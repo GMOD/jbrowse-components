@@ -14,9 +14,9 @@ export interface ErrorProps {
 export function getDisplayStr(totalBytes: number) {
   let displayBp
   if (Math.floor(totalBytes / 1000000) > 0) {
-    displayBp = `${parseFloat((totalBytes / 1000000).toPrecision(3))} Mb`
+    displayBp = `${Number.parseFloat((totalBytes / 1000000).toPrecision(3))} Mb`
   } else if (Math.floor(totalBytes / 1000) > 0) {
-    displayBp = `${parseFloat((totalBytes / 1000).toPrecision(3))} Kb`
+    displayBp = `${Number.parseFloat((totalBytes / 1000).toPrecision(3))} Kb`
   } else {
     displayBp = `${Math.floor(totalBytes)} bytes`
   }

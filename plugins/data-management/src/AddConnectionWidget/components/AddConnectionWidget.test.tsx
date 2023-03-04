@@ -47,8 +47,8 @@ describe('<AddConnectionWidget />', () => {
 
   it('can handle a custom UCSC trackHub URL', async () => {
     const mockFetch = async (url: RequestInfo | URL) => {
-      // @ts-ignore
-      const urlText = url.href ? url.href : url
+      // @ts-expect-error
+      const urlText = url.href || url
       let responseText = ''
       if (urlText.endsWith('hub.txt')) {
         responseText = `hub TestHub
@@ -98,8 +98,8 @@ type bigWig
 
   it('can handle a custom JBrowse 1 data directory URL', async () => {
     const mockFetch = async (url: RequestInfo | URL) => {
-      // @ts-ignore
-      const urlText = url.href ? url.href : url
+      // @ts-expect-error
+      const urlText = url.href || url
       let responseText = ''
       if (urlText.endsWith('trackList.json')) {
         responseText = '{}'

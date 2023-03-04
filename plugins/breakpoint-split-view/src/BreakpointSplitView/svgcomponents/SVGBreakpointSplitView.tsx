@@ -33,14 +33,11 @@ function getTrackNameMaxLen(
   session: AbstractSessionModel,
 ) {
   return max(
-    views
-      .map(view =>
-        view.tracks.map(
-          t => measureText(getTrackName(t.configuration, session), fontSize),
-          fontSize,
-        ),
-      )
-      .flat(),
+    views.flatMap(view =>
+      view.tracks.map(t =>
+        measureText(getTrackName(t.configuration, session), fontSize),
+      ),
+    ),
     0,
   )
 }

@@ -201,11 +201,7 @@ export default abstract class JBrowseCommand extends Command {
     }
     let locationPath: string | undefined
     try {
-      if (check) {
-        locationPath = await fsPromises.realpath(location)
-      } else {
-        locationPath = location
-      }
+      locationPath = check ? await fsPromises.realpath(location) : location
     } catch (e) {
       // ignore
     }
@@ -241,7 +237,7 @@ export default abstract class JBrowseCommand extends Command {
   async fetchGithubVersions() {
     let versions: GithubRelease[] = []
     for await (const iter of this.fetchVersions()) {
-      versions = versions.concat(iter)
+      versions = [...versions, ...iter]
     }
 
     return versions
@@ -255,8 +251,8 @@ export default abstract class JBrowseCommand extends Command {
         .filter(release => release.prerelease === false)
         .filter(release => release.assets && release.assets.length > 0)
 
-      if (nonprereleases.length !== 0) {
-        // @ts-ignore
+      if (nonprereleases.length > 0) {
+        // @ts-expect-error
         const file = nonprereleases[0].assets.find(f =>
           f.name.includes('jbrowse-web'),
         )?.browser_download_url

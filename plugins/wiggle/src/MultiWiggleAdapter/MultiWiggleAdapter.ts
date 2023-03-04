@@ -19,6 +19,7 @@ function getFilename(uri: string) {
 
 interface AdapterEntry {
   dataAdapter: BaseFeatureDataAdapter
+  source: string
   [key: string]: unknown
 }
 
@@ -73,7 +74,7 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     const adapters = await this.getAdapters()
     const stats = (
       await Promise.all(
-        // @ts-ignore
+        // @ts-expect-error
         adapters.map(adp => adp.dataAdapter.getGlobalStats?.(opts)),
       )
     ).filter(f => !!f)
@@ -94,7 +95,7 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
                 ? p
                 : new SimpleFeature({
                     ...p.toJSON(),
-                    uniqueId: adp.source + '-' + p.id(),
+                    uniqueId: `${adp.source}-${p.id()}`,
                     source: adp.source,
                   }),
             ),

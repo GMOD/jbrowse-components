@@ -26,7 +26,7 @@ interface Config {
 }
 
 export default class SetDefaultSession extends JBrowseCommand {
-  // @ts-ignore
+  // @ts-expect-error
   private target: string
 
   static description = 'Set a default session with views and tracks'

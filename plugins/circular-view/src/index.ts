@@ -3,10 +3,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import Plugin from '@jbrowse/core/Plugin'
 
 // locals
-import {
-  CircularViewModel,
-  CircularViewStateModel,
-} from './CircularView/models/CircularView'
+
 import CircularViewF from './CircularView'
 import LaunchCircularViewF from './LaunchCircularView'
 
@@ -40,4 +37,7 @@ export {
   BaseChordDisplayComponent,
 } from './BaseChordDisplay'
 
-export type { CircularViewModel, CircularViewStateModel }
+export {
+  type CircularViewModel,
+  type CircularViewStateModel,
+} from './CircularView/models/CircularView'

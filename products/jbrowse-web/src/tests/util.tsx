@@ -30,9 +30,9 @@ type LGV = LinearGenomeViewModel
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
-// @ts-ignore
+// @ts-expect-error
 global.nodeImage = Image
-// @ts-ignore
+// @ts-expect-error
 global.nodeCreateCanvas = createCanvas
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -48,8 +48,8 @@ export function getPluginManager(initialState?: any, adminMode = true) {
     },
     { pluginManager },
   )
-  // @ts-ignore
-  if (rootModel && rootModel.jbrowse.defaultSession.length) {
+  // @ts-expect-error
+  if (rootModel && rootModel.jbrowse.defaultSession.length > 0) {
     const { name } = rootModel.jbrowse.defaultSession
     localStorage.setItem(
       `localSaved-1`,
@@ -143,6 +143,7 @@ export function JBrowse(props: any) {
 
 export const hts = (str: string) => 'htsTrackEntry-' + str
 export const pc = (str: string) => `prerendered_canvas_${str}_done`
+export const pv = (str: string) => pc(`{volvox}ctgA:${str}`)
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createView(args?: any, adminMode?: boolean) {
@@ -164,9 +165,9 @@ export function doBeforeEach(
   clearCache()
   clearAdapterCache()
 
-  // @ts-ignore
+  // @ts-expect-error
   fetch.resetMocks()
-  // @ts-ignore
+  // @ts-expect-error
   fetch.mockResponse(generateReadBuffer(url => new LocalFile(cb(url))))
 }
 

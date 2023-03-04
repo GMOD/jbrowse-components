@@ -72,7 +72,7 @@ function preprocessConfigurationSchemaArguments(
       ...schemaDefinition,
     }
     options = {
-      ...(inputOptions.baseConfiguration.jbrowseSchemaOptions || {}),
+      ...inputOptions.baseConfiguration.jbrowseSchemaOptions,
       ...inputOptions,
     }
     delete options.baseConfiguration

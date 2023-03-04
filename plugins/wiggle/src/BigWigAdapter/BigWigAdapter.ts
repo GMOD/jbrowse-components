@@ -81,21 +81,20 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
         basesPerSpan: bpPerPx / resolution,
       })
 
-      for (let i = 0; i < feats.length; i++) {
-        const data = feats[i]
+      for (const data of feats) {
         if (source) {
-          // @ts-ignore
+          // @ts-expect-error
           data.source = source
         }
         const uniqueId = `${source}:${region.refName}:${data.start}-${data.end}`
-        // @ts-ignore
+        // @ts-expect-error
         data.refName = refName
         data.uniqueId = uniqueId
         observer.next({
-          // @ts-ignore
+          // @ts-expect-error
           get: (str: string) => (data as Record<string, unknown>)[str],
           id: () => uniqueId,
-          // @ts-ignore
+          // @ts-expect-error
           toJSON: () => data,
         })
       }

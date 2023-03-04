@@ -126,7 +126,7 @@ export default function RootModel(
        * #getter
        */
       get savedSessions() {
-        return Array.from(self.savedSessionsVolatile.values())
+        return [...self.savedSessionsVolatile.values()]
       },
       /**
        * #method
@@ -168,35 +168,35 @@ export default function RootModel(
       afterCreate() {
         document.addEventListener('keydown', e => {
           const cm = e.ctrlKey || e.metaKey
-          if (self.history.canRedo) {
-            if (
-              // ctrl+shift+z or cmd+shift+z
-              (cm && e.shiftKey && e.code === 'KeyZ') ||
+          if (
+            self.history.canRedo &&
+            // ctrl+shift+z or cmd+shift+z
+            ((cm && e.shiftKey && e.code === 'KeyZ') ||
               // ctrl+y
-              (e.ctrlKey && !e.shiftKey && e.code === 'KeyY')
-            ) {
-              self.history.redo()
-            }
+              (e.ctrlKey && !e.shiftKey && e.code === 'KeyY'))
+          ) {
+            self.history.redo()
           }
-          if (self.history.canUndo) {
-            // ctrl+z or cmd+z
-            if (cm && !e.shiftKey && e.code === 'KeyZ') {
-              self.history.undo()
-            }
+          if (
+            self.history.canUndo && // ctrl+z or cmd+z
+            cm &&
+            !e.shiftKey &&
+            e.code === 'KeyZ'
+          ) {
+            self.history.undo()
           }
         })
 
-        Object.entries(localStorage)
+        for (const [key, val] of Object.entries(localStorage)
           .filter(([key, _val]) => key.startsWith('localSaved-'))
-          .filter(([key]) => key.indexOf(self.configPath || 'undefined') !== -1)
-          .forEach(([key, val]) => {
-            try {
-              const { session } = JSON.parse(val)
-              self.savedSessionsVolatile.set(key, session)
-            } catch (e) {
-              console.error('bad session encountered', key, val)
-            }
-          })
+          .filter(([key]) => key.includes(self.configPath || 'undefined'))) {
+          try {
+            const { session } = JSON.parse(val)
+            self.savedSessionsVolatile.set(key, session)
+          } catch (e) {
+            console.error('bad session encountered', key, val)
+          }
+        }
         addDisposer(
           self,
           autorun(() => {
@@ -205,7 +205,7 @@ export default function RootModel(
                 const key = self.localStorageId(val.name)
                 localStorage.setItem(key, JSON.stringify({ session: val }))
               } catch (e) {
-                // @ts-ignore
+                // @ts-expect-error
                 if (e.code === '22' || e.code === '1024') {
                   alert(
                     'Local storage is full! Please use the "Open sessions" panel to remove old sessions',
@@ -518,7 +518,7 @@ export default function RootModel(
               onClick: (session: SessionWithWidgets) => {
                 if (session.views.length === 0) {
                   session.notify('Please open a view to add a track first')
-                } else if (session.views.length >= 1) {
+                } else if (session.views.length > 0) {
                   const widget = session.addWidget(
                     'AddTrackWidget',
                     'addTrackWidget',

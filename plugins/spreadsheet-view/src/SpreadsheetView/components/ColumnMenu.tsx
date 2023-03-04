@@ -21,17 +21,11 @@ const ColumnMenu = observer(function ({
 }: {
   spreadsheetModel: SpreadsheetModel
   viewModel: SpreadsheetViewModel
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  currentColumnMenu: any
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  setColumnMenu: (arg: any) => void
+  currentColumnMenu?: { colNumber: number; anchorEl: HTMLElement }
+  setColumnMenu: (arg?: { anchorEl: HTMLElement; colNumber: number }) => void
 }) {
-  const columnMenuClose = () => {
-    setColumnMenu(null)
-  }
-
-  const columnNumber = currentColumnMenu && currentColumnMenu.colNumber
-
+  const columnMenuClose = () => setColumnMenu(undefined)
+  const columnNumber = currentColumnMenu?.colNumber || 0
   const sortMenuClick = (descending: boolean) => {
     spreadsheetModel.setSortColumns([
       {
@@ -64,26 +58,24 @@ const ColumnMenu = observer(function ({
     }
   })
 
-  const dataType =
-    currentColumnMenu && spreadsheetModel.columns[columnNumber].dataType
+  const { columns, sortColumns } = spreadsheetModel
+  const dataType = currentColumnMenu && columns[columnNumber].dataType
   const dataTypeName = (dataType && dataType.type) || ''
   const dataTypeDisplayName =
-    (currentColumnMenu &&
-      spreadsheetModel.columns[columnNumber].dataType.displayName) ||
-    ''
+    (currentColumnMenu && columns[columnNumber].dataType.displayName) || ''
 
   const isSortingAscending = Boolean(
-    spreadsheetModel.sortColumns.length &&
+    sortColumns.length > 0 &&
       currentColumnMenu &&
-      spreadsheetModel.sortColumns.find(
+      sortColumns.some(
         col =>
           col.columnNumber === currentColumnMenu.colNumber && !col.descending,
       ),
   )
   const isSortingDescending = Boolean(
-    spreadsheetModel.sortColumns.length &&
+    sortColumns.length > 0 &&
       currentColumnMenu &&
-      spreadsheetModel.sortColumns.find(
+      sortColumns.some(
         col =>
           col.columnNumber === currentColumnMenu.colNumber && col.descending,
       ),
@@ -137,7 +129,7 @@ const ColumnMenu = observer(function ({
           if (subMenuItems) {
             return {
               label: displayName,
-              icon: subMenuItems.find(
+              icon: subMenuItems.some(
                 (i: { typeName: string }) => i.typeName === dataTypeName,
               )
                 ? CheckIcon
@@ -177,7 +169,7 @@ const ColumnMenu = observer(function ({
 
   return (
     <Menu
-      anchorEl={currentColumnMenu && currentColumnMenu.anchorEl}
+      anchorEl={currentColumnMenu?.anchorEl}
       open={Boolean(currentColumnMenu)}
       onMenuItemClick={(_event, callback) => {
         callback()

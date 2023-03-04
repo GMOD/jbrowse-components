@@ -7,7 +7,7 @@ const dynamodb = new AWS.DynamoDB.DocumentClient({
   region,
 })
 
-async function readSession(sessionId) {
+function readSession(sessionId) {
   const params = {
     TableName: sessionTable,
     Key: { sessionId },

@@ -4,13 +4,11 @@ export class BlockSet {
   constructor(public blocks: BaseBlock[] = []) {}
 
   push(block: BaseBlock) {
-    if (block instanceof ElidedBlock) {
-      if (this.blocks.length) {
-        const lastBlock = this.blocks[this.blocks.length - 1]
-        if (lastBlock instanceof ElidedBlock) {
-          lastBlock.push(block)
-          return
-        }
+    if (block instanceof ElidedBlock && this.blocks.length > 0) {
+      const lastBlock = this.blocks[this.blocks.length - 1]
+      if (lastBlock instanceof ElidedBlock) {
+        lastBlock.push(block)
+        return
       }
     }
 
@@ -22,10 +20,12 @@ export class BlockSet {
   }
 
   map<T, U = this>(func: Func<T>, thisarg?: U) {
+    // eslint-disable-next-line unicorn/no-array-method-this-argument
     return this.blocks.map(func, thisarg)
   }
 
   forEach<T, U = this>(func: Func<T>, thisarg?: U) {
+    // eslint-disable-next-line unicorn/no-array-method-this-argument
     return this.blocks.forEach(func, thisarg)
   }
 

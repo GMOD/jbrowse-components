@@ -8,6 +8,7 @@ import {
   createView,
   pc,
   hts,
+  pv,
 } from './util'
 
 setup()
@@ -32,11 +33,11 @@ test('opens the track menu and enables soft clipping', async () => {
   fireEvent.click(await findByText('Show soft clipping'))
 
   // wait for block to rerender
-  const { findByTestId: f0 } = within(await findByTestId('Blockset-pileup'))
+  const f0 = within(await findByTestId('Blockset-pileup'))
 
   // slightly higher threshold for fonts
   expectCanvasMatch(
-    await f0(pc('softclipped_{volvox}ctgA:2849..2864-0'), ...opts),
+    await f0.findByTestId(pc('softclipped_{volvox}ctgA:2849..2864-0'), ...opts),
     0.05,
   )
 }, 30000)
@@ -56,13 +57,14 @@ test('selects a sort, sort by base pair', async () => {
 
   // wait for pileup track to render with sort
   await findAllByTestId('pileup-Base pair', ...opts)
-  const { findByTestId: find1 } = within(await findByTestId('Blockset-pileup'))
-  expectCanvasMatch(await find1(pc('{volvox}ctgA:13196..13230-0'), ...opts))
+  const f1 = within(await findByTestId('Blockset-pileup'))
+  expectCanvasMatch(await f1.findByTestId(pv('13196..13230-0'), ...opts))
 
+  // maintains sort after zoom out
   fireEvent.click(await findByTestId('zoom_out'))
   await findAllByTestId('pileup-Base pair', ...opts)
-  const { findByTestId: find2 } = within(await findByTestId('Blockset-pileup'))
-  expectCanvasMatch(await find2(pc('{volvox}ctgA:13161..13230-0'), ...opts))
+  const f2 = within(await findByTestId('Blockset-pileup'))
+  expectCanvasMatch(await f2.findByTestId(pv('13161..13230-0'), ...opts))
 }, 35000)
 
 test('color by tag', async () => {
@@ -83,8 +85,8 @@ test('color by tag', async () => {
   fireEvent.click(await findByText('Submit'))
   // wait for pileup track to render with color
   await findAllByTestId('pileup-tagHP', ...opts)
-  const { findByTestId: find1 } = within(await findByTestId('Blockset-pileup'))
-  expectCanvasMatch(await find1(pc('{volvox}ctgA:39805..40176-0'), ...opts))
+  const f1 = within(await findByTestId('Blockset-pileup'))
+  expectCanvasMatch(await f1.findByTestId(pv('39805..40176-0'), ...opts))
 }, 30000)
 
 test('toggle short-read arc display', async () => {

@@ -16,7 +16,7 @@ export default class CytobandAdapter extends BaseAdapter {
     if (loc.uri === '' || loc.uri === '/path/to/cytoband.txt.gz') {
       return []
     }
-    const buffer = (await openLocation(loc, pm).readFile()) as Buffer
+    const buffer = await openLocation(loc, pm).readFile()
     const buf = isGzip(buffer) ? await unzip(buffer) : buffer
     const text = new TextDecoder('utf8', { fatal: true }).decode(buf)
     return text

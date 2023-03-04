@@ -63,15 +63,15 @@ export function mergeIntervals<T extends Interval>(intervals: T[], w = 5000) {
 }
 
 export function gatherOverlaps(regions: BasicFeature[]) {
-  const groups = regions.reduce((memo, x) => {
+  const memo = {} as { [key: string]: BasicFeature[] }
+  for (const x of regions) {
     if (!memo[x.refName]) {
       memo[x.refName] = []
     }
     memo[x.refName].push(x)
-    return memo
-  }, {} as { [key: string]: BasicFeature[] })
+  }
 
-  return Object.values(groups)
-    .map(group => mergeIntervals(group.sort((a, b) => a.start - b.start)))
-    .flat()
+  return Object.values(memo).flatMap(group =>
+    mergeIntervals(group.sort((a, b) => a.start - b.start)),
+  )
 }

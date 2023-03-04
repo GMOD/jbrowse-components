@@ -70,6 +70,7 @@ export default function (/* config?: any*/): JexlNonBuildable {
     s.startsWith(search, pos),
   )
   j.addFunction('substring', (s: string, start: number, end?: number) =>
+    // eslint-disable-next-line unicorn/prefer-string-slice
     s.substring(start, end),
   )
   j.addFunction('toLowerCase', (s: string) => s.toLowerCase())

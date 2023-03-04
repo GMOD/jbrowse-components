@@ -27,11 +27,7 @@ export default class NestedFrequencyTable {
       amount = 1
     }
 
-    if (!slotName) {
-      slotName = 'default'
-    } else {
-      slotName = slotName.toString()
-    }
+    slotName = slotName ? slotName.toString() : 'default'
 
     if (this.categories[slotName]) {
       this.categories[slotName] = Math.max(
@@ -49,11 +45,7 @@ export default class NestedFrequencyTable {
       amount = 1
     }
 
-    if (!slotName) {
-      slotName = 'default'
-    } else {
-      slotName = slotName.toString()
-    }
+    slotName = slotName ? slotName.toString() : 'default'
 
     this.categories[slotName] = (this.categories[slotName] || 0) + amount
     return this.categories[slotName]
@@ -71,7 +63,7 @@ export default class NestedFrequencyTable {
       path = path.split('/')
     }
 
-    if (!path.length) {
+    if (path.length === 0) {
       return this
     }
 

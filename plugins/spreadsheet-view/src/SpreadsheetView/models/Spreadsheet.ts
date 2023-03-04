@@ -142,7 +142,7 @@ const Spreadsheet = types
 
     setSortColumns(newSort: NonNullable<SnapshotIn<typeof self.sortColumns>>) {
       if (newSort) {
-        // @ts-ignore
+        // @ts-expect-error
         self.sortColumns = newSort
       }
     },

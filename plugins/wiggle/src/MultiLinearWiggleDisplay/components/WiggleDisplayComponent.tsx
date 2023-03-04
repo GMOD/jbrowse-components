@@ -132,15 +132,15 @@ const ColorLegend = observer(function ({
       {sources.map((source, idx) => {
         const boxHeight = Math.min(20, rowHeight)
         return (
-          <React.Fragment key={source.name + '-' + idx}>
-            {!needsFullHeightScalebar ? (
+          <React.Fragment key={`${source.name}-${idx}`}>
+            {needsFullHeightScalebar ? null : (
               <RectBg
                 y={idx * rowHeight + 1}
                 x={extraOffset}
                 width={legendWidth}
                 height={boxHeight}
               />
-            ) : null}
+            )}
             {source.color ? (
               <RectBg
                 y={idx * rowHeight + 1}
@@ -228,7 +228,7 @@ export const StatBars = observer(function (props: {
             sources.map((_source, idx) => (
               <g
                 transform={`translate(0 ${rowHeight * idx})`}
-                key={JSON.stringify(ticks) + '-' + idx}
+                key={`${JSON.stringify(ticks)}-${idx}`}
               >
                 <YScaleBar model={model} orientation={orientation} />
               </g>
@@ -251,4 +251,4 @@ export default observer((props: { model: WiggleDisplayModel }) => {
   )
 })
 
-export { YScaleBar }
+export { default as YScaleBar } from '../../shared/YScaleBar'

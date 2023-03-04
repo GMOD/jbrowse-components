@@ -84,7 +84,7 @@ export default observer(function LinearSyntenyRendering({
             setTooltip('')
           } else if (model.featPositions[id]) {
             const { f, cigar } = model.featPositions[id]
-            // @ts-ignore
+            // @ts-expect-error
             const f1 = f.toJSON() as {
               refName: string
               start: number
@@ -94,7 +94,7 @@ export default observer(function LinearSyntenyRendering({
               identity?: number
               name?: string
             }
-            // @ts-ignore
+            // @ts-expect-error
             const f2 = f1.mate
             const unitMultiplier2 = Math.floor(MAX_COLOR_RANGE / cigar.length)
             const cigarIdx = getId(r2, g2, b2, unitMultiplier2)
@@ -103,12 +103,13 @@ export default observer(function LinearSyntenyRendering({
             const identity = f1.identity
             const n1 = f1.name
             const n2 = f2.name
-            const tooltip = []
-            tooltip.push(`Loc1: ${assembleLocString(f1)}`)
-            tooltip.push(`Loc2: ${assembleLocString(f2)}`)
-            tooltip.push(`Inverted: ${f1.strand === -1}`)
-            tooltip.push(`Query len: ${l1}`)
-            tooltip.push(`Target len: ${l2}`)
+            const tooltip = [
+              `Loc1: ${assembleLocString(f1)}`,
+              `Loc2: ${assembleLocString(f2)}`,
+              `Inverted: ${f1.strand === -1}`,
+              `Query len: ${l1}`,
+              `Target len: ${l2}`,
+            ]
             if (identity) {
               tooltip.push(`Identity: ${identity}`)
             }
@@ -119,8 +120,7 @@ export default observer(function LinearSyntenyRendering({
               )
             }
             if (n1 && n2) {
-              tooltip.push(`Name 1: ${n1}`)
-              tooltip.push(`Name 2: ${n2}`)
+              tooltip.push(`Name 1: ${n1}`, `Name 2: ${n2}`)
             }
             setTooltip(tooltip.join('<br/>'))
           }

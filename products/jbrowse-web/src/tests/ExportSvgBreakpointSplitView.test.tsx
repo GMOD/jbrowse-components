@@ -7,7 +7,7 @@ import breakpointConfig from '../../test_data/breakpoint/config.json'
 // locals
 import { createView, setup, doBeforeEach } from './util'
 
-// @ts-ignore
+// @ts-expect-error
 global.Blob = (content, options) => ({ content, options })
 
 // mock from https://stackoverflow.com/questions/44686077
@@ -35,7 +35,7 @@ test('export svg of breakpoint split view', async () => {
 
   await waitFor(() => expect(FileSaver.saveAs).toHaveBeenCalled(), delay)
 
-  // @ts-ignore
+  // @ts-expect-error
   const svg = FileSaver.saveAs.mock.calls[0][0].content[0]
   const dir = path.dirname(module.filename)
   fs.writeFileSync(

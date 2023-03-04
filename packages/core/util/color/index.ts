@@ -5,9 +5,7 @@ import {
   getLuminance as muiGetLuminance,
   lighten,
 } from '@mui/material/styles'
-import { namedColorToHex, isNamedColor } from './cssColorsLevel4'
-
-export { namedColorToHex, isNamedColor }
+import { namedColorToHex } from './cssColorsLevel4'
 
 /**
  * Algorithmically pick a contrasting text color that will
@@ -75,3 +73,5 @@ export function makeContrasting(
   }
   return convertedForeground
 }
+
+export { isNamedColor, namedColorToHex } from './cssColorsLevel4'

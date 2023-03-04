@@ -151,7 +151,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
         const trimEnd = Math.min(end - chunkStart, chunkEnd - chunkStart)
         const trimLength = trimEnd - trimStart
         const chunkSeq = chunk.get('seq') || chunk.get('residues')
-        sequence += chunkSeq.substr(trimStart, trimLength)
+        sequence += chunkSeq.slice(trimStart, trimStart + trimLength)
       })
 
     if (sequence.length !== end - start) {
@@ -230,7 +230,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   async estimateRegionsStats(regions: Region[], opts?: BaseOptions) {
     const { bam } = await this.configure()
     // this is a method to avoid calling on htsget adapters
-    // @ts-ignore
+    // @ts-expect-error
     if (bam.index.filehandle !== '?') {
       const bytes = await bytesForRegions(regions, bam)
       const fetchSizeLimit = this.getConf('fetchSizeLimit')

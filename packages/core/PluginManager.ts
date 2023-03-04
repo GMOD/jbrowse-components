@@ -232,7 +232,6 @@ export default class PluginManager {
 
     this.pluginMetadata[plugin.name] = metadata
     if ('definition' in load) {
-      // @ts-ignore
       this.runtimePluginDefinitions.push(load.definition as PluginDefinition)
     }
     plugin.install(this)
@@ -378,7 +377,7 @@ export default class PluginManager {
   ) {
     const pluggableTypes = this.getElementTypeRecord(groupName)
       .all()
-      // @ts-ignore
+      // @ts-expect-error
       .map(t => t[fieldName])
       .filter(t => isType(t) && isModelType(t)) as IAnyType[]
 
@@ -400,7 +399,7 @@ export default class PluginManager {
   ) {
     const pluggableTypes = this.getElementTypeRecord(typeGroup)
       .all()
-      // @ts-ignore
+      // @ts-expect-error
       .map(t => t[fieldName])
       .filter(t => isBareConfigurationSchemaType(t)) as IAnyType[]
 

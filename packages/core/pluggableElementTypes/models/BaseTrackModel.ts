@@ -24,9 +24,9 @@ export function getCompatibleDisplays(self: IAnyStateTreeNode) {
   const { pluginManager } = getEnv(self)
   const view = getContainingView(self)
   const viewType = pluginManager.getViewType(view.type)
-  const compatTypes = viewType.displayTypes.map(d => d.name)
+  const compatTypes = new Set(viewType.displayTypes.map(d => d.name))
   const displays = self.configuration.displays as AnyConfigurationModel[]
-  return displays.filter(d => compatTypes.includes(d.type))
+  return displays.filter(d => compatTypes.has(d.type))
 }
 
 /**
@@ -103,7 +103,7 @@ export function createBaseTrackModel(
        * #getter
        */
       get viewMenuActions(): MenuItem[] {
-        return self.displays.map(d => d.viewMenuActions).flat()
+        return self.displays.flatMap(d => d.viewMenuActions)
       },
 
       /**
@@ -111,14 +111,14 @@ export function createBaseTrackModel(
        */
       get canConfigure() {
         const session = getSession(self)
+        const { sessionTracks, adminMode } = session
         return (
           isSessionModelWithConfigEditing(session) &&
-          // @ts-ignore
-          (session.adminMode ||
-            // @ts-ignore
-            session.sessionTracks.find(track => {
-              return track.trackId === self.configuration.trackId
-            }))
+          (adminMode ||
+            sessionTracks.find(
+              (track: { trackId: string }) =>
+                track.trackId === self.configuration.trackId,
+            ))
         )
       },
     }))
@@ -136,7 +136,7 @@ export function createBaseTrackModel(
         const session = getSession(self)
         const view = getContainingView(self)
         if (isSessionModelWithConfigEditing(session)) {
-          // @ts-ignore
+          // @ts-expect-error
           const trackConf = session.editTrackConfiguration(self.configuration)
           if (trackConf && trackConf !== self.configuration) {
             view.hideTrack(self.configuration)
@@ -202,9 +202,9 @@ export function createBaseTrackModel(
        * #method
        */
       trackMenuItems() {
-        const menuItems: MenuItem[] = self.displays
-          .map(d => d.trackMenuItems())
-          .flat()
+        const menuItems: MenuItem[] = self.displays.flatMap(d =>
+          d.trackMenuItems(),
+        )
         const shownId = self.displays[0].configuration.displayId
         const compatDisp = getCompatibleDisplays(self)
 

@@ -8,7 +8,7 @@ type LSV = LinearSyntenyViewModel
 export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(
     'LaunchView-LinearSyntenyView',
-    // @ts-ignore
+    // @ts-expect-error
     async ({
       session,
       views,

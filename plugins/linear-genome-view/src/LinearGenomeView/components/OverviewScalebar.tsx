@@ -339,4 +339,6 @@ export default observer(function OverviewScalebar({
   )
 })
 
-export { Cytobands, Polygon }
+export { Polygon }
+
+export { default as Cytobands } from './Cytobands'

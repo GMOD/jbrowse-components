@@ -84,14 +84,25 @@ export default class AuthenticationPlugin extends Plugin {
 }
 
 export {
-  OAuthConfigSchema,
-  OAuthInternetAccountModelFactory,
-  ExternalTokenConfigSchema,
-  ExternalTokenInternetAccountModelFactory,
-  HTTPBasicConfigSchema,
-  HTTPBasicInternetAccountModelFactory,
-  DropboxOAuthConfigSchema,
-  DropboxOAuthInternetAccountModelFactory,
-  GoogleDriveOAuthConfigSchema,
-  GoogleDriveOAuthInternetAccountModelFactory,
-}
+  configSchema as OAuthConfigSchema,
+  modelFactory as OAuthInternetAccountModelFactory,
+} from './OAuthModel'
+export {
+  configSchema as ExternalTokenConfigSchema,
+  modelFactory as ExternalTokenInternetAccountModelFactory,
+} from './ExternalTokenModel'
+
+export {
+  configSchema as HTTPBasicConfigSchema,
+  modelFactory as HTTPBasicInternetAccountModelFactory,
+} from './HTTPBasicModel'
+
+export {
+  configSchema as DropboxOAuthConfigSchema,
+  modelFactory as DropboxOAuthInternetAccountModelFactory,
+} from './DropboxOAuthModel'
+
+export {
+  configSchema as GoogleDriveOAuthConfigSchema,
+  modelFactory as GoogleDriveOAuthInternetAccountModelFactory,
+} from './GoogleDriveOAuthModel'

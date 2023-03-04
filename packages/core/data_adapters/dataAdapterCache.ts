@@ -1,13 +1,12 @@
 import { SnapshotIn } from 'mobx-state-tree'
 import PluginManager from '../PluginManager'
-import { AnyConfigurationSchemaType } from '../configuration/configurationSchema'
+import { AnyConfigurationSchemaType } from '../configuration'
 import { AnyDataAdapter } from './BaseAdapter'
-import { Region } from '../util/types'
 import idMaker from '../util/idMaker'
 
-function adapterConfigCacheKey(
-  adapterConfig: SnapshotIn<AnyConfigurationSchemaType>,
-) {
+type ConfigSnap = SnapshotIn<AnyConfigurationSchemaType>
+
+function adapterConfigCacheKey(adapterConfig: ConfigSnap) {
   return `${idMaker(adapterConfig)}`
 }
 
@@ -61,7 +60,6 @@ export async function getAdapter(
     //
     const { AdapterClass, getAdapterClass } = dataAdapterType
 
-    // @ts-ignore
     const CLASS = AdapterClass || (await getAdapterClass())
     if (!CLASS) {
       throw new Error('Failed to get adapter')
@@ -88,13 +86,12 @@ export async function getAdapter(
  * internally, staying with the same worker session ID
  */
 export type getSubAdapterType = (
-  adapterConfigSnapshot: SnapshotIn<AnyConfigurationSchemaType>,
+  adapterConfigSnap: ConfigSnap,
 ) => ReturnType<typeof getAdapter>
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function freeAdapterResources(specification: Record<string, any>) {
   let deleteCount = 0
-
   const specKeys = Object.keys(specification)
 
   // if we don't specify a range, delete any adapters that are
@@ -117,11 +114,11 @@ export function freeAdapterResources(specification: Record<string, any>) {
         const regions =
           specification.regions ||
           (specification.region ? [specification.region] : [])
-        regions.forEach((region: Region) => {
+        for (const region of regions) {
           if (region.refName !== undefined) {
             cacheEntry.dataAdapter.freeResources(region)
           }
-        })
+        }
       }
     })
   }

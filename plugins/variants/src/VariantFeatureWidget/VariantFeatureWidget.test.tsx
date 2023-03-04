@@ -18,7 +18,7 @@ test('renders with just the required model elements', () => {
   const model = Session.create(
     {
       widget: {
-        // @ts-ignore
+        // @ts-expect-error
         type: 'VariantFeatureWidget',
       },
     },

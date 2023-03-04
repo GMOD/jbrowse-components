@@ -132,7 +132,7 @@ export function getConf(
 export function getTypeNamesFromExplicitlyTypedUnion(maybeUnionType: unknown) {
   if (isType(maybeUnionType)) {
     maybeUnionType = resolveLateType(maybeUnionType)
-    // @ts-ignore
+    // @ts-expect-error
     if (isUnionType(maybeUnionType)) {
       const typeNames: string[] = []
       getUnionSubTypes(maybeUnionType).forEach(type => {

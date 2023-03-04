@@ -94,14 +94,11 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
 
   const trackLabelMaxLen =
     max(
-      views
-        .map(view =>
-          view.tracks.map(
-            t => measureText(getTrackName(t.configuration, session), fontSize),
-            fontSize,
-          ),
-        )
-        .flat(),
+      views.flatMap(view =>
+        view.tracks.map(t =>
+          measureText(getTrackName(t.configuration, session), fontSize),
+        ),
+      ),
       0,
     ) + 40
   const trackLabelOffset = trackLabels === 'left' ? trackLabelMaxLen : 0

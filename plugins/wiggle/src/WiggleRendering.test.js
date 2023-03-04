@@ -15,7 +15,7 @@ test('one', async () => {
       config={{ type: 'DummyRenderer' }}
     />,
   )
-  const test = await getByTestId('wiggle-rendering-test')
+  const test = getByTestId('wiggle-rendering-test')
   expect(fireEvent.click(test)).toBeTruthy()
   expect(container.firstChild).toMatchSnapshot()
 })

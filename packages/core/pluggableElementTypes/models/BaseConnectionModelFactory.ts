@@ -19,8 +19,8 @@ function stateModelFactory(pluginManager: PluginManager) {
     })
     .actions(self => ({
       afterAttach() {
-        if (!self.tracks.length) {
-          // @ts-ignore
+        if (self.tracks.length === 0) {
+          // @ts-expect-error
           self.connect(self.configuration)
         }
       },

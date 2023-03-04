@@ -22,8 +22,6 @@ import { getBlob } from '../tracks'
 import PluginManager from '../../PluginManager'
 import { isElectron } from '../'
 
-export { RemoteFileWithRangeCache }
-
 function isLocalPathLocation(
   location: FileLocation,
 ): location is LocalPathLocation {
@@ -137,13 +135,16 @@ function getInternetAccount(
 // needed with HTTP Basic authentication included
 async function checkAuthNeededFetch(url: RequestInfo, opts?: RequestInit) {
   const response = await fetch(url, opts)
-  if (response.status === 401) {
-    if (response.headers.get('WWW-Authenticate')?.includes('Basic')) {
-      throw new AuthNeededError(
-        'Accessing HTTPBasic resource without authentication',
-        url.toString(),
-      )
-    }
+  if (
+    response.status === 401 &&
+    response.headers.get('WWW-Authenticate')?.includes('Basic')
+  ) {
+    throw new AuthNeededError(
+      'Accessing HTTPBasic resource without authentication',
+      url.toString(),
+    )
   }
   return response
 }
+
+export { RemoteFileWithRangeCache } from './RemoteFileWithRangeCache'

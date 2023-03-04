@@ -45,7 +45,7 @@ const defaultInternetAccounts = [
 export async function loadPluginManager(configPath: string) {
   const snap = await ipcRenderer.invoke('loadSession', configPath)
   const pm = await createPluginManager(snap)
-  // @ts-ignore
+  // @ts-expect-error
   pm.rootModel?.setSessionPath(configPath)
   return pm
 }

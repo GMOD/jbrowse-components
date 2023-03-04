@@ -23,7 +23,7 @@ const useStyles = makeStyles()(theme => ({
 export default function MultiWiggleWidget({ model }: { model: AddTrackModel }) {
   const { classes } = useStyles()
   const [val, setVal] = useState('')
-  const [trackName, setTrackName] = useState('MultiWiggle ' + Date.now())
+  const [trackName, setTrackName] = useState(`MultiWiggle${+Date.now()}`)
   return (
     <Paper className={classes.paper}>
       <ul>
@@ -51,7 +51,7 @@ export default function MultiWiggleWidget({ model }: { model: AddTrackModel }) {
           hidden
           multiple
           onChange={({ target }) => {
-            const res = Array.from(target?.files || []).map(file => ({
+            const res = [...(target?.files || [])].map(file => ({
               type: 'BigWigAdapter',
               bigWigLocation: isElectron
                 ? {

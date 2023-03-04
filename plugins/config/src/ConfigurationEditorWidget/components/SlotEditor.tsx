@@ -86,7 +86,7 @@ const IntegerEditor = observer(
   }) => {
     const [val, setVal] = useState(slot.value)
     useEffect(() => {
-      const num = parseInt(val, 10)
+      const num = Number.parseInt(val, 10)
       if (!Number.isNaN(num)) {
         slot.set(num)
       }
@@ -195,7 +195,7 @@ const SlotEditor = observer(
     const { type } = slot
     let ValueComponent = slot.isCallback
       ? CallbackEditor
-      : // @ts-ignore
+      : // @ts-expect-error
         valueComponents[type]
     if (!ValueComponent) {
       console.warn(`no slot editor defined for ${type}, editing as string`)
@@ -221,11 +221,7 @@ const SlotEditor = observer(
                 slot.isCallback ? 'regular value' : 'callback'
               }`}
             >
-              {!slot.isCallback ? (
-                <RadioButtonUncheckedIcon />
-              ) : (
-                <SvgCheckbox />
-              )}
+              {slot.isCallback ? <SvgCheckbox /> : <RadioButtonUncheckedIcon />}
             </IconButton>
           ) : null}
         </div>

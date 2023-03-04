@@ -7,7 +7,7 @@ interface AnalyticsObj {
 }
 
 interface Track {
-  [key: string]: any
+  type: string
 }
 
 export async function writeAWSAnalytics(
@@ -121,7 +121,7 @@ export async function writeGAAnalytics(
   const analyticsScriptNode = document.createElement('script')
   analyticsScriptNode.innerHTML = analyticsScript
 
-  document.getElementsByTagName('head')[0].appendChild(analyticsScriptNode)
+  document.getElementsByTagName('head')[0].append(analyticsScriptNode)
 }
 
 export function doAnalytics(

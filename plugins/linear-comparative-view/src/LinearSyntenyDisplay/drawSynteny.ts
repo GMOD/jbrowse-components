@@ -69,14 +69,17 @@ export function drawRef(
 
     // drawing a line if the results are thin results in much less pixellation
     // than filling in a thin polygon
-    if (l1 <= lineLimit && l2 <= lineLimit) {
-      if (x21 < width + oobLimit && x21 > -oobLimit) {
-        ctx1.moveTo(x11, y1)
-        if (drawCurves) {
-          ctx1.bezierCurveTo(x11, mid, x21, mid, x21, y2)
-        } else {
-          ctx1.lineTo(x21, y2)
-        }
+    if (
+      l1 <= lineLimit &&
+      l2 <= lineLimit &&
+      x21 < width + oobLimit &&
+      x21 > -oobLimit
+    ) {
+      ctx1.moveTo(x11, y1)
+      if (drawCurves) {
+        ctx1.bezierCurveTo(x11, mid, x21, mid, x21, y2)
+      } else {
+        ctx1.lineTo(x21, y2)
       }
     }
   }

@@ -45,7 +45,7 @@ export default observer(function ({
   return (
     <>
       <InputLabel>{slot.name}</InputLabel>
-      {Array.from(slot.value, ([key, val]) => (
+      {[...slot.value].map(([key, val]) => (
         <Card raised key={key} className={classes.card}>
           <CardHeader
             title={key}

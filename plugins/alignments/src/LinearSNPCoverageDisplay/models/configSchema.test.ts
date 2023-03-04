@@ -9,7 +9,7 @@ beforeEach(() => {
 })
 
 afterEach(() => {
-  // @ts-ignore
+  // @ts-expect-error
   console.warn.mockRestore()
 })
 // change renderer

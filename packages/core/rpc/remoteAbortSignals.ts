@@ -45,7 +45,6 @@ export function isRemoteAbortSignal(
     typeof thing === 'object' &&
     thing !== null &&
     'abortSignalId' in thing &&
-    // @ts-ignore
     typeof thing.abortSignalId === 'number'
   )
 }

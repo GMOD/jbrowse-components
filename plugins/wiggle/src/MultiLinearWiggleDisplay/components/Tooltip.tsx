@@ -73,4 +73,5 @@ const WiggleTooltip = observer(
   },
 )
 export default WiggleTooltip
-export { Tooltip }
+
+export { default as Tooltip } from '../../Tooltip'

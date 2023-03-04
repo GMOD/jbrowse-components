@@ -3,12 +3,10 @@ import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import UCSCTrackHubConnectionF from './ucsc-trackhub'
 import AddTrackWidgetF from './AddTrackWidget'
-import { AddTrackModel } from './AddTrackWidget/model'
+
 import AddConnectionWidgetF from './AddConnectionWidget'
 import PluginStoreWidgetF from './PluginStoreWidget'
-import HierarchicalTrackSelectorWidgetF, {
-  HierarchicalTrackSelectorModel,
-} from './HierarchicalTrackSelectorWidget'
+import HierarchicalTrackSelectorWidgetF from './HierarchicalTrackSelectorWidget'
 
 const SetDefaultSession = lazy(() => import('./SetDefaultSession'))
 
@@ -34,4 +32,6 @@ export default class extends Plugin {
 }
 
 export { AssemblyManager, SetDefaultSession }
-export type { HierarchicalTrackSelectorModel, AddTrackModel }
+
+export { type AddTrackModel } from './AddTrackWidget/model'
+export { type HierarchicalTrackSelectorModel } from './HierarchicalTrackSelectorWidget'

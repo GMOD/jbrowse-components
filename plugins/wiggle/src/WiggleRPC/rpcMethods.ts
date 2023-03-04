@@ -40,7 +40,7 @@ export class WiggleGetGlobalStats extends RpcMethodType {
     const { adapterConfig, sessionId } = deserializedArgs
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
 
-    // @ts-ignore
+    // @ts-expect-error
     return dataAdapter.getGlobalStats(deserializedArgs)
   }
 }
@@ -164,7 +164,7 @@ export class MultiWiggleGetSources extends RpcMethodType {
     const { regions, adapterConfig, sessionId } = deserializedArgs
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
 
-    // @ts-ignore
+    // @ts-expect-error
     return dataAdapter.getSources(regions, deserializedArgs)
   }
 }

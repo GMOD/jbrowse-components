@@ -24,10 +24,7 @@ export function deepUpdate(a: Obj, b: Obj): Obj {
       typeof a[prop] === 'object'
     ) {
       deepUpdate(a[prop], b[prop])
-    } else if (
-      typeof a[prop] === 'undefined' ||
-      typeof b[prop] !== 'undefined'
-    ) {
+    } else if (a[prop] === undefined || b[prop] !== undefined) {
       a[prop] = b[prop]
     }
   }
@@ -44,27 +41,24 @@ export function deepUpdate(a: Obj, b: Obj): Obj {
  * e.g., 'htp://foo/someurl?arg=valueforbaz'
  */
 export function fillTemplate(template: string, fillWith: Obj): string {
-  return template.replace(
-    /\{([\w\s.]+)\}/g,
-    (match, varName: string): string => {
-      varName = varName.replace(/\s+/g, '') // remove all whitespace
-      const fill = getValue(fillWith, varName)
-      if (fill !== undefined) {
-        if (typeof fill === 'function') {
-          return fill(varName)
-        }
-        return fill
+  return template.replace(/{([\s\w.]+)}/g, (match, varName: string): string => {
+    varName = varName.replace(/\s+/g, '') // remove all whitespace
+    const fill = getValue(fillWith, varName)
+    if (fill !== undefined) {
+      if (typeof fill === 'function') {
+        return fill(varName)
       }
-      if (fillWith.callback) {
-        // @ts-ignore
-        const v = fillWith.callback.call(this, varName)
-        if (v !== undefined) {
-          return v
-        }
+      return fill
+    }
+    if (fillWith.callback) {
+      // @ts-expect-error
+      const v = fillWith.callback.call(this, varName)
+      if (v !== undefined) {
+        return v
       }
-      return match
-    },
-  )
+    }
+    return match
+  })
 }
 
 /**
@@ -146,7 +140,7 @@ function mixin(dest: Obj, source: Obj, copyFunc: Function): Obj {
     s = source[name]
     if (
       !(name in dest) ||
-      // @ts-ignore
+      // @ts-expect-error
       (dest[name] !== s && (!(name in empty) || empty[name] !== s))
     ) {
       dest[name] = copyFunc ? copyFunc(s) : s

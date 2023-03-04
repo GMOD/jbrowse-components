@@ -61,25 +61,25 @@ test('widget drawer navigation', async () => {
   await findByTestId('hierarchical_track_selector')
 
   // test minimize and maximize widget drawer
-  // @ts-ignore
+  // @ts-expect-error
   expect(session.minimized).toBeFalsy()
 
   await findByTestId('drawer-minimize')
   fireEvent.click(await findByTestId('drawer-minimize'))
-  // @ts-ignore
+  // @ts-expect-error
   expect(session.minimized).toBeTruthy()
 
   fireEvent.click(await findByTestId('drawer-maximize'))
-  // @ts-ignore
+  // @ts-expect-error
   expect(session.minimized).toBeFalsy()
 
   // test deleting widget from select dropdown using trash icon
-  // @ts-ignore
+  // @ts-expect-error
   expect(session.activeWidgets.size).toEqual(2)
   fireEvent.mouseDown(
     getByRole(await findByTestId('widget-drawer-selects'), 'button'),
   )
   fireEvent.click(await findByTestId('ConfigurationEditorWidget-drawer-delete'))
-  // @ts-ignore
+  // @ts-expect-error
   expect(session.activeWidgets.size).toEqual(1)
 }, 20000)

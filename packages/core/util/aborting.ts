@@ -78,6 +78,6 @@ export function isAbortException(exception: unknown): boolean {
       // Error: aborted
       // AbortError: aborted
       // AbortError: The user aborted a request.
-      !!exception.message.match(/\b(aborted|AbortError)\b/i))
+      !!/\b(aborted|aborterror)\b/i.test(exception.message))
   )
 }

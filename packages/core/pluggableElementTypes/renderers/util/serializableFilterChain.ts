@@ -27,7 +27,7 @@ export default class SerializableFilterChain {
   passes(...args: any[]) {
     for (let i = 0; i < this.filterChain.length; i += 1) {
       if (
-        // @ts-ignore
+        // @ts-expect-error
         !this.filterChain[i].expr.evalSync({ feature: args[0] })
       ) {
         return false

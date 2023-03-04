@@ -50,4 +50,4 @@ const LinearWiggleDisplay = observer((props: { model: WiggleDisplayModel }) => {
 
 export default LinearWiggleDisplay
 
-export { YScaleBar }
+export { default as YScaleBar } from '../../shared/YScaleBar'

@@ -24,7 +24,7 @@ const opts = [{}, delay]
 
 test('reloads vcf (VCF.GZ 404)', async () => {
   await mockConsole(async () => {
-    // @ts-ignore
+    // @ts-expect-error
     fetch.mockResponse(async request => {
       if (request.url === 'volvox.filtered.vcf.gz') {
         return { status: 404 }
@@ -39,7 +39,7 @@ test('reloads vcf (VCF.GZ 404)', async () => {
     fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), ...opts))
     await findAllByText(/HTTP 404/, ...opts)
 
-    // @ts-ignore
+    // @ts-expect-error
     fetch.mockResponse(readBuffer)
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0])
@@ -50,7 +50,7 @@ test('reloads vcf (VCF.GZ 404)', async () => {
 
 test('reloads vcf (VCF.GZ.TBI 404)', async () => {
   await mockConsole(async () => {
-    // @ts-ignore
+    // @ts-expect-error
     fetch.mockResponse(async request => {
       if (request.url === 'volvox.filtered.vcf.gz.tbi') {
         return { status: 404 }
@@ -64,7 +64,7 @@ test('reloads vcf (VCF.GZ.TBI 404)', async () => {
     view.setNewView(0.05, 5000)
     fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), ...opts))
     await findAllByText(/HTTP 404/, ...opts)
-    // @ts-ignore
+    // @ts-expect-error
     fetch.mockResponse(readBuffer)
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0])

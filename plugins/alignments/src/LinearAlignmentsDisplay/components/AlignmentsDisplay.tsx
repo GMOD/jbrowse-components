@@ -7,13 +7,13 @@ import { ResizeHandle } from '@jbrowse/core/ui'
 // locals
 import { AlignmentsDisplayModel } from '../models/model'
 
-const useStyles = makeStyles()(() => ({
+const useStyles = makeStyles()({
   resizeHandle: {
     height: 2,
     position: 'absolute',
     zIndex: 2,
   },
-}))
+})
 
 function AlignmentsDisplay({ model }: { model: AlignmentsDisplayModel }) {
   const { PileupDisplay, SNPCoverageDisplay } = model

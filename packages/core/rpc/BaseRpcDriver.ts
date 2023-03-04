@@ -120,7 +120,7 @@ export default abstract class BaseRpcDriver {
   filterArgs<THING_TYPE>(thing: THING_TYPE, sessionId: string): THING_TYPE {
     if (Array.isArray(thing)) {
       return thing
-        .filter(isClonable)
+        .filter(thing => isClonable(thing))
         .map(t => this.filterArgs(t, sessionId)) as unknown as THING_TYPE
     }
     if (typeof thing === 'object' && thing !== null) {
@@ -167,7 +167,11 @@ export default abstract class BaseRpcDriver {
       readConfObject(this.config, 'workerCount') ||
       clamp(1, Math.max(1, hardwareConcurrency - 1), 5)
 
-    return [...new Array(workerCount)].map(() => new LazyWorker(this))
+    const workers = []
+    for (let i = 0; i < workerCount; i++) {
+      workers.push(new LazyWorker(this))
+    }
+    return workers
   }
 
   getWorkerPool() {
@@ -189,12 +193,7 @@ export default abstract class BaseRpcDriver {
       workerNumber = workerAssignment
     }
 
-    // console.log(`${sessionId} -> worker ${workerNumber}`)
-    const worker = workers[workerNumber].getWorker()
-    if (!worker) {
-      throw new Error('no web workers registered for RPC')
-    }
-    return worker
+    return workers[workerNumber].getWorker()
   }
 
   async call(

@@ -56,12 +56,10 @@ export default class SceneGraph {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data?: Record<string, any>,
   ): SceneGraph {
-    let child: SceneGraph
-    if (nameOrSceneGraph instanceof SceneGraph) {
-      child = nameOrSceneGraph
-    } else {
-      child = new SceneGraph(nameOrSceneGraph, left, top, width, height, data)
-    }
+    const child =
+      nameOrSceneGraph instanceof SceneGraph
+        ? nameOrSceneGraph
+        : new SceneGraph(nameOrSceneGraph, left, top, width, height, data)
 
     if (!(child instanceof SceneGraph)) {
       throw new TypeError(

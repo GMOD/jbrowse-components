@@ -78,7 +78,7 @@ export const sortFeature = (
         const acode = bMismatch && bMismatch.base.toUpperCase()
         const bcode = aMismatch && aMismatch.base.toUpperCase()
         if (acode === bcode && acode === '*') {
-          // @ts-ignore
+          // @ts-expect-error
           return aMismatch.length - bMismatch.length
         }
         return (
@@ -99,9 +99,10 @@ export const sortFeature = (
   }
 
   const sortedMap = new Map(
-    featuresInCenterLine
-      .concat(featuresOutsideCenter)
-      .map(feature => [feature.id(), feature]),
+    [...featuresInCenterLine, ...featuresOutsideCenter].map(feature => [
+      feature.id(),
+      feature,
+    ]),
   )
 
   return sortedMap

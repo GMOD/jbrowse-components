@@ -101,7 +101,7 @@ const ViewContainer = observer(
 
     useEffect(() => {
       if (width && isAlive(view)) {
-        view.setWidth(width - parseInt(padWidth, 10) * 2)
+        view.setWidth(width - Number.parseInt(padWidth, 10) * 2)
       }
     }, [padWidth, view, width])
 

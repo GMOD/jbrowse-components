@@ -10,9 +10,9 @@ import { standardizeArgv, parseArgv } from './parseArgv'
 import { renderRegion, Opts } from './renderRegion'
 import { convert } from './util'
 
-// @ts-ignore
+// @ts-expect-error
 global.nodeImage = Image
-// @ts-ignore
+// @ts-expect-error
 global.nodeCreateCanvas = createCanvas
 
 const { document } = new JSDOM(`...`).window
@@ -38,13 +38,13 @@ global.document = document
 //       at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
 // ]
 
-// @ts-ignore
+// @ts-expect-error
 global.fetch = fetch
-// @ts-ignore
+// @ts-expect-error
 global.Headers = Headers
-// @ts-ignore
+// @ts-expect-error
 global.Response = Response
-// @ts-ignore
+// @ts-expect-error
 global.Request = Request
 
 const err = console.error

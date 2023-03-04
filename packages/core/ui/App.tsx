@@ -118,7 +118,7 @@ const App = observer(function (props: {
           </AppBar>
         </div>
         <div className={classes.components}>
-          {views.length ? (
+          {views.length > 0 ? (
             views.map(view => (
               <ViewPanel
                 key={`view-${view.id}`}

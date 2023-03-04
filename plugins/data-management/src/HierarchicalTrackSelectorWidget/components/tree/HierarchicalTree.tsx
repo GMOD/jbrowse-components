@@ -70,7 +70,7 @@ export default observer(function HierarchicalTree({
       }
 
       while (true) {
-        // @ts-ignore
+        // @ts-expect-error
         const parentMeta = yield
 
         for (let i = 0; i < parentMeta.node.children.length; i++) {
@@ -83,7 +83,7 @@ export default observer(function HierarchicalTree({
   )
 
   useEffect(() => {
-    // @ts-ignore
+    // @ts-expect-error
     treeRef.current.recomputeTree({
       refreshNodes: true,
       useDefaultHeight: true,
@@ -91,9 +91,9 @@ export default observer(function HierarchicalTree({
   }, [tree, filterText])
   return (
     <>
-      {/* @ts-ignore */}
+      {/* @ts-expect-error */}
       <VariableSizeTree ref={treeRef} treeWalker={treeWalker} height={height}>
-        {/* @ts-ignore */}
+        {/* @ts-expect-error */}
         {Node}
       </VariableSizeTree>
     </>

@@ -398,7 +398,6 @@ const PlatformSpecificFatalErrorDialog = (props: FallbackProps) => {
 }
 const LoaderWrapper = ({ initialTimestamp }: { initialTimestamp: number }) => {
   return (
-    // @ts-ignore
     <ErrorBoundary FallbackComponent={PlatformSpecificFatalErrorDialog}>
       <QueryParamProvider adapter={WindowHistoryAdapter}>
         <Loader initialTimestamp={initialTimestamp} />

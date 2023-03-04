@@ -1,4 +1,3 @@
 // convert named export to default for lazy react
-import { FeatureDetails } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 
-export default FeatureDetails
+export { FeatureDetails as default } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'

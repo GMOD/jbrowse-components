@@ -17,7 +17,7 @@ export interface NodeData {
 }
 
 export function getAllChildren(subtree?: TreeNode): AnyConfigurationModel[] {
-  // @ts-ignore
+  // @ts-expect-error
   return (
     subtree?.children.map(t =>
       t.children.length ? getAllChildren(t) : (t.conf as AnyConfigurationModel),

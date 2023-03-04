@@ -104,18 +104,18 @@ export default function f(pluginManager: PluginManager) {
       get isFtp() {
         const { trackData: track, indexTrackData: index } = self
         return !!(
-          // @ts-ignore
+          // @ts-expect-error
           (index?.uri?.startsWith('ftp://') || track?.uri?.startsWith('ftp://'))
         )
       },
 
       get isRelativeTrackUrl() {
-        // @ts-ignore
+        // @ts-expect-error
         const uri = self.trackData?.uri
         return uri ? !isAbsoluteUrl(uri) : false
       },
       get isRelativeIndexUrl() {
-        // @ts-ignore
+        // @ts-expect-error
         const uri = self.indexTrackData?.uri
         return uri ? !isAbsoluteUrl(uri) : false
       },
@@ -124,11 +124,11 @@ export default function f(pluginManager: PluginManager) {
       },
 
       get trackHttp() {
-        // @ts-ignore
+        // @ts-expect-error
         return self.trackData?.uri?.startsWith('http://')
       },
       get indexHttp() {
-        // @ts-ignore
+        // @ts-expect-error
         return self.indexTrackData?.uri?.startsWith('http://')
       },
 

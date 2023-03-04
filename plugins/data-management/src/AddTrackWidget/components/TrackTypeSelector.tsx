@@ -30,7 +30,7 @@ const TrackTypeSelector = observer(({ model }: { model: AddTrackModel }) => {
       fullWidth
       onChange={event => model.setTrackType(event.target.value)}
       SelectProps={{
-        // @ts-ignore
+        // @ts-expect-error
         SelectDisplayProps: { 'data-testid': 'trackTypeSelect' },
       }}
     >

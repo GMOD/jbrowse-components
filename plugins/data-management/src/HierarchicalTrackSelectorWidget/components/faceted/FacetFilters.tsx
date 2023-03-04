@@ -65,7 +65,7 @@ function FacetFilter({
           className={classes.select}
           value={filters[column.field]}
           onChange={event => {
-            // @ts-ignore
+            // @ts-expect-error
             const { options } = event.target
             const val: string[] = []
             const len = options.length
@@ -105,28 +105,28 @@ export default function FacetFilters({
 }) {
   const facets = columns.slice(1)
   const uniqs = facets.map(() => new Map<string, number>())
-  rows.forEach(row => {
-    facets.forEach((column, index) => {
+  for (const row of rows) {
+    for (const [index, column] of facets.entries()) {
       const elt = uniqs[index]
       const key = `${row[column.field] || ''}`
       const val = elt.get(key)
       // we don't allow filtering on empty yet
       if (key) {
-        if (val !== undefined) {
-          elt.set(key, val + 1)
-        } else {
+        if (val === undefined) {
           elt.set(key, 1)
+        } else {
+          elt.set(key, val + 1)
         }
       }
-    })
-  })
+    }
+  }
 
   return (
     <div>
       {facets.map((column, index) => (
         <FacetFilter
           key={column.field}
-          vals={Array.from(uniqs[index])}
+          vals={[...uniqs[index]]}
           column={column}
           width={width}
           dispatch={dispatch}

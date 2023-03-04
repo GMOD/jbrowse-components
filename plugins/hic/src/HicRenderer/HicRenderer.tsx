@@ -1,8 +1,6 @@
 import ServerSideRendererType, {
   RenderArgs as ServerSideRenderArgs,
-  RenderArgsSerialized,
   RenderArgsDeserialized as ServerSideRenderArgsDeserialized,
-  RenderResults,
   ResultsSerialized as ServerSideResultsSerialized,
   ResultsDeserialized as ServerSideResultsDeserialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
@@ -43,8 +41,6 @@ export interface RenderArgsDeserializedWithFeatures
   extends RenderArgsDeserialized {
   features: HicFeature[]
 }
-
-export type { RenderArgsSerialized, RenderResults }
 
 export type ResultsSerialized = ServerSideResultsSerialized
 
@@ -157,3 +153,8 @@ export default class HicRenderer extends ServerSideRendererType {
     return features as any
   }
 }
+
+export {
+  type RenderArgsSerialized,
+  type RenderResults,
+} from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'

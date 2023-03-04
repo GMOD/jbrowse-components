@@ -13,25 +13,25 @@ import 'abortcontroller-polyfill/dist/abortcontroller-polyfill-only'
 import { Image, createCanvas } from 'canvas'
 import fetch, { Headers, Response, Request } from 'node-fetch'
 
-// @ts-ignore
+// @ts-expect-error
 global.fetch = fetch
-// @ts-ignore
+// @ts-expect-error
 global.Headers = Headers
-// @ts-ignore
+// @ts-expect-error
 global.Response = Response
-// @ts-ignore
+// @ts-expect-error
 global.Request = Request
 
 const { document } = new JSDOM(`...`).window
 global.document = document
 
-// @ts-ignore
+// @ts-expect-error
 global.nodeImage = Image
-// @ts-ignore
+// @ts-expect-error
 global.nodeCreateCanvas = createCanvas
 
 xtest('renders a region with --session and --config args', async () => {
-  // @ts-ignore
+  // @ts-expect-error
   const result = await renderRegion({
     session: path.join(__dirname, '../test/clingen_session.json'),
     config: path.join(__dirname, '../data/config.json'),
@@ -41,7 +41,7 @@ xtest('renders a region with --session and --config args', async () => {
 }, 40000)
 
 xtest('renders a region with --session, --tracks, and --assembly args', async () => {
-  // @ts-ignore
+  // @ts-expect-error
   const result = await renderRegion({
     session: path.join(__dirname, '../test/clingen_session.json'),
     tracks: path.join(__dirname, '../data/tracks.json'),

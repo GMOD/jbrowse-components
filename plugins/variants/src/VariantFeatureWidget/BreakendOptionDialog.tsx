@@ -70,19 +70,25 @@ function BreakendOptionDialog({
                 feature,
                 view,
               )
-              function remapIds(arr: any[]) {
-                return arr.map((v: any) => ({
+
+              interface Track {
+                trackId: string
+                [key: string]: unknown
+              }
+              function remapIds(arr: Track[]) {
+                return arr.map(v => ({
                   ...v,
-                  id: v.trackId + '-' + Math.random(),
+                  id: `${v.trackId}-${Math.random()}`,
                 }))
               }
               viewSnapshot.views[0].offsetPx -= view.width / 2 + 100
               viewSnapshot.views[1].offsetPx -= view.width / 2 + 100
               viewSnapshot.featureData = feature
-              const viewTracks = getSnapshot(view.tracks) as unknown[]
+              // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+              const viewTracks = getSnapshot(view.tracks) as Track[]
               viewSnapshot.views[0].tracks = remapIds(viewTracks)
               viewSnapshot.views[1].tracks = remapIds(
-                mirrorTracks ? viewTracks.slice().reverse() : viewTracks,
+                mirrorTracks ? [...viewTracks].reverse() : viewTracks,
               )
 
               session.addView('BreakpointSplitView', viewSnapshot)

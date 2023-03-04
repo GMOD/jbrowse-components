@@ -65,22 +65,21 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
 
     const str = new TextDecoder().decode(buffer)
     const { header, lines } = readVcf(str)
+    const intervalTree = {} as { [key: string]: IntervalTree }
 
-    const intervalTree = lines
-      .map((line, id) => {
-        const [refName, startP, , ref, , , , info] = line.split('\t')
-        const start = +startP - 1
-        const end = +(info.match(/END=(\d+)/)?.[1].trim() || start + ref.length)
-        return { line, refName, start, end, id }
-      })
-      .reduce((acc, obj) => {
-        const key = obj.refName
-        if (!acc[key]) {
-          acc[key] = new IntervalTree()
-        }
-        acc[key].insert([obj.start, obj.end], obj)
-        return acc
-      }, {} as Record<string, IntervalTree>)
+    for (const obj of lines.map((line, id) => {
+      const [refName, startP, , ref, , , , info] = line.split('\t')
+      const start = +startP - 1
+      const def = start + ref.length
+      const end = +(info.match(/END=(\d+)/)?.[1].trim() || def)
+      return { line, refName, start, end, id }
+    })) {
+      const key = obj.refName
+      if (!intervalTree[key]) {
+        intervalTree[key] = new IntervalTree()
+      }
+      intervalTree[key].insert([obj.start, obj.end], obj)
+    }
 
     return { header, intervalTree }
   }

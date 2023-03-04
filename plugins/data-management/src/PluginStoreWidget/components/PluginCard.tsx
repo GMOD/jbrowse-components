@@ -54,9 +54,8 @@ export default observer(function PluginCard({
   const { classes } = useStyles()
   const session = getSession(model)
   const { pluginManager } = getEnv(model)
-  const isInstalled = Boolean(
-    pluginManager.runtimePluginDefinitions.find(def => def.url === plugin.url),
-  )
+  const { runtimePluginDefinitions } = pluginManager
+  const isInstalled = runtimePluginDefinitions.some(d => d.url === plugin.url)
   const [tempDisabled, setTempDisabled] = useState(false)
   const disableButton = isInstalled || tempDisabled
 

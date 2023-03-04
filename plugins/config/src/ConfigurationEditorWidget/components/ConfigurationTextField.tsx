@@ -13,7 +13,7 @@ export default function ConfigurationTextField(
       {...props}
       helperText={<SanitizedHTML html={helperText || ''} />}
       FormHelperTextProps={{
-        // @ts-ignore
+        // @ts-expect-error
         component: 'div',
       }}
       fullWidth

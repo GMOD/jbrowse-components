@@ -4,7 +4,7 @@ import BaseRpcDriver, { watchWorker, WorkerHandle } from './BaseRpcDriver'
 import RpcMethodType from '../pluggableElementTypes/RpcMethodType'
 import { ConfigurationSchema } from '../configuration'
 
-function timeout(ms: number) {
+function delay(ms: number) {
   return new Promise(resolve => {
     setTimeout(() => {
       resolve(true)
@@ -21,55 +21,70 @@ class MockWorkerHandle implements WorkerHandle {
     name: string,
     _args = [],
     opts: {
-      timeout: number
+      timeout?: number
       signal?: AbortSignal
-      rpcDriverClassName: string
-    } = {
-      timeout: 3000,
-      rpcDriverClassName: 'MockRpcDriver',
-    },
+      rpcDriverClassName?: string
+    } = {},
   ) {
+    const { signal, timeout = 3000 } = opts
     const start = Date.now()
-    if (name === 'ping') {
-      while (this.busy) {
-        if (opts.timeout < +Date.now() - start) {
-          throw new Error('timeout')
+    switch (name) {
+      case 'ping': {
+        while (this.busy) {
+          if (timeout < +Date.now() - start) {
+            throw new Error('timeout')
+          }
+
+          await delay(50)
         }
 
-        await timeout(50)
+        break
       }
-    } else if (name === 'doWorkShortPingTime') {
-      this.busy = true
-      await timeout(50)
-      this.busy = false
-      await timeout(50)
-      this.busy = true
-      await timeout(50)
-      this.busy = false
-      await timeout(50)
-      this.busy = true
-      await timeout(50)
-      this.busy = false
-    } else if (name === 'doWorkLongPingTime') {
-      this.busy = true
-      await timeout(1000)
-      checkAbortSignal(opts.signal)
-      this.busy = false
-      await timeout(1000)
-      checkAbortSignal(opts.signal)
-      this.busy = true
-      await timeout(1000)
-      checkAbortSignal(opts.signal)
-      this.busy = false
-    } else if (name === 'MockRenderTimeout') {
-      this.busy = true
-      await timeout(10000)
-      this.busy = false
-    } else if (name === 'MockRenderShort') {
-      this.busy = true
-      await timeout(100)
-      checkAbortSignal(opts.signal)
-      this.busy = false
+      case 'doWorkShortPingTime': {
+        this.busy = true
+        await delay(50)
+        this.busy = false
+        await delay(50)
+        this.busy = true
+        await delay(50)
+        this.busy = false
+        await delay(50)
+        this.busy = true
+        await delay(50)
+        this.busy = false
+
+        break
+      }
+      case 'doWorkLongPingTime': {
+        this.busy = true
+        await delay(1000)
+        checkAbortSignal(signal)
+        this.busy = false
+        await delay(1000)
+        checkAbortSignal(signal)
+        this.busy = true
+        await delay(1000)
+        checkAbortSignal(signal)
+        this.busy = false
+
+        break
+      }
+      case 'MockRenderTimeout': {
+        this.busy = true
+        await delay(10000)
+        this.busy = false
+
+        break
+      }
+      case 'MockRenderShort': {
+        this.busy = true
+        await delay(100)
+        checkAbortSignal(signal)
+        this.busy = false
+
+        break
+      }
+      // No default
     }
   }
 }

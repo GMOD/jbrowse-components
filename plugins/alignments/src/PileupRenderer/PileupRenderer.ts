@@ -1,11 +1,6 @@
 import { Theme } from '@mui/material/styles'
 import BoxRendererType, {
-  RenderArgs,
-  RenderArgsSerialized,
   RenderArgsDeserialized as BoxRenderArgsDeserialized,
-  RenderResults,
-  ResultsSerialized,
-  ResultsDeserialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import {
@@ -473,11 +468,10 @@ export default class PileupRenderer extends BoxRendererType {
 
     // probIndex applies across multiple modifications e.g.
     let probIndex = 0
-    for (let i = 0; i < modifications.length; i++) {
-      const { type, positions } = modifications[i]
+    for (const { type, positions } of modifications) {
       const col = modificationTagMap[type] || 'black'
 
-      // @ts-ignore
+      // @ts-expect-error
       const base = Color(col)
       for (const readPos of getNextRefPos(cigarOps, positions)) {
         const r = start + readPos
@@ -732,30 +726,25 @@ export default class PileupRenderer extends BoxRendererType {
         }
         break
       }
-      case 'insertSizeAndPairOrientation':
+      case 'insertSizeAndPairOrientation': {
         break
+      }
 
       case 'modifications':
-      case 'methylation':
+      case 'methylation': {
         // this coloring is similar to igv.js, and is helpful to color negative
         // strand reads differently because their c-g will be flipped (e.g. g-c
         // read right to left)
-        if (feature.get('flags') & 16) {
-          ctx.fillStyle = '#c8dcc8'
-        } else {
-          ctx.fillStyle = '#c8c8c8'
-        }
+        ctx.fillStyle = feature.get('flags') & 16 ? '#c8dcc8' : '#c8c8c8'
         break
+      }
 
-      case 'normal':
-      default:
-        if (defaultColor) {
-          // avoid a readConfObject call here
-          ctx.fillStyle = '#c8c8c8'
-        } else {
-          ctx.fillStyle = readConfObject(config, 'color', { feature })
-        }
+      default: {
+        ctx.fillStyle = defaultColor
+          ? '#c8c8c8'
+          : readConfObject(config, 'color', { feature })
         break
+      }
     }
 
     this.drawRect(ctx, feat, renderArgs)
@@ -880,14 +869,15 @@ export default class PileupRenderer extends BoxRendererType {
             widthPx,
             heightPx,
             canvasWidth,
-            !mismatchAlpha
-              ? baseColor
-              : mismatch.qual !== undefined
-              ? // @ts-ignore
-                Color(baseColor)
-                  .alpha(Math.min(1, mismatch.qual / 50))
-                  .hsl()
-                  .string()
+
+            mismatchAlpha
+              ? mismatch.qual === undefined
+                ? baseColor
+                : // @ts-expect-error
+                  Color(baseColor)
+                    .alpha(Math.min(1, mismatch.qual / 50))
+                    .hsl()
+                    .string()
               : baseColor,
           )
         }
@@ -897,14 +887,14 @@ export default class PileupRenderer extends BoxRendererType {
           const contrastColor = drawSNPsMuted
             ? 'black'
             : contrastForBase[mismatch.base] || 'black'
-          ctx.fillStyle = !mismatchAlpha
-            ? contrastColor
-            : mismatch.qual !== undefined
-            ? // @ts-ignore
-              Color(contrastColor)
-                .alpha(Math.min(1, mismatch.qual / 50))
-                .hsl()
-                .string()
+          ctx.fillStyle = mismatchAlpha
+            ? mismatch.qual === undefined
+              ? contrastColor
+              : // @ts-expect-error
+                Color(contrastColor)
+                  .alpha(Math.min(1, mismatch.qual / 50))
+                  .hsl()
+                  .string()
             : contrastColor
           ctx.fillText(
             mbase,
@@ -1315,10 +1305,10 @@ export default class PileupRenderer extends BoxRendererType {
   }
 }
 
-export type {
-  RenderArgs,
-  RenderArgsSerialized,
-  RenderResults,
-  ResultsSerialized,
-  ResultsDeserialized,
-}
+export {
+  type RenderArgs,
+  type RenderResults,
+  type RenderArgsSerialized,
+  type ResultsSerialized,
+  type ResultsDeserialized,
+} from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'

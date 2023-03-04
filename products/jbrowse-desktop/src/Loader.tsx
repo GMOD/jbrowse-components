@@ -19,12 +19,11 @@ export default observer(() => {
 
   const handleSetPluginManager = useCallback(
     (pm: PluginManager) => {
-      // @ts-ignore
+      // @ts-expect-error
       pm.rootModel?.setOpenNewSessionCallback(async (path: string) => {
         handleSetPluginManager(await loadPluginManager(path))
       })
 
-      // @ts-ignore
       setPluginManager(pm)
       setError(undefined)
       setConfig('')

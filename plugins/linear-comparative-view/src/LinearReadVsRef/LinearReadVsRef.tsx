@@ -53,17 +53,17 @@ interface BasicFeature {
 type FeaturesPerRef = { [key: string]: BasicFeature[] }
 
 function gatherOverlaps(regions: BasicFeature[]) {
-  const groups = regions.reduce((memo, x) => {
+  const memo = {} as FeaturesPerRef
+  for (const x of regions) {
     if (!memo[x.refName]) {
       memo[x.refName] = []
     }
     memo[x.refName].push(x)
-    return memo
-  }, {} as FeaturesPerRef)
+  }
 
-  return Object.values(groups)
-    .map(group => mergeIntervals(group.sort((a, b) => a.start - b.start)))
-    .flat()
+  return Object.values(memo).flatMap(group =>
+    mergeIntervals(group.sort((a, b) => a.start - b.start)),
+  )
 }
 
 export default function ReadVsRefDialog({
@@ -192,11 +192,7 @@ export default function ReadVsRefDialog({
 
       // the config feature store includes synthetic mate features
       // mapped to the read assembly
-      const configFeatureStore = features.concat(
-        // @ts-ignore
-        features.map(f => f.mate),
-      )
-
+      const configFeatureStore = [...features, ...features.map(f => f.mate)]
       const expand = 2 * windowSize
       const refLen = features.reduce((a, f) => a + f.end - f.start + expand, 0)
 

@@ -470,7 +470,7 @@ onClick={() => {
     return 'localPath' in location
   }
   // we can determine the localpath from the data provided from the user submitting a file through the file selector
-  // @ts-ignore
+  // @ts-expect-error
   const localPath = isLocalPathLocation(model.trackData)
     ? model.trackData.localPath
     : ''
@@ -534,7 +534,7 @@ onClick={() => {
       })
 
       // after setting the relevant features in our model, we can add a new track
-      // @ts-ignore
+      // @ts-expect-error
       session.addTrackConf({
         trackId,
         type: 'VariantTrack',
@@ -550,7 +550,7 @@ onClick={() => {
       model.view?.showTrack(trackId)
 
       model.clearData()
-      // @ts-ignore
+      // @ts-expect-error
       session.hideWidget(model)
     },
 }}

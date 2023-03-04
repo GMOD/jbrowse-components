@@ -61,7 +61,7 @@ function SearchBox({
         const allRefs = assembly?.allRefNamesWithLowerCase || []
         if (
           allRefs.includes(input) ||
-          (allRefs.includes(ref) && !Number.isNaN(parseInt(rest, 10)))
+          (allRefs.includes(ref) && !Number.isNaN(Number.parseInt(rest, 10)))
         ) {
           await model.navToLocString(input, assemblyName)
         } else {

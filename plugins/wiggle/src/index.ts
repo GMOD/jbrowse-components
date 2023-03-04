@@ -9,7 +9,7 @@ import {
 
 // locals
 import WiggleBaseRenderer from './WiggleBaseRenderer'
-import WiggleRendering from './WiggleRendering'
+
 import BigWigAdapterF from './BigWigAdapter'
 import QuantitativeTrackF from './QuantitativeTrack'
 import MultiQuantitativeTrackF from './MultiQuantitativeTrack'
@@ -38,9 +38,8 @@ import {
 import {
   ReactComponent as LinearWiggleDisplayReactComponent,
   modelFactory as linearWiggleDisplayModelFactory,
-  Tooltip,
 } from './LinearWiggleDisplay'
-import { TooltipContentsComponent } from './Tooltip'
+
 import {
   ReactComponent as XYPlotRendererReactComponent,
   configSchema as xyPlotRendererConfigSchema,
@@ -120,12 +119,12 @@ export default class WigglePlugin extends Plugin {
 
 export * from './util'
 
+export { default as WiggleRendering } from './WiggleRendering'
 export {
-  LinearWiggleDisplayReactComponent,
   Tooltip,
-  WiggleRendering,
-  WiggleBaseRenderer,
-  linearWiggleDisplayModelFactory,
-}
+  ReactComponent as LinearWiggleDisplayReactComponent,
+  modelFactory as linearWiggleDisplayModelFactory,
+} from './LinearWiggleDisplay'
+export { type TooltipContentsComponent } from './Tooltip'
 
-export type { TooltipContentsComponent }
+export { default as WiggleBaseRenderer } from './WiggleBaseRenderer'

@@ -99,11 +99,10 @@ export default observer(function FacetedSelector({
 
   const filteredMetadataKeys = useMemo(
     () =>
-      [...new Set(rows.map(row => getRootKeys(row.metadata)).flat())].filter(
-        f =>
-          !hideSparse
-            ? true
-            : rows.map(r => r.metadata[f]).filter(f => !!f).length > 5,
+      [...new Set(rows.flatMap(row => getRootKeys(row.metadata)))].filter(f =>
+        !hideSparse
+          ? true
+          : rows.map(r => r.metadata[f]).filter(f => !!f).length > 5,
       ),
     [hideSparse, rows],
   )

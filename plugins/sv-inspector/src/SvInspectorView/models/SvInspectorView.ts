@@ -101,7 +101,7 @@ const SvInspectorViewF = (pluginManager: PluginManager) => {
     }))
     .views(self => ({
       get selectedRows() {
-        // @ts-ignore
+        // @ts-expect-error
         return self.spreadsheetView.rowSet.selectedRows
       },
 
@@ -133,7 +133,7 @@ const SvInspectorViewF = (pluginManager: PluginManager) => {
         const { getAdapterClass } =
           pluginManager.getAdapterType('FromConfigAdapter')
         return getAdapterClass().then(Adapter =>
-          // @ts-ignore
+          // @ts-expect-error
           new Adapter(self.featuresAdapterConfigSnapshot).getRefNames(),
         )
       },
@@ -169,11 +169,7 @@ const SvInspectorViewF = (pluginManager: PluginManager) => {
         self.width = newWidth
       },
       setHeight(newHeight: number) {
-        if (newHeight > minHeight) {
-          self.height = newHeight
-        } else {
-          self.height = minHeight
-        }
+        self.height = newHeight > minHeight ? newHeight : minHeight
         return self.height
       },
 
@@ -303,7 +299,7 @@ const SvInspectorViewF = (pluginManager: PluginManager) => {
 
               // put our track in as the only track
               if (assemblyName && generatedTrackConf) {
-                // @ts-ignore
+                // @ts-expect-error
                 self.circularView.addTrackConf(generatedTrackConf, {
                   assemblyName,
                 })
@@ -328,7 +324,7 @@ const SvInspectorViewF = (pluginManager: PluginManager) => {
                 {
                   label: 'Open split detail view',
                   icon: OpenInNewIcon,
-                  // @ts-ignore
+                  // @ts-expect-error
                   disabled(spreadsheetView, spreadsheet, rowNumber, row) {
                     return !canOpenBreakpointSplitViewFromTableRow(
                       self,
@@ -339,7 +335,7 @@ const SvInspectorViewF = (pluginManager: PluginManager) => {
                     )
                   },
 
-                  // @ts-ignore
+                  // @ts-expect-error
                   onClick(spreadsheetView, spreadsheet, rowNumber, row) {
                     openBreakpointSplitViewFromTableRow(
                       self,

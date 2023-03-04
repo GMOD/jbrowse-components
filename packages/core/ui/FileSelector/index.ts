@@ -1,3 +1,1 @@
-import FileSelector from './FileSelector'
-
-export default FileSelector
+export { default } from './FileSelector'

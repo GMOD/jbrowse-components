@@ -507,9 +507,11 @@ function stateModelFactory(pluginManager: PluginManager) {
           throw new Error(`unknown track type ${conf.type}`)
         }
         const viewType = pluginManager.getViewType(self.type)
-        const supportedDisplays = viewType.displayTypes.map(d => d.name)
+        const supportedDisplays = new Set(
+          viewType.displayTypes.map(d => d.name),
+        )
         const displayConf = conf.displays.find((d: AnyConfigurationModel) =>
-          supportedDisplays.includes(d.type),
+          supportedDisplays.has(d.type),
         )
         const track = trackType.stateModel.create({
           ...initialSnapshot,
@@ -528,12 +530,14 @@ function stateModelFactory(pluginManager: PluginManager) {
         const name = readConfObject(configuration, 'name')
         const trackType = pluginManager.getTrackType(type)
         if (!trackType) {
-          throw new Error(`unknown track type ${configuration.type}`)
+          throw new Error(`unknown track type ${type}`)
         }
         const viewType = pluginManager.getViewType(self.type)
-        const supportedDisplays = viewType.displayTypes.map(d => d.name)
+        const supportedDisplays = new Set(
+          viewType.displayTypes.map(d => d.name),
+        )
         const displayConf = configuration.displays.find(
-          (d: AnyConfigurationModel) => supportedDisplays.includes(d.type),
+          (d: AnyConfigurationModel) => supportedDisplays.has(d.type),
         )
         self.tracks.push(
           trackType.stateModel.create({

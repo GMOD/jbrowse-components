@@ -3,7 +3,7 @@ import { promises as fsPromises } from 'fs'
 import JBrowseCommand, { Config } from '../base'
 
 export default class AddTrackJson extends JBrowseCommand {
-  // @ts-ignore
+  // @ts-expect-error
   target: string
 
   static description =

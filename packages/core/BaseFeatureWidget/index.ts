@@ -106,7 +106,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .preProcessSnapshot(snap => {
-      // @ts-ignore
+      // @ts-expect-error
       const { featureData, finalizedFeatureData, ...rest } = snap
       return {
         unformattedFeatureData: featureData,
@@ -128,9 +128,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         // undefined to hide. see config guide. this replacement happens both
         // here and when displaying the featureData in base feature widget
         finalizedFeatureData: JSON.parse(
-          JSON.stringify(featureData, (_, v) =>
-            typeof v === 'undefined' ? null : v,
-          ),
+          JSON.stringify(featureData, (_, v) => (v === undefined ? null : v)),
         ),
         ...rest,
       }
