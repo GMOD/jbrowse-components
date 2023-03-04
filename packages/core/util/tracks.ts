@@ -307,7 +307,7 @@ export function showTrackGeneric(
     throw new Error(`Unknown track type ${conf.type}`)
   }
   const viewType = pluginManager.getViewType(self.type)
-  const supportedDisplays = viewType.displayTypes.map(d => d.name)
+  const supportedDisplays = new Set(viewType.displayTypes.map(d => d.name))
 
   const { displays = [] } = conf
   const displayTypes = new Set()
@@ -324,7 +324,7 @@ export function showTrackGeneric(
   })
 
   const displayConf = displays?.find((d: AnyConfigurationModel) =>
-    supportedDisplays.includes(d.type),
+    supportedDisplays.has(d.type),
   )
   if (!displayConf) {
     throw new Error(

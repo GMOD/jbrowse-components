@@ -1,5 +1,5 @@
 import React, { lazy } from 'react'
-import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
+import { getConf } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { Region } from '@jbrowse/core/util/types'
 import { ElementId, Region as MUIRegion } from '@jbrowse/core/util/types/mst'

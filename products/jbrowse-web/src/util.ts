@@ -175,28 +175,22 @@ export async function checkPlugins(pluginsToCheck: PluginDefinition[]) {
   const storePlugins = await fetchPlugins()
   return pluginsToCheck.every(p => {
     if (isUMDPluginDefinition(p)) {
-      return Boolean(
-        storePlugins.plugins.find(
-          pp =>
-            isUMDPluginDefinition(p) &&
-            (('url' in pp && 'url' in p && p.url === pp.url) ||
-              ('umdUrl' in pp && 'umdUrl' in p && p.umdUrl === pp.umdUrl)),
-        ),
+      return storePlugins.plugins.some(
+        pp =>
+          isUMDPluginDefinition(p) &&
+          (('url' in pp && 'url' in p && p.url === pp.url) ||
+            ('umdUrl' in pp && 'umdUrl' in p && p.umdUrl === pp.umdUrl)),
       )
     }
     if (isESMPluginDefinition(p)) {
-      return Boolean(
-        storePlugins.plugins.find(
-          pp =>
-            isESMPluginDefinition(p) && 'esmUrl' in p && p.esmUrl === pp.esmUrl,
-        ),
+      return storePlugins.plugins.some(
+        pp =>
+          isESMPluginDefinition(p) && 'esmUrl' in p && p.esmUrl === pp.esmUrl,
       )
     }
     if (isCJSPluginDefinition(p)) {
-      return Boolean(
-        storePlugins.plugins.find(
-          pp => isCJSPluginDefinition(p) && p.cjsUrl === pp.cjsUrl,
-        ),
+      return storePlugins.plugins.some(
+        pp => isCJSPluginDefinition(p) && p.cjsUrl === pp.cjsUrl,
       )
     }
     return false

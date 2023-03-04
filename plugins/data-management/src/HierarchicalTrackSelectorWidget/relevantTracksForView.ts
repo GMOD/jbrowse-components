@@ -5,7 +5,14 @@ import {
 import { getSession, getEnv } from '@jbrowse/core/util'
 
 function hasAnyOverlap<T>(a1: T[] = [], a2: T[] = []) {
-  return !!a1.find(value => a2.includes(value))
+  // shortcut case is that arrays are single entries, and are equal
+  // long case is that we use a set
+  if (a1[0] === a2[0]) {
+    return true
+  } else {
+    const s1 = new Set(a1)
+    return a2.some(a => s1.has(a))
+  }
 }
 
 export function relevantTracksForView(
