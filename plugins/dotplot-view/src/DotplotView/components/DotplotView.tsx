@@ -95,6 +95,7 @@ const DotplotViewInternal = observer(function ({
   const distanceX = useRef(0)
   const distanceY = useRef(0)
   const scheduled = useRef(false)
+  const [ctrlKeyWasUsed, setCtrlKeyWasUsed] = useState(false)
   const svg = ref.current?.getBoundingClientRect() || blank
   const mousedown = getOffset(mousedownClient, svg)
   const mousecurr = getOffset(mousecurrClient, svg)
@@ -102,7 +103,15 @@ const DotplotViewInternal = observer(function ({
   const mouserect = mouseup || mousecurr
   const xdistance = mousedown && mouserect ? mouserect[0] - mousedown[0] : 0
   const ydistance = mousedown && mouserect ? mouserect[1] - mousedown[1] : 0
-  const { hview, vview } = model
+  const { hview, vview, wheelMode } = model
+
+  const validPan =
+    (cursorMode === 'move' && !ctrlKeyWasUsed) ||
+    (cursorMode === 'crosshair' && ctrlKeyWasUsed)
+
+  const validSelect =
+    (cursorMode === 'move' && ctrlKeyWasUsed) ||
+    (cursorMode === 'crosshair' && !ctrlKeyWasUsed)
 
   // use non-React wheel handler to properly prevent body scrolling
   useEffect(() => {
@@ -117,8 +126,14 @@ const DotplotViewInternal = observer(function ({
 
         window.requestAnimationFrame(() => {
           transaction(() => {
-            hview.scroll(distanceX.current)
-            vview.scroll(distanceY.current)
+            if (wheelMode === 'pan') {
+              hview.scroll(distanceX.current / 3)
+              vview.scroll(distanceY.current / 10)
+            } else if (wheelMode === 'zoom') {
+              const val = distanceY.current < 0 ? 1.1 : 0.9
+              hview.zoomTo(hview.bpPerPx * val)
+              vview.zoomTo(vview.bpPerPx * val)
+            }
           })
           scheduled.current = false
           distanceX.current = 0
@@ -132,13 +147,13 @@ const DotplotViewInternal = observer(function ({
       return () => curr.removeEventListener('wheel', onWheel)
     }
     return () => {}
-  }, [hview, vview])
+  }, [hview, vview, wheelMode])
 
   useEffect(() => {
     function globalMouseMove(event: MouseEvent) {
       setMouseCurrClient([event.clientX, event.clientY])
 
-      if (mousecurrClient && mousedownClient && cursorMode === 'move') {
+      if (mousecurrClient && mousedownClient && validPan) {
         hview.scroll(-event.clientX + mousecurrClient[0])
         vview.scroll(event.clientY - mousecurrClient[1])
       }
@@ -146,7 +161,15 @@ const DotplotViewInternal = observer(function ({
 
     window.addEventListener('mousemove', globalMouseMove)
     return () => window.removeEventListener('mousemove', globalMouseMove)
-  }, [mousecurrClient, mousedownClient, cursorMode, hview, vview])
+  }, [
+    validPan,
+    mousecurrClient,
+    mousedownClient,
+    cursorMode,
+    ctrlKeyWasUsed,
+    hview,
+    vview,
+  ])
 
   // detect a mouseup after a mousedown was submitted, autoremoves mouseup
   // once that single mouseup is set
@@ -154,11 +177,7 @@ const DotplotViewInternal = observer(function ({
     let cleanup = () => {}
 
     function globalMouseUp(event: MouseEvent) {
-      if (
-        Math.abs(xdistance) > 3 &&
-        Math.abs(ydistance) > 3 &&
-        cursorMode === 'crosshair'
-      ) {
+      if (Math.abs(xdistance) > 3 && Math.abs(ydistance) > 3 && validSelect) {
         setMouseUpClient([event.clientX, event.clientY])
       } else {
         setMouseDownClient(undefined)
@@ -170,14 +189,23 @@ const DotplotViewInternal = observer(function ({
       cleanup = () => window.removeEventListener('mouseup', globalMouseUp, true)
     }
     return cleanup
-  }, [mousedown, mousecurr, mouseup, xdistance, ydistance, cursorMode])
+  }, [
+    validSelect,
+    mousedown,
+    mousecurr,
+    mouseup,
+    xdistance,
+    ydistance,
+    ctrlKeyWasUsed,
+    cursorMode,
+  ])
 
   return (
     <div>
       <Header
         model={model}
         selection={
-          cursorMode === 'move' || !(mousedown && mouserect)
+          !validSelect || !(mousedown && mouserect)
             ? undefined
             : {
                 width: Math.abs(xdistance),
@@ -191,16 +219,11 @@ const DotplotViewInternal = observer(function ({
         onMouseLeave={() => setMouseOvered(false)}
         onMouseEnter={() => setMouseOvered(true)}
       >
-        <div
-          className={classes.container}
-          style={{
-            transform: `scaleX(${hview.scaleFactor}) scaleY(${vview.scaleFactor})`,
-          }}
-        >
+        <div className={classes.container}>
           <VerticalAxis model={model} />
           <HorizontalAxis model={model} />
           <div ref={ref} className={classes.content}>
-            {mouseOvered && cursorMode === 'crosshair' ? (
+            {mouseOvered && validSelect ? (
               <TooltipWhereMouseovered
                 model={model}
                 mouserect={mouserect}
@@ -208,7 +231,7 @@ const DotplotViewInternal = observer(function ({
                 ydistance={ydistance}
               />
             ) : null}
-            {cursorMode === 'crosshair' ? (
+            {validSelect ? (
               <TooltipWhereClicked
                 model={model}
                 mousedown={mousedown}
@@ -217,17 +240,18 @@ const DotplotViewInternal = observer(function ({
               />
             ) : null}
             <div
-              style={{ cursor: cursorMode }}
+              style={{ cursor: ctrlKeyWasUsed ? 'pointer' : cursorMode }}
               onMouseDown={event => {
                 if (event.button === 0) {
                   const { clientX, clientY } = event
                   setMouseDownClient([clientX, clientY])
                   setMouseCurrClient([clientX, clientY])
+                  setCtrlKeyWasUsed(event.ctrlKey)
                 }
               }}
             >
               <Grid model={model}>
-                {cursorMode === 'crosshair' && mousedown && mouserect ? (
+                {validSelect && mousedown && mouserect ? (
                   <rect
                     fill="rgba(255,0,0,0.3)"
                     x={Math.min(mouserect[0], mousedown[0])}
@@ -256,8 +280,8 @@ const DotplotViewInternal = observer(function ({
             anchorPosition={
               mouseupClient
                 ? {
-                    top: mouseupClient[1] + 30,
-                    left: mouseupClient[0] + 30,
+                    top: mouseupClient[1] + 50,
+                    left: mouseupClient[0] + 50,
                   }
                 : undefined
             }

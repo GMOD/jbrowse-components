@@ -34,6 +34,27 @@ const Dotplot1DView = Base1DView.extend(self => {
       get maxBpPerPx() {
         return self.totalBp / (self.width - 50)
       },
+
+      /**
+       * #getter
+       */
+      get minBpPerPx() {
+        return 1 / 50
+      },
+
+      /**
+       * #getter
+       */
+      get maxOffset() {
+        return self.displayedRegionsTotalPx - self.width * 0.95
+      },
+
+      /**
+       * #getter
+       */
+      get minOffset() {
+        return -self.width * 0.05
+      },
     },
     actions: {
       /**
