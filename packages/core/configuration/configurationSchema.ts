@@ -278,11 +278,12 @@ export function ConfigurationSchema<
   return schemaType
 }
 
-export function TrackConfigurationReference(schemaType: IAnyModelType) {
+export function TrackConfigurationReference(schemaType: IAnyType) {
   const trackRef = types.reference(schemaType, {
     get(identifier, parent) {
       let ret = getSession(parent).tracksById[identifier]
       if (!ret) {
+        // @ts-ignore
         ret = resolveIdentifier(schemaType, getRoot(parent), identifier)
       }
       if (!ret) {
@@ -318,5 +319,10 @@ export function DisplayConfigurationReference(schemaType: IAnyType) {
 
 // prefer track/display configuration reference if known
 export function ConfigurationReference(schemaType: IAnyType) {
+  if (schemaType.name.includes('Track')) {
+    return TrackConfigurationReference(schemaType)
+  } else if (schemaType.name.includes('Display')) {
+    return DisplayConfigurationReference(schemaType)
+  }
   return types.union(types.reference(schemaType), schemaType)
 }

@@ -1,5 +1,5 @@
 import {
-  DisplayConfigurationReference,
+  ConfigurationReference,
   AnyConfigurationSchemaType,
   getConf,
 } from '@jbrowse/core/configuration'
@@ -13,7 +13,7 @@ export default (configSchema: AnyConfigurationSchemaType) =>
       BaseLinearDisplay,
       types.model({
         type: types.literal('LinearHicDisplay'),
-        configuration: DisplayConfigurationReference(configSchema),
+        configuration: ConfigurationReference(configSchema),
         resolution: types.optional(types.number, 1),
       }),
     )

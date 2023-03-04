@@ -1,5 +1,5 @@
 import {
-  DisplayConfigurationReference,
+  ConfigurationReference,
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
 
@@ -25,7 +25,7 @@ export default function stateModelFactory(schema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        configuration: DisplayConfigurationReference(schema),
+        configuration: ConfigurationReference(schema),
       }),
     )
     .views(self => {

@@ -12,7 +12,7 @@ import deepEqual from 'fast-deep-equal'
 
 // jbrowse
 import {
-  DisplayConfigurationReference,
+  ConfigurationReference,
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
   getConf,
@@ -106,7 +106,7 @@ function AlignmentsModel(
     /**
      * #property
      */
-    configuration: DisplayConfigurationReference(configSchema),
+    configuration: ConfigurationReference(configSchema),
     /**
      * #property
      */

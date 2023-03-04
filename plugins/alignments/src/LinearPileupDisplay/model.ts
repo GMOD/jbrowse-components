@@ -5,7 +5,7 @@ import copy from 'copy-to-clipboard'
 import {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
-  DisplayConfigurationReference,
+  ConfigurationReference,
   readConfObject,
   getConf,
 } from '@jbrowse/core/configuration'
@@ -78,7 +78,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        configuration: DisplayConfigurationReference(configSchema),
+        configuration: ConfigurationReference(configSchema),
         /**
          * #property
          */

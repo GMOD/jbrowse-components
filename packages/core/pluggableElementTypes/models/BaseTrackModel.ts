@@ -12,7 +12,7 @@ import {
   getConf,
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
-  TrackConfigurationReference,
+  ConfigurationReference,
 } from '../../configuration'
 import PluginManager from '../../PluginManager'
 import { MenuItem } from '../../ui'
@@ -54,7 +54,7 @@ export function createBaseTrackModel(
        * #property
        */
       // @ts-ignore
-      configuration: TrackConfigurationReference(baseTrackConfig),
+      configuration: ConfigurationReference(baseTrackConfig),
       /**
        * #property
        */

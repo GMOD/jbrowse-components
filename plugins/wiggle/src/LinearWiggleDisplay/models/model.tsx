@@ -1,6 +1,6 @@
 import React, { lazy } from 'react'
 import {
-  DisplayConfigurationReference,
+  ConfigurationReference,
   AnyConfigurationSchemaType,
   getConf,
   readConfObject,
@@ -64,7 +64,7 @@ function stateModelFactory(
         /**
          * #property
          */
-        configuration: DisplayConfigurationReference(configSchema),
+        configuration: ConfigurationReference(configSchema),
         /**
          * #property
          */

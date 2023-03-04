@@ -1,6 +1,6 @@
 import {
   AnyConfigurationSchemaType,
-  DisplayConfigurationReference,
+  ConfigurationReference,
 } from '@jbrowse/core/configuration/configurationSchema'
 import { types } from 'mobx-state-tree'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
@@ -12,7 +12,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       BaseLinearDisplay,
       types.model({
         type: types.literal('LinearArcDisplay'),
-        configuration: DisplayConfigurationReference(configSchema),
+        configuration: ConfigurationReference(configSchema),
       }),
     )
 

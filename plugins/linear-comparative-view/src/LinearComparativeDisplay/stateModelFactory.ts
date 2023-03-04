@@ -1,6 +1,6 @@
 import {
   readConfObject,
-  DisplayConfigurationReference,
+  ConfigurationReference,
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
 import { types, getSnapshot, Instance } from 'mobx-state-tree'
@@ -33,7 +33,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        configuration: DisplayConfigurationReference(configSchema),
+        configuration: ConfigurationReference(configSchema),
         /**
          * #property
          */

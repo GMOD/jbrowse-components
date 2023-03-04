@@ -6,7 +6,7 @@ import deepEqual from 'fast-deep-equal'
 
 // jbrowse imports
 import {
-  DisplayConfigurationReference,
+  ConfigurationReference,
   AnyConfigurationSchemaType,
   getConf,
   readConfObject,
@@ -72,7 +72,7 @@ const stateModelFactory = (
       BaseLinearDisplay,
       types.model({
         type: types.literal('MultiLinearWiggleDisplay'),
-        configuration: DisplayConfigurationReference(configSchema),
+        configuration: ConfigurationReference(configSchema),
         selectedRendering: types.optional(types.string, ''),
         resolution: types.optional(types.number, 1),
         fill: types.maybe(types.boolean),
