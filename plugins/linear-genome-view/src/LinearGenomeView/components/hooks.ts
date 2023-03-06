@@ -239,7 +239,12 @@ export function useRangeSelect(
 
 export function useWheelScroll(
   ref: React.RefObject<HTMLDivElement>,
-  model: LGV,
+  model: {
+    bpPerPx: number
+    zoomTo: (arg: number, arg2?: number) => void
+    setScaleFactor: (arg: number) => void
+    horizontalScroll: (arg: number) => void
+  },
 ) {
   const delta = useRef(0)
   const timeout = useRef<Timer>()
@@ -266,6 +271,7 @@ export function useWheelScroll(
             delta.current > 0
               ? model.bpPerPx * (1 + delta.current)
               : model.bpPerPx / (1 - delta.current),
+            origEvent.clientX - (curr?.getBoundingClientRect().left || 0),
           )
           delta.current = 0
         }, 300)
