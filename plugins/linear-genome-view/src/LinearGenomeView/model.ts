@@ -579,7 +579,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      zoomTo(bpPerPx: number, offset = self.width / 2) {
+      zoomTo(bpPerPx: number, offset = self.width / 2, centerAtOffset = false) {
         const newBpPerPx = clamp(bpPerPx, self.minBpPerPx, self.maxBpPerPx)
         if (newBpPerPx === self.bpPerPx) {
           return newBpPerPx
@@ -596,7 +596,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
         // coordinate
         this.scrollTo(
           Math.round(
-            ((self.offsetPx + offset) * oldBpPerPx) / newBpPerPx - offset,
+            ((self.offsetPx + offset) * oldBpPerPx) / newBpPerPx -
+              (centerAtOffset ? self.width / 2 : offset),
           ),
         )
         return newBpPerPx

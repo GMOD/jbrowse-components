@@ -59,7 +59,7 @@ export default observer(function TracksContainer({
       onClick={event => {
         if (event.detail === 2) {
           const left = ref.current?.getBoundingClientRect().left || 0
-          model.zoomTo(model.bpPerPx / 2, event.clientX - left)
+          model.zoomTo(model.bpPerPx / 2, event.clientX - left, true)
         }
       }}
       onMouseDown={event => {
