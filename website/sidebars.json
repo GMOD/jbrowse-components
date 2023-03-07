@@ -99,6 +99,7 @@
       "type": "category",
       "label": "Archive",
       "items": [
+        "archive/pag2023_workshop",
         "archive/pag2022_synteny_tutorial",
         "archive/bcc2020_plugin_development",
         {
