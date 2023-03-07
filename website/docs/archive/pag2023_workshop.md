@@ -13,7 +13,7 @@ logged in setup their own instance on AWS!
 
 Video of the main tutorial (1hr 20min)
 
-<iframe width="560" height="315" src="https://www.youtube.com/watch?v=0MtYsAFEMXI" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/0MtYsAFEMXI" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 Intro presentations from Rob, Colin, and Caroline also uploaded to Youtube, see
 https://www.youtube.com/@scottcain8804
