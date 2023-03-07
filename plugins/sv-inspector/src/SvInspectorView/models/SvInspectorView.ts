@@ -24,7 +24,7 @@ import {
  * #stateModel SvInspectorView
  * combination of a spreadsheetview and a circularview
  */
-const SvInspectorViewF = (pluginManager: PluginManager) => {
+function SvInspectorViewF(pluginManager: PluginManager) {
   const SpreadsheetViewType = pluginManager.getViewType('SpreadsheetView')
   const CircularViewType = pluginManager.getViewType('CircularView')
 

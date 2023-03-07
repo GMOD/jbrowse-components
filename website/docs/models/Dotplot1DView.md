@@ -43,6 +43,27 @@ number
 number
 ```
 
+#### getter: minBpPerPx
+
+```js
+// type
+number
+```
+
+#### getter: maxOffset
+
+```js
+// type
+number
+```
+
+#### getter: minOffset
+
+```js
+// type
+number
+```
+
 ### Dotplot1DView - Actions
 
 #### action: setScaleFactor

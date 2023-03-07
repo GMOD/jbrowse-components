@@ -259,7 +259,7 @@ number
 
 ```js
 // type
-any
+number
 ```
 
 #### getter: trackHeightsWithResizeHandles
@@ -616,7 +616,7 @@ scrollTo: (offsetPx: number) => number
 
 ```js
 // type signature
-zoomTo: (bpPerPx: number) => number
+zoomTo: (bpPerPx: number, offset?: number, centerAtOffset?: boolean) => number
 ```
 
 #### action: setOffsets

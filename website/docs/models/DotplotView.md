@@ -138,9 +138,37 @@ vview: types.optional(DotplotVView, {})
 
 ```js
 // type signature
-string
+IOptionalIType<ISimpleType<string>, [undefined]>
 // code
-cursorMode: 'crosshair'
+cursorMode: types.optional(
+          types.string,
+          () => localStorageGetItem('dotplot-cursorMode') || 'crosshair',
+        )
+```
+
+#### property: wheelMode
+
+```js
+// type signature
+IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+wheelMode: types.optional(
+          types.string,
+          () => localStorageGetItem('dotplot-wheelMode') || 'zoom',
+        )
+```
+
+#### property: showPanButtons
+
+```js
+// type signature
+IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+showPanButtons: types.optional(types.boolean, () =>
+          Boolean(
+            JSON.parse(localStorageGetItem('dotplot-showPanbuttons') || 'true'),
+          ),
+        )
 ```
 
 #### property: tracks
@@ -262,6 +290,20 @@ menuItems: () => ({ label: string; onClick: () => void; icon: OverridableCompone
 ```
 
 ### DotplotView - Actions
+
+#### action: setShowPanButtons
+
+```js
+// type signature
+setShowPanButtons: (flag: boolean) => void
+```
+
+#### action: setWheelMode
+
+```js
+// type signature
+setWheelMode: (str: string) => void
+```
 
 #### action: setCursorMode
 
