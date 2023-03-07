@@ -231,7 +231,7 @@ zoomIn: () => void
 
 ```js
 // type signature
-zoomTo: (newBpPerPx: number, offset?: number) => number
+zoomTo: (bpPerPx: number, offset?: number) => number
 ```
 
 #### action: scrollTo

@@ -299,7 +299,7 @@ clearRegionStats: () => void
 
 ```js
 // type signature
-setHeight: (displayHeight: number) => any
+setHeight: (displayHeight: number) => number
 ```
 
 #### action: resizeHeight

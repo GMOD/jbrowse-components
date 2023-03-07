@@ -305,12 +305,8 @@ addView: (typeName: string, initialState?: {}) => { id: string; displayName: str
 
 ```js
 // type signature
-addWidget: (
-  typeName: string,
-  id: string,
-  initialState?: {},
-  configuration?: { type: string },
-) => any
+addWidget: (typeName: string, id: string, initialState?: {}, conf?: unknown) =>
+  any
 ```
 
 #### action: showWidget
