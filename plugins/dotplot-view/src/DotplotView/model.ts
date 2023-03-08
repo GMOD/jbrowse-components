@@ -111,30 +111,6 @@ export default function stateModelFactory(pm: PluginManager) {
          * #property
          */
         vview: types.optional(DotplotVView, {}),
-        /**
-         * #property
-         */
-        cursorMode: types.optional(
-          types.string,
-          () => localStorageGetItem('dotplot-cursorMode') || 'crosshair',
-        ),
-
-        /**
-         * #property
-         */
-        wheelMode: types.optional(
-          types.string,
-          () => localStorageGetItem('dotplot-wheelMode') || 'zoom',
-        ),
-
-        /**
-         * #property
-         */
-        showPanButtons: types.optional(types.boolean, () =>
-          Boolean(
-            JSON.parse(localStorageGetItem('dotplot-showPanbuttons') || 'true'),
-          ),
-        ),
 
         /**
          * #property
@@ -155,6 +131,14 @@ export default function stateModelFactory(pm: PluginManager) {
     .volatile(() => ({
       volatileWidth: undefined as number | undefined,
       volatileError: undefined as unknown,
+
+      // these are 'personal preferences', stored in volatile and
+      // loaded/written to localStorage
+      cursorMode: localStorageGetItem('dotplot-cursorMode') || 'crosshair',
+      showPanButtons: Boolean(
+        JSON.parse(localStorageGetItem('dotplot-showPanbuttons') || 'true'),
+      ),
+      wheelMode: localStorageGetItem('dotplot-wheelMode') || 'zoom',
       borderX: 100,
       borderY: 100,
     }))
