@@ -17,6 +17,7 @@ export default function SVGTrackLabel({
   const theme = useTheme()
   const fill = theme.palette.text.primary
   const xoff = trackLabels === 'overlay' ? 5 : 0
+  const yoff = trackLabels === 'offset' ? 5 : 0
   return trackLabels !== 'none' ? (
     <g>
       {trackLabels === 'left' ? (
@@ -33,6 +34,7 @@ export default function SVGTrackLabel({
       ) : (
         <text
           x={x + xoff}
+          y={yoff}
           fill={fill}
           fontSize={fontSize}
           dominantBaseline="hanging"

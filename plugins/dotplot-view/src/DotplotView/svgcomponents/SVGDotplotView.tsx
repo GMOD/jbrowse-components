@@ -47,7 +47,6 @@ export async function renderToSvg(
           <VerticalAxisRaw model={model} />
           <g transform={`translate(${borderX} 0)`}>
             <GridRaw model={model} />
-
             <defs>
               <clipPath id="clip-ruler">
                 <rect x={0} y={0} width={viewWidth} height={viewHeight} />
