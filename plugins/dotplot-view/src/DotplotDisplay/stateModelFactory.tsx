@@ -52,6 +52,13 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         })),
     )
     .views(self => ({
+      get shouldDisplay() {
+        const view = getContainingView(self)
+        return (
+          view.vview.bpPerPx === self.data.bpPerPxY &&
+          view.hview.bpPerPx === self.data.bpPerPxX
+        )
+      },
       /**
        * #getter
        */

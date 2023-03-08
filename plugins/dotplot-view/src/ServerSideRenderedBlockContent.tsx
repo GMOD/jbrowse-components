@@ -60,12 +60,17 @@ function BlockError({ error }: { error: unknown }) {
   )
 }
 
-const ServerSideRenderedBlockContent = observer(function ({
+export default observer(function ({
   model,
   style,
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  model: any
+  model: {
+    error?: unknown
+    message?: string
+    filled?: boolean
+    shouldDisplay?: boolean
+    reactElement?: React.ReactElement
+  }
   style: CSSProperties
 }) {
   if (model.error) {
@@ -74,9 +79,8 @@ const ServerSideRenderedBlockContent = observer(function ({
     return <BlockMessage messageText={model.message} />
   } else if (!model.filled) {
     return <LoadingMessage />
-  } else {
+  } else if (model.shouldDisplay) {
     return <div style={style}>{model.reactElement}</div>
   }
+  return null
 })
-
-export default ServerSideRenderedBlockContent
