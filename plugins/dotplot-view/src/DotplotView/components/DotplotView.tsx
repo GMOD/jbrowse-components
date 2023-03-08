@@ -192,6 +192,7 @@ const DotplotViewInternal = observer(function ({
     let cleanup = () => {}
 
     function globalMouseUp(event: MouseEvent) {
+      setCtrlKeyWasUsed(false)
       if (Math.abs(xdistance) > 3 && Math.abs(ydistance) > 3 && validSelect) {
         setMouseUpClient([event.clientX, event.clientY])
       } else {

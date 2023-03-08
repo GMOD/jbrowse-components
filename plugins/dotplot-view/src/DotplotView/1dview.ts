@@ -46,14 +46,14 @@ const Dotplot1DView = Base1DView.extend(self => {
        * #getter
        */
       get maxOffset() {
-        return self.displayedRegionsTotalPx - self.width * 0.95
+        return self.displayedRegionsTotalPx - self.width * 0.8
       },
 
       /**
        * #getter
        */
       get minOffset() {
-        return -self.width * 0.05
+        return -self.width * 0.2
       },
     },
     actions: {
