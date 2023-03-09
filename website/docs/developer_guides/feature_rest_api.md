@@ -104,26 +104,33 @@ Example return JSON:
 
 ### Configuring Tracks to Use a REST Feature Store
 
-Example configuration for an HTMLFeatures track showing features from a REST
-feature store with URLs based at http://my.site.com/rest/api/base, and also
-adding "organism=tyrannosaurus" in the query string of all HTTP requests.
+Example configuration for a gene track showing features from a REST feature
+store with URLs based at http://my.site.com/rest/api/base, and also adding
+"organism_name=tyrannosaurus" in the query string of all HTTP requests.
 
     {
-        "label":      "my_rest_track",
-        "key":        "REST Test Track",
-        "type":       "JBrowse/View/Track/HTMLFeatures",
-        "storeClass": "JBrowse/Store/SeqFeature/REST",
-        "baseUrl":    "http://my.site.com/rest/api/base",
-        "query": {
-            "organism": "tyrannosaurus"
+      "type": "FeatureTrack",
+      "trackId": "rest_genes",
+      "assemblyNames": ["volvox"],
+      "name": "Genes (via REST test server)",
+      "category": ["Integration test"],
+      "adapter": {
+        "type": "JBrowseRESTFeatureAdapter",
+        "location": {
+          "uri": "http://my.site.com/rest/api/base",
+          "locationType": "UriLocation"
+        },
+        "extra_query": {
+          "organism_name": "tyrannosaurus"
         }
-    }
+      }
+    },
 
 ## Using JBrowse 2 with Existing Web Services
 
 Users can extend JBrowse's functionality to with their own JavaScript code using
 the JBrowse plugin system. For an overview of plugins and their structure, see
-[Writing JBrowse Plugins](#writing-jbrowse-plugins 'wikilink').
+[Developer Guide](../../developer_guide/).
 
 To use JBrowse with an existing set of web services, users will want to
 implement a JBrowse 2 plugin that contains a new Adapter that can fetch data
