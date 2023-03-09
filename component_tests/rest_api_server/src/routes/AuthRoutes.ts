@@ -4,14 +4,12 @@ import AuthService from '@src/services/AuthService';
 
 import { IReq, IRes } from './types/express/misc';
 
-
 // **** Types **** //
 
 interface ILoginReq {
-  email: string;
-  password: string;
+  email: string
+  password: string
 }
-
 
 // **** Functions **** //
 
@@ -40,7 +38,6 @@ function logout(_: IReq, res: IRes) {
   SessionUtil.clearCookie(res);
   return res.status(HttpStatusCodes.OK).end();
 }
-
 
 // **** Export default **** //
 

@@ -1,4 +1,3 @@
-
 export type Immutable<T> = {
-  readonly [K in keyof T]: Immutable<T[K]>;
-};
+  readonly [K in keyof T]: Immutable<T[K]>
+}

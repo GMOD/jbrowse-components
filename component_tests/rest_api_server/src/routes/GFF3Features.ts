@@ -15,27 +15,29 @@ const assemblies = {
   volvox: {
     gff3: '../../test_data/volvox/volvox.sort.gff3',
     fasta: '../../test_data/volvox/volvox.fa',
-    fai: '../../test_data/volvox/volvox.fa.fai'
+    fai: '../../test_data/volvox/volvox.fa.fai',
   },
 }
 
 async function reference_sequences(req: IReq, res: IRes) {
-  const { assemblyName }   = req.params
+  const { assemblyName } = req.params
   const assembly = assemblies[assemblyName as keyof typeof assemblies]
-  if(!assembly) {
+  if (!assembly) {
     res.status(HttpStatusCodes.NOT_FOUND).send('Assembly not found')
     return
   }
-  const adapter = new FastaAdapter(FastaAdapterConfig.create({
-    fastaLocation: {
-      type: 'LocalPathLocation',
-      localPath: assembly.fasta,
-    },
-    faiLocation: {
-      type: 'LocalPathLocation',
-      localPath: assembly.fai,
-    }
-  }))
+  const adapter = new FastaAdapter(
+    FastaAdapterConfig.create({
+      fastaLocation: {
+        type: 'LocalPathLocation',
+        localPath: assembly.fasta,
+      },
+      faiLocation: {
+        type: 'LocalPathLocation',
+        localPath: assembly.fai,
+      },
+    }),
+  )
 
   const refnames = await adapter.getRefNames()
   return res.status(HttpStatusCodes.OK).json(refnames)
@@ -45,24 +47,30 @@ async function features(req: IReq, res: IRes) {
   const { assemblyName, refName } = req.params
   const { start, end } = req.query
   const assembly = assemblies[assemblyName as keyof typeof assemblies]
-  if(!assembly) {
+  if (!assembly) {
     res.status(404).send('Assembly not found')
     return
   }
-  const adapter = new GFF3Adapter(GFF3AdapterConfig.create({
-    gffLocation: {
-      type: 'LocalPathLocation',
-      localPath: assembly.gff3,
-    }
-  }))
-  const featureObservable = adapter.getFeatures({ refName, start: Number(start), end: Number(end) })
-  const features: Feature[] = await firstValueFrom(featureObservable.pipe(toArray()))
+  const adapter = new GFF3Adapter(
+    GFF3AdapterConfig.create({
+      gffLocation: {
+        type: 'LocalPathLocation',
+        localPath: assembly.gff3,
+      },
+    }),
+  )
+  const featureObservable = adapter.getFeatures({
+    refName,
+    start: Number(start),
+    end: Number(end),
+  })
+  const features: Feature[] = await firstValueFrom(
+    featureObservable.pipe(toArray()),
+  )
   return res.status(HttpStatusCodes.OK).json({
-    features
+    features,
   });
 }
-
-
 
 export default {
   features,

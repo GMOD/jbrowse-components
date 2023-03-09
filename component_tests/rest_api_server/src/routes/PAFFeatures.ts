@@ -12,29 +12,29 @@ import FastaAdapter from '../../../../plugins/sequence/src/IndexedFastaAdapter/I
 import FastaAdapterConfig from '../../../../plugins/sequence/src/IndexedFastaAdapter/configSchema'
 import { rsort } from 'semver';
 
-
 const datasets = {
   grape_peach: {
     assemblyNames: ['peach', 'grape'],
     pafLocation: {
-      "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_grape.paf.gz",
-      "locationType": "UriLocation"
-    }
-  }
-}
+      uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_grape.paf.gz',
+      locationType: 'UriLocation',
+    },
+  },
+};
 
 function openDataset(name: string) {
   const ds = datasets[name as keyof typeof datasets]
-  if(!ds)
+  if (!ds) {
     return
+  }
   const adapter = new PAFAdapter(PAFAdapterConfig.create(ds))
   return adapter
 }
 
 async function assembly_names(req: IReq, res: IRes) {
-  const {datasetName} = req.params
+  const { datasetName } = req.params
   const paf = openDataset(datasetName)
-  if(!paf) {
+  if (!paf) {
     res.status(404).send('Dataset not found')
     return
   }
@@ -46,30 +46,38 @@ async function has_data_for_reference(req: IReq, res: IRes) {
 }
 
 async function reference_sequences(req: IReq, res: IRes) {
-  const {datasetName, assemblyName} = req.params
+  const { datasetName, assemblyName } = req.params
   const paf = openDataset(datasetName)
-  if(!paf) {
+  if (!paf) {
     res.status(404).send('Dataset not found')
     return
   }
-  return res.status(HttpStatusCodes.OK).json(await paf.getRefNames({ regions: [{assemblyName}] }))
+  return res
+    .status(HttpStatusCodes.OK)
+    .json(await paf.getRefNames({ regions: [{ assemblyName }] }))
 }
 
 async function features(req: IReq, res: IRes) {
-  const {datasetName, assemblyName, refName } = req.params
+  const { datasetName, assemblyName, refName } = req.params
   const { start, end } = req.query
   const paf = openDataset(datasetName)
-  if(!paf) {
+  if (!paf) {
     res.status(404).send('Dataset not found')
     return
   }
-  const featureObservable = paf.getFeatures({ assemblyName, refName, start: Number(start), end: Number(end) })
-  const features: Feature[] = await firstValueFrom(featureObservable.pipe(toArray()))
+  const featureObservable = paf.getFeatures({
+    assemblyName,
+    refName,
+    start: Number(start),
+    end: Number(end),
+  })
+  const features: Feature[] = await firstValueFrom(
+    featureObservable.pipe(toArray()),
+  )
   return res.status(HttpStatusCodes.OK).json({
-    features
+    features,
   });
 }
-
 
 export default {
   features,

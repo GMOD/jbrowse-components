@@ -4,7 +4,6 @@
 
 import HttpStatusCodes from '@src/constants/HttpStatusCodes';
 
-
 /**
  * Error with status code and message
  */

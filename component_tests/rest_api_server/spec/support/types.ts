@@ -1,1 +1,1 @@
-export type TReqBody = string | object | undefined;
+export type TReqBody = string | object | undefined

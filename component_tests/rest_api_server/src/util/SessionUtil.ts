@@ -6,7 +6,6 @@ import jsonwebtoken from 'jsonwebtoken';
 
 import EnvVars from '../constants/EnvVars';
 
-
 // **** Variables **** //
 
 // Errors
@@ -20,7 +19,6 @@ const Options = {
   expiresIn: EnvVars.Jwt.Exp,
 };
 
-
 // **** Functions **** //
 
 /**
@@ -33,7 +31,7 @@ function getSessionData<T>(req: Request): Promise<string | T | undefined> {
 }
 
 /**
- * Add a JWT to the response 
+ * Add a JWT to the response
  */
 async function addSessionData(
   res: Response,
@@ -56,7 +54,6 @@ function clearCookie(res: Response): Response {
   const { Key, Options } = EnvVars.CookieProps;
   return res.clearCookie(Key, Options);
 }
-
 
 // **** Helper Functions **** //
 
@@ -81,7 +78,6 @@ function _decode<T>(jwt: string): Promise<string | undefined | T> {
     });
   });
 }
-
 
 // **** Export default **** //
 

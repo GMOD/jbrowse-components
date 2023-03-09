@@ -5,14 +5,12 @@ import UserRepo from '@src/repos/UserRepo';
 import PwdUtil from '@src/util/PwdUtil';
 import FullPaths from '@src/routes/constants/FullPaths';
 
-
 // **** Variables **** //
 
 const LoginCreds = {
   email: 'jsmith@gmail.com',
   password: 'Password@1',
 } as const;
-
 
 // **** Functions **** //
 
@@ -36,7 +34,6 @@ function login(beforeAgent: SuperTest<Test>, done: (arg: string) => void) {
       return done(cookie);
     });
 }
-
 
 // **** Export default **** //
 

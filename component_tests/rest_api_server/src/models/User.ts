@@ -1,6 +1,7 @@
 // **** Variables **** //
 
-const INVALID_CONSTRUCTOR_PARAM = 'nameOrObj arg must a string or an object ' + 
+const INVALID_CONSTRUCTOR_PARAM =
+  'nameOrObj arg must a string or an object ' +
   'with the appropriate user keys.';
 
 export enum UserRoles {
@@ -8,29 +9,26 @@ export enum UserRoles {
   Admin,
 }
 
-
 // **** Types **** //
 
 export interface IUser {
-  id: number;
-  name: string;
-  email: string;
-  pwdHash?: string;
-  role?: UserRoles;
+  id: number
+  name: string
+  email: string
+  pwdHash?: string
+  role?: UserRoles
 }
 
 export interface ISessionUser {
-  id: number;
-  email: string;
-  name: string;
-  role: IUser['role'];
+  id: number
+  email: string
+  name: string
+  role: IUser['role']
 }
-
 
 // **** User **** //
 
 class User implements IUser {
-
   public id: number;
   public name: string;
   public email: string;
@@ -47,11 +45,11 @@ class User implements IUser {
     pwdHash?: string,
     id?: number, // id last cause usually set by db
   ) {
-    this.name = (name ?? '');
-    this.email = (email ?? '');
-    this.role = (role ?? UserRoles.Standard);
-    this.pwdHash = (pwdHash ?? '');
-    this.id = (id ?? -1);
+    this.name = name ?? '';
+    this.email = email ?? '';
+    this.role = role ?? UserRoles.Standard;
+    this.pwdHash = pwdHash ?? '';
+    this.id = id ?? -1;
   }
 
   /**
@@ -81,7 +79,6 @@ class User implements IUser {
     );
   }
 }
-
 
 // **** Export default **** //
 
