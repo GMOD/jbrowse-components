@@ -8,11 +8,7 @@ import {
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import {
-  types,
-  getParent,
-  getPropertyMembers,
-} from 'mobx-state-tree'
+import { types, getParent, getPropertyMembers } from 'mobx-state-tree'
 
 // jbrowse imports
 import {

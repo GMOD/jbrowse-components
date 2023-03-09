@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
-import { getPropertyMembers, IAnyModelType, IAnyType, ISimpleType } from 'mobx-state-tree'
+import { getPropertyMembers, IAnyType } from 'mobx-state-tree'
 import { getEnv, FileLocation } from '@jbrowse/core/util'
 import { FileSelector } from '@jbrowse/core/ui'
 import {
@@ -24,7 +24,10 @@ import ConfigurationTextField from './ConfigurationTextField'
 import NumberMapEditor from './NumberMapEditor'
 import NumberEditor from './NumberEditor'
 import BooleanEditor from './BooleanEditor'
-import { AnyConfigurationSlot, AnyConfigurationSlotType } from '@jbrowse/core/configuration/configurationSchema'
+import {
+  AnyConfigurationSlot,
+  AnyConfigurationSlotType,
+} from '@jbrowse/core/configuration/configurationSchema'
 
 const StringEditor = observer(
   ({
@@ -108,7 +111,7 @@ const StringEnumEditor = observer(function ({
   slot,
   slotSchema,
 }: {
-  slot: AnyConfigurationSlot,
+  slot: AnyConfigurationSlot
   slotSchema: AnyConfigurationSlotType
 }) {
   const p = getPropertyMembers(getSubType(slotSchema))
