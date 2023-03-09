@@ -1,16 +1,16 @@
-import HttpStatusCodes from '@src/constants/HttpStatusCodes';
+import HttpStatusCodes from '@src/constants/HttpStatusCodes'
 
-import { IReq, IRes } from './types/express/misc';
+import { IReq, IRes } from './types/express/misc'
 
-import { firstValueFrom, toArray } from 'rxjs';
+import { firstValueFrom, toArray } from 'rxjs'
 
-import { Feature } from '@jbrowse/core/util';
+import { Feature } from '@jbrowse/core/util'
 import PAFAdapter from '../../../../plugins/comparative-adapters/src/PAFAdapter/PAFAdapter'
 import PAFAdapterConfig from '../../../../plugins/comparative-adapters/src/PAFAdapter/configSchema'
 
 import FastaAdapter from '../../../../plugins/sequence/src/IndexedFastaAdapter/IndexedFastaAdapter'
 import FastaAdapterConfig from '../../../../plugins/sequence/src/IndexedFastaAdapter/configSchema'
-import { rsort } from 'semver';
+import { rsort } from 'semver'
 
 const datasets = {
   grape_peach: {
@@ -20,7 +20,7 @@ const datasets = {
       locationType: 'UriLocation',
     },
   },
-};
+}
 
 function openDataset(name: string) {
   const ds = datasets[name as keyof typeof datasets]
@@ -76,7 +76,7 @@ async function features(req: IReq, res: IRes) {
   )
   return res.status(HttpStatusCodes.OK).json({
     features,
-  });
+  })
 }
 
 export default {
@@ -84,4 +84,4 @@ export default {
   assembly_names,
   reference_sequences,
   has_data_for_reference,
-} as const;
+} as const

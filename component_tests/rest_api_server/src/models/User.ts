@@ -2,7 +2,7 @@
 
 const INVALID_CONSTRUCTOR_PARAM =
   'nameOrObj arg must a string or an object ' +
-  'with the appropriate user keys.';
+  'with the appropriate user keys.'
 
 export enum UserRoles {
   Standard,
@@ -29,11 +29,11 @@ export interface ISessionUser {
 // **** User **** //
 
 class User implements IUser {
-  public id: number;
-  public name: string;
-  public email: string;
-  public role?: UserRoles;
-  public pwdHash?: string;
+  public id: number
+  public name: string
+  public email: string
+  public role?: UserRoles
+  public pwdHash?: string
 
   /**
    * Constructor()
@@ -45,11 +45,11 @@ class User implements IUser {
     pwdHash?: string,
     id?: number, // id last cause usually set by db
   ) {
-    this.name = name ?? '';
-    this.email = email ?? '';
-    this.role = role ?? UserRoles.Standard;
-    this.pwdHash = pwdHash ?? '';
-    this.id = id ?? -1;
+    this.name = name ?? ''
+    this.email = email ?? ''
+    this.role = role ?? UserRoles.Standard
+    this.pwdHash = pwdHash ?? ''
+    this.id = id ?? -1
   }
 
   /**
@@ -58,11 +58,11 @@ class User implements IUser {
   public static from(param: object): User {
     // Check is user
     if (!User.isUser(param)) {
-      throw new Error(INVALID_CONSTRUCTOR_PARAM);
+      throw new Error(INVALID_CONSTRUCTOR_PARAM)
     }
     // Get user instance
-    const p = param as IUser;
-    return new User(p.name, p.email, p.role, p.pwdHash, p.id);
+    const p = param as IUser
+    return new User(p.name, p.email, p.role, p.pwdHash, p.id)
   }
 
   /**
@@ -76,10 +76,10 @@ class User implements IUser {
       'email' in arg &&
       'name' in arg &&
       'role' in arg
-    );
+    )
   }
 }
 
 // **** Export default **** //
 
-export default User;
+export default User

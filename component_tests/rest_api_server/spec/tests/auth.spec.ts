@@ -1,49 +1,49 @@
-import supertest, { SuperTest, Test, Response } from 'supertest';
+import supertest, { SuperTest, Test, Response } from 'supertest'
 
-import app from '@src/server';
+import app from '@src/server'
 
-import UserRepo from '@src/repos/UserRepo';
-import PwdUtil from '@src/util/PwdUtil';
-import User, { UserRoles } from '@src/models/User';
-import { Errors } from '@src/services/AuthService';
+import UserRepo from '@src/repos/UserRepo'
+import PwdUtil from '@src/util/PwdUtil'
+import User, { UserRoles } from '@src/models/User'
+import { Errors } from '@src/services/AuthService'
 
-import FullPaths from '@src/routes/constants/FullPaths';
-import EnvVars from '@src/constants/EnvVars';
-import HttpStatusCodes from '@src/constants/HttpStatusCodes';
+import FullPaths from '@src/routes/constants/FullPaths'
+import EnvVars from '@src/constants/EnvVars'
+import HttpStatusCodes from '@src/constants/HttpStatusCodes'
 
-import { TReqBody } from 'spec/support/types';
+import { TReqBody } from 'spec/support/types'
 
 // **** Variables **** //
 
 // Paths
-const { Login, Logout } = FullPaths.Auth;
+const { Login, Logout } = FullPaths.Auth
 
 // StatusCodes
-const { OK, UNAUTHORIZED } = HttpStatusCodes;
+const { OK, UNAUTHORIZED } = HttpStatusCodes
 
 // Login credentials
 const LoginCreds = {
   email: 'jsmith@gmail.com',
   password: 'Password@1',
-} as const;
+} as const
 
 // **** Tests **** //
 
 describe('AuthRouter', () => {
-  let agent: SuperTest<Test>;
+  let agent: SuperTest<Test>
 
   // Run before all tests
   beforeAll(done => {
-    agent = supertest.agent(app);
-    done();
-  });
+    agent = supertest.agent(app)
+    done()
+  })
 
   // ** Test login ** //
   describe(`"POST:${Login}"`, () => {
-    const EMAIL_NOT_FOUND_ERR = Errors.EmailNotFound(LoginCreds.email);
+    const EMAIL_NOT_FOUND_ERR = Errors.EmailNotFound(LoginCreds.email)
 
     const callApi = (reqBody: TReqBody) =>
-      agent.post(Login).type('form').send(reqBody);
+      agent.post(Login).type('form').send(reqBody)
 
     // Success
     it(
@@ -53,18 +53,18 @@ describe('AuthRouter', () => {
         // Setup data
         const role = UserRoles.Standard,
           pwdHash = PwdUtil.hashSync(LoginCreds.password),
-          loginUser = new User('john smith', LoginCreds.email, role, pwdHash);
+          loginUser = new User('john smith', LoginCreds.email, role, pwdHash)
         // Add spy
-        spyOn(UserRepo, 'getOne').and.resolveTo(loginUser);
+        spyOn(UserRepo, 'getOne').and.resolveTo(loginUser)
         // Call API
         callApi(LoginCreds).end((_: Error, res: Response) => {
-          expect(res.status).toBe(OK);
-          const cookie = res.headers['set-cookie'][0];
-          expect(cookie).toContain(EnvVars.CookieProps.Key);
-          done();
-        });
+          expect(res.status).toBe(OK)
+          const cookie = res.headers['set-cookie'][0]
+          expect(cookie).toContain(EnvVars.CookieProps.Key)
+          done()
+        })
       },
-    );
+    )
 
     // Email not found error
     it(
@@ -73,15 +73,15 @@ describe('AuthRouter', () => {
         'was not found.',
       done => {
         // Spy
-        spyOn(UserRepo, 'getOne').and.resolveTo(null);
+        spyOn(UserRepo, 'getOne').and.resolveTo(null)
         // Call
         callApi(LoginCreds).end((_: Error, res: Response) => {
-          expect(res.status).toBe(UNAUTHORIZED);
-          expect(res.body.error).toBe(EMAIL_NOT_FOUND_ERR);
-          done();
-        });
+          expect(res.status).toBe(UNAUTHORIZED)
+          expect(res.body.error).toBe(EMAIL_NOT_FOUND_ERR)
+          done()
+        })
       },
-    );
+    )
 
     // Password failed
     it(
@@ -91,27 +91,27 @@ describe('AuthRouter', () => {
         // Setup data
         const role = UserRoles.Standard,
           pwdHash = PwdUtil.hashSync('bad password'),
-          loginUser = new User('john smith', LoginCreds.email, role, pwdHash);
+          loginUser = new User('john smith', LoginCreds.email, role, pwdHash)
         // Add spy
-        spyOn(UserRepo, 'getOne').and.resolveTo(loginUser);
+        spyOn(UserRepo, 'getOne').and.resolveTo(loginUser)
         // Call API
         callApi(LoginCreds).end((_: Error, res: Response) => {
-          expect(res.status).toBe(UNAUTHORIZED);
-          expect(res.body.error).toBe(Errors.Unauth);
-          done();
-        });
+          expect(res.status).toBe(UNAUTHORIZED)
+          expect(res.body.error).toBe(Errors.Unauth)
+          done()
+        })
       },
-    );
-  });
+    )
+  })
 
   // ** Test logout ** //
   describe(`"GET:${Logout}"`, () => {
     // Successful logout
     it(`should return a response with a status of ${OK}`, done => {
       agent.get(Logout).end((_: Error, res: Response) => {
-        expect(res.status).toBe(HttpStatusCodes.OK);
-        done();
-      });
-    });
-  });
-});
+        expect(res.status).toBe(HttpStatusCodes.OK)
+        done()
+      })
+    })
+  })
+})

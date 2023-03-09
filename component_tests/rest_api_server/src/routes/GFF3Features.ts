@@ -1,10 +1,10 @@
-import HttpStatusCodes from '@src/constants/HttpStatusCodes';
+import HttpStatusCodes from '@src/constants/HttpStatusCodes'
 
-import { IReq, IRes } from './types/express/misc';
+import { IReq, IRes } from './types/express/misc'
 
-import { firstValueFrom, toArray } from 'rxjs';
+import { firstValueFrom, toArray } from 'rxjs'
 
-import { Feature } from '@jbrowse/core/util';
+import { Feature } from '@jbrowse/core/util'
 import GFF3Adapter from '../../../../plugins/gff3/src/Gff3Adapter/Gff3Adapter'
 import GFF3AdapterConfig from '../../../../plugins/gff3/src/Gff3Adapter/configSchema'
 
@@ -69,10 +69,10 @@ async function features(req: IReq, res: IRes) {
   )
   return res.status(HttpStatusCodes.OK).json({
     features,
-  });
+  })
 }
 
 export default {
   features,
   reference_sequences,
-} as const;
+} as const

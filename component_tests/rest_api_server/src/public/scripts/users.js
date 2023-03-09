@@ -1,6 +1,6 @@
 // ***** Start **** //
 
-displayUsers();
+displayUsers()
 
 // ***** Fetch and display users **** //
 
@@ -11,15 +11,15 @@ function displayUsers() {
   Http.get('/api/users/all')
     .then(resp => resp.json())
     .then(resp => {
-      var allUsers = resp.users;
+      var allUsers = resp.users
       // Empty the anchor
-      var allUsersAnchor = document.getElementById('all-users-anchor');
-      allUsersAnchor.innerHTML = '';
+      var allUsersAnchor = document.getElementById('all-users-anchor')
+      allUsersAnchor.innerHTML = ''
       // Append users to anchor
       allUsers.forEach(user => {
-        allUsersAnchor.innerHTML += getUserDisplayEle(user);
-      });
-    });
+        allUsersAnchor.innerHTML += getUserDisplayEle(user)
+      })
+    })
 }
 
 /**
@@ -53,7 +53,7 @@ function getUserDisplayEle(user) {
           Cancel
         </button>
       </div>
-    </div>`;
+    </div>`
 }
 
 // **** Add, Edit, and Delete Users **** //
@@ -62,31 +62,31 @@ function getUserDisplayEle(user) {
 document.addEventListener(
   'click',
   function (event) {
-    event.preventDefault();
-    var ele = event.target;
+    event.preventDefault()
+    var ele = event.target
     if (ele.matches('#add-user-btn')) {
-      addUser();
+      addUser()
     } else if (ele.matches('.edit-user-btn')) {
-      showEditView(ele.parentNode.parentNode);
+      showEditView(ele.parentNode.parentNode)
     } else if (ele.matches('.cancel-edit-btn')) {
-      cancelEdit(ele.parentNode.parentNode);
+      cancelEdit(ele.parentNode.parentNode)
     } else if (ele.matches('.submit-edit-btn')) {
-      submitEdit(ele);
+      submitEdit(ele)
     } else if (ele.matches('.delete-user-btn')) {
-      deleteUser(ele);
+      deleteUser(ele)
     } else if (ele.matches('#logout-btn')) {
-      logoutUser();
+      logoutUser()
     }
   },
   false,
-);
+)
 
 /**
  * Add a new user.
  */
 function addUser() {
-  var nameInput = document.getElementById('name-input');
-  var emailInput = document.getElementById('email-input');
+  var nameInput = document.getElementById('name-input')
+  var emailInput = document.getElementById('email-input')
   var data = {
     user: {
       id: -1,
@@ -94,38 +94,38 @@ function addUser() {
       email: emailInput.value,
       role: 0,
     },
-  };
+  }
   // Call api
-  Http.post('/api/users/add', data).then(() => displayUsers());
+  Http.post('/api/users/add', data).then(() => displayUsers())
 }
 
 /**
  * Show edit view.
  */
 function showEditView(userEle) {
-  var normalView = userEle.getElementsByClassName('normal-view')[0];
-  var editView = userEle.getElementsByClassName('edit-view')[0];
-  normalView.style.display = 'none';
-  editView.style.display = 'block';
+  var normalView = userEle.getElementsByClassName('normal-view')[0]
+  var editView = userEle.getElementsByClassName('edit-view')[0]
+  normalView.style.display = 'none'
+  editView.style.display = 'block'
 }
 
 /**
  * Cancel edit.
  */
 function cancelEdit(userEle) {
-  var normalView = userEle.getElementsByClassName('normal-view')[0];
-  var editView = userEle.getElementsByClassName('edit-view')[0];
-  normalView.style.display = 'block';
-  editView.style.display = 'none';
+  var normalView = userEle.getElementsByClassName('normal-view')[0]
+  var editView = userEle.getElementsByClassName('edit-view')[0]
+  normalView.style.display = 'block'
+  editView.style.display = 'none'
 }
 
 /**
  * Submit edit.
  */
 function submitEdit(ele) {
-  var userEle = ele.parentNode.parentNode;
-  var nameInput = userEle.getElementsByClassName('name-edit-input')[0];
-  var emailInput = userEle.getElementsByClassName('email-edit-input')[0];
+  var userEle = ele.parentNode.parentNode
+  var nameInput = userEle.getElementsByClassName('name-edit-input')[0]
+  var emailInput = userEle.getElementsByClassName('email-edit-input')[0]
   var id = ele.dataset.userId
   var role = ele.dataset.userRole
   var data = {
@@ -135,7 +135,7 @@ function submitEdit(ele) {
       email: emailInput.value,
       role: Number(role),
     },
-  };
+  }
   Http.put('/api/users/update', data).then(() => displayUsers())
 }
 
@@ -150,5 +150,5 @@ function deleteUser(ele) {
 // **** Logout **** //
 
 function logoutUser() {
-  Http.get('/api/auth/logout').then(() => (window.location.href = '/'));
+  Http.get('/api/auth/logout').then(() => (window.location.href = '/'))
 }
