@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-rest-adapters",
-  "version": "2.3.3",
+  "version": "2.4.0",
   "description": "JBrowse 2 plugin containing data adapters for connecting for JB2 and JB1 REST API endpoints",
   "keywords": [
     "jbrowse",
