@@ -8,9 +8,6 @@ import {
   IAnyType,
   IModelReflectionPropertiesData,
   IAnyComplexType,
-  getPropertyMembers,
-  IAnyModelType,
-  IAnyStateTreeNode,
   ISimpleType,
   UnionStringArray,
 } from 'mobx-state-tree'
@@ -70,8 +67,10 @@ export function getUnionSubTypes(unionType: IAnyType): IAnyType[] {
 /**
  * get the type of one of the properties of the given MST model type
  */
-export function getPropertyType(type: IAnyType, propertyName: string) {
-  // @ts-ignore
+export function getPropertyType(
+  type: IModelReflectionPropertiesData,
+  propertyName: string,
+) {
   const propertyType = type.properties[propertyName]
   return propertyType
 }
@@ -87,7 +86,9 @@ export function getDefaultValue(type: IAnyType) {
   return type._defaultValue || type.defaultValue
 }
 
-export type IEnumerationType<T extends string> = ISimpleType<UnionStringArray<T[]>>
+export type IEnumerationType<T extends string> = ISimpleType<
+  UnionStringArray<T[]>
+>
 
 /** get the string values of an MST enumeration type */
 export function getEnumerationValues(type: IAnyComplexType) {
