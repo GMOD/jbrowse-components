@@ -109,6 +109,7 @@
     "eslint-config-react-app": "^7.0.0",
     "eslint-plugin-cypress": "^2.12.1",
     "eslint-plugin-monorepo": "^0.3.2",
+    "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-react-hooks": "^4.3.0",
     "eslint-plugin-tsdoc": "^0.2.4",
