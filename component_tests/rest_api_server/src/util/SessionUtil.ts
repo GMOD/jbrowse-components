@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 
-import HttpStatusCodes from '@src/constants/HttpStatusCodes'
-import { RouteError } from '@src/other/classes'
+import HttpStatusCodes from '../constants/HttpStatusCodes'
+import { RouteError } from '../other/classes'
 import jsonwebtoken from 'jsonwebtoken'
 
 import EnvVars from '../constants/EnvVars'

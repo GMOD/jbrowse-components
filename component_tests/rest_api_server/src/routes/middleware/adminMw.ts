@@ -5,10 +5,10 @@
 import { Request, Response, NextFunction } from 'express'
 import { JwtPayload } from 'jsonwebtoken'
 
-import HttpStatusCodes from '@src/constants/HttpStatusCodes'
+import HttpStatusCodes from '../../constants/HttpStatusCodes'
 
-import SessionUtil from '@src/util/SessionUtil'
-import { ISessionUser, UserRoles } from '@src/models/User'
+import SessionUtil from '../../util/SessionUtil'
+import { ISessionUser, UserRoles } from '../../models/User'
 
 // **** Variables **** //
 

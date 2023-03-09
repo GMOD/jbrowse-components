@@ -1,4 +1,4 @@
-import HttpStatusCodes from '@src/constants/HttpStatusCodes'
+import HttpStatusCodes from '../constants/HttpStatusCodes'
 
 import { IReq, IRes } from './types/express/misc'
 

@@ -2,7 +2,7 @@
  * Miscellaneous shared classes go here.
  */
 
-import HttpStatusCodes from '@src/constants/HttpStatusCodes'
+import HttpStatusCodes from '../constants/HttpStatusCodes'
 
 /**
  * Error with status code and message

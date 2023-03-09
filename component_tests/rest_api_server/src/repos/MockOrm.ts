@@ -1,6 +1,6 @@
 import jsonfile from 'jsonfile'
 
-import { IUser } from '@src/models/User'
+import { IUser } from '../models/User'
 
 // **** Variables **** //
 
