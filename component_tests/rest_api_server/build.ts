@@ -9,7 +9,7 @@ import childProcess from 'child_process'
 /**
  * Start
  */
-;(async () => {
+void (async () => {
   try {
     // Remove current build
     await remove('./dist/')

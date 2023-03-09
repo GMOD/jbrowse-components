@@ -27,6 +27,7 @@
     "node": ">=8.10.0"
   },
   "dependencies": {
+    "@jbrowse/core": "^2.0.0",
     "bcrypt": "^5.1.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
@@ -41,6 +42,7 @@
     "jsonwebtoken": "^9.0.0",
     "module-alias": "^2.2.2",
     "morgan": "^1.10.0",
+    "rxjs": "^7.0.0",
     "ts-command-line-args": "^2.4.2"
   },
   "devDependencies": {

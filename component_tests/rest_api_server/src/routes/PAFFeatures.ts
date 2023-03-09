@@ -8,10 +8,6 @@ import { Feature } from '@jbrowse/core/util'
 import PAFAdapter from '../../../../plugins/comparative-adapters/src/PAFAdapter/PAFAdapter'
 import PAFAdapterConfig from '../../../../plugins/comparative-adapters/src/PAFAdapter/configSchema'
 
-import FastaAdapter from '../../../../plugins/sequence/src/IndexedFastaAdapter/IndexedFastaAdapter'
-import FastaAdapterConfig from '../../../../plugins/sequence/src/IndexedFastaAdapter/configSchema'
-import { rsort } from 'semver'
-
 const datasets = {
   grape_peach: {
     assemblyNames: ['peach', 'grape'],

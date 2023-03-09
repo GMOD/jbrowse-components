@@ -29,6 +29,7 @@ describe('base data adapter', () => {
     })
     const featuresArray = features.pipe(toArray()).toPromise()
 
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     expect(featuresArray).rejects.toThrow(/something blew up/)
   })
 
