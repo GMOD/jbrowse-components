@@ -259,6 +259,10 @@ OPTIONS
 
   -t, --trackType=trackType             Type of track, by default inferred from track file
 
+  --bed1=bed1                           Used only for mcscan anchors/simpleAnchors types
+
+  --bed2=bed2                           Used only for mcscan anchors/simpleAnchors types
+
   --category=category                   Optional Comma separated string of categories to group tracks
 
   --config=config                       Any extra config settings to add to a track. i.e '{"defaultRendering":
