@@ -134,6 +134,7 @@
     {
       "files": [
         "**/test/**",
+        "**/tests/**",
         "**/*.test.[t,j]s",
         "**/*.test.[t,j]sx",
         "**/rescripts/*",
