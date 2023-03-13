@@ -224,7 +224,6 @@ export const InternetAccount = types
         self.removeToken()
         throw error
       }
-      self.storeToken(validatedToken)
       return {
         internetAccountType: self.type,
         authInfo: { token: validatedToken, configuration: getConf(self) },
@@ -242,10 +241,6 @@ export const InternetAccount = types
      */
     getFetcher(loc?: UriLocation) {
       return async (input: RequestInfo, init?: RequestInit) => {
-        if (!inWebWorker && loc) {
-          loc.internetAccountPreAuthorization =
-            await self.getPreAuthorizationInformation(loc)
-        }
         const authToken = await self.getToken(loc)
         const newInit = self.addAuthHeaderToInit(init, authToken)
         return fetch(input, newInit)
