@@ -47,7 +47,7 @@ test('open a bigwig track that needs oauth authentication and has existing token
   const token = '1234'
   sessionStorage.setItem('dropboxOAuth-token', token)
   // @ts-expect-error
-  await waitFor(() => expect(rootModel.internetAccounts.length).toBe(2))
+  await waitFor(() => expect(rootModel.internetAccounts.length).toBe(3))
   // @ts-expect-error
   rootModel.internetAccounts[0].validateToken = jest.fn().mockReturnValue(token)
   // @ts-expect-error

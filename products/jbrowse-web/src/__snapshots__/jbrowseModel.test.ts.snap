@@ -428,6 +428,38 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "type": "ReferenceSequenceTrack",
       },
     },
+    {
+      "name": "volvox_oauth",
+      "sequence": {
+        "adapter": {
+          "chromSizesLocation": {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
+            "locationType": "UriLocation",
+            "uri": "/path/to/default.chrom.sizes",
+          },
+          "twoBitLocation": {
+            "internetAccountId": "customOAuth",
+            "internetAccountPreAuthorization": undefined,
+            "locationType": "UriLocation",
+            "uri": "http://localhost:3030/data/volvox.2bit",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "displays": [
+          {
+            "displayId": "volvox_oauth-ReferenceSequenceTrack-LinearReferenceSequenceDisplay",
+            "type": "LinearReferenceSequenceDisplay",
+          },
+          {
+            "displayId": "volvox_oauth-ReferenceSequenceTrack-LinearGCContentDisplay",
+            "type": "LinearGCContentDisplay",
+          },
+        ],
+        "trackId": "volvox_oauth-ReferenceSequenceTrack",
+        "type": "ReferenceSequenceTrack",
+      },
+    },
   ],
   "configuration": {
     "extraThemes": {
@@ -502,6 +534,16 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "internetAccountId": "googleOAuth",
       "name": "Google Drive",
       "type": "GoogleDriveOAuthInternetAccount",
+    },
+    {
+      "authEndpoint": "http://localhost:3030/oauth",
+      "clientId": "myClientId",
+      "description": "OAuth account for testing",
+      "hasRefreshToken": true,
+      "internetAccountId": "customOAuth",
+      "name": "OAuth test account",
+      "tokenEndpoint": "http://localhost:3030/oauth/token",
+      "type": "OAuthInternetAccount",
     },
   ],
   "plugins": [
@@ -1570,6 +1612,72 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "name": "Google Drive BigWig",
       "trackId": "google_bigwig",
       "type": "QuantitativeTrack",
+    },
+    {
+      "adapter": {
+        "bigWigLocation": {
+          "internetAccountId": "customOAuth",
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "http://localhost:3030/data/volvox.bw",
+        },
+        "type": "BigWigAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+        "volvox_oauth",
+      ],
+      "category": [
+        "Authentication",
+      ],
+      "displays": [
+        {
+          "displayId": "oauth_bigwig-LinearWiggleDisplay",
+          "type": "LinearWiggleDisplay",
+        },
+      ],
+      "name": "Custom OAuth BigWig",
+      "trackId": "oauth_bigwig",
+      "type": "QuantitativeTrack",
+    },
+    {
+      "adapter": {
+        "index": {
+          "location": {
+            "internetAccountId": "customOAuth",
+            "internetAccountPreAuthorization": undefined,
+            "locationType": "UriLocation",
+            "uri": "http://localhost:3030/data/volvox.filtered.vcf.gz.tbi",
+          },
+        },
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "internetAccountId": "customOAuth",
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "http://localhost:3030/data/volvox.filtered.vcf.gz",
+        },
+      },
+      "assemblyNames": [
+        "volvox",
+        "volvox_oauth",
+      ],
+      "category": [
+        "Authentication",
+      ],
+      "displays": [
+        {
+          "displayId": "oauth_vcf-LinearVariantDisplay",
+          "type": "LinearVariantDisplay",
+        },
+        {
+          "displayId": "oauth_vcf-ChordVariantDisplay",
+          "type": "ChordVariantDisplay",
+        },
+      ],
+      "name": "Custom OAuth VCF",
+      "trackId": "oauth_vcf",
+      "type": "VariantTrack",
     },
     {
       "adapter": {
