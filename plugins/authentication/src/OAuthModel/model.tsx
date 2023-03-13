@@ -17,6 +17,14 @@ interface OAuthData {
   state?: string
 }
 
+interface OAuthExchangeData {
+  code: string
+  grant_type: string
+  client_id: string
+  redirect_uri: string
+  code_verifier?: string
+}
+
 function fixup(buf: string) {
   return buf.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
 }
@@ -88,12 +96,14 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
         token: string,
         redirectUri: string,
       ): Promise<string> {
-        const data = {
+        const data: OAuthExchangeData = {
           code: token,
           grant_type: 'authorization_code',
           client_id: self.clientId,
-          code_verifier: self.codeVerifierPKCE,
           redirect_uri: redirectUri,
+        }
+        if (self.needsPKCE) {
+          data.code_verifier = self.codeVerifierPKCE
         }
 
         const params = new URLSearchParams(Object.entries(data))
@@ -312,11 +322,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
               )
               resolve(token)
             } catch (err) {
-              reject(
-                new Error(
-                  `Token could not be refreshed. ${err}  Please reload the page.`,
-                ),
-              )
+              self.removeRefreshToken()
             }
           }
           this.addMessageChannel(resolve, reject)
