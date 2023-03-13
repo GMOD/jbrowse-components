@@ -13,6 +13,7 @@ const baseDir = path.join(__dirname, '..', '..', 'test', 'data')
 const simpleBam = path.join(baseDir, 'simple.bam')
 const simpleBai = path.join(baseDir, 'simple.bai')
 const simpleGff = path.join(baseDir, 'volvox.sort.gff3')
+const simplePaf = path.join(baseDir, 'volvox_inv_indels.paf')
 const simpleVcf = path.join(baseDir, 'volvox.filtered.vcf')
 const simpleGtf = path.join(baseDir, 'volvox.sorted.gtf')
 const simpleGffGz = path.join(baseDir, 'volvox.sort.gff3.gz')
@@ -609,6 +610,36 @@ describe('add-track', () => {
               indexType: 'CSI',
             },
           },
+        },
+      ])
+    })
+
+  setup
+    .do(initctx)
+    .command([
+      'add-track',
+      simplePaf,
+      '--assemblyNames',
+      'volvox_random_inv,volvox',
+      '--load',
+      'copy',
+    ])
+    .it('adds a paf file', async ctx => {
+      expect(fs.existsSync(ctxDir(ctx, 'volvox_inv_indels.paf'))).toBeTruthy()
+      expect(readConf(ctx).tracks).toEqual([
+        {
+          type: 'SyntenyTrack',
+          trackId: 'volvox_inv_indels',
+          name: 'volvox_inv_indels',
+          adapter: {
+            type: 'PAFAdapter',
+            pafLocation: {
+              uri: 'volvox_inv_indels.paf',
+              locationType: 'UriLocation',
+            },
+            assemblyNames: ['volvox_random_inv', 'volvox'],
+          },
+          assemblyNames: ['volvox_random_inv', 'volvox'],
         },
       ])
     })
