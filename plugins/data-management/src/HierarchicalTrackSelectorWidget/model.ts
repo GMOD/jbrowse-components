@@ -141,10 +141,10 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       view: types.safeReference(
         pluginManager.pluggableMstType('view', 'stateModel'),
       ),
+      filterText: '',
     })
     .volatile(() => ({
       selection: [] as AnyConfigurationModel[],
-      filterText: '',
     }))
     .actions(self => ({
       setSelection(elt: AnyConfigurationModel[]) {
