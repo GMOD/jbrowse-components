@@ -2,7 +2,6 @@ import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import { isElectron, UriLocation } from '@jbrowse/core/util'
 import { Instance, types } from 'mobx-state-tree'
-import jwtDecode, { JwtPayload } from 'jwt-decode'
 
 // locals
 import { OAuthInternetAccountConfigModel } from './configSchema'
@@ -329,27 +328,37 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           token: string,
           location: UriLocation,
         ): Promise<string> {
-          const decoded = jwtDecode<JwtPayload>(token)
-          if (decoded.exp && decoded.exp < Date.now() / 1000) {
+          const newInit = self.addAuthHeaderToInit({ method: 'HEAD' }, token)
+          const response = await fetch(location.uri, newInit)
+          if (!response.ok) {
+            self.removeToken()
             const refreshToken =
               self.hasRefreshToken && self.retrieveRefreshToken()
             if (refreshToken) {
               try {
-                if (!refreshTokenPromise) {
-                  refreshTokenPromise =
+                if (!exchangedTokenPromise) {
+                  exchangedTokenPromise =
                     self.exchangeRefreshForAccessToken(refreshToken)
                 }
-                const newToken = await refreshTokenPromise
-                return this.validateToken(newToken, location)
+                const newToken = await exchangedTokenPromise
+                exchangedTokenPromise = undefined
+                return newToken
               } catch (err) {
-                throw new Error(`Token could not be refreshed. ${err}`)
+                console.error('Token could not be refreshed', err)
+                // let original error be thrown
               }
             }
+            let errorMessage
+            try {
+              errorMessage = await response.text()
+            } catch (error) {
+              errorMessage = ''
+            }
             throw new Error(
-              `Token could not be refreshed. No refresh token found. Please reload the page.`,
+              `Error validating token — ${response.status} (${
+                response.statusText
+              })${errorMessage ? ` (${errorMessage})` : ''}`,
             )
-          } else {
-            refreshTokenPromise = undefined
           }
           return token
         },
