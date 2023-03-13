@@ -170,7 +170,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
     }))
     .actions(self => {
       let listener: (event: MessageEvent) => void
-      let refreshTokenPromise: Promise<string> | undefined = undefined
+      let exchangedTokenPromise: Promise<string> | undefined = undefined
       return {
         // used to listen to child window for auth code/token
         addMessageChannel(
