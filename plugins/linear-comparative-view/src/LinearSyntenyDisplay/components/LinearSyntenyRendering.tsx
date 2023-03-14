@@ -79,7 +79,7 @@ export default observer(function LinearSyntenyRendering({
           const [r2, g2, b2] = ctx2.getImageData(x, y, 1, 1).data
           const unitMultiplier = Math.floor(MAX_COLOR_RANGE / model.numFeats)
           const id = getId(r1, g1, b1, unitMultiplier)
-          model.setMouseoverId(id)
+          model.setMouseoverId(model.featPositions[id]?.f.id())
           if (id === -1) {
             setTooltip('')
           } else if (model.featPositions[id]) {
@@ -93,8 +93,13 @@ export default observer(function LinearSyntenyRendering({
               assemblyName: string
               identity?: number
               name?: string
+              mate: {
+                start: number
+                end: number
+                refName: string
+                name: string
+              }
             }
-            // @ts-expect-error
             const f2 = f1.mate
             const unitMultiplier2 = Math.floor(MAX_COLOR_RANGE / cigar.length)
             const cigarIdx = getId(r2, g2, b2, unitMultiplier2)
@@ -125,7 +130,7 @@ export default observer(function LinearSyntenyRendering({
             setTooltip(tooltip.join('<br/>'))
           }
         }}
-        onMouseLeave={() => model.setMouseoverId(-1)}
+        onMouseLeave={() => model.setMouseoverId(undefined)}
         onClick={event => {
           const ref1 = model.clickMapCanvas
           const ref2 = model.cigarClickMapCanvas
@@ -143,10 +148,13 @@ export default observer(function LinearSyntenyRendering({
           const [r1, g1, b1] = ctx1.getImageData(x, y, 1, 1).data
           const unitMultiplier = Math.floor(MAX_COLOR_RANGE / model.numFeats)
           const id = getId(r1, g1, b1, unitMultiplier)
-          model.setClickId(id)
           const f = model.featPositions[id]
+          if (!f) {
+            return
+          }
+          model.setClickId(f.f.id())
           const session = getSession(model)
-          if (f && isSessionModelWithWidgets(session)) {
+          if (isSessionModelWithWidgets(session)) {
             session.showWidget(
               session.addWidget('SyntenyFeatureWidget', 'syntenyFeature', {
                 featureData: {
@@ -184,7 +192,7 @@ export default observer(function LinearSyntenyRendering({
         width={width}
         height={height}
       />
-      {model.mouseoverId !== -1 && tooltip && currX && currY ? (
+      {model.mouseoverId && tooltip && currX && currY ? (
         <SyntenyTooltip x={currX} y={currY} title={tooltip} />
       ) : null}
     </div>
