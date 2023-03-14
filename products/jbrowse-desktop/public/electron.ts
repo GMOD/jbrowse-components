@@ -229,8 +229,6 @@ async function createWindow() {
     return { action: 'deny' }
   })
 
-  console.log(process.execPath)
-  console.log([path.resolve(process.argv[1])])
   if (process.defaultApp) {
     if (process.argv.length >= 2) {
       app.setAsDefaultProtocolClient('jbrowse', process.execPath, [path.resolve(process.argv[1])])
@@ -245,7 +243,6 @@ let deeplinkingUrl;
 app.on('open-url', function (event, url) {
   event.preventDefault()
   deeplinkingUrl = url
-  logEverywhere("open-url# " + deeplinkingUrl)
 })
 
   const isMac = process.platform === 'darwin'
@@ -639,14 +636,3 @@ autoUpdater.on('update-downloaded', () => {
     buttons: ['OK'],
   })
 })
-
-// Log both at dev console and at running node console instance
-function logEverywhere(s : string) {
-  console.log(s)
-  if (mainWindow && mainWindow.webContents) {
-      mainWindow.webContents.executeJavaScript(`console.log("${s}")`)
-  }
-}
-
-console.log(app.isDefaultProtocolClient('jbrowse', process.execPath, [path.resolve(process.argv[1])]))
-console.log(app.isDefaultProtocolClient('jbrowse')
