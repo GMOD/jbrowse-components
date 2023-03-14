@@ -234,12 +234,12 @@ export function drawMouseoverSynteny(model: LinearSyntenyDisplayModel) {
   ctx.resetTransform()
   ctx.scale(highResolutionScaling, highResolutionScaling)
   ctx.clearRect(0, 0, width, height)
-  if (mouseoverId !== -1 && model.features && model.features[mouseoverId]) {
-    const feature = model.featPositions[mouseoverId]
+  const feature1 = model.featMap[mouseoverId || '']
+  if (feature1) {
     ctx.fillStyle = 'rgb(0,0,0,0.1)'
     drawMatchSimple({
       cb: ctx => ctx.fill(),
-      feature,
+      feature: feature1,
       ctx,
       oobLimit,
       viewWidth: view.width,
@@ -248,14 +248,13 @@ export function drawMouseoverSynteny(model: LinearSyntenyDisplayModel) {
       height,
     })
   }
-
-  if (clickId !== -1 && model.features && model.featPositions[clickId]) {
-    const feature = model.featPositions[clickId]
+  const feature2 = model.featMap[clickId || '']
+  if (feature2) {
     ctx.strokeStyle = 'rgb(0, 0, 0, 0.9)'
 
     drawMatchSimple({
       cb: ctx => ctx.stroke(),
-      feature,
+      feature: feature2,
       ctx,
       oobLimit,
       viewWidth: view.width,
