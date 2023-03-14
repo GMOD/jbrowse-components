@@ -134,43 +134,6 @@ IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>
 vview: types.optional(DotplotVView, {})
 ```
 
-#### property: cursorMode
-
-```js
-// type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
-// code
-cursorMode: types.optional(
-          types.string,
-          () => localStorageGetItem('dotplot-cursorMode') || 'crosshair',
-        )
-```
-
-#### property: wheelMode
-
-```js
-// type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
-// code
-wheelMode: types.optional(
-          types.string,
-          () => localStorageGetItem('dotplot-wheelMode') || 'zoom',
-        )
-```
-
-#### property: showPanButtons
-
-```js
-// type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-showPanButtons: types.optional(types.boolean, () =>
-          Boolean(
-            JSON.parse(localStorageGetItem('dotplot-showPanbuttons') || 'true'),
-          ),
-        )
-```
-
 #### property: tracks
 
 ```js

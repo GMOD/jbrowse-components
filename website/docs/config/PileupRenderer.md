@@ -62,7 +62,7 @@ minSubfeatureWidth: {
       type: 'number',
       description:
         'the minimum width in px for a pileup mismatch feature. use for increasing/decreasing mismatch marker widths when zoomed out, e.g. 0 or 1',
-      defaultValue: 0.7,
+      defaultValue: 1,
     }
 ```
 
