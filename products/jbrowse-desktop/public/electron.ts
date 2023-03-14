@@ -649,3 +649,4 @@ function logEverywhere(s : string) {
 }
 
 console.log(app.isDefaultProtocolClient('jbrowse', process.execPath, [path.resolve(process.argv[1])]))
+console.log(app.isDefaultProtocolClient('jbrowse')

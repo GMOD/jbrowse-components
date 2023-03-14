@@ -133,7 +133,9 @@
         "github"
       ],
       "category": "public.app-category.utilities",
-      "artifactName": "jbrowse-desktop-v${version}-mac.${ext}"
+      "artifactName": "jbrowse-desktop-v${version}-mac.${ext}",
+      "target": "dmg",
+      "extendInfo": "jbrowse"
     },
     "files": [
       "build/**/*",
