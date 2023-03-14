@@ -239,6 +239,15 @@ async function createWindow() {
     app.setAsDefaultProtocolClient('jbrowse')
   }
 
+let deeplinkingUrl;
+
+// Protocol handler for osx
+app.on('open-url', function (event, url) {
+  event.preventDefault()
+  deeplinkingUrl = url
+  logEverywhere("open-url# " + deeplinkingUrl)
+})
+
   const isMac = process.platform === 'darwin'
 
   const mainMenu = Menu.buildFromTemplate([
@@ -630,5 +639,13 @@ autoUpdater.on('update-downloaded', () => {
     buttons: ['OK'],
   })
 })
+
+// Log both at dev console and at running node console instance
+function logEverywhere(s : string) {
+  console.log(s)
+  if (mainWindow && mainWindow.webContents) {
+      mainWindow.webContents.executeJavaScript(`console.log("${s}")`)
+  }
+}
 
 console.log(app.isDefaultProtocolClient('jbrowse', process.execPath, [path.resolve(process.argv[1])]))
