@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { contrastingTextColor } from '@jbrowse/core/util/color'
-import { Feature } from '@jbrowse/core/util'
-import { Region } from '@jbrowse/core/util/types'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 import {
+  Feature,
+  Region,
   bpSpanPx,
   revcom,
   complement,
@@ -15,9 +14,10 @@ import {
   defaultCodonTable,
   generateCodonTable,
 } from '@jbrowse/core/util'
+import { Theme } from '@mui/material'
 
 function Translation(props: {
-  codonTable: any
+  codonTable: Record<string, string>
   seq: string
   frame: number
   bpPerPx: number
@@ -25,7 +25,7 @@ function Translation(props: {
   reverse?: boolean
   height: number
   y: number
-  theme?: any
+  theme?: Theme
 }) {
   const {
     codonTable,
@@ -84,9 +84,9 @@ function Translation(props: {
               stroke={render ? '#555' : 'none'}
               fill={
                 defaultStarts.includes(codon)
-                  ? theme.palette.startCodon
+                  ? theme?.palette.startCodon
                   : defaultStops.includes(codon)
-                  ? theme.palette.stopCodon
+                  ? theme?.palette.stopCodon
                   : map[Math.abs(frame)]
               }
             />
@@ -257,7 +257,17 @@ const SequenceSVG = ({
   )
 }
 
-const Wrapper = ({ exportSVG, width, totalHeight, children }: any) => {
+const Wrapper = ({
+  exportSVG,
+  width,
+  totalHeight,
+  children,
+}: {
+  exportSVG?: { rasterizeLayers: boolean }
+  width: number
+  totalHeight: number
+  children: React.ReactNode
+}) => {
   return exportSVG ? (
     <>{children}</>
   ) : (
