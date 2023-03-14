@@ -102,7 +102,7 @@
     "webpack": "^5.72.0"
   },
   "devDependencies": {
-    "electron": "23.1.1"
+    "electron": "^23.1.1"
   },
   "browserslist": [
     "last 1 chrome version"
@@ -144,5 +144,13 @@
     },
     "afterSign": "scripts/notarize.js"
   },
-  "private": true
+  "private": true,
+  "protocols": [
+    {
+      "name": "jbrowse-deep-linking",
+      "schemes": [
+        "jbrowse"
+      ]
+    }
+  ]
 }

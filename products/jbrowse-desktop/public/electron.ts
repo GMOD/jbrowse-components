@@ -229,6 +229,16 @@ async function createWindow() {
     return { action: 'deny' }
   })
 
+  console.log(process.execPath)
+  console.log([path.resolve(process.argv[1])])
+  if (process.defaultApp) {
+    if (process.argv.length >= 2) {
+      app.setAsDefaultProtocolClient('jbrowse', process.execPath, [path.resolve(process.argv[1])])
+    }
+  } else {
+    app.setAsDefaultProtocolClient('jbrowse')
+  }
+
   const isMac = process.platform === 'darwin'
 
   const mainMenu = Menu.buildFromTemplate([
@@ -620,3 +630,5 @@ autoUpdater.on('update-downloaded', () => {
     buttons: ['OK'],
   })
 })
+
+console.log(app.isDefaultProtocolClient('jbrowse', process.execPath, [path.resolve(process.argv[1])]))
