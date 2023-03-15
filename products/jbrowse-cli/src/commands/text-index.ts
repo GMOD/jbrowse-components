@@ -7,6 +7,7 @@ import { flags } from '@oclif/command'
 // locals
 import { indexGff3 } from '../types/gff3Adapter'
 import { indexVcf } from '../types/vcfAdapter'
+import { indexGtf } from '../types/gtfAdapter'
 import JBrowseCommand, {
   Track,
   Config,
@@ -447,6 +448,8 @@ export default class TextIndex extends JBrowseCommand {
         loc = adapter.vcfLocation
       } else if (type === 'VcfTabixAdapter') {
         loc = adapter.vcfGzLocation
+      } else if (type === 'GtfAdapter') {
+        loc = adapter.gtfLocation
       }
       if (!loc) {
         return
@@ -469,7 +472,16 @@ export default class TextIndex extends JBrowseCommand {
           typesToExclude: indexingFeatureTypesToExclude,
           quiet,
         })
-      }
+      } else if (type === 'GtfAdapter') {
+        yield* indexGtf({
+          config,
+          attributesToIndex: indexingAttributes,
+          inLocation: getLoc(loc),
+          outLocation,
+          typesToExclude: indexingFeatureTypesToExclude,
+          quiet,
+        })
+      } 
     }
   }
 
