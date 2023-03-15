@@ -1,4 +1,5 @@
 import { types, addDisposer, Instance, SnapshotOut } from 'mobx-state-tree'
+import localForage from 'localforage'
 import { autorun } from 'mobx'
 import PluginManager from '@jbrowse/core/PluginManager'
 import PluginLoader, {
@@ -33,6 +34,10 @@ type Root = { configuration?: Config }
 // raw readConf alternative for before conf is initialized
 function readConf({ configuration }: Root, attr: string, def: string) {
   return configuration?.[attr] || def
+}
+
+async function localForageOrStorage(key: string) {
+  return (await localForage.getItem(key)) || localStorage.getItem(key)
 }
 
 async function fetchPlugins() {
@@ -367,10 +372,11 @@ const SessionLoader = types
       try {
         // rename the current autosave from previously loaded jbrowse session
         // into previousAutosave on load
-        const { configPath } = self
-        const lastAutosave = localStorage.getItem(`autosave-${configPath}`)
+        const { configPath: c } = self
+        const lastAutosave = await localForageOrStorage(`autosave-${c}`)
         if (lastAutosave) {
-          localStorage.setItem(`previousAutosave-${configPath}`, lastAutosave)
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          localForage.setItem(`previousAutosave-${c}`, lastAutosave)
         }
       } catch (e) {
         console.error('failed to create previousAutosave', e)

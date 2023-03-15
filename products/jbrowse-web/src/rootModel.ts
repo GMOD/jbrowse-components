@@ -1,4 +1,5 @@
 import { lazy } from 'react'
+import localForage from 'localforage'
 import {
   addDisposer,
   cast,
@@ -186,32 +187,37 @@ export default function RootModel(
             self.history.undo()
           }
         })
-
-        for (const [key, val] of Object.entries(localStorage)
-          .filter(([key, _val]) => key.startsWith('localSaved-'))
-          .filter(([key]) => key.includes(self.configPath || 'undefined'))) {
-          try {
-            const { session } = JSON.parse(val)
-            self.savedSessionsVolatile.set(key, session)
-          } catch (e) {
-            console.error('bad session encountered', key, val)
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        localForage.iterate((val, key) => {
+          if (
+            key.startsWith('localSaved-') &&
+            key.includes(self.configPath || 'undefined')
+          ) {
+            try {
+              // @ts-expect-error
+              const { session } = JSON.parse(val) || {}
+              self.savedSessionsVolatile.set(key, session)
+            } catch (e) {
+              console.error('bad session encountered', key, val)
+            }
           }
-        }
+        })
+
         addDisposer(
           self,
-          autorun(() => {
+          autorun(async () => {
             for (const [, val] of self.savedSessionsVolatile.entries()) {
-              try {
-                const key = self.localStorageId(val.name)
-                localStorage.setItem(key, JSON.stringify({ session: val }))
-              } catch (e) {
-                // @ts-expect-error
-                if (e.code === '22' || e.code === '1024') {
-                  alert(
-                    'Local storage is full! Please use the "Open sessions" panel to remove old sessions',
-                  )
-                }
-              }
+              const key = self.localStorageId(val.name)
+              localForage
+                .setItem(key, JSON.stringify({ session: val }))
+                .catch(e => {
+                  console.error(e)
+                  if (e.code === '22' || e.code === '1024') {
+                    alert(
+                      'Local storage is full! Please use the "Open sessions" panel to remove old sessions',
+                    )
+                  }
+                })
             }
           }),
         )
@@ -231,7 +237,7 @@ export default function RootModel(
         addDisposer(
           self,
           autorun(
-            () => {
+            async () => {
               if (self.session) {
                 const noSession = { name: 'empty' }
                 const snapshot = getSnapshot(self.session) || noSession
@@ -240,7 +246,7 @@ export default function RootModel(
                   JSON.stringify({ session: snapshot }),
                 )
 
-                localStorage.setItem(
+                await localForage.setItem(
                   `autosave-${self.configPath}`,
                   JSON.stringify({
                     session: {

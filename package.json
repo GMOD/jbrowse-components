@@ -74,6 +74,7 @@
     "@types/jexl": "^2.3.0",
     "@types/json-parse-better-errors": "^1.0.0",
     "@types/json-stable-stringify": "^1.0.32",
+    "@types/localforage": "^0.0.34",
     "@types/lodash.merge": "^4.6.6",
     "@types/long": "^4.0.0",
     "@types/node": "^14.14.0",
