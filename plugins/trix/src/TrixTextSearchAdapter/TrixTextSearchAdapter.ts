@@ -56,8 +56,8 @@ export default class TrixTextSearchAdapter
       throw new Error('must provide out.ixx')
     }
     this.trixJs = new Trix(
-      openLocation(ixxFilePath),
-      openLocation(ixFilePath),
+      openLocation(ixxFilePath, pluginManager),
+      openLocation(ixFilePath, pluginManager),
       1500,
     )
   }
