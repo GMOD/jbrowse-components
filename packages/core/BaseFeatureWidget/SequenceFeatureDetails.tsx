@@ -41,9 +41,7 @@ const useStyles = makeStyles()(theme => ({
   formControl: {
     margin: 0,
   },
-  container: {
-    margin: theme.spacing(1),
-  },
+
   container2: {
     marginTop: theme.spacing(1),
   },
@@ -56,13 +54,10 @@ const BPLIMIT = 500_000
 // to not be 100% accurate
 export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
   const { classes } = useStyles()
-  const parentFeature = feature as unknown as ParentFeat
-  const hasCDS = !!parentFeature.subfeatures?.find(sub => sub.type === 'CDS')
-  const isGene = feature.type === 'gene'
   const [shown, setShown] = useState(false)
   const [helpShown, setHelpShown] = useState(false)
 
-  return (isGene && !hasCDS) || !model ? null : (
+  return !model ? null : (
     <div className={classes.container2}>
       <Button variant="contained" onClick={() => setShown(!shown)}>
         {shown ? 'Hide feature sequence' : 'Show feature sequence'}
@@ -181,7 +176,7 @@ function FeatureSequence({ model, feature }: BaseProps) {
   const attemptGeneType =
     feature.type === 'CDS'
       ? sequenceTypes.includes('CDS') && !feature.parentId
-      : sequenceTypes.includes(feature.type)
+      : sequenceTypes.includes(feature.type) && feature.subfeatures?.length
   const val = attemptGeneType ? (hasCDS ? 'cds' : 'cdna') : 'genomic'
 
   // this useEffect is needed to reset the mode/setMode useState because the
