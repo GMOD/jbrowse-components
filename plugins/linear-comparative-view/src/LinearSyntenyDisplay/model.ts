@@ -199,9 +199,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             if (!view.initialized) {
               return
             }
-            if (self.mouseoverId || self.clickId) {
-              drawMouseoverSynteny(self)
-            }
+            drawMouseoverSynteny(self)
           }),
         )
 
