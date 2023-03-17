@@ -481,7 +481,7 @@ export default class TextIndex extends JBrowseCommand {
           typesToExclude: indexingFeatureTypesToExclude,
           quiet,
         })
-      } 
+      }
     }
   }
 

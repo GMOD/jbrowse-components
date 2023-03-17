@@ -1,0 +1,18 @@
+{
+  "dateCreated": "2023-03-17T06:19:17.756Z",
+  "tracks": [
+    {
+      "trackId": "test_gtf_indexing.gtf",
+      "attributesIndexed": ["Name", "ID"],
+      "excludedTypes": ["CDS", "exon"],
+      "adapterConf": {
+        "type": "GtfAdapter",
+        "gtfLocation": {
+          "uri": "/home/rajatpartani/Desktop/jbrowse/jbrowse-components/products/jbrowse-cli/test/data/test_gtf_indexing.gtf",
+          "locationType": "UriLocation"
+        }
+      }
+    }
+  ],
+  "assemblyNames": []
+}

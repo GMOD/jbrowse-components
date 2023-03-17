@@ -73,7 +73,11 @@ export async function* indexGtf({
           .map(f => f.split(' '))
           .map(([key, val]) => [
             key.trim(),
-            decodeURIComponent(val).trim().replaceAll('\"','').split(',').join(' '),
+            decodeURIComponent(val)
+              .trim()
+              .replaceAll('"', '')
+              .split(',')
+              .join(' '),
           ]),
       )
       const attrs = attributesToIndex
