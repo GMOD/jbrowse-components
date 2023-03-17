@@ -12,6 +12,7 @@ export default (pluginManager: PluginManager) => {
     return new DisplayType({
       name: 'LinearBareDisplay',
       configSchema,
+      displayName: 'Bare feature display',
       stateModel: stateModelFactory(configSchema),
       trackType: 'BasicTrack',
       viewType: 'LinearGenomeView',

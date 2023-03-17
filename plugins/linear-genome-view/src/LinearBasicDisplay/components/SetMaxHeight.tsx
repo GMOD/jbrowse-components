@@ -10,15 +10,11 @@ import {
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()({
   root: {
     width: 500,
   },
-
-  field: {
-    margin: theme.spacing(2),
-  },
-}))
+})
 
 function SetMaxHeightDlg({
   model,
@@ -26,7 +22,7 @@ function SetMaxHeightDlg({
 }: {
   model: {
     maxHeight?: number
-    setMaxHeight: Function
+    setMaxHeight: (arg?: number) => void
   }
   handleClose: () => void
 }) {
