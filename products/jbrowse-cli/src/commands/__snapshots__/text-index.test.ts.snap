@@ -274,7 +274,7 @@ seg15 ["ctgA%3A39265..39361"|"volvox.sort.gff3.gz"|"seg15"],1 ["ctgA%3A39753..40
 "
 `;
 
-exports[`text-index with multiple per-files Indexes with multiple per-file args 3`] = `13210`;
+exports[`text-index with multiple per-files Indexes with multiple per-file args 3`] = `13274`;
 
 exports[`text-index with multiple per-files Indexes with multiple per-file args 4`] = `
 "agt220000000000
@@ -296,7 +296,7 @@ seg15 ["ctgA%3A39265..39361"|"volvox.sort.gff3.gz"|"seg15"],1 ["ctgA%3A39753..40
 "
 `;
 
-exports[`text-index with single per-file Indexes with  single per-file arg 3`] = `13210`;
+exports[`text-index with single per-file Indexes with  single per-file arg 3`] = `13274`;
 
 exports[`text-index with single per-file Indexes with  single per-file arg 4`] = `
 "agt220000000000

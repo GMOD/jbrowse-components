@@ -2074,7 +2074,6 @@
       },
       "assemblyNames": ["volvox"]
     },
-
     {
       "type": "SyntenyTrack",
       "trackId": "volvox_inv_indels",
