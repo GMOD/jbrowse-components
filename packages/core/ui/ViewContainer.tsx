@@ -3,7 +3,7 @@ import { IconButton, Paper, Tooltip, useTheme } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
-import useMeasure from 'react-use-measure'
+import useMeasure from '@jbrowse/core/util/useMeasure'
 
 // icons
 import CloseIcon from '@mui/icons-material/Close'
@@ -46,7 +46,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const ViewContainer = observer(function ({
+export default observer(function ({
   view,
   onClose,
   onMinimize,
@@ -124,5 +124,3 @@ const ViewContainer = observer(function ({
     </Paper>
   )
 })
-
-export default ViewContainer
