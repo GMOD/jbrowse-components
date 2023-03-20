@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
+import { ThemeOptions } from '@mui/material'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getConf } from '@jbrowse/core/configuration'
 import { MenuItem } from '@jbrowse/core/ui'
@@ -19,10 +20,7 @@ import { Stats } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import { Region } from '@jbrowse/core/util/types'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
-import {
-  getParentRenderProps,
-  getRpcSessionId,
-} from '@jbrowse/core/util/tracks'
+import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { autorun } from 'mobx'
 import { addDisposer, isAlive, types, Instance } from 'mobx-state-tree'
 
@@ -34,7 +32,7 @@ import { LinearGenomeViewModel, ExportSvgOptions } from '../../LinearGenomeView'
 import { Tooltip } from '../components/BaseLinearDisplay'
 import TooLargeMessage from '../components/TooLargeMessage'
 import BlockState, { renderBlockData } from './serverSideRenderedBlock'
-import { ThemeOptions } from '@mui/material'
+import { getId, getDisplayStr, estimateRegionsStatsPre } from './util'
 
 type LGV = LinearGenomeViewModel
 
@@ -46,25 +44,7 @@ export interface Layout {
   name: string
 }
 
-// stabilize clipid under test for snapshot
-function getId(id: string, index: number) {
-  const isJest = typeof jest === 'undefined'
-  return `clip-${isJest ? id : 'jest'}-${index}`
-}
-
 type LayoutRecord = [number, number, number, number]
-
-function getDisplayStr(totalBytes: number) {
-  let displayBp
-  if (Math.floor(totalBytes / 1000000) > 0) {
-    displayBp = `${Number.parseFloat((totalBytes / 1000000).toPrecision(3))} Mb`
-  } else if (Math.floor(totalBytes / 1000) > 0) {
-    displayBp = `${Number.parseFloat((totalBytes / 1000).toPrecision(3))} Kb`
-  } else {
-    displayBp = `${Math.floor(totalBytes)} bytes`
-  }
-  return displayBp
-}
 
 const minDisplayHeight = 20
 
@@ -109,8 +89,8 @@ function stateModelFactory() {
       message: '',
       featureIdUnderMouse: undefined as undefined | string,
       contextMenuFeature: undefined as undefined | Feature,
-      estimatedRegionStatsP: undefined as undefined | Promise<Stats>,
-      estimatedRegionStats: undefined as undefined | Stats,
+      estimatedRegionsStatsP: undefined as undefined | Promise<Stats>,
+      estimatedRegionsStats: undefined as undefined | Stats,
     }))
     .views(self => ({
       get height() {
@@ -184,7 +164,7 @@ function stateModelFactory() {
       get features() {
         const featureMaps = []
         for (const block of self.blockState.values()) {
-          if (block && block.features) {
+          if (block?.features) {
             featureMaps.push(block.features)
           }
         }
@@ -202,7 +182,11 @@ function stateModelFactory() {
       /**
        * #getter
        */
-      getFeatureOverlapping(blockKey: string, x: number, y: number) {
+      getFeatureOverlapping(
+        blockKey: string,
+        x: number,
+        y: number,
+      ): string | undefined {
         return self.blockState.get(blockKey)?.layout?.getByCoord(x, y)
       },
 
@@ -231,7 +215,7 @@ function stateModelFactory() {
        * #getter
        */
       get currentBytesRequested() {
-        return self.estimatedRegionStats?.bytes || 0
+        return self.estimatedRegionsStats?.bytes || 0
       },
 
       /**
@@ -239,7 +223,7 @@ function stateModelFactory() {
        */
       get currentFeatureScreenDensity() {
         const view = getContainingView(self) as LGV
-        return (self.estimatedRegionStats?.featureDensity || 0) * view.bpPerPx
+        return (self.estimatedRegionsStats?.featureDensity || 0) * view.bpPerPx
       },
 
       /**
@@ -252,7 +236,7 @@ function stateModelFactory() {
        * #getter
        */
       get estimatedStatsReady() {
-        return !!self.estimatedRegionStats
+        return !!self.estimatedRegionsStats || !!self.userBpPerPxLimit
       },
 
       /**
@@ -261,7 +245,7 @@ function stateModelFactory() {
       get maxAllowableBytes() {
         return (
           self.userByteSizeLimit ||
-          self.estimatedRegionStats?.fetchSizeLimit ||
+          self.estimatedRegionsStats?.fetchSizeLimit ||
           (getConf(self, 'fetchSizeLimit') as number)
         )
       },
@@ -273,95 +257,68 @@ function stateModelFactory() {
       setMessage(message: string) {
         self.message = message
       },
-
+    }))
+    .actions(self => ({
       afterAttach() {
         // watch the parent's blocks to update our block state when they change,
         // then we recreate the blocks on our own model (creating and deleting to
         // match the parent blocks)
-        const blockWatchDisposer = autorun(() => {
-          const blocksPresent: { [key: string]: boolean } = {}
-          const view = getContainingView(self) as LGV
-          if (view.initialized) {
-            self.blockDefinitions.contentBlocks.forEach(block => {
-              blocksPresent[block.key] = true
-              if (!self.blockState.has(block.key)) {
-                this.addBlock(block.key, block)
-              }
-            })
-            self.blockState.forEach((_, key) => {
-              if (!blocksPresent[key]) {
-                this.deleteBlock(key)
-              }
-            })
-          }
-        })
-
-        addDisposer(self, blockWatchDisposer)
-      },
-
-      /**
-       * #action
-       */
-      estimateRegionsStats(
-        regions: Region[],
-        opts: {
-          headers?: Record<string, string>
-          signal?: AbortSignal
-          filters?: string[]
-        },
-      ) {
-        if (self.estimatedRegionStatsP) {
-          return self.estimatedRegionStatsP
-        }
-
-        const { rpcManager } = getSession(self)
-        const { adapterConfig } = self
-        if (!adapterConfig) {
-          // A track extending the base track might not have an adapter config
-          // e.g. Apollo tracks don't use adapters
-          return Promise.resolve({})
-        }
-        const sessionId = getRpcSessionId(self)
-
-        const params = {
-          sessionId,
-          regions,
-          adapterConfig,
-          statusCallback: (message: string) => {
-            if (isAlive(self)) {
-              this.setMessage(message)
+        addDisposer(
+          self,
+          autorun(() => {
+            const blocksPresent: { [key: string]: boolean } = {}
+            const view = getContainingView(self) as LGV
+            if (view.initialized) {
+              self.blockDefinitions.contentBlocks.forEach(block => {
+                blocksPresent[block.key] = true
+                if (!self.blockState.has(block.key)) {
+                  this.addBlock(block.key, block)
+                }
+              })
+              self.blockState.forEach((_, key) => {
+                if (!blocksPresent[key]) {
+                  this.deleteBlock(key)
+                }
+              })
             }
-          },
-          ...opts,
+          }),
+        )
+      },
+
+      /**
+       * #action
+       */
+      async estimateRegionsStats() {
+        if (!self.estimatedRegionsStatsP) {
+          self.estimatedRegionsStatsP = estimateRegionsStatsPre(self).catch(
+            e => {
+              this.setRegionsStatsP(undefined)
+              throw e
+            },
+          )
         }
+        return self.estimatedRegionsStatsP
+      },
 
-        self.estimatedRegionStatsP = rpcManager
-          .call(sessionId, 'CoreEstimateRegionStats', params)
-          .catch(e => {
-            this.setRegionStatsP(undefined)
-            throw e
-          }) as Promise<Stats>
+      /**
+       * #action
+       */
+      setRegionsStatsP(arg: any) {
+        self.estimatedRegionsStatsP = arg
+      },
 
-        return self.estimatedRegionStatsP
+      /**
+       * #action
+       */
+      setRegionsStats(estimatedRegionsStats?: Stats) {
+        self.estimatedRegionsStats = estimatedRegionsStats
       },
       /**
        * #action
        */
-      setRegionStatsP(p?: Promise<Stats>) {
-        self.estimatedRegionStatsP = p
-      },
-      /**
-       * #action
-       */
-      setRegionStats(estimatedRegionStats?: Stats) {
-        self.estimatedRegionStats = estimatedRegionStats
-      },
-      /**
-       * #action
-       */
-      clearRegionStats() {
-        self.estimatedRegionStatsP = undefined
-        self.estimatedRegionStats = undefined
+      clearRegionsStats() {
+        self.estimatedRegionsStatsP = undefined
+        self.estimatedRegionsStats = undefined
       },
       /**
        * #action
@@ -390,9 +347,9 @@ function stateModelFactory() {
       /**
        * #action
        */
-      updateStatsLimit(stats: Stats) {
+      updateStatsLimit(stats?: Stats) {
         const view = getContainingView(self) as LGV
-        if (stats.bytes) {
+        if (stats?.bytes) {
           self.userByteSizeLimit = stats.bytes
         } else {
           self.userBpPerPxLimit = view.bpPerPx
@@ -484,13 +441,11 @@ function stateModelFactory() {
         if (!self.estimatedStatsReady || view.dynamicBlocks.totalBp < 20_000) {
           return false
         }
-        const bpLimitOrDensity = self.userBpPerPxLimit
-          ? view.bpPerPx > self.userBpPerPxLimit
-          : self.currentFeatureScreenDensity > self.maxFeatureScreenDensity
-
         return (
           self.currentBytesRequested > self.maxAllowableBytes ||
-          bpLimitOrDensity
+          (self.userBpPerPxLimit
+            ? view.bpPerPx > self.userBpPerPxLimit
+            : self.currentFeatureScreenDensity > self.maxFeatureScreenDensity)
         )
       },
 
@@ -517,7 +472,6 @@ function stateModelFactory() {
          */
         async reload() {
           self.setError()
-          const aborter = new AbortController()
           const view = getContainingView(self) as LGV
 
           // extra check for contentBlocks.length
@@ -527,84 +481,70 @@ function stateModelFactory() {
           }
 
           try {
-            self.estimatedRegionStatsP = self.estimateRegionsStats(
-              view.staticBlocks.contentBlocks,
-              { signal: aborter.signal },
-            )
-            const estimatedRegionStats = await self.estimatedRegionStatsP
+            const estimatedRegionsStats = await self.estimateRegionsStats()
 
             if (isAlive(self)) {
-              self.setRegionStats(estimatedRegionStats)
+              self.setRegionsStats(estimatedRegionsStats)
               superReload()
-            } else {
-              return
             }
           } catch (e) {
             console.error(e)
             self.setError(e)
           }
         },
-        afterAttach() {
-          // this autorun performs stats estimation
-          //
-          // the chain of events calls estimateRegionsStats against the data
-          // adapter which by default uses featureDensity, but can also respond
-          // with a byte size estimate and fetch size limit (data adapter can
-          // define what is too much data)
-          addDisposer(
-            self,
-            autorun(
-              async () => {
-                try {
-                  const aborter = new AbortController()
-                  const view = getContainingView(self) as LGV
-
-                  // extra check for contentBlocks.length
-                  // https://github.com/GMOD/jbrowse-components/issues/2694
-                  if (
-                    !view.initialized ||
-                    !view.staticBlocks.contentBlocks.length
-                  ) {
-                    return
-                  }
-
-                  // don't re-estimate featureDensity even if zoom level changes,
-                  // jbrowse1-style assume it's sort of representative
-                  if (self.estimatedRegionStats?.featureDensity !== undefined) {
-                    self.setCurrBpPerPx(view.bpPerPx)
-                    return
-                  }
-
-                  // we estimate stats once at a given zoom level
-                  if (view.bpPerPx === self.currBpPerPx) {
-                    return
-                  }
-
-                  self.clearRegionStats()
-                  self.setCurrBpPerPx(view.bpPerPx)
-                  const statsP = self.estimateRegionsStats(
-                    view.staticBlocks.contentBlocks,
-                    { signal: aborter.signal },
-                  )
-                  self.setRegionStatsP(statsP)
-                  const estimatedRegionStats = await statsP
-
-                  if (isAlive(self)) {
-                    self.setRegionStats(estimatedRegionStats)
-                  }
-                } catch (e) {
-                  if (!isAbortException(e) && isAlive(self)) {
-                    console.error(e)
-                    self.setError(e)
-                  }
-                }
-              },
-              { delay: 500 },
-            ),
-          )
-        },
       }
     })
+    .actions(self => ({
+      afterAttach() {
+        // this autorun performs stats estimation
+        //
+        // the chain of events calls estimateRegionsStats against the data
+        // adapter which by default uses featureDensity, but can also respond
+        // with a byte size estimate and fetch size limit (data adapter can
+        // define what is too much data)
+        addDisposer(
+          self,
+          autorun(async () => {
+            try {
+              const view = getContainingView(self) as LGV
+
+              // extra check for contentBlocks.length
+              // https://github.com/GMOD/jbrowse-components/issues/2694
+              if (
+                !view.initialized ||
+                !view.staticBlocks.contentBlocks.length
+              ) {
+                return
+              }
+
+              // don't re-estimate featureDensity even if zoom level changes,
+              // jbrowse1-style assume it's sort of representative
+              if (self.estimatedRegionsStats?.featureDensity !== undefined) {
+                self.setCurrBpPerPx(view.bpPerPx)
+                return
+              }
+
+              // we estimate stats once at a given zoom level
+              if (view.bpPerPx === self.currBpPerPx) {
+                return
+              }
+
+              self.clearRegionsStats()
+              self.setCurrBpPerPx(view.bpPerPx)
+              const estimatedRegionsStats = await self.estimateRegionsStats()
+              if (isAlive(self)) {
+                self.setRegionsStats(estimatedRegionsStats)
+              }
+            } catch (e) {
+              if (!isAbortException(e) && isAlive(self)) {
+                console.error(e)
+                self.setError(e)
+              }
+            }
+          }),
+        )
+      },
+    }))
     .views(self => ({
       /**
        * #method
@@ -622,8 +562,7 @@ function stateModelFactory() {
        *  react node allows user to force load at current setting
        */
       regionCannotBeRendered(_region: Region) {
-        const { regionTooLarge } = self
-        return regionTooLarge ? <TooLargeMessage model={self} /> : null
+        return self.regionTooLarge ? <TooLargeMessage model={self} /> : null
       },
 
       /**
@@ -636,20 +575,22 @@ function stateModelFactory() {
       /**
        * #method
        */
-      contextMenuItems() {
-        return self.contextMenuFeature
-          ? [
-              {
-                label: 'Open feature details',
-                icon: MenuOpenIcon,
-                onClick: () => {
-                  if (self.contextMenuFeature) {
-                    self.selectFeature(self.contextMenuFeature)
-                  }
+      contextMenuItems(): MenuItem[] {
+        return [
+          ...(self.contextMenuFeature
+            ? [
+                {
+                  label: 'Open feature details',
+                  icon: MenuOpenIcon,
+                  onClick: () => {
+                    if (self.contextMenuFeature) {
+                      self.selectFeature(self.contextMenuFeature)
+                    }
+                  },
                 },
-              },
-            ]
-          : []
+              ]
+            : []),
+        ]
       },
       /**
        * #method
@@ -659,7 +600,7 @@ function stateModelFactory() {
         return {
           ...getParentRenderProps(self),
           notReady:
-            self.currBpPerPx !== view.bpPerPx || !self.estimatedRegionStats,
+            self.currBpPerPx !== view.bpPerPx || !self.estimatedRegionsStats,
           rpcDriverName: self.rpcDriverName,
           displayModel: self,
           onFeatureClick(_: unknown, featureId?: string) {
