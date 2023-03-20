@@ -327,8 +327,8 @@ export function getModificationPositions(
 }
 
 export function getModificationTypes(mm: string) {
-  const mods = mm.split(';')
-  return mods
+  return mm
+    .split(';')
     .filter(mod => !!mod)
     .flatMap(mod => {
       const [basemod] = mod.split(',')

@@ -48,22 +48,9 @@ export function getPluginManager(initialState?: any, adminMode = true) {
     },
     { pluginManager },
   )
-  // @ts-expect-error
-  if (rootModel && rootModel.jbrowse.defaultSession.length > 0) {
-    const { name } = rootModel.jbrowse.defaultSession
-    localStorage.setItem(
-      `localSaved-1`,
-      JSON.stringify({ session: rootModel.jbrowse.defaultSession }),
-    )
-    rootModel.activateSession(name)
-  } else {
-    rootModel.setDefaultSession()
-  }
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  rootModel.session!.views.map(view => view.setWidth(800))
+  rootModel.setDefaultSession()
   pluginManager.setRootModel(rootModel)
-
   pluginManager.configure()
   return pluginManager
 }

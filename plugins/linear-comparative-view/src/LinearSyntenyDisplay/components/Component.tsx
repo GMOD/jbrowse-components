@@ -18,11 +18,11 @@ const useStyles = makeStyles()(theme => {
     },
     blockMessage: {
       background: '#f1f1f1',
-      padding: '10px',
+      padding: 10,
     },
     blockError: {
       background: '#f1f1f1',
-      padding: '10px',
+      padding: 10,
       color: 'red',
     },
   }

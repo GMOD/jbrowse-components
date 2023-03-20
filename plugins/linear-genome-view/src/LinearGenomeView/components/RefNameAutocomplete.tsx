@@ -30,13 +30,12 @@ export interface Option {
 function aggregateResults(results: BaseResult[]) {
   const m: { [key: string]: BaseResult[] } = {}
 
-  for (let i = 0; i < results.length; i++) {
-    const r = results[i]
-    const d = r.getDisplayString()
-    if (!m[d]) {
-      m[d] = []
+  for (const result of results) {
+    const displayString = result.getDisplayString()
+    if (!m[displayString]) {
+      m[displayString] = []
     }
-    m[d].push(r)
+    m[displayString].push(result)
   }
   return m
 }
@@ -63,13 +62,11 @@ function getDeduplicatedResult(results: BaseResult[]) {
 // because they do not have a matchedObject. the trix search results already
 // filter so don't need re-filtering
 function filterOptions(options: Option[], searchQuery: string) {
-  return options.filter(option => {
-    const { result } = option
-    return (
+  return options.filter(
+    ({ result }) =>
       result.getLabel().toLowerCase().includes(searchQuery) ||
-      result.matchedObject
-    )
-  })
+      result.matchedObject,
+  )
 }
 
 function RefNameAutocomplete({
@@ -109,18 +106,17 @@ function RefNameAutocomplete({
   const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
   const { coarseVisibleLocStrings, hasDisplayedRegions } = model
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const regions = assembly?.regions || []
+  const regions = assembly?.regions
 
   const options = useMemo(
     () =>
-      regions.map(option => ({
+      regions?.map(option => ({
         result: new RefSequenceResult({
           refName: option.refName,
           label: option.refName,
           matchedAttribute: 'refName',
         }),
-      })),
+      })) || [],
     [regions],
   )
 
@@ -157,8 +153,10 @@ function RefNameAutocomplete({
 
   // heuristic, text width + icon width + 50 accommodates help icon and search
   // icon
-  const w = measureText(inputBoxVal, 16) + 50
-  const width = Math.min(Math.max(w, minWidth), maxWidth)
+  const width = Math.min(
+    Math.max(measureText(inputBoxVal, 16) + 50, minWidth),
+    maxWidth,
+  )
 
   // notes on implementation:
   // The selectOnFocus setting helps highlight the field when clicked

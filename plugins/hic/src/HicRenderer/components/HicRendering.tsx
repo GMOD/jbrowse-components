@@ -3,7 +3,7 @@ import { Region } from '@jbrowse/core/util/types'
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 
-function HicRendering(props: {
+export default observer(function HicRendering(props: {
   blockKey: string
   width: number
   height: number
@@ -21,6 +21,4 @@ function HicRendering(props: {
       />
     </div>
   )
-}
-
-export default observer(HicRendering)
+})
