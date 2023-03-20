@@ -28,13 +28,11 @@ function addRelativeUris(config: Config, base: URL) {
   }
 }
 
+type Root = { configuration?: Config }
+
 // raw readConf alternative for before conf is initialized
-function readConf(
-  { configuration = {} }: { configuration?: Config },
-  attr: string,
-  def: string,
-) {
-  return configuration[attr] || def
+function readConf({ configuration }: Root, attr: string, def: string) {
+  return configuration?.[attr] || def
 }
 
 async function fetchPlugins() {

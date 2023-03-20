@@ -806,7 +806,6 @@ export default class PileupRenderer extends BoxRendererType {
     canvasWidth,
     drawSNPsMuted,
     drawIndels = true,
-    theme,
   }: {
     ctx: CanvasRenderingContext2D
     feat: LayoutFeature
