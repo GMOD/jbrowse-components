@@ -2947,11 +2947,6 @@
     npmlog "^6.0.2"
     write-file-atomic "^4.0.1"
 
-"@librpc/ee@1.0.4":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@librpc/ee/-/ee-1.0.4.tgz#ce73a36279dc4cf93efa43f7e3564ec165947522"
-  integrity sha512-vhPlbRwAKQC80h0k74tsOkMKIidZtqlFSOHRzCvC8n7Va9rzMDwpG26Pm84dAt0ZuGK0g1UEfPzxDiYo9ZQBrg==
-
 "@malept/cross-spawn-promise@^1.1.0":
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/@malept/cross-spawn-promise/-/cross-spawn-promise-1.1.1.tgz#504af200af6b98e198bce768bc1730c6936ae01d"
@@ -7651,6 +7646,11 @@ combined-stream@^1.0.8:
   integrity sha512-FQN4MRfuJeHf7cBbBMJFXhKSDq+2kAArBlmRBvcvFE5BB1HZKXtSFASDhdlz9zOYwxh8lDdnvmMOe/+5cdoEdg==
   dependencies:
     delayed-stream "~1.0.0"
+
+comlink@^4.0.0:
+  version "4.4.1"
+  resolved "https://registry.yarnpkg.com/comlink/-/comlink-4.4.1.tgz#e568b8e86410b809e8600eb2cf40c189371ef981"
+  integrity sha512-+1dlx0aY5Jo1vHy/tSsIGpSkN4tS9rZSW8FIhG0JH/crs9wwweswIo/POr451r7bZww3hFbPAKnTpimzL/mm4Q==
 
 commander@2.9.0:
   version "2.9.0"
@@ -13178,14 +13178,6 @@ libnpmpublish@^6.0.4:
     semver "^7.3.7"
     ssri "^9.0.0"
 
-librpc-web-mod@^1.1.5:
-  version "1.1.6"
-  resolved "https://registry.yarnpkg.com/librpc-web-mod/-/librpc-web-mod-1.1.6.tgz#40cc6cedd7391f393654d36e5708b5ebfe8aff2f"
-  integrity sha512-QXOEKbUdv/rzO0GBS1cBmRi19UobTsFJoySUYbPKpP32J/tjiGEm2DFgGFDW0E1254r48kc9sXm8kbldn833yQ==
-  dependencies:
-    "@librpc/ee" "1.0.4"
-    serialize-error "^8.1.0"
-
 lilconfig@^2.0.3, lilconfig@^2.0.5, lilconfig@^2.0.6:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/lilconfig/-/lilconfig-2.1.0.tgz#78e23ac89ebb7e1bfbf25b18043de756548e7f52"
@@ -16994,7 +16986,7 @@ serialize-error@^7.0.1:
   dependencies:
     type-fest "^0.13.1"
 
-serialize-error@^8.0.0, serialize-error@^8.1.0:
+serialize-error@^8.0.0:
   version "8.1.0"
   resolved "https://registry.yarnpkg.com/serialize-error/-/serialize-error-8.1.0.tgz#3a069970c712f78634942ddd50fbbc0eaebe2f67"
   integrity sha512-3NnuWfM6vBYoy5gZFvHiYsVbafvI9vZv/+jlIigFn4oP4zjNPK3LhcY0xSCgeb1a5L8jO71Mit9LlNoi2UfDDQ==

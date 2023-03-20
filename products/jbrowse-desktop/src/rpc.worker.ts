@@ -2,13 +2,11 @@
 import './workerPolyfill'
 
 // @ts-ignore needs to stay because otherwise fails during build time
-import RpcServer from 'librpc-web-mod'
 import { enableStaticRendering } from 'mobx-react'
-
 import PluginManager from '@jbrowse/core/PluginManager'
-import { remoteAbortRpcHandler } from '@jbrowse/core/rpc/remoteAbortSignals'
 import PluginLoader, { PluginDefinition } from '@jbrowse/core/PluginLoader'
-import { serializeError } from 'serialize-error'
+import { remoteAbort } from '@jbrowse/core/rpc/remoteAbortSignals'
+import * as Comlink from 'comlink'
 
 // locals
 import corePlugins from './corePlugins'
@@ -22,85 +20,42 @@ interface WorkerConfiguration {
   windowHref: string
 }
 
-// waits for a message from the main thread containing our configuration, which
-// must be sent on boot
-function receiveConfiguration() {
-  const configurationP: Promise<WorkerConfiguration> = new Promise(resolve => {
-    function listener(event: MessageEvent) {
-      if (event.data.message === 'config') {
-        resolve(event.data.config as WorkerConfiguration)
-        removeEventListener('message', listener)
-      }
+let rpcConfig: Record<string, Function>
+Comlink.expose({
+  call(name: string, args: Record<string, unknown>, statusCallback: Function) {
+    if (name === 'ping') {
+      return
+    } else if (name === 'signalAbort') {
+      remoteAbort(args as { signalId: number })
+    } else if (!rpcConfig) {
+      throw new Error('uninitialized')
+    } else if (!rpcConfig[name]) {
+      throw new Error(`unknown function ${name}`)
+    } else {
+      return rpcConfig[name]({ ...args, statusCallback })
     }
-    self.addEventListener('message', listener)
-  })
-  postMessage({ message: 'readyForConfig' })
-  return configurationP
-}
+  },
 
-async function getPluginManager() {
-  // Load runtime plugins
-  const config = await receiveConfiguration()
-  const pluginLoader = new PluginLoader(config.plugins, {
-    fetchESM: url => import(/* webpackIgnore:true */ url),
-  })
-  pluginLoader.installGlobalReExports(self)
-  const runtimePlugins = await pluginLoader.load(config.windowHref)
-  const plugins = [...corePlugins.map(p => ({ plugin: p })), ...runtimePlugins]
-  const pluginManager = new PluginManager(plugins.map(P => new P.plugin()))
-  pluginManager.createPluggableElements()
-  pluginManager.configure()
-
-  return pluginManager
-}
-
-interface WrappedFuncArgs {
-  rpcDriverClassName: string
-  channel: string
-  [key: string]: unknown
-}
-
-type RpcFunc = (args: unknown, rpcDriverClassName: string) => unknown
-
-function wrapForRpc(func: RpcFunc) {
-  return (args: WrappedFuncArgs) => {
-    const { channel, rpcDriverClassName } = args
-    return func(
-      {
-        ...args,
-        statusCallback: (message: string) => {
-          // @ts-expect-error
-          self.rpcServer.emit(channel, message)
-        },
-      },
-      rpcDriverClassName,
-    )
-  }
-}
-
-getPluginManager()
-  .then(pluginManager => {
-    const rpcConfig = Object.fromEntries(
-      pluginManager
-        .getRpcElements()
-        .map(entry => [entry.name, wrapForRpc(entry.execute.bind(entry))]),
-    )
-
-    // @ts-expect-error
-    self.rpcServer = new RpcServer.Server({
-      ...rpcConfig,
-      ...remoteAbortRpcHandler(),
-      ping: () => {
-        // the ping method is required by the worker driver for checking the
-        // health of the worker
-      },
+  async conf(config: WorkerConfiguration) {
+    const pluginLoader = new PluginLoader(config.plugins, {
+      fetchESM: url => import(/* webpackIgnore:true */ url),
     })
-    postMessage({ message: 'ready' })
-  })
-  .catch(error => {
-    postMessage({ message: 'error', error: serializeError(error) })
-  })
-
-export default () => {
-  /* do nothing */
-}
+    pluginLoader.installGlobalReExports(self)
+    const runtimePlugins = await pluginLoader.load(config.windowHref)
+    const plugins = [
+      ...corePlugins.map(p => ({ plugin: p })),
+      ...runtimePlugins,
+    ]
+    rpcConfig = Object.fromEntries(
+      new PluginManager(plugins.map(P => new P.plugin()))
+        .createPluggableElements()
+        .configure()
+        .getRpcElements()
+        .map(entry => [
+          entry.name,
+          (serializedArgs: unknown, rpcDriver: string) =>
+            entry.execute(serializedArgs, rpcDriver),
+        ]),
+    )
+  },
+})
