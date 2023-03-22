@@ -742,7 +742,7 @@ export async function renameRegionsIfNeeded<
   const assemblyNames = regions.map(region => region.assemblyName)
   const assemblyMaps = Object.fromEntries(
     await Promise.all(
-      assemblyNames.map(async assemblyName => {
+      [...new Set(assemblyNames)].map(async assemblyName => {
         return [
           assemblyName,
           await assemblyManager.getRefNameMapForAdapter(
