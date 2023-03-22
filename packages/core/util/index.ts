@@ -739,10 +739,10 @@ export async function renameRegionsIfNeeded<
     throw new Error('sessionId is required')
   }
 
-  const assemblyNames = [...new Set(regions.map(region => region.assemblyName))]
+  const assemblyNames = regions.map(region => region.assemblyName)
   const assemblyMaps = Object.fromEntries(
     await Promise.all(
-      assemblyNames.map(async assemblyName => {
+      [...new Set(assemblyNames)].map(async assemblyName => {
         return [
           assemblyName,
           await assemblyManager.getRefNameMapForAdapter(
