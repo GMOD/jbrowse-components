@@ -42,7 +42,6 @@ const useStyles = makeStyles()(theme => ({
     fontWeight: 'normal',
     border: `1px solid ${theme.palette.action.disabledBackground}`,
     position: 'sticky',
-    top: '-1px',
     zIndex: 2,
     whiteSpace: 'nowrap',
   },
@@ -52,10 +51,10 @@ const useStyles = makeStyles()(theme => ({
     position: 'absolute',
     right: 0,
     top: 0,
-    background: theme.palette.action.disabled,
+    zIndex: 100,
+    background: theme.palette.action.hover,
     height: '100%',
-    boxSizing: 'border-box',
-    borderLeft: `1px solid ${theme.palette.action.disabledBackground}`,
+    borderLeft: `1px solid ${theme.palette.action.selected}`,
   },
   columnButton: {
     padding: 0,
@@ -111,15 +110,6 @@ export default observer(function ({
 
   // column menu active state
   const [currentColumnMenu, setColumnMenu] = useState<ColMenu>()
-  function columnButtonClick(
-    colNumber: number,
-    evt: React.MouseEvent<HTMLElement>,
-  ) {
-    setColumnMenu({
-      colNumber,
-      anchorEl: evt.currentTarget,
-    })
-  }
 
   // column header hover state
   const [currentHoveredColumn, setHoveredColumn] = useState<number>()
@@ -179,7 +169,12 @@ export default observer(function ({
                 >
                   <IconButton
                     className={classes.columnButton}
-                    onClick={columnButtonClick.bind(null, colNumber)}
+                    onClick={(evt: React.MouseEvent<HTMLElement>) => {
+                      setColumnMenu({
+                        colNumber,
+                        anchorEl: evt.currentTarget,
+                      })
+                    }}
                   >
                     <ArrowDropDown />
                   </IconButton>
