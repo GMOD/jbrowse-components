@@ -1,10 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
 
-const RS =
-  typeof window !== 'undefined' && 'ResizeObserver' in window
-    ? window.ResizeObserver
-    : undefined
-
 export default function useMeasure() {
   const ref = useRef<HTMLDivElement>(null)
   const [dims, setDims] = useState<{ width?: number; height?: number }>({
@@ -15,6 +10,11 @@ export default function useMeasure() {
     if (!ref.current) {
       return
     }
+    const RS =
+      typeof window !== 'undefined' && 'ResizeObserver' in window
+        ? window.ResizeObserver
+        : undefined
+
     if (!RS) {
       return
     }

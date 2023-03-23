@@ -27,7 +27,7 @@ import {
 import { isAbortException, checkAbortSignal } from './aborting'
 import { BaseBlock } from './blockTypes'
 import { isUriLocation } from './types'
-import useMeasure from './useMeasure'
+import useMeasure from '@jbrowse/core/util/useMeasure'
 
 export * from './types'
 export * from './aborting'
@@ -200,15 +200,12 @@ export function springAnimate(
   ]
 }
 
-/** find the first node in the hierarchy that matches the given 'is' typescript type guard predicate */
-export function findParentThatIs<
-  PREDICATE extends (thing: IAnyStateTreeNode) => boolean,
->(
+// find the first node in the hierarchy that matches the given 'is' typescript type guard predicate
+export function findParentThatIs<T extends (a: IAnyStateTreeNode) => boolean>(
   node: IAnyStateTreeNode,
-  predicate: PREDICATE,
-): TypeTestedByPredicate<PREDICATE> & IAnyStateTreeNode {
-  return findParentThat(node, predicate) as TypeTestedByPredicate<PREDICATE> &
-    IAnyStateTreeNode
+  predicate: T,
+): TypeTestedByPredicate<T> & IAnyStateTreeNode {
+  return findParentThat(node, predicate)
 }
 
 /** get the current JBrowse session model, starting at any node in the state tree */

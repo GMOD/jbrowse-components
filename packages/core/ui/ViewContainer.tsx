@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react'
-import { IconButton, Paper, Tooltip, useTheme } from '@mui/material'
+import { IconButton, Paper, useTheme } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 
@@ -10,9 +10,9 @@ import AddIcon from '@mui/icons-material/Add'
 
 // locals
 import { IBaseViewModel } from '../pluggableElementTypes/models'
-import EditableTypography from './EditableTypography'
 import ViewMenu from './ViewMenu'
 import { useWidthSetter } from '../util'
+import ViewContainerTitle from './ViewContainerTitle'
 
 const useStyles = makeStyles()(theme => ({
   viewContainer: {
@@ -26,23 +26,6 @@ const useStyles = makeStyles()(theme => ({
   },
   grow: {
     flexGrow: 1,
-  },
-
-  input: {
-    paddingBottom: 0,
-    paddingTop: 2,
-  },
-  inputBase: {
-    color: theme.palette.secondary.contrastText,
-  },
-  inputRoot: {
-    '&:hover': {
-      backgroundColor: theme.palette.secondary.light,
-    },
-  },
-  inputFocused: {
-    borderColor: theme.palette.primary.main,
-    backgroundColor: theme.palette.secondary.light,
   },
 }))
 
@@ -74,25 +57,8 @@ export default observer(function ({
       <div ref={scrollRef} style={{ display: 'flex' }}>
         <ViewMenu model={view} IconProps={{ className: classes.icon }} />
         <div className={classes.grow} />
-        <Tooltip title="Rename view" arrow>
-          <EditableTypography
-            value={
-              view.displayName ||
-              // @ts-expect-error
-              `${view.assemblyNames?.join(',') || 'Untitled view'}${
-                view.minimized ? ' (minimized)' : ''
-              }`
-            }
-            setValue={val => view.setDisplayName(val)}
-            variant="body2"
-            classes={{
-              input: classes.input,
-              inputBase: classes.inputBase,
-              inputRoot: classes.inputRoot,
-              inputFocused: classes.inputFocused,
-            }}
-          />
-        </Tooltip>
+
+        <ViewContainerTitle view={view} />
         <div className={classes.grow} />
         <IconButton data-testid="minimize_view" onClick={onMinimize}>
           {view.minimized ? (

@@ -100,7 +100,7 @@ export function setup() {
 }
 
 // eslint-disable-next-line no-global-assign
-window = Object.assign(window, { innerWidth: 800 })
+// window = Object.assign(window, { innerWidth: 800 })
 
 export function canvasToBuffer(canvas: HTMLCanvasElement) {
   return Buffer.from(
