@@ -30,7 +30,7 @@ const useStyles = makeStyles()(theme => ({
     margin: '0 auto',
   },
   container: {
-    overflow: 'auto',
+    margin: theme.spacing(2),
   },
 }))
 
