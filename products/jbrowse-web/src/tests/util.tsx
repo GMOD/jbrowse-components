@@ -86,11 +86,6 @@ export function generateReadBuffer(getFile: (s: string) => GenericFilehandle) {
 }
 
 export function setup() {
-  window.requestIdleCallback = (cb: Function) => cb()
-  window.cancelIdleCallback = () => {}
-  window.requestAnimationFrame = (cb: Function) => setTimeout(cb)
-  window.cancelAnimationFrame = () => {}
-
   Storage.prototype.getItem = jest.fn(() => null)
   Storage.prototype.setItem = jest.fn()
   Storage.prototype.removeItem = jest.fn()
