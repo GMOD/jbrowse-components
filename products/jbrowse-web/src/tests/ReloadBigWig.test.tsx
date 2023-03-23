@@ -35,7 +35,7 @@ test('reloads bigwig (BW 404)', async () => {
     })
 
     const { view, findByTestId, findByText, findAllByTestId, findAllByText } =
-      createView()
+      await createView()
     await findByText('Help')
     view.setNewView(10, 0)
     fireEvent.click(await findByTestId(hts('volvox_microarray'), ...opts))

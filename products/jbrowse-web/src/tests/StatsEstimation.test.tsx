@@ -22,7 +22,7 @@ const delay = { timeout: 20000 }
 const o = [{}, delay]
 
 test('test stats estimation pileup, zoom in to see', async () => {
-  const { view, findByText, findAllByText, findByTestId } = createView()
+  const { view, findByText, findAllByText, findByTestId } = await createView()
   await findByText('Help')
   view.setNewView(30, 183)
   fireEvent.click(await findByTestId(hts('volvox_cram_pileup'), ...o))
@@ -36,7 +36,7 @@ test('test stats estimation pileup, zoom in to see', async () => {
 }, 30000)
 
 test('test stats estimation pileup, force load to see', async () => {
-  const { view, findByText, findAllByText, findByTestId } = createView()
+  const { view, findByText, findAllByText, findByTestId } = await createView()
   await findByText('Help')
   view.setNewView(25.07852564102564, 283)
 
@@ -51,7 +51,7 @@ test('test stats estimation pileup, force load to see', async () => {
 
 test('test stats estimation on vcf track, zoom in to see', async () => {
   const { view, findByText, findAllByText, findAllByTestId, findByTestId } =
-    createView()
+    await createView()
   await findByText('Help')
   view.setNewView(34, 5)
   fireEvent.click(await findByTestId('htsTrackEntry-variant_colors', ...o))
@@ -66,7 +66,7 @@ test('test stats estimation on vcf track, zoom in to see', async () => {
 
 test('test stats estimation on vcf track, force load to see', async () => {
   const { view, findByText, findAllByText, findAllByTestId, findByTestId } =
-    createView()
+    await createView()
   await findByText('Help')
   view.setNewView(34, 5)
   await findAllByText('ctgA', ...o)

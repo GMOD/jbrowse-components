@@ -24,7 +24,7 @@ const delay = { timeout: 40000 }
 const opts = [{}, delay]
 
 test('export svg of lgv', async () => {
-  const { view, findByTestId, findByText } = createView()
+  const { view, findByTestId, findByText } = await createView()
 
   await findByText('Help')
   view.setNewView(0.1, 1)
@@ -47,7 +47,7 @@ test('export svg of lgv', async () => {
 
 test('export svg of synteny', async () => {
   console.warn = jest.fn()
-  const { findByTestId, findAllByText, findByText } = createView({
+  const { findByTestId, findAllByText, findByText } = await createView({
     ...volvoxConfig,
     defaultSession: {
       id: 'session_testing',
@@ -204,7 +204,7 @@ test('export svg of synteny', async () => {
 }, 45000)
 
 test('export svg of circular', async () => {
-  const { findByTestId, findByText } = createView({
+  const { findByTestId, findByText } = await createView({
     ...volvoxConfig,
     defaultSession: {
       name: 'Integration Test Circular',
@@ -237,7 +237,7 @@ test('export svg of circular', async () => {
 }, 45000)
 
 test('export svg of dotplot', async () => {
-  const { findByTestId, findByText } = createView({
+  const { findByTestId, findByText } = await createView({
     ...volvoxConfig,
     defaultSession: {
       id: 'yvVuWHcq2',

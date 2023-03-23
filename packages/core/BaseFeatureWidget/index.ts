@@ -4,11 +4,7 @@ import clone from 'clone'
 
 // locals
 import PluginManager from '../PluginManager'
-import {
-  getConf,
-  ConfigurationSchema,
-  AnyConfigurationModel,
-} from '../configuration'
+import { getConf, ConfigurationSchema } from '../configuration'
 import { getSession } from '../util'
 import { ElementId } from '../util/types/mst'
 
@@ -78,24 +74,21 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             if (unformattedFeatureData) {
               const feature = clone(unformattedFeatureData)
 
-              const f = (
-                obj: { configuration: AnyConfigurationModel },
+              const combine = (
                 arg2: string,
-              ) => getConf(obj, ['formatDetails', arg2], { feature })
+                feature: Record<string, unknown>,
+              ) => ({
+                ...getConf(session, ['formatDetails', arg2], { feature }),
+                ...getConf(track, ['formatDetails', arg2], { feature }),
+              })
 
               if (track) {
                 // eslint-disable-next-line no-underscore-dangle
-                feature.__jbrowsefmt = {
-                  ...f(session, 'feature'),
-                  ...f(track, 'feature'),
-                }
+                feature.__jbrowsefmt = combine('feature', feature)
                 const depth = getConf(track, ['formatDetails', 'depth'])
                 formatSubfeatures(feature, depth, sub => {
                   // eslint-disable-next-line no-underscore-dangle
-                  sub.__jbrowsefmt = {
-                    ...f(session, 'subfeature'),
-                    ...f(track, 'subfeature'),
-                  }
+                  sub.__jbrowsefmt = combine('subfeatures', sub)
                 })
               }
 

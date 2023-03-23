@@ -20,7 +20,7 @@ const delay = { timeout: 40000 }
 
 test('copy and delete track in admin mode', async () => {
   const { view, findByTestId, queryByText, findAllByTestId, findByText } =
-    createView(undefined, true)
+    await createView(undefined, true)
 
   await findByText('Help')
   view.setNewView(0.05, 5000)
@@ -39,7 +39,7 @@ test('copy and delete track in admin mode', async () => {
 
 test('copy and delete reference sequence track disabled', async () => {
   const { view, rootModel, session, queryByText, findByTestId, findByText } =
-    createView(undefined, true)
+    await createView(undefined, true)
 
   // @ts-expect-error
   const { assemblyManager } = rootModel
@@ -64,7 +64,7 @@ test('copy and delete reference sequence track disabled', async () => {
 }, 40000)
 
 test('copy and delete track to session tracks', async () => {
-  const { view, findByTestId, findAllByTestId, findByText } = createView(
+  const { view, findByTestId, findAllByTestId, findByText } = await createView(
     undefined,
     false,
   )

@@ -14,7 +14,7 @@ const delay = { timeout: 10000 }
 const opts = [{}, delay]
 
 test('open a circular view', async () => {
-  const { findByTestId, findByText, queryByTestId } = createView({
+  const { findByTestId, findByText, queryByTestId } = await createView({
     ...configSnapshot,
     defaultSession: {
       name: 'Integration Test Circular',

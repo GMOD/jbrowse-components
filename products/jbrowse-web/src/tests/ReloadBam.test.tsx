@@ -35,7 +35,7 @@ test('reloads alignments track (BAI 404)', async () => {
     })
 
     const { view, findByTestId, findByText, findAllByTestId, findAllByText } =
-      createView()
+      await createView()
     await findByText('Help')
     view.setNewView(0.5, 0)
     fireEvent.click(await findByTestId(hts('volvox_bam_snpcoverage'), ...opts))
@@ -58,7 +58,7 @@ test('reloads alignments track (BAM 404)', async () => {
     })
 
     const { view, findByTestId, findByText, findAllByTestId, findAllByText } =
-      createView()
+      await createView()
     await findByText('Help')
     view.setNewView(0.5, 0)
     fireEvent.click(await findByTestId(hts('volvox_bam_pileup'), ...opts))
