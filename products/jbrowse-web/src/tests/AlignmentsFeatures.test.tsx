@@ -21,7 +21,7 @@ const delay = { timeout: 20000 }
 const opts = [{}, delay]
 
 test('opens the track menu and enables soft clipping', async () => {
-  const { view, findByTestId, findByText } = createView()
+  const { view, findByTestId, findByText } = await createView()
   await findByText('Help')
   view.setNewView(0.02, 142956)
 
@@ -43,7 +43,7 @@ test('opens the track menu and enables soft clipping', async () => {
 }, 30000)
 
 test('selects a sort, sort by base pair', async () => {
-  const { view, findByTestId, findByText, findAllByTestId } = createView()
+  const { view, findByTestId, findByText, findAllByTestId } = await createView()
   await findByText('Help')
   view.setNewView(0.043688891869634636, 301762)
   const track = 'volvox_cram_alignments_ctga'
@@ -68,7 +68,7 @@ test('selects a sort, sort by base pair', async () => {
 }, 35000)
 
 test('color by tag', async () => {
-  const { view, findByTestId, findByText, findAllByTestId } = createView()
+  const { view, findByTestId, findByText, findAllByTestId } = await createView()
   await findByText('Help')
   view.setNewView(0.465, 85055)
 
@@ -90,7 +90,7 @@ test('color by tag', async () => {
 }, 30000)
 
 test('toggle short-read arc display', async () => {
-  const { view, findByTestId, findAllByText, findByText } = createView()
+  const { view, findByTestId, findAllByText, findByText } = await createView()
   await findByText('Help')
   await view.navToLocString('ctgA:1-50000')
   fireEvent.click(await findByTestId(hts('volvox_sv_cram'), ...opts))
@@ -101,7 +101,7 @@ test('toggle short-read arc display', async () => {
 }, 30000)
 
 test('toggle short-read cloud display', async () => {
-  const { view, findByTestId, findAllByText, findByText } = createView()
+  const { view, findByTestId, findAllByText, findByText } = await createView()
   await findByText('Help')
   await view.navToLocString('ctgA:1-50000')
   fireEvent.click(await findByTestId(hts('volvox_sv_cram'), ...opts))
@@ -112,7 +112,7 @@ test('toggle short-read cloud display', async () => {
 }, 30000)
 
 test('toggle long-read cloud display', async () => {
-  const { view, findByTestId, findAllByText, findByText } = createView()
+  const { view, findByTestId, findAllByText, findByText } = await createView()
   await findByText('Help')
   await view.navToLocString('ctgA:19,101..32,027')
   fireEvent.click(await findByTestId(hts('volvox-simple-inv.bam'), ...opts))
@@ -123,7 +123,7 @@ test('toggle long-read cloud display', async () => {
 }, 30000)
 
 test('toggle long-read arc display', async () => {
-  const { view, findByTestId, findAllByText, findByText } = createView()
+  const { view, findByTestId, findAllByText, findByText } = await createView()
   await findByText('Help')
   await view.navToLocString('ctgA:19,101..32,027')
   fireEvent.click(await findByTestId(hts('volvox-simple-inv.bam'), ...opts))
@@ -134,7 +134,7 @@ test('toggle long-read arc display', async () => {
 }, 30000)
 
 test('toggle long-read arc display, use out of view pairing', async () => {
-  const { view, findByTestId, findAllByText, findByText } = createView()
+  const { view, findByTestId, findAllByText, findByText } = await createView()
   await findByText('Help')
   await view.navToLocString('ctgA:478..6,191')
   fireEvent.click(await findByTestId(hts('volvox-long-reads-sv-cram'), ...opts))
@@ -145,7 +145,7 @@ test('toggle long-read arc display, use out of view pairing', async () => {
 }, 30000)
 
 test('toggle short-read arc display, use out of view pairing', async () => {
-  const { view, findByTestId, findAllByText, findByText } = createView()
+  const { view, findByTestId, findAllByText, findByText } = await createView()
   await findByText('Help')
   await view.navToLocString('ctgA:478..6,191')
   fireEvent.click(await findByTestId(hts('volvox_sv_cram'), ...opts))

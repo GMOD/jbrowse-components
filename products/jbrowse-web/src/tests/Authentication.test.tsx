@@ -24,7 +24,7 @@ beforeEach(() => {
 const delay = { timeout: 20000 }
 
 test('open a bigwig track that needs oauth authentication and has existing token', async () => {
-  const { rootModel, view, findByTestId, findByText } = createView({
+  const { rootModel, view, findByTestId, findByText } = await createView({
     ...config,
     tracks: [
       {
@@ -63,7 +63,7 @@ test('open a bigwig track that needs oauth authentication and has existing token
 }, 25000)
 
 test('opens a bigwig track that needs external token authentication', async () => {
-  const { view, findByTestId } = createView({
+  const { view, findByTestId } = await createView({
     ...config,
     internetAccounts: [
       {
@@ -109,7 +109,7 @@ test('opens a bigwig track that needs external token authentication', async () =
 }, 25000)
 
 test('opens a bigwig track that needs httpbasic authentication', async () => {
-  const { findByTestId, findByText, view } = createView({
+  const { findByTestId, findByText, view } = await createView({
     ...config,
     tracks: [
       {

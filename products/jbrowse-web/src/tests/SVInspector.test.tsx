@@ -12,7 +12,7 @@ const delay = { timeout: 20000 }
 
 test('opens a vcf.gz file in the sv inspector view', async () => {
   const consoleMock = jest.spyOn(console, 'warn').mockImplementation()
-  const { session, findByTestId, getByTestId, findByText } = createView()
+  const { session, findByTestId, getByTestId, findByText } = await createView()
 
   fireEvent.click(await findByText('File'))
   fireEvent.click(await findByText('Add'))

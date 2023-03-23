@@ -14,7 +14,7 @@ const delay = { timeout: 10000 }
 const opts = [{}, delay]
 
 async function doSetup(val?: unknown) {
-  const args = createView(val)
+  const args = await createView(val)
   const { findByTestId, findByPlaceholderText } = args
 
   const autocomplete = await findByTestId('autocomplete', ...opts)
