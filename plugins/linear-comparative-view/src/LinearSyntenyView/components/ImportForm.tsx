@@ -103,119 +103,119 @@ function TrackSelector({
   )
 }
 
-const LinearSyntenyImportForm = observer(
-  ({ model }: { model: LinearSyntenyViewModel }) => {
-    const { classes } = useStyles()
-    const session = getSession(model)
-    const { assemblyNames } = session
-    const [assembly2, setAssembly2] = useState(assemblyNames[0] || '')
-    const [assembly1, setAssembly1] = useState(assemblyNames[0] || '')
-    const [error, setError] = useState<unknown>()
-    const [sessionTrackData, setSessionTrackData] = useState<Conf>()
-    const [showTrackId, setShowTrackId] = useState<string>()
+export default observer(function ({
+  model,
+}: {
+  model: LinearSyntenyViewModel
+}) {
+  const { classes } = useStyles()
+  const session = getSession(model)
+  const { assemblyNames } = session
+  const [assembly2, setAssembly2] = useState(assemblyNames[0] || '')
+  const [assembly1, setAssembly1] = useState(assemblyNames[0] || '')
+  const [error, setError] = useState<unknown>()
+  const [sessionTrackData, setSessionTrackData] = useState<Conf>()
+  const [showTrackId, setShowTrackId] = useState<string>()
 
-    async function onOpenClick() {
-      try {
-        if (!isSessionWithAddTracks(session)) {
-          return
-        }
-        setError(undefined)
-
-        const { assemblyManager } = session
-        const assemblies = [assembly1, assembly2]
-        model.setViews(
-          await Promise.all(
-            assemblies.map(async sel => {
-              const asm = await assemblyManager.waitForAssembly(sel)
-              if (!asm) {
-                throw new Error(`Assembly ${sel} failed to load`)
-              }
-              return {
-                type: 'LinearGenomeView' as const,
-                bpPerPx: 1,
-                offsetPx: 0,
-                hideHeader: true,
-                displayedRegions: asm.regions,
-              }
-            }),
-          ),
-        )
-        model.views.forEach(view => view.setWidth(model.width))
-        if (sessionTrackData) {
-          session.addTrackConf(sessionTrackData)
-          model.toggleTrack(sessionTrackData.trackId)
-        } else if (showTrackId) {
-          model.showTrack(showTrackId)
-        }
-      } catch (e) {
-        console.error(e)
-        setError(e)
+  async function onOpenClick() {
+    try {
+      if (!isSessionWithAddTracks(session)) {
+        return
       }
+      setError(undefined)
+
+      const { assemblyManager } = session
+      const assemblies = [assembly1, assembly2]
+      model.setViews(
+        await Promise.all(
+          assemblies.map(async sel => {
+            const asm = await assemblyManager.waitForAssembly(sel)
+            if (!asm) {
+              throw new Error(`Assembly ${sel} failed to load`)
+            }
+            return {
+              type: 'LinearGenomeView' as const,
+              bpPerPx: 1,
+              offsetPx: 0,
+              hideHeader: true,
+              displayedRegions: asm.regions,
+            }
+          }),
+        ),
+      )
+      model.views.forEach(view => view.setWidth(model.width))
+      if (sessionTrackData) {
+        session.addTrackConf(sessionTrackData)
+        model.toggleTrack(sessionTrackData.trackId)
+      } else if (showTrackId) {
+        model.showTrack(showTrackId)
+      }
+    } catch (e) {
+      console.error(e)
+      setError(e)
     }
+  }
 
-    // this is a combination of any displayed error message we have
-    const displayError = error
-    return (
-      <Container className={classes.importFormContainer}>
-        {displayError ? <ErrorMessage error={displayError} /> : null}
-        <Grid
-          container
-          spacing={1}
-          justifyContent="center"
-          alignItems="center"
-          className={classes.assemblySelector}
-        >
-          <Grid item>
-            <Paper style={{ padding: 12 }}>
-              <p style={{ textAlign: 'center' }}>
-                Select assemblies for linear synteny view
-              </p>
-              <Grid
-                container
-                spacing={1}
-                justifyContent="center"
-                alignItems="center"
-              >
-                <Grid item>
-                  <AssemblySelector
-                    selected={assembly1}
-                    onChange={val => setAssembly1(val)}
-                    session={session}
-                  />
-                </Grid>
-                <Grid item>
-                  <AssemblySelector
-                    selected={assembly2}
-                    onChange={val => setAssembly2(val)}
-                    session={session}
-                  />
-                </Grid>
-                <Grid item>
-                  <FormControl>
-                    <Button
-                      onClick={onOpenClick}
-                      variant="contained"
-                      color="primary"
-                    >
-                      Launch
-                    </Button>
-                  </FormControl>
-                </Grid>
+  // this is a combination of any displayed error message we have
+  const displayError = error
+  return (
+    <Container className={classes.importFormContainer}>
+      {displayError ? <ErrorMessage error={displayError} /> : null}
+      <Grid
+        container
+        spacing={1}
+        justifyContent="center"
+        alignItems="center"
+        className={classes.assemblySelector}
+      >
+        <Grid item>
+          <Paper style={{ padding: 12 }}>
+            <p style={{ textAlign: 'center' }}>
+              Select assemblies for linear synteny view
+            </p>
+            <Grid
+              container
+              spacing={1}
+              justifyContent="center"
+              alignItems="center"
+            >
+              <Grid item>
+                <AssemblySelector
+                  selected={assembly1}
+                  onChange={val => setAssembly1(val)}
+                  session={session}
+                />
               </Grid>
-            </Paper>
-            <TrackSelector
-              setShowTrackId={setShowTrackId}
-              assembly2={assembly2}
-              assembly1={assembly1}
-              setSessionTrackData={setSessionTrackData}
-              sessionTrackData={sessionTrackData}
-              model={model}
-            />
-          </Grid>
+              <Grid item>
+                <AssemblySelector
+                  selected={assembly2}
+                  onChange={val => setAssembly2(val)}
+                  session={session}
+                />
+              </Grid>
+              <Grid item>
+                <FormControl>
+                  <Button
+                    onClick={onOpenClick}
+                    variant="contained"
+                    color="primary"
+                  >
+                    Launch
+                  </Button>
+                </FormControl>
+              </Grid>
+            </Grid>
+          </Paper>
+          <TrackSelector
+            setShowTrackId={setShowTrackId}
+            assembly2={assembly2}
+            assembly1={assembly1}
+            setSessionTrackData={setSessionTrackData}
+            sessionTrackData={sessionTrackData}
+            model={model}
+          />
         </Grid>
-      </Container>
-    )
-  },
-)
-
-export default LinearSyntenyImportForm
+      </Grid>
+    </Container>
+  )
+})
