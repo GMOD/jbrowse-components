@@ -27,15 +27,20 @@ const useStyles = makeStyles()(theme => ({
   root: {
     position: 'relative',
     marginBottom: theme.spacing(1),
+    overflow: 'hidden',
   },
   header: {
+    overflow: 'hidden',
     whiteSpace: 'nowrap',
     boxSizing: 'border-box',
     height: headerHeight,
     paddingLeft: theme.spacing(1),
   },
-
+  contentArea: {
+    overflow: 'auto',
+  },
   columnFilter: {
+    overflow: 'hidden',
     whiteSpace: 'nowrap',
     boxSizing: 'border-box',
     height: headerHeight,
@@ -232,7 +237,10 @@ export default observer(function ({ model }: { model: SpreadsheetViewModel }) {
       {mode === 'import' ? (
         <ImportWizard model={model.importWizard} />
       ) : (
-        <div style={{ height: height - headerHeight }}>
+        <div
+          className={classes.contentArea}
+          style={{ height: height - headerHeight }}
+        >
           <div
             style={{
               position: 'relative',
