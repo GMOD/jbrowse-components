@@ -54,7 +54,6 @@
     "material-ui-popup-state": "^5.0.0",
     "rbush": "^3.0.1",
     "react-error-boundary": "^3.0.0",
-    "react-use-measure": "^2.1.1",
     "serialize-error": "^8.0.0",
     "shortid": "^2.2.13",
     "svg-path-generator": "^1.1.0"

@@ -72,7 +72,6 @@
     "mobx-react": "^7.5.0",
     "mobx-state-tree": "^5.0.0",
     "prop-types": "^15.0.0",
-    "react-use-measure": "^2.1.1",
     "rxjs": "^7.0.0",
     "serialize-error": "^8.0.0",
     "tss-react": "^4.4.1"
