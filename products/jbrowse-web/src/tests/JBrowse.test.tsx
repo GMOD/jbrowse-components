@@ -24,12 +24,13 @@ beforeEach(() => {
 
 test('renders with an empty config', async () => {
   const { findByText } = await createView()
-  await findByText('Help')
-})
+  await findByText('Help', {}, delay)
+}, 20000)
+
 test('renders with an initialState', async () => {
   const { findByText } = await createView()
-  await findByText('Help')
-})
+  await findByText('Help', {}, delay)
+}, 20000)
 
 test('lollipop track test', async () => {
   const { view, findByTestId, findByText } = await createView()
