@@ -97,7 +97,7 @@ const DataTableBody = observer(function ({
   )
 })
 
-const DataTable = observer(function ({
+export default observer(function ({
   model,
   page,
   rowsPerPage,
@@ -203,5 +203,3 @@ const DataTable = observer(function ({
     </>
   )
 })
-
-export default DataTable
