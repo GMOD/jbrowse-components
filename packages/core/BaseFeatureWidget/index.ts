@@ -4,21 +4,14 @@ import clone from 'clone'
 
 // locals
 import PluginManager from '../PluginManager'
-import {
-  getConf,
-  ConfigurationSchema,
-  AnyConfigurationModel,
-} from '../configuration'
-import { Feature, getSession } from '../util'
+import { getConf, ConfigurationSchema } from '../configuration'
+import { getSession } from '../util'
 import { ElementId } from '../util/types/mst'
 
 const configSchema = ConfigurationSchema('BaseFeatureWidget', {})
 
 interface Feat {
   subfeatures?: Record<string, unknown>[]
-}
-interface WithConf {
-  configuration: AnyConfigurationModel
 }
 
 function formatSubfeatures(
