@@ -1,38 +1,40 @@
 const assembly = {
-  name: 'GRCh38',
-  aliases: ['hg38'],
+  name: 'volvox',
+  aliases: ['vvx'],
   sequence: {
     type: 'ReferenceSequenceTrack',
-    trackId: 'GRCh38-ReferenceSequenceTrack',
+    trackId: 'volvox_refseq',
+    metadata: {
+      date: '2020-08-20',
+    },
+    formatAbout: {
+      hideUris: true,
+      config: "jexl:{extraField:'important data'}",
+    },
     adapter: {
-      type: 'BgzipFastaAdapter',
-      fastaLocation: {
-        uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
-      },
-      faiLocation: {
-        uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai',
-      },
-      gziLocation: {
-        uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi',
+      type: 'TwoBitAdapter',
+      twoBitLocation: {
+        uri: 'volvox.2bit',
+        locationType: 'UriLocation',
       },
     },
-    displays: [
-      {
-        type: 'LinearReferenceSequenceDisplay',
-        displayId:
-          'GRCh38-ReferenceSequenceTrack-LinearReferenceSequenceDisplay',
-        renderer: {
-          type: 'DivSequenceRenderer',
-        },
-      },
-    ],
   },
   refNameAliases: {
     adapter: {
-      type: 'RefNameAliasAdapter',
-      location: {
-        uri: '/GRCh38.aliases.txt',
-      },
+      type: 'FromConfigAdapter',
+      adapterId: 'W6DyPGJ0UU',
+      features: [
+        {
+          refName: 'ctgA',
+          uniqueId: 'alias1',
+          aliases: ['A', 'contigA'],
+        },
+        {
+          refName: 'ctgB',
+          uniqueId: 'alias2',
+          aliases: ['B', 'contigB'],
+        },
+      ],
     },
   },
 }
