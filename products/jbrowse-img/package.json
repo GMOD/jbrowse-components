@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/img",
-  "version": "2.4.1",
+  "version": "2.4.2",
   "main": "dist/index.js",
   "module": "esm/index.js",
   "author": "JBrowse Team",
@@ -29,8 +29,8 @@
     "@babel/runtime": "^7.17.9",
     "@emotion/cache": "^11.7.1",
     "@emotion/react": "^11.9.0",
-    "@jbrowse/plugin-linear-genome-view": "^2.4.1",
-    "@jbrowse/react-linear-genome-view": "^2.4.1",
+    "@jbrowse/plugin-linear-genome-view": "^2.4.2",
+    "@jbrowse/react-linear-genome-view": "^2.4.2",
     "abortcontroller-polyfill": "^1.7.3",
     "canvas": "^2.9.1",
     "jsdom": "^20.0.3",
