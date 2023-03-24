@@ -373,6 +373,7 @@ export function isAbstractMenuManager(
 export interface NoAssemblyRegion
   extends SnapshotIn<typeof MUNoAssemblyRegion> {}
 
+/** a description of a specific genomic region. assemblyName, refName, start, end, and reversed */
 export interface Region extends SnapshotIn<typeof MUIRegion> {}
 
 export interface AugmentedRegion extends Region {

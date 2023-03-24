@@ -240,6 +240,8 @@ export interface AnyConfigurationSchemaType
 }
 
 export type AnyConfigurationModel = Instance<AnyConfigurationSchemaType>
+export type AnyConfigurationSlotType = ReturnType<typeof ConfigSlot>
+export type AnyConfigurationSlot = Instance<AnyConfigurationSlotType>
 
 export type ConfigurationModel<SCHEMA extends AnyConfigurationSchemaType> =
   Instance<SCHEMA>
