@@ -16,8 +16,6 @@ type RowModel = Instance<typeof RowStateModel>
 const useStyles = makeStyles()(theme => ({
   dataTable: {
     borderCollapse: 'collapse',
-    borderSpacing: 0,
-    boxSizing: 'border-box',
     '& td': {
       border: `1px solid ${theme.palette.action.disabledBackground}`,
       padding: '0.2rem',

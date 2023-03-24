@@ -37,16 +37,13 @@ const useStyles = makeStyles()(theme => ({
     right: 0,
     top: 0,
     background: theme.palette.background.paper,
-    zIndex: 100,
     height: '100%',
-    boxSizing: 'border-box',
   },
 
   topLeftCorner: {
     background: theme.palette.mode === 'dark' ? '#333' : '#eee',
     position: 'sticky',
     top: 0,
-    zIndex: 2,
     minWidth: theme.spacing(2),
     textAlign: 'left',
   },
