@@ -11,11 +11,10 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 // locals
 import ImportWizard from './ImportWizard'
 import Spreadsheet from './Spreadsheet'
-import SpreadsheetStateModel from '../models/Spreadsheet'
-import SpreadsheetStateViewModel from '../models/SpreadsheetView'
-
 import GlobalFilterControls from './GlobalFilterControls'
 import ColumnFilterControls from './ColumnFilterControls'
+import SpreadsheetStateModel from '../models/Spreadsheet'
+import SpreadsheetStateViewModel from '../models/SpreadsheetView'
 
 type SpreadsheetModel = Instance<typeof SpreadsheetStateModel>
 type SpreadsheetViewModel = Instance<typeof SpreadsheetStateViewModel>
@@ -187,11 +186,7 @@ function StatusBar({
   )
 }
 
-const SpreadsheetView = observer(function ({
-  model,
-}: {
-  model: SpreadsheetViewModel
-}) {
+export default observer(function ({ model }: { model: SpreadsheetViewModel }) {
   const { classes } = useStyles()
   const {
     spreadsheet,
@@ -212,11 +207,7 @@ const SpreadsheetView = observer(function ({
   const hide2 = mode !== 'display' || hideFilterControls
 
   return (
-    <div
-      className={classes.root}
-      style={{ height: model.height, width: model.width }}
-      data-testid={model.id}
-    >
+    <div className={classes.root} data-testid={model.id}>
       {!hide1 || !hide2 ? (
         <Grid container direction="row" className={classes.header}>
           {hide1 ? null : (
@@ -288,5 +279,3 @@ const SpreadsheetView = observer(function ({
     </div>
   )
 })
-
-export default SpreadsheetView

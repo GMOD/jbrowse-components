@@ -16,51 +16,47 @@ import CellData from './CellData'
 type SpreadsheetModel = Instance<typeof SpreadsheetStateModel>
 type RowModel = Instance<typeof RowStateModel>
 
-const useStyles = makeStyles()(theme => {
-  const { palette } = theme
-  return {
-    rowNumCell: {
-      textAlign: 'left',
-      border: `1px solid ${palette.action.disabledBackground}`,
-      position: 'relative',
-      padding: '0 2px 0 0',
-      whiteSpace: 'nowrap',
-      userSelect: 'none',
-    },
-    rowNumber: {
-      fontWeight: 'normal',
-      display: 'inline-block',
-      flex: 'none',
-      paddingRight: '20px',
-      margin: 0,
-      whiteSpace: 'nowrap',
-    },
-    rowMenuButton: {
-      padding: 0,
-      margin: 0,
-      position: 'absolute',
-      right: 0,
-      display: 'inline-block',
-      whiteSpace: 'nowrap',
-      flex: 'none',
-    },
-    rowMenuButtonIcon: {},
-    rowSelector: {
-      position: 'relative',
-      top: '-2px',
-      margin: 0,
-      padding: '0 0.2rem',
-    },
+const useStyles = makeStyles()(theme => ({
+  rowNumCell: {
+    textAlign: 'left',
+    border: `1px solid ${theme.palette.action.disabledBackground}`,
+    position: 'relative',
+    padding: '0 2px 0 0',
+    whiteSpace: 'nowrap',
+    userSelect: 'none',
+  },
+  rowNumber: {
+    fontWeight: 'normal',
+    display: 'inline-block',
+    flex: 'none',
+    paddingRight: '20px',
+    margin: 0,
+    whiteSpace: 'nowrap',
+  },
+  rowMenuButton: {
+    padding: 0,
+    margin: 0,
+    position: 'absolute',
+    right: 0,
+    display: 'inline-block',
+    whiteSpace: 'nowrap',
+    flex: 'none',
+  },
+  rowMenuButtonIcon: {},
+  rowSelector: {
+    position: 'relative',
+    top: '-2px',
+    margin: 0,
+    padding: '0 0.2rem',
+  },
 
-    dataRowSelected: {
+  dataRowSelected: {
+    background: indigo[100],
+    '& th': {
       background: indigo[100],
-      '& th': {
-        background: indigo[100],
-      },
     },
-    emptyMessage: { captionSide: 'bottom' },
-  }
-})
+  },
+}))
 
 const DataRow = observer(function ({
   rowModel,
@@ -86,7 +82,7 @@ const DataRow = observer(function ({
 
   return (
     <tr className={rowClass}>
-      <th className={classes.rowNumCell} onClick={labelClick}>
+      <td className={classes.rowNumCell} onClick={labelClick}>
         {hideRowSelection ? (
           <FormControlLabel
             className={classes.rowNumber}
@@ -113,7 +109,7 @@ const DataRow = observer(function ({
         >
           <ArrowDropDown className={classes.rowMenuButtonIcon} />
         </IconButton>
-      </th>
+      </td>
       {columnDisplayOrder.map(colNumber => (
         <td key={colNumber}>
           <CellData
