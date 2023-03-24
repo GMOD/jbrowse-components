@@ -22,14 +22,14 @@ export interface ILiteralType<T> extends ISimpleType<T> {
 export function getSubType(type: IAnyType): IAnyType {
   let t
   if (isOptionalType(type)) {
-    // @ts-ignore
+    // @ts-expect-error
     t = type._subtype || type.type
   } else if (isArrayType(type) || isMapType(type)) {
-    // @ts-ignore
+    // @ts-expect-error
     t = type._subtype || type._subType || type.subType
-    // @ts-ignore
+    // @ts-expect-error
   } else if (typeof type.getSubType === 'function') {
-    // @ts-ignore
+    // @ts-expect-error
     return type.getSubType()
   } else {
     throw new TypeError('unsupported mst type')
@@ -49,13 +49,13 @@ export function getUnionSubTypes(unionType: IAnyType): IAnyType[] {
     throw new TypeError('not an MST union type')
   }
   const t =
-    // @ts-ignore
+    // @ts-expect-error
     unionType._types ||
-    // @ts-ignore
+    // @ts-expect-error
     unionType.types ||
-    // @ts-ignore
+    // @ts-expect-error
     getSubType(unionType)._types ||
-    // @ts-ignore
+    // @ts-expect-error
     getSubType(unionType).types
   if (!t) {
     // debugger
@@ -82,7 +82,7 @@ export function getDefaultValue(type: IAnyType) {
   if (!isOptionalType(type)) {
     throw new TypeError('type must be an optional type')
   }
-  // @ts-ignore
+  // @ts-expect-error
   return type._defaultValue || type.defaultValue
 }
 
@@ -103,7 +103,7 @@ export function resolveLateType(maybeLate: IAnyType) {
     !isArrayType(maybeLate) &&
     isLateType(maybeLate)
   ) {
-    // @ts-ignore
+    // @ts-expect-error
     return maybeLate.getSubType()
   }
   return maybeLate

@@ -13,7 +13,7 @@ beforeEach(() => {
 
 test('change color on track', async () => {
   const { view, getByTestId, findByTestId, findByText, findByDisplayValue } =
-    createView(undefined, true)
+    await createView(undefined, true)
 
   await findByText('Help')
   view.setNewView(0.05, 5000)

@@ -20,7 +20,7 @@ const delay = { timeout: 20000 }
 const opts = [{}, delay]
 
 test('opens an alignments track', async () => {
-  const { view, findByTestId, findByText, findAllByTestId } = createView()
+  const { view, findByTestId, findByText, findAllByTestId } = await createView()
   await findByText('Help')
   view.setNewView(5, 100)
   fireEvent.click(
@@ -45,7 +45,7 @@ test('opens an alignments track', async () => {
 }, 20000)
 
 test('test that bam with small max height displays message', async () => {
-  const { findByTestId, findAllByText } = createView()
+  const { findByTestId, findAllByText } = await createView()
   fireEvent.click(
     await findByTestId(hts('volvox_bam_small_max_height'), ...opts),
   )
@@ -54,7 +54,7 @@ test('test that bam with small max height displays message', async () => {
 }, 30000)
 
 test('test snpcoverage doesnt count snpcoverage', async () => {
-  const { view, findByTestId, findByText } = createView()
+  const { view, findByTestId, findByText } = await createView()
   await findByText('Help')
   view.setNewView(0.03932, 67884.16536402702)
   fireEvent.click(await findByTestId(hts('volvox-long-reads-sv-cram'), ...opts))

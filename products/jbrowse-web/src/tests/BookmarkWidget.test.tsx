@@ -11,7 +11,7 @@ beforeEach(() => {
 const delay = { timeout: 15000 }
 
 test('click and drag rubberband, bookmarks region', async () => {
-  const { session, view, findByTestId, findByText } = createView()
+  const { session, view, findByTestId, findByText } = await createView()
   const rubberband = await findByTestId('rubberband_controls', {}, delay)
 
   expect(view.bpPerPx).toEqual(0.05)
@@ -27,7 +27,7 @@ test('click and drag rubberband, bookmarks region', async () => {
 }, 20000)
 
 test('bookmarks current region', async () => {
-  const { session, findByTestId, findByText } = createView()
+  const { session, findByTestId, findByText } = await createView()
 
   fireEvent.click(await findByTestId('view_menu_icon'))
   fireEvent.click(await findByText('Bookmark current region'))
@@ -40,7 +40,7 @@ test('bookmarks current region', async () => {
 }, 20000)
 
 test('navigates to bookmarked region from widget', async () => {
-  const { view, session, findByTestId, findByText } = createView()
+  const { view, session, findByTestId, findByText } = await createView()
 
   // need this to complete before we can try to navigate
   fireEvent.click(await findByTestId(hts('volvox_alignments'), {}, delay))

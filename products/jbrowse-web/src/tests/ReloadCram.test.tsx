@@ -39,7 +39,7 @@ test('reloads alignments track (CRAI 404)', async () => {
     })
 
     const { view, findByTestId, findByText, findAllByTestId, findAllByText } =
-      createView()
+      await createView()
     await findByText('Help')
     view.setNewView(0.5, 0)
     fireEvent.click(await findByTestId(hts('volvox_cram_pileup'), ...opts))
@@ -65,7 +65,7 @@ test('reloads alignments track (CRAM 404)', async () => {
     })
 
     const { view, findByTestId, findByText, findAllByTestId, findAllByText } =
-      createView()
+      await createView()
     await findByText('Help')
     view.setNewView(0.5, 0)
     fireEvent.click(await findByTestId(hts('volvox_cram_snpcoverage'), ...opts))

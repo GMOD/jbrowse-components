@@ -33,7 +33,7 @@ test('reloads vcf (VCF.GZ 404)', async () => {
     })
 
     const { view, findByTestId, findByText, findAllByTestId, findAllByText } =
-      createView()
+      await createView()
     await findByText('Help')
     view.setNewView(0.05, 5000)
     fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), ...opts))
@@ -59,7 +59,7 @@ test('reloads vcf (VCF.GZ.TBI 404)', async () => {
     })
 
     const { view, findByTestId, findByText, findAllByTestId, findAllByText } =
-      createView()
+      await createView()
     await findByText('Help')
     view.setNewView(0.05, 5000)
     fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), ...opts))

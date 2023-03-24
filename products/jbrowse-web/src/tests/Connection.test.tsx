@@ -32,7 +32,7 @@ test('Open up a UCSC trackhub connection', async () => {
     return readBuffer(request)
   })
 
-  const { findByTestId, findByText } = createView()
+  const { findByTestId, findByText } = await createView()
 
   fireEvent.click(await findByText('File'))
   fireEvent.click(await findByText(/Open connection/))

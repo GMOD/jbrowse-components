@@ -2,7 +2,7 @@ import React from 'react'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { render } from '@testing-library/react'
+import { render, waitFor } from '@testing-library/react'
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
@@ -86,11 +86,6 @@ export function generateReadBuffer(getFile: (s: string) => GenericFilehandle) {
 }
 
 export function setup() {
-  window.requestIdleCallback = (cb: Function) => cb()
-  window.cancelIdleCallback = () => {}
-  window.requestAnimationFrame = (cb: Function) => setTimeout(cb)
-  window.cancelAnimationFrame = () => {}
-
   Storage.prototype.getItem = jest.fn(() => null)
   Storage.prototype.setItem = jest.fn()
   Storage.prototype.removeItem = jest.fn()
@@ -98,9 +93,6 @@ export function setup() {
 
   expect.extend({ toMatchImageSnapshot })
 }
-
-// eslint-disable-next-line no-global-assign
-window = Object.assign(window, { innerWidth: 800 })
 
 export function canvasToBuffer(canvas: HTMLCanvasElement) {
   return Buffer.from(
@@ -133,7 +125,17 @@ export const pc = (str: string) => `prerendered_canvas_${str}_done`
 export const pv = (str: string) => pc(`{volvox}ctgA:${str}`)
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createView(args?: any, adminMode?: boolean) {
+export async function createView(args?: any, adminMode?: boolean) {
+  const ret = createViewNoWait(args, adminMode)
+  const { view } = ret
+  if (view && 'initialized' in view) {
+    await waitFor(() => expect(view.initialized).toBe(true), { timeout: 10000 })
+  }
+  return ret
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function createViewNoWait(args?: any, adminMode?: boolean) {
   const pluginManager = getPluginManager(args, adminMode)
   const rest = render(<JBrowse pluginManager={pluginManager} />)
 
@@ -159,7 +161,7 @@ export function doBeforeEach(
 }
 
 export async function doSetupForImportForm(val?: unknown) {
-  const args = createView(val)
+  const args = await createView(val)
   const { view, findByTestId, getByPlaceholderText, findByPlaceholderText } =
     args
 

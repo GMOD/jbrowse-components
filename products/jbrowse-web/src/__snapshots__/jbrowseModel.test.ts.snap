@@ -2181,6 +2181,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "formatDetails": {
         "feature": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>',extrafield:'Field added with custom callback:' + feature.name,phase:undefined,type:undefined}",
+        "subfeatures": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>Subfeature: '+(!feature.name?'No name':feature.name)+'</a>'}",
       },
       "name": "GFF3Tabix genes",
       "trackId": "gff3tabix_genes",
