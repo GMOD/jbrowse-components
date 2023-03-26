@@ -1,32 +1,15 @@
 import React, { useState } from 'react'
-import {
-  Typography,
-  Link,
-  Paper,
-  Checkbox,
-  FormControlLabel,
-  FormGroup,
-} from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
+import { Link, Paper } from '@mui/material'
 import { observer } from 'mobx-react'
-import { getSession } from '@jbrowse/core/util'
 import copy from 'copy-to-clipboard'
 import clone from 'clone'
-import {
-  FeatureDetails,
-  BaseCard,
-  SimpleValue,
-} from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
-import { getLengthOnRef } from '../MismatchParser'
+import { FeatureDetails } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
 
-const useStyles = makeStyles()({
-  compact: {
-    paddingRight: 0,
-    paddingTop: 0,
-    paddingBottom: 0,
-  },
-})
+// locals
+import { getTag, navToLoc } from './util'
+import SupplementaryAlignments from './AlignmentsFeatureSuppAligns'
+import AlignmentFlags from './AlignmentsFeatureFlags'
 
 const omit = ['clipPos', 'flags']
 
@@ -94,52 +77,6 @@ const tags = {
   UQ: 'Phred likelihood of the segment, conditional on the mapping being correct',
 }
 
-const flagNames = [
-  'read paired',
-  'read mapped in proper pair',
-  'read unmapped',
-  'mate unmapped',
-  'read reverse strand',
-  'mate reverse strand',
-  'first in pair',
-  'second in pair',
-  'not primary alignment',
-  'read fails platform/vendor quality checks',
-  'read is PCR or optical duplicate',
-  'supplementary alignment',
-]
-function AlignmentFlags(props: { feature: { flags: number } }) {
-  const { classes } = useStyles()
-  const { feature } = props
-  const { flags } = feature
-
-  return (
-    <BaseCard {...props} title="Flags">
-      <SimpleValue name="Flag" value={flags} />
-      <FormGroup>
-        {flagNames.map((name, index) => {
-          const val = flags & (1 << index)
-          const key = `${name}_${val}`
-          return (
-            <FormControlLabel
-              key={key}
-              control={
-                <Checkbox
-                  className={classes.compact}
-                  checked={Boolean(val)}
-                  name={name}
-                  readOnly
-                />
-              }
-              label={name}
-            />
-          )
-        })}
-      </FormGroup>
-    </BaseCard>
-  )
-}
-
 function Formatter({ value }: { value: unknown }) {
   const [show, setShow] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -166,65 +103,6 @@ function Formatter({ value }: { value: unknown }) {
   )
 }
 
-function SupplementaryAlignments(props: {
-  tag: string
-  model: IAnyStateTreeNode
-}) {
-  const { tag, model } = props
-  return (
-    <BaseCard {...props} title="Supplementary alignments">
-      <Typography>List of supplementary alignment locations</Typography>
-      <ul>
-        {tag
-          .split(';')
-          .filter(SA => !!SA)
-          .map((SA, index) => {
-            const [saRef, saStart, saStrand, saCigar] = SA.split(',')
-            const saLength = getLengthOnRef(saCigar)
-            const extra = Math.floor(saLength / 5)
-            const start = +saStart
-            const end = +saStart + saLength
-            const locString = `${saRef}:${Math.max(1, start - extra)}-${
-              end + extra
-            }`
-            const displayStart = start.toLocaleString('en-US')
-            const displayEnd = end.toLocaleString('en-US')
-            const displayString = `${saRef}:${displayStart}-${displayEnd} (${saStrand})`
-            return (
-              <li key={`${locString}-${index}`}>
-                <Link
-                  onClick={async event => {
-                    event.preventDefault()
-                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                    navToLoc(locString, model)
-                  }}
-                  href="#"
-                >
-                  {displayString}
-                </Link>
-              </li>
-            )
-          })}
-      </ul>
-    </BaseCard>
-  )
-}
-
-async function navToLoc(locString: string, model: IAnyStateTreeNode) {
-  const session = getSession(model)
-  const { view } = model
-  try {
-    if (view) {
-      await view.navToLocString(locString)
-    } else {
-      throw new Error('No view associated with this view anymore')
-    }
-  } catch (e) {
-    console.error(e)
-    session.notify(`${e}`)
-  }
-}
-
 function PairLink({
   locString,
   model,
@@ -246,17 +124,9 @@ function PairLink({
   )
 }
 
-function getTag(
-  tag: string,
-  feat: {
-    tags?: { [key: string]: unknown }
-    [key: string]: unknown
-  },
-) {
-  return feat.tags?.[tag] || feat[tag]
-}
-
-function AlignmentFeatureDetails(props: { model: IAnyStateTreeNode }) {
+export default observer(function AlignmentFeatureDetails(props: {
+  model: IAnyStateTreeNode
+}) {
   const { model } = props
   const feat = clone(model.featureData)
   const SA = getTag('SA', feat) as string
@@ -282,6 +152,4 @@ function AlignmentFeatureDetails(props: { model: IAnyStateTreeNode }) {
       ) : null}
     </Paper>
   )
-}
-
-export default observer(AlignmentFeatureDetails)
+})
