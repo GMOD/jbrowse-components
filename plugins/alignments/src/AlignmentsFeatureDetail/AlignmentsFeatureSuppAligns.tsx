@@ -3,6 +3,7 @@ import { Typography, Link } from '@mui/material'
 import { BaseCard } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import { getLengthOnRef } from '../MismatchParser'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
+import { navToLoc } from './util'
 
 export default function SupplementaryAlignments(props: {
   tag: string
@@ -33,6 +34,7 @@ export default function SupplementaryAlignments(props: {
                 <Link
                   onClick={async event => {
                     event.preventDefault()
+
                     // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     navToLoc(locString, model)
                   }}
