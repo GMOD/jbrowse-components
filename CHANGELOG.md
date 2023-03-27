@@ -1,3 +1,79 @@
+## 2.4.2 (2023-03-27)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                                 | Download                                                          |
+| --------------------------------------- | ----------------------------------------------------------------- |
+| @jbrowse/core                           | https://www.npmjs.com/package/@jbrowse/core                       |
+| @jbrowse/plugin-alignments              | https://www.npmjs.com/package/@jbrowse/plugin-alignments          |
+| @jbrowse/plugin-arc                     |                                                                   |
+| @jbrowse/plugin-config                  | https://www.npmjs.com/package/@jbrowse/plugin-config              |
+| @jbrowse/plugin-data-management         | https://www.npmjs.com/package/@jbrowse/plugin-data-management     |
+| @jbrowse/plugin-hic                     |                                                                   |
+| @jbrowse/plugin-linear-comparative-view |                                                                   |
+| @jbrowse/plugin-linear-genome-view      | https://www.npmjs.com/package/@jbrowse/plugin-linear-genome-view  |
+| @jbrowse/plugin-lollipop                |                                                                   |
+| @jbrowse/plugin-sequence                | https://www.npmjs.com/package/@jbrowse/plugin-sequence            |
+| @jbrowse/plugin-spreadsheet-view        |                                                                   |
+| @jbrowse/plugin-svg                     | https://www.npmjs.com/package/@jbrowse/plugin-svg                 |
+| @jbrowse/plugin-trix                    | https://www.npmjs.com/package/@jbrowse/plugin-trix                |
+| @jbrowse/plugin-variants                | https://www.npmjs.com/package/@jbrowse/plugin-variants            |
+| @jbrowse/cli                            | https://www.npmjs.com/package/@jbrowse/cli                        |
+| @jbrowse/desktop                        |                                                                   |
+| @jbrowse/img                            | https://www.npmjs.com/package/@jbrowse/img                        |
+| @jbrowse/react-circular-genome-view     | https://www.npmjs.com/package/@jbrowse/react-circular-genome-view |
+| @jbrowse/react-linear-genome-view       | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view   |
+| @jbrowse/web                            |                                                                   |
+
+</p>
+</details>
+
+#### :rocket: Enhancement
+
+- `core`
+  - [#3604](https://github.com/GMOD/jbrowse-components/pull/3604) Alignments
+    tags description in feature details on mouseover
+    ([@cmdcolin](https://github.com/cmdcolin))
+- Other
+  - [#3586](https://github.com/GMOD/jbrowse-components/pull/3586) Add
+    authorization(internetAccount) support for Trix index files
+    ([@andrzejgrzelak](https://github.com/andrzejgrzelak))
+
+#### :bug: Bug Fix
+
+- Other
+  - [#3610](https://github.com/GMOD/jbrowse-components/pull/3610) Avoid cutting
+    off import form of spreadsheet view, fix overflowed text in table header
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3600](https://github.com/GMOD/jbrowse-components/pull/3600) Fix using the
+    force load button after a stats timeout
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3592](https://github.com/GMOD/jbrowse-components/pull/3592) Fix shading on
+    synteny features after mouseout ([@cmdcolin](https://github.com/cmdcolin))
+- `__mocks__`, `core`
+  - [#3608](https://github.com/GMOD/jbrowse-components/pull/3608) Fix
+    subfeatures formatter not being applied to feature detail panel
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3607](https://github.com/GMOD/jbrowse-components/pull/3607) Avoid
+    "ResizeObserver" loop warning during development
+    ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#3593](https://github.com/GMOD/jbrowse-components/pull/3593) Fix gene
+    without subfeatures not being displayed in sequence feature details
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :house: Internal
+
+- [#3611](https://github.com/GMOD/jbrowse-components/pull/3611) Use local data
+  instead of remote data for LGV component test
+  ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 2
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- [@andrzejgrzelak](https://github.com/andrzejgrzelak)
+
 ## 2.4.1 (2023-03-14)
 
 <details><summary>Packages in this release</summary>
