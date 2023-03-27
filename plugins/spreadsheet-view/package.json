@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-spreadsheet-view",
-  "version": "2.4.1",
+  "version": "2.4.2",
   "description": "JBrowse 2 spreadsheet view",
   "keywords": [
     "jbrowse",
@@ -39,7 +39,7 @@
   "dependencies": {
     "@gmod/bgzf-filehandle": "^1.4.3",
     "@gmod/vcf": "^5.0.9",
-    "@jbrowse/plugin-variants": "^2.4.1",
+    "@jbrowse/plugin-variants": "^2.4.2",
     "@mui/icons-material": "^5.0.1",
     "csvtojson": "^2.0.10"
   },
