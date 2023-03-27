@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
-import { getParent, Instance } from 'mobx-state-tree'
+import { getParent } from 'mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 
 // icons
@@ -9,12 +9,10 @@ import CropFreeIcon from '@mui/icons-material/CropFree'
 import ArrowDropDown from '@mui/icons-material/ArrowDropDown'
 
 // locals
-import SpreadsheetStateModel from '../models/Spreadsheet'
+import { SpreadsheetModel } from '../models/Spreadsheet'
 import ColumnMenu from './ColumnMenu'
 import SortIndicator from './SortIndicator'
 import { numToColName } from './util'
-
-type SpreadsheetModel = Instance<typeof SpreadsheetStateModel>
 
 interface ColMenu {
   colNumber: number
@@ -42,6 +40,7 @@ const useStyles = makeStyles()(theme => ({
 
   topLeftCorner: {
     background: theme.palette.mode === 'dark' ? '#333' : '#eee',
+    zIndex: 2,
     position: 'sticky',
     top: 0,
     minWidth: theme.spacing(2),
@@ -96,7 +95,7 @@ const DataTableHeader = observer(function ({
                 }}
               >
                 <IconButton
-                  onClick={(evt: React.MouseEvent<HTMLElement>) => {
+                  onClick={evt => {
                     setColumnMenu({
                       colNumber,
                       anchorEl: evt.currentTarget,
