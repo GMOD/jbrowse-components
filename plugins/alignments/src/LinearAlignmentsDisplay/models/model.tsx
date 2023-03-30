@@ -20,6 +20,7 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { MenuItem } from '@jbrowse/core/ui'
+import { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 const minDisplayHeight = 20
 
@@ -234,9 +235,9 @@ function stateModelFactory(
       /**
        * #action
        */
-      updateQuantitativeStatsLimit(stats?: unknown) {
-        self.PileupDisplay.updateQuantitativeStatsLimit(stats)
-        self.SNPCoverageDisplay.updateQuantitativeStatsLimit(stats)
+      setFeatureDensityStatsLimit(stats?: FeatureDensityStats) {
+        self.PileupDisplay.setFeatureDensityStatsLimit(stats)
+        self.SNPCoverageDisplay.setFeatureDensityStatsLimit(stats)
       },
 
       /**
