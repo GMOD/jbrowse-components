@@ -234,9 +234,9 @@ function stateModelFactory(
       /**
        * #action
        */
-      updateStatsLimit(stats?: unknown) {
-        self.PileupDisplay.updateStatsLimit(stats)
-        self.SNPCoverageDisplay.updateStatsLimit(stats)
+      updateQuantitativeStatsLimit(stats?: unknown) {
+        self.PileupDisplay.updateQuantitativeStatsLimit(stats)
+        self.SNPCoverageDisplay.updateQuantitativeStatsLimit(stats)
       },
 
       /**

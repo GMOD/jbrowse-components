@@ -5,7 +5,7 @@ import { reduce } from 'rxjs/operators'
 import { NoAssemblyRegion } from './types'
 import { Feature } from './simpleFeature'
 
-export interface UnrectifiedFeatureStats {
+export interface UnrectifiedQuantitativeStats {
   scoreMin: number
   scoreMax: number
   scoreSum: number
@@ -13,7 +13,7 @@ export interface UnrectifiedFeatureStats {
   featureCount: number
   basesCovered: number
 }
-export interface FeatureStats extends UnrectifiedFeatureStats {
+export interface QuantitativeStats extends UnrectifiedQuantitativeStats {
   featureDensity: number
   scoreMean: number
   scoreStdDev: number
@@ -58,7 +58,7 @@ export function calcStdFromSums(
  * @returns - a summary stats object with
  * scoreMean, scoreStdDev, and featureDensity added
  */
-export function rectifyStats(s: UnrectifiedFeatureStats) {
+export function rectifyStats(s: UnrectifiedQuantitativeStats) {
   return {
     ...s,
     scoreMean: (s.scoreSum || 0) / (s.featureCount || s.basesCovered || 1),
@@ -68,7 +68,7 @@ export function rectifyStats(s: UnrectifiedFeatureStats) {
       s.featureCount || s.basesCovered,
     ),
     featureDensity: (s.featureCount || 1) / s.basesCovered,
-  } as FeatureStats
+  } as QuantitativeStats
 }
 
 /**
@@ -170,5 +170,5 @@ export function blankStats() {
     featureCount: 0,
     featureDensity: 0,
     basesCovered: 0,
-  } as FeatureStats
+  } as QuantitativeStats
 }

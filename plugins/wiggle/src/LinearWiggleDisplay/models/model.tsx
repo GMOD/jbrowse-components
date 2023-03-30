@@ -134,7 +134,7 @@ function stateModelFactory(
       /**
        * #action
        */
-      updateStats(stats: { scoreMin: number; scoreMax: number }) {
+      updateQuantitativeStats(stats: { scoreMin: number; scoreMax: number }) {
         const { scoreMin, scoreMax } = stats
         const EPSILON = 0.000001
         if (!self.stats) {
@@ -685,7 +685,7 @@ function stateModelFactory(
               ...self.renderProps(),
             })
             if (isAlive(self)) {
-              self.updateStats(stats)
+              self.updateQuantitativeStats(stats)
               superReload()
             }
           } catch (e) {

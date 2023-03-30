@@ -7,7 +7,10 @@ import { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
 import { updateStatus, Feature } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { rectifyStats, UnrectifiedFeatureStats } from '@jbrowse/core/util/stats'
+import {
+  rectifyStats,
+  UnrectifiedQuantitativeStats,
+} from '@jbrowse/core/util/stats'
 
 interface WiggleOptions extends BaseOptions {
   resolution?: number
@@ -61,7 +64,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
 
   public async getGlobalStats(opts?: BaseOptions) {
     const { header } = await this.setup(opts)
-    return rectifyStats(header.totalSummary as UnrectifiedFeatureStats)
+    return rectifyStats(header.totalSummary as UnrectifiedQuantitativeStats)
   }
 
   public getFeatures(region: Region, opts: WiggleOptions = {}) {
