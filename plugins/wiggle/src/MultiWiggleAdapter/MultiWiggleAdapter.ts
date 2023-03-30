@@ -106,7 +106,7 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   }
 
   // always render bigwig instead of calculating a feature density for it
-  async estimateRegionsStats(_regions: Region[]) {
+  async getMultiRegionFeatureDensityStats(_regions: Region[]) {
     return { featureDensity: 0 }
   }
 

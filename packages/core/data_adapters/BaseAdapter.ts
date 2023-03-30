@@ -93,14 +93,11 @@ export abstract class BaseAdapter {
   public abstract freeResources(region: Region): void
 }
 
-type FeatureDensityStats =
-  | {
-      featureDensity: number
-    }
-  | {
-      fetchSizeLimit: number
-      bytes: number
-    }
+export interface FeatureDensityStats {
+  featureDensity?: number
+  fetchSizeLimit?: number
+  bytes?: number
+}
 
 /**
  * Base class for feature adapters to extend. Defines some methods that
@@ -260,7 +257,7 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
    * of  this API is to alert the user if they are going to be downloading too
    * much information, and give them a hint to zoom in to see more. The default
    * implementation samples from the regions, downloads feature data with
-   * getFeatures, and returns an object with the form {featureDensity:number}
+   * getFeatures, and returns an object with the form \{featureDensity:number\}
    *
    * Derived classes can override this to return alternative calculations for
    * featureDensity, or they can also return an object containing a byte size

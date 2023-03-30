@@ -263,7 +263,7 @@ export async function getStats(
 }
 
 export function statsAutorun(self: {
-  estimatedStatsReady: boolean
+  featureDensityStatsReady: boolean
   regionTooLarge: boolean
   setLoading: (aborter: AbortController) => void
   setError: (error: unknown) => void
@@ -284,7 +284,7 @@ export function statsAutorun(self: {
 
           if (
             !view.initialized ||
-            !self.estimatedStatsReady ||
+            !self.featureDensityStatsReady ||
             self.regionTooLarge
           ) {
             return

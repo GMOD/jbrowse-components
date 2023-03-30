@@ -102,7 +102,10 @@ export class WiggleGetMultiRegionStats extends RpcMethodType {
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
 
     if (dataAdapter instanceof BaseFeatureDataAdapter) {
-      return dataAdapter.getMultiRegionStats(regions, deserializedArgs)
+      return dataAdapter.getMultiRegionQuantitativeStats(
+        regions,
+        deserializedArgs,
+      )
     }
     throw new Error('Data adapter not found')
   }
