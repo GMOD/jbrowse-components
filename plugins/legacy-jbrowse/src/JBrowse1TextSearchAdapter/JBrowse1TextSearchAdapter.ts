@@ -1,6 +1,6 @@
 import {
   BaseTextSearchAdapter,
-  BaseArgs,
+  BaseTextSearchArgs,
   BaseAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
@@ -57,7 +57,7 @@ export default class JBrowse1TextSearchAdapter
     return this.httpMap.getBucket(query)
   }
 
-  async searchIndex(args: BaseArgs) {
+  async searchIndex(args: BaseTextSearchArgs) {
     const { searchType, queryString } = args
     const tracks = this.tracksNames || (await this.httpMap.getTrackNames())
     const str = queryString.toLowerCase()

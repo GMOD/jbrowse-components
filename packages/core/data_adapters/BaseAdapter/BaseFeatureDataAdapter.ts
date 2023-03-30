@@ -1,103 +1,15 @@
 import { Observable, firstValueFrom, merge } from 'rxjs'
 import { toArray } from 'rxjs/operators'
-import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
 
 // locals
-import { ObservableCreate } from '../util/rxjs'
-import { checkAbortSignal, sum, max, min } from '../util'
-import { Feature } from '../util/simpleFeature'
-import {
-  readConfObject,
-  AnyConfigurationModel,
-  ConfigurationSchema,
-} from '../configuration'
-import { getSubAdapterType } from './dataAdapterCache'
-import { AugmentedRegion as Region, NoAssemblyRegion } from '../util/types'
-import { blankStats, rectifyStats, scoresToStats } from '../util/stats'
-import BaseResult from '../TextSearch/BaseResults'
-import idMaker from '../util/idMaker'
-import PluginManager from '../PluginManager'
-
-export interface BaseOptions {
-  signal?: AbortSignal
-  bpPerPx?: number
-  sessionId?: string
-  statusCallback?: (message: string) => void
-  headers?: Record<string, string>
-  [key: string]: unknown
-}
-
-export type SearchType = 'full' | 'prefix' | 'exact'
-
-export interface BaseArgs {
-  searchType?: SearchType
-  queryString: string
-  signal?: AbortSignal
-  limit?: number
-  pageNumber?: number
-}
-// see
-// https://www.typescriptlang.org/docs/handbook/2/classes.html#abstract-construct-signatures
-// for why this is the abstract construct signature
-export interface AnyAdapter {
-  new (
-    config: AnyConfigurationModel,
-    getSubAdapter?: getSubAdapterType,
-    pluginManager?: PluginManager | undefined,
-  ): AnyDataAdapter
-}
-
-export type AnyDataAdapter =
-  | BaseAdapter
-  | BaseFeatureDataAdapter
-  | BaseRefNameAliasAdapter
-  | BaseTextSearchAdapter
-  | RegionsAdapter
-  | BaseSequenceAdapter
-
-export interface SequenceAdapter
-  extends BaseFeatureDataAdapter,
-    RegionsAdapter {}
-
-const EmptyConfig = ConfigurationSchema('empty', {})
-
-export abstract class BaseAdapter {
-  public id: string
-
-  static capabilities = [] as string[]
-
-  constructor(
-    public config: AnyConfigurationModel = EmptyConfig.create(),
-    public getSubAdapter?: getSubAdapterType,
-    public pluginManager?: PluginManager,
-  ) {
-    // note: we use switch on jest here for more simple feature IDs
-    // in test environment
-    if (typeof jest === 'undefined') {
-      const data = isStateTreeNode(config) ? getSnapshot(config) : config
-      this.id = `${idMaker(data)}`
-    } else {
-      this.id = 'test'
-    }
-  }
-
-  getConf(arg: string | string[]) {
-    return readConfObject(this.config, arg)
-  }
-
-  /**
-   * Called to provide a hint that data tied to a certain region will not be
-   * needed for the foreseeable future and can be purged from caches, etc
-   * @param region - Region
-   */
-  public abstract freeResources(region: Region): void
-}
-
-export interface FeatureDensityStats {
-  featureDensity?: number
-  fetchSizeLimit?: number
-  bytes?: number
-}
+import { BaseAdapter } from './BaseAdapter'
+import { BaseOptions } from './BaseOptions'
+import { FeatureDensityStats } from './types'
+import { ObservableCreate } from '../../util/rxjs'
+import { checkAbortSignal, sum, max, min } from '../../util'
+import { Feature } from '../../util/simpleFeature'
+import { AugmentedRegion as Region } from '../../util/types'
+import { blankStats, rectifyStats, scoresToStats } from '../../util/stats'
 
 /**
  * Base class for feature adapters to extend. Defines some methods that
@@ -106,21 +18,35 @@ export interface FeatureDensityStats {
 export abstract class BaseFeatureDataAdapter extends BaseAdapter {
   /**
    * Get all reference sequence names used in the data source
+   * Example:
+   * public async getRefNames(opts?: BaseOptions): Promise\<string[]\> \}
+   *   await this.setup()
+   *   const \{ refNames \} = this.metadata
+   *   return refNames
+   * \}
+   *
    *
    * NOTE: If an adapter is unable to determine the reference sequence names,
    * the array will be empty
    * @param opts - Feature adapter options
    */
   public abstract getRefNames(opts?: BaseOptions): Promise<string[]>
-  // public abstract async getRefNames(opts?: BaseOptions): Promise<string[]>
-  //   await this.setup()
-  //   const { refNames } = this.metadata
-  //   return refNames
-  // }
-  //
 
   /**
    * Get features from the data source that overlap a region
+   * Example:
+   * public getFeatures(
+   *   region: Region,
+   *   opts: BaseOptions,
+   * ): Observable<Feature> \{
+   *   return ObservableCreate(observer =\> \{
+   *     const records = getRecords(assembly, refName, start, end)
+   *     records.forEach(record =\> \{
+   *       observer.next(this.recordToFeature(record))
+   *     \})
+   *     observer.complete()
+   *   \})
+   * \}
    * @param region - Region
    * @param opts - Feature adapter options
    * @returns Observable of Feature objects in the region
@@ -129,18 +55,6 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     region: Region,
     opts?: BaseOptions,
   ): Observable<Feature>
-  // public abstract getFeatures(
-  //   region: Region,
-  //   opts: BaseOptions,
-  // ): Observable<Feature> {
-  //   return ObservableCreate(observer => {
-  //     const records = getRecords(assembly, refName, start, end)
-  //     records.forEach(record => {
-  //       observer.next(this.recordToFeature(record))
-  //     })
-  //     observer.complete()
-  //   })
-  // }
 
   /**
    * Return "header info" that is fetched from the data file, or other info
@@ -181,9 +95,9 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
    * Checks if the store has data for the given assembly and reference
    * sequence, and then gets the features in the region if it does.
    *
-   * Currently this just calls getFeatureInRegion for each region. Adapters
-   * that are frequently called on multiple regions simultaneously may
-   * want to implement a more efficient custom version of this method.
+   * Currently this just calls getFeatureInRegion for each region. Adapters that
+   * are frequently called on multiple regions simultaneously may want to
+   * implement a more efficient custom version of this method.
    *
    * Currently this just calls getFeatureInRegion for each region. Adapters that
    * are frequently called on multiple regions simultaneously may want to
@@ -253,9 +167,9 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
   }
 
   /**
-   * Calculates the "feature density" of a set of regions. The primary purpose
-   * of  this API is to alert the user if they are going to be downloading too
-   * much information, and give them a hint to zoom in to see more. The default
+   * Calculates the "feature density" of a region. The primary purpose of this
+   * API is to alert the user if they are going to be downloading too much
+   * information, and give them a hint to zoom in to see more. The default
    * implementation samples from the regions, downloads feature data with
    * getFeatures, and returns an object with the form \{featureDensity:number\}
    *
@@ -266,14 +180,7 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
    * data' (e.g. CRAM and
    * BAM may vary on what they think too much data is)
    */
-  public async getMultiRegionFeatureDensityStats(
-    regions: Region[],
-    opts?: BaseOptions,
-  ) {
-    if (!regions.length) {
-      throw new Error('No regions supplied')
-    }
-    const region = regions[0]
+  getRegionFeatureDensityStats(region: Region, opts?: BaseOptions) {
     let lastTime = +Date.now()
     const statsFromInterval = async (length: number, expansionTime: number) => {
       const { start, end } = region
@@ -323,72 +230,27 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     return statsFromInterval(1000, 0)
   }
 
-  // renamed to getMultiRegionFeatureDensityStats
-  public estimateRegionsStats(regions: Region[], opts?: BaseOptions) {
-    return this.getMultiRegionFeatureDensityStats(regions, opts)
+  /**
+   * Calculates the "feature density" of a set of regions. The primary purpose
+   * of this API is to alert the user if they are going to be downloading too
+   * much information, and give them a hint to zoom in to see more. The default
+   * implementation samples from the regions, downloads feature data with
+   * getFeatures, and returns an object with the form \{featureDensity:number\}
+   *
+   * Derived classes can override this to return alternative calculations for
+   * featureDensity, or they can also return an object containing a byte size
+   * calculation with the format \{bytes:number, fetchSizeLimit:number\} where
+   * fetchSizeLimit is the adapter-defined limit for what it thinks is 'too much
+   * data' (e.g. CRAM and
+   * BAM may vary on what they think too much data is)
+   */
+  public async getMultiRegionFeatureDensityStats(
+    regions: Region[],
+    opts?: BaseOptions,
+  ) {
+    if (!regions.length) {
+      throw new Error('No regions supplied')
+    }
+    return this.getRegionFeatureDensityStats(regions[0], opts)
   }
-
-  // renamed to getRegionQuantitativeStats
-  public getRegionStats(region: Region, opts?: BaseOptions) {
-    return this.getRegionQuantitativeStats(region, opts)
-  }
-
-  // renamed to getMultiRegionQuantitativeStats
-  public getMultiRegionStats(regions: Region[] = [], opts?: BaseOptions) {
-    return this.getMultiRegionQuantitativeStats(regions, opts)
-  }
-}
-
-export interface RegionsAdapter extends BaseAdapter {
-  getRegions(opts: BaseOptions): Promise<NoAssemblyRegion[]>
-}
-
-export abstract class BaseSequenceAdapter
-  extends BaseFeatureDataAdapter
-  implements RegionsAdapter
-{
-  async getMultiRegionFeatureDensityStats() {
-    return { featureDensity: 0 }
-  }
-
-  abstract getRegions(opts: BaseOptions): Promise<NoAssemblyRegion[]>
-}
-
-export function isSequenceAdapter(
-  thing: AnyDataAdapter,
-): thing is BaseSequenceAdapter {
-  return 'getRegions' in thing && 'getFeatures' in thing
-}
-
-export function isRegionsAdapter(
-  thing: AnyDataAdapter,
-): thing is RegionsAdapter {
-  return 'getRegions' in thing
-}
-
-export function isFeatureAdapter(
-  thing: AnyDataAdapter,
-): thing is BaseFeatureDataAdapter {
-  return 'getFeatures' in thing
-}
-
-export interface Alias {
-  refName: string
-  aliases: string[]
-}
-export interface BaseRefNameAliasAdapter extends BaseAdapter {
-  getRefNameAliases(opts: BaseOptions): Promise<Alias[]>
-}
-export function isRefNameAliasAdapter(
-  thing: object,
-): thing is BaseRefNameAliasAdapter {
-  return 'getRefNameAliases' in thing
-}
-export interface BaseTextSearchAdapter extends BaseAdapter {
-  searchIndex(args: BaseArgs): Promise<BaseResult[]>
-}
-export function isTextSearchAdapter(
-  thing: AnyDataAdapter,
-): thing is BaseTextSearchAdapter {
-  return 'searchIndex' in thing
 }

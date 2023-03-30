@@ -1,16 +1,11 @@
 import BaseResult from './BaseResults'
 import PluginManager from '../PluginManager'
 import QuickLRU from '../util/QuickLRU'
-import { SearchType, BaseTextSearchAdapter } from '../data_adapters/BaseAdapter'
+import {
+  BaseTextSearchAdapter,
+  BaseTextSearchArgs,
+} from '../data_adapters/BaseAdapter'
 import { readConfObject, AnyConfigurationModel } from '../configuration'
-
-export interface BaseArgs {
-  queryString: string
-  searchType?: SearchType
-  signal?: AbortSignal
-  limit?: number
-  pageNumber?: number
-}
 
 export interface SearchScope {
   includeAggregateIndexes: boolean
@@ -91,7 +86,7 @@ export default class TextSearchManager {
    * limit of results to return, searchType...prefix | full | exact", etc.
    */
   async search(
-    args: BaseArgs,
+    args: BaseTextSearchArgs,
     searchScope: SearchScope,
     rankFn: (results: BaseResult[]) => BaseResult[],
   ) {
