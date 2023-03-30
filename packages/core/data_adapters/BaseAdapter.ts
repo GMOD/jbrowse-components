@@ -93,11 +93,14 @@ export abstract class BaseAdapter {
   public abstract freeResources(region: Region): void
 }
 
-export interface Stats {
-  featureDensity?: number
-  fetchSizeLimit?: number
-  bytes?: number
-}
+type FeatureDensityStats =
+  | {
+      featureDensity: number
+    }
+  | {
+      fetchSizeLimit: number
+      bytes: number
+    }
 
 /**
  * Base class for feature adapters to extend. Defines some methods that
@@ -198,9 +201,7 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     opts: BaseOptions = {},
   ) {
     return merge(
-      ...regions.map(region => {
-        return this.getFeaturesInRegion(region, opts)
-      }),
+      ...regions.map(region => this.getFeaturesInRegion(region, opts)),
     )
   }
 
@@ -214,17 +215,27 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     return refNames.includes(refName)
   }
 
-  public async getRegionStats(region: Region, opts?: BaseOptions) {
+  /**
+   * Calculates the minimum score, maximum score, and other statistics from
+   * features over a region, primarily used for quantitative tracks
+   */
+  public async getRegionQuantitativeStats(region: Region, opts?: BaseOptions) {
     const feats = this.getFeatures(region, opts)
     return scoresToStats(region, feats)
   }
-
-  public async getMultiRegionStats(regions: Region[] = [], opts?: BaseOptions) {
+  /**
+   * Calculates the minimum score, maximum score, and other statistics from
+   * features over multiple regions, primarily used for quantitative tracks
+   */
+  public async getMultiRegionQuantitativeStats(
+    regions: Region[] = [],
+    opts?: BaseOptions,
+  ) {
     if (!regions.length) {
       return blankStats()
     }
     const feats = await Promise.all(
-      regions.map(region => this.getRegionStats(region, opts)),
+      regions.map(region => this.getRegionQuantitativeStats(region, opts)),
     )
 
     const scoreMax = max(feats.map(a => a.scoreMax))
@@ -244,23 +255,42 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     })
   }
 
-  public async estimateRegionsStats(regions: Region[], opts?: BaseOptions) {
+  /**
+   * Calculates the "feature density" of a set of regions. The primary purpose
+   * of  this API is to alert the user if they are going to be downloading too
+   * much information, and give them a hint to zoom in to see more. The default
+   * implementation samples from the regions, downloads feature data with
+   * getFeatures, and returns an object with the form {featureDensity:number}
+   *
+   * Derived classes can override this to return alternative calculations for
+   * featureDensity, or they can also return an object containing a byte size
+   * calculation with the format \{bytes:number, fetchSizeLimit:number\} where
+   * fetchSizeLimit is the adapter-defined limit for what it thinks is 'too much
+   * data' (e.g. CRAM and
+   * BAM may vary on what they think too much data is)
+   */
+  public async getMultiRegionFeatureDensityStats(
+    regions: Region[],
+    opts?: BaseOptions,
+  ) {
     if (!regions.length) {
-      throw new Error('No regions to estimate stats for')
+      throw new Error('No regions supplied')
     }
     const region = regions[0]
     let lastTime = +Date.now()
     const statsFromInterval = async (length: number, expansionTime: number) => {
       const { start, end } = region
       const sampleCenter = start * 0.75 + end * 0.25
-      const query = {
-        ...region,
-        start: Math.max(0, Math.round(sampleCenter - length / 2)),
-        end: Math.min(Math.round(sampleCenter + length / 2), end),
-      }
 
       const features = await firstValueFrom(
-        this.getFeatures(query, opts).pipe(toArray()),
+        this.getFeatures(
+          {
+            ...region,
+            start: Math.max(0, Math.round(sampleCenter - length / 2)),
+            end: Math.min(Math.round(sampleCenter + length / 2), end),
+          },
+          opts,
+        ).pipe(toArray()),
       )
 
       return maybeRecordStats(
@@ -273,10 +303,10 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
 
     const maybeRecordStats = async (
       interval: number,
-      stats: Stats,
+      stats: FeatureDensityStats,
       statsSampleFeatures: number,
       expansionTime: number,
-    ): Promise<Stats> => {
+    ): Promise<FeatureDensityStats> => {
       const refLen = region.end - region.start
       if (statsSampleFeatures >= 70 || interval * 2 > refLen) {
         return stats
@@ -295,6 +325,21 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
 
     return statsFromInterval(1000, 0)
   }
+
+  // renamed to getMultiRegionFeatureDensityStats
+  public estimateRegionsStats(regions: Region[], opts?: BaseOptions) {
+    return this.getMultiRegionFeatureDensityStats(regions, opts)
+  }
+
+  // renamed to getRegionQuantitativeStats
+  public getRegionStats(region: Region, opts?: BaseOptions) {
+    return this.getRegionQuantitativeStats(region, opts)
+  }
+
+  // renamed to getMultiRegionQuantitativeStats
+  public getMultiRegionStats(regions: Region[] = [], opts?: BaseOptions) {
+    return this.getMultiRegionQuantitativeStats(regions, opts)
+  }
 }
 
 export interface RegionsAdapter extends BaseAdapter {
@@ -305,7 +350,7 @@ export abstract class BaseSequenceAdapter
   extends BaseFeatureDataAdapter
   implements RegionsAdapter
 {
-  async estimateRegionsStats() {
+  async getMultiRegionFeatureDensityStats() {
     return { featureDensity: 0 }
   }
 

@@ -142,7 +142,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
   }
 
   // don't do feature stats estimation, similar to bigwigadapter
-  async estimateRegionsStats(_regions: Region[]) {
+  async getMultiRegionFeatureDensityStats(_regions: Region[]) {
     return { featureDensity: 0 }
   }
 

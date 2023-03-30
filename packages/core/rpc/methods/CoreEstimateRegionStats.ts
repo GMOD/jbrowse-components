@@ -44,6 +44,9 @@ export default class CoreEstimateRegionStats extends RpcMethodType {
     if (!isFeatureAdapter(dataAdapter)) {
       throw new Error('Adapter does not support retrieving features')
     }
-    return dataAdapter.estimateRegionsStats(regions, deserializedArgs)
+    return dataAdapter.getMultiRegionFeatureDensityStats(
+      regions,
+      deserializedArgs,
+    )
   }
 }
