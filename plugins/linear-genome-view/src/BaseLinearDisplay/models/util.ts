@@ -54,7 +54,7 @@ export async function getFeatureDensityStatsPre(
   }
   const sessionId = getRpcSessionId(self)
 
-  return rpcManager.call(sessionId, 'CoreEstimateRegionStats', {
+  return rpcManager.call(sessionId, 'CoreGetFeatureDensityStats', {
     sessionId,
     regions,
     adapterConfig,

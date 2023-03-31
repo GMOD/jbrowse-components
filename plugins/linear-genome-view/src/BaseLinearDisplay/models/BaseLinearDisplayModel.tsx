@@ -318,7 +318,7 @@ function stateModelFactory() {
       /**
        * #action
        */
-      clearRegionsStats() {
+      clearFeatureDensityStats() {
         self.featureDensityStatsP = undefined
         self.featureDensityStats = undefined
       },
@@ -534,7 +534,7 @@ function stateModelFactory() {
                 return
               }
 
-              self.clearRegionsStats()
+              self.clearFeatureDensityStats()
               self.setCurrBpPerPx(view.bpPerPx)
               const featureDensityStats = await self.getFeatureDensityStats()
               if (isAlive(self)) {

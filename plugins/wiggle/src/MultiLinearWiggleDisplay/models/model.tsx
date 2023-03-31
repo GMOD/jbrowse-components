@@ -30,8 +30,7 @@ import {
 import {
   getNiceDomain,
   getScale,
-  getStats,
-  statsAutorun,
+  quantitativeStatsAutorun,
   YSCALEBAR_LABEL_OFFSET,
 } from '../../util'
 
@@ -662,27 +661,12 @@ const stateModelFactory = (
       type ExportSvgOpts = Parameters<typeof superRenderSvg>[0]
 
       return {
-        // re-runs stats and refresh whole display on reload
         async reload() {
           self.setError()
-          const aborter = new AbortController()
-          let stats
-          try {
-            self.setLoading(aborter)
-            stats = await getStats(self, {
-              signal: aborter.signal,
-              ...self.renderProps(),
-            })
-            if (isAlive(self)) {
-              self.updateQuantitativeStats(stats)
-              superReload()
-            }
-          } catch (e) {
-            self.setError(e)
-          }
+          superReload()
         },
         afterAttach() {
-          statsAutorun(self)
+          quantitativeStatsAutorun(self)
           addDisposer(
             self,
             autorun(async () => {

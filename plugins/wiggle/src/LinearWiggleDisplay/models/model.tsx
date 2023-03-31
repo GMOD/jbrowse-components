@@ -17,15 +17,14 @@ import {
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
-import { isAlive, types, Instance } from 'mobx-state-tree'
+import { types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 import { axisPropsFromTickScale } from 'react-d3-axis-mod'
 import {
   getNiceDomain,
   getScale,
-  getStats,
-  statsAutorun,
+  quantitativeStatsAutorun,
   YSCALEBAR_LABEL_OFFSET,
 } from '../../util'
 
@@ -677,23 +676,11 @@ function stateModelFactory(
          */
         async reload() {
           self.setError()
-          const aborter = new AbortController()
-          self.setLoading(aborter)
-          try {
-            const stats = await getStats(self, {
-              signal: aborter.signal,
-              ...self.renderProps(),
-            })
-            if (isAlive(self)) {
-              self.updateQuantitativeStats(stats)
-              superReload()
-            }
-          } catch (e) {
-            self.setError(e)
-          }
+          superReload()
         },
+
         afterAttach() {
-          statsAutorun(self)
+          quantitativeStatsAutorun(self)
         },
         /**
          * #action

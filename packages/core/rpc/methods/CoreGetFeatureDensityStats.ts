@@ -6,8 +6,8 @@ import { RemoteAbortSignal } from '../remoteAbortSignals'
 import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
 import { renameRegionsIfNeeded, Region } from '../../util'
 
-export default class CoreEstimateRegionStats extends RpcMethodType {
-  name = 'CoreEstimateRegionStats'
+export default class CoreGetFeatureDensityStats extends RpcMethodType {
+  name = 'CoreGetFeatureDensityStats'
 
   async serializeArguments(
     args: RenderArgs & {

@@ -176,7 +176,7 @@ export function groupBy<T>(array: T[], predicate: (v: T) => string) {
   return result
 }
 
-export async function getStats(
+export async function getQuantitativeStats(
   self: {
     adapterConfig: AnyConfigurationModel
     autoscaleType: string
@@ -206,7 +206,7 @@ export async function getStats(
   if (autoscaleType === 'global' || autoscaleType === 'globalsd') {
     const results: QuantitativeStats = (await rpcManager.call(
       sessionId,
-      'WiggleGetGlobalStats',
+      'WiggleGetGlobalQuantitativeStats',
       params,
     )) as QuantitativeStats
     const { scoreMin, scoreMean, scoreStdDev } = results
@@ -225,7 +225,7 @@ export async function getStats(
     const { dynamicBlocks, bpPerPx } = getContainingView(self) as LGV
     const results = (await rpcManager.call(
       sessionId,
-      'WiggleGetMultiRegionStats',
+      'WiggleGetMultiRegionQuantitativeStats',
       {
         ...params,
         regions: dynamicBlocks.contentBlocks.map(region => {
@@ -255,16 +255,17 @@ export async function getStats(
   if (autoscaleType === 'zscale') {
     return rpcManager.call(
       sessionId,
-      'WiggleGetGlobalStats',
+      'WiggleGetGlobalQuantitativeStats',
       params,
     ) as Promise<QuantitativeStats>
   }
   throw new Error(`invalid autoscaleType '${autoscaleType}'`)
 }
 
-export function statsAutorun(self: {
+export function quantitativeStatsAutorun(self: {
   featureDensityStatsReady: boolean
   regionTooLarge: boolean
+  error: unknown
   setLoading: (aborter: AbortController) => void
   setError: (error: unknown) => void
   updateQuantitativeStats: (
@@ -288,13 +289,14 @@ export function statsAutorun(self: {
           if (
             !view.initialized ||
             !self.featureDensityStatsReady ||
-            self.regionTooLarge
+            self.regionTooLarge ||
+            self.error
           ) {
             return
           }
           const statsRegion = JSON.stringify(view.dynamicBlocks)
 
-          const wiggleStats = await getStats(self, {
+          const wiggleStats = await getQuantitativeStats(self, {
             signal: aborter.signal,
             ...self.renderProps(),
           })
