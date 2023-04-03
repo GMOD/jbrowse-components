@@ -8,8 +8,7 @@ import typescript from '@rollup/plugin-typescript'
 import path from 'path'
 import { defineConfig, OutputOptions, Plugin, RollupOptions } from 'rollup'
 import externalGlobals from 'rollup-plugin-external-globals'
-import builtins from 'rollup-plugin-node-builtins'
-import globals from 'rollup-plugin-node-globals'
+import nodePolyfills from 'rollup-plugin-polyfill-node'
 import sourceMaps from 'rollup-plugin-sourcemaps'
 import { terser } from 'rollup-plugin-terser'
 import { babelPluginJBrowse } from './babelPluginJBrowse'
@@ -86,8 +85,8 @@ function getPlugins(
     }),
     mode === 'npm' && sourceMaps(),
     mode === 'npm' && writeIndex(packageName, distPath),
-    (mode === 'esmBundle' || mode === 'umd') && globals(),
-    (mode === 'esmBundle' || mode === 'umd') && builtins(),
+    (mode === 'esmBundle' || mode === 'umd') &&
+      nodePolyfills({ include: null }),
     (mode === 'cjs' || mode === 'esmBundle') && omitUnresolved(),
   ].filter(Boolean)
 
