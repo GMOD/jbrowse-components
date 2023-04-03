@@ -310,13 +310,16 @@ export default class PileupRenderer extends BoxRendererType {
   }) {
     const heightLim = charHeight - 2
     const { feature, topPx, heightPx } = feat
-    const seq = feature.get('seq') as string
+    const seq = feature.get('seq') as string | undefined
     const cigarOps = parseCigar(feature.get('CIGAR'))
     const w = 1 / bpPerPx
     const start = feature.get('start')
     let soffset = 0 // sequence offset
     let roffset = 0 // reference offset
 
+    if (!seq) {
+      return
+    }
     for (let i = 0; i < cigarOps.length; i += 2) {
       const len = +cigarOps[i]
       const op = cigarOps[i + 1]
