@@ -188,7 +188,7 @@ export default function ReadVsRefDialog({
       })
       features.sort((a, b) => a.clipPos - b.clipPos)
 
-      const featSeq = feature.get('seq') as string
+      const featSeq = feature.get('seq') as string | undefined
 
       // the config feature store includes synthetic mate features
       // mapped to the read assembly

@@ -172,7 +172,7 @@ export default class PileupRenderer extends BoxRendererType {
     // Expand the start and end of feature when softclipping enabled
     if (showSoftClip) {
       const mismatches = feature.get('mismatches') as Mismatch[] | undefined
-      const seq = feature.get('seq') as string
+      const seq = feature.get('seq') as string | undefined
       if (seq && mismatches) {
         for (let i = 0; i < mismatches.length; i += 1) {
           const { type, start, cliplen = 0 } = mismatches[i]
@@ -454,9 +454,12 @@ export default class PileupRenderer extends BoxRendererType {
 
     const cigar = feature.get('CIGAR')
     const start = feature.get('start')
-    const seq = feature.get('seq')
+    const seq = feature.get('seq') as string | undefined
     const strand = feature.get('strand')
     const cigarOps = parseCigar(cigar)
+    if (!seq) {
+      return
+    }
 
     const modifications = getModificationPositions(mm, seq, strand)
 
@@ -524,9 +527,13 @@ export default class PileupRenderer extends BoxRendererType {
     const cigar = feature.get('CIGAR')
     const fstart = feature.get('start')
     const fend = feature.get('end')
-    const seq = feature.get('seq')
+    const seq = feature.get('seq') as string | undefined
     const strand = feature.get('strand')
     const cigarOps = parseCigar(cigar)
+
+    if (!seq) {
+      return
+    }
 
     const methBins = new Array(region.end - region.start).fill(0)
     const modifications = getModificationPositions(mm, seq, strand)
@@ -1038,7 +1045,7 @@ export default class PileupRenderer extends BoxRendererType {
     const [region] = regions
     const minFeatWidth = readConfObject(config, 'minSubfeatureWidth')
     const mismatches = feature.get('mismatches') as Mismatch[] | undefined
-    const seq = feature.get('seq')
+    const seq = feature.get('seq') as string | undefined
     const { charWidth, charHeight } = this.getCharWidthHeight()
     const { bases } = theme.palette
     const colorForBase: { [key: string]: string } = {

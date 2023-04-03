@@ -461,15 +461,23 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #getter
        */
       get rendererConfig() {
-        const configBlob =
-          getConf(self, ['renderers', self.rendererTypeName]) || {}
+        const {
+          featureHeight,
+          noSpacing,
+          trackMaxHeight,
+          mismatchAlpha,
+          rendererTypeName,
+        } = self
+        const configBlob = getConf(self, ['renderers', rendererTypeName]) || {}
         return self.rendererType.configSchema.create(
           {
             ...configBlob,
-            height: self.featureHeight,
-            noSpacing: self.noSpacing,
-            maxHeight: self.trackMaxHeight,
-            mismatchAlpha: self.mismatchAlpha,
+            ...(featureHeight !== undefined ? { height: featureHeight } : {}),
+            ...(noSpacing !== undefined ? { noSpacing } : {}),
+            ...(mismatchAlpha !== undefined ? { mismatchAlpha } : {}),
+            ...(trackMaxHeight !== undefined
+              ? { maxHeight: trackMaxHeight }
+              : {}),
           },
           getEnv(self),
         )

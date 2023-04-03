@@ -527,7 +527,11 @@ const libs = {
       return () => useStyles().classes
     },
   },
-  '@mui/material': LazyMUICore,
+  '@mui/material': {
+    ...LazyMUICore,
+    alpha: MUIStyles.alpha,
+    useTheme: MUIStyles.useTheme,
+  },
   'prop-types': PropTypes,
 
   // end special case
