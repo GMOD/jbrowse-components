@@ -86,6 +86,9 @@ function getPlugins(
     mode === 'npm' && sourceMaps(),
     mode === 'npm' && writeIndex(packageName, distPath),
     (mode === 'esmBundle' || mode === 'umd') &&
+      // By default, nodePolyfills only polyfills code in node_modules/. We set
+      // to null here to include the plugin srouce code itself (and for Yarn 2/3
+      // compatiblity, since it doesn't use node_moduels/).
       nodePolyfills({ include: null }),
     (mode === 'cjs' || mode === 'esmBundle') && omitUnresolved(),
   ].filter(Boolean)
