@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { RaStanza, TrackDbFile } from '@gmod/ucsc-hub'
+import { RaStanza, TrackDbFile, HubFile, GenomesFile } from '@gmod/ucsc-hub'
 import { FileLocation, isUriLocation, objectHash } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import {
@@ -10,7 +10,6 @@ import {
 export async function fetchHubFile(hubLocation: FileLocation) {
   try {
     const hubFileText = await openLocation(hubLocation).readFile('utf8')
-    const { HubFile } = await import('@gmod/ucsc-hub')
     return new HubFile(hubFileText)
   } catch (error) {
     throw new Error(`Not a valid hub.txt file, got error: '${error}'`)
@@ -19,13 +18,11 @@ export async function fetchHubFile(hubLocation: FileLocation) {
 
 export async function fetchGenomesFile(genomesLoc: FileLocation) {
   const genomesFileText = await openLocation(genomesLoc).readFile('utf8')
-  const { GenomesFile } = await import('@gmod/ucsc-hub')
   return new GenomesFile(genomesFileText)
 }
 
 export async function fetchTrackDbFile(trackDbLoc: FileLocation) {
   const text = await openLocation(trackDbLoc).readFile('utf8')
-  const { TrackDbFile } = await import('@gmod/ucsc-hub')
   return new TrackDbFile(text)
 }
 

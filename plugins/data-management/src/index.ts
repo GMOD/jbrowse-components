@@ -1,7 +1,7 @@
 import { lazy } from 'react'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
-import UCSCTrackHubConnectionF from './ucsc-trackhub'
+import UCSCHubConnectionF from './ucsc-hubs'
 import AddTrackWidgetF from './AddTrackWidget'
 
 import AddConnectionWidgetF from './AddConnectionWidget'
@@ -21,7 +21,7 @@ export default class extends Plugin {
   }
 
   install(pluginManager: PluginManager) {
-    UCSCTrackHubConnectionF(pluginManager)
+    UCSCHubConnectionF(pluginManager)
     AddTrackWidgetF(pluginManager)
     HierarchicalTrackSelectorWidgetF(pluginManager)
     AddConnectionWidgetF(pluginManager)
