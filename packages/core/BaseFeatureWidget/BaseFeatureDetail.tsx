@@ -396,7 +396,7 @@ function DataGridDetails({
           }}
         >
           <DataGrid
-            disableSelectionOnClick
+            disableRowSelectionOnClick
             rowHeight={rowHeight}
             rows={rows}
             hideFooterSelectedRowCount

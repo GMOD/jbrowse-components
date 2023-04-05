@@ -63,7 +63,7 @@ export default observer(function WarningDialog({
           <DataGrid
             rows={rows}
             columns={columns}
-            disableSelectionOnClick
+            disableRowSelectionOnClick
             rowHeight={25}
             disableColumnMenu
           />
