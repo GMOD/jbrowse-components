@@ -1,7 +1,7 @@
 import { IAnyModelType } from 'mobx-state-tree'
 import PluggableElementBase from './PluggableElementBase'
 import { getDefaultValue } from '../util/mst-reflection'
-import { AnyConfigurationSchemaType } from '../configuration/configurationSchema'
+import { AnyConfigurationSchemaType } from '../configuration/types'
 
 export default class InternetAccountType extends PluggableElementBase {
   stateModel: IAnyModelType

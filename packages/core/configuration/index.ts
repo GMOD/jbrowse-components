@@ -4,8 +4,10 @@ export {
 } from './configurationSchema'
 
 export type {
-  AnyConfigurationModel,
   AnyConfigurationSchemaType,
-} from './configurationSchema'
+  AnyConfigurationModel,
+  AnyConfigurationSlot,
+  AnyConfigurationSlotType,
+} from './types'
 
 export * from './util'

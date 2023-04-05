@@ -179,6 +179,7 @@ export function groupBy<T>(array: T[], predicate: (v: T) => string) {
 export async function getQuantitativeStats(
   self: {
     adapterConfig: AnyConfigurationModel
+    configuration: AnyConfigurationModel
     autoscaleType: string
     setMessage: (str: string) => void
   },
@@ -273,6 +274,7 @@ export function quantitativeStatsAutorun(self: {
     statsRegion: string,
   ) => void
   renderProps: () => Record<string, unknown>
+  configuration: AnyConfigurationModel
   adapterConfig: AnyConfigurationModel
   autoscaleType: string
   setMessage: (str: string) => void

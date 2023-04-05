@@ -7,7 +7,7 @@ import {
   IStateTreeNode,
   IType,
 } from 'mobx-state-tree'
-import { AnyConfigurationModel } from '../../configuration/configurationSchema'
+import { AnyConfigurationModel } from '../../configuration'
 
 import assemblyManager from '../../assemblyManager'
 import TextSearchManager from '../../TextSearch/TextSearchManager'
@@ -105,6 +105,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
     name: string
     connectionId: string
     tracks: AnyConfigurationModel[]
+    configuration: AnyConfigurationModel
   }[]
   makeConnection?: Function
   adminMode?: boolean
@@ -252,6 +253,7 @@ export function isViewModel(thing: unknown): thing is AbstractViewModel {
 
 export interface AbstractTrackModel {
   displays: AbstractDisplayModel[]
+  configuration: AnyConfigurationModel
 }
 
 export function isTrackModel(thing: unknown): thing is AbstractTrackModel {

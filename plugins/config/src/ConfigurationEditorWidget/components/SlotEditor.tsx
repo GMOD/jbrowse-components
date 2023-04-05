@@ -27,7 +27,7 @@ import BooleanEditor from './BooleanEditor'
 import {
   AnyConfigurationSlot,
   AnyConfigurationSlotType,
-} from '@jbrowse/core/configuration/configurationSchema'
+} from '@jbrowse/core/configuration'
 
 const StringEditor = observer(
   ({

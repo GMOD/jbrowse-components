@@ -5,7 +5,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { TwoBitFile } from '@gmod/twobit'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 

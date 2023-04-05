@@ -2,6 +2,7 @@ import { types, getSnapshot } from 'mobx-state-tree'
 import { ConfigurationSchema } from './configurationSchema'
 import { isConfigurationModel } from './util'
 import { getConf, readConfObject } from '.'
+// import { ConfigurationSchemaForModel, GetOptions, GetBase, ConfigurationSlotName } from './types'
 
 describe('configuration schemas', () => {
   test('can make a schema with a color', () => {
@@ -21,6 +22,7 @@ describe('configuration schemas', () => {
     })
 
     const model = container.create()
+
     expect(isConfigurationModel(model.configuration)).toBe(true)
     expect(getConf(model, 'backgroundColor')).toBe('#eee')
     expect(getConf(model, 'someInteger')).toBe(12)
@@ -35,6 +37,13 @@ describe('configuration schemas', () => {
     expect(getConf(model, 'someInteger', { a: 5 })).toBe(10)
     model.configuration.someInteger.set(42)
     expect(getConf(model, 'someInteger', { a: 5 })).toBe(42)
+
+    // typescript tests
+    // const conf = model.configuration
+    // let schema: ConfigurationSchemaForModel<typeof conf>
+    // let options: GetOptions<typeof schema>
+    // let base: GetBase<typeof schema>
+    // let slot: ConfigurationSlotName<typeof schema>
   })
 
   test('can nest an array of configuration schemas', () => {
@@ -84,6 +93,47 @@ describe('configuration schemas', () => {
     expect(isConfigurationModel(model.configuration)).toBe(true)
     expect(getConf(model, 'someInteger')).toBe(12)
     // expect(getConf(model, 'mySubConfiguration.someNumber')).toBe(4.3)
+  })
+
+  test('a schema can inherit from another base schema', () => {
+    const base = ConfigurationSchema('Foo', {
+      someInteger: {
+        description: 'an integer slot',
+        type: 'integer',
+        defaultValue: 12,
+      },
+      mySubConfiguration: ConfigurationSchema('SubObject', {
+        someNumber: {
+          description: 'some number in a subconfiguration',
+          type: 'number',
+          defaultValue: 4.3,
+        },
+      }),
+    })
+
+    const child = ConfigurationSchema(
+      'Bar',
+      {
+        anotherInteger: {
+          type: 'integer',
+          defaultValue: 4,
+        },
+      },
+      {
+        baseConfiguration: base,
+      },
+    )
+
+    const model = child.create()
+    expect(isConfigurationModel(model)).toBe(true)
+    expect(readConfObject(model, 'someInteger')).toBe(12)
+
+    // typescript tests
+    // const conf = model
+    // let schema: ConfigurationSchemaForModel<typeof conf>
+    // let options: GetOptions<typeof schema>
+    // let baseConf: GetBase<typeof schema>
+    // let slot: ConfigurationSlotName<typeof schema>
   })
 
   test('can snapshot a simple schema', () => {

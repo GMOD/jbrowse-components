@@ -381,9 +381,9 @@ export default function assemblyFactory(
        */
       async loadPre() {
         const conf = self.configuration
-        const refNameAliasesAdapterConf = conf.refNameAliases?.adapter
-        const cytobandAdapterConf = conf.cytobands?.adapter
-        const sequenceAdapterConf = conf.sequence.adapter
+        const refNameAliasesAdapterConf = conf?.refNameAliases?.adapter
+        const cytobandAdapterConf = conf?.cytobands?.adapter
+        const sequenceAdapterConf = conf?.sequence.adapter
         const assemblyName = self.name
 
         const regions = await getAssemblyRegions(sequenceAdapterConf, pm)

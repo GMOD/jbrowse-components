@@ -14,7 +14,7 @@ import { checkAbortSignal, getSerializedSvg, updateStatus } from '../../util'
 import SerializableFilterChain, {
   SerializedFilterChain,
 } from './util/serializableFilterChain'
-import { AnyConfigurationModel } from '../../configuration/configurationSchema'
+import { AnyConfigurationModel } from '../../configuration'
 import RpcManager from '../../rpc/RpcManager'
 import { createJBrowseTheme } from '../../ui'
 

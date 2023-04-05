@@ -159,6 +159,9 @@ export default function ReadVsRefDialog({
       // tracks can be opened on the top panel of the linear read vs ref
       const { assemblyManager } = session
       const assembly = assemblyManager.get(trackAssembly)
+      if (!assembly) {
+        throw new Error('assembly not found')
+      }
 
       const suppAlns = featurizeSA(SA, feature.id(), origStrand, readName, true)
 

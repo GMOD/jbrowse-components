@@ -77,11 +77,11 @@ export default function createViewState(opts: ViewStateOptions) {
     if (!session.view.initialized) {
       return
     }
-    const asm = assemblyManager.get(assembly.name)
-    if (!asm?.regions) {
+    const regions = assemblyManager.get(assembly?.name)?.regions
+    if (!regions) {
       return
     }
-    session.view.setDisplayedRegions(asm.regions)
+    session.view.setDisplayedRegions(regions)
     reaction.dispose()
   })
   if (onChange) {
