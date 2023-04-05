@@ -59,11 +59,8 @@ export default function UCSCTrackHubConnection(pluginManager: PluginManager) {
             ) {
               continue
             }
-            const conf = session.assemblies.find(a =>
-              readConfObject(a, 'name') === genomeName ||
-              Array.isArray(readConfObject(a, 'aliases'))
-                ? readConfObject(a, 'aliases').includes(genomeName)
-                : false,
+            const conf = session.assemblies.find(
+              a => readConfObject(a, 'name') === genomeName,
             )
             if (!conf) {
               throw new Error(
