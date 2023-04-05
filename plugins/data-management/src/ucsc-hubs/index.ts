@@ -4,6 +4,8 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import stateModelFactory from './model'
 import configSchema from './configSchema'
 
+import ConnectionConfigurator from './ConnectionConfigurator'
+
 export default (pluginManager: PluginManager) => {
   pluginManager.addConnectionType(
     () =>
@@ -14,6 +16,7 @@ export default (pluginManager: PluginManager) => {
         displayName: 'UCSC Track Hub',
         description: 'A track or assembly hub in the Track Hub format',
         url: '//genome.ucsc.edu/goldenPath/help/hgTrackHubHelp.html#Intro',
+        configEditorComponent: ConnectionConfigurator,
       }),
   )
 }
