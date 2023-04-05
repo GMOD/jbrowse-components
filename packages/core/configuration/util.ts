@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   isStateTreeNode,
   getSnapshot,
@@ -11,9 +12,10 @@ import {
   isLateType,
 } from 'mobx-state-tree'
 
-import {
+import type {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
+  ConfigurationSlotName,
 } from './configurationSchema'
 import {
   getUnionSubTypes,
@@ -31,12 +33,10 @@ import {
  * @param args - extra arguments e.g. for a feature callback,
  *  will be sent to each of the slotNames
  */
-export function readConfObject(
-  confObject: AnyConfigurationModel,
-  slotPath: string[] | string | undefined = undefined,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  args: Record<string, any> = {},
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
+  confObject: CONFMODEL,
+  slotPath?: ConfigurationSlotName<CONFMODEL> | string[],
+  args: Record<string, unknown> = {},
 ): any {
   if (!confObject) {
     throw new TypeError('must provide conf object to read')
@@ -81,21 +81,28 @@ export function readConfObject(
     return slot
   }
 
-  const slotName = slotPath[0]
-  if (slotPath.length > 1) {
-    const newPath = slotPath.slice(1)
-    let subConf = confObject[slotName]
-    // check for the subconf being a map if we don't find it immediately
-    if (
-      !subConf &&
-      isStateTreeNode(confObject) &&
-      isMapType(getType(confObject))
-    ) {
-      subConf = confObject.get(slotName)
+  if (Array.isArray(slotPath)) {
+    const slotName = slotPath[0]
+    if (slotPath.length > 1) {
+      const newPath = slotPath.slice(1)
+      let subConf = confObject[slotName]
+      // check for the subconf being a map if we don't find it immediately
+      if (
+        !subConf &&
+        isStateTreeNode(confObject) &&
+        isMapType(getType(confObject))
+      ) {
+        subConf = confObject.get(slotName)
+      }
+      return subConf ? readConfObject(subConf, newPath, args) : undefined
     }
-    return subConf ? readConfObject(subConf, newPath, args) : undefined
+    return readConfObject(
+      confObject,
+      slotName as ConfigurationSlotName<CONFMODEL>,
+      args,
+    )
   }
-  return readConfObject(confObject, slotName, args)
+  throw new TypeError('slotPath must be a string or array')
 }
 
 /**

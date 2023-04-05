@@ -81,8 +81,9 @@ export abstract class BaseAdapter {
     }
   }
 
+  /** @deprecated use `getConf(adapter, 'mySlotName')` instead */
   getConf(arg: string | string[]) {
-    return readConfObject(this.config, arg)
+    return readConfObject(this.config, arg as string)
   }
 
   /**

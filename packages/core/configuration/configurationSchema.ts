@@ -231,14 +231,29 @@ function makeConfigurationSchemaModel<
   return types.optional(completeModel, modelDefault)
 }
 
-export interface AnyConfigurationSchemaType
-  extends ReturnType<typeof makeConfigurationSchemaModel> {
+export interface ConfigurationSchemaType<
+  DEFINITION extends ConfigurationSchemaDefinition,
+  OPTIONS extends ConfigurationSchemaOptions,
+> extends ReturnType<typeof makeConfigurationSchemaModel<DEFINITION, OPTIONS>> {
   isJBrowseConfigurationSchema: boolean
   jbrowseSchemaDefinition: ConfigurationSchemaDefinition
   jbrowseSchemaOptions: ConfigurationSchemaOptions
   type: string
+  [key: string]: unknown
 }
 
+/** the possible names of configuration slots for a config schema or model */
+export type ConfigurationSlotName<CONFSCHEMA> =
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  CONFSCHEMA extends ConfigurationSchemaType<infer D, any>
+    ? keyof D & string
+    : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    CONFSCHEMA extends Instance<ConfigurationSchemaType<infer D, any>>
+    ? keyof D & string
+    : never
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AnyConfigurationSchemaType = ConfigurationSchemaType<any, any>
 export type AnyConfigurationModel = Instance<AnyConfigurationSchemaType>
 export type AnyConfigurationSlotType = ReturnType<typeof ConfigSlot>
 export type AnyConfigurationSlot = Instance<AnyConfigurationSlotType>
