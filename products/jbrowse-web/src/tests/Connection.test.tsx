@@ -1,4 +1,6 @@
-import { fireEvent } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import configSnapshot from '../../test_data/volvox/config.json'
 import { LocalFile } from 'generic-filehandle'
 
 import { createView, generateReadBuffer, doBeforeEach } from './util'
@@ -9,19 +11,19 @@ beforeEach(() => {
 })
 
 const readBuffer = generateReadBuffer(
-  url => new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),
+  s => new LocalFile(require.resolve(`../../test_data/volvox/${s}`)),
 )
 
 const readBuffer2 = generateReadBuffer(
-  url =>
-    new LocalFile(require.resolve(`../../test_data/volvoxhub/hub1/${url}`)),
+  s => new LocalFile(require.resolve(`../../test_data/volvoxhub/hub1/${s}`)),
 )
 
-const delay = 40000
+const delay = { timeout: 40000 }
 const opts = [{}, delay]
 const root = 'https://jbrowse.org/volvoxhub/'
 
 test('Open up a UCSC trackhub connection', async () => {
+  const user = userEvent.setup()
   // @ts-expect-error
   fetch.mockResponse(async request => {
     if (request.url.startsWith(root)) {
@@ -32,14 +34,22 @@ test('Open up a UCSC trackhub connection', async () => {
     return readBuffer(request)
   })
 
-  const { findByTestId, findByText } = await createView()
+  const { findByText, findByTestId } = await createView(configSnapshot)
 
-  fireEvent.click(await findByText('File'))
-  fireEvent.click(await findByText(/Open connection/))
-  fireEvent.click(await findByText('Next'))
-  fireEvent.change(await findByTestId('urlInput'), {
-    target: { value: 'https://jbrowse.org/volvoxhub/hub.txt' },
-  })
-  fireEvent.click(await findByText('Connect'))
+  await user.click(await screen.findByText('File'))
+  await user.click(await screen.findByText('Open connection...'))
+
+  const elt = await screen.findByText('Next', ...opts)
+  await waitFor(() => expect(elt).toHaveProperty('disabled', false))
+  await user.click(elt)
+
+  const input = await findByTestId('urlInput', ...opts)
+  await user.clear(input)
+  await user.type(input, root + 'hub.txt')
+
+  const elt2 = await screen.findByText('Connect', ...opts)
+  await waitFor(() => expect(elt2).toHaveProperty('disabled', false))
+  await user.click(elt2)
+
   await findByText('CRAM - Volvox Sorted', ...opts)
 }, 40000)
