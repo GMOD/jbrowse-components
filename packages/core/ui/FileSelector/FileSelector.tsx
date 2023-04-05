@@ -42,14 +42,14 @@ function shorten(str: string, len: number) {
   return str
 }
 
-export default observer(function (props: {
+const FileSelector: React.FC<{
   location?: FileLocation
   setLocation: (param: FileLocation) => void
   setName?: (str: string) => void
   name?: string
   description?: string
   rootModel?: AbstractRootModel
-}) {
+}> = observer(props => {
   const { location, name, description, rootModel, setLocation } = props
   const fileOrUrl = !location || isUriLocation(location) ? 'url' : 'file'
   const [toggleButtonValue, setToggleButtonValue] = useState(
@@ -197,3 +197,5 @@ export default observer(function (props: {
     </>
   )
 })
+
+export default FileSelector
