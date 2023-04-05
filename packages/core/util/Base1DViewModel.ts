@@ -196,17 +196,26 @@ const Base1DView = types
     /**
      * #action
      */
-    zoomTo(newBpPerPx: number, offset = self.width / 2) {
-      const bpPerPx = newBpPerPx
-      if (bpPerPx === self.bpPerPx) {
-        return self.bpPerPx
-      }
-      const oldBpPerPx = self.bpPerPx
-      self.bpPerPx = bpPerPx
+    zoomTo(bpPerPx: number, offset = self.width / 2) {
+      const newBpPerPx = clamp(
+        bpPerPx,
+        'minBpPerPx' in self ? (self.minBpPerPx as number) : 0,
+        'maxBpPerPx' in self ? (self.maxBpPerPx as number) : Infinity,
+      )
 
-      // tweak the offset so that the center of the view remains at the same coordinate
+      const oldBpPerPx = self.bpPerPx
+      if (Math.abs(oldBpPerPx - newBpPerPx) < 0.000001) {
+        return oldBpPerPx
+      }
+
+      self.bpPerPx = newBpPerPx
+
+      // tweak the offset so that the center of the view remains at the same
+      // coordinate
       self.offsetPx = clamp(
-        Math.round(((self.offsetPx + offset) * oldBpPerPx) / bpPerPx - offset),
+        Math.round(
+          ((self.offsetPx + offset) * oldBpPerPx) / newBpPerPx - offset,
+        ),
         self.minOffset,
         self.maxOffset,
       )

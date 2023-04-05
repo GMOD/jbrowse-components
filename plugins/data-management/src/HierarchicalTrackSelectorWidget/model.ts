@@ -15,7 +15,14 @@ import { ElementId } from '@jbrowse/core/util/types/mst'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 function hasAnyOverlap<T>(a1: T[] = [], a2: T[] = []) {
-  return !!a1.find(value => a2.includes(value))
+  // shortcut case is that arrays are single entries, and are equal
+  // long case is that we use a set
+  if (a1[0] === a2[0]) {
+    return true
+  } else {
+    const s1 = new Set(a1)
+    return a2.some(a => s1.has(a))
+  }
 }
 
 export function matches(
@@ -116,7 +123,7 @@ export function generateHierarchy(
           id: conf.trackId,
           name: getTrackName(conf, session),
           conf,
-          checked: !!tracks.find(f => f.configuration === conf),
+          checked: tracks.some(f => f.configuration === conf),
           children: [],
         },
       )
@@ -175,7 +182,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           return undefined
         }
         for (const display of trackConf.displays) {
-          if (viewType.displayTypes.find(d => d.name === display.type)) {
+          if (viewType.displayTypes.some(d => d.name === display.type)) {
             return trackConf
           }
         }
@@ -194,9 +201,10 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         const refseq = self.getRefSeqTrackConf(assemblyName)
         // filter out tracks that don't match the current assembly (check all
         // assembly aliases) and display types
-        return (refseq ? [refseq] : []).concat([
+        return [
+          ...(refseq ? [refseq] : []),
           ...filterTracks(tracks, self, assemblyName),
-        ])
+        ]
       },
 
       get assemblyNames(): string[] {
@@ -233,7 +241,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           (assembly &&
             connectionInstances
               ?.map(c => ({
-                // @ts-ignore
+                // @ts-expect-error
                 id: getSnapshot(c).configuration,
                 name: getConf(c, 'name'),
                 children: this.connectionHierarchy(assemblyName, c),

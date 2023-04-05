@@ -33,6 +33,7 @@ const useStyles = makeStyles()(theme => ({
     position: 'absolute',
     top: 0,
     height: HEADER_OVERVIEW_HEIGHT,
+    overflow: 'hidden',
   },
   scalebarContigForward: {
     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 15 9'%3E%3Cpath d='M-.1 0L6 4.5L-.1 9' fill='none' stroke='${theme.palette.divider}'/%3E%3C/svg%3E")`,
@@ -73,65 +74,63 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const Polygon = observer(
-  ({
-    model,
-    overview,
-    useOffset = true,
-  }: {
-    model: LGV
-    overview: Base1DViewModel
-    useOffset?: boolean
-  }) => {
-    const theme = useTheme()
-    const multiplier = Number(useOffset)
-    const { interRegionPaddingWidth, offsetPx, dynamicBlocks, cytobandOffset } =
-      model
-    const { contentBlocks, totalWidthPxWithoutBorders } = dynamicBlocks
+const Polygon = observer(function ({
+  model,
+  overview,
+  useOffset = true,
+}: {
+  model: LGV
+  overview: Base1DViewModel
+  useOffset?: boolean
+}) {
+  const theme = useTheme()
+  const multiplier = Number(useOffset)
+  const { interRegionPaddingWidth, offsetPx, dynamicBlocks, cytobandOffset } =
+    model
+  const { contentBlocks, totalWidthPxWithoutBorders } = dynamicBlocks
 
-    const { tertiary, primary } = theme.palette
-    const polygonColor = tertiary ? tertiary.light : primary.light
+  const { tertiary, primary } = theme.palette
+  const polygonColor = tertiary ? tertiary.light : primary.light
 
-    if (!contentBlocks.length) {
-      return null
-    }
-    const first = contentBlocks[0]
-    const last = contentBlocks[contentBlocks.length - 1]
-    const topLeft =
-      (overview.bpToPx({
-        ...first,
-        coord: first.reversed ? first.end : first.start,
-      }) || 0) +
-      cytobandOffset * multiplier
-    const topRight =
-      (overview.bpToPx({
-        ...last,
-        coord: last.reversed ? last.start : last.end,
-      }) || 0) +
-      cytobandOffset * multiplier
+  if (!contentBlocks.length) {
+    return null
+  }
+  const first = contentBlocks[0]
+  const last = contentBlocks[contentBlocks.length - 1]
+  const topLeft =
+    (overview.bpToPx({
+      ...first,
+      coord: first.reversed ? first.end : first.start,
+    }) || 0) +
+    cytobandOffset * multiplier
+  const topRight =
+    (overview.bpToPx({
+      ...last,
+      coord: last.reversed ? last.start : last.end,
+    }) || 0) +
+    cytobandOffset * multiplier
 
-    const startPx = Math.max(0, -offsetPx)
-    const endPx =
-      startPx +
-      totalWidthPxWithoutBorders +
-      (contentBlocks.length * interRegionPaddingWidth) / 2
+  const startPx = Math.max(0, -offsetPx)
+  const endPx =
+    startPx +
+    totalWidthPxWithoutBorders +
+    (contentBlocks.length * interRegionPaddingWidth) / 2
 
-    const points = [
-      [startPx, HEADER_BAR_HEIGHT],
-      [endPx, HEADER_BAR_HEIGHT],
-      [topRight, 0],
-      [topLeft, 0],
-    ]
+  const points = [
+    [startPx, HEADER_BAR_HEIGHT],
+    [endPx, HEADER_BAR_HEIGHT],
+    [topRight, 0],
+    [topLeft, 0],
+  ]
 
-    return (
-      <polygon
-        points={points.toString()}
-        fill={alpha(polygonColor, 0.3)}
-        stroke={alpha(polygonColor, 0.8)}
-      />
-    )
-  },
-)
+  return (
+    <polygon
+      points={points.toString()}
+      fill={alpha(polygonColor, 0.3)}
+      stroke={alpha(polygonColor, 0.8)}
+    />
+  )
+})
 
 type LGV = LinearGenomeViewModel
 
@@ -221,86 +220,84 @@ const OverviewBox = observer(function ({
   )
 })
 
-const Scalebar = observer(
-  ({
-    model,
-    scale,
-    overview,
-  }: {
-    model: LGV
-    overview: Base1DViewModel
-    scale: number
-  }) => {
-    const { classes } = useStyles()
-    const theme = useTheme()
-    const { dynamicBlocks, showCytobands, cytobandOffset } = model
-    const visibleRegions = dynamicBlocks.contentBlocks
-    const overviewVisibleRegions = overview.dynamicBlocks
+const Scalebar = observer(function ({
+  model,
+  scale,
+  overview,
+}: {
+  model: LGV
+  overview: Base1DViewModel
+  scale: number
+}) {
+  const { classes } = useStyles()
+  const theme = useTheme()
+  const { dynamicBlocks, showCytobands, cytobandOffset } = model
+  const visibleRegions = dynamicBlocks.contentBlocks
+  const overviewVisibleRegions = overview.dynamicBlocks
 
-    const { tertiary, primary } = theme.palette
-    const scalebarColor = tertiary ? tertiary.light : primary.light
+  const { tertiary, primary } = theme.palette
+  const scalebarColor = tertiary ? tertiary.light : primary.light
 
-    if (!visibleRegions.length) {
-      return null
-    }
-    const first = visibleRegions[0]
-    const firstOverviewPx =
-      overview.bpToPx({
-        ...first,
-        coord: first.reversed ? first.end : first.start,
-      }) || 0
+  if (!visibleRegions.length) {
+    return null
+  }
+  const first = visibleRegions[0]
+  const firstOverviewPx =
+    overview.bpToPx({
+      ...first,
+      coord: first.reversed ? first.end : first.start,
+    }) || 0
 
-    const last = visibleRegions[visibleRegions.length - 1]
-    const lastOverviewPx =
-      overview.bpToPx({
-        ...last,
-        coord: last.reversed ? last.start : last.end,
-      }) || 0
+  const last = visibleRegions[visibleRegions.length - 1]
+  const lastOverviewPx =
+    overview.bpToPx({
+      ...last,
+      coord: last.reversed ? last.start : last.end,
+    }) || 0
 
-    const color = showCytobands ? '#f00' : scalebarColor
-    const transparency = showCytobands ? 0.1 : 0.3
+  const color = showCytobands ? '#f00' : scalebarColor
+  const transparency = showCytobands ? 0.1 : 0.3
 
-    return (
-      <div className={classes.scalebar}>
-        <div
-          className={classes.scalebarVisibleRegion}
-          style={{
-            width: lastOverviewPx - firstOverviewPx,
-            left: firstOverviewPx + cytobandOffset,
-            background: alpha(color, transparency),
-            borderColor: color,
-          }}
-        />
-        {/* this is the entire scale bar */}
-        {overviewVisibleRegions.map((block, idx) => {
-          return !(block instanceof ContentBlock) ? (
-            <div
-              key={`${JSON.stringify(block)}-${idx}`}
-              className={classes.scalebarContig}
-              style={{
-                width: block.widthPx,
-                left: block.offsetPx,
-                backgroundColor: '#999',
-                backgroundImage:
-                  'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px)',
-              }}
-            />
-          ) : (
-            <OverviewBox
-              scale={scale}
-              block={block}
-              model={model}
-              overview={overview}
-              key={`${JSON.stringify(block)}-${idx}`}
-            />
-          )
-        })}
-      </div>
-    )
-  },
-)
+  return (
+    <div className={classes.scalebar}>
+      <div
+        className={classes.scalebarVisibleRegion}
+        style={{
+          width: lastOverviewPx - firstOverviewPx,
+          left: firstOverviewPx + cytobandOffset,
+          background: alpha(color, transparency),
+          borderColor: color,
+        }}
+      />
+      {/* this is the entire scale bar */}
+      {overviewVisibleRegions.map((block, idx) => {
+        return !(block instanceof ContentBlock) ? (
+          <div
+            key={`${JSON.stringify(block)}-${idx}`}
+            className={classes.scalebarContig}
+            style={{
+              width: block.widthPx,
+              left: block.offsetPx,
+              backgroundColor: '#999',
+              backgroundImage:
+                'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px)',
+            }}
+          />
+        ) : (
+          <OverviewBox
+            scale={scale}
+            block={block}
+            model={model}
+            overview={overview}
+            key={`${JSON.stringify(block)}-${idx}`}
+          />
+        )
+      })}
+    </div>
+  )
+})
 
-function OverviewScalebar({
+export default observer(function OverviewScalebar({
   model,
   children,
 }: {
@@ -340,8 +337,8 @@ function OverviewScalebar({
       </div>
     </div>
   )
-}
+})
 
-export default observer(OverviewScalebar)
+export { Polygon }
 
-export { Cytobands, Polygon }
+export { default as Cytobands } from './Cytobands'

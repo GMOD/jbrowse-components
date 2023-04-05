@@ -5,8 +5,8 @@ import {
   doBeforeEach,
   expectCanvasMatch,
   createView,
-  pc,
   hts,
+  pv,
 } from './util'
 
 setup()
@@ -19,9 +19,9 @@ const delay = { timeout: 20000 }
 const opts = [{}, delay]
 
 test('open a multibigwig track', async () => {
-  const { view, findByTestId, findByText } = createView()
+  const { view, findByTestId, findByText } = await createView()
   await findByText('Help')
   view.setNewView(5, 0)
   fireEvent.click(await findByTestId(hts('volvox_microarray_multi'), ...opts))
-  expectCanvasMatch(await findByTestId(pc('{volvox}ctgA:1..4000-0'), ...opts))
+  expectCanvasMatch(await findByTestId(pv('1..4000-0'), ...opts))
 }, 25000)

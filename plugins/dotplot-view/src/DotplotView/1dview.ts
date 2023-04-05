@@ -32,7 +32,28 @@ const Dotplot1DView = Base1DView.extend(self => {
        * #getter
        */
       get maxBpPerPx() {
-        return self.totalBp / self.width
+        return self.totalBp / (self.width - 50)
+      },
+
+      /**
+       * #getter
+       */
+      get minBpPerPx() {
+        return 1 / 50
+      },
+
+      /**
+       * #getter
+       */
+      get maxOffset() {
+        return self.displayedRegionsTotalPx - self.width * 0.2
+      },
+
+      /**
+       * #getter
+       */
+      get minOffset() {
+        return -self.width * 0.8
       },
     },
     actions: {
@@ -49,7 +70,7 @@ const Dotplot1DView = Base1DView.extend(self => {
       center() {
         const centerBp = self.totalBp / 2
         const centerPx = centerBp / self.bpPerPx
-        self.scrollTo(Math.round(centerPx - self.width / 2))
+        self.scrollTo(centerPx - self.width / 2)
       },
     },
   }

@@ -3,15 +3,15 @@ import {
   Button,
   DialogActions,
   DialogContent,
-  Grid,
   MenuItem,
   Paper,
   TextField,
   Typography,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { FileSelector, Dialog, ErrorMessage } from '@jbrowse/core/ui'
+import { Dialog, ErrorMessage, FileSelector } from '@jbrowse/core/ui'
 import { FileLocation } from '@jbrowse/core/util/types'
+import AdapterInput from './AdapterInput'
 
 const { ipcRenderer } = window.require('electron')
 
@@ -31,117 +31,6 @@ const useStyles = makeStyles()(theme => ({
     padding: theme.spacing(2),
   },
 }))
-
-function AdapterInput({
-  adapterSelection,
-  fastaLocation,
-  setFastaLocation,
-  faiLocation,
-  setFaiLocation,
-  chromSizesLocation,
-  gziLocation,
-  setGziLocation,
-  twoBitLocation,
-  setTwoBitLocation,
-  setChromSizesLocation,
-}: {
-  adapterSelection: string
-  fastaLocation: FileLocation
-  setFastaLocation: Function
-  faiLocation: FileLocation
-  setFaiLocation: Function
-  gziLocation: FileLocation
-  chromSizesLocation: FileLocation
-  setGziLocation: Function
-  twoBitLocation: FileLocation
-  setTwoBitLocation: Function
-  setChromSizesLocation: Function
-}) {
-  if (adapterSelection === 'IndexedFastaAdapter') {
-    return (
-      <Grid container spacing={2}>
-        <Grid item>
-          <FileSelector
-            name="fastaLocation"
-            location={fastaLocation}
-            setLocation={loc => setFastaLocation(loc)}
-          />
-        </Grid>
-        <Grid item>
-          <FileSelector
-            name="faiLocation"
-            location={faiLocation}
-            setLocation={loc => setFaiLocation(loc)}
-          />
-        </Grid>
-      </Grid>
-    )
-  }
-  if (adapterSelection === 'BgzipFastaAdapter') {
-    return (
-      <Grid container spacing={2}>
-        <Grid item>
-          <FileSelector
-            name="fastaLocation"
-            location={fastaLocation}
-            setLocation={loc => setFastaLocation(loc)}
-          />
-        </Grid>
-        <Grid item>
-          <FileSelector
-            name="faiLocation"
-            location={faiLocation}
-            setLocation={loc => setFaiLocation(loc)}
-          />
-        </Grid>
-        <Grid item>
-          <FileSelector
-            name="gziLocation"
-            location={gziLocation}
-            setLocation={loc => setGziLocation(loc)}
-          />
-        </Grid>
-      </Grid>
-    )
-  }
-
-  if (adapterSelection === 'TwoBitAdapter') {
-    return (
-      <Grid container spacing={2}>
-        <Grid item>
-          <FileSelector
-            name="twoBitLocation"
-            location={twoBitLocation}
-            setLocation={loc => setTwoBitLocation(loc)}
-          />
-        </Grid>
-        <Grid item>
-          <FileSelector
-            name="chromSizesLocation (optional, can be added to speed up loading 2bit files with many contigs)"
-            location={chromSizesLocation}
-            setLocation={loc => setChromSizesLocation(loc)}
-          />
-        </Grid>
-      </Grid>
-    )
-  }
-
-  if (adapterSelection === 'FastaAdapter') {
-    return (
-      <Grid container spacing={2}>
-        <Grid item>
-          <FileSelector
-            name="fastaLocation"
-            location={fastaLocation}
-            setLocation={loc => setFastaLocation(loc)}
-          />
-        </Grid>
-      </Grid>
-    )
-  }
-
-  return null
-}
 
 const blank = { uri: '' } as FileLocation
 
@@ -174,6 +63,9 @@ const OpenSequenceDialog = ({
   const [gziLocation, setGziLocation] = useState(blank)
   const [twoBitLocation, setTwoBitLocation] = useState(blank)
   const [chromSizesLocation, setChromSizesLocation] = useState(blank)
+  const [refNameAliasesLocation, setRefNameAliasesLocation] = useState(blank)
+  const [cytobandsLocation, setCytobandsLocation] = useState(blank)
+  const [showAdvanced, setShowAdvanced] = useState(false)
 
   function clearState() {
     setFastaLocation(blank)
@@ -181,23 +73,21 @@ const OpenSequenceDialog = ({
     setGziLocation(blank)
     setTwoBitLocation(blank)
     setChromSizesLocation(blank)
+    setRefNameAliasesLocation(blank)
+    setCytobandsLocation(blank)
     setAssemblyName('')
     setAssemblyDisplayName('')
   }
 
-  async function createAssemblyConfigHelper() {
+  async function createAssemblyAdapterConfig() {
     if (adapterSelection === 'FastaAdapter') {
       setLoading('Creating .fai file for FASTA')
       const faiLocation = await ipcRenderer.invoke('indexFasta', fastaLocation)
       return {
-        name: assemblyName,
-        displayName: assemblyDisplayName,
-        sequence: {
-          adapter: {
-            type: 'IndexedFastaAdapter',
-            fastaLocation,
-            faiLocation: { localPath: faiLocation },
-          },
+        adapter: {
+          type: 'IndexedFastaAdapter',
+          fastaLocation,
+          faiLocation: { localPath: faiLocation },
         },
       }
     }
@@ -206,14 +96,10 @@ const OpenSequenceDialog = ({
         throw new Error('Need both fastaLocation and faiLocation')
       }
       return {
-        name: assemblyName,
-        displayName: assemblyDisplayName,
-        sequence: {
-          adapter: {
-            type: 'IndexedFastaAdapter',
-            fastaLocation,
-            faiLocation,
-          },
+        adapter: {
+          type: 'IndexedFastaAdapter',
+          fastaLocation,
+          faiLocation,
         },
       }
     } else if (adapterSelection === 'BgzipFastaAdapter') {
@@ -227,15 +113,11 @@ const OpenSequenceDialog = ({
         )
       }
       return {
-        name: assemblyName,
-        displayName: assemblyDisplayName,
-        sequence: {
-          adapter: {
-            type: 'BgzipFastaAdapter',
-            fastaLocation,
-            faiLocation,
-            gziLocation,
-          },
+        adapter: {
+          type: 'BgzipFastaAdapter',
+          fastaLocation,
+          faiLocation,
+          gziLocation,
         },
       }
     } else if (adapterSelection === 'TwoBitAdapter') {
@@ -243,14 +125,10 @@ const OpenSequenceDialog = ({
         throw new Error('Need twoBitLocation')
       }
       return {
-        name: assemblyName,
-        displayName: assemblyDisplayName,
-        sequence: {
-          adapter: {
-            type: 'TwoBitAdapter',
-            twoBitLocation,
-            chromSizesLocation,
-          },
+        adapter: {
+          type: 'TwoBitAdapter',
+          twoBitLocation,
+          chromSizesLocation,
         },
       }
     }
@@ -258,24 +136,45 @@ const OpenSequenceDialog = ({
   }
 
   async function createAssemblyConfig() {
-    const conf = await createAssemblyConfigHelper()
-
     return {
-      ...conf,
+      name: assemblyName,
+      displayName: assemblyDisplayName,
       sequence: {
         type: 'ReferenceSequenceTrack',
         trackId: `${assemblyName}-${Date.now()}`,
-        ...conf.sequence,
+        ...(await createAssemblyAdapterConfig()),
       },
+      ...(!isBlank(refNameAliasesLocation)
+        ? {
+            refNameAliases: {
+              adapter: {
+                type: 'RefNameAliasAdapter',
+                location: refNameAliasesLocation,
+              },
+            },
+          }
+        : {}),
+      ...(!isBlank(cytobandsLocation)
+        ? {
+            cytobands: {
+              adapter: {
+                type: 'CytobandAdapter',
+                cytobandsLocation: cytobandsLocation,
+              },
+            },
+          }
+        : {}),
     }
   }
   return (
     <Dialog open onClose={() => onClose()} title="Open sequence(s)">
       <DialogContent>
         <Typography>
-          Use this dialog to open one or more indexed FASTA files,
-          bgzipped+indexed FASTA files, or .2bit files of a genome assembly or
-          other sequence
+          Use this dialog to open one or more indexed FASTA files
+          (IndexedFastaAdapter), bgzipped+indexed FASTA files
+          (BgzipFastaAdapter), or .2bit files (TwoBitAdapter) of a genome
+          assembly or other sequence. A plain FASTA file can also be supplied
+          (FastaAdapter), which will be indexed on submit.
         </Typography>
 
         {assemblyConfs.length ? (
@@ -293,7 +192,6 @@ const OpenSequenceDialog = ({
 
         <Paper className={classes.paper}>
           <TextField
-            inputProps={{ 'data-testid': 'assembly-name' }}
             label="Assembly name"
             helperText="The assembly name e.g. hg38"
             variant="outlined"
@@ -302,7 +200,6 @@ const OpenSequenceDialog = ({
           />
 
           <TextField
-            inputProps={{ 'data-testid': 'assembly-display-name' }}
             label="Assembly display name"
             helperText='(optional) A human readable display name for the assembly e.g. "Homo sapiens (hg38)"'
             variant="outlined"
@@ -316,9 +213,7 @@ const OpenSequenceDialog = ({
             select
             helperText="Type of adapter to use"
             fullWidth
-            onChange={event => {
-              setAdapterSelection(event.target.value)
-            }}
+            onChange={event => setAdapterSelection(event.target.value)}
           >
             {adapterTypes.map(str => (
               <MenuItem key={str} value={str}>
@@ -341,6 +236,24 @@ const OpenSequenceDialog = ({
             setChromSizesLocation={setChromSizesLocation}
           />
         </Paper>
+
+        <Button onClick={() => setShowAdvanced(a => !a)} variant="contained">
+          {showAdvanced ? 'Hide advanced options' : 'Show advanced options'}
+        </Button>
+        {showAdvanced ? (
+          <Paper className={classes.paper}>
+            <FileSelector
+              name="Add refName aliases e.g. remap chr1 and 1 to same entity. Can use a tab separated file of aliases, such as a .chromAliases files from UCSC"
+              location={refNameAliasesLocation}
+              setLocation={setRefNameAliasesLocation}
+            />
+            <FileSelector
+              name="Add cytobands for assembly with the format of cytoBands.txt/cytoBandIdeo.txt from UCSC (.gz also allowed)"
+              location={cytobandsLocation}
+              setLocation={setCytobandsLocation}
+            />
+          </Paper>
+        ) : null}
       </DialogContent>
       <DialogActions>
         <Button
@@ -362,6 +275,7 @@ const OpenSequenceDialog = ({
           }}
           disabled={!!loading}
           variant="contained"
+          color="inherit"
         >
           Add another assembly
         </Button>

@@ -63,7 +63,7 @@ export default class extends Plugin {
                         this.activateBookmarkWidget()
                         bookmarkWidget = widgets.get('GridBookmark')
                       }
-                      // @ts-ignore
+                      // @ts-expect-error
                       bookmarkWidget.addBookmark(firstRegion)
                     }
                   },
@@ -76,13 +76,13 @@ export default class extends Plugin {
                       {
                         label: 'Open bookmark widget',
                         icon: BookmarksIcon,
-                        // @ts-ignore
+                        // @ts-expect-error
                         onClick: self.activateBookmarkWidget,
                       },
                       {
                         label: 'Bookmark current region',
                         icon: BookmarkIcon,
-                        // @ts-ignore
+                        // @ts-expect-error
                         onClick: self.bookmarkCurrentRegion,
                       },
                     ]
@@ -108,11 +108,11 @@ export default class extends Plugin {
                             const { widgets } = session
                             let bookmarkWidget = widgets.get('GridBookmark')
                             if (!bookmarkWidget) {
-                              // @ts-ignore
+                              // @ts-expect-error
                               self.activateBookmarkWidget()
                               bookmarkWidget = widgets.get('GridBookmark')
                             }
-                            // @ts-ignore
+                            // @ts-expect-error
                             bookmarkWidget.addBookmark(firstRegion)
                           }
                         },

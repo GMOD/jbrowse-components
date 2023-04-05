@@ -74,22 +74,16 @@ const ElisionRulerArc = observer(function ({
   const largeArc = endRadians - startRadians > Math.PI ? '1' : '0'
   // TODO: draw the elision
   const centerRadians = (endRadians + startRadians) / 2
-  const regionCountString = `[${Number(
-    // @ts-ignore
-    region.regions.length,
-  ).toLocaleString()}]`
+  const regionCount = `[${Number(region.regions.length).toLocaleString()}]`
   return (
     <>
       <RulerLabel
-        text={regionCountString}
+        text={regionCount}
         view={model}
         maxWidthPx={widthPx}
         radians={centerRadians}
         radiusPx={radiusPx}
-        title={`${Number(
-          // @ts-ignore
-          region.regions.length,
-        ).toLocaleString()} more regions`}
+        title={`${regionCount} more regions`}
         color={theme.palette.text.primary}
       />
       <path

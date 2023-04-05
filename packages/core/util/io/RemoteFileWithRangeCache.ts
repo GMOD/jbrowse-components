@@ -70,8 +70,8 @@ export class RemoteFileWithRangeCache extends RemoteFile {
       const rangeParse = /bytes=(\d+)-(\d+)/.exec(range)
       if (rangeParse) {
         const [, start, end] = rangeParse
-        const s = parseInt(start, 10)
-        const e = parseInt(end, 10)
+        const s = Number.parseInt(start, 10)
+        const e = Number.parseInt(end, 10)
         const response = (await globalRangeCache.getRange(url, s, e - s + 1, {
           signal: init && init.signal,
         })) as BinaryRangeResponse

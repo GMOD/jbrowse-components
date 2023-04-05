@@ -72,10 +72,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       featPositions: [] as FeatPos[],
 
       // currently mouse'd over feature
-      mouseoverId: -1,
+      mouseoverId: undefined as string | undefined,
 
       // currently click'd over feature
-      clickId: -1,
+      clickId: undefined as string | undefined,
 
       // currently mouseover'd CIGAR subfeature
       cigarMouseoverId: -1,
@@ -114,7 +114,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setMouseoverId(arg: number) {
+      setMouseoverId(arg?: string) {
         self.mouseoverId = arg
       },
       /**
@@ -126,7 +126,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setClickId(arg: number) {
+      setClickId(arg?: string) {
         self.clickId = arg
       },
     }))
@@ -199,9 +199,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             if (!view.initialized) {
               return
             }
-            if (self.mouseoverId || self.clickId) {
-              drawMouseoverSynteny(self)
-            }
+            drawMouseoverSynteny(self)
           }),
         )
 

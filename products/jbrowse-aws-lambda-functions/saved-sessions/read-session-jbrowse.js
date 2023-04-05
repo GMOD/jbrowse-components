@@ -7,7 +7,7 @@ const dynamodb = new AWS.DynamoDB.DocumentClient({
   region,
 })
 
-async function readSession(sessionId) {
+function readSession(sessionId) {
   const params = {
     TableName: sessionTable,
     Key: { sessionId },
@@ -17,8 +17,12 @@ async function readSession(sessionId) {
 
 exports.handler = async event => {
   const data = event.queryStringParameters
-  const { sessionId } = data
+  let { sessionId } = data
   let tableData
+
+  // workaround for '+' character being encoded by api gateway (?) as space, xref
+  // https://github.com/GMOD/jbrowse-components/pull/3524
+  sessionId = sessionId.replace(/ /g, '+')
   try {
     tableData = await readSession(sessionId)
   } catch (e) {

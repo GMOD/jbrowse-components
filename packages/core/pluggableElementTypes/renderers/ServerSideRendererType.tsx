@@ -45,8 +45,6 @@ export interface RenderArgsDeserialized extends BaseRenderArgs {
   filters: SerializableFilterChain
 }
 
-export type { RenderResults }
-
 export interface ResultsSerialized extends Omit<RenderResults, 'reactElement'> {
   html: string
 }
@@ -215,3 +213,5 @@ export default class ServerSideRenderer extends RendererType {
     return freed + freedRpc
   }
 }
+
+export { type RenderResults } from './RendererType'

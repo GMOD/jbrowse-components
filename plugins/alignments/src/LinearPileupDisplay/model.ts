@@ -57,6 +57,13 @@ const rendererTypes = new Map([
 
 type LGV = LinearGenomeViewModel
 
+export interface Filter {
+  flagInclude: number
+  flagExclude: number
+  readName?: string
+  tagFilter?: { tag: string; value: string }
+}
+
 /**
  * #stateModel LinearPileupDisplay
  * extends `BaseLinearDisplay`
@@ -99,6 +106,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         mismatchAlpha: types.maybe(types.boolean),
+
         /**
          * #property
          */
@@ -275,7 +283,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 if (sortedBy) {
                   const { pos, refName, assemblyName } = sortedBy
                   // render just the sorted region first
-                  // @ts-ignore
+                  // @ts-expect-error
                   await self.rendererType.renderInClient(rpcManager, {
                     assemblyName,
                     regions: [
@@ -331,15 +339,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                       layoutId: view.id,
                       rendererType: 'PileupRenderer',
                     },
-                  )) as { feature: unknown }
+                  )) as { feature: SimpleFeatureSerialized }
 
                   // check featureIdUnderMouse is still the same as the
                   // feature.id that was returned e.g. that the user hasn't
                   // moused over to a new position during the async operation
                   // above
-                  // @ts-ignore
                   if (self.featureIdUnderMouse === feature.uniqueId) {
-                    // @ts-ignore
                     self.setFeatureUnderMouse(new SimpleFeature(feature))
                   }
                 }
@@ -403,8 +409,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setConfig(configuration: AnyConfigurationModel) {
-        self.configuration = configuration
+      setConfig(conf: AnyConfigurationModel) {
+        self.configuration = conf
       },
 
       /**
@@ -431,12 +437,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         }
         self.ready = false
       },
-      setFilterBy(filter: {
-        flagInclude: number
-        flagExclude: number
-        readName?: string
-        tagFilter?: { tag: string; value: string }
-      }) {
+      setFilterBy(filter: Filter) {
         self.filterBy = cast(filter)
       },
     }))
@@ -459,46 +460,48 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #getter
        */
-      get maxHeight() {
-        const conf = getConf(self, ['renderers', self.rendererTypeName]) || {}
-        return self.trackMaxHeight !== undefined
-          ? self.trackMaxHeight
-          : conf.maxHeight
-      },
-
-      /**
-       * #getter
-       */
       get rendererConfig() {
-        const configBlob =
-          getConf(self, ['renderers', self.rendererTypeName]) || {}
+        const {
+          featureHeight,
+          noSpacing,
+          trackMaxHeight,
+          mismatchAlpha,
+          rendererTypeName,
+        } = self
+        const configBlob = getConf(self, ['renderers', rendererTypeName]) || {}
         return self.rendererType.configSchema.create(
           {
             ...configBlob,
-            height: self.featureHeight,
-            noSpacing: self.noSpacing,
-            maxHeight: this.maxHeight,
-            mismatchAlpha: self.mismatchAlpha,
+            ...(featureHeight !== undefined ? { height: featureHeight } : {}),
+            ...(noSpacing !== undefined ? { noSpacing } : {}),
+            ...(mismatchAlpha !== undefined ? { mismatchAlpha } : {}),
+            ...(trackMaxHeight !== undefined
+              ? { maxHeight: trackMaxHeight }
+              : {}),
           },
           getEnv(self),
         )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get maxHeight() {
+        return readConfObject(self.rendererConfig, 'maxHeight')
       },
 
       /**
        * #getter
        */
       get featureHeightSetting() {
-        return (
-          self.featureHeight || readConfObject(this.rendererConfig, 'height')
-        )
+        return readConfObject(self.rendererConfig, 'height')
       },
       /**
        * #getter
        */
       get mismatchAlphaSetting() {
-        return self.mismatchAlpha !== undefined
-          ? self.mismatchAlpha
-          : readConfObject(this.rendererConfig, 'mismatchAlpha')
+        return readConfObject(self.rendererConfig, 'mismatchAlpha')
       },
       /**
        * #getter
@@ -617,7 +620,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   )) as { feature: unknown }
 
                   if (feature) {
-                    // @ts-ignore
+                    // @ts-expect-error
                     self.selectFeature(new SimpleFeature(feature))
                   }
                 }

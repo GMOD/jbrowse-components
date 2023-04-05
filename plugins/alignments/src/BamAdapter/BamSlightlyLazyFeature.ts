@@ -97,9 +97,9 @@ export default class BamSlightlyLazyFeature implements Feature {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   get(field: string): any {
     const methodName = `_get_${field}`
-    // @ts-ignore
+    // @ts-expect-error
     if (this[methodName]) {
-      // @ts-ignore
+      // @ts-expect-error
       return this[methodName]()
     }
     return this.record.get(field)

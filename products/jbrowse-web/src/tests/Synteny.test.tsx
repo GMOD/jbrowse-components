@@ -56,7 +56,7 @@ expect.extend({ toMatchImageSnapshot })
 
 const delay = { timeout: 20000 }
 
-// @ts-ignore
+// @ts-expect-error
 jest.spyOn(global, 'fetch').mockImplementation(readBuffer)
 
 afterEach(() => {

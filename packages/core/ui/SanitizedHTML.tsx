@@ -30,6 +30,8 @@ const htmlTags = [
   'strong',
   'table',
   'tbody',
+  'sup',
+  'sub',
   'td',
   'tfoot',
   'th',

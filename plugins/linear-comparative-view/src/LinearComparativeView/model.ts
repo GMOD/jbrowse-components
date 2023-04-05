@@ -125,7 +125,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get assemblyNames() {
-        return [...new Set(self.views.map(v => v.assemblyNames).flat())]
+        return [...new Set(self.views.flatMap(v => v.assemblyNames))]
       },
     }))
     .actions(self => ({
@@ -136,7 +136,8 @@ function stateModelFactory(pluginManager: PluginManager) {
             if (self.linkViews) {
               const { name, path, args } = param
 
-              // doesn't link showTrack/hideTrack, doesn't make sense in synteny views most time
+              // doesn't link showTrack/hideTrack, doesn't make sense in
+              // synteny views most time
               const actions = ['horizontalScroll', 'zoomTo', 'setScaleFactor']
               if (actions.includes(name) && path) {
                 this.onSubviewAction(name, path, args)
@@ -150,18 +151,15 @@ function stateModelFactory(pluginManager: PluginManager) {
       // e.g. read vs ref
       beforeDestroy() {
         const session = getSession(self)
-        self.assemblyNames.forEach(asm => {
-          session.removeTemporaryAssembly(asm)
-        })
+        self.assemblyNames.forEach(asm => session.removeTemporaryAssembly(asm))
       },
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      onSubviewAction(actionName: string, path: string, args: any[] = []) {
+      onSubviewAction(actionName: string, path: string, args?: unknown[]) {
         self.views.forEach(view => {
           const ret = getPath(view)
           if (ret.lastIndexOf(path) !== ret.length - path.length) {
-            // @ts-ignore
-            view[actionName](args[0])
+            // @ts-expect-error
+            view[actionName](args?.[0])
           }
         })
       },
@@ -189,7 +187,8 @@ function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
-       * removes the view itself from the state tree entirely by calling the parent removeView
+       * removes the view itself from the state tree entirely by calling the
+       * parent removeView
        */
       closeView() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -258,9 +257,11 @@ function stateModelFactory(pluginManager: PluginManager) {
           throw new Error(`unknown track type ${configuration.type}`)
         }
         const viewType = pluginManager.getViewType(self.type)
-        const supportedDisplays = viewType.displayTypes.map(d => d.name)
+        const supportedDisplays = new Set(
+          viewType.displayTypes.map(d => d.name),
+        )
         const displayConf = configuration.displays.find(
-          (d: AnyConfigurationModel) => supportedDisplays.includes(d.type),
+          (d: AnyConfigurationModel) => supportedDisplays.has(d.type),
         )
         if (!displayConf) {
           throw new Error(
@@ -326,16 +327,9 @@ function stateModelFactory(pluginManager: PluginManager) {
       menuItems(): MenuItem[] {
         return [
           ...self.views
-            .map((view, idx) => {
-              const items = view.menuItems?.()
-              return items
-                ? ({
-                    label: `View ${idx + 1} Menu`,
-                    subMenu: items,
-                  } as MenuItem)
-                : undefined
-            })
-            .filter((f): f is MenuItem => !!f),
+            .map((view, idx) => [idx, view.menuItems?.()] as const)
+            .filter(f => !!f[1])
+            .map(f => ({ label: `View ${f[0] + 1} Menu`, subMenu: f[1] })),
           {
             label: 'Return to import form',
             onClick: () => {

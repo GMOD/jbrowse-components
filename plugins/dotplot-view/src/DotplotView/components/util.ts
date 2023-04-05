@@ -21,13 +21,13 @@ export function getBlockLabelKeysToHide(
   viewOffsetPx: number,
 ) {
   const blockLabelKeysToHide = new Set<string>()
-  const sortedBlocks = blocks.slice(0).sort((a, b) => {
+  const sortedBlocks = [...blocks].sort((a, b) => {
     const alen = a.end - a.start
     const blen = b.end - b.start
     return blen - alen
   })
-  const positions = new Array(Math.round(length))
-  sortedBlocks.forEach(({ key, offsetPx }) => {
+  const positions = Array.from({ length: Math.round(length) })
+  for (const { key, offsetPx } of sortedBlocks) {
     const y = Math.round(length - offsetPx + viewOffsetPx)
     const labelBounds = [Math.max(y - 12, 0), y]
     if (y === 0 || positions.slice(...labelBounds).some(Boolean)) {
@@ -35,7 +35,7 @@ export function getBlockLabelKeysToHide(
     } else {
       positions.fill(true, ...labelBounds)
     }
-  })
+  }
   return blockLabelKeysToHide
 }
 /**
@@ -50,7 +50,7 @@ export function chooseGridPitch(
 ) {
   scale = Math.abs(scale)
   const minMajorPitchBp = minMajorPitchPx * scale
-  const majorMagnitude = parseInt(
+  const majorMagnitude = Number.parseInt(
     Number(minMajorPitchBp).toExponential().split(/e/i)[1],
     10,
   )
@@ -96,9 +96,10 @@ export function makeTicks(
 
     const minBase = start
     const maxBase = end
+
     for (
-      let base = Math.ceil(minBase / iterPitch) * iterPitch;
-      base < maxBase;
+      let base = Math.floor(minBase / iterPitch) * iterPitch;
+      base < Math.ceil(maxBase / iterPitch) * iterPitch + 1;
       base += iterPitch
     ) {
       if (emitMinor && base % gridPitch.majorPitch) {

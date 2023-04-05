@@ -17,6 +17,7 @@ import {
   measureText,
   parseLocString,
   springAnimate,
+  sum,
 } from '@jbrowse/core/util'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { BlockSet, BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -52,13 +53,10 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 // locals
 import { renderToSvg } from './svgcomponents/SVGLinearGenomeView'
-import RefNameAutocomplete from './components/RefNameAutocomplete'
-import SearchBox from './components/SearchBox'
+
 import ExportSvgDlg from './components/ExportSvgDialog'
 import MiniControls from './components/MiniControls'
 import Header from './components/Header'
-import ZoomControls from './components/ZoomControls'
-import LinearGenomeView from './components/LinearGenomeView'
 
 // lazies
 const SequenceSearchDialog = lazy(
@@ -365,9 +363,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get trackHeights() {
-        return self.tracks
-          .map(t => t.displays[0].height)
-          .reduce((a, b) => a + b, 0)
+        return sum(self.tracks.map(t => t.displays[0].height))
       },
 
       /**
@@ -478,14 +474,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       rankSearchResults(results: BaseResult[]) {
         // order of rank
-        const openTrackIds = self.tracks.map(
-          track => track.configuration.trackId,
+        const openTrackIds = new Set(
+          self.tracks.map(track => track.configuration.trackId),
         )
-        results.forEach(result => {
-          if (openTrackIds.includes(result.trackId)) {
+        for (const result of results) {
+          if (openTrackIds.has(result.trackId)) {
             result.updateScore(result.getScore() + 1)
           }
-        })
+        }
         return results
       },
 
@@ -583,25 +579,25 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      zoomTo(bpPerPx: number) {
+      zoomTo(bpPerPx: number, offset = self.width / 2, centerAtOffset = false) {
         const newBpPerPx = clamp(bpPerPx, self.minBpPerPx, self.maxBpPerPx)
         if (newBpPerPx === self.bpPerPx) {
           return newBpPerPx
         }
         const oldBpPerPx = self.bpPerPx
-        self.bpPerPx = newBpPerPx
 
         if (Math.abs(oldBpPerPx - newBpPerPx) < 0.000001) {
           console.warn('zoomTo bpPerPx rounding error')
           return oldBpPerPx
         }
+        self.bpPerPx = newBpPerPx
 
-        // tweak the offset so that the center of the view remains at the same coordinate
-        const viewWidth = self.width
+        // tweak the offset so that the center of the view remains at the same
+        // coordinate
         this.scrollTo(
           Math.round(
-            ((self.offsetPx + viewWidth / 2) * oldBpPerPx) / newBpPerPx -
-              viewWidth / 2,
+            ((self.offsetPx + offset) * oldBpPerPx) / newBpPerPx -
+              (centerAtOffset ? self.width / 2 : offset),
           ),
         )
         return newBpPerPx
@@ -644,8 +640,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       horizontallyFlip() {
         self.displayedRegions = cast(
-          self.displayedRegions
-            .slice()
+          [...self.displayedRegions]
             .reverse()
             .map(region => ({ ...region, reversed: !region.reversed })),
         )
@@ -670,9 +665,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
           throw new Error(`Unknown track type ${conf.type}`)
         }
         const viewType = pluginManager.getViewType(self.type)
-        const supportedDisplays = viewType.displayTypes.map(d => d.name)
+        const supportedDisplays = new Set(
+          viewType.displayTypes.map(d => d.name),
+        )
         const displayConf = conf.displays.find((d: AnyConfigurationModel) =>
-          supportedDisplays.includes(d.type),
+          supportedDisplays.has(d.type),
         )
         if (!displayConf) {
           throw new Error(
@@ -914,7 +911,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       /**
-       * #action
+       * #method
        * creates an svg export and save using FileSaver
        */
       async exportSvg(opts: ExportSvgOptions = {}) {
@@ -1366,7 +1363,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           })
         } else {
           self.setDisplayedRegions(
-            // @ts-ignore
+            // @ts-expect-error
             locations.map(r => (r.start === undefined ? r.parentRegion : r)),
           )
           self.showAllRegions()
@@ -1586,22 +1583,23 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get centerLineInfo() {
-        return self.displayedRegions.length
+        return self.displayedRegions.length > 0
           ? this.pxToBp(self.width / 2)
           : undefined
       },
     }))
 }
 
-export {
-  renderToSvg,
-  RefNameAutocomplete,
-  SearchBox,
-  ZoomControls,
-  LinearGenomeView,
-}
-
 export type LinearGenomeViewStateModel = ReturnType<typeof stateModelFactory>
 export type LinearGenomeViewModel = Instance<LinearGenomeViewStateModel>
 
-export { default as ReactComponent } from './components/LinearGenomeView'
+export {
+  default as ReactComponent,
+  default as LinearGenomeView,
+} from './components/LinearGenomeView'
+
+export { default as RefNameAutocomplete } from './components/RefNameAutocomplete'
+export { default as SearchBox } from './components/SearchBox'
+export { default as ZoomControls } from './components/ZoomControls'
+
+export { renderToSvg } from './svgcomponents/SVGLinearGenomeView'

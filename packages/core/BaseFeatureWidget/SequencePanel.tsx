@@ -94,7 +94,7 @@ const SeqPanel = React.forwardRef<HTMLDivElement, SeqPanelProps>(function (
           {`>${
             feature.name ||
             feature.id ||
-            feature.refName + ':' + (feature.start + 1) + '-' + feature.end
+            `${feature.refName}:${feature.start + 1}-${feature.end}`
           }-${mode}\n`}
         </span>
         <br />

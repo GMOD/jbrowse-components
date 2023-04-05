@@ -100,7 +100,7 @@ async function loadRefNameMap(
 
 // Valid refName pattern from https://samtools.github.io/hts-specs/SAMv1.pdf
 function checkRefName(refName: string) {
-  if (!refName.match(refNameRegex)) {
+  if (!refNameRegex.test(refName)) {
     throw new Error(`Encountered invalid refName: "${refName}"`)
   }
 }
@@ -177,7 +177,7 @@ export default function assemblyFactory(
     }))
     .views(self => ({
       get initialized() {
-        // @ts-ignore
+        // @ts-expect-error
         self.load()
         return !!self.refNameAliases
       },
@@ -186,7 +186,7 @@ export default function assemblyFactory(
       },
 
       get regions() {
-        // @ts-ignore
+        // @ts-expect-error
         self.load()
         return self.volatileRegions
       },
@@ -256,7 +256,7 @@ export default function assemblyFactory(
         if (!self.refNames) {
           return undefined
         }
-        const idx = self.refNames.findIndex(r => r === refName)
+        const idx = self.refNames.indexOf(refName)
         if (idx === -1) {
           return undefined
         }
@@ -413,7 +413,7 @@ async function getCytobands(config: AnyConfigurationModel, pm: PluginManager) {
   const CLASS = await type.getAdapterClass()
   const adapter = new CLASS(config, undefined, pm)
 
-  // @ts-ignore
+  // @ts-expect-error
   return adapter.getData()
 }
 

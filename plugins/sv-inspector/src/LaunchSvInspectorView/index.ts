@@ -5,7 +5,7 @@ import { SvInspectorViewModel } from '../SvInspectorView/models/SvInspectorView'
 export default (pluginManager: PluginManager) => {
   pluginManager.addToExtensionPoint(
     'LaunchView-SvInspectorView',
-    // @ts-ignore
+    // @ts-expect-error
     async ({
       session,
       assembly,

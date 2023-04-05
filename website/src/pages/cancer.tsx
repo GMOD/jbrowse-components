@@ -28,7 +28,7 @@ function Header() {
           <Link
             className="button button--secondary button--lg"
             href={`https://jbrowse.org/code/jb2/${
-              /* @ts-ignore */ siteConfig.customFields.currentVersion
+              /* @ts-expect-error */ siteConfig.customFields.currentVersion
             }/?config=test_data/config_demo.json&session=share-oTyYRpz9fN&password=fYAbt`}
           >
             Browse a cancer annotations demo web instance

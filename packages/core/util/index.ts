@@ -14,11 +14,7 @@ import {
   IStateTreeNode,
 } from 'mobx-state-tree'
 import { reaction, IReactionPublic, IReactionOptions } from 'mobx'
-import SimpleFeature, {
-  Feature,
-  SimpleFeatureSerialized,
-  isFeature,
-} from './simpleFeature'
+import { Feature } from './simpleFeature'
 import {
   isSessionModel,
   isDisplayModel,
@@ -31,14 +27,14 @@ import {
 import { isAbortException, checkAbortSignal } from './aborting'
 import { BaseBlock } from './blockTypes'
 import { isUriLocation } from './types'
+import useMeasure from '@jbrowse/core/util/useMeasure'
 
 export * from './types'
 export * from './aborting'
 export * from './when'
 export * from './range'
 export * from './dedupe'
-export { SimpleFeature, isFeature }
-export type { Feature, SimpleFeatureSerialized }
+
 export * from './offscreenCanvasPonyfill'
 export * from './offscreenCanvasUtils'
 
@@ -61,6 +57,25 @@ export function useDebounce<T>(value: T, delay: number) {
   }, [value, delay])
 
   return debouncedValue
+}
+
+// used in ViewContainer files to get the width
+export function useWidthSetter(
+  view: { setWidth: (arg: number) => void },
+  padding: string,
+) {
+  const [ref, { width }] = useMeasure()
+  useEffect(() => {
+    if (width && isAlive(view)) {
+      // sets after a requestAnimationFrame
+      // https://stackoverflow.com/a/58701523/2129219
+      // avoids ResizeObserver loop error being shown during development
+      requestAnimationFrame(() =>
+        view.setWidth(width - Number.parseInt(padding, 10) * 2),
+      )
+    }
+  }, [padding, view, width])
+  return ref
 }
 
 // https://stackoverflow.com/questions/56283920/
@@ -185,15 +200,12 @@ export function springAnimate(
   ]
 }
 
-/** find the first node in the hierarchy that matches the given 'is' typescript type guard predicate */
-export function findParentThatIs<
-  PREDICATE extends (thing: IAnyStateTreeNode) => boolean,
->(
+// find the first node in the hierarchy that matches the given 'is' typescript type guard predicate
+export function findParentThatIs<T extends (a: IAnyStateTreeNode) => boolean>(
   node: IAnyStateTreeNode,
-  predicate: PREDICATE,
-): TypeTestedByPredicate<PREDICATE> & IAnyStateTreeNode {
-  return findParentThat(node, predicate) as TypeTestedByPredicate<PREDICATE> &
-    IAnyStateTreeNode
+  predicate: T,
+): TypeTestedByPredicate<T> & IAnyStateTreeNode {
+  return findParentThat(node, predicate)
 }
 
 /** get the current JBrowse session model, starting at any node in the state tree */
@@ -317,12 +329,12 @@ export function parseLocStringOneBased(
   let reversed = false
   if (locString.endsWith('[rev]')) {
     reversed = true
-    locString = locString.replace(/\[rev\]$/, '')
+    locString = locString.replace(/\[rev]$/, '')
   }
   // remove any whitespace
   locString = locString.replace(/\s/, '')
   // refNames can have colons, ref https://samtools.github.io/hts-specs/SAMv1.pdf Appendix A
-  const assemblyMatch = locString.match(/(\{(.+)\})?(.+)/)
+  const assemblyMatch = locString.match(/({(.+)})?(.+)/)
   if (!assemblyMatch) {
     throw new Error(`invalid location string: "${locString}"`)
   }
@@ -525,8 +537,8 @@ export function bpToPx(
   return roundToNearestPointOne((reversed ? end - bp : bp - start) / bpPerPx)
 }
 
-const oneEightyOverPi = 180.0 / Math.PI
-const piOverOneEighty = Math.PI / 180.0
+const oneEightyOverPi = 180 / Math.PI
+const piOverOneEighty = Math.PI / 180
 export function radToDeg(radians: number) {
   return (radians * oneEightyOverPi) % 360
 }
@@ -577,7 +589,7 @@ export function iterMap<T, U>(
   func: (arg: T) => U,
   sizeHint?: number,
 ) {
-  const results: U[] = sizeHint ? new Array(sizeHint) : []
+  const results = Array.from<U>({ length: sizeHint || 0 })
   let counter = 0
   for (const item of iter) {
     results[counter] = func(item)
@@ -635,7 +647,7 @@ export function makeAbortableReaction<T, U, V>(
     model: T,
     handle: IReactionPublic,
   ) => Promise<V>,
-  // @ts-ignore
+  // @ts-expect-error
   reactionOptions: IReactionOptions,
   startedFunction: (aborter: AbortController) => void,
   successFunction: (arg: V) => void,
@@ -681,7 +693,7 @@ export function makeAbortableReaction<T, U, V>(
             data,
             thisInProgress.signal,
             self,
-            // @ts-ignore
+            // @ts-expect-error
             mobxReactionHandle,
           )
           checkAbortSignal(thisInProgress.signal)
@@ -713,14 +725,12 @@ export function renameRegionIfNeeded(
     return region
   }
 
-  if (region && refNameMap && refNameMap[region.refName]) {
+  if (region && refNameMap?.[region.refName]) {
     // clone the region so we don't modify it
-    if (isStateTreeNode(region)) {
-      // @ts-ignore
-      region = { ...getSnapshot(region) }
-    } else {
-      region = { ...region }
-    }
+    region = isStateTreeNode(region)
+      ? // @ts-expect-error
+        { ...getSnapshot(region) }
+      : { ...region }
 
     // modify it directly in the container
     const newRef = refNameMap[region.refName]
@@ -749,7 +759,7 @@ export async function renameRegionsIfNeeded<
   const assemblyNames = regions.map(region => region.assemblyName)
   const assemblyMaps = Object.fromEntries(
     await Promise.all(
-      assemblyNames.map(async assemblyName => {
+      [...new Set(assemblyNames)].map(async assemblyName => {
         return [
           assemblyName,
           await assemblyManager.getRefNameMapForAdapter(
@@ -878,10 +888,8 @@ export function blobToDataURL(blob: Blob): Promise<string> {
 // get the contents of the canvas
 export const rIC =
   typeof jest === 'undefined'
-    ? // @ts-ignore
-      typeof window !== 'undefined' && window.requestIdleCallback
-      ? // @ts-ignore
-        window.requestIdleCallback
+    ? typeof window !== 'undefined' && window.requestIdleCallback
+      ? window.requestIdleCallback
       : (cb: Function) => setTimeout(() => cb(), 1)
     : (cb: Function) => cb()
 
@@ -1003,7 +1011,7 @@ export function generateCodonTable(table: any) {
 export async function updateStatus<U>(
   msg: string,
   cb: (arg: string) => void,
-  fn: () => U,
+  fn: () => U | Promise<U>,
 ) {
   cb(msg)
   const res = await fn()
@@ -1089,9 +1097,9 @@ export function supportedIndexingAdapters(type: string) {
 export function getBpDisplayStr(totalBp: number) {
   let str
   if (Math.floor(totalBp / 1_000_000) > 0) {
-    str = `${parseFloat((totalBp / 1_000_000).toPrecision(3))}Mbp`
+    str = `${Number.parseFloat((totalBp / 1_000_000).toPrecision(3))}Mbp`
   } else if (Math.floor(totalBp / 1_000) > 0) {
-    str = `${parseFloat((totalBp / 1_000).toPrecision(3))}Kbp`
+    str = `${Number.parseFloat((totalBp / 1_000).toPrecision(3))}Kbp`
   } else {
     str = `${toLocale(Math.floor(totalBp))}bp`
   }
@@ -1103,17 +1111,12 @@ export function toLocale(n: number) {
 }
 
 export function getTickDisplayStr(totalBp: number, bpPerPx: number) {
-  let str
-  if (Math.floor(bpPerPx / 1_000) > 0) {
-    str = `${toLocale(parseFloat((totalBp / 1_000_000).toFixed(2)))}M`
-  } else {
-    str = `${toLocale(Math.floor(totalBp))}`
-  }
-  return str
+  return Math.floor(bpPerPx / 1_000) > 0
+    ? `${toLocale(Number.parseFloat((totalBp / 1_000_000).toFixed(2)))}M`
+    : `${toLocale(Math.floor(totalBp))}`
 }
 
 export function getViewParams(model: IAnyStateTreeNode, exportSVG?: boolean) {
-  // @ts-ignore
   const { dynamicBlocks, staticBlocks, offsetPx } = getContainingView(model)
   const b = dynamicBlocks?.contentBlocks[0] || {}
   const staticblock = staticBlocks?.contentBlocks[0] || {}
@@ -1121,8 +1124,8 @@ export function getViewParams(model: IAnyStateTreeNode, exportSVG?: boolean) {
   return {
     offsetPx: exportSVG ? 0 : offsetPx - staticblock.offsetPx,
     offsetPx1: exportSVG ? 0 : offsetPx - staticblock1.offsetPx,
-    start: b.start,
-    end: b.end,
+    start: b.start as number,
+    end: b.end as number,
   }
 }
 
@@ -1191,7 +1194,7 @@ function coarseStripHTML(s: string) {
 
 // heuristic measurement for a column of a @mui/x-data-grid, pass in values from a column
 export function measureGridWidth(
-  elements: string[],
+  elements: unknown[],
   args?: {
     minWidth?: number
     fontSize?: number
@@ -1259,3 +1262,10 @@ export function sum(arr: number[]) {
 export function avg(arr: number[]) {
   return sum(arr) / arr.length
 }
+
+export {
+  default as SimpleFeature,
+  type Feature,
+  type SimpleFeatureSerialized,
+  isFeature,
+} from './simpleFeature'

@@ -22,12 +22,7 @@ const RowFullTextFilter = types
         row: { cellsWithDerived: { text: string }[] },
       ) {
         const { cellsWithDerived } = row
-        for (
-          let columnNumber = 0;
-          columnNumber < cellsWithDerived.length;
-          columnNumber += 1
-        ) {
-          const cell = cellsWithDerived[columnNumber]
+        for (const cell of cellsWithDerived) {
           // note: case insensitive
           if (cell.text && cell.text.toLowerCase().includes(s)) {
             return true
@@ -63,7 +58,7 @@ const model = types
       return [self.rowFullText, ...self.columnFilters].filter(f => !!f)
     },
     setRowFullTextFilter(stringToFind: string) {
-      // @ts-ignore
+      // @ts-expect-error
       self.rowFullText = {
         type: 'RowFullText',
         stringToFind,

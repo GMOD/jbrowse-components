@@ -22,10 +22,8 @@ function addRelativeUris(config: any, baseUri: string) {
     for (const key of Object.keys(config)) {
       if (typeof config[key] === 'object') {
         addRelativeUris(config[key], baseUri)
-      } else if (key === 'uri') {
-        if (!config.baseUri) {
-          config.baseUri = baseUri
-        }
+      } else if (key === 'uri' && !config.baseUri) {
+        config.baseUri = baseUri
       }
     }
   }
@@ -33,18 +31,22 @@ function addRelativeUris(config: any, baseUri: string) {
 
 const configPath = 'test_data/volvox/config.json'
 addRelativeUris(volvoxConfig, new URL(configPath, window.location.href).href)
-const supportedTrackTypes = [
+const supportedTrackTypes = new Set([
   'AlignmentsTrack',
   'FeatureTrack',
   'VariantTrack',
   'WiggleTrack',
-]
+])
 
-const excludeIds = ['gtf_plain_text_test', 'lollipop_track', 'arc_track']
+const excludeIds = new Set([
+  'gtf_plain_text_test',
+  'lollipop_track',
+  'arc_track',
+])
 
 const assembly = volvoxConfig.assemblies[0]
 const tracks = volvoxConfig.tracks.filter(
-  t => supportedTrackTypes.includes(t.type) && !excludeIds.includes(t.trackId),
+  t => supportedTrackTypes.has(t.type) && !excludeIds.has(t.trackId),
 )
 const defaultSession = {
   name: 'Storybook',

@@ -29,37 +29,35 @@ function getOffset(model: WiggleDisplayModel) {
     : 10
 }
 
-const Wrapper = observer(
-  ({
-    children,
-    model,
-    exportSVG,
-  }: {
-    model: WiggleDisplayModel
-    children: React.ReactNode
-    exportSVG?: boolean
-  }) => {
-    if (exportSVG) {
-      return <>{children}</>
-    } else {
-      const { height } = model
-      return (
-        <svg
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            pointerEvents: 'none',
-            height,
-            width: getContainingView(model).width,
-          }}
-        >
-          {children}
-        </svg>
-      )
-    }
-  },
-)
+const Wrapper = observer(function ({
+  children,
+  model,
+  exportSVG,
+}: {
+  model: WiggleDisplayModel
+  children: React.ReactNode
+  exportSVG?: boolean
+}) {
+  if (exportSVG) {
+    return <>{children}</>
+  } else {
+    const { height } = model
+    return (
+      <svg
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          pointerEvents: 'none',
+          height,
+          width: getContainingView(model).width,
+        }}
+      >
+        {children}
+      </svg>
+    )
+  }
+})
 
 const RectBg = (props: {
   x: number
@@ -91,161 +89,158 @@ const ScoreLegend = observer(({ model }: { model: WiggleDisplayModel }) => {
   )
 })
 
-const ColorLegend = observer(
-  ({
-    model,
-    rowHeight,
-    labelWidth,
-    exportSVG,
-  }: {
-    model: WiggleDisplayModel
-    rowHeight: number
-    labelWidth: number
-    exportSVG?: boolean
-  }) => {
-    const {
-      needsCustomLegend,
-      needsScalebar,
-      needsFullHeightScalebar,
-      rowHeightTooSmallForScalebar,
-      renderColorBoxes,
-      sources,
-    } = model
-    const svgFontSize = Math.min(rowHeight, 12)
-    const canDisplayLabel = rowHeight > 11
-    const colorBoxWidth = renderColorBoxes ? 15 : 0
-    const legendWidth = labelWidth + colorBoxWidth + 5
-    const svgOffset = exportSVG ? 10 : 0
-    const extraOffset =
-      svgOffset || (needsScalebar && !rowHeightTooSmallForScalebar ? 50 : 0)
-    return sources ? (
-      <>
-        {
-          /* 0.25 for hanging letters like g */
-          needsFullHeightScalebar ? (
-            <RectBg
-              y={0}
-              x={extraOffset}
-              width={legendWidth}
-              height={(sources.length + 0.25) * rowHeight}
-            />
-          ) : null
-        }
-        {sources.map((source, idx) => {
-          const boxHeight = Math.min(20, rowHeight)
-          return (
-            <React.Fragment key={source.name + '-' + idx}>
-              {!needsFullHeightScalebar ? (
-                <RectBg
-                  y={idx * rowHeight + 1}
-                  x={extraOffset}
-                  width={legendWidth}
-                  height={boxHeight}
-                />
-              ) : null}
-              {source.color ? (
-                <RectBg
-                  y={idx * rowHeight + 1}
-                  x={extraOffset}
-                  width={colorBoxWidth}
-                  height={needsCustomLegend ? rowHeight : boxHeight}
-                  color={source.color}
-                />
-              ) : null}
-              {canDisplayLabel ? (
-                <text
-                  y={idx * rowHeight + 13}
-                  x={extraOffset + colorBoxWidth + 2}
-                  fontSize={svgFontSize}
-                >
-                  {source.name}
-                </text>
-              ) : null}
-            </React.Fragment>
-          )
-        })}
-      </>
-    ) : null
-  },
-)
+const ColorLegend = observer(function ({
+  model,
+  rowHeight,
+  labelWidth,
+  exportSVG,
+}: {
+  model: WiggleDisplayModel
+  rowHeight: number
+  labelWidth: number
+  exportSVG?: boolean
+}) {
+  const {
+    needsCustomLegend,
+    needsScalebar,
+    needsFullHeightScalebar,
+    rowHeightTooSmallForScalebar,
+    renderColorBoxes,
+    sources,
+  } = model
+  const svgFontSize = Math.min(rowHeight, 12)
+  const canDisplayLabel = rowHeight > 11
+  const colorBoxWidth = renderColorBoxes ? 15 : 0
+  const legendWidth = labelWidth + colorBoxWidth + 5
+  const svgOffset = exportSVG ? 10 : 0
+  const extraOffset =
+    svgOffset || (needsScalebar && !rowHeightTooSmallForScalebar ? 50 : 0)
 
-export const StatBars = observer(
-  (props: {
-    model: WiggleDisplayModel
-    orientation?: string
-    exportSVG?: boolean
-  }) => {
-    const { model, orientation, exportSVG } = props
-    const {
-      stats,
-      needsCustomLegend,
-      needsFullHeightScalebar,
-      rowHeightTooSmallForScalebar,
-      rowHeight,
-      sources,
-      ticks,
-    } = model
-    const svgFontSize = Math.min(rowHeight, 12)
-    const canDisplayLabel = rowHeight > 11
-    const { width: viewWidth } = getContainingView(model) as LGV
-    const minWidth = 20
-
-    const ready = stats && sources
-    if (!ready) {
-      return null
-    }
-
-    const labelWidth = Math.max(
-      ...(sources
-        .map(s => measureText(s.name, svgFontSize))
-        .map(width => (canDisplayLabel ? width : minWidth)) || [0]),
-    )
-
-    return (
-      <Wrapper {...props}>
-        {needsFullHeightScalebar ? (
-          <>
-            <g transform={`translate(${!exportSVG ? getOffset(model) : 0},0)`}>
-              <YScaleBar model={model} orientation={orientation} />
-            </g>
-            <g transform={`translate(${viewWidth - labelWidth - 100},0)`}>
-              <ColorLegend
-                exportSVG={exportSVG}
-                model={model}
-                rowHeight={12}
-                labelWidth={labelWidth}
+  return sources ? (
+    <>
+      {
+        /* 0.25 for hanging letters like g */
+        needsFullHeightScalebar ? (
+          <RectBg
+            y={0}
+            x={extraOffset}
+            width={legendWidth}
+            height={(sources.length + 0.25) * rowHeight}
+          />
+        ) : null
+      }
+      {sources.map((source, idx) => {
+        const boxHeight = Math.min(20, rowHeight)
+        return (
+          <React.Fragment key={`${source.name}-${idx}`}>
+            {needsFullHeightScalebar ? null : (
+              <RectBg
+                y={idx * rowHeight + 1}
+                x={extraOffset}
+                width={legendWidth}
+                height={boxHeight}
               />
-            </g>
-          </>
-        ) : (
-          <>
+            )}
+            {source.color ? (
+              <RectBg
+                y={idx * rowHeight + 1}
+                x={extraOffset}
+                width={colorBoxWidth}
+                height={needsCustomLegend ? rowHeight : boxHeight}
+                color={source.color}
+              />
+            ) : null}
+            {canDisplayLabel ? (
+              <text
+                y={idx * rowHeight + 13}
+                x={extraOffset + colorBoxWidth + 2}
+                fontSize={svgFontSize}
+              >
+                {source.name}
+              </text>
+            ) : null}
+          </React.Fragment>
+        )
+      })}
+    </>
+  ) : null
+})
+
+export const StatBars = observer(function (props: {
+  model: WiggleDisplayModel
+  orientation?: string
+  exportSVG?: boolean
+}) {
+  const { model, orientation, exportSVG } = props
+  const {
+    stats,
+    needsCustomLegend,
+    needsFullHeightScalebar,
+    rowHeightTooSmallForScalebar,
+    rowHeight,
+    sources,
+    ticks,
+  } = model
+  const svgFontSize = Math.min(rowHeight, 12)
+  const canDisplayLabel = rowHeight > 11
+  const { width: viewWidth } = getContainingView(model) as LGV
+  const minWidth = 20
+
+  const ready = stats && sources
+  if (!ready) {
+    return null
+  }
+
+  const labelWidth = Math.max(
+    ...(sources
+      .map(s => measureText(s.name, svgFontSize))
+      .map(width => (canDisplayLabel ? width : minWidth)) || [0]),
+  )
+
+  return (
+    <Wrapper {...props}>
+      {needsFullHeightScalebar ? (
+        <>
+          <g transform={`translate(${!exportSVG ? getOffset(model) : 0},0)`}>
+            <YScaleBar model={model} orientation={orientation} />
+          </g>
+          <g transform={`translate(${viewWidth - labelWidth - 100},0)`}>
             <ColorLegend
               exportSVG={exportSVG}
               model={model}
-              rowHeight={model.rowHeight}
+              rowHeight={12}
               labelWidth={labelWidth}
             />
+          </g>
+        </>
+      ) : (
+        <>
+          <ColorLegend
+            exportSVG={exportSVG}
+            model={model}
+            rowHeight={model.rowHeight}
+            labelWidth={labelWidth}
+          />
 
-            {rowHeightTooSmallForScalebar || needsCustomLegend ? (
-              <ScoreLegend {...props} />
-            ) : (
-              sources.map((_source, idx) => (
-                <g
-                  transform={`translate(0 ${rowHeight * idx})`}
-                  key={JSON.stringify(ticks) + '-' + idx}
-                >
-                  <YScaleBar model={model} orientation={orientation} />
-                </g>
-              ))
-            )}
-          </>
-        )}
-      </Wrapper>
-    )
-  },
-)
+          {rowHeightTooSmallForScalebar || needsCustomLegend ? (
+            <ScoreLegend {...props} />
+          ) : (
+            sources.map((_source, idx) => (
+              <g
+                transform={`translate(0 ${rowHeight * idx})`}
+                key={`${JSON.stringify(ticks)}-${idx}`}
+              >
+                <YScaleBar model={model} orientation={orientation} />
+              </g>
+            ))
+          )}
+        </>
+      )}
+    </Wrapper>
+  )
+})
 
-const LinearWiggleDisplay = observer((props: { model: WiggleDisplayModel }) => {
+export default observer((props: { model: WiggleDisplayModel }) => {
   const { model } = props
 
   return (
@@ -256,6 +251,4 @@ const LinearWiggleDisplay = observer((props: { model: WiggleDisplayModel }) => {
   )
 })
 
-export default LinearWiggleDisplay
-
-export { YScaleBar }
+export { default as YScaleBar } from '../../shared/YScaleBar'

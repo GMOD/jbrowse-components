@@ -120,11 +120,7 @@ const model = types
       return self.width
     },
     setHeight(newHeight: number) {
-      if (newHeight > minHeight) {
-        self.height = newHeight
-      } else {
-        self.height = minHeight
-      }
+      self.height = newHeight > minHeight ? newHeight : minHeight
       return self.height
     },
     resizeHeight(distance: number) {

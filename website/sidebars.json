@@ -54,6 +54,7 @@
         "developer_guides/creating_view",
         "developer_guides/extension_points",
         "developer_guides/pluggable_elements",
+        "developer_guides/modifying_menus",
         "urlparams",
         "api_guide",
         {
@@ -98,6 +99,7 @@
       "type": "category",
       "label": "Archive",
       "items": [
+        "archive/pag2023_workshop",
         "archive/pag2022_synteny_tutorial",
         "archive/bcc2020_plugin_development",
         {

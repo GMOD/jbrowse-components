@@ -289,7 +289,7 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
         console.warn(
           "Stats estimation reached timeout, or didn't get enough features",
         )
-        return { featureDensity: Infinity }
+        return { featureDensity: Number.POSITIVE_INFINITY }
       }
     }
 

@@ -64,7 +64,7 @@ export default class FromConfigAdapter extends BaseFeatureDataAdapter {
   }
 
   async getRefNameAliases() {
-    return Array.from(this.features.values()).map(featureArray => ({
+    return [...this.features.values()].map(featureArray => ({
       refName: featureArray[0].get('refName'),
       aliases: featureArray[0].get('aliases'),
     }))

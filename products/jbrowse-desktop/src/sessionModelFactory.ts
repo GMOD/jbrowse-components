@@ -125,16 +125,9 @@ export default function sessionModelFactory(
         types.string,
         () => localStorageGetItem('drawerPosition') || 'right',
       ),
-
-      /**
-       * #property
-       */
-      sessionThemeName: types.optional(
-        types.string,
-        () => localStorageGetItem('themeName') || 'default',
-      ),
     })
     .volatile((/* self */) => ({
+      sessionThemeName: localStorageGetItem('themeName') || 'default',
       /**
        * this is the globally "selected" object. can be anything.
        * code that wants to deal with this should examine it to see what
@@ -215,25 +208,25 @@ export default function sessionModelFactory(
       /**
        * #getter
        */
-      get configuration() {
+      get configuration(): AnyConfigurationModel {
         return getParent<any>(self).jbrowse.configuration
       },
       /**
        * #getter
        */
-      get assemblies() {
+      get assemblies(): AnyConfigurationModel[] {
         return getParent<any>(self).jbrowse.assemblies
       },
       /**
        * #getter
        */
-      get assemblyNames() {
+      get assemblyNames(): string[] {
         return getParent<any>(self).jbrowse.assemblyNames
       },
       /**
        * #getter
        */
-      get tracks() {
+      get tracks(): AnyConfigurationModel[] {
         return getParent<any>(self).jbrowse.tracks
       },
       /**
@@ -297,9 +290,7 @@ export default function sessionModelFactory(
       get visibleWidget() {
         if (isAlive(self)) {
           // returns most recently added item in active widgets
-          return Array.from(self.activeWidgets.values())[
-            self.activeWidgets.size - 1
-          ]
+          return [...self.activeWidgets.values()][self.activeWidgets.size - 1]
         }
         return undefined
       },
@@ -671,20 +662,18 @@ export default function sessionModelFactory(
         assemblyName: string,
         initialState: any = {},
       ) {
-        const assembly = self.assemblies.find(
-          (s: AnyConfigurationModel) =>
-            readConfObject(s, 'name') === assemblyName,
+        const asm = self.assemblies.find(
+          s => readConfObject(s, 'name') === assemblyName,
         )
-        if (!assembly) {
+        if (!asm) {
           throw new Error(
             `Could not add view of assembly "${assemblyName}", assembly name not found`,
           )
         }
-        initialState.displayRegionsFromAssemblyName = readConfObject(
-          assembly,
-          'name',
-        )
-        return this.addView(viewType, initialState)
+        return this.addView(viewType, {
+          ...initialState,
+          displayRegionsFromAssemblyName: readConfObject(asm, 'name'),
+        })
       },
 
       /**
@@ -707,7 +696,7 @@ export default function sessionModelFactory(
         typeName: string,
         id: string,
         initialState = {},
-        configuration = { type: typeName },
+        conf?: unknown,
       ) {
         const typeDefinition = pluginManager.getElementType('widget', typeName)
         if (!typeDefinition) {
@@ -717,7 +706,7 @@ export default function sessionModelFactory(
           ...initialState,
           id,
           type: typeName,
-          configuration,
+          configuration: conf || { type: typeName },
         }
         self.widgets.set(id, data)
         return self.widgets.get(id)
@@ -917,7 +906,7 @@ export default function sessionModelFactory(
               const { jobsManager } = rootModel
               const { trackId, assemblyNames, textSearching, name } =
                 trackSnapshot
-              const indexName = name + '-index'
+              const indexName = `${name}-index`
               // TODO: open jobs list widget
               jobsManager.queueJob({
                 indexingParams: {
@@ -962,10 +951,10 @@ export default function sessionModelFactory(
   ) as typeof sessionModel
 
   return types.snapshotProcessor(addSnackbarToModel(extendedSessionModel), {
-    // @ts-ignore
+    // @ts-expect-error
     preProcessor(snapshot) {
       if (snapshot) {
-        // @ts-ignore
+        // @ts-expect-error
         const { connectionInstances, ...rest } = snapshot || {}
         // connectionInstances schema changed from object to an array, so any
         // old connectionInstances as object is in snapshot, filter it out

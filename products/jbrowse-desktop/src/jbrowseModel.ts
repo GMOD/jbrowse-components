@@ -19,10 +19,10 @@ import {
 import { SessionStateModel } from './sessionModelFactory'
 
 // poke some things for testing (this stuff will eventually be removed)
-// @ts-ignore
+// @ts-expect-error
 window.getSnapshot = getSnapshot
 
-// @ts-ignore
+// @ts-expect-error
 window.resolveIdentifier = resolveIdentifier
 
 export default function JBrowseDesktop(
@@ -127,7 +127,7 @@ export default function JBrowseDesktop(
           sequence: {
             type: 'ReferenceSequenceTrack',
             trackId: `${name}-${Date.now()}`,
-            ...(assemblyConf.sequence || {}),
+            ...assemblyConf.sequence,
           },
         })
         return self.assemblies[length - 1]

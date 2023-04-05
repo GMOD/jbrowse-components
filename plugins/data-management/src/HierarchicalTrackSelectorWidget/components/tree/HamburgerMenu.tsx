@@ -73,8 +73,6 @@ export default observer(function HamburgerMenu({
     deletingConnection?: boolean,
   ) {
     const name = readConfObject(connectionConf, 'name')
-
-    // @ts-ignore
     const result = session.prepareToBreakConnection(connectionConf)
     if (result) {
       const [safelyBreakConnection, dereferenceTypeCount] = result

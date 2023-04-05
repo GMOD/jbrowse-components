@@ -24,6 +24,7 @@ import {
   minmax,
   measureText,
   max,
+  localStorageGetItem,
 } from '@jbrowse/core/util'
 import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -35,12 +36,7 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 
 // locals
-import {
-  Dotplot1DView,
-  Dotplot1DViewModel,
-  DotplotHView,
-  DotplotVView,
-} from './1dview'
+import { Dotplot1DView, DotplotHView, DotplotVView } from './1dview'
 import { getBlockLabelKeysToHide, makeTicks } from './components/util'
 import { renderToSvg } from './svgcomponents/SVGDotplotView'
 import ExportSvgDlg from './components/ExportSvgDialog'
@@ -115,10 +111,6 @@ export default function stateModelFactory(pm: PluginManager) {
          * #property
          */
         vview: types.optional(DotplotVView, {}),
-        /**
-         * #property
-         */
-        cursorMode: 'crosshair',
 
         /**
          * #property
@@ -139,6 +131,14 @@ export default function stateModelFactory(pm: PluginManager) {
     .volatile(() => ({
       volatileWidth: undefined as number | undefined,
       volatileError: undefined as unknown,
+
+      // these are 'personal preferences', stored in volatile and
+      // loaded/written to localStorage
+      cursorMode: localStorageGetItem('dotplot-cursorMode') || 'crosshair',
+      showPanButtons: Boolean(
+        JSON.parse(localStorageGetItem('dotplot-showPanbuttons') || 'true'),
+      ),
+      wheelMode: localStorageGetItem('dotplot-wheelMode') || 'zoom',
       borderX: 100,
       borderY: 100,
     }))
@@ -247,6 +247,18 @@ export default function stateModelFactory(pm: PluginManager) {
       /**
        * #action
        */
+      setShowPanButtons(flag: boolean) {
+        self.showPanButtons = flag
+      },
+      /**
+       * #action
+       */
+      setWheelMode(str: string) {
+        self.wheelMode = str
+      },
+      /**
+       * #action
+       */
       setCursorMode(str: string) {
         self.cursorMode = str
       },
@@ -302,7 +314,8 @@ export default function stateModelFactory(pm: PluginManager) {
 
       /**
        * #action
-       * removes the view itself from the state tree entirely by calling the parent removeView
+       * removes the view itself from the state tree entirely by calling the
+       * parent removeView
        */
       closeView() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -433,6 +446,15 @@ export default function stateModelFactory(pm: PluginManager) {
       },
       /**
        * #action
+       */
+      showAllRegions() {
+        self.hview.zoomTo(self.hview.maxBpPerPx)
+        self.vview.zoomTo(self.vview.maxBpPerPx)
+        self.vview.center()
+        self.hview.center()
+      },
+      /**
+       * #action
        * creates a linear synteny view from the clicked and dragged region
        */
       onDotplotView(mousedown: Coord, mouseup: Coord) {
@@ -524,36 +546,45 @@ export default function stateModelFactory(pm: PluginManager) {
       afterAttach() {
         addDisposer(
           self,
+          autorun(() => {
+            const s = (s: unknown) => JSON.stringify(s)
+            const { showPanButtons } = self
+            if (typeof localStorage !== 'undefined') {
+              localStorage.setItem('dotplot-showPanbuttons', s(showPanButtons))
+            }
+          }),
+        )
+        addDisposer(
+          self,
           autorun(
             () => {
               const session = getSession(self)
-              if (self.volatileWidth === undefined) {
+
+              // don't operate if width not set yet
+              if (
+                self.volatileWidth === undefined ||
+                !self.assembliesInitialized
+              ) {
                 return
               }
 
-              if (self.initialized) {
+              // also don't operate if displayedRegions already set, this is a
+              // helper autorun to load regions from assembly
+              if (
+                self.hview.displayedRegions.length > 0 &&
+                self.vview.displayedRegions.length > 0
+              ) {
                 return
               }
-              const axis = [self.viewWidth, self.viewHeight]
+
               const views = [self.hview, self.vview]
-              self.assemblyNames.forEach((name, index) => {
-                const assembly = session.assemblyManager.get(name)
-                if (assembly) {
-                  if (assembly.error) {
-                    self.setError(assembly.error)
-                  }
-                  const { regions } = assembly
-                  if (regions && regions.length) {
-                    const regionsSnapshot = regions
-                    if (regionsSnapshot) {
-                      transaction(() => {
-                        const view = views[index]
-                        view.setDisplayedRegions(regionsSnapshot)
-                        view.setBpPerPx(view.totalBp / axis[index])
-                      })
-                    }
-                  }
-                }
+              transaction(() => {
+                self.assemblyNames.forEach((name, index) => {
+                  const assembly = session.assemblyManager.get(name)
+                  const view = views[index]
+                  view.setDisplayedRegions(assembly?.regions || [])
+                })
+                self.showAllRegions()
               })
             },
             { delay: 1000 },
@@ -616,15 +647,6 @@ export default function stateModelFactory(pm: PluginManager) {
         vview.setBpPerPx(avg)
         vview.centerAt(vpx.coord, vpx.refName, vpx.index)
       },
-      /**
-       * #action
-       */
-      showAllRegions() {
-        self.hview.zoomTo(self.hview.maxBpPerPx)
-        self.vview.zoomTo(self.vview.maxBpPerPx)
-        self.vview.center()
-        self.hview.center()
-      },
     }))
     .views(self => ({
       /**
@@ -685,7 +707,7 @@ export default function stateModelFactory(pm: PluginManager) {
     }))
 }
 
-export { Dotplot1DView }
-export type { Dotplot1DViewModel }
 export type DotplotViewStateModel = ReturnType<typeof stateModelFactory>
 export type DotplotViewModel = Instance<DotplotViewStateModel>
+
+export { type Dotplot1DViewModel, Dotplot1DView } from './1dview'

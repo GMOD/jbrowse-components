@@ -25,7 +25,7 @@ interface JBrowseRollupConfigOptions {
 
 const appPath = fs.realpathSync(process.cwd())
 const packageJsonPath = path.join(appPath, 'package.json')
-const packageJsonText = fs.readFileSync(packageJsonPath, 'utf-8')
+const packageJsonText = fs.readFileSync(packageJsonPath, 'utf8')
 const packageJson = JSON.parse(packageJsonText)
 const packageName = safePackageName(packageJson.name || '')
 const umdName = `JBrowsePlugin${packageJson.config?.jbrowse?.plugin?.name}`
@@ -37,13 +37,11 @@ const nodeEnv = process.env.NODE_ENV || 'production'
 
 function createGlobalMap(jbrowseGlobals: string[], dotSyntax = false) {
   const globalMap: Record<string, string> = {}
-  jbrowseGlobals.forEach(global => {
-    if (dotSyntax) {
-      globalMap[global] = `JBrowseExports.${global}`
-    } else {
-      globalMap[global] = `JBrowseExports["${global}"]`
-    }
-  })
+  for (const global of jbrowseGlobals) {
+    globalMap[global] = dotSyntax
+      ? `JBrowseExports.${global}`
+      : `JBrowseExports["${global}"]`
+  }
   return globalMap
 }
 
@@ -79,7 +77,7 @@ function getPlugins(
       externalGlobals(createGlobalMap(jbrowseGlobals)),
     babelPluginJBrowse({
       exclude: ['node_modules/**', '__virtual__/**'],
-      // @ts-ignore
+      // @ts-expect-error
       custom: {
         extractErrors: false,
         format: mode === 'esmBundle' || mode === 'npm' ? 'esm' : mode,
@@ -159,10 +157,8 @@ export function createRollupConfig(
       input: path.join(srcPath, 'index.ts'),
       external: (id: string) => {
         const isExternal = external(id)
-        if (isExternal) {
-          if (!jbrowseGlobals.includes(id)) {
-            return false
-          }
+        if (isExternal && !jbrowseGlobals.includes(id)) {
+          return false
         }
         return isExternal
       },
@@ -208,10 +204,8 @@ export function createRollupConfig(
       input: path.join(srcPath, 'index.ts'),
       external: (id: string) => {
         const isExternal = external(id)
-        if (isExternal) {
-          if (!jbrowseGlobals.includes(id)) {
-            return false
-          }
+        if (isExternal && !jbrowseGlobals.includes(id)) {
+          return false
         }
         return isExternal
       },
@@ -239,10 +233,8 @@ export function createRollupConfig(
           return true
         }
         const isExternal = external(id)
-        if (isExternal) {
-          if (!jbrowseGlobals.includes(id)) {
-            return false
-          }
+        if (isExternal && !jbrowseGlobals.includes(id)) {
+          return false
         }
         return isExternal
       },

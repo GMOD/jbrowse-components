@@ -11,7 +11,7 @@ info
 
 ## Source file
 
-[plugins/linear-comparative-view/src/LinearSyntenyDisplay/stateModelFactory.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyDisplay/stateModelFactory.ts)
+[plugins/linear-comparative-view/src/LinearSyntenyDisplay/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyDisplay/model.ts)
 
 ## Docs
 
@@ -58,6 +58,15 @@ string[]
 ```js
 // type
 number
+```
+
+#### getter: ready
+
+used for synteny svg rendering
+
+```js
+// type
+boolean
 ```
 
 #### getter: featMap
@@ -108,7 +117,7 @@ setMouseoverCanvasRef: (ref: HTMLCanvasElement) => void
 
 ```js
 // type signature
-setMouseoverId: (arg: number) => void
+setMouseoverId: (arg?: string) => void
 ```
 
 #### action: setCigarMouseoverId
@@ -122,5 +131,5 @@ setCigarMouseoverId: (arg: number) => void
 
 ```js
 // type signature
-setClickId: (arg: number) => void
+setClickId: (arg?: string) => void
 ```

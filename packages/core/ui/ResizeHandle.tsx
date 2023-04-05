@@ -64,11 +64,9 @@ function ResizeHandle({
 
   let className
   if (flexbox) {
-    if (vertical) {
-      className = classes.flexbox_verticalHandle
-    } else {
-      className = classes.flexbox_horizontalHandle
-    }
+    className = vertical
+      ? classes.flexbox_verticalHandle
+      : classes.flexbox_horizontalHandle
   } else if (vertical) {
     className = classes.verticalHandle
   } else {

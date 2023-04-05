@@ -114,9 +114,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           self.message = undefined
           self.error = undefined
           renderInProgress = undefined
+
           if (
             foundNewFeatureNotInExistingMap ||
-            foundExistingFeatureNotInNewMap
+            foundExistingFeatureNotInNewMap ||
+            !self.features
           ) {
             self.features = features
           }
@@ -141,7 +143,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     .actions(self => ({
       afterAttach() {
         makeAbortableReaction(
-          // @ts-ignore
+          // @ts-expect-error
           self,
           renderBlockData,
           renderBlockEffect,
@@ -192,8 +194,6 @@ async function renderBlockEffect(props: ReturnType<typeof renderBlockData>) {
 
   const { rpcManager, renderProps } = props
   const { adapterConfig } = renderProps
-
-  // @ts-ignore
   const view0 = renderProps.view.views[0]
 
   const features = (await rpcManager.call('getFeats', 'CoreGetFeatures', {

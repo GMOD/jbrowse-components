@@ -75,7 +75,7 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
       get location() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const path = getParent<any>(self).sessionPath
-        return path.substring(0, path.lastIndexOf('/'))
+        return path.slice(0, Math.max(0, path.lastIndexOf('/')))
       },
     }))
     .actions(self => ({
@@ -98,7 +98,7 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
       },
       setProgressPct(arg: string) {
         const progress = +arg
-        if (isNaN(progress)) {
+        if (Number.isNaN(progress)) {
           this.setStatusMessage(arg)
         } else {
           progress === 100 && this.setStatusMessage('Generating ixIxx files.')

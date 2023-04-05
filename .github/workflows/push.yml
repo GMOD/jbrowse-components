@@ -7,9 +7,9 @@ jobs:
     name: Test and typecheck on node 16.x and ubuntu-latest
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Use Node.js 16.x
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: '16'
       - name: Install deps (with cache)
@@ -25,9 +25,9 @@ jobs:
     name: Build website on node 16 and ubuntu-latest
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Use Node.js 16
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: '16'
       - name: Install website deps (with cache)
@@ -38,13 +38,20 @@ jobs:
         run: |
           cd website/
           yarn build
+          mkdir testing
+          mv build testing/jb2
+      - name: Check website links
+        uses: untitaker/hyperlink@0.1.27
+        with:
+          args: website/testing/ --check-anchors
+
   buildwholerepo:
     name: Build whole repo on node 16 and ubuntu-latest
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Use Node.js 16
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: '16'
       - name: Install deps (with cache)
@@ -70,9 +77,9 @@ jobs:
     name: Build only jbrowse-web and upload to s3 on node 16 and ubuntu-latest
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Use Node.js 16
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: '16'
       - name: Install deps (with cache)
@@ -84,7 +91,7 @@ jobs:
           NODE_OPTIONS='--max-old-space-size=6500' yarn build
           cd ../../
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -98,9 +105,9 @@ jobs:
     name: Build and deploy static linear genome view Storybook site to AWS S3
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Use Node.js 16
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: '16'
       - name: Install deps (with cache)
@@ -110,7 +117,7 @@ jobs:
           yarn storybook:build
         working-directory: products/jbrowse-react-linear-genome-view
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -124,9 +131,9 @@ jobs:
     name: Build and deploy static circular genome view Storybook site to AWS S3
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Use Node.js 16
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: '16'
       - name: Install deps (with cache)
@@ -136,7 +143,7 @@ jobs:
           yarn storybook:build
         working-directory: products/jbrowse-react-circular-genome-view
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

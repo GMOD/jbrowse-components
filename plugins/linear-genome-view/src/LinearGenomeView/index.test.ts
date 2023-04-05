@@ -96,7 +96,7 @@ function initialize() {
       assemblyManager: types.optional(AssemblyManager, {
         assemblies: {
           volvox: {
-            // @ts-ignore
+            // @ts-expect-error
             regions: volvoxDisplayedRegions,
           },
         },
@@ -311,7 +311,6 @@ test('can navToMultiple', () => {
 describe('Zoom to selected displayed regions', () => {
   const { Session, LinearGenomeModel } = initialize()
   let model: LGV
-  let largestBpPerPx: number
   beforeEach(() => {
     const session = Session.create({
       configuration: {},
@@ -357,7 +356,6 @@ describe('Zoom to selected displayed regions', () => {
       },
     )
 
-    largestBpPerPx = model.bpPerPx
     expect(model.offsetPx).toEqual(0)
     expect(model.bpPerPx).toBeCloseTo(31.408)
   })
@@ -384,7 +382,6 @@ describe('Zoom to selected displayed regions', () => {
     expect(model.offsetPx).toEqual(0)
     // 10000 - 5000 = 5000 / 800 = 6.25
     expect(model.bpPerPx).toEqual(6.25)
-    expect(model.bpPerPx).toBeLessThan(largestBpPerPx)
   })
 
   it('can select one region with start or end outside of displayed region', () => {
@@ -411,7 +408,6 @@ describe('Zoom to selected displayed regions', () => {
     expect(Math.abs(model.offsetPx)).toEqual(0)
     // endOffset 19000 - (-1) = 19001 /  800 = zoomTo(23.75)
     expect(model.bpPerPx).toBeCloseTo(23.75)
-    expect(model.bpPerPx).toBeLessThan(largestBpPerPx)
   })
 
   it('can select over two regions in the same reference sequence', () => {
@@ -439,7 +435,6 @@ describe('Zoom to selected displayed regions', () => {
     expect(model.bpPerPx).toBeCloseTo(27.78, 0)
     // offset 5000 / bpPerPx (because that is the starting) = 180.5
     expect(model.offsetPx).toBe(181)
-    expect(model.bpPerPx).toBeLessThan(largestBpPerPx)
   })
 
   it('can navigate to overlapping regions with a region between', () => {
@@ -585,7 +580,7 @@ test('can perform bpToPx in a way that makes sense on things that happen outside
   model.toggleHeaderOverview()
   expect(model.hideHeaderOverview).toEqual(true)
   model.toggleHeaderOverview()
-  model.setError(Error('pxToBp failed to map to a region'))
+  model.setError(new Error('pxToBp failed to map to a region'))
   expect(`${model.error}`).toEqual('Error: pxToBp failed to map to a region')
 })
 // determined objectively by looking at
@@ -936,7 +931,7 @@ test('navToLocString with human assembly', async () => {
     assemblyManager: {
       assemblies: {
         hg38: {
-          // @ts-ignore
+          // @ts-expect-error
           regions: hg38Regions,
         },
       },

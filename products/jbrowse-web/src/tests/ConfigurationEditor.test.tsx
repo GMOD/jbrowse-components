@@ -13,7 +13,7 @@ beforeEach(() => {
 
 test('change color on track', async () => {
   const { view, getByTestId, findByTestId, findByText, findByDisplayValue } =
-    createView(undefined, true)
+    await createView(undefined, true)
 
   await findByText('Help')
   view.setNewView(0.05, 5000)
@@ -27,7 +27,7 @@ test('change color on track', async () => {
     target: { value: 'green' },
   })
   await waitFor(() => {
-    const elt = getByTestId('box-test-vcf-604452')
+    const elt = getByTestId('box-test-vcf-604453')
     expect(elt).toHaveAttribute('fill', 'green')
   }, delay)
 }, 20000)

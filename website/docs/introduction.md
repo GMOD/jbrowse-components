@@ -28,7 +28,7 @@ Welcome to the JBrowse 2 documentation.
   configuring JBrowse via the GUI
 - [Config editing via command-line interface](./tutorials/config_cli) - a guide
   for configuring JBrowse via CLI
-- [Writing a simple plugin for JBrowse 2](./tutorials/simple_plugin_tutorial/01_introduction/)
+- [Writing a simple plugin for JBrowse 2](./tutorials/simple_plugin/)
 - [Developing with JBrowse web and desktop](./tutorials/develop_web_and_desktop_tutorial/)
 
 ...and more! Use the left panel to browse some of the other guide docs

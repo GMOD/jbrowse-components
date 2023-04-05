@@ -26,14 +26,14 @@ export default class NCListFeature implements Feature {
   }
 
   jb2TagToJb1Tag(tag: string): string {
-    // @ts-ignore
+    // @ts-expect-error
     const mapped = jb2ToJb1[tag] || tag
     return mapped.toLowerCase()
   }
 
   jb1TagToJb2Tag(tag: string): string {
     const t = tag.toLowerCase()
-    // @ts-ignore
+    // @ts-expect-error
     const mapped = jb1ToJb2[t] || t
     return mapped
   }

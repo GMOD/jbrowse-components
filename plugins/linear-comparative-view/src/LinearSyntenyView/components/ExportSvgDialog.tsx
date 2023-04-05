@@ -85,7 +85,7 @@ export default function ExportSvgDlg({
             {Object.entries(session.allThemes()).map(([key, val]) => (
               <MenuItem key={key} value={key}>
                 {
-                  // @ts-ignore
+                  // @ts-expect-error
                   val.name || '(Unknown name)'
                 }
               </MenuItem>
@@ -131,11 +131,11 @@ export default function ExportSvgDlg({
                 themeName,
                 trackLabels,
               })
-              setLoading(false)
               handleClose()
             } catch (e) {
               console.error(e)
               setError(e)
+            } finally {
               setLoading(false)
             }
           }}

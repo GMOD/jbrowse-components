@@ -25,7 +25,7 @@ export function cigarToMismatches(
   seq?: string,
   ref?: string,
   qual?: Buffer,
-): Mismatch[] {
+) {
   let roffset = 0 // reference offset
   let soffset = 0 // seq offset
   const mismatches: Mismatch[] = []
@@ -125,7 +125,7 @@ export function mdToMismatches(
   cigarMismatches: Mismatch[],
   seq: string,
   qual?: Buffer,
-): Mismatch[] {
+) {
   const mismatchRecords: Mismatch[] = []
   let curr: Mismatch = { start: 0, base: '', length: 0, type: 'mismatch' }
   const skips = cigarMismatches.filter(cigar => cigar.type === 'skip')
@@ -216,7 +216,7 @@ export function getMismatches(
   seq?: string,
   ref?: string,
   qual?: Buffer,
-): Mismatch[] {
+) {
   let mismatches: Mismatch[] = []
   const ops = parseCigar(cigar)
 
@@ -327,23 +327,22 @@ export function getModificationPositions(
 }
 
 export function getModificationTypes(mm: string) {
-  const mods = mm.split(';')
-  return mods
+  return mm
+    .split(';')
     .filter(mod => !!mod)
-    .map(mod => {
+    .flatMap(mod => {
       const [basemod] = mod.split(',')
 
       const matches = basemod.match(modificationRegex)
       if (!matches) {
         throw new Error(`bad format for MM tag: ${mm}`)
       }
-      const [, , , typestr] = matches
+      const typestr = matches[3]
 
       // can be a multi e.g. C+mh for both meth (m) and hydroxymeth (h) so
       // split, and they can also be chemical codes (ChEBI) e.g. C+16061
       return typestr.split(/(\d+|.)/).filter(f => !!f)
     })
-    .flat()
 }
 
 export function getOrientedCigar(flip: boolean, cigar: string[]) {
@@ -357,8 +356,7 @@ export function getOrientedCigar(flip: boolean, cigar: string[]) {
       } else if (op === 'I') {
         op = 'D'
       }
-      ret.push(len)
-      ret.push(op)
+      ret.push(len, op)
     }
     return ret
   } else {

@@ -8,7 +8,7 @@ import {
   doBeforeEach,
   createView,
   hts,
-  pc,
+  pv,
 } from './util'
 
 expect.extend({ toMatchImageSnapshot })
@@ -22,7 +22,7 @@ const delay = { timeout: 20000 }
 const o = [{}, delay]
 
 test('test stats estimation pileup, zoom in to see', async () => {
-  const { view, findByText, findAllByText, findByTestId } = createView()
+  const { view, findByText, findAllByText, findByTestId } = await createView()
   await findByText('Help')
   view.setNewView(30, 183)
   fireEvent.click(await findByTestId(hts('volvox_cram_pileup'), ...o))
@@ -32,11 +32,11 @@ test('test stats estimation pileup, zoom in to see', async () => {
   // found it helps avoid flaky test to check that it is zoomed in before
   // checking snapshot (even though it seems like it is unneeded) #2673
   await waitFor(() => expect(view.bpPerPx).toBe(before / 2), delay)
-  expectCanvasMatch(await findByTestId(pc('{volvox}ctgA:1..12000-0'), ...o))
+  expectCanvasMatch(await findByTestId(pv('1..12000-0'), ...o))
 }, 30000)
 
 test('test stats estimation pileup, force load to see', async () => {
-  const { view, findByText, findAllByText, findByTestId } = createView()
+  const { view, findByText, findAllByText, findByTestId } = await createView()
   await findByText('Help')
   view.setNewView(25.07852564102564, 283)
 
@@ -46,12 +46,12 @@ test('test stats estimation pileup, force load to see', async () => {
   const buttons = await findAllByText(/Force load/, ...o)
   fireEvent.click(buttons[0])
 
-  expectCanvasMatch(await findByTestId(pc('{volvox}ctgA:1..20063-0'), ...o))
+  expectCanvasMatch(await findByTestId(pv('1..20063-0'), ...o))
 }, 30000)
 
 test('test stats estimation on vcf track, zoom in to see', async () => {
   const { view, findByText, findAllByText, findAllByTestId, findByTestId } =
-    createView()
+    await createView()
   await findByText('Help')
   view.setNewView(34, 5)
   fireEvent.click(await findByTestId('htsTrackEntry-variant_colors', ...o))
@@ -61,15 +61,16 @@ test('test stats estimation on vcf track, zoom in to see', async () => {
   // found it helps avoid flaky test to check that it is zoomed in before
   // checking snapshot (even though it seems like it is unneeded) #2673
   await waitFor(() => expect(view.bpPerPx).toBe(before / 2), delay)
-  await findAllByTestId('box-test-vcf-605560', ...o)
+  await findAllByTestId('box-test-vcf-606969', ...o)
 }, 30000)
 
 test('test stats estimation on vcf track, force load to see', async () => {
-  const { view, findByText, findAllByText, findByTestId } = createView()
+  const { view, findByText, findAllByText, findAllByTestId, findByTestId } =
+    await createView()
   await findByText('Help')
   view.setNewView(34, 5)
   await findAllByText('ctgA', ...o)
   fireEvent.click(await findByTestId('htsTrackEntry-variant_colors', ...o))
   fireEvent.click((await findAllByText(/Force load/, ...o))[0])
-  await findByTestId('box-test-vcf-605223', ...o)
+  await findAllByTestId('box-test-vcf-605224', ...o)
 }, 30000)

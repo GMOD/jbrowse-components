@@ -3,7 +3,7 @@
  */
 
 import fs from 'fs'
-import * as path from 'path'
+import path from 'path'
 import { setup, readConf, dataDir } from '../testUtil'
 
 const { copyFile, rename } = fs.promises
@@ -68,7 +68,6 @@ const testConfig = dataDir('test_config.json')
 const setupWithAddTrack = setup
   .do(async ctx => {
     await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
-
     await rename(
       path.join(ctx.dir, path.basename(testConfig)),
       path.join(ctx.dir, 'config.json'),
@@ -92,7 +91,6 @@ describe('set-default-session', () => {
   setup
     .do(async ctx => {
       await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
-
       await rename(
         path.join(ctx.dir, path.basename(testConfig)),
         path.join(ctx.dir, 'config.json'),
@@ -104,7 +102,6 @@ describe('set-default-session', () => {
   setup
     .do(async ctx => {
       await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
-
       await rename(
         path.join(ctx.dir, path.basename(testConfig)),
         path.join(ctx.dir, 'config.json'),
@@ -163,7 +160,7 @@ describe('set-default-session', () => {
     })
     .command(['set-default-session', '--delete'])
     .it('deletes a default session', async ctx => {
-      const contents = await readConf(ctx)
+      const contents = readConf(ctx)
 
       expect(contents).toEqual({
         ...defaultConfig,
@@ -182,7 +179,7 @@ describe('set-default-session', () => {
     })
     .command(['set-default-session', '--session', simpleDefaultSession])
     .it('adds a default session from a file', async ctx => {
-      const contents = await readConf(ctx)
+      const contents = readConf(ctx)
       expect(contents).toEqual({
         ...defaultConfig,
         tracks: [],
@@ -214,7 +211,7 @@ describe('set-default-session', () => {
     .it(
       'adds a default session that is a linear genome view and a simple track',
       async ctx => {
-        const contents = await readConf(ctx)
+        const contents = readConf(ctx)
         expect(contents).toEqual({
           ...defaultConfig,
           defaultSession: {

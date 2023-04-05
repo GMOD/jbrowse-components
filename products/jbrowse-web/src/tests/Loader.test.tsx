@@ -37,7 +37,7 @@ const readBuffer = async (url: string, args: RequestInit) => {
       },
     }
   }
-  if (url.match(/testid/)) {
+  if (/testid/.test(url)) {
     return {
       ok: true,
       async text() {
@@ -45,7 +45,7 @@ const readBuffer = async (url: string, args: RequestInit) => {
       },
     }
   }
-  if (url.match(/testcustomcallback/)) {
+  if (/testcustomcallback/.test(url)) {
     return {
       ok: true,
       async text() {
@@ -53,14 +53,14 @@ const readBuffer = async (url: string, args: RequestInit) => {
       },
     }
   }
-  if (url.match(/nonexist/)) {
+  if (/nonexist/.test(url)) {
     return {
       ok: false,
       statusText: 'failed to find session',
     }
   }
   // this is the analytics
-  if (url.match(/jb2=true/)) {
+  if (/jb2=true/.test(url)) {
     return {
       ok: true,
       async json() {

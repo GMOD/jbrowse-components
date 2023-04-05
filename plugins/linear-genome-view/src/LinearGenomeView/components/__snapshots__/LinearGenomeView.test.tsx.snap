@@ -11,7 +11,6 @@ exports[`renders one track, one region 1`] = `
       >
         <div
           class="css-dznme2-rubberbandControl"
-          role="presentation"
         >
           <div
             class="css-16vhz0m-scalebar"
@@ -21,7 +20,7 @@ exports[`renders one track, one region 1`] = `
               style="width: 800px; left: 0px; background: rgba(66, 165, 245, 0.3); border-color: #42a5f5;"
             />
             <div
-              class="css-osn2dd-scalebarContig"
+              class="css-2jeg0a-scalebarContig"
               style="width: 0px; left: 0px; background-color: rgb(153, 153, 153);"
             />
             <div>
@@ -32,7 +31,7 @@ exports[`renders one track, one region 1`] = `
                 ctgA
               </p>
               <div
-                class="css-1npsllo-scalebarContig-scalebarContigForward-scalebarBorder"
+                class="css-rtx9ov-scalebarContig-scalebarContigForward-scalebarBorder"
                 style="left: 0px; width: 800px; border-color: rgb(153, 102, 0);"
               >
                 <p
@@ -68,7 +67,7 @@ exports[`renders one track, one region 1`] = `
               </div>
             </div>
             <div
-              class="css-osn2dd-scalebarContig"
+              class="css-2jeg0a-scalebarContig"
               style="width: 0px; left: 800px; background-color: rgb(153, 153, 153);"
             />
           </div>
@@ -88,10 +87,10 @@ exports[`renders one track, one region 1`] = `
           />
         </svg>
         <div
-          class="css-ig8oez-headerBar"
+          class="css-cwpsam-headerBar"
         >
           <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-iqybyt-MuiButtonBase-root-MuiIconButton-root-toggleButton"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-7xx2bb-MuiButtonBase-root-MuiIconButton-root-toggleButton"
             tabindex="0"
             title="Open track selector"
             type="button"
@@ -118,7 +117,7 @@ exports[`renders one track, one region 1`] = `
             class="MuiFormGroup-root MuiFormGroup-row css-1gwpy8f-MuiFormGroup-root-headerForm"
           >
             <button
-              class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-8wbbs0-MuiButtonBase-root-MuiButton-root-panButton"
+              class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-1bqryi1-MuiButtonBase-root-MuiButton-root-panButton"
               tabindex="0"
               type="button"
             >
@@ -138,7 +137,7 @@ exports[`renders one track, one region 1`] = `
               />
             </button>
             <button
-              class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-8wbbs0-MuiButtonBase-root-MuiButton-root-panButton"
+              class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-1bqryi1-MuiButtonBase-root-MuiButton-root-panButton"
               tabindex="0"
               type="button"
             >
@@ -158,13 +157,13 @@ exports[`renders one track, one region 1`] = `
               />
             </button>
             <div
-              class="MuiAutocomplete-root css-1qqsdnr-MuiAutocomplete-root"
+              class="MuiAutocomplete-root css-l3ln04-MuiAutocomplete-root"
               data-testid="autocomplete"
-              style="width: 200px;"
+              style="width: 175px;"
             >
               <div
                 class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-1efd6m0-MuiFormControl-root-MuiTextField-root-headerRefName"
-                style="margin: 7px; min-width: 175px;"
+                style="margin: 7px;"
               >
                 <div
                   class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiAutocomplete-inputRoot css-154xyx0-MuiInputBase-root-MuiOutlinedInput-root"
@@ -177,7 +176,7 @@ exports[`renders one track, one region 1`] = `
                     autocapitalize="none"
                     autocomplete="off"
                     class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-nxo287-MuiInputBase-input-MuiOutlinedInput-input"
-                    id="refNameAutocomplete-lgv"
+                    id="mui-7"
                     placeholder="Search for location"
                     role="combobox"
                     spellcheck="false"
@@ -276,8 +275,7 @@ exports[`renders one track, one region 1`] = `
                 style="left: 0%; width: 0%;"
               />
               <span
-                class="MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary css-14gf62f-MuiSlider-thumb"
-                data-focusvisible="false"
+                class="MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary css-14gf62f-MuiSlider-thumb"
                 data-index="0"
                 style="left: 0%;"
               >
@@ -347,6 +345,10 @@ exports[`renders one track, one region 1`] = `
             style="width: 100px;"
           >
             <div
+              class="css-i794sq-tick-minorTick"
+              style="left: -21px;"
+            />
+            <div
               class="css-1qcgmte-tick-majorTick"
               style="left: -1px;"
             />
@@ -373,6 +375,10 @@ exports[`renders one track, one region 1`] = `
             <div
               class="css-i794sq-tick-minorTick"
               style="left: 119px;"
+            />
+            <div
+              class="css-i794sq-tick-minorTick"
+              style="left: 139px;"
             />
           </div>
           <div
@@ -563,7 +569,6 @@ exports[`renders two tracks, two regions 1`] = `
       >
         <div
           class="css-dznme2-rubberbandControl"
-          role="presentation"
         >
           <div
             class="css-16vhz0m-scalebar"
@@ -573,7 +578,7 @@ exports[`renders two tracks, two regions 1`] = `
               style="width: 580px; left: 0px; background: rgba(66, 165, 245, 0.3); border-color: #42a5f5;"
             />
             <div
-              class="css-osn2dd-scalebarContig"
+              class="css-2jeg0a-scalebarContig"
               style="width: 0px; left: 0px; background-color: rgb(153, 153, 153);"
             />
             <div>
@@ -584,12 +589,12 @@ exports[`renders two tracks, two regions 1`] = `
                 ctgA
               </p>
               <div
-                class="css-1npsllo-scalebarContig-scalebarContigForward-scalebarBorder"
+                class="css-rtx9ov-scalebarContig-scalebarContigForward-scalebarBorder"
                 style="left: 0px; width: 72.72727272727273px; border-color: rgb(153, 102, 0);"
               />
             </div>
             <div
-              class="css-osn2dd-scalebarContig"
+              class="css-2jeg0a-scalebarContig"
               style="width: 0px; left: 72.72727272727273px; background-color: rgb(153, 153, 153);"
             />
             <div>
@@ -600,7 +605,7 @@ exports[`renders two tracks, two regions 1`] = `
                 ctgB
               </p>
               <div
-                class="css-1npsllo-scalebarContig-scalebarContigForward-scalebarBorder"
+                class="css-rtx9ov-scalebarContig-scalebarContigForward-scalebarBorder"
                 style="left: 72.72727272727273px; width: 727.2727272727273px;"
               >
                 <p
@@ -636,7 +641,7 @@ exports[`renders two tracks, two regions 1`] = `
               </div>
             </div>
             <div
-              class="css-osn2dd-scalebarContig"
+              class="css-2jeg0a-scalebarContig"
               style="width: 0px; left: 800px; background-color: rgb(153, 153, 153);"
             />
           </div>
@@ -656,10 +661,10 @@ exports[`renders two tracks, two regions 1`] = `
           />
         </svg>
         <div
-          class="css-ig8oez-headerBar"
+          class="css-cwpsam-headerBar"
         >
           <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-iqybyt-MuiButtonBase-root-MuiIconButton-root-toggleButton"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-7xx2bb-MuiButtonBase-root-MuiIconButton-root-toggleButton"
             tabindex="0"
             title="Open track selector"
             type="button"
@@ -686,7 +691,7 @@ exports[`renders two tracks, two regions 1`] = `
             class="MuiFormGroup-root MuiFormGroup-row css-1gwpy8f-MuiFormGroup-root-headerForm"
           >
             <button
-              class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-8wbbs0-MuiButtonBase-root-MuiButton-root-panButton"
+              class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-1bqryi1-MuiButtonBase-root-MuiButton-root-panButton"
               tabindex="0"
               type="button"
             >
@@ -706,7 +711,7 @@ exports[`renders two tracks, two regions 1`] = `
               />
             </button>
             <button
-              class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-8wbbs0-MuiButtonBase-root-MuiButton-root-panButton"
+              class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-1bqryi1-MuiButtonBase-root-MuiButton-root-panButton"
               tabindex="0"
               type="button"
             >
@@ -726,13 +731,13 @@ exports[`renders two tracks, two regions 1`] = `
               />
             </button>
             <div
-              class="MuiAutocomplete-root css-1qqsdnr-MuiAutocomplete-root"
+              class="MuiAutocomplete-root css-l3ln04-MuiAutocomplete-root"
               data-testid="autocomplete"
               style="width: 260.27500000000003px;"
             >
               <div
                 class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-1efd6m0-MuiFormControl-root-MuiTextField-root-headerRefName"
-                style="margin: 7px; min-width: 175px;"
+                style="margin: 7px;"
               >
                 <div
                   class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiAutocomplete-inputRoot css-154xyx0-MuiInputBase-root-MuiOutlinedInput-root"
@@ -745,7 +750,7 @@ exports[`renders two tracks, two regions 1`] = `
                     autocapitalize="none"
                     autocomplete="off"
                     class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-nxo287-MuiInputBase-input-MuiOutlinedInput-input"
-                    id="refNameAutocomplete-lgv"
+                    id="mui-9"
                     placeholder="Search for location"
                     role="combobox"
                     spellcheck="false"
@@ -846,8 +851,7 @@ exports[`renders two tracks, two regions 1`] = `
                 style="left: 0%; width: 9.774680693120512%;"
               />
               <span
-                class="MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary css-14gf62f-MuiSlider-thumb"
-                data-focusvisible="false"
+                class="MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary css-14gf62f-MuiSlider-thumb"
                 data-index="0"
                 style="left: 9.774680693120512%;"
               >
@@ -917,6 +921,10 @@ exports[`renders two tracks, two regions 1`] = `
             style="width: 100px;"
           >
             <div
+              class="css-i794sq-tick-minorTick"
+              style="left: -21px;"
+            />
+            <div
               class="css-1qcgmte-tick-majorTick"
               style="left: -1px;"
             />
@@ -944,6 +952,10 @@ exports[`renders two tracks, two regions 1`] = `
               class="css-i794sq-tick-minorTick"
               style="left: 119px;"
             />
+            <div
+              class="css-i794sq-tick-minorTick"
+              style="left: 139px;"
+            />
           </div>
           <div
             class="css-1b6zgog-interRegionPaddingBlock"
@@ -953,6 +965,10 @@ exports[`renders two tracks, two regions 1`] = `
             class="css-1dmfa10-contentBlock"
             style="width: 800px;"
           >
+            <div
+              class="css-i794sq-tick-minorTick"
+              style="left: -21px;"
+            />
             <div
               class="css-1qcgmte-tick-majorTick"
               style="left: -1px;"
@@ -1120,6 +1136,10 @@ exports[`renders two tracks, two regions 1`] = `
             <div
               class="css-i794sq-tick-minorTick"
               style="left: 819px;"
+            />
+            <div
+              class="css-i794sq-tick-minorTick"
+              style="left: 839px;"
             />
           </div>
         </div>

@@ -88,7 +88,12 @@ export default function ResizeBar({
 }) {
   const { classes } = useStyles()
   const offsets = [] as number[]
-  widths.reduce((a, b, i) => (offsets[i] = a + b), checkbox ? 52 : 0)
+  let init = checkbox ? 52 : 0
+  for (let i = 0; i < widths.length; i++) {
+    const width = widths[i]
+    offsets[i] = width + init
+    init += width
+  }
 
   const onDrag = useCallback(
     (distance: number, idx: number) => {

@@ -17,12 +17,12 @@ beforeEach(() => {
 })
 
 test('open a dotplot view', async () => {
-  const { findByTestId } = createView(config)
+  const { findByTestId } = await createView(config)
   expectCanvasMatch(await findByTestId('prerendered_canvas_done', ...opts))
 }, 30000)
 
 test('open a dotplot view with import form', async () => {
-  const { findByTestId, findAllByTestId, findByText } = createView(config)
+  const { findByTestId, findAllByTestId, findByText } = await createView(config)
 
   fireEvent.click(await findByTestId('close_view'))
   fireEvent.click(await findByText('File'))
@@ -46,7 +46,7 @@ test('open a dotplot view with import form', async () => {
 }, 30000)
 
 test('inverted dotplot', async () => {
-  const { findByTestId } = createView({
+  const { findByTestId } = await createView({
     ...config,
     defaultSession: dotplotSession.session,
   })
@@ -54,7 +54,7 @@ test('inverted dotplot', async () => {
 }, 30000)
 
 test('inverted dotplot flip axes', async () => {
-  const { findByTestId } = createView({
+  const { findByTestId } = await createView({
     ...config,
     defaultSession: dotplotSessionFlipAxes.session,
   })

@@ -168,11 +168,12 @@ export function getNiceDomain({
 }
 
 export function groupBy<T>(array: T[], predicate: (v: T) => string) {
-  return array.reduce((acc, value) => {
-    const entry = (acc[predicate(value)] ||= [])
+  const result = {} as { [key: string]: T[] }
+  for (const value of array) {
+    const entry = (result[predicate(value)] ||= [])
     entry.push(value)
-    return acc
-  }, {} as { [key: string]: T[] })
+  }
+  return result
 }
 
 export async function getStats(

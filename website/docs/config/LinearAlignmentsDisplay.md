@@ -30,6 +30,15 @@ pileupDisplay: pm.getDisplayType('LinearPileupDisplay').configSchema
 snpCoverageDisplay: pm.getDisplayType('LinearSNPCoverageDisplay').configSchema
 ```
 
+#### slot: height
+
+```js
+height: {
+        type: 'number',
+        defaultValue: 250,
+      }
+```
+
 ## LinearAlignmentsDisplay - Derives from
 
 ```js

@@ -7,7 +7,7 @@ import volvoxConfig from '../../test_data/volvox/config.json'
 // locals
 import { hts, createView, setup, doBeforeEach } from './util'
 
-// @ts-ignore
+// @ts-expect-error
 global.Blob = (content, options) => ({ content, options })
 
 // mock from https://stackoverflow.com/questions/44686077
@@ -24,7 +24,7 @@ const delay = { timeout: 40000 }
 const opts = [{}, delay]
 
 test('export svg of lgv', async () => {
-  const { view, findByTestId, findByText } = createView()
+  const { view, findByTestId, findByText } = await createView()
 
   await findByText('Help')
   view.setNewView(0.1, 1)
@@ -38,7 +38,7 @@ test('export svg of lgv', async () => {
 
   await waitFor(() => expect(FileSaver.saveAs).toHaveBeenCalled(), delay)
 
-  // @ts-ignore
+  // @ts-expect-error
   const svg = FileSaver.saveAs.mock.calls[0][0].content[0]
   const dir = path.dirname(module.filename)
   fs.writeFileSync(`${dir}/__image_snapshots__/lgv_snapshot.svg`, svg)
@@ -47,7 +47,7 @@ test('export svg of lgv', async () => {
 
 test('export svg of synteny', async () => {
   console.warn = jest.fn()
-  const { findByTestId, findAllByText, findByText } = createView({
+  const { findByTestId, findAllByText, findByText } = await createView({
     ...volvoxConfig,
     defaultSession: {
       id: 'session_testing',
@@ -196,7 +196,7 @@ test('export svg of synteny', async () => {
 
   await waitFor(() => expect(FileSaver.saveAs).toHaveBeenCalled(), delay)
 
-  // @ts-ignore
+  // @ts-expect-error
   const svg = FileSaver.saveAs.mock.calls[0][0].content[0]
   const dir = path.dirname(module.filename)
   fs.writeFileSync(`${dir}/__image_snapshots__/synteny_snapshot.svg`, svg)
@@ -204,7 +204,7 @@ test('export svg of synteny', async () => {
 }, 45000)
 
 test('export svg of circular', async () => {
-  const { findByTestId, findByText } = createView({
+  const { findByTestId, findByText } = await createView({
     ...volvoxConfig,
     defaultSession: {
       name: 'Integration Test Circular',
@@ -229,7 +229,7 @@ test('export svg of circular', async () => {
 
   await waitFor(() => expect(FileSaver.saveAs).toHaveBeenCalled(), delay)
 
-  // @ts-ignore
+  // @ts-expect-error
   const svg = FileSaver.saveAs.mock.calls[0][0].content[0]
   const dir = path.dirname(module.filename)
   fs.writeFileSync(`${dir}/__image_snapshots__/circular_snapshot.svg`, svg)
@@ -237,7 +237,7 @@ test('export svg of circular', async () => {
 }, 45000)
 
 test('export svg of dotplot', async () => {
-  const { findByTestId, findByText } = createView({
+  const { findByTestId, findByText } = await createView({
     ...volvoxConfig,
     defaultSession: {
       id: 'yvVuWHcq2',
@@ -325,7 +325,7 @@ test('export svg of dotplot', async () => {
 
   await waitFor(() => expect(FileSaver.saveAs).toHaveBeenCalled(), delay)
 
-  // @ts-ignore
+  // @ts-expect-error
   const svg = FileSaver.saveAs.mock.calls[0][0].content[0]
   const dir = path.dirname(module.filename)
   fs.writeFileSync(`${dir}/__image_snapshots__/dotplot_snapshot.svg`, svg)

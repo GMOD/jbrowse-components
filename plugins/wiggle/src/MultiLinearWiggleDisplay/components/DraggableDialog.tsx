@@ -54,7 +54,7 @@ function DraggableDialog(props: DialogProps & { title: string }) {
             <IconButton
               className={classes.closeButton}
               onClick={() => {
-                // @ts-ignore
+                // @ts-expect-error
                 onClose()
               }}
             >

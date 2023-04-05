@@ -216,11 +216,7 @@ function stateModelFactory(
        * #action
        */
       toggleLogScale() {
-        if (self.scale !== 'log') {
-          self.scale = 'log'
-        } else {
-          self.scale = 'linear'
-        }
+        self.scale = self.scale === 'log' ? 'linear' : 'log'
       },
 
       /**
@@ -347,9 +343,6 @@ function stateModelFactory(
        * #getter
        */
       get rendererConfig() {
-        const configBlob =
-          getConf(self, ['renderers', self.rendererTypeName]) || {}
-
         const {
           color,
           displayCrossHatches,
@@ -359,8 +352,9 @@ function stateModelFactory(
           posColor,
           summaryScoreMode,
           scaleType,
+          rendererTypeName,
         } = self
-
+        const configBlob = getConf(self, ['renderers', rendererTypeName]) || {}
         return self.rendererType.configSchema.create(
           {
             ...configBlob,
@@ -386,15 +380,13 @@ function stateModelFactory(
          * #getter
          */
         get filled() {
-          const { fill, rendererConfig: conf } = self
-          return fill ?? readConfObject(conf, 'filled')
+          return readConfObject(self.rendererConfig, 'filled')
         },
         /**
          * #getter
          */
         get summaryScoreModeSetting() {
-          const { summaryScoreMode, rendererConfig: conf } = self
-          return summaryScoreMode ?? readConfObject(conf, 'summaryScoreMode')
+          return readConfObject(self.rendererConfig, 'summaryScoreMode')
         },
         /**
          * #getter
@@ -464,8 +456,7 @@ function stateModelFactory(
          * #getter
          */
         get displayCrossHatchesSetting() {
-          const { displayCrossHatches: hatches, rendererConfig: conf } = self
-          return hatches ?? readConfObject(conf, 'displayCrossHatches')
+          return readConfObject(self.rendererConfig, 'displayCrossHatches')
         },
       }
     })

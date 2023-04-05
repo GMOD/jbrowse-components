@@ -49,7 +49,7 @@ export default function (pluginManager: PluginManager) {
               'adapter',
             ])
 
-            // @ts-ignore
+            // @ts-expect-error
             const jb2Tracks = config.tracks?.map(jb1Track => {
               const jb2Track = convertTrackConfig(
                 jb1Track,
@@ -57,7 +57,7 @@ export default function (pluginManager: PluginManager) {
                 sequenceAdapter,
               )
 
-              // @ts-ignore
+              // @ts-expect-error
               jb2Track.assemblyNames = [assemblyName]
               return jb2Track
             })

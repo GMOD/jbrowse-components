@@ -44,3 +44,13 @@ fetchSizeLimit: {
         "maximum data to attempt to download for a given track, used if adapter doesn't specify one",
     }
 ```
+
+#### slot: height
+
+```js
+height: {
+      type: 'number',
+      defaultValue: 100,
+      description: 'default height for the track',
+    }
+```

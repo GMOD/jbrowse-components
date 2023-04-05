@@ -48,7 +48,7 @@ open, tracks open in those views, etc.
 
 ```js
 // type signature
-IMaybe<ISnapshotProcessor<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number, number, number>; ... 12 more ...; sessionThemeName: IOptionalIType<...>; }, { ...; } & ... 9 more ... & { ...; }, _NotCustomized, _NotCustomized>, _NotCustomized, _NotCustomiz...
+IMaybe<ISnapshotProcessor<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number, number, number>; ... 11 more ...; drawerPosition: IOptionalIType<...>; }, { ...; } & ... 9 more ... & { ...; }, _NotCustomized, _NotCustomized>, _NotCustomized, _NotCustomized>>
 // code
 session: types.maybe(Session)
 ```
@@ -145,7 +145,7 @@ localStorageId: (name: string) => string
 
 ```js
 // type signature
-setSession: (sessionSnapshot?: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number, number, number>; ... 12 more ...; sessionThemeName: IOptionalIType<...>; }>>) => void
+setSession: (sessionSnapshot?: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number, number, number>; ... 11 more ...; drawerPosition: IOptionalIType<...>; }>>) => void
 ```
 
 #### action: setMenus

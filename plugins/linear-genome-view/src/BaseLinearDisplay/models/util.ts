@@ -1,3 +1,9 @@
+import { Stats } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { IAnyStateTreeNode, isAlive } from 'mobx-state-tree'
+import { LinearGenomeViewModel } from '../../LinearGenomeView'
+
 export interface RenderProps {
   rendererType: any // eslint-disable-line @typescript-eslint/no-explicit-any
   renderArgs: { [key: string]: any } // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -14,11 +20,42 @@ export interface ErrorProps {
 export function getDisplayStr(totalBytes: number) {
   let displayBp
   if (Math.floor(totalBytes / 1000000) > 0) {
-    displayBp = `${parseFloat((totalBytes / 1000000).toPrecision(3))} Mb`
+    displayBp = `${Number.parseFloat((totalBytes / 1000000).toPrecision(3))} Mb`
   } else if (Math.floor(totalBytes / 1000) > 0) {
-    displayBp = `${parseFloat((totalBytes / 1000).toPrecision(3))} Kb`
+    displayBp = `${Number.parseFloat((totalBytes / 1000).toPrecision(3))} Kb`
   } else {
     displayBp = `${Math.floor(totalBytes)} bytes`
   }
   return displayBp
+}
+
+// stabilize clipid under test for snapshot
+export function getId(id: string, index: number) {
+  const isJest = typeof jest === 'undefined'
+  return `clip-${isJest ? id : 'jest'}-${index}`
+}
+
+export async function estimateRegionsStatsPre(self: IAnyStateTreeNode) {
+  const view = getContainingView(self) as LinearGenomeViewModel
+  const regions = view.staticBlocks.contentBlocks
+
+  const { rpcManager } = getSession(self)
+  const { adapterConfig } = self
+  if (!adapterConfig) {
+    // A track extending the base track might not have an adapter config
+    // e.g. Apollo tracks don't use adapters
+    return {}
+  }
+  const sessionId = getRpcSessionId(self)
+
+  return rpcManager.call(sessionId, 'CoreEstimateRegionStats', {
+    sessionId,
+    regions,
+    adapterConfig,
+    statusCallback: (message: string) => {
+      if (isAlive(self)) {
+        self.setMessage(message)
+      }
+    },
+  }) as Promise<Stats>
 }

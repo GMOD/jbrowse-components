@@ -12,6 +12,7 @@ export default (pluginManager: PluginManager) => {
     return new DisplayType({
       name: 'LinearBareDisplay',
       configSchema,
+      displayName: 'Bare feature display',
       stateModel: stateModelFactory(configSchema),
       trackType: 'BasicTrack',
       viewType: 'LinearGenomeView',
@@ -20,4 +21,5 @@ export default (pluginManager: PluginManager) => {
   })
 }
 
-export { configSchemaFactory, stateModelFactory }
+export { configSchemaFactory } from './configSchema'
+export { stateModelFactory } from './model'

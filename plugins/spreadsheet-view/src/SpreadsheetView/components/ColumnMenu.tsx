@@ -3,7 +3,6 @@ import { observer } from 'mobx-react'
 import { iterMap } from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
 import { MenuItem } from '@jbrowse/core/ui/Menu'
-import { SvgIcon } from '@mui/material'
 import { SpreadsheetModel } from '../models/Spreadsheet'
 import { SpreadsheetViewModel } from '../models/SpreadsheetView'
 
@@ -21,17 +20,11 @@ const ColumnMenu = observer(function ({
 }: {
   spreadsheetModel: SpreadsheetModel
   viewModel: SpreadsheetViewModel
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  currentColumnMenu: any
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  setColumnMenu: (arg: any) => void
+  currentColumnMenu?: { colNumber: number; anchorEl: HTMLElement }
+  setColumnMenu: (arg?: { anchorEl: HTMLElement; colNumber: number }) => void
 }) {
-  const columnMenuClose = () => {
-    setColumnMenu(null)
-  }
-
-  const columnNumber = currentColumnMenu && currentColumnMenu.colNumber
-
+  const columnMenuClose = () => setColumnMenu(undefined)
+  const columnNumber = currentColumnMenu?.colNumber || 0
   const sortMenuClick = (descending: boolean) => {
     spreadsheetModel.setSortColumns([
       {
@@ -41,57 +34,45 @@ const ColumnMenu = observer(function ({
     ])
   }
 
-  const filterMenuClick = () => {
-    viewModel.filterControls.addBlankColumnFilter(columnNumber)
-  }
-
   const { dataTypeChoices } = spreadsheetModel
 
   // make a Map of categoryName => [entry...]
-  const dataTypeTopLevelMenu = new Map()
+  type Record = (typeof dataTypeChoices)[0]
+  type RecordGroup = { isCategory: boolean; subMenuItems: Record[] }
+  const dataTypeTopLevelMenu = new Map<string, Record | RecordGroup>()
   dataTypeChoices.forEach(dataTypeRecord => {
     const { displayName, categoryName } = dataTypeRecord
     if (categoryName) {
-      if (!dataTypeTopLevelMenu.has(categoryName)) {
-        dataTypeTopLevelMenu.set(categoryName, {
+      let entry = dataTypeTopLevelMenu.get(categoryName) as RecordGroup
+      if (!entry) {
+        entry = {
           isCategory: true,
           subMenuItems: [],
-        })
+        }
+        dataTypeTopLevelMenu.set(categoryName, entry)
       }
-      dataTypeTopLevelMenu.get(categoryName).subMenuItems.push(dataTypeRecord)
+      entry.subMenuItems.push(dataTypeRecord)
     } else {
       dataTypeTopLevelMenu.set(displayName, dataTypeRecord)
     }
   })
 
-  const dataType =
-    currentColumnMenu && spreadsheetModel.columns[columnNumber].dataType
-  const dataTypeName = (dataType && dataType.type) || ''
+  const { columns, sortColumns } = spreadsheetModel
+  const dataType = currentColumnMenu && columns[columnNumber].dataType
+  const dataTypeName = dataType?.type || ''
   const dataTypeDisplayName =
-    (currentColumnMenu &&
-      spreadsheetModel.columns[columnNumber].dataType.displayName) ||
-    ''
+    (currentColumnMenu && columns[columnNumber].dataType.displayName) || ''
 
-  const isSortingAscending = Boolean(
-    spreadsheetModel.sortColumns.length &&
-      currentColumnMenu &&
-      spreadsheetModel.sortColumns.find(
-        col =>
-          col.columnNumber === currentColumnMenu.colNumber && !col.descending,
-      ),
-  )
-  const isSortingDescending = Boolean(
-    spreadsheetModel.sortColumns.length &&
-      currentColumnMenu &&
-      spreadsheetModel.sortColumns.find(
-        col =>
-          col.columnNumber === currentColumnMenu.colNumber && col.descending,
-      ),
-  )
-  function stopSortingClick() {
-    columnMenuClose()
-    spreadsheetModel.setSortColumns([])
-  }
+  const isSortingAscending =
+    !!currentColumnMenu &&
+    sortColumns.some(
+      c => c.columnNumber === currentColumnMenu.colNumber && !c.descending,
+    )
+  const isSortingDescending =
+    !!currentColumnMenu &&
+    sortColumns.some(
+      c => c.columnNumber === currentColumnMenu.colNumber && c.descending,
+    )
 
   const menuItems = [
     // top-level column menu
@@ -100,18 +81,21 @@ const ColumnMenu = observer(function ({
       icon: SortIcon,
       type: 'radio',
       checked: isSortingAscending,
-      onClick: isSortingAscending
-        ? stopSortingClick
-        : sortMenuClick.bind(null, false),
+      onClick: () => sortMenuClick(false),
     },
     {
       label: 'Sort descending',
       icon: SortIcon,
       type: 'radio',
       checked: isSortingDescending,
-      onClick: isSortingDescending
-        ? stopSortingClick
-        : sortMenuClick.bind(null, true),
+      onClick: () => sortMenuClick(true),
+    },
+    {
+      label: 'No sort',
+      icon: SortIcon,
+      type: 'radio',
+      checked: !isSortingDescending && !isSortingAscending,
+      onClick: () => spreadsheetModel.setSortColumns([]),
     },
     // data type menu
     {
@@ -120,46 +104,31 @@ const ColumnMenu = observer(function ({
       subMenu: iterMap(
         dataTypeTopLevelMenu.entries(),
         ([displayName, record]) => {
-          const { subMenuItems, typeName } = record
-          if (typeName) {
-            const menuEntry = {
+          if ('typeName' in record && record.typeName) {
+            const { typeName } = record
+            return {
               label: displayName || typeName,
-              icon: undefined as typeof SvgIcon | undefined,
-              onClick: () => {
-                spreadsheetModel.setColumnType(columnNumber, typeName)
-              },
+              icon: dataTypeName === typeName ? CheckIcon : undefined,
+              onClick: () =>
+                spreadsheetModel.setColumnType(columnNumber, typeName),
             }
-            if (dataTypeName === typeName) {
-              menuEntry.icon = CheckIcon
-            }
-            return menuEntry
-          }
-          if (subMenuItems) {
+          } else if ('subMenuItems' in record && record.subMenuItems) {
+            const { subMenuItems } = record
             return {
               label: displayName,
-              icon: subMenuItems.find(
-                (i: { typeName: string }) => i.typeName === dataTypeName,
-              )
+              icon: subMenuItems.some(i => i.typeName === dataTypeName)
                 ? CheckIcon
                 : undefined,
-              subMenu: subMenuItems.map(
-                ({
-                  typeName: subTypeName,
-                  displayName: subDisplayName,
-                }: {
-                  typeName: string
-                  displayName: string
-                }) => ({
-                  label: subDisplayName,
-                  icon: subTypeName === dataTypeName ? CheckIcon : undefined,
-                  onClick: () => {
-                    spreadsheetModel.setColumnType(columnNumber, subTypeName)
-                  },
-                }),
-              ),
+              subMenu: subMenuItems.map(({ typeName, displayName }) => ({
+                label: displayName,
+                icon: typeName === dataTypeName ? CheckIcon : undefined,
+                onClick: () =>
+                  spreadsheetModel.setColumnType(columnNumber, typeName),
+              })),
             }
+          } else {
+            return null
           }
-          return null
         },
       ).filter(Boolean),
     },
@@ -167,17 +136,18 @@ const ColumnMenu = observer(function ({
 
   // don't display the filter item if this data type doesn't have filtering
   // implemented
-  if (dataType && dataType.hasFilter) {
+  if (dataType?.hasFilter) {
     menuItems.push({
       label: 'Create filter',
       icon: FilterListIcon,
-      onClick: filterMenuClick.bind(null, true),
+      onClick: () =>
+        viewModel.filterControls.addBlankColumnFilter(columnNumber),
     })
   }
 
   return (
     <Menu
-      anchorEl={currentColumnMenu && currentColumnMenu.anchorEl}
+      anchorEl={currentColumnMenu?.anchorEl}
       open={Boolean(currentColumnMenu)}
       onMenuItemClick={(_event, callback) => {
         callback()

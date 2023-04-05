@@ -5,6 +5,13 @@ import { isAlive, isStateTreeNode } from 'mobx-state-tree'
 import { measureText, getViewParams, Feature, Region } from '@jbrowse/core/util'
 import { DisplayModel } from './util'
 
+interface ViewParams {
+  start: number
+  end: number
+  offsetPx: number
+  offsetPx1: number
+}
+
 export default observer(function ({
   text,
   x,
@@ -34,12 +41,7 @@ export default observer(function ({
   displayModel?: DisplayModel
   exportSVG?: unknown
   region: Region
-  viewParams: {
-    start: number
-    end: number
-    offsetPx: number
-    offsetPx1: number
-  }
+  viewParams: ViewParams
 }) {
   const totalWidth = featureWidth + allowedWidthExpansion
   const measuredTextWidth = measureText(text, fontHeight)

@@ -8,7 +8,7 @@ import {
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import MakeSpreadsheetColumnType from './MakeSpreadsheetColumnType'
-import { types, getType } from 'mobx-state-tree'
+import { types, getPropertyMembers } from 'mobx-state-tree'
 import { observer } from 'mobx-react'
 import {
   getPropertyType,
@@ -31,7 +31,7 @@ const OPERATIONS = [
 // NOTE: assembly names, if present, are ignored in all of these predicates
 const OPERATION_PREDICATES = {
   contains: (textInCell, stringToFind) => {
-    return textInCell.toLowerCase().indexOf(stringToFind) !== -1
+    return textInCell.toLowerCase().includes(stringToFind)
   },
   equals: (textInCell, stringToFind) => {
     return textInCell.toLowerCase() === stringToFind
@@ -77,7 +77,7 @@ const FilterReactComponent = observer(
   ({ filterModel }: { filterModel: any }) => {
     const { classes } = useStyles()
     const operationChoices = getEnumerationValues(
-      getSubType(getPropertyType(getType(filterModel), 'operation')),
+      getSubType(getPropertyType(getPropertyMembers(filterModel), 'operation')),
     )
     return (
       <>

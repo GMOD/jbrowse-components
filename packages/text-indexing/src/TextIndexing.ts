@@ -30,26 +30,24 @@ export async function indexTracks(args: {
   } = args
   const idxType = indexType || 'perTrack'
   checkAbortSignal(signal)
-  if (idxType === 'perTrack') {
-    await perTrackIndex(
-      tracks,
-      statusCallback,
-      outLocation,
-      attributes,
-      exclude,
-      signal,
-    )
-  } else {
-    await aggregateIndex(
-      tracks,
-      statusCallback,
-      outLocation,
-      attributes,
-      assemblies,
-      exclude,
-      signal,
-    )
-  }
+  await (idxType === 'perTrack'
+    ? perTrackIndex(
+        tracks,
+        statusCallback,
+        outLocation,
+        attributes,
+        exclude,
+        signal,
+      )
+    : aggregateIndex(
+        tracks,
+        statusCallback,
+        outLocation,
+        attributes,
+        assemblies,
+        exclude,
+        signal,
+      ))
   checkAbortSignal(signal)
   return []
 }
@@ -81,7 +79,7 @@ async function perTrackIndex(
   )
   for (const trackConfig of supportedTracks) {
     const { textSearching, trackId, assemblyNames } = trackConfig
-    const id = trackId + '-index'
+    const id = `${trackId}-index`
     if (textSearching?.textSearchAdapter && !force) {
       console.warn(
         `Note: ${trackId} has already been indexed with this configuration, use --force to overwrite this track. Skipping for now`,
@@ -210,57 +208,70 @@ async function* indexFiles(
       indexingAttributes: attrs = attributes,
     } = textSearching || {}
     // currently only supporting GFF3Tabix and VCFTabix
-    if (type === 'Gff3TabixAdapter') {
-      yield* indexGff3(
-        track,
-        attrs,
-        getLoc('gffGzLocation', track),
-        outLocation,
-        types,
-        quiet,
-        statusCallback,
-        signal,
-      )
-    } else if (type === 'Gff3Adapter') {
-      yield* indexGff3(
-        track,
-        attrs,
-        getLoc('gffLocation', track),
-        outLocation,
-        types,
-        quiet,
-        statusCallback,
-        signal,
-      )
-    } else if (type === 'VcfTabixAdapter') {
-      yield* indexVcf(
-        track,
-        attrs,
-        getLoc('vcfGzLocation', track),
-        outLocation,
-        types,
-        quiet,
-        statusCallback,
-        signal,
-      )
-    } else if (type === 'VcfAdapter') {
-      yield* indexVcf(
-        track,
-        attrs,
-        getLoc('vcfLocation', track),
-        outLocation,
-        types,
-        quiet,
-        statusCallback,
-        signal,
-      )
+    switch (type) {
+      case 'Gff3TabixAdapter': {
+        yield* indexGff3(
+          track,
+          attrs,
+          getLoc('gffGzLocation', track),
+          outLocation,
+          types,
+          quiet,
+          statusCallback,
+          signal,
+        )
+
+        break
+      }
+      case 'Gff3Adapter': {
+        yield* indexGff3(
+          track,
+          attrs,
+          getLoc('gffLocation', track),
+          outLocation,
+          types,
+          quiet,
+          statusCallback,
+          signal,
+        )
+
+        break
+      }
+      case 'VcfTabixAdapter': {
+        yield* indexVcf(
+          track,
+          attrs,
+          getLoc('vcfGzLocation', track),
+          outLocation,
+          types,
+          quiet,
+          statusCallback,
+          signal,
+        )
+
+        break
+      }
+      case 'VcfAdapter': {
+        yield* indexVcf(
+          track,
+          attrs,
+          getLoc('vcfLocation', track),
+          outLocation,
+          types,
+          quiet,
+          statusCallback,
+          signal,
+        )
+
+        break
+      }
+      // No default
     }
   }
   return
 }
 
 function getLoc(attr: string, config: Track) {
-  // @ts-ignore
   const elt = config.adapter[attr]
   return elt.uri || elt.localPath
 }

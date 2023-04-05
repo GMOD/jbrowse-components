@@ -6,9 +6,6 @@ import {
   generateUnsupportedTrackConf,
   generateUnknownTrackConf,
 } from '@jbrowse/core/util/tracks'
-import ucscAssemblies from './ucscAssemblies'
-
-export { ucscAssemblies }
 
 export async function fetchHubFile(hubLocation: FileLocation) {
   try {
@@ -63,16 +60,16 @@ export function generateTracks(
 ) {
   const tracks: any = []
 
-  trackDb.forEach((track, trackName) => {
-    const trackKeys = Array.from(track.keys())
-    const parentTrackKeys = [
+  for (const [trackName, track] of trackDb.entries()) {
+    const trackKeys = [...track.keys()]
+    const parentTrackKeys = new Set([
       'superTrack',
       'compositeTrack',
       'container',
       'view',
-    ]
-    if (trackKeys.some(key => parentTrackKeys.includes(key))) {
-      return
+    ])
+    if (trackKeys.some(key => parentTrackKeys.has(key))) {
+      continue
     }
     const parentTracks = []
     let currentTrackName = trackName
@@ -99,7 +96,7 @@ export function generateTracks(
       trackId: `ucsc-trackhub-${objectHash(res)}`,
       assemblyNames: [assemblyName],
     })
-  })
+  }
 
   return tracks
 }
@@ -324,3 +321,5 @@ function makeTrackConfig(
       return generateUnknownTrackConf(name, baseTrackType, categories)
   }
 }
+
+export { default as ucscAssemblies } from './ucscAssemblies'

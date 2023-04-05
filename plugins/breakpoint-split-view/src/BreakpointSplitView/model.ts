@@ -1,3 +1,4 @@
+import React from 'react'
 import {
   types,
   getParent,
@@ -7,6 +8,7 @@ import {
   Instance,
 } from 'mobx-state-tree'
 import { autorun } from 'mobx'
+import { saveAs } from 'file-saver'
 
 // jbrowse
 import {
@@ -18,12 +20,35 @@ import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getSession, Feature } from '@jbrowse/core/util'
 import { AnyConfigurationModel, getConf } from '@jbrowse/core/configuration'
 
+// icons
+import PhotoCamera from '@mui/icons-material/PhotoCamera'
+import LinkIcon from '@mui/icons-material/Link'
+
 // locals
 import { intersect } from './util'
+import { renderToSvg } from './svgcomponents/SVGBreakpointSplitView'
+import ExportSvgDlg from './components/ExportSvgDialog'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function calc(track: any, feat: Feature): LayoutRecord {
+function calc(
+  track: { displays: { searchFeatureByID: (str: string) => LayoutRecord }[] },
+  feat: Feature,
+) {
   return track.displays[0].searchFeatureByID(feat.id())
+}
+
+export interface ExportSvgOptions {
+  rasterizeLayers?: boolean
+  filename?: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Wrapper?: React.FC<any>
+  fontSize?: number
+  rulerHeight?: number
+  textHeight?: number
+  paddingHeight?: number
+  headerHeight?: number
+  cytobandHeight?: number
+  trackLabels?: string
+  themeName?: string
 }
 
 type LGV = LinearGenomeViewModel
@@ -90,19 +115,24 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       matchedTrackFeatures: {} as { [key: string]: Feature[][] },
     }))
     .views(self => ({
+      /**
+       * #method
+       * creates an svg export and save using FileSaver
+       */
+      async exportSvg(opts: ExportSvgOptions = {}) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const html = await renderToSvg(self as any, opts)
+        const blob = new Blob([html], { type: 'image/svg+xml' })
+        saveAs(blob, opts.filename || 'image.svg')
+      },
+    }))
+    .views(self => ({
       // Find all track ids that match across multiple views
       get matchedTracks() {
         return intersect(
           elt => elt.configuration.trackId as string,
           ...self.views.map(view => view.tracks),
         )
-      },
-
-      menuItems() {
-        self.views
-          .map((view, idx) => [idx, view.menuItems?.()])
-          .filter(f => !!f[1])
-          .map(f => ({ label: `View ${f[0]} Menu`, subMenu: f[1] }))
       },
 
       // Get tracks with a given trackId across multiple views
@@ -256,6 +286,46 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             }
           }),
         )
+      },
+
+      menuItems() {
+        return [
+          ...self.views
+            .map((view, idx) => [idx, view.menuItems?.()] as const)
+            .filter(f => !!f[1])
+            .map(f => ({ label: `View ${f[0] + 1} Menu`, subMenu: f[1] })),
+
+          {
+            label: 'Show intra-view links',
+            type: 'checkbox',
+            checked: self.showIntraviewLinks,
+            onClick: () => self.toggleIntraviewLinks(),
+          },
+          {
+            label: 'Allow clicking alignment squiggles?',
+            type: 'checkbox',
+            checked: self.interactToggled,
+            onClick: () => self.toggleInteract(),
+          },
+
+          {
+            label: 'Link views',
+            type: 'checkbox',
+            icon: LinkIcon,
+            checked: self.linkViews,
+            onClick: () => self.toggleLinkViews(),
+          },
+          {
+            label: 'Export SVG',
+            icon: PhotoCamera,
+            onClick: () => {
+              getSession(self).queueDialog(handleClose => [
+                ExportSvgDlg,
+                { model: self, handleClose },
+              ])
+            },
+          },
+        ]
       },
     }))
 

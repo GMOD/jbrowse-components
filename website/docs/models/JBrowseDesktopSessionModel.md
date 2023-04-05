@@ -132,18 +132,6 @@ drawerPosition: types.optional(
       )
 ```
 
-#### property: sessionThemeName
-
-```js
-// type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
-// code
-sessionThemeName: types.optional(
-        types.string,
-        () => localStorageGetItem('themeName') || 'default',
-      )
-```
-
 ### JBrowseDesktopSessionModel - Getters
 
 #### getter: jbrowse
@@ -192,28 +180,28 @@ any
 
 ```js
 // type
-any
+{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>
 ```
 
 #### getter: assemblies
 
 ```js
 // type
-any
+({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]
 ```
 
 #### getter: assemblyNames
 
 ```js
 // type
-any
+string[]
 ```
 
 #### getter: tracks
 
 ```js
 // type
-any
+({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]
 ```
 
 #### getter: textSearchManager
@@ -532,12 +520,8 @@ addViewFromAnotherView: (
 
 ```js
 // type signature
-addWidget: (
-  typeName: string,
-  id: string,
-  initialState?: {},
-  configuration?: { type: string },
-) => any
+addWidget: (typeName: string, id: string, initialState?: {}, conf?: unknown) =>
+  any
 ```
 
 #### action: showWidget
@@ -622,7 +606,7 @@ clearConnections: () => void
 
 ```js
 // type signature
-addSavedSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ name: ISimpleType<string>; margin: IType<number, number, number>; drawerWidth: IOptionalIType<ISimpleType<number>, [undefined]>; ... 8 more ...; sessionThemeName: IOptionalIType<...>; }>>) => any
+addSavedSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ name: ISimpleType<string>; margin: IType<number, number, number>; drawerWidth: IOptionalIType<ISimpleType<number>, [undefined]>; ... 7 more ...; drawerPosition: IOptionalIType<...>; }>>) => any
 ```
 
 #### action: removeSavedSession
@@ -664,5 +648,5 @@ setDefaultSession: () => any
 
 ```js
 // type signature
-setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ name: ISimpleType<string>; margin: IType<number, number, number>; drawerWidth: IOptionalIType<ISimpleType<number>, [undefined]>; ... 8 more ...; sessionThemeName: IOptionalIType<...>; }>>) => any
+setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ name: ISimpleType<string>; margin: IType<number, number, number>; drawerWidth: IOptionalIType<ISimpleType<number>, [undefined]>; ... 7 more ...; drawerPosition: IOptionalIType<...>; }>>) => any
 ```

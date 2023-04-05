@@ -10,6 +10,7 @@ export default (pluginManager: PluginManager) => {
     const configSchema = configSchemaFactory(pluginManager)
     return new DisplayType({
       name: 'LinearArcDisplay',
+      displayName: 'Arc display',
       configSchema,
       stateModel: stateModelFactory(configSchema),
       trackType: 'FeatureTrack',

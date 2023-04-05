@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
+import { ThemeOptions } from '@mui/material'
 import { types, Instance } from 'mobx-state-tree'
 import {
   getConf,
@@ -18,7 +19,6 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
 import { renderBlockData, renderBlockEffect } from './renderDotplotBlock'
 import { DotplotViewModel, ExportSvgOptions } from '../DotplotView/model'
-import { ThemeOptions } from '@mui/material'
 
 /**
  * #stateModel DotplotDisplay
@@ -52,6 +52,13 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         })),
     )
     .views(self => ({
+      get shouldDisplay() {
+        const view = getContainingView(self)
+        return (
+          view.vview.bpPerPx === self.data.bpPerPxY &&
+          view.hview.bpPerPx === self.data.bpPerPxX
+        )
+      },
       /**
        * #getter
        */
@@ -70,19 +77,44 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         }
       },
     }))
+    .views(self => ({
+      /**
+       * #method
+       */
+      async renderSvg(opts: ExportSvgOptions & { theme: ThemeOptions }) {
+        const props = renderBlockData(self)
+        if (!props) {
+          return null
+        }
+
+        const { rendererType, rpcManager, renderProps } = props
+        const rendering = await rendererType.renderInClient(rpcManager, {
+          ...renderProps,
+          exportSVG: opts,
+          theme: opts.theme || renderProps.theme,
+        })
+        const { hview, vview } = getContainingView(self) as DotplotViewModel
+        const offX = -hview.offsetPx + rendering.offsetX
+        const offY = -vview.offsetPx + rendering.offsetY
+        return (
+          <g transform={`translate(${offX} ${-offY})`}>
+            <ReactRendering rendering={rendering} />
+          </g>
+        )
+      },
+    }))
     .actions(self => {
       let renderInProgress: undefined | AbortController
 
       return {
         afterAttach() {
           makeAbortableReaction(
-            self as any,
-            () => renderBlockData(self as any),
-            (blockData): any =>
-              blockData ? renderBlockEffect(blockData) : undefined,
+            self,
+            () => renderBlockData(self),
+            blockData => renderBlockEffect(blockData),
             {
               name: `${self.type} ${self.id} rendering`,
-              delay: 1000,
+              delay: 500,
               fireImmediately: true,
             },
             this.setLoading,
@@ -154,30 +186,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           self.error = error
           self.renderingComponent = undefined
           renderInProgress = undefined
-        },
-        /**
-         * #action
-         */
-        async renderSvg(opts: ExportSvgOptions & { theme: ThemeOptions }) {
-          const props = renderBlockData(self)
-          if (!props) {
-            return null
-          }
-
-          const { rendererType, rpcManager, renderProps } = props
-          const rendering = await rendererType.renderInClient(rpcManager, {
-            ...renderProps,
-            exportSVG: opts,
-            theme: opts.theme || renderProps.theme,
-          })
-          const { hview, vview } = getContainingView(self) as DotplotViewModel
-          const offX = -hview.offsetPx + rendering.offsetX
-          const offY = -vview.offsetPx + rendering.offsetY
-          return (
-            <g transform={`translate(${offX} ${offY})`}>
-              <ReactRendering rendering={rendering} />
-            </g>
-          )
         },
       }
     })

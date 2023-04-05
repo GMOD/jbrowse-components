@@ -81,10 +81,11 @@ const blockState = types
         self.status = message
       },
       setLoading(abortController: AbortController) {
-        if (renderInProgress !== undefined) {
-          if (!renderInProgress.signal.aborted) {
-            renderInProgress.abort()
-          }
+        if (
+          renderInProgress !== undefined &&
+          !renderInProgress.signal.aborted
+        ) {
+          renderInProgress.abort()
         }
         self.filled = false
         self.message = undefined
@@ -215,7 +216,7 @@ export function renderBlockData(
     const regionAsm = self.region.assemblyName
     if (
       !assemblyNames.includes(regionAsm) &&
-      !assemblyNames.find(name => assemblyManager.get(name)?.hasName(regionAsm))
+      !assemblyNames.some(name => assemblyManager.get(name)?.hasName(regionAsm))
     ) {
       throw new Error(
         `region assembly (${regionAsm}) does not match track assemblies (${assemblyNames})`,

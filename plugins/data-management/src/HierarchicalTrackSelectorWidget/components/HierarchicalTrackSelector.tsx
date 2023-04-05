@@ -24,7 +24,7 @@ const AutoSizedHierarchicalTree = ({
       {({ height }) => {
         return (
           <HierarchicalTree
-            height={height - offset}
+            height={(height || offset) - offset}
             model={model}
             tree={tree}
           />

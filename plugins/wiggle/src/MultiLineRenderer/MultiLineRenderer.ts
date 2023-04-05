@@ -7,7 +7,7 @@ import WiggleBaseRenderer, {
 } from '../WiggleBaseRenderer'
 
 export default class MultiLineRenderer extends WiggleBaseRenderer {
-  // @ts-ignore
+  // @ts-expect-error
   async draw(ctx: CanvasRenderingContext2D, props: MultiArgs) {
     const { sources, features } = props
     const groups = groupBy([...features.values()], f => f.get('source'))
@@ -22,7 +22,7 @@ export default class MultiLineRenderer extends WiggleBaseRenderer {
         features,
         colorCallback: () => source.color || 'blue',
       })
-      feats = feats.concat(reducedFeatures)
+      feats = [...feats, ...reducedFeatures]
     })
     return { reducedFeatures: feats }
   }

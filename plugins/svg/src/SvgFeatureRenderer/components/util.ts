@@ -1,13 +1,16 @@
 import React from 'react'
-import { readConfObject } from '@jbrowse/core/configuration'
+import {
+  readConfObject,
+  AnyConfigurationModel,
+} from '@jbrowse/core/configuration'
 import SceneGraph from '@jbrowse/core/util/layouts/SceneGraph'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import { Feature, Region } from '@jbrowse/core/util'
+
+// locals
 import Box from './Box'
 import ProcessedTranscript from './ProcessedTranscript'
 import Segments from './Segments'
 import Subfeatures from './Subfeatures'
-import { Region } from '@jbrowse/core/util'
 
 export interface Glyph
   extends React.FC<{
@@ -54,7 +57,7 @@ export function chooseGlyphComponent(
     const hasSubSub = subfeatures.find(sub => !!sub.get('subfeatures'))
     if (
       ['mRNA', 'transcript', 'primary_transcript'].includes(type) &&
-      subfeatures.find(f => f.get('type') === 'CDS')
+      subfeatures.some(f => f.get('type') === 'CDS')
     ) {
       return ProcessedTranscript
     } else if (!feature.parent() && hasSubSub) {
@@ -145,7 +148,7 @@ export function layOutFeature(args: FeatureLayOutArgs): SceneGraph {
   return subLayout
 }
 
-export function layOutSubfeatures(args: SubfeatureLayOutArgs): void {
+export function layOutSubfeatures(args: SubfeatureLayOutArgs) {
   const { layout, subfeatures, bpPerPx, reversed, config, extraGlyphs } = args
   subfeatures.forEach(feature => {
     ;(chooseGlyphComponent(feature, extraGlyphs).layOut || layOut)({
@@ -159,7 +162,7 @@ export function layOutSubfeatures(args: SubfeatureLayOutArgs): void {
   })
 }
 
-export function isUTR(feature: Feature): boolean {
+export function isUTR(feature: Feature) {
   return /(\bUTR|_UTR|untranslated[_\s]region)\b/.test(
     feature.get('type') || '',
   )

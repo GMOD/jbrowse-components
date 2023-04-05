@@ -47,7 +47,7 @@ export default class CoreGetFeatureDetails extends RpcMethodType {
       this.pluginManager.getRendererType(rendererType),
     )
 
-    // @ts-ignore
+    // @ts-expect-error
     const sess = RendererType.sessions[getLayoutId(args)]
     const { layout } = sess.cachedLayout
     const xref = layout.getDataByID(featureId)

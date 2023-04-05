@@ -87,7 +87,7 @@ be interplay between view types e.g. popup dotplot from a linear view, etc.
 
 Adapters are parsers for a given data format. We will review what adapters the
 alignments plugin has (to write your own adapter, see
-[creating adapters](../pluggable_elements/#creating-adapters)).
+[creating adapters](/docs/developer_guides/creating_adapter/)).
 
 Example adapters: the `@jbrowse/plugin-alignments` plugin creates multiple
 adapter types:
@@ -145,7 +145,7 @@ Renderers are a new concept in JBrowse 2, and are related to the concept of
 server side rendering (SSR), but can be used not just on the server but also in
 contexts like the web worker (e.g. the webworker can draw the features to an
 OffscreenCanvas). For more info see
-[creating renderers](../pluggable_elements/#creating-renderers).
+[creating renderers](/docs/developer_guides/creating_renderer/).
 
 For example, the `@jbrowse/plugin-alignments` exports several renderer types:
 
@@ -222,7 +222,7 @@ callback that is called at an appropriate time.
 
 Checkout the [full extension point API](/docs/developer_guides/extension_points)
 or an
-[example for adding context menu items](/docs/developer_guides/pluggable_elements/#adding-track-context-menu-items)
+[example for adding context menu items](/docs/developer_guides/modifying_menus)
 for more detailed information.
 
 ## Next steps
@@ -231,8 +231,6 @@ Now that you have an overview of the different pluggable element types that are
 available to you, review your
 [understanding of the configuration model](../config_model).
 
-Also checkout the
-[guided tutorial](/docs/tutorials/simple_plugin_tutorial/01_introduction) for
-writing a plugin, which will take you through everything from installation,
-creating a new pluggable element, and general development tips for working with
-JBrowse 2.
+Also checkout the [guided tutorial](/docs/tutorials/simple_plugin/) for writing
+a plugin, which will take you through everything from installation, creating a
+new pluggable element, and general development tips for working with JBrowse 2.

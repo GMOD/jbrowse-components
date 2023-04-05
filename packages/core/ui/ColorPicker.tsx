@@ -120,7 +120,7 @@ export function ColorPicker({
         <div className={classes.swatches}>
           {presetColors.map((presetColor, idx) => (
             <button
-              key={presetColor + '-' + idx}
+              key={`${presetColor}-${idx}`}
               className={classes.swatch}
               style={{ background: presetColor }}
               onClick={() => handleChange(presetColor)}

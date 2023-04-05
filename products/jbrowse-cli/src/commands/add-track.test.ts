@@ -3,27 +3,38 @@
  */
 
 import fs from 'fs'
-import * as path from 'path'
+import path from 'path'
 
 import { setup, readConf, ctxDir } from '../testUtil'
 
 const { writeFile, copyFile } = fs.promises
 
-const baseDir = path.join(__dirname, '..', '..', 'test', 'data')
-const simpleBam = path.join(baseDir, 'simple.bam')
-const simpleBai = path.join(baseDir, 'simple.bai')
-const simpleGff = path.join(baseDir, 'volvox.sort.gff3')
-const simpleVcf = path.join(baseDir, 'volvox.filtered.vcf')
-const simpleGtf = path.join(baseDir, 'volvox.sorted.gtf')
-const simpleGffGz = path.join(baseDir, 'volvox.sort.gff3.gz')
-const testConfig = path.join(baseDir, 'test_config.json')
+const exists = (p: string) => fs.existsSync(p)
+
+const base = path.join(__dirname, '..', '..', 'test', 'data')
+const simpleBam = path.join(base, 'simple.bam')
+const simpleBai = path.join(base, 'simple.bai')
+const simpleGff = path.join(base, 'volvox.sort.gff3')
+const simplePaf = path.join(base, 'volvox_inv_indels.paf')
+const simplePafGz = path.join(base, 'volvox_inv_indels.paf.gz')
+const simpleDelta = path.join(base, 'volvox_inv_indels.delta')
+const simpleOut = path.join(base, 'volvox_inv_indels.out')
+const simpleChain = path.join(base, 'volvox_inv_indels.chain')
+const simpleMcScan = path.join(base, 'volvox_inv_indels.anchors')
+const simpleMcScanGrape = path.join(base, 'grape.bed')
+const simpleMcScanPeach = path.join(base, 'peach.bed')
+const simpleMcScanSimple = path.join(base, 'volvox_inv_indels.anchors.simple')
+const simpleVcf = path.join(base, 'volvox.filtered.vcf')
+const simpleGtf = path.join(base, 'volvox.sorted.gtf')
+const simpleGffGz = path.join(base, 'volvox.sort.gff3.gz')
+const testConfig = path.join(base, 'test_config.json')
 
 function initctx(ctx: { dir: string }) {
   return copyFile(testConfig, path.join(ctx.dir, 'config.json'))
 }
 function init2bit(ctx: { dir: string }) {
   return copyFile(
-    path.join(baseDir, 'simple.2bit'),
+    path.join(base, 'simple.2bit'),
     path.join(ctx.dir, 'simple.2bit'),
   )
 }
@@ -92,8 +103,8 @@ describe('add-track', () => {
     .do(initctx)
     .command(['add-track', simpleBam, '--load', 'copy'])
     .it('adds a bam track with bai', async ctx => {
-      expect(fs.existsSync(path.join(ctx.dir, 'simple.bam'))).toBeTruthy()
-      expect(fs.existsSync(path.join(ctx.dir, 'simple.bam.bai'))).toBeTruthy()
+      expect(exists(path.join(ctx.dir, 'simple.bam'))).toBeTruthy()
+      expect(exists(path.join(ctx.dir, 'simple.bam.bai'))).toBeTruthy()
       expect(readConf(ctx).tracks).toEqual([
         {
           type: 'AlignmentsTrack',
@@ -136,8 +147,8 @@ describe('add-track', () => {
       simpleBam + '.csi',
     ])
     .it('adds a bam track with csi', async ctx => {
-      expect(fs.existsSync(ctxDir(ctx, 'simple.bam'))).toBeTruthy()
-      expect(fs.existsSync(ctxDir(ctx, 'simple.bam.csi'))).toBeTruthy()
+      expect(exists(ctxDir(ctx, 'simple.bam'))).toBeTruthy()
+      expect(exists(ctxDir(ctx, 'simple.bam.csi'))).toBeTruthy()
       expect(readConf(ctx).tracks).toEqual([
         {
           type: 'AlignmentsTrack',
@@ -255,8 +266,8 @@ describe('add-track', () => {
       simpleBai,
     ])
     .it('adds a bam track with indexFile for bai', async ctx => {
-      expect(fs.existsSync(ctxDir(ctx, 'simple.bam'))).toBeTruthy()
-      expect(fs.existsSync(ctxDir(ctx, 'simple.bai'))).toBeTruthy()
+      expect(exists(ctxDir(ctx, 'simple.bam'))).toBeTruthy()
+      expect(exists(ctxDir(ctx, 'simple.bai'))).toBeTruthy()
       expect(readConf(ctx).tracks).toEqual([
         {
           type: 'AlignmentsTrack',
@@ -514,7 +525,7 @@ describe('add-track', () => {
     .do(initctx)
     .command(['add-track', simpleGff, '--load', 'copy'])
     .it('adds a plaintext gff', async ctx => {
-      expect(fs.existsSync(ctxDir(ctx, 'volvox.sort.gff3'))).toBeTruthy()
+      expect(exists(ctxDir(ctx, 'volvox.sort.gff3'))).toBeTruthy()
       expect(readConf(ctx).tracks).toEqual([
         {
           type: 'FeatureTrack',
@@ -536,7 +547,7 @@ describe('add-track', () => {
     .do(initctx)
     .command(['add-track', simpleVcf, '--load', 'copy'])
     .it('adds a plaintext vcf', async ctx => {
-      expect(fs.existsSync(ctxDir(ctx, 'volvox.filtered.vcf'))).toBeTruthy()
+      expect(exists(ctxDir(ctx, 'volvox.filtered.vcf'))).toBeTruthy()
       expect(readConf(ctx).tracks).toEqual([
         {
           type: 'VariantTrack',
@@ -558,7 +569,7 @@ describe('add-track', () => {
     .do(initctx)
     .command(['add-track', simpleGtf, '--load', 'copy'])
     .it('adds a plaintext gtf', async ctx => {
-      expect(fs.existsSync(ctxDir(ctx, 'volvox.sorted.gtf'))).toBeTruthy()
+      expect(exists(ctxDir(ctx, 'volvox.sorted.gtf'))).toBeTruthy()
       expect(readConf(ctx).tracks).toEqual([
         {
           type: 'FeatureTrack',
@@ -587,8 +598,8 @@ describe('add-track', () => {
       simpleGffGz + '.csi',
     ])
     .it('adds a tabix gff with csi', async ctx => {
-      expect(fs.existsSync(ctxDir(ctx, 'volvox.sort.gff3.gz'))).toBeTruthy()
-      expect(fs.existsSync(ctxDir(ctx, 'volvox.sort.gff3.gz.csi'))).toBeTruthy()
+      expect(exists(ctxDir(ctx, 'volvox.sort.gff3.gz'))).toBeTruthy()
+      expect(exists(ctxDir(ctx, 'volvox.sort.gff3.gz.csi'))).toBeTruthy()
       expect(readConf(ctx).tracks).toEqual([
         {
           type: 'FeatureTrack',
@@ -615,10 +626,251 @@ describe('add-track', () => {
 
   setup
     .do(initctx)
+    .command([
+      'add-track',
+      simplePafGz,
+      '--assemblyNames',
+      'volvox_random_inv,volvox',
+      '--load',
+      'copy',
+    ])
+    .it('adds a paf gz file', async ctx => {
+      expect(exists(ctxDir(ctx, 'volvox_inv_indels.paf.gz'))).toBeTruthy()
+      expect(readConf(ctx).tracks).toEqual([
+        {
+          type: 'SyntenyTrack',
+          trackId: 'volvox_inv_indels.paf',
+          name: 'volvox_inv_indels.paf',
+          adapter: {
+            type: 'PAFAdapter',
+            pafLocation: {
+              uri: 'volvox_inv_indels.paf.gz',
+              locationType: 'UriLocation',
+            },
+            assemblyNames: ['volvox_random_inv', 'volvox'],
+          },
+          assemblyNames: ['volvox_random_inv', 'volvox'],
+        },
+      ])
+    })
+
+  setup
+    .do(initctx)
+    .command([
+      'add-track',
+      simplePaf,
+      '--assemblyNames',
+      'volvox_random_inv,volvox',
+      '--load',
+      'copy',
+    ])
+    .it('adds a paf file', async ctx => {
+      expect(exists(ctxDir(ctx, 'volvox_inv_indels.paf'))).toBeTruthy()
+      expect(readConf(ctx).tracks).toEqual([
+        {
+          type: 'SyntenyTrack',
+          trackId: 'volvox_inv_indels',
+          name: 'volvox_inv_indels',
+          adapter: {
+            type: 'PAFAdapter',
+            pafLocation: {
+              uri: 'volvox_inv_indels.paf',
+              locationType: 'UriLocation',
+            },
+            assemblyNames: ['volvox_random_inv', 'volvox'],
+          },
+          assemblyNames: ['volvox_random_inv', 'volvox'],
+        },
+      ])
+    })
+
+  setup
+    .do(initctx)
+    .command([
+      'add-track',
+      simpleDelta,
+      '--assemblyNames',
+      'volvox_random_inv,volvox',
+      '--load',
+      'copy',
+    ])
+    .it('adds a delta file', async ctx => {
+      expect(exists(ctxDir(ctx, 'volvox_inv_indels.delta'))).toBeTruthy()
+      expect(readConf(ctx).tracks).toEqual([
+        {
+          type: 'SyntenyTrack',
+          trackId: 'volvox_inv_indels',
+          name: 'volvox_inv_indels',
+          adapter: {
+            type: 'DeltaAdapter',
+            assemblyNames: ['volvox_random_inv', 'volvox'],
+            deltaLocation: {
+              uri: 'volvox_inv_indels.delta',
+              locationType: 'UriLocation',
+            },
+          },
+          assemblyNames: ['volvox_random_inv', 'volvox'],
+        },
+      ])
+    })
+
+  setup
+    .do(initctx)
+    .command([
+      'add-track',
+      simpleOut,
+      '--assemblyNames',
+      'volvox_random_inv,volvox',
+      '--load',
+      'copy',
+    ])
+    .it('adds a mashmap file', async ctx => {
+      expect(exists(ctxDir(ctx, 'volvox_inv_indels.out'))).toBeTruthy()
+      expect(readConf(ctx).tracks).toEqual([
+        {
+          type: 'SyntenyTrack',
+          trackId: 'volvox_inv_indels',
+          name: 'volvox_inv_indels',
+          adapter: {
+            type: 'MashMapAdapter',
+            assemblyNames: ['volvox_random_inv', 'volvox'],
+            outLocation: {
+              uri: 'volvox_inv_indels.out',
+              locationType: 'UriLocation',
+            },
+          },
+          assemblyNames: ['volvox_random_inv', 'volvox'],
+        },
+      ])
+    })
+
+  setup
+    .do(initctx)
+    .command([
+      'add-track',
+      simpleMcScanSimple,
+      '--assemblyNames',
+      'volvox_random_inv,volvox',
+      '--bed1',
+      simpleMcScanGrape,
+      '--bed2',
+      simpleMcScanPeach,
+      '--load',
+      'copy',
+    ])
+    .it('adds a mcscan simpleanchors file', async ctx => {
+      expect(
+        exists(ctxDir(ctx, 'volvox_inv_indels.anchors.simple')),
+      ).toBeTruthy()
+      expect(exists(ctxDir(ctx, 'grape.bed'))).toBeTruthy()
+      expect(exists(ctxDir(ctx, 'peach.bed'))).toBeTruthy()
+      expect(readConf(ctx).tracks).toEqual([
+        {
+          type: 'SyntenyTrack',
+          trackId: 'volvox_inv_indels.anchors',
+          name: 'volvox_inv_indels.anchors',
+          adapter: {
+            type: 'MCScanSimpleAnchorsAdapter',
+            assemblyNames: ['volvox_random_inv', 'volvox'],
+            mcscanSimpleAnchorsLocation: {
+              uri: 'volvox_inv_indels.anchors.simple',
+              locationType: 'UriLocation',
+            },
+            bed1Location: {
+              uri: 'grape.bed',
+              locationType: 'UriLocation',
+            },
+            bed2Location: {
+              uri: 'peach.bed',
+              locationType: 'UriLocation',
+            },
+          },
+          assemblyNames: ['volvox_random_inv', 'volvox'],
+        },
+      ])
+    })
+
+  setup
+    .do(initctx)
+    .command([
+      'add-track',
+      simpleMcScan,
+      '--assemblyNames',
+      'volvox_random_inv,volvox',
+      '--bed1',
+      simpleMcScanGrape,
+      '--bed2',
+      simpleMcScanPeach,
+      '--load',
+      'copy',
+    ])
+    .it('adds a mcscan anchors file', async ctx => {
+      expect(exists(ctxDir(ctx, 'volvox_inv_indels.anchors'))).toBeTruthy()
+      expect(exists(ctxDir(ctx, 'grape.bed'))).toBeTruthy()
+      expect(exists(ctxDir(ctx, 'peach.bed'))).toBeTruthy()
+
+      expect(readConf(ctx).tracks).toEqual([
+        {
+          type: 'SyntenyTrack',
+          trackId: 'volvox_inv_indels',
+          name: 'volvox_inv_indels',
+          adapter: {
+            type: 'MCScanAnchorsAdapter',
+            assemblyNames: ['volvox_random_inv', 'volvox'],
+            mcscanAnchorsLocation: {
+              uri: 'volvox_inv_indels.anchors',
+              locationType: 'UriLocation',
+            },
+            bed1Location: {
+              uri: 'grape.bed',
+              locationType: 'UriLocation',
+            },
+            bed2Location: {
+              uri: 'peach.bed',
+              locationType: 'UriLocation',
+            },
+          },
+          assemblyNames: ['volvox_random_inv', 'volvox'],
+        },
+      ])
+    })
+
+  setup
+    .do(initctx)
+    .command([
+      'add-track',
+      simpleChain,
+      '--assemblyNames',
+      'volvox_random_inv,volvox',
+      '--load',
+      'copy',
+    ])
+    .it('adds a liftover chain file', async ctx => {
+      expect(exists(ctxDir(ctx, 'volvox_inv_indels.chain'))).toBeTruthy()
+      expect(readConf(ctx).tracks).toEqual([
+        {
+          type: 'SyntenyTrack',
+          trackId: 'volvox_inv_indels',
+          name: 'volvox_inv_indels',
+          adapter: {
+            type: 'ChainAdapter',
+            assemblyNames: ['volvox_random_inv', 'volvox'],
+            chainLocation: {
+              uri: 'volvox_inv_indels.chain',
+              locationType: 'UriLocation',
+            },
+          },
+          assemblyNames: ['volvox_random_inv', 'volvox'],
+        },
+      ])
+    })
+
+  setup
+    .do(initctx)
     .command(['add-track', simpleGffGz, '--load', 'copy'])
     .it('adds a tabix gff', async ctx => {
-      expect(fs.existsSync(ctxDir(ctx, 'volvox.sort.gff3.gz'))).toBeTruthy()
-      expect(fs.existsSync(ctxDir(ctx, 'volvox.sort.gff3.gz.tbi'))).toBeTruthy()
+      expect(exists(ctxDir(ctx, 'volvox.sort.gff3.gz'))).toBeTruthy()
+      expect(exists(ctxDir(ctx, 'volvox.sort.gff3.gz.tbi'))).toBeTruthy()
       expect(readConf(ctx).tracks).toEqual([
         {
           type: 'FeatureTrack',

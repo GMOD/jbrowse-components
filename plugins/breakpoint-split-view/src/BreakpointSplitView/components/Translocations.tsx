@@ -15,10 +15,12 @@ const Translocations = observer(function ({
   model,
   trackId,
   parentRef: ref,
+  getTrackYPosOverride,
 }: {
   model: BreakpointViewModel
   trackId: string
   parentRef: React.RefObject<SVGSVGElement>
+  getTrackYPosOverride?: (trackId: string, level: number) => number
 }) {
   const { views } = model
   const session = getSession(model)
@@ -51,8 +53,8 @@ const Translocations = observer(function ({
 
   // we hardcode the TRA to go to the "other view" and if there is none, we
   // just return null here note: would need to do processing of the INFO
-  // CHR2/END and see which view could contain those coordinates to really
-  // do it properly
+  // CHR2/END and see which view could contain those coordinates to really do
+  // it properly
   if (views.length < 2) {
     return null
   }
@@ -93,8 +95,12 @@ const Translocations = observer(function ({
             const reversed2 = views[level2].pxToBp(x2).reversed
 
             const tracks = views.map(v => v.getTrack(trackId))
-            const y1 = yPos(trackId, level1, views, tracks, c1) - yOffset
-            const y2 = yPos(trackId, level2, views, tracks, c2) - yOffset
+            const y1 =
+              yPos(trackId, level1, views, tracks, c1, getTrackYPosOverride) -
+              yOffset
+            const y2 =
+              yPos(trackId, level2, views, tracks, c2, getTrackYPosOverride) -
+              yOffset
 
             const path = Path()
               .moveTo(

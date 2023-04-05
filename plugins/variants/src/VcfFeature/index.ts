@@ -79,7 +79,7 @@ export default class VCFFeature implements Feature {
     const start = POS - 1
     const [type, description] = getSOTermAndDescription(REF, ALT, this.parser)
     const isTRA = ALT?.some(f => f === '<TRA>')
-    const isSymbolic = ALT?.some(f => f.indexOf('<') !== -1)
+    const isSymbolic = ALT?.some(f => f.includes('<'))
 
     return {
       refName: CHROM,

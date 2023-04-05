@@ -28,7 +28,7 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
   const { classes } = useStyles()
 
   if (!initialized && !error) {
-    return <LoadingEllipses variant="h5" />
+    return <LoadingEllipses variant="h6" />
   }
   if (!hasDisplayedRegions || error) {
     return <ImportForm model={model} />

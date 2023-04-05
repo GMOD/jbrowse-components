@@ -140,10 +140,10 @@ function makeUTRs(parent: Feature, subs: Feature[]) {
 
 function getSubparts(f: Feature, config: AnyConfigurationModel) {
   let c = f.get('subfeatures')
-  if (!c || !c.length) {
+  if (!c || c.length === 0) {
     return []
   }
-  const hasUTRs = !!c.find(child => isUTR(child))
+  const hasUTRs = c.some(child => isUTR(child))
   const isTranscript = ['mRNA', 'transcript'].includes(f.get('type'))
   const impliedUTRs = !hasUTRs && isTranscript
 

@@ -79,12 +79,12 @@ export default observer(function LinearSyntenyRendering({
           const [r2, g2, b2] = ctx2.getImageData(x, y, 1, 1).data
           const unitMultiplier = Math.floor(MAX_COLOR_RANGE / model.numFeats)
           const id = getId(r1, g1, b1, unitMultiplier)
-          model.setMouseoverId(id)
+          model.setMouseoverId(model.featPositions[id]?.f.id())
           if (id === -1) {
             setTooltip('')
           } else if (model.featPositions[id]) {
             const { f, cigar } = model.featPositions[id]
-            // @ts-ignore
+            // @ts-expect-error
             const f1 = f.toJSON() as {
               refName: string
               start: number
@@ -93,8 +93,13 @@ export default observer(function LinearSyntenyRendering({
               assemblyName: string
               identity?: number
               name?: string
+              mate: {
+                start: number
+                end: number
+                refName: string
+                name: string
+              }
             }
-            // @ts-ignore
             const f2 = f1.mate
             const unitMultiplier2 = Math.floor(MAX_COLOR_RANGE / cigar.length)
             const cigarIdx = getId(r2, g2, b2, unitMultiplier2)
@@ -103,12 +108,13 @@ export default observer(function LinearSyntenyRendering({
             const identity = f1.identity
             const n1 = f1.name
             const n2 = f2.name
-            const tooltip = []
-            tooltip.push(`Loc1: ${assembleLocString(f1)}`)
-            tooltip.push(`Loc2: ${assembleLocString(f2)}`)
-            tooltip.push(`Inverted: ${f1.strand === -1}`)
-            tooltip.push(`Query len: ${l1}`)
-            tooltip.push(`Target len: ${l2}`)
+            const tooltip = [
+              `Loc1: ${assembleLocString(f1)}`,
+              `Loc2: ${assembleLocString(f2)}`,
+              `Inverted: ${f1.strand === -1}`,
+              `Query len: ${l1}`,
+              `Target len: ${l2}`,
+            ]
             if (identity) {
               tooltip.push(`Identity: ${identity}`)
             }
@@ -119,13 +125,12 @@ export default observer(function LinearSyntenyRendering({
               )
             }
             if (n1 && n2) {
-              tooltip.push(`Name 1: ${n1}`)
-              tooltip.push(`Name 2: ${n2}`)
+              tooltip.push(`Name 1: ${n1}`, `Name 2: ${n2}`)
             }
             setTooltip(tooltip.join('<br/>'))
           }
         }}
-        onMouseLeave={() => model.setMouseoverId(-1)}
+        onMouseLeave={() => model.setMouseoverId(undefined)}
         onClick={event => {
           const ref1 = model.clickMapCanvas
           const ref2 = model.cigarClickMapCanvas
@@ -143,10 +148,13 @@ export default observer(function LinearSyntenyRendering({
           const [r1, g1, b1] = ctx1.getImageData(x, y, 1, 1).data
           const unitMultiplier = Math.floor(MAX_COLOR_RANGE / model.numFeats)
           const id = getId(r1, g1, b1, unitMultiplier)
-          model.setClickId(id)
           const f = model.featPositions[id]
+          if (!f) {
+            return
+          }
+          model.setClickId(f.f.id())
           const session = getSession(model)
-          if (f && isSessionModelWithWidgets(session)) {
+          if (isSessionModelWithWidgets(session)) {
             session.showWidget(
               session.addWidget('SyntenyFeatureWidget', 'syntenyFeature', {
                 featureData: {
@@ -184,7 +192,7 @@ export default observer(function LinearSyntenyRendering({
         width={width}
         height={height}
       />
-      {model.mouseoverId !== -1 && tooltip && currX && currY ? (
+      {model.mouseoverId && tooltip && currX && currY ? (
         <SyntenyTooltip x={currX} y={currY} title={tooltip} />
       ) : null}
     </div>

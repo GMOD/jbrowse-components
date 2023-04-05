@@ -4,9 +4,9 @@ import { getPropertyMembers, IAnyType } from 'mobx-state-tree'
 import { getEnv, FileLocation } from '@jbrowse/core/util'
 import { FileSelector } from '@jbrowse/core/ui'
 import {
-  getPropertyType,
   getSubType,
   getUnionSubTypes,
+  ILiteralType,
 } from '@jbrowse/core/util/mst-reflection'
 import { IconButton, MenuItem, Paper, SvgIcon, TextField } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
@@ -24,6 +24,10 @@ import ConfigurationTextField from './ConfigurationTextField'
 import NumberMapEditor from './NumberMapEditor'
 import NumberEditor from './NumberEditor'
 import BooleanEditor from './BooleanEditor'
+import {
+  AnyConfigurationSlot,
+  AnyConfigurationSlotType,
+} from '@jbrowse/core/configuration/configurationSchema'
 
 const StringEditor = observer(
   ({
@@ -86,7 +90,7 @@ const IntegerEditor = observer(
   }) => {
     const [val, setVal] = useState(slot.value)
     useEffect(() => {
-      const num = parseInt(val, 10)
+      const num = Number.parseInt(val, 10)
       if (!Number.isNaN(num)) {
         slot.set(num)
       }
@@ -107,14 +111,13 @@ const StringEnumEditor = observer(function ({
   slot,
   slotSchema,
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  slot: any
-  slotSchema: IAnyType
+  slot: AnyConfigurationSlot
+  slotSchema: AnyConfigurationSlotType
 }) {
   const p = getPropertyMembers(getSubType(slotSchema))
   const choices = getUnionSubTypes(
-    getUnionSubTypes(getSubType(getPropertyType(p, 'value')))[1],
-  ).map(t => t.value)
+    getUnionSubTypes(getSubType(p.properties.value))[1],
+  ).map(t => (t as ILiteralType<string>).value)
 
   return (
     <ConfigurationTextField
@@ -195,7 +198,7 @@ const SlotEditor = observer(
     const { type } = slot
     let ValueComponent = slot.isCallback
       ? CallbackEditor
-      : // @ts-ignore
+      : // @ts-expect-error
         valueComponents[type]
     if (!ValueComponent) {
       console.warn(`no slot editor defined for ${type}, editing as string`)
@@ -221,11 +224,7 @@ const SlotEditor = observer(
                 slot.isCallback ? 'regular value' : 'callback'
               }`}
             >
-              {!slot.isCallback ? (
-                <RadioButtonUncheckedIcon />
-              ) : (
-                <SvgCheckbox />
-              )}
+              {slot.isCallback ? <SvgCheckbox /> : <RadioButtonUncheckedIcon />}
             </IconButton>
           ) : null}
         </div>

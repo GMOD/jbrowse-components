@@ -70,22 +70,30 @@ export function MenuItemEndDecoration(props: MenuItemEndDecorationProps) {
     ;({ checked, disabled } = props)
   }
   let icon
-  if (type === 'subMenu') {
-    icon = <ArrowRightIcon color="action" />
-  } else if (type === 'checkbox') {
-    if (checked) {
-      const color = disabled ? 'inherit' : undefined
-      icon = <CheckBoxIcon color={color} />
-    } else {
-      icon = <CheckBoxOutlineBlankIcon color="action" />
+  switch (type) {
+    case 'subMenu': {
+      icon = <ArrowRightIcon color="action" />
+      break
     }
-  } else if (type === 'radio') {
-    if (checked) {
-      const color = disabled ? 'inherit' : undefined
-      icon = <RadioButtonCheckedIcon color={color} />
-    } else {
-      icon = <RadioButtonUncheckedIcon color="action" />
+    case 'checkbox': {
+      if (checked) {
+        const color = disabled ? 'inherit' : undefined
+        icon = <CheckBoxIcon color={color} />
+      } else {
+        icon = <CheckBoxOutlineBlankIcon color="action" />
+      }
+      break
     }
+    case 'radio': {
+      if (checked) {
+        const color = disabled ? 'inherit' : undefined
+        icon = <RadioButtonCheckedIcon color={color} />
+      } else {
+        icon = <RadioButtonUncheckedIcon color="action" />
+      }
+      break
+    }
+    // No default
   }
   return <div className={classes.menuItemEndDecoration}>{icon}</div>
 }
@@ -323,20 +331,35 @@ const MenuPage = React.forwardRef<HTMLDivElement, MenuPageProps>(
                     }
                   }}
                   onKeyDown={e => {
-                    if (e.key === 'ArrowLeft' || e.key === 'Escape') {
-                      onClose && onClose(e, 'escapeKeyDown')
-                    } else if (e.key === 'ArrowUp') {
-                      setSelectedMenuItemIdx(
-                        findPreviousValidIdx(menuItems, idx),
-                      )
-                    } else if (e.key === 'ArrowDown') {
-                      const a = findNextValidIdx(menuItems, idx)
-                      setSelectedMenuItemIdx(a)
-                    } else if ('subMenu' in menuItem) {
-                      if (e.key === 'ArrowRight' || e.key === 'Enter') {
-                        setSubMenuAnchorEl(e.currentTarget)
-                        setOpenSubMenuIdx(idx)
-                        setIsSubMenuOpen(true)
+                    switch (e.key) {
+                      case 'ArrowLeft':
+                      case 'Escape': {
+                        onClose && onClose(e, 'escapeKeyDown')
+
+                        break
+                      }
+                      case 'ArrowUp': {
+                        setSelectedMenuItemIdx(
+                          findPreviousValidIdx(menuItems, idx),
+                        )
+
+                        break
+                      }
+                      case 'ArrowDown': {
+                        const a = findNextValidIdx(menuItems, idx)
+                        setSelectedMenuItemIdx(a)
+
+                        break
+                      }
+                      default: {
+                        if (
+                          'subMenu' in menuItem &&
+                          (e.key === 'ArrowRight' || e.key === 'Enter')
+                        ) {
+                          setSubMenuAnchorEl(e.currentTarget)
+                          setOpenSubMenuIdx(idx)
+                          setIsSubMenuOpen(true)
+                        }
                       }
                     }
                   }}

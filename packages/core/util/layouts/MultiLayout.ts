@@ -16,7 +16,7 @@ export default class MultiLayout<SUB_LAYOUT_CLASS extends BaseLayout<T>, T> {
 
   getDataByID(id: string): unknown {
     for (const layout of this.subLayouts.values()) {
-      // @ts-ignore
+      // @ts-expect-error
       const r = layout.getDataByID(id)
       if (r) {
         return r

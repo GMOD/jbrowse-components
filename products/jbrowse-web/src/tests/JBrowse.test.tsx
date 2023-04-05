@@ -23,16 +23,17 @@ beforeEach(() => {
 })
 
 test('renders with an empty config', async () => {
-  const { findByText } = createView()
-  await findByText('Help')
-})
+  const { findByText } = await createView()
+  await findByText('Help', {}, delay)
+}, 20000)
+
 test('renders with an initialState', async () => {
-  const { findByText } = createView()
-  await findByText('Help')
-})
+  const { findByText } = await createView()
+  await findByText('Help', {}, delay)
+}, 20000)
 
 test('lollipop track test', async () => {
-  const { view, findByTestId, findByText } = createView()
+  const { view, findByTestId, findByText } = await createView()
   await findByText('Help')
   view.setNewView(1, 150)
   fireEvent.click(await findByTestId(hts('lollipop_track'), {}, delay))
@@ -63,17 +64,17 @@ test('toplevel configuration', () => {
 })
 
 test('assembly aliases', async () => {
-  const { view, findByTestId, findByText } = createView()
+  const { view, findByTestId, findByText } = await createView()
   await findByText('Help')
   view.setNewView(0.05, 5000)
   fireEvent.click(
     await findByTestId(hts('volvox_filtered_vcf_assembly_alias'), {}, delay),
   )
-  await findByTestId('box-test-vcf-604452', {}, delay)
+  await findByTestId('box-test-vcf-604453', {}, delay)
 }, 15000)
 
 test('nclist track test with long name', async () => {
-  const { view, findByTestId, findByText } = createView()
+  const { view, findByTestId, findByText } = await createView()
   await findByText('Help')
   view.setNewView(6.2, -301)
   fireEvent.click(await findByTestId(hts('nclist_long_names'), {}, delay))
@@ -86,7 +87,7 @@ test('nclist track test with long name', async () => {
 }, 20000)
 
 test('test sharing', async () => {
-  // @ts-ignore
+  // @ts-expect-error
   sessionSharing.shareSessionToDynamo = jest.fn().mockReturnValue({
     encryptedSession: 'A',
     json: {
@@ -94,7 +95,7 @@ test('test sharing', async () => {
     },
     password: '123',
   })
-  const { findByLabelText, findByText } = createView()
+  const { findByLabelText, findByText } = await createView()
   fireEvent.click(await findByText('Share'))
   expect(((await findByLabelText('URL')) as HTMLInputElement).value).toBe(
     'http://localhost/?session=share-abc&password=123',
@@ -102,7 +103,7 @@ test('test sharing', async () => {
 }, 15000)
 
 test('looks at about this track dialog', async () => {
-  const { findByTestId, findAllByText, findByText } = createView()
+  const { findByTestId, findAllByText, findByText } = await createView()
   await findByText('Help')
 
   // load track

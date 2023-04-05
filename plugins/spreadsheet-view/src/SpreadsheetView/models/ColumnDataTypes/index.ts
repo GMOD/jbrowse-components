@@ -22,7 +22,7 @@ const AnyFilterModelType = types.union(
     .map(columnType => {
       // just instantiate the blank types to get their filter model types
       const { FilterModelType } = columnType.create({
-        // @ts-ignore
+        // @ts-expect-error
         type: columnType.properties.type.value,
       })
       return FilterModelType as unknown as IAnyModelType

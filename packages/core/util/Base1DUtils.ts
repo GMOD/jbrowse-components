@@ -115,7 +115,7 @@ export function pxToBp(
   if (bp < 0) {
     const r = displayedRegions[0]
     const snap = getSnapshot(r)
-    // @ts-ignore
+    // @ts-expect-error
     return {
       // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
       ...(snap as Omit<typeof snap, symbol>),
@@ -134,7 +134,7 @@ export function pxToBp(
     const offset = bp - bpSoFar
     if (len + bpSoFar > bp && bpSoFar <= bp) {
       const snap = getSnapshot(r)
-      // @ts-ignore
+      // @ts-expect-error
       return {
         // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
         ...(snap as Omit<typeof snap, symbol>),
@@ -155,13 +155,13 @@ export function pxToBp(
     }
   }
 
-  if (bp >= bpSoFar && displayedRegions.length) {
+  if (bp >= bpSoFar && displayedRegions.length > 0) {
     const r = displayedRegions[displayedRegions.length - 1]
     const len = r.end - r.start
     const offset = bp - bpSoFar + len
 
     const snap = getSnapshot(r)
-    // @ts-ignore
+    // @ts-expect-error
     return {
       // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
       ...(snap as Omit<typeof snap, symbol>),
@@ -207,11 +207,14 @@ export function bpToPx({
   for (; i < displayedRegions.length; i++) {
     const r = displayedRegions[i]
     const len = r.end - r.start
-    if (refName === r.refName && coord >= r.start && coord <= r.end) {
-      if (regionNumber ? regionNumber === i : true) {
-        bpSoFar += r.reversed ? r.end - coord : coord - r.start
-        break
-      }
+    if (
+      refName === r.refName &&
+      coord >= r.start &&
+      coord <= r.end &&
+      (regionNumber ? regionNumber === i : true)
+    ) {
+      bpSoFar += r.reversed ? r.end - coord : coord - r.start
+      break
     }
 
     // add the interRegionPaddingWidth if the boundary is in the screen e.g. in
@@ -258,11 +261,14 @@ export function bpToPxMap({
   for (; i < displayedRegions.length; i++) {
     const r = displayedRegions[i]
     const len = r.end - r.start
-    if (refName === r.refName && coord >= r.start && coord <= r.end) {
-      if (regionNumber !== undefined ? regionNumber === i : true) {
-        bpSoFar += r.reversed ? r.end - coord : coord - r.start
-        break
-      }
+    if (
+      refName === r.refName &&
+      coord >= r.start &&
+      coord <= r.end &&
+      (regionNumber === undefined ? true : regionNumber === i)
+    ) {
+      bpSoFar += r.reversed ? r.end - coord : coord - r.start
+      break
     }
 
     // add the interRegionPaddingWidth if the boundary is in the screen e.g. in

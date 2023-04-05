@@ -10,7 +10,7 @@ export function chooseGridPitch(
 ) {
   scale = Math.abs(scale)
   const minMajorPitchBp = minMajorPitchPx * scale
-  const majorMagnitude = parseInt(
+  const majorMagnitude = Number.parseInt(
     Number(minMajorPitchBp).toExponential().split(/e/i)[1],
     10,
   )
@@ -68,8 +68,8 @@ export function makeTicks(
   let index = 0
   const ticks = []
   for (
-    let base = Math.ceil(minBase / iterPitch) * iterPitch;
-    base < maxBase;
+    let base = Math.floor(minBase / iterPitch) * iterPitch;
+    base < Math.ceil(maxBase / iterPitch) * iterPitch + 1;
     base += iterPitch
   ) {
     if (emitMinor && base % (gridPitch.majorPitch * 2)) {

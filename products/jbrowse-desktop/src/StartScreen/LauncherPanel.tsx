@@ -18,11 +18,11 @@ const useStyles = makeStyles()(theme => ({
     display: 'block',
     marginBottom: theme.spacing(3),
     width: 200,
-    height: '3em',
+    padding: theme.spacing(1),
   },
 }))
 
-export default function StartScreenOptionsPanel({
+export default function LauncherPanel({
   setPluginManager,
 }: {
   setPluginManager: (arg0: PluginManager) => void

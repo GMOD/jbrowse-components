@@ -2,7 +2,7 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { FileLocation, NoAssemblyRegion } from '@jbrowse/core/util/types'
+import { NoAssemblyRegion } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { Feature } from '@jbrowse/core/util'
@@ -24,7 +24,7 @@ export default class extends BaseFeatureDataAdapter {
     const location = this.getConf(['index', 'location'])
     const indexType = this.getConf(['index', 'indexType'])
 
-    const filehandle = openLocation(vcfGzLocation as FileLocation, pm)
+    const filehandle = openLocation(vcfGzLocation, pm)
     const isCSI = indexType === 'CSI'
     const vcf = new TabixIndexedFile({
       filehandle,

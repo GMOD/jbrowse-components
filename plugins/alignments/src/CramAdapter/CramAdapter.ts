@@ -124,7 +124,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
         const trimEnd = Math.min(end - chunkStart, chunkEnd - chunkStart)
         const trimLength = trimEnd - trimStart
         const chunkSeq = chunk.get('seq') || chunk.get('residues')
-        return chunkSeq.substr(trimStart, trimLength)
+        return chunkSeq.slice(trimStart, trimStart + trimLength)
       })
       .join('')
 
@@ -253,7 +253,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
 
       if (tagFilter) {
         filtered = filtered.filter(record => {
-          // @ts-ignore
+          // @ts-expect-error
           const val = record[tagFilter.tag]
           return val === '*' ? val !== undefined : val === tagFilter.value
         })

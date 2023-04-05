@@ -20,7 +20,7 @@ interface Config {
 }
 
 export default class AddConnection extends JBrowseCommand {
-  // @ts-ignore
+  // @ts-expect-error
   private target: string
 
   static description = 'Add a connection to a JBrowse 2 configuration'
@@ -98,15 +98,13 @@ export default class AddConnection extends JBrowseCommand {
     }
     const { config } = runFlags
     let { type, name, connectionId, assemblyName } = runFlags
-    const url = await this.resolveURL(
-      argsPath,
-      !(runFlags.skipCheck || runFlags.force),
-    )
+    const { skipCheck, force } = runFlags
+    const url = await this.resolveURL(argsPath, !(skipCheck || force))
 
     const configContents: Config = await this.readJsonFile(this.target)
     this.debug(`Using config file ${this.target}`)
 
-    if (!configContents.assemblies || !configContents.assemblies.length) {
+    if (!configContents.assemblies || configContents.assemblies.length === 0) {
       this.error(
         'No assemblies found. Please add one before adding connections',
         { exit: 120 },

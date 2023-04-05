@@ -6,8 +6,8 @@ import {
   expectCanvasMatch,
   createView,
   hts,
-  pc,
   doBeforeEach,
+  pv,
 } from './util'
 
 setup()
@@ -20,22 +20,17 @@ const delay = { timeout: 20000 }
 const opts = [{}, delay]
 
 test('opens an alignments track', async () => {
-  const { view, findByTestId, findByText, findAllByTestId } = createView()
+  const { view, findByTestId, findByText, findAllByTestId } = await createView()
   await findByText('Help')
   view.setNewView(5, 100)
   fireEvent.click(
     await findByTestId(hts('volvox_alignments_pileup_coverage'), ...opts),
   )
 
-  const { findByTestId: f1 } = within(
-    await findByTestId('Blockset-pileup', ...opts),
-  )
-  expectCanvasMatch(await f1(pc('{volvox}ctgA:1..4000-0'), ...opts))
-
-  const { findByTestId: f2 } = within(
-    await findByTestId('Blockset-snpcoverage', ...opts),
-  )
-  expectCanvasMatch(await f2(pc('{volvox}ctgA:1..4000-0'), ...opts))
+  const f1 = within(await findByTestId('Blockset-pileup', ...opts))
+  const f2 = within(await findByTestId('Blockset-snpcoverage', ...opts))
+  expectCanvasMatch(await f1.findByTestId(pv('1..4000-0'), ...opts))
+  expectCanvasMatch(await f2.findByTestId(pv('1..4000-0'), ...opts))
 
   const track = await findAllByTestId('pileup_overlay_canvas')
   fireEvent.mouseMove(track[0], { clientX: 200, clientY: 20 })
@@ -50,7 +45,7 @@ test('opens an alignments track', async () => {
 }, 20000)
 
 test('test that bam with small max height displays message', async () => {
-  const { findByTestId, findAllByText } = createView()
+  const { findByTestId, findAllByText } = await createView()
   fireEvent.click(
     await findByTestId(hts('volvox_bam_small_max_height'), ...opts),
   )
@@ -59,14 +54,11 @@ test('test that bam with small max height displays message', async () => {
 }, 30000)
 
 test('test snpcoverage doesnt count snpcoverage', async () => {
-  const { view, findByTestId, findByText } = createView()
+  const { view, findByTestId, findByText } = await createView()
   await findByText('Help')
   view.setNewView(0.03932, 67884.16536402702)
   fireEvent.click(await findByTestId(hts('volvox-long-reads-sv-cram'), ...opts))
-  const { findByTestId: f1 } = within(
-    await findByTestId('Blockset-snpcoverage', ...opts),
-  )
-
-  expectCanvasMatch(await f1(pc('{volvox}ctgA:2657..2688-0'), ...opts))
-  expectCanvasMatch(await f1(pc('{volvox}ctgA:2689..2720-0'), ...opts))
+  const f1 = within(await findByTestId('Blockset-snpcoverage', ...opts))
+  expectCanvasMatch(await f1.findByTestId(pv('2657..2688-0'), ...opts))
+  expectCanvasMatch(await f1.findByTestId(pv('2689..2720-0'), ...opts))
 }, 30000)

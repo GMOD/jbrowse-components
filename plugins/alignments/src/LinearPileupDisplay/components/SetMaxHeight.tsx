@@ -10,11 +10,11 @@ import {
 import { Dialog } from '@jbrowse/core/ui'
 import { makeStyles } from 'tss-react/mui'
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()({
   root: {
     width: 500,
   },
-}))
+})
 
 function SetMaxHeightDlg(props: {
   model: {
@@ -37,9 +37,7 @@ function SetMaxHeightDlg(props: {
         </Typography>
         <TextField
           value={max}
-          onChange={event => {
-            setMax(event.target.value)
-          }}
+          onChange={event => setMax(event.target.value)}
           placeholder="Enter max height for layout"
         />
         <DialogActions>

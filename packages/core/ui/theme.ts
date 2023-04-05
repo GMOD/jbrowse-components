@@ -1,4 +1,4 @@
-import { blue, green, red, grey, amber } from '@mui/material/colors'
+import { blue, green, red, grey, orange } from '@mui/material/colors'
 import { createTheme, ThemeOptions } from '@mui/material/styles'
 import type { PaletteAugmentColorOptions } from '@mui/material/styles/createPalette'
 import deepmerge from 'deepmerge'
@@ -37,9 +37,8 @@ const mandarin = '#FFB11D'
 
 const refTheme = createTheme()
 
-function getDefaultTheme() {
+function stockTheme() {
   return {
-    name: 'Default (from config)',
     palette: {
       mode: undefined,
       primary: { main: midnight },
@@ -51,31 +50,37 @@ function getDefaultTheme() {
       bases: {
         A: refTheme.palette.augmentColor({ color: green }),
         C: refTheme.palette.augmentColor({ color: blue }),
-        G: refTheme.palette.augmentColor({ color: amber }),
+        G: refTheme.palette.augmentColor({ color: orange }),
         T: refTheme.palette.augmentColor({ color: red }),
       },
     },
+    components: {
+      MuiLink: {
+        styleOverrides: {
+          // the default link color uses theme.palette.primary.main which is
+          // very bad with dark mode+midnight primary
+          //
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          root: ({ theme }: any) => ({
+            color: theme.palette.tertiary.main,
+          }),
+        },
+      },
+    },
+  }
+}
+
+function getDefaultTheme() {
+  return {
+    name: 'Default (from config)',
+    ...stockTheme(),
   }
 }
 
 function getLightStockTheme() {
   return {
     name: 'Light (stock)',
-    palette: {
-      mode: undefined,
-      primary: { main: midnight },
-      secondary: { main: grape },
-      tertiary: refTheme.palette.augmentColor({ color: { main: forest } }),
-      quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
-      stopCodon: '#e22',
-      startCodon: '#3e3',
-      bases: {
-        A: refTheme.palette.augmentColor({ color: green }),
-        C: refTheme.palette.augmentColor({ color: blue }),
-        G: refTheme.palette.augmentColor({ color: amber }),
-        T: refTheme.palette.augmentColor({ color: red }),
-      },
-    },
+    ...stockTheme(),
   }
 }
 
@@ -93,8 +98,21 @@ function getDarkStockTheme() {
       bases: {
         A: refTheme.palette.augmentColor({ color: green }),
         C: refTheme.palette.augmentColor({ color: blue }),
-        G: refTheme.palette.augmentColor({ color: amber }),
+        G: refTheme.palette.augmentColor({ color: orange }),
         T: refTheme.palette.augmentColor({ color: red }),
+      },
+    },
+    components: {
+      MuiAppBar: {
+        defaultProps: {
+          enableColorOnDark: true,
+        },
+        styleOverrides: {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          primary: (props: any) => {
+            return props.theme.palette.primary.main
+          },
+        },
       },
     },
   }
@@ -114,7 +132,7 @@ function getDarkMinimalTheme() {
       bases: {
         A: refTheme.palette.augmentColor({ color: green }),
         C: refTheme.palette.augmentColor({ color: blue }),
-        G: refTheme.palette.augmentColor({ color: amber }),
+        G: refTheme.palette.augmentColor({ color: orange }),
         T: refTheme.palette.augmentColor({ color: red }),
       },
     },
@@ -134,7 +152,7 @@ function getMinimalTheme() {
       bases: {
         A: refTheme.palette.augmentColor({ color: green }),
         C: refTheme.palette.augmentColor({ color: blue }),
-        G: refTheme.palette.augmentColor({ color: amber }),
+        G: refTheme.palette.augmentColor({ color: orange }),
         T: refTheme.palette.augmentColor({ color: red }),
       },
     },
@@ -240,7 +258,7 @@ function createDefaultProps(theme?: ThemeOptions) {
         },
         styleOverrides: {
           secondary: {
-            // @ts-ignore
+            // @ts-expect-error
             backgroundColor: theme?.palette?.quaternary?.main,
           },
         },
@@ -363,13 +381,18 @@ function createDefaultProps(theme?: ThemeOptions) {
       MuiAccordionSummary: {
         styleOverrides: {
           root: {
-            // @ts-ignore
+            // @ts-expect-error
             backgroundColor: theme?.palette?.tertiary?.main,
           },
           content: {
-            // @ts-ignore
+            // @ts-expect-error
             color: theme?.palette?.tertiary?.contrastText,
           },
+        },
+      },
+      MuiToggleButtonGroup: {
+        defaultProps: {
+          size: 'small' as const,
         },
       },
     },
@@ -377,12 +400,15 @@ function createDefaultProps(theme?: ThemeOptions) {
 }
 
 export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
-  return {
-    palette: theme?.palette,
-    typography: { fontSize: 12 },
-    spacing: 4,
-    ...createDefaultProps(theme),
-  }
+  return deepmerge(
+    {
+      palette: theme?.palette,
+      typography: { fontSize: 12 },
+      spacing: 4,
+      ...createDefaultProps(theme),
+    },
+    theme || {},
+  )
 }
 
 type ThemeMap = { [key: string]: ThemeOptions }
@@ -390,9 +416,15 @@ type ThemeMap = { [key: string]: ThemeOptions }
 export function createJBrowseTheme(
   configTheme: ThemeOptions = {},
   themes = defaultThemes,
-  paletteName = 'default',
+  themeName = 'default',
 ) {
-  return createTheme(getCurrentTheme(configTheme, themes, paletteName))
+  return createTheme(
+    createJBrowseBaseTheme(
+      themeName === 'default'
+        ? deepmerge(themes['default'], augmentTheme(configTheme))
+        : augmentThemePlus(themes[themeName]) || themes['default'],
+    ),
+  )
 }
 
 function augmentTheme(theme: ThemeOptions = {}) {
@@ -423,34 +455,22 @@ function augmentTheme(theme: ThemeOptions = {}) {
   return theme
 }
 
-export function getCurrentTheme(
-  theme: ThemeOptions = {},
-  themes = defaultThemes,
-  themeName = 'default',
-) {
-  const baseTheme = augmentTheme(theme)
-  const isDefault = themeName !== 'default'
-  let userChoiceTheme = augmentTheme(themes[themeName] || themes['default'])
-  if (!userChoiceTheme?.palette?.quaternary) {
-    userChoiceTheme = deepmerge(userChoiceTheme, {
+// creates some blank quaternary/tertiary colors if unsupplied by a user theme
+function augmentThemePlus(theme: ThemeOptions = {}) {
+  theme = augmentTheme(theme)
+  if (!theme?.palette?.quaternary) {
+    theme = deepmerge(theme, {
       palette: {
         quaternary: refTheme.palette.augmentColor({ color: { main: '#aaa' } }),
       },
     })
   }
-  if (!userChoiceTheme?.palette?.tertiary) {
-    userChoiceTheme = deepmerge(userChoiceTheme, {
+  if (!theme?.palette?.tertiary) {
+    theme = deepmerge(theme, {
       palette: {
         tertiary: refTheme.palette.augmentColor({ color: { main: '#aaa' } }),
       },
     })
   }
-
-  const obj = createJBrowseBaseTheme(
-    isDefault
-      ? userChoiceTheme
-      : deepmerge(themes['default'] || {}, baseTheme || {}),
-  )
-
-  return deepmerge(obj, theme)
+  return theme
 }

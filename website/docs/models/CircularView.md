@@ -143,13 +143,6 @@ scrollY: 0
 number
 ```
 
-#### getter: staticSlices
-
-```js
-// type
-any[]
-```
-
 #### getter: visibleSection
 
 ```js
@@ -272,7 +265,7 @@ see reasonably
 
 ```js
 // type
-({ elided: true; widthBp: number; regions: Region[]; } | { elided: false; widthBp: number; start: number; end: number; refName: string; })[]
+SliceRegion[]
 ```
 
 #### getter: assemblyNames
@@ -289,11 +282,29 @@ string[]
 any
 ```
 
+#### getter: staticSlices
+
+```js
+// type
+any[]
+```
+
 #### getter: visibleStaticSlices
 
 ```js
 // type
 any[]
+```
+
+### CircularView - Methods
+
+#### method: menuItems
+
+return the view menu items
+
+```js
+// type signature
+menuItems: () => MenuItem[]
 ```
 
 ### CircularView - Actions
@@ -443,4 +454,13 @@ hideTrack: (trackId: string) => number
 ```js
 // type signature
 toggleFitToWindowLock: () => boolean
+```
+
+#### action: exportSvg
+
+creates an svg export and save using FileSaver
+
+```js
+// type signature
+exportSvg: (opts?: ExportSvgOptions) => Promise<void>
 ```

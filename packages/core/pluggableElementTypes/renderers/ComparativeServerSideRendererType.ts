@@ -6,7 +6,6 @@ import ServerSideRenderer, {
   RenderArgs as ServerSideRenderArgs,
   RenderArgsSerialized as ServerSideRenderArgsSerialized,
   RenderArgsDeserialized as ServerSideRenderArgsDeserialized,
-  RenderResults,
   ResultsSerialized as ServerSideResultsSerialized,
   ResultsDeserialized as ServerSideResultsDeserialized,
 } from './ServerSideRendererType'
@@ -31,8 +30,6 @@ export interface RenderArgsDeserialized
   displayModel: {}
   blockKey: string
 }
-
-export type { RenderResults }
 
 export type ResultsSerialized = ServerSideResultsSerialized
 
@@ -121,12 +118,7 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
     const pm = this.pluginManager
     const { sessionId, adapterConfig } = renderArgs
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
-
-    let regions = [] as Region[]
-
-    // @ts-ignore this is instantiated by the getFeatures call
-    regions = renderArgs.regions
-
+    const regions = renderArgs.regions as Region[]
     if (!regions || regions.length === 0) {
       console.warn('no regions supplied to comparative renderer')
       return []
@@ -159,3 +151,5 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
     return dedupe(res, f => f.id())
   }
 }
+
+export { type RenderResults } from './ServerSideRendererType'

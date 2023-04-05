@@ -10,7 +10,7 @@ type CGV = CircularViewModel
 export default (pluginManager: PluginManager) => {
   pluginManager.addToExtensionPoint(
     'LaunchView-CircularView',
-    // @ts-ignore
+    // @ts-expect-error
     async ({
       session,
       assembly,

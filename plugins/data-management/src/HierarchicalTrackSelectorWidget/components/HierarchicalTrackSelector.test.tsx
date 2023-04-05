@@ -9,7 +9,7 @@ import HierarchicalTrackSelector from './HierarchicalTrackSelector'
 
 jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 
-// @ts-ignore
+// @ts-expect-error
 window.requestIdleCallback = cb => cb()
 window.cancelIdleCallback = () => {}
 
@@ -20,7 +20,7 @@ test('renders nothing with no assembly', () => {
 
   const { container } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
-      {/* @ts-ignore*/}
+      {/* @ts-expect-error*/}
       <HierarchicalTrackSelector model={model} />
     </ThemeProvider>,
   )
@@ -76,7 +76,7 @@ test('renders with a couple of uncategorized tracks', async () => {
 
   const { container, findByTestId } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
-      {/* @ts-ignore*/}
+      {/* @ts-expect-error*/}
       <HierarchicalTrackSelector model={model} />
     </ThemeProvider>,
   )
@@ -139,7 +139,7 @@ test('renders with a couple of categorized tracks', async () => {
 
   const { container, findByTestId } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
-      {/* @ts-ignore*/}
+      {/* @ts-expect-error*/}
       <HierarchicalTrackSelector model={model} />
     </ThemeProvider>,
   )

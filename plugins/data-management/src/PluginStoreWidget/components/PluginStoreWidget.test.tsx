@@ -34,17 +34,17 @@ beforeEach(() => {
   model = session.addWidget('PluginStoreWidget', 'pluginStoreWidget')
   const { location } = window
 
-  // @ts-ignore
+  // @ts-expect-error
   delete window.location
   window.location = {
     ...location,
     reload: jest.fn(),
   }
 
-  // @ts-ignore
+  // @ts-expect-error
   fetch.resetMocks()
 
-  // @ts-ignore
+  // @ts-expect-error
   fetch.mockResponse(JSON.stringify(plugins))
 })
 

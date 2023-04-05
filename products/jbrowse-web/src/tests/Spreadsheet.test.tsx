@@ -12,7 +12,7 @@ beforeEach(() => {
 const delay = { timeout: 10000 }
 
 test('opens a vcf.gz file in the spreadsheet view', async () => {
-  const { session, findByTestId, getByTestId, findByText } = createView()
+  const { session, findByTestId, getByTestId, findByText } = await createView()
 
   fireEvent.click(await findByText('File'))
   fireEvent.click(await findByText('Add'))
@@ -32,7 +32,7 @@ test('opens a vcf.gz file in the spreadsheet view', async () => {
 }, 15000)
 
 test('opens a bed.gz file in the spreadsheet view', async () => {
-  const { session, findByTestId, getByTestId, findByText } = createView()
+  const { session, findByTestId, getByTestId, findByText } = await createView()
   fireEvent.click(await findByText('File'))
   fireEvent.click(await findByText('Add'))
   fireEvent.click(await findByText('Spreadsheet view'))

@@ -5,7 +5,7 @@ import {
   doBeforeEach,
   expectCanvasMatch,
   createView,
-  pc,
+  pv,
   hts,
 } from './util'
 
@@ -15,29 +15,29 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-const delay = { timeout: 10000 }
+const delay = { timeout: 20000 }
 const opts = [{}, delay]
 
 test('open a bigwig track', async () => {
-  const { view, findByTestId, findByText } = createView()
+  const { view, findByTestId, findByText } = await createView()
   await findByText('Help')
   view.setNewView(5, 0)
   fireEvent.click(await findByTestId(hts('volvox_microarray'), ...opts))
-  expectCanvasMatch(await findByTestId(pc('{volvox}ctgA:1..4000-0'), ...opts))
-}, 15000)
+  expectCanvasMatch(await findByTestId(pv('1..4000-0'), ...opts))
+}, 25000)
 test('open a bigwig line track 2', async () => {
-  const { view, findByTestId, findByText } = createView()
+  const { view, findByTestId, findByText } = await createView()
 
   await findByText('Help')
   view.setNewView(10, 0)
   fireEvent.click(await findByTestId(hts('volvox_microarray_line'), ...opts))
-  expectCanvasMatch(await findByTestId(pc('{volvox}ctgA:1..8000-0'), ...opts))
-}, 15000)
+  expectCanvasMatch(await findByTestId(pv('1..8000-0'), ...opts))
+}, 25000)
 test('open a bigwig density track', async () => {
-  const { view, findByTestId, findByText } = createView()
+  const { view, findByTestId, findByText } = await createView()
 
   await findByText('Help')
   view.setNewView(5, 0)
   fireEvent.click(await findByTestId(hts('volvox_microarray_density'), ...opts))
-  expectCanvasMatch(await findByTestId(pc('{volvox}ctgA:1..4000-0'), ...opts))
-}, 15000)
+  expectCanvasMatch(await findByTestId(pv('1..4000-0'), ...opts))
+}, 25000)

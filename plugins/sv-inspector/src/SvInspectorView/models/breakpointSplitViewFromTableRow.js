@@ -1,31 +1,17 @@
-import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+import { SimpleFeature, getEnv, getSession } from '@jbrowse/core/util'
 import { makeAdHocSvFeature } from './adhocFeatureUtils'
-import { getEnv, getSession } from '@jbrowse/core/util'
 
-export function getSerializedFeatureForRow(
-  session,
-  spreadsheetView,
-  row,
-  rowNumber,
-) {
-  if (row.extendedData) {
-    if (row.extendedData.vcfFeature) {
-      return row.extendedData.vcfFeature
-    }
-    if (row.extendedData.feature) {
-      return row.extendedData.feature
-    }
-  }
-  const adhocFeature = makeAdHocSvFeature(
-    spreadsheetView.spreadsheet,
-    rowNumber,
-    row,
-    session.assemblyManager.isValidRefName,
+export function getFeatureForRow(session, spreadsheetView, row, rowNumber) {
+  return (
+    row.extendedData?.vcfFeature ||
+    row.extendedData?.feature ||
+    makeAdHocSvFeature(
+      spreadsheetView.spreadsheet,
+      rowNumber,
+      row,
+      session.assemblyManager.isValidRefName,
+    )
   )
-  if (adhocFeature) {
-    return adhocFeature
-  }
-  return undefined
 }
 
 export function breakpointSplitViewSnapshotFromTableRow(
@@ -37,24 +23,14 @@ export function breakpointSplitViewSnapshotFromTableRow(
 ) {
   const { pluginManager } = getEnv(svInspectorView)
   const session = getSession(spreadsheetView)
-  const featureData = getSerializedFeatureForRow(
-    session,
-    spreadsheet,
-    row,
-    rowNumber,
-  )
+  const featureData = getFeatureForRow(session, spreadsheet, row, rowNumber)
 
   if (featureData) {
     const feature = new SimpleFeature(featureData)
     session.setSelection(feature)
-    const viewType = pluginManager.getViewType('BreakpointSplitView')
-    const { circularView } = svInspectorView
-
-    const viewSnapshot = viewType.snapshotFromBreakendFeature(
-      feature,
-      circularView,
-    )
-    return viewSnapshot
+    return pluginManager
+      .getViewType('BreakpointSplitView')
+      .snapshotFromBreakendFeature(feature, svInspectorView.circularView)
   }
   return undefined
 }
@@ -92,14 +68,15 @@ export function canOpenBreakpointSplitViewFromTableRow(
   rowNumber,
 ) {
   try {
-    const viewSnapshot = breakpointSplitViewSnapshotFromTableRow(
-      svInspectorView,
-      spreadsheetView,
-      spreadsheet,
-      row,
-      rowNumber,
+    return Boolean(
+      breakpointSplitViewSnapshotFromTableRow(
+        svInspectorView,
+        spreadsheetView,
+        spreadsheet,
+        row,
+        rowNumber,
+      ),
     )
-    return Boolean(viewSnapshot)
   } catch (e) {
     console.error('Unable to open breakpoint split view from table row', e)
     return false

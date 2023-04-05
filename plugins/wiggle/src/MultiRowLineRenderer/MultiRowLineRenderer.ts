@@ -6,7 +6,7 @@ import WiggleBaseRenderer, {
 } from '../WiggleBaseRenderer'
 
 export default class MultiRowLineRenderer extends WiggleBaseRenderer {
-  // @ts-ignore
+  // @ts-expect-error
   async draw(ctx: CanvasRenderingContext2D, props: MultiArgs) {
     const { bpPerPx, sources, regions, features } = props
     const [region] = regions
@@ -28,7 +28,7 @@ export default class MultiRowLineRenderer extends WiggleBaseRenderer {
       ctx.lineTo(width, height)
       ctx.stroke()
       ctx.translate(0, height)
-      feats = feats.concat(reducedFeatures)
+      feats = [...feats, ...reducedFeatures]
     })
     ctx.restore()
     return { reducedFeatures: feats }

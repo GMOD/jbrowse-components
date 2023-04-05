@@ -55,16 +55,16 @@ describe('parseLocString', () => {
   ]
 
   // test unreversed
-  cases.forEach(([input, output]) => {
+  for (const [input, output] of cases) {
     test(`${input}`, () => {
       expect(
         parseLocString(input, refName => ['chr1', 'chr2'].includes(refName)),
       ).toEqual({ ...output, reversed: false })
     })
-  })
+  }
 
   // test reversed
-  cases.forEach(([input, output]) => {
+  for (const [input, output] of cases) {
     test(`${input}`, () => {
       expect(
         parseLocString(input + '[rev]', refName =>
@@ -72,7 +72,7 @@ describe('parseLocString', () => {
         ),
       ).toEqual({ ...output, reversed: true })
     })
-  })
+  }
 })
 
 describe('assembleLocString', () => {
@@ -93,7 +93,7 @@ describe('assembleLocString', () => {
     [{ refName: 'chr1', start: -2, end: -1 }, 'chr1:-1'],
     [{ start: -100, end: -1, refName: 'chr1' }, 'chr1:-99..-1'],
   ]
-  cases.forEach(([input, output]) => {
+  for (const [input, output] of cases) {
     test(`assemble ${output}`, () => {
       expect(assembleLocString(input)).toEqual(output)
     })
@@ -105,7 +105,7 @@ describe('assembleLocString', () => {
         ),
       ).toEqual({ ...input, reversed: false })
     })
-  })
+  }
 
   // Special case since undefined `start` will result in `start` being assumed
   // to be `0`
@@ -146,7 +146,7 @@ describe('compareLocStrings', () => {
     ['{hg19}chr1:1-200', 'chr1:1-200', 1],
     ['{hg19}chr1:1-200', '{hg19}chr1:2-200', -1],
   ]
-  cases.forEach(([input1, input2, output]) => {
+  for (const [input1, input2, output] of cases) {
     test(`${input1} ${input2} = ${output}`, () => {
       expect(
         compareLocStrings(
@@ -156,7 +156,7 @@ describe('compareLocStrings', () => {
         ),
       ).toEqual(output)
     })
-  })
+  }
 })
 
 describe('test stringify', () => {

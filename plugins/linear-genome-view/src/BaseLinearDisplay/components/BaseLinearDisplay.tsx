@@ -6,8 +6,7 @@ import { getConf } from '@jbrowse/core/configuration'
 import { Menu } from '@jbrowse/core/ui'
 
 // locals
-import Tooltip from './Tooltip'
-import BlockMsg from './BlockMsg'
+
 import LinearBlocks from './LinearBlocks'
 import { BaseLinearDisplayModel } from '../models/BaseLinearDisplayModel'
 
@@ -113,4 +112,6 @@ const BaseLinearDisplay = observer(function (props: {
 })
 
 export default BaseLinearDisplay
-export { Tooltip, BlockMsg }
+
+export { default as Tooltip } from './Tooltip'
+export { default as BlockMsg } from './BlockMsg'

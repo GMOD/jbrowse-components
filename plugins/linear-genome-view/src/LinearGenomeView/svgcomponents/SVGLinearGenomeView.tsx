@@ -10,7 +10,7 @@ import { LinearGenomeViewModel, ExportSvgOptions } from '..'
 import SVGBackground from './SVGBackground'
 import SVGTracks from './SVGTracks'
 import SVGHeader from './SVGHeader'
-import SVGRuler from './SVGRuler'
+
 import { getTrackName } from '@jbrowse/core/util/tracks'
 
 type LGV = LinearGenomeViewModel
@@ -65,10 +65,10 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   )
   const trackLabelMaxLen =
     max(
-      tracks.map(
-        t => measureText(getTrackName(t.configuration, session), fontSize),
-        fontSize,
+      tracks.map(t =>
+        measureText(getTrackName(t.configuration, session), fontSize),
       ),
+      0,
     ) + 40
   const trackLabelOffset = trackLabels === 'left' ? trackLabelMaxLen : 0
   const w = width + trackLabelOffset
@@ -110,4 +110,5 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   )
 }
 
-export { SVGTracks, SVGRuler }
+export { default as SVGRuler } from './SVGRuler'
+export { default as SVGTracks } from './SVGTracks'

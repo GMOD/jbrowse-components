@@ -15,7 +15,7 @@ function styledBy(property: string, mapping: { [key: string]: string }) {
   return (props: { [key: string]: string }) => mapping[props[property]]
 }
 
-// @ts-ignore
+// @ts-expect-error
 const useStyles = makeStyles()(theme => ({
   root: {
     margin: theme.spacing(1),
@@ -92,13 +92,13 @@ export function readBlobAsText(blob: Blob): Promise<string> {
 function ImportSession({ model }: { model: any }) {
   const [error, setError] = useState<unknown>()
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    // @ts-ignore
+    // @ts-expect-error
     accept: 'application/json',
     maxSize: MAX_FILE_SIZE,
     multiple: false,
     onDrop: async (acceptedFiles, rejectedFiles) => {
       try {
-        if (rejectedFiles.length) {
+        if (rejectedFiles.length > 0) {
           throw new Error(
             `${rejectedFiles[0].errors.map(e => `${e}`).join(', ')}`,
           )
@@ -113,7 +113,7 @@ function ImportSession({ model }: { model: any }) {
     },
   })
 
-  // @ts-ignore
+  // @ts-expect-error
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { classes } = useStyles({ isDragActive }) as any
 

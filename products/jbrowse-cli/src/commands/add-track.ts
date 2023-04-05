@@ -7,6 +7,24 @@ import JBrowseCommand from '../base'
 const { copyFile, rename, symlink } = fs.promises
 const { COPYFILE_EXCL } = fs.constants
 
+function makeLocationProtocol(protocol: string) {
+  return (location: string) => {
+    if (protocol === 'uri') {
+      return {
+        uri: location,
+        locationType: 'UriLocation',
+      } as UriLocation
+    }
+    if (protocol === 'localPath') {
+      return {
+        localPath: location,
+        locationType: 'LocalPathLocation',
+      } as LocalPathLocation
+    }
+    throw new Error(`invalid protocol ${protocol}`)
+  }
+}
+
 interface Track {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any
@@ -34,7 +52,7 @@ interface LocalPathLocation {
 const isUrl = (loc?: string) => loc?.match(/^https?:\/\//)
 
 export default class AddTrack extends JBrowseCommand {
-  // @ts-ignore
+  // @ts-expect-error
   target: string
 
   static description = 'Add a track to a JBrowse 2 configuration'
@@ -138,6 +156,12 @@ export default class AddTrack extends JBrowseCommand {
       description: 'Force protocol to a specific value',
       default: 'uri',
     }),
+    bed1: flags.string({
+      description: 'Used only for mcscan anchors/simpleAnchors types',
+    }),
+    bed2: flags.string({
+      description: 'Used only for mcscan anchors/simpleAnchors types',
+    }),
   }
 
   async run() {
@@ -157,6 +181,8 @@ export default class AddTrack extends JBrowseCommand {
       protocol,
       out,
       indexFile: index,
+      bed1,
+      bed2,
     } = runFlags
 
     const output = target || out || '.'
@@ -181,23 +207,31 @@ export default class AddTrack extends JBrowseCommand {
     }
     const location = argsTrack
 
-    const inPlace = load === 'inPlace'
-    const useIndex = isUrl(index) || inPlace || index
-    const effectiveLocation =
-      isUrl(location) || inPlace
-        ? location
-        : path.join(subDir, path.basename(location))
+    const mapLoc = (p: string) => {
+      return !p || isUrl(p) || load === 'inPlace'
+        ? p
+        : path.join(subDir, path.basename(p))
+    }
 
-    const effectiveIndexLocation =
-      !index || isUrl(index) || inPlace
-        ? index
-        : path.join(subDir, path.basename(index))
-    const adapter = useIndex
-      ? this.guessAdapter(effectiveLocation, protocol, effectiveIndexLocation)
-      : this.guessAdapter(effectiveLocation, protocol)
+    const adapter = this.guessAdapter({
+      protocol,
+      location: mapLoc(location),
+      index: index ? mapLoc(index) : undefined,
+      bed1: bed1 ? mapLoc(bed1) : undefined,
+      bed2: bed2 ? mapLoc(bed2) : undefined,
+    })
 
-    if (adapter.type === 'PAFAdapter') {
-      // @ts-ignore
+    if (
+      [
+        'PAFAdapter',
+        'DeltaAdapter',
+        'ChainAdapter',
+        'MashMapAdapter',
+        'MCScanAnchorsAdapter',
+        'MCScanSimpleAnchorsAdapter',
+      ].includes(adapter.type)
+    ) {
+      // @ts-expect-error
       adapter.assemblyNames = assemblyNames.split(',').map(a => a.trim())
     }
 
@@ -240,10 +274,6 @@ export default class AddTrack extends JBrowseCommand {
     trackId = trackId || path.basename(location, path.extname(location))
     name = name || trackId
     assemblyNames = assemblyNames || configContents.assemblies[0].name
-    this.debug(`Name is: ${name}`)
-    this.debug(`Type is: ${trackType}`)
-    this.debug(`Track is :${trackId}`)
-    this.debug(`Assembly name(s) is :${assemblyNames}`)
 
     const configObj = config ? parseJSON(config) : {}
     const trackConfig: Track = {
@@ -256,22 +286,16 @@ export default class AddTrack extends JBrowseCommand {
       description,
       ...configObj,
     }
-    this.debug(
-      `Track location: ${location}, index: ${adapter ? adapter.index : ''}`,
-    )
 
     // any special track modifications go here
-    switch (trackType) {
-      case 'AlignmentsTrack': {
-        const assembly = configContents.assemblies.find(
-          asm => asm.name === assemblyNames,
-        )
-        if (assembly) {
-          trackConfig.adapter.sequenceAdapter = assembly.sequence.adapter
-        } else if (!skipCheck) {
-          this.error(`Failed to find assemblyName ${assemblyNames}`)
-        }
-        break
+    if (trackType === 'AlignmentsTrack') {
+      const assembly = configContents.assemblies.find(
+        asm => asm.name === assemblyNames,
+      )
+      if (assembly) {
+        trackConfig.adapter.sequenceAdapter = assembly.sequence.adapter
+      } else if (!skipCheck) {
+        this.error(`Failed to find assemblyName ${assemblyNames}`)
       }
     }
 
@@ -316,6 +340,7 @@ export default class AddTrack extends JBrowseCommand {
 
     const loadType =
       (load as 'copy' | 'inPlace' | 'move' | 'symlink' | undefined) || 'inPlace'
+
     const callbacks = {
       copy: (src: string, dest: string) => copyFile(src, dest, COPYFILE_EXCL),
       move: (src: string, dest: string) => rename(src, dest),
@@ -324,9 +349,8 @@ export default class AddTrack extends JBrowseCommand {
         /* do nothing */
       },
     }
-
     await Promise.all(
-      Object.values(this.guessFileNames(location, index))
+      Object.values(this.guessFileNames({ location, index, bed1, bed2 }))
         .filter(f => !!f)
         .map(src =>
           callbacks[loadType](src, destinationFn(configDirectory, src)),
@@ -345,130 +369,82 @@ export default class AddTrack extends JBrowseCommand {
     )
   }
 
-  guessFileNames(fileName: string, index?: string) {
-    if (/\.bam$/i.test(fileName)) {
+  guessFileNames({
+    location,
+    index,
+    bed1,
+    bed2,
+  }: {
+    location: string
+    index?: string
+    bed1?: string
+    bed2?: string
+  }) {
+    if (/\.anchors(.simple)?$/i.test(location)) {
       return {
-        file: fileName,
-        index: index || `${fileName}.bai`,
+        file: location,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        bed1: bed1!,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        bed2: bed2!,
+      }
+    }
+    if (/\.bam$/i.test(location)) {
+      return {
+        file: location,
+        index: index || `${location}.bai`,
       }
     }
 
-    if (/\.cram$/i.test(fileName)) {
+    if (/\.cram$/i.test(location)) {
       return {
-        file: fileName,
-        index: index || `${fileName}.crai`,
+        file: location,
+        index: index || `${location}.crai`,
       }
     }
 
-    if (/\.gff3?$/i.test(fileName)) {
+    if (
+      /\.gff3?\.b?gz$/i.test(location) ||
+      /\.vcf\.b?gz$/i.test(location) ||
+      /\.bed\.b?gz$/i.test(location)
+    ) {
       return {
-        file: fileName,
+        file: location,
+        index: index || `${location}.tbi`,
       }
     }
 
-    if (/\.gff3?\.b?gz$/i.test(fileName)) {
+    if (/\.(fa|fasta|fas|fna|mfa)$/i.test(location)) {
       return {
-        file: fileName,
-        index: index || `${fileName}.tbi`,
+        file: location,
+        index: index || `${location}.fai`,
       }
     }
 
-    if (/\.gtf?$/i.test(fileName)) {
+    if (/\.(fa|fasta|fas|fna|mfa)\.b?gz$/i.test(location)) {
       return {
-        file: fileName,
+        file: location,
+        index: `${location}.fai`,
+        index2: `${location}.gzi`,
       }
     }
 
-    if (/\.vcf$/i.test(fileName)) {
+    if (
+      /\.2bit$/i.test(location) ||
+      /\/trackData.jsonz?$/i.test(location) ||
+      /\/sparql$/i.test(location) ||
+      /\.out(.gz)?$/i.test(location) ||
+      /\.paf(.gz)?$/i.test(location) ||
+      /\.delta(.gz)?$/i.test(location) ||
+      /\.(bw|bigwig)$/i.test(location) ||
+      /\.(bb|bigbed)$/i.test(location) ||
+      /\.vcf$/i.test(location) ||
+      /\.gtf?$/i.test(location) ||
+      /\.gff3?$/i.test(location) ||
+      /\.chain(.gz)?$/i.test(location)
+    ) {
       return {
-        file: fileName,
-      }
-    }
-
-    if (/\.vcf\.b?gz$/i.test(fileName)) {
-      return {
-        file: fileName,
-        index: index || `${fileName}.tbi`,
-      }
-    }
-
-    if (/\.vcf\.idx$/i.test(fileName)) {
-      return {}
-    }
-
-    if (/\.bed$/i.test(fileName)) {
-      return {}
-    }
-
-    if (/\.bed\.b?gz$/i.test(fileName)) {
-      return {
-        file: fileName,
-        index: index || `${fileName}.tbi`,
-      }
-    }
-
-    if (/\.bed\.idx$/i.test(fileName)) {
-      return {}
-    }
-
-    if (/\.(bb|bigbed)$/i.test(fileName)) {
-      return {
-        file: fileName,
-      }
-    }
-
-    if (/\.(bw|bigwig)$/i.test(fileName)) {
-      return {
-        file: fileName,
-      }
-    }
-
-    if (/\.(fa|fasta|fas|fna|mfa)$/i.test(fileName)) {
-      return {
-        file: fileName,
-        index: index || `${fileName}.fai`,
-      }
-    }
-
-    if (/\.(fa|fasta|fas|fna|mfa)\.b?gz$/i.test(fileName)) {
-      return {
-        file: fileName,
-        index: `${fileName}.fai`,
-        index2: `${fileName}.gzi`,
-      }
-    }
-
-    if (/\.2bit$/i.test(fileName)) {
-      return {
-        file: fileName,
-      }
-    }
-
-    if (/\.sizes$/i.test(fileName)) {
-      return {}
-    }
-
-    if (/\/trackData.jsonz?$/i.test(fileName)) {
-      return {
-        file: fileName,
-      }
-    }
-
-    if (/\/sparql$/i.test(fileName)) {
-      return {
-        file: fileName,
-      }
-    }
-
-    if (/\.hic$/i.test(fileName)) {
-      return {
-        file: fileName,
-      }
-    }
-
-    if (/\.paf$/i.test(fileName)) {
-      return {
-        file: fileName,
+        file: location,
       }
     }
 
@@ -476,184 +452,218 @@ export default class AddTrack extends JBrowseCommand {
   }
 
   // find way to import this instead of having to paste it
-  guessAdapter(fileName: string, protocol: string, index?: string) {
-    function makeLocation(location: string) {
-      if (protocol === 'uri') {
-        return { uri: location, locationType: 'UriLocation' } as UriLocation
-      }
-      if (protocol === 'localPath') {
-        return {
-          localPath: location,
-          locationType: 'LocalPathLocation',
-        } as LocalPathLocation
-      }
-      throw new Error(`invalid protocol ${protocol}`)
-    }
-    if (/\.bam$/i.test(fileName)) {
+  guessAdapter({
+    location,
+    protocol,
+    index,
+    bed1,
+    bed2,
+  }: {
+    location: string
+    protocol: string
+    index?: string
+    bed1?: string
+    bed2?: string
+  }) {
+    const makeLocation = makeLocationProtocol(protocol)
+    if (/\.bam$/i.test(location)) {
       return {
         type: 'BamAdapter',
-        bamLocation: makeLocation(fileName),
+        bamLocation: makeLocation(location),
         index: {
-          location: makeLocation(index || `${fileName}.bai`),
-          indexType:
-            index && index.toUpperCase().endsWith('CSI') ? 'CSI' : 'BAI',
+          location: makeLocation(index || `${location}.bai`),
+          indexType: index?.toUpperCase().endsWith('CSI') ? 'CSI' : 'BAI',
         },
       }
     }
 
-    if (/\.cram$/i.test(fileName)) {
+    if (/\.cram$/i.test(location)) {
       return {
         type: 'CramAdapter',
-        cramLocation: makeLocation(fileName),
-        craiLocation: makeLocation(`${fileName}.crai`),
+        cramLocation: makeLocation(location),
+        craiLocation: makeLocation(`${location}.crai`),
       }
     }
 
-    if (/\.gff3?$/i.test(fileName)) {
+    if (/\.gff3?$/i.test(location)) {
       return {
         type: 'Gff3Adapter',
-        gffLocation: makeLocation(fileName),
+        gffLocation: makeLocation(location),
       }
     }
 
-    if (/\.gff3?\.b?gz$/i.test(fileName)) {
+    if (/\.gff3?\.b?gz$/i.test(location)) {
       return {
         type: 'Gff3TabixAdapter',
-        gffGzLocation: makeLocation(fileName),
+        gffGzLocation: makeLocation(location),
         index: {
-          location: makeLocation(index || `${fileName}.tbi`),
-          indexType:
-            index && index.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
+          location: makeLocation(index || `${location}.tbi`),
+          indexType: index?.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
         },
       }
     }
 
-    if (/\.gtf?$/i.test(fileName)) {
+    if (/\.gtf?$/i.test(location)) {
       return {
         type: 'GtfAdapter',
-        gtfLocation: makeLocation(fileName),
+        gtfLocation: makeLocation(location),
       }
     }
 
-    if (/\.vcf$/i.test(fileName)) {
+    if (/\.vcf$/i.test(location)) {
       return {
         type: 'VcfAdapter',
-        vcfLocation: makeLocation(fileName),
+        vcfLocation: makeLocation(location),
       }
     }
 
-    if (/\.vcf\.b?gz$/i.test(fileName)) {
+    if (/\.vcf\.b?gz$/i.test(location)) {
       return {
         type: 'VcfTabixAdapter',
-        vcfGzLocation: makeLocation(fileName),
+        vcfGzLocation: makeLocation(location),
         index: {
-          location: makeLocation(index || `${fileName}.tbi`),
-          indexType:
-            index && index.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
+          location: makeLocation(index || `${location}.tbi`),
+          indexType: index?.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
         },
       }
     }
 
-    if (/\.vcf\.idx$/i.test(fileName)) {
+    if (/\.vcf\.idx$/i.test(location)) {
       return {
         type: 'UNSUPPORTED',
       }
     }
 
-    if (/\.bed$/i.test(fileName)) {
+    if (/\.bed$/i.test(location)) {
       return {
         type: 'UNSUPPORTED',
       }
     }
 
-    if (/\.bed\.b?gz$/i.test(fileName)) {
+    if (/\.bed\.b?gz$/i.test(location)) {
       return {
         type: 'BedTabixAdapter',
-        bedGzLocation: makeLocation(fileName),
+        bedGzLocation: makeLocation(location),
         index: {
-          location: makeLocation(index || `${fileName}.tbi`),
-          indexType:
-            index && index.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
+          location: makeLocation(index || `${location}.tbi`),
+          indexType: index?.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
         },
       }
     }
 
-    if (/\.bed$/i.test(fileName)) {
+    if (/\.bed$/i.test(location)) {
       return {
         type: 'BedAdapter',
-        bedLocation: makeLocation(fileName),
+        bedLocation: makeLocation(location),
       }
     }
 
-    if (/\.(bb|bigbed)$/i.test(fileName)) {
+    if (/\.(bb|bigbed)$/i.test(location)) {
       return {
         type: 'BigBedAdapter',
-        bigBedLocation: makeLocation(fileName),
+        bigBedLocation: makeLocation(location),
       }
     }
 
-    if (/\.(bw|bigwig)$/i.test(fileName)) {
+    if (/\.(bw|bigwig)$/i.test(location)) {
       return {
         type: 'BigWigAdapter',
-        bigWigLocation: makeLocation(fileName),
+        bigWigLocation: makeLocation(location),
       }
     }
 
-    if (/\.(fa|fasta|fna|mfa)$/i.test(fileName)) {
+    if (/\.(fa|fasta|fna|mfa)$/i.test(location)) {
       return {
         type: 'IndexedFastaAdapter',
-        fastaLocation: makeLocation(fileName),
-        faiLocation: makeLocation(index || `${fileName}.fai`),
+        fastaLocation: makeLocation(location),
+        faiLocation: makeLocation(index || `${location}.fai`),
       }
     }
 
-    if (/\.(fa|fasta|fna|mfa)\.b?gz$/i.test(fileName)) {
+    if (/\.(fa|fasta|fna|mfa)\.b?gz$/i.test(location)) {
       return {
         type: 'BgzipFastaAdapter',
-        fastaLocation: makeLocation(fileName),
-        faiLocation: makeLocation(`${fileName}.fai`),
-        gziLocation: makeLocation(`${fileName}.gzi`),
+        fastaLocation: makeLocation(location),
+        faiLocation: makeLocation(`${location}.fai`),
+        gziLocation: makeLocation(`${location}.gzi`),
       }
     }
 
-    if (/\.2bit$/i.test(fileName)) {
+    if (/\.2bit$/i.test(location)) {
       return {
         type: 'TwoBitAdapter',
-        twoBitLocation: makeLocation(fileName),
+        twoBitLocation: makeLocation(location),
       }
     }
 
-    if (/\.sizes$/i.test(fileName)) {
+    if (/\.sizes$/i.test(location)) {
       return {
         type: 'UNSUPPORTED',
       }
     }
 
-    if (/\/trackData.jsonz?$/i.test(fileName)) {
+    if (/\/trackData.jsonz?$/i.test(location)) {
       return {
         type: 'NCListAdapter',
-        rootUrlTemplate: makeLocation(fileName),
+        rootUrlTemplate: makeLocation(location),
       }
     }
 
-    if (/\/sparql$/i.test(fileName)) {
+    if (/\/sparql$/i.test(location)) {
       return {
         type: 'SPARQLAdapter',
-        endpoint: fileName,
+        endpoint: location,
       }
     }
 
-    if (/\.hic/i.test(fileName)) {
+    if (/\.hic$/i.test(location)) {
       return {
         type: 'HicAdapter',
-        hicLocation: makeLocation(fileName),
+        hicLocation: makeLocation(location),
       }
     }
 
-    if (/\.paf/i.test(fileName)) {
+    if (/\.paf(.gz)?$/i.test(location)) {
       return {
         type: 'PAFAdapter',
-        pafLocation: makeLocation(fileName),
+        pafLocation: makeLocation(location),
+      }
+    }
+
+    if (/\.out(.gz)?$/i.test(location)) {
+      return {
+        type: 'MashMapAdapter',
+        outLocation: makeLocation(location),
+      }
+    }
+    if (/\.chain(.gz)?$/i.test(location)) {
+      return {
+        type: 'ChainAdapter',
+        chainLocation: makeLocation(location),
+      }
+    }
+    if (/\.delta(.gz)?$/i.test(location)) {
+      return {
+        type: 'DeltaAdapter',
+        deltaLocation: makeLocation(location),
+      }
+    }
+
+    if (/\.anchors(.gz)?$/i.test(location)) {
+      return {
+        type: 'MCScanAnchorsAdapter',
+        mcscanAnchorsLocation: makeLocation(location),
+        bed1Location: bed1 ? makeLocation(bed1) : undefined,
+        bed2Location: bed2 ? makeLocation(bed2) : undefined,
+      }
+    }
+
+    if (/\.anchors.simple(.gz)?$/i.test(location)) {
+      return {
+        type: 'MCScanSimpleAnchorsAdapter',
+        mcscanSimpleAnchorsLocation: makeLocation(location),
+        bed1Location: bed1 ? makeLocation(bed1) : undefined,
+        bed2Location: bed2 ? makeLocation(bed2) : undefined,
       }
     }
 
@@ -674,6 +684,11 @@ export default class AddTrack extends JBrowseCommand {
       VcfAdapter: 'VariantTrack',
       HicAdapter: 'HicTrack',
       PAFAdapter: 'SyntenyTrack',
+      DeltaAdapter: 'SyntenyTrack',
+      ChainAdapter: 'SyntenyTrack',
+      MashMapAdapter: 'SyntenyTrack',
+      MCScanAnchorsAdapter: 'SyntenyTrack',
+      MCScanSimpleAnchorsAdapter: 'SyntenyTrack',
     }
     return known[adapterType] || 'FeatureTrack'
   }

@@ -83,6 +83,22 @@ export interface LoadedPlugin {
   default: PluginConstructor
 }
 
+function pluginDescriptionString(pluginDefinition: PluginDefinition) {
+  if (isUMDPluginDefinition(pluginDefinition)) {
+    return `UMD plugin ${pluginDefinition.name}`
+  }
+  if (isESMPluginDefinition(pluginDefinition)) {
+    return `ESM plugin ${
+      (pluginDefinition as ESMUrlPluginDefinition).esmUrl ||
+      (pluginDefinition as ESMLocPluginDefinition).esmLoc?.uri
+    }`
+  }
+  if (isCJSPluginDefinition(pluginDefinition)) {
+    return `CJS plugin ${pluginDefinition.cjsUrl}`
+  }
+  return 'unknown plugin'
+}
+
 function isInWebWorker() {
   return Boolean('WorkerGlobalScope' in globalThis)
 }
@@ -110,9 +126,9 @@ export default class PluginLoader {
       return domLoadScript(scriptUrl)
     }
 
-    // @ts-ignore
+    // @ts-expect-error
     if (globalThis?.importScripts) {
-      // @ts-ignore
+      // @ts-expect-error
       await globalThis.importScripts(scriptUrl)
       return
     }
@@ -176,14 +192,14 @@ export default class PluginLoader {
     }
     const moduleName = def.name
     const umdName = `JBrowsePlugin${moduleName}`
-    if (typeof jest !== 'undefined') {
-      // @ts-ignore
-      globalThis[umdName] = { default: Plugin }
-    } else {
+    if (typeof jest === 'undefined') {
       await this.loadScript(parsedUrl.href)
+    } else {
+      // @ts-expect-error
+      globalThis[umdName] = { default: Plugin }
     }
 
-    // @ts-ignore
+    // @ts-expect-error
     const plugin = globalThis[umdName] as
       | { default: PluginConstructor }
       | undefined
@@ -212,11 +228,18 @@ export default class PluginLoader {
     } else {
       throw new Error(`Could not determine plugin type: ${JSON.stringify(def)}`)
     }
+    if (!plugin.default) {
+      throw new Error(
+        `${pluginDescriptionString(
+          def,
+        )} does not have a default export, cannot load`,
+      )
+    }
     return plugin.default
   }
 
   installGlobalReExports(target: WindowOrWorkerGlobalScope) {
-    // @ts-ignore
+    // @ts-expect-error
     target.JBrowseExports = Object.fromEntries(
       Object.entries(ReExports).map(([moduleName, module]) => {
         return [moduleName, module]

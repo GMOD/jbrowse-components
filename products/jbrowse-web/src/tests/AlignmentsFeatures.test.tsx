@@ -8,6 +8,7 @@ import {
   createView,
   pc,
   hts,
+  pv,
 } from './util'
 
 setup()
@@ -20,7 +21,7 @@ const delay = { timeout: 20000 }
 const opts = [{}, delay]
 
 test('opens the track menu and enables soft clipping', async () => {
-  const { view, findByTestId, findByText } = createView()
+  const { view, findByTestId, findByText } = await createView()
   await findByText('Help')
   view.setNewView(0.02, 142956)
 
@@ -32,17 +33,17 @@ test('opens the track menu and enables soft clipping', async () => {
   fireEvent.click(await findByText('Show soft clipping'))
 
   // wait for block to rerender
-  const { findByTestId: f0 } = within(await findByTestId('Blockset-pileup'))
+  const f0 = within(await findByTestId('Blockset-pileup'))
 
   // slightly higher threshold for fonts
   expectCanvasMatch(
-    await f0(pc('softclipped_{volvox}ctgA:2849..2864-0'), ...opts),
+    await f0.findByTestId(pc('softclipped_{volvox}ctgA:2849..2864-0'), ...opts),
     0.05,
   )
 }, 30000)
 
 test('selects a sort, sort by base pair', async () => {
-  const { view, findByTestId, findByText, findAllByTestId } = createView()
+  const { view, findByTestId, findByText, findAllByTestId } = await createView()
   await findByText('Help')
   view.setNewView(0.043688891869634636, 301762)
   const track = 'volvox_cram_alignments_ctga'
@@ -56,17 +57,18 @@ test('selects a sort, sort by base pair', async () => {
 
   // wait for pileup track to render with sort
   await findAllByTestId('pileup-Base pair', ...opts)
-  const { findByTestId: find1 } = within(await findByTestId('Blockset-pileup'))
-  expectCanvasMatch(await find1(pc('{volvox}ctgA:13196..13230-0'), ...opts))
+  const f1 = within(await findByTestId('Blockset-pileup'))
+  expectCanvasMatch(await f1.findByTestId(pv('13196..13230-0'), ...opts))
 
+  // maintains sort after zoom out
   fireEvent.click(await findByTestId('zoom_out'))
   await findAllByTestId('pileup-Base pair', ...opts)
-  const { findByTestId: find2 } = within(await findByTestId('Blockset-pileup'))
-  expectCanvasMatch(await find2(pc('{volvox}ctgA:13161..13230-0'), ...opts))
+  const f2 = within(await findByTestId('Blockset-pileup'))
+  expectCanvasMatch(await f2.findByTestId(pv('13161..13230-0'), ...opts))
 }, 35000)
 
 test('color by tag', async () => {
-  const { view, findByTestId, findByText, findAllByTestId } = createView()
+  const { view, findByTestId, findByText, findAllByTestId } = await createView()
   await findByText('Help')
   view.setNewView(0.465, 85055)
 
@@ -83,12 +85,12 @@ test('color by tag', async () => {
   fireEvent.click(await findByText('Submit'))
   // wait for pileup track to render with color
   await findAllByTestId('pileup-tagHP', ...opts)
-  const { findByTestId: find1 } = within(await findByTestId('Blockset-pileup'))
-  expectCanvasMatch(await find1(pc('{volvox}ctgA:39805..40176-0'), ...opts))
+  const f1 = within(await findByTestId('Blockset-pileup'))
+  expectCanvasMatch(await f1.findByTestId(pv('39805..40176-0'), ...opts))
 }, 30000)
 
 test('toggle short-read arc display', async () => {
-  const { view, findByTestId, findAllByText, findByText } = createView()
+  const { view, findByTestId, findAllByText, findByText } = await createView()
   await findByText('Help')
   await view.navToLocString('ctgA:1-50000')
   fireEvent.click(await findByTestId(hts('volvox_sv_cram'), ...opts))
@@ -99,7 +101,7 @@ test('toggle short-read arc display', async () => {
 }, 30000)
 
 test('toggle short-read cloud display', async () => {
-  const { view, findByTestId, findAllByText, findByText } = createView()
+  const { view, findByTestId, findAllByText, findByText } = await createView()
   await findByText('Help')
   await view.navToLocString('ctgA:1-50000')
   fireEvent.click(await findByTestId(hts('volvox_sv_cram'), ...opts))
@@ -110,7 +112,7 @@ test('toggle short-read cloud display', async () => {
 }, 30000)
 
 test('toggle long-read cloud display', async () => {
-  const { view, findByTestId, findAllByText, findByText } = createView()
+  const { view, findByTestId, findAllByText, findByText } = await createView()
   await findByText('Help')
   await view.navToLocString('ctgA:19,101..32,027')
   fireEvent.click(await findByTestId(hts('volvox-simple-inv.bam'), ...opts))
@@ -121,7 +123,7 @@ test('toggle long-read cloud display', async () => {
 }, 30000)
 
 test('toggle long-read arc display', async () => {
-  const { view, findByTestId, findAllByText, findByText } = createView()
+  const { view, findByTestId, findAllByText, findByText } = await createView()
   await findByText('Help')
   await view.navToLocString('ctgA:19,101..32,027')
   fireEvent.click(await findByTestId(hts('volvox-simple-inv.bam'), ...opts))
@@ -132,7 +134,7 @@ test('toggle long-read arc display', async () => {
 }, 30000)
 
 test('toggle long-read arc display, use out of view pairing', async () => {
-  const { view, findByTestId, findAllByText, findByText } = createView()
+  const { view, findByTestId, findAllByText, findByText } = await createView()
   await findByText('Help')
   await view.navToLocString('ctgA:478..6,191')
   fireEvent.click(await findByTestId(hts('volvox-long-reads-sv-cram'), ...opts))
@@ -143,7 +145,7 @@ test('toggle long-read arc display, use out of view pairing', async () => {
 }, 30000)
 
 test('toggle short-read arc display, use out of view pairing', async () => {
-  const { view, findByTestId, findAllByText, findByText } = createView()
+  const { view, findByTestId, findAllByText, findByText } = await createView()
   await findByText('Help')
   await view.navToLocString('ctgA:478..6,191')
   fireEvent.click(await findByTestId(hts('volvox_sv_cram'), ...opts))

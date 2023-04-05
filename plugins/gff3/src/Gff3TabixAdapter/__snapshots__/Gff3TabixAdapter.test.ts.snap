@@ -12,7 +12,7 @@ exports[`adapter can fetch features from volvox.gff3 test getfeatures on gff pla
     "start": 0,
     "strand": undefined,
     "type": "contig",
-    "uniqueId": "test-offset-794327",
+    "uniqueId": "test-offset-794328",
   },
   {
     "derived_features": [],
@@ -25,7 +25,7 @@ exports[`adapter can fetch features from volvox.gff3 test getfeatures on gff pla
     "start": 1658,
     "strand": 1,
     "type": "remark",
-    "uniqueId": "test-offset-794370",
+    "uniqueId": "test-offset-794371",
   },
   {
     "derived_features": [],
@@ -38,7 +38,7 @@ exports[`adapter can fetch features from volvox.gff3 test getfeatures on gff pla
     "start": 3013,
     "strand": 1,
     "type": "remark",
-    "uniqueId": "test-offset-794439",
+    "uniqueId": "test-offset-794440",
   },
   {
     "derived_features": [],
@@ -51,7 +51,7 @@ exports[`adapter can fetch features from volvox.gff3 test getfeatures on gff pla
     "start": 4714,
     "strand": -1,
     "type": "remark",
-    "uniqueId": "test-offset-794513",
+    "uniqueId": "test-offset-794514",
   },
 ]
 `;

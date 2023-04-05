@@ -9,32 +9,16 @@ import LineStyleIcon from '@mui/icons-material/LineStyle'
 import {
   BaseLinearDisplay,
   BaseLinearDisplayComponent,
-  BlockModel,
-  BlockMsg,
   baseLinearDisplayConfigSchema,
 } from './BaseLinearDisplay'
-import LinearBareDisplayF, {
-  configSchemaFactory as linearBareDisplayConfigSchemaFactory,
-} from './LinearBareDisplay'
+import LinearBareDisplayF from './LinearBareDisplay'
 import LinearGenomeViewF, {
-  LinearGenomeViewModel,
-  LinearGenomeViewStateModel,
-  RefNameAutocomplete,
   SearchBox,
   ZoomControls,
   LinearGenomeView,
 } from './LinearGenomeView'
 
-import {
-  renderToSvg,
-  totalHeight,
-  SVGTracks,
-  SVGRuler,
-} from './LinearGenomeView/svgcomponents/SVGLinearGenomeView'
-import LinearBasicDisplayF, {
-  configSchema as linearBasicDisplayConfigSchemaFactory,
-  modelFactory as linearBasicDisplayModelFactory,
-} from './LinearBasicDisplay'
+import LinearBasicDisplayF from './LinearBasicDisplay'
 
 import FeatureTrackF from './FeatureTrack'
 import BasicTrackF from './BasicTrack'
@@ -74,22 +58,28 @@ export default class LinearGenomeViewPlugin extends Plugin {
   }
 }
 
+export type { BaseLinearDisplayModel, BlockModel } from './BaseLinearDisplay'
+
+export { configSchemaFactory as linearBareDisplayConfigSchemaFactory } from './LinearBareDisplay'
 export {
+  BlockMsg,
   baseLinearDisplayConfigSchema,
-  linearBareDisplayConfigSchemaFactory,
-  linearBasicDisplayConfigSchemaFactory,
-  linearBasicDisplayModelFactory,
-  renderToSvg,
-  totalHeight,
-  SVGTracks,
-  SVGRuler,
   BaseLinearDisplayComponent,
   BaseLinearDisplay,
+} from './BaseLinearDisplay'
+export {
+  type LinearGenomeViewModel,
   RefNameAutocomplete,
+  type LinearGenomeViewStateModel,
   SearchBox,
-  BlockMsg,
-}
-
-export type { LinearGenomeViewModel, LinearGenomeViewStateModel, BlockModel }
-
-export type { BaseLinearDisplayModel } from './BaseLinearDisplay'
+} from './LinearGenomeView'
+export {
+  renderToSvg,
+  SVGTracks,
+  totalHeight,
+  SVGRuler,
+} from './LinearGenomeView/svgcomponents/SVGLinearGenomeView'
+export {
+  configSchema as linearBasicDisplayConfigSchemaFactory,
+  modelFactory as linearBasicDisplayModelFactory,
+} from './LinearBasicDisplay'

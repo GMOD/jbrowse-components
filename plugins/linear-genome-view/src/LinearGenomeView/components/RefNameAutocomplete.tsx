@@ -6,7 +6,6 @@ import BaseResult, {
 } from '@jbrowse/core/TextSearch/BaseResults'
 import {
   Autocomplete,
-  CircularProgress,
   IconButton,
   InputAdornment,
   TextField,
@@ -28,17 +27,46 @@ export interface Option {
   result: BaseResult
 }
 
+function aggregateResults(results: BaseResult[]) {
+  const m: { [key: string]: BaseResult[] } = {}
+
+  for (const result of results) {
+    const displayString = result.getDisplayString()
+    if (!m[displayString]) {
+      m[displayString] = []
+    }
+    m[displayString].push(result)
+  }
+  return m
+}
+
+function getDeduplicatedResult(results: BaseResult[]) {
+  return Object.entries(aggregateResults(results)).map(
+    ([displayString, results]) =>
+      results.length === 1
+        ? {
+            result: results[0],
+          }
+        : {
+            // deduplicate a "multi-result"
+            result: new BaseResult({
+              displayString,
+              results,
+              label: displayString,
+            }),
+          },
+  )
+}
+
 // the logic of this method is to only apply a filter to RefSequenceResults
 // because they do not have a matchedObject. the trix search results already
 // filter so don't need re-filtering
 function filterOptions(options: Option[], searchQuery: string) {
-  return options.filter(option => {
-    const { result } = option
-    return (
+  return options.filter(
+    ({ result }) =>
       result.getLabel().toLowerCase().includes(searchQuery) ||
-      result.matchedObject
-    )
-  })
+      result.matchedObject,
+  )
 }
 
 function RefNameAutocomplete({
@@ -51,6 +79,7 @@ function RefNameAutocomplete({
   value,
   showHelp = true,
   minWidth = 200,
+  maxWidth = 550,
   TextFieldProps = {},
 }: {
   model: LinearGenomeViewModel
@@ -61,6 +90,7 @@ function RefNameAutocomplete({
   fetchResults: (query: string) => Promise<BaseResult[]>
   style?: React.CSSProperties
   minWidth?: number
+  maxWidth?: number
   showHelp?: boolean
   TextFieldProps?: TFP
 }) {
@@ -76,18 +106,17 @@ function RefNameAutocomplete({
   const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
   const { coarseVisibleLocStrings, hasDisplayedRegions } = model
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const regions = assembly?.regions || []
+  const regions = assembly?.regions
 
   const options = useMemo(
     () =>
-      regions.map(option => ({
+      regions?.map(option => ({
         result: new RefSequenceResult({
           refName: option.refName,
           label: option.refName,
           matchedAttribute: 'refName',
         }),
-      })),
+      })) || [],
     [regions],
   )
 
@@ -104,32 +133,8 @@ function RefNameAutocomplete({
         setLoaded(false)
         const results = await fetchResults(debouncedSearch)
         if (active) {
-          const m: { [key: string]: BaseResult[] } = {}
-
-          for (let i = 0; i < results.length; i++) {
-            const r = results[i]
-            const d = r.getDisplayString()
-            if (!m[d]) {
-              m[d] = []
-            }
-            m[d].push(r)
-          }
-          const display = Object.entries(m).map(([displayString, results]) => {
-            if (results.length === 1) {
-              return { result: results[0] }
-            } else {
-              return {
-                result: new BaseResult({
-                  displayString,
-                  results,
-                  label: displayString,
-                }),
-              }
-            }
-          })
-
-          setSearchOptions(display)
           setLoaded(true)
+          setSearchOptions(getDeduplicatedResult(results))
         }
       } catch (e) {
         console.error(e)
@@ -146,11 +151,11 @@ function RefNameAutocomplete({
 
   const inputBoxVal = coarseVisibleLocStrings || value || ''
 
-  // heuristic, text width + icon width
-  // + 45 accommodates help icon and search icon
+  // heuristic, text width + icon width + 50 accommodates help icon and search
+  // icon
   const width = Math.min(
     Math.max(measureText(inputBoxVal, 16) + 50, minWidth),
-    550,
+    maxWidth,
   )
 
   // notes on implementation:
@@ -158,7 +163,6 @@ function RefNameAutocomplete({
   return (
     <>
       <Autocomplete
-        id={`refNameAutocomplete-${model.id}`}
         data-testid="autocomplete"
         disableListWrap
         disableClearable
@@ -237,21 +241,17 @@ function RefNameAutocomplete({
 
                 endAdornment: (
                   <>
-                    {regions.length === 0 ? (
-                      <CircularProgress color="inherit" size={20} />
-                    ) : (
-                      <InputAdornment position="end" style={{ marginRight: 7 }}>
-                        <SearchIcon fontSize="small" />
-                        {showHelp ? (
-                          <IconButton
-                            onClick={() => setHelpDialogDisplayed(true)}
-                            size="small"
-                          >
-                            <HelpIcon fontSize="small" />
-                          </IconButton>
-                        ) : null}
-                      </InputAdornment>
-                    )}
+                    <InputAdornment position="end" style={{ marginRight: 7 }}>
+                      <SearchIcon fontSize="small" />
+                      {showHelp ? (
+                        <IconButton
+                          onClick={() => setHelpDialogDisplayed(true)}
+                          size="small"
+                        >
+                          <HelpIcon fontSize="small" />
+                        </IconButton>
+                      ) : null}
+                    </InputAdornment>
                     {params.InputProps.endAdornment}
                   </>
                 ),

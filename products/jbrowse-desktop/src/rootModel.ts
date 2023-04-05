@@ -293,7 +293,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
               onClick: (session: any) => {
                 if (session.views.length === 0) {
                   session.notify('Please open a view to add a track first')
-                } else if (session.views.length >= 1) {
+                } else if (session.views.length > 0) {
                   const widget = session.addWidget(
                     'AddTrackWidget',
                     'addTrackWidget',
@@ -559,25 +559,23 @@ export default function rootModelFactory(pluginManager: PluginManager) {
 
       afterCreate() {
         document.addEventListener('keydown', e => {
-          if (self.history.canRedo) {
-            if (
-              // ctrl+shift+z or cmd+shift+z
-              ((e.ctrlKey || e.metaKey) && e.shiftKey && e.code === 'KeyZ') ||
+          if (
+            self.history.canRedo &&
+            // ctrl+shift+z or cmd+shift+z
+            (((e.ctrlKey || e.metaKey) && e.shiftKey && e.code === 'KeyZ') ||
               // ctrl+y
-              (e.ctrlKey && !e.shiftKey && e.code === 'KeyY')
-            ) {
-              self.history.redo()
-            }
+              (e.ctrlKey && !e.shiftKey && e.code === 'KeyY'))
+          ) {
+            self.history.redo()
           }
-          if (self.history.canUndo) {
-            if (
-              // ctrl+z or cmd+z
-              (e.ctrlKey || e.metaKey) &&
-              !e.shiftKey &&
-              e.code === 'KeyZ'
-            ) {
-              self.history.undo()
-            }
+          if (
+            self.history.canUndo &&
+            // ctrl+z or cmd+z
+            (e.ctrlKey || e.metaKey) &&
+            !e.shiftKey &&
+            e.code === 'KeyZ'
+          ) {
+            self.history.undo()
           }
         })
         addDisposer(
