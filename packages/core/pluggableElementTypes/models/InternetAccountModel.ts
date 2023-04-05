@@ -224,7 +224,6 @@ export const InternetAccount = types
         self.removeToken()
         throw error
       }
-      self.storeToken(validatedToken)
       return {
         internetAccountType: self.type,
         authInfo: { token: validatedToken, configuration: getConf(self) },
