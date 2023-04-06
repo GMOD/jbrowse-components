@@ -6,6 +6,7 @@ import JBrowseMenu from '@jbrowse/core/ui/Menu'
 import {
   getSession,
   isSessionModelWithWidgets,
+  isSessionWithAddTracks,
   isSessionModelWithConnections,
 } from '@jbrowse/core/util'
 import {
@@ -116,6 +117,22 @@ export default observer(function HamburgerMenu({
       onClick: () => setConnectionManagerOpen(true),
     })
   }
+
+  const trackMenuItems = [
+    {
+      label: 'Add track...',
+      onClick: () => {
+        if (isSessionModelWithWidgets(session)) {
+          session.showWidget(
+            session.addWidget('AddTrackWidget', 'addTrackWidget', {
+              view: model.view.id,
+            }),
+          )
+        }
+      },
+    },
+  ]
+
   return (
     <>
       <IconButton
@@ -134,18 +151,7 @@ export default observer(function HamburgerMenu({
         }}
         onClose={() => setMenuEl(undefined)}
         menuItems={[
-          {
-            label: 'Add track...',
-            onClick: () => {
-              if (isSessionModelWithWidgets(session)) {
-                session.showWidget(
-                  session.addWidget('AddTrackWidget', 'addTrackWidget', {
-                    view: model.view.id,
-                  }),
-                )
-              }
-            },
-          },
+          ...(isSessionWithAddTracks(session) ? trackMenuItems : []),
           ...(session.makeConnection ? connectionMenuItems : []),
 
           ...(assemblyNames.length > 1

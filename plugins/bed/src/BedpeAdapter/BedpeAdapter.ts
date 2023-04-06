@@ -168,12 +168,16 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
       return featureData(f, uniqueId, true, names)
     })
 
-    for (const obj of ret1) {
-      intervalTree.insert([obj.get('start'), obj.get('end')], obj)
+    if (ret1) {
+      for (const obj of ret1) {
+        intervalTree.insert([obj.get('start'), obj.get('end')], obj)
+      }
     }
 
-    for (const obj of ret2) {
-      intervalTree.insert([obj.get('start'), obj.get('end')], obj)
+    if (ret2) {
+      for (const obj of ret2) {
+        intervalTree.insert([obj.get('start'), obj.get('end')], obj)
+      }
     }
 
     return intervalTree

@@ -10,6 +10,7 @@ import {
   makeIndex,
   makeIndexType,
   AdapterGuesser,
+  TrackTypeGuesser,
 } from '@jbrowse/core/util/tracks'
 
 export default class BedPlugin extends Plugin {
@@ -113,6 +114,18 @@ export default class BedPlugin extends Plugin {
             }
           }
           return adapterGuesser(file, index, adapterHint)
+        }
+      },
+    )
+
+    pluginManager.addToExtensionPoint(
+      'Core-guessTrackTypeForLocation',
+      (trackTypeGuesser: TrackTypeGuesser) => {
+        return (adapterName: string) => {
+          if (adapterName === 'BedpeAdapter') {
+            return 'VariantTrack'
+          }
+          return trackTypeGuesser(adapterName)
         }
       },
     )
