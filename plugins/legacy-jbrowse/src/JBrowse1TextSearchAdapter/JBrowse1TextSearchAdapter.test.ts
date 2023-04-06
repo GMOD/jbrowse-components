@@ -6,15 +6,15 @@ import last from '../../test_data/names/f.json'
 import Adapter from './JBrowse1TextSearchAdapter'
 import configSchema from './configSchema'
 
-function mockFetch(url: string) {
+function mockFetch(url: RequestInfo | URL) {
   let response = {}
-  if (url.includes('names/meta.json')) {
+  if (`${url}`.includes('names/meta.json')) {
     response = meta
   }
-  if (url.includes('names/0.json')) {
+  if (`${url}`.includes('names/0.json')) {
     response = first
   }
-  if (url.includes('names/f.json')) {
+  if (`${url}`.includes('names/f.json')) {
     response = last
   }
   return Promise.resolve(new Response(JSON.stringify(response)))
@@ -26,8 +26,7 @@ const rootTemplate = path
 
 test('search upper case', async () => {
   const spy = jest.spyOn(global, 'fetch')
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  spy.mockImplementation(mockFetch as any)
+  spy.mockImplementation(mockFetch)
 
   const adapter = new Adapter(
     configSchema.create({
@@ -65,8 +64,7 @@ test('search upper case', async () => {
 
 test('search lower case', async () => {
   const spy = jest.spyOn(global, 'fetch')
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  spy.mockImplementation(mockFetch as any)
+  spy.mockImplementation(mockFetch)
 
   const adapter = new Adapter(
     configSchema.create({

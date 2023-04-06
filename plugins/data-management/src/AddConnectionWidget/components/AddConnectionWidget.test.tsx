@@ -7,8 +7,6 @@ import AddConnectionWidget from './AddConnectionWidget'
 
 jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 
-// window.fetch = jest.fn(() => new Promise(resolve => resolve()))
-
 describe('<AddConnectionWidget />', () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let model: any

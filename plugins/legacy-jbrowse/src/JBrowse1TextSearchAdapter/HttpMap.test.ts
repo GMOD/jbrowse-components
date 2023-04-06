@@ -5,17 +5,14 @@ import last from '../../test_data/names/f.json'
 import HttpMap from './HttpMap'
 
 test('read from meta', async () => {
-  function mockFetch(url: RequestInfo | URL) {
-    const response = `${url}`.includes('names/meta.json') ? meta : {}
-    return Promise.resolve(new Response(JSON.stringify(response)))
-  }
   const rootTemplate = path
     .join(__dirname, '..', '..', '..', '..', 'test_data', 'names')
     .replace(/\\/g, '\\\\')
 
-  const spy = jest.spyOn(global, 'fetch')
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  spy.mockImplementation(mockFetch as any)
+  jest.spyOn(global, 'fetch').mockImplementation(url => {
+    const response = `${url}`.includes('names/meta.json') ? meta : {}
+    return Promise.resolve(new Response(JSON.stringify(response)))
+  })
   const hashMap = new HttpMap({ url: rootTemplate })
   await hashMap.getBucket('apple')
 
@@ -24,7 +21,12 @@ test('read from meta', async () => {
   expect(await hashMap.getCompress()).toBe(0)
 })
 test('get bucket contents', async () => {
-  function mockFetch(url: RequestInfo | URL) {
+  const rootTemplate = path
+    .join(__dirname, '..', '..', '..', '..', 'test_data', 'names')
+    .replace(/\\/g, '\\\\')
+
+  const spy = jest.spyOn(global, 'fetch')
+  spy.mockImplementation(url => {
     let response = {}
     if (`${url}`.includes('names/meta.json')) {
       response = meta
@@ -36,16 +38,8 @@ test('get bucket contents', async () => {
       response = last
     }
     return Promise.resolve(new Response(JSON.stringify(response)))
-  }
-  const rootTemplate = path
-    .join(__dirname, '..', '..', '..', '..', 'test_data', 'names')
-    .replace(/\\/g, '\\\\')
-
-  const spy = jest.spyOn(global, 'fetch')
-  spy.mockImplementation(mockFetch)
-  const hashMap = new HttpMap({
-    url: rootTemplate,
   })
+  const hashMap = new HttpMap({ url: rootTemplate })
 
   await hashMap.getBucket('apple')
   expect(spy).toHaveBeenLastCalledWith(`${rootTemplate}/0.json`)
