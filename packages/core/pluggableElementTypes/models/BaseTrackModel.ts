@@ -69,7 +69,7 @@ export function createBaseTrackModel(
        * determines which webworker to send the track to, currently based on trackId
        */
       get rpcSessionId() {
-        return self.configuration.trackId
+        return self.configuration?.trackId
       },
       /**
        * #getter
@@ -117,7 +117,7 @@ export function createBaseTrackModel(
           (adminMode ||
             sessionTracks.find(
               (track: { trackId: string }) =>
-                track.trackId === self.configuration.trackId,
+                track.trackId === self.configuration?.trackId,
             ))
         )
       },

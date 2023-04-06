@@ -36,7 +36,7 @@ export interface ConfigurationSchemaDefinition {
     | IAnyType
 }
 
-interface ConfigurationSchemaOptions {
+export interface ConfigurationSchemaOptions {
   explicitlyTyped?: boolean
   explicitIdentifier?: string
   implicitIdentifier?: string | boolean
@@ -252,11 +252,41 @@ export type ConfigurationSlotName<CONFSCHEMA> =
     ? keyof D & string
     : never
 
+//     /** the possible names of configuration slots for a config schema or model */
+// export type ConfigurationSlotName<SCHEMA_OR_MODEL_OR_REFERENCE> =
+// // eslint-disable-next-line @typescript-eslint/no-explicit-any
+// SCHEMA_OR_MODEL_OR_REFERENCE extends ConfigurationSchemaType<infer D, any> // it's a schema
+//   ? keyof D & string
+//   : SCHEMA_OR_MODEL_OR_REFERENCE extends Instance<
+//       // eslint-disable-next-line @typescript-eslint/no-explicit-any
+//       ConfigurationSchemaType<infer D, any>
+//     > // it's a model
+//   ? keyof D & string
+//   : SCHEMA_OR_MODEL_OR_REFERENCE extends ConfigurationModelReference<
+//       // eslint-disable-next-line @typescript-eslint/no-explicit-any
+//       TypeOfValue<ConfigurationSchemaType<infer D, any>>
+//     > // it's a reference
+//   ? keyof D & string
+//   : never
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type AnyConfigurationSchemaType = ConfigurationSchemaType<any, any>
 export type AnyConfigurationModel = Instance<AnyConfigurationSchemaType>
 export type AnyConfigurationSlotType = ReturnType<typeof ConfigSlot>
 export type AnyConfigurationSlot = Instance<AnyConfigurationSlotType>
+
+// /** the reference returned by a call to `ConfigurationReference(schema)` */
+// export type ConfigurationModelReference<
+//   MODELTYPE extends AnyConfigurationModel,
+// > = Instance<ReturnType<typeof ConfigurationReference<TypeOfValue<MODELTYPE>>>>
+
+// /** either a configuration model itself, or a MST reference to it */
+// export type ConfigurationModelOrReference<
+//   MODELTYPE extends AnyConfigurationModel,
+// > = ConfigurationModelReference<MODELTYPE> | MODELTYPE
+
+// export type AnyConfigurationModelOrReference =
+//   ConfigurationModelOrReference<AnyConfigurationModel>
 
 export type ConfigurationModel<SCHEMA extends AnyConfigurationSchemaType> =
   Instance<SCHEMA>
@@ -268,7 +298,7 @@ export function ConfigurationSchema<
   modelName: string,
   inputSchemaDefinition: DEFINITION,
   inputOptions?: OPTIONS,
-) {
+): ConfigurationSchemaType<DEFINITION, OPTIONS> {
   const { schemaDefinition, options } = preprocessConfigurationSchemaArguments(
     modelName,
     inputSchemaDefinition,
@@ -286,6 +316,11 @@ export function ConfigurationSchema<
   return schemaType
 }
 
-export function ConfigurationReference(schemaType: IAnyType) {
-  return types.union(types.reference(schemaType), schemaType)
+export function ConfigurationReference<
+  SCHEMATYPE extends AnyConfigurationSchemaType,
+>(schemaType: SCHEMATYPE) {
+  // we cast this to SCHEMATYPE, because the reference *should* behave just
+  // like the object it points to. It won't be undefined (this is a
+  // `reference`, not a `safeReference`)
+  return types.union(types.reference(schemaType), schemaType) as SCHEMATYPE
 }

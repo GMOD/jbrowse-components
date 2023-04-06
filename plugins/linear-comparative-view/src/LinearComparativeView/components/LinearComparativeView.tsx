@@ -140,7 +140,9 @@ export default observer(function (props: {
   const { model } = props
 
   const middle = model.tracks.some(({ displays }) =>
-    displays.some((d: AnyConfigurationModel) => getConf(d, 'middle')),
+    displays.some((d: { configuration: AnyConfigurationModel }) =>
+      getConf(d, 'middle'),
+    ),
   )
   return middle ? (
     <MiddleComparativeView {...props} />

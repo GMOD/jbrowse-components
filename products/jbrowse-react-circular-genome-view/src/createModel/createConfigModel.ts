@@ -1,14 +1,15 @@
 import {
+  AnyConfigurationSchemaType,
   ConfigurationSchema,
   readConfObject,
 } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import { getParent, IAnyType, types } from 'mobx-state-tree'
+import { getParent, types } from 'mobx-state-tree'
 
 export default function createConfigModel(
   pluginManager: PluginManager,
-  assemblyConfigSchemasType: IAnyType,
+  assemblyConfigSchemasType: AnyConfigurationSchemaType,
 ) {
   return types
     .model('Configuration', {

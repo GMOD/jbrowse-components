@@ -1,4 +1,4 @@
-import { getConf } from '@jbrowse/core/configuration'
+import { AnyConfigurationModel, getConf } from '@jbrowse/core/configuration'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -53,6 +53,7 @@ export default async function drawFeats(
     colorBy?: { type: string }
     height: number
     chainData?: ChainData
+    configuration: AnyConfigurationModel
   },
   ctx: CanvasRenderingContext2D,
 ) {
