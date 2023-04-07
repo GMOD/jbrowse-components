@@ -1127,7 +1127,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                     </div>
                   </div>
                   <p>
-                    what to display in a given mouseover
+                    text to display when the cursor hovers over a feature
                   </p>
                   <button
                     class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorPrimary MuiIconButton-sizeMedium css-1kuq5xv-MuiButtonBase-root-MuiIconButton-root"

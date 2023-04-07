@@ -12,16 +12,6 @@ function configSchemaFactory(pluginManager: PluginManager) {
       /**
        * #slot
        */
-      mouseover: {
-        type: 'string',
-        description: 'what to display in a given mouseover',
-        defaultValue: `jexl:get(feature,'name')`,
-
-        contextVariable: ['feature'],
-      },
-      /**
-       * #slot
-       */
       renderer: pluginManager.pluggableConfigSchemaType('renderer'),
     },
     {
