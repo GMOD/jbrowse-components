@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   types,
   isStateTreeNode,
@@ -36,22 +37,25 @@ export interface ConfigurationSchemaDefinition {
     | IAnyType
 }
 
-export interface ConfigurationSchemaOptions {
+export interface ConfigurationSchemaOptions<
+  BASE_SCHEMA extends AnyConfigurationSchemaType | undefined,
+  EXPLICIT_IDENTIFIER extends string | undefined,
+> {
   explicitlyTyped?: boolean
-  explicitIdentifier?: string
+  explicitIdentifier?: EXPLICIT_IDENTIFIER
   implicitIdentifier?: string | boolean
-  baseConfiguration?: AnyConfigurationSchemaType
+  baseConfiguration?: BASE_SCHEMA
 
-  actions?: (self: unknown) => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  views?: (self: unknown) => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  extend?: (self: unknown) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  actions?: (self: unknown) => any
+  views?: (self: unknown) => any
+  extend?: (self: unknown) => any
   preProcessSnapshot?: (snapshot: {}) => {}
 }
 
 function preprocessConfigurationSchemaArguments(
   modelName: string,
   inputSchemaDefinition: ConfigurationSchemaDefinition,
-  inputOptions: ConfigurationSchemaOptions = {},
+  inputOptions: ConfigurationSchemaOptions<any, any> = {},
 ) {
   if (typeof modelName !== 'string') {
     throw new Error(
@@ -82,10 +86,9 @@ function preprocessConfigurationSchemaArguments(
 
 function makeConfigurationSchemaModel<
   DEFINITION extends ConfigurationSchemaDefinition,
-  OPTIONS extends ConfigurationSchemaOptions,
+  OPTIONS extends ConfigurationSchemaOptions<any, any>,
 >(modelName: string, schemaDefinition: DEFINITION, options: OPTIONS) {
   // now assemble the MST model of the configuration schema
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const modelDefinition: Record<string, any> = {}
   let identifier
 
@@ -116,7 +119,6 @@ function makeConfigurationSchemaModel<
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const volatileConstants: Record<string, any> = {
     isJBrowseConfigurationSchema: true,
     jbrowseSchema: {
@@ -233,71 +235,56 @@ function makeConfigurationSchemaModel<
 
 export interface ConfigurationSchemaType<
   DEFINITION extends ConfigurationSchemaDefinition,
-  OPTIONS extends ConfigurationSchemaOptions,
+  OPTIONS extends ConfigurationSchemaOptions<any, any>,
 > extends ReturnType<typeof makeConfigurationSchemaModel<DEFINITION, OPTIONS>> {
   isJBrowseConfigurationSchema: boolean
   jbrowseSchemaDefinition: ConfigurationSchemaDefinition
-  jbrowseSchemaOptions: ConfigurationSchemaOptions
+  jbrowseSchemaOptions: ConfigurationSchemaOptions<any, any>
   type: string
   [key: string]: unknown
 }
 
-/** the possible names of configuration slots for a config schema or model */
-export type ConfigurationSlotName<CONFSCHEMA> =
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  CONFSCHEMA extends ConfigurationSchemaType<infer D, any>
-    ? keyof D & string
-    : // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    CONFSCHEMA extends Instance<ConfigurationSchemaType<infer D, any>>
-    ? keyof D & string
+/** the explicitIdentifier, if any, that was set in the options of a configuration schema */
+export type ConfigurationExplicitIdentifier<CONFSCHEMA> =
+  CONFSCHEMA extends ConfigurationSchemaType<
+    any,
+    ConfigurationSchemaOptions<any, infer ID extends string>
+  >
+    ? ID
+    : CONFSCHEMA extends Instance<
+        ConfigurationSchemaType<
+          any,
+          ConfigurationSchemaOptions<any, infer ID extends string>
+        >
+      >
+    ? ID
     : never
 
-//     /** the possible names of configuration slots for a config schema or model */
-// export type ConfigurationSlotName<SCHEMA_OR_MODEL_OR_REFERENCE> =
-// // eslint-disable-next-line @typescript-eslint/no-explicit-any
-// SCHEMA_OR_MODEL_OR_REFERENCE extends ConfigurationSchemaType<infer D, any> // it's a schema
-//   ? keyof D & string
-//   : SCHEMA_OR_MODEL_OR_REFERENCE extends Instance<
-//       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-//       ConfigurationSchemaType<infer D, any>
-//     > // it's a model
-//   ? keyof D & string
-//   : SCHEMA_OR_MODEL_OR_REFERENCE extends ConfigurationModelReference<
-//       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-//       TypeOfValue<ConfigurationSchemaType<infer D, any>>
-//     > // it's a reference
-//   ? keyof D & string
-//   : never
+/** the possible names of configuration slots for a config schema or model */
+export type ConfigurationSlotName<CONFSCHEMA> =
+  CONFSCHEMA extends ConfigurationSchemaType<infer D, any>
+    ? (keyof D & string) | ConfigurationExplicitIdentifier<CONFSCHEMA>
+    : CONFSCHEMA extends Instance<ConfigurationSchemaType<infer D, any>>
+    ? (keyof D & string) | ConfigurationExplicitIdentifier<CONFSCHEMA>
+    : never
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type AnyConfigurationSchemaType = ConfigurationSchemaType<any, any>
 export type AnyConfigurationModel = Instance<AnyConfigurationSchemaType>
 export type AnyConfigurationSlotType = ReturnType<typeof ConfigSlot>
 export type AnyConfigurationSlot = Instance<AnyConfigurationSlotType>
-
-// /** the reference returned by a call to `ConfigurationReference(schema)` */
-// export type ConfigurationModelReference<
-//   MODELTYPE extends AnyConfigurationModel,
-// > = Instance<ReturnType<typeof ConfigurationReference<TypeOfValue<MODELTYPE>>>>
-
-// /** either a configuration model itself, or a MST reference to it */
-// export type ConfigurationModelOrReference<
-//   MODELTYPE extends AnyConfigurationModel,
-// > = ConfigurationModelReference<MODELTYPE> | MODELTYPE
-
-// export type AnyConfigurationModelOrReference =
-//   ConfigurationModelOrReference<AnyConfigurationModel>
 
 export type ConfigurationModel<SCHEMA extends AnyConfigurationSchemaType> =
   Instance<SCHEMA>
 
 export function ConfigurationSchema<
   DEFINITION extends ConfigurationSchemaDefinition,
-  OPTIONS extends ConfigurationSchemaOptions,
+  OPTIONS extends ConfigurationSchemaOptions<BASE_SCHEMA, EXPLICIT_IDENTIFIER>,
+  BASE_SCHEMA extends AnyConfigurationSchemaType | undefined = undefined,
+  EXPLICIT_IDENTIFIER extends string | undefined = undefined,
 >(
   modelName: string,
   inputSchemaDefinition: DEFINITION,
-  inputOptions?: OPTIONS,
+  inputOptions?: ConfigurationSchemaOptions<BASE_SCHEMA, EXPLICIT_IDENTIFIER>,
 ): ConfigurationSchemaType<DEFINITION, OPTIONS> {
   const { schemaDefinition, options } = preprocessConfigurationSchemaArguments(
     modelName,
