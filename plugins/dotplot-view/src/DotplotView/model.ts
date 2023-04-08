@@ -548,9 +548,11 @@ export default function stateModelFactory(pm: PluginManager) {
           self,
           autorun(() => {
             const s = (s: unknown) => JSON.stringify(s)
-            const { showPanButtons } = self
+            const { showPanButtons, wheelMode, cursorMode } = self
             if (typeof localStorage !== 'undefined') {
               localStorage.setItem('dotplot-showPanbuttons', s(showPanButtons))
+              localStorage.setItem('dotplot-cursorMode', cursorMode)
+              localStorage.setItem('dotplot-wheelMode', wheelMode)
             }
           }),
         )

@@ -168,7 +168,7 @@ const DotplotViewInternal = observer(function ({
     function globalMouseMove(event: MouseEvent) {
       setMouseCurrClient([event.clientX, event.clientY])
 
-      if (mousecurrClient && mousedownClient && validPan) {
+      if (mousecurrClient && mousedownClient && validPan && !mouseupClient) {
         hview.scroll(-event.clientX + mousecurrClient[0])
         vview.scroll(event.clientY - mousecurrClient[1])
       }
@@ -182,6 +182,7 @@ const DotplotViewInternal = observer(function ({
     mousedownClient,
     cursorMode,
     ctrlKeyWasUsed,
+    mouseupClient,
     hview,
     vview,
   ])
@@ -189,10 +190,7 @@ const DotplotViewInternal = observer(function ({
   // detect a mouseup after a mousedown was submitted, autoremoves mouseup
   // once that single mouseup is set
   useEffect(() => {
-    let cleanup = () => {}
-
     function globalMouseUp(event: MouseEvent) {
-      setCtrlKeyWasUsed(false)
       if (Math.abs(xdistance) > 3 && Math.abs(ydistance) > 3 && validSelect) {
         setMouseUpClient([event.clientX, event.clientY])
       } else {
@@ -202,9 +200,9 @@ const DotplotViewInternal = observer(function ({
 
     if (mousedown && !mouseup) {
       window.addEventListener('mouseup', globalMouseUp, true)
-      cleanup = () => window.removeEventListener('mouseup', globalMouseUp, true)
+      return () => window.removeEventListener('mouseup', globalMouseUp, true)
     }
-    return cleanup
+    return () => {}
   }, [
     validSelect,
     mousedown,
