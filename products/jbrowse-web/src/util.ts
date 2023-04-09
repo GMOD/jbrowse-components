@@ -149,13 +149,11 @@ export function addRelativeUris(config: Config, base: URL) {
   }
 }
 
+type Root = { configuration?: Config }
+
 // raw readConf alternative for before conf is initialized
-export function readConf(
-  { configuration = {} }: { configuration?: Config },
-  attr: string,
-  def: string,
-) {
-  return configuration[attr] || def
+export function readConf({ configuration }: Root, attr: string, def: string) {
+  return configuration?.[attr] || def
 }
 
 export async function fetchPlugins() {
