@@ -1,13 +1,15 @@
 {
   "name": "@jbrowse/web",
   "version": "2.18.0",
+  "type": "module",
   "license": "Apache-2.0",
   "homepage": ".",
   "main": "build",
   "dir": "src",
   "scripts": {
-    "start": "node scripts/start.js",
-    "build": "node scripts/build.js",
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
     "postbuild": "node -e \"fs.writeFileSync('build/version.txt',JSON.parse(require('fs').readFileSync('package.json', 'utf8')).version)\"",
     "prepack": "yarn build"
   },
@@ -67,16 +69,8 @@
     "rxjs": "^7.0.0",
     "semver": "^7.3.5",
     "tss-react": "^4.4.1",
-    "use-query-params": "^2.0.0"
-  },
-  "browserslist": {
-    "production": [
-      "last 1 chrome version"
-    ],
-    "license": "Apache-2.0",
-    "development": [
-      "last 1 chrome version"
-    ]
+    "use-query-params": "^2.0.0",
+    "vite": "^6.0.0"
   },
   "private": true
 }

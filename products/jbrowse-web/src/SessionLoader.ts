@@ -258,7 +258,7 @@ const SessionLoader = types
     async fetchPlugins(config: { plugins: PluginDefinition[] }) {
       try {
         const pluginLoader = new PluginLoader(config.plugins, {
-          fetchESM: url => import(/* webpackIgnore:true */ url),
+          fetchESM: url => import(/* @vite-ignore */ url),
         })
         pluginLoader.installGlobalReExports(window)
         const runtimePlugins = await pluginLoader.load(window.location.href)
@@ -274,7 +274,7 @@ const SessionLoader = types
     async fetchSessionPlugins(snap: { sessionPlugins?: PluginDefinition[] }) {
       try {
         const pluginLoader = new PluginLoader(snap.sessionPlugins || [], {
-          fetchESM: url => import(/* webpackIgnore:true */ url),
+          fetchESM: url => import(/* @vite-ignore */ url),
         })
         pluginLoader.installGlobalReExports(window)
         const plugins = await pluginLoader.load(window.location.href)

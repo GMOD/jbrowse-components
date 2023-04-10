@@ -82,20 +82,32 @@ function promisifiedLoadScript(src: string) {
   })
 }
 
+function isModuleWorker() {
+  try {
+    importScripts('data:,')
+    return false
+  } catch (e) {}
+  return true
+}
+
 async function loadScript(scriptUrl: string) {
   if (!isInWebWorker()) {
     return promisifiedLoadScript(scriptUrl)
   }
 
   // @ts-expect-error
-  if (globalThis.importScripts) {
+  if (isModuleWorker) {
+    const ret = await import(/* @vite-ignore */ scriptUrl)
+    console.log({ ret })
+  } else if (globalThis?.importScripts) {
     // @ts-expect-error
     await globalThis.importScripts(scriptUrl)
     return
+  } else {
+    throw new Error(
+      'cannot figure out how to load external JS scripts in this environment',
+    )
   }
-  throw new Error(
-    'cannot figure out how to load external JS scripts in this environment',
-  )
 }
 
 export function isCJSPluginDefinition(
