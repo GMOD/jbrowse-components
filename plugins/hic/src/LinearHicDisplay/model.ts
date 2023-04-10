@@ -1,7 +1,7 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import { types, getEnv } from 'mobx-state-tree'
-import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
+import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 
 export default (configSchema: AnyConfigurationSchemaType) =>
   types

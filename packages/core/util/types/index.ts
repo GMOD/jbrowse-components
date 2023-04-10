@@ -7,7 +7,7 @@ import {
   IStateTreeNode,
   IType,
 } from 'mobx-state-tree'
-import { AnyConfigurationModel } from '../../configuration/configurationSchema'
+import { AnyConfigurationModel } from '../../configuration'
 
 import assemblyManager from '../../assemblyManager'
 import TextSearchManager from '../../TextSearch/TextSearchManager'

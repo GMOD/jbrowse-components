@@ -2,7 +2,7 @@ import { GenericFilehandle } from 'generic-filehandle'
 import { Observable } from 'rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { ConfigurationSchema } from '@jbrowse/core/configuration/configurationSchema'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 // setup for Cram Adapter Testing
 export function parseSmallFasta(text: string) {

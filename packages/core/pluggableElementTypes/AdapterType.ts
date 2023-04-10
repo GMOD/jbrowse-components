@@ -1,5 +1,5 @@
 import PluggableElementBase from './PluggableElementBase'
-import { AnyConfigurationSchemaType } from '../configuration/configurationSchema'
+import { AnyConfigurationSchemaType } from '../configuration'
 import { AnyAdapter } from '../data_adapters/BaseAdapter'
 
 export type AdapterMetadata = {

@@ -2,7 +2,7 @@ import { IAnyModelType } from 'mobx-state-tree'
 import PluggableElementBase from './PluggableElementBase'
 import { AnyReactComponentType } from '../util'
 import { getDefaultValue } from '../util/mst-reflection'
-import { AnyConfigurationSchemaType } from '../configuration/configurationSchema'
+import { AnyConfigurationSchemaType } from '../configuration'
 
 export default class DisplayType extends PluggableElementBase {
   stateModel: IAnyModelType

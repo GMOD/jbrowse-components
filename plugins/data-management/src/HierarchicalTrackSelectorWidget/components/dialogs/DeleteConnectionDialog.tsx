@@ -8,7 +8,7 @@ import {
   Button,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { AbstractSessionModel } from '@jbrowse/core/util'
 
 function DeleteConnectionDialog({

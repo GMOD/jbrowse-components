@@ -11,7 +11,7 @@ import PluginLoader, {
 import { fromUrlSafeB64 } from './util'
 import { readSessionFromDynamo } from './sessionSharing'
 import { openLocation } from '@jbrowse/core/util/io'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import shortid from 'shortid'
 
 type Config = SnapshotOut<AnyConfigurationModel>
