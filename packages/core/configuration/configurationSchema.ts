@@ -245,28 +245,21 @@ export interface ConfigurationSchemaType<
 }
 
 /** the explicitIdentifier, if any, that was set in the options of a configuration schema */
-export type ConfigurationExplicitIdentifier<CONFSCHEMA> =
-  CONFSCHEMA extends ConfigurationSchemaType<
+export type ConfigurationExplicitIdentifier<MODEL> = MODEL extends Instance<
+  ConfigurationSchemaType<
     any,
     ConfigurationSchemaOptions<any, infer ID extends string>
   >
-    ? ID
-    : CONFSCHEMA extends Instance<
-        ConfigurationSchemaType<
-          any,
-          ConfigurationSchemaOptions<any, infer ID extends string>
-        >
-      >
-    ? ID
-    : never
+>
+  ? ID
+  : never
 
 /** the possible names of configuration slots for a config schema or model */
-export type ConfigurationSlotName<CONFSCHEMA> =
-  CONFSCHEMA extends ConfigurationSchemaType<infer D, any>
-    ? (keyof D & string) | ConfigurationExplicitIdentifier<CONFSCHEMA>
-    : CONFSCHEMA extends Instance<ConfigurationSchemaType<infer D, any>>
-    ? (keyof D & string) | ConfigurationExplicitIdentifier<CONFSCHEMA>
-    : never
+export type ConfigurationSlotName<CONFSCHEMA> = CONFSCHEMA extends Instance<
+  ConfigurationSchemaType<infer D, any>
+>
+  ? (keyof D & string) | ConfigurationExplicitIdentifier<CONFSCHEMA>
+  : never
 
 export type AnyConfigurationSchemaType = ConfigurationSchemaType<any, any>
 export type AnyConfigurationModel = Instance<AnyConfigurationSchemaType>
