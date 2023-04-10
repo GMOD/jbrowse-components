@@ -81,9 +81,12 @@ export abstract class BaseAdapter {
     }
   }
 
-  /** @deprecated use `getConf(adapter, 'mySlotName')` instead */
+  /**
+   * Same as `readConfObject(this.config, arg)`.
+   * @deprecated Does not offer the same TS type checking as `readConfObject`, consider using that instead.
+   */
   getConf(arg: string | string[]) {
-    return readConfObject(this.config, arg as string)
+    return readConfObject(this.config, arg)
   }
 
   /**
