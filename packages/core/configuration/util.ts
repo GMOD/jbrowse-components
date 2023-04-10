@@ -57,7 +57,7 @@ export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
     if (!slot) {
       return undefined
       // if we want to be very strict about config slots, we could uncomment the below
-      // instead of returning undefine
+      // instead of returning undefined
       //
       // const modelType = getType(model)
       // const schemaType = model.configuration && getType(model.configuration)
@@ -127,43 +127,6 @@ export function getConf<CONFMODEL extends AnyConfigurationModel>(
   }
   throw new TypeError('cannot getConf on this model, it has no configuration')
 }
-
-// type ModelTypeOfPossibleReference<
-//   MODEL_OR_REFERENCE extends AnyConfigurationModelOrReference,
-// > = MODEL_OR_REFERENCE extends AnyConfigurationModel
-//   ? NonNullable<MODEL_OR_REFERENCE>
-//   : MODEL_OR_REFERENCE extends ConfigurationModelReference<infer MODEL>
-//   ? MODEL | undefined
-//   : never
-
-// /**
-//  * same as `getConf`, except returns undefined if the model or its config is undefined
-//  *
-//  * @param model - object containing a 'configuration' member
-//  * @param slotPaths - array of paths to read
-//  * @param args - extra arguments e.g. for a feature callback,
-//  *   will be sent to each of the slotNames
-//  */
-// export function maybeGetConf<
-//   CONFMODEL extends AnyConfigurationModelOrReference,
-// >(
-//   model?: { configuration?: CONFMODEL },
-//   slotPath?: Parameters<
-//     typeof readConfObject<ModelTypeOfPossibleReference<CONFMODEL>>
-//   >[1],
-//   args?: Parameters<
-//     typeof readConfObject<ModelTypeOfPossibleReference<CONFMODEL>>
-//   >[2],
-// ) {
-//   if (!model || !model.configuration) {
-//     return undefined
-//   }
-//   return readConfObject(
-//     model.configuration as ModelTypeOfPossibleReference<CONFMODEL>,
-//     slotPath,
-//     args,
-//   )
-// }
 
 /**
  * given a union of explicitly typed configuration schema types,
