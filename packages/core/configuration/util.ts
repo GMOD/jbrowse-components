@@ -12,17 +12,19 @@ import {
   isLateType,
 } from 'mobx-state-tree'
 
-import type {
-  AnyConfigurationModel,
-  AnyConfigurationSchemaType,
-  ConfigurationSlotName,
-} from './configurationSchema'
 import {
   getUnionSubTypes,
   getDefaultValue,
   getSubType,
   resolveLateType,
 } from '../util/mst-reflection'
+
+import {
+  AnyConfigurationModel,
+  AnyConfigurationSchemaType,
+  ConfigurationSlotName,
+  ConfigurationSchemaForModel,
+} from './types'
 
 /**
  * given a configuration model (an instance of a ConfigurationSchema),
@@ -35,7 +37,9 @@ import {
  */
 export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
   confObject: CONFMODEL,
-  slotPath?: ConfigurationSlotName<CONFMODEL> | string[],
+  slotPath?:
+    | ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>
+    | string[],
   args: Record<string, unknown> = {},
 ): any {
   if (!confObject) {
@@ -98,7 +102,7 @@ export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
     }
     return readConfObject(
       confObject,
-      slotName as ConfigurationSlotName<CONFMODEL>,
+      slotName as ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
       args,
     )
   }

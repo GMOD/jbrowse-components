@@ -5,7 +5,6 @@ import {
   isType,
   isLateType,
   getSnapshot,
-  Instance,
   IAnyType,
   SnapshotOut,
 } from 'mobx-state-tree'
@@ -14,6 +13,14 @@ import { ElementId } from '../util/types/mst'
 
 import ConfigSlot, { ConfigSlotDefinition } from './configurationSlot'
 import { isConfigurationSchemaType } from './util'
+import { AnyConfigurationSchemaType } from './types'
+
+export type {
+  AnyConfigurationSchemaType,
+  AnyConfigurationModel,
+  AnyConfigurationSlot,
+  AnyConfigurationSlotType,
+} from './types'
 
 function isEmptyObject(thing: unknown) {
   return (
@@ -243,44 +250,6 @@ export interface ConfigurationSchemaType<
   type: string
   [key: string]: unknown
 }
-
-/** the explicitIdentifier, if any, that was set in the options of a configuration schema */
-export type ConfigurationExplicitIdentifier<MODEL> = MODEL extends Instance<
-  ConfigurationSchemaType<
-    any,
-    ConfigurationSchemaOptions<any, infer ID extends string>
-  >
->
-  ? ID
-  : never
-
-// export type BaseConfigurationSchemaSlot<CONFSCHEMA> =
-//   CONFSCHEMA extends Instance<
-//     ConfigurationSchemaType<
-//       any,
-//       ConfigurationSchemaOptions<
-//         infer BASE extends AnyConfigurationSchemaType,
-//         any
-//       >
-//     >
-//   >
-//     ? ConfigurationSlotName<Instance<BASE>>
-//     : never
-
-/** the possible names of configuration slots for a config schema or model */
-export type ConfigurationSlotName<CONFSCHEMA> = CONFSCHEMA extends Instance<
-  ConfigurationSchemaType<infer D, any>
->
-  ? (keyof D & string) | ConfigurationExplicitIdentifier<CONFSCHEMA> // | BaseConfigurationSchemaSlot<CONFSCHEMA>
-  : never
-
-export type AnyConfigurationSchemaType = ConfigurationSchemaType<any, any>
-export type AnyConfigurationModel = Instance<AnyConfigurationSchemaType>
-export type AnyConfigurationSlotType = ReturnType<typeof ConfigSlot>
-export type AnyConfigurationSlot = Instance<AnyConfigurationSlotType>
-
-export type ConfigurationModel<SCHEMA extends AnyConfigurationSchemaType> =
-  Instance<SCHEMA>
 
 export function ConfigurationSchema<
   DEFINITION extends ConfigurationSchemaDefinition,
