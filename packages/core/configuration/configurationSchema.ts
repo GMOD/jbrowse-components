@@ -254,11 +254,24 @@ export type ConfigurationExplicitIdentifier<MODEL> = MODEL extends Instance<
   ? ID
   : never
 
+// export type BaseConfigurationSchemaSlot<CONFSCHEMA> =
+//   CONFSCHEMA extends Instance<
+//     ConfigurationSchemaType<
+//       any,
+//       ConfigurationSchemaOptions<
+//         infer BASE extends AnyConfigurationSchemaType,
+//         any
+//       >
+//     >
+//   >
+//     ? ConfigurationSlotName<Instance<BASE>>
+//     : never
+
 /** the possible names of configuration slots for a config schema or model */
 export type ConfigurationSlotName<CONFSCHEMA> = CONFSCHEMA extends Instance<
   ConfigurationSchemaType<infer D, any>
 >
-  ? (keyof D & string) | ConfigurationExplicitIdentifier<CONFSCHEMA>
+  ? (keyof D & string) | ConfigurationExplicitIdentifier<CONFSCHEMA> // | BaseConfigurationSchemaSlot<CONFSCHEMA>
   : never
 
 export type AnyConfigurationSchemaType = ConfigurationSchemaType<any, any>
