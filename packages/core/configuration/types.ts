@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { Instance } from 'mobx-state-tree'
+import type { IStateTreeNode, Instance } from 'mobx-state-tree'
 import type {
   ConfigurationSchemaType,
   ConfigurationSchemaOptions,
@@ -20,15 +20,16 @@ export type GetOptions<SCHEMA> = SCHEMA extends ConfigurationSchemaType<
 //   ? D
 //   : never
 
-export type GetBase<SCHEMA> =
-  GetOptions<SCHEMA> extends ConfigurationSchemaOptions<undefined, any>
-    ? undefined
-    : GetOptions<SCHEMA> extends ConfigurationSchemaOptions<
-        infer BASE extends AnyConfigurationSchemaType,
-        any
-      >
-    ? BASE
-    : never
+export type GetBase<SCHEMA> = SCHEMA extends undefined
+  ? never
+  : GetOptions<SCHEMA> extends ConfigurationSchemaOptions<undefined, any>
+  ? undefined
+  : GetOptions<SCHEMA> extends ConfigurationSchemaOptions<
+      infer BASE extends AnyConfigurationSchemaType,
+      any
+    >
+  ? BASE
+  : never
 
 export type GetExplicitIdentifier<SCHEMA> =
   GetOptions<SCHEMA> extends ConfigurationSchemaOptions<
@@ -38,17 +39,22 @@ export type GetExplicitIdentifier<SCHEMA> =
     ? EXPLICIT_IDENTIFIER
     : never
 
-export type ConfigurationSchemaForModel<MODEL> = MODEL extends Instance<
+export type ConfigurationSchemaForModel<MODEL> = MODEL extends IStateTreeNode<
   infer SCHEMA extends AnyConfigurationSchemaType
 >
   ? SCHEMA
   : never
 
-export type ConfigurationSlotName<SCHEMA> =
-  SCHEMA extends ConfigurationSchemaType<infer D, any>
-    ? (keyof D & string) | GetExplicitIdentifier<SCHEMA>
-    : // | ConfigurationSlotName<GetBase<SCHEMA>>
-      never
+export type ConfigurationSlotName<SCHEMA> = SCHEMA extends undefined
+  ? never
+  : SCHEMA extends ConfigurationSchemaType<infer D, any>
+  ?
+      | (keyof D & string)
+      | GetExplicitIdentifier<SCHEMA>
+      | (GetBase<SCHEMA> extends ConfigurationSchemaType<any, any>
+          ? ConfigurationSlotName<GetBase<SCHEMA>>
+          : never)
+  : never
 
 export type AnyConfigurationSchemaType = ConfigurationSchemaType<any, any>
 export type AnyConfigurationModel = Instance<AnyConfigurationSchemaType>

@@ -245,8 +245,8 @@ export interface ConfigurationSchemaType<
   OPTIONS extends ConfigurationSchemaOptions<any, any>,
 > extends ReturnType<typeof makeConfigurationSchemaModel<DEFINITION, OPTIONS>> {
   isJBrowseConfigurationSchema: boolean
-  jbrowseSchemaDefinition: ConfigurationSchemaDefinition
-  jbrowseSchemaOptions: ConfigurationSchemaOptions<any, any>
+  jbrowseSchemaDefinition: DEFINITION
+  jbrowseSchemaOptions: OPTIONS
   type: string
   [key: string]: unknown
 }
