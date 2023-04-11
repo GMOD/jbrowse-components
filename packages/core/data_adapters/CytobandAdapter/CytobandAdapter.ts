@@ -4,12 +4,13 @@ import { unzip } from '@gmod/bgzf-filehandle'
 import { SimpleFeature } from '../../util'
 import { openLocation } from '../../util/io'
 import { BaseAdapter } from '../BaseAdapter'
+import type configSchema from './configSchema'
 
 export function isGzip(buf: Buffer) {
   return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
 }
 
-export default class CytobandAdapter extends BaseAdapter {
+export default class CytobandAdapter extends BaseAdapter<typeof configSchema> {
   async getData() {
     const pm = this.pluginManager
     const loc = this.getConf('cytobandLocation')
@@ -36,4 +37,9 @@ export default class CytobandAdapter extends BaseAdapter {
   }
 
   freeResources(/* { region } */): void {}
+}
+
+/** type guard for CytobandAdapter */
+export function isCytobandAdapter(x: unknown): x is CytobandAdapter {
+  return x instanceof CytobandAdapter
 }

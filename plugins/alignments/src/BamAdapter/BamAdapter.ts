@@ -4,7 +4,7 @@ import {
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { Region } from '@jbrowse/core/util/types'
-import { bytesForRegions, updateStatus, Feature } from '@jbrowse/core/util'
+import { bytesForRegions, updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { toArray } from 'rxjs/operators'
@@ -12,19 +12,24 @@ import { toArray } from 'rxjs/operators'
 // locals
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
 import { firstValueFrom } from 'rxjs'
+import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type configSchema from './configSchema'
 
 interface Header {
   idToName: string[]
   nameToId: Record<string, number>
 }
 
-export default class BamAdapter extends BaseFeatureDataAdapter {
+export default class BamAdapter extends BaseFeatureDataAdapter<
+  typeof configSchema,
+  BamSlightlyLazyFeature
+> {
   private samHeader?: Header
 
   private setupP?: Promise<Header>
   private configureP?: Promise<{
     bam: BamFile
-    sequenceAdapter?: BaseFeatureDataAdapter
+    sequenceAdapter?: BaseFeatureDataAdapter<AnyConfigurationSchemaType>
   }>
 
   // derived classes may not use the same configuration so a custom
@@ -53,7 +58,8 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       const { dataAdapter } = await this.getSubAdapter(adapterConfig)
       return {
         bam,
-        sequenceAdapter: dataAdapter as BaseFeatureDataAdapter,
+        sequenceAdapter:
+          dataAdapter as BaseFeatureDataAdapter<AnyConfigurationSchemaType>,
       }
     } else {
       return { bam }
@@ -179,7 +185,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   ) {
     const { refName, start, end, originalRefName } = region
     const { signal, filterBy, statusCallback = () => {} } = opts || {}
-    return ObservableCreate<Feature>(async observer => {
+    return ObservableCreate<BamSlightlyLazyFeature>(async observer => {
       const { bam } = await this.configure()
       await this.setup(opts)
       statusCallback('Downloading alignments')

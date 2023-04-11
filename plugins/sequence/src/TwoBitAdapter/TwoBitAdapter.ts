@@ -8,8 +8,11 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import configSchema from './configSchema'
 
-export default class TwoBitAdapter extends BaseSequenceAdapter {
+export default class TwoBitAdapter extends BaseSequenceAdapter<
+  typeof configSchema
+> {
   private twobit: TwoBitFile
 
   // the chromSizesData can be used to speed up loading since TwoBit has to do

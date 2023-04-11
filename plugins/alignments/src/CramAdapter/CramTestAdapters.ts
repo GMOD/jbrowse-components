@@ -46,13 +46,16 @@ export class FetchableSmallFasta {
   }
 }
 
-export class SequenceAdapter extends BaseFeatureDataAdapter {
+const EmptyConfig = ConfigurationSchema('empty', {})
+export class SequenceAdapter extends BaseFeatureDataAdapter<
+  typeof EmptyConfig
+> {
   fasta: FetchableSmallFasta
 
   refNames: string[] = []
 
   constructor(filehandle: FileHandle) {
-    super(ConfigurationSchema('empty', {}).create())
+    super(EmptyConfig.create())
     this.fasta = new FetchableSmallFasta(filehandle)
   }
 

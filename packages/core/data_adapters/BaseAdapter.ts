@@ -35,6 +35,7 @@ export interface BaseArgs {
   limit?: number
   pageNumber?: number
 }
+
 // see
 // https://www.typescriptlang.org/docs/handbook/2/classes.html#abstract-construct-signatures
 // for why this is the abstract construct signature

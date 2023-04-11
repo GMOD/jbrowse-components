@@ -8,10 +8,18 @@ import { Region } from '@jbrowse/core/util/types'
 import { abortBreakPoint } from '@jbrowse/core/util'
 import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import { toArray } from 'rxjs/operators'
-import { readConfObject } from '@jbrowse/core/configuration'
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import {
+  AnyConfigurationSchemaType,
+  readConfObject,
+} from '@jbrowse/core/configuration'
+import type {
+  AnyDataAdapter,
+  BaseFeatureDataAdapter,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type HicAdapter from '../HicAdapter/HicAdapter'
+import { firstValueFrom } from 'rxjs'
 
 interface HicFeature {
   bin1: number
@@ -19,8 +27,16 @@ interface HicFeature {
   counts: number
 }
 
-interface HicDataAdapter extends BaseFeatureDataAdapter {
+export interface HicDataAdapter
+  extends BaseFeatureDataAdapter<AnyConfigurationSchemaType> {
   getResolution: (bp: number) => Promise<number>
+}
+
+/** type guard for HicDataAdapter interface */
+export function isHicDataAdapter(
+  adapter: AnyDataAdapter,
+): adapter is HicDataAdapter {
+  return 'getFeatures' in adapter && 'getResolution' in adapter
 }
 
 export interface RenderArgs extends ServerSideRenderArgs {
@@ -30,7 +46,7 @@ export interface RenderArgs extends ServerSideRenderArgs {
 export interface RenderArgsDeserialized
   extends ServerSideRenderArgsDeserialized {
   regions: Region[]
-  dataAdapter: HicDataAdapter
+  dataAdapter: HicAdapter
   bpPerPx: number
   highResolutionScaling: number
   resolution: number
@@ -67,9 +83,10 @@ export default class HicRenderer extends ServerSideRendererType {
       sessionId,
       adapterConfig,
     )
-    const res = await (dataAdapter as HicDataAdapter).getResolution(
-      bpPerPx / resolution,
-    )
+    if (!isHicDataAdapter(dataAdapter)) {
+      throw new Error('data adapter is not a HicDataAdapter')
+    }
+    const res = await dataAdapter.getResolution(bpPerPx / resolution)
 
     const Color = await import('color').then(f => f.default)
     const w = res / (bpPerPx * Math.sqrt(2))
@@ -142,15 +159,14 @@ export default class HicRenderer extends ServerSideRendererType {
       sessionId,
       adapterConfig,
     )
-    const features = await (dataAdapter as BaseFeatureDataAdapter)
-      .getFeatures(regions[0], args)
-      .pipe(toArray())
-      .toPromise()
+    const features = await firstValueFrom(
+      (dataAdapter as HicAdapter).getFeatures(regions[0], args).pipe(toArray()),
+    )
+
     // cast to any to avoid return-type conflict, because the
     // types of features returned by our getFeatures are quite
     // different from the base interface
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return features as any
+    return features
   }
 }
 

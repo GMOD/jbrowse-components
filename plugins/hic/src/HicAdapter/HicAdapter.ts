@@ -10,14 +10,15 @@ import HicStraw from 'hic-straw'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import configSchema from './configSchema'
 
-interface ContactRecord {
+export interface ContactRecord {
   bin1: number
   bin2: number
   counts: number
 }
 
-interface HicMetadata {
+export interface HicMetadata {
   chromosomes: {
     name: string
     length: number
@@ -60,7 +61,7 @@ export function openFilehandleWrapper(
   return new GenericFilehandleWrapper(openLocation(location, pluginManager))
 }
 
-interface HicParser {
+export interface HicParser {
   getContactRecords: (
     normalize: string,
     ref: Ref,
@@ -71,7 +72,10 @@ interface HicParser {
   getMetaData: () => Promise<HicMetadata>
 }
 
-export default class HicAdapter extends BaseFeatureDataAdapter {
+export default class HicAdapter extends BaseFeatureDataAdapter<
+  typeof configSchema,
+  ContactRecord
+> {
   private hic: HicParser
 
   public constructor(
@@ -138,7 +142,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
       })
       statusCallback('')
       observer.complete()
-    }, opts.signal) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }, opts.signal)
   }
 
   // don't do feature stats estimation, similar to bigwigadapter
