@@ -227,7 +227,10 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     }, signal)
   }
 
-  async estimateRegionsStats(regions: Region[], opts?: BaseOptions) {
+  async getMultiRegionFeatureDensityStats(
+    regions: Region[],
+    opts?: BaseOptions,
+  ) {
     const { bam } = await this.configure()
     // this is a method to avoid calling on htsget adapters
     // @ts-expect-error
@@ -236,7 +239,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       const fetchSizeLimit = this.getConf('fetchSizeLimit')
       return { bytes, fetchSizeLimit }
     } else {
-      return super.estimateRegionsStats(regions, opts)
+      return super.getMultiRegionFeatureDensityStats(regions, opts)
     }
   }
 

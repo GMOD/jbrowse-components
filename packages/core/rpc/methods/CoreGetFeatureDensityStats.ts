@@ -6,8 +6,8 @@ import { RemoteAbortSignal } from '../remoteAbortSignals'
 import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
 import { renameRegionsIfNeeded, Region } from '../../util'
 
-export default class CoreEstimateRegionStats extends RpcMethodType {
-  name = 'CoreEstimateRegionStats'
+export default class CoreGetFeatureDensityStats extends RpcMethodType {
+  name = 'CoreGetFeatureDensityStats'
 
   async serializeArguments(
     args: RenderArgs & {
@@ -44,6 +44,9 @@ export default class CoreEstimateRegionStats extends RpcMethodType {
     if (!isFeatureAdapter(dataAdapter)) {
       throw new Error('Adapter does not support retrieving features')
     }
-    return dataAdapter.estimateRegionsStats(regions, deserializedArgs)
+    return dataAdapter.getMultiRegionFeatureDensityStats(
+      regions,
+      deserializedArgs,
+    )
   }
 }

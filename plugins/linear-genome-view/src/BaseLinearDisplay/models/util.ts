@@ -1,4 +1,5 @@
-import { Stats } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { IAnyStateTreeNode, isAlive } from 'mobx-state-tree'
@@ -35,7 +36,12 @@ export function getId(id: string, index: number) {
   return `clip-${isJest ? id : 'jest'}-${index}`
 }
 
-export async function estimateRegionsStatsPre(self: IAnyStateTreeNode) {
+export async function getFeatureDensityStatsPre(
+  self: IAnyStateTreeNode & {
+    adapterConfig?: AnyConfigurationModel
+    setMessage: (arg: string) => void
+  },
+) {
   const view = getContainingView(self) as LinearGenomeViewModel
   const regions = view.staticBlocks.contentBlocks
 
@@ -48,7 +54,7 @@ export async function estimateRegionsStatsPre(self: IAnyStateTreeNode) {
   }
   const sessionId = getRpcSessionId(self)
 
-  return rpcManager.call(sessionId, 'CoreEstimateRegionStats', {
+  return rpcManager.call(sessionId, 'CoreGetFeatureDensityStats', {
     sessionId,
     regions,
     adapterConfig,
@@ -57,5 +63,5 @@ export async function estimateRegionsStatsPre(self: IAnyStateTreeNode) {
         self.setMessage(message)
       }
     },
-  }) as Promise<Stats>
+  }) as Promise<FeatureDensityStats>
 }

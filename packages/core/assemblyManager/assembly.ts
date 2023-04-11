@@ -5,6 +5,7 @@ import AbortablePromiseCache from 'abortable-promise-cache'
 // locals
 import { getConf, AnyConfigurationModel } from '../configuration'
 import {
+  BaseOptions,
   BaseRefNameAliasAdapter,
   RegionsAdapter,
 } from '../data_adapters/BaseAdapter'
@@ -111,12 +112,6 @@ function getAdapterId(adapterConf: unknown) {
 
 type RefNameAliases = Record<string, string>
 
-export interface BaseOptions {
-  signal?: AbortSignal
-  sessionId: string
-  statusCallback?: Function
-}
-
 interface CacheData {
   adapterConf: unknown
   self: Assembly
@@ -148,10 +143,12 @@ export default function assemblyFactory(
 ) {
   const adapterLoads = new AbortablePromiseCache<CacheData, RefNameMap>({
     cache: new QuickLRU({ maxSize: 1000 }),
+
+    // @ts-expect-error
     async fill(
       args: CacheData,
       signal?: AbortSignal,
-      statusCallback?: Function,
+      statusCallback?: (arg: string) => void,
     ) {
       const { adapterConf, self, options } = args
       return loadRefNameMap(

@@ -16,7 +16,7 @@ import {
   Feature,
   ReactRendering,
 } from '@jbrowse/core/util'
-import { Stats } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import { Region } from '@jbrowse/core/util/types'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
@@ -32,7 +32,7 @@ import { LinearGenomeViewModel, ExportSvgOptions } from '../../LinearGenomeView'
 import { Tooltip } from '../components/BaseLinearDisplay'
 import TooLargeMessage from '../components/TooLargeMessage'
 import BlockState, { renderBlockData } from './serverSideRenderedBlock'
-import { getId, getDisplayStr, estimateRegionsStatsPre } from './util'
+import { getId, getDisplayStr, getFeatureDensityStatsPre } from './util'
 
 type LGV = LinearGenomeViewModel
 
@@ -89,8 +89,10 @@ function stateModelFactory() {
       message: '',
       featureIdUnderMouse: undefined as undefined | string,
       contextMenuFeature: undefined as undefined | Feature,
-      estimatedRegionsStatsP: undefined as undefined | Promise<Stats>,
-      estimatedRegionsStats: undefined as undefined | Stats,
+      featureDensityStatsP: undefined as
+        | undefined
+        | Promise<FeatureDensityStats>,
+      featureDensityStats: undefined as undefined | FeatureDensityStats,
     }))
     .views(self => ({
       get height() {
@@ -215,7 +217,7 @@ function stateModelFactory() {
        * #getter
        */
       get currentBytesRequested() {
-        return self.estimatedRegionsStats?.bytes || 0
+        return self.featureDensityStats?.bytes || 0
       },
 
       /**
@@ -223,7 +225,7 @@ function stateModelFactory() {
        */
       get currentFeatureScreenDensity() {
         const view = getContainingView(self) as LGV
-        return (self.estimatedRegionsStats?.featureDensity || 0) * view.bpPerPx
+        return (self.featureDensityStats?.featureDensity || 0) * view.bpPerPx
       },
 
       /**
@@ -235,8 +237,8 @@ function stateModelFactory() {
       /**
        * #getter
        */
-      get estimatedStatsReady() {
-        return !!self.estimatedRegionsStats || !!self.userBpPerPxLimit
+      get featureDensityStatsReady() {
+        return !!self.featureDensityStats || !!self.userBpPerPxLimit
       },
 
       /**
@@ -245,7 +247,7 @@ function stateModelFactory() {
       get maxAllowableBytes() {
         return (
           self.userByteSizeLimit ||
-          self.estimatedRegionsStats?.fetchSizeLimit ||
+          self.featureDensityStats?.fetchSizeLimit ||
           (getConf(self, 'fetchSizeLimit') as number)
         )
       },
@@ -288,37 +290,37 @@ function stateModelFactory() {
       /**
        * #action
        */
-      async estimateRegionsStats() {
-        if (!self.estimatedRegionsStatsP) {
-          self.estimatedRegionsStatsP = estimateRegionsStatsPre(self).catch(
+      async getFeatureDensityStats() {
+        if (!self.featureDensityStatsP) {
+          self.featureDensityStatsP = getFeatureDensityStatsPre(self).catch(
             e => {
-              this.setRegionsStatsP(undefined)
+              this.setFeatureDensityStatsP(undefined)
               throw e
             },
           )
         }
-        return self.estimatedRegionsStatsP
+        return self.featureDensityStatsP
       },
 
       /**
        * #action
        */
-      setRegionsStatsP(arg: any) {
-        self.estimatedRegionsStatsP = arg
+      setFeatureDensityStatsP(arg: any) {
+        self.featureDensityStatsP = arg
       },
 
       /**
        * #action
        */
-      setRegionsStats(estimatedRegionsStats?: Stats) {
-        self.estimatedRegionsStats = estimatedRegionsStats
+      setFeatureDensityStats(featureDensityStats?: FeatureDensityStats) {
+        self.featureDensityStats = featureDensityStats
       },
       /**
        * #action
        */
-      clearRegionsStats() {
-        self.estimatedRegionsStatsP = undefined
-        self.estimatedRegionsStats = undefined
+      clearFeatureDensityStats() {
+        self.featureDensityStatsP = undefined
+        self.featureDensityStats = undefined
       },
       /**
        * #action
@@ -347,7 +349,7 @@ function stateModelFactory() {
       /**
        * #action
        */
-      updateStatsLimit(stats?: Stats) {
+      setFeatureDensityStatsLimit(stats?: FeatureDensityStats) {
         const view = getContainingView(self) as LGV
         if (stats?.bytes) {
           self.userByteSizeLimit = stats.bytes
@@ -406,13 +408,12 @@ function stateModelFactory() {
        * #action
        */
       clearFeatureSelection() {
-        const session = getSession(self)
-        session.clearSelection()
+        getSession(self).clearSelection()
       },
       /**
        * #action
        */
-      setFeatureIdUnderMouse(feature: string | undefined) {
+      setFeatureIdUnderMouse(feature?: string) {
         self.featureIdUnderMouse = feature
       },
       /**
@@ -434,11 +435,15 @@ function stateModelFactory() {
        * region is too large if:
        * - stats are ready
        * - region is greater than 20kb (don't warn when zoomed in less than that)
-       * - and bytes is greater than max allowed bytes or density greater than max density
+       * - and bytes is greater than max allowed bytes or density greater than max
+       *   density
        */
       get regionTooLarge() {
         const view = getContainingView(self) as LGV
-        if (!self.estimatedStatsReady || view.dynamicBlocks.totalBp < 20_000) {
+        if (
+          !self.featureDensityStatsReady ||
+          view.dynamicBlocks.totalBp < 20_000
+        ) {
           return false
         }
         return (
@@ -481,10 +486,10 @@ function stateModelFactory() {
           }
 
           try {
-            const estimatedRegionsStats = await self.estimateRegionsStats()
+            const featureDensityStats = await self.getFeatureDensityStats()
 
             if (isAlive(self)) {
-              self.setRegionsStats(estimatedRegionsStats)
+              self.setFeatureDensityStats(featureDensityStats)
               superReload()
             }
           } catch (e) {
@@ -498,7 +503,7 @@ function stateModelFactory() {
       afterAttach() {
         // this autorun performs stats estimation
         //
-        // the chain of events calls estimateRegionsStats against the data
+        // the chain of events calls getFeatureDensityStats against the data
         // adapter which by default uses featureDensity, but can also respond
         // with a byte size estimate and fetch size limit (data adapter can
         // define what is too much data)
@@ -519,7 +524,7 @@ function stateModelFactory() {
 
               // don't re-estimate featureDensity even if zoom level changes,
               // jbrowse1-style assume it's sort of representative
-              if (self.estimatedRegionsStats?.featureDensity !== undefined) {
+              if (self.featureDensityStats?.featureDensity !== undefined) {
                 self.setCurrBpPerPx(view.bpPerPx)
                 return
               }
@@ -529,11 +534,11 @@ function stateModelFactory() {
                 return
               }
 
-              self.clearRegionsStats()
+              self.clearFeatureDensityStats()
               self.setCurrBpPerPx(view.bpPerPx)
-              const estimatedRegionsStats = await self.estimateRegionsStats()
+              const featureDensityStats = await self.getFeatureDensityStats()
               if (isAlive(self)) {
-                self.setRegionsStats(estimatedRegionsStats)
+                self.setFeatureDensityStats(featureDensityStats)
               }
             } catch (e) {
               if (!isAbortException(e) && isAlive(self)) {
@@ -600,7 +605,7 @@ function stateModelFactory() {
         return {
           ...getParentRenderProps(self),
           notReady:
-            self.currBpPerPx !== view.bpPerPx || !self.estimatedRegionsStats,
+            self.currBpPerPx !== view.bpPerPx || !self.featureDensityStatsReady,
           rpcDriverName: self.rpcDriverName,
           displayModel: self,
           onFeatureClick(_: unknown, featureId?: string) {

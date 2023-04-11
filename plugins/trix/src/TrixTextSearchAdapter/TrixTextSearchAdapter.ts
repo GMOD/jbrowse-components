@@ -1,8 +1,8 @@
 import Trix from '@gmod/trix'
 import {
   BaseTextSearchAdapter,
-  BaseArgs,
   BaseAdapter,
+  BaseTextSearchArgs,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
@@ -67,7 +67,7 @@ export default class TrixTextSearchAdapter
    * @param args - search options/arguments include: search query
    * limit of results to return, searchType...prefix | full | exact", etc.
    */
-  async searchIndex(args: BaseArgs) {
+  async searchIndex(args: BaseTextSearchArgs) {
     const query = args.queryString.toLowerCase()
     const strs = query.split(' ')
     const results = await this.trixJs.search(query)
@@ -109,12 +109,11 @@ export default class TrixTextSearchAdapter
         })
       })
 
-    if (args.searchType === 'exact') {
-      return formatted.filter(
-        res => res.getLabel().toLowerCase() === args.queryString.toLowerCase(),
-      )
-    }
-    return formatted
+    return args.searchType === 'exact'
+      ? formatted.filter(
+          r => r.getLabel().toLowerCase() === args.queryString.toLowerCase(),
+        )
+      : formatted
   }
 
   freeResources() {}

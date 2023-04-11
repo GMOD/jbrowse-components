@@ -253,7 +253,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
 
                 if (
                   !view.initialized ||
-                  !self.estimatedStatsReady ||
+                  !self.featureDensityStatsReady ||
                   self.regionTooLarge
                 ) {
                   return

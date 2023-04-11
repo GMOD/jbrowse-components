@@ -36,7 +36,7 @@ describe('adapter can fetch features from volvox.bw', () => {
   })
   it('get region stats', async () => {
     expect(
-      await adapter.getRegionStats({
+      await adapter.getRegionQuantitativeStats({
         refName: 'ctgA',
         start: 10000,
         end: 40000,
@@ -47,14 +47,19 @@ describe('adapter can fetch features from volvox.bw', () => {
 
   it('get local stats', async () => {
     expect(
-      await adapter.getMultiRegionStats([
+      await adapter.getMultiRegionQuantitativeStats([
         {
           refName: 'ctgA',
           start: 10000,
           end: 39999,
           assemblyName: 'volvox',
         },
-        { refName: 'ctgB', start: 0, end: 99, assemblyName: 'volvox' },
+        {
+          refName: 'ctgB',
+          start: 0,
+          end: 99,
+          assemblyName: 'volvox',
+        },
       ]),
     ).toMatchSnapshot()
   })
