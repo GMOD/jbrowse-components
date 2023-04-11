@@ -26,10 +26,12 @@ let adapterCache: Record<string, AdapterCacheEntry> = {}
  *   used for reference counting
  * @param adapterConfigSnapshot - plain-JS configuration snapshot for the adapter
  */
-export async function getAdapter(
+export async function getAdapter<
+  CONF_SCHEMA extends AnyConfigurationSchemaType,
+>(
   pluginManager: PluginManager,
   sessionId: string,
-  adapterConfigSnapshot: SnapshotIn<AnyConfigurationSchemaType>,
+  adapterConfigSnapshot: SnapshotIn<CONF_SCHEMA>,
 ) {
   // cache the adapter object
   const cacheKey = adapterConfigCacheKey(adapterConfigSnapshot)

@@ -1,15 +1,14 @@
 import { Observable, firstValueFrom, merge } from 'rxjs'
 import { toArray } from 'rxjs/operators'
-import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
+import { isStateTreeNode, getSnapshot, Instance } from 'mobx-state-tree'
 
 // locals
 import { ObservableCreate } from '../util/rxjs'
-import { checkAbortSignal, sum, max, min } from '../util'
-import { Feature } from '../util/simpleFeature'
+import { checkAbortSignal, sum, max, min, Feature } from '../util'
 import {
   readConfObject,
   AnyConfigurationModel,
-  ConfigurationSchema,
+  AnyConfigurationSchemaType,
 } from '../configuration'
 import { getSubAdapterType } from './dataAdapterCache'
 import { AugmentedRegion as Region, NoAssemblyRegion } from '../util/types'
@@ -48,26 +47,26 @@ export interface AnyAdapter {
 }
 
 export type AnyDataAdapter =
-  | BaseAdapter
-  | BaseFeatureDataAdapter
-  | BaseRefNameAliasAdapter
-  | BaseTextSearchAdapter
-  | RegionsAdapter
-  | BaseSequenceAdapter
+  | BaseAdapter<AnyConfigurationSchemaType>
+  | BaseFeatureDataAdapter<AnyConfigurationSchemaType, Feature>
+  | BaseRefNameAliasAdapter<AnyConfigurationSchemaType>
+  | BaseTextSearchAdapter<AnyConfigurationSchemaType>
+  | RegionsAdapter<AnyConfigurationSchemaType>
+  | BaseSequenceAdapter<AnyConfigurationSchemaType>
 
-export interface SequenceAdapter
-  extends BaseFeatureDataAdapter,
-    RegionsAdapter {}
+export interface SequenceAdapter<CONF_SCHEMA extends AnyConfigurationSchemaType>
+  extends BaseFeatureDataAdapter<CONF_SCHEMA, Feature>,
+    RegionsAdapter<CONF_SCHEMA> {}
 
-const EmptyConfig = ConfigurationSchema('empty', {})
-
-export abstract class BaseAdapter {
+export abstract class BaseAdapter<
+  CONF_SCHEMA extends AnyConfigurationSchemaType,
+> {
   public id: string
 
   static capabilities = [] as string[]
 
   constructor(
-    public config: AnyConfigurationModel = EmptyConfig.create(),
+    public config: Instance<CONF_SCHEMA>,
     public getSubAdapter?: getSubAdapterType,
     public pluginManager?: PluginManager,
   ) {
@@ -82,11 +81,12 @@ export abstract class BaseAdapter {
   }
 
   /**
-   * Same as `readConfObject(this.config, arg)`.
-   * @deprecated Does not offer the same TS type checking as `readConfObject`, consider using that instead.
+   * Same as `readConfObject(this.config, slotName)`.
    */
-  getConf(arg: string | string[]) {
-    return readConfObject(this.config, arg)
+  getConf(
+    slotName: Parameters<typeof readConfObject<Instance<CONF_SCHEMA>>>[1],
+  ) {
+    return readConfObject<Instance<CONF_SCHEMA>>(this.config, slotName)
   }
 
   /**
@@ -107,7 +107,10 @@ export interface Stats {
  * Base class for feature adapters to extend. Defines some methods that
  * subclasses must implement.
  */
-export abstract class BaseFeatureDataAdapter extends BaseAdapter {
+export abstract class BaseFeatureDataAdapter<
+  CONF_SCHEMA extends AnyConfigurationSchemaType,
+  FEATURE_TYPE extends Feature = Feature,
+> extends BaseAdapter<CONF_SCHEMA> {
   /**
    * Get all reference sequence names used in the data source
    *
@@ -132,7 +135,7 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
   public abstract getFeatures(
     region: Region,
     opts?: BaseOptions,
-  ): Observable<Feature>
+  ): Observable<FEATURE_TYPE>
   // public abstract getFeatures(
   //   region: Region,
   //   opts: BaseOptions,
@@ -170,7 +173,7 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
    * sequence, and then gets the features in the region if it does.
    */
   public getFeaturesInRegion(region: Region, opts: BaseOptions = {}) {
-    return ObservableCreate<Feature>(async observer => {
+    return ObservableCreate<FEATURE_TYPE>(async observer => {
       const hasData = await this.hasDataForRefName(region.refName, opts)
       checkAbortSignal(opts.signal)
       if (!hasData) {
@@ -301,13 +304,16 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
   }
 }
 
-export interface RegionsAdapter extends BaseAdapter {
+export interface RegionsAdapter<CONF_SCHEMA extends AnyConfigurationSchemaType>
+  extends BaseAdapter<CONF_SCHEMA> {
   getRegions(opts: BaseOptions): Promise<NoAssemblyRegion[]>
 }
 
-export abstract class BaseSequenceAdapter
-  extends BaseFeatureDataAdapter
-  implements RegionsAdapter
+export abstract class BaseSequenceAdapter<
+    CONF_SCHEMA extends AnyConfigurationSchemaType,
+  >
+  extends BaseFeatureDataAdapter<CONF_SCHEMA, Feature>
+  implements RegionsAdapter<CONF_SCHEMA>
 {
   async estimateRegionsStats() {
     return { featureDensity: 0 }
@@ -318,19 +324,19 @@ export abstract class BaseSequenceAdapter
 
 export function isSequenceAdapter(
   thing: AnyDataAdapter,
-): thing is BaseSequenceAdapter {
+): thing is BaseSequenceAdapter<AnyConfigurationSchemaType> {
   return 'getRegions' in thing && 'getFeatures' in thing
 }
 
 export function isRegionsAdapter(
   thing: AnyDataAdapter,
-): thing is RegionsAdapter {
+): thing is RegionsAdapter<AnyConfigurationSchemaType> {
   return 'getRegions' in thing
 }
 
 export function isFeatureAdapter(
   thing: AnyDataAdapter,
-): thing is BaseFeatureDataAdapter {
+): thing is BaseFeatureDataAdapter<AnyConfigurationSchemaType, Feature> {
   return 'getFeatures' in thing
 }
 
@@ -338,19 +344,23 @@ export interface Alias {
   refName: string
   aliases: string[]
 }
-export interface BaseRefNameAliasAdapter extends BaseAdapter {
+export interface BaseRefNameAliasAdapter<
+  CONF_SCHEMA extends AnyConfigurationSchemaType,
+> extends BaseAdapter<CONF_SCHEMA> {
   getRefNameAliases(opts: BaseOptions): Promise<Alias[]>
 }
 export function isRefNameAliasAdapter(
   thing: object,
-): thing is BaseRefNameAliasAdapter {
+): thing is BaseRefNameAliasAdapter<AnyConfigurationSchemaType> {
   return 'getRefNameAliases' in thing
 }
-export interface BaseTextSearchAdapter extends BaseAdapter {
+export interface BaseTextSearchAdapter<
+  CONF_SCHEMA extends AnyConfigurationSchemaType,
+> extends BaseAdapter<CONF_SCHEMA> {
   searchIndex(args: BaseArgs): Promise<BaseResult[]>
 }
 export function isTextSearchAdapter(
   thing: AnyDataAdapter,
-): thing is BaseTextSearchAdapter {
+): thing is BaseTextSearchAdapter<AnyConfigurationSchemaType> {
   return 'searchIndex' in thing
 }

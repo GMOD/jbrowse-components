@@ -11,6 +11,8 @@ import {
 import PluginManager from '../PluginManager'
 import { when, Region, Feature } from '../util'
 import QuickLRU from '../util/QuickLRU'
+import { ConfigurationSchemaForModel } from '../configuration/types'
+import CytobandAdapter from '../data_adapters/CytobandAdapter/CytobandAdapter'
 
 const refNameRegex = new RegExp(
   '[0-9A-Za-z!#$%&+./:;?@^_|~-][0-9A-Za-z!#$%&*+./:;=?@^_|~-]*',
@@ -397,34 +399,42 @@ export default function assemblyFactory(
     }))
 }
 
-async function getRefNameAliases(
-  config: AnyConfigurationModel,
+async function getRefNameAliases<CONF_MODEL extends AnyConfigurationModel>(
+  config: CONF_MODEL,
   pm: PluginManager,
   signal?: AbortSignal,
 ) {
   const type = pm.getAdapterType(config.type)
   const CLASS = await type.getAdapterClass()
-  const adapter = new CLASS(config, undefined, pm) as BaseRefNameAliasAdapter
+  const adapter = new CLASS(config, undefined, pm) as BaseRefNameAliasAdapter<
+    ConfigurationSchemaForModel<CONF_MODEL>
+  >
   return adapter.getRefNameAliases({ signal })
 }
 
-async function getCytobands(config: AnyConfigurationModel, pm: PluginManager) {
+async function getCytobands<CONF_MODEL extends AnyConfigurationModel>(
+  config: CONF_MODEL,
+  pm: PluginManager,
+) {
   const type = pm.getAdapterType(config.type)
   const CLASS = await type.getAdapterClass()
   const adapter = new CLASS(config, undefined, pm)
-
-  // @ts-expect-error
+  if (!(adapter instanceof CytobandAdapter)) {
+    throw new Error('not a cytoband adapter')
+  }
   return adapter.getData()
 }
 
-async function getAssemblyRegions(
-  config: AnyConfigurationModel,
+async function getAssemblyRegions<CONF_MODEL extends AnyConfigurationModel>(
+  config: CONF_MODEL,
   pm: PluginManager,
   signal?: AbortSignal,
 ) {
   const type = pm.getAdapterType(config.type)
   const CLASS = await type.getAdapterClass()
-  const adapter = new CLASS(config, undefined, pm) as RegionsAdapter
+  const adapter = new CLASS(config, undefined, pm) as RegionsAdapter<
+    ConfigurationSchemaForModel<CONF_MODEL>
+  >
   return adapter.getRegions({ signal })
 }
 
