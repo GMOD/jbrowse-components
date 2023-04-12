@@ -21,6 +21,7 @@ import {
   getContainingView,
   Feature,
   Region,
+  AbstractTrackModel,
 } from '@jbrowse/core/util'
 import { getConf } from '@jbrowse/core/configuration'
 
@@ -60,7 +61,7 @@ export default observer(function SaveTrackDataDlg({
   model,
   handleClose,
 }: {
-  model: IAnyStateTreeNode
+  model: AbstractTrackModel
   handleClose: () => void
 }) {
   const { classes } = useStyles()
