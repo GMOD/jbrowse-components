@@ -167,7 +167,7 @@ export default function assemblyFactory(
   return types
     .model({
       /**
-       * #propert
+       * #property
        */
       configuration: types.safeReference(assemblyConfigType),
     })
