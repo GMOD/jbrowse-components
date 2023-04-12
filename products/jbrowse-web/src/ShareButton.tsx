@@ -267,7 +267,7 @@ const ShareDialog = observer(function ({
         <DialogActions>
           <Button
             onClick={() => {
-              copy(shortUrl || longUrl.toString())
+              copy(shortUrl || longUrl)
               session.notify('Copied to clipboard', 'success')
             }}
             color="primary"
