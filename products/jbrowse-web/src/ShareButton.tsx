@@ -14,6 +14,7 @@ import {
   RadioGroup,
   TextField,
   Typography,
+  Link,
 } from '@mui/material'
 import copy from 'copy-to-clipboard'
 
@@ -147,6 +148,24 @@ function InfoDialog(props: { open: boolean; onClose: Function }) {
     </Dialog>
   )
 }
+function LinkField({ url }: { url: string }) {
+  return (
+    <>
+      <TextField
+        label="URL"
+        value={url}
+        InputProps={{ readOnly: true }}
+        variant="filled"
+        style={{ width: '100%' }}
+        onClick={event => {
+          const target = event.target as HTMLTextAreaElement
+          target.select()
+        }}
+      />
+      <Link href={url}>Right click to bookmark</Link>
+    </>
+  )
+}
 
 const ShareDialog = observer(function ({
   handleClose,
@@ -239,34 +258,10 @@ const ShareDialog = observer(function ({
             ) : loading ? (
               <Typography>Generating short URL...</Typography>
             ) : (
-              <TextField
-                label="URL"
-                value={shortUrl}
-                InputProps={{
-                  readOnly: true,
-                }}
-                variant="filled"
-                style={{ width: '100%' }}
-                onClick={event => {
-                  const target = event.target as HTMLTextAreaElement
-                  target.select()
-                }}
-              />
+              <LinkField url={shortUrl} />
             )
           ) : (
-            <TextField
-              label="URL"
-              value={longUrl}
-              InputProps={{
-                readOnly: true,
-              }}
-              variant="filled"
-              style={{ width: '100%' }}
-              onClick={event => {
-                const target = event.target as HTMLTextAreaElement
-                target.select()
-              }}
-            />
+            <LinkField url={longUrl} />
           )}
         </DialogContent>
         <DialogActions>
