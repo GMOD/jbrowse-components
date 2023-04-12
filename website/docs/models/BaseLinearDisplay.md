@@ -288,11 +288,11 @@ setFeatureDensityStatsP: (arg: any) => void
 setFeatureDensityStats: (featureDensityStats?: FeatureDensityStats) => void
 ```
 
-#### action: clearRegionsStats
+#### action: clearFeatureDensityStats
 
 ```js
 // type signature
-clearRegionsStats: () => void
+clearFeatureDensityStats: () => void
 ```
 
 #### action: setHeight

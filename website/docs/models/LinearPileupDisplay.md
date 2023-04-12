@@ -134,18 +134,18 @@ filterBy: types.optional(FilterModel, {})
 
 ### LinearPileupDisplay - Getters
 
-#### getter: maxHeight
-
-```js
-// type
-any
-```
-
 #### getter: rendererConfig
 
 ```js
 // type
 { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>
+```
+
+#### getter: maxHeight
+
+```js
+// type
+any
 ```
 
 #### getter: featureHeightSetting
@@ -312,7 +312,7 @@ toggleMismatchAlpha: () => void
 
 ```js
 // type signature
-setConfig: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
+setConfig: (conf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
 ```
 
 #### action: setSortedBy
