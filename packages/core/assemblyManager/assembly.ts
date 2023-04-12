@@ -64,7 +64,7 @@ async function loadRefNameMap(
   })
 
   const refNames = (await assembly.rpcManager.call(
-    sessionId,
+    sessionId || 'assemblyRpc',
     'CoreGetRefNames',
     {
       adapterConfig,
