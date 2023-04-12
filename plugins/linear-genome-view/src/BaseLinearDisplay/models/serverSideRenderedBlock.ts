@@ -63,19 +63,21 @@ const blockState = types
       },
       afterAttach() {
         const display = getContainingDisplay(self)
-        makeAbortableReaction(
-          self as any,
-          renderBlockData,
-          renderBlockEffect, // reaction doesn't expect async here
-          {
-            name: `${display.id}/${assembleLocString(self.region)} rendering`,
-            delay: display.renderDelay,
-            fireImmediately: true,
-          },
-          this.setLoading,
-          this.setRendered,
-          this.setError,
-        )
+        setTimeout(() => {
+          makeAbortableReaction(
+            self as any,
+            renderBlockData,
+            renderBlockEffect, // reaction doesn't expect async here
+            {
+              name: `${display.id}/${assembleLocString(self.region)} rendering`,
+              delay: display.renderDelay,
+              fireImmediately: true,
+            },
+            this.setLoading,
+            this.setRendered,
+            this.setError,
+          )
+        }, display.renderDelay)
       },
       setStatus(message: string) {
         self.status = message
