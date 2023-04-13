@@ -234,9 +234,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
-         * show the "gridlines" in the track area
+         * highlighted areas
          */
-        highlights: types.array(MUIRegion),
+        highlight: types.array(MUIRegion),
       }),
     )
     .volatile(() => ({
@@ -536,13 +536,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       clearHighlights() {
-        self.highlights = cast([])
+        self.highlight = cast([])
       },
       /**
        * #action
        */
-      setHighlights(regions: Region[]) {
-        self.highlights = cast(regions)
+      setHighlight(regions: Region[]) {
+        self.highlight = cast(regions)
       },
       /**
        * #action
