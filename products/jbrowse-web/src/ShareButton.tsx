@@ -162,7 +162,7 @@ function LinkField({ url }: { url: string }) {
           target.select()
         }}
       />
-      <Link href={url}>Right click to bookmark</Link>
+      <Link href={url}>Link for bookmarking</Link>
     </>
   )
 }
