@@ -657,8 +657,11 @@ export function FeatureDetails(props: {
 }
 
 export default observer(function ({ model }: BaseInputProps) {
-  const { featureData } = model
+  const { error, featureData } = model
 
+  if (error) {
+    return <ErrorMessage error={error} />
+  }
   if (!featureData) {
     return null
   }

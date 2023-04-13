@@ -175,9 +175,12 @@ export async function doSetupForImportForm(val?: unknown) {
   )
   const input = (await findByPlaceholderText(
     'Search for location',
+    {},
+    { timeout: 10000 },
   )) as HTMLInputElement
 
-  // this will be the input that is obtained after opening the LGV from the import form
+  // this will be the input that is obtained after opening the LGV from the
+  // import form
   const getInputValue = () =>
     (getByPlaceholderText('Search for location') as HTMLInputElement).value
 
