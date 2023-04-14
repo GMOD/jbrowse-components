@@ -109,29 +109,30 @@ export default async function generateCoverageBins(
     }
 
     if (colorBy?.type === 'modifications') {
-      const seq = feature.get('seq') as string
+      const seq = feature.get('seq') as string | undefined
       const mm = (getTagAlt(feature, 'MM', 'Mm') as string) || ''
       const ops = parseCigar(feature.get('CIGAR'))
       const fend = feature.get('end')
-
-      getModificationPositions(mm, seq, fstrand).forEach(
-        ({ type, positions }) => {
-          const mod = `mod_${type}`
-          for (const pos of getNextRefPos(ops, positions)) {
-            const epos = pos + fstart - region.start
-            if (epos >= 0 && epos < bins.length && pos + fstart < fend) {
-              const bin = bins[epos]
-              if (bin) {
-                inc(bin, fstrand, 'cov', mod)
-              } else {
-                console.warn(
-                  'Undefined position in modifications snpcoverage encountered',
-                )
+      if (seq) {
+        getModificationPositions(mm, seq, fstrand).forEach(
+          ({ type, positions }) => {
+            const mod = `mod_${type}`
+            for (const pos of getNextRefPos(ops, positions)) {
+              const epos = pos + fstart - region.start
+              if (epos >= 0 && epos < bins.length && pos + fstart < fend) {
+                const bin = bins[epos]
+                if (bin) {
+                  inc(bin, fstrand, 'cov', mod)
+                } else {
+                  console.warn(
+                    'Undefined position in modifications snpcoverage encountered',
+                  )
+                }
               }
             }
-          }
-        },
-      )
+          },
+        )
+      }
     }
 
     // methylation based coloring takes into account both reference
@@ -142,49 +143,51 @@ export default async function generateCoverageBins(
           'no region sequence detected, need sequenceAdapter configuration',
         )
       }
-      const seq = feature.get('seq')
+      const seq = feature.get('seq') as string | undefined
       const mm = getTagAlt(feature, 'MM', 'Mm') || ''
       const methBins = new Array(region.end - region.start).fill(0)
       const ops = parseCigar(feature.get('CIGAR'))
 
-      getModificationPositions(mm, seq, fstrand).forEach(
-        ({ type, positions }) => {
-          // we are processing methylation
-          if (type === 'm') {
-            for (const pos of getNextRefPos(ops, positions)) {
-              const epos = pos + fstart - region.start
-              if (epos >= 0 && epos < methBins.length) {
-                methBins[epos] = 1
+      if (seq) {
+        getModificationPositions(mm, seq, fstrand).forEach(
+          ({ type, positions }) => {
+            // we are processing methylation
+            if (type === 'm') {
+              for (const pos of getNextRefPos(ops, positions)) {
+                const epos = pos + fstart - region.start
+                if (epos >= 0 && epos < methBins.length) {
+                  methBins[epos] = 1
+                }
               }
             }
-          }
-        },
-      )
+          },
+        )
 
-      for (let j = fstart; j < fend; j++) {
-        const i = j - region.start
-        if (i >= 0 && i < bins.length - 1) {
-          const l1 = regionSeq[i].toLowerCase()
-          const l2 = regionSeq[i + 1].toLowerCase()
-          const bin = bins[i]
-          const bin1 = bins[i + 1]
+        for (let j = fstart; j < fend; j++) {
+          const i = j - region.start
+          if (i >= 0 && i < bins.length - 1) {
+            const l1 = regionSeq[i].toLowerCase()
+            const l2 = regionSeq[i + 1].toLowerCase()
+            const bin = bins[i]
+            const bin1 = bins[i + 1]
 
-          // color
-          if (l1 === 'c' && l2 === 'g') {
-            if (methBins[i] || methBins[i + 1]) {
-              inc(bin, fstrand, 'cov', 'meth')
-              inc(bin1, fstrand, 'cov', 'meth')
-              bins[i].ref--
-              bins[i][fstrand]--
-              bins[i + 1].ref--
-              bins[i + 1][fstrand]--
-            } else {
-              inc(bin, fstrand, 'cov', 'unmeth')
-              inc(bin1, fstrand, 'cov', 'unmeth')
-              bins[i].ref--
-              bins[i][fstrand]--
-              bins[i + 1].ref--
-              bins[i + 1][fstrand]--
+            // color
+            if (l1 === 'c' && l2 === 'g') {
+              if (methBins[i] || methBins[i + 1]) {
+                inc(bin, fstrand, 'cov', 'meth')
+                inc(bin1, fstrand, 'cov', 'meth')
+                bins[i].ref--
+                bins[i][fstrand]--
+                bins[i + 1].ref--
+                bins[i + 1][fstrand]--
+              } else {
+                inc(bin, fstrand, 'cov', 'unmeth')
+                inc(bin1, fstrand, 'cov', 'unmeth')
+                bins[i].ref--
+                bins[i][fstrand]--
+                bins[i + 1].ref--
+                bins[i + 1][fstrand]--
+              }
             }
           }
         }

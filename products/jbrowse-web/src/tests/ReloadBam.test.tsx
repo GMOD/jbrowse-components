@@ -21,7 +21,7 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-const delay = { timeout: 10000 }
+const delay = { timeout: 30000 }
 const opts = [{}, delay]
 
 test('reloads alignments track (BAI 404)', async () => {
@@ -35,7 +35,7 @@ test('reloads alignments track (BAI 404)', async () => {
     })
 
     const { view, findByTestId, findByText, findAllByTestId, findAllByText } =
-      createView()
+      await createView()
     await findByText('Help')
     view.setNewView(0.5, 0)
     fireEvent.click(await findByTestId(hts('volvox_bam_snpcoverage'), ...opts))
@@ -46,7 +46,7 @@ test('reloads alignments track (BAI 404)', async () => {
     fireEvent.click(buttons[0])
     expectCanvasMatch(await findByTestId(pv('1..400-0'), ...opts))
   })
-}, 20000)
+}, 40000)
 test('reloads alignments track (BAM 404)', async () => {
   await mockConsole(async () => {
     // @ts-expect-error
@@ -58,7 +58,7 @@ test('reloads alignments track (BAM 404)', async () => {
     })
 
     const { view, findByTestId, findByText, findAllByTestId, findAllByText } =
-      createView()
+      await createView()
     await findByText('Help')
     view.setNewView(0.5, 0)
     fireEvent.click(await findByTestId(hts('volvox_bam_pileup'), ...opts))
@@ -70,4 +70,4 @@ test('reloads alignments track (BAM 404)', async () => {
     fireEvent.click(buttons[0])
     expectCanvasMatch(await findByTestId(pv('1..400-0'), ...opts))
   })
-}, 20000)
+}, 40000)

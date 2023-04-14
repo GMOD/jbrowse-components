@@ -27,6 +27,7 @@ import {
 import { isAbortException, checkAbortSignal } from './aborting'
 import { BaseBlock } from './blockTypes'
 import { isUriLocation } from './types'
+import useMeasure from '@jbrowse/core/util/useMeasure'
 
 export * from './types'
 export * from './aborting'
@@ -56,6 +57,25 @@ export function useDebounce<T>(value: T, delay: number) {
   }, [value, delay])
 
   return debouncedValue
+}
+
+// used in ViewContainer files to get the width
+export function useWidthSetter(
+  view: { setWidth: (arg: number) => void },
+  padding: string,
+) {
+  const [ref, { width }] = useMeasure()
+  useEffect(() => {
+    if (width && isAlive(view)) {
+      // sets after a requestAnimationFrame
+      // https://stackoverflow.com/a/58701523/2129219
+      // avoids ResizeObserver loop error being shown during development
+      requestAnimationFrame(() =>
+        view.setWidth(width - Number.parseInt(padding, 10) * 2),
+      )
+    }
+  }, [padding, view, width])
+  return ref
 }
 
 // https://stackoverflow.com/questions/56283920/
@@ -180,15 +200,12 @@ export function springAnimate(
   ]
 }
 
-/** find the first node in the hierarchy that matches the given 'is' typescript type guard predicate */
-export function findParentThatIs<
-  PREDICATE extends (thing: IAnyStateTreeNode) => boolean,
->(
+// find the first node in the hierarchy that matches the given 'is' typescript type guard predicate
+export function findParentThatIs<T extends (a: IAnyStateTreeNode) => boolean>(
   node: IAnyStateTreeNode,
-  predicate: PREDICATE,
-): TypeTestedByPredicate<PREDICATE> & IAnyStateTreeNode {
-  return findParentThat(node, predicate) as TypeTestedByPredicate<PREDICATE> &
-    IAnyStateTreeNode
+  predicate: T,
+): TypeTestedByPredicate<T> & IAnyStateTreeNode {
+  return findParentThat(node, predicate)
 }
 
 /** get the current JBrowse session model, starting at any node in the state tree */
@@ -742,7 +759,7 @@ export async function renameRegionsIfNeeded<
   const assemblyNames = regions.map(region => region.assemblyName)
   const assemblyMaps = Object.fromEntries(
     await Promise.all(
-      assemblyNames.map(async assemblyName => {
+      [...new Set(assemblyNames)].map(async assemblyName => {
         return [
           assemblyName,
           await assemblyManager.getRefNameMapForAdapter(

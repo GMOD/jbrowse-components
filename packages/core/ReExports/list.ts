@@ -7,6 +7,7 @@ export default [
   'mobx',
   'mobx-state-tree',
   'react',
+  'react/jsx-runtime',
   'react-dom',
   'mobx-react',
   '@mui/x-data-grid',

@@ -14,54 +14,52 @@ const useStyles = makeStyles()({
   },
 })
 
-const TextFilter = observer(
-  ({
-    textFilter,
-  }: {
-    textFilter: { stringToFind: string; setString: (arg: string) => void }
-  }) => {
-    const { classes } = useStyles()
-    // this paragraph is silliness to debounce the text filter input
-    const [textFilterValue, setTextFilterValue] = useState(
-      textFilter.stringToFind,
-    )
-    const debouncedTextFilter = useDebounce(textFilterValue, 500)
-    useEffect(() => {
-      textFilter.setString(debouncedTextFilter)
-    }, [debouncedTextFilter, textFilter])
+const TextFilter = observer(function ({
+  textFilter,
+}: {
+  textFilter: { stringToFind: string; setString: (arg: string) => void }
+}) {
+  const { classes } = useStyles()
+  // this paragraph is silliness to debounce the text filter input
+  const [textFilterValue, setTextFilterValue] = useState(
+    textFilter.stringToFind,
+  )
+  const debouncedTextFilter = useDebounce(textFilterValue, 500)
+  useEffect(() => {
+    textFilter.setString(debouncedTextFilter)
+  }, [debouncedTextFilter, textFilter])
 
-    return (
-      <div>
-        <TextField
-          label="text filter"
-          value={textFilterValue}
-          onChange={evt => setTextFilterValue(evt.target.value)}
-          variant="outlined"
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <FilterIcon />
-              </InputAdornment>
-            ),
-            endAdornment: (
-              <InputAdornment
-                className={classes.textFilterControlEndAdornment}
-                position="end"
+  return (
+    <div>
+      <TextField
+        label="text filter"
+        value={textFilterValue}
+        onChange={evt => setTextFilterValue(evt.target.value)}
+        variant="outlined"
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <FilterIcon />
+            </InputAdornment>
+          ),
+          endAdornment: (
+            <InputAdornment
+              className={classes.textFilterControlEndAdornment}
+              position="end"
+            >
+              <IconButton
+                aria-label="clear filter"
+                onClick={() => setTextFilterValue('')}
               >
-                <IconButton
-                  aria-label="clear filter"
-                  onClick={() => setTextFilterValue('')}
-                >
-                  <ClearIcon />
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-        />
-      </div>
-    )
-  },
-)
+                <ClearIcon />
+              </IconButton>
+            </InputAdornment>
+          ),
+        }}
+      />
+    </div>
+  )
+})
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const GlobalFilterControls = observer(({ model }: { model: any }) => {

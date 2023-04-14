@@ -137,7 +137,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setMaxHeight(val: number) {
+      setMaxHeight(val?: number) {
         self.trackMaxHeight = val
       },
     }))

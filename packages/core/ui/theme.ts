@@ -1,4 +1,4 @@
-import { blue, green, red, grey, amber } from '@mui/material/colors'
+import { blue, green, red, grey, orange } from '@mui/material/colors'
 import { createTheme, ThemeOptions } from '@mui/material/styles'
 import type { PaletteAugmentColorOptions } from '@mui/material/styles/createPalette'
 import deepmerge from 'deepmerge'
@@ -50,7 +50,7 @@ function stockTheme() {
       bases: {
         A: refTheme.palette.augmentColor({ color: green }),
         C: refTheme.palette.augmentColor({ color: blue }),
-        G: refTheme.palette.augmentColor({ color: amber }),
+        G: refTheme.palette.augmentColor({ color: orange }),
         T: refTheme.palette.augmentColor({ color: red }),
       },
     },
@@ -98,7 +98,7 @@ function getDarkStockTheme() {
       bases: {
         A: refTheme.palette.augmentColor({ color: green }),
         C: refTheme.palette.augmentColor({ color: blue }),
-        G: refTheme.palette.augmentColor({ color: amber }),
+        G: refTheme.palette.augmentColor({ color: orange }),
         T: refTheme.palette.augmentColor({ color: red }),
       },
     },
@@ -132,7 +132,7 @@ function getDarkMinimalTheme() {
       bases: {
         A: refTheme.palette.augmentColor({ color: green }),
         C: refTheme.palette.augmentColor({ color: blue }),
-        G: refTheme.palette.augmentColor({ color: amber }),
+        G: refTheme.palette.augmentColor({ color: orange }),
         T: refTheme.palette.augmentColor({ color: red }),
       },
     },
@@ -152,7 +152,7 @@ function getMinimalTheme() {
       bases: {
         A: refTheme.palette.augmentColor({ color: green }),
         C: refTheme.palette.augmentColor({ color: blue }),
-        G: refTheme.palette.augmentColor({ color: amber }),
+        G: refTheme.palette.augmentColor({ color: orange }),
         T: refTheme.palette.augmentColor({ color: red }),
       },
     },

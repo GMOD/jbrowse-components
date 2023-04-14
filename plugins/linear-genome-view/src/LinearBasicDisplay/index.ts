@@ -11,7 +11,7 @@ export default (pluginManager: PluginManager) => {
     const config = configSchema(pluginManager)
     return new DisplayType({
       name: 'LinearBasicDisplay',
-      displayName: 'Basic deature display',
+      displayName: 'Basic feature display',
       configSchema: config,
       stateModel: modelFactory(config),
       trackType: 'FeatureTrack',

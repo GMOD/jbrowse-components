@@ -19,7 +19,7 @@ const delay = { timeout: 20000 }
 const opts = [{}, delay]
 
 test('open a multibigwig track', async () => {
-  const { view, findByTestId, findByText } = createView()
+  const { view, findByTestId, findByText } = await createView()
   await findByText('Help')
   view.setNewView(5, 0)
   fireEvent.click(await findByTestId(hts('volvox_microarray_multi'), ...opts))

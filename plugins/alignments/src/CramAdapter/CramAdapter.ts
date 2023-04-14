@@ -278,7 +278,10 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   }
 
   // we return the configured fetchSizeLimit, and the bytes for the region
-  async estimateRegionsStats(regions: Region[], opts?: BaseOptions) {
+  async getMultiRegionFeatureDensityStats(
+    regions: Region[],
+    opts?: BaseOptions,
+  ) {
     const bytes = await this.bytesForRegions(regions, opts)
     const fetchSizeLimit = this.getConf('fetchSizeLimit')
     return {

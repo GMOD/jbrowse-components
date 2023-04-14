@@ -15,7 +15,7 @@ const delay = { timeout: 20000 }
 
 test('launch read vs ref panel', async () => {
   const consoleMock = jest.spyOn(console, 'warn').mockImplementation()
-  const { view, findByTestId, findByText, findAllByTestId } = createView()
+  const { view, findByTestId, findByText, findAllByTestId } = await createView()
 
   await findByText('Help')
   view.setNewView(5, 100)
@@ -39,7 +39,7 @@ test('launch read vs ref panel', async () => {
 }, 40000)
 
 test('launch read vs ref dotplot', async () => {
-  const { view, findByTestId, findByText, findAllByTestId } = createView()
+  const { view, findByTestId, findByText, findAllByTestId } = await createView()
 
   await findByText('Help')
   view.setNewView(5, 100)

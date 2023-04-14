@@ -367,7 +367,7 @@ function process(
     else if (opt.startsWith('force:')) {
       const [, force] = opt.split(':')
       if (force) {
-        display.updateStatsLimit({ bytes: Number.MAX_VALUE })
+        display.setFeatureDensityStatsLimit({ bytes: Number.MAX_VALUE })
       }
     }
 

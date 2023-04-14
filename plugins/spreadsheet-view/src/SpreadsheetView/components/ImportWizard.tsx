@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-
 import {
   FormControl,
   FormGroup,
@@ -13,17 +12,25 @@ import {
   Grid,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-
 import { observer } from 'mobx-react'
 import { getRoot } from 'mobx-state-tree'
 import { AbstractRootModel, getSession } from '@jbrowse/core/util'
 import { FileSelector, ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
+
+// locals
 import { ImportWizardModel } from '../models/ImportWizard'
 import NumberEditor from './NumberEditor'
 
 const useStyles = makeStyles()(theme => ({
   buttonContainer: {
     marginTop: theme.spacing(1),
+  },
+  grid: {
+    width: '25rem',
+    margin: '0 auto',
+  },
+  container: {
+    margin: theme.spacing(2),
   },
 }))
 
@@ -46,10 +53,10 @@ const ImportWizard = observer(({ model }: { model: ImportWizardModel }) => {
   const rootModel = getRoot(model)
 
   return (
-    <Container>
+    <Container className={classes.container}>
       {err ? <ErrorMessage error={err} /> : null}
       <Grid
-        style={{ width: '25rem', margin: '0 auto' }}
+        className={classes.grid}
         container
         spacing={1}
         direction="column"
@@ -72,19 +79,17 @@ const ImportWizard = observer(({ model }: { model: ImportWizardModel }) => {
             <FormLabel component="legend">File Type</FormLabel>
             <RadioGroup aria-label="file type" name="type" value={fileType}>
               <Grid container spacing={1} direction="row">
-                {fileTypes.map(fileTypeName => {
-                  return (
-                    <Grid item key={fileTypeName}>
-                      <FormControlLabel
-                        checked={fileType === fileTypeName}
-                        value={fileTypeName}
-                        onClick={() => model.setFileType(fileTypeName)}
-                        control={<Radio />}
-                        label={fileTypeName}
-                      />
-                    </Grid>
-                  )
-                })}
+                {fileTypes.map(fileTypeName => (
+                  <Grid item key={fileTypeName}>
+                    <FormControlLabel
+                      checked={fileType === fileTypeName}
+                      value={fileTypeName}
+                      onClick={() => model.setFileType(fileTypeName)}
+                      control={<Radio />}
+                      label={fileTypeName}
+                    />
+                  </Grid>
+                ))}
               </Grid>
             </RadioGroup>
           </FormControl>

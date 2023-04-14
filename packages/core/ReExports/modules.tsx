@@ -1,5 +1,6 @@
 // this is all the stuff that the pluginManager re-exports for plugins to use
 import React, { lazy, LazyExoticComponent, Suspense } from 'react'
+import * as ReactJSXRuntime from 'react/jsx-runtime'
 import * as ReactDom from 'react-dom'
 import * as mobx from 'mobx'
 import * as mst from 'mobx-state-tree'
@@ -503,6 +504,7 @@ const libs = {
   mobx,
   'mobx-state-tree': mst,
   react: React,
+  'react/jsx-runtime': ReactJSXRuntime,
   'react-dom': ReactDom,
   'mobx-react': mxreact,
   '@mui/x-data-grid': {
@@ -527,7 +529,11 @@ const libs = {
       return () => useStyles().classes
     },
   },
-  '@mui/material': LazyMUICore,
+  '@mui/material': {
+    ...LazyMUICore,
+    alpha: MUIStyles.alpha,
+    useTheme: MUIStyles.useTheme,
+  },
   'prop-types': PropTypes,
 
   // end special case

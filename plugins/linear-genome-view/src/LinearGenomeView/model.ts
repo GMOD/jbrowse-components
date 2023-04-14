@@ -198,7 +198,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
-         * how to display the track labels, can be "overlapping", "offset", or "hidden"
+         * how to display the track labels, can be "overlapping", "offset", or
+         * "hidden"
          */
         trackLabels: types.optional(
           types.string,

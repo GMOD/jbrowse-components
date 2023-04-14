@@ -8,8 +8,7 @@ import typescript from '@rollup/plugin-typescript'
 import path from 'path'
 import { defineConfig, OutputOptions, Plugin, RollupOptions } from 'rollup'
 import externalGlobals from 'rollup-plugin-external-globals'
-import builtins from 'rollup-plugin-node-builtins'
-import globals from 'rollup-plugin-node-globals'
+import nodePolyfills from 'rollup-plugin-polyfill-node'
 import sourceMaps from 'rollup-plugin-sourcemaps'
 import { terser } from 'rollup-plugin-terser'
 import { babelPluginJBrowse } from './babelPluginJBrowse'
@@ -86,8 +85,11 @@ function getPlugins(
     }),
     mode === 'npm' && sourceMaps(),
     mode === 'npm' && writeIndex(packageName, distPath),
-    (mode === 'esmBundle' || mode === 'umd') && globals(),
-    (mode === 'esmBundle' || mode === 'umd') && builtins(),
+    (mode === 'esmBundle' || mode === 'umd') &&
+      // By default, nodePolyfills only polyfills code in node_modules/. We set
+      // to null here to include the plugin source code itself (and for Yarn 2/3
+      // compatibility, since it doesn't use node_modules/).
+      nodePolyfills({ include: null }),
     (mode === 'cjs' || mode === 'esmBundle') && omitUnresolved(),
   ].filter(Boolean)
 

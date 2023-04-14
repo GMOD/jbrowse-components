@@ -1,11 +1,10 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { getRoot } from 'mobx-state-tree'
-import { PluginDefinition } from '@jbrowse/core/PluginLoader'
+import { Dialog } from '@jbrowse/core/ui'
 import {
   Button,
   Collapse,
-  Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
@@ -53,26 +52,6 @@ function CustomPluginForm({
   const [cjsPluginUrl, setCJSPluginUrl] = useState('')
   const [advancedOptionsOpen, setAdvancedOptionsOpen] = useState(false)
 
-  function handleChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
-    const { name, value } = event.target
-    if (name === 'umdName') {
-      setUMDPluginName(value)
-    }
-    if (name === 'umdUrl') {
-      setUMDPluginUrl(value)
-    }
-    if (name === 'esmUrl') {
-      setESMPluginUrl(value)
-    }
-    if (name === 'cjsUrl') {
-      setCJSPluginUrl(value)
-    }
-  }
-
-  function handleOpenAdvancedOptions() {
-    setAdvancedOptionsOpen(!advancedOptionsOpen)
-  }
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { jbrowse } = getRoot<any>(model)
 
@@ -81,21 +60,15 @@ function CustomPluginForm({
   )
 
   function handleSubmit() {
-    if (!ready) {
-      return
-    }
-    const pluginDefinition: PluginDefinition = {}
     if (umdPluginName && umdPluginUrl) {
-      pluginDefinition.name = umdPluginName
-      pluginDefinition.umdUrl = umdPluginUrl
+      jbrowse.addPlugin({ name: umdPluginName, umdUrl: umdPluginUrl })
     }
     if (esmPluginUrl) {
-      pluginDefinition.esmUrl = esmPluginUrl
+      jbrowse.addPlugin({ esmUrl: esmPluginUrl })
     }
     if (cjsPluginUrl) {
-      pluginDefinition.cjsUrl = cjsPluginUrl
+      jbrowse.addPlugin({ cjsUrl: cjsPluginUrl })
     }
-    jbrowse.addPlugin(pluginDefinition)
   }
 
   function handleClose() {
@@ -120,7 +93,7 @@ function CustomPluginForm({
             label="Plugin name"
             variant="outlined"
             value={umdPluginName}
-            onChange={handleChange}
+            onChange={event => setUMDPluginName(event.target.value)}
           />
           <TextField
             id="umd-url-input"
@@ -128,9 +101,11 @@ function CustomPluginForm({
             label="Plugin URL"
             variant="outlined"
             value={umdPluginUrl}
-            onChange={handleChange}
+            onChange={event => setUMDPluginUrl(event.target.value)}
           />
-          <DialogContentText onClick={handleOpenAdvancedOptions}>
+          <DialogContentText
+            onClick={() => setAdvancedOptionsOpen(!advancedOptionsOpen)}
+          >
             <IconButton
               className={cx(classes.expand, {
                 [classes.expandOpen]: advancedOptionsOpen,
@@ -156,7 +131,7 @@ function CustomPluginForm({
                 label="ESM build URL"
                 variant="outlined"
                 value={esmPluginUrl}
-                onChange={handleChange}
+                onChange={event => setESMPluginUrl(event.target.value)}
               />
               <TextField
                 id="cjs-url-input"
@@ -164,7 +139,7 @@ function CustomPluginForm({
                 label="CJS build URL"
                 variant="outlined"
                 value={cjsPluginUrl}
-                onChange={handleChange}
+                onChange={event => setCJSPluginUrl(event.target.value)}
               />
             </div>
           </Collapse>

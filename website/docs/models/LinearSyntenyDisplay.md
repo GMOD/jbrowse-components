@@ -117,7 +117,7 @@ setMouseoverCanvasRef: (ref: HTMLCanvasElement) => void
 
 ```js
 // type signature
-setMouseoverId: (arg: number) => void
+setMouseoverId: (arg?: string) => void
 ```
 
 #### action: setCigarMouseoverId
@@ -131,5 +131,5 @@ setCigarMouseoverId: (arg: number) => void
 
 ```js
 // type signature
-setClickId: (arg: number) => void
+setClickId: (arg?: string) => void
 ```

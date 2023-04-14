@@ -3,7 +3,13 @@ import { observer } from 'mobx-react'
 import { Link, IconButton, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { DataGrid, GridCellParams } from '@mui/x-data-grid'
-import { getSession, assembleLocString, measureText } from '@jbrowse/core/util'
+import {
+  getSession,
+  assembleLocString,
+  measureGridWidth,
+} from '@jbrowse/core/util'
+
+// icons
 import DeleteIcon from '@mui/icons-material/Delete'
 
 // locals
@@ -20,13 +26,6 @@ const useStyles = makeStyles()(() => ({
     cursor: 'pointer',
   },
 }))
-
-// creates a coarse measurement of column width, similar to code in
-// BaseFeatureDetails
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const measure = (row: any, col: string) =>
-  Math.min(Math.max(measureText(String(row[col]), 14) + 20, 80), 1000)
-
 const BookmarkGrid = observer(({ model }: { model: GridBookmarkModel }) => {
   const { classes } = useStyles()
   const [dialogRowNumber, setDialogRowNumber] = useState<number>()
@@ -49,68 +48,62 @@ const BookmarkGrid = observer(({ model }: { model: GridBookmarkModel }) => {
       }
     })
 
-  const columns = [
-    {
-      field: 'locString',
-      headerName: 'bookmark link',
-      width: Math.max(...bookmarkRows.map(row => measure(row, 'locString'))),
-      renderCell: (params: GridCellParams) => {
-        const { value } = params
-        return (
-          <Link
-            className={classes.link}
-            onClick={async event => {
-              event.preventDefault()
-              // has own error handling
-              await navToBookmark(value as string, views, model)
-            }}
-          >
-            {value}
-          </Link>
-        )
-      },
-    },
-    {
-      field: 'label',
-      width: Math.max(
-        100,
-        Math.max(...bookmarkRows.map(row => measure(row, 'label'))),
-      ),
-      editable: true,
-    },
-    {
-      field: 'delete',
-      width: 30,
-      renderCell: (params: GridCellParams) => {
-        const { value } = params
-        return (
-          <IconButton
-            data-testid="deleteBookmark"
-            aria-label="delete"
-            onClick={() => {
-              if (value !== null && value !== undefined) {
-                setDialogRowNumber(+value)
-              }
-            }}
-          >
-            <DeleteIcon />
-          </IconButton>
-        )
-      },
-    },
-  ]
-
   return (
     <>
       <DataGrid
         density="compact"
         rows={bookmarkRows}
-        columns={columns}
-        onCellEditCommit={args => {
-          const { value, id } = args
-          model.updateBookmarkLabel(id as number, value as string)
-        }}
-        disableSelectionOnClick
+        columns={[
+          {
+            field: 'locString',
+            headerName: 'bookmark link',
+            width: measureGridWidth(bookmarkRows.map(row => row.locString)),
+            renderCell: params => {
+              const { value } = params
+              return (
+                <Link
+                  className={classes.link}
+                  href="#"
+                  onClick={async event => {
+                    event.preventDefault()
+                    await navToBookmark(value as string, views, model)
+                  }}
+                >
+                  {value}
+                </Link>
+              )
+            },
+          },
+          {
+            field: 'label',
+            width: measureGridWidth(bookmarkRows.map(row => row.label)),
+            editable: true,
+          },
+          {
+            field: 'delete',
+            width: 30,
+            renderCell: (params: GridCellParams) => {
+              const { value } = params
+              return (
+                <IconButton
+                  data-testid="deleteBookmark"
+                  aria-label="delete"
+                  onClick={() => {
+                    if (value != null) {
+                      setDialogRowNumber(+value)
+                    }
+                  }}
+                >
+                  <DeleteIcon />
+                </IconButton>
+              )
+            },
+          },
+        ]}
+        onCellEditStop={({ id, value }) =>
+          model.updateBookmarkLabel(id as number, value)
+        }
+        disableRowSelectionOnClick
       />
 
       <DeleteBookmarkDialog

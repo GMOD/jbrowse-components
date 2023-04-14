@@ -1,9 +1,11 @@
+import React from 'react'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { PropTypes as CommonPropTypes } from '@jbrowse/core/util/types/mst'
 import { bpToPx } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
-import React from 'react'
+
+// locals
 import Lollipop from './Lollipop'
 import Stick from './Stick'
 

@@ -83,6 +83,22 @@ export interface LoadedPlugin {
   default: PluginConstructor
 }
 
+function pluginDescriptionString(pluginDefinition: PluginDefinition) {
+  if (isUMDPluginDefinition(pluginDefinition)) {
+    return `UMD plugin ${pluginDefinition.name}`
+  }
+  if (isESMPluginDefinition(pluginDefinition)) {
+    return `ESM plugin ${
+      (pluginDefinition as ESMUrlPluginDefinition).esmUrl ||
+      (pluginDefinition as ESMLocPluginDefinition).esmLoc?.uri
+    }`
+  }
+  if (isCJSPluginDefinition(pluginDefinition)) {
+    return `CJS plugin ${pluginDefinition.cjsUrl}`
+  }
+  return 'unknown plugin'
+}
+
 function isInWebWorker() {
   return Boolean('WorkerGlobalScope' in globalThis)
 }
@@ -211,6 +227,13 @@ export default class PluginLoader {
       )
     } else {
       throw new Error(`Could not determine plugin type: ${JSON.stringify(def)}`)
+    }
+    if (!plugin.default) {
+      throw new Error(
+        `${pluginDescriptionString(
+          def,
+        )} does not have a default export, cannot load`,
+      )
     }
     return plugin.default
   }

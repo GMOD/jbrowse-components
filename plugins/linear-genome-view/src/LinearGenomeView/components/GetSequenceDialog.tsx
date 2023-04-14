@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { makeStyles } from 'tss-react/mui'
 import {
   Button,
@@ -96,14 +96,6 @@ function SequenceDialog({
   const { leftOffset, rightOffset } = model
   const loading = Boolean(sequenceChunks === undefined)
 
-  // avoid infinite looping of useEffect
-  // random note: the current selected region can't be a computed because it
-  // uses action on base1dview even though it's on the ephemeral base1dview
-  const regionsSelected = useMemo(
-    () => model.getSelectedRegions(leftOffset, rightOffset),
-    [model, leftOffset, rightOffset],
-  )
-
   useEffect(() => {
     let active = true
     const controller = new AbortController()
@@ -111,17 +103,16 @@ function SequenceDialog({
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
-        if (regionsSelected.length > 0) {
-          const chunks = await fetchSequence(
-            model,
-            regionsSelected,
-            controller.signal,
-          )
-          if (active) {
-            setSequenceChunks(chunks)
-          }
-        } else {
+        // random note: the current selected region can't be a computed because
+        // it uses action on base1dview even though it's on the ephemeral
+        // base1dview
+        const selection = model.getSelectedRegions(leftOffset, rightOffset)
+        if (selection.length === 0) {
           throw new Error('Selected region is out of bounds')
+        }
+        const chunks = await fetchSequence(model, selection, controller.signal)
+        if (active) {
+          setSequenceChunks(chunks)
         }
       } catch (e) {
         console.error(e)
@@ -135,7 +126,7 @@ function SequenceDialog({
       controller.abort()
       active = false
     }
-  }, [model, session, regionsSelected])
+  }, [model, session, leftOffset, rightOffset])
 
   const sequence = sequenceChunks
     ? formatSeqFasta(
@@ -146,10 +137,10 @@ function SequenceDialog({
             const chunkRefName = chunk.get('refName')
             const chunkStart = chunk.get('start') + 1
             const chunkEnd = chunk.get('end')
-            const chunkLocstring = `${chunkRefName}:${chunkStart}-${chunkEnd}`
+            const loc = `${chunkRefName}:${chunkStart}-${chunkEnd}`
             if (chunkSeq?.length !== chunkEnd - chunkStart + 1) {
               throw new Error(
-                `${chunkLocstring} returned ${chunkSeq.length.toLocaleString()} bases, but should have returned ${(
+                `${loc} returned ${chunkSeq.length.toLocaleString()} bases, but should have returned ${(
                   chunkEnd - chunkStart
                 ).toLocaleString()}`,
               )
@@ -162,8 +153,7 @@ function SequenceDialog({
               chunkSeq = complement(chunkSeq)
             }
             return {
-              header:
-                chunkLocstring + (rev ? '-rev' : '') + (comp ? '-comp' : ''),
+              header: loc + (rev ? '-rev' : '') + (comp ? '-comp' : ''),
               seq: chunkSeq,
             }
           }),
@@ -178,7 +168,7 @@ function SequenceDialog({
       open
       onClose={() => {
         handleClose()
-        model.setOffsets(undefined, undefined)
+        model.setOffsets()
       }}
       title="Reference sequence"
     >

@@ -351,6 +351,10 @@ export default class PluginManager {
     return this.getElementTypesInGroup('track') as TrackType[]
   }
 
+  getConnectionElements() {
+    return this.getElementTypesInGroup('connection') as ConnectionType[]
+  }
+
   getAddTrackWorkflowElements() {
     return this.getElementTypesInGroup(
       'add track workflow',

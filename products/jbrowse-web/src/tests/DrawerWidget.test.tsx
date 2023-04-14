@@ -10,7 +10,7 @@ beforeEach(() => {
 })
 
 test('opens feature detail from left click', async () => {
-  const { view, findByTestId, findAllByTestId, findByText } = createView()
+  const { view, findByTestId, findAllByTestId, findByText } = await createView()
   await findByText('Help')
   view.setNewView(0.05, 5000)
   fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), {}, delay))
@@ -23,7 +23,7 @@ test('opens feature detail from left click', async () => {
 }, 20000)
 
 test('open feature detail from right click', async () => {
-  const { view, findByTestId, findAllByTestId, findByText } = createView()
+  const { view, findByTestId, findAllByTestId, findByText } = await createView()
   await findByText('Help')
   view.setNewView(0.05, 5000)
   fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), {}, delay))
@@ -39,7 +39,7 @@ test('open feature detail from right click', async () => {
 }, 20000)
 
 test('widget drawer navigation', async () => {
-  const { view, session, findByTestId, findByText } = createView()
+  const { view, session, findByTestId, findByText } = await createView()
   await findByText('Help')
   view.setNewView(0.05, 5000)
   // opens a config editor widget

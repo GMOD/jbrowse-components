@@ -6,7 +6,7 @@ title: PAG2023 Workshop
 We hosted a workshop on setting up JBrowse 2 at PAG 2023.
 
 A guide to follow along is written here:
-http://gmod.org/wiki/JBrowse_2_Tutorial_PAG_2023
+[http://gmod.org/wiki/JBrowse2_Tutorial_PAG_2023](http://gmod.org/wiki/JBrowse2_Tutorial_PAG_2023)
 
 Thanks to all the participants for their feedback and comments. Almost 40 people
 logged in setup their own instance on AWS!

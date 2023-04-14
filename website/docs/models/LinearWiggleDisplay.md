@@ -345,11 +345,11 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 
 ### LinearWiggleDisplay - Actions
 
-#### action: updateStats
+#### action: updateQuantitativeStats
 
 ```js
 // type signature
-updateStats: (stats: { scoreMin: number; scoreMax: number; }) => void
+updateQuantitativeStats: (stats: { scoreMin: number; scoreMax: number; }) => void
 ```
 
 #### action: setColor

@@ -161,5 +161,5 @@ setDisplayMode: (val: string) => void
 
 ```js
 // type signature
-setMaxHeight: (val: number) => void
+setMaxHeight: (val?: number) => void
 ```

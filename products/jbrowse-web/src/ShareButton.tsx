@@ -224,7 +224,6 @@ const ShareDialog = observer(function ({
         open
         onClose={handleClose}
         title="JBrowse Shareable Link"
-        data-testid="share-dialog"
       >
         <DialogContent>
           <DialogContentText>
@@ -291,9 +290,7 @@ const ShareDialog = observer(function ({
 
       <SettingsDialog
         open={settingsDialogOpen}
-        onClose={() => {
-          setSettingsDialogOpen(false)
-        }}
+        onClose={() => setSettingsDialogOpen(false)}
         currentSetting={currentSetting}
       />
     </>

@@ -7,7 +7,8 @@ import { DataGrid, GridCellParams } from '@mui/x-data-grid'
 
 // jbrowse
 import { getTrackName } from '@jbrowse/core/util/tracks'
-import { ResizeHandle, SanitizedHTML } from '@jbrowse/core/ui'
+import { ResizeHandle } from '@jbrowse/core/ui'
+import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import JBrowseMenu from '@jbrowse/core/ui/Menu'
 import ResizeBar, { useResizeBar } from '@jbrowse/core/ui/ResizeBar'
 import {
@@ -185,7 +186,7 @@ export default observer(function FacetedSelector({
         const { value, id, row } = params
         return (
           <>
-            <SanitizedHTML html={value} />
+            <SanitizedHTML html={value as string} />
             <IconButton
               onClick={e =>
                 setInfo({
@@ -207,7 +208,7 @@ export default observer(function FacetedSelector({
       width: widthsDebounced[e] || 100, // can be undefined before useEffect update
       renderCell: (params: GridCellParams) => {
         const { value } = params
-        return value ? <SanitizedHTML html={value} /> : ''
+        return value ? <SanitizedHTML html={value as string} /> : ''
       },
     })),
     ...filteredMetadataKeys.map(e => ({
@@ -215,7 +216,7 @@ export default observer(function FacetedSelector({
       width: widthsDebounced[e] || 100, // can be undefined before useEffect update
       renderCell: (params: GridCellParams) => {
         const { value } = params
-        return value ? <SanitizedHTML html={value} /> : ''
+        return value ? <SanitizedHTML html={value as string} /> : ''
       },
     })),
   ]
@@ -286,11 +287,11 @@ export default observer(function FacetedSelector({
             )}
             columnVisibilityModel={visible}
             onColumnVisibilityModelChange={newModel => setVisible(newModel)}
-            headerHeight={35}
+            columnHeaderHeight={35}
             checkboxSelection
-            disableSelectionOnClick
+            disableRowSelectionOnClick
             keepNonExistentRowsSelected
-            onSelectionModelChange={userSelectedIds => {
+            onRowSelectionModelChange={userSelectedIds => {
               if (!useShoppingCart) {
                 const a1 = shownTrackIds
                 const a2 = userSelectedIds as string[]
@@ -309,7 +310,7 @@ export default observer(function FacetedSelector({
                 model.setSelection(tracks)
               }
             }}
-            selectionModel={
+            rowSelectionModel={
               useShoppingCart ? selection.map(s => s.trackId) : shownTrackIds
             }
             columns={columns}

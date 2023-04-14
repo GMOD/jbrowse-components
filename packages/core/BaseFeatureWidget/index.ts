@@ -4,11 +4,7 @@ import clone from 'clone'
 
 // locals
 import PluginManager from '../PluginManager'
-import {
-  getConf,
-  ConfigurationSchema,
-  AnyConfigurationModel,
-} from '../configuration'
+import { getConf, ConfigurationSchema } from '../configuration'
 import { getSession } from '../util'
 import { ElementId } from '../util/types/mst'
 
@@ -52,6 +48,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       trackId: types.maybe(types.string),
       trackType: types.maybe(types.string),
     })
+    .volatile(() => ({
+      error: undefined as unknown,
+    }))
     .actions(self => ({
       setFeatureData(featureData: Record<string, unknown>) {
         self.unformattedFeatureData = featureData
@@ -66,40 +65,45 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         self.trackId = trackId
         self.trackType = type
       },
+      setError(e: unknown) {
+        self.error = e
+      },
     }))
     .actions(self => ({
       afterCreate() {
         addDisposer(
           self,
           autorun(() => {
-            self.setExtra(self.track?.type, self.track?.configuration.trackId)
-            const { unformattedFeatureData, track } = self
-            const session = getSession(self)
-            if (unformattedFeatureData) {
-              const feature = clone(unformattedFeatureData)
+            try {
+              self.setExtra(self.track?.type, self.track?.configuration.trackId)
+              const { unformattedFeatureData, track } = self
+              const session = getSession(self)
+              if (unformattedFeatureData) {
+                const feature = clone(unformattedFeatureData)
 
-              const f = (
-                obj: { configuration: AnyConfigurationModel },
-                arg2: string,
-              ) => getConf(obj, ['formatDetails', arg2], { feature })
-
-              if (track) {
-                // eslint-disable-next-line no-underscore-dangle
-                feature.__jbrowsefmt = {
-                  ...f(session, 'feature'),
-                  ...f(track, 'feature'),
-                }
-                const depth = getConf(track, ['formatDetails', 'depth'])
-                formatSubfeatures(feature, depth, sub => {
-                  // eslint-disable-next-line no-underscore-dangle
-                  sub.__jbrowsefmt = {
-                    ...f(session, 'subfeature'),
-                    ...f(track, 'subfeature'),
-                  }
+                const combine = (
+                  arg2: string,
+                  feature: Record<string, unknown>,
+                ) => ({
+                  ...getConf(session, ['formatDetails', arg2], { feature }),
+                  ...getConf(track, ['formatDetails', arg2], { feature }),
                 })
-              }
 
-              self.setFormattedData(feature)
+                if (track) {
+                  // eslint-disable-next-line no-underscore-dangle
+                  feature.__jbrowsefmt = combine('feature', feature)
+                  const depth = getConf(track, ['formatDetails', 'depth'])
+                  formatSubfeatures(feature, depth, sub => {
+                    // eslint-disable-next-line no-underscore-dangle
+                    sub.__jbrowsefmt = combine('subfeatures', sub)
+                  })
+                }
+
+                self.setFormattedData(feature)
+              }
+            } catch (e) {
+              console.error(e)
+              self.setError(e)
             }
           }),
         )

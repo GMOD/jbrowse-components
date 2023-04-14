@@ -187,11 +187,11 @@ setSNPCoverageHeight: (n: number) => void
 setSNPCoverageDisplay: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
 ```
 
-#### action: updateStatsLimit
+#### action: setFeatureDensityStatsLimit
 
 ```js
 // type signature
-updateStatsLimit: (stats: unknown) => void
+setFeatureDensityStatsLimit: (stats?: FeatureDensityStats) => void
 ```
 
 #### action: setPileupDisplay

@@ -59,9 +59,8 @@ export default function UCSCTrackHubConnection(pluginManager: PluginManager) {
             ) {
               continue
             }
-            const conf = session.assemblies.find(
-              a => readConfObject(a, 'name') === genomeName,
-            )
+
+            const conf = session.assemblyManager.get(genomeName)?.configuration
             if (!conf) {
               throw new Error(
                 `Cannot find assembly for "${genomeName}" from the genomes file for connection "${connectionName}"`,

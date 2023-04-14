@@ -8,8 +8,7 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
     class="MuiScopedCssBaseline-root css-1pa2gw3-MuiScopedCssBaseline-root"
   >
     <div
-      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation12 css-11n9l57-MuiPaper-root-viewContainer"
-      style="padding: 0px 4px 4px;"
+      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation12 css-tgvt3g-MuiPaper-root-viewContainer"
     >
       <div
         style="display: flex;"

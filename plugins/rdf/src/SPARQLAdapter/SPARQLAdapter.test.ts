@@ -10,14 +10,14 @@ import configSchema from './configSchema'
 // window.fetch = jest.fn(url => new Promise(resolve => resolve()))
 
 test('adapter can fetch variants from volvox.vcf.gz', async () => {
-  function mockFetch(url: string): Promise<Response> {
+  function mockFetch(url: RequestInfo | URL) {
     let response = {}
-    if (url.includes('chr1')) {
+    if (`${url}`.includes('chr1')) {
       response = queryResponse
     }
-    if (url.includes('chr80')) {
+    if (`${url}`.includes('chr80')) {
       response = emptyQueryResponse
-    } else if (url.includes('fakeRefNamesQuery')) {
+    } else if (`${url}`.includes('fakeRefNamesQuery')) {
       response = refNamesResponse
     }
 
@@ -25,8 +25,7 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
   }
 
   const spy = jest.spyOn(global, 'fetch')
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  spy.mockImplementation(mockFetch as any)
+  spy.mockImplementation(mockFetch)
   const adapter = new Adapter(
     configSchema.create({
       endpoint: {

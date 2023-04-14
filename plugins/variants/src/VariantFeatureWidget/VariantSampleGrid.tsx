@@ -119,7 +119,7 @@ export default function VariantSamples(props: {
     width: widths[index],
   }))
 
-  // disableSelectionOnClick helps avoid
+  // disableRowSelectionOnClick helps avoid
   // https://github.com/mui-org/material-ui-x/issues/1197
   return !preFilteredRows.length ? null : (
     <BaseCard {...props} title="Samples">
@@ -135,9 +135,9 @@ export default function VariantSamples(props: {
           <DataGrid
             rows={rows}
             columns={columns}
-            disableSelectionOnClick
+            disableRowSelectionOnClick
             rowHeight={25}
-            headerHeight={35}
+            columnHeaderHeight={35}
             disableColumnMenu
           />
         </div>

@@ -64,6 +64,7 @@ ctgA	example	match	8545	8783	.	-	.	Name=seg04
 ctgA	example	match	8869	8935	.	-	.	Name=seg04
 ctgA	example	match	9404	9825	.	-	.	Name=seg04
 ctgA	bare_predicted	CDS	10000	11500	.	+	0	Name=Apple1;Note=CDS with no parent
+ctgA	bare_predicted	gene	10000	11500	.	+	0	Name=Apple4;Note=Gene with no subfeatures
 ctgA	example	polypeptide_domain	11911	15561	.	+	.	Name=m11;Note=kinase
 ctgA	example	match	12531	12895	.	+	.	Name=seg12
 ctgA	predicted	mRNA	13000	17200	.	+	0	ID=cds-Apple2;Name=Apple2;Note=mRNA with CDSs but no UTRs

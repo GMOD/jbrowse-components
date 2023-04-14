@@ -14,20 +14,21 @@ const getFile = (url: string) =>
     require.resolve(`../../${url.replace(/http:\/\/localhost\//, '')}`),
   )
 
-const readBuffer = async (url: string, args: RequestInit) => {
+jest.mock('../makeWorkerInstance', () => () => {})
+
+expect.extend({ toMatchImageSnapshot })
+
+const delay = { timeout: 20000 }
+
+jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
   // this is the analytics
-  if (url.match(/jb2=true/)) {
-    return {
-      ok: true,
-      async json() {
-        return {}
-      },
-    }
+  if (`${url}`.match(/jb2=true/)) {
+    return new Response('{}')
   }
   try {
-    const file = getFile(url)
+    const file = getFile(`${url}`)
     const maxRangeRequest = 2000000 // kind of arbitrary, part of the rangeParser
-    if (args.headers && 'range' in args.headers) {
+    if (args && args.headers && 'range' in args.headers) {
       const range = rangeParser(maxRangeRequest, args.headers.range)
       if (range === -2 || range === -1) {
         throw new Error(`Error parsing range "${args.headers.range}"`)
@@ -48,16 +49,7 @@ const readBuffer = async (url: string, args: RequestInit) => {
     console.error(e)
     return new Response(undefined, { status: 404 })
   }
-}
-
-jest.mock('../makeWorkerInstance', () => () => {})
-
-expect.extend({ toMatchImageSnapshot })
-
-const delay = { timeout: 20000 }
-
-// @ts-expect-error
-jest.spyOn(global, 'fetch').mockImplementation(readBuffer)
+})
 
 afterEach(() => {
   localStorage.clear()

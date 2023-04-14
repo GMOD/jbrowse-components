@@ -17,15 +17,14 @@ import {
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
-import { isAlive, types, Instance } from 'mobx-state-tree'
+import { types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 import { axisPropsFromTickScale } from 'react-d3-axis-mod'
 import {
   getNiceDomain,
   getScale,
-  getStats,
-  statsAutorun,
+  quantitativeStatsAutorun,
   YSCALEBAR_LABEL_OFFSET,
 } from '../../util'
 
@@ -134,7 +133,7 @@ function stateModelFactory(
       /**
        * #action
        */
-      updateStats(stats: { scoreMin: number; scoreMax: number }) {
+      updateQuantitativeStats(stats: { scoreMin: number; scoreMax: number }) {
         const { scoreMin, scoreMax } = stats
         const EPSILON = 0.000001
         if (!self.stats) {
@@ -343,9 +342,6 @@ function stateModelFactory(
        * #getter
        */
       get rendererConfig() {
-        const configBlob =
-          getConf(self, ['renderers', self.rendererTypeName]) || {}
-
         const {
           color,
           displayCrossHatches,
@@ -355,8 +351,9 @@ function stateModelFactory(
           posColor,
           summaryScoreMode,
           scaleType,
+          rendererTypeName,
         } = self
-
+        const configBlob = getConf(self, ['renderers', rendererTypeName]) || {}
         return self.rendererType.configSchema.create(
           {
             ...configBlob,
@@ -382,15 +379,13 @@ function stateModelFactory(
          * #getter
          */
         get filled() {
-          const { fill, rendererConfig: conf } = self
-          return fill ?? readConfObject(conf, 'filled')
+          return readConfObject(self.rendererConfig, 'filled')
         },
         /**
          * #getter
          */
         get summaryScoreModeSetting() {
-          const { summaryScoreMode, rendererConfig: conf } = self
-          return summaryScoreMode ?? readConfObject(conf, 'summaryScoreMode')
+          return readConfObject(self.rendererConfig, 'summaryScoreMode')
         },
         /**
          * #getter
@@ -460,8 +455,7 @@ function stateModelFactory(
          * #getter
          */
         get displayCrossHatchesSetting() {
-          const { displayCrossHatches: hatches, rendererConfig: conf } = self
-          return hatches ?? readConfObject(conf, 'displayCrossHatches')
+          return readConfObject(self.rendererConfig, 'displayCrossHatches')
         },
       }
     })
@@ -682,23 +676,11 @@ function stateModelFactory(
          */
         async reload() {
           self.setError()
-          const aborter = new AbortController()
-          self.setLoading(aborter)
-          try {
-            const stats = await getStats(self, {
-              signal: aborter.signal,
-              ...self.renderProps(),
-            })
-            if (isAlive(self)) {
-              self.updateStats(stats)
-              superReload()
-            }
-          } catch (e) {
-            self.setError(e)
-          }
+          superReload()
         },
+
         afterAttach() {
-          statsAutorun(self)
+          quantitativeStatsAutorun(self)
         },
         /**
          * #action

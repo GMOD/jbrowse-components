@@ -137,7 +137,7 @@ any
 
 ```js
 // type
-;(blockKey: string, x: number, y: number) => any
+;(blockKey: string, x: number, y: number) => string
 ```
 
 #### getter: getFeatureByID
@@ -175,7 +175,7 @@ number
 any
 ```
 
-#### getter: estimatedStatsReady
+#### getter: featureDensityStatsReady
 
 ```js
 // type
@@ -241,7 +241,7 @@ trackMenuItems: () => MenuItem[]
 
 ```js
 // type signature
-contextMenuItems: () => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; }[]
+contextMenuItems: () => MenuItem[]
 ```
 
 #### method: renderProps
@@ -267,32 +267,32 @@ renderSvg: (opts: ExportSvgOptions & { overrideHeight: number; theme: ThemeOptio
 setMessage: (message: string) => void
 ```
 
-#### action: estimateRegionsStats
+#### action: getFeatureDensityStats
 
 ```js
 // type signature
-estimateRegionsStats: (regions: Region[], opts: { headers?: Record<string, string>; signal?: AbortSignal; filters?: string[]; }) => Promise<{}>
+getFeatureDensityStats: () => Promise<FeatureDensityStats>
 ```
 
-#### action: setRegionStatsP
+#### action: setFeatureDensityStatsP
 
 ```js
 // type signature
-setRegionStatsP: (p?: Promise<Stats>) => void
+setFeatureDensityStatsP: (arg: any) => void
 ```
 
-#### action: setRegionStats
+#### action: setFeatureDensityStats
 
 ```js
 // type signature
-setRegionStats: (estimatedRegionStats?: Stats) => void
+setFeatureDensityStats: (featureDensityStats?: FeatureDensityStats) => void
 ```
 
-#### action: clearRegionStats
+#### action: clearFeatureDensityStats
 
 ```js
 // type signature
-clearRegionStats: () => void
+clearFeatureDensityStats: () => void
 ```
 
 #### action: setHeight
@@ -316,11 +316,11 @@ resizeHeight: (distance: number) => number
 setScrollTop: (scrollTop: number) => void
 ```
 
-#### action: updateStatsLimit
+#### action: setFeatureDensityStatsLimit
 
 ```js
 // type signature
-updateStatsLimit: (stats: Stats) => void
+setFeatureDensityStatsLimit: (stats?: FeatureDensityStats) => void
 ```
 
 #### action: addBlock
@@ -362,7 +362,7 @@ clearFeatureSelection: () => void
 
 ```js
 // type signature
-setFeatureIdUnderMouse: (feature: string) => void
+setFeatureIdUnderMouse: (feature?: string) => void
 ```
 
 #### action: reload
