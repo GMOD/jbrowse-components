@@ -18,6 +18,12 @@ import {
 } from '@mui/material'
 import copy from 'copy-to-clipboard'
 
+import {
+  StringParam,
+  QueryParamProvider,
+  useQueryParam,
+} from 'use-query-params'
+
 import { alpha } from '@mui/material/styles'
 import { makeStyles } from 'tss-react/mui'
 import { AbstractSessionModel } from '@jbrowse/core/util'
@@ -148,7 +154,19 @@ function InfoDialog(props: { open: boolean; onClose: Function }) {
     </Dialog>
   )
 }
-function LinkField({ url }: { url: string }) {
+function LinkField({
+  url,
+  sessionParam,
+  passwordParam,
+}: {
+  url: string
+  sessionParam: string
+  passwordParam?: string
+}) {
+  const [clicked, setClicked] = useState(false)
+  const [, setPassword] = useQueryParam('password', StringParam)
+  const [, setSession] = useQueryParam('session', StringParam)
+
   return (
     <>
       <TextField
@@ -156,13 +174,23 @@ function LinkField({ url }: { url: string }) {
         value={url}
         InputProps={{ readOnly: true }}
         variant="filled"
-        style={{ width: '100%' }}
+        fullWidth
         onClick={event => {
           const target = event.target as HTMLTextAreaElement
           target.select()
         }}
       />
-      <Link href={url}>Link for bookmarking</Link>
+      <Link
+        href="#"
+        onClick={event => {
+          setPassword(passwordParam)
+          setSession(sessionParam)
+          setClicked(true)
+          event.preventDefault()
+        }}
+      >
+        {clicked ? 'Now hit Ctrl/Cmd+D' : 'Click to bookmark'}
+      </Link>
     </>
   )
 }
@@ -174,6 +202,8 @@ const ShareDialog = observer(function ({
   handleClose: () => void
   session: AbstractSessionModel & { shareURL: string }
 }) {
+  const [sessionParam, setSessionParam] = useState('')
+  const [passwordParam, setPasswordParam] = useState('')
   const [shortUrl, setShortUrl] = useState('')
   const [longUrl, setLongUrl] = useState('')
   const [loading, setLoading] = useState(true)
@@ -200,6 +230,9 @@ const ShareDialog = observer(function ({
             params.set('password', result.password)
             locationUrl.search = params.toString()
             setShortUrl(locationUrl.href)
+
+            setSessionParam(`share-${result.json.sessionId}`)
+            setPasswordParam(result.password)
           }
         } catch (e) {
           setError(e)
@@ -223,6 +256,7 @@ const ShareDialog = observer(function ({
         const longUrl = new URL(window.location.href)
         const longParams = new URLSearchParams(longUrl.search)
         longParams.set('session', `encoded-${sess}`)
+        setSessionParam(`encoded-${sess}`)
         longUrl.search = longParams.toString()
         if (!cancelled) {
           setLongUrl(longUrl.toString())
@@ -258,10 +292,14 @@ const ShareDialog = observer(function ({
             ) : loading ? (
               <Typography>Generating short URL...</Typography>
             ) : (
-              <LinkField url={shortUrl} />
+              <LinkField
+                url={shortUrl}
+                sessionParam={sessionParam}
+                passwordParam={passwordParam}
+              />
             )
           ) : (
-            <LinkField url={longUrl} />
+            <LinkField url={longUrl} sessionParam={sessionParam} />
           )}
         </DialogContent>
         <DialogActions>
