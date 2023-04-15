@@ -43,9 +43,10 @@ export function featureData(data: FeatureLoc) {
     if (data.attributes[a] !== null) {
       let attr = data.attributes[a]
       if (Array.isArray(attr) && attr.length === 1) {
-        // gtf uses double quotes for text values in the attributes column, remove them
-        const formattedAttr = attr[0].replace(/^"|"$/g, '')
-        attr = formattedAttr
+        // gtf uses double quotes for text values in the attributes column,
+        // remove them
+        // @ts-expect-error
+        attr = `${attr[0]}`.replace(/^"|"$/g, '')
       }
       f[b] = attr
     }

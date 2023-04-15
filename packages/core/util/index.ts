@@ -12,6 +12,7 @@ import {
   hasParent,
   IAnyStateTreeNode,
   IStateTreeNode,
+  Instance,
 } from 'mobx-state-tree'
 import { reaction, IReactionPublic, IReactionOptions } from 'mobx'
 import { Feature } from './simpleFeature'
@@ -24,6 +25,7 @@ import {
   Region,
   TypeTestedByPredicate,
 } from './types'
+import { Region as MUIRegion } from './types/mst'
 import { isAbortException, checkAbortSignal } from './aborting'
 import { BaseBlock } from './blockTypes'
 import { isUriLocation } from './types'
@@ -621,6 +623,19 @@ export function findLastIndex<T>(
   return -1
 }
 
+export function findLast<T>(
+  array: Array<T>,
+  predicate: (value: T, index: number, obj: T[]) => boolean,
+): T | undefined {
+  let l = array.length
+  while (l--) {
+    if (predicate(array[l], l, array)) {
+      return array[l]
+    }
+  }
+  return undefined
+}
+
 /**
  * makes a mobx reaction with the given functions, that calls actions on the
  * model for each stage of execution, and to abort the reaction function when
@@ -719,7 +734,7 @@ export function makeAbortableReaction<T, U, V>(
 
 export function renameRegionIfNeeded(
   refNameMap: Record<string, string>,
-  region: Region,
+  region: Region | Instance<typeof MUIRegion>,
 ): Region & { originalRefName?: string } {
   if (isStateTreeNode(region) && !isAlive(region)) {
     return region
@@ -728,8 +743,7 @@ export function renameRegionIfNeeded(
   if (region && refNameMap?.[region.refName]) {
     // clone the region so we don't modify it
     region = isStateTreeNode(region)
-      ? // @ts-expect-error
-        { ...getSnapshot(region) }
+      ? { ...getSnapshot(region) }
       : { ...region }
 
     // modify it directly in the container
