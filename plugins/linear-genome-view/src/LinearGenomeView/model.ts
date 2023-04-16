@@ -57,6 +57,7 @@ import { renderToSvg } from './svgcomponents/SVGLinearGenomeView'
 import ExportSvgDlg from './components/ExportSvgDialog'
 import MiniControls from './components/MiniControls'
 import Header from './components/Header'
+import { generateLocations, parseLocStrings } from './util'
 
 // lazies
 const SequenceSearchDialog = lazy(
@@ -1282,80 +1283,27 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const { isValidRefName } = assemblyManager
         await when(() => self.volatileWidth !== undefined)
         const assemblyName = optAssemblyName || assemblyNames[0]
-        let parsedLocStrings
-        const inputs = locString
-          .split(/(\s+)/)
-          .map(f => f.trim())
-          .filter(f => !!f)
 
         if (assemblyName) {
           await assemblyManager.waitForAssembly(assemblyName)
         }
-
-        // first try interpreting as a whitespace-separated sequence of
-        // multiple locstrings
-        try {
-          parsedLocStrings = inputs.map(loc =>
-            parseLocString(loc, ref => isValidRefName(ref, assemblyName)),
-          )
-        } catch (e) {
-          // if this fails, try interpreting as a whitespace-separated refname,
-          // start, end if start and end are integer inputs
-          const [refName, start, end] = inputs
-          if (
-            `${e}`.match(/Unknown reference sequence/) &&
-            Number.isInteger(+start) &&
-            Number.isInteger(+end)
-          ) {
-            parsedLocStrings = [
-              parseLocString(refName + ':' + start + '..' + end, ref =>
-                isValidRefName(ref, assemblyName),
-              ),
-            ]
-          } else {
-            throw e
-          }
-        }
-
-        const locations = await Promise.all(
-          parsedLocStrings?.map(async region => {
-            const asmName = region.assemblyName || assemblyName
-            const asm = await assemblyManager.waitForAssembly(asmName)
-            const { refName } = region
-            if (!asm) {
-              throw new Error(`assembly ${asmName} not found`)
-            }
-            const { regions } = asm
-            if (!regions) {
-              throw new Error(`regions not loaded yet for ${asmName}`)
-            }
-            const canonicalRefName = asm.getCanonicalRefName(region.refName)
-            if (!canonicalRefName) {
-              throw new Error(
-                `Could not find refName ${refName} in ${asm.name}`,
-              )
-            }
-            const parentRegion = regions.find(
-              r => r.refName === canonicalRefName,
-            )
-            if (!parentRegion) {
-              throw new Error(`Could not find refName ${refName} in ${asmName}`)
-            }
-
-            return {
-              ...region,
-              assemblyName: asmName,
-              parentRegion,
-            }
-          }),
+        const locations = await generateLocations(
+          parseLocStrings(
+            locString
+              .split(/(\s+)/)
+              .map(f => f.trim())
+              .filter(f => !!f),
+            assemblyName,
+            isValidRefName,
+          ),
+          assemblyManager,
+          assemblyName,
         )
 
         if (locations.length === 1) {
           const loc = locations[0]
-          self.setDisplayedRegions([
-            { reversed: loc.reversed, ...loc.parentRegion },
-          ])
-          const { start, end, parentRegion } = loc
+          const { reversed, parentRegion, start, end } = loc
+          self.setDisplayedRegions([{ reversed, ...parentRegion }])
 
           this.navTo({
             ...loc,
@@ -1391,26 +1339,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       navToMultiple(locations: NavLocation[]) {
-        const firstLocation = locations[0]
-        let { refName } = firstLocation
-        const {
-          start,
-          end,
-          assemblyName = self.assemblyNames[0],
-        } = firstLocation
+        const firstLoc = locations[0]
+        const { start, end, assemblyName = self.assemblyNames[0] } = firstLoc
 
         if (start !== undefined && end !== undefined && start > end) {
           throw new Error(`start "${start + 1}" is greater than end "${end}"`)
         }
-        const session = getSession(self)
-        const { assemblyManager } = session
-        const assembly = assemblyManager.get(assemblyName)
-        if (assembly) {
-          const canonicalRefName = assembly.getCanonicalRefName(refName)
-          if (canonicalRefName) {
-            refName = canonicalRefName
-          }
-        }
+        const assembly = getSession(self).assemblyManager.get(assemblyName)
+        const refName =
+          assembly?.getCanonicalRefName(firstLoc.refName) || firstLoc.refName
+
         let s = start
         let e = end
         let refNameMatched = false
@@ -1433,10 +1371,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
 
         const lastIndex = findLastIndex(self.displayedRegions, predicate)
-        let index
+        let index: number | undefined
         while (index !== lastIndex) {
           try {
-            const previousIndex: number | undefined = index
+            const previousIndex = index
             index = self.displayedRegions
               .slice(previousIndex === undefined ? 0 : previousIndex + 1)
               .findIndex(predicate)
@@ -1463,7 +1401,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             if (index === -1) {
               throw new Error(
                 `could not find a region that completely contained "${assembleLocString(
-                  firstLocation,
+                  firstLoc,
                 )}"`,
               )
             }

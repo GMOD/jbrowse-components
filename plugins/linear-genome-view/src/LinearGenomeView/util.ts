@@ -1,3 +1,10 @@
+import {
+  AssemblyManager,
+  ParsedLocString,
+  parseLocString,
+  Region,
+} from '@jbrowse/core/util'
+
 /**
  * Given a scale ( bp/px ) and minimum distances (px) between major and minor
  * gridlines, return an object like `{ majorPitch: bp, minorPitch: bp }` giving
@@ -81,4 +88,72 @@ export function makeTicks(
     }
   }
   return ticks
+}
+
+export async function generateLocations(
+  regions: ParsedLocString[] = [],
+  assemblyManager: AssemblyManager,
+  assemblyName: string,
+) {
+  return Promise.all(
+    regions.map(async region => {
+      const asmName = region.assemblyName || assemblyName
+      const asm = await assemblyManager.waitForAssembly(asmName)
+      const { refName } = region
+      if (!asm) {
+        throw new Error(`assembly ${asmName} not found`)
+      }
+      const { regions } = asm
+      if (!regions) {
+        throw new Error(`regions not loaded yet for ${asmName}`)
+      }
+      const canonicalRefName = asm.getCanonicalRefName(region.refName)
+      if (!canonicalRefName) {
+        throw new Error(`Could not find refName ${refName} in ${asm.name}`)
+      }
+      const parentRegion = regions.find(r => r.refName === canonicalRefName)
+      if (!parentRegion) {
+        throw new Error(`Could not find refName ${refName} in ${asmName}`)
+      }
+
+      return {
+        ...(region as Omit<typeof region, symbol>),
+        assemblyName: asmName,
+        parentRegion,
+      }
+    }),
+  )
+}
+
+export function parseLocStrings(
+  inputs: string[],
+  assemblyName: string,
+  isValidRefName: (str: string, assemblyName: string) => boolean,
+) {
+  let parsedLocStrings
+  // first try interpreting as a whitespace-separated sequence of
+  // multiple locstrings
+  try {
+    parsedLocStrings = inputs.map(loc =>
+      parseLocString(loc, ref => isValidRefName(ref, assemblyName)),
+    )
+  } catch (e) {
+    // if this fails, try interpreting as a whitespace-separated refname,
+    // start, end if start and end are integer inputs
+    const [refName, start, end] = inputs
+    if (
+      `${e}`.match(/Unknown reference sequence/) &&
+      Number.isInteger(+start) &&
+      Number.isInteger(+end)
+    ) {
+      parsedLocStrings = [
+        parseLocString(refName + ':' + start + '..' + end, ref =>
+          isValidRefName(ref, assemblyName),
+        ),
+      ]
+    } else {
+      throw e
+    }
+  }
+  return parsedLocStrings
 }
