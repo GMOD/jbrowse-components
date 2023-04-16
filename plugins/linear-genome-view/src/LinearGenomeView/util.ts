@@ -2,7 +2,6 @@ import {
   AssemblyManager,
   ParsedLocString,
   parseLocString,
-  Region,
 } from '@jbrowse/core/util'
 
 /**

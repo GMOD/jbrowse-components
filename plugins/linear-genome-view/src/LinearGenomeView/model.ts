@@ -7,7 +7,7 @@ import { MenuItem, ReturnToImportFormDialog } from '@jbrowse/core/ui'
 import {
   assembleLocString,
   clamp,
-  findLastIndex,
+  findLast,
   getContainingView,
   getSession,
   isViewContainer,
@@ -15,11 +15,8 @@ import {
   isSessionWithAddTracks,
   localStorageGetItem,
   measureText,
-  parseLocString,
   springAnimate,
   sum,
-  findLast,
-  doesIntersect2,
 } from '@jbrowse/core/util'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { BlockSet, BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -1344,49 +1341,59 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       navToMultiple(locations: NavLocation[]) {
-        const f = locations[0]
-        const { assemblyName = self.assemblyNames[0], refName: ref } = f
-
-        if (f.start !== undefined && f.end !== undefined && f.start > f.end) {
-          throw new Error(
-            `start "${f.start + 1}" is greater than end "${f.end}"`,
+        if (
+          locations.some(
+            l =>
+              l.start !== undefined && l.end !== undefined && l.start > l.end,
           )
+        ) {
+          throw new Error('found start greater than end')
         }
-        const assembly = getSession(self).assemblyManager.get(assemblyName)
-        const refName = assembly?.getCanonicalRefName(ref) || ref
-        const r = findLast(self.displayedRegions, r => r.refName === refName)
-        if (!r) {
-          throw new Error(`could not find a region with refName "${refName}"`)
+        const f1 = locations[0]
+        const f2 = locations[locations.length - 1]
+        const a = self.assemblyNames[0]
+        const { assemblyManager } = getSession(self)
+        const assembly1 = assemblyManager.get(f1.assemblyName || a)
+        const assembly2 = assemblyManager.get(f2.assemblyName || a)
+        const ref1 = assembly1?.getCanonicalRefName(f1.refName) || f1.refName
+        const ref2 = assembly2?.getCanonicalRefName(f2.refName) || f2.refName
+        const r1 = self.displayedRegions.find(r => r.refName === ref1)
+        const r2 = findLast(self.displayedRegions, r => r.refName === ref2)
+        if (!r1) {
+          throw new Error(`could not find a region with refName "${ref1}"`)
+        }
+        if (!r2) {
+          throw new Error(`could not find a region with refName "${ref2}"`)
         }
 
-        const s = f.start === undefined ? r.start : f.start
-        const e = f.end === undefined ? r.end : f.end
+        const s1 = f1.start === undefined ? r1.start : f1.start
+        const e1 = f1.end === undefined ? r1.end : f1.end
+        const s2 = f2.start === undefined ? r2.start : f2.start
+        const e2 = f2.end === undefined ? r2.end : f2.end
 
         const index = self.displayedRegions.findIndex(
           r =>
-            refName === r.refName &&
-            s >= r.start &&
-            s <= r.end &&
-            e <= r.end &&
-            s >= r.start,
+            ref1 === r.refName &&
+            s1 >= r.start &&
+            s1 <= r.end &&
+            e1 <= r.end &&
+            e1 >= r.start,
         )
-
-        const f2 = locations.slice(-1)[0]
-        const s2 = f2.start === undefined ? r.start : f2.start
-        const e2 = f2.end === undefined ? r.end : f2.end
 
         const index2 = self.displayedRegions.findIndex(
           r =>
-            refName === r.refName &&
+            ref2 === r.refName &&
             s2 >= r.start &&
             s2 <= r.end &&
             e2 <= r.end &&
-            s2 >= r.start,
+            e2 >= r.start,
         )
 
         if (index === -1 || index2 === -1) {
           throw new Error(
-            `could not find a region that contained "${assembleLocString(f)}"`,
+            `could not find a region that contained "${locations.map(l =>
+              assembleLocString(l),
+            )}"`,
           )
         }
 
@@ -1396,7 +1403,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         this.moveTo(
           {
             index,
-            offset: sd.reversed ? sd.end - e : s - sd.start,
+            offset: sd.reversed ? sd.end - e1 : s1 - sd.start,
           },
           {
             index: index2,

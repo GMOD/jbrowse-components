@@ -234,12 +234,12 @@ test('can instantiate a model that tests navTo/moveTo', async () => {
   expect(model.bpPerPx).toBe(0.125)
 
   expect(() => model.navTo({ refName: 'ctgA', start: 200, end: 100 })).toThrow(
-    'start "201" is greater than end "100"',
+    /start greater than end/,
   )
 
-  expect(() =>
-    model.navTo({ refName: 'ctgDoesNotExist', start: 0, end: 100 }),
-  ).toThrow('could not find a region with refName "ctgDoesNotExist"')
+  expect(() => model.navTo({ refName: 'noExist', start: 0, end: 100 })).toThrow(
+    /could not find a region/,
+  )
 
   expect(() => model.navTo({ refName: 'ctgA', end: 20100 })).toThrow(
     /could not find a region/,
