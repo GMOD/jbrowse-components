@@ -25,6 +25,19 @@ In embedded mode, preparing search indexes is a little more awkward because the
 cases don't generally use the config.json. Therefore, you can supply the --file
 argument to the `jbrowse text-index` command
 
+## Per-track search index
+
+Per-track search indexes contain information for a single track.
+
+<Story id="source-with-per-track-text-searching--example" />
+
+# Preparing indexes
+
+In embedded mode, preparing search indexes is a little more awkward because the
+`jbrowse test-index` command normally looks for a config.json but embedded use
+cases don't generally use the config.json. Therefore, you can supply the --file
+argument to the `jbrowse text-index` command
+
 ### Preparing aggregate search indexes
 
 If you use the `jbrowse text-index` command with the --files argument, you can
