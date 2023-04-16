@@ -18,6 +18,8 @@ import {
   parseLocString,
   springAnimate,
   sum,
+  findLast,
+  doesIntersect2,
 } from '@jbrowse/core/util'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { BlockSet, BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -799,10 +801,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #method
        * Helper method for the fetchSequence.
-       * Retrieves the corresponding regions that were selected by the rubberband
+       * Retrieves the corresponding regions that were selected by the
+       * rubberband
        *
-       * @param leftOffset - `object as {start, end, index, offset}`, offset = start of user drag
-       * @param rightOffset - `object as {start, end, index, offset}`, offset = end of user drag
+       * @param leftOffset - `object as {start, end, index, offset}`, offset = start
+       * of user drag
+       * @param rightOffset - `object as {start, end, index, offset}`,
+       * offset = end of user drag
        * @returns array of Region[]
        */
       getSelectedRegions(leftOffset?: BpOffset, rightOffset?: BpOffset) {
@@ -824,7 +829,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
-       * schedule something to be run after the next time displayedRegions is set
+       * schedule something to be run after the next time displayedRegions is
+       * set
        */
       afterDisplayedRegionsSet(cb: Function) {
         self.afterDisplayedRegionsSetCallbacks.push(cb)
@@ -1001,8 +1007,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * the cytoband is displayed to the right of the chromosome name,
-       * and that offset is calculated manually with this method
+       * the cytoband is displayed to the right of the chromosome name, and
+       * that offset is calculated manually with this method
        */
       get cytobandOffset() {
         return this.showCytobands
@@ -1163,11 +1169,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #getter
          * static blocks are an important concept jbrowse uses to avoid
-         * re-rendering when you scroll to the side. when you horizontally
-         * scroll to the right, old blocks to the left may be removed, and
-         * new blocks may be instantiated on the right. tracks may use the
-         * static blocks to render their data for the region represented by
-         * the block
+         * re-rendering when you scroll to the side. when you horizontally scroll to the
+         * right, old blocks to the left may be removed, and new blocks may be
+         * instantiated on the right. tracks may use the static blocks to render their
+         * data for the region represented by the block
          */
         get staticBlocks() {
           const ret = calculateStaticBlocks(self)
@@ -1181,9 +1186,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #getter
          * dynamic blocks represent the exact coordinates of the currently
-         * visible genome regions on the screen. they are similar to static
-         * blocks, but statcic blocks can go offscreen while dynamic blocks
-         * represent exactly what is on screen
+         * visible genome regions on the screen. they are similar to static blocks, but
+         * static blocks can go offscreen while dynamic blocks represent exactly what
+         * is on screen
          */
         get dynamicBlocks() {
           return calculateDynamicBlocks(self)
@@ -1260,8 +1265,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
     .actions(self => ({
       /**
        * #action
-       * offset is the base-pair-offset in the displayed region, index is the index of the
-       * displayed region in the linear genome view
+       * offset is the base-pair-offset in the displayed region, index is the
+       * index of the displayed region in the linear genome view
        *
        * @param start - object as `{start, end, offset, index}`
        * @param end - object as `{start, end, offset, index}`
@@ -1275,7 +1280,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * navigate to the given locstring
        *
        * @param locString - e.g. "chr1:1-100"
-       * @param optAssemblyName - (optional) the assembly name to use when navigating to the locstring
+       * @param optAssemblyName - (optional) the assembly name to use when
+       * navigating to the locstring
        */
       async navToLocString(locString: string, optAssemblyName?: string) {
         const { assemblyNames } = self
@@ -1322,10 +1328,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        * Navigate to a location based on its refName and optionally start, end,
-       * and assemblyName. Can handle if there are multiple displayedRegions
-       * from same refName. Only navigates to a location if it is entirely
-       * within a displayedRegion. Navigates to the first matching location
-       * encountered.
+       * and assemblyName. Can handle if there are multiple displayedRegions from same
+       * refName. Only navigates to a location if it is entirely within a
+       * displayedRegion. Navigates to the first matching location encountered.
        *
        * Throws an error if navigation was unsuccessful
        *
@@ -1339,120 +1344,65 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       navToMultiple(locations: NavLocation[]) {
-        const firstLoc = locations[0]
-        const { start, end, assemblyName = self.assemblyNames[0] } = firstLoc
+        const f = locations[0]
+        const { assemblyName = self.assemblyNames[0], refName: ref } = f
 
-        if (start !== undefined && end !== undefined && start > end) {
-          throw new Error(`start "${start + 1}" is greater than end "${end}"`)
+        if (f.start !== undefined && f.end !== undefined && f.start > f.end) {
+          throw new Error(
+            `start "${f.start + 1}" is greater than end "${f.end}"`,
+          )
         }
         const assembly = getSession(self).assemblyManager.get(assemblyName)
-        const refName =
-          assembly?.getCanonicalRefName(firstLoc.refName) || firstLoc.refName
-
-        let s = start
-        let e = end
-        let refNameMatched = false
-        const predicate = (r: Region) => {
-          if (refName === r.refName) {
-            refNameMatched = true
-            if (s === undefined) {
-              s = r.start
-            }
-            if (e === undefined) {
-              e = r.end
-            }
-            if (s >= r.start && s <= r.end && e <= r.end && e >= r.start) {
-              return true
-            }
-            s = start
-            e = end
-          }
-          return false
+        const refName = assembly?.getCanonicalRefName(ref) || ref
+        const r = findLast(self.displayedRegions, r => r.refName === refName)
+        if (!r) {
+          throw new Error(`could not find a region with refName "${refName}"`)
         }
 
-        const lastIndex = findLastIndex(self.displayedRegions, predicate)
-        let index: number | undefined
-        while (index !== lastIndex) {
-          try {
-            const previousIndex = index
-            index = self.displayedRegions
-              .slice(previousIndex === undefined ? 0 : previousIndex + 1)
-              .findIndex(predicate)
-            if (previousIndex !== undefined) {
-              index += previousIndex + 1
-            }
-            if (!refNameMatched) {
-              throw new Error(
-                `could not find a region with refName "${refName}"`,
-              )
-            }
-            if (s === undefined) {
-              throw new Error(
-                `could not find a region with refName "${refName}" that contained an end position ${e}`,
-              )
-            }
-            if (e === undefined) {
-              throw new Error(
-                `could not find a region with refName "${refName}" that contained a start position ${
-                  s + 1
-                }`,
-              )
-            }
-            if (index === -1) {
-              throw new Error(
-                `could not find a region that completely contained "${assembleLocString(
-                  firstLoc,
-                )}"`,
-              )
-            }
-            if (locations.length === 1) {
-              const f = self.displayedRegions[index]
-              this.moveTo(
-                { index, offset: f.reversed ? f.end - e : s - f.start },
-                { index, offset: f.reversed ? f.end - s : e - f.start },
-              )
-              return
-            }
-            let idx = 0
-            let start = 0
-            let end = 0
-            for (idx; idx < locations.length; idx++) {
-              const location = locations[idx]
-              const region = self.displayedRegions[index + idx]
-              start = location.start || region.start
-              end = location.end || region.end
-              if (location.refName !== region.refName) {
-                throw new Error(
-                  `Entered location ${assembleLocString(
-                    location,
-                  )} does not match with displayed regions`,
-                )
-              }
-            }
-            idx -= 1
-            const startDisplayedRegion = self.displayedRegions[index]
-            const endDisplayedRegion = self.displayedRegions[index + idx]
-            this.moveTo(
-              {
-                index,
-                offset: startDisplayedRegion.reversed
-                  ? startDisplayedRegion.end - e
-                  : s - startDisplayedRegion.start,
-              },
-              {
-                index: index + idx,
-                offset: endDisplayedRegion.reversed
-                  ? endDisplayedRegion.end - start
-                  : end - endDisplayedRegion.start,
-              },
-            )
-            return
-          } catch (error) {
-            if (index === lastIndex) {
-              throw error
-            }
-          }
+        const s = f.start === undefined ? r.start : f.start
+        const e = f.end === undefined ? r.end : f.end
+
+        const index = self.displayedRegions.findIndex(
+          r =>
+            refName === r.refName &&
+            s >= r.start &&
+            s <= r.end &&
+            e <= r.end &&
+            s >= r.start,
+        )
+
+        const f2 = locations.slice(-1)[0]
+        const s2 = f2.start === undefined ? r.start : f2.start
+        const e2 = f2.end === undefined ? r.end : f2.end
+
+        const index2 = self.displayedRegions.findIndex(
+          r =>
+            refName === r.refName &&
+            s2 >= r.start &&
+            s2 <= r.end &&
+            e2 <= r.end &&
+            s2 >= r.start,
+        )
+
+        if (index === -1 || index2 === -1) {
+          throw new Error(
+            `could not find a region that contained "${assembleLocString(f)}"`,
+          )
         }
+
+        const sd = self.displayedRegions[index]
+        const ed = self.displayedRegions[index2]
+
+        this.moveTo(
+          {
+            index,
+            offset: sd.reversed ? sd.end - e : s - sd.start,
+          },
+          {
+            index: index2,
+            offset: ed.reversed ? ed.end - s2 : e2 - ed.start,
+          },
+        )
       },
     }))
     .views(self => ({
