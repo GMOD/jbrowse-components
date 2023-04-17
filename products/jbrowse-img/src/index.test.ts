@@ -9,7 +9,6 @@ import { renderRegion } from './renderRegion'
 import path from 'path'
 import fs from 'fs'
 import { JSDOM } from 'jsdom'
-import 'abortcontroller-polyfill/dist/abortcontroller-polyfill-only'
 import { Image, createCanvas } from 'canvas'
 import fetch, { Headers, Response, Request } from 'node-fetch'
 
