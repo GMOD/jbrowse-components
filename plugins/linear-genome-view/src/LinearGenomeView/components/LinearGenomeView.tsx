@@ -39,18 +39,6 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
 
   return (
     <div style={{ position: 'relative' }}>
-      {model.seqDialogDisplayed ? (
-        <GetSequenceDialog
-          model={model}
-          handleClose={() => model.setGetSequenceDialogOpen(false)}
-        />
-      ) : null}
-      {model.isSearchDialogDisplayed ? (
-        <SearchResultsDialog
-          model={model}
-          handleClose={() => model.setSearchResults(undefined, undefined)}
-        />
-      ) : null}
       <HeaderComponent model={model} />
       <MiniControlsComponent model={model} />
       <TracksContainer model={model}>

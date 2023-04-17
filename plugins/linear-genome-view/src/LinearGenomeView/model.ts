@@ -63,6 +63,12 @@ const SequenceSearchDialog = lazy(
   () => import('./components/SequenceSearchDialog'),
 )
 
+const GetSequenceDialog = lazy(() => import('./components/GetSequenceDialog'))
+
+const SequenceSearchDialog = lazy(
+  () => import('./components/SequenceSearchDialog'),
+)
+
 export interface BpOffset {
   refName?: string
   index: number
@@ -255,9 +261,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       coarseTotalBp: 0,
       leftOffset: undefined as undefined | BpOffset,
       rightOffset: undefined as undefined | BpOffset,
-      searchResults: undefined as undefined | BaseResult[],
-      searchQuery: undefined as undefined | string,
-      seqDialogDisplayed: false,
     }))
     .views(self => ({
       /**
@@ -337,13 +340,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       get hasDisplayedRegions() {
         return self.displayedRegions.length > 0
-      },
-
-      /**
-       * #getter
-       */
-      get isSearchDialogDisplayed() {
-        return self.searchResults !== undefined
       },
 
       /**
@@ -634,16 +630,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setSearchResults(results?: BaseResult[], query?: string) {
-        self.searchResults = results
-        self.searchQuery = query
-      },
-
-      /**
-       * #action
-       */
-      setGetSequenceDialogOpen(open: boolean) {
-        self.seqDialogDisplayed = open
+      setSearchResults(searchResults?: BaseResult[], searchQuery?: string) {
+        getSession(self).queueDialog(handleClose => [
+          SequenceSearchDialog,
+          { model: self as any, searchResults, searchQuery, handleClose },
+        ])
       },
 
       /**
@@ -1439,15 +1430,21 @@ export function stateModelFactory(pluginManager: PluginManager) {
           {
             label: 'Zoom to region',
             icon: ZoomInIcon,
-            onClick: () => {
-              const { leftOffset, rightOffset } = self
-              self.moveTo(leftOffset, rightOffset)
-            },
+            onClick: () => self.moveTo(self.leftOffset, self.rightOffset),
           },
           {
             label: 'Get sequence',
             icon: MenuOpenIcon,
-            onClick: () => self.setGetSequenceDialogOpen(true),
+            onClick: () =>
+              getSession(self).queueDialog(handleClose => [
+                GetSequenceDialog,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                { model: self as any, handleClose },
+              ]),
+          },
+          {
+            label: 'Highlight',
+            onClick: () => self.setHighlight(self.leftOffset, self.rightOffset),
           },
         ]
       },
