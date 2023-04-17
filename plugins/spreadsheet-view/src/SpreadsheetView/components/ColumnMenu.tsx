@@ -37,7 +37,7 @@ const ColumnMenu = observer(function ({
   const { dataTypeChoices } = spreadsheetModel
 
   // make a Map of categoryName => [entry...]
-  type Record = typeof dataTypeChoices[0]
+  type Record = (typeof dataTypeChoices)[0]
   type RecordGroup = { isCategory: boolean; subMenuItems: Record[] }
   const dataTypeTopLevelMenu = new Map<string, Record | RecordGroup>()
   dataTypeChoices.forEach(dataTypeRecord => {

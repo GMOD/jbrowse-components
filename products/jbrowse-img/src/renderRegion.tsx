@@ -24,7 +24,7 @@ export interface Opts {
   aliases?: string
   cytobands?: string
   defaultSession?: string
-  trackList: Entry[]
+  trackList?: Entry[]
   tracks?: string
 }
 
