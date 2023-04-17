@@ -231,6 +231,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * show the "gridlines" in the track area
          */
         showGridlines: true,
+
+        /**
+         * #property
+         * highlighted areas
+         */
+        highlight: types.array(MUIRegion),
       }),
     )
     .volatile(() => ({
@@ -526,6 +532,24 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      clearHighlights() {
+        self.highlight = cast([])
+      },
+      /**
+       * #action
+       */
+      setHighlight(regions: Region[]) {
+        self.highlight = cast(regions)
+      },
+      /**
+       * #action
+       */
+      addHighlight(regions: Region[]) {
+        self.highlight = cast([...self.highlight, ...regions])
+      },
       /**
        * #action
        */
@@ -1535,6 +1559,34 @@ export function stateModelFactory(pluginManager: PluginManager) {
             label: 'Get sequence',
             icon: MenuOpenIcon,
             onClick: () => self.setGetSequenceDialogOpen(true),
+          },
+          {
+            label: 'Highlights',
+            type: 'subMenu',
+            subMenu: [
+              {
+                label: 'Clear all highlights',
+                onClick: () => self.clearHighlights(),
+              },
+              {
+                label: 'Set only this highlight',
+                onClick: () => {
+                  const { leftOffset, rightOffset } = self
+                  self.setHighlight(
+                    self.getSelectedRegions(leftOffset, rightOffset),
+                  )
+                },
+              },
+              {
+                label: 'Add to existing highlights',
+                onClick: () => {
+                  const { leftOffset, rightOffset } = self
+                  self.addHighlight(
+                    self.getSelectedRegions(leftOffset, rightOffset),
+                  )
+                },
+              },
+            ],
           },
         ]
       },
