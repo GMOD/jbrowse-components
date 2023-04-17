@@ -92,11 +92,14 @@ export function makeTicks(
 export async function generateLocations(
   regions: ParsedLocString[] = [],
   assemblyManager: AssemblyManager,
-  assemblyName: string,
+  assemblyName?: string,
 ) {
   return Promise.all(
     regions.map(async region => {
       const asmName = region.assemblyName || assemblyName
+      if (!asmName) {
+        throw new Error('no assembly provided')
+      }
       const asm = await assemblyManager.waitForAssembly(asmName)
       const { refName } = region
       if (!asm) {
@@ -125,15 +128,18 @@ export async function generateLocations(
 }
 
 export function parseLocStrings(
-  inputs: string[],
+  input: string,
   assemblyName: string,
   isValidRefName: (str: string, assemblyName: string) => boolean,
 ) {
-  let parsedLocStrings
+  const inputs = input
+    .split(/(\s+)/)
+    .map(f => f.trim())
+    .filter(f => !!f)
   // first try interpreting as a whitespace-separated sequence of
   // multiple locstrings
   try {
-    parsedLocStrings = inputs.map(loc =>
+    return inputs.map(loc =>
       parseLocString(loc, ref => isValidRefName(ref, assemblyName)),
     )
   } catch (e) {
@@ -145,7 +151,7 @@ export function parseLocStrings(
       Number.isInteger(+start) &&
       Number.isInteger(+end)
     ) {
-      parsedLocStrings = [
+      return [
         parseLocString(refName + ':' + start + '..' + end, ref =>
           isValidRefName(ref, assemblyName),
         ),
@@ -154,5 +160,4 @@ export function parseLocStrings(
       throw e
     }
   }
-  return parsedLocStrings
 }

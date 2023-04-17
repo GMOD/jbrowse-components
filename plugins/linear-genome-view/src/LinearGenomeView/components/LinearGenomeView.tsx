@@ -10,8 +10,6 @@ import { LinearGenomeViewModel } from '..'
 import TrackContainer from './TrackContainer'
 import TracksContainer from './TracksContainer'
 import ImportForm from './ImportForm'
-import GetSequenceDialog from './GetSequenceDialog'
-import SearchResultsDialog from './SearchResultsDialog'
 
 type LGV = LinearGenomeViewModel
 

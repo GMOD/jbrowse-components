@@ -18,12 +18,12 @@ import { LinearGenomeViewModel } from '../..'
 
 export default function SearchResultsTable({
   searchResults,
-  optAssemblyName,
+  assemblyName: optAssemblyName,
   model,
   handleClose,
 }: {
   searchResults: BaseResult[]
-  optAssemblyName?: string
+  assemblyName?: string
   model: LinearGenomeViewModel
   handleClose: () => void
 }) {

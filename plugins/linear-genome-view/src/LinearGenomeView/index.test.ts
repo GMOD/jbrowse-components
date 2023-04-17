@@ -283,27 +283,27 @@ test('can navToMultiple', () => {
   expect(model.offsetPx).toBe(0)
   expect(model.bpPerPx).toBe(12.5)
 
-  // model.navToMultiple([
-  //   { refName: 'ctgA', start: 5000, end: 10000 },
-  //   { refName: 'ctgB', start: 0, end: 5000 },
-  // ])
-  // expect(model.offsetPx).toBe(399)
-  // expect(model.bpPerPx).toBeCloseTo(12.531)
+  model.navToMultiple([
+    { refName: 'ctgA', start: 5000, end: 10000 },
+    { refName: 'ctgB', start: 0, end: 5000 },
+  ])
+  expect(model.offsetPx).toBe(399)
+  expect(model.bpPerPx).toBeCloseTo(12.531)
 
-  // model.navToMultiple([
-  //   { refName: 'ctgA', start: 5000, end: 10000 },
-  //   { refName: 'ctgB', start: 0, end: 10000 },
-  //   { refName: 'ctgC', start: 0, end: 5000 },
-  // ])
-  // expect(model.offsetPx).toBe(199)
-  // expect(model.bpPerPx).toBeCloseTo(25.125)
+  model.navToMultiple([
+    { refName: 'ctgA', start: 5000, end: 10000 },
+    { refName: 'ctgB', start: 0, end: 10000 },
+    { refName: 'ctgC', start: 0, end: 5000 },
+  ])
+  expect(model.offsetPx).toBe(199)
+  expect(model.bpPerPx).toBeCloseTo(25.125)
 
-  // model.navToMultiple([
-  //   { refName: 'ctgA', start: 5000, end: 10000 },
-  //   { refName: 'ctgC', start: 0, end: 5000 },
-  // ])
-  // expect(model.offsetPx).toBe(2793)
-  // expect(model.bpPerPx).toBeCloseTo(12.531)
+  model.navToMultiple([
+    { refName: 'ctgA', start: 5000, end: 10000 },
+    { refName: 'ctgC', start: 0, end: 5000 },
+  ])
+  expect(model.offsetPx).toBe(199)
+  expect(model.bpPerPx).toBeCloseTo(25.12562)
 })
 
 describe('Zoom to selected displayed regions', () => {

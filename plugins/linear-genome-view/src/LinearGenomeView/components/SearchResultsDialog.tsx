@@ -14,13 +14,13 @@ import SearchResultsTable from './SearchResultsTable'
 
 export default function SearchResultsDialog({
   model,
-  optAssemblyName,
+  assemblyName,
   searchQuery,
   searchResults,
   handleClose,
 }: {
   model: LinearGenomeViewModel
-  optAssemblyName?: string
+  assemblyName?: string
   searchQuery: string
   searchResults?: BaseResult[]
   handleClose: () => void
@@ -40,7 +40,7 @@ export default function SearchResultsDialog({
             <SearchResultsTable
               model={model}
               handleClose={handleClose}
-              optAssemblyName={optAssemblyName}
+              assemblyName={assemblyName}
               searchResults={searchResults}
             />
           </>

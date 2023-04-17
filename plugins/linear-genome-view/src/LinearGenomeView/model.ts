@@ -17,6 +17,7 @@ import {
   measureText,
   springAnimate,
   sum,
+  ParsedLocString,
 } from '@jbrowse/core/util'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { BlockSet, BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -65,8 +66,8 @@ const SequenceSearchDialog = lazy(
 
 const GetSequenceDialog = lazy(() => import('./components/GetSequenceDialog'))
 
-const SequenceSearchDialog = lazy(
-  () => import('./components/SequenceSearchDialog'),
+const SearchResultsDialog = lazy(
+  () => import('./components/SearchResultsDialog'),
 )
 
 export interface BpOffset {
@@ -237,12 +238,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * show the "gridlines" in the track area
          */
         showGridlines: true,
-
-        /**
-         * #property
-         * highlighted areas
-         */
-        highlight: types.array(MUIRegion),
       }),
     )
     .volatile(() => ({
@@ -531,18 +526,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      clearHighlights() {
-        self.highlight = cast([])
-      },
-      /**
-       * #action
-       */
-      setHighlight(regions: Region[]) {
-        self.highlight = cast(regions)
-      },
-      /**
-       * #action
-       */
       setShowCytobands(flag: boolean) {
         self.showCytobandsSetting = flag
       },
@@ -620,7 +603,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
-       * sets offsets used in the get sequence dialog
+       * sets offsets of rubberband, used in the get sequence dialog can call
+       * view.getSelectedRegions(view.leftOffset,view.rightOffset) to compute
+       * the selected regions from the offsets
        */
       setOffsets(left?: BpOffset, right?: BpOffset) {
         self.leftOffset = left
@@ -630,10 +615,22 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setSearchResults(searchResults?: BaseResult[], searchQuery?: string) {
+      setSearchResults(
+        searchResults: BaseResult[],
+        searchQuery: string,
+        assemblyName?: string,
+      ) {
         getSession(self).queueDialog(handleClose => [
-          SequenceSearchDialog,
-          { model: self as any, searchResults, searchQuery, handleClose },
+          SearchResultsDialog,
+
+          {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            model: self as any,
+            searchResults,
+            searchQuery,
+            handleClose,
+            assemblyName,
+          },
         ])
       },
 
@@ -1283,31 +1280,44 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
-       * navigate to the given locstring
+       * Navigate to the given locstring, will change displayed regions if
+       * needed, and wait for assemblies to be initialized
        *
-       * @param locString - e.g. "chr1:1-100"
+       * @param input - e.g. "chr1:1-100", "chr1:1-100 chr2:1-100", "chr 1 100"
        * @param optAssemblyName - (optional) the assembly name to use when
        * navigating to the locstring
        */
-      async navToLocString(locString: string, optAssemblyName?: string) {
+      async navToLocString(input: string, optAssemblyName?: string) {
         const { assemblyNames } = self
         const { assemblyManager } = getSession(self)
         const { isValidRefName } = assemblyManager
-        await when(() => self.volatileWidth !== undefined)
         const assemblyName = optAssemblyName || assemblyNames[0]
-
         if (assemblyName) {
+          // wait before isValidRefName can be called
           await assemblyManager.waitForAssembly(assemblyName)
         }
+
+        return this.navToLocations(
+          parseLocStrings(input, assemblyName, isValidRefName),
+          assemblyName,
+        )
+      },
+
+      /**
+       * #action
+       * Similar to `navToLocString`, but accepts parsed location objects
+       * instead of strings. Will try to perform `setDisplayedRegions` if
+       * changing regions
+       */
+      async navToLocations(
+        parsedLocStrings: ParsedLocString[],
+        assemblyName?: string,
+      ) {
+        const { assemblyManager } = getSession(self)
+        await when(() => self.volatileWidth !== undefined)
+
         const locations = await generateLocations(
-          parseLocStrings(
-            locString
-              .split(/(\s+)/)
-              .map(f => f.trim())
-              .filter(f => !!f),
-            assemblyName,
-            isValidRefName,
-          ),
+          parsedLocStrings,
           assemblyManager,
           assemblyName,
         )
@@ -1334,9 +1344,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        * Navigate to a location based on its refName and optionally start, end,
-       * and assemblyName. Can handle if there are multiple displayedRegions from same
-       * refName. Only navigates to a location if it is entirely within a
-       * displayedRegion. Navigates to the first matching location encountered.
+       * and assemblyName. Will not try to change displayed regions, use
+       * `navToLocations` instead. Only navigates to a location if it is
+       * entirely within a displayedRegion. Navigates to the first matching location
+       * encountered.
        *
        * Throws an error if navigation was unsuccessful
        *
@@ -1348,6 +1359,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
+       * Navigate to a location based on its refName and optionally start, end,
+       * and assemblyName. Will not try to change displayed regions, use
+       * navToLocations instead. Only navigates to a location if it is entirely
+       * within a displayedRegion. Navigates to the first matching location
+       * encountered.
+       *
+       * Throws an error if navigation was unsuccessful
+       *
+       * @param locations - proposed location to navigate to
        */
       navToMultiple(locations: NavLocation[]) {
         if (
@@ -1442,10 +1462,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 { model: self as any, handleClose },
               ]),
           },
-          {
-            label: 'Highlight',
-            onClick: () => self.setHighlight(self.leftOffset, self.rightOffset),
-          },
         ]
       },
 
@@ -1478,7 +1494,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           coord,
           regionNumber,
         })
-        if (centerPx) {
+        if (centerPx !== undefined) {
           self.scrollTo(Math.round(centerPx.offsetPx - self.width / 2))
         }
       },

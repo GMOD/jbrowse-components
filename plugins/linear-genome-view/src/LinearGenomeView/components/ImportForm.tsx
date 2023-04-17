@@ -82,7 +82,7 @@ export default observer(function ({ model }: { model: LGV }) {
       if (option?.getDisplayString() === input && option.hasLocation()) {
         await navToOption(option)
       } else if (option?.results?.length) {
-        model.setSearchResults(option.results, option.getLabel())
+        model.setSearchResults(option.results, option.getLabel(), selectedAsm)
       } else {
         const [ref, rest] = splitLast(input, ':')
         const allRefs = assembly?.allRefNamesWithLowerCase || []
@@ -102,7 +102,7 @@ export default observer(function ({ model }: { model: LGV }) {
           })
 
           if (results.length > 1) {
-            model.setSearchResults(results, input.toLowerCase())
+            model.setSearchResults(results, input.toLowerCase(), selectedAsm)
           } else if (results.length === 1) {
             await navToOption(results[0])
           } else {
