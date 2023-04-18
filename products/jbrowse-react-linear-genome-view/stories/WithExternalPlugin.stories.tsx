@@ -94,4 +94,4 @@ export const Example = () => {
   )
 }
 
-export default { title: 'Source: Loading plugins from external URLs' }
+export default { title: 'Source: With plugins from external URLs' }

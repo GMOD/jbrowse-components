@@ -41,4 +41,4 @@ export const Example = () => {
   )
 }
 
-export default { title: 'Source: Observe visible regions' }
+export default { title: 'Source: With visible regions observer' }

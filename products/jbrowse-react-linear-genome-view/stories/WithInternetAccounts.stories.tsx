@@ -41,7 +41,7 @@ export const Example = () => {
     <div>
       <JBrowseLinearGenomeView viewState={state} />
       <a href="https://github.com/gmod/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/stories/withinternetaccounts.stories.tsx">
-        source code
+        Source code
       </a>
     </div>
   )
