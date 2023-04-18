@@ -170,7 +170,7 @@ const OverviewBox = observer(function ({
         style={{
           left: block.offsetPx + 3,
           color: canDisplayCytobands
-            ? theme.palette.primary.contrastText
+            ? theme.palette.text.primary
             : refNameColor,
         }}
         className={classes.scalebarRefName}
