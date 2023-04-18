@@ -129,7 +129,11 @@ function TrackContainer({
               <div
                 ref={ref}
                 className={classes.renderingComponentContainer}
-                style={{ transform: `scaleX(${model.scaleFactor})` }}
+                style={{
+                  transform: `scaleX(${
+                    model.scaleFactor
+                  }) translate(${-model.previewScrollOffsetPx}px, 0)`,
+                }}
               >
                 <RenderingComponent
                   model={display}

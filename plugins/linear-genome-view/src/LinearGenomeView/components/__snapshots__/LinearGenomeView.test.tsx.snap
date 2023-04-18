@@ -512,7 +512,7 @@ exports[`renders one track, one region 1`] = `
         >
           <div
             class="css-v11ioz-renderingComponentContainer"
-            style="transform: scaleX(1);"
+            style="transform: scaleX(1) translate(0px, 0);"
           >
             <div
               class="css-1y9lrrz-display"
@@ -1331,7 +1331,7 @@ exports[`renders two tracks, two regions 1`] = `
         >
           <div
             class="css-v11ioz-renderingComponentContainer"
-            style="transform: scaleX(1);"
+            style="transform: scaleX(1) translate(0px, 0);"
           >
             <div
               class="css-1y9lrrz-display"
@@ -1463,7 +1463,7 @@ exports[`renders two tracks, two regions 1`] = `
         >
           <div
             class="css-v11ioz-renderingComponentContainer"
-            style="transform: scaleX(1);"
+            style="transform: scaleX(1) translate(0px, 0);"
           >
             <div
               class="css-1y9lrrz-display"

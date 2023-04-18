@@ -152,6 +152,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
+         * Distance in pixels that we have "preview scrolled", which is scrolling
+         * just the grid lines and existing content without fetching data and re-rendering.
+         * This is in addition to the offsetPx.
+         */
+        previewScrollOffsetPx: 0,
+
+        /**
+         * #property
          * Number of base-pairs per displayed pixel. Expresses the "zoom level" of
          * the view.
          */
@@ -833,12 +841,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
+       * @param distance - distance to scroll in base pairs
        */
       horizontalScroll(distance: number) {
+        self.previewScrollOffsetPx = 0
         const oldOffsetPx = self.offsetPx
         // newOffsetPx is the actual offset after the scroll is clamped
         const newOffsetPx = self.scrollTo(self.offsetPx + distance)
         return newOffsetPx - oldOffsetPx
+      },
+
+      previewScroll(distance: number) {
+        self.previewScrollOffsetPx += distance
       },
 
       /**

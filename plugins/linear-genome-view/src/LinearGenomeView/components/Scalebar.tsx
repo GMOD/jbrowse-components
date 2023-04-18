@@ -62,10 +62,12 @@ const useStyles = makeStyles()(theme => ({
 const RenderedRefNameLabels = observer(({ model }: { model: LGV }) => {
   const { classes } = useStyles()
 
+  const totalOffsetPx = model.offsetPx + model.previewScrollOffsetPx
+
   // find the block that needs pinning to the left side for context
   let lastLeftBlock = 0
   model.staticBlocks.forEach((block, i) => {
-    if (block.offsetPx - model.offsetPx < 0) {
+    if (block.offsetPx - totalOffsetPx < 0) {
       lastLeftBlock = i
     }
   })
@@ -79,8 +81,8 @@ const RenderedRefNameLabels = observer(({ model }: { model: LGV }) => {
             style={{
               left:
                 index === lastLeftBlock
-                  ? Math.max(0, -model.offsetPx)
-                  : block.offsetPx - model.offsetPx - 1,
+                  ? Math.max(0, -totalOffsetPx)
+                  : block.offsetPx - totalOffsetPx - 1,
               paddingLeft: index === lastLeftBlock ? 0 : 1,
             }}
             className={classes.refLabel}
@@ -160,7 +162,8 @@ const Scalebar = React.forwardRef<HTMLDivElement, ScalebarProps>(
   ({ model, style, className, ...other }, ref) => {
     const { classes, cx } = useStyles()
 
-    const offsetLeft = model.staticBlocks.offsetPx - model.offsetPx
+    const offsetLeft =
+      model.staticBlocks.offsetPx - model.offsetPx - model.previewScrollOffsetPx
     return (
       <Paper
         data-resizer="true" // used to avoid click-and-drag scrolls on trackscontainer

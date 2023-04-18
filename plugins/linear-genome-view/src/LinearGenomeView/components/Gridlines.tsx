@@ -94,7 +94,8 @@ const RenderedVerticalGuides = observer(({ model }: { model: LGV }) => {
 function VerticalGuides({ model }: { model: LGV }) {
   const { classes } = useStyles()
   // find the block that needs pinning to the left side for context
-  const offsetLeft = model.staticBlocks.offsetPx - model.offsetPx
+  const offsetLeft =
+    model.staticBlocks.offsetPx - model.offsetPx - model.previewScrollOffsetPx
   return (
     <div
       className={classes.verticalGuidesZoomContainer}

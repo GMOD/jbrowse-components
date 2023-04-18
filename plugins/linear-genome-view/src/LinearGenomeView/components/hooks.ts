@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useRef, useEffect, useState, useCallback } from 'react'
 import normalizeWheel from 'normalize-wheel'
 
 // locals
@@ -9,51 +9,75 @@ type LGV = LinearGenomeViewModel
 type Timer = ReturnType<typeof setTimeout>
 
 export function useSideScroll(model: LGV) {
+  const [dragStart, setDragStart] = useState<number | undefined>()
   const [mouseDragging, setMouseDragging] = useState(false)
+
   // refs are to store these variables to avoid repeated rerenders associated
   // with useState/setState
-  const scheduled = useRef(false)
-
+  const scheduledPreviewScroll = useRef(false)
   const prevX = useRef<number>(0)
-
-  useEffect(() => {
-    let cleanup = () => {}
-
-    function globalMouseMove(event: MouseEvent) {
+  const globalMouseMove = useCallback(
+    (event: MouseEvent) => {
       event.preventDefault()
       const currX = event.clientX
       const distance = currX - prevX.current
       if (distance) {
         // use rAF to make it so multiple event handlers aren't fired per-frame
         // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
-        if (!scheduled.current) {
-          scheduled.current = true
+        if (!scheduledPreviewScroll.current) {
+          scheduledPreviewScroll.current = true
           window.requestAnimationFrame(() => {
-            model.horizontalScroll(-distance)
-            scheduled.current = false
-            prevX.current = event.clientX
+            model.previewScroll(-distance)
+            scheduledPreviewScroll.current = false
+            prevX.current = currX
           })
         }
       }
-    }
+    },
+    [model],
+  )
 
-    function globalMouseUp() {
-      prevX.current = 0
+  // this is the function that actually does the final scrolling
+  const executeDragScroll = useCallback(
+    (event: MouseEvent) => {
       if (mouseDragging) {
-        setMouseDragging(false)
+        const dragDistance = dragStart ? event.clientX - dragStart : 0
+        if (dragDistance) {
+          model.horizontalScroll(-dragDistance)
+        }
       }
-    }
+    },
+    [dragStart, model, mouseDragging],
+  )
 
+  const resetMouseDragging = useCallback(
+    (source: string, event: MouseEvent) => {
+      prevX.current = 0
+      setMouseDragging(false)
+      setDragStart(undefined)
+    },
+    [],
+  )
+
+  // effect to install global event handlers for mousemove and mouseup while dragging
+  useEffect(() => {
+    let cleanup = () => {}
+
+    const endDrag = (event: MouseEvent) => {
+      executeDragScroll(event)
+      resetMouseDragging('mouseup', event)
+    }
     if (mouseDragging) {
       window.addEventListener('mousemove', globalMouseMove, true)
-      window.addEventListener('mouseup', globalMouseUp, true)
+      window.addEventListener('mouseup', endDrag, true)
       cleanup = () => {
         window.removeEventListener('mousemove', globalMouseMove, true)
-        window.removeEventListener('mouseup', globalMouseUp, true)
+        window.removeEventListener('mouseup', endDrag, true)
       }
     }
+
     return cleanup
-  }, [model, mouseDragging, prevX])
+  }, [resetMouseDragging, globalMouseMove, mouseDragging, executeDragScroll])
 
   function mouseDown(event: React.MouseEvent) {
     if (event.shiftKey) {
@@ -65,9 +89,10 @@ export function useSideScroll(model: LGV) {
       return
     }
 
-    // otherwise do click and drag scroll
+    // otherwise start a click and drag scroll
     if (event.button === 0) {
       prevX.current = event.clientX
+      setDragStart(event.clientX)
       setMouseDragging(true)
     }
   }
@@ -76,7 +101,7 @@ export function useSideScroll(model: LGV) {
   // the global add/remove are not called in time, resulting in issue #533
   function mouseUp(event: React.MouseEvent) {
     event.preventDefault()
-    setMouseDragging(false)
+    resetMouseDragging('local', event.nativeEvent)
   }
   return { mouseDown, mouseUp }
 }
