@@ -116,6 +116,63 @@ use the custom `jexl` function in your config callbacks as follows:
 See [our no-build plugin tutorial](/docs/tutorials/no_build_plugin_tutorial/)
 for more info on setting up a simple plugin for doing these customizations.
 
+### Example: A generalized solution to dbxrefs
+
+If you wanted to always link out to different websites mentioned in the dbxrefs
+of your data file, you could make a jexl function such as the following
+
+```js
+// myplugin.js
+;(function () {
+  class MyPlugin {
+    install() {}
+    configure(pluginManager) {
+      pluginManager.jexl.addFunction('linkout', feature => {
+        // no dbxref found, so return empty string
+        if (!feature.dbxref) {
+          return ''
+        }
+        const dbxrefs = Array.isArray(feature.dbxref)
+          ? feature.dbxref
+          : [feature.dbxref]
+        return dbxrefs.map(dbxref => {
+          // customized link for Genbank dbxref
+          if (dbxref.startsWith('Genbank:')) {
+            const ref = dbxref.replace('Genbank:', '')
+            return `<a href="https://www.ncbi.nlm.nih.gov/gene/?term=${ref}">${dbxref}</a>`
+          }
+          // customized link for GeneID dbxref
+          else if (dbxref.startsWith('GeneID:')) {
+            const ref = dbxref.replace('GeneID:', '')
+            return `<a href="https://www.ncbi.nlm.nih.gov/gene/?term=${ref}">${dbxref}</a>`
+          }
+          // no link, just plaintext returned
+          return dbxref
+        })
+      })
+    }
+  }
+
+  // the plugin will be included in both the main thread and web worker, so
+  // install plugin to either window or self (webworker global scope)
+  ;(typeof self !== 'undefined' ? self : window).JBrowsePluginMyPlugin = {
+    default: Plugin,
+  }
+})()
+```
+
+And then in your config
+
+```json
+{
+  ...
+  "formatDetails": {
+    "feature": "jexl:{dbxref:linkout(feature)}",
+    "subfeatures": "jexl:{dbxref:linkout(feature)}"
+  }
+}
+```
+
 #### Footnote 1
 
 Note that the feature for feature detail panels is different from that in the
