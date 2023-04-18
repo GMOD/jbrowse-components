@@ -145,13 +145,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
-         * corresponds roughly to the horizontal scroll of the LGV
+         * Distance in pixels from the left edge of the view to the left edge of the
+         * first displayed region.
          */
         offsetPx: 0,
 
         /**
          * #property
-         * corresponds roughly to the zoom level, base-pairs per pixel
+         * Number of base-pairs per displayed pixel. Expresses the "zoom level" of
+         * the view.
          */
         bpPerPx: 1,
 
