@@ -1,5 +1,5 @@
 import React from 'react'
-import { createViewState, JBrowseLinearGenomeView } from '../src'
+import { createViewState, JBrowseLinearGenomeView } from '../../src'
 import { getVolvoxConfig } from './util'
 
 export const WithOutsideStyling = () => {
@@ -53,4 +53,3 @@ export const WithTwoLinearGenomeViews = () => {
   )
 }
 
-export default { title: 'Source: Other miscellaneous examples' }

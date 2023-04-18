@@ -2,10 +2,12 @@ import React from 'react'
 
 // in your code
 // import { createViewState, loadPlugins, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view'
-import { createViewState, JBrowseLinearGenomeView } from '../src'
+import { createViewState, JBrowseLinearGenomeView } from '../../src'
 import { getVolvoxConfig } from './util'
 
-export const Example = () => {
+console.log(__filename)
+
+export const WithInternetAccounts = () => {
   const { assembly } = getVolvoxConfig()
   const state = createViewState({
     assembly,
@@ -40,11 +42,10 @@ export const Example = () => {
   return (
     <div>
       <JBrowseLinearGenomeView viewState={state} />
-      <a href="https://github.com/gmod/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/stories/withinternetaccounts.stories.tsx">
+      <a href="https://github.com/gmod/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/stories/example/WithInternetAccounts.tsx">
         Source code
       </a>
     </div>
   )
 }
 
-export default { title: 'Source: With internet accounts' }

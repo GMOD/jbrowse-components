@@ -1,8 +1,8 @@
 import React from 'react'
-import { createViewState, JBrowseLinearGenomeView } from '../src'
+import { createViewState, JBrowseLinearGenomeView } from '../../src'
 import { getVolvoxConfig } from './util'
 
-export const WithLongReads = () => {
+export const DefaultSession = () => {
   // this default session loads an alignments track at startup
   const defaultSession = {
     id: 'wBejr9mPa',
@@ -55,4 +55,3 @@ export const WithLongReads = () => {
   )
 }
 
-export default { title: 'Source: With default session' }

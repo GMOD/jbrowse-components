@@ -6,7 +6,7 @@ import Plugin from '@jbrowse/core/Plugin'
 
 // in your code
 // import { createViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view'
-import { createViewState, JBrowseLinearGenomeView } from '../src'
+import { createViewState, JBrowseLinearGenomeView } from '../../src'
 import { getVolvoxConfig } from './util'
 
 // I call this small class a 'locally defined' plugin
@@ -56,7 +56,7 @@ class HighlightRegionPlugin extends Plugin {
   configure() {}
 }
 
-export const Example = () => {
+export const WithInlinePlugins = () => {
   const { assembly, tracks } = getVolvoxConfig()
   const state = createViewState({
     assembly,
@@ -73,8 +73,4 @@ export const Example = () => {
       </a>
     </div>
   )
-}
-
-export default {
-  title: 'Source: With locally-defined plugins',
 }

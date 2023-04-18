@@ -2,11 +2,11 @@ import React from 'react'
 
 // in your code
 // import { createViewState, loadPlugins, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view'
-import { createViewState, JBrowseLinearGenomeView } from '../src'
+import { createViewState, JBrowseLinearGenomeView } from '../../src'
 
-import nextstrainConfig from '../public/nextstrain_covid.json'
+import nextstrainConfig from '../../public/nextstrain_covid.json'
 
-export const Example = () => {
+export const NextstrainExample = () => {
   const { assembly, tracks, defaultSession } = nextstrainConfig
   const state = createViewState({
     assembly,
@@ -35,5 +35,3 @@ export const Example = () => {
     </div>
   )
 }
-
-export default { title: 'Source: Nextstrain style example' }

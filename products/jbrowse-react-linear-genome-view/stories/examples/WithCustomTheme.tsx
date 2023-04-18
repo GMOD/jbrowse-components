@@ -1,10 +1,10 @@
 import React from 'react'
 // in your code:
 // import {createViewState, JBrowseLinearGenomeView} from '@jbrowse/react-linear-genome-view'
-import { createViewState, JBrowseLinearGenomeView } from '../src'
+import { createViewState, JBrowseLinearGenomeView } from '../../src'
 import { getVolvoxConfig } from './util'
 
-export const CustomTheme = () => {
+export const WithCustomTheme = () => {
   const { assembly, tracks } = getVolvoxConfig()
   const state = createViewState({
     assembly,
@@ -44,4 +44,3 @@ export const CustomTheme = () => {
   )
 }
 
-export default { title: 'Source: With custom theme' }

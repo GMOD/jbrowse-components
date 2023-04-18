@@ -2,9 +2,9 @@ import React from 'react'
 
 // in your code
 // import { createViewState, loadPlugins, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view'
-import { createViewState, JBrowseLinearGenomeView } from '../src'
+import { createViewState, JBrowseLinearGenomeView } from '../../src'
 
-export const Example = () => {
+export const HumanExomeExample = () => {
   const assembly = {
     name: 'GRCh38',
     sequence: {
@@ -109,4 +109,3 @@ export const Example = () => {
   )
 }
 
-export default { title: 'Source: Human hg38 exome example' }

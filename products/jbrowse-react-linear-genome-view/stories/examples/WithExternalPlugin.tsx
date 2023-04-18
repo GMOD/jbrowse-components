@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from 'react'
 // in your code
 // import { createViewState, loadPlugins, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view'
-import { createViewState, loadPlugins, JBrowseLinearGenomeView } from '../src'
+import {
+  createViewState,
+  loadPlugins,
+  JBrowseLinearGenomeView,
+} from '../../src'
 
 const hg19Assembly = {
   name: 'hg19',
@@ -38,7 +42,7 @@ const hg19Assembly = {
 
 type ViewState = ReturnType<typeof createViewState>
 
-export const Example = () => {
+export const WithExternalPlugin = () => {
   const [error, setError] = useState<unknown>()
   const [viewState, setViewState] = useState<ViewState>()
 
@@ -94,4 +98,3 @@ export const Example = () => {
   )
 }
 
-export default { title: 'Source: With plugins from external URLs' }

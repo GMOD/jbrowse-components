@@ -1,5 +1,5 @@
 // configs
-import config from '../public/test_data/volvox/config.json'
+import config from '../../public/test_data/volvox/config.json'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function addRelativeUris(config: any, baseUri: string) {

@@ -1,11 +1,11 @@
 import React from 'react'
 // in your code:
 // import {createViewState, JBrowseLinearGenomeView} from '@jbrowse/react-linear-genome-view'
-import { createViewState, JBrowseLinearGenomeView } from '../src'
+import { createViewState, JBrowseLinearGenomeView } from '../../src'
 
 import { addRelativeUris, getVolvoxConfig } from './util'
 
-export const Example = () => {
+export const WithPerTrackTextSearching = () => {
   const { assembly } = getVolvoxConfig()
   const textSearchConfig = {
     assembly,
@@ -69,4 +69,3 @@ export const Example = () => {
   )
 }
 
-export default { title: 'Source: With per-track text searching' }

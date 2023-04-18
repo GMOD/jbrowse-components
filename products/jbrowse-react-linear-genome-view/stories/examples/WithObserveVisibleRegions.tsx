@@ -4,7 +4,7 @@ import { observer } from 'mobx-react'
 
 // in your code
 // import { createViewState, loadPlugins, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view'
-import { createViewState, JBrowseLinearGenomeView } from '../src'
+import { createViewState, JBrowseLinearGenomeView } from '../../src'
 import { getVolvoxConfig } from './util'
 
 function loc(r: Region) {
@@ -23,7 +23,7 @@ const VisibleRegions = observer(({ viewState }: { viewState: ViewState }) => {
   ) : null
 })
 
-export const Example = () => {
+export const WithObserveVisibleRegions = () => {
   const { assembly, tracks } = getVolvoxConfig()
   const state = createViewState({
     assembly,
@@ -41,4 +41,3 @@ export const Example = () => {
   )
 }
 
-export default { title: 'Source: With visible regions observer' }

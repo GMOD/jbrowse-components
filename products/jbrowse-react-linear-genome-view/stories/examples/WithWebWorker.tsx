@@ -2,10 +2,10 @@ import React from 'react'
 
 // in your code:
 // import {createViewState, JBrowseLinearGenomeView} from '@jbrowse/react-linear-genome-view'
-import { createViewState, JBrowseLinearGenomeView } from '../src'
+import { createViewState, JBrowseLinearGenomeView } from '../../src'
 // in your code
 // import {makeWorkerInstance} from '@jbrowse/react-linear-genome-view/esm/makeWorkerInstance'
-import makeWorkerInstance from '../src/makeWorkerInstance'
+import makeWorkerInstance from '../../src/makeWorkerInstance'
 
 import { getVolvoxConfig } from './util'
 
@@ -35,4 +35,3 @@ export const WithWebWorker = () => {
   )
 }
 
-export default { title: 'Source: With web workers' }
