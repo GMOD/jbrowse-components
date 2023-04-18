@@ -1,5 +1,5 @@
 import { flags } from '@oclif/command'
-import rimraf from 'rimraf'
+import { rimrafSync } from 'rimraf'
 import fs from 'fs'
 import path from 'path'
 import fetch from '../fetchWithProxy'
@@ -113,7 +113,7 @@ export default class Upgrade extends JBrowseCommand {
     }
 
     if (clean) {
-      rimraf.sync(path.join(argsPath, 'static'))
+      rimrafSync(path.join(argsPath, 'static'))
       fs.readdirSync(argsPath)
         .filter(f => f.includes('worker.js'))
         .forEach(f => fs.unlinkSync(path.join(argsPath, f)))

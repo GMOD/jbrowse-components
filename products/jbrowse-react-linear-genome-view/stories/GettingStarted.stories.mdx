@@ -14,12 +14,7 @@ demonstration of how the component looks and works.
 
 This is an example of what a story looks like:
 
-<Canvas>
-  <Story
-    id="linear-view--one-linear-genome-view"
-    name="One linear genome view"
-  />
-</Canvas>
+<Story id="source-code-for-examples--one-linear-genome-view" />
 
 You can test out the various features of the component, and open tracks and
 interact with it as you would in your app. You can also click on the code button
@@ -82,9 +77,7 @@ const state = createViewState({
 
 Example
 
-<Canvas>
-  <Story id="linear-view--using-loc-object" name="Using location" />
-</Canvas>
+<Story id="source-code-for-examples--using-loc-object" name="Using location" />
 
 ## Disabling the ability to add tracks
 
@@ -104,17 +97,18 @@ const state = createViewState({
 
 Example
 
-<Canvas>
-  <Story id="linear-view--disable-add-tracks" name="Disable add tracks" />
-</Canvas>
+<Story
+  id="source-code-for-examples--disable-add-track"
+  name="Disable add tracks"
+/>
 
 ## Opening up tracks by default
 
-You can use the "showTrack" function on the object returned by createViewState
+You can use the `showTrack` function on the object returned by `createViewState`
+to show a track with a given trackId. This can be easier than using the
+defaultSession.
 
-<Canvas>
-  <Story id="linear-view--with-show-track" name="Show track" />
-</Canvas>
+<Story id="source-code-for-examples--with-show-track" name="Show track" />
 
 ## An overview of the LGV API
 
@@ -157,25 +151,6 @@ The LGV component only accepts a single assembly object instead of an array:
 }
 ```
 
-You can also set an initial location for when the browser first loads on the
-package when you initialize the state of the component with your configuration
-values:
-
-```js
-const state = createViewState({
-  assembly,
-  tracks,
-  location: '10:29,838,737..29,838,819',
-  defaultSession,
-})
-```
-
-Example
-
-<Canvas>
-  <Story id="linear-view--using-loc-object" name="Using loc object" />
-</Canvas>
-
 ## Additional resources
 
 This overview is intended as a launching point for initial use of the LGV
@@ -184,6 +159,10 @@ for what is possible with the component.
 
 Here are a few more resources that may help:
 
-- [The guide for creating default sessions](/?path=/story/default-sessions--page)
+- [The guide for creating default sessions](?path=/docs/default-sessions--docs)
 - [Code example](https://github.com/GMOD/jbrowse-components/blob/HEAD/products/jbrowse-react-linear-genome-view/docs/example.md)
-- [Story source code](https://github.com/GMOD/jbrowse-components/tree/main/products/jbrowse-react-linear-genome-view/stories)
+  for using @jbrowse/react-linear-genome-view
+- [Source code for all the storybook examples](https://github.com/GMOD/jbrowse-components/tree/main/products/jbrowse-react-linear-genome-view/stories)
+- Examples of using @jbrowse/react-linear-genome-view in create-react-app, vite,
+  and next.js
+  [https://jbrowse.org/jb2/docs/embedded_components/](https://jbrowse.org/jb2/docs/embedded_components/)

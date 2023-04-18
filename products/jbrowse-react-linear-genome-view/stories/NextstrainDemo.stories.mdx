@@ -5,22 +5,23 @@ import { Meta, Story, Canvas } from '@storybook/addon-docs'
 ## Nextstrain SARS-CoV-2 example
 
 We created this demo to help show how a instance can be used to browse the
-SARS-CoV-2 genome similar to Nextstrain (https://nextstrain.org). It uses a
+SARS-CoV-2 genome similar to [Nextstrain](https://nextstrain.org). It uses a
 color config to color gene's similar to the Nextstrain website, and also
 displays "Entropy score" to show diversity
 
-<Canvas>
-  <Story id="linear-view--nextstrain-example" />
-</Canvas>
+<Story id="source-code-for-examples--nextstrain-example" />
 
 ### Source
 
-This config makes use of the "FromConfigAdapter" where we supply the feature
+This config makes use of the `FromConfigAdapter` where we supply the feature
 data to the system through JSON rather than from flatfiles like GFF3 and BigWig.
 The FromConfigAdapter can be useful to display on-the-fly analyses from your
 code or to avoid having to write data to the disk e.g. generate a BigWig/GFF3.
-See products/jbrowse-react-linear-genome-view/public/nextstrain_covid.json for
-details, summarized below here too
+
+See
+[here](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/public/nextstrain_covid.json)
+for the example config, summarized below here too. Note that the link is a
+large-ish JSON file because of the usage of `FromConfigAdapter`
 
 ```
 {
@@ -236,32 +237,4 @@ details, summarized below here too
   }
 }
 
-```
-
-And then we launch it like this
-
-```
-  const { assembly, tracks, defaultSession } = nextstrainConfig
-  const state = createViewState({
-    assembly,
-    tracks,
-    defaultSession,
-    location: 'SARS-CoV-2:1..29,903',
-    onChange: patch => {
-      // eslint-disable-next-line no-console
-      console.log('patch', patch)
-    },
-    configuration: {
-      theme: {
-        palette: {
-          primary: {
-            main: '#5da8a3',
-          },
-          secondary: {
-            main: '#333',
-          },
-        },
-      },
-    },
-  })
 ```

@@ -92,7 +92,7 @@
     "prop-types": "^15.7.2",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
-    "react-error-boundary": "^3.0.0",
+    "react-error-boundary": "^4.0.3",
     "rxjs": "^7.0.0",
     "sanitize-filename": "^1.6.3",
     "serialize-error": "^8.0.0",
@@ -102,13 +102,13 @@
     "webpack": "^5.72.0"
   },
   "devDependencies": {
-    "electron": "23.1.1"
+    "electron": "24.1.2"
   },
   "browserslist": [
     "last 1 chrome version"
   ],
   "build": {
-    "electronVersion": "23.1.0",
+    "electronVersion": "24.1.2",
     "extraMetadata": {
       "main": "build/electron.js"
     },

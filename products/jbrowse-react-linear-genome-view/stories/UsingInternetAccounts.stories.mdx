@@ -3,62 +3,55 @@ import { isArrayLike } from 'lodash'
 
 <Meta title="Using InternetAccounts" />
 
+# Internet accounts
+
+"Internet accounts" are used to access authenticated resources or otherwise
+override the 'fetch' behavior of the app. Starting with v2.2.1 of
+`@jbrowse/react-linear-genome-view`, developers can use InternetAccounts in the
+embedded components.
+
 ## Using InternetAccounts
-
-Starting with v2.2.1 of `@jbrowse/react-linear-genome-view`, developers can use
-JBrowse's InternetAccounts in the component.
-
-Before using InternetAccounts, make sure they are what you need for your
-application. InternetAccounts in JBrowse Web are generally used for accessing
-controlled files, e.g. Google Drive, Dropbox, and other password-protected
-files. Often it will be better to handle this type of functionality in your app
-and then run `@jbrowse/react-linear-genome-view` in an part of your app that has
-already been authenticated. In fact, JBrowse's DropboxOAuthInternetAccount and
-GoogleDriveOAuthInternetAccount will not work as-is because
-`@jbrowse/react-linear-genome-view` doesn't have the app-level control needed to
-properly execute an OAuth 2.0 login flow.
-
-There are some instances where InternetAccounts could be useful, though. For
-example, you can use a custom InternetAccount to override the `fetch` behavior
-of a particular track, allowing you to customize where and how the data is
-retrieved.
 
 InternetAccount configurations are passed to `createViewState` like this:
 
 ```js
-import {
-  createViewState,
-  loadPlugins,
-  JBrowseLinearGenomeView,
-} from '@jbrowse/react-linear-genome-view'
-import makeWorkerInstance from '@jbrowse/react-linear-genome-view/esm/makeWorkerInstance'
-
-function YourApp() {
-  const state = createViewState({
-    assembly,
-    tracks,
-    location: 'ctgA:1105..1221',
-    internetAccounts: [
-      {
-        type: 'ExternalTokenInternetAccount',
-        internetAccountId: 'manualGoogleEntry',
-        name: 'Google Drive Manual Token Entry',
-        description: 'Manually enter a token to access Google Drive files',
-        tokenType: 'Bearer',
-      },
-    ],
-  })
-
-  return <JBrowseLinearGenomeView viewState={state} />
-}
+const state = createViewState({
+  assembly,
+  tracks,
+  location: 'ctgA:1105..1221',
+  internetAccounts: [
+    {
+      type: 'ExternalTokenInternetAccount',
+      internetAccountId: 'manualGoogleEntry',
+      name: 'Google Drive Manual Token Entry',
+      description: 'Manually enter a token to access Google Drive files',
+      tokenType: 'Bearer',
+    },
+  ],
+})
 ```
 
 Then any file location in your tracks that specifies an `internetAccountId` of
-"manualGoogleEntry" will use the specified InternetAccount. The above example
-lets the user manually enter a token already retrieved elsewhere. An
-"Authorization" header is then set on any request to that resource with a value
-of `Bearer <token>`.
+"manualGoogleEntry" will use the specified InternetAccount.
 
-<Canvas withSource="open">
-  <Story id="linear-view--with-internet-accounts" />
-</Canvas>
+<Story id="source-code-for-examples--with-internet-accounts" />
+
+The above example lets the user manually enter a token already retrieved
+elsewhere. An "Authorization" header is then set on any request to that resource
+with a value of `Bearer <token>`.
+
+## Notes
+
+Normally, internet accounts are used for accessing information from external
+third party resources. For accessing authenticated non-external resources,
+you'll more likely be 'automatically' be authenticated via cookies.
+
+Note that JBrowse's DropboxOAuthInternetAccount and
+GoogleDriveOAuthInternetAccount will not work as-is because
+`@jbrowse/react-linear-genome-view` doesn't have the app-level control needed to
+properly execute an OAuth 2.0 login flow.
+
+There are some instances where InternetAccounts could be useful for non-external
+resources too though. For example, you can use a custom InternetAccount to
+override the `fetch` behavior of a particular track, allowing you to customize
+where and how the data is retrieved.

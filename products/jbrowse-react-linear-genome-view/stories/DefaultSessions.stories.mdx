@@ -8,10 +8,18 @@ When using JBrowse 2, information about the current app state such as what views
 are open is stored in a session. It is possible to configure a JB2 app with a
 `defaultSession`, which will be loaded when the app first is loaded.
 
+Here is an example LGV with a long reads alignment track loaded in the
+`defaultSession`:
+
+<Story id="source-code-for-examples--default-session" />
+
 ## Creating a default session
 
-It is possible to manually configure a `defaultSession` for a React LGV
-component. Here is the default structure:
+It is possible to programmatically configure a `defaultSession` for a React LGV
+component, however note that the session is an internal representation that may
+not be optimial for programmatic usage.
+
+Here is the structure of the session:
 
 ```js
 const defaultSession = {
@@ -67,13 +75,14 @@ For example, to display a ReferenceSequenceTrack with the id
 }
 ```
 
-## Exporting sessions
+## Exporting sessions from JBrowse Web/Desktop for use in @jbrowse/react-linear-genome-view
 
 A powerful tool for learning about track types and display types for default
-sessions is the feature for exporting sessions in the main JBrowse 2 app (File >
-Export session). This feature exports a JSON file of the current session in the
-app. This feature can also be used to graphically generate the desired view
-configuration for the React LGV component.
+sessions is the feature for exporting sessions in the main JBrowse 2 app (File
+
+> Export session). This feature exports a JSON file of the current session in
+> the app. This feature can also be used to graphically generate the desired
+> view configuration for the React LGV component.
 
 To create a default session using JB2, load whatever tracks and data you want to
 be displayed into a session with a single linear genome view open. Export the
@@ -90,10 +99,3 @@ const defaultSession = {
   view: session.session.views[0],
 }
 ```
-
-Here is an example LGV with a long reads alignment track loaded in the
-`defaultSession`:
-
-<Canvas>
-  <Story id="linear-view--with-long-reads" />
-</Canvas>
