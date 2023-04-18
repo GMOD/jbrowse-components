@@ -15,7 +15,7 @@ export const DisableAddTrack = () => {
   return (
     <div>
       <JBrowseLinearGenomeView viewState={state} />
-      <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/stories/BasicUsage.stories.tsx">
+      <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/stories/examples/DisableAddTrack.tsx">
         Source code
       </a>
     </div>

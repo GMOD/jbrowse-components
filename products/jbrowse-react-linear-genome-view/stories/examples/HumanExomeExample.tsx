@@ -102,10 +102,9 @@ export const HumanExomeExample = () => {
   return (
     <div>
       <JBrowseLinearGenomeView viewState={state} />
-      <a href="https://github.com/gmod/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/stories/HumanExomeExample.stories.tsx">
+      <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/stories/examples/HumanExomeExample.tsx">
         Source code
       </a>
     </div>
   )
 }
-

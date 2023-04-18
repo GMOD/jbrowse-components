@@ -91,10 +91,9 @@ export const WithExternalPlugin = () => {
       ) : (
         <JBrowseLinearGenomeView viewState={viewState} />
       )}
-      <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/stories/WithExternalPlugin.stories.tsx">
+      <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/stories/examples/WithExternalPlugin.tsx">
         Source code
       </a>
     </div>
   )
 }
-

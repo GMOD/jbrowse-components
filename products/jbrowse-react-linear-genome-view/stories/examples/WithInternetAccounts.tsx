@@ -5,8 +5,6 @@ import React from 'react'
 import { createViewState, JBrowseLinearGenomeView } from '../../src'
 import { getVolvoxConfig } from './util'
 
-console.log(__filename)
-
 export const WithInternetAccounts = () => {
   const { assembly } = getVolvoxConfig()
   const state = createViewState({
@@ -42,10 +40,9 @@ export const WithInternetAccounts = () => {
   return (
     <div>
       <JBrowseLinearGenomeView viewState={state} />
-      <a href="https://github.com/gmod/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/stories/example/WithInternetAccounts.tsx">
+      <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/stories/examples/WithInternetAccounts.tsx">
         Source code
       </a>
     </div>
   )
 }
-

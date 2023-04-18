@@ -15,6 +15,7 @@ export {
   WithPerTrackTextSearching,
   WithShowTrack,
   WithWebWorker,
+  WithTwoLinearGenomeViews,
 } from './examples'
 
 export default { title: 'Source code for examples' }

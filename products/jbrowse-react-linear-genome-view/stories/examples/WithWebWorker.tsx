@@ -27,11 +27,9 @@ export const WithWebWorker = () => {
   return (
     <div>
       <JBrowseLinearGenomeView viewState={state} />
-
-      <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/stories/WithWebWorker.stories.tsx">
+      <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/stories/examples/WithWebWorker.tsx">
         Source code
       </a>
     </div>
   )
 }
-
