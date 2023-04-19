@@ -584,7 +584,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
       scrollTo(offsetPx: number) {
         const newOffsetPx = clamp(offsetPx, self.minOffset, self.maxOffset)
         self.offsetPx = newOffsetPx
+        self.previewScrollOffsetPx = 0
         return newOffsetPx
+      },
+      /**
+       * #action
+       */
+      previewScrollTo(offsetPx: number) {
+        self.previewScrollOffsetPx = offsetPx
+        return offsetPx
       },
 
       /**
@@ -947,10 +955,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       function slide(viewWidths: number) {
         const [animate, cancelAnimation] = springAnimate(
-          self.offsetPx,
-          self.offsetPx + self.width * viewWidths,
-          self.scrollTo,
-          undefined,
+          self.previewScrollOffsetPx,
+          self.previewScrollOffsetPx + self.width * viewWidths,
+          self.previewScrollTo,
+          () => self.scrollTo(self.offsetPx + self.previewScrollOffsetPx),
           2,
           550,
           50,
