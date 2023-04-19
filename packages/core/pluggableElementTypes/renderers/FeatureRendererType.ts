@@ -19,7 +19,7 @@ import ServerSideRendererType, {
   ResultsSerialized as ServerSideResultsSerialized,
 } from './ServerSideRendererType'
 import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
-import { AnyConfigurationModel } from '../../configuration/configurationSchema'
+import { AnyConfigurationModel } from '../../configuration'
 
 export interface RenderArgs extends ServerSideRenderArgs {
   displayModel: { id: string; selectedFeatureId?: string }

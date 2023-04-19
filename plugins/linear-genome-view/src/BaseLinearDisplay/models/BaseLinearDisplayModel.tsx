@@ -2,7 +2,7 @@
 import React from 'react'
 import { ThemeOptions } from '@mui/material'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { getConf } from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { MenuItem } from '@jbrowse/core/ui'
 import {
   isAbortException,
@@ -33,6 +33,7 @@ import { Tooltip } from '../components/BaseLinearDisplay'
 import TooLargeMessage from '../components/TooLargeMessage'
 import BlockState, { renderBlockData } from './serverSideRenderedBlock'
 import { getId, getDisplayStr, getFeatureDensityStatsPre } from './util'
+import configSchema from './configSchema'
 
 type LGV = LinearGenomeViewModel
 
@@ -81,6 +82,10 @@ function stateModelFactory() {
          * #property
          */
         userByteSizeLimit: types.maybe(types.number),
+        /**
+         * #property
+         */
+        configuration: ConfigurationReference(configSchema),
       }),
     )
     .volatile(() => ({

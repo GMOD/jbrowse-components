@@ -87,7 +87,7 @@ function AddTrackWorkflow({ model }: { model: AddTrackModel }) {
 
     const assemblyInstance = session.assemblyManager.get(assembly)
 
-    if (trackAdapter && trackAdapter.type !== 'UNKNOWN') {
+    if (assemblyInstance && trackAdapter && trackAdapter.type !== 'UNKNOWN') {
       session.addTrackConf({
         trackId,
         type: trackType,

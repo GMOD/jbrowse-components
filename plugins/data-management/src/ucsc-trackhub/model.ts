@@ -31,7 +31,7 @@ export default function UCSCTrackHubConnection(pluginManager: PluginManager) {
       async connect() {
         const session = getSession(self)
         try {
-          const connectionName = getConf(self, 'name')
+          const connectionName = getConf(self, 'name') // NOTE: name comes from the base configuration
           const hubFileLocation = getConf(self, 'hubTxtLocation')
           const hubFile = await fetchHubFile(hubFileLocation)
           const genomeFile = hubFile.get('genomesFile')

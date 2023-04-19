@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   isStateTreeNode,
   getSnapshot,
@@ -12,15 +13,18 @@ import {
 } from 'mobx-state-tree'
 
 import {
-  AnyConfigurationModel,
-  AnyConfigurationSchemaType,
-} from './configurationSchema'
-import {
   getUnionSubTypes,
   getDefaultValue,
   getSubType,
   resolveLateType,
 } from '../util/mst-reflection'
+
+import {
+  AnyConfigurationModel,
+  AnyConfigurationSchemaType,
+  ConfigurationSlotName,
+  ConfigurationSchemaForModel,
+} from './types'
 
 /**
  * given a configuration model (an instance of a ConfigurationSchema),
@@ -31,12 +35,12 @@ import {
  * @param args - extra arguments e.g. for a feature callback,
  *  will be sent to each of the slotNames
  */
-export function readConfObject(
-  confObject: AnyConfigurationModel,
-  slotPath: string[] | string | undefined = undefined,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  args: Record<string, any> = {},
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
+  confObject: CONFMODEL,
+  slotPath?:
+    | ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>
+    | string[],
+  args: Record<string, unknown> = {},
 ): any {
   if (!confObject) {
     throw new TypeError('must provide conf object to read')
@@ -57,7 +61,7 @@ export function readConfObject(
     if (!slot) {
       return undefined
       // if we want to be very strict about config slots, we could uncomment the below
-      // instead of returning undefine
+      // instead of returning undefined
       //
       // const modelType = getType(model)
       // const schemaType = model.configuration && getType(model.configuration)
@@ -81,21 +85,28 @@ export function readConfObject(
     return slot
   }
 
-  const slotName = slotPath[0]
-  if (slotPath.length > 1) {
-    const newPath = slotPath.slice(1)
-    let subConf = confObject[slotName]
-    // check for the subconf being a map if we don't find it immediately
-    if (
-      !subConf &&
-      isStateTreeNode(confObject) &&
-      isMapType(getType(confObject))
-    ) {
-      subConf = confObject.get(slotName)
+  if (Array.isArray(slotPath)) {
+    const slotName = slotPath[0]
+    if (slotPath.length > 1) {
+      const newPath = slotPath.slice(1)
+      let subConf = confObject[slotName]
+      // check for the subconf being a map if we don't find it immediately
+      if (
+        !subConf &&
+        isStateTreeNode(confObject) &&
+        isMapType(getType(confObject))
+      ) {
+        subConf = confObject.get(slotName)
+      }
+      return subConf ? readConfObject(subConf, newPath, args) : undefined
     }
-    return subConf ? readConfObject(subConf, newPath, args) : undefined
+    return readConfObject(
+      confObject,
+      slotName as ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
+      args,
+    )
   }
-  return readConfObject(confObject, slotName, args)
+  throw new TypeError('slotPath must be a string or array')
 }
 
 /**
@@ -106,18 +117,17 @@ export function readConfObject(
  * @param args - extra arguments e.g. for a feature callback,
  *   will be sent to each of the slotNames
  */
-export function getConf(
-  model: unknown,
-  slotPath: string[] | string | undefined = undefined,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  args: Record<string, any> = {},
+export function getConf<CONFMODEL extends AnyConfigurationModel>(
+  model: { configuration: CONFMODEL },
+  slotPath?: Parameters<typeof readConfObject<CONFMODEL>>[1],
+  args?: Parameters<typeof readConfObject<CONFMODEL>>[2],
 ) {
   if (!model) {
     throw new TypeError('must provide a model object')
   }
-  const { configuration } = model as { configuration: unknown }
+  const { configuration } = model
   if (isConfigurationModel(configuration)) {
-    return readConfObject(configuration, slotPath, args)
+    return readConfObject<CONFMODEL>(configuration, slotPath, args)
   }
   throw new TypeError('cannot getConf on this model, it has no configuration')
 }
