@@ -950,6 +950,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
           self.offsetPx,
           self.offsetPx + self.width * viewWidths,
           self.scrollTo,
+          undefined,
+          2,
+          550,
+          50,
         )
         cancelLastAnimation()
         cancelLastAnimation = cancelAnimation
@@ -984,6 +988,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
             self.zoomTo(targetBpPerPx)
             self.setScaleFactor(1)
           },
+          0.01,
+          300,
+          30,
         )
         cancelLastAnimation()
         cancelLastAnimation = cancelAnimation
