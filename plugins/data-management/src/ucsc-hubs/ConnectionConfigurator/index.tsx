@@ -1,12 +1,13 @@
-import React, { FC } from 'react'
+import React, { FC, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 import { AbstractSessionModel } from '@jbrowse/core/util'
 
 import { FileSelector } from '@jbrowse/core/ui'
-import { readConfObject } from '@jbrowse/core/configuration'
-import type configSchema from './configSchema'
-import { Instance } from 'mobx-state-tree'
+import { getConf } from '@jbrowse/core/configuration'
+import type configSchema from '../configSchema'
+import { Instance, getSnapshot } from 'mobx-state-tree'
+import ConfiguratorState from './model'
 
 const useStyles = makeStyles()(theme => ({
   root: {
@@ -31,20 +32,34 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 const ConnectionConfigurator: FC<{
-  model: { target: Instance<typeof configSchema> }
+  connectionConfiguration: Instance<typeof configSchema>
   session: AbstractSessionModel
-}> = ({ model: { target: connectionConfig }, session }) => {
+}> = ({ connectionConfiguration, session }) => {
+  // we use our own little internal MST tree for state management
+  const model = useMemo(
+    () =>
+      ConfiguratorState.create({
+        configuration: getSnapshot(connectionConfiguration),
+      }),
+    [connectionConfiguration],
+  )
+
   const { classes } = useStyles()
+  if (!model) {
+    return <div>Loading model...</div>
+  }
   return (
     <div className={classes.root}>
       <FileSelector
-        location={readConfObject(connectionConfig, 'hubTxtLocation')}
+        location={getConf(model, 'hubTxtLocation')}
         setLocation={newLocation => {
-          connectionConfig.hubTxtLocation.set(newLocation)
+          model.configuration.hubTxtLocation.set(newLocation)
         }}
         name="Hub.txt File"
         description="Choose the location of the hub.txt file"
       />
+      <div>{model.state}</div>
+      <div>{model.message}</div>
     </div>
   )
 }

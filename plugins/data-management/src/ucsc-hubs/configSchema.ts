@@ -4,8 +4,6 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 /**
  * #config UCSCTrackHubConnection
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
-
 const UCSCTrackHubConnection = ConfigurationSchema(
   'UCSCTrackHubConnection',
   {

@@ -1,8 +1,9 @@
 import React, { Suspense } from 'react'
+import type { Instance } from 'mobx-state-tree'
+import type baseConnectionConfig from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
 import { observer } from 'mobx-react'
 import { ConfigurationEditor } from '@jbrowse/plugin-config'
 import { ConnectionType } from '@jbrowse/core/pluggableElementTypes'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { AbstractSessionModel } from '@jbrowse/core/util'
 import { LoadingEllipses } from '@jbrowse/core/ui'
 
@@ -12,15 +13,19 @@ export default observer(function ({
   session,
 }: {
   connectionType: ConnectionType
-  model: AnyConfigurationModel
+  model: Instance<typeof baseConnectionConfig>
   session: AbstractSessionModel
 }) {
-  const ConfigEditorComponent =
-    connectionType.configEditorComponent || ConfigurationEditor
-
   return (
     <Suspense fallback={<LoadingEllipses />}>
-      <ConfigEditorComponent model={{ target: model }} session={session} />
+      {connectionType.configEditorComponent ? (
+        <connectionType.configEditorComponent
+          connectionConfiguration={model}
+          session={session}
+        />
+      ) : (
+        <ConfigurationEditor model={{ target: model }} session={session} />
+      )}
     </Suspense>
   )
 })
