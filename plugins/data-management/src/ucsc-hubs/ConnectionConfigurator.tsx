@@ -37,18 +37,13 @@ const ConnectionConfigurator: FC<{
   const { classes } = useStyles()
   return (
     <div className={classes.root}>
-      <div>Configurator</div>
-      <label>Choose hub file</label>
-      {d}
       <FileSelector
         location={readConfObject(connectionConfig, 'hubTxtLocation')}
         setLocation={newLocation => {
-          connectionConfig.configuration.hubTxtLocation.set(newLocation)
+          connectionConfig.hubTxtLocation.set(newLocation)
         }}
-        // setName={}
-        name="Hub File"
-        description="Location of the hub.txt file"
-        // rootModel={}
+        name="Hub.txt File"
+        description="Choose the location of the hub.txt file"
       />
     </div>
   )
