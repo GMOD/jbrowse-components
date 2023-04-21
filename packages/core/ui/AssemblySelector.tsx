@@ -9,7 +9,6 @@ import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 // locals
-import { getConf } from '../configuration'
 import { useLocalStorage, AbstractSessionModel } from '../util'
 
 const useStyles = makeStyles()({
@@ -81,7 +80,7 @@ const AssemblySelector = observer(function ({
     >
       {assemblyNames.map(name => {
         const assembly = assemblyManager.get(name)
-        const displayName = assembly ? getConf(assembly, 'displayName') : ''
+        const displayName = assembly ? assembly.getConf('displayName') : ''
         return (
           <MenuItem key={name} value={name}>
             {displayName || name}

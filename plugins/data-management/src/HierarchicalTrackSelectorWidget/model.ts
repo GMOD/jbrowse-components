@@ -233,7 +233,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       ): AnyConfigurationModel | undefined {
         const { assemblyManager } = getSession(self)
         const assembly = assemblyManager.get(assemblyName)
-        const trackConf = assembly?.configuration.sequence
+        const trackConf = assembly?.configuration?.sequence
         const viewType = pluginManager.getViewType(self.view.type)
         if (!trackConf) {
           return undefined

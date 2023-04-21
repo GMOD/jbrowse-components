@@ -1,22 +1,19 @@
-import {
-  addDisposer,
-  cast,
-  getParent,
-  types,
-  Instance,
-  IAnyType,
-} from 'mobx-state-tree'
+import { addDisposer, cast, getParent, types, Instance } from 'mobx-state-tree'
 import { when } from '../util'
 import { reaction } from 'mobx'
 import { readConfObject, AnyConfigurationModel } from '../configuration'
 import assemblyFactory, { Assembly } from './assembly'
 import PluginManager from '../PluginManager'
 import RpcManager from '../rpc/RpcManager'
+import {
+  AssemblyConfigModel,
+  AssemblyConfigSchema,
+} from './assemblyConfigSchema'
 
 /**
  * #stateModel AssemblyManager
  */
-function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
+function assemblyManagerFactory(conf: AssemblyConfigSchema, pm: PluginManager) {
   type Conf = Instance<typeof conf> | string
   return types
     .model({
@@ -71,7 +68,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
           ...assemblies,
           ...sessionAssemblies,
           ...temporaryAssemblies,
-        ] as AnyConfigurationModel[]
+        ] as AssemblyConfigModel[]
       },
 
       get rpcManager(): RpcManager {
@@ -205,6 +202,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
        * used as a reference. snapshots cannot be used
        */
       addAssembly(configuration: Conf) {
+        // @ts-expect-error
         self.assemblies.push({ configuration })
       },
 
@@ -215,6 +213,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
        * session.temporaryAssemblies instead of using this directly
        */
       replaceAssembly(idx: number, configuration: Conf) {
+        // @ts-expect-error
         self.assemblies[idx] = cast({ configuration })
       },
     }))

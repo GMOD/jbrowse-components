@@ -68,7 +68,7 @@ async function fetchSequence(
   if (!assembly) {
     throw new Error(`assembly ${assemblyName} not found`)
   }
-  const adapterConfig = getConf(assembly, ['sequence', 'adapter'])
+  const adapterConfig = assembly.getConf(['sequence', 'adapter'])
 
   const sessionId = 'getSequence'
   return rpcManager.call(sessionId, 'CoreGetFeatures', {

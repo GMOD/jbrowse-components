@@ -1,3 +1,4 @@
+import { Instance } from 'mobx-state-tree'
 import { ConfigurationSchema } from '../configuration'
 import PluginManager from '../PluginManager'
 
@@ -103,6 +104,9 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
     },
   )
 }
+
+export type AssemblyConfigSchema = ReturnType<typeof assemblyConfigSchema>
+export type AssemblyConfigModel = Instance<AssemblyConfigSchema>
 
 export default assemblyConfigSchema
 export type BaseAssemblyConfigSchema = ReturnType<typeof assemblyConfigSchema>

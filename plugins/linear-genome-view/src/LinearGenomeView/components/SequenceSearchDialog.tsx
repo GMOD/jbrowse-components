@@ -106,7 +106,7 @@ function SequenceDialog({
                   searchReverse,
                   caseInsensitive,
                   sequenceAdapter: getSnapshot(
-                    assemblyManager.get(assemblyName)?.configuration.sequence
+                    assemblyManager.get(assemblyName)?.configuration?.sequence
                       .adapter,
                   ),
                 },

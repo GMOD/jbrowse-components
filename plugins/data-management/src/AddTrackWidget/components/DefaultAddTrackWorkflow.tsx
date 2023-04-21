@@ -95,7 +95,7 @@ function AddTrackWorkflow({ model }: { model: AddTrackModel }) {
         assemblyNames: [assembly],
         adapter: {
           ...trackAdapter,
-          sequenceAdapter: getConf(assemblyInstance, ['sequence', 'adapter']),
+          sequenceAdapter: assemblyInstance.getConf(['sequence', 'adapter']),
         },
       })
       if (model.view) {

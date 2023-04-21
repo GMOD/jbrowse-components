@@ -181,7 +181,7 @@ export default function ReadVsRefDialog({
       const refLen = features.reduce((a, f) => a + f.end - f.start + expand, 0)
 
       const seqTrackId = `${readName}_${Date.now()}`
-      const sequenceTrackConf = getConf(assembly, 'sequence')
+      const sequenceTrackConf = assembly.getConf('sequence')
       const lgvRegions = gatherOverlaps(
         features.map(f => ({
           ...f,

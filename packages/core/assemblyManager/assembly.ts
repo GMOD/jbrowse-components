@@ -1,9 +1,9 @@
-import { getParent, types, Instance, IAnyType } from 'mobx-state-tree'
+import { getParent, types, Instance } from 'mobx-state-tree'
 import jsonStableStringify from 'json-stable-stringify'
 import AbortablePromiseCache from 'abortable-promise-cache'
 
 // locals
-import { getConf, AnyConfigurationModel } from '../configuration'
+import { AnyConfigurationModel, readConfObject } from '../configuration'
 import {
   BaseOptions,
   BaseRefNameAliasAdapter,
@@ -13,6 +13,7 @@ import PluginManager from '../PluginManager'
 import { when, Region, Feature } from '../util'
 import QuickLRU from '../util/QuickLRU'
 import RpcManager from '../rpc/RpcManager'
+import { AssemblyConfigSchema } from './assemblyConfigSchema'
 
 const refNameRegex = new RegExp(
   '[0-9A-Za-z!#$%&+./:;?@^_|~-][0-9A-Za-z!#$%&*+./:;=?@^_|~-]*',
@@ -143,7 +144,7 @@ export interface Loading {
  * #stateModel Assembly
  */
 export default function assemblyFactory(
-  assemblyConfigType: IAnyType,
+  assemblyConfigType: AssemblyConfigSchema,
   pm: PluginManager,
 ) {
   const adapterLoads = new AbortablePromiseCache<CacheData, RefNameMap>({
@@ -181,6 +182,14 @@ export default function assemblyFactory(
       cytobands: undefined as Feature[] | undefined,
     }))
     .views(self => ({
+      getConf(key: string | string[]) {
+        if (!self.configuration) {
+          throw new Error('no configuration')
+        }
+        return readConfObject(self.configuration, key)
+      },
+    }))
+    .views(self => ({
       /**
        * #getter
        */
@@ -193,7 +202,7 @@ export default function assemblyFactory(
        * #getter
        */
       get name(): string {
-        return getConf(self, 'name')
+        return self.getConf('name')
       },
       /**
        * #getter
@@ -207,13 +216,13 @@ export default function assemblyFactory(
        * #getter
        */
       get aliases(): string[] {
-        return getConf(self, 'aliases')
+        return self.getConf('aliases')
       },
       /**
        * #getter
        */
       get displayName(): string | undefined {
-        return getConf(self, 'displayName')
+        return self.getConf('displayName')
       },
       /**
        * #getter
@@ -266,7 +275,7 @@ export default function assemblyFactory(
        * #getter
        */
       get refNameColors() {
-        const colors: string[] = getConf(self, 'refNameColors')
+        const colors: string[] = self.getConf('refNameColors')
         return colors.length === 0 ? refNameColors : colors
       },
     }))
