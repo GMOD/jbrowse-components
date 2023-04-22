@@ -218,11 +218,6 @@ const DataGridEntries: Record<string, LazyExoticComponent<any>> = {
       default: module.GridArrowUpwardIcon,
     })),
   ),
-  GridAutoSizer: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridAutoSizer,
-    })),
-  ),
   GridCellCheckboxForwardRef: lazy(() =>
     import('@mui/x-data-grid').then(module => ({
       default: module.GridCellCheckboxForwardRef,

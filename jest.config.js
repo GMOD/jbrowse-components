@@ -33,6 +33,7 @@ module.exports = {
   ],
   setupFiles: [
     '<rootDir>/config/jest/textEncoder.js',
+    '<rootDir>/config/jest/resizeObserver.js',
     '<rootDir>/config/jest/fetchMock.js',
     '<rootDir>/config/jest/console.js',
     '<rootDir>/config/jest/crypto.js',

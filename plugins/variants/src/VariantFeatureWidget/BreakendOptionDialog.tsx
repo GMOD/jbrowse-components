@@ -20,7 +20,7 @@ const useStyles = makeStyles()({
   },
 })
 
-function BreakendOptionDialog({
+export default observer(function BreakendOptionDialog({
   model,
   handleClose,
   feature,
@@ -43,7 +43,7 @@ function BreakendOptionDialog({
           control={
             <Checkbox
               checked={copyTracks}
-              onChange={() => setCopyTracks(val => !val)}
+              onChange={event => setCopyTracks(event.target.checked)}
             />
           }
           label="Copy tracks into the new view"
@@ -54,7 +54,7 @@ function BreakendOptionDialog({
           control={
             <Checkbox
               checked={mirrorTracks}
-              onChange={() => setMirrorTracks(val => !val)}
+              onChange={event => setMirrorTracks(event.target.checked)}
             />
           }
           label="Mirror tracks vertically in vertically stacked view"
@@ -114,5 +114,4 @@ function BreakendOptionDialog({
       </DialogActions>
     </Dialog>
   )
-}
-export default observer(BreakendOptionDialog)
+})

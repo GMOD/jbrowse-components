@@ -30,12 +30,12 @@ import {
   isUriLocation,
   assembleLocString,
   ParsedLocString,
-} from '../util'
-import { ErrorMessage, SanitizedHTML } from '../ui'
-import SequenceFeatureDetails from './SequenceFeatureDetails'
-import { BaseCardProps, BaseProps } from './types'
-import { SimpleFeatureSerialized } from '../util/simpleFeature'
-import { ellipses } from './util'
+} from '../../util'
+import { ErrorMessage, SanitizedHTML } from '../../ui'
+import SequenceFeatureDetails from '../SequenceFeatureDetails'
+import { BaseCardProps, BaseProps } from '../types'
+import { SimpleFeatureSerialized } from '../../util/simpleFeature'
+import { ellipses } from '../util'
 
 const MAX_FIELD_NAME_WIDTH = 170
 

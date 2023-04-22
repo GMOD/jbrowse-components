@@ -14,6 +14,8 @@ export default function FacetedHeader({
   setFilterText,
   setUseShoppingCart,
   setHideSparse,
+  setShowOptions,
+  showOptions,
   hideSparse,
   useShoppingCart,
   filterText,
@@ -22,7 +24,9 @@ export default function FacetedHeader({
   setFilterText: (arg: string) => void
   setUseShoppingCart: (arg: boolean) => void
   setHideSparse: (arg: boolean) => void
+  setShowOptions: (arg: boolean) => void
   filterText: string
+  showOptions: boolean
   useShoppingCart: boolean
   hideSparse: boolean
   model: HierarchicalTrackSelectorModel
@@ -77,6 +81,12 @@ export default function FacetedHeader({
             label: 'Hide sparse metadata columns',
             onClick: () => setHideSparse(!hideSparse),
             checked: hideSparse,
+            type: 'checkbox',
+          },
+          {
+            label: 'Show extra table options',
+            onClick: () => setShowOptions(!showOptions),
+            checked: showOptions,
             type: 'checkbox',
           },
         ]}

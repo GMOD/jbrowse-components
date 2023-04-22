@@ -5,6 +5,7 @@ import { render, cleanup, fireEvent, within } from '@testing-library/react'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 
 import GridBookmarkWidget from './GridBookmarkWidget'
+import { GridBookmarkModel } from '../model'
 jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 
 jest.mock('file-saver', () => {
@@ -15,24 +16,32 @@ jest.mock('file-saver', () => {
 })
 
 describe('<GridBookmarkWidget />', () => {
-  let session
-  let model
-
   beforeEach(() => {
-    session = createTestSession()
-    model = session.addWidget('GridBookmarkWidget', 'gridBookmarkWidget')
+    // @ts-expect-error
     saveAs.mockReset()
   })
 
   afterEach(cleanup)
 
   it('renders empty with no bookmarks', async () => {
+    const session = createTestSession()
+    const model = session.addWidget(
+      'GridBookmarkWidget',
+      'gridBookmarkWidget',
+    ) as GridBookmarkModel
+
     const { findByText } = render(<GridBookmarkWidget model={model} />)
 
     expect(await findByText('No rows')).toBeTruthy()
   })
 
   it('renders bookmarks correctly', async () => {
+    const session = createTestSession()
+    const model = session.addWidget(
+      'GridBookmarkWidget',
+      'gridBookmarkWidget',
+    ) as GridBookmarkModel
+
     model.addBookmark({
       refName: 'chr1',
       start: 1,
@@ -46,6 +55,12 @@ describe('<GridBookmarkWidget />', () => {
   })
 
   it('deletes individual bookmarks correctly', async () => {
+    const session = createTestSession()
+    const model = session.addWidget(
+      'GridBookmarkWidget',
+      'gridBookmarkWidget',
+    ) as GridBookmarkModel
+
     model.addBookmark({
       refName: 'chr1',
       start: 1,
@@ -64,6 +79,12 @@ describe('<GridBookmarkWidget />', () => {
   })
 
   it('clears all bookmarks correctly', async () => {
+    const session = createTestSession()
+    const model = session.addWidget(
+      'GridBookmarkWidget',
+      'gridBookmarkWidget',
+    ) as GridBookmarkModel
+
     model.addBookmark({
       refName: 'chr1',
       start: 1,
@@ -80,6 +101,12 @@ describe('<GridBookmarkWidget />', () => {
   })
 
   it('downloads a BED file correctly', async () => {
+    const session = createTestSession()
+    const model = session.addWidget(
+      'GridBookmarkWidget',
+      'gridBookmarkWidget',
+    ) as GridBookmarkModel
+
     model.addBookmark({
       refName: 'chr1',
       start: 1,
@@ -102,6 +129,12 @@ describe('<GridBookmarkWidget />', () => {
   })
 
   it('downloads a TSV file correctly', async () => {
+    const session = createTestSession()
+    const model = session.addWidget(
+      'GridBookmarkWidget',
+      'gridBookmarkWidget',
+    ) as GridBookmarkModel
+
     model.addBookmark({
       refName: 'chr1',
       start: 1,
