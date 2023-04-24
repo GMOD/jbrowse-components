@@ -13,32 +13,21 @@ import {
 import {
   Region,
   AbstractSessionModel,
-  TrackViewModel,
   JBrowsePlugin,
   DialogComponentType,
 } from '@jbrowse/core/util/types'
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
 import { ThemeOptions } from '@mui/material'
-import {
-  getContainingView,
-  localStorageGetItem,
-  localStorageSetItem,
-} from '@jbrowse/core/util'
+import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
 import { autorun, observable } from 'mobx'
 import {
   addDisposer,
   cast,
-  getMembers,
   getParent,
   getRoot,
   getSnapshot,
-  getType,
   isAlive,
-  isModelType,
-  isReferenceType,
   types,
-  walk,
-  IAnyStateTreeNode,
   Instance,
   SnapshotIn,
   SnapshotOut,
@@ -47,6 +36,8 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 
+import { Session } from '@jbrowse/product-core'
+
 // icons
 import SettingsIcon from '@mui/icons-material/Settings'
 import CopyIcon from '@mui/icons-material/FileCopy'
@@ -54,11 +45,6 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import InfoIcon from '@mui/icons-material/Info'
 
 const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
-
-export declare interface ReferringNode {
-  node: IAnyStateTreeNode
-  key: string
-}
 
 export declare interface ReactProps {
   [key: string]: any
@@ -80,87 +66,81 @@ export default function sessionModelFactory(
 ) {
   const minDrawerWidth = 128
   const sessionModel = types
-    .model('JBrowseWebSessionModel', {
-      /**
-       * #property
-       */
-      id: types.optional(types.identifier, shortid()),
-      /**
-       * #property
-       */
-      name: types.string,
-      /**
-       * #property
-       */
-      margin: 0,
-      /**
-       * #property
-       */
-      drawerWidth: types.optional(
-        types.refinement(types.integer, width => width >= minDrawerWidth),
-        384,
-      ),
-      /**
-       * #property
-       */
-      views: types.array(pluginManager.pluggableMstType('view', 'stateModel')),
-      /**
-       * #property
-       */
-      widgets: types.map(
-        pluginManager.pluggableMstType('widget', 'stateModel'),
-      ),
-      /**
-       * #property
-       */
-      activeWidgets: types.map(
-        types.safeReference(
+    .compose(
+      types.model({
+        /**
+         * #property
+         */
+        id: types.optional(types.identifier, shortid()),
+        /**
+         * #property
+         */
+        name: types.string,
+        /**
+         * #property
+         */
+        margin: 0,
+        /**
+         * #property
+         */
+        drawerWidth: types.optional(
+          types.refinement(types.integer, width => width >= minDrawerWidth),
+          384,
+        ),
+        /**
+         * #property
+         */
+        views: types.array(
+          pluginManager.pluggableMstType('view', 'stateModel'),
+        ),
+        /**
+         * #property
+         */
+        widgets: types.map(
           pluginManager.pluggableMstType('widget', 'stateModel'),
         ),
-      ),
-      /**
-       * #property
-       */
-      connectionInstances: types.array(
-        pluginManager.pluggableMstType('connection', 'stateModel'),
-      ),
-      /**
-       * #property
-       */
-      sessionTracks: types.array(
-        pluginManager.pluggableConfigSchemaType('track'),
-      ),
-      /**
-       * #property
-       */
-      sessionConnections: types.array(
-        pluginManager.pluggableConfigSchemaType('connection'),
-      ),
-      /**
-       * #property
-       */
-      sessionAssemblies: types.array(assemblyConfigSchemasType),
-      /**
-       * #property
-       */
-      temporaryAssemblies: types.array(assemblyConfigSchemasType),
-      /**
-       * #property
-       */
-      sessionPlugins: types.array(types.frozen()),
-      /**
-       * #property
-       */
-      minimized: types.optional(types.boolean, false),
+        /**
+         * #property
+         */
+        activeWidgets: types.map(
+          types.safeReference(
+            pluginManager.pluggableMstType('widget', 'stateModel'),
+          ),
+        ),
+        /**
+         * #property
+         */
+        sessionTracks: types.array(
+          pluginManager.pluggableConfigSchemaType('track'),
+        ),
+        /**
+         * #property
+         */
+        sessionAssemblies: types.array(assemblyConfigSchemasType),
+        /**
+         * #property
+         */
+        temporaryAssemblies: types.array(assemblyConfigSchemasType),
+        /**
+         * #property
+         */
+        sessionPlugins: types.array(types.frozen()),
+        /**
+         * #property
+         */
+        minimized: types.optional(types.boolean, false),
 
-      /**
-       * #property
-       */
-      drawerPosition: types.optional(
-        types.string,
-        () => localStorageGetItem('drawerPosition') || 'right',
-      ),
-    })
+        /**
+         * #property
+         */
+        drawerPosition: types.optional(
+          types.string,
+          () => localStorageGetItem('drawerPosition') || 'right',
+        ),
+      }),
+      Session.Connections(pluginManager),
+    )
+    .named('JBrowseWebSessionModel')
     .volatile((/* self */) => ({
       /**
        * #volatile
@@ -294,12 +274,6 @@ export default function sessionModelFactory(
       /**
        * #getter
        */
-      get connections(): AnyConfigurationModel[] {
-        return [...self.sessionConnections, ...self.jbrowse.connections]
-      },
-      /**
-       * #getter
-       */
       get adminMode(): boolean {
         return getParent<any>(self).adminMode
       },
@@ -364,30 +338,6 @@ export default function sessionModelFactory(
           return [...self.activeWidgets.values()][self.activeWidgets.size - 1]
         }
         return undefined
-      },
-      /**
-       * #method
-       * See if any MST nodes currently have a types.reference to this object.
-       *
-       * @param object - object
-       * @returns An array where the first element is the node referring
-       * to the object and the second element is they property name the node is
-       * using to refer to the object
-       */
-      getReferring(object: IAnyStateTreeNode) {
-        const refs: ReferringNode[] = []
-        walk(getParent<any>(self), node => {
-          if (isModelType(getType(node))) {
-            const members = getMembers(node)
-            Object.entries(members.properties).forEach(([key, value]) => {
-              // @ts-ignore
-              if (isReferenceType(value) && node[key] === object) {
-                refs.push({ node, key })
-              }
-            })
-          }
-        })
-        return refs
       },
     }))
     .actions(self => ({
@@ -522,137 +472,6 @@ export default function sessionModelFactory(
         const rootModel = getParent<any>(self)
         rootModel.setPluginsUpdated(true)
       },
-      /**
-       * #action
-       */
-      makeConnection(
-        configuration: AnyConfigurationModel,
-        initialSnapshot = {},
-      ) {
-        const { type } = configuration
-        if (!type) {
-          throw new Error('track configuration has no `type` listed')
-        }
-        const name = readConfObject(configuration, 'name')
-        const connectionType = pluginManager.getConnectionType(type)
-        if (!connectionType) {
-          throw new Error(`unknown connection type ${type}`)
-        }
-        const connectionData = {
-          ...initialSnapshot,
-          name,
-          type,
-          configuration,
-        }
-        const length = self.connectionInstances.push(connectionData)
-        return self.connectionInstances[length - 1]
-      },
-
-      /**
-       * #action
-       */
-      removeReferring(
-        referring: any,
-        track: any,
-        callbacks: Function[],
-        dereferenceTypeCount: Record<string, number>,
-      ) {
-        referring.forEach(({ node }: ReferringNode) => {
-          let dereferenced = false
-          try {
-            // If a view is referring to the track config, remove the track
-            // from the view
-            const type = 'open track(s)'
-            const view = getContainingView(node) as TrackViewModel
-            callbacks.push(() => view.hideTrack(track.trackId))
-            dereferenced = true
-            if (!dereferenceTypeCount[type]) {
-              dereferenceTypeCount[type] = 0
-            }
-            dereferenceTypeCount[type] += 1
-          } catch (err1) {
-            // ignore
-          }
-
-          // @ts-ignore
-          if (self.widgets.has(node.id)) {
-            // If a configuration editor widget has the track config
-            // open, close the widget
-            const type = 'configuration editor widget(s)'
-            callbacks.push(() => this.hideWidget(node))
-            dereferenced = true
-            if (!dereferenceTypeCount[type]) {
-              dereferenceTypeCount[type] = 0
-            }
-            dereferenceTypeCount[type] += 1
-          }
-          if (!dereferenced) {
-            throw new Error(
-              `Error when closing this connection, the following node is still referring to a track configuration: ${JSON.stringify(
-                getSnapshot(node),
-              )}`,
-            )
-          }
-        })
-      },
-
-      /**
-       * #action
-       */
-      prepareToBreakConnection(configuration: AnyConfigurationModel) {
-        const callbacksToDereferenceTrack: Function[] = []
-        const dereferenceTypeCount: Record<string, number> = {}
-        const name = readConfObject(configuration, 'name')
-        const connection = self.connectionInstances.find(c => c.name === name)
-        if (connection) {
-          connection.tracks.forEach((track: any) => {
-            const referring = self.getReferring(track)
-            this.removeReferring(
-              referring,
-              track,
-              callbacksToDereferenceTrack,
-              dereferenceTypeCount,
-            )
-          })
-          const safelyBreakConnection = () => {
-            callbacksToDereferenceTrack.forEach(cb => cb())
-            this.breakConnection(configuration)
-          }
-          return [safelyBreakConnection, dereferenceTypeCount]
-        }
-        return undefined
-      },
-
-      /**
-       * #action
-       */
-      breakConnection(configuration: AnyConfigurationModel) {
-        const name = readConfObject(configuration, 'name')
-        const connection = self.connectionInstances.find(c => c.name === name)
-        self.connectionInstances.remove(connection)
-      },
-
-      /**
-       * #action
-       */
-      deleteConnection(configuration: AnyConfigurationModel) {
-        let deletedConn
-        if (self.adminMode) {
-          deletedConn =
-            getParent<any>(self).jbrowse.deleteConnectionConf(configuration)
-        }
-        if (!deletedConn) {
-          const { connectionId } = configuration
-          const idx = self.sessionConnections.findIndex(
-            c => c.connectionId === connectionId,
-          )
-          if (idx === -1) {
-            return undefined
-          }
-          return self.sessionConnections.splice(idx, 1)
-        }
-        return deletedConn
-      },
 
       /**
        * #action
@@ -743,7 +562,7 @@ export default function sessionModelFactory(
         const callbacksToDereferenceTrack: Function[] = []
         const dereferenceTypeCount: Record<string, number> = {}
         const referring = self.getReferring(trackConf)
-        this.removeReferring(
+        self.removeReferring(
           referring,
           trackConf,
           callbacksToDereferenceTrack,
@@ -759,30 +578,6 @@ export default function sessionModelFactory(
           return undefined
         }
         return self.sessionTracks.splice(idx, 1)
-      },
-
-      /**
-       * #action
-       */
-      addConnectionConf(connectionConf: any) {
-        if (self.adminMode) {
-          return getParent<any>(self).jbrowse.addConnectionConf(connectionConf)
-        }
-        const { connectionId, type } = connectionConf as {
-          type: string
-          connectionId: string
-        }
-        if (!type) {
-          throw new Error(`unknown connection type ${type}`)
-        }
-        const connection = self.sessionTracks.find(
-          (c: any) => c.connectionId === connectionId,
-        )
-        if (connection) {
-          return connection
-        }
-        const length = self.sessionConnections.push(connectionConf)
-        return self.sessionConnections[length - 1]
       },
 
       /**
@@ -914,13 +709,6 @@ export default function sessionModelFactory(
        */
       clearSelection() {
         self.selection = undefined
-      },
-
-      /**
-       * #action
-       */
-      clearConnections() {
-        self.connectionInstances.length = 0
       },
 
       /**

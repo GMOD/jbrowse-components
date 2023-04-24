@@ -103,7 +103,6 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   sessionConnections?: AnyConfigurationModel[]
   connectionInstances?: {
     name: string
-    connectionId: string
     tracks: AnyConfigurationModel[]
     configuration: AnyConfigurationModel
   }[]
