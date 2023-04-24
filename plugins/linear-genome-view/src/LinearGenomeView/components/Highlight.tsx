@@ -34,9 +34,9 @@ export default observer(function Highlight({ model }: { model: LGV }) {
             : undefined
         })
         .filter((f): f is { width: number; left: number } => !!f)
-        .map(({ left, width }) => (
+        .map(({ left, width }, idx) => (
           <div
-            key={`${left}-${width}`}
+            key={`${left}_${width}_${idx}`}
             className={classes.highlight}
             style={{ left, width }}
           />
