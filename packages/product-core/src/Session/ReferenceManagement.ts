@@ -2,9 +2,9 @@
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import {
-  SessionWithWidgets,
   TrackViewModel,
   getContainingView,
+  isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import {
   IAnyStateTreeNode,
@@ -17,6 +17,8 @@ import {
   types,
   walk,
 } from 'mobx-state-tree'
+
+import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 
 export interface ReferringNode {
   node: IAnyStateTreeNode
@@ -56,8 +58,8 @@ export default function ReferenceManagement(pluginManager: PluginManager) {
        * #action
        */
       removeReferring(
-        referring: { node: ReferringNode }[],
-        track: unknown,
+        referring: ReferringNode[],
+        track: BaseTrackConfig,
         callbacks: Function[],
         dereferenceTypeCount: Record<string, number>,
       ) {
@@ -78,14 +80,13 @@ export default function ReferenceManagement(pluginManager: PluginManager) {
             // ignore
           }
 
-          // @ts-ignore
-          if (self.widgets.has(node.id)) {
+          if (isSessionModelWithWidgets(self) && self.widgets.has(node.id)) {
             // If a configuration editor widget has the track config
             // open, close the widget
             const type = 'configuration editor widget(s)'
-            callbacks.push(() =>
-              (self as unknown as SessionWithWidgets).hideWidget(node),
-            )
+            if (isSessionModelWithWidgets(self)) {
+              callbacks.push(() => self.hideWidget(node))
+            }
             dereferenced = true
             if (!dereferenceTypeCount[type]) {
               dereferenceTypeCount[type] = 0

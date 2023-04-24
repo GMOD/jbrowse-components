@@ -5,11 +5,13 @@ import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import { getParent, types } from 'mobx-state-tree'
+import { Instance, getParent, types } from 'mobx-state-tree'
 import ReferenceManagement from './ReferenceManagement'
 import { RootModel } from '../RootModel'
-import type baseConnectionConfig from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
-import { BaseConnectionModelFactory } from '@jbrowse/core/pluggableElementTypes'
+import {
+  BaseConnectionModelFactory,
+  baseConnectionConfig,
+} from '@jbrowse/core/pluggableElementTypes'
 
 export default function Connections(pluginManager: PluginManager) {
   // connections: AnyConfigurationModel[]
@@ -50,8 +52,9 @@ export default function Connections(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get connections(): AnyConfigurationModel[] {
-        return [...self.sessionConnections, ...self.jbrowse.connections]
+      get connections(): Instance<typeof baseConnectionConfig>[] {
+        const jbConf = getParent<RootModel>(self).jbrowse
+        return [...self.sessionConnections, ...jbConf.connections]
       },
     }))
     .actions(self => ({
