@@ -40,7 +40,7 @@ import { Cable } from '@jbrowse/core/ui/Icons'
 import makeWorkerInstance from './makeWorkerInstance'
 import corePlugins from './corePlugins'
 import jbrowseWebFactory from './jbrowseModel'
-import sessionModelFactory from './sessionModelFactory'
+import sessionModelFactory from './sessionModel'
 import { filterSessionInPlace } from './util'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 

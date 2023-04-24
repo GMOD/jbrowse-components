@@ -11,7 +11,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 // locals
 import ShareButton from './ShareButton'
 import AdminComponent from './AdminComponent'
-import { SessionModel } from './sessionModelFactory'
+import { SessionModel } from './sessionModel'
 
 export default observer(function ({
   pluginManager,

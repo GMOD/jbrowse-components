@@ -39,13 +39,6 @@ export default function Connections(pluginManager: PluginManager) {
             'stateModel',
           ) as ReturnType<typeof BaseConnectionModelFactory>,
         ),
-
-        /**
-         * #property
-         */
-        sessionConnections: types.array(
-          pluginManager.pluggableConfigSchemaType('connection'),
-        ),
       }),
     )
     .views(self => ({
@@ -53,8 +46,7 @@ export default function Connections(pluginManager: PluginManager) {
        * #getter
        */
       get connections(): Instance<typeof baseConnectionConfig>[] {
-        const jbConf = getParent<RootModel>(self).jbrowse
-        return [...self.sessionConnections, ...jbConf.connections]
+        return getParent<RootModel>(self).jbrowse.connections
       },
     }))
     .actions(self => ({
