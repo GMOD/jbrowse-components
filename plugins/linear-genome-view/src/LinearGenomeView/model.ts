@@ -152,14 +152,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
-         * Distance in pixels that we have "preview scrolled", which is scrolling
-         * just the grid lines and existing content without fetching data and re-rendering.
-         * This is in addition to the offsetPx.
-         */
-        previewScrollOffsetPx: 0,
-
-        /**
-         * #property
          * Number of base-pairs per displayed pixel. Expresses the "zoom level" of
          * the view.
          */
@@ -262,6 +254,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
       searchResults: undefined as undefined | BaseResult[],
       searchQuery: undefined as undefined | string,
       seqDialogDisplayed: false,
+
+      /**
+       * #property
+       * Distance in pixels that we have "preview scrolled", which is scrolling
+       * just the grid lines and existing content without fetching data and re-rendering.
+       * This is in addition to the offsetPx.
+       */
+      previewScrollOffsetPx: 0,
     }))
     .views(self => ({
       /**
