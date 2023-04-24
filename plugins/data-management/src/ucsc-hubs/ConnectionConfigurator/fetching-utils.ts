@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   RaStanza,
   TrackDbFile,
@@ -20,7 +19,8 @@ import {
 } from '@jbrowse/core/util/tracks'
 
 /**
- * a unified representation of a hub file and its genomes file and trackDb files
+ * the UCSC connection configurator's unified representation of a hub file,
+ * its genomes file, and trackDb files
  */
 export class UnifiedHubData {
   constructor(
@@ -408,4 +408,4 @@ function makeTrackConfig(
   }
 }
 
-export { default as ucscAssemblies } from './ucscAssemblies'
+export { default as ucscAssemblies } from '../ucscAssemblies'
