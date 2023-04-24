@@ -65,82 +65,81 @@ export default function sessionModelFactory(
   assemblyConfigSchemasType = types.frozen(),
 ) {
   const minDrawerWidth = 128
+
+  const BaseSession = types.model({
+    /**
+     * #property
+     */
+    id: types.optional(types.identifier, shortid()),
+    /**
+     * #property
+     */
+    name: types.string,
+    /**
+     * #property
+     */
+    margin: 0,
+    /**
+     * #property
+     */
+    drawerWidth: types.optional(
+      types.refinement(types.integer, width => width >= minDrawerWidth),
+      384,
+    ),
+    /**
+     * #property
+     */
+    views: types.array(pluginManager.pluggableMstType('view', 'stateModel')),
+    /**
+     * #property
+     */
+    widgets: types.map(pluginManager.pluggableMstType('widget', 'stateModel')),
+    /**
+     * #property
+     */
+    activeWidgets: types.map(
+      types.safeReference(
+        pluginManager.pluggableMstType('widget', 'stateModel'),
+      ),
+    ),
+    /**
+     * #property
+     */
+    sessionTracks: types.array(
+      pluginManager.pluggableConfigSchemaType('track'),
+    ),
+    /**
+     * #property
+     */
+    sessionAssemblies: types.array(assemblyConfigSchemasType),
+    /**
+     * #property
+     */
+    temporaryAssemblies: types.array(assemblyConfigSchemasType),
+    /**
+     * #property
+     */
+    sessionPlugins: types.array(types.frozen()),
+    /**
+     * #property
+     */
+    minimized: types.optional(types.boolean, false),
+
+    /**
+     * #property
+     */
+    drawerPosition: types.optional(
+      types.string,
+      () => localStorageGetItem('drawerPosition') || 'right',
+    ),
+  })
+
   const sessionModel = types
     .compose(
-      types.model({
-        /**
-         * #property
-         */
-        id: types.optional(types.identifier, shortid()),
-        /**
-         * #property
-         */
-        name: types.string,
-        /**
-         * #property
-         */
-        margin: 0,
-        /**
-         * #property
-         */
-        drawerWidth: types.optional(
-          types.refinement(types.integer, width => width >= minDrawerWidth),
-          384,
-        ),
-        /**
-         * #property
-         */
-        views: types.array(
-          pluginManager.pluggableMstType('view', 'stateModel'),
-        ),
-        /**
-         * #property
-         */
-        widgets: types.map(
-          pluginManager.pluggableMstType('widget', 'stateModel'),
-        ),
-        /**
-         * #property
-         */
-        activeWidgets: types.map(
-          types.safeReference(
-            pluginManager.pluggableMstType('widget', 'stateModel'),
-          ),
-        ),
-        /**
-         * #property
-         */
-        sessionTracks: types.array(
-          pluginManager.pluggableConfigSchemaType('track'),
-        ),
-        /**
-         * #property
-         */
-        sessionAssemblies: types.array(assemblyConfigSchemasType),
-        /**
-         * #property
-         */
-        temporaryAssemblies: types.array(assemblyConfigSchemasType),
-        /**
-         * #property
-         */
-        sessionPlugins: types.array(types.frozen()),
-        /**
-         * #property
-         */
-        minimized: types.optional(types.boolean, false),
-
-        /**
-         * #property
-         */
-        drawerPosition: types.optional(
-          types.string,
-          () => localStorageGetItem('drawerPosition') || 'right',
-        ),
-      }),
+      'JBrowseWebSessionModel',
+      BaseSession,
       Session.Connections(pluginManager),
     )
-    .named('JBrowseWebSessionModel')
     .volatile((/* self */) => ({
       /**
        * #volatile
