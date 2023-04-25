@@ -7,7 +7,7 @@ import { MenuItem, ReturnToImportFormDialog } from '@jbrowse/core/ui'
 import {
   assembleLocString,
   clamp,
-  findLastIndex,
+  findLast,
   getContainingView,
   getSession,
   isViewContainer,
@@ -15,9 +15,9 @@ import {
   isSessionWithAddTracks,
   localStorageGetItem,
   measureText,
-  parseLocString,
   springAnimate,
   sum,
+  ParsedLocString,
 } from '@jbrowse/core/util'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { BlockSet, BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -57,10 +57,17 @@ import { renderToSvg } from './svgcomponents/SVGLinearGenomeView'
 import ExportSvgDlg from './components/ExportSvgDialog'
 import MiniControls from './components/MiniControls'
 import Header from './components/Header'
+import { generateLocations, parseLocStrings } from './util'
 
 // lazies
 const SequenceSearchDialog = lazy(
   () => import('./components/SequenceSearchDialog'),
+)
+
+const GetSequenceDialog = lazy(() => import('./components/GetSequenceDialog'))
+
+const SearchResultsDialog = lazy(
+  () => import('./components/SearchResultsDialog'),
 )
 
 export interface BpOffset {
@@ -249,9 +256,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       coarseTotalBp: 0,
       leftOffset: undefined as undefined | BpOffset,
       rightOffset: undefined as undefined | BpOffset,
-      searchResults: undefined as undefined | BaseResult[],
-      searchQuery: undefined as undefined | string,
-      seqDialogDisplayed: false,
     }))
     .views(self => ({
       /**
@@ -331,13 +335,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       get hasDisplayedRegions() {
         return self.displayedRegions.length > 0
-      },
-
-      /**
-       * #getter
-       */
-      get isSearchDialogDisplayed() {
-        return self.searchResults !== undefined
       },
 
       /**
@@ -606,7 +603,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
-       * sets offsets used in the get sequence dialog
+       * sets offsets of rubberband, used in the get sequence dialog can call
+       * view.getSelectedRegions(view.leftOffset,view.rightOffset) to compute
+       * the selected regions from the offsets
        */
       setOffsets(left?: BpOffset, right?: BpOffset) {
         self.leftOffset = left
@@ -616,16 +615,23 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setSearchResults(results?: BaseResult[], query?: string) {
-        self.searchResults = results
-        self.searchQuery = query
-      },
+      setSearchResults(
+        searchResults: BaseResult[],
+        searchQuery: string,
+        assemblyName?: string,
+      ) {
+        getSession(self).queueDialog(handleClose => [
+          SearchResultsDialog,
 
-      /**
-       * #action
-       */
-      setGetSequenceDialogOpen(open: boolean) {
-        self.seqDialogDisplayed = open
+          {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            model: self as any,
+            searchResults,
+            searchQuery,
+            handleClose,
+            assemblyName,
+          },
+        ])
       },
 
       /**
@@ -798,10 +804,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #method
        * Helper method for the fetchSequence.
-       * Retrieves the corresponding regions that were selected by the rubberband
+       * Retrieves the corresponding regions that were selected by the
+       * rubberband
        *
-       * @param leftOffset - `object as {start, end, index, offset}`, offset = start of user drag
-       * @param rightOffset - `object as {start, end, index, offset}`, offset = end of user drag
+       * @param leftOffset - `object as {start, end, index, offset}`, offset = start
+       * of user drag
+       * @param rightOffset - `object as {start, end, index, offset}`,
+       * offset = end of user drag
        * @returns array of Region[]
        */
       getSelectedRegions(leftOffset?: BpOffset, rightOffset?: BpOffset) {
@@ -823,7 +832,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
-       * schedule something to be run after the next time displayedRegions is set
+       * schedule something to be run after the next time displayedRegions is
+       * set
        */
       afterDisplayedRegionsSet(cb: Function) {
         self.afterDisplayedRegionsSetCallbacks.push(cb)
@@ -1000,8 +1010,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * the cytoband is displayed to the right of the chromosome name,
-       * and that offset is calculated manually with this method
+       * the cytoband is displayed to the right of the chromosome name, and
+       * that offset is calculated manually with this method
        */
       get cytobandOffset() {
         return this.showCytobands
@@ -1162,11 +1172,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #getter
          * static blocks are an important concept jbrowse uses to avoid
-         * re-rendering when you scroll to the side. when you horizontally
-         * scroll to the right, old blocks to the left may be removed, and
-         * new blocks may be instantiated on the right. tracks may use the
-         * static blocks to render their data for the region represented by
-         * the block
+         * re-rendering when you scroll to the side. when you horizontally scroll to the
+         * right, old blocks to the left may be removed, and new blocks may be
+         * instantiated on the right. tracks may use the static blocks to render their
+         * data for the region represented by the block
          */
         get staticBlocks() {
           const ret = calculateStaticBlocks(self)
@@ -1180,9 +1189,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #getter
          * dynamic blocks represent the exact coordinates of the currently
-         * visible genome regions on the screen. they are similar to static
-         * blocks, but statcic blocks can go offscreen while dynamic blocks
-         * represent exactly what is on screen
+         * visible genome regions on the screen. they are similar to static blocks, but
+         * static blocks can go offscreen while dynamic blocks represent exactly what
+         * is on screen
          */
         get dynamicBlocks() {
           return calculateDynamicBlocks(self)
@@ -1259,8 +1268,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
     .actions(self => ({
       /**
        * #action
-       * offset is the base-pair-offset in the displayed region, index is the index of the
-       * displayed region in the linear genome view
+       * offset is the base-pair-offset in the displayed region, index is the
+       * index of the displayed region in the linear genome view
        *
        * @param start - object as `{start, end, offset, index}`
        * @param end - object as `{start, end, offset, index}`
@@ -1271,91 +1280,52 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
-       * navigate to the given locstring
+       * Navigate to the given locstring, will change displayed regions if
+       * needed, and wait for assemblies to be initialized
        *
-       * @param locString - e.g. "chr1:1-100"
-       * @param optAssemblyName - (optional) the assembly name to use when navigating to the locstring
+       * @param input - e.g. "chr1:1-100", "chr1:1-100 chr2:1-100", "chr 1 100"
+       * @param optAssemblyName - (optional) the assembly name to use when
+       * navigating to the locstring
        */
-      async navToLocString(locString: string, optAssemblyName?: string) {
+      async navToLocString(input: string, optAssemblyName?: string) {
         const { assemblyNames } = self
         const { assemblyManager } = getSession(self)
         const { isValidRefName } = assemblyManager
-        await when(() => self.volatileWidth !== undefined)
         const assemblyName = optAssemblyName || assemblyNames[0]
-        let parsedLocStrings
-        const inputs = locString
-          .split(/(\s+)/)
-          .map(f => f.trim())
-          .filter(f => !!f)
-
         if (assemblyName) {
+          // wait before isValidRefName can be called
           await assemblyManager.waitForAssembly(assemblyName)
         }
 
-        // first try interpreting as a whitespace-separated sequence of
-        // multiple locstrings
-        try {
-          parsedLocStrings = inputs.map(loc =>
-            parseLocString(loc, ref => isValidRefName(ref, assemblyName)),
-          )
-        } catch (e) {
-          // if this fails, try interpreting as a whitespace-separated refname,
-          // start, end if start and end are integer inputs
-          const [refName, start, end] = inputs
-          if (
-            `${e}`.match(/Unknown reference sequence/) &&
-            Number.isInteger(+start) &&
-            Number.isInteger(+end)
-          ) {
-            parsedLocStrings = [
-              parseLocString(refName + ':' + start + '..' + end, ref =>
-                isValidRefName(ref, assemblyName),
-              ),
-            ]
-          } else {
-            throw e
-          }
-        }
+        return this.navToLocations(
+          parseLocStrings(input, assemblyName, isValidRefName),
+          assemblyName,
+        )
+      },
 
-        const locations = await Promise.all(
-          parsedLocStrings?.map(async region => {
-            const asmName = region.assemblyName || assemblyName
-            const asm = await assemblyManager.waitForAssembly(asmName)
-            const { refName } = region
-            if (!asm) {
-              throw new Error(`assembly ${asmName} not found`)
-            }
-            const { regions } = asm
-            if (!regions) {
-              throw new Error(`regions not loaded yet for ${asmName}`)
-            }
-            const canonicalRefName = asm.getCanonicalRefName(region.refName)
-            if (!canonicalRefName) {
-              throw new Error(
-                `Could not find refName ${refName} in ${asm.name}`,
-              )
-            }
-            const parentRegion = regions.find(
-              r => r.refName === canonicalRefName,
-            )
-            if (!parentRegion) {
-              throw new Error(`Could not find refName ${refName} in ${asmName}`)
-            }
+      /**
+       * #action
+       * Similar to `navToLocString`, but accepts parsed location objects
+       * instead of strings. Will try to perform `setDisplayedRegions` if
+       * changing regions
+       */
+      async navToLocations(
+        parsedLocStrings: ParsedLocString[],
+        assemblyName?: string,
+      ) {
+        const { assemblyManager } = getSession(self)
+        await when(() => self.volatileWidth !== undefined)
 
-            return {
-              ...region,
-              assemblyName: asmName,
-              parentRegion,
-            }
-          }),
+        const locations = await generateLocations(
+          parsedLocStrings,
+          assemblyManager,
+          assemblyName,
         )
 
         if (locations.length === 1) {
           const loc = locations[0]
-          self.setDisplayedRegions([
-            { reversed: loc.reversed, ...loc.parentRegion },
-          ])
-          const { start, end, parentRegion } = loc
+          const { reversed, parentRegion, start, end } = loc
+          self.setDisplayedRegions([{ reversed, ...parentRegion }])
 
           this.navTo({
             ...loc,
@@ -1374,9 +1344,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        * Navigate to a location based on its refName and optionally start, end,
-       * and assemblyName. Can handle if there are multiple displayedRegions
-       * from same refName. Only navigates to a location if it is entirely
-       * within a displayedRegion. Navigates to the first matching location
+       * and assemblyName. Will not try to change displayed regions, use
+       * `navToLocations` instead. Only navigates to a location if it is
+       * entirely within a displayedRegion. Navigates to the first matching location
        * encountered.
        *
        * Throws an error if navigation was unsuccessful
@@ -1389,132 +1359,86 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
+       * Navigate to a location based on its refName and optionally start, end,
+       * and assemblyName. Will not try to change displayed regions, use
+       * navToLocations instead. Only navigates to a location if it is entirely
+       * within a displayedRegion. Navigates to the first matching location
+       * encountered.
+       *
+       * Throws an error if navigation was unsuccessful
+       *
+       * @param locations - proposed location to navigate to
        */
       navToMultiple(locations: NavLocation[]) {
-        const firstLocation = locations[0]
-        let { refName } = firstLocation
-        const {
-          start,
-          end,
-          assemblyName = self.assemblyNames[0],
-        } = firstLocation
-
-        if (start !== undefined && end !== undefined && start > end) {
-          throw new Error(`start "${start + 1}" is greater than end "${end}"`)
+        if (
+          locations.some(
+            l =>
+              l.start !== undefined && l.end !== undefined && l.start > l.end,
+          )
+        ) {
+          throw new Error('found start greater than end')
         }
-        const session = getSession(self)
-        const { assemblyManager } = session
-        const assembly = assemblyManager.get(assemblyName)
-        if (assembly) {
-          const canonicalRefName = assembly.getCanonicalRefName(refName)
-          if (canonicalRefName) {
-            refName = canonicalRefName
-          }
+        const f1 = locations[0]
+        const f2 = locations[locations.length - 1]
+        const a = self.assemblyNames[0]
+        const { assemblyManager } = getSession(self)
+        const assembly1 = assemblyManager.get(f1.assemblyName || a)
+        const assembly2 = assemblyManager.get(f2.assemblyName || a)
+        const ref1 = assembly1?.getCanonicalRefName(f1.refName) || f1.refName
+        const ref2 = assembly2?.getCanonicalRefName(f2.refName) || f2.refName
+        const r1 = self.displayedRegions.find(r => r.refName === ref1)
+        const r2 = findLast(self.displayedRegions, r => r.refName === ref2)
+        if (!r1) {
+          throw new Error(`could not find a region with refName "${ref1}"`)
         }
-        let s = start
-        let e = end
-        let refNameMatched = false
-        const predicate = (r: Region) => {
-          if (refName === r.refName) {
-            refNameMatched = true
-            if (s === undefined) {
-              s = r.start
-            }
-            if (e === undefined) {
-              e = r.end
-            }
-            if (s >= r.start && s <= r.end && e <= r.end && e >= r.start) {
-              return true
-            }
-            s = start
-            e = end
-          }
-          return false
+        if (!r2) {
+          throw new Error(`could not find a region with refName "${ref2}"`)
         }
 
-        const lastIndex = findLastIndex(self.displayedRegions, predicate)
-        let index
-        while (index !== lastIndex) {
-          try {
-            const previousIndex: number | undefined = index
-            index = self.displayedRegions
-              .slice(previousIndex === undefined ? 0 : previousIndex + 1)
-              .findIndex(predicate)
-            if (previousIndex !== undefined) {
-              index += previousIndex + 1
-            }
-            if (!refNameMatched) {
-              throw new Error(
-                `could not find a region with refName "${refName}"`,
-              )
-            }
-            if (s === undefined) {
-              throw new Error(
-                `could not find a region with refName "${refName}" that contained an end position ${e}`,
-              )
-            }
-            if (e === undefined) {
-              throw new Error(
-                `could not find a region with refName "${refName}" that contained a start position ${
-                  s + 1
-                }`,
-              )
-            }
-            if (index === -1) {
-              throw new Error(
-                `could not find a region that completely contained "${assembleLocString(
-                  firstLocation,
-                )}"`,
-              )
-            }
-            if (locations.length === 1) {
-              const f = self.displayedRegions[index]
-              this.moveTo(
-                { index, offset: f.reversed ? f.end - e : s - f.start },
-                { index, offset: f.reversed ? f.end - s : e - f.start },
-              )
-              return
-            }
-            let idx = 0
-            let start = 0
-            let end = 0
-            for (idx; idx < locations.length; idx++) {
-              const location = locations[idx]
-              const region = self.displayedRegions[index + idx]
-              start = location.start || region.start
-              end = location.end || region.end
-              if (location.refName !== region.refName) {
-                throw new Error(
-                  `Entered location ${assembleLocString(
-                    location,
-                  )} does not match with displayed regions`,
-                )
-              }
-            }
-            idx -= 1
-            const startDisplayedRegion = self.displayedRegions[index]
-            const endDisplayedRegion = self.displayedRegions[index + idx]
-            this.moveTo(
-              {
-                index,
-                offset: startDisplayedRegion.reversed
-                  ? startDisplayedRegion.end - e
-                  : s - startDisplayedRegion.start,
-              },
-              {
-                index: index + idx,
-                offset: endDisplayedRegion.reversed
-                  ? endDisplayedRegion.end - start
-                  : end - endDisplayedRegion.start,
-              },
-            )
-            return
-          } catch (error) {
-            if (index === lastIndex) {
-              throw error
-            }
-          }
+        const s1 = f1.start === undefined ? r1.start : f1.start
+        const e1 = f1.end === undefined ? r1.end : f1.end
+        const s2 = f2.start === undefined ? r2.start : f2.start
+        const e2 = f2.end === undefined ? r2.end : f2.end
+
+        const index = self.displayedRegions.findIndex(
+          r =>
+            ref1 === r.refName &&
+            s1 >= r.start &&
+            s1 <= r.end &&
+            e1 <= r.end &&
+            e1 >= r.start,
+        )
+
+        const index2 = self.displayedRegions.findIndex(
+          r =>
+            ref2 === r.refName &&
+            s2 >= r.start &&
+            s2 <= r.end &&
+            e2 <= r.end &&
+            e2 >= r.start,
+        )
+
+        if (index === -1 || index2 === -1) {
+          throw new Error(
+            `could not find a region that contained "${locations.map(l =>
+              assembleLocString(l),
+            )}"`,
+          )
         }
+
+        const sd = self.displayedRegions[index]
+        const ed = self.displayedRegions[index2]
+
+        this.moveTo(
+          {
+            index,
+            offset: sd.reversed ? sd.end - e1 : s1 - sd.start,
+          },
+          {
+            index: index2,
+            offset: ed.reversed ? ed.end - s2 : e2 - ed.start,
+          },
+        )
       },
     }))
     .views(self => ({
@@ -1526,15 +1450,17 @@ export function stateModelFactory(pluginManager: PluginManager) {
           {
             label: 'Zoom to region',
             icon: ZoomInIcon,
-            onClick: () => {
-              const { leftOffset, rightOffset } = self
-              self.moveTo(leftOffset, rightOffset)
-            },
+            onClick: () => self.moveTo(self.leftOffset, self.rightOffset),
           },
           {
             label: 'Get sequence',
             icon: MenuOpenIcon,
-            onClick: () => self.setGetSequenceDialogOpen(true),
+            onClick: () =>
+              getSession(self).queueDialog(handleClose => [
+                GetSequenceDialog,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                { model: self as any, handleClose },
+              ]),
           },
         ]
       },
@@ -1568,7 +1494,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           coord,
           regionNumber,
         })
-        if (centerPx) {
+        if (centerPx !== undefined) {
           self.scrollTo(Math.round(centerPx.offsetPx - self.width / 2))
         }
       },

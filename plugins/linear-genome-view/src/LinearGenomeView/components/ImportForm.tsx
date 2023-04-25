@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy } from 'react'
+import React, { useState, useEffect } from 'react'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
@@ -20,9 +20,6 @@ import RefNameAutocomplete from './RefNameAutocomplete'
 import { fetchResults, splitLast } from './util'
 import { LinearGenomeViewModel } from '..'
 
-// lazies
-const SearchResultsDialog = lazy(() => import('./SearchResultsDialog'))
-
 const useStyles = makeStyles()(theme => ({
   importFormContainer: {
     padding: theme.spacing(2),
@@ -41,7 +38,7 @@ export default observer(function ({ model }: { model: LGV }) {
   const { classes } = useStyles()
   const session = getSession(model)
   const { assemblyNames, assemblyManager, textSearchManager } = session
-  const { rankSearchResults, isSearchDialogDisplayed, error } = model
+  const { rankSearchResults, error } = model
   const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0])
   const [option, setOption] = useState<BaseResult>()
   const searchScope = model.searchScope(selectedAsm)
@@ -85,7 +82,7 @@ export default observer(function ({ model }: { model: LGV }) {
       if (option?.getDisplayString() === input && option.hasLocation()) {
         await navToOption(option)
       } else if (option?.results?.length) {
-        model.setSearchResults(option.results, option.getLabel())
+        model.setSearchResults(option.results, option.getLabel(), selectedAsm)
       } else {
         const [ref, rest] = splitLast(input, ':')
         const allRefs = assembly?.allRefNamesWithLowerCase || []
@@ -105,7 +102,7 @@ export default observer(function ({ model }: { model: LGV }) {
           })
 
           if (results.length > 1) {
-            model.setSearchResults(results, input.toLowerCase())
+            model.setSearchResults(results, input.toLowerCase(), selectedAsm)
           } else if (results.length === 1) {
             await navToOption(results[0])
           } else {
@@ -215,13 +212,6 @@ export default observer(function ({ model }: { model: LGV }) {
           </Grid>
         </form>
       </Container>
-      {isSearchDialogDisplayed ? (
-        <SearchResultsDialog
-          model={model}
-          optAssemblyName={selectedAsm}
-          handleClose={() => model.setSearchResults(undefined, undefined)}
-        />
-      ) : null}
     </div>
   )
 })
