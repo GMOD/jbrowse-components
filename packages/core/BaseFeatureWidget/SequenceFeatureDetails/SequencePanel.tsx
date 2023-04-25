@@ -80,18 +80,16 @@ const SeqPanel = React.forwardRef<HTMLDivElement, SeqPanelProps>(function (
   return (
     <div ref={ref} data-testid="sequence_panel">
       <div
-        style={
-          /* raw styles so that html copy works */
-          {
-            fontFamily: 'monospace',
-            wordWrap: 'break-word',
-            overflow: 'auto',
-            color: 'black',
-            fontSize: 12,
-            maxWidth: 600,
-            maxHeight: 500,
-          }
-        }
+        style={{
+          /* raw styles instead of className so that html copy works */
+          fontFamily: 'monospace',
+          wordWrap: 'break-word',
+          overflow: 'auto',
+          color: 'black',
+          fontSize: 12,
+          maxWidth: 600,
+          maxHeight: 300,
+        }}
       >
         <span style={{ background: 'white' }}>
           {`>${

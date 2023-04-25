@@ -18,8 +18,9 @@ const useStyles = makeStyles()(theme => ({
     margin: 0,
   },
 
-  container2: {
-    marginTop: theme.spacing(1),
+  container: {
+    marginTop: theme.spacing(4),
+    marginBottom: theme.spacing(4),
   },
 }))
 
@@ -32,7 +33,7 @@ export default function SequenceFeaturePanel({ model, feature }: BaseProps) {
   const [helpShown, setHelpShown] = useState(false)
 
   return !model ? null : (
-    <div className={classes.container2}>
+    <div className={classes.container}>
       <Button variant="contained" onClick={() => setShown(!shown)}>
         {shown ? 'Hide feature sequence' : 'Show feature sequence'}
       </Button>
@@ -41,11 +42,10 @@ export default function SequenceFeaturePanel({ model, feature }: BaseProps) {
           <HelpIcon />
         </IconButton>
       </FormControl>
-      <br />
       {shown ? (
         <Suspense fallback={<LoadingEllipses />}>
           <SequenceFeatureDetails
-            key={feature.id}
+            key={feature.uniqueId}
             model={model}
             feature={feature}
           />
