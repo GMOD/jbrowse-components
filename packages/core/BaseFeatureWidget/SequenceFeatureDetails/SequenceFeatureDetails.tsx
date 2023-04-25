@@ -32,7 +32,6 @@ const useStyles = makeStyles()(theme => ({
   formControl: {
     margin: 0,
   },
-
   container2: {
     marginTop: theme.spacing(1),
   },
@@ -40,11 +39,14 @@ const useStyles = makeStyles()(theme => ({
 
 // set the key on this component to feature.id to clear state after new feature
 // is selected
-export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
+export default function SequenceFeatureDetails({
+  model,
+  feature: prefeature,
+}: BaseProps) {
   const { classes } = useStyles()
-  const parentFeature = feature as unknown as ParentFeat
-  const hasCDS = parentFeature.subfeatures?.some(sub => sub.type === 'CDS')
-  const hasExon = parentFeature.subfeatures?.some(sub => sub.type === 'exon')
+  const feature = prefeature as unknown as ParentFeat
+  const hasCDS = feature.subfeatures?.some(sub => sub.type === 'CDS')
+  const hasExon = feature.subfeatures?.some(sub => sub.type === 'exon')
   const seqPanelRef = useRef<HTMLDivElement>(null)
   const [intronBp, setIntronBp] = useLocalStorage('intronBp', 10)
   const [upDownBp, setUpDownBp] = useLocalStorage('upDownBp', 500)
@@ -54,7 +56,7 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
 
   const { sequence, error } = useFeatureSequence(
     model,
-    feature,
+    prefeature,
     upDownBp,
     force,
   )
@@ -148,6 +150,11 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
         setUpDownBp={setUpDownBp}
       />
       <br />
+      {feature.type === 'gene' ? (
+        <Typography>
+          Note: inspect subfeature sequences for protein/CDS computations
+        </Typography>
+      ) : null}
       {error ? (
         <Typography color="error">{`${error}`}</Typography>
       ) : !sequence ? (
@@ -168,7 +175,7 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
           <Suspense fallback={<LoadingEllipses />}>
             <SequencePanel
               ref={seqPanelRef}
-              feature={parentFeature}
+              feature={feature}
               mode={mode}
               sequence={sequence}
               intronBp={intronBp}

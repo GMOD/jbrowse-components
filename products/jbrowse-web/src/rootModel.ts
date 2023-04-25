@@ -284,6 +284,9 @@ export default function RootModel(
           }
         }
       },
+      /**
+       * #action
+       */
       initializeInternetAccount(
         internetAccountConfig: AnyConfigurationModel,
         initialSnapshot = {},
@@ -304,6 +307,9 @@ export default function RootModel(
         })
         return self.internetAccounts[length - 1]
       },
+      /**
+       * #action
+       */
       createEphemeralInternetAccount(
         internetAccountId: string,
         initialSnapshot = {},
@@ -336,15 +342,27 @@ export default function RootModel(
         self.internetAccounts.push(internetAccount)
         return internetAccount
       },
+      /**
+       * #action
+       */
       setAssemblyEditing(flag: boolean) {
         self.isAssemblyEditing = flag
       },
+      /**
+       * #action
+       */
       setDefaultSessionEditing(flag: boolean) {
         self.isDefaultSessionEditing = flag
       },
+      /**
+       * #action
+       */
       setPluginsUpdated(flag: boolean) {
         self.pluginsUpdated = flag
       },
+      /**
+       * #action
+       */
       setDefaultSession() {
         const { defaultSession } = self.jbrowse
         const newSession = {
@@ -354,6 +372,9 @@ export default function RootModel(
 
         this.setSession(newSession)
       },
+      /**
+       * #action
+       */
       renameCurrentSession(sessionName: string) {
         if (self.session) {
           const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
@@ -361,18 +382,24 @@ export default function RootModel(
           this.setSession(snapshot)
         }
       },
-
+      /**
+       * #action
+       */
       addSavedSession(session: { name: string }) {
         const key = self.localStorageId(session.name)
         self.savedSessionsVolatile.set(key, session)
       },
-
+      /**
+       * #action
+       */
       removeSavedSession(session: { name: string }) {
         const key = self.localStorageId(session.name)
         localStorage.removeItem(key)
         self.savedSessionsVolatile.delete(key)
       },
-
+      /**
+       * #action
+       */
       duplicateCurrentSession() {
         if (self.session) {
           const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
@@ -388,6 +415,9 @@ export default function RootModel(
           this.setSession(snapshot)
         }
       },
+      /**
+       * #action
+       */
       activateSession(name: string) {
         const localId = self.localStorageId(name)
         const newSessionSnapshot = localStorage.getItem(localId)
@@ -399,6 +429,9 @@ export default function RootModel(
 
         this.setSession(JSON.parse(newSessionSnapshot).session)
       },
+      /**
+       * #action
+       */
       saveSessionToLocalStorage() {
         if (self.session) {
           const key = self.localStorageId(self.session.name)
@@ -414,10 +447,15 @@ export default function RootModel(
         autosavedSession.name = `${name.replace('-autosaved', '')}-restored`
         this.setSession(autosavedSession)
       },
-
+      /**
+       * #action
+       */
       setError(error?: unknown) {
         self.error = error
       },
+      /**
+       * #action
+       */
       findAppropriateInternetAccount(location: UriLocation) {
         // find the existing account selected from menu
         const selectedId = location.internetAccountId

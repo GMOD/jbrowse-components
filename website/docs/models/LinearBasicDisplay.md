@@ -69,7 +69,7 @@ trackMaxHeight: types.maybe(types.number)
 
 ```js
 // type signature
-ITypeUnion<any, any, any>
+AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
 ```

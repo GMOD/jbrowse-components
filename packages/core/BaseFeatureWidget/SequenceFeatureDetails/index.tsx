@@ -45,7 +45,8 @@ export default function SequenceFeaturePanel({ model, feature }: BaseProps) {
       {shown ? (
         <Suspense fallback={<LoadingEllipses />}>
           <SequenceFeatureDetails
-            key={feature.uniqueId}
+            /* eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion */
+            key={feature.uniqueId as string}
             model={model}
             feature={feature}
           />

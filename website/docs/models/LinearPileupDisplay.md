@@ -32,7 +32,7 @@ type: types.literal('LinearPileupDisplay')
 
 ```js
 // type signature
-ITypeUnion<any, any, any>
+AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -189,7 +189,7 @@ string
 
 ```js
 // type signature
-contextMenuItems: () => { label: string; icon: (props: SvgIconProps<"svg", {}>) => Element; onClick: () => void; }[]
+contextMenuItems: () => { label: string; icon: (props: SvgIconProps) => Element; onClick: () => void; }[]
 ```
 
 #### method: renderProps

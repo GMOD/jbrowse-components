@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 import { SeqState, ErrorState } from '../util'
 import { Feature, SimpleFeatureSerialized, getSession } from '../../util'
 import { getConf } from '../../configuration'
-import { SimpleFeatureSerializedNoId } from '../../util/simpleFeature'
 
 const BPLIMIT = 500_000
 
@@ -15,7 +14,7 @@ interface CoordFeat extends SimpleFeatureSerialized {
 
 export function useFeatureSequence(
   model: { view: { assemblyNames: string[] } } | undefined,
-  feature: SimpleFeatureSerializedNoId,
+  feature: SimpleFeatureSerialized,
   upDownBp: number,
   forceLoad: boolean,
 ) {

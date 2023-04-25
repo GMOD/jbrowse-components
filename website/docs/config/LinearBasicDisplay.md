@@ -15,18 +15,6 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ### LinearBasicDisplay - Slots
 
-#### slot: mouseover
-
-```js
-mouseover: {
-        type: 'string',
-        description: 'what to display in a given mouseover',
-        defaultValue: `jexl:get(feature,'name')`,
-
-        contextVariable: ['feature'],
-      }
-```
-
 #### slot: renderer
 
 ```js

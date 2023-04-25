@@ -32,7 +32,7 @@ type: types.literal('LinearReadArcsDisplay')
 
 ```js
 // type signature
-ITypeUnion<any, any, any>
+AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
 ```

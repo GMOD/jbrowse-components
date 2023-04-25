@@ -27,7 +27,7 @@ getRoot()
 
 ```js
 // type signature
-ISnapshotProcessor<IModelType<{ configuration: AnyConfigurationSchemaType; plugins: IArrayType<IType<PluginDefinition, PluginDefinition, PluginDefinition>>; ... 5 more ...; defaultSession: IOptionalIType<...>; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>, _NotCustomized, Record<...>>
+ISnapshotProcessor<IModelType<{ configuration: ConfigurationSchemaType<{ rpc: ConfigurationSchemaType<{ defaultDriver: { type: string; description: string; defaultValue: string; }; drivers: IOptionalIType<IMapType<ITypeUnion<ModelCreationType<ExtractCFromProps<Record<string, any>>>, ModelSnapshotType<...>, {} & ... ...
 // code
 jbrowse: jbrowseWebFactory(pluginManager, Session, assemblyConfigSchema)
 ```
@@ -146,6 +146,113 @@ localStorageId: (name: string) => string
 ```js
 // type signature
 setSession: (sessionSnapshot?: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number, number, number>; ... 11 more ...; drawerPosition: IOptionalIType<...>; }>>) => void
+```
+
+#### action: initializeInternetAccount
+
+```js
+// type signature
+initializeInternetAccount: (
+  internetAccountConfig: { [x: string]: any } & NonEmptyObject & {
+      setSubschema(slotName: string, data: unknown): any,
+    } & IStateTreeNode<AnyConfigurationSchemaType>,
+  initialSnapshot?: {},
+) => any
+```
+
+#### action: createEphemeralInternetAccount
+
+```js
+// type signature
+createEphemeralInternetAccount: (
+  internetAccountId: string,
+  initialSnapshot: {},
+  url: string,
+) => any
+```
+
+#### action: setAssemblyEditing
+
+```js
+// type signature
+setAssemblyEditing: (flag: boolean) => void
+```
+
+#### action: setDefaultSessionEditing
+
+```js
+// type signature
+setDefaultSessionEditing: (flag: boolean) => void
+```
+
+#### action: setPluginsUpdated
+
+```js
+// type signature
+setPluginsUpdated: (flag: boolean) => void
+```
+
+#### action: setDefaultSession
+
+```js
+// type signature
+setDefaultSession: () => void
+```
+
+#### action: renameCurrentSession
+
+```js
+// type signature
+renameCurrentSession: (sessionName: string) => void
+```
+
+#### action: addSavedSession
+
+```js
+// type signature
+addSavedSession: (session: { name: string; }) => void
+```
+
+#### action: removeSavedSession
+
+```js
+// type signature
+removeSavedSession: (session: { name: string; }) => void
+```
+
+#### action: duplicateCurrentSession
+
+```js
+// type signature
+duplicateCurrentSession: () => void
+```
+
+#### action: activateSession
+
+```js
+// type signature
+activateSession: (name: string) => void
+```
+
+#### action: saveSessionToLocalStorage
+
+```js
+// type signature
+saveSessionToLocalStorage: () => void
+```
+
+#### action: setError
+
+```js
+// type signature
+setError: (error?: unknown) => void
+```
+
+#### action: findAppropriateInternetAccount
+
+```js
+// type signature
+findAppropriateInternetAccount: (location: UriLocation) => any
 ```
 
 #### action: setMenus

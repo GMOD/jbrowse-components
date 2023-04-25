@@ -37,6 +37,15 @@ IMaybe<ISimpleType<string>>
 assemblyName: types.maybe(types.string)
 ```
 
+#### property: configuration
+
+```js
+// type signature
+ConfigurationSchemaType<{ onChordClick: { type: string; description: string; defaultValue: boolean; contextVariable: string[]; }; }, ConfigurationSchemaOptions<undefined, "displayId">>
+// code
+configuration: ConfigurationReference(baseChordDisplayConfig)
+```
+
 ### BaseChordDisplay - Getters
 
 #### getter: blockDefinitions

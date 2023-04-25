@@ -54,3 +54,15 @@ height: {
       description: 'default height for the track',
     }
 ```
+
+#### slot: mouseover
+
+```js
+mouseover: {
+      type: 'string',
+      description: 'text to display when the cursor hovers over a feature',
+      defaultValue: `jexl:get(feature,'name')`,
+
+      contextVariable: ['feature'],
+    }
+```

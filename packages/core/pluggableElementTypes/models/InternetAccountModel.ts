@@ -11,6 +11,8 @@ const inWebWorker = typeof sessionStorage === 'undefined'
 /**
  * #stateModel BaseInternetAccountModel
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 export const InternetAccount = types
   .model('InternetAccount', {
     /**
