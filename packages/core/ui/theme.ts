@@ -226,11 +226,6 @@ function createDefaultProps(theme?: ThemeOptions): ThemeOptions {
         defaultProps: {
           margin: 'dense' as const,
         },
-        styleOverrides: {
-          input: {
-            boxSizing: 'content-box!important' as 'content-box',
-          },
-        },
       },
       MuiAutocomplete: {
         defaultProps: {
@@ -281,11 +276,6 @@ function createDefaultProps(theme?: ThemeOptions): ThemeOptions {
       MuiMenu: {
         defaultProps: {
           transitionDuration: 0,
-        },
-      },
-      MuiMenuList: {
-        defaultProps: {
-          dense: true,
         },
       },
       MuiMenuItem: {
