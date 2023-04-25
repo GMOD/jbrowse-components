@@ -3,6 +3,8 @@ import { types } from 'mobx-state-tree'
 import { Session } from '@jbrowse/product-core'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { BaseSessionModel } from './Base'
+import { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
 
 export default function Connections(pluginManager: PluginManager) {
   return types
@@ -18,23 +20,22 @@ export default function Connections(pluginManager: PluginManager) {
         ),
       }),
     )
-    .actions(self => {
-      const superDeleteConnection = self.deleteConnection
-      const superAddConnectionConf = self.addConnectionConf
+    .actions(s => {
+      const self = s as typeof s & BaseSessionModel
+
+      const super_deleteConnection = self.deleteConnection
+      const super_addConnectionConf = self.addConnectionConf
       return {
-        addConnectionConf(connectionConf: any) {
+        addConnectionConf(connectionConf: BaseConnectionConfigModel) {
           if (self.adminMode) {
-            return superAddConnectionConf(connectionConf)
+            return super_addConnectionConf(connectionConf)
           }
-          const { connectionId, type } = connectionConf as {
-            type: string
-            connectionId: string
-          }
+          const { connectionId, type } = connectionConf
           if (!type) {
             throw new Error(`unknown connection type ${type}`)
           }
           const connection = self.sessionTracks.find(
-            (c: any) => c.connectionId === connectionId,
+            c => c.connectionId === connectionId,
           )
           if (connection) {
             return connection
@@ -46,7 +47,7 @@ export default function Connections(pluginManager: PluginManager) {
         deleteConnection(configuration: AnyConfigurationModel) {
           let deletedConn
           if (self.adminMode) {
-            deletedConn = superDeleteConnection(configuration)
+            deletedConn = super_deleteConnection(configuration)
           }
           if (!deletedConn) {
             const { connectionId } = configuration

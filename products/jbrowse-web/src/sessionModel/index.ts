@@ -209,12 +209,6 @@ export default function sessionModelFactory(
       /**
        * #getter
        */
-      get adminMode(): boolean {
-        return getParent<any>(self).adminMode
-      },
-      /**
-       * #getter
-       */
       get savedSessions() {
         return getParent<any>(self).savedSessions
       },

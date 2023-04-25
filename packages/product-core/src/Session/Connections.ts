@@ -5,13 +5,11 @@ import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import { Instance, getParent, types } from 'mobx-state-tree'
+import { getParent, types } from 'mobx-state-tree'
 import ReferenceManagement from './ReferenceManagement'
 import { RootModel } from '../RootModel'
-import {
-  BaseConnectionModelFactory,
-  baseConnectionConfig,
-} from '@jbrowse/core/pluggableElementTypes'
+import { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
+import { BaseConnectionModel } from '@jbrowse/core/pluggableElementTypes/models/BaseConnectionModelFactory'
 
 export default function Connections(pluginManager: PluginManager) {
   // connections: AnyConfigurationModel[]
@@ -37,7 +35,7 @@ export default function Connections(pluginManager: PluginManager) {
           pluginManager.pluggableMstType(
             'connection',
             'stateModel',
-          ) as ReturnType<typeof BaseConnectionModelFactory>,
+          ) as BaseConnectionModel,
         ),
       }),
     )
@@ -45,7 +43,7 @@ export default function Connections(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get connections(): Instance<typeof baseConnectionConfig>[] {
+      get connections(): BaseConnectionConfigModel[] {
         return getParent<RootModel>(self).jbrowse.connections
       },
     }))
@@ -127,7 +125,7 @@ export default function Connections(pluginManager: PluginManager) {
       /**
        * #action
        */
-      addConnectionConf(connectionConf: typeof baseConnectionConfig) {
+      addConnectionConf(connectionConf: BaseConnectionConfigModel) {
         return getParent<RootModel>(self).jbrowse.addConnectionConf(
           connectionConf,
         )

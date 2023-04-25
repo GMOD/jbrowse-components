@@ -61,4 +61,5 @@ function stateModelFactory(pluginManager: PluginManager) {
     }))
 }
 
+export type BaseConnectionModel = ReturnType<typeof stateModelFactory>
 export default stateModelFactory
