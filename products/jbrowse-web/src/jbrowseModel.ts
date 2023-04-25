@@ -17,9 +17,9 @@ import { toJS } from 'mobx'
 import clone from 'clone'
 
 // locals
-import { SessionStateModel } from './sessionModelFactory'
 import JBrowseConfigF from './jbrowseConfig'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
+import { SessionStateModel } from './sessionModel'
 
 // poke some things for testing (this stuff will eventually be removed)
 // @ts-expect-error
@@ -196,7 +196,6 @@ export default function JBrowseWeb(
           throw new Error(`unable to set default session to ${newDefault.name}`)
         }
 
-        // @ts-expect-error complains about name missing, but above line checks this
         self.defaultSession = cast(newDefault)
       },
       /**

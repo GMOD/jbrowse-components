@@ -35,7 +35,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 
-import { Session } from '@jbrowse/product-core'
+import { Session as CoreSession } from '@jbrowse/product-core'
 
 // icons
 import SettingsIcon from '@mui/icons-material/Settings'
@@ -46,6 +46,7 @@ import InfoIcon from '@mui/icons-material/Info'
 import { BaseSession } from './Base'
 import Assemblies from './Assemblies'
 import Drawer from './Drawer'
+import SessionConnections from './SessionConnections'
 
 const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
@@ -71,8 +72,8 @@ export default function sessionModelFactory(
     .compose(
       BaseSession(pluginManager),
       Assemblies(pluginManager, assemblyConfigSchemasType),
-      Session.ReferenceManagement(pluginManager),
-      Session.Connections(pluginManager),
+      CoreSession.ReferenceManagement(pluginManager),
+      SessionConnections(pluginManager),
       Drawer(pluginManager),
     )
     .named('JBrowseWebSessionModel')
