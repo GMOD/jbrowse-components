@@ -167,7 +167,7 @@ export const defaultThemes = {
   darkStock: getDarkStockTheme(),
 } as ThemeMap
 
-function createDefaultProps(theme?: ThemeOptions) {
+function createDefaultProps(theme?: ThemeOptions): ThemeOptions {
   return {
     components: {
       MuiButton: {
@@ -225,6 +225,11 @@ function createDefaultProps(theme?: ThemeOptions) {
       MuiInputBase: {
         defaultProps: {
           margin: 'dense' as const,
+        },
+        styleOverrides: {
+          input: {
+            boxSizing: 'content-box!important' as 'content-box',
+          },
         },
       },
       MuiAutocomplete: {

@@ -39,7 +39,7 @@ function JBrowseDialog(props: DialogProps & { title: string }) {
 
   return (
     <Dialog {...props}>
-      <ScopedCssBaseline sx={{ boxSizing: 'content-box' }}>
+      <ScopedCssBaseline>
         <DialogTitle>
           {title}
           {onClose ? (
