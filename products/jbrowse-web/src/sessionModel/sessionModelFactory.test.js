@@ -4,7 +4,7 @@ import { getSnapshot } from 'mobx-state-tree'
 import { configure } from 'mobx'
 import { createTestSession } from '../rootModel'
 import sessionModelFactory from '.'
-jest.mock('./makeWorkerInstance', () => () => {})
+jest.mock('../makeWorkerInstance', () => () => {})
 
 // mock warnings to avoid unnecessary outputs
 beforeEach(() => {
