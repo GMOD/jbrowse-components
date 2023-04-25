@@ -25,7 +25,6 @@ import {
   getParent,
   getRoot,
   getSnapshot,
-  isAlive,
   types,
   Instance,
   SnapshotIn,
@@ -45,7 +44,6 @@ import InfoIcon from '@mui/icons-material/Info'
 
 import { BaseSession } from './Base'
 import Assemblies from './Assemblies'
-import Drawer from './Drawer'
 import SessionConnections from './SessionConnections'
 
 const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
@@ -71,10 +69,10 @@ export default function sessionModelFactory(
   const sessionModel = types
     .compose(
       BaseSession(pluginManager),
-      Assemblies(pluginManager, assemblyConfigSchemasType),
       CoreSession.ReferenceManagement(pluginManager),
+      CoreSession.DrawerWidgets(pluginManager),
+      Assemblies(pluginManager, assemblyConfigSchemasType),
       SessionConnections(pluginManager),
-      Drawer(pluginManager),
     )
     .named('JBrowseWebSessionModel')
     .volatile((/* self */) => ({
@@ -258,17 +256,6 @@ export default function sessionModelFactory(
           theme: this.theme,
         }
       },
-
-      /**
-       * #getter
-       */
-      get visibleWidget() {
-        if (isAlive(self)) {
-          // returns most recently added item in active widgets
-          return [...self.activeWidgets.values()][self.activeWidgets.size - 1]
-        }
-        return undefined
-      },
     }))
     .actions(self => ({
       /**
@@ -419,7 +406,7 @@ export default function sessionModelFactory(
       removeView(view: any) {
         for (const [, widget] of self.activeWidgets) {
           if (widget.view && widget.view.id === view.id) {
-            this.hideWidget(widget)
+            self.hideWidget(widget)
           }
         }
         self.views.remove(view)
@@ -521,72 +508,6 @@ export default function sessionModelFactory(
         const state = { ...initialState }
         state.displayedRegions = getSnapshot(otherView.displayedRegions)
         return this.addView(viewType, state)
-      },
-
-      /**
-       * #action
-       */
-      addWidget(
-        typeName: string,
-        id: string,
-        initialState = {},
-        conf?: unknown,
-      ) {
-        const typeDefinition = pluginManager.getElementType('widget', typeName)
-        if (!typeDefinition) {
-          throw new Error(`unknown widget type ${typeName}`)
-        }
-        const data = {
-          ...initialState,
-          id,
-          type: typeName,
-          configuration: conf || { type: typeName },
-        }
-        self.widgets.set(id, data)
-        return self.widgets.get(id)
-      },
-
-      /**
-       * #action
-       */
-      showWidget(widget: any) {
-        if (self.activeWidgets.has(widget.id)) {
-          self.activeWidgets.delete(widget.id)
-        }
-        self.activeWidgets.set(widget.id, widget)
-        self.minimized = false
-      },
-
-      /**
-       * #action
-       */
-      hasWidget(widget: any) {
-        return self.activeWidgets.has(widget.id)
-      },
-
-      /**
-       * #action
-       */
-      hideWidget(widget: any) {
-        self.activeWidgets.delete(widget.id)
-      },
-      /**
-       * #action
-       */
-      minimizeWidgetDrawer() {
-        self.minimized = true
-      },
-      /**
-       * #action
-       */
-      showWidgetDrawer() {
-        self.minimized = false
-      },
-      /**
-       * #action
-       */
-      hideAllWidgets() {
-        self.activeWidgets.clear()
       },
 
       /**

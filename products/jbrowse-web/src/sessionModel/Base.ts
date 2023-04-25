@@ -25,32 +25,13 @@ export function BaseSession(pluginManager: PluginManager) {
       /**
        * #property
        */
-      widgets: types.map(
-        pluginManager.pluggableMstType('widget', 'stateModel'),
-      ),
-      /**
-       * #property
-       */
-      activeWidgets: types.map(
-        types.safeReference(
-          pluginManager.pluggableMstType('widget', 'stateModel'),
-        ),
-      ),
-      /**
-       * #property
-       */
       sessionTracks: types.array(
         pluginManager.pluggableConfigSchemaType('track'),
       ),
-
       /**
        * #property
        */
       sessionPlugins: types.array(types.frozen()),
-      /**
-       * #property
-       */
-      minimized: types.optional(types.boolean, false),
     })
     .views(self => ({
       /**
