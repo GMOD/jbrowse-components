@@ -6,6 +6,9 @@ import {
   Divider,
   DialogProps,
   ScopedCssBaseline,
+  createTheme,
+  ThemeProvider,
+  useTheme,
 } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
@@ -36,6 +39,7 @@ function DialogError({ error }: { error: unknown }) {
 function JBrowseDialog(props: DialogProps & { title: string }) {
   const { classes } = useStyles()
   const { title, children, onClose } = props
+  const theme = useTheme()
 
   return (
     <Dialog {...props}>
@@ -57,7 +61,22 @@ function JBrowseDialog(props: DialogProps & { title: string }) {
         <Divider />
 
         <ErrorBoundary FallbackComponent={DialogError}>
-          {children}
+          <ThemeProvider
+            theme={createTheme(theme, {
+              components: {
+                MuiInputBase: {
+                  styleOverrides: {
+                    input: {
+                      // xref https://github.com/GMOD/jbrowse-components/pull/3666
+                      boxSizing: 'content-box!important' as 'content-box',
+                    },
+                  },
+                },
+              },
+            })}
+          >
+            {children}
+          </ThemeProvider>
         </ErrorBoundary>
       </ScopedCssBaseline>
     </Dialog>

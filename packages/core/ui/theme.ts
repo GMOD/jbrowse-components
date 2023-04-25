@@ -167,7 +167,7 @@ export const defaultThemes = {
   darkStock: getDarkStockTheme(),
 } as ThemeMap
 
-function createDefaultProps(theme?: ThemeOptions) {
+function createDefaultProps(theme?: ThemeOptions): ThemeOptions {
   return {
     components: {
       MuiButton: {
@@ -276,11 +276,6 @@ function createDefaultProps(theme?: ThemeOptions) {
       MuiMenu: {
         defaultProps: {
           transitionDuration: 0,
-        },
-      },
-      MuiMenuList: {
-        defaultProps: {
-          dense: true,
         },
       },
       MuiMenuItem: {
