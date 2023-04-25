@@ -89,6 +89,13 @@ export function makeTicks(
   return ticks
 }
 
+/**
+ * Generate location objects for a set of parsed locstrings, which includes
+ * translating the refNames to assembly-canonical refNames and adding the
+ * 'parentRegion'
+ *
+ * Used by navToLocations and navToLocString
+ */
 export async function generateLocations(
   regions: ParsedLocString[] = [],
   assemblyManager: AssemblyManager,
@@ -127,6 +134,18 @@ export async function generateLocations(
   )
 }
 
+/**
+ * Parses locString or space separated set of locStrings into location objects
+ * Example inputs:
+ * "chr1"
+ * "chr1:1-100"
+ * "chr1:1..100"
+ * "chr1 chr2"
+ * "chr1:1-100 chr2:1-100"
+ * "chr1 100 200" equivalent to "chr1:1-100"
+ *
+ * Used by navToLocString
+ */
 export function parseLocStrings(
   input: string,
   assemblyName: string,
