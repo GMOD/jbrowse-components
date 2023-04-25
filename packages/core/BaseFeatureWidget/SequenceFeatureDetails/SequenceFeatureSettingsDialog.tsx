@@ -32,7 +32,7 @@ export default function SequenceFeatureSettingsDialog({
       maxWidth="xl"
       open
       onClose={() => handleClose()}
-      title={'Feature sequence settings'}
+      title="Feature sequence settings"
     >
       <DialogContent className={classes.dialogContent}>
         <TextField
