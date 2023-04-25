@@ -15,6 +15,17 @@ info
 
 ## Docs
 
+### Assembly - Properties
+
+#### property: configuration
+
+```js
+// type signature
+IMaybe<IReferenceType<IAnyType>>
+// code
+configuration: types.safeReference(assemblyConfigType)
+```
+
 ### Assembly - Getters
 
 #### getter: initialized

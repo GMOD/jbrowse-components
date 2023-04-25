@@ -32,23 +32,14 @@ export default function HelpDialog({
             Protein - the translated coding sequence, with the "standard"
             genetic code
           </li>
-          <li>cDNA - shows the UTRs and stitched together CDS sequences</li>
           <li>
-            Gene w/ introns - the sequence underlying the entire gene including
-            including introns, with UTR and CDS highlighted
+            cDNA - shows the 'DNA' version of transcript, formed from exons,
+            including non-coding genes
           </li>
           <li>
-            Gene w/ Nbp introns - same "Gene w/ introns", but limiting to a
-            subset of the intron sequence displayed
-          </li>
-          <li>
-            Gene +/- Nbp up+down stream - same as "Gene w/ introns" but with up
-            and downstream sequence displayed
-          </li>
-          <li>
-            Gene +/- Nbp up+down stream, Nbp introns - same as "Gene w/
-            introns", but with limited intron sequence displayed and up and
-            downstream sequence
+            Genomic w/ introns +/- Nbp up+down stream - the sequence underlying
+            the entire gene including including introns, with UTR and CDS
+            highlighted
           </li>
         </ul>
         <Typography paragraph>
@@ -56,17 +47,18 @@ export default function HelpDialog({
         </Typography>
         <ul>
           <li>
-            Feature sequence - the reference genome sequence underlying the
-            feature
-          </li>
-          <li>
-            Feature sequence +/- Nbp up+down stream - the reference genome
-            sequence underlying the feature, with the up and downstream sequence
+            Genomic +/- Nbp up+down stream - the reference genome sequence
+            underlying the feature, with the up and downstream sequence
           </li>
         </ul>
         <Typography>
-          Note: you can use the "gear icon" <SettingsIcon /> to edit the number
-          of bp displayed up/downstream and in the intron region
+          Note 1: you can use the "gear icon" <SettingsIcon /> to edit the
+          number of bp displayed up/downstream and in the intron region
+        </Typography>
+        <Typography>
+          Note 2: The 'Copy HTML' function retains the colors from the sequence
+          panel but cannot be pasted into some programs like notepad that only
+          expect plain text.
         </Typography>
       </DialogContent>
 

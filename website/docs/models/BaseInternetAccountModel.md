@@ -35,6 +35,15 @@ ISimpleType<string>
 type: types.string
 ```
 
+#### property: configuration
+
+```js
+// type signature
+ConfigurationSchemaType<{ name: { description: string; type: string; defaultValue: string; }; description: { description: string; type: string; defaultValue: string; }; authHeader: { description: string; type: string; defaultValue: string; }; tokenType: { ...; }; domains: { ...; }; }, ConfigurationSchemaOptions<...>>
+// code
+configuration: ConfigurationReference(BaseInternetAccountConfig)
+```
+
 ### BaseInternetAccountModel - Getters
 
 #### getter: name

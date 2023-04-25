@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { defaultCodonTable, generateCodonTable, revcom } from '../util'
+import { defaultCodonTable, generateCodonTable, revcom } from '../../util'
 import {
   ParentFeat,
   SeqState,
@@ -8,8 +8,11 @@ import {
   calculateUTRs2,
   dedupe,
   revlist,
-} from './util'
-import { GenecDNA, GeneProtein, GeneCDS, Genomic } from './SequenceBox'
+} from '../util'
+import CDNASequence from './CDNASequence'
+import ProteinSequence from './ProteinSequence'
+import GenomicSequence from './GenomicSequence'
+import CDSSequence from './CDSSequence'
 
 interface SeqPanelProps {
   sequence: SeqState
@@ -77,18 +80,16 @@ const SeqPanel = React.forwardRef<HTMLDivElement, SeqPanelProps>(function (
   return (
     <div ref={ref} data-testid="sequence_panel">
       <div
-        style={
-          /* raw styles so that html copy works */
-          {
-            fontFamily: 'monospace',
-            wordWrap: 'break-word',
-            overflow: 'auto',
-            color: 'black',
-            fontSize: 12,
-            maxWidth: 600,
-            maxHeight: 500,
-          }
-        }
+        style={{
+          /* raw styles instead of className so that html copy works */
+          fontFamily: 'monospace',
+          wordWrap: 'break-word',
+          overflow: 'auto',
+          color: 'black',
+          fontSize: 12,
+          maxWidth: 600,
+          maxHeight: 300,
+        }}
       >
         <span style={{ background: 'white' }}>
           {`>${
@@ -99,13 +100,17 @@ const SeqPanel = React.forwardRef<HTMLDivElement, SeqPanelProps>(function (
         </span>
         <br />
         {mode === 'genomic' ? (
-          <Genomic sequence={seq} />
-        ) : mode === 'genomic_sequence_updown' ? (
-          <Genomic sequence={seq} upstream={upstream} downstream={downstream} />
+          <GenomicSequence sequence={seq} />
+        ) : mode === 'genomic_sequence_updownstream' ? (
+          <GenomicSequence
+            sequence={seq}
+            upstream={upstream}
+            downstream={downstream}
+          />
         ) : mode === 'cds' ? (
-          <GeneCDS cds={cds} sequence={seq} />
+          <CDSSequence cds={cds} sequence={seq} />
         ) : mode === 'cdna' ? (
-          <GenecDNA
+          <CDNASequence
             exons={exons}
             cds={cds}
             utr={utr}
@@ -113,9 +118,9 @@ const SeqPanel = React.forwardRef<HTMLDivElement, SeqPanelProps>(function (
             intronBp={intronBp}
           />
         ) : mode === 'protein' ? (
-          <GeneProtein cds={cds} codonTable={codonTable} sequence={seq} />
+          <ProteinSequence cds={cds} codonTable={codonTable} sequence={seq} />
         ) : mode === 'gene' ? (
-          <GenecDNA
+          <CDNASequence
             exons={exons}
             cds={cds}
             utr={utr}
@@ -124,7 +129,7 @@ const SeqPanel = React.forwardRef<HTMLDivElement, SeqPanelProps>(function (
             intronBp={intronBp}
           />
         ) : mode === 'gene_collapsed_intron' ? (
-          <GenecDNA
+          <CDNASequence
             exons={exons}
             cds={cds}
             sequence={seq}
@@ -134,7 +139,7 @@ const SeqPanel = React.forwardRef<HTMLDivElement, SeqPanelProps>(function (
             intronBp={intronBp}
           />
         ) : mode === 'gene_updownstream' ? (
-          <GenecDNA
+          <CDNASequence
             exons={exons}
             cds={cds}
             sequence={seq}
@@ -145,7 +150,7 @@ const SeqPanel = React.forwardRef<HTMLDivElement, SeqPanelProps>(function (
             intronBp={intronBp}
           />
         ) : mode === 'gene_updownstream_collapsed_intron' ? (
-          <GenecDNA
+          <CDNASequence
             exons={exons}
             cds={cds}
             sequence={seq}

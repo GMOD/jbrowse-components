@@ -33,7 +33,7 @@ type: types.literal('LGVSyntenyDisplay')
 
 ```js
 // type signature
-ITypeUnion<any, any, any>
+AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(schema)
 ```

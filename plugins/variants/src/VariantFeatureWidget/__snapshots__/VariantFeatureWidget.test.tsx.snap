@@ -188,7 +188,7 @@ exports[`renders with just the required model elements 1`] = `
                 </div>
               </div>
               <div
-                class="css-1upvn7b-container2"
+                class="css-1lttu3w-container"
               >
                 <button
                   class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium css-sghohy-MuiButtonBase-root-MuiButton-root"
@@ -224,7 +224,6 @@ exports[`renders with just the required model elements 1`] = `
                     />
                   </button>
                 </div>
-                <br />
               </div>
             </div>
           </div>

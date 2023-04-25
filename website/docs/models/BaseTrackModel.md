@@ -43,7 +43,7 @@ type: types.literal(trackType)
 
 ```js
 // type signature
-ITypeUnion<any, any, any>
+AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(baseTrackConfig)
 ```

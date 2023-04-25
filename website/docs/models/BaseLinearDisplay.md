@@ -63,6 +63,15 @@ IMaybe<ISimpleType<number>>
 userByteSizeLimit: types.maybe(types.number)
 ```
 
+#### property: configuration
+
+```js
+// type signature
+ConfigurationSchemaType<{ maxFeatureScreenDensity: { type: string; description: string; defaultValue: number; }; fetchSizeLimit: { type: string; defaultValue: number; description: string; }; height: { type: string; defaultValue: number; description: string; }; mouseover: { ...; }; }, ConfigurationSchemaOptions<...>>
+// code
+configuration: ConfigurationReference(configSchema)
+```
+
 ### BaseLinearDisplay - Getters
 
 #### getter: blockType

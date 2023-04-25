@@ -34,7 +34,7 @@ import {
 import { ErrorMessage, SanitizedHTML } from '../ui'
 import SequenceFeatureDetails from './SequenceFeatureDetails'
 import { BaseCardProps, BaseProps } from './types'
-import { SimpleFeatureSerializedNoId } from '../util/simpleFeature'
+import { SimpleFeatureSerialized } from '../util/simpleFeature'
 import { ellipses } from './util'
 
 const MAX_FIELD_NAME_WIDTH = 170
@@ -270,7 +270,7 @@ function Position(props: BaseProps) {
 
 function CoreDetails(props: BaseProps) {
   const { feature } = props
-  const obj = feature as SimpleFeatureSerializedNoId & {
+  const obj = feature as SimpleFeatureSerialized & {
     start: number
     end: number
     assemblyName?: string
@@ -587,13 +587,13 @@ interface PanelDescriptor {
 
 export function FeatureDetails(props: {
   model: IAnyStateTreeNode
-  feature: SimpleFeatureSerializedNoId
+  feature: SimpleFeatureSerialized
   depth?: number
   omit?: string[]
   formatter?: (val: unknown, key: string) => React.ReactNode
 }) {
   const { omit = [], model, feature, depth = 0 } = props
-  const { mate, name = '', id = '', type = '', subfeatures } = feature
+  const { mate, name = '', id = '', type = '', subfeatures, uniqueId } = feature
   const pm = getEnv(model).pluginManager
   const session = getSession(model)
 
@@ -610,8 +610,10 @@ export function FeatureDetails(props: {
         <>
           <Divider />
           <Typography>Mate details</Typography>
-          {/* @ts-expect-error */}
-          <CoreDetails {...props} feature={mate} />
+          <CoreDetails
+            {...props}
+            feature={{ ...mate, uniqueId: uniqueId + '-mate' }}
+          />
         </>
       ) : null}
       <Divider />
@@ -642,10 +644,10 @@ export function FeatureDetails(props: {
 
       {subfeatures?.length ? (
         <BaseCard title="Subfeatures" defaultExpanded={depth < 1}>
-          {subfeatures.map(sub => (
+          {subfeatures.map((sub, idx) => (
             <FeatureDetails
               key={JSON.stringify(sub)}
-              feature={sub}
+              feature={{ ...sub, uniqueId: `${uniqueId}_${idx}` }}
               model={model}
               depth={depth + 1}
             />

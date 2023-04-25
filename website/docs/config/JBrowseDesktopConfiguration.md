@@ -1,6 +1,6 @@
 ---
-id: jbrowsewebconfiguration
-title: JBrowseWebConfiguration
+id: jbrowsedesktopconfiguration
+title: JBrowseDesktopConfiguration
 toplevel: true
 ---
 
@@ -9,13 +9,13 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
-[products/jbrowse-web/src/jbrowseConfig.ts](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-web/src/jbrowseConfig.ts)
+[products/jbrowse-desktop/src/jbrowseConfig.ts](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-desktop/src/jbrowseConfig.ts)
 
 ## Docs
 
-configuration in a config.json
+configuration in a config.json/file.jbrowse
 
-### JBrowseWebConfiguration - Slots
+### JBrowseDesktopConfiguration - Slots
 
 #### slot: configuration.rpc
 
@@ -30,67 +30,6 @@ highResolutionScaling: {
         type: 'number',
         defaultValue: 2,
       }
-```
-
-#### slot: configuration.shareURL
-
-```js
-shareURL: {
-        type: 'string',
-        defaultValue: 'https:
-      }
-```
-
-#### slot: configuration.formatDetails.feature
-
-```js
-feature: {
-          type: 'frozen',
-          description: 'adds extra fields to the feature details',
-          defaultValue: {},
-          contextVariable: ['feature'],
-        }
-```
-
-#### slot: configuration.formatDetails.subfeatures
-
-```js
-subfeatures: {
-          type: 'frozen',
-          description: 'adds extra fields to the subfeatures of a feature',
-          defaultValue: {},
-          contextVariable: ['feature'],
-        }
-```
-
-#### slot: configuration.formatDetails.depth
-
-```js
-depth: {
-          type: 'number',
-          defaultValue: 2,
-          description: 'depth to iterate on subfeatures',
-        }
-```
-
-#### slot: configuration.formatAbout.conf
-
-```js
-config: {
-          type: 'frozen',
-          description: 'formats configuration object in about dialog',
-          defaultValue: {},
-          contextVariable: ['config'],
-        }
-```
-
-#### slot: configuration.formatAbout.hideUris
-
-```js
-hideUris: {
-          type: 'boolean',
-          defaultValue: false,
-        }
 ```
 
 #### slot: configuration.disableAnalytics
@@ -114,10 +53,7 @@ theme: {
 #### slot: configuration.extraThemes
 
 ```js
-extraThemes: {
-        type: 'frozen',
-        defaultValue: {},
-      }
+extraThemes: { type: 'frozen', defaultValue: {} }
 ```
 
 #### slot: configuration.logoPath
@@ -142,11 +78,24 @@ plugins: types.array(types.frozen<PluginDefinition>())
 
 #### slot: assemblies
 
+configuration of the assemblies in the instance, see BaseAssembly
+
 ```js
 assemblies: types.array(assemblyConfigSchemasType)
 ```
 
+#### slot: tracks
+
+track configuration is an array of track config schemas. multiple instances of a
+track can exist that use the same configuration
+
+```js
+tracks: types.array(pluginManager.pluggableConfigSchemaType('track'))
+```
+
 #### slot: internetAccounts
+
+configuration for internet accounts, see InternetAccounts
 
 ```js
 internetAccounts: types.array(
@@ -172,6 +121,6 @@ connections: types.array(pluginManager.pluggableConfigSchemaType('connection'))
 
 ```js
 defaultSession: types.optional(types.frozen(Session), {
-  name: `New session`,
+  name: `New Session`,
 })
 ```
