@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { Link, IconButton, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { DataGrid, GridCellParams } from '@mui/x-data-grid'
+import { DataGrid } from '@mui/x-data-grid'
 import {
   getSession,
   assembleLocString,
@@ -21,11 +21,15 @@ import ClearBookmarks from './ClearBookmarks'
 import { GridBookmarkModel } from '../model'
 import { navToBookmark } from '../utils'
 
-const useStyles = makeStyles()(() => ({
+const useStyles = makeStyles()(theme => ({
   link: {
     cursor: 'pointer',
   },
+  margin: {
+    margin: theme.spacing(2),
+  },
 }))
+
 const BookmarkGrid = observer(({ model }: { model: GridBookmarkModel }) => {
   const { classes } = useStyles()
   const [dialogRowNumber, setDialogRowNumber] = useState<number>()
@@ -58,21 +62,18 @@ const BookmarkGrid = observer(({ model }: { model: GridBookmarkModel }) => {
             field: 'locString',
             headerName: 'bookmark link',
             width: measureGridWidth(bookmarkRows.map(row => row.locString)),
-            renderCell: params => {
-              const { value } = params
-              return (
-                <Link
-                  className={classes.link}
-                  href="#"
-                  onClick={async event => {
-                    event.preventDefault()
-                    await navToBookmark(value as string, views, model)
-                  }}
-                >
-                  {value}
-                </Link>
-              )
-            },
+            renderCell: params => (
+              <Link
+                className={classes.link}
+                href="#"
+                onClick={async event => {
+                  event.preventDefault()
+                  await navToBookmark(params.value, views, model)
+                }}
+              >
+                {params.value}
+              </Link>
+            ),
           },
           {
             field: 'label',
@@ -81,23 +82,20 @@ const BookmarkGrid = observer(({ model }: { model: GridBookmarkModel }) => {
           },
           {
             field: 'delete',
-            width: 30,
-            renderCell: (params: GridCellParams) => {
-              const { value } = params
-              return (
-                <IconButton
-                  data-testid="deleteBookmark"
-                  aria-label="delete"
-                  onClick={() => {
-                    if (value != null) {
-                      setDialogRowNumber(+value)
-                    }
-                  }}
-                >
-                  <DeleteIcon />
-                </IconButton>
-              )
-            },
+            width: 100,
+            renderCell: params => (
+              <IconButton
+                data-testid="deleteBookmark"
+                aria-label="delete"
+                onClick={() => {
+                  if (params.value != null) {
+                    setDialogRowNumber(+params.value)
+                  }
+                }}
+              >
+                <DeleteIcon />
+              </IconButton>
+            ),
           },
         ]}
         onCellEditStop={({ id, value }) =>
@@ -117,6 +115,7 @@ const BookmarkGrid = observer(({ model }: { model: GridBookmarkModel }) => {
 
 function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
   const { selectedAssembly } = model
+  const { classes } = useStyles()
 
   return (
     <>
@@ -125,15 +124,11 @@ function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
       <ImportBookmarks model={model} assemblyName={selectedAssembly} />
       <ClearBookmarks model={model} />
 
-      <div style={{ margin: 12 }}>
-        <Typography>
-          Note: you can double click the <code>label</code> field to add your
-          own custom notes
-        </Typography>
-      </div>
-      <div style={{ height: 750, width: '100%' }}>
-        <BookmarkGrid model={model} />
-      </div>
+      <Typography className={classes.margin}>
+        Note: you can double click the <code>label</code> field to add your own
+        custom notes
+      </Typography>
+      <BookmarkGrid model={model} />
     </>
   )
 }

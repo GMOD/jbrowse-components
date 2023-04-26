@@ -3,7 +3,7 @@ import { IconButton } from '@mui/material'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 import { getRoot, resolveIdentifier } from 'mobx-state-tree'
-import { DataGrid, GridCellParams } from '@mui/x-data-grid'
+import { DataGrid, GridCellParams, GridToolbar } from '@mui/x-data-grid'
 
 // jbrowse
 import { getTrackName } from '@jbrowse/core/util/tracks'
@@ -51,6 +51,7 @@ export default observer(function FacetedSelector({
   const { ref, scrollLeft } = useResizeBar()
 
   const [filterText, setFilterText] = useState('')
+  const [showOptions, setShowOptions] = useState(false)
   const [info, setInfo] = useState<InfoArgs>()
   const [useShoppingCart, setUseShoppingCart] = useState(false)
   const [hideSparse, setHideSparse] = useState(true)
@@ -243,9 +244,11 @@ export default observer(function FacetedSelector({
       ) : null}
       <FacetedHeader
         setHideSparse={setHideSparse}
+        setShowOptions={setShowOptions}
         setFilterText={setFilterText}
         setUseShoppingCart={setUseShoppingCart}
         hideSparse={hideSparse}
+        showOptions={showOptions}
         filterText={filterText}
         useShoppingCart={useShoppingCart}
         model={model}
@@ -313,6 +316,10 @@ export default observer(function FacetedSelector({
             rowSelectionModel={
               useShoppingCart ? selection.map(s => s.trackId) : shownTrackIds
             }
+            slots={{ toolbar: showOptions ? GridToolbar : null }}
+            slotProps={{
+              toolbar: { printOptions: { disableToolbarButton: true } },
+            }}
             columns={columns}
             rowHeight={25}
           />
