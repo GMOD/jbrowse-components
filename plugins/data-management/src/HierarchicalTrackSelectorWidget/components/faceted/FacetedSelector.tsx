@@ -317,6 +317,9 @@ export default observer(function FacetedSelector({
               useShoppingCart ? selection.map(s => s.trackId) : shownTrackIds
             }
             slots={{ toolbar: showOptions ? GridToolbar : null }}
+            slotProps={{
+              toolbar: { printOptions: { disableToolbarButton: true } },
+            }}
             columns={columns}
             rowHeight={25}
           />

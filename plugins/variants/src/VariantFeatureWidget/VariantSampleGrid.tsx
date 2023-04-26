@@ -142,6 +142,9 @@ export default function VariantSamples(props: {
           columnHeaderHeight={35}
           disableColumnMenu
           slots={{ toolbar: checked ? GridToolbar : null }}
+          slotProps={{
+            toolbar: { printOptions: { disableToolbarButton: true } },
+          }}
         />
       </div>
     </BaseCard>

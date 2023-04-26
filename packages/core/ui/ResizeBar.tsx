@@ -15,7 +15,7 @@ const useStyles = makeStyles()(theme => ({
     position: 'absolute',
     height: '100%',
     pointerEvents: 'none',
-    background: theme.palette.divider,
+    background: theme.palette.action.disabled,
     width: 1,
   },
   hiddenTick: {

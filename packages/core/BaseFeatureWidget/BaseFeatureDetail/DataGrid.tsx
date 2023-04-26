@@ -93,6 +93,9 @@ export default function DataGridDetails({
             columnHeaderHeight={35}
             hideFooter={rows.length < 25}
             slots={{ toolbar: checked ? GridToolbar : null }}
+            slotProps={{
+              toolbar: { printOptions: { disableToolbarButton: true } },
+            }}
             columns={colNames.map((val, index) => ({
               field: val,
               renderCell: params => {

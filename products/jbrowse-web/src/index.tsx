@@ -1,9 +1,18 @@
 import React, { lazy, Suspense } from 'react'
 import { render } from 'react-dom'
 import Loading from './Loading'
+import './index.css'
 
 const Main = lazy(() => import('./Loader'))
 const initialTimeStamp = Date.now()
+
+// this should be able to be removed after @mui/x-data-grid updates
+// window.addEventListener('error', event => {
+//   console.log(event.message, event.message.match(/ResizeObserver/))
+//   event.preventDefault()
+//   event.stopPropagation()
+//   event.stopImmediatePropagation()
+// })
 
 if (window?.name.startsWith('JBrowseAuthWindow')) {
   const parent = window.opener
