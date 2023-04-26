@@ -1,7 +1,8 @@
-import { isAlive, types } from 'mobx-state-tree'
+import { addDisposer, isAlive, types } from 'mobx-state-tree'
 
 import PluginManager from '@jbrowse/core/PluginManager'
-import { localStorageGetItem } from '@jbrowse/core/util'
+import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
+import { autorun } from 'mobx'
 
 const minDrawerWidth = 128
 
@@ -155,6 +156,15 @@ export default function DrawerWidgets(pluginManager: PluginManager) {
        */
       hideAllWidgets() {
         self.activeWidgets.clear()
+      },
+
+      afterAttach() {
+        addDisposer(
+          self,
+          autorun(() => {
+            localStorageSetItem('drawerPosition', self.drawerPosition)
+          }),
+        )
       },
     }))
 }

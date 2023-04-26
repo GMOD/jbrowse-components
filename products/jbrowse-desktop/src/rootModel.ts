@@ -31,7 +31,7 @@ import RedoIcon from '@mui/icons-material/Redo'
 import { Save, SaveAs, DNA, Cable } from '@jbrowse/core/ui/Icons'
 
 // locals
-import sessionModelFactory from './sessionModelFactory'
+import sessionModelFactory from './sessionModel'
 import jobsModelFactory from './indexJobsModel'
 import JBrowseDesktop from './jbrowseModel'
 import OpenSequenceDialog from './OpenSequenceDialog'

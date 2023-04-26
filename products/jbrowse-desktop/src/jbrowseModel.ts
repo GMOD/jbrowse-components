@@ -12,8 +12,8 @@ import {
   getSnapshot,
   resolveIdentifier,
 } from 'mobx-state-tree'
-import { SessionStateModel } from './sessionModelFactory'
 import JBrowseConfigF from './jbrowseConfig'
+import { SessionStateModel } from './sessionModel'
 
 // poke some things for testing (this stuff will eventually be removed)
 // @ts-expect-error
