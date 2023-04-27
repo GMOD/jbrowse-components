@@ -185,5 +185,5 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
   )
 }
 
-export type BaseTrackConfigModel = ReturnType<typeof createBaseTrackConfig>
-export type BaseTrackConfig = Instance<BaseTrackConfigModel>
+export type BaseTrackConfigSchema = ReturnType<typeof createBaseTrackConfig>
+export type BaseTrackConfig = Instance<BaseTrackConfigSchema>

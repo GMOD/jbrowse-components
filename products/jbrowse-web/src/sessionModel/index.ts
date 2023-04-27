@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { lazy } from 'react'
 import clone from 'clone'
-import { createJBrowseTheme, defaultThemes } from '@jbrowse/core/ui/theme'
 import { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import {
   readConfObject,
   getConf,
   isConfigurationModel,
   AnyConfigurationModel,
+  AnyConfiguration,
 } from '@jbrowse/core/configuration'
 import {
   Region,
@@ -16,9 +16,8 @@ import {
   DialogComponentType,
 } from '@jbrowse/core/util/types'
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
-import { ThemeOptions } from '@mui/material'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
-import { autorun, observable } from 'mobx'
+import { autorun } from 'mobx'
 import {
   addDisposer,
   cast,
@@ -45,18 +44,13 @@ import InfoIcon from '@mui/icons-material/Info'
 import { BaseSession } from './Base'
 import Assemblies from './Assemblies'
 import SessionConnections from './SessionConnections'
+import { BaseTrackConfig, BaseTrackConfigModel } from '@jbrowse/core/pluggableElementTypes'
 
 const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
 export declare interface ReactProps {
   [key: string]: any
 }
-
-type AnyConfiguration =
-  | AnyConfigurationModel
-  | SnapshotOut<AnyConfigurationModel>
-
-type ThemeMap = { [key: string]: ThemeOptions }
 
 /**
  * #stateModel JBrowseWebSessionModel
@@ -68,13 +62,17 @@ export default function sessionModelFactory(
 ) {
   const sessionModel = types
     .compose(
+      'JBrowseWebSessionModel',
       BaseSession(pluginManager),
       CoreSession.ReferenceManagement(pluginManager),
       CoreSession.DrawerWidgets(pluginManager),
+      CoreSession.DialogQueue(pluginManager),
+      CoreSession.Themes(pluginManager),
+      CoreSession.Views(pluginManager),
+      CoreSession.Tracks(pluginManager),
       Assemblies(pluginManager, assemblyConfigSchemasType),
       SessionConnections(pluginManager),
     )
-    .named('JBrowseWebSessionModel')
     .volatile((/* self */) => ({
       /**
        * #volatile
@@ -94,110 +92,13 @@ export default function sessionModelFactory(
        * `{ taskName: "configure", target: thing_being_configured }`
        */
       task: undefined,
-      /**
-       * #volatile
-       */
-      queueOfDialogs: observable.array(
-        [] as [DialogComponentType, ReactProps][],
-      ),
     }))
     .views(self => ({
-      /**
-       * #getter
-       */
-      get jbrowse() {
-        return getParent<any>(self).jbrowse
-      },
-    }))
-    .views(self => ({
-      /**
-       * #method
-       */
-      allThemes(): ThemeMap {
-        const extraThemes = getConf(self.jbrowse, 'extraThemes')
-        return { ...defaultThemes, ...extraThemes }
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get themeName() {
-        const { sessionThemeName } = self
-        const all = self.allThemes()
-        return all[sessionThemeName] ? sessionThemeName : 'default'
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get theme() {
-        const configTheme = getConf(self.jbrowse, 'theme')
-        const all = self.allThemes()
-        return createJBrowseTheme(configTheme, all, self.themeName)
-      },
-
-      /**
-       * #getter
-       */
-      get DialogComponent() {
-        if (self.queueOfDialogs.length) {
-          const firstInQueue = self.queueOfDialogs[0]
-          return firstInQueue && firstInQueue[0]
-        }
-        return undefined
-      },
-      /**
-       * #getter
-       */
-      get DialogProps() {
-        if (self.queueOfDialogs.length) {
-          const firstInQueue = self.queueOfDialogs[0]
-          return firstInQueue && firstInQueue[1]
-        }
-        return undefined
-      },
       /**
        * #getter
        */
       get shareURL() {
         return getConf(self.jbrowse, 'shareURL')
-      },
-      /**
-       * #getter
-       */
-      get rpcManager() {
-        return self.jbrowse.rpcManager as RpcManager
-      },
-
-      /**
-       * #getter
-       */
-      get configuration(): AnyConfigurationModel {
-        return self.jbrowse.configuration
-      },
-      /**
-       * #getter
-       */
-      get assemblies(): AnyConfigurationModel[] {
-        return self.jbrowse.assemblies
-      },
-      /**
-       * #getter
-       */
-      get assemblyNames(): string[] {
-        const { assemblyNames } = getParent<any>(self).jbrowse
-        const sessionAssemblyNames = self.sessionAssemblies.map(assembly =>
-          readConfObject(assembly, 'name'),
-        )
-        return [...assemblyNames, ...sessionAssemblyNames]
-      },
-      /**
-       * #getter
-       */
-      get tracks(): AnyConfigurationModel[] {
-        return [...self.sessionTracks, ...getParent<any>(self).jbrowse.tracks]
       },
       /**
        * #getter
@@ -238,12 +139,6 @@ export default function sessionModelFactory(
       /**
        * #getter
        */
-      get assemblyManager() {
-        return getParent<any>(self).assemblyManager
-      },
-      /**
-       * #getter
-       */
       get version() {
         return getParent<any>(self).version
       },
@@ -253,366 +148,166 @@ export default function sessionModelFactory(
        */
       renderProps() {
         return {
-          theme: this.theme,
+          theme: self.theme,
         }
       },
     }))
-    .actions(self => ({
-      /**
-       * #action
-       */
-      setThemeName(name: string) {
-        self.sessionThemeName = name
-      },
-      /**
-       * #action
-       */
-      moveViewUp(id: string) {
-        const idx = self.views.findIndex(v => v.id === id)
-
-        if (idx === -1) {
-          return
-        }
-        if (idx > 0) {
-          self.views.splice(idx - 1, 2, self.views[idx], self.views[idx - 1])
-        }
-      },
-      /**
-       * #action
-       */
-      moveViewDown(id: string) {
-        const idx = self.views.findIndex(v => v.id === id)
-
-        if (idx === -1) {
-          return
-        }
-
-        if (idx < self.views.length - 1) {
-          self.views.splice(idx, 2, self.views[idx + 1], self.views[idx])
-        }
-      },
-      /**
-       * #action
-       */
-      queueDialog(
-        callback: (
-          doneCallback: () => void,
-        ) => [DialogComponentType, ReactProps],
-      ) {
-        const [component, props] = callback(() => self.queueOfDialogs.shift())
-        self.queueOfDialogs.push([component, props])
-      },
-      /**
-       * #action
-       */
-      setName(str: string) {
-        self.name = str
-      },
-
-      /**
-       * #action
-       */
-      addAssembly(conf: AnyConfiguration) {
-        const asm = self.sessionAssemblies.find(f => f.name === conf.name)
-        if (asm) {
-          console.warn(`Assembly ${conf.name} was already existing`)
-          return asm
-        }
-        const length = self.sessionAssemblies.push(conf)
-        return self.sessionAssemblies[length - 1]
-      },
-
-      /**
-       * #action
-       * used for read vs ref type assemblies.
-       */
-      addTemporaryAssembly(conf: AnyConfiguration) {
-        const asm = self.sessionAssemblies.find(f => f.name === conf.name)
-        if (asm) {
-          console.warn(`Assembly ${conf.name} was already existing`)
-          return asm
-        }
-        const length = self.temporaryAssemblies.push(conf)
-        return self.temporaryAssemblies[length - 1]
-      },
-      /**
-       * #action
-       */
-      addSessionPlugin(plugin: JBrowsePlugin) {
-        if (self.sessionPlugins.some(p => p.name === plugin.name)) {
-          throw new Error('session plugin cannot be installed twice')
-        }
-        self.sessionPlugins.push(plugin)
-        getRoot<any>(self).setPluginsUpdated(true)
-      },
-      /**
-       * #action
-       */
-      removeAssembly(assemblyName: string) {
-        const index = self.sessionAssemblies.findIndex(
-          asm => asm.name === assemblyName,
-        )
-        if (index !== -1) {
-          self.sessionAssemblies.splice(index, 1)
-        }
-      },
-      /**
-       * #action
-       */
-      removeTemporaryAssembly(assemblyName: string) {
-        const index = self.temporaryAssemblies.findIndex(
-          asm => asm.name === assemblyName,
-        )
-        if (index !== -1) {
-          self.temporaryAssemblies.splice(index, 1)
-        }
-      },
-      /**
-       * #action
-       */
-      removeSessionPlugin(pluginDefinition: PluginDefinition) {
-        self.sessionPlugins = cast(
-          self.sessionPlugins.filter(
-            plugin =>
-              plugin.url !== pluginDefinition.url ||
-              plugin.umdUrl !== pluginDefinition.umdUrl ||
-              plugin.cjsUrl !== pluginDefinition.cjsUrl ||
-              plugin.esmUrl !== pluginDefinition.esmUrl,
-          ),
-        )
-        const rootModel = getParent<any>(self)
-        rootModel.setPluginsUpdated(true)
-      },
-
-      /**
-       * #action
-       */
-      addView(typeName: string, initialState = {}) {
-        const typeDefinition = pluginManager.getElementType('view', typeName)
-        if (!typeDefinition) {
-          throw new Error(`unknown view type ${typeName}`)
-        }
-
-        const length = self.views.push({
-          ...initialState,
-          type: typeName,
-        })
-        return self.views[length - 1]
-      },
-
-      /**
-       * #action
-       */
-      removeView(view: any) {
-        for (const [, widget] of self.activeWidgets) {
-          if (widget.view && widget.view.id === view.id) {
-            self.hideWidget(widget)
+    .actions(self => {
+      const super_addTrackConf = self.addTrackConf
+      const super_deletetrackConf = self.deleteTrackConf
+      return {
+        /**
+         * #action
+         */
+        addSessionPlugin(plugin: JBrowsePlugin) {
+          if (self.sessionPlugins.some(p => p.name === plugin.name)) {
+            throw new Error('session plugin cannot be installed twice')
           }
-        }
-        self.views.remove(view)
-      },
+          self.sessionPlugins.push(plugin)
+          getRoot<any>(self).setPluginsUpdated(true)
+        },
 
-      /**
-       * #action
-       */
-      addAssemblyConf(assemblyConf: AnyConfiguration) {
-        return getParent<any>(self).jbrowse.addAssemblyConf(assemblyConf)
-      },
-
-      /**
-       * #action
-       */
-      addTrackConf(trackConf: AnyConfiguration) {
-        if (self.adminMode) {
-          return getParent<any>(self).jbrowse.addTrackConf(trackConf)
-        }
-        const { trackId, type } = trackConf as { type: string; trackId: string }
-        if (!type) {
-          throw new Error(`unknown track type ${type}`)
-        }
-        const track = self.sessionTracks.find((t: any) => t.trackId === trackId)
-        if (track) {
-          return track
-        }
-        const length = self.sessionTracks.push(trackConf)
-        return self.sessionTracks[length - 1]
-      },
-
-      /**
-       * #action
-       */
-      deleteTrackConf(trackConf: AnyConfigurationModel) {
-        const callbacksToDereferenceTrack: Function[] = []
-        const dereferenceTypeCount: Record<string, number> = {}
-        const referring = self.getReferring(trackConf)
-        self.removeReferring(
-          referring,
-          trackConf,
-          callbacksToDereferenceTrack,
-          dereferenceTypeCount,
-        )
-        callbacksToDereferenceTrack.forEach(cb => cb())
-        if (self.adminMode) {
-          return getParent<any>(self).jbrowse.deleteTrackConf(trackConf)
-        }
-        const { trackId } = trackConf
-        const idx = self.sessionTracks.findIndex(t => t.trackId === trackId)
-        if (idx === -1) {
-          return undefined
-        }
-        return self.sessionTracks.splice(idx, 1)
-      },
-
-      /**
-       * #action
-       */
-      addLinearGenomeViewOfAssembly(assemblyName: string, initialState = {}) {
-        return this.addViewOfAssembly(
-          'LinearGenomeView',
-          assemblyName,
-          initialState,
-        )
-      },
-
-      /**
-       * #action
-       */
-      addViewOfAssembly(
-        viewType: any,
-        assemblyName: string,
-        initialState: any = {},
-      ) {
-        const assembly = self.assemblies.find(
-          s => readConfObject(s, 'name') === assemblyName,
-        )
-        if (!assembly) {
-          throw new Error(
-            `Could not add view of assembly "${assemblyName}", assembly name not found`,
+        /**
+         * #action
+         */
+        removeSessionPlugin(pluginDefinition: PluginDefinition) {
+          self.sessionPlugins = cast(
+            self.sessionPlugins.filter(
+              plugin =>
+                plugin.url !== pluginDefinition.url ||
+                plugin.umdUrl !== pluginDefinition.umdUrl ||
+                plugin.cjsUrl !== pluginDefinition.cjsUrl ||
+                plugin.esmUrl !== pluginDefinition.esmUrl,
+            ),
           )
-        }
-        initialState.displayRegionsFromAssemblyName = readConfObject(
-          assembly,
-          'name',
-        )
-        return this.addView(viewType, initialState)
-      },
+          const rootModel = getParent<any>(self)
+          rootModel.setPluginsUpdated(true)
+        },
 
-      /**
-       * #action
-       */
-      addViewFromAnotherView(
-        viewType: string,
-        otherView: any,
-        initialState: { displayedRegions?: Region[] } = {},
-      ) {
-        const state = { ...initialState }
-        state.displayedRegions = getSnapshot(otherView.displayedRegions)
-        return this.addView(viewType, state)
-      },
+        /**
+         * #action
+         */
+        addTrackConf(trackConf: AnyConfiguration) {
+          if (self.adminMode) {
+            return super_addTrackConf(trackConf)
+          }
+          const { trackId, type } = trackConf as {
+            type: string
+            trackId: string
+          }
+          if (!type) {
+            throw new Error(`unknown track type ${type}`)
+          }
+          const track = self.sessionTracks.find(
+            (t: any) => t.trackId === trackId,
+          )
+          if (track) {
+            return track
+          }
+          const length = self.sessionTracks.push(trackConf)
+          return self.sessionTracks[length - 1]
+        },
 
-      /**
-       * #action
-       * set the global selection, i.e. the globally-selected object.
-       * can be a feature, a view, just about anything
-       * @param thing -
-       */
-      setSelection(thing: any) {
-        self.selection = thing
-      },
+        /**
+         * #action
+         */
+        deleteTrackConf(trackConf: AnyConfigurationModel) {
+          // try to delete it in the main config if in admin mode
+          const found = super_deletetrackConf(trackConf)
+          if (found) {
+            return found
+          }
+          // if not found or not in admin mode, try to delete it in the sessionTracks
+          const { trackId } = trackConf
+          const idx = self.sessionTracks.findIndex(t => t.trackId === trackId)
+          if (idx === -1) {
+            return undefined
+          }
+          return self.sessionTracks.splice(idx, 1)
+        },
 
-      /**
-       * #action
-       * clears the global selection
-       */
-      clearSelection() {
-        self.selection = undefined
-      },
+        /**
+         * #action
+         * set the global selection, i.e. the globally-selected object.
+         * can be a feature, a view, just about anything
+         * @param thing -
+         */
+        setSelection(thing: any) {
+          self.selection = thing
+        },
 
-      /**
-       * #action
-       */
-      addSavedSession(sessionSnapshot: SnapshotIn<typeof self>) {
-        return getParent<any>(self).addSavedSession(sessionSnapshot)
-      },
+        /**
+         * #action
+         * clears the global selection
+         */
+        clearSelection() {
+          self.selection = undefined
+        },
 
-      /**
-       * #action
-       */
-      removeSavedSession(sessionSnapshot: any) {
-        return getParent<any>(self).removeSavedSession(sessionSnapshot)
-      },
+        /**
+         * #action
+         */
+        addSavedSession(sessionSnapshot: SnapshotIn<typeof self>) {
+          return getParent<any>(self).addSavedSession(sessionSnapshot)
+        },
 
-      /**
-       * #action
-       */
-      renameCurrentSession(sessionName: string) {
-        return getParent<any>(self).renameCurrentSession(sessionName)
-      },
+        /**
+         * #action
+         */
+        removeSavedSession(sessionSnapshot: any) {
+          return getParent<any>(self).removeSavedSession(sessionSnapshot)
+        },
 
-      /**
-       * #action
-       */
-      duplicateCurrentSession() {
-        return getParent<any>(self).duplicateCurrentSession()
-      },
-      /**
-       * #action
-       */
-      activateSession(sessionName: any) {
-        return getParent<any>(self).activateSession(sessionName)
-      },
+        /**
+         * #action
+         */
+        renameCurrentSession(sessionName: string) {
+          return getParent<any>(self).renameCurrentSession(sessionName)
+        },
 
-      /**
-       * #action
-       */
-      setDefaultSession() {
-        return getParent<any>(self).setDefaultSession()
-      },
+        /**
+         * #action
+         */
+        duplicateCurrentSession() {
+          return getParent<any>(self).duplicateCurrentSession()
+        },
+        /**
+         * #action
+         */
+        activateSession(sessionName: any) {
+          return getParent<any>(self).activateSession(sessionName)
+        },
 
-      /**
-       * #action
-       */
-      saveSessionToLocalStorage() {
-        return getParent<any>(self).saveSessionToLocalStorage()
-      },
+        /**
+         * #action
+         */
+        setDefaultSession() {
+          return getParent<any>(self).setDefaultSession()
+        },
 
-      /**
-       * #action
-       */
-      loadAutosaveSession() {
-        return getParent<any>(self).loadAutosaveSession()
-      },
+        /**
+         * #action
+         */
+        saveSessionToLocalStorage() {
+          return getParent<any>(self).saveSessionToLocalStorage()
+        },
 
-      /**
-       * #action
-       */
-      setSession(sessionSnapshot: SnapshotIn<typeof self>) {
-        return getParent<any>(self).setSession(sessionSnapshot)
-      },
-    }))
+        /**
+         * #action
+         */
+        loadAutosaveSession() {
+          return getParent<any>(self).loadAutosaveSession()
+        },
 
+        /**
+         * #action
+         */
+        setSession(sessionSnapshot: SnapshotIn<typeof self>) {
+          return getParent<any>(self).setSession(sessionSnapshot)
+        },
+      }
+    })
     .actions(self => ({
-      /**
-       * #action
-       * opens a configuration editor to configure the given thing,
-       * and sets the current task to be configuring it
-       * @param configuration -
-       */
-      editConfiguration(configuration: AnyConfigurationModel) {
-        if (!isConfigurationModel(configuration)) {
-          throw new Error(
-            'must pass a configuration model to editConfiguration',
-          )
-        }
-        const editableConfigSession = self
-        const editor = editableConfigSession.addWidget(
-          'ConfigurationEditorWidget',
-          'configEditor',
-          { target: configuration },
-        )
-        editableConfigSession.showWidget(editor)
-      },
-
       /**
        * #action
        */
@@ -628,14 +323,13 @@ export default function sessionModelFactory(
       /**
        * #method
        */
-      getTrackActionMenuItems(config: AnyConfigurationModel) {
+      getTrackActionMenuItems(config: BaseTrackConfig) {
         const { adminMode, sessionTracks } = self
         const canEdit =
           adminMode || sessionTracks.find(t => t.trackId === config.trackId)
 
         // disable if it is a reference sequence track
-        const isRefSeq =
-          readConfObject(config, 'type') === 'ReferenceSequenceTrack'
+        const isRefSeq = config.type === 'ReferenceSequenceTrack'
         return [
           {
             label: 'About track',

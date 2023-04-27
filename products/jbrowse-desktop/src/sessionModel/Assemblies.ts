@@ -32,6 +32,12 @@ export default function Assemblies(
       get assemblyNames(): string[] {
         return getParent<RootModel>(self).jbrowse.assemblyNames
       },
+      /**
+       * #getter
+       */
+      get assemblyManager() {
+        return getParent<any>(self).assemblyManager
+      },
     }))
     .actions(self => ({
       /**

@@ -4,16 +4,13 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { getConf } from '@jbrowse/core/configuration'
 import { createJBrowseTheme, defaultThemes } from '@jbrowse/core/ui'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
-import type { BaseSessionModel } from './Base'
+import type { BaseSessionModel } from '../../../../products/jbrowse-desktop/src/sessionModel/Base'
 import { ThemeOptions } from '@mui/material'
 import { autorun } from 'mobx'
 
 type ThemeMap = { [key: string]: ThemeOptions }
 
-export default function Themes(
-  pluginManager: PluginManager,
-  assemblyConfigSchemasType = types.frozen(),
-) {
+export default function Themes(pluginManager: PluginManager) {
   return types
     .model({})
     .volatile(() => ({

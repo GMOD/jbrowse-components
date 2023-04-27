@@ -19,6 +19,8 @@ import { MenuItem } from '@jbrowse/core/ui'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { UriLocation } from '@jbrowse/core/util/types'
 
+import type { RootModel as BaseRootModel } from '@jbrowse/product-core'
+
 // icons
 import OpenIcon from '@mui/icons-material/FolderOpen'
 import ExtensionIcon from '@mui/icons-material/Extension'
@@ -40,7 +42,7 @@ const { ipcRenderer } = window.require('electron')
 
 const PreferencesDialog = lazy(() => import('./PreferencesDialog'))
 
-function getSaveSession(model: RootModel) {
+function getSaveSession(model: BaseRootModel) {
   return {
     ...getSnapshot(model.jbrowse),
     defaultSession: model.session ? getSnapshot(model.session) : {},
@@ -308,7 +310,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
               onClick: async () => {
                 if (self.session) {
                   try {
-                    await self.saveSession(getSaveSession(self as RootModel))
+                    await self.saveSession(getSaveSession(self))
                   } catch (e) {
                     console.error(e)
                     self.session?.notify(`${e}`, 'error')
@@ -325,7 +327,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
                     'promptSessionSaveAs',
                   )
                   self.setSessionPath(saveAsPath)
-                  await self.saveSession(getSaveSession(self as RootModel))
+                  await self.saveSession(getSaveSession(self))
                 } catch (e) {
                   console.error(e)
                   self.session?.notify(`${e}`, 'error')
@@ -505,7 +507,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       },
       async setPluginsUpdated() {
         if (self.session) {
-          await self.saveSession(getSaveSession(self as RootModel))
+          await self.saveSession(getSaveSession(self))
         }
         await self.openNewSessionCallback(self.sessionPath)
       },
@@ -690,7 +692,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
             async () => {
               if (self.session) {
                 try {
-                  await self.saveSession(getSaveSession(self as RootModel))
+                  await self.saveSession(getSaveSession(self))
                 } catch (e) {
                   console.error(e)
                 }

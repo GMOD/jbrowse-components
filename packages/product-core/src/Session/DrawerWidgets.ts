@@ -1,8 +1,9 @@
-import { addDisposer, isAlive, types } from 'mobx-state-tree'
+import { Instance, addDisposer, isAlive, types } from 'mobx-state-tree'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
+import { AnyConfigurationModel, isConfigurationModel } from '@jbrowse/core/configuration'
 
 const minDrawerWidth = 128
 
@@ -61,6 +62,7 @@ export default function DrawerWidgets(pluginManager: PluginManager) {
        */
       setDrawerPosition(arg: string) {
         self.drawerPosition = arg
+        localStorage.setItem('drawerPosition', arg)
       },
 
       /**
@@ -158,6 +160,26 @@ export default function DrawerWidgets(pluginManager: PluginManager) {
         self.activeWidgets.clear()
       },
 
+      /**
+       * #action
+       * opens a configuration editor to configure the given thing,
+       * and sets the current task to be configuring it
+       * @param configuration -
+       */
+      editConfiguration(configuration: AnyConfigurationModel) {
+        if (!isConfigurationModel(configuration)) {
+          throw new Error(
+            'must pass a configuration model to editConfiguration',
+          )
+        }
+        const editor = this.addWidget(
+          'ConfigurationEditorWidget',
+          'configEditor',
+          { target: configuration },
+        )
+        this.showWidget(editor)
+      },
+
       afterAttach() {
         addDisposer(
           self,
@@ -168,3 +190,5 @@ export default function DrawerWidgets(pluginManager: PluginManager) {
       },
     }))
 }
+
+export type DrawerWidgetManager = Instance<ReturnType<typeof DrawerWidgets>>

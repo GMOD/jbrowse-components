@@ -90,13 +90,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
        * kind of thing it is.
        */
       selection: undefined,
-      /**
-       * this is the current "task" that is being performed in the UI.
-       * this is usually an object of the form
-       * `{ taskName: "configure", target: thing_being_configured }`
-       */
-      task: undefined,
-
       queueOfDialogs: [] as [DialogComponentType, any][],
     }))
     .views(self => ({

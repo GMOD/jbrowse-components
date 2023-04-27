@@ -1,25 +1,8 @@
 /** MST mixin for managing a queue of dialogs at the level of the session */
 
 import PluginManager from '@jbrowse/core/PluginManager'
-import {
-  DialogComponentType,
-  TrackViewModel,
-  getContainingView,
-  isSessionModelWithWidgets,
-} from '@jbrowse/core/util'
-import {
-  IAnyStateTreeNode,
-  getMembers,
-  getParent,
-  getSnapshot,
-  getType,
-  isModelType,
-  isReferenceType,
-  types,
-  walk,
-} from 'mobx-state-tree'
-
-import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
+import { DialogComponentType } from '@jbrowse/core/util'
+import { IAnyStateTreeNode, Instance, types } from 'mobx-state-tree'
 
 export interface ReferringNode {
   node: IAnyStateTreeNode
@@ -61,6 +44,8 @@ export default function DialogQueue(pluginManager: PluginManager) {
       queueDialog(
         callback: (doneCallback: () => void) => [DialogComponentType, any],
       ): void {
+        // NOTE: this base implementation doesn't include the changes from #2469,
+        // hoping it's not needed anymore
         const [component, props] = callback(() => {
           self.queueOfDialogs.shift()
         })
@@ -68,3 +53,5 @@ export default function DialogQueue(pluginManager: PluginManager) {
       },
     }))
 }
+
+export type DialogQueueManager = Instance<ReturnType<typeof DialogQueue>>

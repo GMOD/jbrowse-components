@@ -1,9 +1,10 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { Instance, getParent, types } from 'mobx-state-tree'
+import { Instance, types } from 'mobx-state-tree'
+import { Session as CoreSession } from '@jbrowse/product-core'
 
 export default function BaseSession(pluginManager: PluginManager) {
-  return types
-    .model({
+  return CoreSession.Base(pluginManager)
+    .props({
       /**
        * #property
        */
@@ -12,33 +13,22 @@ export default function BaseSession(pluginManager: PluginManager) {
        * #property
        */
       margin: 0,
-
-      /**
-       * #property
-       */
-      views: types.array(pluginManager.pluggableMstType('view', 'stateModel')),
     })
     .views(self => ({
-      /**
-       * #getter
-       */
-      get jbrowse() {
-        return getParent<any>(self).jbrowse
-      },
       /**
        * #getter
        */
       get adminMode() {
         return true
       },
+      /**
+       * #getter
+       */
+      get version() {
+        return self.root.version
+      },
     }))
     .volatile((/* self */) => ({
-      /**
-       * this is the globally "selected" object. can be anything.
-       * code that wants to deal with this should examine it to see what
-       * kind of thing it is.
-       */
-      selection: undefined as unknown,
       /**
        * this is the current "task" that is being performed in the UI.
        * this is usually an object of the form
