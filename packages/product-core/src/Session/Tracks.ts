@@ -1,25 +1,23 @@
-import { Instance, addDisposer, getParent, types } from 'mobx-state-tree'
+import { Instance, getParent, types } from 'mobx-state-tree'
 
 import PluginManager from '@jbrowse/core/PluginManager'
-import { AnyConfigurationModel, getConf } from '@jbrowse/core/configuration'
-import type { BaseSessionModel } from '../../../../products/jbrowse-desktop/src/sessionModel/Base'
-import { ThemeOptions } from '@mui/material'
-import { autorun } from 'mobx'
-import DrawerWidgets from './DrawerWidgets'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import BaseSession from './Base'
+import ReferenceManagement from './ReferenceManagement'
 
 export default function Tracks(pluginManager: PluginManager) {
   return types
-    .compose('TracksManagerSessionMixin',
-        BaseSession(pluginManager),
-        ReferenceManagement(pluginManager)
+    .compose(
+      'TracksManagerSessionMixin',
+      BaseSession(pluginManager),
+      ReferenceManagement(pluginManager),
     )
     .views(self => ({
       /**
        * #getter
        */
       get tracks(): AnyConfigurationModel[] {
-        return getParent<any>(self).jbrowse.tracks
+        return self.jbrowse.tracks
       },
     }))
     .actions(self => ({
@@ -27,7 +25,7 @@ export default function Tracks(pluginManager: PluginManager) {
        * #action
        */
       addTrackConf(trackConf: any) {
-        return getParent<any>(self).jbrowse.addTrackConf(trackConf)
+        return self.jbrowse.addTrackConf(trackConf)
       },
 
       /**
@@ -45,7 +43,7 @@ export default function Tracks(pluginManager: PluginManager) {
         )
         callbacksToDereferenceTrack.forEach(cb => cb())
         if (self.adminMode) {
-          return getParent<any>(self).jbrowse.deleteTrackConf(trackConf)
+          return self.jbrowse.deleteTrackConf(trackConf)
         }
       },
     }))

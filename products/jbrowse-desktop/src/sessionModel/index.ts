@@ -144,6 +144,7 @@ export default function sessionModelFactory(
   ) as typeof sessionModel
 
   return types.snapshotProcessor(addSnackbarToModel(extendedSessionModel), {
+    // @ts-expect-error
     preProcessor(snapshot) {
       if (snapshot) {
         // @ts-expect-error

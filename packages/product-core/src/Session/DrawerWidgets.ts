@@ -3,7 +3,10 @@ import { Instance, addDisposer, isAlive, types } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
-import { AnyConfigurationModel, isConfigurationModel } from '@jbrowse/core/configuration'
+import {
+  AnyConfigurationModel,
+  isConfigurationModel,
+} from '@jbrowse/core/configuration'
 
 const minDrawerWidth = 128
 

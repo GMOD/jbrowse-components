@@ -24,6 +24,7 @@ interface TrackTextIndexing {
   tracks: string[] // trackIds
   indexType: string
   timestamp?: string
+  name?: string
 }
 
 interface JobsEntry {

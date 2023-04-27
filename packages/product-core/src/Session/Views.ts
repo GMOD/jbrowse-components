@@ -1,14 +1,15 @@
-import { addDisposer, getParent, getSnapshot, types } from 'mobx-state-tree'
+import { getSnapshot, types } from 'mobx-state-tree'
 
 import PluginManager from '@jbrowse/core/PluginManager'
-import { AnyConfigurationModel, getConf, readConfObject } from '@jbrowse/core/configuration'
-import type { BaseSessionModel } from '../../../../products/jbrowse-desktop/src/sessionModel/Base'
-import { autorun } from 'mobx'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { Region } from '@jbrowse/core/util'
+import DrawerWidgets from './DrawerWidgets'
+import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes'
+import { IBaseViewModelWithDisplayedRegions } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 
 export default function Views(pluginManager: PluginManager) {
-  return types
-    .model({
+  return DrawerWidgets(pluginManager)
+    .props({
       /**
        * #property
        */
@@ -62,7 +63,7 @@ export default function Views(pluginManager: PluginManager) {
       /**
        * #action
        */
-      removeView(view: any) {
+      removeView(view: IBaseViewModel) {
         for (const [, widget] of self.activeWidgets) {
           if (widget.view && widget.view.id === view.id) {
             self.hideWidget(widget)
@@ -86,9 +87,9 @@ export default function Views(pluginManager: PluginManager) {
        * #action
        */
       addViewOfAssembly(
-        viewType: any,
+        viewType: string,
         assemblyName: string,
-        initialState: any = {},
+        initialState: Record<string, unknown> = {},
       ) {
         const asm = self.assemblies.find(
           s => readConfObject(s, 'name') === assemblyName,
@@ -109,7 +110,7 @@ export default function Views(pluginManager: PluginManager) {
        */
       addViewFromAnotherView(
         viewType: string,
-        otherView: any,
+        otherView: IBaseViewModelWithDisplayedRegions,
         initialState: { displayedRegions?: Region[] } = {},
       ) {
         const state = { ...initialState }

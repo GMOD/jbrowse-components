@@ -3,18 +3,11 @@ import { lazy } from 'react'
 import clone from 'clone'
 import { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import {
-  readConfObject,
   getConf,
-  isConfigurationModel,
   AnyConfigurationModel,
   AnyConfiguration,
 } from '@jbrowse/core/configuration'
-import {
-  Region,
-  AbstractSessionModel,
-  JBrowsePlugin,
-  DialogComponentType,
-} from '@jbrowse/core/util/types'
+import { AbstractSessionModel, JBrowsePlugin } from '@jbrowse/core/util/types'
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
@@ -27,11 +20,9 @@ import {
   types,
   Instance,
   SnapshotIn,
-  SnapshotOut,
 } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
-import RpcManager from '@jbrowse/core/rpc/RpcManager'
 
 import { Session as CoreSession } from '@jbrowse/product-core'
 
@@ -44,7 +35,7 @@ import InfoIcon from '@mui/icons-material/Info'
 import { BaseSession } from './Base'
 import Assemblies from './Assemblies'
 import SessionConnections from './SessionConnections'
-import { BaseTrackConfig, BaseTrackConfigModel } from '@jbrowse/core/pluggableElementTypes'
+import { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 
 const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
@@ -316,7 +307,7 @@ export default function sessionModelFactory(
         if (!adminMode && !sessionTracks.includes(configuration)) {
           throw new Error("Can't edit the configuration of a non-session track")
         }
-        this.editConfiguration(configuration)
+        self.editConfiguration(configuration)
       },
     }))
     .views(self => ({
