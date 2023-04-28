@@ -61,7 +61,9 @@ export default class HicRenderer extends ServerSideRendererType {
       resolution,
       sessionId,
       adapterConfig,
+      regions,
     } = props
+    const [region] = regions
     const { dataAdapter } = await getAdapter(
       this.pluginManager,
       sessionId,
@@ -87,6 +89,14 @@ export default class HicRenderer extends ServerSideRendererType {
         maxBin = Math.max(Math.max(bin1, bin2), maxBin)
       }
       await abortBreakPoint(signal)
+      function horizontallyFlip() {
+        ctx.scale(-1, 1)
+        const width = (region.end - region.start) / bpPerPx
+        ctx.translate(-width, 0)
+      }
+      if (region.reversed === true) {
+        horizontallyFlip()
+      }
       ctx.rotate(-Math.PI / 4)
       let start = Date.now()
       for (let i = 0; i < features.length; i++) {
