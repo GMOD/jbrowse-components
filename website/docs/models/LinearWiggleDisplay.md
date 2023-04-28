@@ -324,7 +324,7 @@ boolean
 
 ```js
 // type
-;1 | 0 | 2
+;0 | 1 | 2
 ```
 
 ### LinearWiggleDisplay - Methods
