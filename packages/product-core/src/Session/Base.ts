@@ -17,7 +17,7 @@ export default function BaseSession(pluginManager: PluginManager) {
       /**
        * #property
        */
-      name: types.identifier,
+      name: types.string,
     })
     .volatile(() => ({
       /**
