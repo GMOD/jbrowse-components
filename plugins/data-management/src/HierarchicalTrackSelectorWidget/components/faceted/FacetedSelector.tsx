@@ -26,7 +26,8 @@ import {
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
 
 // locals
-import { matches, HierarchicalTrackSelectorModel } from '../../model'
+import { HierarchicalTrackSelectorModel } from '../../model'
+import { matches } from '../../util'
 import FacetedHeader from './FacetedHeader'
 import FacetFilters from './FacetFilters'
 import { getRootKeys } from './util'
@@ -77,7 +78,7 @@ export default observer(function FacetedSelector({
       .trackConfigurations(assemblyName)
       .filter(conf => matches(filterDebounced, conf, session))
       .map(track => {
-        const metadata = readConfObject(track, 'metadata')
+        const metadata = readConfObject(track, 'metadata') || {}
         return {
           id: track.trackId,
           conf: track,

@@ -1,20 +1,5 @@
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { HierarchicalTrackSelectorModel, TreeNode } from '../model'
-
-export interface NodeData {
-  nestingLevel: number
-  checked: boolean
-  conf: AnyConfigurationModel
-  drawerPosition: unknown
-  id: string
-  isLeaf: boolean
-  name: string
-  onChange: Function
-  toggleCollapse: (arg: string) => void
-  tree: TreeNode
-  selected: boolean
-  model: HierarchicalTrackSelectorModel
-}
+import { TreeNode } from '../model'
 
 export function getAllChildren(subtree?: TreeNode): AnyConfigurationModel[] {
   // @ts-expect-error

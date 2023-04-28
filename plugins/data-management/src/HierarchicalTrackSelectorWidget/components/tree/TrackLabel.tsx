@@ -12,7 +12,8 @@ import {
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 
 // locals
-import { isUnsupported, NodeData } from '../util'
+import { isUnsupported } from '../util'
+import { NodeData } from './util'
 import { SanitizedHTML } from '@jbrowse/core/ui'
 
 const useStyles = makeStyles()(theme => ({
