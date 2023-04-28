@@ -42,6 +42,7 @@ import {
   Instance,
   SnapshotIn,
   SnapshotOut,
+  isStateTreeNode,
 } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
@@ -734,7 +735,7 @@ export default function sessionModelFactory(
         if (!type) {
           throw new Error(`unknown track type ${type}`)
         }
-        const track = self.sessionTracks.find((t: any) => t.trackId === trackId)
+        const track = self.sessionTracks.find(t => t.trackId === trackId)
         if (track) {
           return track
         }
@@ -1043,7 +1044,7 @@ export default function sessionModelFactory(
             onClick: () => {
               self.queueDialog(handleClose => [
                 AboutDialog,
-                { config, handleClose },
+                { config, handleClose, session: self },
               ])
             },
             icon: InfoIcon,
@@ -1064,10 +1065,11 @@ export default function sessionModelFactory(
             label: 'Copy track',
             disabled: isRefSeq,
             onClick: () => {
-              const snap = clone(getSnapshot(config)) as any
+              const s = isStateTreeNode(config) ? getSnapshot(config) : config
+              const snap = clone(s) as any
               const now = Date.now()
               snap.trackId += `-${now}`
-              snap.displays.forEach((display: { displayId: string }) => {
+              snap.displays?.forEach((display: { displayId: string }) => {
                 display.displayId += `-${now}`
               })
               // the -sessionTrack suffix to trackId is used as metadata for
