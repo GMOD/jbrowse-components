@@ -284,14 +284,14 @@ export function ConfigurationSchema<
 
 export function TrackConfigurationReference(schemaType: IAnyType) {
   const trackRef = types.reference(schemaType, {
-    get(identifier, parent) {
-      let ret = getSession(parent).tracksById[identifier]
+    get(id, parent) {
+      let ret = getSession(parent).tracksById[id]
       if (!ret) {
         // @ts-expect-error
-        ret = resolveIdentifier(schemaType, getRoot(parent), identifier)
+        ret = resolveIdentifier(schemaType, getRoot(parent), id)
       }
       if (!ret) {
-        throw new Error(`${identifier} not found`)
+        throw new Error(`${id} not found`)
       }
       return isStateTreeNode(ret) ? ret : schemaType.create(ret, getEnv(parent))
     },
@@ -306,7 +306,11 @@ export function DisplayConfigurationReference(schemaType: IAnyType) {
   const displayRef = types.reference(schemaType, {
     get(id, parent) {
       const track = getContainingTrack(parent)
-      const ret = track.configuration.displays.find(u => u.displayId === id)
+      let ret = track.configuration.displays.find(u => u.displayId === id)
+      if (!ret) {
+        // @ts-expect-error
+        ret = resolveIdentifier(schemaType, getRoot(parent), id)
+      }
       if (!ret) {
         throw new Error(`${id} not found`)
       }
