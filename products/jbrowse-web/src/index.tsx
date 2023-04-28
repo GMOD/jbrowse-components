@@ -1,7 +1,6 @@
 import React, { lazy, Suspense } from 'react'
 import { render } from 'react-dom'
 import Loading from './Loading'
-import './index.css'
 
 const Main = lazy(() => import('./Loader'))
 const initialTimeStamp = Date.now()

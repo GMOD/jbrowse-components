@@ -8,7 +8,6 @@ import '@fontsource/roboto'
 
 import factoryReset from './factoryReset'
 import Loader from './Loader'
-import './index.css'
 
 if (window?.name.startsWith('JBrowseAuthWindow')) {
   window.opener?.postMessage({
