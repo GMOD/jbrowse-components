@@ -12,6 +12,7 @@ import {
   resolveIdentifier,
   types,
   cast,
+  SnapshotIn,
 } from 'mobx-state-tree'
 import { toJS } from 'mobx'
 import clone from 'clone'
@@ -123,7 +124,9 @@ export default function JBrowseWeb(
       /**
        * #action
        */
-      addTrackConf(conf: AnyConfigurationModel & { trackId: string }) {
+      addTrackConf(
+        conf: SnapshotIn<AnyConfigurationModel> & { trackId: string },
+      ) {
         const { type } = conf
         if (!type) {
           throw new Error(`unknown track type ${type}`)
@@ -156,12 +159,12 @@ export default function JBrowseWeb(
       /**
        * #action
        */
-      addConnectionConf(connectionConf: AnyConfigurationModel) {
-        const { type } = connectionConf
+      addConnectionConf(conf: SnapshotIn<AnyConfigurationModel> = {}) {
+        const { type } = conf
         if (!type) {
           throw new Error(`unknown connection type ${type}`)
         }
-        const length = self.connections.push(connectionConf)
+        const length = self.connections.push(conf)
         return self.connections[length - 1]
       },
       /**
