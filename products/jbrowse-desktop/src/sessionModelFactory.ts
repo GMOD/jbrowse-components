@@ -11,6 +11,7 @@ import {
   Region,
   TrackViewModel,
   DialogComponentType,
+  AssemblyManager,
 } from '@jbrowse/core/util/types'
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
 import {
@@ -44,6 +45,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import InfoIcon from '@mui/icons-material/Info'
 import { Indexing } from '@jbrowse/core/ui/Icons'
 import { ThemeOptions } from '@mui/material'
+import RpcManager from '@jbrowse/core/rpc/RpcManager'
 
 const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
@@ -202,7 +204,13 @@ export default function sessionModelFactory(
       /**
        * #getter
        */
-      get rpcManager() {
+      get tracksById(): Record<string, AnyConfigurationModel> {
+        return Object.fromEntries(this.tracks.map(t => [t.trackId, t]))
+      },
+      /**
+       * #getter
+       */
+      get rpcManager(): RpcManager {
         return getParent<any>(self).jbrowse.rpcManager
       },
       /**
@@ -238,7 +246,7 @@ export default function sessionModelFactory(
       /**
        * #getter
        */
-      get connections() {
+      get connections(): AnyConfigurationModel[] {
         return getParent<any>(self).jbrowse.connections
       },
       /**
@@ -250,7 +258,7 @@ export default function sessionModelFactory(
       /**
        * #getter
        */
-      get savedSessionNames() {
+      get savedSessionNames(): string[] {
         return getParent<any>(self).jbrowse.savedSessionNames
       },
       /**
@@ -269,13 +277,13 @@ export default function sessionModelFactory(
       /**
        * #getter
        */
-      get assemblyManager() {
+      get assemblyManager(): AssemblyManager {
         return getParent<any>(self).assemblyManager
       },
       /**
        * #getter
        */
-      get version() {
+      get version(): string {
         return getParent<any>(self).version
       },
       /**

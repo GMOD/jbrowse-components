@@ -128,8 +128,14 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get tracks() {
+      get tracks(): AnyConfigurationModel[] {
         return getParent<any>(self).config.tracks
+      },
+      /**
+       * #getter
+       */
+      get tracksById(): Record<string, AnyConfigurationModel> {
+        return Object.fromEntries(this.tracks.map(t => [t.trackId, t]))
       },
       /**
        * #getter

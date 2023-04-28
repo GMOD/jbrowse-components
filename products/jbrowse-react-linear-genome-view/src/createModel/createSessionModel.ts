@@ -145,20 +145,26 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get assemblies() {
+      get assemblies(): AnyConfigurationModel[] {
         return [getParent<any>(self).config.assembly]
       },
       /**
        * #getter
        */
-      get assemblyNames() {
+      get assemblyNames(): string[] {
         return [getParent<any>(self).config.assemblyName]
       },
       /**
        * #getter
        */
-      get tracks() {
+      get tracks(): AnyConfigurationModel[] {
         return getParent<any>(self).config.tracks
+      },
+      /**
+       * #getter
+       */
+      get tracksById(): Record<string, AnyConfigurationModel> {
+        return Object.fromEntries(this.tracks.map(t => [t.trackId, t]))
       },
       /**
        * #getter
