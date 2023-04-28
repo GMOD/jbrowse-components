@@ -111,7 +111,17 @@ function TrackContainer({
   }, [model.trackRefs, trackId])
 
   return (
-    <Paper className={classes.root} variant="outlined">
+    <Paper
+      ref={ref}
+      className={classes.root}
+      variant="outlined"
+      onClick={event => {
+        if (event.detail === 2 && !track.displays[0].featureIdUnderMouse) {
+          const left = ref.current?.getBoundingClientRect().left || 0
+          model.zoomTo(model.bpPerPx / 2, event.clientX - left, true)
+        }
+      }}
+    >
       <TrackContainerLabel model={track} view={model} />
       <ErrorBoundary
         key={track.id}
@@ -127,17 +137,7 @@ function TrackContainer({
           {!minimized ? (
             <>
               <div
-                ref={ref}
                 className={classes.renderingComponentContainer}
-                onClick={event => {
-                  if (
-                    event.detail === 2 &&
-                    !track.displays[0].featureIdUnderMouse
-                  ) {
-                    const left = ref.current?.getBoundingClientRect().left || 0
-                    model.zoomTo(model.bpPerPx / 2, event.clientX - left, true)
-                  }
-                }}
                 style={{ transform: `scaleX(${model.scaleFactor})` }}
               >
                 <RenderingComponent
