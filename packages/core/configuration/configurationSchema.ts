@@ -7,6 +7,9 @@ import {
   getSnapshot,
   IAnyType,
   SnapshotOut,
+  getEnv,
+  getRoot,
+  resolveIdentifier,
 } from 'mobx-state-tree'
 
 import { ElementId } from '../util/types/mst'
@@ -14,6 +17,7 @@ import { ElementId } from '../util/types/mst'
 import ConfigSlot, { ConfigSlotDefinition } from './configurationSlot'
 import { isConfigurationSchemaType } from './util'
 import { AnyConfigurationSchemaType } from './types'
+import { getContainingTrack, getSession } from '../util'
 
 export type {
   AnyConfigurationSchemaType,
@@ -278,9 +282,51 @@ export function ConfigurationSchema<
   return schemaType
 }
 
+export function TrackConfigurationReference(schemaType: IAnyType) {
+  const trackRef = types.reference(schemaType, {
+    get(identifier, parent) {
+      let ret = getSession(parent).tracksById[identifier]
+      if (!ret) {
+        // @ts-expect-error
+        ret = resolveIdentifier(schemaType, getRoot(parent), identifier)
+      }
+      if (!ret) {
+        throw new Error(`${identifier} not found`)
+      }
+      return isStateTreeNode(ret) ? ret : schemaType.create(ret, getEnv(parent))
+    },
+    set(value) {
+      return value.trackId
+    },
+  })
+  return types.union(trackRef, schemaType)
+}
+
+export function DisplayConfigurationReference(schemaType: IAnyType) {
+  const displayRef = types.reference(schemaType, {
+    get(id, parent) {
+      const track = getContainingTrack(parent)
+      const ret = track.configuration.displays.find(u => u.displayId === id)
+      if (!ret) {
+        throw new Error(`${id} not found`)
+      }
+      return ret
+    },
+    set(value) {
+      return value.displayId
+    },
+  })
+  return types.union(displayRef, schemaType)
+}
+
 export function ConfigurationReference<
   SCHEMATYPE extends AnyConfigurationSchemaType,
 >(schemaType: SCHEMATYPE) {
+  if (schemaType.name.endsWith('TrackConfigurationSchema')) {
+    return TrackConfigurationReference(schemaType)
+  } else if (schemaType.name.endsWith('DisplayConfigurationSchema')) {
+    return DisplayConfigurationReference(schemaType)
+  }
   // we cast this to SCHEMATYPE, because the reference *should* behave just
   // like the object it points to. It won't be undefined (this is a
   // `reference`, not a `safeReference`)

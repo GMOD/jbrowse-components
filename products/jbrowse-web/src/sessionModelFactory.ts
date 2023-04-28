@@ -253,8 +253,14 @@ export default function sessionModelFactory(
       /**
        * #getter
        */
-      get rpcManager() {
-        return self.jbrowse.rpcManager as RpcManager
+      get tracksById(): Record<string, AnyConfigurationModel> {
+        return Object.fromEntries(this.tracks.map(t => [t.trackId, t]))
+      },
+      /**
+       * #getter
+       */
+      get rpcManager(): RpcManager {
+        return self.jbrowse.rpcManager
       },
 
       /**
