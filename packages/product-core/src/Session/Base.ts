@@ -70,13 +70,13 @@ export default function BaseSession(pluginManager: PluginManager) {
        * #getter
        */
       get history() {
-        return self.root.history
+        return this.root.history
       },
       /**
        * #getter
        */
       get menus() {
-        return self.root.menus
+        return this.root.menus
       },
     }))
 }

@@ -101,60 +101,10 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           await ipcRenderer.invoke('saveSession', self.sessionPath, val)
         }
       },
-      /**
+       /**
        * #action
        */
-      setOpenNewSessionCallback(cb: (arg: string) => Promise<void>) {
-        self.openNewSessionCallback = cb
-      },
-      /**
-       * #action
-       */
-      setSavedSessionNames(sessionNames: string[]) {
-        self.savedSessionNames = cast(sessionNames)
-      },
-      /**
-       * #action
-       */
-      setSessionPath(path: string) {
-        self.sessionPath = path
-      },
-      /**
-       * #action
-       */
-      setSession(sessionSnapshot?: SnapshotIn<typeof Session>) {
-        self.session = cast(sessionSnapshot)
-      },
-      /**
-       * #action
-       */
-      setError(error: unknown) {
-        self.error = error
-      },
-      /**
-       * #action
-       */
-      setDefaultSession() {
-        this.setSession(self.jbrowse.defaultSession)
-      },
-      /**
-       * #action
-       */
-      setAssemblyEditing(flag: boolean) {
-        self.isAssemblyEditing = flag
-      },
-      /**
-       * #action
-       */
-      async renameCurrentSession(newName: string) {
-        if (self.session) {
-          this.setSession({ ...getSnapshot(self.session), name: newName })
-        }
-      },
-      /**
-       * #action
-       */
-      duplicateCurrentSession() {
+       duplicateCurrentSession() {
         if (self.session) {
           const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
           let newSnapshotName = `${self.session.name} (copy)`
