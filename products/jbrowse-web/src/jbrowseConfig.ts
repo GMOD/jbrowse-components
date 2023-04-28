@@ -18,6 +18,7 @@ export default function JBrowseConfigF(
   pluginManager: PluginManager,
   assemblyConfigSchemasType: AnyConfigurationSchemaType,
   Session: SessionStateModel,
+  adminMode: boolean,
 ) {
   return types.model('JBrowseWeb', {
     configuration: ConfigurationSchema('Root', {
@@ -134,7 +135,11 @@ export default function JBrowseConfigF(
     assemblies: types.array(assemblyConfigSchemasType),
     // track configuration is an array of track config schemas. multiple
     // instances of a track can exist that use the same configuration
-    tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
+    tracks:
+      // @ts-ignore
+      adminMode || globalThis.disableFrozenTracks
+        ? types.array(pluginManager.pluggableConfigSchemaType('track'))
+        : types.frozen([] as { trackId: string; [key: string]: unknown }[]),
     /**
      * #slot
      */

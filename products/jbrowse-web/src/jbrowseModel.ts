@@ -48,11 +48,13 @@ export default function JBrowseWeb(
   pluginManager: PluginManager,
   Session: SessionStateModel,
   assemblyConfigSchemasType: AnyConfigurationSchemaType,
+  adminMode: boolean,
 ) {
   const JBrowseModel = JBrowseConfigF(
     pluginManager,
     assemblyConfigSchemasType,
     Session,
+    adminMode,
   )
     .views(self => ({
       /**
