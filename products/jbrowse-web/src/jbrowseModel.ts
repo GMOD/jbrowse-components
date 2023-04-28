@@ -123,17 +123,21 @@ export default function JBrowseWeb(
       /**
        * #action
        */
-      addTrackConf(trackConf: AnyConfigurationModel) {
-        const { type } = trackConf
+      addTrackConf(conf: AnyConfigurationModel & { trackId: string }) {
+        const { type } = conf
         if (!type) {
           throw new Error(`unknown track type ${type}`)
         }
-        const track = self.tracks.find(t => t.trackId === trackConf.trackId)
+        const track = self.tracks.find(t => t.trackId === conf.trackId)
         if (track) {
           return track
         }
-        const length = self.tracks.push(trackConf)
-        return self.tracks[length - 1]
+        if (adminMode) {
+          self.tracks.push(conf)
+        } else {
+          self.tracks = [...self.tracks, conf]
+        }
+        return self.tracks[self.tracks.length - 1]
       },
       /**
        * #action

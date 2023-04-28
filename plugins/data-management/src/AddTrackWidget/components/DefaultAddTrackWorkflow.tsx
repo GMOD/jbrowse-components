@@ -87,7 +87,7 @@ function AddTrackWorkflow({ model }: { model: AddTrackModel }) {
 
     const assemblyInstance = session.assemblyManager.get(assembly)
 
-    if (trackAdapter && trackAdapter.type !== 'UNKNOWN') {
+    if (assemblyInstance && trackAdapter && trackAdapter.type !== 'UNKNOWN') {
       session.addTrackConf({
         trackId,
         type: trackType,
@@ -110,7 +110,7 @@ function AddTrackWorkflow({ model }: { model: AddTrackModel }) {
             exclude: ['CDS', 'exon'],
           }
           const indexName = trackName + '-index'
-          const newEntry = {
+          jobsManager.queueJob({
             indexingParams: {
               ...attr,
               assemblies: [assembly],
@@ -121,8 +121,7 @@ function AddTrackWorkflow({ model }: { model: AddTrackModel }) {
             },
             name: indexName,
             cancelCallback: () => jobsManager.abortJob(),
-          }
-          jobsManager.queueJob(newEntry)
+          })
         }
       } else {
         session.notify(
