@@ -71,13 +71,6 @@ export default function sessionModelFactory(
       sessionThemeName: localStorageGetItem('themeName') || 'default',
       /**
        * #volatile
-       * this is the globally "selected" object. can be anything.
-       * code that wants to deal with this should examine it to see what
-       * kind of thing it is.
-       */
-      selection: undefined,
-      /**
-       * #volatile
        * this is the current "task" that is being performed in the UI.
        * this is usually an object of the form
        * `{ taskName: "configure", target: thing_being_configured }`
@@ -215,24 +208,6 @@ export default function sessionModelFactory(
             return undefined
           }
           return self.sessionTracks.splice(idx, 1)
-        },
-
-        /**
-         * #action
-         * set the global selection, i.e. the globally-selected object.
-         * can be a feature, a view, just about anything
-         * @param thing -
-         */
-        setSelection(thing: any) {
-          self.selection = thing
-        },
-
-        /**
-         * #action
-         * clears the global selection
-         */
-        clearSelection() {
-          self.selection = undefined
         },
 
         /**

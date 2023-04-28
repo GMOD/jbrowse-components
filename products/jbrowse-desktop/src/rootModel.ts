@@ -101,10 +101,10 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           await ipcRenderer.invoke('saveSession', self.sessionPath, val)
         }
       },
-       /**
+      /**
        * #action
        */
-       duplicateCurrentSession() {
+      duplicateCurrentSession() {
         if (self.session) {
           const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
           let newSnapshotName = `${self.session.name} (copy)`
@@ -116,7 +116,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
             } while (self.jbrowse.savedSessionNames.includes(newSnapshotName))
           }
           snapshot.name = newSnapshotName
-          this.setSession(snapshot)
+          self.setSession(snapshot)
         }
       },
       /**

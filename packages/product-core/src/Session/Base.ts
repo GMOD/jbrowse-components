@@ -79,4 +79,25 @@ export default function BaseSession(pluginManager: PluginManager) {
         return this.root.menus
       },
     }))
+    .actions(self => ({
+      /**
+       * #action
+       * set the global selection, i.e. the globally-selected object.
+       * can be a feature, a view, just about anything
+       * @param thing -
+       */
+      setSelection(thing: unknown) {
+        self.selection = thing
+      },
+
+      /**
+       * #action
+       * clears the global selection
+       */
+      clearSelection() {
+        self.selection = undefined
+      },
+    }))
 }
+
+export type BaseSessionType = ReturnType<typeof BaseSession>

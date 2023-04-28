@@ -11,7 +11,7 @@ import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
  */
 export function BaseRootModel<
   JBROWSE_MODEL_TYPE extends IAnyType,
-  SESSION_MODEL_TYPE extends BaseSession,
+  SESSION_MODEL_TYPE extends IAnyType,
 >(
   pluginManager: PluginManager,
   jbrowseModelType: JBROWSE_MODEL_TYPE,
