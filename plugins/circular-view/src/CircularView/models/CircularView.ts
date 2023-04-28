@@ -3,14 +3,11 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import {
   cast,
   getParent,
-  getRoot,
-  resolveIdentifier,
   types,
   SnapshotOrInstance,
   Instance,
 } from 'mobx-state-tree'
 import { Region } from '@jbrowse/core/util/types/mst'
-import { transaction } from 'mobx'
 import { saveAs } from 'file-saver'
 import { renderToSvg } from '../svgcomponents/SVGCircularView'
 import {

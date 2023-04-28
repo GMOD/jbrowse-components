@@ -1,5 +1,5 @@
 import React, { lazy } from 'react'
-import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
+import { getConf } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { Region } from '@jbrowse/core/util/types'
 import { ElementId, Region as MUIRegion } from '@jbrowse/core/util/types/mst'
@@ -29,13 +29,11 @@ import {
   showTrackGeneric,
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
-import { when, transaction, autorun } from 'mobx'
+import { when, autorun } from 'mobx'
 import {
   addDisposer,
   cast,
   getSnapshot,
-  getRoot,
-  resolveIdentifier,
   types,
   Instance,
 } from 'mobx-state-tree'

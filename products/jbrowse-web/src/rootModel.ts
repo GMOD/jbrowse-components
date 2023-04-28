@@ -3,7 +3,6 @@ import {
   addDisposer,
   cast,
   getSnapshot,
-  getType,
   types,
   IAnyStateTreeNode,
   SnapshotIn,
