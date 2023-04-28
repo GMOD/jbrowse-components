@@ -34,6 +34,11 @@ import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import ExportSvgDlg from '../components/ExportSvgDialog'
 import { calculateStaticSlices, sliceIsVisible, SliceRegion } from './slices'
 import { viewportVisibleSection } from './viewportVisibleRegion'
+import {
+  hideTrackGeneric,
+  showTrackGeneric,
+  toggleTrackGeneric,
+} from '@jbrowse/core/util/tracks'
 
 export interface ExportSvgOptions {
   rasterizeLayers?: boolean
@@ -481,12 +486,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       toggleTrack(trackId: string) {
-        // if we have any tracks with that configuration, turn them off
-        const hiddenCount = this.hideTrack(trackId)
-        // if none had that configuration, turn one on
-        if (!hiddenCount) {
-          this.showTrack(trackId)
-        }
+        return toggleTrackGeneric(self, trackId)
       },
 
       /**
@@ -500,26 +500,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       showTrack(trackId: string, initialSnapshot = {}) {
-        const schema = pluginManager.pluggableConfigSchemaType('track')
-        const conf = resolveIdentifier(schema, getRoot(self), trackId)
-        const trackType = pluginManager.getTrackType(conf.type)
-        if (!trackType) {
-          throw new Error(`unknown track type ${conf.type}`)
-        }
-        const viewType = pluginManager.getViewType(self.type)
-        const supportedDisplays = new Set(
-          viewType.displayTypes.map(d => d.name),
-        )
-        const displayConf = conf.displays.find((d: AnyConfigurationModel) =>
-          supportedDisplays.has(d.type),
-        )
-        const track = trackType.stateModel.create({
-          ...initialSnapshot,
-          type: conf.type,
-          configuration: conf,
-          displays: [{ type: displayConf.type, configuration: displayConf }],
-        })
-        self.tracks.push(track)
+        showTrackGeneric(self, trackId, initialSnapshot)
       },
 
       /**
@@ -554,11 +535,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       hideTrack(trackId: string) {
-        const schema = pluginManager.pluggableConfigSchemaType('track')
-        const conf = resolveIdentifier(schema, getRoot(self), trackId)
-        const t = self.tracks.filter(t => t.configuration === conf)
-        transaction(() => t.forEach(t => self.tracks.remove(t)))
-        return t.length
+        hideTrackGeneric(self, trackId)
       },
 
       /**

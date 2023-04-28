@@ -13,7 +13,12 @@ import {
 import { saveAs } from 'file-saver'
 import { autorun, transaction } from 'mobx'
 
-import { getParentRenderProps } from '@jbrowse/core/util/tracks'
+import {
+  getParentRenderProps,
+  hideTrackGeneric,
+  showTrackGeneric,
+  toggleTrackGeneric,
+} from '@jbrowse/core/util/tracks'
 import { ReturnToImportFormDialog } from '@jbrowse/core/ui'
 import { BaseTrackStateModel } from '@jbrowse/core/pluggableElementTypes/models'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
@@ -359,48 +364,20 @@ export default function stateModelFactory(pm: PluginManager) {
        * #action
        */
       showTrack(trackId: string, initialSnapshot = {}) {
-        const schema = pm.pluggableConfigSchemaType('track')
-        const conf = resolveIdentifier(schema, getRoot(self), trackId)
-        const trackType = pm.getTrackType(conf.type)
-        if (!trackType) {
-          throw new Error(`unknown track type ${conf.type}`)
-        }
-        const viewType = pm.getViewType(self.type)
-        const displayConf = conf.displays.find((d: AnyConfigurationModel) =>
-          viewType.displayTypes.find(type => type.name === d.type),
-        )
-        if (!displayConf) {
-          throw new Error(
-            `could not find a compatible display for view type ${self.type}`,
-          )
-        }
-        const track = trackType.stateModel.create({
-          ...initialSnapshot,
-          type: conf.type,
-          configuration: conf,
-          displays: [{ type: displayConf.type, configuration: displayConf }],
-        })
-        self.tracks.push(track)
+        return showTrackGeneric(self, trackId, initialSnapshot)
       },
 
       /**
        * #action
        */
       hideTrack(trackId: string) {
-        const schema = pm.pluggableConfigSchemaType('track')
-        const conf = resolveIdentifier(schema, getRoot(self), trackId)
-        const t = self.tracks.filter(t => t.configuration === conf)
-        transaction(() => t.forEach(t => self.tracks.remove(t)))
-        return t.length
+        return hideTrackGeneric(self, trackId)
       },
       /**
        * #action
        */
       toggleTrack(trackId: string) {
-        const hiddenCount = this.hideTrack(trackId)
-        if (!hiddenCount) {
-          this.showTrack(trackId)
-        }
+        return toggleTrackGeneric(self, trackId)
       },
       /**
        * #action
