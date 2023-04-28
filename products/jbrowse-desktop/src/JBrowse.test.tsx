@@ -32,6 +32,7 @@ function getPluginManager(initialState?: SnapshotIn<JBrowseRootModel>) {
     {
       jbrowse: initialState || configSnapshot,
       assemblyManager: {},
+      version: 'testing',
     },
     { pluginManager },
   )

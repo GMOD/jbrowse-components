@@ -2,14 +2,14 @@ import { Instance, getParent, types } from 'mobx-state-tree'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { RootModel } from '../rootModel'
+import { Base } from '@jbrowse/product-core/src/Session'
 
 export default function Assemblies(
   pluginManager: PluginManager,
   assemblyConfigSchemasType = types.frozen(),
 ) {
-  return types
-    .model({
+  return Base(pluginManager)
+    .props({
       /**
        * #property
        */
@@ -23,20 +23,14 @@ export default function Assemblies(
       /**
        * #getter
        */
-      get assemblies(): AnyConfigurationModel[] {
-        return getParent<RootModel>(self).jbrowse.assemblies
-      },
-      /**
-       * #getter
-       */
       get assemblyNames(): string[] {
-        return getParent<RootModel>(self).jbrowse.assemblyNames
+        return self.jbrowse.assemblyNames
       },
       /**
        * #getter
        */
       get assemblyManager() {
-        return getParent<any>(self).assemblyManager
+        return self.root.assemblyManager
       },
     }))
     .actions(self => ({
@@ -91,7 +85,7 @@ export default function Assemblies(
        * #action
        */
       addAssemblyConf(assemblyConf: any) {
-        return getParent<any>(self).jbrowse.addAssemblyConf(assemblyConf)
+        return self.jbrowse.addAssemblyConf(assemblyConf)
       },
     }))
 }

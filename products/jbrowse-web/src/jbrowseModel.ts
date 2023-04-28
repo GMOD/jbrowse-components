@@ -196,6 +196,7 @@ export default function JBrowseWeb(
           throw new Error(`unable to set default session to ${newDefault.name}`)
         }
 
+        // @ts-expect-error complains about name missing, but above line checks this
         self.defaultSession = cast(newDefault)
       },
       /**

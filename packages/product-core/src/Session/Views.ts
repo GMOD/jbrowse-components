@@ -6,9 +6,11 @@ import { Region } from '@jbrowse/core/util'
 import DrawerWidgets from './DrawerWidgets'
 import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes'
 import { IBaseViewModelWithDisplayedRegions } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
+import Base from './Base'
 
 export default function Views(pluginManager: PluginManager) {
-  return DrawerWidgets(pluginManager)
+  return types
+    .compose(Base(pluginManager), DrawerWidgets(pluginManager))
     .props({
       /**
        * #property

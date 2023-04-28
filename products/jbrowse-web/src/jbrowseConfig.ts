@@ -6,7 +6,7 @@ import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import { types } from 'mobx-state-tree'
-import { SessionStateModel } from './sessionModelFactory'
+import { SessionStateModel } from './sessionModel'
 
 /**
  * #config JBrowseWebConfiguration

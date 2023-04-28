@@ -7,7 +7,7 @@ import { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { types } from 'mobx-state-tree'
-import { SessionStateModel } from './sessionModelFactory'
+import { SessionStateModelType } from './sessionModel'
 
 /**
  * #config JBrowseDesktopConfiguration
@@ -17,7 +17,7 @@ function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export default function JBrowseConfigF(
   pluginManager: PluginManager,
-  Session: SessionStateModel,
+  Session: SessionStateModelType,
   assemblyConfigSchemasType: AnyConfigurationSchemaType,
 ) {
   return types.model('JBrowseDesktop', {

@@ -13,7 +13,8 @@ import {
   resolveIdentifier,
 } from 'mobx-state-tree'
 import JBrowseConfigF from './jbrowseConfig'
-import { SessionStateModel } from './sessionModel'
+import { SessionStateModelType } from './sessionModel'
+import { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 
 // poke some things for testing (this stuff will eventually be removed)
 // @ts-expect-error
@@ -30,8 +31,8 @@ function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export default function JBrowseDesktop(
   pluginManager: PluginManager,
-  Session: SessionStateModel,
-  assemblyConfigSchemasType: AnyConfigurationSchemaType,
+  Session: SessionStateModelType,
+  assemblyConfigSchemasType: BaseAssemblyConfigSchema,
 ) {
   return JBrowseConfigF(pluginManager, Session, assemblyConfigSchemasType)
     .views(self => ({

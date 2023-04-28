@@ -9,17 +9,15 @@ import {
 } from 'mobx-state-tree'
 import { autorun } from 'mobx'
 import makeWorkerInstance from './makeWorkerInstance'
-import assemblyManagerFactory from '@jbrowse/core/assemblyManager'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import TimeTraveller from '@jbrowse/core/util/TimeTraveller'
 import { MenuItem } from '@jbrowse/core/ui'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { UriLocation } from '@jbrowse/core/util/types'
 
-import type { RootModel as BaseRootModel } from '@jbrowse/product-core'
+import { BaseRootModel } from '@jbrowse/product-core'
 
 // icons
 import OpenIcon from '@mui/icons-material/FolderOpen'
@@ -42,7 +40,7 @@ const { ipcRenderer } = window.require('electron')
 
 const PreferencesDialog = lazy(() => import('./PreferencesDialog'))
 
-function getSaveSession(model: BaseRootModel) {
+function getSaveSession(model: Instance<ReturnType<typeof rootModelFactory>>) {
   return {
     ...getSnapshot(model.jbrowse),
     defaultSession: model.session ? getSnapshot(model.session) : {},
@@ -63,19 +61,13 @@ export default function rootModelFactory(pluginManager: PluginManager) {
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
   const Session = sessionModelFactory(pluginManager, assemblyConfigSchema)
   const JobsManager = jobsModelFactory(pluginManager)
-  return types
-    .model('Root', {
-      /**
-       * #property
-       * `jbrowse` is a mapping of the config.json into the in-memory state tree
-       */
-      jbrowse: JBrowseDesktop(pluginManager, Session, assemblyConfigSchema),
-      /**
-       * #property
-       * `session` encompasses the currently active state of the app, including
-       * views open, tracks open in those views, etc.
-       */
-      session: types.maybe(Session),
+  return BaseRootModel(
+    pluginManager,
+    JBrowseDesktop(pluginManager, Session, assemblyConfigSchema),
+    Session,
+    assemblyConfigSchema,
+  )
+    .props({
       /**
        * #property
        */
@@ -83,18 +75,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       /**
        * #property
        */
-      assemblyManager: assemblyManagerFactory(
-        assemblyConfigSchema,
-        pluginManager,
-      ),
-      /**
-       * #property
-       */
       savedSessionNames: types.maybe(types.array(types.string)),
-      /**
-       * #property
-       */
-      version: types.maybe(types.string),
       /**
        * #property
        */
@@ -111,15 +92,6 @@ export default function rootModelFactory(pluginManager: PluginManager) {
        */
       history: types.optional(TimeTraveller, { targetPath: '../session' }),
     })
-    .volatile(() => ({
-      isAssemblyEditing: false,
-      error: undefined as unknown,
-      textSearchManager: new TextSearchManager(pluginManager),
-      openNewSessionCallback: async (_path: string) => {
-        console.error('openNewSessionCallback unimplemented')
-      },
-      pluginManager,
-    }))
     .actions(self => ({
       /**
        * #action
@@ -310,7 +282,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
               onClick: async () => {
                 if (self.session) {
                   try {
-                    await self.saveSession(getSaveSession(self))
+                    await self.saveSession(getSaveSession(self as RootModel))
                   } catch (e) {
                     console.error(e)
                     self.session?.notify(`${e}`, 'error')
@@ -327,7 +299,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
                     'promptSessionSaveAs',
                   )
                   self.setSessionPath(saveAsPath)
-                  await self.saveSession(getSaveSession(self))
+                  await self.saveSession(getSaveSession(self as RootModel))
                 } catch (e) {
                   console.error(e)
                   self.session?.notify(`${e}`, 'error')
@@ -507,7 +479,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       },
       async setPluginsUpdated() {
         if (self.session) {
-          await self.saveSession(getSaveSession(self))
+          await self.saveSession(getSaveSession(self as RootModel))
         }
         await self.openNewSessionCallback(self.sessionPath)
       },
@@ -692,7 +664,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
             async () => {
               if (self.session) {
                 try {
-                  await self.saveSession(getSaveSession(self))
+                  await self.saveSession(getSaveSession(self as RootModel))
                 } catch (e) {
                   console.error(e)
                 }
