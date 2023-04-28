@@ -67,10 +67,17 @@ logoPath: {
 
 #### slot: plugins
 
-defines plugins of the format \{ umdUrl: string, name:string \} | \{ url:
-string, name: string \} | \{ esmUrl: string \} | \{ cjsUrl: string \} | \{
-umdLoc: \{ uri: string \} \} | \{ esmLoc: \{ uri: string \} \} | \{ cjsLoc: \{
-uri: string \} \}
+defines plugins of the format
+
+```typescript
+type PluginDefinition=
+   { umdUrl: string, name:string } |
+   { url: string, name: string } |
+   { esmUrl: string } |
+   { cjsUrl: string } |
+   { umdLoc: { uri: string } } |
+   { esmLoc: { uri: string } } |
+```
 
 ```js
 plugins: types.array(types.frozen<PluginDefinition>())
