@@ -93,7 +93,7 @@ function TrackContainer({
   const { horizontalScroll, draggingTrackId, moveTrack } = model
   const { height, RenderingComponent, DisplayBlurb } = display
   const trackId = getConf(track, 'trackId')
-  const ref = useRef(null)
+  const ref = useRef<HTMLDivElement>(null)
   const dimmed = draggingTrackId !== undefined && draggingTrackId !== display.id
   const minimized = track.minimized
   const debouncedOnDragEnter = useDebouncedCallback(() => {
@@ -129,6 +129,15 @@ function TrackContainer({
               <div
                 ref={ref}
                 className={classes.renderingComponentContainer}
+                onClick={event => {
+                  if (
+                    event.detail === 2 &&
+                    !track.displays[0].featureIdUnderMouse
+                  ) {
+                    const left = ref.current?.getBoundingClientRect().left || 0
+                    model.zoomTo(model.bpPerPx / 2, event.clientX - left, true)
+                  }
+                }}
                 style={{ transform: `scaleX(${model.scaleFactor})` }}
               >
                 <RenderingComponent
