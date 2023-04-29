@@ -2,6 +2,7 @@
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { DialogComponentType } from '@jbrowse/core/util'
+import { observable } from 'mobx'
 import { IAnyStateTreeNode, Instance, types } from 'mobx-state-tree'
 
 export interface ReferringNode {
@@ -13,7 +14,9 @@ export default function DialogQueue(pluginManager: PluginManager) {
   return types
     .model('DialogQueueSessionMixin', {})
     .volatile(() => ({
-      queueOfDialogs: [] as [DialogComponentType, any][],
+      queueOfDialogs: observable.array(
+        [] as [DialogComponentType, Record<string, unknown>][],
+      ),
     }))
     .views(self => ({
       /**
