@@ -50,13 +50,13 @@ export default function sessionModelFactory(
   const sessionModel = types
     .compose(
       'JBrowseWebSessionModel',
-      BaseSession(pluginManager),
       CoreSession.ReferenceManagement(pluginManager),
       CoreSession.DrawerWidgets(pluginManager),
       CoreSession.DialogQueue(pluginManager),
       CoreSession.Themes(pluginManager),
       CoreSession.Views(pluginManager),
       CoreSession.Tracks(pluginManager),
+      BaseSession(pluginManager),
       Assemblies(pluginManager, assemblyConfigSchemasType),
       SessionConnections(pluginManager),
     )

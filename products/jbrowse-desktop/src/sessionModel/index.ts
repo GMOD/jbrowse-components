@@ -23,7 +23,6 @@ export default function sessionModelFactory(
   const sessionModel = types
     .compose(
       'JBrowseDesktopSessionModel',
-      Base(pluginManager),
       types.compose(
         CoreSession.ReferenceManagement(pluginManager),
         CoreSession.Connections(pluginManager),
@@ -33,6 +32,7 @@ export default function sessionModelFactory(
         CoreSession.Tracks(pluginManager),
         CoreSession.Views(pluginManager),
       ),
+      Base(pluginManager),
       Assemblies(pluginManager, assemblyConfigSchemasType),
       TrackMenu(pluginManager),
       SessionManagement(pluginManager),

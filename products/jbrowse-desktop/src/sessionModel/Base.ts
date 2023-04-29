@@ -8,10 +8,6 @@ export default function BaseSession(pluginManager: PluginManager) {
       /**
        * #property
        */
-      name: types.identifier,
-      /**
-       * #property
-       */
       margin: 0,
     })
     .views(self => ({

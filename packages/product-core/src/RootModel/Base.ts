@@ -28,7 +28,7 @@ export function BaseRootModel<
       /**
        * #property
        */
-      version: types.string,
+      version: 'development',
 
       /**
        * #property
