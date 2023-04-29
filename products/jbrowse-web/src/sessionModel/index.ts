@@ -39,10 +39,6 @@ import { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 
 const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
-export declare interface ReactProps {
-  [key: string]: any
-}
-
 /**
  * #stateModel JBrowseWebSessionModel
  * inherits SnackbarModel
