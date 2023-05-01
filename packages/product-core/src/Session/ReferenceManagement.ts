@@ -104,3 +104,7 @@ export default function ReferenceManagement(pluginManager: PluginManager) {
       },
     }))
 }
+
+export type SessionWithReferenceManagement = ReturnType<
+  typeof ReferenceManagement
+>

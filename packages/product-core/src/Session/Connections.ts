@@ -5,46 +5,32 @@ import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import { getParent, types } from 'mobx-state-tree'
-import ReferenceManagement from './ReferenceManagement'
-import { RootModel } from '../RootModel'
+import { Instance, types } from 'mobx-state-tree'
+import type { SessionWithReferenceManagement } from './ReferenceManagement'
+import { BaseRootModelType } from '../RootModel'
 import { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
 import { BaseConnectionModel } from '@jbrowse/core/pluggableElementTypes/models/BaseConnectionModelFactory'
 
 export default function Connections(pluginManager: PluginManager) {
-  // connections: AnyConfigurationModel[]
-  // deleteConnection?: Function
-  // sessionConnections?: AnyConfigurationModel[]
-  // connectionInstances?: {
-  //   name: string
-  //   connectionId: string
-  //   tracks: AnyConfigurationModel[]
-  //   configuration: AnyConfigurationModel
-  // }[]
-  // makeConnection?: Function
-
   return types
-    .compose(
-      'ConnectionsManagementSessionMixin',
-      ReferenceManagement(pluginManager),
-      types.model({
-        /**
-         * #property
-         */
-        connectionInstances: types.array(
-          pluginManager.pluggableMstType(
-            'connection',
-            'stateModel',
-          ) as BaseConnectionModel,
-        ),
-      }),
-    )
+    .model({
+      /**
+       * #property
+       */
+      connectionInstances: types.array(
+        pluginManager.pluggableMstType(
+          'connection',
+          'stateModel',
+        ) as BaseConnectionModel,
+      ),
+    })
     .views(self => ({
       /**
        * #getter
        */
       get connections(): BaseConnectionConfigModel[] {
-        return getParent<RootModel>(self).jbrowse.connections
+        const { jbrowse } = self as typeof self & Instance<BaseRootModelType>
+        return jbrowse.connections
       },
     }))
     .actions(self => ({
@@ -78,14 +64,16 @@ export default function Connections(pluginManager: PluginManager) {
        * #action
        */
       prepareToBreakConnection(configuration: AnyConfigurationModel) {
+        const root = self as typeof self &
+          Instance<SessionWithReferenceManagement>
         const callbacksToDereferenceTrack: Function[] = []
         const dereferenceTypeCount: Record<string, number> = {}
         const name = readConfObject(configuration, 'name')
         const connection = self.connectionInstances.find(c => c.name === name)
         if (connection) {
           connection.tracks.forEach(track => {
-            const referring = self.getReferring(track)
-            self.removeReferring(
+            const referring = root.getReferring(track)
+            root.removeReferring(
               referring,
               track,
               callbacksToDereferenceTrack,
@@ -117,18 +105,16 @@ export default function Connections(pluginManager: PluginManager) {
        * #action
        */
       deleteConnection(configuration: AnyConfigurationModel) {
-        return getParent<RootModel>(self).jbrowse.deleteConnectionConf(
-          configuration,
-        )
+        const { jbrowse } = self as typeof self & Instance<BaseRootModelType>
+        return jbrowse.deleteConnectionConf(configuration)
       },
 
       /**
        * #action
        */
       addConnectionConf(connectionConf: BaseConnectionConfigModel) {
-        return getParent<RootModel>(self).jbrowse.addConnectionConf(
-          connectionConf,
-        )
+        const { jbrowse } = self as typeof self & Instance<BaseRootModelType>
+        return jbrowse.addConnectionConf(connectionConf)
       },
 
       /**

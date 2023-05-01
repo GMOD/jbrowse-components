@@ -29,7 +29,7 @@ export function BaseSession(pluginManager: PluginManager) {
        * #getter
        */
       get tracks(): AnyConfigurationModel[] {
-        return [...self.sessionTracks, ...getParent<any>(self).jbrowse.tracks]
+        return [...self.sessionTracks, ...self.jbrowse.tracks]
       },
     }))
     .actions(self => ({

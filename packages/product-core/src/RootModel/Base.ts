@@ -9,7 +9,7 @@ import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 /**
  * factory function for the Base-level root model shared by all products
  */
-export function BaseRootModel<
+export function BaseRoot<
   JBROWSE_MODEL_TYPE extends IAnyType,
   SESSION_MODEL_TYPE extends IAnyType,
 >(
@@ -102,6 +102,7 @@ export function BaseRootModel<
        */
       async renameCurrentSession(newName: string) {
         if (self.session) {
+          // @ts-expect-error
           this.setSession({ ...getSnapshot(self.session), name: newName })
         }
       },
@@ -119,3 +120,5 @@ export function BaseRootModel<
       },
     }))
 }
+
+export type BaseRootModelType = ReturnType<typeof BaseRoot>

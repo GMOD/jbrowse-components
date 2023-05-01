@@ -1,7 +1,6 @@
 import { lazy } from 'react'
 import {
   addDisposer,
-  cast,
   getSnapshot,
   types,
   SnapshotIn,
@@ -15,9 +14,8 @@ import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import TimeTraveller from '@jbrowse/core/util/TimeTraveller'
 import { MenuItem } from '@jbrowse/core/ui'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { UriLocation } from '@jbrowse/core/util/types'
 
-import { BaseRootModel } from '@jbrowse/product-core'
+import { BaseRoot, InternetAccounts } from '@jbrowse/product-core'
 
 // icons
 import OpenIcon from '@mui/icons-material/FolderOpen'
@@ -52,6 +50,8 @@ interface Menu {
   menuItems: MenuItem[]
 }
 
+// IN PROGRESS: factoring more stuff out of this root model into core
+
 /**
  * #stateModel JBrowseDesktopRootModel
  * note that many properties of the root model are available through the session, which
@@ -61,12 +61,17 @@ export default function rootModelFactory(pluginManager: PluginManager) {
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
   const Session = sessionModelFactory(pluginManager, assemblyConfigSchema)
   const JobsManager = jobsModelFactory(pluginManager)
-  return BaseRootModel(
-    pluginManager,
-    JBrowseDesktop(pluginManager, Session, assemblyConfigSchema),
-    Session,
-    assemblyConfigSchema,
-  )
+  return types
+    .compose(
+      'JBrowseDesktopRootModel',
+      BaseRoot(
+        pluginManager,
+        JBrowseDesktop(pluginManager, Session, assemblyConfigSchema),
+        Session,
+        assemblyConfigSchema,
+      ),
+      InternetAccounts(pluginManager),
+    )
     .props({
       /**
        * #property
@@ -76,12 +81,6 @@ export default function rootModelFactory(pluginManager: PluginManager) {
        * #property
        */
       savedSessionNames: types.maybe(types.array(types.string)),
-      /**
-       * #property
-       */
-      internetAccounts: types.array(
-        pluginManager.pluggableMstType('internet account', 'stateModel'),
-      ),
       /**
        * #property
        */
@@ -118,92 +117,6 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           snapshot.name = newSnapshotName
           self.setSession(snapshot)
         }
-      },
-      /**
-       * #action
-       */
-      initializeInternetAccount(
-        internetAccountConfig: AnyConfigurationModel,
-        initialSnapshot = {},
-      ) {
-        const internetAccountType = pluginManager.getInternetAccountType(
-          internetAccountConfig.type,
-        )
-        if (!internetAccountType) {
-          throw new Error(
-            `unknown internet account type ${internetAccountConfig.type}`,
-          )
-        }
-
-        const length = self.internetAccounts.push({
-          ...initialSnapshot,
-          type: internetAccountConfig.type,
-          configuration: internetAccountConfig,
-        })
-        return self.internetAccounts[length - 1]
-      },
-      /**
-       * #action
-       */
-      createEphemeralInternetAccount(
-        internetAccountId: string,
-        initialSnapshot = {},
-        url: string,
-      ) {
-        let hostUri
-
-        try {
-          hostUri = new URL(url).origin
-        } catch (e) {
-          // ignore
-        }
-        // id of a custom new internaccount is `${type}-${name}`
-        const internetAccountSplit = internetAccountId.split('-')
-        const configuration = {
-          type: internetAccountSplit[0],
-          internetAccountId: internetAccountId,
-          name: internetAccountSplit.slice(1).join('-'),
-          description: '',
-          domains: [hostUri],
-        }
-        const internetAccountType = pluginManager.getInternetAccountType(
-          configuration.type,
-        )
-        const internetAccount = internetAccountType.stateModel.create({
-          ...initialSnapshot,
-          type: configuration.type,
-          configuration,
-        })
-        self.internetAccounts.push(internetAccount)
-        return internetAccount
-      },
-      /**
-       * #action
-       */
-      findAppropriateInternetAccount(location: UriLocation) {
-        // find the existing account selected from menu
-        const selectedId = location.internetAccountId
-        if (selectedId) {
-          const selectedAccount = self.internetAccounts.find(account => {
-            return account.internetAccountId === selectedId
-          })
-          if (selectedAccount) {
-            return selectedAccount
-          }
-        }
-
-        // if no existing account or not found, try to find working account
-        for (const account of self.internetAccounts) {
-          const handleResult = account.handlesLocation(location)
-          if (handleResult) {
-            return account
-          }
-        }
-
-        // if still no existing account, create ephemeral config to use
-        return selectedId
-          ? this.createEphemeralInternetAccount(selectedId, {}, location.uri)
-          : null
       },
     }))
     .volatile(self => ({
@@ -598,14 +511,6 @@ export default function rootModelFactory(pluginManager: PluginManager) {
               // https://github.com/mobxjs/mobx-state-tree/issues/1089#issuecomment-441207911
               self.history.initialize()
             }
-          }),
-        )
-        addDisposer(
-          self,
-          autorun(() => {
-            self.jbrowse.internetAccounts.forEach(account => {
-              self.initializeInternetAccount(account)
-            })
           }),
         )
         addDisposer(
