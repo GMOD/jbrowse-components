@@ -66,18 +66,6 @@ export default function BaseSession(pluginManager: PluginManager) {
       get textSearchManager() {
         return this.root.textSearchManager
       },
-      /**
-       * #getter
-       */
-      get history() {
-        return this.root.history
-      },
-      /**
-       * #getter
-       */
-      get menus() {
-        return this.root.menus
-      },
     }))
     .actions(self => ({
       /**

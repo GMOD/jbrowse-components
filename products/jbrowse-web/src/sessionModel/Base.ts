@@ -28,33 +28,6 @@ export function BaseSession(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get jbrowse() {
-        return getParent<any>(self).jbrowse
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get rpcManager() {
-        return self.jbrowse.rpcManager as RpcManager
-      },
-      /**
-       * #getter
-       */
-      get configuration(): AnyConfigurationModel {
-        return self.jbrowse.configuration
-      },
-      /**
-       * #getter
-       */
-      get adminMode(): boolean {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return getParent<any>(self).adminMode
-      },
-      /**
-       * #getter
-       */
       get tracks(): AnyConfigurationModel[] {
         return [...self.sessionTracks, ...getParent<any>(self).jbrowse.tracks]
       },
