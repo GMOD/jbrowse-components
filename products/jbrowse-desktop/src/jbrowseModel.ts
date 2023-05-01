@@ -1,8 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import {
-  AnyConfigurationModel,
-  AnyConfigurationSchemaType,
-} from '@jbrowse/core/configuration'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'

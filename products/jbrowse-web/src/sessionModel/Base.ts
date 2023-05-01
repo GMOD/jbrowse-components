@@ -1,8 +1,7 @@
-import { Instance, getParent, types } from 'mobx-state-tree'
+import { Instance, types } from 'mobx-state-tree'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import RpcManager from '@jbrowse/core/rpc/RpcManager'
 
 import { Session as CoreSession } from '@jbrowse/product-core'
 

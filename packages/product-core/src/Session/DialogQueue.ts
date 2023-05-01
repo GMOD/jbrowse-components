@@ -57,4 +57,5 @@ export default function DialogQueue(pluginManager: PluginManager) {
     }))
 }
 
-export type DialogQueueManager = Instance<ReturnType<typeof DialogQueue>>
+export type DialogQueueManagerType = ReturnType<typeof DialogQueue>
+export type DialogQueueManager = Instance<DialogQueueManagerType>

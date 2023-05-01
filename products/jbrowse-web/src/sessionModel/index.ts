@@ -84,43 +84,43 @@ export default function sessionModelFactory(
        * #getter
        */
       get textSearchManager(): TextSearchManager {
-        return getParent<any>(self).textSearchManager
+        return self.root.textSearchManager
       },
       /**
        * #getter
        */
       get savedSessions() {
-        return getParent<any>(self).savedSessions
+        return self.root.savedSessions
       },
       /**
        * #getter
        */
       get previousAutosaveId() {
-        return getParent<any>(self).previousAutosaveId
+        return self.root.previousAutosaveId
       },
       /**
        * #getter
        */
       get savedSessionNames() {
-        return getParent<any>(self).savedSessionNames
+        return self.root.savedSessionNames
       },
       /**
        * #getter
        */
       get history() {
-        return getParent<any>(self).history
+        return self.root.history
       },
       /**
        * #getter
        */
       get menus() {
-        return getParent<any>(self).menus
+        return self.root.menus
       },
       /**
        * #getter
        */
       get version() {
-        return getParent<any>(self).version
+        return self.root.version
       },
 
       /**
@@ -210,62 +210,62 @@ export default function sessionModelFactory(
          * #action
          */
         addSavedSession(sessionSnapshot: SnapshotIn<typeof self>) {
-          return getParent<any>(self).addSavedSession(sessionSnapshot)
+          return self.root.addSavedSession(sessionSnapshot)
         },
 
         /**
          * #action
          */
         removeSavedSession(sessionSnapshot: any) {
-          return getParent<any>(self).removeSavedSession(sessionSnapshot)
+          return self.root.removeSavedSession(sessionSnapshot)
         },
 
         /**
          * #action
          */
         renameCurrentSession(sessionName: string) {
-          return getParent<any>(self).renameCurrentSession(sessionName)
+          return self.root.renameCurrentSession(sessionName)
         },
 
         /**
          * #action
          */
         duplicateCurrentSession() {
-          return getParent<any>(self).duplicateCurrentSession()
+          return self.root.duplicateCurrentSession()
         },
         /**
          * #action
          */
         activateSession(sessionName: any) {
-          return getParent<any>(self).activateSession(sessionName)
+          return self.root.activateSession(sessionName)
         },
 
         /**
          * #action
          */
         setDefaultSession() {
-          return getParent<any>(self).setDefaultSession()
+          return self.root.setDefaultSession()
         },
 
         /**
          * #action
          */
         saveSessionToLocalStorage() {
-          return getParent<any>(self).saveSessionToLocalStorage()
+          return self.root.saveSessionToLocalStorage()
         },
 
         /**
          * #action
          */
         loadAutosaveSession() {
-          return getParent<any>(self).loadAutosaveSession()
+          return self.root.loadAutosaveSession()
         },
 
         /**
          * #action
          */
         setSession(sessionSnapshot: SnapshotIn<typeof self>) {
-          return getParent<any>(self).setSession(sessionSnapshot)
+          return self.root.setSession(sessionSnapshot)
         },
       }
     })
