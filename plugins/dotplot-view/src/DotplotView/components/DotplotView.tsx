@@ -241,6 +241,7 @@ const DotplotViewInternal = observer(function ({
               <TooltipWhereMouseovered
                 model={model}
                 mouserect={mouserect}
+                mouserectClient={mousecurrClient}
                 xdistance={xdistance}
                 ydistance={ydistance}
               />
@@ -249,6 +250,7 @@ const DotplotViewInternal = observer(function ({
               <TooltipWhereClicked
                 model={model}
                 mousedown={mousedown}
+                mousedownClient={mousedownClient}
                 xdistance={xdistance}
                 ydistance={ydistance}
               />
