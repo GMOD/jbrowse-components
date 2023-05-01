@@ -153,23 +153,16 @@ function RefNameAutocomplete({
 
   // heuristic, text width + icon width + 50 accommodates help icon and search
   // icon
-  console.log({ inputBoxVal })
   const width = Math.min(
     Math.max(measureText(inputBoxVal, 16) + 50, minWidth),
     maxWidth,
   )
-
-  console.log({
-    k1: Math.max(measureText(inputBoxVal, 16) + 50, minWidth),
-    k2: maxWidth,
-  })
 
   // notes on implementation:
   // The selectOnFocus setting helps highlight the field when clicked
   return (
     <>
       <Autocomplete
-        size="small"
         data-testid="autocomplete"
         disableListWrap
         disableClearable
@@ -235,8 +228,8 @@ function RefNameAutocomplete({
           return (
             <TextField
               onBlur={() =>
-                // this is used to restore a refName or the non-user-typed
-                // input to the box on blurring
+                // this is used to restore a refName or the non-user-typed input
+                // to the box on blurring
                 setInputValue(inputBoxVal)
               }
               {...params}
@@ -250,7 +243,14 @@ function RefNameAutocomplete({
                   <>
                     <InputAdornment position="end" style={{ marginRight: 7 }}>
                       <SearchIcon fontSize="small" />
-                      {showHelp ? <HelpAdornment /> : null}
+                      {showHelp ? (
+                        <IconButton
+                          onClick={() => setHelpDialogDisplayed(true)}
+                          size="small"
+                        >
+                          <HelpIcon fontSize="small" />
+                        </IconButton>
+                      ) : null}
                     </InputAdornment>
                     {params.InputProps.endAdornment}
                   </>
@@ -267,24 +267,12 @@ function RefNameAutocomplete({
             : option.result.getDisplayString()) || ''
         }
       />
-    </>
-  )
-}
-
-function HelpAdornment() {
-  const [isHelpDialogDisplayed, setHelpDialogDisplayed] = useState(false)
-  return (
-    <InputAdornment position="end" style={{ marginRight: 7 }}>
-      <SearchIcon fontSize="small" />
-      <IconButton onClick={() => setHelpDialogDisplayed(true)} size="small">
-        <HelpIcon fontSize="small" />
-      </IconButton>
       {isHelpDialogDisplayed ? (
         <Suspense fallback={<div />}>
           <HelpDialog handleClose={() => setHelpDialogDisplayed(false)} />
         </Suspense>
       ) : null}
-    </InputAdornment>
+    </>
   )
 }
 

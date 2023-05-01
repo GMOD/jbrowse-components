@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/blocks';
+import { Meta, Story } from '@storybook/blocks'
 import { WithInternetAccounts } from './JBrowseLinearGenomeView.stories'
 
 <Meta title="Using InternetAccounts" />
@@ -48,10 +48,10 @@ you'll more likely be 'automatically' be authenticated via cookies.
 
 Note that JBrowse's `DropboxOAuthInternetAccount` and
 `GoogleDriveOAuthInternetAccount` will not work as-is because
-`@jbrowse/react-linear-genome-view` doesn't have the app-level control needed
-to properly execute an OAuth 2.0 login flow.
+`@jbrowse/react-linear-genome-view` doesn't have the app-level control needed to
+properly execute an OAuth 2.0 login flow.
 
-There are some instances where InternetAccounts could be useful for
-non-external resources too though. For example, you can use a custom
-InternetAccount to override the `fetch` behavior of a particular track,
-allowing you to customize where and how the data is retrieved.
+There are some instances where InternetAccounts could be useful for non-external
+resources too though. For example, you can use a custom InternetAccount to
+override the `fetch` behavior of a particular track, allowing you to customize
+where and how the data is retrieved.
