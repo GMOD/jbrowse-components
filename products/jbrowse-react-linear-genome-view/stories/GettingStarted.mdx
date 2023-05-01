@@ -1,4 +1,10 @@
-import { Meta, Story, Canvas } from '@storybook/addon-docs'
+import { Meta, Story } from '@storybook/blocks'
+import {
+  OneLinearGenomeView,
+  UsingLocObject,
+  DisableAddTrack,
+  WithShowTrack,
+} from './JBrowseLinearGenomeView.stories'
 
 <Meta title="Getting Started" />
 
@@ -14,7 +20,7 @@ demonstration of how the component looks and works.
 
 This is an example of what a story looks like:
 
-<Story id="source-code-for-examples--one-linear-genome-view" />
+<Story of={OneLinearGenomeView} />
 
 You can test out the various features of the component, and open tracks and
 interact with it as you would in your app. You can also click on the code button
@@ -77,7 +83,7 @@ const state = createViewState({
 
 Example
 
-<Story id="source-code-for-examples--using-loc-object" name="Using location" />
+<Story of={UsingLocObject} />
 
 ## Disabling the ability to add tracks
 
@@ -97,10 +103,7 @@ const state = createViewState({
 
 Example
 
-<Story
-  id="source-code-for-examples--disable-add-track"
-  name="Disable add tracks"
-/>
+<Story of={DisableAddTrack} />
 
 ## Opening up tracks by default
 
@@ -108,7 +111,7 @@ You can use the `showTrack` function on the object returned by `createViewState`
 to show a track with a given trackId. This can be easier than using the
 defaultSession.
 
-<Story id="source-code-for-examples--with-show-track" name="Show track" />
+<Story of={WithShowTrack} />
 
 ## An overview of the LGV API
 

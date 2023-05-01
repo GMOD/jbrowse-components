@@ -1,5 +1,5 @@
-import { Meta, Story, Canvas } from '@storybook/addon-docs'
-import { isArrayLike } from 'lodash'
+import { Meta, Story } from '@storybook/blocks'
+import { WithInternetAccounts } from './JBrowseLinearGenomeView.stories'
 
 <Meta title="Using InternetAccounts" />
 
@@ -34,7 +34,7 @@ const state = createViewState({
 Then any file location in your tracks that specifies an `internetAccountId` of
 "manualGoogleEntry" will use the specified InternetAccount.
 
-<Story id="source-code-for-examples--with-internet-accounts" />
+<Story of={WithInternetAccounts} />
 
 The above example lets the user manually enter a token already retrieved
 elsewhere. An "Authorization" header is then set on any request to that resource
@@ -46,8 +46,8 @@ Normally, internet accounts are used for accessing information from external
 third party resources. For accessing authenticated non-external resources,
 you'll more likely be 'automatically' be authenticated via cookies.
 
-Note that JBrowse's DropboxOAuthInternetAccount and
-GoogleDriveOAuthInternetAccount will not work as-is because
+Note that JBrowse's `DropboxOAuthInternetAccount` and
+`GoogleDriveOAuthInternetAccount` will not work as-is because
 `@jbrowse/react-linear-genome-view` doesn't have the app-level control needed to
 properly execute an OAuth 2.0 login flow.
 

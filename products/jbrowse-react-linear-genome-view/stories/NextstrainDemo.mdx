@@ -1,4 +1,5 @@
-import { Meta, Story, Canvas } from '@storybook/addon-docs'
+import { Meta, Story } from '@storybook/blocks'
+import { NextstrainExample } from './JBrowseLinearGenomeView.stories'
 
 <Meta title="Nextstrain SARS-CoV-2 demo" />
 
@@ -9,7 +10,7 @@ SARS-CoV-2 genome similar to [Nextstrain](https://nextstrain.org). It uses a
 color config to color gene's similar to the Nextstrain website, and also
 displays "Entropy score" to show diversity
 
-<Story id="source-code-for-examples--nextstrain-example" />
+<Story of={NextstrainExample} />
 
 ### Source
 
@@ -23,7 +24,7 @@ See
 for the example config, summarized below here too. Note that the link is a
 large-ish JSON file because of the usage of `FromConfigAdapter`
 
-```
+```json
 {
   "assembly": {
     "name": "SARS-CoV-2",
@@ -178,7 +179,7 @@ large-ish JSON file because of the usage of `FromConfigAdapter`
             "start": 26252,
             "end": 26253,
             "uniqueId": "26252"
-          },
+          }
           /*more scores for the entropy track here */
         ]
       }
@@ -236,5 +237,4 @@ large-ish JSON file because of the usage of `FromConfigAdapter`
     }
   }
 }
-
 ```

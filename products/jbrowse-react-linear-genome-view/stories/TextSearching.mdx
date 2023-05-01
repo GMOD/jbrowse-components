@@ -1,4 +1,8 @@
-import { Meta, Story, Canvas } from '@storybook/addon-docs'
+import { Meta, Story } from '@storybook/blocks'
+import {
+  WithAggregateTextSearching,
+  WithPerTrackTextSearching,
+} from './JBrowseLinearGenomeView.stories'
 
 <Meta title="Text Searching" />
 
@@ -10,13 +14,13 @@ An aggregate search index contains info for multiple tracks. This can be
 configured by passing the "aggregateTextSearchAdapters" (which would normally
 just be a single entry but could be multiple)
 
-<Story id="source-code-for-examples--with-aggregate-text-searching" />
+<Story of={WithAggregateTextSearching} />
 
 ## Per-track search index
 
 Per-track search indexes contain information for a single track.
 
-<Story id="source-code-for-examples--with-per-track-text-searching" />
+<Story of={WithPerTrackTextSearching} />
 
 # Preparing indexes
 

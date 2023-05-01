@@ -1,4 +1,8 @@
-import { Meta, Story, Canvas } from '@storybook/addon-docs'
+import { Meta, Story } from '@storybook/blocks'
+import {
+  WithInlinePlugins,
+  WithExternalPlugin,
+} from './JBrowseLinearGenomeView.stories'
 
 <Meta title="Using Plugins" />
 
@@ -10,13 +14,13 @@ This example loads a plugin that is defined in your own source code. The plugin
 adds an extra action from clicking and dragging a region with the mouse that
 console.log's the region that was selected
 
-<Story id="source-code-for-examples--with-inline-plugins" />
+<Story of={WithInlinePlugins} />
 
 ## Plugins loaded from external URL
 
 This example loads a plugin from an external URL
 
-<Story id="source-code-for-examples--with-external-plugin" />
+<Story of={WithExternalPlugin} />
 
 ## Plugins loaded from NPM
 

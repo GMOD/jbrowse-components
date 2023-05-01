@@ -1,4 +1,5 @@
-import { Meta, Story, Canvas } from '@storybook/addon-docs'
+import { Meta, Story } from '@storybook/blocks'
+import { DefaultSession } from './JBrowseLinearGenomeView.stories'
 
 <Meta title="Default Sessions" />
 
@@ -11,7 +12,7 @@ are open is stored in a session. It is possible to configure a JB2 app with a
 Here is an example LGV with a long reads alignment track loaded in the
 `defaultSession`:
 
-<Story id="source-code-for-examples--default-session" />
+<Story of={DefaultSession} />
 
 ## Creating a default session
 
@@ -79,10 +80,9 @@ For example, to display a ReferenceSequenceTrack with the id
 
 A powerful tool for learning about track types and display types for default
 sessions is the feature for exporting sessions in the main JBrowse 2 app (File
-
-> Export session). This feature exports a JSON file of the current session in
-> the app. This feature can also be used to graphically generate the desired
-> view configuration for the React LGV component.
+-> Export session). This feature exports a JSON file of the current session in
+the app. This feature can also be used to graphically generate the desired view
+configuration for the React LGV component.
 
 To create a default session using JB2, load whatever tracks and data you want to
 be displayed into a session with a single linear genome view open. Export the

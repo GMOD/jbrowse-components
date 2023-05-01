@@ -1,4 +1,5 @@
-import { Meta, Story, Canvas } from '@storybook/addon-docs'
+import { Meta, Story } from '@storybook/blocks'
+import { Volvox, ShowTrack } from './JBrowseCircularGenomeView.stories'
 
 <Meta title="Getting Started" />
 
@@ -14,9 +15,7 @@ demonstration of how the component looks and works.
 
 This is an example of what a story looks like:
 
-<Canvas>
-  <Story id="circular-genome-view--volvox" />
-</Canvas>
+<Story of={Volvox} />
 
 You can test out the various features of the component, and open tracks and
 interact with it as you would in your app. You can also click on the code button
@@ -68,9 +67,7 @@ The CGV component only accepts a single assembly object instead of an array:
 
 You can call "showTrack" on the object returned by createViewState
 
-<Canvas>
-  <Story id="circular-genome-view--show-track" />
-</Canvas>
+<Story of={ShowTrack} />
 
 ## Additional resources
 

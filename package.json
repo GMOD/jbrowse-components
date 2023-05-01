@@ -45,8 +45,6 @@
     "@oclif/dev-cli": "^1.26.9",
     "@oclif/test": "^1.2.7",
     "@storybook/addon-essentials": "^7.0.0",
-    "@storybook/addon-interactions": "^7.0.0",
-    "@storybook/addon-links": "^7.0.0",
     "@storybook/builder-webpack5": "^7.0.0",
     "@storybook/node-logger": "^7.0.0",
     "@storybook/react": "^7.0.0",
