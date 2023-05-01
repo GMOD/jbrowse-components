@@ -12,16 +12,6 @@ export function round(value: number) {
   return Math.round(value * 1e5) / 1e5
 }
 const useStyles = makeStyles()(theme => ({
-  popover: {
-    background: theme.palette.background.paper,
-    maxWidth: 400,
-    wordBreak: 'break-all',
-    zIndex: 1000,
-    border: `1px solid ${theme.palette.action.active}`,
-    pointerEvents: 'none',
-    position: 'absolute',
-  },
-
   // these styles come from
   // https://github.com/mui-org/material-ui/blob/master/packages/material-ui/src/Tooltip/Tooltip.js
   tooltip: {
