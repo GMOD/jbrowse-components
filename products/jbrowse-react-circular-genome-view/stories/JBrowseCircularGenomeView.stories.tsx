@@ -99,7 +99,14 @@ export const Volvox = () => {
     ],
     defaultSession,
   })
-  return <JBrowseCircularGenomeView viewState={state} />
+  return (
+    <div>
+      <JBrowseCircularGenomeView viewState={state} />
+      <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-circular-genome-view/stories/JBrowseCircularGenomeView.stories.tsx">
+        Source code
+      </a>
+    </div>
+  )
 }
 
 export const ShowTrack = () => {
@@ -189,7 +196,14 @@ export const ShowTrack = () => {
   })
 
   state.session.view.showTrack('volvox_sv_test')
-  return <JBrowseCircularGenomeView viewState={state} />
+  return (
+    <div>
+      <JBrowseCircularGenomeView viewState={state} />
+      <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-circular-genome-view/stories/JBrowseCircularGenomeView.stories.tsx">
+        Source code
+      </a>
+    </div>
+  )
 }
 
 const hg19Assembly = {
@@ -277,7 +291,14 @@ export const Human = () => {
     tracks: hg19Tracks,
     defaultSession: hg19DefaultSession,
   })
-  return <JBrowseCircularGenomeView viewState={state} />
+  return (
+    <div>
+      <JBrowseCircularGenomeView viewState={state} />
+      <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-circular-genome-view/stories/JBrowseCircularGenomeView.stories.tsx">
+        Source code
+      </a>
+    </div>
+  )
 }
 
 const JBrowseCircularGenomeViewStories = {
