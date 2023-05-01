@@ -177,9 +177,8 @@ function Home() {
               publish, please cite the most recent JBrowse paper:
             </p>
             <cite>
-              Diesh, C., Stevens, G.J., Xie, P. et al. JBrowse 2: a modular
-              genome browser with views of synteny and structural variation.
-              Genome Biol 24, 74 (2023).{' '}
+              JBrowse 2: a modular genome browser with views of synteny and
+              structural variation. Genome Biology (2023).{' '}
               <a href="https://doi.org/10.1186/s13059-023-02914-z">
                 https://doi.org/10.1186/s13059-023-02914-z
               </a>
