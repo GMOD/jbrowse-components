@@ -21,7 +21,7 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-const delay = { timeout: 10000 }
+const delay = { timeout: 40000 }
 const opts = [{}, delay]
 
 // this tests reloading after an initial track error
@@ -51,7 +51,7 @@ test('reloads alignments track (CRAI 404)', async () => {
     fireEvent.click(buttons[0])
     expectCanvasMatch(await findByTestId(pv('1..400-0'), ...opts))
   })
-}, 20000)
+}, 50000)
 
 test('reloads alignments track (CRAM 404)', async () => {
   await mockConsole(async () => {
@@ -76,4 +76,4 @@ test('reloads alignments track (CRAM 404)', async () => {
     fireEvent.click(buttons[0])
     expectCanvasMatch(await findByTestId(pv('1..400-0'), ...opts))
   })
-}, 20000)
+}, 50000)

@@ -6,6 +6,7 @@ import BaseResult, {
 } from '@jbrowse/core/TextSearch/BaseResults'
 import {
   Autocomplete,
+  AutocompleteRenderInputParams,
   IconButton,
   InputAdornment,
   TextField,
@@ -69,6 +70,23 @@ function filterOptions(options: Option[], searchQuery: string) {
   )
 }
 
+function getFiltered(opts: Option[], inputValue: string) {
+  const filtered = filterOptions(opts, inputValue.toLocaleLowerCase())
+  return [
+    ...filtered.slice(0, 100),
+    ...(filtered.length > 100
+      ? [
+          {
+            group: 'limitOption',
+            result: new BaseResult({
+              label: 'keep typing for more results',
+            }),
+          },
+        ]
+      : []),
+  ]
+}
+
 function RefNameAutocomplete({
   model,
   onSelect,
@@ -98,7 +116,6 @@ function RefNameAutocomplete({
   const { assemblyManager } = session
   const [open, setOpen] = useState(false)
   const [loaded, setLoaded] = useState(true)
-  const [isHelpDialogDisplayed, setHelpDialogDisplayed] = useState(false)
   const [currentSearch, setCurrentSearch] = useState('')
   const [inputValue, setInputValue] = useState('')
   const [searchOptions, setSearchOptions] = useState<Option[]>()
@@ -151,10 +168,10 @@ function RefNameAutocomplete({
 
   const inputBoxVal = coarseVisibleLocStrings || value || ''
 
-  // heuristic, text width + icon width + 50 accommodates help icon and search
+  // heuristic, text width + 60 accommodates help icon and search
   // icon
   const width = Math.min(
-    Math.max(measureText(inputBoxVal, 16) + 50, minWidth),
+    Math.max(measureText(inputBoxVal, 13) + 100, minWidth),
     maxWidth,
   )
 
@@ -203,75 +220,100 @@ function RefNameAutocomplete({
           setInputValue(inputBoxVal)
         }}
         options={!searchOptions?.length ? options : searchOptions}
-        getOptionDisabled={option => option?.group === 'limitOption'}
-        filterOptions={(options, params) => {
-          const filtered = filterOptions(
-            options,
-            params.inputValue.toLocaleLowerCase(),
-          )
-          return [
-            ...filtered.slice(0, 100),
-            ...(filtered.length > 100
-              ? [
-                  {
-                    group: 'limitOption',
-                    result: new BaseResult({
-                      label: 'keep typing for more results',
-                    }),
-                  },
-                ]
-              : []),
-          ]
-        }}
-        renderInput={params => {
-          const { helperText, InputProps = {} } = TextFieldProps
-          return (
-            <TextField
-              onBlur={() =>
-                // this is used to restore a refName or the non-user-typed input
-                // to the box on blurring
-                setInputValue(inputBoxVal)
-              }
-              {...params}
-              {...TextFieldProps}
-              helperText={helperText}
-              InputProps={{
-                ...params.InputProps,
-                ...InputProps,
-
-                endAdornment: (
-                  <>
-                    <InputAdornment position="end" style={{ marginRight: 7 }}>
-                      <SearchIcon fontSize="small" />
-                      {showHelp ? (
-                        <IconButton
-                          onClick={() => setHelpDialogDisplayed(true)}
-                          size="small"
-                        >
-                          <HelpIcon fontSize="small" />
-                        </IconButton>
-                      ) : null}
-                    </InputAdornment>
-                    {params.InputProps.endAdornment}
-                  </>
-                ),
-              }}
-              placeholder="Search for location"
-              onChange={e => setCurrentSearch(e.target.value)}
-            />
-          )
-        }}
-        getOptionLabel={option =>
-          (typeof option === 'string'
-            ? option
-            : option.result.getDisplayString()) || ''
+        getOptionDisabled={option => option.group === 'limitOption'}
+        filterOptions={(opts, { inputValue }) => getFiltered(opts, inputValue)}
+        renderInput={params => (
+          <AutocompleteTextField
+            showHelp={showHelp}
+            params={params}
+            inputBoxVal={inputBoxVal}
+            TextFieldProps={TextFieldProps}
+            setCurrentSearch={setCurrentSearch}
+            setInputValue={setInputValue}
+          />
+        )}
+        getOptionLabel={opt =>
+          typeof opt === 'string' ? opt : opt.result.getDisplayString()
         }
       />
+    </>
+  )
+}
+
+function AutocompleteTextField({
+  TextFieldProps,
+  inputBoxVal,
+  params,
+  showHelp,
+  setInputValue,
+  setCurrentSearch,
+}: {
+  TextFieldProps: TFP
+  inputBoxVal: string
+  showHelp?: boolean
+  params: AutocompleteRenderInputParams
+  setInputValue: (arg: string) => void
+  setCurrentSearch: (arg: string) => void
+}) {
+  const { helperText, InputProps = {} } = TextFieldProps
+  return (
+    <TextField
+      onBlur={() =>
+        // this is used to restore a refName or the non-user-typed input
+        // to the box on blurring
+        setInputValue(inputBoxVal)
+      }
+      {...params}
+      {...TextFieldProps}
+      size="small"
+      helperText={helperText}
+      InputProps={{
+        ...params.InputProps,
+        ...InputProps,
+
+        endAdornment: (
+          <EndAdornment
+            showHelp={showHelp}
+            endAdornment={params.InputProps.endAdornment}
+          />
+        ),
+      }}
+      placeholder="Search for location"
+      onChange={e => setCurrentSearch(e.target.value)}
+    />
+  )
+}
+
+function HelpAdornment() {
+  const [isHelpDialogDisplayed, setHelpDialogDisplayed] = useState(false)
+  return (
+    <>
+      <IconButton onClick={() => setHelpDialogDisplayed(true)} size="small">
+        <HelpIcon fontSize="small" />
+      </IconButton>
       {isHelpDialogDisplayed ? (
         <Suspense fallback={<div />}>
           <HelpDialog handleClose={() => setHelpDialogDisplayed(false)} />
         </Suspense>
       ) : null}
+    </>
+  )
+}
+
+function EndAdornment({
+  showHelp,
+  endAdornment,
+}: {
+  showHelp?: boolean
+  endAdornment: React.ReactNode
+}) {
+  return (
+    <>
+      <InputAdornment position="end" style={{ marginRight: 7 }}>
+        <SearchIcon fontSize="small" />
+        {showHelp ? <HelpAdornment /> : null}
+      </InputAdornment>
+      {endAdornment}
     </>
   )
 }
