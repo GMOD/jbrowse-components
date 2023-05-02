@@ -168,10 +168,10 @@ function RefNameAutocomplete({
 
   const inputBoxVal = coarseVisibleLocStrings || value || ''
 
-  // heuristic, text width + icon width + 50 accommodates help icon and search
+  // heuristic, text width + 60 accommodates help icon and search
   // icon
   const width = Math.min(
-    Math.max(measureText(inputBoxVal, 16) + 100, minWidth),
+    Math.max(measureText(inputBoxVal, 13) + 100, minWidth),
     maxWidth,
   )
 
@@ -270,8 +270,6 @@ function AutocompleteTextField({
       InputProps={{
         ...params.InputProps,
         ...InputProps,
-
-        style: { ...InputProps.style, fontSize: '0.8rem' },
 
         endAdornment: (
           <EndAdornment

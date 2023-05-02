@@ -8,7 +8,7 @@ exports[`renders with the available plugins 1`] = `
     class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-1z10yd4-MuiFormControl-root-MuiTextField-root"
   >
     <label
-      class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard css-1s1jvl0-MuiFormLabel-root-MuiInputLabel-root"
+      class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard css-8ajfgw-MuiFormLabel-root-MuiInputLabel-root"
       data-shrink="false"
       for="mui-1"
       id="mui-1-label"
@@ -16,7 +16,7 @@ exports[`renders with the available plugins 1`] = `
       Filter plugins
     </label>
     <div
-      class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-1blad95-MuiInputBase-root-MuiInput-root"
+      class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-e5xmlq-MuiInputBase-root-MuiInput-root"
     >
       <input
         aria-invalid="false"
@@ -29,13 +29,13 @@ exports[`renders with the available plugins 1`] = `
         class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-1laqsz7-MuiInputAdornment-root"
       >
         <button
-          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1lruqhb-MuiButtonBase-root-MuiIconButton-root"
           tabindex="0"
           type="button"
         >
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-thxhq5-MuiSvgIcon-root"
             data-testid="ClearIcon"
             focusable="false"
             viewBox="0 0 24 24"
@@ -64,7 +64,7 @@ exports[`renders with the available plugins 1`] = `
         class="MuiAccordionSummary-content Mui-expanded css-1rhnrrr-MuiAccordionSummary-content"
       >
         <h5
-          class="MuiTypography-root MuiTypography-h5 css-1ldbtdh-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-h5 css-dy7l2v-MuiTypography-root"
         >
           Installed plugins
         </h5>
@@ -74,7 +74,7 @@ exports[`renders with the available plugins 1`] = `
       >
         <svg
           aria-hidden="true"
-          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-kbgf2m-MuiSvgIcon-root-expandIcon"
+          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1pl3opc-MuiSvgIcon-root-expandIcon"
           data-testid="ExpandMoreIcon"
           focusable="false"
           viewBox="0 0 24 24"
@@ -111,7 +111,7 @@ exports[`renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1a34d00-MuiSvgIcon-root-lockedPluginTooltip"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ktnuse-MuiSvgIcon-root-lockedPluginTooltip"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -122,7 +122,7 @@ exports[`renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1p9x5wm-MuiTypography-root"
                   >
                     SVGPlugin
                   </p>
@@ -133,7 +133,7 @@ exports[`renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1a34d00-MuiSvgIcon-root-lockedPluginTooltip"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ktnuse-MuiSvgIcon-root-lockedPluginTooltip"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -144,7 +144,7 @@ exports[`renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1p9x5wm-MuiTypography-root"
                   >
                     LinearGenomeViewPlugin
                   </p>
@@ -155,7 +155,7 @@ exports[`renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1a34d00-MuiSvgIcon-root-lockedPluginTooltip"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ktnuse-MuiSvgIcon-root-lockedPluginTooltip"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -166,7 +166,7 @@ exports[`renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1p9x5wm-MuiTypography-root"
                   >
                     AlignmentsPlugin
                   </p>
@@ -177,7 +177,7 @@ exports[`renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1a34d00-MuiSvgIcon-root-lockedPluginTooltip"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ktnuse-MuiSvgIcon-root-lockedPluginTooltip"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -188,7 +188,7 @@ exports[`renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1p9x5wm-MuiTypography-root"
                   >
                     AuthenticationPlugin
                   </p>
@@ -199,7 +199,7 @@ exports[`renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1a34d00-MuiSvgIcon-root-lockedPluginTooltip"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ktnuse-MuiSvgIcon-root-lockedPluginTooltip"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -210,7 +210,7 @@ exports[`renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1p9x5wm-MuiTypography-root"
                   >
                     BedPlugin
                   </p>
@@ -221,7 +221,7 @@ exports[`renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1a34d00-MuiSvgIcon-root-lockedPluginTooltip"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ktnuse-MuiSvgIcon-root-lockedPluginTooltip"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -232,7 +232,7 @@ exports[`renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1p9x5wm-MuiTypography-root"
                   >
                     CircularViewPlugin
                   </p>
@@ -243,7 +243,7 @@ exports[`renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1a34d00-MuiSvgIcon-root-lockedPluginTooltip"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ktnuse-MuiSvgIcon-root-lockedPluginTooltip"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -254,7 +254,7 @@ exports[`renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1p9x5wm-MuiTypography-root"
                   >
                     ConfigurationPlugin
                   </p>
@@ -265,7 +265,7 @@ exports[`renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1a34d00-MuiSvgIcon-root-lockedPluginTooltip"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ktnuse-MuiSvgIcon-root-lockedPluginTooltip"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -276,7 +276,7 @@ exports[`renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1p9x5wm-MuiTypography-root"
                   >
                     DataManagementPlugin
                   </p>
@@ -287,7 +287,7 @@ exports[`renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1a34d00-MuiSvgIcon-root-lockedPluginTooltip"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ktnuse-MuiSvgIcon-root-lockedPluginTooltip"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -298,7 +298,7 @@ exports[`renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1p9x5wm-MuiTypography-root"
                   >
                     DotplotPlugin
                   </p>
@@ -309,7 +309,7 @@ exports[`renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1a34d00-MuiSvgIcon-root-lockedPluginTooltip"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ktnuse-MuiSvgIcon-root-lockedPluginTooltip"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -320,7 +320,7 @@ exports[`renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1p9x5wm-MuiTypography-root"
                   >
                     GTFPlugin
                   </p>
@@ -331,7 +331,7 @@ exports[`renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1a34d00-MuiSvgIcon-root-lockedPluginTooltip"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ktnuse-MuiSvgIcon-root-lockedPluginTooltip"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -342,7 +342,7 @@ exports[`renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1p9x5wm-MuiTypography-root"
                   >
                     GFF3Plugin
                   </p>
@@ -353,7 +353,7 @@ exports[`renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1a34d00-MuiSvgIcon-root-lockedPluginTooltip"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ktnuse-MuiSvgIcon-root-lockedPluginTooltip"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -364,7 +364,7 @@ exports[`renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1p9x5wm-MuiTypography-root"
                   >
                     LegacyJBrowsePlugin
                   </p>
@@ -375,7 +375,7 @@ exports[`renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1a34d00-MuiSvgIcon-root-lockedPluginTooltip"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ktnuse-MuiSvgIcon-root-lockedPluginTooltip"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -386,7 +386,7 @@ exports[`renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1p9x5wm-MuiTypography-root"
                   >
                     LinearComparativeViewPlugin
                   </p>
@@ -397,7 +397,7 @@ exports[`renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1a34d00-MuiSvgIcon-root-lockedPluginTooltip"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ktnuse-MuiSvgIcon-root-lockedPluginTooltip"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -408,7 +408,7 @@ exports[`renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1p9x5wm-MuiTypography-root"
                   >
                     LollipopPlugin
                   </p>
@@ -419,7 +419,7 @@ exports[`renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1a34d00-MuiSvgIcon-root-lockedPluginTooltip"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ktnuse-MuiSvgIcon-root-lockedPluginTooltip"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -430,7 +430,7 @@ exports[`renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1p9x5wm-MuiTypography-root"
                   >
                     ArcRenderer
                   </p>
@@ -441,7 +441,7 @@ exports[`renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1a34d00-MuiSvgIcon-root-lockedPluginTooltip"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ktnuse-MuiSvgIcon-root-lockedPluginTooltip"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -452,7 +452,7 @@ exports[`renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1p9x5wm-MuiTypography-root"
                   >
                     MenusPlugin
                   </p>
@@ -463,7 +463,7 @@ exports[`renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1a34d00-MuiSvgIcon-root-lockedPluginTooltip"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ktnuse-MuiSvgIcon-root-lockedPluginTooltip"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -474,7 +474,7 @@ exports[`renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1p9x5wm-MuiTypography-root"
                   >
                     RdfPlugin
                   </p>
@@ -485,7 +485,7 @@ exports[`renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1a34d00-MuiSvgIcon-root-lockedPluginTooltip"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ktnuse-MuiSvgIcon-root-lockedPluginTooltip"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -496,7 +496,7 @@ exports[`renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1p9x5wm-MuiTypography-root"
                   >
                     SequencePlugin
                   </p>
@@ -507,7 +507,7 @@ exports[`renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1a34d00-MuiSvgIcon-root-lockedPluginTooltip"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ktnuse-MuiSvgIcon-root-lockedPluginTooltip"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -518,7 +518,7 @@ exports[`renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1p9x5wm-MuiTypography-root"
                   >
                     VariantsPlugin
                   </p>
@@ -529,7 +529,7 @@ exports[`renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1a34d00-MuiSvgIcon-root-lockedPluginTooltip"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ktnuse-MuiSvgIcon-root-lockedPluginTooltip"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -540,7 +540,7 @@ exports[`renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1p9x5wm-MuiTypography-root"
                   >
                     WigglePlugin
                   </p>
@@ -551,7 +551,7 @@ exports[`renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1a34d00-MuiSvgIcon-root-lockedPluginTooltip"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ktnuse-MuiSvgIcon-root-lockedPluginTooltip"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -562,7 +562,7 @@ exports[`renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1p9x5wm-MuiTypography-root"
                   >
                     GCContentPlugin
                   </p>
@@ -573,7 +573,7 @@ exports[`renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1a34d00-MuiSvgIcon-root-lockedPluginTooltip"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ktnuse-MuiSvgIcon-root-lockedPluginTooltip"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -584,7 +584,7 @@ exports[`renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1p9x5wm-MuiTypography-root"
                   >
                     SpreadsheetViewPlugin
                   </p>
@@ -595,7 +595,7 @@ exports[`renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1a34d00-MuiSvgIcon-root-lockedPluginTooltip"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ktnuse-MuiSvgIcon-root-lockedPluginTooltip"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -606,7 +606,7 @@ exports[`renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1p9x5wm-MuiTypography-root"
                   >
                     SvInspectorViewPlugin
                   </p>
@@ -617,7 +617,7 @@ exports[`renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1a34d00-MuiSvgIcon-root-lockedPluginTooltip"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ktnuse-MuiSvgIcon-root-lockedPluginTooltip"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -628,7 +628,7 @@ exports[`renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1p9x5wm-MuiTypography-root"
                   >
                     BreakpointSplitViewPlugin
                   </p>
@@ -639,7 +639,7 @@ exports[`renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1a34d00-MuiSvgIcon-root-lockedPluginTooltip"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ktnuse-MuiSvgIcon-root-lockedPluginTooltip"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -650,7 +650,7 @@ exports[`renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1p9x5wm-MuiTypography-root"
                   >
                     HicPlugin
                   </p>
@@ -661,7 +661,7 @@ exports[`renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1a34d00-MuiSvgIcon-root-lockedPluginTooltip"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ktnuse-MuiSvgIcon-root-lockedPluginTooltip"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -672,7 +672,7 @@ exports[`renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1p9x5wm-MuiTypography-root"
                   >
                     TrixPlugin
                   </p>
@@ -683,7 +683,7 @@ exports[`renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1a34d00-MuiSvgIcon-root-lockedPluginTooltip"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ktnuse-MuiSvgIcon-root-lockedPluginTooltip"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -694,7 +694,7 @@ exports[`renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1p9x5wm-MuiTypography-root"
                   >
                     GridBookmarkPlugin
                   </p>
@@ -705,7 +705,7 @@ exports[`renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1a34d00-MuiSvgIcon-root-lockedPluginTooltip"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ktnuse-MuiSvgIcon-root-lockedPluginTooltip"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -716,7 +716,7 @@ exports[`renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1p9x5wm-MuiTypography-root"
                   >
                     ComparativeAdaptersPlugin
                   </p>
@@ -741,7 +741,7 @@ exports[`renders with the available plugins 1`] = `
         class="MuiAccordionSummary-content Mui-expanded css-1rhnrrr-MuiAccordionSummary-content"
       >
         <h5
-          class="MuiTypography-root MuiTypography-h5 css-1ldbtdh-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-h5 css-dy7l2v-MuiTypography-root"
         >
           Available plugins
         </h5>
@@ -751,7 +751,7 @@ exports[`renders with the available plugins 1`] = `
       >
         <svg
           aria-hidden="true"
-          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-kbgf2m-MuiSvgIcon-root-expandIcon"
+          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1pl3opc-MuiSvgIcon-root-expandIcon"
           data-testid="ExpandMoreIcon"
           focusable="false"
           viewBox="0 0 24 24"
@@ -786,7 +786,7 @@ exports[`renders with the available plugins 1`] = `
                   class="css-yyi66y-dataField"
                 >
                   <h5
-                    class="MuiTypography-root MuiTypography-h5 css-1ldbtdh-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-h5 css-dy7l2v-MuiTypography-root"
                   >
                     <a
                       class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-ygjubp-MuiTypography-root-MuiLink-root"
@@ -803,7 +803,7 @@ exports[`renders with the available plugins 1`] = `
                 >
                   <svg
                     aria-hidden="true"
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-thxhq5-MuiSvgIcon-root"
                     data-testid="PersonIcon"
                     focusable="false"
                     style="margin-right: 0.5em;"
@@ -814,18 +814,18 @@ exports[`renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1p9x5wm-MuiTypography-root"
                   >
                     Colin Diesh
                   </p>
                 </div>
                 <p
-                  class="MuiTypography-root MuiTypography-body1 css-1w7qu8c-MuiTypography-root-bold"
+                  class="MuiTypography-root MuiTypography-body1 css-1r4z4ba-MuiTypography-root-bold"
                 >
                   Description:
                 </p>
                 <p
-                  class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+                  class="MuiTypography-root MuiTypography-body1 css-1p9x5wm-MuiTypography-root"
                 >
                   multiple sequence alignment browser plugin for JBrowse 2
                 </p>
@@ -834,7 +834,7 @@ exports[`renders with the available plugins 1`] = `
                 class="MuiCardActions-root MuiCardActions-spacing css-1t6e9jv-MuiCardActions-root"
               >
                 <button
-                  class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall css-1cpxz0y-MuiButtonBase-root-MuiButton-root"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall css-tj95ca-MuiButtonBase-root-MuiButton-root"
                   tabindex="0"
                   type="button"
                 >
@@ -843,7 +843,7 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <svg
                       aria-hidden="true"
-                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-thxhq5-MuiSvgIcon-root"
                       data-testid="AddIcon"
                       focusable="false"
                       viewBox="0 0 24 24"
