@@ -162,6 +162,13 @@ function stateModelFactory(
       get height() {
         return self.heightPreConfig ?? getConf(self, 'height')
       },
+
+      get featureIdUnderMouse() {
+        return (
+          self.PileupDisplay.featureIdUnderMouse ||
+          self.SNPCoverageDisplay.featureIdUnderMouse
+        )
+      },
     }))
     .views(self => ({
       /**
