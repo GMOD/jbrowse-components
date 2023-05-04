@@ -35,7 +35,6 @@ export default function sessionModelFactory(
       Base(pluginManager),
       Assemblies(pluginManager, assemblyConfigSchemasType),
       TrackMenu(pluginManager),
-      SessionManagement(pluginManager),
     )
     .views(self => ({
       /**
