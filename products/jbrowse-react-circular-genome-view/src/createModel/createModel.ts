@@ -10,6 +10,7 @@ import { cast, getSnapshot, Instance, SnapshotIn, types } from 'mobx-state-tree'
 import corePlugins from '../corePlugins'
 import createConfigModel from './createConfigModel'
 import createSessionModel from './createSessionModel'
+import { version } from '../version'
 
 export default function createModel(runtimePlugins: PluginConstructor[]) {
   const pluginManager = new PluginManager(
@@ -33,6 +34,8 @@ export default function createModel(runtimePlugins: PluginConstructor[]) {
     })
     .volatile(() => ({
       error: undefined as Error | undefined,
+      adminMode: false,
+      version,
     }))
     .actions(self => ({
       setSession(sessionSnapshot: SnapshotIn<typeof Session>) {

@@ -1,7 +1,10 @@
-import { Instance, getParent, types } from 'mobx-state-tree'
+import { Instance, types } from 'mobx-state-tree'
 
 import PluginManager from '@jbrowse/core/PluginManager'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import {
+  AnyConfiguration,
+  AnyConfigurationModel,
+} from '@jbrowse/core/configuration'
 import BaseSession from './Base'
 import ReferenceManagement from './ReferenceManagement'
 
@@ -24,7 +27,7 @@ export default function Tracks(pluginManager: PluginManager) {
       /**
        * #action
        */
-      addTrackConf(trackConf: any) {
+      addTrackConf(trackConf: AnyConfiguration) {
         return self.jbrowse.addTrackConf(trackConf)
       },
 

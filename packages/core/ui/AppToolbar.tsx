@@ -61,7 +61,7 @@ const AppToolbar = observer(function ({
         'warning',
       )
     } else {
-      session.renameCurrentSession(newName)
+      session.root.renameCurrentSession(newName)
     }
   }
   return (

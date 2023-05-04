@@ -10,6 +10,7 @@ import { cast, getSnapshot, Instance, SnapshotIn, types } from 'mobx-state-tree'
 import corePlugins from '../corePlugins'
 import createConfigModel from './createConfigModel'
 import createSessionModel from './createSessionModel'
+import { version } from '../version'
 
 export default function createModel(
   runtimePlugins: PluginConstructor[],
@@ -43,8 +44,9 @@ export default function createModel(
         MainThreadRpcDriver: {},
       }),
       textSearchManager: new TextSearchManager(pluginManager),
+      adminMode: false,
+      version,
     }))
-
     .actions(self => ({
       setSession(sessionSnapshot: SnapshotIn<typeof Session>) {
         self.session = cast(sessionSnapshot)

@@ -21,6 +21,10 @@ export default function BaseSession<
        * #property
        */
       name: types.string,
+      /**
+       * #property
+       */
+      margin: 0,
     })
     .volatile(() => ({
       /**
@@ -68,6 +72,12 @@ export default function BaseSession<
        */
       get textSearchManager() {
         return this.root.textSearchManager
+      },
+      /**
+       * #getter
+       */
+      get version() {
+        return this.root.version
       },
     }))
     .actions(self => ({

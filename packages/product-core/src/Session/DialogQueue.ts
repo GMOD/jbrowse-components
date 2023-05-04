@@ -14,9 +14,7 @@ export default function DialogQueue(pluginManager: PluginManager) {
   return types
     .model('DialogQueueSessionMixin', {})
     .volatile(() => ({
-      queueOfDialogs: observable.array(
-        [] as [DialogComponentType, Record<string, unknown>][],
-      ),
+      queueOfDialogs: [] as [DialogComponentType, unknown][],
     }))
     .views(self => ({
       /**
@@ -44,15 +42,19 @@ export default function DialogQueue(pluginManager: PluginManager) {
       /**
        * #action
        */
+      removeActiveDialog() {
+        self.queueOfDialogs = self.queueOfDialogs.slice(1)
+      },
+      /**
+       * #action
+       */
       queueDialog(
-        callback: (doneCallback: () => void) => [DialogComponentType, any],
+        callback: (doneCallback: () => void) => [DialogComponentType, unknown],
       ): void {
-        // NOTE: this base implementation doesn't include the changes from #2469,
-        // hoping it's not needed anymore
         const [component, props] = callback(() => {
-          self.queueOfDialogs.shift()
+          this.removeActiveDialog()
         })
-        self.queueOfDialogs.push([component, props])
+        self.queueOfDialogs = [...self.queueOfDialogs, [component, props]]
       },
     }))
 }

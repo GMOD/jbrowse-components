@@ -30,7 +30,7 @@ export default function sessionModelFactory(
         CoreSession.DialogQueue(pluginManager),
         CoreSession.Themes(pluginManager),
         CoreSession.Tracks(pluginManager),
-        CoreSession.Views(pluginManager),
+        CoreSession.MultipleViews(pluginManager),
       ),
       Base(pluginManager),
       Assemblies(pluginManager, assemblyConfigSchemasType),

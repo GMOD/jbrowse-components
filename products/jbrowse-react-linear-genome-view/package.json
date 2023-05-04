@@ -65,6 +65,7 @@
     "@jbrowse/plugin-trix": "^2.5.0",
     "@jbrowse/plugin-variants": "^2.5.0",
     "@jbrowse/plugin-wiggle": "^2.5.0",
+    "@jbrowse/product-core": "^2.5.0",
     "@mui/icons-material": "^5.0.0",
     "@mui/material": "^5.10.17",
     "librpc-web-mod": "^1.1.5",

@@ -54,8 +54,8 @@ export default function sessionModelFactory(
       CoreSession.DrawerWidgets(pluginManager),
       CoreSession.DialogQueue(pluginManager),
       CoreSession.Themes(pluginManager),
-      CoreSession.Views(pluginManager),
-      CoreSession.Tracks(pluginManager),
+      CoreSession.MultipleViews(pluginManager),
+      CoreSession.SessionTracks(pluginManager),
       BaseSession(pluginManager),
       Assemblies(pluginManager, assemblyConfigSchemasType),
       SessionConnections(pluginManager),
@@ -132,143 +132,97 @@ export default function sessionModelFactory(
         }
       },
     }))
-    .actions(self => {
-      const super_addTrackConf = self.addTrackConf
-      const super_deletetrackConf = self.deleteTrackConf
-      return {
-        /**
-         * #action
-         */
-        addSessionPlugin(plugin: JBrowsePlugin) {
-          if (self.sessionPlugins.some(p => p.name === plugin.name)) {
-            throw new Error('session plugin cannot be installed twice')
-          }
-          self.sessionPlugins.push(plugin)
-          getRoot<any>(self).setPluginsUpdated(true)
-        },
+    .actions(self => ({
+      /**
+       * #action
+       */
+      addSessionPlugin(plugin: JBrowsePlugin) {
+        if (self.sessionPlugins.some(p => p.name === plugin.name)) {
+          throw new Error('session plugin cannot be installed twice')
+        }
+        self.sessionPlugins.push(plugin)
+        getRoot<any>(self).setPluginsUpdated(true)
+      },
 
-        /**
-         * #action
-         */
-        removeSessionPlugin(pluginDefinition: PluginDefinition) {
-          self.sessionPlugins = cast(
-            self.sessionPlugins.filter(
-              plugin =>
-                plugin.url !== pluginDefinition.url ||
-                plugin.umdUrl !== pluginDefinition.umdUrl ||
-                plugin.cjsUrl !== pluginDefinition.cjsUrl ||
-                plugin.esmUrl !== pluginDefinition.esmUrl,
-            ),
-          )
-          const rootModel = getParent<any>(self)
-          rootModel.setPluginsUpdated(true)
-        },
+      /**
+       * #action
+       */
+      removeSessionPlugin(pluginDefinition: PluginDefinition) {
+        self.sessionPlugins = cast(
+          self.sessionPlugins.filter(
+            plugin =>
+              plugin.url !== pluginDefinition.url ||
+              plugin.umdUrl !== pluginDefinition.umdUrl ||
+              plugin.cjsUrl !== pluginDefinition.cjsUrl ||
+              plugin.esmUrl !== pluginDefinition.esmUrl,
+          ),
+        )
+        const rootModel = getParent<any>(self)
+        rootModel.setPluginsUpdated(true)
+      },
 
-        /**
-         * #action
-         */
-        addTrackConf(trackConf: AnyConfiguration) {
-          if (self.adminMode) {
-            return super_addTrackConf(trackConf)
-          }
-          const { trackId, type } = trackConf as {
-            type: string
-            trackId: string
-          }
-          if (!type) {
-            throw new Error(`unknown track type ${type}`)
-          }
-          const track = self.sessionTracks.find(
-            (t: any) => t.trackId === trackId,
-          )
-          if (track) {
-            return track
-          }
-          const length = self.sessionTracks.push(trackConf)
-          return self.sessionTracks[length - 1]
-        },
+      /**
+       * #action
+       */
+      addSavedSession(sessionSnapshot: SnapshotIn<typeof self>) {
+        return self.root.addSavedSession(sessionSnapshot)
+      },
 
-        /**
-         * #action
-         */
-        deleteTrackConf(trackConf: AnyConfigurationModel) {
-          // try to delete it in the main config if in admin mode
-          const found = super_deletetrackConf(trackConf)
-          if (found) {
-            return found
-          }
-          // if not found or not in admin mode, try to delete it in the sessionTracks
-          const { trackId } = trackConf
-          const idx = self.sessionTracks.findIndex(t => t.trackId === trackId)
-          if (idx === -1) {
-            return undefined
-          }
-          return self.sessionTracks.splice(idx, 1)
-        },
+      /**
+       * #action
+       */
+      removeSavedSession(sessionSnapshot: any) {
+        return self.root.removeSavedSession(sessionSnapshot)
+      },
 
-        /**
-         * #action
-         */
-        addSavedSession(sessionSnapshot: SnapshotIn<typeof self>) {
-          return self.root.addSavedSession(sessionSnapshot)
-        },
+      /**
+       * #action
+       */
+      renameCurrentSession(sessionName: string) {
+        return self.root.renameCurrentSession(sessionName)
+      },
 
-        /**
-         * #action
-         */
-        removeSavedSession(sessionSnapshot: any) {
-          return self.root.removeSavedSession(sessionSnapshot)
-        },
+      /**
+       * #action
+       */
+      duplicateCurrentSession() {
+        return self.root.duplicateCurrentSession()
+      },
+      /**
+       * #action
+       */
+      activateSession(sessionName: any) {
+        return self.root.activateSession(sessionName)
+      },
 
-        /**
-         * #action
-         */
-        renameCurrentSession(sessionName: string) {
-          return self.root.renameCurrentSession(sessionName)
-        },
+      /**
+       * #action
+       */
+      setDefaultSession() {
+        return self.root.setDefaultSession()
+      },
 
-        /**
-         * #action
-         */
-        duplicateCurrentSession() {
-          return self.root.duplicateCurrentSession()
-        },
-        /**
-         * #action
-         */
-        activateSession(sessionName: any) {
-          return self.root.activateSession(sessionName)
-        },
+      /**
+       * #action
+       */
+      saveSessionToLocalStorage() {
+        return self.root.saveSessionToLocalStorage()
+      },
 
-        /**
-         * #action
-         */
-        setDefaultSession() {
-          return self.root.setDefaultSession()
-        },
+      /**
+       * #action
+       */
+      loadAutosaveSession() {
+        return self.root.loadAutosaveSession()
+      },
 
-        /**
-         * #action
-         */
-        saveSessionToLocalStorage() {
-          return self.root.saveSessionToLocalStorage()
-        },
-
-        /**
-         * #action
-         */
-        loadAutosaveSession() {
-          return self.root.loadAutosaveSession()
-        },
-
-        /**
-         * #action
-         */
-        setSession(sessionSnapshot: SnapshotIn<typeof self>) {
-          return self.root.setSession(sessionSnapshot)
-        },
-      }
-    })
+      /**
+       * #action
+       */
+      setSession(sessionSnapshot: SnapshotIn<typeof self>) {
+        return self.root.setSession(sessionSnapshot)
+      },
+    }))
     .actions(self => ({
       /**
        * #action

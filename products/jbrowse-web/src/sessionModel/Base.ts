@@ -12,12 +12,7 @@ export function BaseSession(pluginManager: PluginManager) {
        * #property
        */
       margin: 0,
-      /**
-       * #property
-       */
-      sessionTracks: types.array(
-        pluginManager.pluggableConfigSchemaType('track'),
-      ),
+      
       /**
        * #property
        */
