@@ -617,10 +617,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                       layoutId: getContainingView(self).id,
                       rendererType: 'PileupRenderer',
                     },
-                  )) as { feature: unknown }
+                  )) as { feature: SimpleFeatureSerialized | undefined }
 
                   if (feature) {
-                    // @ts-expect-error
                     self.selectFeature(new SimpleFeature(feature))
                   }
                 }
