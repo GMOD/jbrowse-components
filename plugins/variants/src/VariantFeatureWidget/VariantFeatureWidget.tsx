@@ -60,9 +60,6 @@ function VariantFeatureDetails(props: any) {
         {...props}
         descriptions={descriptions}
       />
-
-      {/* blank space at the bottom of screen allows scroll */}
-      <div style={{ height: 300 }} />
     </Paper>
   )
 }
