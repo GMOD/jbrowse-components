@@ -10,7 +10,6 @@ import Base from './Base'
 import Assemblies from './Assemblies'
 import TrackMenu from './TrackMenu'
 import { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
-import SessionManagement from './SessionManagement'
 
 /**
  * #stateModel JBrowseDesktopSessionModel
