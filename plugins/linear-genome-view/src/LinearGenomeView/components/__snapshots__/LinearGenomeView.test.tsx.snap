@@ -733,7 +733,7 @@ exports[`renders two tracks, two regions 1`] = `
             <div
               class="MuiAutocomplete-root css-1h51icj-MuiAutocomplete-root"
               data-testid="autocomplete"
-              style="width: 270.84843750000005px;"
+              style="width: 283.990625px;"
             >
               <div
                 class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-1efd6m0-MuiFormControl-root-MuiTextField-root-headerRefName"

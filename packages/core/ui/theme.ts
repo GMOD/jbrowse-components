@@ -389,7 +389,7 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
   return deepmerge(
     {
       palette: theme?.palette,
-      typography: { fontSize: 11 },
+      typography: { fontSize: 12 },
       spacing: 4,
       ...createDefaultProps(theme),
     },
