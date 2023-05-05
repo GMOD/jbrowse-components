@@ -45,15 +45,15 @@ export default function SequenceFeatureDetails({
 }: BaseProps) {
   const { classes } = useStyles()
   const feature = prefeature as unknown as ParentFeat
-  const hasCDS = feature.subfeatures?.some(sub => sub.type === 'CDS')
-  const hasExon = feature.subfeatures?.some(sub => sub.type === 'exon')
   const seqPanelRef = useRef<HTMLDivElement>(null)
   const [intronBp, setIntronBp] = useLocalStorage('intronBp', 10)
   const [upDownBp, setUpDownBp] = useLocalStorage('upDownBp', 500)
   const [copied, setCopied] = useState(false)
   const [copiedHtml, setCopiedHtml] = useState(false)
   const [force, setForce] = useState(false)
-
+  const hasCDS = feature.subfeatures?.some(sub => sub.type === 'CDS')
+  const hasExon = feature.subfeatures?.some(sub => sub.type === 'exon')
+  const hasExonOrCDS = hasExon || hasCDS
   const { sequence, error } = useFeatureSequence(
     model,
     prefeature,
@@ -68,28 +68,24 @@ export default function SequenceFeatureDetails({
   const rest = {
     ...(hasCDS ? { cds: 'CDS' } : {}),
     ...(hasCDS ? { protein: 'Protein' } : {}),
-    ...(hasExon ? { cdna: 'cDNA' } : {}),
-    ...(hasExon
-      ? {
-          gene: `Genomic w/ full introns`,
-        }
-      : {}),
-    ...(hasExon
+    ...(hasExonOrCDS ? { cdna: 'cDNA' } : {}),
+    ...(hasExonOrCDS ? { gene: `Genomic w/ full introns` } : {}),
+    ...(hasExonOrCDS
       ? {
           gene_updownstream: `Genomic w/ full introns +/- ${upDownBp}bp up+down stream`,
         }
       : {}),
-    ...(hasExon
+    ...(hasExonOrCDS
       ? { gene_collapsed_intron: `Genomic w/ ${intronBp}bp intron` }
       : {}),
-    ...(hasExon
+    ...(hasExonOrCDS
       ? {
           gene_updownstream_collapsed_intron: `Genomic w/ ${intronBp}bp intron +/- ${upDownBp}bp up+down stream `,
         }
       : {}),
 
-    ...(!hasExon ? { genomic: 'Genomic' } : {}),
-    ...(!hasExon
+    ...(!hasExonOrCDS ? { genomic: 'Genomic' } : {}),
+    ...(!hasExonOrCDS
       ? {
           genomic_sequence_updownstream: `Genomic +/- ${upDownBp}bp up+down stream`,
         }
