@@ -105,8 +105,9 @@ export default function BaseRootModelTypeF<
        */
       async renameCurrentSession(newName: string) {
         if (self.session) {
-          // @ts-expect-error
-          this.setSession({ ...getSnapshot(self.session), name: newName })
+          const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
+          snapshot.name = newName
+          this.setSession(snapshot)
         }
       },
       /**

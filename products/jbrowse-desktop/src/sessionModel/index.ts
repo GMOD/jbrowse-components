@@ -37,6 +37,25 @@ export default function sessionModelFactory(
     )
     .views(self => ({
       /**
+       * #getter
+       */
+      get history() {
+        return self.root.history
+      },
+      /**
+       * #getter
+       */
+      get menus() {
+        return self.root.menus
+      },
+      /**
+       * #getter
+       */
+      get savedSessionNames() {
+        return self.root.savedSessionNames
+      },
+
+      /**
        * #method
        */
       renderProps() {
@@ -44,6 +63,12 @@ export default function sessionModelFactory(
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      renameCurrentSession(sessionName: string) {
+        return self.root.renameCurrentSession(sessionName)
+      },
       /**
        * #action
        */

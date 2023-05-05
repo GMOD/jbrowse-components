@@ -1,5 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { types } from 'mobx-state-tree'
+import { Instance, types } from 'mobx-state-tree'
 import { lazy } from 'react'
 
 // icons
@@ -383,3 +383,6 @@ export default function Menus(pluginManager: PluginManager) {
       },
     }))
 }
+
+export type DesktopMenusType = ReturnType<typeof Menus>
+export type DesktopMenus = Instance<DesktopMenusType>

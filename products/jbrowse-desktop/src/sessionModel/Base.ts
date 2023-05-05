@@ -1,6 +1,7 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { Instance, types } from 'mobx-state-tree'
 import { Session as CoreSession } from '@jbrowse/product-core'
+import { DesktopRootModel } from '../rootModel'
 
 export default function BaseSession(pluginManager: PluginManager) {
   return CoreSession.Base(pluginManager)
