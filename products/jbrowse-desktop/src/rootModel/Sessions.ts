@@ -1,8 +1,8 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { autorun } from 'mobx'
 import { SnapshotIn, addDisposer, getSnapshot, types } from 'mobx-state-tree'
-import type { BaseSessionModel } from '../sessionModel/Base'
 import type { BaseRootModel } from '@jbrowse/product-core/src/RootModel/Base'
+import { BaseSession } from '@jbrowse/product-core/src/Session/Base'
 
 const { ipcRenderer } = window.require('electron')
 
@@ -60,7 +60,7 @@ export default function SessionManagement(pluginManager: PluginManager) {
         /**
          * #action
          */
-        activateSession(sessionSnapshot: SnapshotIn<BaseSessionModel>) {
+        activateSession(sessionSnapshot: SnapshotIn<BaseSession>) {
           self.setSession(sessionSnapshot)
         },
       }

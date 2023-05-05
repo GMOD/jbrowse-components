@@ -2,7 +2,7 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSnapshot } from 'mobx-state-tree'
 import { configure } from 'mobx'
-import { createTestSession } from '../rootModel'
+import { createTestSession } from '../rootModel/rootModel'
 import sessionModelFactory from '.'
 jest.mock('../makeWorkerInstance', () => () => {})
 

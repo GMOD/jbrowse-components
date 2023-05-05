@@ -11,7 +11,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 // locals
 import ShareButton from './ShareButton'
 import AdminComponent from './AdminComponent'
-import { SessionModel } from './sessionModel'
+import { WebSessionModel } from './sessionModel'
 
 export default observer(function ({
   pluginManager,
@@ -24,7 +24,7 @@ export default observer(function ({
   const [, setSessionId] = useQueryParam('session', StringParam)
   const { rootModel } = pluginManager
   const { error, jbrowse } = rootModel || {}
-  const session = rootModel?.session as SessionModel
+  const session = rootModel?.session as WebSessionModel
   const currentSessionId = session.id
 
   useEffect(() => {

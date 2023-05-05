@@ -8,8 +8,8 @@ import { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 
 /** base session shared by **all** JBrowse products. Be careful what you include here, everything will use it. */
 export default function BaseSessionFactory<
-  ROOT_MODEL_TYPE extends BaseRootModelType = BaseRootModelType,
-  JB_CONFIG_SCHEMA extends AnyConfigurationSchemaType = AnyConfigurationSchemaType,
+  ROOT_MODEL_TYPE extends BaseRootModelType,
+  JB_CONFIG_SCHEMA extends AnyConfigurationSchemaType,
 >(pluginManager: PluginManager) {
   return types
     .model({

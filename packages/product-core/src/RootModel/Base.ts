@@ -16,13 +16,10 @@ import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 /**
  * factory function for the Base-level root model shared by all products
  */
-export default function BaseRootModelTypeF<
-  JBROWSE_MODEL_TYPE extends IAnyType,
-  SESSION_MODEL_TYPE extends IAnyType,
->(
+export default function BaseRootModelTypeF(
   pluginManager: PluginManager,
-  jbrowseModelType: JBROWSE_MODEL_TYPE,
-  sessionModelType: SESSION_MODEL_TYPE,
+  jbrowseModelType: IAnyType,
+  sessionModelType: IAnyType,
   assemblyConfigSchema: BaseAssemblyConfigSchema,
 ) {
   return types
@@ -85,7 +82,7 @@ export default function BaseRootModelTypeF<
       /**
        * #action
        */
-      setSession(sessionSnapshot?: SnapshotIn<SESSION_MODEL_TYPE>) {
+      setSession(sessionSnapshot?: SnapshotIn<IAnyType>) {
         self.session = cast(sessionSnapshot)
       },
       /**

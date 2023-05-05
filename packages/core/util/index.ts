@@ -219,6 +219,10 @@ export function getSession(node: IAnyStateTreeNode) {
   }
 }
 
+export function getJBrowseRoot(node: IAnyStateTreeNode) {
+  return getParent(getSession(node))
+}
+
 /** get the state model of the view in the state tree that contains the given node */
 export function getContainingView(node: IAnyStateTreeNode) {
   try {

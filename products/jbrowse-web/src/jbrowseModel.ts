@@ -19,7 +19,6 @@ import clone from 'clone'
 // locals
 import JBrowseConfigF from './jbrowseConfig'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import { SessionStateModel } from './sessionModel'
 
 // poke some things for testing (this stuff will eventually be removed)
 // @ts-expect-error
@@ -42,18 +41,11 @@ function removeAttr(obj: Record<string, unknown>, attr: string) {
  * #stateModel JBrowseWebModel
  * the rootModel.jbrowse state model for JBrowse Web
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
-
 export default function JBrowseWeb(
   pluginManager: PluginManager,
-  Session: SessionStateModel,
   assemblyConfigSchemasType: AnyConfigurationSchemaType,
 ) {
-  const JBrowseModel = JBrowseConfigF(
-    pluginManager,
-    assemblyConfigSchemasType,
-    Session,
-  )
+  const JBrowseModel = JBrowseConfigF(pluginManager, assemblyConfigSchemasType)
     .views(self => ({
       /**
        * #getter
@@ -196,7 +188,6 @@ export default function JBrowseWeb(
           throw new Error(`unable to set default session to ${newDefault.name}`)
         }
 
-        // @ts-expect-error complains about name missing, but above line checks this
         self.defaultSession = cast(newDefault)
       },
       /**

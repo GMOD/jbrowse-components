@@ -11,7 +11,6 @@ import {
   addDisposer,
   cast,
   getParent,
-  getRoot,
   getSnapshot,
   types,
   Instance,
@@ -31,6 +30,7 @@ import InfoIcon from '@mui/icons-material/Info'
 import Assemblies from './Assemblies'
 import SessionConnections from './SessionConnections'
 import { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
+import { WebRootModel } from '../rootModel/rootModel'
 
 const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
@@ -94,6 +94,9 @@ export default function sessionModelFactory(
       task: undefined,
     }))
     .views(self => ({
+      get root() {
+        return getParent<WebRootModel>(self)
+      },
       /**
        * #getter
        */
@@ -104,43 +107,43 @@ export default function sessionModelFactory(
        * #getter
        */
       get textSearchManager(): TextSearchManager {
-        return self.root.textSearchManager
+        return this.root.textSearchManager
       },
       /**
        * #getter
        */
       get savedSessions() {
-        return self.root.savedSessions
+        return this.root.savedSessions
       },
       /**
        * #getter
        */
       get previousAutosaveId() {
-        return self.root.previousAutosaveId
+        return this.root.previousAutosaveId
       },
       /**
        * #getter
        */
       get savedSessionNames() {
-        return self.root.savedSessionNames
+        return this.root.savedSessionNames
       },
       /**
        * #getter
        */
       get history() {
-        return self.root.history
+        return this.root.history
       },
       /**
        * #getter
        */
       get menus() {
-        return self.root.menus
+        return this.root.menus
       },
       /**
        * #getter
        */
       get version() {
-        return self.root.version
+        return this.root.version
       },
 
       /**
@@ -161,7 +164,7 @@ export default function sessionModelFactory(
           throw new Error('session plugin cannot be installed twice')
         }
         self.sessionPlugins.push(plugin)
-        getRoot<any>(self).setPluginsUpdated(true)
+        self.root.setPluginsUpdated(true)
       },
 
       /**
@@ -332,10 +335,8 @@ export default function sessionModelFactory(
   ) as typeof sessionModel
 
   return types.snapshotProcessor(addSnackbarToModel(extendedSessionModel), {
-    // @ts-expect-error
     preProcessor(snapshot) {
       if (snapshot) {
-        // @ts-expect-error
         const { connectionInstances, ...rest } = snapshot || {}
         // connectionInstances schema changed from object to an array, so any
         // old connectionInstances as object is in snapshot, filter it out
@@ -349,11 +350,11 @@ export default function sessionModelFactory(
   })
 }
 
-export type SessionStateModel = ReturnType<typeof sessionModelFactory>
-export type SessionModel = Instance<SessionStateModel>
+export type WebSessionModelType = ReturnType<typeof sessionModelFactory>
+export type WebSessionModel = Instance<WebSessionModelType>
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-function z(x: Instance<SessionStateModel>): AbstractSessionModel {
+function z(x: Instance<WebSessionModelType>): AbstractSessionModel {
   // this function's sole purpose is to get typescript to check
   // that the session model implements all of AbstractSessionModel
   return x

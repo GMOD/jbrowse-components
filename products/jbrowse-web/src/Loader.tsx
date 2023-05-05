@@ -19,13 +19,14 @@ import { doAnalytics } from '@jbrowse/core/util/analytics'
 import Loading from './Loading'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
-import JBrowseRootModelFactory from './rootModel'
+import JBrowseRootModelFactory from './rootModel/rootModel'
 import packageJSON from '../package.json'
 import factoryReset from './factoryReset'
 import SessionLoader, {
   SessionLoaderModel,
   loadSessionSpec,
 } from './SessionLoader'
+import sessionModelFactory from './sessionModel'
 
 // lazy components
 const SessionWarningDialog = lazy(() => import('./SessionWarningDialog'))
@@ -278,7 +279,11 @@ const Renderer = observer(
             })),
           ])
           pluginManager.createPluggableElements()
-          const RootModel = JBrowseRootModelFactory(pluginManager, !!adminKey)
+          const RootModel = JBrowseRootModelFactory(
+            pluginManager,
+            sessionModelFactory,
+            !!adminKey,
+          )
 
           if (configSnapshot) {
             const rootModel = RootModel.create(
@@ -304,7 +309,7 @@ const Renderer = observer(
               if (sessionError) {
                 rootModel.setDefaultSession()
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                rootModel.session!.notify(
+                rootModel.session.notify(
                   `Error loading session: ${sessionError}. If you
                 received this URL from another user, request that they send you
                 a session generated with the "Share" button instead of copying

@@ -1,6 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
-import { types, Instance } from 'mobx-state-tree'
+import { types, Instance, getParent } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 import { Session as CoreSession } from '@jbrowse/product-core'
@@ -10,6 +10,7 @@ import Base from './Base'
 import Assemblies from './Assemblies'
 import TrackMenu from './TrackMenu'
 import { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
+import { DesktopRootModel } from '../rootModel'
 
 /**
  * #stateModel JBrowseDesktopSessionModel
@@ -36,23 +37,26 @@ export default function sessionModelFactory(
       TrackMenu(pluginManager),
     )
     .views(self => ({
+      get root() {
+        return getParent<DesktopRootModel>(self)
+      },
       /**
        * #getter
        */
       get history() {
-        return self.root.history
+        return this.root.history
       },
       /**
        * #getter
        */
       get menus() {
-        return self.root.menus
+        return this.root.menus
       },
       /**
        * #getter
        */
       get savedSessionNames() {
-        return self.root.savedSessionNames
+        return this.root.savedSessionNames
       },
 
       /**

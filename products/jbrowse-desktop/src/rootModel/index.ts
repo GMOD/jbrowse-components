@@ -1,4 +1,4 @@
-import { types, Instance } from 'mobx-state-tree'
+import { types, Instance, IAnyType } from 'mobx-state-tree'
 import makeWorkerInstance from '../makeWorkerInstance'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -7,19 +7,26 @@ import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { RootModel } from '@jbrowse/product-core'
 
 // locals
-import sessionModelFactory from '../sessionModel'
 import jobsModelFactory from '../indexJobsModel'
 import JBrowseDesktop from '../jbrowseModel'
 import Menus from './Menus'
 import SessionManagement from './Sessions'
 import { HistoryManagement } from './HistoryManagement'
 
+type SessionModelFactory = (
+  pm: PluginManager,
+  assemblyConfigSchema: ReturnType<typeof assemblyConfigSchemaFactory>,
+) => IAnyType
+
 /**
  * #stateModel JBrowseDesktopRootModel
  * note that many properties of the root model are available through the session, which
  * may be preferable since using getSession() is better relied on than getRoot()
  */
-export default function rootModelFactory(pluginManager: PluginManager) {
+export default function rootModelFactory(
+  pluginManager: PluginManager,
+  sessionModelFactory: SessionModelFactory,
+) {
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
   const Session = sessionModelFactory(pluginManager, assemblyConfigSchema)
   const JobsManager = jobsModelFactory(pluginManager)
@@ -28,7 +35,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       'JBrowseDesktopRootModel',
       RootModel.BaseRootModel(
         pluginManager,
-        JBrowseDesktop(pluginManager, Session, assemblyConfigSchema),
+        JBrowseDesktop(pluginManager, assemblyConfigSchema),
         Session,
         assemblyConfigSchema,
       ),

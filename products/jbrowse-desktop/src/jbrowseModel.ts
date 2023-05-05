@@ -10,7 +10,6 @@ import {
   resolveIdentifier,
 } from 'mobx-state-tree'
 import JBrowseConfigF from './jbrowseConfig'
-import { SessionStateModelType } from './sessionModel'
 import { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 
 // poke some things for testing (this stuff will eventually be removed)
@@ -24,14 +23,11 @@ window.resolveIdentifier = resolveIdentifier
  * #stateModel JBrowseDesktopModel
  * the rootModel.jbrowse state model for JBrowse Desktop
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
-
 export default function JBrowseDesktop(
   pluginManager: PluginManager,
-  Session: SessionStateModelType,
   assemblyConfigSchemasType: BaseAssemblyConfigSchema,
 ) {
-  return JBrowseConfigF(pluginManager, Session, assemblyConfigSchemasType)
+  return JBrowseConfigF(pluginManager, assemblyConfigSchemasType)
     .views(self => ({
       /**
        * #getter

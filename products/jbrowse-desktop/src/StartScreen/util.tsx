@@ -13,6 +13,7 @@ import {
 import JBrowseRootModelFactory from '../rootModel'
 import corePlugins from '../corePlugins'
 import packageJSON from '../../package.json'
+import sessionModelFactory from '../sessionModel'
 
 const { ipcRenderer } = window.require('electron')
 
@@ -118,7 +119,7 @@ export async function createPluginManager(
   ])
   pm.createPluggableElements()
 
-  const JBrowseRootModel = JBrowseRootModelFactory(pm)
+  const JBrowseRootModel = JBrowseRootModelFactory(pm, sessionModelFactory)
 
   const jbrowse = deepmerge(configSnapshot, {
     internetAccounts: defaultInternetAccounts,

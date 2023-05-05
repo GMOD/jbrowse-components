@@ -2,7 +2,7 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSnapshot } from 'mobx-state-tree'
 import corePlugins from '../corePlugins'
-import rootModelFactory from '.'
+import rootModelFactory from './rootModel'
 jest.mock('../makeWorkerInstance', () => () => {})
 
 describe('Root MST model', () => {
