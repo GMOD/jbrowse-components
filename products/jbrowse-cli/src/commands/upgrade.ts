@@ -2,8 +2,8 @@ import { flags } from '@oclif/command'
 import { rimrafSync } from 'rimraf'
 import fs from 'fs'
 import path from 'path'
+import decompress from 'decompress'
 import fetch from '../fetchWithProxy'
-import unzip from 'unzipper'
 import JBrowseCommand from '../base'
 
 export default class Upgrade extends JBrowseCommand {
@@ -119,9 +119,7 @@ export default class Upgrade extends JBrowseCommand {
         .forEach(f => fs.unlinkSync(path.join(argsPath, f)))
     }
 
-    const result = await response.arrayBuffer()
-    const unzipper = await unzip.Open.buffer(Buffer.from(result))
-    await unzipper.extract({ path: argsPath })
+    await decompress(Buffer.from(await response.arrayBuffer()), argsPath)
     this.log(`Unpacked ${locationUrl} at ${argsPath}`)
   }
 }

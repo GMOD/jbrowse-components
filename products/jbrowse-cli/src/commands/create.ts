@@ -1,8 +1,8 @@
 import { flags } from '@oclif/command'
 import fs from 'fs'
 import fetch from '../fetchWithProxy'
-import unzip from 'unzipper'
 import JBrowseCommand from '../base'
+import decompress from 'decompress'
 
 const fsPromises = fs.promises
 
@@ -107,9 +107,7 @@ export default class Create extends JBrowseCommand {
         'The URL provided does not seem to be a JBrowse installation URL',
       )
     }
-    const result = await response.arrayBuffer()
-    const unzipper = await unzip.Open.buffer(Buffer.from(result))
-    await unzipper.extract({ path: argsPath })
+    await decompress(Buffer.from(await response.arrayBuffer()), argsPath)
 
     this.log(`Unpacked ${locationUrl} at ${argsPath}`)
   }
