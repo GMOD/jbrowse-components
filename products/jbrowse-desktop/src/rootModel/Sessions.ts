@@ -1,20 +1,15 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { BaseRootModelType } from '@jbrowse/product-core'
 import { autorun } from 'mobx'
-import {
-  Instance,
-  SnapshotIn,
-  addDisposer,
-  getSnapshot,
-  types,
-} from 'mobx-state-tree'
-import { BaseSessionModel } from '../sessionModel/Base'
+import { SnapshotIn, addDisposer, getSnapshot, types } from 'mobx-state-tree'
+import type { BaseSessionModel } from '../sessionModel/Base'
+import type { BaseRootModel } from '@jbrowse/product-core/src/RootModel/Base'
 
 const { ipcRenderer } = window.require('electron')
 
-export function getSaveSession(model: Instance<BaseRootModelType>) {
+export function getSaveSession(model: BaseRootModel) {
+  const snap = getSnapshot(model.jbrowse)
   return {
-    ...getSnapshot(model.jbrowse),
+    ...(snap as Record<string, unknown>),
     defaultSession: model.session ? getSnapshot(model.session) : {},
   }
 }
@@ -32,7 +27,7 @@ export default function SessionManagement(pluginManager: PluginManager) {
       sessionPath: types.optional(types.string, ''),
     })
     .actions(s => {
-      const self = s as typeof s & Instance<BaseRootModelType>
+      const self = s as typeof s & BaseRootModel
       return {
         /**
          * #action
@@ -71,7 +66,7 @@ export default function SessionManagement(pluginManager: PluginManager) {
       }
     })
     .actions(s => {
-      const self = s as typeof s & Instance<BaseRootModelType>
+      const self = s as typeof s & BaseRootModel
       return {
         afterCreate() {
           addDisposer(
@@ -80,9 +75,7 @@ export default function SessionManagement(pluginManager: PluginManager) {
               async () => {
                 if (self.session) {
                   try {
-                    await self.saveSession(
-                      getSaveSession(self as Instance<BaseRootModelType>),
-                    )
+                    await self.saveSession(getSaveSession(self))
                   } catch (e) {
                     console.error(e)
                   }

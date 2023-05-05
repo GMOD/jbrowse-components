@@ -37,18 +37,6 @@ export default function sessionModelFactory(
     )
     .views(self => ({
       /**
-       * #getter
-       */
-      get history() {
-        return self.root.history
-      },
-      /**
-       * #getter
-       */
-      get menus() {
-        return self.root.menus
-      },
-      /**
        * #method
        */
       renderProps() {

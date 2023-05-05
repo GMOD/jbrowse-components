@@ -5,7 +5,7 @@ import { autorun } from 'mobx'
 import { Instance, addDisposer, types } from 'mobx-state-tree'
 import { BaseRootModelType } from './Base'
 
-export function InternetAccounts(pluginManager: PluginManager) {
+export default function InternetAccountsF(pluginManager: PluginManager) {
   return types
     .model({
       /**
@@ -116,7 +116,8 @@ export function InternetAccounts(pluginManager: PluginManager) {
           addDisposer(
             self,
             autorun(() => {
-              const { jbrowse } = self as typeof self & Instance<BaseRootModelType>
+              const { jbrowse } = self as typeof self &
+                Instance<BaseRootModelType>
               jbrowse.internetAccounts.forEach(account => {
                 self.initializeInternetAccount(account)
               })
@@ -127,4 +128,8 @@ export function InternetAccounts(pluginManager: PluginManager) {
     })
 }
 
-export type RootModelWithInternetAccounts = ReturnType<typeof InternetAccounts>
+export type RootModelWithInternetAccountsType = ReturnType<
+  typeof InternetAccountsF
+>
+export type RootModelWithInternetAccounts =
+  Instance<RootModelWithInternetAccountsType>

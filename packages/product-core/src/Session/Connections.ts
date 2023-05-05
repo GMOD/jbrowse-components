@@ -7,7 +7,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { Instance, types } from 'mobx-state-tree'
 import type { SessionWithReferenceManagement } from './ReferenceManagement'
-import { BaseRootModelType } from '../RootModel'
+import type { BaseRootModelType } from '../RootModel/Base'
 import { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
 import { BaseConnectionModel } from '@jbrowse/core/pluggableElementTypes/models/BaseConnectionModelFactory'
 

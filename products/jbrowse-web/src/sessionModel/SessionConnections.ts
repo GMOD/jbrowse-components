@@ -1,10 +1,12 @@
 import { types } from 'mobx-state-tree'
 
 import { Session as CoreSession } from '@jbrowse/product-core'
+import type { BaseSession } from '@jbrowse/product-core/src/Session/Base'
+
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { BaseSessionModel } from './Base'
 import { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
+import { SessionWithSessionTracks } from '@jbrowse/product-core/src/Session/SessionTracks'
 
 export default function SessionConnections(pluginManager: PluginManager) {
   return types
@@ -21,8 +23,7 @@ export default function SessionConnections(pluginManager: PluginManager) {
       }),
     )
     .actions(s => {
-      const self = s as typeof s & BaseSessionModel
-
+      const self = s as typeof s & BaseSession & SessionWithSessionTracks
       const super_deleteConnection = self.deleteConnection
       const super_addConnectionConf = self.addConnectionConf
       return {

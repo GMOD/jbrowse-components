@@ -1,2 +1,2 @@
-export * from './Base'
-export * from './InternetAccounts'
+export { default as BaseRootModel } from './Base'
+export { default as InternetAccounts } from './InternetAccounts'

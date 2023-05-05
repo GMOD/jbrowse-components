@@ -14,7 +14,7 @@ import { lazy } from 'react'
 import type { DialogQueueManager } from '@jbrowse/product-core/src/Session/DialogQueue'
 import type { TracksManager } from '@jbrowse/product-core/src/Session/Tracks'
 import type { DrawerWidgetManager } from '@jbrowse/product-core/src/Session/DrawerWidgets'
-import { RootModel } from '../rootModel'
+import { DesktopRootModel } from '../rootModel'
 
 const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
@@ -69,7 +69,7 @@ export default function TrackMenu(pluginManager: PluginManager) {
           label: trackSnapshot.textSearching ? 'Re-index track' : 'Index track',
           disabled: !supportedIndexingAdapters(trackSnapshot.adapter.type),
           onClick: () => {
-            const rootModel = getParent<RootModel>(self)
+            const rootModel = getParent<DesktopRootModel>(self)
             const { jobsManager } = rootModel
             const { trackId, assemblyNames, textSearching, name } =
               trackSnapshot

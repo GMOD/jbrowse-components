@@ -73,4 +73,5 @@ export default function SessionTracks(pluginManager: PluginManager) {
     })
 }
 
-export type TracksManager = Instance<ReturnType<typeof Tracks>>
+export type SessionWithSessionTracksType = ReturnType<typeof SessionTracks>
+export type SessionWithSessionTracks = Instance<SessionWithSessionTracksType>

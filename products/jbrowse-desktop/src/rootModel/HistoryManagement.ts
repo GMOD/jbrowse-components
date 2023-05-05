@@ -1,7 +1,7 @@
 import TimeTraveller from '@jbrowse/core/util/TimeTraveller'
-import { BaseRootModelType } from '@jbrowse/product-core'
+import type { BaseRootModel } from '@jbrowse/product-core/src/RootModel/Base'
 import { autorun } from 'mobx'
-import { Instance, addDisposer, types } from 'mobx-state-tree'
+import { addDisposer, types } from 'mobx-state-tree'
 
 export const HistoryManagement = types
   .model({
@@ -36,7 +36,7 @@ export const HistoryManagement = types
       addDisposer(
         self,
         autorun(() => {
-          const { session } = self as typeof self & Instance<BaseRootModelType>
+          const { session } = self as typeof self & BaseRootModel
           if (session) {
             // we use a specific initialization routine after session is
             // created to get it to start tracking itself sort of related

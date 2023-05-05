@@ -3,13 +3,20 @@ import assemblyManagerFactory, {
   BaseAssemblyConfigSchema,
 } from '@jbrowse/core/assemblyManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import { IAnyType, SnapshotIn, cast, getSnapshot, types } from 'mobx-state-tree'
+import {
+  IAnyType,
+  Instance,
+  SnapshotIn,
+  cast,
+  getSnapshot,
+  types,
+} from 'mobx-state-tree'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 
 /**
  * factory function for the Base-level root model shared by all products
  */
-export function BaseRoot<
+export default function BaseRootModelTypeF<
   JBROWSE_MODEL_TYPE extends IAnyType,
   SESSION_MODEL_TYPE extends IAnyType,
 >(
@@ -44,9 +51,9 @@ export function BaseRoot<
       /**
        * #property
        */
-      assemblyManager: assemblyManagerFactory(
-        assemblyConfigSchema,
-        pluginManager,
+      assemblyManager: types.optional(
+        assemblyManagerFactory(assemblyConfigSchema, pluginManager),
+        {},
       ),
     })
     .volatile(self => ({
@@ -63,13 +70,9 @@ export function BaseRoot<
        * Boolean indicating whether the session is in admin mode or not
        */
       adminMode: true,
-
       isAssemblyEditing: false,
       error: undefined as unknown,
       textSearchManager: new TextSearchManager(pluginManager),
-      openNewSessionCallback: async (_path: string) => {
-        console.error('openNewSessionCallback unimplemented')
-      },
       pluginManager,
     }))
     .actions(self => ({
@@ -109,16 +112,11 @@ export function BaseRoot<
       /**
        * #action
        */
-      setOpenNewSessionCallback(cb: (arg: string) => Promise<void>) {
-        self.openNewSessionCallback = cb
-      },
-      /**
-       * #action
-       */
       setAssemblyEditing(flag: boolean) {
         self.isAssemblyEditing = flag
       },
     }))
 }
 
-export type BaseRootModelType = ReturnType<typeof BaseRoot>
+export type BaseRootModelType = ReturnType<typeof BaseRootModelTypeF>
+export type BaseRootModel = Instance<BaseRootModelType>

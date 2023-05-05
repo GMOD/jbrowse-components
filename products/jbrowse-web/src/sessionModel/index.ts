@@ -2,11 +2,7 @@
 import { lazy } from 'react'
 import clone from 'clone'
 import { PluginDefinition } from '@jbrowse/core/PluginLoader'
-import {
-  getConf,
-  AnyConfigurationModel,
-  AnyConfiguration,
-} from '@jbrowse/core/configuration'
+import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { AbstractSessionModel, JBrowsePlugin } from '@jbrowse/core/util/types'
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
@@ -32,7 +28,6 @@ import CopyIcon from '@mui/icons-material/FileCopy'
 import DeleteIcon from '@mui/icons-material/Delete'
 import InfoIcon from '@mui/icons-material/Info'
 
-import { BaseSession } from './Base'
 import Assemblies from './Assemblies'
 import SessionConnections from './SessionConnections'
 import { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
@@ -56,10 +51,35 @@ export default function sessionModelFactory(
       CoreSession.Themes(pluginManager),
       CoreSession.MultipleViews(pluginManager),
       CoreSession.SessionTracks(pluginManager),
-      BaseSession(pluginManager),
       Assemblies(pluginManager, assemblyConfigSchemasType),
       SessionConnections(pluginManager),
     )
+    .props({
+      /**
+       * #property
+       */
+      margin: 0,
+      /**
+       * #property
+       */
+      sessionPlugins: types.array(types.frozen()),
+    })
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get tracks(): AnyConfigurationModel[] {
+        return [...self.sessionTracks, ...self.jbrowse.tracks]
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       */
+      setName(str: string) {
+        self.name = str
+      },
+    }))
     .volatile((/* self */) => ({
       /**
        * #volatile

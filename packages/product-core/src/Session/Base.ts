@@ -2,12 +2,12 @@ import shortid from 'shortid'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import { Instance, getParent, types } from 'mobx-state-tree'
-import { BaseRootModelType } from '../RootModel'
+import type { BaseRootModelType } from '../RootModel/Base'
 import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 
 /** base session shared by **all** JBrowse products. Be careful what you include here, everything will use it. */
-export default function BaseSession<
+export default function BaseSessionFactory<
   ROOT_MODEL_TYPE extends BaseRootModelType = BaseRootModelType,
   JB_CONFIG_SCHEMA extends AnyConfigurationSchemaType = AnyConfigurationSchemaType,
 >(pluginManager: PluginManager) {
@@ -101,4 +101,5 @@ export default function BaseSession<
     }))
 }
 
-export type BaseSessionType = ReturnType<typeof BaseSession>
+export type BaseSessionType = ReturnType<typeof BaseSessionFactory>
+export type BaseSession = Instance<BaseSessionType>

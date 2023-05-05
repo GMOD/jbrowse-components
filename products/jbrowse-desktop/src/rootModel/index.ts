@@ -4,7 +4,7 @@ import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyC
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 
-import { BaseRoot, InternetAccounts } from '@jbrowse/product-core'
+import { RootModel } from '@jbrowse/product-core'
 
 // locals
 import sessionModelFactory from '../sessionModel'
@@ -26,13 +26,13 @@ export default function rootModelFactory(pluginManager: PluginManager) {
   return types
     .compose(
       'JBrowseDesktopRootModel',
-      BaseRoot(
+      RootModel.BaseRootModel(
         pluginManager,
         JBrowseDesktop(pluginManager, Session, assemblyConfigSchema),
         Session,
         assemblyConfigSchema,
       ),
-      InternetAccounts(pluginManager),
+      RootModel.InternetAccounts(pluginManager),
       Menus(pluginManager),
       SessionManagement(pluginManager),
       HistoryManagement,
@@ -54,8 +54,19 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           MainThreadRpcDriver: {},
         },
       ),
+      openNewSessionCallback: async (_path: string) => {
+        console.error('openNewSessionCallback unimplemented')
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       */
+      setOpenNewSessionCallback(cb: (arg: string) => Promise<void>) {
+        self.openNewSessionCallback = cb
+      },
     }))
 }
 
-export type RootModelType = ReturnType<typeof rootModelFactory>
-export type RootModel = Instance<RootModelType>
+export type DesktopRootModelType = ReturnType<typeof rootModelFactory>
+export type DesktopRootModel = Instance<DesktopRootModelType>

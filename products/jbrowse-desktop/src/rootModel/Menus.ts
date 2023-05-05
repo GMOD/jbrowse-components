@@ -1,5 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { Instance, types } from 'mobx-state-tree'
+import { types } from 'mobx-state-tree'
 import { lazy } from 'react'
 
 // icons
@@ -19,7 +19,7 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import OpenSequenceDialog from '../OpenSequenceDialog'
 import type { DialogQueueManager } from '@jbrowse/product-core/src/Session/DialogQueue'
 import { getSaveSession } from './Sessions'
-import { RootModel, RootModelType } from '.'
+import { DesktopRootModel } from '.'
 
 const PreferencesDialog = lazy(() => import('../PreferencesDialog'))
 const { ipcRenderer } = window.require('electron')
@@ -33,7 +33,7 @@ export default function Menus(pluginManager: PluginManager) {
   return types
     .model({})
     .volatile(s => {
-      const self = s as RootModel
+      const self = s as DesktopRootModel
       return {
         menus: [
           {
@@ -242,7 +242,7 @@ export default function Menus(pluginManager: PluginManager) {
         self.menus = newMenus
       },
       async setPluginsUpdated() {
-        const root = self as Instance<RootModelType>
+        const root = self as DesktopRootModel
         if (root.session) {
           await root.saveSession(getSaveSession(root))
         }
