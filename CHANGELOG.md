@@ -88,7 +88,7 @@
     trackhub assembly aliases matching
     ([@andrzejgrzelak](https://github.com/andrzejgrzelak))
 - `__mocks__`, `core`
-  - [#3630](https://github.com/GMOD/jbrowse-components/pull/3630) Fix flakyness
+  - [#3630](https://github.com/GMOD/jbrowse-components/pull/3630) Fix flakiness
     of connection test ([@cmdcolin](https://github.com/cmdcolin))
 
 #### :memo: Documentation
