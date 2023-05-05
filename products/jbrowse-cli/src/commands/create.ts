@@ -107,8 +107,10 @@ export default class Create extends JBrowseCommand {
         'The URL provided does not seem to be a JBrowse installation URL',
       )
     }
+    const result = await response.arrayBuffer()
+    const unzipper = await unzip.Open.buffer(Buffer.from(result))
+    await unzipper.extract({ path: argsPath })
 
-    await response.body.pipe(unzip.Extract({ path: argsPath })).promise()
     this.log(`Unpacked ${locationUrl} at ${argsPath}`)
   }
 
@@ -124,7 +126,7 @@ export default class Create extends JBrowseCommand {
 
   async catch(error: unknown) {
     // @ts-expect-error
-    if (error.parse && error.parse.output.flags.listVersions) {
+    if (error.parse?.output.flags.listVersions) {
       const versions = (await this.fetchGithubVersions()).map(
         version => version.tag_name,
       )

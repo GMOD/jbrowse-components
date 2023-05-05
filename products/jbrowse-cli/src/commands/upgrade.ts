@@ -118,7 +118,10 @@ export default class Upgrade extends JBrowseCommand {
         .filter(f => f.includes('worker.js'))
         .forEach(f => fs.unlinkSync(path.join(argsPath, f)))
     }
-    await response.body.pipe(unzip.Extract({ path: argsPath })).promise()
+
+    const result = await response.arrayBuffer()
+    const unzipper = await unzip.Open.buffer(Buffer.from(result))
+    await unzipper.extract({ path: argsPath })
     this.log(`Unpacked ${locationUrl} at ${argsPath}`)
   }
 }
