@@ -5,10 +5,11 @@ import {
   parseCigar,
   getNextRefPos,
   getModificationPositions,
-  Mismatch,
   getMethBins,
+  Mismatch,
 } from '../MismatchParser'
 import { doesIntersect2 } from '@jbrowse/core/util'
+import { Bin, SkipMap } from './util'
 
 function mismatchLen(mismatch: Mismatch) {
   return !isInterbase(mismatch.type) ? mismatch.length : 1
@@ -47,41 +48,13 @@ export default async function generateCoverageBins(
   }
   const binMax = Math.ceil(extendedRegion.end - extendedRegion.start)
 
-  const skipmap = {} as {
-    [key: string]: {
-      score: number
-      feature: unknown
-      start: number
-      end: number
-      strand: number
-      xs: string
-    }
-  }
-
-  // bins contain:
-  // - cov feature if they contribute to coverage
-  // - noncov are insertions/clip features that don't contribute to coverage
-  // - delskips deletions or introns that don't contribute to coverage
-  type BinType = { total: number; strands: { [key: string]: number } }
-
+  const skipmap = {} as SkipMap
   const regionSequence =
     features.length && shouldFetchReferenceSequence(opts.colorBy?.type)
       ? await fetchSequence(region)
       : undefined
 
-  const bins = [] as {
-    refbase?: string
-    total: number
-    all: number
-    ref: number
-    '-1': number
-    '0': number
-    '1': number
-    lowqual: BinType
-    cov: BinType
-    delskips: BinType
-    noncov: BinType
-  }[]
+  const bins = [] as Bin[]
 
   for (let i = 0; i < features.length; i++) {
     const feature = features[i]
@@ -100,10 +73,10 @@ export default async function generateCoverageBins(
             '-1': 0,
             '0': 0,
             '1': 0,
-            lowqual: {} as BinType,
-            cov: {} as BinType,
-            delskips: {} as BinType,
-            noncov: {} as BinType,
+            lowqual: {},
+            cov: {},
+            delskips: {},
+            noncov: {},
           }
         }
         if (j !== fend) {
@@ -152,9 +125,8 @@ export default async function generateCoverageBins(
       if (!seq) {
         continue
       }
-      const dels = (
-        feature.get('mismatches') as Mismatch[] | undefined
-      )?.filter(f => f.type === 'deletion')
+      const mismatches = feature.get('mismatches') as Mismatch[] | undefined
+      const dels = mismatches?.filter(f => f.type === 'deletion')
       const { methBins, methProbs } = getMethBins(feature)
 
       // methylation based coloring takes into account both reference sequence
