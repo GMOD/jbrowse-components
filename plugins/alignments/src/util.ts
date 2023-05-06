@@ -81,11 +81,12 @@ export function getColorWGBS(strand: number, base: string) {
   return '#888'
 }
 
+// fetches region sequence augmenting by +/- 1bp for CpG on either side of requested region
 export async function fetchSequence(
   region: AugmentedRegion,
   adapter: BaseFeatureDataAdapter,
 ) {
-  const { end, originalRefName, refName } = region
+  const { start, end, originalRefName, refName } = region
 
   const feats = await firstValueFrom(
     adapter
@@ -93,6 +94,7 @@ export async function fetchSequence(
         ...region,
         refName: originalRefName || refName,
         end: end + 1,
+        start: start - 1,
       })
       .pipe(toArray()),
   )

@@ -144,6 +144,16 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       currSortBpPerPx: 0,
       ready: false,
     }))
+    .views(self => ({
+      get autorunReady() {
+        const view = getContainingView(self) as LGV
+        return (
+          view.initialized &&
+          self.featureDensityStatsReady &&
+          !self.regionTooLarge
+        )
+      },
+    }))
     .actions(self => ({
       /**
        * #action
@@ -241,25 +251,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           autorun(
             async () => {
               try {
-                const { rpcManager } = getSession(self)
                 const view = getContainingView(self) as LGV
-                const {
-                  sortedBy,
-                  colorBy,
-                  parentTrack,
-                  adapterConfig,
-                  rendererType,
-                } = self
-
-                if (
-                  !view.initialized ||
-                  !self.featureDensityStatsReady ||
-                  self.regionTooLarge
-                ) {
+                if (!self.autorunReady) {
                   return
                 }
 
-                const { staticBlocks, bpPerPx } = view
+                const { colorBy } = self
+                const { staticBlocks } = view
                 // continually generate the vc pairing, set and rerender if any
                 // new values seen
                 if (colorBy?.tag) {
@@ -267,7 +265,26 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                     await getUniqueTagValues(self, colorBy, staticBlocks),
                   )
                 }
+              } catch (e) {
+                console.error(e)
+                self.setError(e)
+              }
+            },
+            { delay: 1000 },
+          ),
+        )
 
+        addDisposer(
+          self,
+          autorun(
+            async () => {
+              try {
+                if (!self.autorunReady) {
+                  return
+                }
+                const { parentTrack, colorBy } = self
+
+                const { staticBlocks } = getContainingView(self) as LGV
                 if (colorBy?.type === 'modifications') {
                   const adapter = getConf(parentTrack, ['adapter'])
                   self.updateModificationColorMap(
@@ -279,6 +296,28 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                     ),
                   )
                 }
+              } catch (e) {
+                console.error(e)
+                self.setError(e)
+              }
+            },
+            { delay: 1000 },
+          ),
+        )
+
+        addDisposer(
+          self,
+          autorun(
+            async () => {
+              try {
+                const { rpcManager } = getSession(self)
+                const view = getContainingView(self) as LGV
+                if (!self.autorunReady) {
+                  return
+                }
+
+                const { sortedBy, adapterConfig, rendererType } = self
+                const { bpPerPx } = view
 
                 if (sortedBy) {
                   const { pos, refName, assemblyName } = sortedBy
@@ -583,7 +622,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           } = self
 
           const superProps = superRenderProps()
-
           return {
             ...superProps,
             notReady:

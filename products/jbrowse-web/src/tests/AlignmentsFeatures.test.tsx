@@ -154,3 +154,5 @@ test('toggle short-read arc display, use out of view pairing', async () => {
   fireEvent.click((await findAllByText('Arc display'))[0])
   expectCanvasMatch(await findByTestId('Arc-display-true', ...opts))
 }, 30000)
+
+// modifications: two blocks lie on block boundaries (devtools to inspect) http://localhost:3001/?config=test_data%2Fconfig_demo.json&session=share-vOxzGuC_ex&password=W7XRE

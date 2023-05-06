@@ -24,6 +24,8 @@ import {
   parseCigar,
   getModificationPositions,
   getNextRefPos,
+  getModificationProbabilities,
+  getMethBins,
 } from '../MismatchParser'
 import { sortFeature } from './sortUtil'
 import {
@@ -95,6 +97,11 @@ export interface RenderArgsDeserializedWithFeaturesAndLayout
   features: Map<string, Feature>
   layout: BaseLayout<Feature>
   regionSequence?: string
+}
+
+interface RenderArgsWithColor
+  extends RenderArgsDeserializedWithFeaturesAndLayout {
+  Color: Awaited<typeof import('color')>
 }
 
 interface LayoutRecord {
@@ -200,17 +207,15 @@ export default class PileupRenderer extends BoxRendererType {
       )
     }
     const topPx = layout.addRect(feature.id(), s, e, heightPx, feature)
-    if (topPx === null) {
-      return null
-    }
-
-    return {
-      feature,
-      leftPx,
-      rightPx,
-      topPx: displayMode === 'collapse' ? 0 : topPx,
-      heightPx,
-    }
+    return topPx === null
+      ? null
+      : {
+          feature,
+          leftPx,
+          rightPx,
+          topPx: displayMode === 'collapse' ? 0 : topPx,
+          heightPx,
+        }
   }
 
   // expands region for clipping to use. possible improvement: use average read
@@ -218,9 +223,8 @@ export default class PileupRenderer extends BoxRendererType {
   // don't have to expand a softclipping size a lot, but long reads might)
   getExpandedRegion(region: Region, renderArgs: RenderArgsDeserialized) {
     const { config, showSoftClip } = renderArgs
-
-    const maxClippingSize = readConfObject(config, 'maxClippingSize')
     const { start, end } = region
+    const maxClippingSize = readConfObject(config, 'maxClippingSize')
     const bpExpansion = showSoftClip ? Math.round(maxClippingSize) : 0
 
     return {
@@ -358,6 +362,7 @@ export default class PileupRenderer extends BoxRendererType {
       }
     }
   }
+
   colorByPerBaseQuality({
     ctx,
     feat,
@@ -420,7 +425,6 @@ export default class PileupRenderer extends BoxRendererType {
   // if we have MP or Mp it is phred scaled ASCII, which can go up to 90 but
   // has very high likelihood basecalls at that point, we really only care
   // about low qual calls <20 approx
-  //
   colorByModifications({
     ctx,
     feat,
@@ -433,50 +437,34 @@ export default class PileupRenderer extends BoxRendererType {
     feat: LayoutFeature
     region: Region
     bpPerPx: number
-    renderArgs: RenderArgsDeserializedWithFeaturesAndLayout
+    renderArgs: RenderArgsWithColor
     canvasWidth: number
   }) {
     const { feature, topPx, heightPx } = feat
     const { Color, modificationTagMap = {} } = renderArgs
 
-    const mm = (getTagAlt(feature, 'MM', 'Mm') as string) || ''
-
-    const ml = (getTagAlt(feature, 'ML', 'Ml') as number[] | string) || []
-
-    const probabilities = ml
-      ? (typeof ml === 'string' ? ml.split(',').map(e => +e) : ml).map(
-          e => e / 255,
-        )
-      : (getTagAlt(feature, 'MP', 'Mp') as string)
-          .split('')
-          .map(s => s.charCodeAt(0) - 33)
-          .map(elt => Math.min(1, elt / 50))
-
-    const cigar = feature.get('CIGAR')
-    const start = feature.get('start')
     const seq = feature.get('seq') as string | undefined
-    const strand = feature.get('strand')
-    const cigarOps = parseCigar(cigar)
+
     if (!seq) {
       return
     }
-
+    const mm = (getTagAlt(feature, 'MM', 'Mm') as string) || ''
+    const cigar = feature.get('CIGAR')
+    const start = feature.get('start')
+    const strand = feature.get('strand')
+    const cigarOps = parseCigar(cigar)
+    const probabilities = getModificationProbabilities(feature)
     const modifications = getModificationPositions(mm, seq, strand)
 
     // probIndex applies across multiple modifications e.g.
     let probIndex = 0
     for (const { type, positions } of modifications) {
       const col = modificationTagMap[type] || 'black'
-
-      // @ts-expect-error
       const base = Color(col)
       for (const readPos of getNextRefPos(cigarOps, positions)) {
         const r = start + readPos
         const [leftPx, rightPx] = bpSpanPx(r, r + 1, region, bpPerPx)
-
-        // give it a little boost of 0.1 to not make them fully
-        // invisible to avoid confusion
-        const prob = probabilities[probIndex]
+        const prob = probabilities?.[probIndex] || 0
 
         fillRect(
           ctx,
@@ -485,7 +473,7 @@ export default class PileupRenderer extends BoxRendererType {
           rightPx - leftPx + 0.5,
           heightPx,
           canvasWidth,
-          prob && prob !== 1
+          prob !== 1
             ? base
                 .alpha(prob + 0.1)
                 .hsl()
@@ -512,92 +500,58 @@ export default class PileupRenderer extends BoxRendererType {
     feat: LayoutFeature
     region: Region
     bpPerPx: number
-    renderArgs: RenderArgsDeserializedWithFeaturesAndLayout
+    renderArgs: RenderArgsWithColor
     canvasWidth: number
   }) {
-    const { regionSequence } = renderArgs
+    const { regionSequence, Color } = renderArgs
     const { feature, topPx, heightPx } = feat
-
-    const mm: string = getTagAlt(feature, 'MM', 'Mm') || ''
-
     if (!regionSequence) {
       throw new Error('region sequence required for methylation')
     }
 
-    const cigar = feature.get('CIGAR')
-    const fstart = feature.get('start')
-    const fend = feature.get('end')
     const seq = feature.get('seq') as string | undefined
-    const strand = feature.get('strand')
-    const cigarOps = parseCigar(cigar)
-
     if (!seq) {
       return
     }
+    const fstart = feature.get('start')
+    const fend = feature.get('end')
+    const { methBins, methProbs } = getMethBins(feature)
 
-    const methBins = new Array(region.end - region.start).fill(0)
-    const modifications = getModificationPositions(mm, seq, strand)
-    for (let i = 0; i < modifications.length; i++) {
-      const { type, positions } = modifications[i]
-      if (type === 'm' && positions) {
-        for (const pos of getNextRefPos(cigarOps, positions)) {
-          const epos = pos + fstart - region.start
-          if (epos >= 0 && epos < methBins.length) {
-            methBins[epos] = 1
-          }
-        }
+    function getCol(k: number) {
+      if (methBins[k]) {
+        const p = methProbs[k] || 0
+        return p > 0.5
+          ? Color('red')
+              .alpha((p - 0.5) * 2)
+              .hsl()
+              .string()
+          : Color('blue')
+              .alpha(1 - p * 2)
+              .hsl()
+              .string()
       }
+      return undefined
     }
+    for (let i = 0; i < fend - fstart; i++) {
+      const j = i + fstart
+      const l1 = regionSequence[j - region.start + 1]?.toLowerCase()
+      const l2 = regionSequence[j - region.start + 2]?.toLowerCase()
 
-    for (let j = fstart; j < fend; j++) {
-      const i = j - region.start
-      if (i >= 0 && i < methBins.length) {
-        const l1 = regionSequence[i].toLowerCase()
-        const l2 = regionSequence[i + 1].toLowerCase()
-
-        // if we are zoomed out, display just a block over the cpg
+      if (l1 === 'c' && l2 === 'g') {
         if (bpPerPx > 2) {
-          if (l1 === 'c' && l2 === 'g') {
-            const s = region.start + i
-            const [leftPx, rightPx] = bpSpanPx(s, s + 2, region, bpPerPx)
-            fillRect(
-              ctx,
-              leftPx,
-              topPx,
-              rightPx - leftPx + 0.5,
-              heightPx,
-              canvasWidth,
-              methBins[i] || methBins[i + 1] ? 'red' : 'blue',
-            )
-          }
-        }
-        // if we are zoomed in, color the c inside the cpg
-        else {
-          // color
-          if (l1 === 'c' && l2 === 'g') {
-            const s = region.start + i
-            const [leftPx, rightPx] = bpSpanPx(s, s + 1, region, bpPerPx)
-            fillRect(
-              ctx,
-              leftPx,
-              topPx,
-              rightPx - leftPx + 0.5,
-              heightPx,
-              canvasWidth,
-              methBins[i] ? 'red' : 'blue',
-            )
-
-            const [leftPx2, rightPx2] = bpSpanPx(s + 1, s + 2, region, bpPerPx)
-            fillRect(
-              ctx,
-              leftPx2,
-              topPx,
-              rightPx2 - leftPx2 + 0.5,
-              heightPx,
-              canvasWidth,
-              methBins[i + 1] ? 'red' : 'blue',
-            )
-          }
+          const [leftPx, rightPx] = bpSpanPx(j, j + 2, region, bpPerPx)
+          const w = rightPx - leftPx + 0.5
+          const c = getCol(i) || getCol(i + 1) || 'blue'
+          fillRect(ctx, leftPx, topPx, w, heightPx, canvasWidth, c)
+        } else {
+          const [leftPx, rightPx] = bpSpanPx(j, j + 1, region, bpPerPx)
+          const w = rightPx - leftPx + 0.5
+          const c = getCol(i) || 'blue'
+          fillRect(ctx, leftPx, topPx, w, heightPx, canvasWidth, c)
+          const [leftPx2, rightPx2] = bpSpanPx(j + 1, j + 2, region, bpPerPx)
+          const w2 = rightPx2 - leftPx2 + 0.5
+          const c2 = getCol(i + 1) || 'blue'
+          fillRect(ctx, leftPx2, topPx, w2, heightPx, canvasWidth, c2)
         }
       }
     }
@@ -653,12 +607,11 @@ export default class PileupRenderer extends BoxRendererType {
     charWidth,
     charHeight,
     defaultColor,
-    theme,
     canvasWidth,
   }: {
     ctx: CanvasRenderingContext2D
     feat: LayoutFeature
-    renderArgs: RenderArgsDeserializedWithFeaturesAndLayout
+    renderArgs: RenderArgsWithColor
     colorForBase: Record<string, string>
     contrastForBase: Record<string, string>
     charWidth: number
@@ -1110,8 +1063,8 @@ export default class PileupRenderer extends BoxRendererType {
   }: {
     ctx: CanvasRenderingContext2D
     canvasWidth: number
-    layoutRecords: (LayoutFeature | null)[]
-    renderArgs: RenderArgsDeserializedWithFeaturesAndLayout
+    layoutRecords: LayoutFeature[]
+    renderArgs: RenderArgsWithColor
   }) {
     const {
       layout,
@@ -1144,9 +1097,6 @@ export default class PileupRenderer extends BoxRendererType {
     const drawIndels = shouldDrawIndels(colorBy?.type)
     for (let i = 0; i < layoutRecords.length; i++) {
       const feat = layoutRecords[i]
-      if (feat === null) {
-        continue
-      }
 
       this.drawAlignmentRect({
         ctx,
@@ -1273,7 +1223,7 @@ export default class PileupRenderer extends BoxRendererType {
     const res = await renderToAbstractCanvas(width, height, renderProps, ctx =>
       this.makeImageData({
         ctx,
-        layoutRecords,
+        layoutRecords: layoutRecords.filter((f): f is LayoutRecord => !!f),
         canvasWidth: width,
         renderArgs: {
           ...renderProps,
