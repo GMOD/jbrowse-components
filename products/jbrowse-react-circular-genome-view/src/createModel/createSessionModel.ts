@@ -41,12 +41,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get jbrowse() {
-        return self.root.config
-      },
-      /**
-       * #getter
-       */
       get assemblies() {
         return [getParent<any>(self).config.assembly]
       },

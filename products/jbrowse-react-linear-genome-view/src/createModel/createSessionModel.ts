@@ -46,12 +46,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get jbrowse() {
-        return self.root.config
-      },
-      /**
-       * #getter
-       */
       get disableAddTracks() {
         return getParent<any>(self).disableAddTracks
       },

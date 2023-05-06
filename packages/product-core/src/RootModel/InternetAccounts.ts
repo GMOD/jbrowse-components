@@ -118,9 +118,7 @@ export default function InternetAccountsF(pluginManager: PluginManager) {
             autorun(() => {
               const { jbrowse } = self as typeof self &
                 Instance<BaseRootModelType>
-              jbrowse.internetAccounts.forEach(account => {
-                self.initializeInternetAccount(account)
-              })
+              jbrowse.internetAccounts.forEach(self.initializeInternetAccount)
             }),
           )
         },

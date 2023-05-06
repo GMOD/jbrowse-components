@@ -335,8 +335,10 @@ export default function sessionModelFactory(
   ) as typeof sessionModel
 
   return types.snapshotProcessor(addSnackbarToModel(extendedSessionModel), {
+    // @ts-expect-error
     preProcessor(snapshot) {
       if (snapshot) {
+        // @ts-expect-error
         const { connectionInstances, ...rest } = snapshot || {}
         // connectionInstances schema changed from object to an array, so any
         // old connectionInstances as object is in snapshot, filter it out
