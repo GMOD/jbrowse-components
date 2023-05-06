@@ -2,7 +2,6 @@
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { DialogComponentType } from '@jbrowse/core/util'
-import { observable } from 'mobx'
 import { IAnyStateTreeNode, Instance, types } from 'mobx-state-tree'
 
 export interface ReferringNode {

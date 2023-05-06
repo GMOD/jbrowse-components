@@ -1,4 +1,4 @@
-import { Instance, getParent, types } from 'mobx-state-tree'
+import { Instance, types } from 'mobx-state-tree'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -84,7 +84,7 @@ export default function Assemblies(
       /**
        * #action
        */
-      addAssemblyConf(assemblyConf: any) {
+      addAssemblyConf(assemblyConf: AnyConfigurationModel) {
         return self.jbrowse.addAssemblyConf(assemblyConf)
       },
     }))

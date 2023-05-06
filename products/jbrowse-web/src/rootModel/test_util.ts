@@ -21,7 +21,6 @@ export function createTestSession(snapshot = {}, adminMode = false) {
     ...snapshot,
   })
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const session = root.session as WebSessionModel
   session.views.map(view => view.setWidth(800))
   pluginManager.setRootModel(root)

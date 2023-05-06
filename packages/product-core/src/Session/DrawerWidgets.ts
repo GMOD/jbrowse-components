@@ -11,6 +11,11 @@ import {
 const minDrawerWidth = 128
 
 export default function DrawerWidgets(pluginManager: PluginManager) {
+  const widgetStateModelType = pluginManager.pluggableMstType(
+    'widget',
+    'stateModel',
+  )
+  type WidgetStateModel = Instance<typeof widgetStateModelType>
   return types
     .model({
       /**
@@ -30,17 +35,11 @@ export default function DrawerWidgets(pluginManager: PluginManager) {
       /**
        * #property
        */
-      widgets: types.map(
-        pluginManager.pluggableMstType('widget', 'stateModel'),
-      ),
+      widgets: types.map(widgetStateModelType),
       /**
        * #property
        */
-      activeWidgets: types.map(
-        types.safeReference(
-          pluginManager.pluggableMstType('widget', 'stateModel'),
-        ),
-      ),
+      activeWidgets: types.map(types.safeReference(widgetStateModelType)),
 
       /**
        * #property
@@ -122,7 +121,7 @@ export default function DrawerWidgets(pluginManager: PluginManager) {
       /**
        * #action
        */
-      showWidget(widget: any) {
+      showWidget(widget: WidgetStateModel) {
         if (self.activeWidgets.has(widget.id)) {
           self.activeWidgets.delete(widget.id)
         }
@@ -133,14 +132,14 @@ export default function DrawerWidgets(pluginManager: PluginManager) {
       /**
        * #action
        */
-      hasWidget(widget: any) {
+      hasWidget(widget: WidgetStateModel) {
         return self.activeWidgets.has(widget.id)
       },
 
       /**
        * #action
        */
-      hideWidget(widget: any) {
+      hideWidget(widget: WidgetStateModel) {
         self.activeWidgets.delete(widget.id)
       },
 
