@@ -1,25 +1,26 @@
 // import electron first, important, because the electron mock creates
 // window.require
 // eslint-disable-next-line @typescript-eslint/no-unused-vars,no-unused-vars
-import electron from 'electron'
+import 'electron'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSnapshot } from 'mobx-state-tree'
 import corePlugins from '../corePlugins'
-import rootModelFactory from '.'
+import rootModelFactory, { DesktopRootModelType } from '.'
+import sessionModelFactory from '../sessionModel'
 jest.mock('../makeWorkerInstance', () => () => {})
 
 describe('Root MST model', () => {
-  let rootModel
+  let rootModel: DesktopRootModelType | undefined
 
   beforeAll(() => {
     const pluginManager = new PluginManager(corePlugins.map(P => new P()))
     pluginManager.createPluggableElements()
     pluginManager.configure()
-    rootModel = rootModelFactory(pluginManager)
+    rootModel = rootModelFactory(pluginManager, sessionModelFactory)
   })
 
   it('creates with defaults', () => {
-    const root = rootModel.create({
+    const root = rootModel!.create({
       jbrowse: {
         configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
       },
@@ -33,7 +34,7 @@ describe('Root MST model', () => {
   })
 
   it('adds menus', () => {
-    const root = rootModel.create({
+    const root = rootModel!.create({
       jbrowse: {
         configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
       },
