@@ -142,7 +142,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       modificationTagMap: observable.map<string, string>({}),
       featureUnderMouseVolatile: undefined as undefined | Feature,
       currSortBpPerPx: 0,
-      ready: false,
+      colorReady: false,
+      sortReady: false,
     }))
     .views(self => ({
       get autorunReady() {
@@ -158,8 +159,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setReady(flag: boolean) {
-        self.ready = flag
+      setColorReady(flag: boolean) {
+        self.colorReady = flag
+      },
+      /**
+       * #action
+       */
+      setSortReady(flag: boolean) {
+        self.sortReady = flag
       },
       /**
        * #action
@@ -192,7 +199,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       setColorScheme(colorScheme: { type: string; tag?: string }) {
         self.colorTagMap = observable.map({}) // clear existing mapping
         self.colorBy = cast(colorScheme)
-        self.ready = false
+        self.colorReady = false
       },
 
       /**
@@ -296,6 +303,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                     ),
                   )
                 }
+                self.setColorReady(true)
               } catch (e) {
                 console.error(e)
                 self.setError(e)
@@ -340,11 +348,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                     timeout: 1000000,
                     ...self.renderProps(),
                   })
-                  self.setReady(true)
                   self.setCurrSortBpPerPx(bpPerPx)
-                } else {
-                  self.setReady(true)
                 }
+                self.setSortReady(true)
               } catch (e) {
                 console.error(e)
                 self.setError(e)
@@ -474,7 +480,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           assemblyName,
           tag,
         }
-        self.ready = false
+        self.sortReady = false
       },
       setFilterBy(filter: Filter) {
         self.filterBy = cast(filter)
@@ -618,7 +624,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             filterBy,
             rpcDriverName,
             currSortBpPerPx,
-            ready,
+            sortReady,
+            colorReady,
           } = self
 
           const superProps = superRenderProps()
@@ -626,7 +633,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             ...superProps,
             notReady:
               superProps.notReady ||
-              !ready ||
+              !sortReady ||
+              !colorReady ||
               (sortedBy && currSortBpPerPx !== view.bpPerPx),
             rpcDriverName,
             displayModel: self,

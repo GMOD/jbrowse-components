@@ -90,7 +90,7 @@ export default async function generateCoverageBins(
     const fstrand = feature.get('strand') as -1 | 0 | 1
 
     for (let j = fstart; j < fend + 1; j++) {
-      const i = j - extendedRegion.start
+      const i = j - Math.max(extendedRegion.start, 0)
       if (i >= 0 && i < binMax) {
         if (bins[i] === undefined) {
           bins[i] = {
