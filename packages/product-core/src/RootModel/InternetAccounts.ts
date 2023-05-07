@@ -1,6 +1,6 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { UriLocation, isModelWithAfterCreate } from '@jbrowse/core/util'
+import { UriLocation } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
 import { Instance, addDisposer, types } from 'mobx-state-tree'
 import { BaseRootModelType } from './Base'
@@ -62,7 +62,7 @@ export default function InternetAccountsF(pluginManager: PluginManager) {
           internetAccountId: internetAccountId,
           name: internetAccountSplit.slice(1).join('-'),
           description: '',
-          domains: [hostUri],
+          domains: hostUri ? [hostUri] : [],
         }
         const internetAccountType = pluginManager.getInternetAccountType(
           configuration.type,
@@ -104,26 +104,18 @@ export default function InternetAccountsF(pluginManager: PluginManager) {
           : null
       },
     }))
-    .actions(self => {
-      const super_afterCreate = isModelWithAfterCreate(self)
-        ? self.afterCreate
-        : undefined
-      return {
-        afterCreate() {
-          if (super_afterCreate) {
-            super_afterCreate()
-          }
-          addDisposer(
-            self,
-            autorun(() => {
-              const { jbrowse } = self as typeof self &
-                Instance<BaseRootModelType>
-              jbrowse.internetAccounts.forEach(self.initializeInternetAccount)
-            }),
-          )
-        },
-      }
-    })
+    .actions(self => ({
+      afterCreate() {
+        addDisposer(
+          self,
+          autorun(() => {
+            const { jbrowse } = self as typeof self &
+              Instance<BaseRootModelType>
+            jbrowse.internetAccounts.forEach(self.initializeInternetAccount)
+          }),
+        )
+      },
+    }))
 }
 
 export type RootModelWithInternetAccountsType = ReturnType<

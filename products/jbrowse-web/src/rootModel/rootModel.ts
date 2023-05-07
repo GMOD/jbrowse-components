@@ -18,7 +18,6 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import TimeTraveller from '@jbrowse/core/util/TimeTraveller'
-import { isModelWithAfterCreate } from '@jbrowse/core/util'
 import { AbstractSessionModel, SessionWithWidgets } from '@jbrowse/core/util'
 import { MenuItem } from '@jbrowse/core/ui'
 
@@ -152,14 +151,8 @@ export default function RootModel(
     }))
 
     .actions(self => {
-      const super_afterCreate = isModelWithAfterCreate(self)
-        ? self.afterCreate
-        : undefined
       return {
         afterCreate() {
-          if (super_afterCreate) {
-            super_afterCreate()
-          }
           document.addEventListener('keydown', e => {
             const cm = e.ctrlKey || e.metaKey
             if (

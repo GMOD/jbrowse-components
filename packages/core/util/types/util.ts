@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
-import { IAnyStateTreeNode, IModelType, Instance } from 'mobx-state-tree'
 import PluginManager from '../../PluginManager'
 
 /**
@@ -21,15 +20,3 @@ export type AnyReactComponentType = React.ComponentType<any>
 /** get the type that a predicate asserts */
 export type TypeTestedByPredicate<PREDICATE extends (thing: any) => boolean> =
   PREDICATE extends (thing: any) => thing is infer TYPE ? TYPE : never
-
-/** type guard that inpects whether a MST model has an `afterCreate` action */
-export function isModelWithAfterCreate(
-  thing: IAnyStateTreeNode,
-): thing is Instance<IModelType<{}, { afterCreate: () => void }>> {
-  return (
-    typeof thing === 'object' &&
-    thing !== null &&
-    'afterCreate' in thing &&
-    typeof thing.afterCreate === 'function'
-  )
-}
