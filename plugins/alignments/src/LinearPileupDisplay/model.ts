@@ -34,11 +34,7 @@ import FilterListIcon from '@mui/icons-material/ClearAll'
 
 // locals
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
-import {
-  getUniqueTagValues,
-  getUniqueModificationValues,
-  FilterModel,
-} from '../shared'
+import { getUniqueTagValues, FilterModel } from '../shared'
 import { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 
 // async
@@ -139,7 +135,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     )
     .volatile(() => ({
       colorTagMap: observable.map<string, string>({}),
-      modificationTagMap: observable.map<string, string>({}),
       featureUnderMouseVolatile: undefined as undefined | Feature,
       currSortBpPerPx: 0,
       colorReady: false,
@@ -199,20 +194,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       setColorScheme(colorScheme: { type: string; tag?: string }) {
         self.colorTagMap = observable.map({}) // clear existing mapping
         self.colorBy = cast(colorScheme)
-        self.colorReady = false
-      },
-
-      /**
-       * #action
-       */
-      updateModificationColorMap(uniqueModifications: string[]) {
-        const colorPalette = ['red', 'blue', 'green', 'orange', 'purple']
-        uniqueModifications.forEach(value => {
-          if (!self.modificationTagMap.has(value)) {
-            const totalKeys = [...self.modificationTagMap.keys()].length
-            self.modificationTagMap.set(value, colorPalette[totalKeys])
-          }
-        })
       },
 
       /**
@@ -266,39 +247,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 // continually generate the vc pairing, set and rerender if any
                 // new values seen
                 if (colorBy?.tag) {
+                  self.setColorReady(false)
                   self.updateColorTagMap(
                     await getUniqueTagValues(self, colorBy, staticBlocks),
-                  )
-                }
-              } catch (e) {
-                console.error(e)
-                self.setError(e)
-              }
-            },
-            { delay: 1000 },
-          ),
-        )
-
-        addDisposer(
-          self,
-          autorun(
-            async () => {
-              try {
-                if (!self.autorunReady) {
-                  return
-                }
-                const { parentTrack, colorBy } = self
-
-                const { staticBlocks } = getContainingView(self) as LGV
-                if (colorBy?.type === 'modifications') {
-                  const adapter = getConf(parentTrack, ['adapter'])
-                  self.updateModificationColorMap(
-                    await getUniqueModificationValues(
-                      self,
-                      adapter,
-                      colorBy,
-                      staticBlocks,
-                    ),
                   )
                 }
                 self.setColorReady(true)
@@ -616,7 +567,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           const view = getContainingView(self) as LGV
           const {
             colorTagMap,
-            modificationTagMap,
             sortedBy,
             colorBy,
             filterBy,
@@ -640,7 +590,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             colorBy,
             filterBy: JSON.parse(JSON.stringify(filterBy)),
             colorTagMap: Object.fromEntries(colorTagMap.toJSON()),
-            modificationTagMap: Object.fromEntries(modificationTagMap.toJSON()),
             showSoftClip: self.showSoftClipping,
             config: self.rendererConfig,
             async onFeatureClick(_: unknown, featureId?: string) {

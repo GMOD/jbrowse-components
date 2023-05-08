@@ -14,7 +14,7 @@ const useStyles = makeStyles()(theme => ({
 export default function ModificationTable({
   modifications,
 }: {
-  modifications: [string, string][]
+  modifications: [string, string | undefined][]
 }) {
   const { classes } = useStyles()
   return (

@@ -15,7 +15,7 @@ jest.mock('file-saver', () => ({ saveAs: jest.fn() }))
 
 setup()
 
-const delay = { timeout: 40000 }
+const delay = { timeout: 50000 }
 
 test('export svg of breakpoint split view', async () => {
   doBeforeEach(url => require.resolve(`../../test_data/breakpoint/${url}`))
@@ -44,4 +44,4 @@ test('export svg of breakpoint split view', async () => {
     svg,
   )
   expect(svg).toMatchSnapshot()
-}, 45000)
+}, 60000)

@@ -9,6 +9,7 @@ import {
   WiggleBaseRenderer,
   YSCALEBAR_LABEL_OFFSET,
 } from '@jbrowse/plugin-wiggle'
+import { modificationColors } from '../util'
 
 export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
   bpPerPx: number
@@ -22,7 +23,6 @@ export interface RenderArgsDeserializedWithFeatures
   features: Map<string, Feature>
   ticks: { values: number[] }
   displayCrossHatches: boolean
-  modificationTagMap?: Record<string, string>
 }
 
 type Counts = {
@@ -49,7 +49,6 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       regions,
       bpPerPx,
       displayCrossHatches,
-      modificationTagMap = {},
       scaleOpts,
       height: unadjustedHeight,
       theme: configTheme,
@@ -154,8 +153,8 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
         const { total } = snpinfo.cov[base]
         ctx.fillStyle =
           colorForBase[base] ||
-          modificationTagMap[base.replace('mod_', '')] ||
-          '#888'
+          modificationColors[base.replace('mod_', '')] ||
+          'black'
 
         const height = toHeight(score)
         const bottom = toY(score) + height

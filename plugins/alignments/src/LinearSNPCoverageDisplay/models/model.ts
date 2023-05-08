@@ -1,6 +1,4 @@
-import { addDisposer, types, cast, getEnv, getSnapshot } from 'mobx-state-tree'
-import clone from 'clone'
-import { autorun } from 'mobx'
+import { types, cast, getEnv, getSnapshot } from 'mobx-state-tree'
 
 // jbrowse
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -11,17 +9,13 @@ import {
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
-import { getContainingView } from '@jbrowse/core/util'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
 import Tooltip from '../components/Tooltip'
-import { FilterModel, getUniqueModificationValues } from '../../shared'
+import { FilterModel } from '../../shared'
 
 // using a map because it preserves order
 const rendererTypes = new Map([['snpcoverage', 'SNPCoverageRenderer']])
-
-type LGV = LinearGenomeViewModel
 
 /**
  * #stateModel LinearSNPCoverageDisplay
@@ -67,9 +61,7 @@ function stateModelFactory(
         ),
       }),
     )
-    .volatile(() => ({
-      modificationTagMap: undefined as Record<string, string> | undefined,
-    }))
+
     .actions(self => ({
       /**
        * #action
@@ -93,23 +85,6 @@ function stateModelFactory(
        */
       setColorBy(colorBy?: { type: string; tag?: string }) {
         self.colorBy = cast(colorBy)
-      },
-
-      /**
-       * #action
-       */
-      updateModificationColorMap(uniqueModifications: string[]) {
-        const colorPalette = ['red', 'blue', 'green', 'orange', 'purple']
-        let i = 0
-
-        const newMap = clone(self.modificationTagMap) || {}
-        uniqueModifications.forEach(value => {
-          if (!newMap[value]) {
-            const newColor = colorPalette[i++]
-            newMap[value] = newColor
-          }
-        })
-        self.modificationTagMap = newMap
       },
     }))
     .views(self => {
@@ -161,27 +136,16 @@ function stateModelFactory(
         },
 
         /**
-         * #getter
-         */
-        get modificationsReady() {
-          return self.colorBy?.type === 'modifications'
-            ? self.modificationTagMap !== undefined
-            : true
-        },
-
-        /**
          * #method
          */
         renderProps() {
           const superProps = superRenderProps()
-          const { colorBy, filterBy, modificationTagMap } = self
+          const { colorBy, filterBy } = self
           return {
             ...superProps,
-            notReady: superProps.notReady || !this.modificationsReady,
-            modificationTagMap: modificationTagMap,
 
-            // must use getSnapshot because otherwise changes to e.g. just the
-            // colorBy.type are not read
+            // must use getSnapshot because otherwise changes to e.g.
+            // just the colorBy.type are not read
             colorBy: colorBy ? getSnapshot(colorBy) : undefined,
             filterBy: filterBy ? getSnapshot(filterBy) : undefined,
           }
@@ -206,43 +170,6 @@ function stateModelFactory(
        */
       toggleDrawArcs() {
         self.drawArcs = !self.drawArcsSetting
-      },
-      afterAttach() {
-        addDisposer(
-          self,
-          autorun(
-            async () => {
-              try {
-                const { colorBy } = self
-                const view = getContainingView(self) as LGV
-
-                if (
-                  !view.initialized ||
-                  !self.featureDensityStatsReady ||
-                  self.regionTooLarge
-                ) {
-                  return
-                }
-                const { staticBlocks } = view
-                if (colorBy?.type === 'modifications') {
-                  const adapter = getConf(self.parentTrack, 'adapter')
-                  self.updateModificationColorMap(
-                    await getUniqueModificationValues(
-                      self,
-                      adapter,
-                      colorBy,
-                      staticBlocks,
-                    ),
-                  )
-                }
-              } catch (error) {
-                console.error(error)
-                self.setError(error)
-              }
-            },
-            { delay: 1000 },
-          ),
-        )
       },
     }))
 

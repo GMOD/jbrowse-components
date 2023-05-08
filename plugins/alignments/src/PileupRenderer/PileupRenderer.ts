@@ -33,6 +33,7 @@ import {
   orientationTypes,
   fetchSequence,
   shouldFetchReferenceSequence,
+  modificationColors,
 } from '../util'
 import {
   PileupLayoutSession,
@@ -82,7 +83,6 @@ function getContrastBaseMap(theme: Theme) {
 export interface RenderArgsDeserialized extends BoxRenderArgsDeserialized {
   colorBy?: { type: string; tag?: string }
   colorTagMap?: Record<string, string>
-  modificationTagMap?: Record<string, string>
   sortedBy?: {
     type: string
     pos: number
@@ -443,7 +443,7 @@ export default class PileupRenderer extends BoxRendererType {
     canvasWidth: number
   }) {
     const { feature, topPx, heightPx } = feat
-    const { Color, modificationTagMap = {} } = renderArgs
+    const { Color } = renderArgs
 
     const seq = feature.get('seq') as string | undefined
 
@@ -461,7 +461,7 @@ export default class PileupRenderer extends BoxRendererType {
     // probIndex applies across multiple modifications e.g.
     let probIndex = 0
     for (const { type, positions } of modifications) {
-      const col = modificationTagMap[type] || 'black'
+      const col = modificationColors[type] || 'black'
       const base = Color(col)
       for (const readPos of getNextRefPos(cigarOps, positions)) {
         const r = start + readPos

@@ -105,3 +105,15 @@ export async function fetchSequence(
 export function shouldFetchReferenceSequence(type?: string) {
   return type === 'methylation'
 }
+
+// adapted from IGV https://github.com/igvteam/igv/blob/e803e3af2d8c9ea049961dfd4628146bdde9a574/src/main/java/org/broad/igv/sam/mods/BaseModificationColors.java#L27
+export const modificationColors = {
+  m: 'rgb(255,0,0)',
+  h: 'rgb(11, 132, 165)',
+  o: 'rgb(111, 78, 129)',
+  f: 'rgb(246, 200, 95)',
+  c: 'rgb(157, 216, 102)',
+  g: 'rgb(255, 160, 86)',
+  e: 'rgb(141, 221, 208)',
+  b: 'rgb(202, 71, 47)',
+} as Record<string, string | undefined>

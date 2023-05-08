@@ -1,28 +1,19 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { ObservableMap } from 'mobx'
-import {
-  Button,
-  CircularProgress,
-  DialogActions,
-  DialogContent,
-  Typography,
-} from '@mui/material'
+import { Button, DialogActions, DialogContent, Typography } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
 import ModificationTable from './ModificationsTable'
+import { modificationColors } from '../../util'
 
 function ColorByTagDlg(props: {
   model: {
     setColorScheme: (arg: { type: string }) => void
-    modificationTagMap: ObservableMap<string, string>
     colorBy?: { type: string }
   }
   handleClose: () => void
 }) {
   const { model, handleClose } = props
-  const { colorBy, modificationTagMap } = model
-
-  const modifications = [...modificationTagMap.entries()]
+  const { colorBy } = model
 
   return (
     <Dialog open onClose={handleClose} title="Color by modifications">
@@ -40,22 +31,10 @@ function ColorByTagDlg(props: {
         <div style={{ margin: 20 }}>
           {colorBy?.type === 'modifications' ? (
             <div>
-              {modifications.length ? (
-                <>
-                  Current modification-type-to-color mapping
-                  <ModificationTable
-                    modifications={[...modificationTagMap.entries()]}
-                  />
-                </>
-              ) : (
-                <>
-                  <Typography>
-                    Note: color by modifications is already enabled. Loading
-                    current modifications...
-                  </Typography>
-                  <CircularProgress size={15} />
-                </>
-              )}
+              Modification-type-to-color mapping
+              <ModificationTable
+                modifications={[...Object.entries(modificationColors)]}
+              />
             </div>
           ) : null}
           {colorBy?.type === 'methylation' ? (
