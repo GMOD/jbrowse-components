@@ -1,4 +1,9 @@
-import { IAnyStateTreeNode, Instance, addDisposer, types } from 'mobx-state-tree'
+import {
+  IAnyStateTreeNode,
+  Instance,
+  addDisposer,
+  types,
+} from 'mobx-state-tree'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getConf } from '@jbrowse/core/configuration'

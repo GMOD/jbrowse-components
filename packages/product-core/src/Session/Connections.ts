@@ -5,7 +5,7 @@ import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import { IAnyStateTreeNode, Instance, isStateTreeNode, types } from 'mobx-state-tree'
+import { IAnyStateTreeNode, Instance, types } from 'mobx-state-tree'
 import type { SessionWithReferenceManagementType } from './ReferenceManagement'
 import type { BaseRootModelType } from '../RootModel/Base'
 import { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'

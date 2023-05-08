@@ -1,4 +1,9 @@
-import { IAnyStateTreeNode, Instance, getSnapshot, types } from 'mobx-state-tree'
+import {
+  IAnyStateTreeNode,
+  Instance,
+  getSnapshot,
+  types,
+} from 'mobx-state-tree'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'

@@ -58,7 +58,6 @@ test('toplevel configuration', () => {
   pm.setRootModel(rootModel)
   pm.configure()
   const state = pm.rootModel
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const { jbrowse } = state!
   const { configuration } = jbrowse
   // test reading top level configurations added by Test Plugin
