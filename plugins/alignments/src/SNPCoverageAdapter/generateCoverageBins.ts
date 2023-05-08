@@ -43,11 +43,10 @@ export default async function generateCoverageBins(
   const { colorBy } = opts
   const extendedRegion = {
     ...region,
-    start: region.start - 1,
+    start: Math.max(0, region.start - 1),
     end: region.end + 1,
   }
   const binMax = Math.ceil(extendedRegion.end - extendedRegion.start)
-
   const skipmap = {} as SkipMap
   const regionSequence =
     features.length && shouldFetchReferenceSequence(opts.colorBy?.type)
@@ -56,15 +55,14 @@ export default async function generateCoverageBins(
 
   const bins = [] as Bin[]
 
-  for (let i = 0; i < features.length; i++) {
-    const feature = features[i]
+  for (const feature of features) {
     const fstart = feature.get('start')
     const fend = feature.get('end')
     const fstrand = feature.get('strand') as -1 | 0 | 1
     const mismatches = (feature.get('mismatches') as Mismatch[]) || []
 
     for (let j = fstart; j < fend + 1; j++) {
-      const i = j - Math.max(extendedRegion.start, 0)
+      const i = j - region.start
       if (i >= 0 && i < binMax) {
         if (bins[i] === undefined) {
           bins[i] = {
@@ -101,6 +99,20 @@ export default async function generateCoverageBins(
           for (const pos of getNextRefPos(ops, positions)) {
             const epos = pos + fstart - region.start
             if (epos >= 0 && epos < bins.length && pos + fstart < fend) {
+              if (bins[epos] === undefined) {
+                bins[epos] = {
+                  total: 0,
+                  all: 0,
+                  ref: 0,
+                  '-1': 0,
+                  '0': 0,
+                  '1': 0,
+                  lowqual: {},
+                  cov: {},
+                  delskips: {},
+                  noncov: {},
+                }
+              }
               const bin = bins[epos]
               if (bin) {
                 inc(bin, fstrand, 'cov', mod)
@@ -199,8 +211,7 @@ export default async function generateCoverageBins(
     const colorSNPs =
       colorBy?.type !== 'modifications' && colorBy?.type !== 'methylation'
 
-    for (let i = 0; i < mismatches.length; i++) {
-      const mismatch = mismatches[i]
+    for (const mismatch of mismatches) {
       const mstart = fstart + mismatch.start
       const mlen = mismatchLen(mismatch)
       const mend = mstart + mlen

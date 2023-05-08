@@ -40,7 +40,7 @@ import {
   FilterModel,
 } from '../shared'
 import { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
-import { modificationColors } from '../util'
+import { createAutorun, modificationColors } from '../util'
 import { randomColor } from './util'
 
 // async
@@ -257,165 +257,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       setFeatureUnderMouse(feat?: Feature) {
         self.featureUnderMouseVolatile = feat
       },
-    }))
-    .actions(self => ({
-      afterAttach() {
-        function createAutorun(
-          arg: () => Promise<void>,
-          options?: { delay: number },
-        ) {
-          addDisposer(
-            self,
-            autorun(async () => {
-              try {
-                await arg()
-              } catch (e) {
-                if (isAlive(self)) {
-                  self.setError(e)
-                }
-              }
-            }, options),
-          )
-        }
-        createAutorun(
-          async () => {
-            const view = getContainingView(self) as LGV
-            self.setTagsReady(false)
-            if (!self.autorunReady) {
-              return
-            }
-
-            const { colorBy } = self
-            const { staticBlocks } = view
-            // continually generate the vc pairing, set and rerender if any
-            // new values seen
-            if (colorBy?.tag) {
-              const vals = await getUniqueTagValues(self, colorBy, staticBlocks)
-              if (isAlive(self)) {
-                self.updateColorTagMap(vals)
-                self.setTagsReady(true)
-              }
-            } else {
-              self.setTagsReady(true)
-            }
-          },
-          { delay: 1000 },
-        )
-        createAutorun(async () => {
-          self.setModificationsReady(false)
-          if (!self.autorunReady) {
-            return
-          }
-          const { parentTrack, colorBy } = self
-          const { staticBlocks } = getContainingView(self) as LGV
-          if (colorBy?.type === 'modifications') {
-            const adapter = getConf(parentTrack, ['adapter'])
-            const vals = await getUniqueModificationValues(
-              self,
-              adapter,
-              colorBy,
-              staticBlocks,
-            )
-            if (isAlive(self)) {
-              self.updateModificationColorMap(vals)
-              self.setModificationsReady(true)
-            }
-          } else {
-            self.setModificationsReady(true)
-          }
-        })
-
-        createAutorun(
-          async () => {
-            const { rpcManager } = getSession(self)
-            const view = getContainingView(self) as LGV
-            self.setSortReady(false)
-            if (!self.autorunReady) {
-              return
-            }
-
-            const { sortedBy, adapterConfig, rendererType } = self
-            const { bpPerPx } = view
-
-            if (sortedBy) {
-              const { pos, refName, assemblyName } = sortedBy
-              // render just the sorted region first
-              // @ts-expect-error
-              await self.rendererType.renderInClient(rpcManager, {
-                assemblyName,
-                regions: [
-                  {
-                    start: pos,
-                    end: pos + 1,
-                    refName,
-                    assemblyName,
-                  },
-                ],
-                adapterConfig: adapterConfig,
-                rendererType: rendererType.name,
-                sessionId: getRpcSessionId(self),
-                layoutId: view.id,
-                timeout: 1000000,
-                ...self.renderProps(),
-              })
-              if (isAlive(self)) {
-                self.setCurrSortBpPerPx(bpPerPx)
-                self.setSortReady(true)
-              }
-            } else {
-              self.setCurrSortBpPerPx(bpPerPx)
-              self.setSortReady(true)
-            }
-          },
-
-          { delay: 1000 },
-        )
-
-        // autorun synchronizes featureUnderMouse with featureIdUnderMouse
-        // asynchronously. this is needed due to how we do not serialize all
-        // features from the BAM/CRAM over the rpc
-        addDisposer(
-          self,
-          autorun(async () => {
-            const session = getSession(self)
-            try {
-              const featureId = self.featureIdUnderMouse
-              if (self.featureUnderMouse?.id() !== featureId) {
-                if (!featureId) {
-                  self.setFeatureUnderMouse(undefined)
-                } else {
-                  const sessionId = getRpcSessionId(self)
-                  const view = getContainingView(self)
-                  const { feature } = (await session.rpcManager.call(
-                    sessionId,
-                    'CoreGetFeatureDetails',
-                    {
-                      featureId,
-                      sessionId,
-                      layoutId: view.id,
-                      rendererType: 'PileupRenderer',
-                    },
-                  )) as { feature: SimpleFeatureSerialized }
-
-                  // check featureIdUnderMouse is still the same as the
-                  // feature.id that was returned e.g. that the user hasn't
-                  // moused over to a new position during the async operation
-                  // above
-                  if (
-                    isAlive(self) &&
-                    self.featureIdUnderMouse === feature.uniqueId
-                  ) {
-                    self.setFeatureUnderMouse(new SimpleFeature(feature))
-                  }
-                }
-              }
-            } catch (e) {
-              console.error(e)
-              session.notify(`${e}`, 'error')
-            }
-          }),
-        )
-      },
 
       /**
        * #action
@@ -570,15 +411,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
 
       get renderReady() {
         const view = getContainingView(self) as LGV
-        console.log(
-          self.sortReady,
-          self.modificationsReady,
-          self.tagsReady,
-          self.currSortBpPerPx === view.bpPerPx,
-        )
-
         return (
-          self.sortReady &&
           self.modificationsReady &&
           self.tagsReady &&
           self.currSortBpPerPx === view.bpPerPx
@@ -644,7 +477,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #method
          */
-        renderProps() {
+        renderPropsPre() {
           const {
             colorTagMap,
             modificationTagMap,
@@ -730,6 +563,17 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 session.notify(`${e}`)
               }
             },
+          }
+        },
+
+        // renderProps and renderPropsPre are separated due to sortReady
+        // causing a infinite loop in the sort autorun, since the sort autorun
+        // uses renderProps
+        renderProps() {
+          const pre = this.renderPropsPre()
+          return {
+            ...pre,
+            notReady: pre.notReady || !self.sortReady,
           }
         },
 
@@ -897,9 +741,151 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         },
       }
     })
+    .actions(self => ({
+      afterAttach() {
+        createAutorun(
+          self,
+          async () => {
+            const view = getContainingView(self) as LGV
+            self.setTagsReady(false)
+            if (!self.autorunReady) {
+              return
+            }
+
+            const { colorBy } = self
+            const { staticBlocks } = view
+            // continually generate the vc pairing, set and rerender if any
+            // new values seen
+            if (colorBy?.tag) {
+              const vals = await getUniqueTagValues(self, colorBy, staticBlocks)
+              if (isAlive(self)) {
+                self.updateColorTagMap(vals)
+                self.setTagsReady(true)
+              }
+            } else {
+              self.setTagsReady(true)
+            }
+          },
+          { delay: 1000 },
+        )
+        createAutorun(self, async () => {
+          self.setModificationsReady(false)
+          if (!self.autorunReady) {
+            return
+          }
+          const { parentTrack, colorBy } = self
+          const { staticBlocks } = getContainingView(self) as LGV
+          if (colorBy?.type === 'modifications') {
+            const adapter = getConf(parentTrack, ['adapter'])
+            const vals = await getUniqueModificationValues(
+              self,
+              adapter,
+              colorBy,
+              staticBlocks,
+            )
+            if (isAlive(self)) {
+              self.updateModificationColorMap(vals)
+              self.setModificationsReady(true)
+            }
+          } else {
+            self.setModificationsReady(true)
+          }
+        })
+
+        createAutorun(
+          self,
+          async () => {
+            const { rpcManager } = getSession(self)
+            const view = getContainingView(self) as LGV
+            if (!self.autorunReady) {
+              return
+            }
+
+            const { sortedBy, adapterConfig, rendererType } = self
+            const { bpPerPx } = view
+
+            if (sortedBy) {
+              self.setSortReady(false)
+              const { pos, refName, assemblyName } = sortedBy
+              // render just the sorted region first
+              // @ts-expect-error
+              await self.rendererType.renderInClient(rpcManager, {
+                assemblyName,
+                regions: [
+                  {
+                    start: pos,
+                    end: pos + 1,
+                    refName,
+                    assemblyName,
+                  },
+                ],
+                adapterConfig: adapterConfig,
+                rendererType: rendererType.name,
+                sessionId: getRpcSessionId(self),
+                layoutId: view.id,
+                timeout: 1_000_000,
+                ...self.renderPropsPre(),
+              })
+              if (isAlive(self)) {
+                self.setCurrSortBpPerPx(bpPerPx)
+                self.setSortReady(true)
+              }
+            } else {
+              self.setCurrSortBpPerPx(bpPerPx)
+              self.setSortReady(true)
+            }
+          },
+          { delay: 1000 },
+        )
+
+        // autorun synchronizes featureUnderMouse with featureIdUnderMouse
+        // asynchronously. this is needed due to how we do not serialize all
+        // features from the BAM/CRAM over the rpc
+        addDisposer(
+          self,
+          autorun(async () => {
+            const session = getSession(self)
+            try {
+              const featureId = self.featureIdUnderMouse
+              if (self.featureUnderMouse?.id() !== featureId) {
+                if (!featureId) {
+                  self.setFeatureUnderMouse(undefined)
+                } else {
+                  const sessionId = getRpcSessionId(self)
+                  const view = getContainingView(self)
+                  const { feature } = (await session.rpcManager.call(
+                    sessionId,
+                    'CoreGetFeatureDetails',
+                    {
+                      featureId,
+                      sessionId,
+                      layoutId: view.id,
+                      rendererType: 'PileupRenderer',
+                    },
+                  )) as { feature: SimpleFeatureSerialized }
+
+                  // check featureIdUnderMouse is still the same as the
+                  // feature.id that was returned e.g. that the user hasn't
+                  // moused over to a new position during the async operation
+                  // above
+                  if (
+                    isAlive(self) &&
+                    self.featureIdUnderMouse === feature.uniqueId
+                  ) {
+                    self.setFeatureUnderMouse(new SimpleFeature(feature))
+                  }
+                }
+              }
+            } catch (e) {
+              console.error(e)
+              session.notify(`${e}`, 'error')
+            }
+          }),
+        )
+      },
+    }))
 }
 
 export type LinearPileupDisplayStateModel = ReturnType<typeof stateModelFactory>
 export type LinearPileupDisplayModel = Instance<LinearPileupDisplayStateModel>
-
 export default stateModelFactory
