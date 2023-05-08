@@ -48,7 +48,7 @@ function formatFeat(f: Feature, parentId?: string, parentRef?: string) {
     f.get('start') + 1,
     f.get('end'),
     f.get('score') || '.',
-    f.get('strand') || '.',
+    f.get('strand') == 1 ? '+' : f.get('strand') == -1 ? '-' : '.',
     f.get('phase') || '.',
     (parentId ? `Parent=${parentId};` : '') +
       f
