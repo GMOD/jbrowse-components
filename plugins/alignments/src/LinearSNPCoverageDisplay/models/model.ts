@@ -1,4 +1,5 @@
-import { types, cast, getEnv, getSnapshot } from 'mobx-state-tree'
+import { types, cast, getEnv, getSnapshot, isAlive } from 'mobx-state-tree'
+import { observable } from 'mobx'
 
 // jbrowse
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -9,13 +10,19 @@ import {
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
+import { getContainingView } from '@jbrowse/core/util'
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
 import Tooltip from '../components/Tooltip'
-import { FilterModel } from '../../shared'
+import { FilterModel, getUniqueModificationValues } from '../../shared'
+import { createAutorun, modificationColors } from '../../util'
+import { randomColor } from '../../LinearPileupDisplay/util'
 
 // using a map because it preserves order
 const rendererTypes = new Map([['snpcoverage', 'SNPCoverageRenderer']])
+
+type LGV = LinearGenomeViewModel
 
 /**
  * #stateModel LinearSNPCoverageDisplay
@@ -61,7 +68,10 @@ function stateModelFactory(
         ),
       }),
     )
-
+    .volatile(() => ({
+      modificationTagMap: observable.map<string, string>({}),
+      modificationsReady: false,
+    }))
     .actions(self => ({
       /**
        * #action
@@ -86,6 +96,20 @@ function stateModelFactory(
       setColorBy(colorBy?: { type: string; tag?: string }) {
         self.colorBy = cast(colorBy)
       },
+
+      /**
+       * #action
+       */
+      updateModificationColorMap(uniqueModifications: string[]) {
+        uniqueModifications.forEach(value => {
+          if (!self.modificationTagMap.has(value)) {
+            self.modificationTagMap.set(
+              value,
+              modificationColors[value] || randomColor(),
+            )
+          }
+        })
+      },
     }))
     .views(self => {
       const { renderProps: superRenderProps } = self
@@ -97,15 +121,13 @@ function stateModelFactory(
           const configBlob =
             getConf(self, ['renderers', self.rendererTypeName]) || {}
 
-          const { color, drawInterbaseCounts, drawIndicators, drawArcs } = self
           return self.rendererType.configSchema.create(
             {
               ...configBlob,
-              color: color ?? configBlob.color,
               drawInterbaseCounts:
-                drawInterbaseCounts ?? configBlob.drawInterbaseCounts,
-              drawIndicators: drawIndicators ?? configBlob.drawIndicators,
-              drawArcs: drawArcs ?? configBlob.drawArcs,
+                self.drawInterbaseCounts ?? configBlob.drawInterbaseCounts,
+              drawIndicators: self.drawIndicators ?? configBlob.drawIndicators,
+              drawArcs: self.drawArcs ?? configBlob.drawArcs,
             },
             getEnv(self),
           )
@@ -138,16 +160,32 @@ function stateModelFactory(
         },
 
         /**
+         * #getter
+         */
+
+        get autorunReady() {
+          const view = getContainingView(self) as LGV
+          return (
+            view.initialized &&
+            self.featureDensityStatsReady &&
+            !self.regionTooLarge &&
+            !self.error
+          )
+        },
+
+        /**
          * #method
          */
         renderProps() {
           const superProps = superRenderProps()
-          const { colorBy, filterBy } = self
+          const { colorBy, filterBy, modificationTagMap } = self
           return {
             ...superProps,
+            notReady: superProps.notReady || !self.modificationsReady,
+            modificationTagMap: Object.fromEntries(modificationTagMap.toJSON()),
 
-            // must use getSnapshot because otherwise changes to e.g.
-            // just the colorBy.type are not read
+            // must use getSnapshot because otherwise changes to e.g. just the
+            // colorBy.type are not read
             colorBy: colorBy ? getSnapshot(colorBy) : undefined,
             filterBy: filterBy ? getSnapshot(filterBy) : undefined,
           }
@@ -155,6 +193,12 @@ function stateModelFactory(
       }
     })
     .actions(self => ({
+      /**
+       * #action
+       */
+      setModificationsReady(flag: boolean) {
+        self.modificationsReady = flag
+      },
       /**
        * #action
        */
@@ -172,6 +216,38 @@ function stateModelFactory(
        */
       toggleDrawArcs() {
         self.drawArcs = !self.drawArcsSetting
+      },
+    }))
+    .actions(self => ({
+      afterAttach() {
+        createAutorun(
+          self,
+          async () => {
+            self.setModificationsReady(false)
+            if (!self.autorunReady) {
+              return
+            }
+            const view = getContainingView(self) as LGV
+            const { staticBlocks } = view
+            const { colorBy } = self
+            if (colorBy?.type === 'modifications') {
+              const adapter = getConf(self.parentTrack, 'adapter')
+              const vals = await getUniqueModificationValues(
+                self,
+                adapter,
+                colorBy,
+                staticBlocks,
+              )
+              if (isAlive(self)) {
+                self.updateModificationColorMap(vals)
+                self.setModificationsReady(true)
+              }
+            } else {
+              self.setModificationsReady(true)
+            }
+          },
+          { delay: 1000 },
+        )
       },
     }))
 

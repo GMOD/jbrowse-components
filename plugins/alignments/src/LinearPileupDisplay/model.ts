@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 import { autorun, observable } from 'mobx'
-import { cast, types, addDisposer, Instance } from 'mobx-state-tree'
+import { cast, types, addDisposer, Instance, isAlive } from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
 import {
   AnyConfigurationModel,
@@ -34,8 +34,14 @@ import FilterListIcon from '@mui/icons-material/ClearAll'
 
 // locals
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
-import { getUniqueTagValues, FilterModel } from '../shared'
+import {
+  getUniqueTagValues,
+  getUniqueModificationValues,
+  FilterModel,
+} from '../shared'
 import { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
+import { modificationColors } from '../util'
+import { randomColor } from './util'
 
 // async
 const FilterByTagDlg = lazy(() => import('../shared/FilterByTag'))
@@ -135,10 +141,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     )
     .volatile(() => ({
       colorTagMap: observable.map<string, string>({}),
+      modificationTagMap: observable.map<string, string>({}),
       featureUnderMouseVolatile: undefined as undefined | Feature,
       currSortBpPerPx: 0,
-      colorReady: false,
+      modificationsReady: false,
       sortReady: false,
+      tagsReady: false,
     }))
     .views(self => ({
       get autorunReady() {
@@ -154,8 +162,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setColorReady(flag: boolean) {
-        self.colorReady = flag
+      setModificationsReady(flag: boolean) {
+        self.modificationsReady = flag
+      },
+      /**
+       * #action
+       */
+      setTagsReady(flag: boolean) {
+        self.tagsReady = flag
       },
       /**
        * #action
@@ -199,6 +213,20 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
+      updateModificationColorMap(uniqueModifications: string[]) {
+        uniqueModifications.forEach(value => {
+          if (!self.modificationTagMap.has(value)) {
+            self.modificationTagMap.set(
+              value,
+              modificationColors[value] || randomColor(),
+            )
+          }
+        })
+      },
+
+      /**
+       * #action
+       */
       updateColorTagMap(uniqueTag: string[]) {
         // pale color scheme
         // https://cran.r-project.org/web/packages/khroma/vignettes/tol.html
@@ -232,81 +260,115 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     }))
     .actions(self => ({
       afterAttach() {
-        addDisposer(
-          self,
-          autorun(
-            async () => {
+        function createAutorun(
+          arg: () => Promise<void>,
+          options?: { delay: number },
+        ) {
+          addDisposer(
+            self,
+            autorun(async () => {
               try {
-                const view = getContainingView(self) as LGV
-                if (!self.autorunReady) {
-                  return
-                }
-
-                const { colorBy } = self
-                const { staticBlocks } = view
-                // continually generate the vc pairing, set and rerender if any
-                // new values seen
-                if (colorBy?.tag) {
-                  self.setColorReady(false)
-                  self.updateColorTagMap(
-                    await getUniqueTagValues(self, colorBy, staticBlocks),
-                  )
-                }
-                self.setColorReady(true)
+                await arg()
               } catch (e) {
-                console.error(e)
-                self.setError(e)
+                if (isAlive(self)) {
+                  self.setError(e)
+                }
               }
-            },
-            { delay: 1000 },
-          ),
+            }, options),
+          )
+        }
+        createAutorun(
+          async () => {
+            const view = getContainingView(self) as LGV
+            self.setTagsReady(false)
+            if (!self.autorunReady) {
+              return
+            }
+
+            const { colorBy } = self
+            const { staticBlocks } = view
+            // continually generate the vc pairing, set and rerender if any
+            // new values seen
+            if (colorBy?.tag) {
+              const vals = await getUniqueTagValues(self, colorBy, staticBlocks)
+              if (isAlive(self)) {
+                self.updateColorTagMap(vals)
+                self.setTagsReady(true)
+              }
+            } else {
+              self.setTagsReady(true)
+            }
+          },
+          { delay: 1000 },
         )
+        createAutorun(async () => {
+          self.setModificationsReady(false)
+          if (!self.autorunReady) {
+            return
+          }
+          const { parentTrack, colorBy } = self
+          const { staticBlocks } = getContainingView(self) as LGV
+          if (colorBy?.type === 'modifications') {
+            const adapter = getConf(parentTrack, ['adapter'])
+            const vals = await getUniqueModificationValues(
+              self,
+              adapter,
+              colorBy,
+              staticBlocks,
+            )
+            if (isAlive(self)) {
+              self.updateModificationColorMap(vals)
+              self.setModificationsReady(true)
+            }
+          } else {
+            self.setModificationsReady(true)
+          }
+        })
 
-        addDisposer(
-          self,
-          autorun(
-            async () => {
-              try {
-                const { rpcManager } = getSession(self)
-                const view = getContainingView(self) as LGV
-                if (!self.autorunReady) {
-                  return
-                }
+        createAutorun(
+          async () => {
+            const { rpcManager } = getSession(self)
+            const view = getContainingView(self) as LGV
+            self.setSortReady(false)
+            if (!self.autorunReady) {
+              return
+            }
 
-                const { sortedBy, adapterConfig, rendererType } = self
-                const { bpPerPx } = view
+            const { sortedBy, adapterConfig, rendererType } = self
+            const { bpPerPx } = view
 
-                if (sortedBy) {
-                  const { pos, refName, assemblyName } = sortedBy
-                  // render just the sorted region first
-                  // @ts-expect-error
-                  await self.rendererType.renderInClient(rpcManager, {
+            if (sortedBy) {
+              const { pos, refName, assemblyName } = sortedBy
+              // render just the sorted region first
+              // @ts-expect-error
+              await self.rendererType.renderInClient(rpcManager, {
+                assemblyName,
+                regions: [
+                  {
+                    start: pos,
+                    end: pos + 1,
+                    refName,
                     assemblyName,
-                    regions: [
-                      {
-                        start: pos,
-                        end: pos + 1,
-                        refName,
-                        assemblyName,
-                      },
-                    ],
-                    adapterConfig: adapterConfig,
-                    rendererType: rendererType.name,
-                    sessionId: getRpcSessionId(self),
-                    layoutId: view.id,
-                    timeout: 1000000,
-                    ...self.renderProps(),
-                  })
-                  self.setCurrSortBpPerPx(bpPerPx)
-                }
+                  },
+                ],
+                adapterConfig: adapterConfig,
+                rendererType: rendererType.name,
+                sessionId: getRpcSessionId(self),
+                layoutId: view.id,
+                timeout: 1000000,
+                ...self.renderProps(),
+              })
+              if (isAlive(self)) {
+                self.setCurrSortBpPerPx(bpPerPx)
                 self.setSortReady(true)
-              } catch (e) {
-                console.error(e)
-                self.setError(e)
               }
-            },
-            { delay: 1000 },
-          ),
+            } else {
+              self.setCurrSortBpPerPx(bpPerPx)
+              self.setSortReady(true)
+            }
+          },
+
+          { delay: 1000 },
         )
 
         // autorun synchronizes featureUnderMouse with featureIdUnderMouse
@@ -339,7 +401,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   // feature.id that was returned e.g. that the user hasn't
                   // moused over to a new position during the async operation
                   // above
-                  if (self.featureIdUnderMouse === feature.uniqueId) {
+                  if (
+                    isAlive(self) &&
+                    self.featureIdUnderMouse === feature.uniqueId
+                  ) {
                     self.setFeatureUnderMouse(new SimpleFeature(feature))
                   }
                 }
@@ -429,7 +494,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           assemblyName,
           tag,
         }
-        self.sortReady = false
       },
       setFilterBy(filter: Filter) {
         self.filterBy = cast(filter)
@@ -503,6 +567,23 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       get featureUnderMouse() {
         return self.featureUnderMouseVolatile
       },
+
+      get renderReady() {
+        const view = getContainingView(self) as LGV
+        console.log(
+          self.sortReady,
+          self.modificationsReady,
+          self.tagsReady,
+          self.currSortBpPerPx === view.bpPerPx,
+        )
+
+        return (
+          self.sortReady &&
+          self.modificationsReady &&
+          self.tagsReady &&
+          self.currSortBpPerPx === view.bpPerPx
+        )
+      },
     }))
     .views(self => {
       const {
@@ -564,32 +645,26 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #method
          */
         renderProps() {
-          const view = getContainingView(self) as LGV
           const {
             colorTagMap,
+            modificationTagMap,
             sortedBy,
             colorBy,
             filterBy,
             rpcDriverName,
-            currSortBpPerPx,
-            sortReady,
-            colorReady,
           } = self
 
           const superProps = superRenderProps()
           return {
             ...superProps,
-            notReady:
-              superProps.notReady ||
-              !sortReady ||
-              !colorReady ||
-              (sortedBy && currSortBpPerPx !== view.bpPerPx),
+            notReady: superProps.notReady || !self.renderReady,
             rpcDriverName,
             displayModel: self,
             sortedBy,
             colorBy,
             filterBy: JSON.parse(JSON.stringify(filterBy)),
             colorTagMap: Object.fromEntries(colorTagMap.toJSON()),
+            modificationTagMap: Object.fromEntries(modificationTagMap.toJSON()),
             showSoftClip: self.showSoftClipping,
             config: self.rendererConfig,
             async onFeatureClick(_: unknown, featureId?: string) {

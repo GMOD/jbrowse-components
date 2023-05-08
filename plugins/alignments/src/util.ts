@@ -3,6 +3,8 @@ import { toArray } from 'rxjs/operators'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { AugmentedRegion } from '@jbrowse/core/util'
 import { firstValueFrom } from 'rxjs'
+import { IAnyStateTreeNode, addDisposer, isAlive } from 'mobx-state-tree'
+import { autorun } from 'mobx'
 // get tag from BAM or CRAM feature, where CRAM uses feature.get('tags') and
 // BAM does not
 export function getTag(feature: Feature, tag: string) {
@@ -94,7 +96,7 @@ export async function fetchSequence(
         ...region,
         refName: originalRefName || refName,
         end: end + 1,
-        start: start - 1,
+        start: Math.max(0, start - 1),
       })
       .pipe(toArray()),
   )
@@ -117,3 +119,22 @@ export const modificationColors = {
   e: 'rgb(141, 221, 208)',
   b: 'rgb(202, 71, 47)',
 } as Record<string, string | undefined>
+
+export function createAutorun(
+  self: IAnyStateTreeNode & { setError: (arg: unknown) => void },
+  arg: () => Promise<void>,
+  options?: { delay: number },
+) {
+  addDisposer(
+    self,
+    autorun(async () => {
+      try {
+        await arg()
+      } catch (e) {
+        if (isAlive(self)) {
+          self.setError(e)
+        }
+      }
+    }, options),
+  )
+}
