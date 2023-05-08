@@ -53,6 +53,7 @@ function NoConfigMessage() {
     ['test_data/volvox/theme.json', 'Theme test (wild color)'],
     ['test_data/volvox/theme2.json', 'Theme test (wormbase color)'],
     ['test_data/wgbs/config.json', 'WGBS methylation'],
+    ['test_data/methylation_test/config.json', 'Nanopore methylation'],
   ]
   return (
     <div>

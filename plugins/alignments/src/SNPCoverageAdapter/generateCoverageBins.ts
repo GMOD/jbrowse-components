@@ -61,6 +61,7 @@ export default async function generateCoverageBins(
     const fstart = feature.get('start')
     const fend = feature.get('end')
     const fstrand = feature.get('strand') as -1 | 0 | 1
+    const mismatches = (feature.get('mismatches') as Mismatch[]) || []
 
     for (let j = fstart; j < fend + 1; j++) {
       const i = j - Math.max(extendedRegion.start, 0)
@@ -94,24 +95,23 @@ export default async function generateCoverageBins(
       const ops = parseCigar(feature.get('CIGAR'))
       const fend = feature.get('end')
       if (seq) {
-        getModificationPositions(mm, seq, fstrand).forEach(
-          ({ type, positions }) => {
-            const mod = `mod_${type}`
-            for (const pos of getNextRefPos(ops, positions)) {
-              const epos = pos + fstart - region.start
-              if (epos >= 0 && epos < bins.length && pos + fstart < fend) {
-                const bin = bins[epos]
-                if (bin) {
-                  inc(bin, fstrand, 'cov', mod)
-                } else {
-                  console.warn(
-                    'Undefined position in modifications snpcoverage encountered',
-                  )
-                }
+        const modifications = getModificationPositions(mm, seq, fstrand)
+        for (const { type, positions } of modifications) {
+          const mod = `mod_${type}`
+          for (const pos of getNextRefPos(ops, positions)) {
+            const epos = pos + fstart - region.start
+            if (epos >= 0 && epos < bins.length && pos + fstart < fend) {
+              const bin = bins[epos]
+              if (bin) {
+                inc(bin, fstrand, 'cov', mod)
+              } else {
+                console.warn(
+                  'Undefined position in modifications snpcoverage encountered',
+                )
               }
             }
-          },
-        )
+          }
+        }
       }
     }
 
@@ -125,9 +125,8 @@ export default async function generateCoverageBins(
       if (!seq) {
         continue
       }
-      const mismatches = feature.get('mismatches') as Mismatch[] | undefined
-      const dels = mismatches?.filter(f => f.type === 'deletion')
       const { methBins, methProbs } = getMethBins(feature)
+      const dels = mismatches.filter(f => f.type === 'deletion')
 
       // methylation based coloring takes into account both reference sequence
       // CpG detection and reads
@@ -163,8 +162,8 @@ export default async function generateCoverageBins(
               if (
                 !dels?.some(d =>
                   doesIntersect2(
-                    j + region.start - 1,
-                    j + region.start,
+                    j,
+                    j + 1,
                     d.start + fstart,
                     d.start + fstart + d.length,
                   ),
@@ -179,8 +178,8 @@ export default async function generateCoverageBins(
               if (
                 !dels?.some(d =>
                   doesIntersect2(
-                    j + region.start,
-                    j + region.start + 1,
+                    j + 1,
+                    j + 2,
                     d.start + fstart,
                     d.start + fstart + d.length,
                   ),
@@ -197,7 +196,6 @@ export default async function generateCoverageBins(
     }
 
     // normal SNP based coloring
-    const mismatches = (feature.get('mismatches') as Mismatch[]) || []
     const colorSNPs =
       colorBy?.type !== 'modifications' && colorBy?.type !== 'methylation'
 

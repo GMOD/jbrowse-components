@@ -39,7 +39,7 @@
   "dependencies": {
     "@flatten-js/interval-tree": "^1.0.15",
     "@gmod/bgzf-filehandle": "^1.4.3",
-    "@gmod/gtf": "^0.0.6"
+    "@gmod/gtf": "^0.0.8"
   },
   "peerDependencies": {
     "@jbrowse/core": "^2.0.0",

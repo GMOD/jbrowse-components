@@ -52,12 +52,10 @@ It is likely preferable in most cases to install the tools globally with
 - [`jbrowse add-track TRACK`](#jbrowse-add-track-track)
 - [`jbrowse add-track-json TRACK`](#jbrowse-add-track-json-track)
 - [`jbrowse admin-server`](#jbrowse-admin-server)
-- [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
 - [`jbrowse help [COMMAND]`](#jbrowse-help-command)
 - [`jbrowse remove-track TRACK`](#jbrowse-remove-track-track)
 - [`jbrowse set-default-session`](#jbrowse-set-default-session)
 - [`jbrowse text-index`](#jbrowse-text-index)
-- [`jbrowse upgrade [LOCALPATH]`](#jbrowse-upgrade-localpath)
 
 ## `jbrowse add-assembly SEQUENCE`
 
@@ -367,51 +365,6 @@ EXAMPLES
 _See code:
 [src/commands/admin-server.ts](https://github.com/GMOD/jbrowse-components/blob/v2.5.0/products/jbrowse-cli/src/commands/admin-server.ts)_
 
-## `jbrowse create LOCALPATH`
-
-Downloads and installs the latest JBrowse 2 release
-
-```
-USAGE
-  $ jbrowse create LOCALPATH
-
-ARGUMENTS
-  LOCALPATH  Location where JBrowse 2 will be installed
-
-OPTIONS
-  -f, --force         Overwrites existing JBrowse 2 installation if present in path
-  -h, --help          show CLI help
-  -l, --listVersions  Lists out all versions of JBrowse 2
-
-  -t, --tag=tag       Version of JBrowse 2 to install. Format is v1.0.0.
-                      Defaults to latest
-
-  -u, --url=url       A direct URL to a JBrowse 2 release
-
-  --branch=branch     Download a development build from a named git branch
-
-  --nightly           Download the latest development build from the main branch
-
-EXAMPLES
-  # Download latest release from github, and put in specific path
-  $ jbrowse create /path/to/new/installation
-
-  # Download latest release from github and force overwrite existing contents at path
-  $ jbrowse create /path/to/new/installation --force
-
-  # Download latest release from a specific URL
-  $ jbrowse create /path/to/new/installation --url url.com/directjbrowselink.zip
-
-  # Download a specific tag from github
-  $ jbrowse create /path/to/new/installation --tag v1.0.0
-
-  # List available versions
-  $ jbrowse create --listVersions
-```
-
-_See code:
-[src/commands/create.ts](https://github.com/GMOD/jbrowse-components/blob/v2.5.0/products/jbrowse-cli/src/commands/create.ts)_
-
 ## `jbrowse help [COMMAND]`
 
 display help for jbrowse
@@ -556,55 +509,6 @@ EXAMPLES
 
 _See code:
 [src/commands/text-index.ts](https://github.com/GMOD/jbrowse-components/blob/v2.5.0/products/jbrowse-cli/src/commands/text-index.ts)_
-
-## `jbrowse upgrade [LOCALPATH]`
-
-Upgrades JBrowse 2 to latest version
-
-```
-USAGE
-  $ jbrowse upgrade [LOCALPATH]
-
-ARGUMENTS
-  LOCALPATH  [default: .] Location where JBrowse 2 is installed
-
-OPTIONS
-  -h, --help          show CLI help
-  -l, --listVersions  Lists out all versions of JBrowse 2
-
-  -t, --tag=tag       Version of JBrowse 2 to install. Format is v1.0.0.
-                      Defaults to latest
-
-  -u, --url=url       A direct URL to a JBrowse 2 release
-
-  --branch=branch     Download a development build from a named git branch
-
-  --clean             Removes old js,map,and LICENSE files in the installation
-
-  --nightly           Download the latest development build from the main branch
-
-EXAMPLES
-  # Upgrades current directory to latest jbrowse release
-  $ jbrowse upgrade
-
-  # Upgrade jbrowse instance at a specific filesystem path
-  $ jbrowse upgrade /path/to/jbrowse2/installation
-
-  # Upgrade to a specific tag
-  $ jbrowse upgrade /path/to/jbrowse2/installation --tag v1.0.0
-
-  # List versions available on github
-  $ jbrowse upgrade --listVersions
-
-  # Upgrade from a specific URL
-  $ jbrowse upgrade --url https://sample.com/jbrowse2.zip
-
-  # Get nightly release from main branch
-  $ jbrowse upgrade --nightly
-```
-
-_See code:
-[src/commands/upgrade.ts](https://github.com/GMOD/jbrowse-components/blob/v2.5.0/products/jbrowse-cli/src/commands/upgrade.ts)_
 
 <!-- commandsstop -->
 

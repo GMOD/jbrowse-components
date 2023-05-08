@@ -117,8 +117,8 @@ export function cigarToMismatches(
 }
 
 /**
- * parse a SAM MD tag to find mismatching bases of the template versus the reference
- * @returns array of mismatches and their positions
+ * parse a SAM MD tag to find mismatching bases of the template versus the
+ * reference @returns array of mismatches and their positions
  */
 export function mdToMismatches(
   mdstring: string,
@@ -291,8 +291,7 @@ export function getMethBins(feature: Feature) {
     const probabilities = getModificationProbabilities(feature)
     const modifications = getModificationPositions(mm, seq, fstrand)
     let probIndex = 0
-    for (let i = 0; i < modifications.length; i++) {
-      const { type, positions } = modifications[i]
+    for (const { type, positions } of modifications) {
       if (type === 'm') {
         for (const ref of getNextRefPos(ops, positions)) {
           const prob = probabilities?.[probIndex] || 0

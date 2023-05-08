@@ -1,7 +1,7 @@
-import { fireEvent, within } from '@testing-library/react'
+import { within } from '@testing-library/react'
 import path from 'path'
 // locals
-import { setup, expectCanvasMatch, doBeforeEach, createView, pv } from './util'
+import { setup, expectCanvasMatch, doBeforeEach, createView } from './util'
 import config from '../../test_data/methylation_test/config.json'
 
 setup()
