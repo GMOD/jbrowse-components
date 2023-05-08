@@ -167,9 +167,9 @@ function PileupRendering(props: {
   // need to call this in render so we get the right observer behavior
   return (
     <div
-      data-testid={`pileup-${[sortedBy?.type, colorBy?.type, colorBy?.tag].join(
-        '-',
-      )}`}
+      data-testid={`pileup-${[sortedBy?.type, colorBy?.type, colorBy?.tag]
+        .filter(f => !!f)
+        .join('-')}`}
       style={{ position: 'relative', width: canvasWidth, height }}
     >
       <PrerenderedCanvas

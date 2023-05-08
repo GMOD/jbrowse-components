@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 import { autorun, observable } from 'mobx'
-import { cast, types, addDisposer, Instance, isAlive } from 'mobx-state-tree'
+import { cast, types, addDisposer, Instance } from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
 import {
   AnyConfigurationModel,
@@ -328,6 +328,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return
         }
 
+        self.sortReady = false
         self.sortedBy = {
           type,
           pos: centerBp,
@@ -758,10 +759,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             // new values seen
             if (colorBy?.tag) {
               const vals = await getUniqueTagValues(self, colorBy, staticBlocks)
-              if (isAlive(self)) {
-                self.updateColorTagMap(vals)
-                self.setTagsReady(true)
-              }
+              self.updateColorTagMap(vals)
+              self.setTagsReady(true)
             } else {
               self.setTagsReady(true)
             }
@@ -783,13 +782,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               colorBy,
               staticBlocks,
             )
-            if (isAlive(self)) {
-              self.updateModificationColorMap(vals)
-              self.setModificationsReady(true)
-            }
-          } else {
-            self.setModificationsReady(true)
+            self.updateModificationColorMap(vals)
           }
+          self.setModificationsReady(true)
         })
 
         createAutorun(
@@ -805,7 +800,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             const { bpPerPx } = view
 
             if (sortedBy) {
-              self.setSortReady(false)
               const { pos, refName, assemblyName } = sortedBy
               // render just the sorted region first
               // @ts-expect-error
@@ -826,14 +820,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 timeout: 1_000_000,
                 ...self.renderPropsPre(),
               })
-              if (isAlive(self)) {
-                self.setCurrSortBpPerPx(bpPerPx)
-                self.setSortReady(true)
-              }
-            } else {
-              self.setCurrSortBpPerPx(bpPerPx)
-              self.setSortReady(true)
             }
+            self.setCurrSortBpPerPx(bpPerPx)
+            self.setSortReady(true)
           },
           { delay: 1000 },
         )
@@ -868,10 +857,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   // feature.id that was returned e.g. that the user hasn't
                   // moused over to a new position during the async operation
                   // above
-                  if (
-                    isAlive(self) &&
-                    self.featureIdUnderMouse === feature.uniqueId
-                  ) {
+                  if (self.featureIdUnderMouse === feature.uniqueId) {
                     self.setFeatureUnderMouse(new SimpleFeature(feature))
                   }
                 }

@@ -84,7 +84,7 @@ test('color by tag', async () => {
   })
   fireEvent.click(await findByText('Submit'))
   // wait for pileup track to render with color
-  await findAllByTestId('pileup-tagHP', ...opts)
+  await findAllByTestId('pileup-tag-HP', ...opts)
   const f1 = within(await findByTestId('Blockset-pileup'))
   expectCanvasMatch(await f1.findByTestId(pv('39805..40176-0'), ...opts))
 }, 30000)
