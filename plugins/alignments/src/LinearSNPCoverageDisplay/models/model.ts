@@ -162,7 +162,6 @@ function stateModelFactory(
         /**
          * #getter
          */
-
         get autorunReady() {
           const view = getContainingView(self) as LGV
           return (
@@ -173,6 +172,15 @@ function stateModelFactory(
           )
         },
 
+        get renderReady() {
+          const superProps = superRenderProps()
+          return !superProps.notReady && self.modificationsReady
+        },
+
+        get ready() {
+          return this.renderReady
+        },
+
         /**
          * #method
          */
@@ -181,7 +189,7 @@ function stateModelFactory(
           const { colorBy, filterBy, modificationTagMap } = self
           return {
             ...superProps,
-            notReady: superProps.notReady || !self.modificationsReady,
+            notReady: !this.ready,
             modificationTagMap: Object.fromEntries(modificationTagMap.toJSON()),
 
             // must use getSnapshot because otherwise changes to e.g. just the

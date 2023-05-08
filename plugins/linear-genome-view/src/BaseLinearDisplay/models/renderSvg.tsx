@@ -24,7 +24,6 @@ export default async function renderBaseLinearDisplaySvg(
   const { overrideHeight } = opts
   const view = getContainingView(self) as LinearGenomeViewModel
   const { offsetPx: viewOffsetPx, roundedDynamicBlocks, width } = view
-
   const renderings = await Promise.all(
     roundedDynamicBlocks.map(async block => {
       const blockState = BlockState.create({

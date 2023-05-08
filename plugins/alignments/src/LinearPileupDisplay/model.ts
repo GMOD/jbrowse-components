@@ -208,6 +208,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       setColorScheme(colorScheme: { type: string; tag?: string }) {
         self.colorTagMap = observable.map({}) // clear existing mapping
         self.colorBy = cast(colorScheme)
+        self.tagsReady = false
+        self.modificationsReady = false
       },
 
       /**
@@ -409,7 +411,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       get featureUnderMouse() {
         return self.featureUnderMouseVolatile
       },
-
+      /**
+       * #getter
+       */
       get renderReady() {
         const view = getContainingView(self) as LGV
         return (
@@ -570,6 +574,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         // renderProps and renderPropsPre are separated due to sortReady
         // causing a infinite loop in the sort autorun, since the sort autorun
         // uses renderProps
+        /**
+         * #method
+         */
         renderProps() {
           const pre = this.renderPropsPre()
           return {
@@ -748,27 +755,21 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           self,
           async () => {
             const view = getContainingView(self) as LGV
-            self.setTagsReady(false)
             if (!self.autorunReady) {
               return
             }
 
             const { colorBy } = self
             const { staticBlocks } = view
-            // continually generate the vc pairing, set and rerender if any
-            // new values seen
             if (colorBy?.tag) {
               const vals = await getUniqueTagValues(self, colorBy, staticBlocks)
               self.updateColorTagMap(vals)
-              self.setTagsReady(true)
-            } else {
-              self.setTagsReady(true)
             }
+            self.setTagsReady(true)
           },
           { delay: 1000 },
         )
         createAutorun(self, async () => {
-          self.setModificationsReady(false)
           if (!self.autorunReady) {
             return
           }

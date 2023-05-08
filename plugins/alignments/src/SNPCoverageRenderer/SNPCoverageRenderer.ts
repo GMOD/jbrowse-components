@@ -23,6 +23,7 @@ export interface RenderArgsDeserializedWithFeatures
   features: Map<string, Feature>
   ticks: { values: number[] }
   displayCrossHatches: boolean
+  modificationTagMap: Record<string, string | undefined>
 }
 
 type Counts = {
@@ -49,6 +50,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       regions,
       bpPerPx,
       displayCrossHatches,
+      modificationTagMap = {},
       scaleOpts,
       height: unadjustedHeight,
       theme: configTheme,
@@ -153,7 +155,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
         const { total } = snpinfo.cov[base]
         ctx.fillStyle =
           colorForBase[base] ||
-          modificationColors[base.replace('mod_', '')] ||
+          modificationTagMap[base.replace('mod_', '')] ||
           'black'
 
         const height = toHeight(score)

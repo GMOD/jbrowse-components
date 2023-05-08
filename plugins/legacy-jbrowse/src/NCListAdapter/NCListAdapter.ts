@@ -28,6 +28,7 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
     const refNames = this.getConf('refNames')
     const rootUrlTemplate = this.getConf('rootUrlTemplate')
     this.configRefNames = refNames
+
     this.nclist = new NCListStore({
       baseUrl: '',
       urlTemplate: rootUrlTemplate.uri,

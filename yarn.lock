@@ -1699,7 +1699,7 @@
     "@gmod/bgzf-filehandle" "^1.4.0"
     generic-filehandle "^3.0.0"
 
-"@gmod/nclist@^0.2.0":
+"@gmod/nclist@^0.2.1":
   version "0.2.2"
   resolved "https://registry.yarnpkg.com/@gmod/nclist/-/nclist-0.2.2.tgz#c550efae85f61b4c42abfe92f07ae74db27e66ba"
   integrity sha512-LzIYvOSul9rl4y9eGIZx2ltTpTsXVWlEbW/rkauKSLjge6Pnv9XgkT43fCalYMi9Bzniwm5eF59JPi2eM5pcMg==

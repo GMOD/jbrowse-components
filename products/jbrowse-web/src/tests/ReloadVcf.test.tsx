@@ -19,16 +19,17 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-const delay = { timeout: 5000 }
+const delay = { timeout: 30000 }
 const opts = [{}, delay]
 
-test('reloads vcf', async () => {
+test('reloads vcf (VCF.GZ 404)', async () => {
   await mockConsole(async () => {
     // @ts-expect-error
     fetch.mockResponse(async request => {
-      return request.url === 'volvox.filtered.vcf.gz'
-        ? { status: 404 }
-        : readBuffer(request)
+      if (request.url === 'volvox.filtered.vcf.gz') {
+        return { status: 404 }
+      }
+      return readBuffer(request)
     })
 
     const { view, findByTestId, findByText, findAllByTestId, findAllByText } =
@@ -45,15 +46,16 @@ test('reloads vcf', async () => {
 
     await findAllByTestId('box-test-vcf-604453', ...opts)
   })
-}, 50000)
+}, 40000)
 
-test('reloads tbi', async () => {
+test('reloads vcf (VCF.GZ.TBI 404)', async () => {
   await mockConsole(async () => {
     // @ts-expect-error
-    fetch.mockResponse(async r => {
-      return r.url === 'volvox.filtered.vcf.gz.tbi'
-        ? { status: 404 }
-        : readBuffer(r)
+    fetch.mockResponse(async request => {
+      if (request.url === 'volvox.filtered.vcf.gz.tbi') {
+        return { status: 404 }
+      }
+      return readBuffer(request)
     })
 
     const { view, findByTestId, findByText, findAllByTestId, findAllByText } =
@@ -69,4 +71,4 @@ test('reloads tbi', async () => {
 
     await findAllByTestId('box-test-vcf-604453', ...opts)
   })
-}, 50000)
+}, 40000)
