@@ -9,6 +9,7 @@ import {
   SnapshotIn,
   cast,
   getSnapshot,
+  isStateTreeNode,
   types,
 } from 'mobx-state-tree'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
@@ -118,3 +119,13 @@ export default function BaseRootModelTypeF(
 
 export type BaseRootModelType = ReturnType<typeof BaseRootModelTypeF>
 export type BaseRootModel = Instance<BaseRootModelType>
+
+/** Type guard for checking if something is a JB root model */
+export function isRootModel(thing: unknown): thing is BaseRootModelType {
+  return (
+    isStateTreeNode(thing) &&
+    'session' in thing &&
+    'jbrowse' in thing &&
+    'assemblyManager' in thing
+  )
+}
