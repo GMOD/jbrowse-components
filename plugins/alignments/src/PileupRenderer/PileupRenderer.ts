@@ -73,7 +73,9 @@ function getColorBaseMap(theme: Theme) {
 function getContrastBaseMap(theme: Theme) {
   const map = getColorBaseMap(theme)
   return Object.fromEntries(
-    Object.entries(map).map(([k, v]) => [k, theme.palette.getContrastText(v)]),
+    Object.entries(map).map(
+      ([k, v]) => [k, theme.palette.getContrastText(v)] as const,
+    ),
   )
 }
 
@@ -772,7 +774,7 @@ export default class PileupRenderer extends BoxRendererType {
   }: {
     ctx: CanvasRenderingContext2D
     feat: LayoutFeature
-    renderArgs: RenderArgsDeserializedWithFeaturesAndLayout
+    renderArgs: RenderArgsWithColor
     colorForBase: { [key: string]: string }
     contrastForBase: { [key: string]: string }
     mismatchAlpha?: boolean
@@ -825,12 +827,10 @@ export default class PileupRenderer extends BoxRendererType {
             widthPx,
             heightPx,
             canvasWidth,
-
             mismatchAlpha
               ? mismatch.qual === undefined
                 ? baseColor
-                : // @ts-expect-error
-                  Color(baseColor)
+                : Color(baseColor)
                     .alpha(Math.min(1, mismatch.qual / 50))
                     .hsl()
                     .string()
@@ -846,8 +846,7 @@ export default class PileupRenderer extends BoxRendererType {
           ctx.fillStyle = mismatchAlpha
             ? mismatch.qual === undefined
               ? contrastColor
-              : // @ts-expect-error
-                Color(contrastColor)
+              : Color(contrastColor)
                   .alpha(Math.min(1, mismatch.qual / 50))
                   .hsl()
                   .string()
