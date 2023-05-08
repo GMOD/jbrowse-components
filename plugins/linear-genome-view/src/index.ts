@@ -62,15 +62,16 @@ export type { BaseLinearDisplayModel, BlockModel } from './BaseLinearDisplay'
 
 export { configSchemaFactory as linearBareDisplayConfigSchemaFactory } from './LinearBareDisplay'
 export {
-  BlockMsg,
   baseLinearDisplayConfigSchema,
-  BaseLinearDisplayComponent,
   BaseLinearDisplay,
+  BlockMsg,
+  BaseLinearDisplayComponent,
+  HeightMixin,
 } from './BaseLinearDisplay'
 export {
   type LinearGenomeViewModel,
-  RefNameAutocomplete,
   type LinearGenomeViewStateModel,
+  RefNameAutocomplete,
   SearchBox,
 } from './LinearGenomeView'
 export {

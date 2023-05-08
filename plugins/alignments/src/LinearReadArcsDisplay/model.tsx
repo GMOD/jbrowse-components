@@ -7,12 +7,7 @@ import {
   ConfigurationSchema,
   getConf,
 } from '@jbrowse/core/configuration'
-import { getSession, getContainingView } from '@jbrowse/core/util'
-
-import {
-  BaseLinearDisplay,
-  LinearGenomeViewModel,
-} from '@jbrowse/plugin-linear-genome-view'
+import { getSession } from '@jbrowse/core/util'
 
 // icons
 import PaletteIcon from '@mui/icons-material/Palette'
@@ -22,15 +17,11 @@ import FilterListIcon from '@mui/icons-material/ClearAll'
 import { FilterModel } from '../shared'
 import drawFeats from './drawFeats'
 import { fetchChains, ChainData } from '../shared/fetchChains'
+import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
+import { HeightMixin } from '@jbrowse/plugin-linear-genome-view'
 
 // async
 const FilterByTagDlg = lazy(() => import('../shared/FilterByTag'))
-
-// stabilize clipid under test for snapshot
-function getId(id: string) {
-  const isJest = typeof jest === 'undefined'
-  return `arc-clip-${isJest ? id : 'jest'}`
-}
 
 interface Filter {
   flagInclude: number
@@ -39,17 +30,16 @@ interface Filter {
   tagFilter?: { tag: string; value: string }
 }
 
-type LGV = LinearGenomeViewModel
-
 /**
  * #stateModel LinearReadArcsDisplay
- * extends `BaseLinearDisplay`
+ * extends `BaseDisplay`, it is not a block based track, hence not BaseLinearDisplay
  */
 function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
     .compose(
       'LinearReadArcsDisplay',
-      BaseLinearDisplay,
+      BaseDisplay,
+      HeightMixin(),
       types.model({
         /**
          * #property
@@ -101,9 +91,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       loading: false,
       drawn: false,
       chainData: undefined as ChainData | undefined,
+      message: '',
       ref: null as HTMLCanvasElement | null,
       lastDrawnOffsetPx: 0,
     }))
+
     .actions(self => ({
       /**
        * #action
@@ -196,44 +188,35 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
     }))
 
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get lineWidthSetting() {
+        return self.lineWidth ?? getConf(self, 'lineWidth')
+      },
+
+      /**
+       * #getter
+       */
+      get jitterVal(): number {
+        return self.jitter ?? getConf(self, 'jitter')
+      },
+    }))
     .views(self => {
       const {
         trackMenuItems: superTrackMenuItems,
         renderProps: superRenderProps,
       } = self
-
       return {
         /**
-         * #getter
+         * #method
+         * only used to tell system it's ready for export
          */
-        get lineWidthSetting() {
-          return self.lineWidth ?? getConf(self, 'lineWidth')
-        },
-
-        /**
-         * #getter
-         */
-        get jitterVal(): number {
-          return self.jitter ?? getConf(self, 'jitter')
-        },
-        /**
-         * #getter
-         */
-        get ready() {
-          return !!self.chainData
-        },
-        // we don't use a server side renderer, but we need to provide this
-        // to avoid confusing the system currently
-        get rendererTypeName() {
-          return 'PileupRenderer'
-        },
-        // we don't use a server side renderer, so this fills in minimal
-        // info so as not to crash
         renderProps() {
           return {
             ...superRenderProps(),
-            // never ready, we don't want to use server side render
-            notReady: true,
+            notReady: !self.chainData,
             config: ConfigurationSchema('empty', {}).create(),
           }
         },
@@ -276,19 +259,19 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               subMenu: [
                 {
                   type: 'checkbox',
-                  checked: this.jitterVal === 0,
+                  checked: self.jitterVal === 0,
                   label: 'None',
                   onClick: () => self.setJitter(0),
                 },
                 {
                   type: 'checkbox',
-                  checked: this.jitterVal === 2,
+                  checked: self.jitterVal === 2,
                   label: 'Small',
                   onClick: () => self.setJitter(2),
                 },
                 {
                   type: 'checkbox',
-                  checked: this.jitterVal === 10,
+                  checked: self.jitterVal === 10,
                   label: 'Large',
                   onClick: () => self.setJitter(10),
                 },
@@ -338,53 +321,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #method
        */
-      async renderSvg(opts: { rasterizeLayers?: boolean }) {
-        const view = getContainingView(self) as LGV
-        const width = view.dynamicBlocks.totalWidthPx
-        const height = self.height
-        let str
-        if (opts.rasterizeLayers) {
-          const canvas = document.createElement('canvas')
-          canvas.width = width * 2
-          canvas.height = height * 2
-          const ctx = canvas.getContext('2d')
-          if (!ctx) {
-            return
-          }
-          ctx.scale(2, 2)
-          await drawFeats(self, ctx)
-          str = (
-            <image
-              width={width}
-              height={height}
-              xlinkHref={canvas.toDataURL('image/png')}
-            />
-          )
-        } else {
-          // @ts-ignore
-          const C2S = await import('canvas2svg')
-          const ctx = new C2S.default(width, height)
-          await drawFeats(self, ctx)
-          const clipid = getId(self.id)
-          str = (
-            <>
-              <defs>
-                <clipPath id={clipid}>
-                  <rect x={0} y={0} width={width} height={height} />
-                </clipPath>
-              </defs>
-              <g
-                /* eslint-disable-next-line react/no-danger */
-                dangerouslySetInnerHTML={{
-                  __html: ctx.getSvg().innerHTML,
-                }}
-                clipPath={`url(#${clipid})`}
-              />
-            </>
-          )
-        }
-
-        return <>{str}</>
+      async renderSvg(opts: {
+        rasterizeLayers?: boolean
+      }): Promise<React.ReactNode> {
+        const { renderReadArcSvg } = await import('./renderSvg')
+        return renderReadArcSvg(self as LinearReadArcsDisplayModel, opts)
       },
     }))
     .actions(self => ({

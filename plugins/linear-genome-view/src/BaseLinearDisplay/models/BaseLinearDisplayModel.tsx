@@ -33,6 +33,7 @@ import { getDisplayStr, getFeatureDensityStatsPre } from './util'
 import configSchema from './configSchema'
 import autorunFeatureDensityStats from './autorunFeatureDensityStats'
 import renderBaseLinearDisplaySvg from './renderSvg'
+import HeightMixin from './HeightMixin'
 
 type LGV = LinearGenomeViewModel
 
@@ -57,6 +58,7 @@ function stateModelFactory() {
     .compose(
       'BaseLinearDisplay',
       BaseDisplay,
+      HeightMixin(),
       types.model({
         /**
          * #property

@@ -9,7 +9,6 @@ import {
   WiggleBaseRenderer,
   YSCALEBAR_LABEL_OFFSET,
 } from '@jbrowse/plugin-wiggle'
-import { modificationColors } from '../util'
 
 export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
   bpPerPx: number
@@ -23,7 +22,7 @@ export interface RenderArgsDeserializedWithFeatures
   features: Map<string, Feature>
   ticks: { values: number[] }
   displayCrossHatches: boolean
-  modificationTagMap: Record<string, string | undefined>
+  modificationTagMap?: Record<string, string | undefined>
 }
 
 type Counts = {

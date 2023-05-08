@@ -10,3 +10,4 @@ export {
   Tooltip,
   BlockMsg,
 } from './components/BaseLinearDisplay'
+export { default as HeightMixin } from './models/HeightMixin'
