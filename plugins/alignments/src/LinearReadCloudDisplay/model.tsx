@@ -17,7 +17,11 @@ import { FilterModel } from '../shared'
 import { fetchChains, ChainData } from '../shared/fetchChains'
 import drawFeats from './drawFeats'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import { HeightMixin } from '@jbrowse/plugin-linear-genome-view'
+import {
+  FeatureDensityMixin,
+  TrackHeightMixin,
+} from '@jbrowse/plugin-linear-genome-view'
+import { createAutorun } from '../util'
 
 // async
 const FilterByTagDlg = lazy(() => import('../shared/FilterByTag'))
@@ -38,7 +42,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     .compose(
       'LinearReadCloudDisplay',
       BaseDisplay,
-      HeightMixin(),
+      TrackHeightMixin(),
+      FeatureDensityMixin(),
       types.model({
         /**
          * #property
@@ -69,22 +74,21 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     .volatile(() => ({
       loading: false,
       drawn: false,
-      message: '',
       chainData: undefined as ChainData | undefined,
       ref: null as HTMLCanvasElement | null,
       lastDrawnOffsetPx: 0,
     }))
-
     .actions(self => ({
       /**
        * #action
-       * internal, a reference to a HTMLCanvas because we use a autorun to draw the canvas
        */
       reload() {
         self.error = undefined
       },
       /**
        * #action
+       * internal, a reference to a HTMLCanvas because we use a autorun to draw
+       * the canvas
        */
       setRef(ref: HTMLCanvasElement | null) {
         self.ref = ref
@@ -137,13 +141,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       } = self
 
       return {
-        /**
-         * #getter
-         */
-        get ready() {
-          return !!self.chainData
-        },
-
         // we don't use a server side renderer, so this fills in minimal
         // info so as not to crash
         renderProps() {
@@ -215,32 +212,25 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           autorun(() => fetchChains(self), { delay: 1000 }),
         )
 
-        addDisposer(
+        createAutorun(
           self,
-          autorun(
-            async () => {
-              try {
-                const canvas = self.ref
-                if (!canvas) {
-                  return
-                }
-                const ctx = canvas.getContext('2d')
-                if (!ctx) {
-                  return
-                }
-                ctx.clearRect(0, 0, canvas.width, self.height * 2)
-                ctx.resetTransform()
-                ctx.scale(2, 2)
+          async () => {
+            const canvas = self.ref
+            if (!canvas) {
+              return
+            }
+            const ctx = canvas.getContext('2d')
+            if (!ctx) {
+              return
+            }
+            ctx.clearRect(0, 0, canvas.width, self.height * 2)
+            ctx.resetTransform()
+            ctx.scale(2, 2)
 
-                await drawFeats(self, ctx)
-                self.setDrawn(true)
-              } catch (e) {
-                console.error(e)
-                self.setError(e)
-              }
-            },
-            { delay: 1000 },
-          ),
+            await drawFeats(self, ctx)
+            self.setDrawn(true)
+          },
+          { delay: 1000 },
         )
       },
     }))

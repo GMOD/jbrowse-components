@@ -10,4 +10,5 @@ export {
   Tooltip,
   BlockMsg,
 } from './components/BaseLinearDisplay'
-export { default as HeightMixin } from './models/HeightMixin'
+export { default as TrackHeightMixin } from './models/TrackHeightMixin'
+export { default as FeatureDensityMixin } from './models/FeatureDensityMixin'

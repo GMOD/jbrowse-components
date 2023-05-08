@@ -2,7 +2,7 @@
 import React from 'react'
 import { ThemeOptions } from '@mui/material'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { MenuItem } from '@jbrowse/core/ui'
 import {
   getContainingView,
@@ -13,9 +13,7 @@ import {
   isFeature,
   Feature,
 } from '@jbrowse/core/util'
-import { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { BaseBlock } from '@jbrowse/core/util/blockTypes'
-import { Region } from '@jbrowse/core/util/types'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { autorun } from 'mobx'
@@ -27,13 +25,11 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 // locals
 import { LinearGenomeViewModel, ExportSvgOptions } from '../../LinearGenomeView'
 import { Tooltip } from '../components/BaseLinearDisplay'
-import TooLargeMessage from '../components/TooLargeMessage'
 import BlockState from './serverSideRenderedBlock'
-import { getDisplayStr, getFeatureDensityStatsPre } from './util'
 import configSchema from './configSchema'
-import autorunFeatureDensityStats from './autorunFeatureDensityStats'
 import renderBaseLinearDisplaySvg from './renderSvg'
-import HeightMixin from './HeightMixin'
+import TrackHeightMixin from './TrackHeightMixin'
+import FeatureDensityMixin from './FeatureDensityMixin'
 
 type LGV = LinearGenomeViewModel
 
@@ -47,8 +43,6 @@ export interface Layout {
 
 type LayoutRecord = [number, number, number, number]
 
-const minDisplayHeight = 20
-
 /**
  * #stateModel BaseLinearDisplay
  * extends `BaseDisplay`
@@ -58,31 +52,14 @@ function stateModelFactory() {
     .compose(
       'BaseLinearDisplay',
       BaseDisplay,
-      HeightMixin(),
+      TrackHeightMixin(),
+      FeatureDensityMixin(),
       types.model({
-        /**
-         * #property
-         */
-        heightPreConfig: types.maybe(
-          types.refinement(
-            'displayHeight',
-            types.number,
-            n => n >= minDisplayHeight,
-          ),
-        ),
         /**
          * #property
          * updated via autorun
          */
         blockState: types.map(BlockState),
-        /**
-         * #property
-         */
-        userBpPerPxLimit: types.maybe(types.number),
-        /**
-         * #property
-         */
-        userByteSizeLimit: types.maybe(types.number),
         /**
          * #property
          */
@@ -92,18 +69,10 @@ function stateModelFactory() {
     .volatile(() => ({
       currBpPerPx: 0,
       scrollTop: 0,
-      message: '',
       featureIdUnderMouse: undefined as undefined | string,
       contextMenuFeature: undefined as undefined | Feature,
-      featureDensityStatsP: undefined as
-        | undefined
-        | Promise<FeatureDensityStats>,
-      featureDensityStats: undefined as undefined | FeatureDensityStats,
     }))
     .views(self => ({
-      get height() {
-        return self.heightPreConfig ?? (getConf(self, 'height') as number)
-      },
       /**
        * #getter
        */
@@ -114,12 +83,11 @@ function stateModelFactory() {
        * #getter
        */
       get blockDefinitions() {
-        const { blockType } = this
         const view = getContainingView(self) as LGV
         if (!view.initialized) {
           throw new Error('view not initialized yet')
         }
-        return view[blockType]
+        return view[this.blockType]
       },
     }))
     .views(self => ({
@@ -218,149 +186,14 @@ function stateModelFactory() {
         })
         return ret
       },
-
-      /**
-       * #getter
-       */
-      get currentBytesRequested() {
-        return self.featureDensityStats?.bytes || 0
-      },
-
-      /**
-       * #getter
-       */
-      get currentFeatureScreenDensity() {
-        const view = getContainingView(self) as LGV
-        return (self.featureDensityStats?.featureDensity || 0) * view.bpPerPx
-      },
-
-      /**
-       * #getter
-       */
-      get maxFeatureScreenDensity() {
-        return getConf(self, 'maxFeatureScreenDensity')
-      },
-      /**
-       * #getter
-       */
-      get featureDensityStatsReady() {
-        return !!self.featureDensityStats || !!self.userBpPerPxLimit
-      },
-
-      /**
-       * #getter
-       */
-      get maxAllowableBytes() {
-        return (
-          self.userByteSizeLimit ||
-          self.featureDensityStats?.fetchSizeLimit ||
-          (getConf(self, 'fetchSizeLimit') as number)
-        )
-      },
     }))
+
     .actions(self => ({
-      /**
-       * #action
-       */
-      setMessage(message: string) {
-        self.message = message
-      },
-    }))
-    .actions(self => ({
-      afterAttach() {
-        // watch the parent's blocks to update our block state when they change,
-        // then we recreate the blocks on our own model (creating and deleting to
-        // match the parent blocks)
-        addDisposer(
-          self,
-          autorun(() => {
-            const blocksPresent: { [key: string]: boolean } = {}
-            const view = getContainingView(self) as LGV
-            if (view.initialized) {
-              self.blockDefinitions.contentBlocks.forEach(block => {
-                blocksPresent[block.key] = true
-                if (!self.blockState.has(block.key)) {
-                  this.addBlock(block.key, block)
-                }
-              })
-              self.blockState.forEach((_, key) => {
-                if (!blocksPresent[key]) {
-                  this.deleteBlock(key)
-                }
-              })
-            }
-          }),
-        )
-      },
-
-      /**
-       * #action
-       */
-      async getFeatureDensityStats() {
-        if (!self.featureDensityStatsP) {
-          self.featureDensityStatsP = getFeatureDensityStatsPre(self).catch(
-            e => {
-              this.setFeatureDensityStatsP(undefined)
-              throw e
-            },
-          )
-        }
-        return self.featureDensityStatsP
-      },
-
-      /**
-       * #action
-       */
-      setFeatureDensityStatsP(arg: any) {
-        self.featureDensityStatsP = arg
-      },
-
-      /**
-       * #action
-       */
-      setFeatureDensityStats(featureDensityStats?: FeatureDensityStats) {
-        self.featureDensityStats = featureDensityStats
-      },
-      /**
-       * #action
-       */
-      clearFeatureDensityStats() {
-        self.featureDensityStatsP = undefined
-        self.featureDensityStats = undefined
-      },
-      /**
-       * #action
-       */
-      setHeight(displayHeight: number) {
-        self.heightPreConfig = Math.max(displayHeight, minDisplayHeight)
-        return self.height
-      },
-      /**
-       * #action
-       */
-      resizeHeight(distance: number) {
-        const oldHeight = self.height
-        const newHeight = this.setHeight(self.height + distance)
-        return newHeight - oldHeight
-      },
-
       /**
        * #action
        */
       setScrollTop(scrollTop: number) {
         self.scrollTop = scrollTop
-      },
-
-      /**
-       * #action
-       */
-      setFeatureDensityStatsLimit(stats?: FeatureDensityStats) {
-        const view = getContainingView(self) as LGV
-        if (stats?.bytes) {
-          self.userByteSizeLimit = stats.bytes
-        } else {
-          self.userBpPerPxLimit = view.bpPerPx
-        }
       },
 
       /**
@@ -375,12 +208,7 @@ function stateModelFactory() {
           }),
         )
       },
-      /**
-       * #action
-       */
-      setCurrBpPerPx(n: number) {
-        self.currBpPerPx = n
-      },
+
       /**
        * #action
        */
@@ -430,44 +258,6 @@ function stateModelFactory() {
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       * region is too large if:
-       * - stats are ready
-       * - region is greater than 20kb (don't warn when zoomed in less than that)
-       * - and bytes is greater than max allowed bytes or density greater than max
-       *   density
-       */
-      get regionTooLarge() {
-        const view = getContainingView(self) as LGV
-        if (
-          !self.featureDensityStatsReady ||
-          view.dynamicBlocks.totalBp < 20_000
-        ) {
-          return false
-        }
-        return (
-          self.currentBytesRequested > self.maxAllowableBytes ||
-          (self.userBpPerPxLimit
-            ? view.bpPerPx > self.userBpPerPxLimit
-            : self.currentFeatureScreenDensity > self.maxFeatureScreenDensity)
-        )
-      },
-
-      /**
-       * #getter
-       * only shows a message of bytes requested is defined, the feature density
-       * based stats don't produce any helpful message besides to zoom in
-       */
-      get regionTooLargeReason() {
-        const req = self.currentBytesRequested
-        const max = self.maxAllowableBytes
-
-        return req && req > max
-          ? `Requested too much data (${getDisplayStr(req)})`
-          : ''
-      },
-
       get notReady() {
         const view = getContainingView(self) as LGV
         return (
@@ -491,36 +281,8 @@ function stateModelFactory() {
         },
       }
     })
-    .actions(self => ({
-      afterAttach() {
-        addDisposer(
-          self,
-          autorun(() =>
-            autorunFeatureDensityStats(self as BaseLinearDisplayModel),
-          ),
-        )
-      },
-    }))
+
     .views(self => ({
-      /**
-       * #method
-       */
-      regionCannotBeRenderedText(_region: Region) {
-        return self.regionTooLarge ? 'Force load to see features' : ''
-      },
-
-      /**
-       * #method
-       * @param region -
-       * @returns falsy if the region is fine to try rendering. Otherwise,
-       *  return a react node + string of text.
-       *  string of text describes why it cannot be rendered
-       *  react node allows user to force load at current setting
-       */
-      regionCannotBeRendered(_region: Region) {
-        return self.regionTooLarge ? <TooLargeMessage model={self} /> : null
-      },
-
       /**
        * #method
        */
@@ -608,6 +370,32 @@ function stateModelFactory() {
         },
       ) {
         return renderBaseLinearDisplaySvg(self as BaseLinearDisplayModel, opts)
+      },
+      afterAttach() {
+        // watch the parent's blocks to update our block state when they change,
+        // then we recreate the blocks on our own model (creating and deleting to
+        // match the parent blocks)
+        addDisposer(
+          self,
+          autorun(() => {
+            const blocksPresent: { [key: string]: boolean } = {}
+            const view = getContainingView(self) as LGV
+            if (!view.initialized) {
+              return
+            }
+            self.blockDefinitions.contentBlocks.forEach(block => {
+              blocksPresent[block.key] = true
+              if (!self.blockState.has(block.key)) {
+                self.addBlock(block.key, block)
+              }
+            })
+            self.blockState.forEach((_, key) => {
+              if (!blocksPresent[key]) {
+                self.deleteBlock(key)
+              }
+            })
+          }),
+        )
       },
     }))
     .preProcessSnapshot(snap => {

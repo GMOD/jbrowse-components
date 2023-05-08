@@ -66,7 +66,8 @@ export {
   BaseLinearDisplay,
   BlockMsg,
   BaseLinearDisplayComponent,
-  HeightMixin,
+  TrackHeightMixin,
+  FeatureDensityMixin,
 } from './BaseLinearDisplay'
 export {
   type LinearGenomeViewModel,

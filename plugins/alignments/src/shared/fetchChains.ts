@@ -5,6 +5,8 @@ import {
 } from '@jbrowse/core/util'
 import { getSnapshot, IAnyStateTreeNode } from 'mobx-state-tree'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { LinearReadArcsDisplayModel } from '../LinearReadArcsDisplay/model'
+import { LinearReadCloudDisplayModel } from '../LinearReadCloudDisplay/model'
 
 type LGV = LinearGenomeViewModel
 
@@ -36,13 +38,15 @@ export interface ChainData {
   stats?: ChainStats
 }
 
-export async function fetchChains(self: IAnyStateTreeNode) {
+export async function fetchChains(
+  self: LinearReadArcsDisplayModel | LinearReadCloudDisplayModel,
+) {
   try {
     const { rpcSessionId: sessionId } = getContainingTrack(self)
     const { rpcManager } = getSession(self)
     const view = getContainingView(self) as LGV
 
-    if (!view.initialized || self.error) {
+    if (!view.initialized || self.error || self.regionTooLarge) {
       return
     }
     self.setLoading(true)
@@ -55,9 +59,10 @@ export async function fetchChains(self: IAnyStateTreeNode) {
     })) as ChainData
 
     self.setChainData(ret)
-    self.setLoading(false)
   } catch (e) {
     console.error(e)
     self.setError(e)
+  } finally {
+    self.setLoading(false)
   }
 }

@@ -31,6 +31,7 @@ function stateModelFactory() {
     .volatile(() => ({
       rendererTypeName: '',
       error: undefined as unknown,
+      message: undefined as string | undefined,
     }))
     .views(self => ({
       /**
@@ -147,6 +148,12 @@ function stateModelFactory() {
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      setMessage(arg?: string) {
+        self.message = arg
+      },
       /**
        * #action
        */

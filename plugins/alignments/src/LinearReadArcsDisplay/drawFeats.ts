@@ -33,7 +33,7 @@ interface CoreFeat {
   end: number
 }
 
-export default async function drawFeats(
+export default function drawFeats(
   self: {
     setLastDrawnOffsetPx: (n: number) => void
     drawInter?: boolean
