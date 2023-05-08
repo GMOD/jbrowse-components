@@ -210,8 +210,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         uniqueModifications.forEach(value => {
           if (!self.modificationTagMap.has(value)) {
             const totalKeys = [...self.modificationTagMap.keys()].length
-            const newColor = colorPalette[totalKeys]
-            self.modificationTagMap.set(value, newColor)
+            self.modificationTagMap.set(value, colorPalette[totalKeys])
           }
         })
       },
@@ -239,8 +238,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         uniqueTag.forEach(value => {
           if (!self.colorTagMap.has(value)) {
             const totalKeys = [...self.colorTagMap.keys()].length
-            const newColor = colorPalette[totalKeys]
-            self.colorTagMap.set(value, newColor)
+            self.colorTagMap.set(value, colorPalette[totalKeys])
           }
         })
       },

@@ -5,16 +5,13 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { MenuItem } from '@jbrowse/core/ui'
 import {
-  isAbortException,
   getContainingView,
   getContainingTrack,
   getSession,
-  getViewParams,
   isSelectionContainer,
   isSessionModelWithWidgets,
   isFeature,
   Feature,
-  ReactRendering,
 } from '@jbrowse/core/util'
 import { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -31,9 +28,11 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { LinearGenomeViewModel, ExportSvgOptions } from '../../LinearGenomeView'
 import { Tooltip } from '../components/BaseLinearDisplay'
 import TooLargeMessage from '../components/TooLargeMessage'
-import BlockState, { renderBlockData } from './serverSideRenderedBlock'
-import { getId, getDisplayStr, getFeatureDensityStatsPre } from './util'
+import BlockState from './serverSideRenderedBlock'
+import { getDisplayStr, getFeatureDensityStatsPre } from './util'
 import configSchema from './configSchema'
+import autorunFeatureDensityStats from './autorunFeatureDensityStats'
+import renderBaseLinearDisplaySvg from './renderSvg'
 
 type LGV = LinearGenomeViewModel
 
@@ -331,8 +330,7 @@ function stateModelFactory() {
        * #action
        */
       setHeight(displayHeight: number) {
-        self.heightPreConfig =
-          displayHeight > minDisplayHeight ? displayHeight : minDisplayHeight
+        self.heightPreConfig = Math.max(displayHeight, minDisplayHeight)
         return self.height
       },
       /**
@@ -421,12 +419,7 @@ function stateModelFactory() {
       setFeatureIdUnderMouse(feature?: string) {
         self.featureIdUnderMouse = feature
       },
-      /**
-       * #action
-       */
-      reload() {
-        ;[...self.blockState.values()].map(val => val.doReload())
-      },
+
       /**
        * #action
        */
@@ -472,6 +465,13 @@ function stateModelFactory() {
           ? `Requested too much data (${getDisplayStr(req)})`
           : ''
       },
+
+      get notReady() {
+        const view = getContainingView(self) as LGV
+        return (
+          self.currBpPerPx !== view.bpPerPx || !self.featureDensityStatsReady
+        )
+      },
     }))
     .actions(self => {
       const { reload: superReload } = self
@@ -482,76 +482,20 @@ function stateModelFactory() {
          */
         async reload() {
           self.setError()
-          const view = getContainingView(self) as LGV
-
-          // extra check for contentBlocks.length
-          // https://github.com/GMOD/jbrowse-components/issues/2694
-          if (!view.initialized || !view.staticBlocks.contentBlocks.length) {
-            return
-          }
-
-          try {
-            const featureDensityStats = await self.getFeatureDensityStats()
-
-            if (isAlive(self)) {
-              self.setFeatureDensityStats(featureDensityStats)
-              superReload()
-            }
-          } catch (e) {
-            console.error(e)
-            self.setError(e)
-          }
+          self.setCurrBpPerPx(0)
+          self.clearFeatureDensityStats()
+          ;[...self.blockState.values()].map(val => val.doReload())
+          superReload()
         },
       }
     })
     .actions(self => ({
       afterAttach() {
-        // this autorun performs stats estimation
-        //
-        // the chain of events calls getFeatureDensityStats against the data
-        // adapter which by default uses featureDensity, but can also respond
-        // with a byte size estimate and fetch size limit (data adapter can
-        // define what is too much data)
         addDisposer(
           self,
-          autorun(async () => {
-            try {
-              const view = getContainingView(self) as LGV
-
-              // extra check for contentBlocks.length
-              // https://github.com/GMOD/jbrowse-components/issues/2694
-              if (
-                !view.initialized ||
-                !view.staticBlocks.contentBlocks.length
-              ) {
-                return
-              }
-
-              // don't re-estimate featureDensity even if zoom level changes,
-              // jbrowse1-style assume it's sort of representative
-              if (self.featureDensityStats?.featureDensity !== undefined) {
-                self.setCurrBpPerPx(view.bpPerPx)
-                return
-              }
-
-              // we estimate stats once at a given zoom level
-              if (view.bpPerPx === self.currBpPerPx) {
-                return
-              }
-
-              self.clearFeatureDensityStats()
-              self.setCurrBpPerPx(view.bpPerPx)
-              const featureDensityStats = await self.getFeatureDensityStats()
-              if (isAlive(self)) {
-                self.setFeatureDensityStats(featureDensityStats)
-              }
-            } catch (e) {
-              if (!isAbortException(e) && isAlive(self)) {
-                console.error(e)
-                self.setError(e)
-              }
-            }
-          }),
+          autorun(() =>
+            autorunFeatureDensityStats(self as BaseLinearDisplayModel),
+          ),
         )
       },
     }))
@@ -606,11 +550,9 @@ function stateModelFactory() {
        * #method
        */
       renderProps() {
-        const view = getContainingView(self) as LGV
         return {
           ...getParentRenderProps(self),
-          notReady:
-            self.currBpPerPx !== view.bpPerPx || !self.featureDensityStatsReady,
+          notReady: self.notReady,
           rpcDriverName: self.rpcDriverName,
           displayModel: self,
           onFeatureClick(_: unknown, featureId?: string) {
@@ -663,85 +605,7 @@ function stateModelFactory() {
           theme: ThemeOptions
         },
       ) {
-        const { height, id } = self
-        const { overrideHeight } = opts
-        const view = getContainingView(self) as LGV
-        const { offsetPx: viewOffsetPx, roundedDynamicBlocks, width } = view
-
-        const renderings = await Promise.all(
-          roundedDynamicBlocks.map(async block => {
-            const blockState = BlockState.create({
-              key: block.key,
-              region: block,
-            })
-
-            // regionCannotBeRendered can return jsx so look for plaintext
-            // version, or just get the default if none available
-            const cannotBeRenderedReason =
-              self.regionCannotBeRenderedText(block) ||
-              self.regionCannotBeRendered(block)
-
-            if (cannotBeRenderedReason) {
-              return [
-                block,
-                {
-                  reactElement: (
-                    <>
-                      <rect x={0} y={0} width={width} height={20} fill="#aaa" />
-                      <text x={0} y={15}>
-                        {cannotBeRenderedReason}
-                      </text>
-                    </>
-                  ),
-                },
-              ] as const
-            }
-
-            const { rpcManager, renderArgs, renderProps, rendererType } =
-              renderBlockData(blockState, self)
-
-            return [
-              block,
-              await rendererType.renderInClient(rpcManager, {
-                ...renderArgs,
-                ...renderProps,
-                viewParams: getViewParams(self, true),
-                exportSVG: opts,
-                theme: opts.theme || renderProps.theme,
-              }),
-            ] as const
-          }),
-        )
-
-        return (
-          <>
-            {renderings.map(([block, rendering], index) => {
-              const { offsetPx, widthPx } = block
-              const offset = offsetPx - viewOffsetPx
-              const clipid = getId(id, index)
-
-              return (
-                <React.Fragment key={`frag-${index}`}>
-                  <defs>
-                    <clipPath id={clipid}>
-                      <rect
-                        x={0}
-                        y={0}
-                        width={widthPx}
-                        height={overrideHeight || height}
-                      />
-                    </clipPath>
-                  </defs>
-                  <g transform={`translate(${offset} 0)`}>
-                    <g clipPath={`url(#${clipid})`}>
-                      <ReactRendering rendering={rendering} />
-                    </g>
-                  </g>
-                </React.Fragment>
-              )
-            })}
-          </>
-        )
+        return renderBaseLinearDisplaySvg(self as BaseLinearDisplayModel, opts)
       },
     }))
     .preProcessSnapshot(snap => {
