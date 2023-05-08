@@ -97,13 +97,15 @@ function stateModelFactory(
           const configBlob =
             getConf(self, ['renderers', self.rendererTypeName]) || {}
 
+          const { color, drawInterbaseCounts, drawIndicators, drawArcs } = self
           return self.rendererType.configSchema.create(
             {
               ...configBlob,
+              color: color ?? configBlob.color,
               drawInterbaseCounts:
-                self.drawInterbaseCounts ?? configBlob.drawInterbaseCounts,
-              drawIndicators: self.drawIndicators ?? configBlob.drawIndicators,
-              drawArcs: self.drawArcs ?? configBlob.drawArcs,
+                drawInterbaseCounts ?? configBlob.drawInterbaseCounts,
+              drawIndicators: drawIndicators ?? configBlob.drawIndicators,
+              drawArcs: drawArcs ?? configBlob.drawArcs,
             },
             getEnv(self),
           )
