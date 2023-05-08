@@ -11,9 +11,9 @@ import { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import { supportedIndexingAdapters } from '@jbrowse/text-indexing'
 import { lazy } from 'react'
 
-import type { DialogQueueManager } from '@jbrowse/product-core/src/Session/DialogQueue'
-import type { TracksManager } from '@jbrowse/product-core/src/Session/Tracks'
-import type { DrawerWidgetManager } from '@jbrowse/product-core/src/Session/DrawerWidgets'
+import type { SessionWithDialogs } from '@jbrowse/product-core/src/Session/DialogQueue'
+import type { SessionWithTracks } from '@jbrowse/product-core/src/Session/Tracks'
+import type { SessionWithDrawerWidgets } from '@jbrowse/product-core/src/Session/DrawerWidgets'
 import { DesktopRootModel } from '../rootModel'
 
 const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
@@ -24,9 +24,9 @@ export default function TrackMenu(pluginManager: PluginManager) {
      * #method
      */
     getTrackActionMenuItems(trackConfig: BaseTrackConfig) {
-      const session = self as DialogQueueManager &
-        TracksManager &
-        DrawerWidgetManager
+      const session = self as SessionWithDialogs &
+        SessionWithTracks &
+        SessionWithDrawerWidgets
       const trackSnapshot = JSON.parse(JSON.stringify(getSnapshot(trackConfig)))
       return [
         {

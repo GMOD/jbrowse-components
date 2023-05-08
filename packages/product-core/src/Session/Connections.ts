@@ -5,11 +5,12 @@ import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import { Instance, types } from 'mobx-state-tree'
-import type { SessionWithReferenceManagement } from './ReferenceManagement'
+import { IAnyStateTreeNode, Instance, isStateTreeNode, types } from 'mobx-state-tree'
+import type { SessionWithReferenceManagementType } from './ReferenceManagement'
 import type { BaseRootModelType } from '../RootModel/Base'
 import { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
 import { BaseConnectionModel } from '@jbrowse/core/pluggableElementTypes/models/BaseConnectionModelFactory'
+import { isBaseSession } from './Base'
 
 export default function Connections(pluginManager: PluginManager) {
   return types
@@ -65,7 +66,7 @@ export default function Connections(pluginManager: PluginManager) {
        */
       prepareToBreakConnection(configuration: AnyConfigurationModel) {
         const root = self as typeof self &
-          Instance<SessionWithReferenceManagement>
+          Instance<SessionWithReferenceManagementType>
         const callbacksToDereferenceTrack: Function[] = []
         const dereferenceTypeCount: Record<string, number> = {}
         const name = readConfObject(configuration, 'name')
@@ -124,4 +125,17 @@ export default function Connections(pluginManager: PluginManager) {
         self.connectionInstances.length = 0
       },
     }))
+}
+
+/** Session mixin MST type for a session that has connections */
+export type SessionWithConnectionsType = ReturnType<typeof Connections>
+
+/** Instance of a session that has connections: `connectionInstances`, `makeConnection()`, etc. */
+export type SessionWithConnections = Instance<SessionWithConnectionsType>
+
+/** Type guard for SessionWithConnections */
+export function isSessionWithConnections(
+  session: IAnyStateTreeNode,
+): session is SessionWithConnections {
+  return isBaseSession(session) && 'connectionInstances' in session
 }

@@ -17,7 +17,7 @@ import { Save, SaveAs, DNA, Cable } from '@jbrowse/core/ui/Icons'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 import OpenSequenceDialog from '../OpenSequenceDialog'
-import type { DialogQueueManager } from '@jbrowse/product-core/src/Session/DialogQueue'
+import type { SessionWithDialogs } from '@jbrowse/product-core/src/Session/DialogQueue'
 import { getSaveSession } from './Sessions'
 import { DesktopRootModel } from '.'
 
@@ -92,7 +92,7 @@ export default function Menus(pluginManager: PluginManager) {
                 icon: DNA,
                 onClick: () => {
                   if (self.session) {
-                    const session = self.session as DialogQueueManager
+                    const session = self.session as SessionWithDialogs
                     session.queueDialog(doneCallback => [
                       OpenSequenceDialog,
                       {
@@ -211,7 +211,7 @@ export default function Menus(pluginManager: PluginManager) {
                 icon: SettingsIcon,
                 onClick: () => {
                   if (self.session) {
-                    const session = self.session as DialogQueueManager
+                    const session = self.session as SessionWithDialogs
                     session.queueDialog(handleClose => [
                       PreferencesDialog,
                       {

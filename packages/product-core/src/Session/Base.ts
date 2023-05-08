@@ -1,7 +1,13 @@
 import shortid from 'shortid'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import { Instance, getParent, types } from 'mobx-state-tree'
+import {
+  IAnyStateTreeNode,
+  Instance,
+  getParent,
+  isStateTreeNode,
+  types,
+} from 'mobx-state-tree'
 import type { BaseRootModelType } from '../RootModel/Base'
 import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
@@ -101,5 +107,18 @@ export default function BaseSessionFactory<
     }))
 }
 
+/** Session mixin MST type for the most basic session */
 export type BaseSessionType = ReturnType<typeof BaseSessionFactory>
+
+/** Instance of the most basic possible session */
 export type BaseSession = Instance<BaseSessionType>
+
+/** Type guard for BaseSession */
+export function isBaseSession(thing: IAnyStateTreeNode): thing is BaseSession {
+  return 'id' in thing && 'name' in thing && 'root' in thing
+}
+
+/** Type guard for whether a thing is JBrowse session */
+export function isSession(thing: unknown): thing is BaseSession {
+  return isStateTreeNode(thing) && isBaseSession(thing)
+}

@@ -1,4 +1,4 @@
-import { Instance, types } from 'mobx-state-tree'
+import { IAnyStateTreeNode, Instance, types } from 'mobx-state-tree'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import {
@@ -6,6 +6,7 @@ import {
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
 import Tracks from './Tracks'
+import { isBaseSession } from './Base'
 
 export default function SessionTracks(pluginManager: PluginManager) {
   return Tracks(pluginManager)
@@ -73,5 +74,15 @@ export default function SessionTracks(pluginManager: PluginManager) {
     })
 }
 
+/** Session mixin MST type for a session that has `sessionTracks` */
 export type SessionWithSessionTracksType = ReturnType<typeof SessionTracks>
+
+/** Instance of a session that has `sessionTracks` */
 export type SessionWithSessionTracks = Instance<SessionWithSessionTracksType>
+
+/** Type guard for SessionWithSessionTracks */
+export function isSessionWithSessionTracks(
+  thing: IAnyStateTreeNode,
+): thing is SessionWithSessionTracks {
+  return isBaseSession(thing) && 'sessionTracks' in thing
+}

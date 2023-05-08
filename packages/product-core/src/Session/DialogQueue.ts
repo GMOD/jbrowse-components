@@ -3,6 +3,7 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { DialogComponentType } from '@jbrowse/core/util'
 import { IAnyStateTreeNode, Instance, types } from 'mobx-state-tree'
+import { isBaseSession } from './Base'
 
 export interface ReferringNode {
   node: IAnyStateTreeNode
@@ -58,5 +59,15 @@ export default function DialogQueue(pluginManager: PluginManager) {
     }))
 }
 
-export type DialogQueueManagerType = ReturnType<typeof DialogQueue>
-export type DialogQueueManager = Instance<DialogQueueManagerType>
+/** Session mixin MST type for a session that has `queueOfDialogs`, etc. */
+export type SessionWithDialogsType = ReturnType<typeof DialogQueue>
+
+/** Instance of a session that has dialogs */
+export type SessionWithDialogs = Instance<SessionWithDialogsType>
+
+/** Type guard for SessionWithDialogs */
+export function isSessionWithDialogs(
+  session: IAnyStateTreeNode,
+): session is SessionWithDialogs {
+  return isBaseSession(session) && 'queueOfDialogs' in session
+}

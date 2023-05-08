@@ -1,4 +1,4 @@
-import { getSnapshot, types } from 'mobx-state-tree'
+import { IAnyStateTreeNode, Instance, getSnapshot, types } from 'mobx-state-tree'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
@@ -6,9 +6,9 @@ import { Region } from '@jbrowse/core/util'
 import DrawerWidgets from './DrawerWidgets'
 import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes'
 import { IBaseViewModelWithDisplayedRegions } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
-import Base from './Base'
+import Base, { isBaseSession } from './Base'
 
-export default function Views(pluginManager: PluginManager) {
+export default function MultipleViews(pluginManager: PluginManager) {
   return types
     .compose(Base(pluginManager), DrawerWidgets(pluginManager))
     .props({
@@ -120,4 +120,17 @@ export default function Views(pluginManager: PluginManager) {
         return this.addView(viewType, state)
       },
     }))
+}
+
+/** Session mixin MST type for a session that manages multiple views */
+export type SessionWithMultipleViewsType = ReturnType<typeof MultipleViews>
+
+/** Instance of a session with multiple views */
+export type SessionWithMultipleViews = Instance<SessionWithMultipleViewsType>
+
+/** Type guard for SessionWithMultipleViews */
+export function isSessionWithMultipleViews(
+  session: IAnyStateTreeNode,
+): session is SessionWithMultipleViews {
+  return isBaseSession(session) && 'views' in session
 }

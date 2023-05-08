@@ -1,4 +1,10 @@
-import { Instance, addDisposer, isAlive, types } from 'mobx-state-tree'
+import {
+  IAnyStateTreeNode,
+  Instance,
+  addDisposer,
+  isAlive,
+  types,
+} from 'mobx-state-tree'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
@@ -7,6 +13,7 @@ import {
   AnyConfigurationModel,
   isConfigurationModel,
 } from '@jbrowse/core/configuration'
+import { isBaseSession } from './Base'
 
 const minDrawerWidth = 128
 
@@ -193,4 +200,19 @@ export default function DrawerWidgets(pluginManager: PluginManager) {
     }))
 }
 
-export type DrawerWidgetManager = Instance<ReturnType<typeof DrawerWidgets>>
+/** Session mixin MST type for a session that manages drawer widgets */
+export type SessionWithDrawerWidgetsType = ReturnType<typeof DrawerWidgets>
+
+/** Instance of a session that manages drawer widgets */
+export type SessionWithDrawerWidgets = Instance<SessionWithDrawerWidgetsType>
+
+/** Type guard for SessionWithDrawerWidgets */
+export function isSessionWithDrawerWidgets(
+  session: IAnyStateTreeNode,
+): session is SessionWithDrawerWidgets {
+  return (
+    isBaseSession(session) &&
+    'widgets' in session &&
+    'drawerPosition' in session
+  )
+}

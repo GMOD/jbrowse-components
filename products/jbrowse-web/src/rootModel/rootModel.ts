@@ -41,11 +41,11 @@ import makeWorkerInstance from '../makeWorkerInstance'
 import jbrowseWebFactory from '../jbrowseModel'
 import { filterSessionInPlace } from '../util'
 import { RootModel as CoreRootModel } from '@jbrowse/product-core'
-import {
+import type {
   BaseSession,
   BaseSessionType,
 } from '@jbrowse/product-core/src/Session/Base'
-import { DialogQueueManager } from '@jbrowse/product-core/src/Session/DialogQueue'
+import type { SessionWithDialogs } from '@jbrowse/product-core/src/Session/DialogQueue'
 
 const PreferencesDialog = lazy(() => import('../PreferencesDialog'))
 
@@ -550,7 +550,7 @@ export default function RootModel(
               icon: SettingsIcon,
               onClick: () => {
                 if (self.session) {
-                  ;(self.session as DialogQueueManager).queueDialog(
+                  ;(self.session as SessionWithDialogs).queueDialog(
                     handleClose => [
                       PreferencesDialog,
                       {

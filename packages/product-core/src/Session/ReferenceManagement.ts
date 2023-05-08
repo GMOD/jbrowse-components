@@ -8,6 +8,7 @@ import {
 } from '@jbrowse/core/util'
 import {
   IAnyStateTreeNode,
+  Instance,
   getMembers,
   getParent,
   getSnapshot,
@@ -19,6 +20,7 @@ import {
 } from 'mobx-state-tree'
 
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
+import { isBaseSession } from './Base'
 
 export interface ReferringNode {
   node: IAnyStateTreeNode
@@ -105,6 +107,24 @@ export default function ReferenceManagement(pluginManager: PluginManager) {
     }))
 }
 
-export type SessionWithReferenceManagement = ReturnType<
+/** Session mixin MST type for a session that manages multiple views */
+export type SessionWithReferenceManagementType = ReturnType<
   typeof ReferenceManagement
 >
+
+/** Instance of a session with MST reference management (`getReferring()`, `removeReferring()`)  */
+export type SessionWithReferenceManagement =
+  Instance<SessionWithReferenceManagementType>
+
+/** Type guard for SessionWithReferenceManagement */
+export function isSessionWithReferenceManagement(
+  thing: IAnyStateTreeNode,
+): thing is SessionWithReferenceManagement {
+  return (
+    isBaseSession(thing) &&
+    'getReferring' in thing &&
+    typeof thing.getReferring === 'function' &&
+    'removeReferring' in thing &&
+    typeof thing.removeReferring === 'function'
+  )
+}
