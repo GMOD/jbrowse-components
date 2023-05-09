@@ -31,7 +31,7 @@ export default observer(function ({
 }) {
   const view = getContainingView(model)
   const { classes } = useStyles()
-  const { loading, error, regionTooLarge, message } = model
+  const { drawn, loading, error, regionTooLarge, message } = model
   return error ? (
     <BlockMsg
       message={`${error}`}
@@ -47,13 +47,13 @@ export default observer(function ({
       style={{
         width: view.dynamicBlocks.totalWidthPx,
         height: 20,
-        position: 'absolute',
-        left: Math.max(0, -view.offsetPx),
       }}
     >
       <LoadingEllipses message={message} />
     </div>
   ) : (
-    <>{children}</>
+    // this data-testid is located here because changing props on the canvas
+    // itself is very sensitive to triggering ref invalidation
+    <div data-testid={`drawn-${drawn}`}>{children}</div>
   )
 })

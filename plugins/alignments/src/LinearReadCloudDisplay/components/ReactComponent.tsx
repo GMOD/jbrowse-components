@@ -1,5 +1,4 @@
-import React from 'react'
-import { isAlive } from 'mobx-state-tree'
+import React, { useCallback } from 'react'
 import { observer } from 'mobx-react'
 import { getContainingView } from '@jbrowse/core/util'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -16,22 +15,20 @@ const Cloud = observer(function ({
   model: LinearReadCloudDisplayModel
 }) {
   const view = getContainingView(model) as LGV
+  const width = Math.round(view.dynamicBlocks.totalWidthPx)
+  const height = model.height
+  const cb = useCallback(
+    (ref: HTMLCanvasElement) => model.setRef(ref),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [model, width, height],
+  )
   return (
     <canvas
-      data-testid={`ReadCloud-display-${model.drawn}`}
-      ref={ref => {
-        if (isAlive(model)) {
-          model.setRef(ref)
-        }
-      }}
-      style={{
-        position: 'absolute',
-        left: -view.offsetPx + model.lastDrawnOffsetPx,
-        width: view.dynamicBlocks.totalWidthPx,
-        height: model.height,
-      }}
-      width={view.dynamicBlocks.totalWidthPx * 2}
-      height={model.height * 2}
+      data-testid="cloud-canvas"
+      ref={cb}
+      style={{ width, height }}
+      width={width * 2}
+      height={height * 2}
     />
   )
 })

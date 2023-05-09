@@ -29,7 +29,7 @@ export async function renderReadCloudSvg(
       return
     }
     ctx.scale(2, 2)
-    await drawFeats(self, ctx)
+    drawFeats(self, ctx)
     str = (
       <image
         width={width}
@@ -41,7 +41,7 @@ export async function renderReadCloudSvg(
     // @ts-ignore
     const C2S = await import('canvas2svg')
     const ctx = new C2S.default(width, height)
-    await drawFeats(self, ctx)
+    drawFeats(self, ctx)
     const clipid = getId(self.id)
     str = (
       <>

@@ -455,7 +455,10 @@ function stateModelFactory(
          * #getter
          */
         get displayCrossHatchesSetting() {
-          return readConfObject(self.rendererConfig, 'displayCrossHatches')
+          return (
+            self.displayCrossHatches ??
+            readConfObject(self.rendererConfig, 'displayCrossHatches')
+          )
         },
       }
     })

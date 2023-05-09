@@ -1,6 +1,5 @@
 import React, { lazy } from 'react'
-import { autorun } from 'mobx'
-import { addDisposer, cast, types, Instance } from 'mobx-state-tree'
+import { cast, types, Instance } from 'mobx-state-tree'
 import {
   AnyConfigurationSchemaType,
   ConfigurationReference,
@@ -97,7 +96,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       drawn: false,
       chainData: undefined as ChainData | undefined,
       ref: null as HTMLCanvasElement | null,
-      lastDrawnOffsetPx: 0,
     }))
     .actions(self => ({
       /**
@@ -167,14 +165,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
 
       /**
        * #action
-       * allows the drawing to slide around a little bit if it takes a long time to refresh
-       */
-      setLastDrawnOffsetPx(n: number) {
-        self.lastDrawnOffsetPx = n
-      },
-
-      /**
-       * #action
        * thin, bold, extrabold, etc
        */
       setLineWidth(n: number) {
@@ -183,8 +173,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
 
       /**
        * #action
-       * jitter val, helpful to jitter the x direction so you see better evidence when e.g. 100
-       * long reads map to same x position
+       * jitter val, helpful to jitter the x direction so you see better
+       * evidence when e.g. 100 long reads map to same x position
        */
       setJitter(n: number) {
         self.jitter = n
@@ -332,33 +322,23 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     }))
     .actions(self => ({
       afterAttach() {
-        createAutorun(
-          self,
-          () => {
-            return fetchChains(self)
-          },
-          { delay: 1000 },
-        )
+        createAutorun(self, () => fetchChains(self), { delay: 1000 })
 
-        createAutorun(
-          self,
-          async () => {
-            const canvas = self.ref
-            if (!canvas) {
-              return
-            }
-            const ctx = canvas.getContext('2d')
-            if (!ctx) {
-              return
-            }
-            ctx.clearRect(0, 0, canvas.width, self.height * 2)
-            ctx.resetTransform()
-            ctx.scale(2, 2)
-            drawFeats(self, ctx)
-            self.setDrawn(true)
-          },
-          { delay: 1000 },
-        )
+        createAutorun(self, async () => {
+          const canvas = self.ref
+          if (!canvas) {
+            return
+          }
+          const ctx = canvas.getContext('2d')
+          if (!ctx) {
+            return
+          }
+          ctx.clearRect(0, 0, canvas.width, self.height * 2)
+          ctx.resetTransform()
+          ctx.scale(2, 2)
+          drawFeats(self, ctx)
+          self.setDrawn(true)
+        })
       },
     }))
 }
