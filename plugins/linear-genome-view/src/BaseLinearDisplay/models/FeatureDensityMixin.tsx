@@ -5,7 +5,7 @@ import { getContainingView } from '@jbrowse/core/util'
 import { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { Region } from '@jbrowse/core/util/types'
 import { autorun } from 'mobx'
-import { addDisposer, types } from 'mobx-state-tree'
+import { addDisposer, isAlive, types } from 'mobx-state-tree'
 
 // locals
 import { LinearGenomeViewModel } from '../../LinearGenomeView'
@@ -118,7 +118,9 @@ export default function FeatureDensityMixin() {
           self.featureDensityStatsP = getFeatureDensityStatsPre(
             self as any,
           ).catch(e => {
-            this.setFeatureDensityStatsP(undefined)
+            if (isAlive(self)) {
+              this.setFeatureDensityStatsP(undefined)
+            }
             throw e
           })
         }
