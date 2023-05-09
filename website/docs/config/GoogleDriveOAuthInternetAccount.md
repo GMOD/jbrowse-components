@@ -3,8 +3,9 @@ id: googledriveoauthinternetaccount
 title: GoogleDriveOAuthInternetAccount
 toplevel: true
 ---
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -12,16 +13,9 @@ our source code. See [Config guide](/docs/config_guide) for more info
 
 ## Docs
 
-
-
-
-
-
-
 ### GoogleDriveOAuthInternetAccount - Slots
+
 #### slot: authEndpoint
-
-
 
 ```js
 authEndpoint: {
@@ -33,8 +27,6 @@ authEndpoint: {
 
 #### slot: scopes
 
-
-
 ```js
 scopes: {
       description: 'optional scopes for the authorization call',
@@ -44,8 +36,6 @@ scopes: {
 ```
 
 #### slot: domains
-
-
 
 ```js
 domains: {
@@ -58,8 +48,6 @@ domains: {
 
 #### slot: responseType
 
-
-
 ```js
 responseType: {
       description: 'the type of response from the authorization endpoint',
@@ -68,14 +56,8 @@ responseType: {
     }
 ```
 
-
 ## GoogleDriveOAuthInternetAccount - Derives from
-
-
-
 
 ```js
 baseConfiguration: OAuthConfigSchema
 ```
-
-

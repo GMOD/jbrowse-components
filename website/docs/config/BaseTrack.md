@@ -3,8 +3,9 @@ id: basetrack
 title: BaseTrack
 toplevel: true
 ---
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -12,18 +13,13 @@ our source code. See [Config guide](/docs/config_guide) for more info
 
 ## Docs
 
-
-
 ### BaseTrack - Identifier
 
 #### slot: explicitIdentifier
 
-
-
 ### BaseTrack - Slots
+
 #### slot: name
-
-
 
 ```js
 name: {
@@ -35,8 +31,6 @@ name: {
 
 #### slot: assemblyNames
 
-
-
 ```js
 assemblyNames: {
         description: 'name of the assembly (or assemblies) track belongs to',
@@ -46,8 +40,6 @@ assemblyNames: {
 ```
 
 #### slot: description
-
-
 
 ```js
 description: {
@@ -59,8 +51,6 @@ description: {
 
 #### slot: category
 
-
-
 ```js
 category: {
         description: 'the category and sub-categories of a track',
@@ -70,8 +60,6 @@ category: {
 ```
 
 #### slot: metadata
-
-
 
 ```js
 metadata: {
@@ -83,15 +71,11 @@ metadata: {
 
 #### slot: adapter
 
-
-
 ```js
 adapter: pluginManager.pluggableConfigSchemaType('adapter')
 ```
 
 #### slot: textSearching.indexedAttributes
-
-
 
 ```js
 indexingAttributes: {
@@ -104,8 +88,6 @@ indexingAttributes: {
 
 #### slot: textSearching.indexingFeatureTypesToExclude
 
-
-
 ```js
 indexingFeatureTypesToExclude: {
           type: 'stringArray',
@@ -116,25 +98,19 @@ indexingFeatureTypesToExclude: {
 
 #### slot: textSearching.textSearchAdapter
 
-
-
 ```js
 textSearchAdapter: pluginManager.pluggableConfigSchemaType(
-          'text search adapter',
-        )
+  'text search adapter',
+)
 ```
 
 #### slot: displays
-
-
 
 ```js
 displays: types.array(pluginManager.pluggableConfigSchemaType('display'))
 ```
 
 #### slot: formatDetails.feature
-
-
 
 ```js
 feature: {
@@ -147,8 +123,6 @@ feature: {
 
 #### slot: formatDetails.subfeatures
 
-
-
 ```js
 subfeatures: {
           type: 'frozen',
@@ -159,8 +133,6 @@ subfeatures: {
 ```
 
 #### slot: formatDetails.depth
-
-
 
 ```js
 depth: {
@@ -173,8 +145,6 @@ depth: {
 
 #### slot: formatAbout.config
 
-
-
 ```js
 config: {
           type: 'frozen',
@@ -186,15 +156,9 @@ config: {
 
 #### slot: formatAbout.hideUris
 
-
-
 ```js
 hideUris: {
           type: 'boolean',
           defaultValue: false,
         }
 ```
-
-
-
-

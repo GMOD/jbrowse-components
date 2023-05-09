@@ -3,8 +3,9 @@ id: sequencesearchadapter
 title: SequenceSearchAdapter
 toplevel: true
 ---
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -12,16 +13,9 @@ our source code. See [Config guide](/docs/config_guide) for more info
 
 ## Docs
 
-
-
-
-
-
-
 ### SequenceSearchAdapter - Slots
+
 #### slot: search
-
-
 
 ```js
 search: {
@@ -33,8 +27,6 @@ search: {
 
 #### slot: sequenceAdapter
 
-
-
 ```js
 sequenceAdapter: {
       type: 'frozen',
@@ -43,8 +35,6 @@ sequenceAdapter: {
 ```
 
 #### slot: searchForward
-
-
 
 ```js
 searchForward: {
@@ -55,8 +45,6 @@ searchForward: {
 
 #### slot: searchReverse
 
-
-
 ```js
 searchReverse: {
       type: 'boolean',
@@ -66,15 +54,9 @@ searchReverse: {
 
 #### slot: caseInsensitive
 
-
-
 ```js
 caseInsensitive: {
       type: 'boolean',
       defaultValue: true,
     }
 ```
-
-
-
-

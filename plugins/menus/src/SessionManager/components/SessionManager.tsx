@@ -1,9 +1,5 @@
 import React, { useState } from 'react'
 import {
-  Button,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
   IconButton,
   List,
   ListItem,
@@ -14,7 +10,6 @@ import {
   Paper,
   Typography,
 } from '@mui/material'
-import { Dialog } from '@jbrowse/core/ui'
 import { makeStyles } from 'tss-react/mui'
 
 import { observer } from 'mobx-react'
@@ -24,6 +19,7 @@ import { AbstractSessionModel } from '@jbrowse/core/util'
 // icons
 import DeleteIcon from '@mui/icons-material/Delete'
 import ViewListIcon from '@mui/icons-material/ViewList'
+import DeleteDialog from './DeleteDialog'
 
 const useStyles = makeStyles()(theme => ({
   root: {
@@ -36,7 +32,7 @@ const useStyles = makeStyles()(theme => ({
 
 interface SessionSnap {
   name: string
-  views: { tracks: unknown[] }[]
+  views?: { tracks: unknown[] }[]
   [key: string]: unknown
 }
 
@@ -86,26 +82,19 @@ const AutosaveEntry = observer(({ session }: { session: SessionModel }) => {
 
 const SessionManager = observer(({ session }: { session: SessionModel }) => {
   const { classes } = useStyles()
-  const [sessionIndexToDelete, setSessionIndexToDelete] = useState<
-    number | null
-  >(null)
+  const [sessionIndexToDelete, setSessionIndexToDelete] = useState<number>()
   const [open, setOpen] = useState(false)
 
-  function handleDialogOpen(idx: number) {
-    setSessionIndexToDelete(idx)
-    setOpen(true)
-  }
-
   function handleDialogClose(deleteSession = false) {
-    if (deleteSession && sessionIndexToDelete !== null) {
+    if (deleteSession && sessionIndexToDelete !== undefined) {
       session.removeSavedSession(session.savedSessions[sessionIndexToDelete])
     }
-    setSessionIndexToDelete(null)
+    setSessionIndexToDelete(undefined)
     setOpen(false)
   }
 
   const sessionNameToDelete =
-    sessionIndexToDelete !== null
+    sessionIndexToDelete !== undefined
       ? session.savedSessions[sessionIndexToDelete].name
       : ''
 
@@ -147,7 +136,10 @@ const SessionManager = observer(({ session }: { session: SessionModel }) => {
                       edge="end"
                       disabled={session.name === sessionSnapshot.name}
                       aria-label="Delete"
-                      onClick={() => handleDialogOpen(idx)}
+                      onClick={() => {
+                        setSessionIndexToDelete(idx)
+                        setOpen(true)
+                      }}
                     >
                       <DeleteIcon />
                     </IconButton>
@@ -162,30 +154,11 @@ const SessionManager = observer(({ session }: { session: SessionModel }) => {
           )}
         </List>
       </Paper>
-      <Dialog
+      <DeleteDialog
         open={open}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-        title={`Delete session "${sessionNameToDelete}"?`}
-      >
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            This action cannot be undone
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => handleDialogClose()} color="primary">
-            Cancel
-          </Button>
-          <Button
-            onClick={() => handleDialogClose(true)}
-            color="primary"
-            autoFocus
-          >
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
+        sessionNameToDelete={sessionNameToDelete}
+        handleClose={handleDialogClose}
+      />
     </>
   )
 })

@@ -4,29 +4,20 @@ title: JBrowseReactCircularGenomeViewRootModel
 toplevel: true
 ---
 
-
 Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See [Core concepts and intro to pluggable
-elements](/docs/developer_guide/) for more info
-
-
+our source code. See
+[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
+info
 
 ## Source file
 
 [products/jbrowse-react-circular-genome-view/src/createModel/createModel.ts](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-circular-genome-view/src/createModel/createModel.ts)
 
-
 ## Docs
 
-
-
-
-
-
 ### JBrowseReactCircularGenomeViewRootModel - Properties
+
 #### property: config
-
-
 
 ```js
 // type signature
@@ -37,8 +28,6 @@ config: createConfigModel(pluginManager, assemblyConfigSchema)
 
 #### property: session
 
-
-
 ```js
 // type signature
 IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number, number, number>; } & { ...; } & { ...; } & { ...; }, { ...; } & ... 18 more ... & { ...; }, _NotCustomized, _NotCustomized>
@@ -47,8 +36,6 @@ session: Session
 ```
 
 #### property: assemblyManager
-
-
 
 ```js
 // type signature
@@ -59,8 +46,6 @@ assemblyManager: assemblyManagerType
 
 #### property: internetAccounts
 
-
-
 ```js
 // type signature
 IArrayType<IAnyType>
@@ -70,11 +55,9 @@ internetAccounts: types.array(
       )
 ```
 
-
 ### JBrowseReactCircularGenomeViewRootModel - Getters
+
 #### getter: jbrowse
-
-
 
 ```js
 // type
@@ -83,21 +66,14 @@ internetAccounts: types.array(
 
 #### getter: pluginManager
 
-
-
 ```js
 // type
 PluginManager
 ```
 
-
-
-
-
 ### JBrowseReactCircularGenomeViewRootModel - Actions
+
 #### action: setSession
-
-
 
 ```js
 // type signature
@@ -106,16 +82,12 @@ setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ id: IOptiona
 
 #### action: renameCurrentSession
 
-
-
 ```js
 // type signature
 renameCurrentSession: (sessionName: string) => void
 ```
 
 #### action: setError
-
-
 
 ```js
 // type signature
@@ -124,8 +96,6 @@ setError: (errorMessage: Error) => void
 
 #### action: addInternetAccount
 
-
-
 ```js
 // type signature
 addInternetAccount: (internetAccount: any) => void
@@ -133,11 +103,7 @@ addInternetAccount: (internetAccount: any) => void
 
 #### action: findAppropriateInternetAccount
 
-
-
 ```js
 // type signature
 findAppropriateInternetAccount: (location: UriLocation) => any
 ```
-
-

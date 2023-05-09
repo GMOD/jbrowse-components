@@ -3,8 +3,9 @@ id: baselineardisplay
 title: BaseLinearDisplay
 toplevel: true
 ---
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -20,12 +21,9 @@ our source code. See [Config guide](/docs/config_guide) for more info
 
 #### slot: explicitIdentifier
 
-
-
 ### BaseLinearDisplay - Slots
+
 #### slot: maxFeatureScreenDensity
-
-
 
 ```js
 maxFeatureScreenDensity: {
@@ -38,8 +36,6 @@ maxFeatureScreenDensity: {
 
 #### slot: fetchSizeLimit
 
-
-
 ```js
 fetchSizeLimit: {
       type: 'number',
@@ -51,8 +47,6 @@ fetchSizeLimit: {
 
 #### slot: height
 
-
-
 ```js
 height: {
       type: 'number',
@@ -63,8 +57,6 @@ height: {
 
 #### slot: mouseover
 
-
-
 ```js
 mouseover: {
       type: 'string',
@@ -74,7 +66,3 @@ mouseover: {
       contextVariable: ['feature'],
     }
 ```
-
-
-
-

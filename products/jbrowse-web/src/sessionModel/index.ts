@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { lazy } from 'react'
 import clone from 'clone'
 import { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -31,8 +30,7 @@ import Assemblies from './Assemblies'
 import SessionConnections from './SessionConnections'
 import { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import { WebRootModel } from '../rootModel/rootModel'
-
-const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
+import AboutDialogFallback from '../AboutDialogFallback'
 
 /**
  * #stateModel JBrowseWebSessionModel
@@ -274,7 +272,7 @@ export default function sessionModelFactory(
             label: 'About track',
             onClick: () => {
               self.queueDialog(handleClose => [
-                AboutDialog,
+                AboutDialogFallback,
                 { config, handleClose },
               ])
             },

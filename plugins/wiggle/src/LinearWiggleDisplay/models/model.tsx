@@ -279,7 +279,7 @@ function stateModelFactory(
        * #getter
        */
       get TooltipComponent() {
-        return Tooltip as unknown as React.FC
+        return Tooltip as React.FC
       },
 
       /**
@@ -293,7 +293,7 @@ function stateModelFactory(
        * #getter
        */
       get rendererTypeNameSimple() {
-        return self.rendererTypeNameState || getConf(self, 'defaultRendering')
+        return self.rendererTypeNameState ?? getConf(self, 'defaultRendering')
       },
 
       /**
@@ -320,7 +320,7 @@ function stateModelFactory(
        * #getter
        */
       get scaleType() {
-        return self.scale || getConf(self, 'scaleType')
+        return self.scale ?? getConf(self, 'scaleType')
       },
 
       /**
@@ -455,7 +455,10 @@ function stateModelFactory(
          * #getter
          */
         get displayCrossHatchesSetting() {
-          return readConfObject(self.rendererConfig, 'displayCrossHatches')
+          return (
+            self.displayCrossHatches ??
+            readConfObject(self.rendererConfig, 'displayCrossHatches')
+          )
         },
       }
     })

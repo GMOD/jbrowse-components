@@ -3,8 +3,9 @@ id: dotplotrenderer
 title: DotplotRenderer
 toplevel: true
 ---
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -12,16 +13,9 @@ our source code. See [Config guide](/docs/config_guide) for more info
 
 ## Docs
 
-
-
-
-
-
-
 ### DotplotRenderer - Slots
+
 #### slot: color
-
-
 
 ```js
 color: {
@@ -35,8 +29,6 @@ color: {
 
 #### slot: posColor
 
-
-
 ```js
 posColor: {
       type: 'color',
@@ -46,8 +38,6 @@ posColor: {
 ```
 
 #### slot: negColor
-
-
 
 ```js
 negColor: {
@@ -59,19 +49,15 @@ negColor: {
 
 #### slot: lineWidth
 
-
-
 ```js
 lineWidth: {
       type: 'number',
       description: 'width of the lines to be drawn',
-      defaultValue: 2.5, 
+      defaultValue: 2.5,
     }
 ```
 
 #### slot: colorBy
-
-
 
 ```js
 colorBy: {
@@ -97,8 +83,6 @@ colorBy: {
 
 #### slot: thresholdsPalette
 
-
-
 ```js
 thresholdsPalette: {
       type: 'stringArray',
@@ -109,8 +93,6 @@ thresholdsPalette: {
 
 #### slot: thresholds
 
-
-
 ```js
 thresholds: {
       type: 'stringArray',
@@ -118,7 +100,3 @@ thresholds: {
       description: 'threshold breakpoints, used with colorBy:identity',
     }
 ```
-
-
-
-

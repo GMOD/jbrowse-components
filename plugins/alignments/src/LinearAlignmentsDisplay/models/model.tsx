@@ -336,7 +336,11 @@ function stateModelFactory(
        */
       async renderSvg(opts: { rasterizeLayers?: boolean }) {
         const pileupHeight = self.height - self.SNPCoverageDisplay.height
-        await when(() => self.PileupDisplay.ready)
+        await when(
+          () =>
+            !self.PileupDisplay.renderProps().notReady &&
+            !self.SNPCoverageDisplay.renderProps().notReady,
+        )
         return (
           <>
             <g>{await self.SNPCoverageDisplay.renderSvg(opts)}</g>

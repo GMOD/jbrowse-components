@@ -40,6 +40,8 @@ import {
   FilterModel,
 } from '../shared'
 import { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
+import { createAutorun, modificationColors } from '../util'
+import { randomColor } from '../util'
 
 // async
 const FilterByTagDlg = lazy(() => import('../shared/FilterByTag'))
@@ -142,14 +144,38 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       modificationTagMap: observable.map<string, string>({}),
       featureUnderMouseVolatile: undefined as undefined | Feature,
       currSortBpPerPx: 0,
-      ready: false,
+      modificationsReady: false,
+      sortReady: false,
+      tagsReady: false,
+    }))
+    .views(self => ({
+      get autorunReady() {
+        const view = getContainingView(self) as LGV
+        return (
+          view.initialized &&
+          self.featureDensityStatsReady &&
+          !self.regionTooLarge
+        )
+      },
     }))
     .actions(self => ({
       /**
        * #action
        */
-      setReady(flag: boolean) {
-        self.ready = flag
+      setModificationsReady(flag: boolean) {
+        self.modificationsReady = flag
+      },
+      /**
+       * #action
+       */
+      setTagsReady(flag: boolean) {
+        self.tagsReady = flag
+      },
+      /**
+       * #action
+       */
+      setSortReady(flag: boolean) {
+        self.sortReady = flag
       },
       /**
        * #action
@@ -182,19 +208,20 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       setColorScheme(colorScheme: { type: string; tag?: string }) {
         self.colorTagMap = observable.map({}) // clear existing mapping
         self.colorBy = cast(colorScheme)
-        self.ready = false
+        self.tagsReady = false
+        self.modificationsReady = false
       },
 
       /**
        * #action
        */
       updateModificationColorMap(uniqueModifications: string[]) {
-        const colorPalette = ['red', 'blue', 'green', 'orange', 'purple']
         uniqueModifications.forEach(value => {
           if (!self.modificationTagMap.has(value)) {
-            const totalKeys = [...self.modificationTagMap.keys()].length
-            const newColor = colorPalette[totalKeys]
-            self.modificationTagMap.set(value, newColor)
+            self.modificationTagMap.set(
+              value,
+              modificationColors[value] || randomColor(),
+            )
           }
         })
       },
@@ -222,8 +249,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         uniqueTag.forEach(value => {
           if (!self.colorTagMap.has(value)) {
             const totalKeys = [...self.colorTagMap.keys()].length
-            const newColor = colorPalette[totalKeys]
-            self.colorTagMap.set(value, newColor)
+            self.colorTagMap.set(value, colorPalette[totalKeys])
           }
         })
       },
@@ -232,130 +258,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setFeatureUnderMouse(feat?: Feature) {
         self.featureUnderMouseVolatile = feat
-      },
-    }))
-    .actions(self => ({
-      afterAttach() {
-        addDisposer(
-          self,
-          autorun(
-            async () => {
-              try {
-                const { rpcManager } = getSession(self)
-                const view = getContainingView(self) as LGV
-                const {
-                  sortedBy,
-                  colorBy,
-                  parentTrack,
-                  adapterConfig,
-                  rendererType,
-                } = self
-
-                if (
-                  !view.initialized ||
-                  !self.featureDensityStatsReady ||
-                  self.regionTooLarge
-                ) {
-                  return
-                }
-
-                const { staticBlocks, bpPerPx } = view
-                // continually generate the vc pairing, set and rerender if any
-                // new values seen
-                if (colorBy?.tag) {
-                  self.updateColorTagMap(
-                    await getUniqueTagValues(self, colorBy, staticBlocks),
-                  )
-                }
-
-                if (colorBy?.type === 'modifications') {
-                  const adapter = getConf(parentTrack, ['adapter'])
-                  self.updateModificationColorMap(
-                    await getUniqueModificationValues(
-                      self,
-                      adapter,
-                      colorBy,
-                      staticBlocks,
-                    ),
-                  )
-                }
-
-                if (sortedBy) {
-                  const { pos, refName, assemblyName } = sortedBy
-                  // render just the sorted region first
-                  // @ts-expect-error
-                  await self.rendererType.renderInClient(rpcManager, {
-                    assemblyName,
-                    regions: [
-                      {
-                        start: pos,
-                        end: pos + 1,
-                        refName,
-                        assemblyName,
-                      },
-                    ],
-                    adapterConfig: adapterConfig,
-                    rendererType: rendererType.name,
-                    sessionId: getRpcSessionId(self),
-                    layoutId: view.id,
-                    timeout: 1000000,
-                    ...self.renderProps(),
-                  })
-                  self.setReady(true)
-                  self.setCurrSortBpPerPx(bpPerPx)
-                } else {
-                  self.setReady(true)
-                }
-              } catch (e) {
-                console.error(e)
-                self.setError(e)
-              }
-            },
-            { delay: 1000 },
-          ),
-        )
-
-        // autorun synchronizes featureUnderMouse with featureIdUnderMouse
-        // asynchronously. this is needed due to how we do not serialize all
-        // features from the BAM/CRAM over the rpc
-        addDisposer(
-          self,
-          autorun(async () => {
-            const session = getSession(self)
-            try {
-              const featureId = self.featureIdUnderMouse
-              if (self.featureUnderMouse?.id() !== featureId) {
-                if (!featureId) {
-                  self.setFeatureUnderMouse(undefined)
-                } else {
-                  const sessionId = getRpcSessionId(self)
-                  const view = getContainingView(self)
-                  const { feature } = (await session.rpcManager.call(
-                    sessionId,
-                    'CoreGetFeatureDetails',
-                    {
-                      featureId,
-                      sessionId,
-                      layoutId: view.id,
-                      rendererType: 'PileupRenderer',
-                    },
-                  )) as { feature: SimpleFeatureSerialized }
-
-                  // check featureIdUnderMouse is still the same as the
-                  // feature.id that was returned e.g. that the user hasn't
-                  // moused over to a new position during the async operation
-                  // above
-                  if (self.featureIdUnderMouse === feature.uniqueId) {
-                    self.setFeatureUnderMouse(new SimpleFeature(feature))
-                  }
-                }
-              }
-            } catch (e) {
-              console.error(e)
-              session.notify(`${e}`, 'error')
-            }
-          }),
-        )
       },
 
       /**
@@ -428,6 +330,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return
         }
 
+        self.sortReady = false
         self.sortedBy = {
           type,
           pos: centerBp,
@@ -435,7 +338,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           assemblyName,
           tag,
         }
-        self.ready = false
       },
       setFilterBy(filter: Filter) {
         self.filterBy = cast(filter)
@@ -509,6 +411,17 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       get featureUnderMouse() {
         return self.featureUnderMouseVolatile
       },
+      /**
+       * #getter
+       */
+      get renderReady() {
+        const view = getContainingView(self) as LGV
+        return (
+          self.modificationsReady &&
+          self.tagsReady &&
+          self.currSortBpPerPx === view.bpPerPx
+        )
+      },
     }))
     .views(self => {
       const {
@@ -569,8 +482,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #method
          */
-        renderProps() {
-          const view = getContainingView(self) as LGV
+        renderPropsPre() {
           const {
             colorTagMap,
             modificationTagMap,
@@ -578,18 +490,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             colorBy,
             filterBy,
             rpcDriverName,
-            currSortBpPerPx,
-            ready,
           } = self
 
           const superProps = superRenderProps()
-
           return {
             ...superProps,
-            notReady:
-              superProps.notReady ||
-              !ready ||
-              (sortedBy && currSortBpPerPx !== view.bpPerPx),
+            notReady: superProps.notReady || !self.renderReady,
             rpcDriverName,
             displayModel: self,
             sortedBy,
@@ -662,6 +568,20 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 session.notify(`${e}`)
               }
             },
+          }
+        },
+
+        // renderProps and renderPropsPre are separated due to sortReady
+        // causing a infinite loop in the sort autorun, since the sort autorun
+        // uses renderProps
+        /**
+         * #method
+         */
+        renderProps() {
+          const pre = this.renderPropsPre()
+          return {
+            ...pre,
+            notReady: pre.notReady || !self.sortReady,
           }
         },
 
@@ -829,9 +749,130 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         },
       }
     })
+    .actions(self => ({
+      afterAttach() {
+        createAutorun(
+          self,
+          async () => {
+            const view = getContainingView(self) as LGV
+            if (!self.autorunReady) {
+              return
+            }
+
+            const { colorBy } = self
+            const { staticBlocks } = view
+            if (colorBy?.tag) {
+              const vals = await getUniqueTagValues(self, colorBy, staticBlocks)
+              self.updateColorTagMap(vals)
+            }
+            self.setTagsReady(true)
+          },
+          { delay: 1000 },
+        )
+        createAutorun(self, async () => {
+          if (!self.autorunReady) {
+            return
+          }
+          const { parentTrack, colorBy } = self
+          const { staticBlocks } = getContainingView(self) as LGV
+          if (colorBy?.type === 'modifications') {
+            const adapter = getConf(parentTrack, ['adapter'])
+            const vals = await getUniqueModificationValues(
+              self,
+              adapter,
+              colorBy,
+              staticBlocks,
+            )
+            self.updateModificationColorMap(vals)
+          }
+          self.setModificationsReady(true)
+        })
+
+        createAutorun(
+          self,
+          async () => {
+            const { rpcManager } = getSession(self)
+            const view = getContainingView(self) as LGV
+            if (!self.autorunReady) {
+              return
+            }
+
+            const { sortedBy, adapterConfig, rendererType } = self
+            const { bpPerPx } = view
+
+            if (sortedBy) {
+              const { pos, refName, assemblyName } = sortedBy
+              // render just the sorted region first
+              // @ts-expect-error
+              await self.rendererType.renderInClient(rpcManager, {
+                assemblyName,
+                regions: [
+                  {
+                    start: pos,
+                    end: pos + 1,
+                    refName,
+                    assemblyName,
+                  },
+                ],
+                adapterConfig: adapterConfig,
+                rendererType: rendererType.name,
+                sessionId: getRpcSessionId(self),
+                layoutId: view.id,
+                timeout: 1_000_000,
+                ...self.renderPropsPre(),
+              })
+            }
+            self.setCurrSortBpPerPx(bpPerPx)
+            self.setSortReady(true)
+          },
+          { delay: 1000 },
+        )
+
+        // autorun synchronizes featureUnderMouse with featureIdUnderMouse
+        // asynchronously. this is needed due to how we do not serialize all
+        // features from the BAM/CRAM over the rpc
+        addDisposer(
+          self,
+          autorun(async () => {
+            const session = getSession(self)
+            try {
+              const featureId = self.featureIdUnderMouse
+              if (self.featureUnderMouse?.id() !== featureId) {
+                if (!featureId) {
+                  self.setFeatureUnderMouse(undefined)
+                } else {
+                  const sessionId = getRpcSessionId(self)
+                  const view = getContainingView(self)
+                  const { feature } = (await session.rpcManager.call(
+                    sessionId,
+                    'CoreGetFeatureDetails',
+                    {
+                      featureId,
+                      sessionId,
+                      layoutId: view.id,
+                      rendererType: 'PileupRenderer',
+                    },
+                  )) as { feature: SimpleFeatureSerialized }
+
+                  // check featureIdUnderMouse is still the same as the
+                  // feature.id that was returned e.g. that the user hasn't
+                  // moused over to a new position during the async operation
+                  // above
+                  if (self.featureIdUnderMouse === feature.uniqueId) {
+                    self.setFeatureUnderMouse(new SimpleFeature(feature))
+                  }
+                }
+              }
+            } catch (e) {
+              console.error(e)
+              session.notify(`${e}`, 'error')
+            }
+          }),
+        )
+      },
+    }))
 }
 
 export type LinearPileupDisplayStateModel = ReturnType<typeof stateModelFactory>
 export type LinearPileupDisplayModel = Instance<LinearPileupDisplayStateModel>
-
 export default stateModelFactory

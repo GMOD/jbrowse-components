@@ -4,29 +4,20 @@ title: LinearComparativeView
 toplevel: true
 ---
 
-
 Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See [Core concepts and intro to pluggable
-elements](/docs/developer_guide/) for more info
-
-
+our source code. See
+[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
+info
 
 ## Source file
 
 [plugins/linear-comparative-view/src/LinearComparativeView/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearComparativeView/model.ts)
 
-
 ## Docs
 
-
-
-
-
-
 ### LinearComparativeView - Properties
+
 #### property: id
-
-
 
 ```js
 // type signature
@@ -37,8 +28,6 @@ id: ElementId
 
 #### property: type
 
-
-
 ```js
 // type signature
 ISimpleType<"LinearComparativeView">
@@ -47,8 +36,6 @@ type: types.literal('LinearComparativeView')
 ```
 
 #### property: trackSelectorType
-
-
 
 ```js
 // type signature
@@ -59,8 +46,6 @@ trackSelectorType: 'hierarchical'
 
 #### property: showIntraviewLinks
 
-
-
 ```js
 // type signature
 true
@@ -69,8 +54,6 @@ showIntraviewLinks: true
 ```
 
 #### property: linkViews
-
-
 
 ```js
 // type signature
@@ -81,8 +64,6 @@ linkViews: false
 
 #### property: interactToggled
 
-
-
 ```js
 // type signature
 false
@@ -92,8 +73,6 @@ interactToggled: false
 
 #### property: middleComparativeHeight
 
-
-
 ```js
 // type signature
 number
@@ -102,8 +81,6 @@ middleComparativeHeight: 100
 ```
 
 #### property: tracks
-
-
 
 ```js
 // type signature
@@ -130,9 +107,8 @@ views: types.array(
 
 #### property: viewTrackConfigs
 
-this represents tracks specific to this view specifically used
-for read vs ref dotplots where this track would not really apply
-elsewhere
+this represents tracks specific to this view specifically used for read vs ref
+dotplots where this track would not really apply elsewhere
 
 ```js
 // type signature
@@ -143,11 +119,9 @@ viewTrackConfigs: types.array(
         )
 ```
 
-
 ### LinearComparativeView - Getters
+
 #### getter: highResolutionScaling
-
-
 
 ```js
 // type
@@ -156,16 +130,12 @@ number
 
 #### getter: initialized
 
-
-
 ```js
 // type
 boolean
 ```
 
 #### getter: refNames
-
-
 
 ```js
 // type
@@ -174,19 +144,17 @@ any[][]
 
 #### getter: assemblyNames
 
-
-
 ```js
 // type
 any[]
 ```
 
-
 ### LinearComparativeView - Methods
+
 #### method: headerMenuItems
 
-includes a subset of view menu options because the full list is a
-little overwhelming. overridden by subclasses
+includes a subset of view menu options because the full list is a little
+overwhelming. overridden by subclasses
 
 ```js
 // type signature
@@ -195,8 +163,6 @@ headerMenuItems: () => MenuItem[]
 
 #### method: menuItems
 
-
-
 ```js
 // type signature
 menuItems: () => MenuItem[]
@@ -204,18 +170,14 @@ menuItems: () => MenuItem[]
 
 #### method: rubberBandMenuItems
 
-
-
 ```js
 // type signature
 rubberBandMenuItems: () => { label: string; onClick: () => void; }[]
 ```
 
-
 ### LinearComparativeView - Actions
+
 #### action: setWidth
-
-
 
 ```js
 // type signature
@@ -224,16 +186,12 @@ setWidth: (newWidth: number) => void
 
 #### action: setViews
 
-
-
 ```js
 // type signature
 setViews: (views: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }>>[]) => void
 ```
 
 #### action: removeView
-
-
 
 ```js
 // type signature
@@ -242,8 +200,8 @@ removeView: (view: { id: string; displayName: string; minimized: boolean; type: 
 
 #### action: closeView
 
-removes the view itself from the state tree entirely by calling the
-parent removeView
+removes the view itself from the state tree entirely by calling the parent
+removeView
 
 ```js
 // type signature
@@ -252,16 +210,12 @@ closeView: () => void
 
 #### action: setMiddleComparativeHeight
 
-
-
 ```js
 // type signature
 setMiddleComparativeHeight: (n: number) => number
 ```
 
 #### action: toggleLinkViews
-
-
 
 ```js
 // type signature
@@ -270,16 +224,12 @@ toggleLinkViews: () => void
 
 #### action: activateTrackSelector
 
-
-
 ```js
 // type signature
 activateTrackSelector: () => Widget
 ```
 
 #### action: toggleTrack
-
-
 
 ```js
 // type signature
@@ -288,16 +238,12 @@ toggleTrack: (trackId: string) => void
 
 #### action: showTrack
 
-
-
 ```js
 // type signature
 showTrack: (trackId: string, initialSnapshot?: {}) => void
 ```
 
 #### action: hideTrack
-
-
 
 ```js
 // type signature
@@ -306,8 +252,6 @@ hideTrack: (trackId: string) => number
 
 #### action: squareView
 
-
-
 ```js
 // type signature
 squareView: () => void
@@ -315,11 +259,7 @@ squareView: () => void
 
 #### action: clearView
 
-
-
 ```js
 // type signature
 clearView: () => void
 ```
-
-

@@ -1,4 +1,5 @@
 import { revcom, Feature } from '@jbrowse/core/util'
+import { getTagAlt } from '../util'
 
 export interface Mismatch {
   qual?: number
@@ -116,8 +117,8 @@ export function cigarToMismatches(
 }
 
 /**
- * parse a SAM MD tag to find mismatching bases of the template versus the reference
- * @returns array of mismatches and their positions
+ * parse a SAM MD tag to find mismatching bases of the template versus the
+ * reference @returns array of mismatches and their positions
  */
 export function mdToMismatches(
   mdstring: string,
@@ -126,13 +127,13 @@ export function mdToMismatches(
   seq: string,
   qual?: Buffer,
 ) {
-  const mismatchRecords: Mismatch[] = []
   let curr: Mismatch = { start: 0, base: '', length: 0, type: 'mismatch' }
-  const skips = cigarMismatches.filter(cigar => cigar.type === 'skip')
   let lastCigar = 0
   let lastTemplateOffset = 0
   let lastRefOffset = 0
   let lastSkipPos = 0
+  const mismatchRecords: Mismatch[] = []
+  const skips = cigarMismatches.filter(cigar => cigar.type === 'skip')
 
   // convert a position on the reference sequence to a position
   // on the template sequence, taking into account hard and soft
@@ -265,6 +266,47 @@ export function* getNextRefPos(cigarOps: string[], positions: number[]) {
     }
   }
 }
+
+export function getModificationProbabilities(feature: Feature) {
+  const m = (getTagAlt(feature, 'ML', 'Ml') as number[] | string) || []
+  return m
+    ? (typeof m === 'string' ? m.split(',').map(e => +e) : m).map(e => e / 255)
+    : (getTagAlt(feature, 'MP', 'Mp') as string | undefined)
+        ?.split('')
+        .map(s => s.charCodeAt(0) - 33)
+        .map(elt => Math.min(1, elt / 50))
+}
+
+export function getMethBins(feature: Feature) {
+  const fstart = feature.get('start')
+  const fend = feature.get('end')
+  const fstrand = feature.get('strand') as -1 | 0 | 1
+  const flen = fend - fstart
+  const mm = (getTagAlt(feature, 'MM', 'Mm') as string | undefined) || ''
+  const methBins = new Array<number>(flen)
+  const methProbs = new Array<number>(flen)
+  const seq = feature.get('seq') as string | undefined
+  if (seq) {
+    const ops = parseCigar(feature.get('CIGAR'))
+    const probabilities = getModificationProbabilities(feature)
+    const modifications = getModificationPositions(mm, seq, fstrand)
+    let probIndex = 0
+    for (const { type, positions } of modifications) {
+      if (type === 'm') {
+        for (const ref of getNextRefPos(ops, positions)) {
+          const prob = probabilities?.[probIndex] || 0
+          probIndex++
+          if (ref >= 0 && ref < flen) {
+            methBins[ref] = 1
+            methProbs[ref] = prob
+          }
+        }
+      }
+    }
+  }
+  return { methBins, methProbs }
+}
+
 export function getModificationPositions(
   mm: string,
   fseq: string,

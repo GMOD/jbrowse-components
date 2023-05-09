@@ -205,7 +205,7 @@ export async function getQuantitativeStats(
   }
 
   if (autoscaleType === 'global' || autoscaleType === 'globalsd') {
-    const results: QuantitativeStats = (await rpcManager.call(
+    const results = (await rpcManager.call(
       sessionId,
       'WiggleGetGlobalQuantitativeStats',
       params,

@@ -3,8 +3,9 @@ id: linearsnpcoveragedisplay
 title: LinearSNPCoverageDisplay
 toplevel: true
 ---
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -12,16 +13,9 @@ our source code. See [Config guide](/docs/config_guide) for more info
 
 ## Docs
 
-
-
-
-
-
-
 ### LinearSNPCoverageDisplay - Slots
+
 #### slot: autoscale
-
-
 
 ```js
 autoscale: {
@@ -35,8 +29,6 @@ autoscale: {
 
 #### slot: minScore
 
-
-
 ```js
 minScore: {
         type: 'number',
@@ -46,8 +38,6 @@ minScore: {
 ```
 
 #### slot: maxScore
-
-
 
 ```js
 maxScore: {
@@ -59,20 +49,16 @@ maxScore: {
 
 #### slot: scaleType
 
-
-
 ```js
 scaleType: {
         type: 'stringEnum',
-        model: types.enumeration('Scale type', ['linear', 'log']), 
+        model: types.enumeration('Scale type', ['linear', 'log']),
         description: 'The type of scale to use',
         defaultValue: 'linear',
       }
 ```
 
 #### slot: inverted
-
-
 
 ```js
 inverted: {
@@ -84,8 +70,6 @@ inverted: {
 
 #### slot: multiTicks
 
-
-
 ```js
 multiTicks: {
         type: 'boolean',
@@ -96,24 +80,15 @@ multiTicks: {
 
 #### slot: renderers
 
-
-
 ```js
 renderers: ConfigurationSchema('RenderersConfiguration', {
-        SNPCoverageRenderer: pluginManager.getRendererType(
-          'SNPCoverageRenderer',
-        ).configSchema,
-      })
+  SNPCoverageRenderer: pluginManager.getRendererType('SNPCoverageRenderer')
+    .configSchema,
+})
 ```
 
-
 ## LinearSNPCoverageDisplay - Derives from
-
-
-
 
 ```js
 baseConfiguration: baseLinearDisplayConfigSchema
 ```
-
-

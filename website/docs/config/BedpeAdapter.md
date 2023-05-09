@@ -3,8 +3,9 @@ id: bedpeadapter
 title: BedpeAdapter
 toplevel: true
 ---
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -14,11 +15,8 @@ our source code. See [Config guide](/docs/config_guide) for more info
 
 intended for SVs in a single assembly
 
-
-
-
-
 ### BedpeAdapter - Slots
+
 #### slot: bedpeLocation
 
 can be plaintext or gzipped, not indexed so loaded into memory on startup
@@ -35,8 +33,6 @@ bedpeLocation: {
 
 #### slot: columnNames
 
-
-
 ```js
 columnNames: {
       type: 'stringArray',
@@ -44,7 +40,3 @@ columnNames: {
       defaultValue: [],
     }
 ```
-
-
-
-

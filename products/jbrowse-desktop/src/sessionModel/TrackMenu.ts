@@ -9,14 +9,12 @@ import { Indexing } from '@jbrowse/core/ui/Icons'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import { supportedIndexingAdapters } from '@jbrowse/text-indexing'
-import { lazy } from 'react'
 
 import type { SessionWithDialogs } from '@jbrowse/product-core/src/Session/DialogQueue'
 import type { SessionWithTracks } from '@jbrowse/product-core/src/Session/Tracks'
 import type { SessionWithDrawerWidgets } from '@jbrowse/product-core/src/Session/DrawerWidgets'
 import { DesktopRootModel } from '../rootModel'
-
-const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
+import AboutDialogFallback from '../AboutDialogFallback'
 
 export default function TrackMenu(pluginManager: PluginManager) {
   return types.model({}).views(self => ({
@@ -33,7 +31,7 @@ export default function TrackMenu(pluginManager: PluginManager) {
           label: 'About track',
           onClick: () => {
             session.queueDialog(doneCallback => [
-              AboutDialog,
+              AboutDialogFallback,
               { config: trackConfig, handleClose: doneCallback },
             ])
           },

@@ -178,10 +178,10 @@ export default class FeatureRendererType extends ServerSideRendererType {
 
     const feats = await firstValueFrom(featureObservable.pipe(toArray()))
     checkAbortSignal(signal)
-    return new Map(
+    return new Map<string, Feature>(
       feats
         .filter(feat => this.featurePassesFilters(renderArgs, feat))
-        .map(feat => [feat.id(), feat]),
+        .map(feat => [feat.id(), feat] as const),
     )
   }
 
@@ -191,10 +191,9 @@ export default class FeatureRendererType extends ServerSideRendererType {
    * @returns true if this feature passes all configured filters
    */
   featurePassesFilters(renderArgs: RenderArgsDeserialized, feature: Feature) {
-    if (!renderArgs.filters) {
-      return true
-    }
-    return renderArgs.filters.passes(feature, renderArgs)
+    return renderArgs.filters
+      ? renderArgs.filters.passes(feature, renderArgs)
+      : true
   }
 
   /**
@@ -202,11 +201,10 @@ export default class FeatureRendererType extends ServerSideRendererType {
    *
    * @param props - render args
    */
-  async render(props: RenderArgsDeserialized): Promise<RenderResults> {
-    const features =
-      (props.features as undefined | Map<string, Feature>) ||
-      (await this.getFeatures(props))
-
+  async render(
+    props: RenderArgsDeserialized & { features?: Map<string, Feature> },
+  ): Promise<RenderResults> {
+    const features = props.features || (await this.getFeatures(props))
     const result = await super.render({ ...props, features })
     return { ...result, features }
   }

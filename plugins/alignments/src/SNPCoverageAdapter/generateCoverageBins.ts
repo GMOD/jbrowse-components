@@ -5,8 +5,11 @@ import {
   parseCigar,
   getNextRefPos,
   getModificationPositions,
+  getMethBins,
   Mismatch,
 } from '../MismatchParser'
+import { doesIntersect2 } from '@jbrowse/core/util'
+import { Bin, SkipMap } from './util'
 
 function mismatchLen(mismatch: Mismatch) {
   return !isInterbase(mismatch.type) ? mismatch.length : 1
@@ -38,49 +41,25 @@ export default async function generateCoverageBins(
   fetchSequence: (arg: Region) => Promise<string>,
 ) {
   const { colorBy } = opts
-  const binMax = Math.ceil(region.end - region.start)
-
-  const skipmap = {} as {
-    [key: string]: {
-      score: number
-      feature: unknown
-      start: number
-      end: number
-      strand: number
-      xs: string
-    }
+  const extendedRegion = {
+    ...region,
+    start: Math.max(0, region.start - 1),
+    end: region.end + 1,
   }
-
-  // bins contain:
-  // - cov feature if they contribute to coverage
-  // - noncov are insertions/clip features that don't contribute to coverage
-  // - delskips deletions or introns that don't contribute to coverage
-  type BinType = { total: number; strands: { [key: string]: number } }
-
-  const regionSeq =
+  const binMax = Math.ceil(extendedRegion.end - extendedRegion.start)
+  const skipmap = {} as SkipMap
+  const regionSequence =
     features.length && shouldFetchReferenceSequence(opts.colorBy?.type)
       ? await fetchSequence(region)
       : undefined
 
-  const bins = [] as {
-    refbase?: string
-    total: number
-    all: number
-    ref: number
-    '-1': 0
-    '0': 0
-    '1': 0
-    lowqual: BinType
-    cov: BinType
-    delskips: BinType
-    noncov: BinType
-  }[]
+  const bins = [] as Bin[]
 
-  for (let i = 0; i < features.length; i++) {
-    const feature = features[i]
+  for (const feature of features) {
     const fstart = feature.get('start')
     const fend = feature.get('end')
     const fstrand = feature.get('strand') as -1 | 0 | 1
+    const mismatches = (feature.get('mismatches') as Mismatch[]) || []
 
     for (let j = fstart; j < fend + 1; j++) {
       const i = j - region.start
@@ -93,10 +72,10 @@ export default async function generateCoverageBins(
             '-1': 0,
             '0': 0,
             '1': 0,
-            lowqual: {} as BinType,
-            cov: {} as BinType,
-            delskips: {} as BinType,
-            noncov: {} as BinType,
+            lowqual: {},
+            cov: {},
+            delskips: {},
+            noncov: {},
           }
         }
         if (j !== fend) {
@@ -114,79 +93,113 @@ export default async function generateCoverageBins(
       const ops = parseCigar(feature.get('CIGAR'))
       const fend = feature.get('end')
       if (seq) {
-        getModificationPositions(mm, seq, fstrand).forEach(
-          ({ type, positions }) => {
-            const mod = `mod_${type}`
-            for (const pos of getNextRefPos(ops, positions)) {
-              const epos = pos + fstart - region.start
-              if (epos >= 0 && epos < bins.length && pos + fstart < fend) {
-                const bin = bins[epos]
-                if (bin) {
-                  inc(bin, fstrand, 'cov', mod)
-                } else {
-                  console.warn(
-                    'Undefined position in modifications snpcoverage encountered',
-                  )
+        const modifications = getModificationPositions(mm, seq, fstrand)
+        for (const { type, positions } of modifications) {
+          const mod = `mod_${type}`
+          for (const pos of getNextRefPos(ops, positions)) {
+            const epos = pos + fstart - region.start
+            if (epos >= 0 && epos < bins.length && pos + fstart < fend) {
+              if (bins[epos] === undefined) {
+                bins[epos] = {
+                  total: 0,
+                  all: 0,
+                  ref: 0,
+                  '-1': 0,
+                  '0': 0,
+                  '1': 0,
+                  lowqual: {},
+                  cov: {},
+                  delskips: {},
+                  noncov: {},
                 }
               }
+              const bin = bins[epos]
+              if (bin) {
+                inc(bin, fstrand, 'cov', mod)
+              } else {
+                console.warn(
+                  'Undefined position in modifications snpcoverage encountered',
+                )
+              }
             }
-          },
-        )
+          }
+        }
       }
     }
 
-    // methylation based coloring takes into account both reference
-    // sequence CpG detection and reads
-    else if (colorBy?.type === 'methylation') {
-      if (!regionSeq) {
+    if (colorBy?.type === 'methylation') {
+      if (!regionSequence) {
         throw new Error(
           'no region sequence detected, need sequenceAdapter configuration',
         )
       }
       const seq = feature.get('seq') as string | undefined
-      const mm = getTagAlt(feature, 'MM', 'Mm') || ''
-      const methBins = new Array(region.end - region.start).fill(0)
-      const ops = parseCigar(feature.get('CIGAR'))
+      if (!seq) {
+        continue
+      }
+      const { methBins, methProbs } = getMethBins(feature)
+      const dels = mismatches.filter(f => f.type === 'deletion')
 
-      if (seq) {
-        getModificationPositions(mm, seq, fstrand).forEach(
-          ({ type, positions }) => {
-            // we are processing methylation
-            if (type === 'm') {
-              for (const pos of getNextRefPos(ops, positions)) {
-                const epos = pos + fstart - region.start
-                if (epos >= 0 && epos < methBins.length) {
-                  methBins[epos] = 1
-                }
+      // methylation based coloring takes into account both reference sequence
+      // CpG detection and reads
+      for (let i = 0; i < fend - fstart; i++) {
+        const j = i + fstart
+        const l1 = regionSequence[j - region.start + 1]?.toLowerCase()
+        const l2 = regionSequence[j - region.start + 2]?.toLowerCase()
+        if (l1 === 'c' && l2 === 'g') {
+          const bin0 = bins[j - region.start]
+          const bin1 = bins[j - region.start + 1]
+          const b0 = methBins[i]
+          const b1 = methBins[i + 1]
+          const p0 = methProbs[i]
+          const p1 = methProbs[i + 1]
+
+          // color
+          if (
+            (b0 && (p0 !== undefined ? p0 > 0.5 : true)) ||
+            (b1 && (p1 !== undefined ? p1 > 0.5 : true))
+          ) {
+            if (bin0) {
+              inc(bin0, fstrand, 'cov', 'meth')
+              bin0.ref--
+              bin0[fstrand]--
+            }
+            if (bin1) {
+              inc(bin1, fstrand, 'cov', 'meth')
+              bin1.ref--
+              bin1[fstrand]--
+            }
+          } else {
+            if (bin0) {
+              if (
+                !dels?.some(d =>
+                  doesIntersect2(
+                    j,
+                    j + 1,
+                    d.start + fstart,
+                    d.start + fstart + d.length,
+                  ),
+                )
+              ) {
+                inc(bin0, fstrand, 'cov', 'unmeth')
+                bin0.ref--
+                bin0[fstrand]
               }
             }
-          },
-        )
-
-        for (let j = fstart; j < fend; j++) {
-          const i = j - region.start
-          if (i >= 0 && i < bins.length - 1) {
-            const l1 = regionSeq[i].toLowerCase()
-            const l2 = regionSeq[i + 1].toLowerCase()
-            const bin = bins[i]
-            const bin1 = bins[i + 1]
-
-            // color
-            if (l1 === 'c' && l2 === 'g') {
-              if (methBins[i] || methBins[i + 1]) {
-                inc(bin, fstrand, 'cov', 'meth')
-                inc(bin1, fstrand, 'cov', 'meth')
-                bins[i].ref--
-                bins[i][fstrand]--
-                bins[i + 1].ref--
-                bins[i + 1][fstrand]--
-              } else {
-                inc(bin, fstrand, 'cov', 'unmeth')
+            if (bin1) {
+              if (
+                !dels?.some(d =>
+                  doesIntersect2(
+                    j + 1,
+                    j + 2,
+                    d.start + fstart,
+                    d.start + fstart + d.length,
+                  ),
+                )
+              ) {
                 inc(bin1, fstrand, 'cov', 'unmeth')
-                bins[i].ref--
-                bins[i][fstrand]--
-                bins[i + 1].ref--
-                bins[i + 1][fstrand]--
+                bin1.ref--
+                bin1[fstrand]--
               }
             }
           }
@@ -195,12 +208,10 @@ export default async function generateCoverageBins(
     }
 
     // normal SNP based coloring
-    const mismatches = (feature.get('mismatches') as Mismatch[]) || []
     const colorSNPs =
       colorBy?.type !== 'modifications' && colorBy?.type !== 'methylation'
 
-    for (let i = 0; i < mismatches.length; i++) {
-      const mismatch = mismatches[i]
+    for (const mismatch of mismatches) {
       const mstart = fstart + mismatch.start
       const mlen = mismatchLen(mismatch)
       const mend = mstart + mlen

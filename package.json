@@ -90,7 +90,6 @@
     "@types/shortid": "^0.0.29",
     "@types/string-template": "^1.0.2",
     "@types/tmp": "^0.2.1",
-    "@types/unzipper": "^0.10.3",
     "@typescript-eslint/parser": "^5.45.1",
     "babel-loader": "^9.1.0",
     "canvas": "^2.9.1",
