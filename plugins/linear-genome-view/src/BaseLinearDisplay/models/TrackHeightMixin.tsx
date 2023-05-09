@@ -3,6 +3,9 @@ import { types } from 'mobx-state-tree'
 
 const minDisplayHeight = 20
 
+/**
+ * #stateModel TrackHeightMixin
+ */
 export default function TrackHeightMixin() {
   return types
     .model({

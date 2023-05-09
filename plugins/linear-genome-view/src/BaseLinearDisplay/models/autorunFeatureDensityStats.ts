@@ -18,7 +18,7 @@ export default async function autorunFeatureDensityStats(
     if (
       !view.initialized ||
       !view.staticBlocks.contentBlocks.length ||
-      view.bpPerPx === self.currBpPerPx ||
+      view.bpPerPx === self.currStatsBpPerPx ||
       self.error
     ) {
       return
@@ -27,12 +27,12 @@ export default async function autorunFeatureDensityStats(
     // don't re-estimate featureDensity even if zoom level changes,
     // jbrowse1-style assume it's sort of representative
     if (self.featureDensityStats?.featureDensity !== undefined) {
-      self.setCurrBpPerPx(view.bpPerPx)
+      self.setCurrStatsBpPerPx(view.bpPerPx)
       return
     }
 
     self.clearFeatureDensityStats()
-    self.setCurrBpPerPx(view.bpPerPx)
+    self.setCurrStatsBpPerPx(view.bpPerPx)
     const stats = await self.getFeatureDensityStats()
     if (isAlive(self)) {
       self.setFeatureDensityStats(stats)

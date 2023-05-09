@@ -41,7 +41,7 @@ import {
 } from '../shared'
 import { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 import { createAutorun, modificationColors } from '../util'
-import { randomColor } from './util'
+import { randomColor } from '../util'
 
 // async
 const FilterByTagDlg = lazy(() => import('../shared/FilterByTag'))

@@ -33,7 +33,6 @@ import {
   orientationTypes,
   fetchSequence,
   shouldFetchReferenceSequence,
-  modificationColors,
 } from '../util'
 import {
   PileupLayoutSession,

@@ -68,6 +68,7 @@ export {
   BaseLinearDisplayComponent,
   TrackHeightMixin,
   FeatureDensityMixin,
+  TooLargeMessage,
 } from './BaseLinearDisplay'
 export {
   type LinearGenomeViewModel,

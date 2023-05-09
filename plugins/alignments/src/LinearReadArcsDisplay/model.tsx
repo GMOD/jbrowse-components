@@ -332,9 +332,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     }))
     .actions(self => ({
       afterAttach() {
-        addDisposer(
+        createAutorun(
           self,
-          autorun(() => fetchChains(self), { delay: 1000 }),
+          () => {
+            return fetchChains(self)
+          },
+          { delay: 1000 },
         )
 
         createAutorun(

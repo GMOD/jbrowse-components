@@ -67,7 +67,6 @@ function stateModelFactory() {
       }),
     )
     .volatile(() => ({
-      currBpPerPx: 0,
       scrollTop: 0,
       featureIdUnderMouse: undefined as undefined | string,
       contextMenuFeature: undefined as undefined | Feature,
@@ -257,14 +256,7 @@ function stateModelFactory() {
         self.contextMenuFeature = feature
       },
     }))
-    .views(self => ({
-      get notReady() {
-        const view = getContainingView(self) as LGV
-        return (
-          self.currBpPerPx !== view.bpPerPx || !self.featureDensityStatsReady
-        )
-      },
-    }))
+
     .actions(self => {
       const { reload: superReload } = self
 
@@ -274,7 +266,7 @@ function stateModelFactory() {
          */
         async reload() {
           self.setError()
-          self.setCurrBpPerPx(0)
+          self.setCurrStatsBpPerPx(0)
           self.clearFeatureDensityStats()
           ;[...self.blockState.values()].map(val => val.doReload())
           superReload()
@@ -316,7 +308,7 @@ function stateModelFactory() {
       renderProps() {
         return {
           ...getParentRenderProps(self),
-          notReady: self.notReady,
+          notReady: !self.featureDensityStatsReady,
           rpcDriverName: self.rpcDriverName,
           displayModel: self,
           onFeatureClick(_: unknown, featureId?: string) {

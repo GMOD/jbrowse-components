@@ -15,6 +15,9 @@ import autorunFeatureDensityStats from './autorunFeatureDensityStats'
 
 type LGV = LinearGenomeViewModel
 
+/**
+ * #stateModel FeatureDensityMixin
+ */
 export default function FeatureDensityMixin() {
   return types
     .model({
@@ -27,16 +30,13 @@ export default function FeatureDensityMixin() {
        */
 
       userByteSizeLimit: types.maybe(types.number),
-      /**
-       * #property
-       */
-      currStatsBpPerPx: types.maybe(types.number),
     })
     .volatile(() => ({
       featureDensityStatsP: undefined as
         | undefined
         | Promise<FeatureDensityStats>,
       featureDensityStats: undefined as undefined | FeatureDensityStats,
+      currStatsBpPerPx: 0,
     }))
     .views(self => ({
       /**
@@ -65,7 +65,11 @@ export default function FeatureDensityMixin() {
        * #getter
        */
       get featureDensityStatsReady() {
-        return !!self.featureDensityStats || !!self.userBpPerPxLimit
+        const view = getContainingView(self)
+        return (
+          self.currStatsBpPerPx === view.bpPerPx &&
+          (!!self.featureDensityStats || !!self.userBpPerPxLimit)
+        )
       },
 
       /**
@@ -92,7 +96,7 @@ export default function FeatureDensityMixin() {
       /**
        * #action
        */
-      setCurrBpPerPx(n: number) {
+      setCurrStatsBpPerPx(n: number) {
         self.currStatsBpPerPx = n
       },
       /**

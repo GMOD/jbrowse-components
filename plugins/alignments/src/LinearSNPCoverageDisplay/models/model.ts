@@ -17,7 +17,7 @@ import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import Tooltip from '../components/Tooltip'
 import { FilterModel, getUniqueModificationValues } from '../../shared'
 import { createAutorun, modificationColors } from '../../util'
-import { randomColor } from '../../LinearPileupDisplay/util'
+import { randomColor } from '../../util'
 
 // using a map because it preserves order
 const rendererTypes = new Map([['snpcoverage', 'SNPCoverageRenderer']])
