@@ -80,6 +80,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
+      setLoading(f: boolean) {
+        self.loading = f
+      },
+      /**
+       * #action
+       */
       reload() {
         self.error = undefined
       },
@@ -106,13 +112,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setLoading(f: boolean) {
-        self.loading = f
-      },
-
-      /**
-       * #action
-       */
       setDrawn(f: boolean) {
         self.drawn = f
       },
@@ -124,7 +123,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         self.filterBy = cast(filter)
       },
     }))
-
     .views(self => {
       const {
         trackMenuItems: superTrackMenuItems,

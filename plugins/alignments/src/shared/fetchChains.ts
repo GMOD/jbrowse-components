@@ -48,8 +48,8 @@ export async function fetchChains(
   if (!view.initialized || self.error || self.regionTooLarge) {
     return
   }
-  self.setLoading(true)
 
+  self.setLoading(true)
   const ret = (await rpcManager.call(sessionId, 'PileupGetReducedFeatures', {
     sessionId,
     regions: view.staticBlocks.contentBlocks,

@@ -101,6 +101,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
+      setLoading(f: boolean) {
+        self.loading = f
+      },
+      /**
+       * #action
+       */
       reload() {
         self.error = undefined
       },
@@ -139,13 +145,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setDrawLongRange(f: boolean) {
         self.drawLongRange = f
-      },
-
-      /**
-       * #action
-       */
-      setLoading(f: boolean) {
-        self.loading = f
       },
 
       /**

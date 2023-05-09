@@ -20,7 +20,12 @@ export default function TrackHeightMixin() {
         ),
       ),
     })
-
+    .volatile(() => ({
+      /**
+       * #property
+       */
+      scrollTop: 0,
+    }))
     .views(self => ({
       get height() {
         // @ts-expect-error
@@ -28,6 +33,12 @@ export default function TrackHeightMixin() {
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      setScrollTop(scrollTop: number) {
+        self.scrollTop = scrollTop
+      },
       /**
        * #action
        */

@@ -67,7 +67,6 @@ function stateModelFactory() {
       }),
     )
     .volatile(() => ({
-      scrollTop: 0,
       featureIdUnderMouse: undefined as undefined | string,
       contextMenuFeature: undefined as undefined | Feature,
     }))
@@ -188,13 +187,6 @@ function stateModelFactory() {
     }))
 
     .actions(self => ({
-      /**
-       * #action
-       */
-      setScrollTop(scrollTop: number) {
-        self.scrollTop = scrollTop
-      },
-
       /**
        * #action
        */
