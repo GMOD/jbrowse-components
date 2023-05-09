@@ -3,6 +3,8 @@ import { toArray } from 'rxjs/operators'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { AugmentedRegion } from '@jbrowse/core/util'
 import { firstValueFrom } from 'rxjs'
+import { IAnyStateTreeNode, addDisposer, isAlive } from 'mobx-state-tree'
+import { autorun } from 'mobx'
 // get tag from BAM or CRAM feature, where CRAM uses feature.get('tags') and
 // BAM does not
 export function getTag(feature: Feature, tag: string) {
@@ -81,11 +83,12 @@ export function getColorWGBS(strand: number, base: string) {
   return '#888'
 }
 
+// fetches region sequence augmenting by +/- 1bp for CpG on either side of requested region
 export async function fetchSequence(
   region: AugmentedRegion,
   adapter: BaseFeatureDataAdapter,
 ) {
-  const { end, originalRefName, refName } = region
+  const { start, end, originalRefName, refName } = region
 
   const feats = await firstValueFrom(
     adapter
@@ -93,6 +96,7 @@ export async function fetchSequence(
         ...region,
         refName: originalRefName || refName,
         end: end + 1,
+        start: Math.max(0, start - 1),
       })
       .pipe(toArray()),
   )
@@ -102,4 +106,38 @@ export async function fetchSequence(
 // has to check underlying C-G (aka CpG) on the reference sequence
 export function shouldFetchReferenceSequence(type?: string) {
   return type === 'methylation'
+}
+
+// adapted from IGV https://github.com/igvteam/igv/blob/e803e3af2d8c9ea049961dfd4628146bdde9a574/src/main/java/org/broad/igv/sam/mods/BaseModificationColors.java#L27
+export const modificationColors = {
+  m: 'rgb(255,0,0)',
+  h: 'rgb(11, 132, 165)',
+  o: 'rgb(111, 78, 129)',
+  f: 'rgb(246, 200, 95)',
+  c: 'rgb(157, 216, 102)',
+  g: 'rgb(255, 160, 86)',
+  e: 'rgb(141, 221, 208)',
+  b: 'rgb(202, 71, 47)',
+} as Record<string, string | undefined>
+
+export function createAutorun(
+  self: IAnyStateTreeNode & { setError: (arg: unknown) => void },
+  arg: () => Promise<void>,
+  options?: { delay: number },
+) {
+  addDisposer(
+    self,
+    autorun(async () => {
+      try {
+        await arg()
+      } catch (e) {
+        if (isAlive(self)) {
+          self.setError(e)
+        }
+      }
+    }, options),
+  )
+}
+export function randomColor() {
+  return `hsl(${Math.random() * 200}, 50%, 50%)`
 }
