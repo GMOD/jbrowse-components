@@ -4,22 +4,29 @@ title: LinearBareDisplay
 toplevel: true
 ---
 
+
 Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
+our source code. See [Core concepts and intro to pluggable
+elements](/docs/developer_guide/) for more info
+
+
 
 ## Source file
 
 [plugins/linear-genome-view/src/LinearBareDisplay/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/LinearBareDisplay/model.ts)
 
+
 ## Docs
+
 
 extends `BaseLinearDisplay`
 
-### LinearBareDisplay - Properties
 
+
+### LinearBareDisplay - Properties
 #### property: type
+
+
 
 ```js
 // type signature
@@ -30,6 +37,8 @@ type: types.literal('LinearBareDisplay')
 
 #### property: configuration
 
+
+
 ```js
 // type signature
 AnyConfigurationSchemaType
@@ -37,20 +46,29 @@ AnyConfigurationSchemaType
 configuration: ConfigurationReference(configSchema)
 ```
 
-### LinearBareDisplay - Getters
 
+### LinearBareDisplay - Getters
 #### getter: rendererTypeName
+
+
 
 ```js
 // type
 any
 ```
 
-### LinearBareDisplay - Methods
 
+### LinearBareDisplay - Methods
 #### method: renderProps
+
+
 
 ```js
 // type signature
 renderProps: () => any
 ```
+
+
+
+
+

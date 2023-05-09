@@ -3,9 +3,8 @@ id: bgzipfastaadapter
 title: BgzipFastaAdapter
 toplevel: true
 ---
-
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -13,9 +12,16 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ## Docs
 
-### BgzipFastaAdapter - Slots
 
+
+
+
+
+
+### BgzipFastaAdapter - Slots
 #### slot: fastaLocation
+
+
 
 ```js
 fastaLocation: {
@@ -25,6 +31,8 @@ fastaLocation: {
 ```
 
 #### slot: faiLocation
+
+
 
 ```js
 faiLocation: {
@@ -37,6 +45,8 @@ faiLocation: {
 ```
 
 #### slot: metadataLocation
+
+
 
 ```js
 metadataLocation: {
@@ -51,6 +61,8 @@ metadataLocation: {
 
 #### slot: gziLocation
 
+
+
 ```js
 gziLocation: {
       type: 'fileLocation',
@@ -60,3 +72,7 @@ gziLocation: {
       },
     }
 ```
+
+
+
+

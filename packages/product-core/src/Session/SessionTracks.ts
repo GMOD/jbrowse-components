@@ -8,6 +8,9 @@ import {
 import Tracks from './Tracks'
 import { isBaseSession } from './Base'
 
+/**
+ * #stateModel SessionTracksManagerSessionMixin
+ */
 export default function SessionTracks(pluginManager: PluginManager) {
   return Tracks(pluginManager)
     .named('SessionTracksManagerSessionMixin')

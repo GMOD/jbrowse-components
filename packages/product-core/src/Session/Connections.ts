@@ -12,6 +12,9 @@ import { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/m
 import { BaseConnectionModel } from '@jbrowse/core/pluggableElementTypes/models/BaseConnectionModelFactory'
 import { isBaseSession } from './Base'
 
+/**
+ * #stateModel ConnectionManagementSessionMixin
+ */
 export default function Connections(pluginManager: PluginManager) {
   return types
     .model({

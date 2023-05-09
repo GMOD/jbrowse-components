@@ -10,7 +10,15 @@ import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
 import { Session as CoreSession } from '@jbrowse/product-core'
 
 /**
- * #stateModel JBrowseReactCGVSessionModel
+ * #stateModel JBrowseReactCircularGenomeViewSessionModel
+ * composed of
+ * - BaseSessionModel
+ * - DrawerWidgetSessionMixin
+ * - ConnectionManagementSessionMixin
+ * - DialogQueueSessionMixin
+ * - TracksManagerSessionMixin
+ * - ReferenceManagementSessionMixin
+ * - SnackbarModel
  */
 export default function sessionModelFactory(pluginManager: PluginManager) {
   const model = types

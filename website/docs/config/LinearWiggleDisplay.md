@@ -3,9 +3,8 @@ id: linearwiggledisplay
 title: LinearWiggleDisplay
 toplevel: true
 ---
-
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -13,9 +12,16 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ## Docs
 
-### LinearWiggleDisplay - Slots
 
+
+
+
+
+
+### LinearWiggleDisplay - Slots
 #### slot: autoscale
+
+
 
 ```js
 autoscale: {
@@ -35,6 +41,8 @@ autoscale: {
 
 #### slot: minimalTicks
 
+
+
 ```js
 minimalTicks: {
         type: 'boolean',
@@ -44,6 +52,8 @@ minimalTicks: {
 ```
 
 #### slot: minScore
+
+
 
 ```js
 minScore: {
@@ -55,6 +65,8 @@ minScore: {
 
 #### slot: maxScore
 
+
+
 ```js
 maxScore: {
         type: 'number',
@@ -64,6 +76,8 @@ maxScore: {
 ```
 
 #### slot: numStdDev
+
+
 
 ```js
 numStdDev: {
@@ -76,16 +90,20 @@ numStdDev: {
 
 #### slot: scaleType
 
+
+
 ```js
 scaleType: {
         type: 'stringEnum',
-        model: types.enumeration('Scale type', ['linear', 'log']),
+        model: types.enumeration('Scale type', ['linear', 'log']), 
         description: 'The type of scale to use',
         defaultValue: 'linear',
       }
 ```
 
 #### slot: inverted
+
+
 
 ```js
 inverted: {
@@ -97,6 +115,8 @@ inverted: {
 
 #### slot: defaultRendering
 
+
+
 ```js
 defaultRendering: {
         type: 'stringEnum',
@@ -107,16 +127,24 @@ defaultRendering: {
 
 #### slot: renderers
 
+
+
 ```js
 renderers: ConfigurationSchema('RenderersConfiguration', {
-  DensityRenderer: DensityRendererConfigSchema,
-  XYPlotRenderer: XYPlotRendererConfigSchema,
-  LinePlotRenderer: LinePlotRendererConfigSchema,
-})
+        DensityRenderer: DensityRendererConfigSchema,
+        XYPlotRenderer: XYPlotRendererConfigSchema,
+        LinePlotRenderer: LinePlotRendererConfigSchema,
+      })
 ```
 
+
 ## LinearWiggleDisplay - Derives from
+
+
+
 
 ```js
 baseConfiguration: baseLinearDisplayConfigSchema
 ```
+
+

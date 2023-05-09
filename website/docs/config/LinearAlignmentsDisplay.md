@@ -3,9 +3,8 @@ id: linearalignmentsdisplay
 title: LinearAlignmentsDisplay
 toplevel: true
 ---
-
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -16,9 +15,14 @@ source code. See [Config guide](/docs/config_guide) for more info
 has a "pileup" sub-display, where you can see individual reads and a
 quantitative "snpcoverage" sub-display track showing SNP frequencies
 
-### LinearAlignmentsDisplay - Slots
 
+
+
+
+### LinearAlignmentsDisplay - Slots
 #### slot: pileupDisplay
+
+
 
 ```js
 pileupDisplay: pm.getDisplayType('LinearPileupDisplay').configSchema
@@ -26,11 +30,16 @@ pileupDisplay: pm.getDisplayType('LinearPileupDisplay').configSchema
 
 #### slot: snpCoverageDisplay
 
+
+
 ```js
-snpCoverageDisplay: pm.getDisplayType('LinearSNPCoverageDisplay').configSchema
+snpCoverageDisplay: pm.getDisplayType('LinearSNPCoverageDisplay')
+        .configSchema
 ```
 
 #### slot: height
+
+
 
 ```js
 height: {
@@ -39,8 +48,14 @@ height: {
       }
 ```
 
+
 ## LinearAlignmentsDisplay - Derives from
+
+
+
 
 ```js
 baseConfiguration: baseLinearDisplayConfigSchema
 ```
+
+

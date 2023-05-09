@@ -3,9 +3,8 @@ id: fromconfigregionsadapter
 title: FromConfigRegionsAdapter
 toplevel: true
 ---
-
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -15,9 +14,14 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 used for specifying refNames+sizes of an assembly
 
-### FromConfigRegionsAdapter - Slots
 
+
+
+
+### FromConfigRegionsAdapter - Slots
 #### slot: features
+
+
 
 ```js
 features: {
@@ -25,3 +29,7 @@ features: {
       defaultValue: [],
     }
 ```
+
+
+
+

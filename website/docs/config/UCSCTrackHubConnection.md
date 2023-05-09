@@ -3,9 +3,8 @@ id: ucsctrackhubconnection
 title: UCSCTrackHubConnection
 toplevel: true
 ---
-
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -13,9 +12,16 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ## Docs
 
-### UCSCTrackHubConnection - Slots
 
+
+
+
+
+
+### UCSCTrackHubConnection - Slots
 #### slot: hubTxtLocation
+
+
 
 ```js
 hubTxtLocation: {
@@ -30,6 +36,8 @@ hubTxtLocation: {
 
 #### slot: assemblyNames
 
+
+
 ```js
 assemblyNames: {
       type: 'stringArray',
@@ -39,8 +47,14 @@ assemblyNames: {
     }
 ```
 
+
 ## UCSCTrackHubConnection - Derives from
+
+
+
 
 ```js
 baseConfiguration: baseConnectionConfig
 ```
+
+

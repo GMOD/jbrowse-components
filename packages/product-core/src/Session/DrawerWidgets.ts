@@ -17,6 +17,9 @@ import { isBaseSession } from './Base'
 
 const minDrawerWidth = 128
 
+/**
+ * #stateModel DrawerWidgetSessionMixin
+ */
 export default function DrawerWidgets(pluginManager: PluginManager) {
   const widgetStateModelType = pluginManager.pluggableMstType(
     'widget',

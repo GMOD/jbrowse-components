@@ -27,6 +27,9 @@ export interface ReferringNode {
   key: string
 }
 
+/**
+ * #stateModel ReferenceManagementSessionMixin
+ */
 export default function ReferenceManagement(pluginManager: PluginManager) {
   return types
     .model('ReferenceManagementSessionMixin', {})

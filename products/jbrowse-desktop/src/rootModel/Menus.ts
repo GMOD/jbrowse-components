@@ -29,6 +29,9 @@ export interface Menu {
   menuItems: MenuItem[]
 }
 
+/**
+ * #stateModel DesktopMenusMixin
+ */
 export default function Menus(pluginManager: PluginManager) {
   return types
     .model({})

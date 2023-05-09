@@ -3,9 +3,8 @@ id: multiwiggleadapter
 title: MultiWiggleAdapter
 toplevel: true
 ---
-
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -13,9 +12,16 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ## Docs
 
-### MultiWiggleAdapter - Slots
 
+
+
+
+
+
+### MultiWiggleAdapter - Slots
 #### slot: subadapters
+
+
 
 ```js
 subadapters: {
@@ -27,6 +33,8 @@ subadapters: {
 
 #### slot: bigWigs
 
+
+
 ```js
 bigWigs: {
       type: 'frozen',
@@ -35,3 +43,7 @@ bigWigs: {
       defaultValue: [],
     }
 ```
+
+
+
+

@@ -15,6 +15,7 @@ import {
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 
 /**
+ * #stateModel BaseRootModel
  * factory function for the Base-level root model shared by all products
  */
 export default function BaseRootModelTypeF(
@@ -27,7 +28,8 @@ export default function BaseRootModelTypeF(
     .model('BaseRootModel', {
       /**
        * #property
-       * `jbrowse` is a mapping of the config.json into the in-memory state tree
+       * `jbrowse` is a mapping of the config.json into the in-memory state
+       * tree
        */
       jbrowse: jbrowseModelType,
       /**

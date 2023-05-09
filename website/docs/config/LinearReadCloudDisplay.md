@@ -3,9 +3,8 @@ id: linearreadclouddisplay
 title: LinearReadCloudDisplay
 toplevel: true
 ---
-
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -13,9 +12,16 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ## Docs
 
-### LinearReadCloudDisplay - Slots
 
+
+
+
+
+
+### LinearReadCloudDisplay - Slots
 #### slot: maxFeatureScreenDensity
+
+
 
 ```js
 maxFeatureScreenDensity: {
@@ -27,6 +33,8 @@ maxFeatureScreenDensity: {
 
 #### slot: featureHeight
 
+
+
 ```js
 featureHeight: {
         type: 'number',
@@ -35,6 +43,8 @@ featureHeight: {
 ```
 
 #### slot: colorScheme
+
+
 
 ```js
 colorScheme: {
@@ -52,8 +62,14 @@ colorScheme: {
       }
 ```
 
+
 ## LinearReadCloudDisplay - Derives from
+
+
+
 
 ```js
 baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager)
 ```
+
+

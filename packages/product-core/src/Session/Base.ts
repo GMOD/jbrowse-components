@@ -12,7 +12,11 @@ import type { BaseRootModelType } from '../RootModel/Base'
 import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 
-/** base session shared by **all** JBrowse products. Be careful what you include here, everything will use it. */
+/**
+ * #stateModel BaseSessionModel
+ * base session shared by **all** JBrowse products. Be careful what you include
+ * here, everything will use it.
+ */
 export default function BaseSessionFactory<
   ROOT_MODEL_TYPE extends BaseRootModelType,
   JB_CONFIG_SCHEMA extends AnyConfigurationSchemaType,

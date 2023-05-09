@@ -20,8 +20,16 @@ type SessionModelFactory = (
 
 /**
  * #stateModel JBrowseDesktopRootModel
- * note that many properties of the root model are available through the session, which
- * may be preferable since using getSession() is better relied on than getRoot()
+ * composed of
+ * - BaseRootModel
+ * - InternetAccountsMixin
+ * - DesktopMenuMixin
+ * - DesktopSessionManagementMixin
+ * - HistoryManagementMixin
+ *
+ * note: many properties of the root model are available through the session,
+ * and we generally prefer using the session model (via e.g. getSession) over
+ * the root model (via e.g. getRoot) in plugin code
  */
 export default function rootModelFactory(
   pluginManager: PluginManager,

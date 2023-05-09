@@ -4,20 +4,29 @@ title: LinearComparativeDisplay
 toplevel: true
 ---
 
+
 Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
+our source code. See [Core concepts and intro to pluggable
+elements](/docs/developer_guide/) for more info
+
+
 
 ## Source file
 
 [plugins/linear-comparative-view/src/LinearComparativeDisplay/stateModelFactory.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearComparativeDisplay/stateModelFactory.ts)
 
+
 ## Docs
 
-### LinearComparativeDisplay - Properties
 
+
+
+
+
+### LinearComparativeDisplay - Properties
 #### property: type
+
+
 
 ```js
 // type signature
@@ -28,6 +37,8 @@ type: types.literal('LinearComparativeDisplay')
 
 #### property: configuration
 
+
+
 ```js
 // type signature
 AnyConfigurationSchemaType
@@ -37,6 +48,8 @@ configuration: ConfigurationReference(configSchema)
 
 #### property: height
 
+
+
 ```js
 // type signature
 number
@@ -44,17 +57,22 @@ number
 height: 100
 ```
 
-### LinearComparativeDisplay - Getters
 
+### LinearComparativeDisplay - Getters
 #### getter: renderProps
+
+
 
 ```js
 // type
 () => { rpcDriverName: string; displayModel: { id: string; type: "LinearComparativeDisplay"; rpcDriverName: string; configuration: { [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>; height: number; } & ... 5 more ... & IStateTreeNode<...>; highResolutionScaling: number; }
 ```
 
-### LinearComparativeDisplay - Actions
 
+
+
+
+### LinearComparativeDisplay - Actions
 #### action: setLoading
 
 controlled by a reaction
@@ -90,3 +108,5 @@ controlled by a reaction
 // type signature
 setError: (error: unknown) => void
 ```
+
+

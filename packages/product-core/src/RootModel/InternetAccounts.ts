@@ -5,6 +5,9 @@ import { autorun } from 'mobx'
 import { Instance, addDisposer, types } from 'mobx-state-tree'
 import { BaseRootModelType } from './Base'
 
+/**
+ * #stateModel InternetAccountsMixin
+ */
 export default function InternetAccountsF(pluginManager: PluginManager) {
   return types
     .model({
@@ -64,10 +67,8 @@ export default function InternetAccountsF(pluginManager: PluginManager) {
           description: '',
           domains: hostUri ? [hostUri] : [],
         }
-        const internetAccountType = pluginManager.getInternetAccountType(
-          configuration.type,
-        )
-        const internetAccount = internetAccountType.stateModel.create({
+        const type = pluginManager.getInternetAccountType(configuration.type)
+        const internetAccount = type.stateModel.create({
           ...initialSnapshot,
           type: configuration.type,
           configuration,

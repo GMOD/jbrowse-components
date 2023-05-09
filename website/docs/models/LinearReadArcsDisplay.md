@@ -4,22 +4,29 @@ title: LinearReadArcsDisplay
 toplevel: true
 ---
 
+
 Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
+our source code. See [Core concepts and intro to pluggable
+elements](/docs/developer_guide/) for more info
+
+
 
 ## Source file
 
 [plugins/alignments/src/LinearReadArcsDisplay/model.tsx](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearReadArcsDisplay/model.tsx)
 
+
 ## Docs
+
 
 extends `BaseLinearDisplay`
 
-### LinearReadArcsDisplay - Properties
 
+
+### LinearReadArcsDisplay - Properties
 #### property: type
+
+
 
 ```js
 // type signature
@@ -30,6 +37,8 @@ type: types.literal('LinearReadArcsDisplay')
 
 #### property: configuration
 
+
+
 ```js
 // type signature
 AnyConfigurationSchemaType
@@ -38,6 +47,8 @@ configuration: ConfigurationReference(configSchema)
 ```
 
 #### property: filterBy
+
+
 
 ```js
 // type signature
@@ -48,6 +59,8 @@ filterBy: types.optional(FilterModel, {})
 
 #### property: lineWidth
 
+
+
 ```js
 // type signature
 IMaybe<ISimpleType<number>>
@@ -57,6 +70,8 @@ lineWidth: types.maybe(types.number)
 
 #### property: jitter
 
+
+
 ```js
 // type signature
 IMaybe<ISimpleType<number>>
@@ -65,6 +80,8 @@ jitter: types.maybe(types.number)
 ```
 
 #### property: colorBy
+
+
 
 ```js
 // type signature
@@ -81,6 +98,8 @@ colorBy: types.maybe(
 
 #### property: drawInter
 
+
+
 ```js
 // type signature
 true
@@ -90,6 +109,8 @@ drawInter: true
 
 #### property: drawLongRange
 
+
+
 ```js
 // type signature
 true
@@ -97,9 +118,11 @@ true
 drawLongRange: true
 ```
 
-### LinearReadArcsDisplay - Getters
 
+### LinearReadArcsDisplay - Getters
 #### getter: lineWidthSetting
+
+
 
 ```js
 // type
@@ -108,6 +131,8 @@ any
 
 #### getter: jitterVal
 
+
+
 ```js
 // type
 number
@@ -115,14 +140,18 @@ number
 
 #### getter: ready
 
+
+
 ```js
 // type
 boolean
 ```
 
-### LinearReadArcsDisplay - Methods
 
+### LinearReadArcsDisplay - Methods
 #### method: trackMenuItems
+
+
 
 ```js
 // type signature
@@ -131,17 +160,18 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 
 #### method: renderSvg
 
+
+
 ```js
 // type signature
 renderSvg: (opts: { rasterizeLayers?: boolean; }) => Promise<Element>
 ```
 
-### LinearReadArcsDisplay - Actions
 
+### LinearReadArcsDisplay - Actions
 #### action: reload
 
-internal, a reference to a HTMLCanvas because we use a autorun to draw the
-canvas
+internal, a reference to a HTMLCanvas because we use a autorun to draw the canvas
 
 ```js
 // type signature
@@ -150,8 +180,7 @@ reload: () => void
 
 #### action: setRef
 
-internal, a reference to a HTMLCanvas because we use a autorun to draw the
-canvas
+internal, a reference to a HTMLCanvas because we use a autorun to draw the canvas
 
 ```js
 // type signature
@@ -160,12 +189,16 @@ setRef: (ref: HTMLCanvasElement) => void
 
 #### action: setColorScheme
 
+
+
 ```js
 // type signature
 setColorScheme: (s: { type: string; }) => void
 ```
 
 #### action: setChainData
+
+
 
 ```js
 // type signature
@@ -174,6 +207,8 @@ setChainData: (args: ChainData) => void
 
 #### action: setDrawInter
 
+
+
 ```js
 // type signature
 setDrawInter: (f: boolean) => void
@@ -181,12 +216,16 @@ setDrawInter: (f: boolean) => void
 
 #### action: setDrawLongRange
 
+
+
 ```js
 // type signature
 setDrawLongRange: (f: boolean) => void
 ```
 
 #### action: setLoading
+
+
 
 ```js
 // type signature
@@ -204,6 +243,8 @@ setDrawn: (f: boolean) => void
 
 #### action: setFilterBy
 
+
+
 ```js
 // type signature
 setFilterBy: (filter: Filter) => void
@@ -211,8 +252,7 @@ setFilterBy: (filter: Filter) => void
 
 #### action: setLastDrawnOffsetPx
 
-allows the drawing to slide around a little bit if it takes a long time to
-refresh
+allows the drawing to slide around a little bit if it takes a long time to refresh
 
 ```js
 // type signature
@@ -230,10 +270,12 @@ setLineWidth: (n: number) => void
 
 #### action: setJitter
 
-jitter val, helpful to jitter the x direction so you see better evidence when
-e.g. 100 long reads map to same x position
+jitter val, helpful to jitter the x direction so you see better evidence when e.g. 100
+long reads map to same x position
 
 ```js
 // type signature
 setJitter: (n: number) => void
 ```
+
+

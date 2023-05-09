@@ -3,9 +3,8 @@ id: multilinearwiggledisplay
 title: MultiLinearWiggleDisplay
 toplevel: true
 ---
-
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -13,9 +12,16 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ## Docs
 
-### MultiLinearWiggleDisplay - Slots
 
+
+
+
+
+
+### MultiLinearWiggleDisplay - Slots
 #### slot: autoscale
+
+
 
 ```js
 autoscale: {
@@ -35,6 +41,8 @@ autoscale: {
 
 #### slot: minimalTicks
 
+
+
 ```js
 minimalTicks: {
         type: 'boolean',
@@ -44,6 +52,8 @@ minimalTicks: {
 ```
 
 #### slot: minScore
+
+
 
 ```js
 minScore: {
@@ -55,6 +65,8 @@ minScore: {
 
 #### slot: maxScore
 
+
+
 ```js
 maxScore: {
         type: 'number',
@@ -64,6 +76,8 @@ maxScore: {
 ```
 
 #### slot: numStdDev
+
+
 
 ```js
 numStdDev: {
@@ -76,16 +90,20 @@ numStdDev: {
 
 #### slot: scaleType
 
+
+
 ```js
 scaleType: {
         type: 'stringEnum',
-        model: types.enumeration('Scale type', ['linear', 'log']),
+        model: types.enumeration('Scale type', ['linear', 'log']), 
         description: 'The type of scale to use',
         defaultValue: 'linear',
       }
 ```
 
 #### slot: inverted
+
+
 
 ```js
 inverted: {
@@ -96,6 +114,8 @@ inverted: {
 ```
 
 #### slot: defaultRendering
+
+
 
 ```js
 defaultRendering: {
@@ -113,17 +133,21 @@ defaultRendering: {
 
 #### slot: renderers
 
+
+
 ```js
 renderers: ConfigurationSchema('RenderersConfiguration', {
-  MultiXYPlotRenderer: MultiXYPlotRendererConfigSchema,
-  MultiDensityRenderer: MultiDensityRendererConfigSchema,
-  MultiRowXYPlotRenderer: MultiRowXYPlotRendererConfigSchema,
-  MultiLineRenderer: MultiLineRendererConfigSchema,
-  MultiRowLineRenderer: MultiRowLineRendererConfigSchema,
-})
+        MultiXYPlotRenderer: MultiXYPlotRendererConfigSchema,
+        MultiDensityRenderer: MultiDensityRendererConfigSchema,
+        MultiRowXYPlotRenderer: MultiRowXYPlotRendererConfigSchema,
+        MultiLineRenderer: MultiLineRendererConfigSchema,
+        MultiRowLineRenderer: MultiRowLineRendererConfigSchema,
+      })
 ```
 
 #### slot: height
+
+
 
 ```js
 height: {
@@ -132,8 +156,14 @@ height: {
       }
 ```
 
+
 ## MultiLinearWiggleDisplay - Derives from
+
+
+
 
 ```js
 baseConfiguration: baseLinearDisplayConfigSchema
 ```
+
+

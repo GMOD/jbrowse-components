@@ -12,6 +12,9 @@ import createConfigModel from './createConfigModel'
 import createSessionModel from './createSessionModel'
 import { version } from '../version'
 
+/**
+ * #stateModel JBrowseReactCircularGenomeViewRootModel
+ */
 export default function createModel(runtimePlugins: PluginConstructor[]) {
   const pluginManager = new PluginManager(
     [...corePlugins, ...runtimePlugins].map(P => new P()),
@@ -25,9 +28,21 @@ export default function createModel(runtimePlugins: PluginConstructor[]) {
   )
   const rootModel = types
     .model('ReactCircularGenomeView', {
+      /**
+       * #property
+       */
       config: createConfigModel(pluginManager, assemblyConfigSchema),
+      /**
+       * #property
+       */
       session: Session,
+      /**
+       * #property
+       */
       assemblyManager: assemblyManagerType,
+      /**
+       * #property
+       */
       internetAccounts: types.array(
         pluginManager.pluggableMstType('internet account', 'stateModel'),
       ),
@@ -38,9 +53,15 @@ export default function createModel(runtimePlugins: PluginConstructor[]) {
       version,
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
       setSession(sessionSnapshot: SnapshotIn<typeof Session>) {
         self.session = cast(sessionSnapshot)
       },
+      /**
+       * #action
+       */
       renameCurrentSession(sessionName: string) {
         if (self.session) {
           const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
@@ -48,14 +69,23 @@ export default function createModel(runtimePlugins: PluginConstructor[]) {
           this.setSession(snapshot)
         }
       },
+      /**
+       * #action
+       */
       setError(errorMessage: Error | undefined) {
         self.error = errorMessage
       },
+      /**
+       * #action
+       */
       addInternetAccount(
         internetAccount: SnapshotIn<(typeof self.internetAccounts)[0]>,
       ) {
         self.internetAccounts.push(internetAccount)
       },
+      /**
+       * #action
+       */
       findAppropriateInternetAccount(location: UriLocation) {
         // find the existing account selected from menu
         const selectedId = location.internetAccountId
@@ -81,9 +111,15 @@ export default function createModel(runtimePlugins: PluginConstructor[]) {
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
       get jbrowse() {
         return self.config
       },
+      /**
+       * #getter
+       */
       get pluginManager() {
         return pluginManager
       },

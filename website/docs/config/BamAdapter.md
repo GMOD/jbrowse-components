@@ -3,9 +3,8 @@ id: bamadapter
 title: BamAdapter
 toplevel: true
 ---
-
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -15,9 +14,14 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 used to configure BAM adapter
 
-### BamAdapter - Slots
 
+
+
+
+### BamAdapter - Slots
 #### slot: bamLocation
+
+
 
 ```js
 bamLocation: {
@@ -28,6 +32,8 @@ bamLocation: {
 
 #### slot: index.indexType
 
+
+
 ```js
 indexType: {
         model: types.enumeration('IndexType', ['BAI', 'CSI']),
@@ -37,6 +43,8 @@ indexType: {
 ```
 
 #### slot: index.location
+
+
 
 ```js
 location: {
@@ -50,6 +58,8 @@ location: {
 
 #### slot: fetchSizeLimit
 
+
+
 ```js
 fetchSizeLimit: {
       type: 'number',
@@ -61,8 +71,8 @@ fetchSizeLimit: {
 
 #### slot: sequenceAdapter
 
-generally refers to the reference genome assembly's sequence adapter currently
-needs to be manually added
+generally refers to the reference genome assembly's sequence adapter
+currently needs to be manually added
 
 ```js
 sequenceAdapter: {
@@ -72,3 +82,7 @@ sequenceAdapter: {
       defaultValue: null,
     }
 ```
+
+
+
+

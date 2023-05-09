@@ -3,9 +3,8 @@ id: internetaccount
 title: InternetAccount
 toplevel: true
 ---
-
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -19,9 +18,12 @@ the "base" internet account type
 
 #### slot: explicitIdentifier
 
-### InternetAccount - Slots
 
+
+### InternetAccount - Slots
 #### slot: name
+
+
 
 ```js
 name: {
@@ -33,6 +35,8 @@ name: {
 
 #### slot: description
 
+
+
 ```js
 description: {
       description: 'a description of the internet account',
@@ -42,6 +46,8 @@ description: {
 ```
 
 #### slot: authHeader
+
+
 
 ```js
 authHeader: {
@@ -53,6 +59,8 @@ authHeader: {
 
 #### slot: tokenType
 
+
+
 ```js
 tokenType: {
       description: 'a custom name for a token to include in the header',
@@ -63,6 +71,8 @@ tokenType: {
 
 #### slot: domains
 
+
+
 ```js
 domains: {
       description:
@@ -71,3 +81,7 @@ domains: {
       defaultValue: [],
     }
 ```
+
+
+
+

@@ -3,9 +3,8 @@ id: httpbasicinternetaccount
 title: HTTPBasicInternetAccount
 toplevel: true
 ---
-
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -13,9 +12,16 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ## Docs
 
-### HTTPBasicInternetAccount - Slots
 
+
+
+
+
+
+### HTTPBasicInternetAccount - Slots
 #### slot: tokenType
+
+
 
 ```js
 tokenType: {
@@ -27,6 +33,8 @@ tokenType: {
 
 #### slot: validateWithHEAD
 
+
+
 ```js
 validateWithHEAD: {
       description: 'validate the token with a HEAD request before using it',
@@ -35,8 +43,14 @@ validateWithHEAD: {
     }
 ```
 
+
 ## HTTPBasicInternetAccount - Derives from
+
+
+
 
 ```js
 baseConfiguration: BaseInternetAccountConfig
 ```
+
+

@@ -13,6 +13,9 @@ import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes'
 import { IBaseViewModelWithDisplayedRegions } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import Base, { isBaseSession } from './Base'
 
+/**
+ * #stateModel MultipleViewsSessionMixin
+ */
 export default function MultipleViews(pluginManager: PluginManager) {
   return types
     .compose(Base(pluginManager), DrawerWidgets(pluginManager))

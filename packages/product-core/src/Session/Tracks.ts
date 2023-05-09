@@ -8,6 +8,12 @@ import {
 import BaseSession, { isBaseSession } from './Base'
 import ReferenceManagement from './ReferenceManagement'
 
+/**
+ * #stateModel TracksManagerSessionMixin
+ * composed of
+ * - BaseSessionModel
+ * - ReferenceManagementSessionMixin
+ */
 export default function Tracks(pluginManager: PluginManager) {
   return types
     .compose(

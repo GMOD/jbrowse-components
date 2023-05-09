@@ -3,9 +3,8 @@ id: snpcoveragerenderer
 title: SNPCoverageRenderer
 toplevel: true
 ---
-
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -13,9 +12,16 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ## Docs
 
-### SNPCoverageRenderer - Slots
 
+
+
+
+
+
+### SNPCoverageRenderer - Slots
 #### slot: clipColor
+
+
 
 ```js
 clipColor: {
@@ -26,6 +32,8 @@ clipColor: {
 ```
 
 #### slot: indicatorThreshold
+
+
 
 ```js
 indicatorThreshold: {
@@ -38,6 +46,8 @@ indicatorThreshold: {
 
 #### slot: drawArcs
 
+
+
 ```js
 drawArcs: {
       type: 'boolean',
@@ -47,6 +57,8 @@ drawArcs: {
 ```
 
 #### slot: drawInterbaseCounts
+
+
 
 ```js
 drawInterbaseCounts: {
@@ -59,6 +71,8 @@ drawInterbaseCounts: {
 
 #### slot: drawIndicators
 
+
+
 ```js
 drawIndicators: {
       type: 'boolean',
@@ -67,3 +81,7 @@ drawIndicators: {
       defaultValue: true,
     }
 ```
+
+
+
+

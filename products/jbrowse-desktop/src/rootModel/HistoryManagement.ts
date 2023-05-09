@@ -3,6 +3,9 @@ import type { BaseRootModel } from '@jbrowse/product-core/src/RootModel/Base'
 import { autorun } from 'mobx'
 import { addDisposer, types } from 'mobx-state-tree'
 
+/**
+ * #stateModel HistoryManagementMixin
+ */
 export const HistoryManagement = types
   .model({
     /**

@@ -3,9 +3,8 @@ id: arcrenderer
 title: ArcRenderer
 toplevel: true
 ---
-
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -13,9 +12,16 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ## Docs
 
-### ArcRenderer - Slots
 
+
+
+
+
+
+### ArcRenderer - Slots
 #### slot: color
+
+
 
 ```js
 color: {
@@ -28,6 +34,8 @@ color: {
 
 #### slot: thickness
 
+
+
 ```js
 thickness: {
       type: 'number',
@@ -38,6 +46,8 @@ thickness: {
 ```
 
 #### slot: label
+
+
 
 ```js
 label: {
@@ -50,6 +60,8 @@ label: {
 
 #### slot: height
 
+
+
 ```js
 height: {
       type: 'number',
@@ -61,6 +73,8 @@ height: {
 
 #### slot: caption
 
+
+
 ```js
 caption: {
       type: 'string',
@@ -70,3 +84,7 @@ caption: {
       contextVariable: ['feature'],
     }
 ```
+
+
+
+

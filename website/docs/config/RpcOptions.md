@@ -3,9 +3,8 @@ id: rpcoptions
 title: RpcOptions
 toplevel: true
 ---
-
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -13,9 +12,16 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ## Docs
 
-### RpcOptions - Slots
 
+
+
+
+
+
+### RpcOptions - Slots
 #### slot: defaultDriver
+
+
 
 ```js
 defaultDriver: {
@@ -28,17 +34,23 @@ defaultDriver: {
 
 #### slot: drivers
 
+
+
 ```js
 drivers: types.optional(
-  types.map(
-    types.union(
-      MainThreadRpcDriverConfigSchema,
-      WebWorkerRpcDriverConfigSchema,
-    ),
-  ),
-  {
-    MainThreadRpcDriver: { type: 'MainThreadRpcDriver' },
-    WebWorkerRpcDriver: { type: 'WebWorkerRpcDriver' },
-  },
-)
+      types.map(
+        types.union(
+          MainThreadRpcDriverConfigSchema,
+          WebWorkerRpcDriverConfigSchema,
+        ),
+      ),
+      {
+        MainThreadRpcDriver: { type: 'MainThreadRpcDriver' },
+        WebWorkerRpcDriver: { type: 'WebWorkerRpcDriver' },
+      },
+    )
 ```
+
+
+
+

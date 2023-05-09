@@ -11,11 +11,17 @@ import AboutDialog from '@jbrowse/core/ui/AboutDialog'
 import { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
 import { Session as CoreSession } from '@jbrowse/product-core'
 
-// locals
-
 /**
- * #stateModel JBrowseReactLGVSessionModel
- * inherits SnackbarModel
+ * #stateModel JBrowseReactLinearGenomeViewSessionModel
+ * composed of
+ * - BaseSessionModel
+ * - DrawerWidgetsSessionMixin
+ * - ConnectionManagementSessionMixin
+ * - DialogQueueSessionMixin
+ * - TracksManagerSessionMixin
+ * - ReferenceManagementSessionMixin
+ * - SessionTracksManagerSessionMixin
+ * - SnackbarModel
  */
 export default function sessionModelFactory(pluginManager: PluginManager) {
   const model = types

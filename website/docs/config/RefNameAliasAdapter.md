@@ -3,9 +3,8 @@ id: refnamealiasadapter
 title: RefNameAliasAdapter
 toplevel: true
 ---
-
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -16,9 +15,14 @@ source code. See [Config guide](/docs/config_guide) for more info
 can read "chromAliases" type files from UCSC or any tab separated file of
 refName aliases
 
-### RefNameAliasAdapter - Slots
 
+
+
+
+### RefNameAliasAdapter - Slots
 #### slot: location
+
+
 
 ```js
 location: {
@@ -32,8 +36,8 @@ location: {
 
 #### slot: refNameColumn
 
-by default, the "ref names that match the fasta" are assumed to be in the first
-column (0), change this variable if needed
+by default, the "ref names that match the fasta" are assumed to be in the
+first column (0), change this variable if needed
 
 ```js
 refNameColumn: {
@@ -41,3 +45,7 @@ refNameColumn: {
       defaultValue: 0,
     }
 ```
+
+
+
+

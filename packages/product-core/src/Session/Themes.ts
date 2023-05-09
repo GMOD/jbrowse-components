@@ -15,6 +15,9 @@ import { BaseSession } from './Base'
 
 type ThemeMap = { [key: string]: ThemeOptions }
 
+/**
+ * #stateModel ThemeManagerSessionMixin
+ */
 export default function Themes(pluginManager: PluginManager) {
   return types
     .model({})

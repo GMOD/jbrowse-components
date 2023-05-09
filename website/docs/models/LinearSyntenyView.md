@@ -4,22 +4,29 @@ title: LinearSyntenyView
 toplevel: true
 ---
 
+
 Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
+our source code. See [Core concepts and intro to pluggable
+elements](/docs/developer_guide/) for more info
+
+
 
 ## Source file
 
 [plugins/linear-comparative-view/src/LinearSyntenyView/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyView/model.ts)
 
+
 ## Docs
+
 
 extends the `LinearComparativeView` base model
 
-### LinearSyntenyView - Properties
 
+
+### LinearSyntenyView - Properties
 #### property: type
+
+
 
 ```js
 // type signature
@@ -30,6 +37,8 @@ type: types.literal('LinearSyntenyView')
 
 #### property: /
 
+
+
 ```js
 // type signature
 true
@@ -39,6 +48,8 @@ drawCIGAR: true
 
 #### property: drawCurves
 
+
+
 ```js
 // type signature
 false
@@ -46,21 +57,26 @@ false
 drawCurves: false
 ```
 
-### LinearSyntenyView - Methods
 
+
+
+
+### LinearSyntenyView - Methods
 #### method: headerMenuItems
 
-includes a subset of view menu options because the full list is a little
-overwhelming
+includes a subset of view menu options because the full list is a
+little overwhelming
 
 ```js
 // type signature
 headerMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; })[]
 ```
 
-### LinearSyntenyView - Actions
 
+### LinearSyntenyView - Actions
 #### action: toggleCurves
+
+
 
 ```js
 // type signature
@@ -69,6 +85,8 @@ toggleCurves: () => void
 
 #### action: toggleCIGAR
 
+
+
 ```js
 // type signature
 toggleCIGAR: () => void
@@ -76,7 +94,11 @@ toggleCIGAR: () => void
 
 #### action: showAllRegions
 
+
+
 ```js
 // type signature
 showAllRegions: () => void
 ```
+
+

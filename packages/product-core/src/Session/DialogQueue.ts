@@ -10,6 +10,9 @@ export interface ReferringNode {
   key: string
 }
 
+/**
+ * #stateModel DialogQueueSessionMixin
+ */
 export default function DialogQueue(pluginManager: PluginManager) {
   return types
     .model('DialogQueueSessionMixin', {})

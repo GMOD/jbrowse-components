@@ -54,16 +54,24 @@ export interface Menu {
   menuItems: MenuItem[]
 }
 
+type AssemblyConfig = ReturnType<typeof assemblyConfigSchemaFactory>
+
 /**
  * #stateModel JBrowseWebRootModel
- * note that many properties of the root model are available through the session, which
- * may be preferable since using getSession() is better relied on than getRoot()
+ *
+ * composed of
+ * - BaseRootModel
+ * - InternetAccountsMixin
+ *
+ * note: many properties of the root model are available through the session,
+ * and we generally prefer using the session model (via e.g. getSession) over
+ * the root model (via e.g. getRoot) in plugin code
  */
 export default function RootModel(
   pluginManager: PluginManager,
   sessionModelFactory: (
     p: PluginManager,
-    assemblyConfigSchema: ReturnType<typeof assemblyConfigSchemaFactory>,
+    assemblyConfigSchema: AssemblyConfig,
   ) => IAnyType,
   adminMode = false,
 ) {
@@ -103,7 +111,10 @@ export default function RootModel(
           MainThreadRpcDriver: {},
         },
       ),
-      savedSessionsVolatile: observable.map({}),
+      savedSessionsVolatile: observable.map<
+        string,
+        { name: string; [key: string]: unknown }
+      >({}),
       textSearchManager: new TextSearchManager(pluginManager),
       error: undefined as unknown,
     }))

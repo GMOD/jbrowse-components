@@ -3,9 +3,8 @@ id: linearpileupdisplay
 title: LinearPileupDisplay
 toplevel: true
 ---
-
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -13,9 +12,16 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ## Docs
 
-### LinearPileupDisplay - Slots
 
+
+
+
+
+
+### LinearPileupDisplay - Slots
 #### slot: defaultRendering
+
+
 
 ```js
 defaultRendering: {
@@ -27,13 +33,18 @@ defaultRendering: {
 
 #### slot: renderers
 
+
+
 ```js
 renderers: ConfigurationSchema('RenderersConfiguration', {
-  PileupRenderer: pluginManager.getRendererType('PileupRenderer').configSchema,
-})
+        PileupRenderer:
+          pluginManager.getRendererType('PileupRenderer').configSchema,
+      })
 ```
 
 #### slot: maxFeatureScreenDensity
+
+
 
 ```js
 maxFeatureScreenDensity: {
@@ -44,6 +55,8 @@ maxFeatureScreenDensity: {
 ```
 
 #### slot: colorScheme
+
+
 
 ```js
 colorScheme: {
@@ -61,8 +74,14 @@ colorScheme: {
       }
 ```
 
+
 ## LinearPileupDisplay - Derives from
+
+
+
 
 ```js
 baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager)
 ```
+
+

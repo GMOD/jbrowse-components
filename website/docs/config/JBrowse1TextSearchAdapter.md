@@ -3,9 +3,8 @@ id: jbrowse1textsearchadapter
 title: JBrowse1TextSearchAdapter
 toplevel: true
 ---
-
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -19,9 +18,12 @@ note: metadata about tracks and assemblies covered by text search adapter
 
 #### slot: explicitIdentifier
 
-### JBrowse1TextSearchAdapter - Slots
 
+
+### JBrowse1TextSearchAdapter - Slots
 #### slot: namesIndexLocation
+
+
 
 ```js
 namesIndexLocation: {
@@ -33,6 +35,8 @@ namesIndexLocation: {
 
 #### slot: tracks
 
+
+
 ```js
 tracks: {
       type: 'stringArray',
@@ -43,6 +47,8 @@ tracks: {
 
 #### slot: assemblyNames
 
+
+
 ```js
 assemblyNames: {
       type: 'stringArray',
@@ -50,3 +56,7 @@ assemblyNames: {
       description: 'List of assemblies covered by text search adapter',
     }
 ```
+
+
+
+
