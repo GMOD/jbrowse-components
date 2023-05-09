@@ -3,8 +3,9 @@ id: htsgetbamadapter
 title: HtsgetBamAdapter
 toplevel: true
 ---
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -12,16 +13,12 @@ our source code. See [Config guide](/docs/config_guide) for more info
 
 ## Docs
 
-Used to fetch data from Htsget endpoints in BAM format, using the gmod/bam library
-
-
-
-
+Used to fetch data from Htsget endpoints in BAM format, using the gmod/bam
+library
 
 ### HtsgetBamAdapter - Slots
+
 #### slot: htsgetBase
-
-
 
 ```js
 htsgetBase: {
@@ -33,8 +30,6 @@ htsgetBase: {
 
 #### slot: htsgetTrackId
 
-
-
 ```js
 htsgetTrackId: {
       type: 'string',
@@ -45,8 +40,6 @@ htsgetTrackId: {
 
 #### slot: sequenceAdapter
 
-
-
 ```js
 sequenceAdapter: {
       type: 'frozen',
@@ -55,7 +48,3 @@ sequenceAdapter: {
       defaultValue: null,
     }
 ```
-
-
-
-

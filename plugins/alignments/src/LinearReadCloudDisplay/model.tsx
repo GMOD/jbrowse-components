@@ -214,7 +214,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           ctx.scale(2, 2)
 
           drawFeats(self, ctx)
-          self.setDrawn(true)
         })
       },
     }))

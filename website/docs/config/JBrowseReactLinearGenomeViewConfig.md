@@ -3,8 +3,9 @@ id: jbrowsereactlineargenomeviewconfig
 title: JBrowseReactLinearGenomeViewConfig
 toplevel: true
 ---
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -12,24 +13,15 @@ our source code. See [Config guide](/docs/config_guide) for more info
 
 ## Docs
 
-
-
-
-
-
-
 ### JBrowseReactLinearGenomeViewConfig - Slots
+
 #### slot: configuration.rpc
-
-
 
 ```js
 rpc: RpcManager.configSchema
 ```
 
 #### slot: configuration.highResolutionScaling
-
-
 
 ```js
 highResolutionScaling: {
@@ -39,8 +31,6 @@ highResolutionScaling: {
 ```
 
 #### slot: configuration.formatDetails.feature
-
-
 
 ```js
 feature: {
@@ -53,8 +43,6 @@ feature: {
 
 #### slot: configuration.formatDetails.subfeatures
 
-
-
 ```js
 subfeatures: {
             type: 'frozen',
@@ -66,8 +54,6 @@ subfeatures: {
 
 #### slot: configuration.formatDetails.depth
 
-
-
 ```js
 depth: {
             type: 'number',
@@ -77,8 +63,6 @@ depth: {
 ```
 
 #### slot: configuration.formatAbout.config
-
-
 
 ```js
 config: {
@@ -91,8 +75,6 @@ config: {
 
 #### slot: configuration.formatAbout.hideUris
 
-
-
 ```js
 hideUris: {
             type: 'boolean',
@@ -102,15 +84,11 @@ hideUris: {
 
 #### slot: configuration.theme
 
-
-
 ```js
 theme: { type: 'frozen', defaultValue: {} }
 ```
 
 #### slot: assembly
-
-
 
 ```js
 assembly: assemblyConfigSchemasType
@@ -118,45 +96,36 @@ assembly: assemblyConfigSchemasType
 
 #### slot: tracks
 
-
-
 ```js
 tracks: types.array(pluginManager.pluggableConfigSchemaType('track'))
 ```
 
 #### slot: internetAccounts
 
-
-
 ```js
 internetAccounts: types.array(
-        pluginManager.pluggableConfigSchemaType('internet account'),
-      )
+  pluginManager.pluggableConfigSchemaType('internet account'),
+)
 ```
 
 #### slot: connections
 
-
-
 ```js
-connections: types.array(
-        pluginManager.pluggableConfigSchemaType('connection'),
-      )
+connections: types.array(pluginManager.pluggableConfigSchemaType('connection'))
 ```
 
 #### slot: aggregateTextSearchAdapters
 
-
-
 ```js
 aggregateTextSearchAdapters: types.array(
-        pluginManager.pluggableConfigSchemaType('text search adapter'),
-      )
+  pluginManager.pluggableConfigSchemaType('text search adapter'),
+)
 ```
 
 #### slot: plugins
 
 defines plugins of the format
+
 ```typescript
 type PluginDefinition=
    { umdUrl: string, name:string } |
@@ -170,7 +139,3 @@ type PluginDefinition=
 ```js
 plugins: types.frozen()
 ```
-
-
-
-

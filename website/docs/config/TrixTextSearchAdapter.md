@@ -3,8 +3,9 @@ id: trixtextsearchadapter
 title: TrixTextSearchAdapter
 toplevel: true
 ---
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -12,18 +13,13 @@ our source code. See [Config guide](/docs/config_guide) for more info
 
 ## Docs
 
-
-
 ### TrixTextSearchAdapter - Identifier
 
 #### slot: explicitIdentifier
 
-
-
 ### TrixTextSearchAdapter - Slots
+
 #### slot: ixFilePath
-
-
 
 ```js
 ixFilePath: {
@@ -35,8 +31,6 @@ ixFilePath: {
 
 #### slot: ixxFilePath
 
-
-
 ```js
 ixxFilePath: {
       type: 'fileLocation',
@@ -46,8 +40,6 @@ ixxFilePath: {
 ```
 
 #### slot: metaFilePath
-
-
 
 ```js
 metaFilePath: {
@@ -59,8 +51,6 @@ metaFilePath: {
 
 #### slot: tracks
 
-
-
 ```js
 tracks: {
       type: 'stringArray',
@@ -71,8 +61,6 @@ tracks: {
 
 #### slot: assemblyNames
 
-
-
 ```js
 assemblyNames: {
       type: 'stringArray',
@@ -80,7 +68,3 @@ assemblyNames: {
       description: 'List of assemblies covered by text search adapter',
     }
 ```
-
-
-
-

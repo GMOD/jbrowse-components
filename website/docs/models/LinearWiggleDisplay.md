@@ -4,29 +4,22 @@ title: LinearWiggleDisplay
 toplevel: true
 ---
 
-
 Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See [Core concepts and intro to pluggable
-elements](/docs/developer_guide/) for more info
-
-
+our source code. See
+[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
+info
 
 ## Source file
 
 [plugins/wiggle/src/LinearWiggleDisplay/models/model.tsx](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/LinearWiggleDisplay/models/model.tsx)
 
-
 ## Docs
-
 
 Extends `BaseLinearDisplay`
 
-
-
 ### LinearWiggleDisplay - Properties
+
 #### property: type
-
-
 
 ```js
 // type signature
@@ -37,8 +30,6 @@ type: types.literal('LinearWiggleDisplay')
 
 #### property: configuration
 
-
-
 ```js
 // type signature
 AnyConfigurationSchemaType
@@ -47,8 +38,6 @@ configuration: ConfigurationReference(configSchema)
 ```
 
 #### property: selectedRendering
-
-
 
 ```js
 // type signature
@@ -59,8 +48,6 @@ selectedRendering: types.optional(types.string, '')
 
 #### property: resolution
 
-
-
 ```js
 // type signature
 IOptionalIType<ISimpleType<number>, [undefined]>
@@ -69,8 +56,6 @@ resolution: types.optional(types.number, 1)
 ```
 
 #### property: fill
-
-
 
 ```js
 // type signature
@@ -81,8 +66,6 @@ fill: types.maybe(types.boolean)
 
 #### property: minSize
 
-
-
 ```js
 // type signature
 IMaybe<ISimpleType<number>>
@@ -91,8 +74,6 @@ minSize: types.maybe(types.number)
 ```
 
 #### property: color
-
-
 
 ```js
 // type signature
@@ -103,8 +84,6 @@ color: types.maybe(types.string)
 
 #### property: posColor
 
-
-
 ```js
 // type signature
 IMaybe<ISimpleType<string>>
@@ -113,8 +92,6 @@ posColor: types.maybe(types.string)
 ```
 
 #### property: negColor
-
-
 
 ```js
 // type signature
@@ -125,8 +102,6 @@ negColor: types.maybe(types.string)
 
 #### property: summaryScoreMode
 
-
-
 ```js
 // type signature
 IMaybe<ISimpleType<string>>
@@ -135,8 +110,6 @@ summaryScoreMode: types.maybe(types.string)
 ```
 
 #### property: rendererTypeNameState
-
-
 
 ```js
 // type signature
@@ -147,8 +120,6 @@ rendererTypeNameState: types.maybe(types.string)
 
 #### property: scale
 
-
-
 ```js
 // type signature
 IMaybe<ISimpleType<string>>
@@ -157,8 +128,6 @@ scale: types.maybe(types.string)
 ```
 
 #### property: autoscale
-
-
 
 ```js
 // type signature
@@ -169,8 +138,6 @@ autoscale: types.maybe(types.string)
 
 #### property: displayCrossHatches
 
-
-
 ```js
 // type signature
 IMaybe<ISimpleType<boolean>>
@@ -179,8 +146,6 @@ displayCrossHatches: types.maybe(types.boolean)
 ```
 
 #### property: constraints
-
-
 
 ```js
 // type signature
@@ -195,11 +160,9 @@ constraints: types.optional(
         )
 ```
 
-
 ### LinearWiggleDisplay - Getters
+
 #### getter: TooltipComponent
-
-
 
 ```js
 // type
@@ -208,8 +171,6 @@ React.FC
 
 #### getter: adapterTypeName
 
-
-
 ```js
 // type
 any
@@ -217,16 +178,12 @@ any
 
 #### getter: rendererTypeNameSimple
 
-
-
 ```js
 // type
 any
 ```
 
 #### getter: rendererTypeName
-
-
 
 ```js
 // type
@@ -244,16 +201,12 @@ any
 
 #### getter: scaleType
 
-
-
 ```js
 // type
 any
 ```
 
 #### getter: maxScore
-
-
 
 ```js
 // type
@@ -262,16 +215,12 @@ any
 
 #### getter: minScore
 
-
-
 ```js
 // type
 any
 ```
 
 #### getter: rendererConfig
-
-
 
 ```js
 // type
@@ -280,16 +229,12 @@ any
 
 #### getter: filled
 
-
-
 ```js
 // type
 any
 ```
 
 #### getter: summaryScoreModeSetting
-
-
 
 ```js
 // type
@@ -298,16 +243,12 @@ any
 
 #### getter: domain
 
-
-
 ```js
 // type
 number[]
 ```
 
 #### getter: needsScalebar
-
-
 
 ```js
 // type
@@ -316,16 +257,21 @@ boolean
 
 #### getter: scaleOpts
 
-
-
 ```js
 // type
-{ domain: any; stats: { scoreMin: number; scoreMax: number; }; autoscaleType: any; scaleType: any; inverted: any; }
+{
+  domain: any
+  stats: {
+    scoreMin: number
+    scoreMax: number
+  }
+  autoscaleType: any
+  scaleType: any
+  inverted: any
+}
 ```
 
 #### getter: canHaveFill
-
-
 
 ```js
 // type
@@ -334,16 +280,12 @@ boolean
 
 #### getter: autoscaleType
 
-
-
 ```js
 // type
 any
 ```
 
 #### getter: displayCrossHatchesSetting
-
-
 
 ```js
 // type
@@ -352,16 +294,12 @@ any
 
 #### getter: ticks
 
-
-
 ```js
 // type
 { range: number[]; values: number[]; format: (d: NumberValue) => string; position: ScaleLinear<number, number, never> | ScaleQuantize<number, never>; }
 ```
 
 #### getter: adapterCapabilities
-
-
 
 ```js
 // type
@@ -370,16 +308,12 @@ string[]
 
 #### getter: hasResolution
 
-
-
 ```js
 // type
 boolean
 ```
 
 #### getter: hasGlobalStats
-
-
 
 ```js
 // type
@@ -388,18 +322,14 @@ boolean
 
 #### getter: fillSetting
 
-
-
 ```js
 // type
-0 | 1 | 2
+;0 | 1 | 2
 ```
 
-
 ### LinearWiggleDisplay - Methods
+
 #### method: renderProps
-
-
 
 ```js
 // type signature
@@ -408,18 +338,14 @@ renderProps: () => any
 
 #### method: trackMenuItems
 
-
-
 ```js
 // type signature
 trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; })[]
 ```
 
-
 ### LinearWiggleDisplay - Actions
+
 #### action: updateQuantitativeStats
-
-
 
 ```js
 // type signature
@@ -428,16 +354,12 @@ updateQuantitativeStats: (stats: { scoreMin: number; scoreMax: number; }) => voi
 
 #### action: setColor
 
-
-
 ```js
 // type signature
 setColor: (color?: string) => void
 ```
 
 #### action: setPosColor
-
-
 
 ```js
 // type signature
@@ -446,16 +368,12 @@ setPosColor: (color?: string) => void
 
 #### action: setNegColor
 
-
-
 ```js
 // type signature
 setNegColor: (color?: string) => void
 ```
 
 #### action: setLoading
-
-
 
 ```js
 // type signature
@@ -464,9 +382,9 @@ setLoading: (aborter: AbortController) => void
 
 #### action: selectFeature
 
-this overrides the BaseLinearDisplayModel to avoid popping up a
-feature detail display, but still sets the feature selection on the
-model so listeners can detect a click
+this overrides the BaseLinearDisplayModel to avoid popping up a feature detail
+display, but still sets the feature selection on the model so listeners can
+detect a click
 
 ```js
 // type signature
@@ -475,16 +393,12 @@ selectFeature: (feature: Feature) => void
 
 #### action: setResolution
 
-
-
 ```js
 // type signature
 setResolution: (res: number) => void
 ```
 
 #### action: setFill
-
-
 
 ```js
 // type signature
@@ -493,16 +407,12 @@ setFill: (fill: number) => void
 
 #### action: toggleLogScale
 
-
-
 ```js
 // type signature
 toggleLogScale: () => void
 ```
 
 #### action: setScaleType
-
-
 
 ```js
 // type signature
@@ -511,16 +421,12 @@ setScaleType: (scale?: string) => void
 
 #### action: setSummaryScoreMode
 
-
-
 ```js
 // type signature
 setSummaryScoreMode: (val: string) => void
 ```
 
 #### action: setAutoscale
-
-
 
 ```js
 // type signature
@@ -529,16 +435,12 @@ setAutoscale: (val: string) => void
 
 #### action: setMaxScore
 
-
-
 ```js
 // type signature
 setMaxScore: (val?: number) => void
 ```
 
 #### action: setRendererType
-
-
 
 ```js
 // type signature
@@ -547,8 +449,6 @@ setRendererType: (val: string) => void
 
 #### action: setMinScore
 
-
-
 ```js
 // type signature
 setMinScore: (val?: number) => void
@@ -556,16 +456,12 @@ setMinScore: (val?: number) => void
 
 #### action: toggleCrossHatches
 
-
-
 ```js
 // type signature
 toggleCrossHatches: () => void
 ```
 
 #### action: setCrossHatches
-
-
 
 ```js
 // type signature
@@ -583,11 +479,7 @@ reload: () => Promise<void>
 
 #### action: renderSvg
 
-
-
 ```js
 // type signature
 renderSvg: (opts: ExportSvgOptions & { overrideHeight: number; theme: ThemeOptions; }) => Promise<Element>
 ```
-
-

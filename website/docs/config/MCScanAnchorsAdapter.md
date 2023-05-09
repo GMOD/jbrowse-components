@@ -3,8 +3,9 @@ id: mcscananchorsadapter
 title: MCScanAnchorsAdapter
 toplevel: true
 ---
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -12,16 +13,9 @@ our source code. See [Config guide](/docs/config_guide) for more info
 
 ## Docs
 
-
-
-
-
-
-
 ### MCScanAnchorsAdapter - Slots
+
 #### slot: mcscanAnchorsLocation
-
-
 
 ```js
 mcscanAnchorsLocation: {
@@ -35,8 +29,6 @@ mcscanAnchorsLocation: {
 
 #### slot: bed1Location
 
-
-
 ```js
 bed1Location: {
       type: 'fileLocation',
@@ -48,8 +40,6 @@ bed1Location: {
 ```
 
 #### slot: bed2Location
-
-
 
 ```js
 bed2Location: {
@@ -63,15 +53,9 @@ bed2Location: {
 
 #### slot: assemblyNames
 
-
-
 ```js
 assemblyNames: {
       type: 'stringArray',
       defaultValue: [],
     }
 ```
-
-
-
-

@@ -3,8 +3,9 @@ id: structuralvariantchordrenderer
 title: StructuralVariantChordRenderer
 toplevel: true
 ---
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -12,16 +13,9 @@ our source code. See [Config guide](/docs/config_guide) for more info
 
 ## Docs
 
-
-
-
-
-
-
 ### StructuralVariantChordRenderer - Slots
+
 #### slot: strokeColor
-
-
 
 ```js
 strokeColor: {
@@ -34,8 +28,6 @@ strokeColor: {
 
 #### slot: strokeColorSelected
 
-
-
 ```js
 strokeColorSelected: {
       type: 'color',
@@ -47,8 +39,6 @@ strokeColorSelected: {
 
 #### slot: strokeColorHover
 
-
-
 ```js
 strokeColorHover: {
       type: 'color',
@@ -58,7 +48,3 @@ strokeColorHover: {
       contextVariable: ['feature'],
     }
 ```
-
-
-
-

@@ -4,29 +4,22 @@ title: CircularView
 toplevel: true
 ---
 
-
 Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See [Core concepts and intro to pluggable
-elements](/docs/developer_guide/) for more info
-
-
+our source code. See
+[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
+info
 
 ## Source file
 
 [plugins/circular-view/src/CircularView/models/CircularView.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/CircularView/models/CircularView.ts)
 
-
 ## Docs
-
 
 extends `BaseViewModel`
 
-
-
 ### CircularView - Properties
+
 #### property: type
-
-
 
 ```js
 // type signature
@@ -48,8 +41,6 @@ offsetRadians: -Math.PI / 2
 
 #### property: bpPerPx
 
-
-
 ```js
 // type signature
 number
@@ -58,8 +49,6 @@ bpPerPx: 200
 ```
 
 #### property: tracks
-
-
 
 ```js
 // type signature
@@ -72,8 +61,6 @@ tracks: types.array(
 
 #### property: hideVerticalResizeHandle
 
-
-
 ```js
 // type signature
 false
@@ -82,8 +69,6 @@ hideVerticalResizeHandle: false
 ```
 
 #### property: hideTrackSelectorButton
-
-
 
 ```js
 // type signature
@@ -94,8 +79,6 @@ hideTrackSelectorButton: false
 
 #### property: lockedFitToWindow
 
-
-
 ```js
 // type signature
 true
@@ -105,8 +88,6 @@ lockedFitToWindow: true
 
 #### property: disableImportForm
 
-
-
 ```js
 // type signature
 false
@@ -115,8 +96,6 @@ disableImportForm: false
 ```
 
 #### property: height
-
-
 
 ```js
 // type signature
@@ -130,8 +109,6 @@ height: types.optional(
 
 #### property: displayedRegions
 
-
-
 ```js
 // type signature
 IArrayType<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>>
@@ -140,8 +117,6 @@ displayedRegions: types.array(Region)
 ```
 
 #### property: scrollX
-
-
 
 ```js
 // type signature
@@ -152,8 +127,6 @@ scrollX: 0
 
 #### property: scrollY
 
-
-
 ```js
 // type signature
 number
@@ -161,11 +134,9 @@ number
 scrollY: 0
 ```
 
-
 ### CircularView - Getters
+
 #### getter: width
-
-
 
 ```js
 // type
@@ -174,16 +145,15 @@ number
 
 #### getter: visibleSection
 
-
-
 ```js
 // type
-{ rho: [number, number]; theta: [number, number]; }
+{
+  rho: [number, number]
+  theta: [number, number]
+}
 ```
 
 #### getter: circumferencePx
-
-
 
 ```js
 // type
@@ -192,16 +162,12 @@ number
 
 #### getter: radiusPx
 
-
-
 ```js
 // type
 number
 ```
 
 #### getter: bpPerRadian
-
-
 
 ```js
 // type
@@ -210,8 +176,6 @@ number
 
 #### getter: pxPerRadian
 
-
-
 ```js
 // type
 any
@@ -219,16 +183,12 @@ any
 
 #### getter: centerXY
 
-
-
 ```js
 // type
-[number, number]
+;[number, number]
 ```
 
 #### getter: totalBp
-
-
 
 ```js
 // type
@@ -237,16 +197,12 @@ number
 
 #### getter: maximumRadiusPx
 
-
-
 ```js
 // type
 number
 ```
 
 #### getter: maxBpPerPx
-
-
 
 ```js
 // type
@@ -255,16 +211,12 @@ number
 
 #### getter: minBpPerPx
 
-
-
 ```js
 // type
 number
 ```
 
 #### getter: atMaxBpPerPx
-
-
 
 ```js
 // type
@@ -273,16 +225,12 @@ boolean
 
 #### getter: atMinBpPerPx
 
-
-
 ```js
 // type
 boolean
 ```
 
 #### getter: tooSmallToLock
-
-
 
 ```js
 // type
@@ -291,16 +239,12 @@ boolean
 
 #### getter: figureDimensions
 
-
-
 ```js
 // type
-[number, number]
+;[number, number]
 ```
 
 #### getter: figureWidth
-
-
 
 ```js
 // type
@@ -309,8 +253,6 @@ any
 
 #### getter: figureHeight
 
-
-
 ```js
 // type
 any
@@ -318,8 +260,8 @@ any
 
 #### getter: elidedRegions
 
-this is displayedRegions, post-processed to
-elide regions that are too small to see reasonably
+this is displayedRegions, post-processed to elide regions that are too small to
+see reasonably
 
 ```js
 // type
@@ -328,16 +270,12 @@ SliceRegion[]
 
 #### getter: assemblyNames
 
-
-
 ```js
 // type
 string[]
 ```
 
 #### getter: initialized
-
-
 
 ```js
 // type
@@ -346,8 +284,6 @@ any
 
 #### getter: staticSlices
 
-
-
 ```js
 // type
 any[]
@@ -355,15 +291,13 @@ any[]
 
 #### getter: visibleStaticSlices
 
-
-
 ```js
 // type
 any[]
 ```
 
-
 ### CircularView - Methods
+
 #### method: menuItems
 
 return the view menu items
@@ -373,11 +307,9 @@ return the view menu items
 menuItems: () => MenuItem[]
 ```
 
-
 ### CircularView - Actions
+
 #### action: setWidth
-
-
 
 ```js
 // type signature
@@ -386,16 +318,12 @@ setWidth: (newWidth: number) => number
 
 #### action: setHeight
 
-
-
 ```js
 // type signature
 setHeight: (newHeight: number) => number
 ```
 
 #### action: resizeHeight
-
-
 
 ```js
 // type signature
@@ -404,16 +332,12 @@ resizeHeight: (distance: number) => number
 
 #### action: resizeWidth
 
-
-
 ```js
 // type signature
 resizeWidth: (distance: number) => number
 ```
 
 #### action: rotateClockwiseButton
-
-
 
 ```js
 // type signature
@@ -422,16 +346,12 @@ rotateClockwiseButton: () => void
 
 #### action: rotateCounterClockwiseButton
 
-
-
 ```js
 // type signature
 rotateCounterClockwiseButton: () => void
 ```
 
 #### action: rotateClockwise
-
-
 
 ```js
 // type signature
@@ -440,16 +360,12 @@ rotateClockwise: (distance?: number) => void
 
 #### action: rotateCounterClockwise
 
-
-
 ```js
 // type signature
 rotateCounterClockwise: (distance?: number) => void
 ```
 
 #### action: zoomInButton
-
-
 
 ```js
 // type signature
@@ -458,16 +374,12 @@ zoomInButton: () => void
 
 #### action: zoomOutButton
 
-
-
 ```js
 // type signature
 zoomOutButton: () => void
 ```
 
 #### action: setBpPerPx
-
-
 
 ```js
 // type signature
@@ -476,16 +388,12 @@ setBpPerPx: (newVal: number) => void
 
 #### action: setModelViewWhenAdjust
 
-
-
 ```js
 // type signature
 setModelViewWhenAdjust: (secondCondition: boolean) => void
 ```
 
 #### action: closeView
-
-
 
 ```js
 // type signature
@@ -494,16 +402,12 @@ closeView: () => void
 
 #### action: setDisplayedRegions
 
-
-
 ```js
 // type signature
 setDisplayedRegions: (regions: SnapshotOrInstance<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>>[]) => void
 ```
 
 #### action: activateTrackSelector
-
-
 
 ```js
 // type signature
@@ -512,16 +416,12 @@ activateTrackSelector: () => Widget
 
 #### action: toggleTrack
 
-
-
 ```js
 // type signature
 toggleTrack: (trackId: string) => void
 ```
 
 #### action: setError
-
-
 
 ```js
 // type signature
@@ -530,16 +430,12 @@ setError: (error: unknown) => void
 
 #### action: showTrack
 
-
-
 ```js
 // type signature
 showTrack: (trackId: string, initialSnapshot?: {}) => void
 ```
 
 #### action: addTrackConf
-
-
 
 ```js
 // type signature
@@ -548,16 +444,12 @@ addTrackConf: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubs
 
 #### action: hideTrack
 
-
-
 ```js
 // type signature
 hideTrack: (trackId: string) => number
 ```
 
 #### action: toggleFitToWindowLock
-
-
 
 ```js
 // type signature
@@ -572,5 +464,3 @@ creates an svg export and save using FileSaver
 // type signature
 exportSvg: (opts?: ExportSvgOptions) => Promise<void>
 ```
-
-

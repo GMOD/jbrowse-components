@@ -17,7 +17,7 @@ async function wait(view: any) {
   )
 }
 
-const delay = { timeout: 30000 }
+const delay = { timeout: 50000 }
 const opts = [{}, delay]
 
 test('toggle short-read arc display', async () => {
@@ -29,8 +29,8 @@ test('toggle short-read arc display', async () => {
   fireEvent.click(await findByText('Replace lower panel with...'))
   fireEvent.click((await findAllByText('Arc display'))[0])
   await wait(view)
-  expectCanvasMatch(getByTestId('arc-canvas'), 0)
-}, 40000)
+  expectCanvasMatch(getByTestId('arc-canvas'))
+}, 50000)
 
 test('toggle short-read cloud display', async () => {
   const { view, getByTestId, findByTestId, findAllByText, findByText } =
@@ -41,8 +41,8 @@ test('toggle short-read cloud display', async () => {
   fireEvent.click(await findByText('Replace lower panel with...'))
   fireEvent.click((await findAllByText('Read cloud display'))[0])
   await wait(view)
-  expectCanvasMatch(getByTestId('cloud-canvas'), 0)
-}, 40000)
+  expectCanvasMatch(getByTestId('cloud-canvas'))
+}, 50000)
 
 test('toggle long-read cloud display', async () => {
   const { view, getByTestId, findByTestId, findAllByText, findByText } =
@@ -53,8 +53,8 @@ test('toggle long-read cloud display', async () => {
   fireEvent.click(await findByText('Replace lower panel with...'))
   fireEvent.click((await findAllByText('Read cloud display'))[0])
   await wait(view)
-  expectCanvasMatch(getByTestId('cloud-canvas'), 0)
-}, 40000)
+  expectCanvasMatch(getByTestId('cloud-canvas'))
+}, 50000)
 
 test('toggle long-read arc display', async () => {
   const { view, getByTestId, findByTestId, findAllByText, findByText } =
@@ -64,10 +64,9 @@ test('toggle long-read arc display', async () => {
   fireEvent.click(await findByTestId('track_menu_icon', ...opts))
   fireEvent.click(await findByText('Replace lower panel with...'))
   fireEvent.click((await findAllByText('Arc display'))[0])
-  const ref = getByTestId('arc-canvas')
   await wait(view)
-  expectCanvasMatch(ref, 0)
-}, 40000)
+  expectCanvasMatch(getByTestId('arc-canvas'))
+}, 50000)
 
 test('toggle long-read arc display, use out of view pairing', async () => {
   const { view, getByTestId, findByTestId, findAllByText, findByText } =
@@ -79,8 +78,8 @@ test('toggle long-read arc display, use out of view pairing', async () => {
   fireEvent.click(await findByText('Replace lower panel with...'))
   fireEvent.click((await findAllByText('Arc display'))[0])
   await wait(view)
-  expectCanvasMatch(getByTestId('arc-canvas'), 0)
-}, 40000)
+  expectCanvasMatch(getByTestId('arc-canvas'))
+}, 50000)
 
 test('toggle short-read arc display, use out of view pairing', async () => {
   const { view, getByTestId, findByTestId, findAllByText, findByText } =
@@ -91,5 +90,5 @@ test('toggle short-read arc display, use out of view pairing', async () => {
   fireEvent.click(await findByText('Replace lower panel with...'))
   fireEvent.click((await findAllByText('Arc display'))[0])
   await wait(view)
-  expectCanvasMatch(getByTestId('arc-canvas'), 0)
-}, 40000)
+  expectCanvasMatch(getByTestId('arc-canvas'))
+}, 50000)

@@ -3,8 +3,9 @@ id: jbrowsewebconfiguration
 title: JBrowseWebConfiguration
 toplevel: true
 ---
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -14,22 +15,15 @@ our source code. See [Config guide](/docs/config_guide) for more info
 
 configuration in a config.json
 
-
-
-
-
 ### JBrowseWebConfiguration - Slots
+
 #### slot: configuration.rpc
-
-
 
 ```js
 rpc: RpcManager.configSchema
 ```
 
 #### slot: configuration.highResolutionScaling
-
-
 
 ```js
 highResolutionScaling: {
@@ -40,8 +34,6 @@ highResolutionScaling: {
 
 #### slot: configuration.shareURL
 
-
-
 ```js
 shareURL: {
         type: 'string',
@@ -50,8 +42,6 @@ shareURL: {
 ```
 
 #### slot: configuration.formatDetails.feature
-
-
 
 ```js
 feature: {
@@ -64,8 +54,6 @@ feature: {
 
 #### slot: configuration.formatDetails.subfeatures
 
-
-
 ```js
 subfeatures: {
           type: 'frozen',
@@ -77,8 +65,6 @@ subfeatures: {
 
 #### slot: configuration.formatDetails.depth
 
-
-
 ```js
 depth: {
           type: 'number',
@@ -88,8 +74,6 @@ depth: {
 ```
 
 #### slot: configuration.formatAbout.conf
-
-
 
 ```js
 config: {
@@ -102,8 +86,6 @@ config: {
 
 #### slot: configuration.formatAbout.hideUris
 
-
-
 ```js
 hideUris: {
           type: 'boolean',
@@ -112,8 +94,6 @@ hideUris: {
 ```
 
 #### slot: configuration.disableAnalytics
-
-
 
 ```js
 disableAnalytics: {
@@ -124,8 +104,6 @@ disableAnalytics: {
 
 #### slot: configuration.theme
 
-
-
 ```js
 theme: {
         type: 'frozen',
@@ -135,8 +113,6 @@ theme: {
 
 #### slot: configuration.extraThemes
 
-
-
 ```js
 extraThemes: {
         type: 'frozen',
@@ -145,8 +121,6 @@ extraThemes: {
 ```
 
 #### slot: configuration.logoPath
-
-
 
 ```js
 logoPath: {
@@ -158,6 +132,7 @@ logoPath: {
 #### slot: plugins
 
 defines plugins of the format
+
 ```typescript
 type PluginDefinition=
    { umdUrl: string, name:string } |
@@ -174,52 +149,36 @@ plugins: types.array(types.frozen<PluginDefinition>())
 
 #### slot: assemblies
 
-
-
 ```js
 assemblies: types.array(assemblyConfigSchemasType)
 ```
 
 #### slot: internetAccounts
 
-
-
 ```js
 internetAccounts: types.array(
-      pluginManager.pluggableConfigSchemaType('internet account'),
-    )
+  pluginManager.pluggableConfigSchemaType('internet account'),
+)
 ```
 
 #### slot: aggregateTextSearchAdapters
 
-
-
 ```js
 aggregateTextSearchAdapters: types.array(
-      pluginManager.pluggableConfigSchemaType('text search adapter'),
-    )
+  pluginManager.pluggableConfigSchemaType('text search adapter'),
+)
 ```
 
 #### slot: connections
 
-
-
 ```js
-connections: types.array(
-      pluginManager.pluggableConfigSchemaType('connection'),
-    )
+connections: types.array(pluginManager.pluggableConfigSchemaType('connection'))
 ```
 
 #### slot: defaultSession
 
-
-
 ```js
 defaultSession: types.optional(types.frozen(), {
-      name: `New session`,
-    })
+  name: `New session`,
+})
 ```
-
-
-
-

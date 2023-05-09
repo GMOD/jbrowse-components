@@ -4,29 +4,20 @@ title: DesktopSessionManagementMixin
 toplevel: true
 ---
 
-
 Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See [Core concepts and intro to pluggable
-elements](/docs/developer_guide/) for more info
-
-
+our source code. See
+[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
+info
 
 ## Source file
 
 [products/jbrowse-desktop/src/rootModel/Sessions.ts](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-desktop/src/rootModel/Sessions.ts)
 
-
 ## Docs
 
-
-
-
-
-
 ### DesktopSessionManagementMixin - Properties
+
 #### property: savedSessionNames
-
-
 
 ```js
 // type signature
@@ -37,8 +28,6 @@ savedSessionNames: types.maybe(types.array(types.string))
 
 #### property: sessionPath
 
-
-
 ```js
 // type signature
 IOptionalIType<ISimpleType<string>, [undefined]>
@@ -46,17 +35,9 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 sessionPath: types.optional(types.string, '')
 ```
 
-
-
-
-
-
-
-
 ### DesktopSessionManagementMixin - Actions
+
 #### action: saveSession
-
-
 
 ```js
 // type signature
@@ -65,8 +46,6 @@ saveSession: (val: unknown) => Promise<void>
 
 #### action: duplicateCurrentSession
 
-
-
 ```js
 // type signature
 duplicateCurrentSession: () => void
@@ -74,11 +53,7 @@ duplicateCurrentSession: () => void
 
 #### action: activateSession
 
-
-
 ```js
 // type signature
 activateSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number, number, number>; }>>) => void
 ```
-
-

@@ -3,8 +3,9 @@ id: baseassembly
 title: BaseAssembly
 toplevel: true
 ---
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -18,9 +19,8 @@ This corresponds to the assemblies section of the config
 
 #### slot: name
 
-
-
 ### BaseAssembly - Slots
+
 #### slot: aliases
 
 aliases are "reference name aliases" e.g. aliases for hg38 might be "GRCh38"
@@ -39,13 +39,10 @@ sequence refers to a reference sequence track that has an adapter containing,
 importantly, a sequence adapter such as IndexedFastaAdapter
 
 ```js
-sequence: pluginManager.getTrackType('ReferenceSequenceTrack')
-        .configSchema
+sequence: pluginManager.getTrackType('ReferenceSequenceTrack').configSchema
 ```
 
 #### slot: refNameColors
-
-
 
 ```js
 refNameColors: {
@@ -58,9 +55,9 @@ refNameColors: {
 
 #### slot: refNameAliases.adapter
 
-refNameAliases help resolve e.g. chr1 and 1 as the same entity
-the data for refNameAliases are fetched from an adapter, that is
-commonly a tsv like chromAliases.txt from UCSC or similar
+refNameAliases help resolve e.g. chr1 and 1 as the same entity the data for
+refNameAliases are fetched from an adapter, that is commonly a tsv like
+chromAliases.txt from UCSC or similar
 
 ```js
 adapter: pluginManager.pluggableConfigSchemaType('adapter')
@@ -68,16 +65,14 @@ adapter: pluginManager.pluggableConfigSchemaType('adapter')
 
 #### slot: cytobands.adapter
 
-cytoband data is fetched from an adapter, and can be displayed by a
-view type as ideograms
+cytoband data is fetched from an adapter, and can be displayed by a view type as
+ideograms
 
 ```js
 adapter: pluginManager.pluggableConfigSchemaType('adapter')
 ```
 
 #### slot: displayName
-
-
 
 ```js
 displayName: {
@@ -87,7 +82,3 @@ displayName: {
           'A human readable display name for the assembly e.g. "Homo sapiens (hg38)" while the assembly name may just be "hg38"',
       }
 ```
-
-
-
-

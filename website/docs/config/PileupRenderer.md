@@ -3,8 +3,9 @@ id: pileuprenderer
 title: PileupRenderer
 toplevel: true
 ---
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -12,13 +13,8 @@ our source code. See [Config guide](/docs/config_guide) for more info
 
 ## Docs
 
-
-
-
-
-
-
 ### PileupRenderer - Slots
+
 #### slot: color
 
 default magenta here is used to detect the user has not customized this
@@ -34,8 +30,6 @@ color: {
 
 #### slot: orientationType
 
-
-
 ```js
 orientationType: {
       type: 'stringEnum',
@@ -47,8 +41,6 @@ orientationType: {
 ```
 
 #### slot: displayMode
-
-
 
 ```js
 displayMode: {
@@ -65,8 +57,6 @@ displayMode: {
 
 #### slot: minSubfeatureWidth
 
-
-
 ```js
 minSubfeatureWidth: {
       type: 'number',
@@ -78,8 +68,6 @@ minSubfeatureWidth: {
 
 #### slot: maxHeight
 
-
-
 ```js
 maxHeight: {
       type: 'integer',
@@ -90,8 +78,6 @@ maxHeight: {
 
 #### slot: maxClippingSize
 
-
-
 ```js
 maxClippingSize: {
       type: 'integer',
@@ -101,8 +87,6 @@ maxClippingSize: {
 ```
 
 #### slot: height
-
-
 
 ```js
 height: {
@@ -115,8 +99,6 @@ height: {
 
 #### slot: noSpacing
 
-
-
 ```js
 noSpacing: {
       type: 'boolean',
@@ -126,8 +108,6 @@ noSpacing: {
 ```
 
 #### slot: largeInsertionIndicatorScale
-
-
 
 ```js
 largeInsertionIndicatorScale: {
@@ -140,8 +120,6 @@ largeInsertionIndicatorScale: {
 
 #### slot: mismatchAlpha
 
-
-
 ```js
 mismatchAlpha: {
       type: 'boolean',
@@ -149,7 +127,3 @@ mismatchAlpha: {
       description: 'Fade low quality mismatches',
     }
 ```
-
-
-
-

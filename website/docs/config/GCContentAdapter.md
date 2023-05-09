@@ -3,8 +3,9 @@ id: gccontentadapter
 title: GCContentAdapter
 toplevel: true
 ---
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -12,16 +13,9 @@ our source code. See [Config guide](/docs/config_guide) for more info
 
 ## Docs
 
-
-
-
-
-
-
 ### GCContentAdapter - Slots
+
 #### slot: sequenceAdapter
-
-
 
 ```js
 sequenceAdapter: {
@@ -29,7 +23,3 @@ sequenceAdapter: {
         defaultValue: null,
       }
 ```
-
-
-
-

@@ -3,8 +3,9 @@ id: referencesequencetrack
 title: ReferenceSequenceTrack
 toplevel: true
 ---
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -18,9 +19,8 @@ used to display base level DNA sequence tracks
 
 #### slot: explicitIdentifier
 
-
-
 ### ReferenceSequenceTrack - Slots
+
 #### slot: adapter
 
 configuration for track adapter
@@ -39,8 +39,6 @@ displays: types.array(pluginManager.pluggableConfigSchemaType('display'))
 
 #### slot: name
 
-
-
 ```js
 name: {
         type: 'string',
@@ -52,8 +50,6 @@ name: {
 
 #### slot: metadata
 
-
-
 ```js
 metadata: {
         type: 'frozen',
@@ -63,8 +59,6 @@ metadata: {
 ```
 
 #### slot: formatAbout.config
-
-
 
 ```js
 config: {
@@ -77,15 +71,9 @@ config: {
 
 #### slot: formatAbout.hideUris
 
-
-
 ```js
 hideUris: {
           type: 'boolean',
           defaultValue: false,
         }
 ```
-
-
-
-

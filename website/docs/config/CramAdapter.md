@@ -3,8 +3,9 @@ id: cramadapter
 title: CramAdapter
 toplevel: true
 ---
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -14,14 +15,9 @@ our source code. See [Config guide](/docs/config_guide) for more info
 
 used to configure CRAM adapter
 
-
-
-
-
 ### CramAdapter - Slots
+
 #### slot: fetchSizeLimit
-
-
 
 ```js
 fetchSizeLimit: {
@@ -33,8 +29,6 @@ fetchSizeLimit: {
 ```
 
 #### slot: cramLocation
-
-
 
 ```js
 cramLocation: {
@@ -48,8 +42,6 @@ cramLocation: {
 
 #### slot: craiLocation
 
-
-
 ```js
 craiLocation: {
       type: 'fileLocation',
@@ -62,8 +54,8 @@ craiLocation: {
 
 #### slot: sequenceAdapter
 
-generally refers to the reference genome assembly's sequence adapter
-currently needs to be manually added
+generally refers to the reference genome assembly's sequence adapter currently
+needs to be manually added
 
 ```js
 sequenceAdapter: {
@@ -72,7 +64,3 @@ sequenceAdapter: {
       defaultValue: null,
     }
 ```
-
-
-
-

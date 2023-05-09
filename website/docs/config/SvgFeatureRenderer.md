@@ -3,8 +3,9 @@ id: svgfeaturerenderer
 title: SvgFeatureRenderer
 toplevel: true
 ---
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -12,16 +13,9 @@ our source code. See [Config guide](/docs/config_guide) for more info
 
 ## Docs
 
-
-
-
-
-
-
 ### SvgFeatureRenderer - Slots
+
 #### slot: color1
-
-
 
 ```js
 color1: {
@@ -33,8 +27,6 @@ color1: {
 ```
 
 #### slot: color2
-
-
 
 ```js
 color2: {
@@ -48,8 +40,6 @@ color2: {
 
 #### slot: color3
 
-
-
 ```js
 color3: {
       type: 'color',
@@ -62,8 +52,6 @@ color3: {
 
 #### slot: outline
 
-
-
 ```js
 outline: {
       type: 'color',
@@ -74,8 +62,6 @@ outline: {
 ```
 
 #### slot: height
-
-
 
 ```js
 height: {
@@ -88,8 +74,6 @@ height: {
 
 #### slot: showLabels
 
-
-
 ```js
 showLabels: {
       type: 'boolean',
@@ -99,8 +83,6 @@ showLabels: {
 
 #### slot: showDescriptions
 
-
-
 ```js
 showDescriptions: {
       type: 'boolean',
@@ -109,8 +91,6 @@ showDescriptions: {
 ```
 
 #### slot: labels.name
-
-
 
 ```js
 name: {
@@ -124,8 +104,6 @@ name: {
 
 #### slot: labels.nameColor
 
-
-
 ```js
 nameColor: {
         type: 'color',
@@ -136,8 +114,6 @@ nameColor: {
 ```
 
 #### slot: labels.description
-
-
 
 ```js
 description: {
@@ -150,8 +126,6 @@ description: {
 
 #### slot: labels.descriptionColor
 
-
-
 ```js
 descriptionColor: {
         type: 'color',
@@ -162,8 +136,6 @@ descriptionColor: {
 ```
 
 #### slot: labels.fontSize
-
-
 
 ```js
 fontSize: {
@@ -176,8 +148,6 @@ fontSize: {
 ```
 
 #### slot: displayMode
-
-
 
 ```js
 displayMode: {
@@ -195,8 +165,6 @@ displayMode: {
 
 #### slot: maxFeatureGlyphExpansion
 
-
-
 ```js
 maxFeatureGlyphExpansion: {
       type: 'number',
@@ -208,8 +176,6 @@ maxFeatureGlyphExpansion: {
 
 #### slot: maxHeight
 
-
-
 ```js
 maxHeight: {
       type: 'integer',
@@ -219,8 +185,6 @@ maxHeight: {
 ```
 
 #### slot: subParts
-
-
 
 ```js
 subParts: {
@@ -232,8 +196,6 @@ subParts: {
 
 #### slot: impliedUTRs
 
-
-
 ```js
 impliedUTRs: {
       type: 'boolean',
@@ -241,7 +203,3 @@ impliedUTRs: {
       defaultValue: false,
     }
 ```
-
-
-
-

@@ -4,29 +4,20 @@ title: DotplotDisplay
 toplevel: true
 ---
 
-
 Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See [Core concepts and intro to pluggable
-elements](/docs/developer_guide/) for more info
-
-
+our source code. See
+[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
+info
 
 ## Source file
 
 [plugins/dotplot-view/src/DotplotDisplay/stateModelFactory.tsx](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotDisplay/stateModelFactory.tsx)
 
-
 ## Docs
 
-
-
-
-
-
 ### DotplotDisplay - Properties
+
 #### property: type
-
-
 
 ```js
 // type signature
@@ -37,8 +28,6 @@ type: types.literal('DotplotDisplay')
 
 #### property: configuration
 
-
-
 ```js
 // type signature
 AnyConfigurationSchemaType
@@ -46,22 +35,18 @@ AnyConfigurationSchemaType
 configuration: ConfigurationReference(configSchema)
 ```
 
-
 ### DotplotDisplay - Getters
+
 #### getter: rendererTypeName
-
-
 
 ```js
 // type
 any
 ```
 
-
 ### DotplotDisplay - Methods
+
 #### method: renderProps
-
-
 
 ```js
 // type signature
@@ -70,18 +55,14 @@ renderProps: () => any
 
 #### method: renderSvg
 
-
-
 ```js
 // type signature
 renderSvg: (opts: ExportSvgOptions & { theme: ThemeOptions; }) => Promise<Element>
 ```
 
-
 ### DotplotDisplay - Actions
+
 #### action: setLoading
-
-
 
 ```js
 // type signature
@@ -90,16 +71,12 @@ setLoading: (abortController: AbortController) => void
 
 #### action: setMessage
 
-
-
 ```js
 // type signature
 setMessage: (messageText: string) => void
 ```
 
 #### action: setRendered
-
-
 
 ```js
 // type signature
@@ -108,11 +85,7 @@ setRendered: (args?: { data: any; reactElement: React.ReactElement; renderingCom
 
 #### action: setError
 
-
-
 ```js
 // type signature
 setError: (error: unknown) => void
 ```
-
-

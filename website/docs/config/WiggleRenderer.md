@@ -3,8 +3,9 @@ id: wigglerenderer
 title: WiggleRenderer
 toplevel: true
 ---
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -14,14 +15,9 @@ our source code. See [Config guide](/docs/config_guide) for more info
 
 this is the "base wiggle renderer config schema"
 
-
-
-
-
 ### WiggleRenderer - Slots
+
 #### slot: color
-
-
 
 ```js
 color: {
@@ -33,8 +29,6 @@ color: {
 
 #### slot: posColor
 
-
-
 ```js
 posColor: {
       type: 'color',
@@ -44,8 +38,6 @@ posColor: {
 ```
 
 #### slot: negColor
-
-
 
 ```js
 negColor: {
@@ -57,8 +49,6 @@ negColor: {
 
 #### slot: clipColor
 
-
-
 ```js
 clipColor: {
       type: 'color',
@@ -68,8 +58,6 @@ clipColor: {
 ```
 
 #### slot: bicolorPivot
-
-
 
 ```js
 bicolorPivot: {
@@ -87,8 +75,6 @@ bicolorPivot: {
 
 #### slot: bicolorPivotValue
 
-
-
 ```js
 bicolorPivotValue: {
       type: 'number',
@@ -96,7 +82,3 @@ bicolorPivotValue: {
       description: 'value to use for bicolor pivot',
     }
 ```
-
-
-
-

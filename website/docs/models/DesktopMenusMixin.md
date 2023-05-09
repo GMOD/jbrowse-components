@@ -4,38 +4,20 @@ title: DesktopMenusMixin
 toplevel: true
 ---
 
-
 Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See [Core concepts and intro to pluggable
-elements](/docs/developer_guide/) for more info
-
-
+our source code. See
+[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
+info
 
 ## Source file
 
 [products/jbrowse-desktop/src/rootModel/Menus.ts](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-desktop/src/rootModel/Menus.ts)
 
-
 ## Docs
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ### DesktopMenusMixin - Actions
+
 #### action: setMenus
-
-
 
 ```js
 // type signature
@@ -93,7 +75,6 @@ Insert a menu item into a sub-menu
 
 ```js
 // type signature
-insertInSubMenu: (menuPath: string[], menuItem: MenuItem, position: number) => number
+insertInSubMenu: (menuPath: string[], menuItem: MenuItem, position: number) =>
+  number
 ```
-
-

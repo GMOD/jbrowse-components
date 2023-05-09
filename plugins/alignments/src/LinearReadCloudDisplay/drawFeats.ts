@@ -48,6 +48,7 @@ function fillRectCtx(
 
 export default function drawFeats(
   self: {
+    setDrawn: (arg: boolean) => void
     colorBy?: { type: string }
     height: number
     chainData?: ChainData
@@ -179,4 +180,5 @@ export default function drawFeats(
     fillRectCtx(r1s - view.offsetPx, top, w1, featureHeight, ctx)
     fillRectCtx(r2s - view.offsetPx, top, w2, featureHeight, ctx)
   }
+  self.setDrawn(true)
 }

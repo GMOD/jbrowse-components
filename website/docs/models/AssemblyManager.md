@@ -4,31 +4,23 @@ title: AssemblyManager
 toplevel: true
 ---
 
-
 Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See [Core concepts and intro to pluggable
-elements](/docs/developer_guide/) for more info
-
-
+our source code. See
+[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
+info
 
 ## Source file
 
 [packages/core/assemblyManager/assemblyManager.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/assemblyManager/assemblyManager.ts)
 
-
 ## Docs
 
-
-
-
-
-
 ### AssemblyManager - Properties
+
 #### property: assemblies
 
 this is automatically managed by an autorun which looks in the parent
-session.assemblies, session.sessionAssemblies, and
-session.temporaryAssemblies
+session.assemblies, session.sessionAssemblies, and session.temporaryAssemblies
 
 ```js
 // type signature
@@ -37,11 +29,9 @@ IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { er
 assemblies: types.array(assemblyFactory(conf, pm))
 ```
 
-
 ### AssemblyManager - Getters
+
 #### getter: assemblyNamesList
-
-
 
 ```js
 // type
@@ -58,11 +48,9 @@ session.temporaryAssemblies to load from
 ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]
 ```
 
-
 ### AssemblyManager - Methods
+
 #### method: get
-
-
 
 ```js
 // type signature
@@ -71,8 +59,8 @@ get: (asmName: string) => { configuration: any; } & NonEmptyObject & { error: un
 
 #### method: waitForAssembly
 
-use this method instead of assemblyManager.get(assemblyName)
-to get an assembly with regions loaded
+use this method instead of assemblyManager.get(assemblyName) to get an assembly
+with regions loaded
 
 ```js
 // type signature
@@ -81,16 +69,12 @@ waitForAssembly: (assemblyName: string) => Promise<{ configuration: any; } & Non
 
 #### method: getRefNameMapForAdapter
 
-
-
 ```js
 // type signature
 getRefNameMapForAdapter: (adapterConf: unknown, assemblyName: string, opts: { signal?: AbortSignal; sessionId: string; }) => Promise<any>
 ```
 
 #### method: getReverseRefNameMapForAdapter
-
-
 
 ```js
 // type signature
@@ -99,20 +83,18 @@ getReverseRefNameMapForAdapter: (adapterConf: unknown, assemblyName: string, opt
 
 #### method: isValidRefName
 
-
-
 ```js
 // type signature
 isValidRefName: (refName: string, assemblyName: string) => boolean
 ```
 
-
 ### AssemblyManager - Actions
+
 #### action: removeAssembly
 
-private: you would generally want to add to manipulate
-jbrowse.assemblies, session.sessionAssemblies, or
-session.temporaryAssemblies instead of using this directly
+private: you would generally want to add to manipulate jbrowse.assemblies,
+session.sessionAssemblies, or session.temporaryAssemblies instead of using this
+directly
 
 ```js
 // type signature
@@ -121,13 +103,13 @@ removeAssembly: (asm: { configuration: any; } & NonEmptyObject & { error: unknow
 
 #### action: addAssembly
 
-private: you would generally want to add to manipulate
-jbrowse.assemblies, session.sessionAssemblies, or
-session.temporaryAssemblies instead of using this directly
+private: you would generally want to add to manipulate jbrowse.assemblies,
+session.sessionAssemblies, or session.temporaryAssemblies instead of using this
+directly
 
-this can take an active instance of an assembly, in which case it is
-referred to, or it can take an identifier e.g. assembly name, which is
-used as a reference. snapshots cannot be used
+this can take an active instance of an assembly, in which case it is referred
+to, or it can take an identifier e.g. assembly name, which is used as a
+reference. snapshots cannot be used
 
 ```js
 // type signature
@@ -136,13 +118,11 @@ addAssembly: (configuration: any) => void
 
 #### action: replaceAssembly
 
-private: you would generally want to add to manipulate
-jbrowse.assemblies, session.sessionAssemblies, or
-session.temporaryAssemblies instead of using this directly
+private: you would generally want to add to manipulate jbrowse.assemblies,
+session.sessionAssemblies, or session.temporaryAssemblies instead of using this
+directly
 
 ```js
 // type signature
 replaceAssembly: (idx: number, configuration: any) => void
 ```
-
-

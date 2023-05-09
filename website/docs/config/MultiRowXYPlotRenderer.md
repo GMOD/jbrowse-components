@@ -3,8 +3,9 @@ id: multirowxyplotrenderer
 title: MultiRowXYPlotRenderer
 toplevel: true
 ---
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
@@ -12,16 +13,9 @@ our source code. See [Config guide](/docs/config_guide) for more info
 
 ## Docs
 
-
-
-
-
-
-
 ### MultiRowXYPlotRenderer - Slots
+
 #### slot: filled
-
-
 
 ```js
 filled: {
@@ -32,8 +26,6 @@ filled: {
 
 #### slot: displayCrossHatches
 
-
-
 ```js
 displayCrossHatches: {
       type: 'boolean',
@@ -43,8 +35,6 @@ displayCrossHatches: {
 ```
 
 #### slot: summaryScoreMode
-
-
 
 ```js
 summaryScoreMode: {
@@ -58,8 +48,6 @@ summaryScoreMode: {
 
 #### slot: minSize
 
-
-
 ```js
 minSize: {
       type: 'number',
@@ -67,14 +55,8 @@ minSize: {
     }
 ```
 
-
 ## MultiRowXYPlotRenderer - Derives from
-
-
-
 
 ```js
 baseConfiguration: baseWiggleRendererConfigSchema
 ```
-
-
