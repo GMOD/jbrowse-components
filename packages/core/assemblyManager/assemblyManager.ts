@@ -1,7 +1,7 @@
 import { addDisposer, cast, getParent, types, Instance } from 'mobx-state-tree'
 import { when } from '../util'
 import { reaction } from 'mobx'
-import { readConfObject, AnyConfigurationModel } from '../configuration'
+import { readConfObject } from '../configuration'
 import assemblyFactory, { Assembly } from './assembly'
 import PluginManager from '../PluginManager'
 import RpcManager from '../rpc/RpcManager'

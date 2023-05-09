@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 
 import { SeqState, ErrorState } from '../util'
 import { Feature, SimpleFeatureSerialized, getSession } from '../../util'
-import { getConf } from '../../configuration'
 
 const BPLIMIT = 500_000
 
@@ -34,7 +33,7 @@ export function useFeatureSequence(
       }
       const sessionId = 'getSequence'
       const feats = await rpcManager.call(sessionId, 'CoreGetFeatures', {
-        adapterConfig: getConf(assembly, ['sequence', 'adapter']),
+        adapterConfig: assembly.getConf(['sequence', 'adapter']),
         sessionId,
         regions: [
           {

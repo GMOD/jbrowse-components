@@ -2100,10 +2100,9 @@
     generic-filehandle "^3.0.0"
     long "^4.0.0"
 
-"@gmod/ucsc-hub@^0.1.6":
-  version "0.1.7"
-  resolved "https://registry.yarnpkg.com/@gmod/ucsc-hub/-/ucsc-hub-0.1.7.tgz#ea8d0c1978fc8bbd1ab63061e8105beb3d1509f1"
-  integrity sha512-FHCgRLOYn5wjCGVDkGnW0wda7UAIFqVrKE5+0lh1EpUOu/UM1kfaidsJnha4Jc9V0+KCevSl4haVv0ZaMWqw2w==
+"@gmod/ucsc-hub@link:../ucsc-hub-js":
+  version "0.0.0"
+  uid ""
 
 "@gmod/vcf@^5.0.9":
   version "5.0.10"
