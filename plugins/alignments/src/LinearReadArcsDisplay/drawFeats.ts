@@ -50,6 +50,7 @@ function drawLineAtOffset(
 export default function drawFeats(
   self: {
     drawInter?: boolean
+    setDrawn: (arg: boolean) => void
     drawLongRange?: boolean
     colorBy?: { type: string }
     height: number
@@ -225,4 +226,5 @@ export default function drawFeats(
       }
     }
   }
+  self.setDrawn(true)
 }

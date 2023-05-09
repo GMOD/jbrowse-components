@@ -337,7 +337,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           ctx.resetTransform()
           ctx.scale(2, 2)
           drawFeats(self, ctx)
-          self.setDrawn(true)
         })
       },
     }))
