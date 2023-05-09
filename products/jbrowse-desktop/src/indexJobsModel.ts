@@ -23,6 +23,8 @@ interface TrackTextIndexing {
   assemblies: string[]
   tracks: string[] // trackIds
   indexType: string
+  timestamp?: string
+  name?: string
 }
 
 interface JobsEntry {

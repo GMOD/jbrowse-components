@@ -41,6 +41,7 @@
     "@jbrowse/plugin-trix": "file:./packed/jbrowse-plugin-trix.tgz",
     "@jbrowse/plugin-variants": "file:./packed/jbrowse-plugin-variants.tgz",
     "@jbrowse/plugin-wiggle": "file:./packed/jbrowse-plugin-wiggle.tgz",
+    "@jbrowse/product-core": "file:./packed/jbrowse-product-core.tgz",
     "@jbrowse/react-linear-genome-view": "file:./packed/jbrowse-react-linear-genome-view.tgz",
     "@jbrowse/react-circular-genome-view": "file:./packed/jbrowse-react-circular-genome-view.tgz"
   },

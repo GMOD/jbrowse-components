@@ -1,3 +1,4 @@
+import type { Instance } from 'mobx-state-tree'
 import { ConfigurationSchema } from '../../configuration'
 
 /**
@@ -5,7 +6,7 @@ import { ConfigurationSchema } from '../../configuration'
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
-export default ConfigurationSchema(
+const BaseConnectionConfig = ConfigurationSchema(
   'BaseConnection',
   {
     /**
@@ -33,3 +34,7 @@ export default ConfigurationSchema(
     explicitIdentifier: 'connectionId',
   },
 )
+
+export default BaseConnectionConfig
+export type BaseConnectionConfigSchema = typeof BaseConnectionConfig
+export type BaseConnectionConfigModel = Instance<BaseConnectionConfigSchema>

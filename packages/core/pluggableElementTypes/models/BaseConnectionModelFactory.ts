@@ -1,7 +1,11 @@
 import { cast, types } from 'mobx-state-tree'
-import { AnyConfigurationModel } from '../../configuration'
+import {
+  AnyConfigurationModel,
+  ConfigurationReference,
+} from '../../configuration'
 import PluginManager from '../../PluginManager'
 
+import configSchema from './baseConnectionConfig'
 /**
  * #stateModel BaseConnectionModel
  */
@@ -16,6 +20,11 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #property
        */
       tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
+
+      /**
+       * #property
+       */
+      configuration: ConfigurationReference(configSchema),
     })
     .actions(self => ({
       afterAttach() {
@@ -52,4 +61,5 @@ function stateModelFactory(pluginManager: PluginManager) {
     }))
 }
 
+export type BaseConnectionModel = ReturnType<typeof stateModelFactory>
 export default stateModelFactory

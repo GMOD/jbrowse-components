@@ -7,7 +7,6 @@ import { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { types } from 'mobx-state-tree'
-import { SessionStateModel } from './sessionModelFactory'
 
 /**
  * #config JBrowseDesktopConfiguration
@@ -17,7 +16,6 @@ function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export default function JBrowseConfigF(
   pluginManager: PluginManager,
-  Session: SessionStateModel,
   assemblyConfigSchemasType: AnyConfigurationSchemaType,
 ) {
   return types.model('JBrowseDesktop', {
@@ -110,7 +108,7 @@ export default function JBrowseConfigF(
     /**
      * #slot
      */
-    defaultSession: types.optional(types.frozen(Session), {
+    defaultSession: types.optional(types.frozen(), {
       name: `New Session`,
     }),
   })

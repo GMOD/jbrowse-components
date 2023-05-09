@@ -12,6 +12,7 @@ import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
 import configSnapshot from '../test_data/volvox/config.json'
+import sessionModelFactory from './sessionModel'
 
 jest.mock('./makeWorkerInstance', () => () => {})
 
@@ -27,11 +28,15 @@ function getPluginManager(initialState?: SnapshotIn<JBrowseRootModel>) {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.createPluggableElements()
 
-  const JBrowseRootModel = JBrowseRootModelFactory(pluginManager)
+  const JBrowseRootModel = JBrowseRootModelFactory(
+    pluginManager,
+    sessionModelFactory,
+  )
   const rootModel = JBrowseRootModel.create(
     {
       jbrowse: initialState || configSnapshot,
       assemblyManager: {},
+      version: 'testing',
     },
     { pluginManager },
   )

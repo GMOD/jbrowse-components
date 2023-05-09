@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { IStateTreeNode, Instance } from 'mobx-state-tree'
+import type { IStateTreeNode, Instance, SnapshotOut } from 'mobx-state-tree'
 import type {
   ConfigurationSchemaType,
   ConfigurationSchemaOptions,
@@ -60,6 +60,11 @@ export type AnyConfigurationSchemaType = ConfigurationSchemaType<any, any>
 export type AnyConfigurationModel = Instance<AnyConfigurationSchemaType>
 export type AnyConfigurationSlotType = ReturnType<typeof ConfigSlot>
 export type AnyConfigurationSlot = Instance<AnyConfigurationSlotType>
+
+/** any configuration model, or snapshot thereof */
+export type AnyConfiguration =
+  | AnyConfigurationModel
+  | SnapshotOut<AnyConfigurationModel>
 
 export type ConfigurationModel<SCHEMA extends AnyConfigurationSchemaType> =
   Instance<SCHEMA>

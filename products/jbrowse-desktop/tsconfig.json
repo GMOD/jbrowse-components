@@ -1,6 +1,6 @@
 {
   "extends": "../../tsconfig.json",
-  "include": ["src"],
+  "include": ["src", "../../packages/product-core/src/Session/Themes.ts"],
   "compilerOptions": {
     "jsx": "react-jsx",
     "noEmit": true

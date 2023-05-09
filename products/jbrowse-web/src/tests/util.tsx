@@ -16,7 +16,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { QueryParamProvider } from 'use-query-params'
 
 import JBrowseWithoutQueryParamProvider from '../JBrowse'
-import JBrowseRootModelFactory from '../rootModel'
+import JBrowseRootModelFactory from '../rootModel/rootModel'
 import configSnapshot from '../../test_data/volvox/config.json'
 import corePlugins from '../corePlugins'
 
@@ -25,6 +25,7 @@ import { Image, createCanvas } from 'canvas'
 
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
+import sessionModelFactory from '../sessionModel'
 
 type LGV = LinearGenomeViewModel
 
@@ -40,7 +41,11 @@ export function getPluginManager(initialState?: any, adminMode = true) {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.createPluggableElements()
 
-  const JBrowseRootModel = JBrowseRootModelFactory(pluginManager, adminMode)
+  const JBrowseRootModel = JBrowseRootModelFactory(
+    pluginManager,
+    sessionModelFactory,
+    adminMode,
+  )
   const rootModel = JBrowseRootModel.create(
     {
       jbrowse: initialState || configSnapshot,

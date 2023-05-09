@@ -6,18 +6,14 @@ import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import { types } from 'mobx-state-tree'
-import { SessionStateModel } from './sessionModelFactory'
 
 /**
  * #config JBrowseWebConfiguration
  * configuration in a config.json
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
-
 export default function JBrowseConfigF(
   pluginManager: PluginManager,
   assemblyConfigSchemasType: AnyConfigurationSchemaType,
-  Session: SessionStateModel,
 ) {
   return types.model('JBrowseWeb', {
     configuration: ConfigurationSchema('Root', {
@@ -158,7 +154,7 @@ export default function JBrowseConfigF(
     /**
      * #slot
      */
-    defaultSession: types.optional(types.frozen(Session), {
+    defaultSession: types.optional(types.frozen(), {
       name: `New session`,
     }),
   })

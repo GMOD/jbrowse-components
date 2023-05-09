@@ -8,6 +8,7 @@ export type {
   AnyConfigurationModel,
   AnyConfigurationSlot,
   AnyConfigurationSlotType,
+  AnyConfiguration,
 } from './types'
 
 export * from './util'
