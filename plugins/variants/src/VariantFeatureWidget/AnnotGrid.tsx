@@ -6,6 +6,8 @@ import {
   GridValidRowModel,
 } from '@mui/x-data-grid'
 import { Checkbox, FormControlLabel, Typography } from '@mui/material'
+import ResizeBar, { useResizeBar } from '@jbrowse/core/ui/ResizeBar'
+import { measureGridWidth } from '@jbrowse/core/util'
 
 export default function VariantAnnotPanel({
   rows,
@@ -14,17 +16,14 @@ export default function VariantAnnotPanel({
   rows: GridValidRowModel[]
   columns: GridColDef[]
 }) {
-  const rowHeight = 25
-  const headerHeight = 100
-  const footerHeight = 50
+  const { ref, scrollLeft } = useResizeBar()
   const [checked, setChecked] = useState(false)
-  const height =
-    Math.min(rows.length, 100) * rowHeight +
-    headerHeight +
-    (checked ? 50 : 0) +
-    footerHeight
+  const [widths, setWidths] = useState(
+    columns.map(e => measureGridWidth(rows.map(r => r[e.field]))),
+  )
+
   return rows.length ? (
-    <div>
+    <div ref={ref}>
       <FormControlLabel
         control={
           <Checkbox
@@ -34,16 +33,16 @@ export default function VariantAnnotPanel({
         }
         label={<Typography variant="body2">Show options</Typography>}
       />
-      <div
-        style={{
-          height,
-          width: '100%',
-        }}
-      >
+      <div ref={ref}>
+        <ResizeBar
+          widths={widths}
+          setWidths={setWidths}
+          scrollLeft={scrollLeft}
+        />
         <DataGrid
-          rowHeight={rowHeight}
+          rowHeight={25}
           rows={rows}
-          columns={columns}
+          columns={columns.map((c, i) => ({ ...c, width: widths[i] }))}
           slots={{ toolbar: checked ? GridToolbar : null }}
         />
       </div>

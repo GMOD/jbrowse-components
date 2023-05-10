@@ -54,8 +54,7 @@ function SampleFilters({
 
 export default function VariantSamples(props: {
   feature: SimpleFeatureSerialized
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  descriptions: any
+  descriptions: { FORMAT?: { [key: string]: { Description?: string } } }
 }) {
   const { feature, descriptions = {} } = props
   const { ref, scrollLeft } = useResizeBar()

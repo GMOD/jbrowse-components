@@ -590,6 +590,7 @@ export function FeatureDetails(props: {
   feature: SimpleFeatureSerialized
   depth?: number
   omit?: string[]
+  descriptions?: Record<string, React.ReactNode>
   formatter?: (val: unknown, key: string) => React.ReactNode
 }) {
   const { omit = [], model, feature, depth = 0 } = props
