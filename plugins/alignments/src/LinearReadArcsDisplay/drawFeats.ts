@@ -10,6 +10,7 @@ import {
 import { ChainData } from '../shared/fetchChains'
 import { featurizeSA } from '../MismatchParser'
 import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
+import { LinearReadArcsDisplayModel } from './model'
 
 export function hasPairedReads(features: ChainData) {
   for (const f of features.chains.values()) {
@@ -48,16 +49,7 @@ function drawLineAtOffset(
 }
 
 export default function drawFeats(
-  self: {
-    drawInter?: boolean
-    setDrawn: (arg: boolean) => void
-    drawLongRange?: boolean
-    colorBy?: { type: string }
-    height: number
-    chainData?: ChainData
-    lineWidthSetting: number
-    jitterVal: number
-  },
+  self: LinearReadArcsDisplayModel,
   ctx: CanvasRenderingContext2D,
 ) {
   const {
@@ -227,4 +219,5 @@ export default function drawFeats(
     }
   }
   self.setDrawn(true)
+  self.setLastDrawnOffsetPx(view.offsetPx)
 }

@@ -7,6 +7,7 @@ import { observer } from 'mobx-react'
 // local
 import { LinearReadCloudDisplayModel } from '../LinearReadCloudDisplay/model'
 import { LinearReadArcsDisplayModel } from '../LinearReadArcsDisplay/model'
+import { getContainingView } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => {
   const bg = theme.palette.action.disabledBackground
@@ -32,7 +33,7 @@ export default observer(function ({
   model: LinearReadArcsDisplayModel | LinearReadCloudDisplayModel
   children?: React.ReactNode
 }) {
-  const { drawn, loading, error, regionTooLarge } = model
+  const { error, regionTooLarge } = model
   return error ? (
     <BlockMsg
       message={`${error}`}
@@ -43,16 +44,38 @@ export default observer(function ({
   ) : regionTooLarge ? (
     model.regionCannotBeRendered()
   ) : (
+    <DataDisplay model={model}>{children}</DataDisplay>
+  )
+})
+
+const DataDisplay = observer(function ({
+  model,
+  children,
+}: {
+  model: LinearReadArcsDisplayModel | LinearReadCloudDisplayModel
+  children?: React.ReactNode
+}) {
+  const { drawn, loading } = model
+  const view = getContainingView(model)
+  const left = model.lastDrawnOffsetPx - view.offsetPx
+  return (
     // this data-testid is located here because changing props on the canvas
     // itself is very sensitive to triggering ref invalidation
     <div data-testid={`drawn-${drawn}`}>
-      {children}
+      <div
+        style={{
+          position: 'absolute',
+          left,
+        }}
+      >
+        {children}
+      </div>
       {loading ? <LoadingBar model={model} /> : null}
     </div>
   )
 })
 
-const LoadingBar = observer(function LoadingBar({
+const LoadingBar = observer(function ({
   model,
 }: {
   model: LinearReadArcsDisplayModel | LinearReadCloudDisplayModel

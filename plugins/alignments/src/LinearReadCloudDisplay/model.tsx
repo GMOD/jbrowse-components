@@ -75,8 +75,15 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       drawn: false,
       chainData: undefined as ChainData | undefined,
       ref: null as HTMLCanvasElement | null,
+      lastDrawnOffsetPx: 0,
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      setLastDrawnOffsetPx(n: number) {
+        self.lastDrawnOffsetPx = n
+      },
       /**
        * #action
        */

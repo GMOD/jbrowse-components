@@ -99,7 +99,7 @@ function CsqPanel({
   const csqDescription = descriptions?.INFO?.CSQ?.Description
   const csqFields =
     csqDescription?.match(/.*Format: (.*)/)?.[1].split('|') || []
-  const csq = (feature.INFO?.CSQ || []) as string[]
+  const csq = feature.INFO?.CSQ || []
   return (
     <VariantAnnotationTable
       fields={csqFields}

@@ -1,14 +1,15 @@
-import { AnyConfigurationModel, getConf } from '@jbrowse/core/configuration'
+import { getConf } from '@jbrowse/core/configuration'
 import { getContainingView, getSession, max } from '@jbrowse/core/util'
-
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
 // locals
 import {
   getOrientationColor,
   getInsertSizeColor,
   getInsertSizeAndOrientationColor,
 } from '../shared/color'
-import { ChainData, ReducedFeature } from '../shared/fetchChains'
+import { ReducedFeature } from '../shared/fetchChains'
+import { LinearReadCloudDisplayModel } from './model'
 
 type LGV = LinearGenomeViewModel
 
@@ -47,13 +48,7 @@ function fillRectCtx(
 }
 
 export default function drawFeats(
-  self: {
-    setDrawn: (arg: boolean) => void
-    colorBy?: { type: string }
-    height: number
-    chainData?: ChainData
-    configuration: AnyConfigurationModel
-  },
+  self: LinearReadCloudDisplayModel,
   ctx: CanvasRenderingContext2D,
 ) {
   const { chainData } = self
