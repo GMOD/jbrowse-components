@@ -95,9 +95,16 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       loading: false,
       drawn: false,
       chainData: undefined as ChainData | undefined,
+      lastDrawnOffsetPx: 0,
       ref: null as HTMLCanvasElement | null,
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      setLastDrawnOffsetPx(n: number) {
+        self.lastDrawnOffsetPx = n
+      },
       /**
        * #action
        */
@@ -323,20 +330,25 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       afterAttach() {
         createAutorun(self, () => fetchChains(self), { delay: 1000 })
 
-        createAutorun(self, async () => {
-          const canvas = self.ref
-          if (!canvas) {
-            return
-          }
-          const ctx = canvas.getContext('2d')
-          if (!ctx) {
-            return
-          }
-          ctx.clearRect(0, 0, canvas.width, self.height * 2)
-          ctx.resetTransform()
-          ctx.scale(2, 2)
-          drawFeats(self, ctx)
-        })
+        createAutorun(
+          self,
+          async () => {
+            const canvas = self.ref
+            if (!canvas) {
+              return
+            }
+
+            const ctx = canvas.getContext('2d')
+            if (!ctx) {
+              return
+            }
+            ctx.clearRect(0, 0, canvas.width, self.height * 2)
+            ctx.resetTransform()
+            ctx.scale(2, 2)
+            drawFeats(self, ctx)
+          },
+          { delay: 1000 },
+        )
       },
     }))
 }
