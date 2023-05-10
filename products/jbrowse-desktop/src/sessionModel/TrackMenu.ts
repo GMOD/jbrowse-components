@@ -1,3 +1,4 @@
+import { lazy } from 'react'
 import { getParent, getSnapshot, types } from 'mobx-state-tree'
 
 import SettingsIcon from '@mui/icons-material/Settings'
@@ -14,8 +15,12 @@ import type { SessionWithDialogs } from '@jbrowse/product-core/src/Session/Dialo
 import type { SessionWithTracks } from '@jbrowse/product-core/src/Session/Tracks'
 import type { SessionWithDrawerWidgets } from '@jbrowse/product-core/src/Session/DrawerWidgets'
 import { DesktopRootModel } from '../rootModel'
-import AboutDialogFallback from '../AboutDialogFallback'
 
+const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
+
+/**
+ * #stateModel JBrowseDesktopSessionTrackMenuMixin
+ */
 export default function TrackMenu(pluginManager: PluginManager) {
   return types.model({}).views(self => ({
     /**
@@ -31,7 +36,7 @@ export default function TrackMenu(pluginManager: PluginManager) {
           label: 'About track',
           onClick: () => {
             session.queueDialog(doneCallback => [
-              AboutDialogFallback,
+              AboutDialog,
               { config: trackConfig, handleClose: doneCallback },
             ])
           },

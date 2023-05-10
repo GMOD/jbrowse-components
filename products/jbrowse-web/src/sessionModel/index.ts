@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { lazy } from 'react'
 import clone from 'clone'
 import { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -17,7 +18,7 @@ import {
 } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
-
+import { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import { Session as CoreSession } from '@jbrowse/product-core'
 
 // icons
@@ -26,11 +27,12 @@ import CopyIcon from '@mui/icons-material/FileCopy'
 import DeleteIcon from '@mui/icons-material/Delete'
 import InfoIcon from '@mui/icons-material/Info'
 
+// locals
 import Assemblies from './Assemblies'
 import SessionConnections from './SessionConnections'
-import { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import { WebRootModel } from '../rootModel/rootModel'
-import AboutDialogFallback from '../AboutDialogFallback'
+
+const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
 /**
  * #stateModel JBrowseWebSessionModel
@@ -272,7 +274,7 @@ export default function sessionModelFactory(
             label: 'About track',
             onClick: () => {
               self.queueDialog(handleClose => [
-                AboutDialogFallback,
+                AboutDialog,
                 { config, handleClose },
               ])
             },

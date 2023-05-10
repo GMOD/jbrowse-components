@@ -2,7 +2,6 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
 import { types, Instance, getParent } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
-
 import { Session as CoreSession } from '@jbrowse/product-core'
 
 // icons
@@ -14,7 +13,18 @@ import { DesktopRootModel } from '../rootModel'
 
 /**
  * #stateModel JBrowseDesktopSessionModel
- * inherits SnackbarModel
+ * composed of
+ * - ReferenceManagementSessionMixin
+ * - ConnectionManagementSessionMixin
+ * - DrawerWidgetSessionMixin
+ * - DialogQueueSessionMixin
+ * - ThemeManagerSessionMixin
+ * - TracksManagerSessionMixin
+ * - MultipleViewsSessionMixin
+ * - JBrowseDesktopSessionMixin
+ * - JBrowseDesktopSessionAssembliesModel
+ * - JBrowseDesktopSessionTrackMenuMixin
+ * - SnackbarModel
  */
 export default function sessionModelFactory(
   pluginManager: PluginManager,
@@ -37,6 +47,9 @@ export default function sessionModelFactory(
       TrackMenu(pluginManager),
     )
     .views(self => ({
+      /**
+       * #getter
+       */
       get root() {
         return getParent<DesktopRootModel>(self)
       },

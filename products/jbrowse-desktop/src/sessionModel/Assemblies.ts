@@ -4,6 +4,9 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { Base } from '@jbrowse/product-core/src/Session'
 
+/**
+ * #stateModel JBrowseDesktopSessionAssembliesModel
+ */
 export default function Assemblies(
   pluginManager: PluginManager,
   assemblyConfigSchemasType = types.frozen(),

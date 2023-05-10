@@ -2,6 +2,9 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { Instance } from 'mobx-state-tree'
 import { Session as CoreSession } from '@jbrowse/product-core'
 
+/**
+ * #stateModel JBrowseDesktopSessionMixin
+ */
 export default function BaseSession(pluginManager: PluginManager) {
   return CoreSession.Base(pluginManager)
     .props({
