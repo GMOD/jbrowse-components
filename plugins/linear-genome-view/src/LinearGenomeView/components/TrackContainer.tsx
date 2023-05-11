@@ -9,7 +9,7 @@ import { ErrorBoundary } from 'react-error-boundary'
 import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getConf } from '@jbrowse/core/configuration'
 import { ResizeHandle, ErrorMessage } from '@jbrowse/core/ui'
-import { getContainingView, useDebouncedCallback } from '@jbrowse/core/util'
+import { useDebouncedCallback } from '@jbrowse/core/util'
 
 // locals
 import { LinearGenomeViewModel } from '..'
@@ -56,82 +56,35 @@ const useStyles = makeStyles()({
 
 type LGV = LinearGenomeViewModel
 
-const TrackInnerContainer = observer(function ({
-  view,
+function TrackContainer({
+  model,
   track,
 }: {
-  view: LGV
+  model: LGV
   track: BaseTrackModel
 }) {
   const { classes } = useStyles()
   const display = track.displays[0]
-  const { draggingTrackId } = view
-  const { minimized } = track
+  const { horizontalScroll, draggingTrackId, moveTrack } = model
   const { height, RenderingComponent, DisplayBlurb } = display
   const trackId = getConf(track, 'trackId')
   const ref = useRef<HTMLDivElement>(null)
   const dimmed = draggingTrackId !== undefined && draggingTrackId !== display.id
+  const minimized = track.minimized
   const debouncedOnDragEnter = useDebouncedCallback(() => {
     if (isAlive(display) && dimmed) {
-      view.moveTrack(draggingTrackId, track.id)
+      moveTrack(draggingTrackId, track.id)
     }
   }, 100)
   useEffect(() => {
     if (ref.current) {
-      view.trackRefs[trackId] = ref.current
+      model.trackRefs[trackId] = ref.current
     }
     return () => {
-      delete view.trackRefs[trackId]
+      delete model.trackRefs[trackId]
     }
-  }, [view.trackRefs, trackId])
+  }, [model.trackRefs, trackId])
 
-  return (
-    <div
-      ref={ref}
-      className={classes.trackRenderingContainer}
-      style={{ height: minimized ? 20 : height }}
-      onScroll={evt => display.setScrollTop(evt.currentTarget.scrollTop)}
-      onDragEnter={debouncedOnDragEnter}
-      data-testid={`trackRenderingContainer-${view.id}-${trackId}`}
-    >
-      {!minimized ? (
-        <>
-          <div
-            className={classes.renderingComponentContainer}
-            style={{ transform: `scaleX(${view.scaleFactor})` }}
-          >
-            <RenderingComponent
-              model={display}
-              onHorizontalScroll={view.horizontalScroll}
-            />
-          </div>
-
-          {DisplayBlurb ? (
-            <div
-              style={{
-                position: 'absolute',
-                left: 0,
-                top: display.height - 20,
-              }}
-            >
-              <DisplayBlurb model={display} />
-            </div>
-          ) : null}
-        </>
-      ) : null}
-    </div>
-  )
-})
-
-const TrackOuterContainer = observer(function ({
-  children,
-  track,
-}: {
-  children: React.ReactNode
-  track: BaseTrackModel
-}) {
-  const ref = useRef<HTMLDivElement>(null)
-  const { classes } = useStyles()
   return (
     <Paper
       ref={ref}
@@ -140,41 +93,48 @@ const TrackOuterContainer = observer(function ({
       onClick={event => {
         if (event.detail === 2 && !track.displays[0].featureIdUnderMouse) {
           const left = ref.current?.getBoundingClientRect().left || 0
-          const view = getContainingView(track)
-          view.zoomTo(view.bpPerPx / 2, event.clientX - left, true)
+          model.zoomTo(model.bpPerPx / 2, event.clientX - left, true)
         }
       }}
     >
-      {children}
-    </Paper>
-  )
-})
-
-export default observer(function TrackContainer({
-  model: view,
-  track,
-}: {
-  model: LGV
-  track: BaseTrackModel
-}) {
-  const { classes } = useStyles()
-  const display = track.displays[0]
-  const { draggingTrackId, moveTrack } = view
-  const dimmed = draggingTrackId !== undefined && draggingTrackId !== display.id
-  const debouncedOnDragEnter = useDebouncedCallback(() => {
-    if (isAlive(display) && dimmed) {
-      moveTrack(draggingTrackId, track.id)
-    }
-  }, 100)
-
-  return (
-    <TrackOuterContainer track={track}>
-      <TrackLabelContainer track={track} view={view} />
+      <TrackLabelContainer track={track} view={model} />
       <ErrorBoundary
         key={track.id}
         FallbackComponent={({ error }) => <ErrorMessage error={error} />}
       >
-        <TrackInnerContainer view={view} track={track} />
+        <div
+          className={classes.trackRenderingContainer}
+          style={{ height: minimized ? 20 : height }}
+          onScroll={evt => display.setScrollTop(evt.currentTarget.scrollTop)}
+          onDragEnter={debouncedOnDragEnter}
+          data-testid={`trackRenderingContainer-${model.id}-${trackId}`}
+        >
+          {!minimized ? (
+            <>
+              <div
+                className={classes.renderingComponentContainer}
+                style={{ transform: `scaleX(${model.scaleFactor})` }}
+              >
+                <RenderingComponent
+                  model={display}
+                  onHorizontalScroll={horizontalScroll}
+                />
+              </div>
+
+              {DisplayBlurb ? (
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: display.height - 20,
+                  }}
+                >
+                  <DisplayBlurb model={display} />
+                </div>
+              ) : null}
+            </>
+          ) : null}
+        </div>
       </ErrorBoundary>
       <div
         className={classes.overlay}
@@ -188,6 +148,8 @@ export default observer(function TrackContainer({
         onDrag={display.resizeHeight}
         className={classes.resizeHandle}
       />
-    </TrackOuterContainer>
+    </Paper>
   )
-})
+}
+
+export default observer(TrackContainer)
