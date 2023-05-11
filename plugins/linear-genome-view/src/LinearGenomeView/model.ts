@@ -1172,10 +1172,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #getter
          * static blocks are an important concept jbrowse uses to avoid
-         * re-rendering when you scroll to the side. when you horizontally scroll to the
-         * right, old blocks to the left may be removed, and new blocks may be
-         * instantiated on the right. tracks may use the static blocks to render their
-         * data for the region represented by the block
+         * re-rendering when you scroll to the side. when you horizontally
+         * scroll to the right, old blocks to the left may be removed, and new
+         * blocks may be instantiated on the right. tracks may use the static
+         * blocks to render their data for the region represented by the block
          */
         get staticBlocks() {
           const ret = calculateStaticBlocks(self)
@@ -1189,9 +1189,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #getter
          * dynamic blocks represent the exact coordinates of the currently
-         * visible genome regions on the screen. they are similar to static blocks, but
-         * static blocks can go offscreen while dynamic blocks represent exactly what
-         * is on screen
+         * visible genome regions on the screen. they are similar to static
+         * blocks, but static blocks can go offscreen while dynamic blocks
+         * represent exactly what is on screen
          */
         get dynamicBlocks() {
           return calculateDynamicBlocks(self)
@@ -1213,8 +1213,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #getter
-         * a single "combo-locstring" representing all the regions visible
-         * on the screen
+         * a single "combo-locstring" representing all the regions visible on
+         * the screen
          */
         get visibleLocStrings() {
           return calculateVisibleLocStrings(this.dynamicBlocks.contentBlocks)

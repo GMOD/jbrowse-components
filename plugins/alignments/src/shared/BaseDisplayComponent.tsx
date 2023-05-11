@@ -55,15 +55,15 @@ const DataDisplay = observer(function ({
   model: LinearReadArcsDisplayModel | LinearReadCloudDisplayModel
   children?: React.ReactNode
 }) {
-  const { drawn, loading, drawing } = model
+  const { drawn, loading } = model
   const view = getContainingView(model)
-  const left = model.lastDrawnOffsetPx - view.offsetPx
+  const left = (model.lastDrawnOffsetPx || 0) - view.offsetPx
   return (
     // this data-testid is located here because changing props on the canvas
     // itself is very sensitive to triggering ref invalidation
     <div data-testid={`drawn-${drawn}`}>
       <div style={{ position: 'absolute', left }}>{children}</div>
-      {left !== 0 || loading || drawing ? <LoadingBar model={model} /> : null}
+      {left !== 0 || loading ? <LoadingBar model={model} /> : null}
     </div>
   )
 })
@@ -74,10 +74,10 @@ const LoadingBar = observer(function ({
   model: LinearReadArcsDisplayModel | LinearReadCloudDisplayModel
 }) {
   const { classes } = useStyles()
-  const { drawing, message } = model
+  const { message } = model
   return (
     <div className={classes.loading}>
-      <LoadingEllipses message={drawing ? 'Rendering...' : message} />
+      <LoadingEllipses message={message} />
     </div>
   )
 })

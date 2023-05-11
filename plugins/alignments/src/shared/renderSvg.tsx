@@ -1,12 +1,6 @@
 import React from 'react'
-
 import { getContainingView } from '@jbrowse/core/util'
-
-// locals
-import drawFeats from './drawFeats'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-import { LinearReadArcsDisplayModel } from './model'
 
 // stabilize clipid under test for snapshot
 function getId(id: string) {
@@ -14,14 +8,21 @@ function getId(id: string) {
   return `arc-clip-${isJest ? id : 'jest'}`
 }
 
-export async function renderReadArcSvg(
-  self: LinearReadArcsDisplayModel,
+type LGV = LinearGenomeViewModel
+
+export async function renderSvg<T extends { id: string; height: number }>(
+  self: T,
   opts: { rasterizeLayers?: boolean },
+  cb: (
+    model: T,
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+  ) => void,
 ) {
-  const view = getContainingView(self) as LinearGenomeViewModel
+  const view = getContainingView(self) as LGV
   const width = view.dynamicBlocks.totalWidthPx
   const height = self.height
-  let str
   if (opts.rasterizeLayers) {
     const canvas = document.createElement('canvas')
     canvas.width = width * 2
@@ -31,8 +32,8 @@ export async function renderReadArcSvg(
       return
     }
     ctx.scale(2, 2)
-    drawFeats(self, ctx)
-    str = (
+    cb(self, ctx, width, height)
+    return (
       <image
         width={width}
         height={height}
@@ -43,9 +44,9 @@ export async function renderReadArcSvg(
     // @ts-ignore
     const C2S = await import('canvas2svg')
     const ctx = new C2S.default(width, height)
-    drawFeats(self, ctx)
+    cb(self, ctx, width, height)
     const clipid = getId(self.id)
-    str = (
+    return (
       <>
         <defs>
           <clipPath id={clipid}>
@@ -54,14 +55,10 @@ export async function renderReadArcSvg(
         </defs>
         <g
           /* eslint-disable-next-line react/no-danger */
-          dangerouslySetInnerHTML={{
-            __html: ctx.getSvg().innerHTML,
-          }}
+          dangerouslySetInnerHTML={{ __html: ctx.getSvg().innerHTML }}
           clipPath={`url(#${clipid})`}
         />
       </>
     )
   }
-
-  return <>{str}</>
 }
