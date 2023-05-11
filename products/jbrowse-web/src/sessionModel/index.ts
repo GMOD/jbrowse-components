@@ -32,7 +32,7 @@ import Assemblies from './Assemblies'
 import SessionConnections from './SessionConnections'
 import { WebRootModel } from '../rootModel/rootModel'
 
-const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
+const AboutDialog = lazy(() => import('./AboutDialog'))
 
 /**
  * #stateModel JBrowseWebSessionModel

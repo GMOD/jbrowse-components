@@ -4,8 +4,8 @@ import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 
 // locals
-import EditableTypography from './EditableTypography'
-import { IBaseViewModel } from '../pluggableElementTypes'
+import EditableTypography from '@jbrowse/core/ui/EditableTypography'
+import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes'
 
 const useStyles = makeStyles()(theme => ({
   input: {

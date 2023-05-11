@@ -8,13 +8,13 @@ import {
   NotificationLevel,
   SessionWithDrawerWidgets,
   SnackAction,
-} from '../util'
+} from '@jbrowse/core/util'
 
 // ui elements
-import DropDownMenu from './DropDownMenu'
-import EditableTypography from './EditableTypography'
-import AppLogo from './AppLogo'
-import { MenuItem as JBMenuItem } from './Menu'
+import DropDownMenu from '@jbrowse/core/ui/DropDownMenu'
+import EditableTypography from '@jbrowse/core/ui/EditableTypography'
+import AppLogo from '@jbrowse/core/ui/AppLogo'
+import { MenuItem as JBMenuItem } from '@jbrowse/core/ui/Menu'
 
 const useStyles = makeStyles()(theme => ({
   grow: {

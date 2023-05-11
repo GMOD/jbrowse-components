@@ -9,21 +9,23 @@ import {
   NotificationLevel,
   SessionWithDrawerWidgets,
   SnackAction,
-} from '../util'
+} from '@jbrowse/core/util'
 
 // ui elements
-import ErrorMessage from './ErrorMessage'
-import LoadingEllipses from './LoadingEllipses'
+import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
+import LoadingEllipses from '@jbrowse/core/ui/LoadingEllipses'
+import { MenuItem as JBMenuItem } from '@jbrowse/core/ui/Menu'
+
+// locals
 import ViewContainer from './ViewContainer'
-import { MenuItem as JBMenuItem } from './Menu'
 
 type SnackbarMessage = [string, NotificationLevel, SnackAction]
 
 type AppSession = SessionWithDrawerWidgets & {
   savedSessionNames: string[]
   menus: { label: string; menuItems: JBMenuItem[] }[]
-  renameCurrentSession: (arg: string) => void
   snackbarMessages: SnackbarMessage[]
+  renameCurrentSession: (arg: string) => void
   popSnackbarMessage: () => unknown
 }
 

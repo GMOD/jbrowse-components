@@ -6,9 +6,9 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material/styles'
 import { ScopedCssBaseline } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+import { EmbeddedViewContainer, ModalWidget } from '@jbrowse/embedded-core'
 
-import ModalWidget from './ModalWidget'
-import ViewContainer from './ViewContainer'
+// locals
 import { ViewModel } from '../createModel/createModel'
 
 const useStyles = makeStyles()({
@@ -19,36 +19,38 @@ const useStyles = makeStyles()({
   },
 })
 
-const JBrowseCircularGenomeView = observer(
-  ({ viewState }: { viewState: ViewModel }) => {
-    const { classes } = useStyles()
-    const { session } = viewState
-    const { view } = session
-    const { pluginManager } = getEnv(session)
-    const viewType = pluginManager.getViewType(view.type)
-    if (!viewType) {
-      throw new Error(`unknown view type ${view.type}`)
-    }
-    const { ReactComponent } = viewType
-    const theme = createJBrowseTheme(
-      readConfObject(viewState.config.configuration, 'theme'),
-    )
+const JBrowseCircularGenomeView = observer(function ({
+  viewState,
+}: {
+  viewState: ViewModel
+}) {
+  const { classes } = useStyles()
+  const { session } = viewState
+  const { view } = session
+  const { pluginManager } = getEnv(session)
+  const viewType = pluginManager.getViewType(view.type)
+  if (!viewType) {
+    throw new Error(`unknown view type ${view.type}`)
+  }
+  const { ReactComponent } = viewType
+  const theme = createJBrowseTheme(
+    readConfObject(viewState.config.configuration, 'theme'),
+  )
 
-    return (
-      <ThemeProvider theme={theme}>
-        <div className={classes.avoidParentStyle}>
-          <ScopedCssBaseline>
-            <ViewContainer key={`view-${view.id}`} view={view}>
-              <Suspense fallback={<div>Loading...</div>}>
-                <ReactComponent model={view} session={session} />
-              </Suspense>
-            </ViewContainer>
-            <ModalWidget session={session} />
-          </ScopedCssBaseline>
-        </div>
-      </ThemeProvider>
-    )
-  },
-)
+  return (
+    <ThemeProvider theme={theme}>
+      <div className={classes.avoidParentStyle}>
+        <ScopedCssBaseline>
+          <EmbeddedViewContainer key={`view-${view.id}`} view={view}>
+            <Suspense fallback={<div>Loading...</div>}>
+              <ReactComponent model={view} session={session} />
+            </Suspense>
+          </EmbeddedViewContainer>
+          <ModalWidget session={session} />
+        </ScopedCssBaseline>
+      </div>
+    </ThemeProvider>
+  )
+})
 
 export default JBrowseCircularGenomeView

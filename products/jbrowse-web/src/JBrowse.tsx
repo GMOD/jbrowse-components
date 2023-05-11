@@ -5,7 +5,7 @@ import { useQueryParam, StringParam } from 'use-query-params'
 import { CssBaseline, ThemeProvider } from '@mui/material'
 
 // core
-import { App } from '@jbrowse/core/ui'
+import { App } from '@jbrowse/app-core'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 // locals

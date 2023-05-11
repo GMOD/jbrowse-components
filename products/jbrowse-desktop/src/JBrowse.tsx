@@ -4,7 +4,7 @@ import { ThemeProvider } from '@mui/material/styles'
 import { CssBaseline } from '@mui/material'
 
 // jbrowse
-import { App } from '@jbrowse/core/ui'
+import { App } from '@jbrowse/app-core'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AssemblyManager } from '@jbrowse/plugin-data-management'
 

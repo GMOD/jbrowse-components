@@ -5,6 +5,7 @@ import {
   IconButtonProps as IconButtonPropsType,
 } from '@mui/material'
 import { observer } from 'mobx-react'
+import Menu from '@jbrowse/core/ui/Menu'
 
 // icons
 import MenuIcon from '@mui/icons-material/Menu'
@@ -12,9 +13,8 @@ import ArrowDownward from '@mui/icons-material/ArrowDownward'
 import ArrowUpward from '@mui/icons-material/ArrowUpward'
 
 // locals
-import { getSession } from '../util'
-import { IBaseViewModel } from '../pluggableElementTypes/models'
-import Menu from './Menu'
+import { getSession } from '@jbrowse/core/util'
+import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 const ViewMenu = observer(function ({
   model,

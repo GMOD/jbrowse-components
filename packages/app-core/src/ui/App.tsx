@@ -1,22 +1,24 @@
 import React, { Suspense } from 'react'
 import { AppBar, Fab, Tooltip } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import LaunchIcon from '@mui/icons-material/Launch'
 import { observer } from 'mobx-react'
+
+// icons
+import LaunchIcon from '@mui/icons-material/Launch'
 
 // locals
 import {
   NotificationLevel,
   SessionWithDrawerWidgets,
   SnackAction,
-} from '../util'
+} from '@jbrowse/core/util'
 
 // ui elements
 import DrawerWidget from './DrawerWidget'
 import AppToolbar from './AppToolbar'
-import Snackbar from './Snackbar'
+import Snackbar from '@jbrowse/core/ui/Snackbar'
+import { MenuItem as JBMenuItem } from '@jbrowse/core/ui/Menu'
 import ViewLauncher from './ViewLauncher'
-import { MenuItem as JBMenuItem } from './Menu'
 import ViewPanel from './ViewPanel'
 
 const useStyles = makeStyles()(theme => ({

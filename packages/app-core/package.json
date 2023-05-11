@@ -1,7 +1,7 @@
 {
-  "name": "@jbrowse/product-core",
+  "name": "@jbrowse/app-core",
   "version": "2.5.0",
-  "description": "JBrowse 2 code shared between products but not used by plugins",
+  "description": "JBrowse 2 code shared between the 'full featured' apps e.g. jbrowse-web and jbrowse-desktop",
   "keywords": [
     "jbrowse",
     "jbrowse2",
@@ -15,7 +15,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/GMOD/jbrowse-components.git",
-    "directory": "packages/product-core"
+    "directory": "packages/app-core"
   },
   "author": "JBrowse Team",
   "distMain": "dist/index.js",
@@ -32,8 +32,9 @@
   "scripts": {
     "build:esm": "tsc --build tsconfig.build.esm.json",
     "build:es5": "tsc --build tsconfig.build.es5.json",
+    "prepublishOnly": "node output-version.js > src/version.js && git add -A src && git commit -m '[skip ci] Bump version.js'",
     "build": "npm run build:esm && npm run build:es5",
-    "test": "cd ../..; jest packages/product-core",
+    "test": "cd ../..; jest packages/text-indexing",
     "clean": "rimraf dist esm *.tsbuildinfo",
     "prebuild": "yarn clean",
     "prepack": "yarn build && yarn useDist",

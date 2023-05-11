@@ -15,7 +15,8 @@ import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseV
 import { Menu, Logomark } from '@jbrowse/core/ui'
 import { getSession, useWidthSetter } from '@jbrowse/core/util'
 
-const AboutDialog = lazy(() => import('./AboutDialog'))
+const VersionAboutDialog = lazy(() => import('./VersionAboutDialog'))
+
 const useStyles = makeStyles()(theme => ({
   viewContainer: {
     overflow: 'hidden',
@@ -95,10 +96,11 @@ const ViewContainer = observer(function ({
   children: React.ReactNode
 }) {
   const { classes } = useStyles()
-  const theme = useTheme()
   const session = getSession(view)
   const [dlgOpen, setDlgOpen] = useState(false)
+  const theme = useTheme()
   const ref = useWidthSetter(view, theme.spacing(1))
+  const { displayName } = view
 
   return (
     <Paper elevation={12} ref={ref} className={classes.viewContainer}>
@@ -117,9 +119,9 @@ const ViewContainer = observer(function ({
           IconProps={{ className: classes.icon }}
         />
         <div className={classes.grow} />
-        {view.displayName ? (
+        {displayName ? (
           <Typography variant="body2" className={classes.displayName}>
-            {view.displayName}
+            {displayName}
           </Typography>
         ) : null}
         <div className={classes.grow} />
@@ -132,7 +134,11 @@ const ViewContainer = observer(function ({
       <Paper>{children}</Paper>
       {dlgOpen ? (
         <Suspense fallback={<div />}>
-          <AboutDialog open onClose={() => setDlgOpen(false)} />
+          <VersionAboutDialog
+            open
+            onClose={() => setDlgOpen(false)}
+            version={session.version}
+          />
         </Suspense>
       ) : null}
     </Paper>
