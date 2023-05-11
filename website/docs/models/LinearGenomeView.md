@@ -234,13 +234,6 @@ any
 boolean
 ```
 
-#### getter: isSearchDialogDisplayed
-
-```js
-// type
-boolean
-```
-
 #### getter: scaleBarHeight
 
 ```js
@@ -379,7 +372,7 @@ BlockSet
 #### getter: dynamicBlocks
 
 dynamic blocks represent the exact coordinates of the currently visible genome
-regions on the screen. they are similar to static blocks, but statcic blocks can
+regions on the screen. they are similar to static blocks, but static blocks can
 go offscreen while dynamic blocks represent exactly what is on screen
 
 ```js
@@ -621,7 +614,9 @@ zoomTo: (bpPerPx: number, offset?: number, centerAtOffset?: boolean) => number
 
 #### action: setOffsets
 
-sets offsets used in the get sequence dialog
+sets offsets of rubberband, used in the get sequence dialog can call
+view.getSelectedRegions(view.leftOffset,view.rightOffset) to compute the
+selected regions from the offsets
 
 ```js
 // type signature
@@ -632,14 +627,7 @@ setOffsets: (left?: BpOffset, right?: BpOffset) => void
 
 ```js
 // type signature
-setSearchResults: (results?: BaseResult[], query?: string) => void
-```
-
-#### action: setGetSequenceDialogOpen
-
-```js
-// type signature
-setGetSequenceDialogOpen: (open: boolean) => void
+setSearchResults: (searchResults: BaseResult[], searchQuery: string, assemblyName?: string) => void
 ```
 
 #### action: setNewView
@@ -699,7 +687,7 @@ toggleTrack: (trackId: string) => void
 
 ```js
 // type signature
-setTrackLabels: (setting: "hidden" | "offset" | "overlapping") => void
+setTrackLabels: (setting: "offset" | "hidden" | "overlapping") => void
 ```
 
 #### action: toggleCenterLine
@@ -820,18 +808,29 @@ moveTo: (start?: BpOffset, end?: BpOffset) => void
 
 #### action: navToLocString
 
-navigate to the given locstring
+Navigate to the given locstring, will change displayed regions if needed, and
+wait for assemblies to be initialized
 
 ```js
 // type signature
-navToLocString: (locString: string, optAssemblyName?: string) => Promise<void>
+navToLocString: (input: string, optAssemblyName?: string) => Promise<any>
+```
+
+#### action: navToLocations
+
+Similar to `navToLocString`, but accepts parsed location objects instead of
+strings. Will try to perform `setDisplayedRegions` if changing regions
+
+```js
+// type signature
+navToLocations: (parsedLocStrings: ParsedLocString[], assemblyName?: string) => Promise<void>
 ```
 
 #### action: navTo
 
 Navigate to a location based on its refName and optionally start, end, and
-assemblyName. Can handle if there are multiple displayedRegions from same
-refName. Only navigates to a location if it is entirely within a
+assemblyName. Will not try to change displayed regions, use `navToLocations`
+instead. Only navigates to a location if it is entirely within a
 displayedRegion. Navigates to the first matching location encountered.
 
 Throws an error if navigation was unsuccessful
@@ -842,6 +841,13 @@ navTo: (query: NavLocation) => void
 ```
 
 #### action: navToMultiple
+
+Navigate to a location based on its refName and optionally start, end, and
+assemblyName. Will not try to change displayed regions, use navToLocations
+instead. Only navigates to a location if it is entirely within a
+displayedRegion. Navigates to the first matching location encountered.
+
+Throws an error if navigation was unsuccessful
 
 ```js
 // type signature

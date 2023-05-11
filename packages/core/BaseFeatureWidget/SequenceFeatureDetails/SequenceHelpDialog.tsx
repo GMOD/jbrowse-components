@@ -33,8 +33,8 @@ export default function HelpDialog({
             genetic code
           </li>
           <li>
-            cDNA - shows the 'DNA' version of transcript, formed from exons,
-            including non-coding genes
+            cDNA - shows the 'copy DNA' of transcript, formed from exon
+            sequences
           </li>
           <li>
             Genomic w/ introns +/- Nbp up+down stream - the sequence underlying

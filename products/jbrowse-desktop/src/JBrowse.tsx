@@ -9,12 +9,12 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { AssemblyManager } from '@jbrowse/plugin-data-management'
 
 // locals
-import { RootModel } from './rootModel'
+import { DesktopRootModel } from './rootModel'
 
 const JBrowseNonNullRoot = observer(function ({
   rootModel,
 }: {
-  rootModel: RootModel
+  rootModel: DesktopRootModel
 }) {
   const { session, error, isAssemblyEditing, setAssemblyEditing } = rootModel
 
@@ -54,6 +54,6 @@ export default observer(function ({
 }) {
   const { rootModel } = pluginManager
   return rootModel ? (
-    <JBrowseNonNullRoot rootModel={rootModel as RootModel} />
+    <JBrowseNonNullRoot rootModel={rootModel as DesktopRootModel} />
   ) : null
 })

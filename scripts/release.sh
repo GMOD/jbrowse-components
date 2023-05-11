@@ -43,11 +43,9 @@ BLOGPOST_DRAFT=website/release_announcement_drafts/$RELEASE_TAG.md
 RELEASE_TAG=$RELEASE_TAG node --print "const config = require('./website/docusaurus.config.json'); config.customFields.currentVersion = process.env.RELEASE_TAG; JSON.stringify(config,0,2)" >tmp.json
 mv tmp.json website/docusaurus.config.json
 
-# Packages that have changed and will have their version bumped
-CHANGED=$(yarn --silent lerna changed --all --json)
 # Generates a changelog with a section added listing the packages that were
 # included in this release
-CHANGELOG=$(GITHUB_AUTH="$GITHUB_AUTH" node scripts/changelog.js "$CHANGED" "$VERSION")
+CHANGELOG=$(GITHUB_AUTH="$GITHUB_AUTH" yarn changelog "$VERSION")
 # Add the changelog to the top of CHANGELOG.md
 echo "$CHANGELOG" >tmp.md
 echo "" >>tmp.md

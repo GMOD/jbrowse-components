@@ -211,7 +211,9 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
         if (tagFilter) {
           const val = record.get(tagFilter.tag)
-          if (!(val === '*' ? val !== undefined : val === tagFilter.value)) {
+          if (
+            !(val === '*' ? val !== undefined : `${val}` === tagFilter.value)
+          ) {
             continue
           }
         }

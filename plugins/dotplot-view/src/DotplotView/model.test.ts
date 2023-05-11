@@ -1,4 +1,4 @@
-import { createTestSession } from '@jbrowse/web/src/rootModel'
+import { createTestSession } from '@jbrowse/web/src/rootModel/test_util'
 import { getEnv } from 'mobx-state-tree'
 jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 

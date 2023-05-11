@@ -1,8 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import {
-  AnyConfigurationModel,
-  AnyConfigurationSchemaType,
-} from '@jbrowse/core/configuration'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
@@ -12,8 +9,8 @@ import {
   getSnapshot,
   resolveIdentifier,
 } from 'mobx-state-tree'
-import { SessionStateModel } from './sessionModelFactory'
 import JBrowseConfigF from './jbrowseConfig'
+import { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 
 // poke some things for testing (this stuff will eventually be removed)
 // @ts-expect-error
@@ -26,14 +23,11 @@ window.resolveIdentifier = resolveIdentifier
  * #stateModel JBrowseDesktopModel
  * the rootModel.jbrowse state model for JBrowse Desktop
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
-
 export default function JBrowseDesktop(
   pluginManager: PluginManager,
-  Session: SessionStateModel,
-  assemblyConfigSchemasType: AnyConfigurationSchemaType,
+  assemblyConfigSchemasType: BaseAssemblyConfigSchema,
 ) {
-  return JBrowseConfigF(pluginManager, Session, assemblyConfigSchemasType)
+  return JBrowseConfigF(pluginManager, assemblyConfigSchemasType)
     .views(self => ({
       /**
        * #getter

@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-bed",
-  "version": "2.4.2",
+  "version": "2.5.0",
   "description": "JBrowse 2 bed adapters, tracks, etc.",
   "keywords": [
     "jbrowse",
@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "@flatten-js/interval-tree": "^1.0.15",
-    "@gmod/bbi": "^3.0.0",
+    "@gmod/bbi": "^4.0.0",
     "@gmod/bed": "^2.1.2",
     "@gmod/bgzf-filehandle": "^1.4.3",
     "@gmod/tabix": "^1.5.6"

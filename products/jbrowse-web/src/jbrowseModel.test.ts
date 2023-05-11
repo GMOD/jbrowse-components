@@ -4,7 +4,6 @@ import assemblyConfigSchemasFactory from '@jbrowse/core/assemblyManager/assembly
 import configSnapshot from '../test_data/volvox/config.json'
 import corePlugins from './corePlugins'
 import jbrowseModelFactory from './jbrowseModel'
-import sessionModelFactory from './sessionModelFactory'
 
 function getModel() {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
@@ -12,13 +11,7 @@ function getModel() {
     .configure()
 
   const assemblyConfigSchema = assemblyConfigSchemasFactory(pluginManager)
-  const Session = sessionModelFactory(pluginManager, assemblyConfigSchema)
-  return jbrowseModelFactory(
-    pluginManager,
-    Session,
-    assemblyConfigSchema,
-    false,
-  )
+  return jbrowseModelFactory(pluginManager, assemblyConfigSchema, false)
 }
 describe('JBrowse model', () => {
   it('creates with empty snapshot', () => {

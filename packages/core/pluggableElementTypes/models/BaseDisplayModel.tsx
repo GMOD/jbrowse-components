@@ -31,6 +31,7 @@ function stateModelFactory() {
     .volatile(() => ({
       rendererTypeName: '',
       error: undefined as unknown,
+      message: undefined as string | undefined,
     }))
     .views(self => ({
       /**
@@ -143,10 +144,16 @@ function stateModelFactory() {
        *  react node allows user to force load at current setting
        */
       regionCannotBeRendered(/* region */) {
-        return undefined
+        return null
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      setMessage(arg?: string) {
+        self.message = arg
+      },
       /**
        * #action
        */

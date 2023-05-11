@@ -51,6 +51,12 @@ const SNPCoverageRenderer = ConfigurationSchema(
         'draw a triangular indicator where an event has been detected',
       defaultValue: true,
     },
+
+    color: {
+      type: 'color',
+      description: 'Background color for the SNPCoverage renderer',
+      defaultValue: '#d3d3d3',
+    },
   },
   { explicitlyTyped: true },
 )

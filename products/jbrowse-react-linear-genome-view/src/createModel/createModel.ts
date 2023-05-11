@@ -10,7 +10,11 @@ import { cast, getSnapshot, Instance, SnapshotIn, types } from 'mobx-state-tree'
 import corePlugins from '../corePlugins'
 import createConfigModel from './createConfigModel'
 import createSessionModel from './createSessionModel'
+import { version } from '../version'
 
+/**
+ * #stateModel JBrowseReactLinearGenomeViewRootModel
+ */
 export default function createModel(
   runtimePlugins: PluginConstructor[],
   makeWorkerInstance: () => Worker = () => {
@@ -26,10 +30,25 @@ export default function createModel(
   const AssemblyManager = assemblyManagerFactory(assemblyConfig, pluginManager)
   const rootModel = types
     .model('ReactLinearGenomeView', {
+      /**
+       * #property
+       */
       config: createConfigModel(pluginManager, assemblyConfig),
+      /**
+       * #property
+       */
       session: Session,
+      /**
+       * #property
+       */
       assemblyManager: types.optional(AssemblyManager, {}),
+      /**
+       * #property
+       */
       disableAddTracks: types.optional(types.boolean, false),
+      /**
+       * #property
+       */
       internetAccounts: types.array(
         pluginManager.pluggableMstType('internet account', 'stateModel'),
       ),
@@ -43,12 +62,19 @@ export default function createModel(
         MainThreadRpcDriver: {},
       }),
       textSearchManager: new TextSearchManager(pluginManager),
+      adminMode: false,
+      version,
     }))
-
     .actions(self => ({
+      /**
+       * #action
+       */
       setSession(sessionSnapshot: SnapshotIn<typeof Session>) {
         self.session = cast(sessionSnapshot)
       },
+      /**
+       * #action
+       */
       renameCurrentSession(sessionName: string) {
         if (self.session) {
           const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
@@ -56,14 +82,23 @@ export default function createModel(
           this.setSession(snapshot)
         }
       },
+      /**
+       * #action
+       */
       setError(errorMessage: Error | undefined) {
         self.error = errorMessage
       },
+      /**
+       * #action
+       */
       addInternetAccount(
         internetAccount: SnapshotIn<(typeof self.internetAccounts)[0]>,
       ) {
         self.internetAccounts.push(internetAccount)
       },
+      /**
+       * #action
+       */
       findAppropriateInternetAccount(location: UriLocation) {
         // find the existing account selected from menu
         const selectedId = location.internetAccountId
@@ -90,6 +125,9 @@ export default function createModel(
     }))
 
     .views(self => ({
+      /**
+       * #getter
+       */
       get jbrowse() {
         return self.config
       },

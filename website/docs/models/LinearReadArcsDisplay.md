@@ -15,7 +15,8 @@ info
 
 ## Docs
 
-extends `BaseLinearDisplay`
+extends `BaseDisplay`, it is not a block based track, hence not
+BaseLinearDisplay
 
 ### LinearReadArcsDisplay - Properties
 
@@ -113,14 +114,16 @@ any
 number
 ```
 
-#### getter: ready
+### LinearReadArcsDisplay - Methods
+
+#### method: renderProps
+
+only used to tell system it's ready for export
 
 ```js
-// type
-boolean
+// type signature
+renderProps: () => any
 ```
-
-### LinearReadArcsDisplay - Methods
 
 #### method: trackMenuItems
 
@@ -133,15 +136,12 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 
 ```js
 // type signature
-renderSvg: (opts: { rasterizeLayers?: boolean; }) => Promise<Element>
+renderSvg: (opts: { rasterizeLayers?: boolean; }) => Promise<React.ReactNode>
 ```
 
 ### LinearReadArcsDisplay - Actions
 
 #### action: reload
-
-internal, a reference to a HTMLCanvas because we use a autorun to draw the
-canvas
 
 ```js
 // type signature
@@ -207,16 +207,6 @@ setDrawn: (f: boolean) => void
 ```js
 // type signature
 setFilterBy: (filter: Filter) => void
-```
-
-#### action: setLastDrawnOffsetPx
-
-allows the drawing to slide around a little bit if it takes a long time to
-refresh
-
-```js
-// type signature
-setLastDrawnOffsetPx: (n: number) => void
 ```
 
 #### action: setLineWidth

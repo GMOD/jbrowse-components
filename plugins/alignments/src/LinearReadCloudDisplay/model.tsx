@@ -1,13 +1,10 @@
 import React, { lazy } from 'react'
-import { autorun } from 'mobx'
-import { addDisposer, cast, types, Instance } from 'mobx-state-tree'
+import { cast, types, Instance } from 'mobx-state-tree'
 import {
   AnyConfigurationSchemaType,
   ConfigurationReference,
-  ConfigurationSchema,
 } from '@jbrowse/core/configuration'
-import { getContainingView, getSession } from '@jbrowse/core/util'
-import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
+import { getSession } from '@jbrowse/core/util'
 
 // icons
 import PaletteIcon from '@mui/icons-material/Palette'
@@ -15,9 +12,14 @@ import FilterListIcon from '@mui/icons-material/ClearAll'
 
 // locals
 import { FilterModel } from '../shared'
-import { fetchChains, ChainData } from '../shared/fetchChains'
+import { ChainData } from '../shared/fetchChains'
 import drawFeats from './drawFeats'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
+import {
+  FeatureDensityMixin,
+  TrackHeightMixin,
+} from '@jbrowse/plugin-linear-genome-view'
+import { doAfterAttach } from '../shared/dynamicTrackAfterAttach'
 
 // async
 const FilterByTagDlg = lazy(() => import('../shared/FilterByTag'))
@@ -29,21 +31,17 @@ interface Filter {
   tagFilter?: { tag: string; value: string }
 }
 
-// stabilize clipid under test for snapshot
-function getId(id: string) {
-  const isJest = typeof jest === 'undefined'
-  return `cloud-clip-${isJest ? id : 'jest'}`
-}
-
 /**
  * #stateModel LinearReadCloudDisplay
- * extends `BaseLinearDisplay`
+ * extends `BaseDisplay`, it is not a block based track, hence not BaseLinearDisplay
  */
 function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
     .compose(
       'LinearReadCloudDisplay',
-      BaseLinearDisplay,
+      BaseDisplay,
+      TrackHeightMixin(),
+      FeatureDensityMixin(),
       types.model({
         /**
          * #property
@@ -73,21 +71,41 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     )
     .volatile(() => ({
       loading: false,
-      drawn: false,
       chainData: undefined as ChainData | undefined,
+      lastDrawnOffsetPx: undefined as number | undefined,
+      lastDrawnBpPerPx: 0,
       ref: null as HTMLCanvasElement | null,
-      lastDrawnOffsetPx: 0,
     }))
     .actions(self => ({
       /**
        * #action
-       * internal, a reference to a HTMLCanvas because we use a autorun to draw the canvas
+       */
+      setLastDrawnOffsetPx(n: number) {
+        self.lastDrawnOffsetPx = n
+      },
+      /**
+       * #action
+       */
+      setLastDrawnBpPerPx(n: number) {
+        self.lastDrawnBpPerPx = n
+      },
+
+      /**
+       * #action
+       */
+      setLoading(f: boolean) {
+        self.loading = f
+      },
+      /**
+       * #action
        */
       reload() {
         self.error = undefined
       },
       /**
        * #action
+       * internal, a reference to a HTMLCanvas because we use a autorun to draw
+       * the canvas
        */
       setRef(ref: HTMLCanvasElement | null) {
         self.ref = ref
@@ -107,32 +125,15 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setLoading(f: boolean) {
-        self.loading = f
-      },
-
-      /**
-       * #action
-       */
-      setDrawn(f: boolean) {
-        self.drawn = f
-      },
-
-      /**
-       * #action
-       */
       setFilterBy(filter: Filter) {
         self.filterBy = cast(filter)
       },
-
-      /**
-       * #action
-       */
-      setLastDrawnOffsetPx(n: number) {
-        self.lastDrawnOffsetPx = n
+    }))
+    .views(self => ({
+      get drawn() {
+        return self.lastDrawnOffsetPx !== undefined
       },
     }))
-
     .views(self => {
       const {
         trackMenuItems: superTrackMenuItems,
@@ -140,25 +141,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       } = self
 
       return {
-        /**
-         * #getter
-         */
-        get ready() {
-          return !!self.chainData
-        },
-        // we don't use a server side renderer, but we need to provide this
-        // to avoid confusing the system currently
-        get rendererTypeName() {
-          return 'PileupRenderer'
-        },
         // we don't use a server side renderer, so this fills in minimal
         // info so as not to crash
         renderProps() {
           return {
             ...superRenderProps(),
-            // never ready, we don't want to use server side render
-            notReady: true,
-            config: ConfigurationSchema('empty', {}).create(),
+            notReady: !self.chainData,
           }
         },
 
@@ -208,90 +196,17 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #method
          */
-        async renderSvg(opts: { rasterizeLayers?: boolean }) {
-          const view = getContainingView(self) as LinearGenomeViewModel
-          const width = view.dynamicBlocks.totalWidthPx
-          const height = self.height
-          let str
-          if (opts.rasterizeLayers) {
-            const canvas = document.createElement('canvas')
-            canvas.width = width * 2
-            canvas.height = height * 2
-            const ctx = canvas.getContext('2d')
-            if (!ctx) {
-              return
-            }
-            ctx.scale(2, 2)
-            await drawFeats(self, ctx)
-            str = (
-              <image
-                width={width}
-                height={height}
-                xlinkHref={canvas.toDataURL('image/png')}
-              />
-            )
-          } else {
-            // @ts-ignore
-            const C2S = await import('canvas2svg')
-            const ctx = new C2S.default(width, height)
-            await drawFeats(self, ctx)
-            const clipid = getId(self.id)
-            str = (
-              <>
-                <defs>
-                  <clipPath id={clipid}>
-                    <rect x={0} y={0} width={width} height={height} />
-                  </clipPath>
-                </defs>
-                <g
-                  /* eslint-disable-next-line react/no-danger */
-                  dangerouslySetInnerHTML={{
-                    __html: ctx.getSvg().innerHTML,
-                  }}
-                  clipPath={`url(#${clipid})`}
-                />
-              </>
-            )
-          }
-
-          return <g>{str}</g>
+        async renderSvg(opts: {
+          rasterizeLayers?: boolean
+        }): Promise<React.ReactNode> {
+          const { renderSvg } = await import('../shared/renderSvg')
+          return renderSvg(self as LinearReadCloudDisplayModel, opts, drawFeats)
         },
       }
     })
     .actions(self => ({
       afterAttach() {
-        addDisposer(
-          self,
-          autorun(() => fetchChains(self), { delay: 1000 }),
-        )
-
-        addDisposer(
-          self,
-          autorun(
-            async () => {
-              try {
-                const canvas = self.ref
-                if (!canvas) {
-                  return
-                }
-                const ctx = canvas.getContext('2d')
-                if (!ctx) {
-                  return
-                }
-                ctx.clearRect(0, 0, canvas.width, self.height * 2)
-                ctx.resetTransform()
-                ctx.scale(2, 2)
-
-                await drawFeats(self, ctx)
-                self.setDrawn(true)
-              } catch (e) {
-                console.error(e)
-                self.setError(e)
-              }
-            },
-            { delay: 1000 },
-          ),
-        )
+        doAfterAttach(self, drawFeats)
       },
     }))
 }

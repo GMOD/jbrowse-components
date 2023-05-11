@@ -1,14 +1,15 @@
-import { AnyConfigurationModel, getConf } from '@jbrowse/core/configuration'
-import { getContainingView, getSession } from '@jbrowse/core/util'
-
+import { getConf } from '@jbrowse/core/configuration'
+import { getContainingView, getSession, max } from '@jbrowse/core/util'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
 // locals
 import {
   getOrientationColor,
   getInsertSizeColor,
   getInsertSizeAndOrientationColor,
 } from '../shared/color'
-import { ChainData, ReducedFeature } from '../shared/fetchChains'
+import { ReducedFeature } from '../shared/fetchChains'
+import { LinearReadCloudDisplayModel } from './model'
 
 type LGV = LinearGenomeViewModel
 
@@ -46,15 +47,8 @@ function fillRectCtx(
   ctx.fillRect(x, y, width, height)
 }
 
-export default async function drawFeats(
-  self: {
-    setLastDrawnOffsetPx: (n: number) => void
-    setError: (e: unknown) => void
-    colorBy?: { type: string }
-    height: number
-    chainData?: ChainData
-    configuration: AnyConfigurationModel
-  },
+export default function drawFeats(
+  self: LinearReadCloudDisplayModel,
   ctx: CanvasRenderingContext2D,
 ) {
   const { chainData } = self
@@ -70,8 +64,6 @@ export default async function drawFeats(
   if (!asm) {
     return
   }
-
-  self.setLastDrawnOffsetPx(view.offsetPx)
 
   const { chains, stats } = chainData
   const coords: ChainCoord[] = []
@@ -153,13 +145,9 @@ export default async function drawFeats(
     }
   }
 
-  let max = 0
-  for (let i = 0; i < coords.length; i++) {
-    const { distance } = coords[i]
-    max = Math.max(max, distance)
-  }
   const halfHeight = featureHeight / 2 - 0.5
-  const scaler = (displayHeight - 20) / Math.log(max)
+  const scaler =
+    (displayHeight - 20) / Math.log(max(coords.map(c => c.distance)))
 
   for (let i = 0; i < coords.length; i++) {
     const { r1s, r1e, r2s, r2e, v0, v1, distance } = coords[i]

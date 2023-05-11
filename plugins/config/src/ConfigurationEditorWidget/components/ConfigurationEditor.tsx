@@ -148,24 +148,19 @@ const ConfigurationEditor = observer(function ({
   const key = target && readConfObject(target, 'trackId')
   const name = target && readConfObject(target, 'name')
   return (
-    <>
-      <Accordion key={key} defaultExpanded className={classes.accordion}>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
-        >
-          <Typography>{name ?? 'Configuration'}</Typography>
-        </AccordionSummary>
-        <AccordionDetails
-          className={classes.expansionPanelDetails}
-          data-testid="configEditor"
-        >
-          {!target ? 'no target set' : <Schema schema={target} />}
-        </AccordionDetails>
-      </Accordion>
-
-      {/* blank space at the bottom of screen allows scroll */}
-      <div style={{ height: 300 }} />
-    </>
+    <Accordion key={key} defaultExpanded className={classes.accordion}>
+      <AccordionSummary
+        expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
+      >
+        <Typography>{name ?? 'Configuration'}</Typography>
+      </AccordionSummary>
+      <AccordionDetails
+        className={classes.expansionPanelDetails}
+        data-testid="configEditor"
+      >
+        {!target ? 'no target set' : <Schema schema={target} />}
+      </AccordionDetails>
+    </Accordion>
   )
 })
 

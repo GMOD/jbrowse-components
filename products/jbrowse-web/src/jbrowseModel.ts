@@ -12,13 +12,11 @@ import {
   resolveIdentifier,
   types,
   cast,
-  SnapshotIn,
 } from 'mobx-state-tree'
 import { toJS } from 'mobx'
 import clone from 'clone'
 
 // locals
-import { SessionStateModel } from './sessionModelFactory'
 import JBrowseConfigF from './jbrowseConfig'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 
@@ -43,18 +41,14 @@ function removeAttr(obj: Record<string, unknown>, attr: string) {
  * #stateModel JBrowseWebModel
  * the rootModel.jbrowse state model for JBrowse Web
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
-
 export default function JBrowseWeb(
   pluginManager: PluginManager,
-  Session: SessionStateModel,
   assemblyConfigSchemasType: AnyConfigurationSchemaType,
   adminMode: boolean,
 ) {
   const JBrowseModel = JBrowseConfigF(
     pluginManager,
     assemblyConfigSchemasType,
-    Session,
     adminMode,
   )
     .views(self => ({
@@ -124,23 +118,17 @@ export default function JBrowseWeb(
       /**
        * #action
        */
-      addTrackConf(
-        conf: SnapshotIn<AnyConfigurationModel> & { trackId: string },
-      ) {
-        const { type } = conf
+      addTrackConf(trackConf: { trackId: string; type: string }) {
+        const { type } = trackConf
         if (!type) {
           throw new Error(`unknown track type ${type}`)
         }
-        const track = self.tracks.find(t => t.trackId === conf.trackId)
+        const track = self.tracks.find(t => t.trackId === trackConf.trackId)
         if (track) {
           return track
         }
-        if (adminMode) {
-          self.tracks.push(conf)
-        } else {
-          self.tracks = [...self.tracks, conf]
-        }
-        return self.tracks[self.tracks.length - 1]
+        const length = self.tracks.push(trackConf)
+        return self.tracks[length - 1]
       },
       /**
        * #action
@@ -159,12 +147,12 @@ export default function JBrowseWeb(
       /**
        * #action
        */
-      addConnectionConf(conf: SnapshotIn<AnyConfigurationModel> = {}) {
-        const { type } = conf
+      addConnectionConf(connectionConf: AnyConfigurationModel) {
+        const { type } = connectionConf
         if (!type) {
           throw new Error(`unknown connection type ${type}`)
         }
-        const length = self.connections.push(conf)
+        const length = self.connections.push(connectionConf)
         return self.connections[length - 1]
       },
       /**
@@ -205,7 +193,6 @@ export default function JBrowseWeb(
           throw new Error(`unable to set default session to ${newDefault.name}`)
         }
 
-        // @ts-expect-error complains about name missing, but above line checks this
         self.defaultSession = cast(newDefault)
       },
       /**

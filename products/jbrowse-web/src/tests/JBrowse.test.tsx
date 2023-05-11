@@ -5,12 +5,13 @@ import { readConfObject, getConf } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 // locals
-import JBrowseRootModelFactory from '../rootModel'
+import JBrowseRootModelFactory from '../rootModel/rootModel'
 import corePlugins from '../corePlugins'
 import * as sessionSharing from '../sessionSharing'
 import volvoxConfigSnapshot from '../../test_data/volvox/config.json'
 import { doBeforeEach, setup, createView, hts } from './util'
 import TestPlugin from './TestPlugin'
+import sessionModelFactory from '../sessionModel'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
@@ -45,7 +46,11 @@ test('lollipop track test', async () => {
 test('toplevel configuration', () => {
   const pm = new PluginManager([...corePlugins, TestPlugin].map(P => new P()))
   pm.createPluggableElements()
-  const rootModel = JBrowseRootModelFactory(pm, true).create({
+  const rootModel = JBrowseRootModelFactory(
+    pm,
+    sessionModelFactory,
+    true,
+  ).create({
     jbrowse: volvoxConfigSnapshot,
     assemblyManager: {},
   })
@@ -53,7 +58,6 @@ test('toplevel configuration', () => {
   pm.setRootModel(rootModel)
   pm.configure()
   const state = pm.rootModel
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const { jbrowse } = state!
   const { configuration } = jbrowse
   // test reading top level configurations added by Test Plugin

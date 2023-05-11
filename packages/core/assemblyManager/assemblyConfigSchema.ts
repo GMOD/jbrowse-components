@@ -104,3 +104,4 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
 }
 
 export default assemblyConfigSchema
+export type BaseAssemblyConfigSchema = ReturnType<typeof assemblyConfigSchema>

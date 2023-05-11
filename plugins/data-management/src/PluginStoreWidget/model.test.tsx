@@ -1,4 +1,4 @@
-import { createTestSession } from '@jbrowse/web/src/rootModel'
+import { createTestSession } from '@jbrowse/web/src/rootModel/test_util'
 jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 
 describe('PluginStoreModel', () => {

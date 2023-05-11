@@ -150,9 +150,6 @@ export default observer(function AlignmentFeatureDetails(props: {
       {feat.flags !== undefined ? (
         <AlignmentFlags feature={feat} {...props} />
       ) : null}
-
-      {/* blank space at the bottom of screen allows scroll */}
-      <div style={{ height: 300 }} />
     </Paper>
   )
 })

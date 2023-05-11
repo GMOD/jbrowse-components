@@ -1,0 +1,15 @@
+import { Meta, Story } from '@storybook/blocks'
+import { WithCustomTheme } from './JBrowseLinearGenomeView.stories'
+
+<Meta title="Theming" />
+
+## Theming
+
+Users can customize various aspects by providing a theme. We have a concept of
+"primary","secondary",and "tertiary", and "quaternary" colors for the app which
+by default are "dark blue", "purple", and "yellow". This example changes those,
+as well as the colors used for the DNA bases.
+
+See [here](https://jbrowse.org/jb2/docs/config_guides/theme/) for more info
+
+<Story of={WithCustomTheme} />

@@ -108,7 +108,7 @@ any
 any
 ```
 
-#### getter: modificationsReady
+#### getter: autorunReady
 
 ```js
 // type
@@ -203,6 +203,13 @@ setColorBy: (colorBy?: { type: string; tag?: string; }) => void
 ```js
 // type signature
 updateModificationColorMap: (uniqueModifications: string[]) => void
+```
+
+#### action: setModificationsReady
+
+```js
+// type signature
+setModificationsReady: (flag: boolean) => void
 ```
 
 #### action: toggleDrawIndicators

@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/cli",
-  "version": "2.4.2",
+  "version": "2.5.0",
   "description": "A command line tool for working with JBrowse 2",
   "keywords": [
     "jbrowse",
@@ -52,14 +52,14 @@
     "chalk": "^4.1.0",
     "cli-progress": "^3.9.0",
     "cors": "^2.8.5",
+    "decompress": "^4.0.0",
     "express": "^4.17.1",
     "ixixx": "^2.0.1",
     "json-parse-better-errors": "^1.0.2",
     "node-fetch": "^2.6.0",
     "proxy-agent": "^5.0.0",
     "rimraf": "^5.0.0",
-    "tslib": "^2.3.1",
-    "unzipper": "^0.10.11"
+    "tslib": "^2.3.1"
   },
   "devDependencies": {
     "typescript": "^5.0.0"

@@ -169,6 +169,13 @@ any
 Feature
 ```
 
+#### getter: renderReady
+
+```js
+// type
+boolean
+```
+
 #### getter: rendererTypeName
 
 ```js
@@ -192,6 +199,13 @@ string
 contextMenuItems: () => { label: string; icon: (props: SvgIconProps) => Element; onClick: () => void; }[]
 ```
 
+#### method: renderPropsPre
+
+```js
+// type signature
+renderPropsPre: () => any
+```
+
 #### method: renderProps
 
 ```js
@@ -208,11 +222,25 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 
 ### LinearPileupDisplay - Actions
 
-#### action: setReady
+#### action: setModificationsReady
 
 ```js
 // type signature
-setReady: (flag: boolean) => void
+setModificationsReady: (flag: boolean) => void
+```
+
+#### action: setTagsReady
+
+```js
+// type signature
+setTagsReady: (flag: boolean) => void
+```
+
+#### action: setSortReady
+
+```js
+// type signature
+setSortReady: (flag: boolean) => void
 ```
 
 #### action: setCurrSortBpPerPx

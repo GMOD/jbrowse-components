@@ -69,6 +69,7 @@ const useStyles = makeStyles()(theme => ({
     position: 'relative',
   },
   overviewSvg: {
+    pointerEvents: 'none',
     width: '100%',
     position: 'absolute',
   },

@@ -35,6 +35,15 @@ IArrayType<IAnyModelType>
 tracks: types.array(pluginManager.pluggableConfigSchemaType('track'))
 ```
 
+#### property: configuration
+
+```js
+// type signature
+ConfigurationSchemaType<{ name: { type: string; defaultValue: string; description: string; }; assemblyNames: { type: string; defaultValue: any[]; description: string; }; }, ConfigurationSchemaOptions<undefined, "connectionId">>
+// code
+configuration: ConfigurationReference(configSchema)
+```
+
 ### BaseConnectionModel - Actions
 
 #### action: addTrackConf

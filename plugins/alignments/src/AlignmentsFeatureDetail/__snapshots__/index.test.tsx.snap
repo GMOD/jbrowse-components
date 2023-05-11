@@ -323,8 +323,5 @@ exports[`open up a widget 1`] = `
       </div>
     </div>
   </div>
-  <div
-    style="height: 300px;"
-  />
 </div>
 `;

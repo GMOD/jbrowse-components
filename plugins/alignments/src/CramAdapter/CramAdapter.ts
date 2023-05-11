@@ -255,7 +255,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
         filtered = filtered.filter(record => {
           // @ts-expect-error
           const val = record[tagFilter.tag]
-          return val === '*' ? val !== undefined : val === tagFilter.value
+          return val === '*' ? val !== undefined : `${val}` === tagFilter.value
         })
       }
 

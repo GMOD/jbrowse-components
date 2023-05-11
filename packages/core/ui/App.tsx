@@ -83,34 +83,19 @@ const App = observer(function (props: {
 
   const drawerVisible = visibleWidget && !minimized
 
-  let grid
-  if (drawerPosition === 'right') {
-    grid = [
-      `[main] 1fr`,
-      drawerVisible ? `[drawer] ${drawerWidth}px` : undefined,
-    ]
-  } else if (drawerPosition === 'left') {
-    grid = [
-      drawerVisible ? `[drawer] ${drawerWidth}px` : undefined,
-      `[main] 1fr`,
-    ]
-  }
+  const d = drawerVisible ? `[drawer] ${drawerWidth}px` : undefined
+  const grid =
+    drawerPosition === 'right' ? ['[main] 1fr', d] : [d, '[main] 1fr']
+
   return (
     <div
       className={classes.root}
-      style={{
-        gridTemplateColumns: grid?.filter(f => !!f).join(' '),
-      }}
+      style={{ gridTemplateColumns: grid?.filter(f => !!f).join(' ') }}
     >
       {drawerVisible && drawerPosition === 'left' ? (
         <DrawerWidget session={session} />
       ) : null}
-
-      {session.DialogComponent ? (
-        <Suspense fallback={<div />}>
-          <session.DialogComponent {...session.DialogProps} />
-        </Suspense>
-      ) : null}
+      <DialogQueue session={session} />
       <div className={classes.menuBarAndComponents}>
         <div className={classes.menuBar}>
           <AppBar className={classes.appBar} position="static">
@@ -156,6 +141,22 @@ const App = observer(function (props: {
 
       <Snackbar session={session} />
     </div>
+  )
+})
+
+const DialogQueue = observer(function ({
+  session,
+}: {
+  session: SessionWithDrawerWidgets
+}) {
+  return (
+    <>
+      {session.DialogComponent ? (
+        <Suspense fallback={<React.Fragment />}>
+          <session.DialogComponent {...session.DialogProps} />
+        </Suspense>
+      ) : null}
+    </>
   )
 })
 
