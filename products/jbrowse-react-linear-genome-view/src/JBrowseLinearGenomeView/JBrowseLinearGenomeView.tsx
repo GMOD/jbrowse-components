@@ -4,26 +4,15 @@ import { getEnv } from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { EmbeddedViewContainer, ModalWidget } from '@jbrowse/embedded-core'
-import { ThemeProvider, ScopedCssBaseline } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 
 // locals
 import { ViewModel } from '../createModel/createModel'
-
-const useStyles = makeStyles()(() => ({
-  // avoid parent styles getting into this div
-  // https://css-tricks.com/almanac/properties/a/all/
-  avoidParentStyle: {
-    all: 'initial',
-  },
-}))
 
 const JBrowseLinearGenomeView = observer(function ({
   viewState,
 }: {
   viewState: ViewModel
 }) {
-  const { classes } = useStyles()
   const { session } = viewState
   const { view } = session
   const { pluginManager } = getEnv(session)
@@ -37,18 +26,14 @@ const JBrowseLinearGenomeView = observer(function ({
   )
 
   return (
-    <ThemeProvider theme={theme}>
-      <div className={classes.avoidParentStyle}>
-        <ScopedCssBaseline>
-          <EmbeddedViewContainer key={`view-${view.id}`} view={view}>
-            <Suspense fallback={<div>Loading...</div>}>
-              <ReactComponent model={view} session={session} />
-            </Suspense>
-          </EmbeddedViewContainer>
-          <ModalWidget session={session} />
-        </ScopedCssBaseline>
-      </div>
-    </ThemeProvider>
+    <>
+      <EmbeddedViewContainer key={`view-${view.id}`} view={view} theme={theme}>
+        <Suspense fallback={<div>Loading...</div>}>
+          <ReactComponent model={view} session={session} />
+        </Suspense>
+      </EmbeddedViewContainer>
+      <ModalWidget session={session} />
+    </>
   )
 })
 
