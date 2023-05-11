@@ -72,6 +72,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     )
     .volatile(() => ({
       loading: false,
+      drawing: false,
       drawn: false,
       chainData: undefined as ChainData | undefined,
       ref: null as HTMLCanvasElement | null,
@@ -83,6 +84,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setLastDrawnOffsetPx(n: number) {
         self.lastDrawnOffsetPx = n
+      },
+      /**
+       * #action
+       */
+      setDrawing(f: boolean) {
+        self.drawing = f
       },
       /**
        * #action
@@ -214,11 +221,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           if (!ctx) {
             return
           }
-          ctx.clearRect(0, 0, canvas.width, self.height * 2)
-          ctx.resetTransform()
-          ctx.scale(2, 2)
 
-          drawFeats(self, ctx)
+          const width = canvas.width
+          const height = self.height
+          drawFeats(self, ctx, width, height)
         })
       },
     }))
