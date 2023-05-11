@@ -2,8 +2,8 @@ import React from 'react'
 import { Paper } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import ResizeHandle from './ResizeHandle'
-import { SessionWithDrawerWidgets } from '../util/types'
+import ResizeHandle from '@jbrowse/core/ui/ResizeHandle'
+import { SessionWithDrawerWidgets } from '@jbrowse/core/util/types'
 
 const useStyles = makeStyles()(theme => ({
   paper: {

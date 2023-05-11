@@ -2,6 +2,8 @@ import React, { useEffect, useRef } from 'react'
 import { IconButton, Paper, useTheme } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
+import { useWidthSetter } from '@jbrowse/core/util'
+import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 // icons
 import CloseIcon from '@mui/icons-material/Close'
@@ -9,9 +11,7 @@ import MinimizeIcon from '@mui/icons-material/Minimize'
 import AddIcon from '@mui/icons-material/Add'
 
 // locals
-import { IBaseViewModel } from '../pluggableElementTypes/models'
 import ViewMenu from './ViewMenu'
-import { useWidthSetter } from '../util'
 import ViewContainerTitle from './ViewContainerTitle'
 
 const useStyles = makeStyles()(theme => ({

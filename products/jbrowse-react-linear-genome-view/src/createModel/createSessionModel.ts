@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// note: AboutDialog is imported statically instead of as a lazy component
-// due to vite failing to load it xref #2896
+import { lazy } from 'react'
 import { AbstractSessionModel } from '@jbrowse/core/util/types'
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { cast, getParent, types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import InfoIcon from '@mui/icons-material/Info'
-import AboutDialog from '@jbrowse/core/ui/AboutDialog'
 import { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
 import { Session as CoreSession } from '@jbrowse/product-core'
+
+const AboutDialog = lazy(() => import('./AboutDialog'))
 
 /**
  * #stateModel JBrowseReactLinearGenomeViewSessionModel

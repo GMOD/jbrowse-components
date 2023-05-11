@@ -16,10 +16,10 @@ import {
   NotificationLevel,
   SnackAction,
   SessionWithDrawerWidgets,
-} from '../util'
+} from '@jbrowse/core/util'
 
 // ui elements
-import { MenuItem as JBMenuItem } from './Menu'
+import { MenuItem as JBMenuItem } from '@jbrowse/core/ui/Menu'
 type SnackbarMessage = [string, NotificationLevel, SnackAction]
 
 type AppSession = SessionWithDrawerWidgets & {

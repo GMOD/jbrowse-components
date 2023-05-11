@@ -1,20 +1,21 @@
 import React from 'react'
-import { version } from '../version'
 import { DialogContent, Link, Typography } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
 import { makeStyles } from 'tss-react/mui'
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()({
   content: {
     minWidth: 800,
   },
-}))
+})
 
 export default function AboutDialog({
   open,
+  version,
   onClose,
 }: {
   open: boolean
+  version: string
   onClose: () => void
 }) {
   const { classes } = useStyles()

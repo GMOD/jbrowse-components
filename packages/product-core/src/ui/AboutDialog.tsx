@@ -6,12 +6,15 @@ import {
   getConf,
   readConfObject,
   AnyConfigurationModel,
-} from '../configuration'
-import Dialog from './Dialog'
-import LoadingEllipses from './LoadingEllipses'
-import { getSession, getEnv } from '../util'
-import { getTrackName } from '../util/tracks'
-import { BaseCard, Attributes } from '../BaseFeatureWidget/BaseFeatureDetail'
+} from '@jbrowse/core/configuration'
+import Dialog from '@jbrowse/core/ui/Dialog'
+import LoadingEllipses from '@jbrowse/core/ui/LoadingEllipses'
+import { getSession, getEnv } from '@jbrowse/core/util'
+import { getTrackName } from '@jbrowse/core/util/tracks'
+import {
+  BaseCard,
+  Attributes,
+} from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 
 type FileInfo = Record<string, unknown> | string
 
@@ -142,10 +145,10 @@ export function AboutContents({ config }: { config: AnyConfigurationModel }) {
 
 export default function AboutDialog({
   config,
-  handleClose,
+  onClose,
 }: {
   config: AnyConfigurationModel
-  handleClose: () => void
+  onClose: () => void
 }) {
   const { classes } = useStyles()
   const session = getSession(config)
@@ -160,7 +163,7 @@ export default function AboutDialog({
   ) as React.FC<any>
 
   return (
-    <Dialog open onClose={handleClose} title={trackName} maxWidth="xl">
+    <Dialog open onClose={onClose} title={trackName} maxWidth="xl">
       <DialogContent className={classes.content}>
         <AboutComponent config={config} />
       </DialogContent>

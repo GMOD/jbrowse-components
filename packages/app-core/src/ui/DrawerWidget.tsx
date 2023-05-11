@@ -13,9 +13,10 @@ import {
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import { getEnv } from '../util'
-import LoadingEllipses from './LoadingEllipses'
-import { SessionWithDrawerWidgets } from '../util/types'
+import { getEnv } from '@jbrowse/core/util'
+import LoadingEllipses from '@jbrowse/core/ui/LoadingEllipses'
+import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
+import { SessionWithDrawerWidgets } from '@jbrowse/core/util/types'
 
 // icons
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -25,7 +26,6 @@ import MoreVertIcon from '@mui/icons-material/MoreVert'
 
 // locals
 import Drawer from './Drawer'
-import ErrorMessage from './ErrorMessage'
 
 const useStyles = makeStyles()(theme => ({
   formControl: {

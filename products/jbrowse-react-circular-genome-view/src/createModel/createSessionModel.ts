@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { lazy } from 'react'
 import { AbstractSessionModel } from '@jbrowse/core/util/types'
-import AboutDialog from '@jbrowse/core/ui/AboutDialog'
 import { getParent, types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
 import InfoIcon from '@mui/icons-material/Info'
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
-
 import { Session as CoreSession } from '@jbrowse/product-core'
+
+const AboutDialog = lazy(() => import('./AboutDialog'))
 
 /**
  * #stateModel JBrowseReactCircularGenomeViewSessionModel
