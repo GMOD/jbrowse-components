@@ -33,7 +33,7 @@
     "build:esm": "tsc --build tsconfig.build.esm.json",
     "build:es5": "tsc --build tsconfig.build.es5.json",
     "build": "npm run build:esm && npm run build:es5",
-    "test": "cd ../..; jest packages/text-indexing",
+    "test": "cd ../..; jest packages/embedded-core",
     "clean": "rimraf dist esm *.tsbuildinfo",
     "prebuild": "yarn clean",
     "prepack": "yarn build && yarn useDist",
@@ -59,6 +59,5 @@
     "react-dom": "^17.0.0",
     "rxjs": "^7.0.0",
     "tss-react": "^4.0.0"
-  },
-  "private": true
+  }
 }
