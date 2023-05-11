@@ -3,7 +3,6 @@ import { cast, types, Instance } from 'mobx-state-tree'
 import {
   AnyConfigurationSchemaType,
   ConfigurationReference,
-  ConfigurationSchema,
 } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 
@@ -13,14 +12,14 @@ import FilterListIcon from '@mui/icons-material/ClearAll'
 
 // locals
 import { FilterModel } from '../shared'
-import { fetchChains, ChainData } from '../shared/fetchChains'
+import { ChainData } from '../shared/fetchChains'
 import drawFeats from './drawFeats'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import {
   FeatureDensityMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-import { createAutorun } from '../util'
+import { doAfterAttach } from '../shared/dynamicTrackAfterAttach'
 
 // async
 const FilterByTagDlg = lazy(() => import('../shared/FilterByTag'))
@@ -72,10 +71,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     )
     .volatile(() => ({
       loading: false,
-      drawn: false,
       chainData: undefined as ChainData | undefined,
+      lastDrawnOffsetPx: undefined as number | undefined,
+      lastDrawnBpPerPx: 0,
       ref: null as HTMLCanvasElement | null,
-      lastDrawnOffsetPx: 0,
     }))
     .actions(self => ({
       /**
@@ -84,6 +83,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       setLastDrawnOffsetPx(n: number) {
         self.lastDrawnOffsetPx = n
       },
+      /**
+       * #action
+       */
+      setLastDrawnBpPerPx(n: number) {
+        self.lastDrawnBpPerPx = n
+      },
+
       /**
        * #action
        */
@@ -119,15 +125,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setDrawn(f: boolean) {
-        self.drawn = f
-      },
-
-      /**
-       * #action
-       */
       setFilterBy(filter: Filter) {
         self.filterBy = cast(filter)
+      },
+    }))
+    .views(self => ({
+      get drawn() {
+        return self.lastDrawnOffsetPx !== undefined
       },
     }))
     .views(self => {
@@ -143,7 +147,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return {
             ...superRenderProps(),
             notReady: !self.chainData,
-            config: ConfigurationSchema('empty', {}).create(),
           }
         },
 
@@ -196,30 +199,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         async renderSvg(opts: {
           rasterizeLayers?: boolean
         }): Promise<React.ReactNode> {
-          const { renderReadCloudSvg } = await import('./renderSvg')
-          return renderReadCloudSvg(self as LinearReadCloudDisplayModel, opts)
+          const { renderSvg } = await import('../shared/renderSvg')
+          return renderSvg(self as LinearReadCloudDisplayModel, opts, drawFeats)
         },
       }
     })
     .actions(self => ({
       afterAttach() {
-        createAutorun(self, () => fetchChains(self), { delay: 1000 })
-
-        createAutorun(self, async () => {
-          const canvas = self.ref
-          if (!canvas) {
-            return
-          }
-          const ctx = canvas.getContext('2d')
-          if (!ctx) {
-            return
-          }
-          ctx.clearRect(0, 0, canvas.width, self.height * 2)
-          ctx.resetTransform()
-          ctx.scale(2, 2)
-
-          drawFeats(self, ctx)
-        })
+        doAfterAttach(self, drawFeats)
       },
     }))
 }

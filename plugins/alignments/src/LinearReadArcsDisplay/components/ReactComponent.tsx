@@ -18,7 +18,9 @@ const Arcs = observer(function ({
   const width = Math.round(view.dynamicBlocks.totalWidthPx)
   const height = model.height
   const cb = useCallback(
-    (ref: HTMLCanvasElement) => model.setRef(ref),
+    (ref: HTMLCanvasElement) => {
+      model.setRef(ref)
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [model, width, height],
   )

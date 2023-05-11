@@ -51,10 +51,11 @@ function drawLineAtOffset(
 export default function drawFeats(
   self: LinearReadArcsDisplayModel,
   ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
 ) {
   const {
     chainData,
-    height,
     colorBy,
     drawInter,
     drawLongRange,
@@ -74,6 +75,7 @@ export default function drawFeats(
     return
   }
   ctx.lineWidth = lineWidthSetting
+
   function draw(
     k1: CoreFeat & { tlen?: number; pair_orientation?: string },
     k2: CoreFeat,
@@ -218,6 +220,4 @@ export default function drawFeats(
       }
     }
   }
-  self.setDrawn(true)
-  self.setLastDrawnOffsetPx(view.offsetPx)
 }

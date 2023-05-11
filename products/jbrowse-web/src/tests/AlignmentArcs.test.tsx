@@ -71,7 +71,6 @@ test('toggle long-read arc display', async () => {
 test('toggle long-read arc display, use out of view pairing', async () => {
   const { view, getByTestId, findByTestId, findAllByText, findByText } =
     await createView()
-  await findByText('Help')
   await view.navToLocString('ctgA:478..6,191')
   fireEvent.click(await findByTestId(hts('volvox-long-reads-sv-cram'), ...opts))
   fireEvent.click(await findByTestId('track_menu_icon', ...opts))
