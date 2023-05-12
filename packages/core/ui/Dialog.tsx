@@ -2,9 +2,9 @@ import React from 'react'
 import {
   Dialog,
   DialogTitle,
-  IconButton,
-  Divider,
   DialogProps,
+  Divider,
+  IconButton,
   ScopedCssBaseline,
   ThemeProvider,
   createTheme,
