@@ -10,10 +10,10 @@ import {
 } from '@jbrowse/core/util/analytics'
 
 // locals
-import JBrowseRootModelFactory from '../rootModel'
-import corePlugins from '../corePlugins'
-import packageJSON from '../../package.json'
-import sessionModelFactory from '../sessionModel'
+import JBrowseRootModelFactory from '../../rootModel'
+import corePlugins from '../../corePlugins'
+import packageJSON from '../../../package.json'
+import sessionModelFactory from '../../sessionModel'
 
 const { ipcRenderer } = window.require('electron')
 

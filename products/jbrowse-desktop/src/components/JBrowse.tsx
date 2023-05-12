@@ -9,7 +9,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { AssemblyManager } from '@jbrowse/plugin-data-management'
 
 // locals
-import { DesktopRootModel } from './rootModel'
+import { DesktopRootModel } from '../rootModel'
 
 const JBrowseNonNullRoot = observer(function ({
   rootModel,

@@ -45,6 +45,7 @@ type LayoutRecord = [number, number, number, number]
 
 /**
  * #stateModel BaseLinearDisplay
+ * #category display
  * extends `BaseDisplay`
  */
 function stateModelFactory() {

@@ -5,6 +5,7 @@ import { Region } from '../../util/types/mst'
 
 /**
  * #stateModel BaseViewModel
+ * #category view
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 

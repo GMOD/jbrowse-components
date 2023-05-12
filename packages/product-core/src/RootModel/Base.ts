@@ -16,6 +16,7 @@ import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 
 /**
  * #stateModel BaseRootModel
+ * #category root
  * factory function for the Base-level root model shared by all products
  */
 export default function BaseRootModelTypeF(

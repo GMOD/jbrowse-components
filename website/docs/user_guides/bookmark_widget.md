@@ -1,6 +1,5 @@
 ---
 id: bookmark_widget
-toplevel: true
 title: Bookmark widget
 ---
 

@@ -28,8 +28,8 @@ import SettingsIcon from '@mui/icons-material/Settings'
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 
 // locals
-import { toUrlSafeB64 } from './util'
-import { shareSessionToDynamo } from './sessionSharing'
+import { toUrlSafeB64 } from '../util'
+import { shareSessionToDynamo } from '../sessionSharing'
 
 const useStyles = makeStyles()(theme => ({
   shareDiv: {

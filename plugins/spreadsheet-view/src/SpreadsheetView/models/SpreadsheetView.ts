@@ -46,10 +46,26 @@ const defaultRowMenuItems: MenuItemWithDisabledCallback[] = [
 
 const minHeight = 40
 const defaultHeight = 440
+
+/**
+ * #stateModel SpreadsheetView
+ * #category view
+ */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const model = types
   .model('SpreadsheetView', {
+    /**
+     * #property
+     */
     type: types.literal('SpreadsheetView'),
+    /**
+     * #property
+     */
     offsetPx: 0,
+    /**
+     * #property
+     */
     height: types.optional(
       types.refinement(
         'SpreadsheetViewHeight',
@@ -59,23 +75,42 @@ const model = types
       defaultHeight,
     ),
 
+    /**
+     * #property
+     */
     hideViewControls: false,
+    /**
+     * #property
+     */
     hideVerticalResizeHandle: false,
+    /**
+     * #property
+     */
     hideFilterControls: false,
-
+    /**
+     * #property
+     */
     filterControls: types.optional(FilterControlsModel, () =>
       FilterControlsModel.create({}),
     ),
-
-    // switch specifying whether we are showing the import wizard or the
-    // spreadsheet in our viewing area
+    /**
+     * #property
+     * switch specifying whether we are showing the import wizard or the
+     * spreadsheet in our viewing area
+     */
     mode: types.optional(
       types.enumeration('SpreadsheetViewMode', ['import', 'display']),
       'import',
     ),
+    /**
+     * #property
+     */
     importWizard: types.optional(ImportWizardModel, () =>
       ImportWizardModel.create(),
     ),
+    /**
+     * #property
+     */
     spreadsheet: types.maybe(SpreadsheetModel),
   })
   .volatile(() => ({
@@ -83,14 +118,21 @@ const model = types
     rowMenuItems: defaultRowMenuItems,
   }))
   .views(self => ({
+    /**
+     * #getter
+     */
     get readyToDisplay() {
       return !!self.spreadsheet && self.spreadsheet.isLoaded
     },
-
+    /**
+     * #getter
+     */
     get hideRowSelection() {
       return !!getEnv(self).hideRowSelection
     },
-
+    /**
+     * #getter
+     */
     get outputRows() {
       if (self.spreadsheet && self.spreadsheet.rowSet.isLoaded) {
         const selected = self.spreadsheet.rowSet.selectedFilteredRows
@@ -101,7 +143,9 @@ const model = types
       }
       return undefined
     },
-
+    /**
+     * #getter
+     */
     get assembly() {
       const name = self.spreadsheet?.assemblyName
       if (name) {
@@ -112,45 +156,69 @@ const model = types
     },
   }))
   .actions(self => ({
+    /**
+     * #action
+     */
     setRowMenuItems(newItems: MenuItem[]) {
       self.rowMenuItems = newItems
     },
+    /**
+     * #action
+     */
     setWidth(newWidth: number) {
       self.width = newWidth
       return self.width
     },
+    /**
+     * #action
+     */
     setHeight(newHeight: number) {
       self.height = newHeight > minHeight ? newHeight : minHeight
       return self.height
     },
+    /**
+     * #action
+     */
     resizeHeight(distance: number) {
       const oldHeight = self.height
       const newHeight = this.setHeight(self.height + distance)
       return newHeight - oldHeight
     },
+    /**
+     * #action
+     */
     resizeWidth(distance: number) {
       const oldWidth = self.width
       const newWidth = this.setWidth(self.width + distance)
       return newWidth - oldWidth
     },
 
-    /** load a new spreadsheet and set our mode to display it */
+    /**
+     * #action
+     * load a new spreadsheet and set our mode to display it
+     */
     displaySpreadsheet(spreadsheet: SnapshotIn<typeof SpreadsheetModel>) {
       self.filterControls.clearAllFilters()
       self.spreadsheet = cast(spreadsheet)
       self.mode = 'display'
     },
-
+    /**
+     * #action
+     */
     setImportMode() {
       self.mode = 'import'
     },
-
+    /**
+     * #action
+     */
     setDisplayMode() {
       if (self.readyToDisplay) {
         self.mode = 'display'
       }
     },
-
+    /**
+     * #action
+     */
     closeView() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       getParent<any>(self, 2).removeView(self)

@@ -38,7 +38,8 @@ function removeAttr(obj: Record<string, unknown>, attr: string) {
 }
 
 /**
- * #stateModel JBrowseWebModel
+ * #stateModel JBrowseWebConfigModel
+ * #category root
  * the rootModel.jbrowse state model for JBrowse Web
  */
 export default function JBrowseWeb(

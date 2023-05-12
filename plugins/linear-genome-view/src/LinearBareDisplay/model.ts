@@ -8,6 +8,7 @@ import { BaseLinearDisplay } from '../BaseLinearDisplay'
 
 /**
  * #stateModel LinearBareDisplay
+ * #category display
  * extends `BaseLinearDisplay`
  */
 export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {

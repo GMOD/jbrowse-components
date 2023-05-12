@@ -1,7 +1,6 @@
 ---
 id: customizing_feature_details
 title: Customizing feature details with callbacks and plugins
-toplevel: true
 ---
 
 import Figure from '../figure'

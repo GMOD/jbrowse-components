@@ -4,6 +4,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * #config FeatureTrack
+ * #category track
  * used for basic gene and feature tracks, generally used with LinearBasicDisplay
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars

@@ -17,16 +17,16 @@ import { doAnalytics } from '@jbrowse/core/util/analytics'
 
 // locals
 import Loading from './Loading'
-import corePlugins from './corePlugins'
+import corePlugins from '../corePlugins'
 import JBrowse from './JBrowse'
-import JBrowseRootModelFactory from './rootModel/rootModel'
-import packageJSON from '../package.json'
-import factoryReset from './factoryReset'
+import JBrowseRootModelFactory from '../rootModel/rootModel'
+import packageJSON from '../../package.json'
+import factoryReset from '../factoryReset'
 import SessionLoader, {
   SessionLoaderModel,
   loadSessionSpec,
-} from './SessionLoader'
-import sessionModelFactory from './sessionModel'
+} from '../SessionLoader'
+import sessionModelFactory from '../sessionModel'
 
 // lazy components
 const SessionWarningDialog = lazy(() => import('./SessionWarningDialog'))

@@ -17,6 +17,7 @@ type LGV = LinearGenomeViewModel
 
 /**
  * #stateModel FeatureDensityMixin
+ * #category display
  */
 export default function FeatureDensityMixin() {
   return types

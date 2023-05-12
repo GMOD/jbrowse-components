@@ -8,7 +8,7 @@ import { LogoFull } from '@jbrowse/core/ui/Logo'
 import LauncherPanel from './LauncherPanel'
 import RecentSessionPanel from './RecentSessionsPanel'
 
-import packageJSON from '../../package.json'
+import packageJSON from '../../../package.json'
 
 const useStyles = makeStyles()(theme => ({
   root: {

@@ -1,7 +1,7 @@
 import React from 'react'
 import { fireEvent, render } from '@testing-library/react'
 
-import StartScreen from '../StartScreen'
+import StartScreen from '../components/StartScreen'
 import factoryReset from '../factoryReset'
 import { setup, getPluginManager } from './util'
 

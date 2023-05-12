@@ -1,20 +1,20 @@
 import React from 'react'
 
 // must import first to create window.require as side effect
-import { ipcMain, ipcRenderer } from '../../../packages/__mocks__/electron'
+import { ipcMain, ipcRenderer } from '../../../../packages/__mocks__/electron'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { render, fireEvent } from '@testing-library/react'
 import { SnapshotIn } from 'mobx-state-tree'
 
 // locals
-import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
-import JBrowseRootModelFactory from './rootModel'
-import configSnapshot from '../test_data/volvox/config.json'
-import sessionModelFactory from './sessionModel'
+import corePlugins from '../corePlugins'
+import JBrowseRootModelFactory from '../rootModel'
+import configSnapshot from '../../test_data/volvox/config.json'
+import sessionModelFactory from '../sessionModel'
 
-jest.mock('./makeWorkerInstance', () => () => {})
+jest.mock('../makeWorkerInstance', () => () => {})
 
 type JBrowseRootModel = ReturnType<typeof JBrowseRootModelFactory>
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

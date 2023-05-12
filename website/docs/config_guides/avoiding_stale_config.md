@@ -1,7 +1,6 @@
 ---
 id: avoiding_stale_config
 title: Avoiding stale config
-toplevel: true
 ---
 
 Some servers strongly cache the "config.json" file. If you want to avoid this,

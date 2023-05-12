@@ -1,7 +1,6 @@
 ---
 id: linear_synteny_view
 title: Linear synteny view
-toplevel: true
 ---
 
 import Figure from '../figure'

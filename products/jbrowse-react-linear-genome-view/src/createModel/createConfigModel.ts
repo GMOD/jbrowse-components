@@ -8,6 +8,7 @@ import { getParent, IAnyType, types } from 'mobx-state-tree'
 
 /**
  * #config JBrowseReactLinearGenomeViewConfig
+ * #category root
  */
 export default function createConfigModel(
   pluginManager: PluginManager,

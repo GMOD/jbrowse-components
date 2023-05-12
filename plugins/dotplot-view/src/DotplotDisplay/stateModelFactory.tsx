@@ -22,6 +22,7 @@ import { DotplotViewModel, ExportSvgOptions } from '../DotplotView/model'
 
 /**
  * #stateModel DotplotDisplay
+ * #category display
  */
 export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types

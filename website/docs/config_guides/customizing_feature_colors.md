@@ -1,7 +1,6 @@
 ---
 id: customizing_feature_colors
 title: Customizing feature colors with callbacks and plugins
-toplevel: true
 ---
 
 If you have a color callback that has a lot of logic in it, then using jexl to

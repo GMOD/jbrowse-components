@@ -23,11 +23,29 @@ const fileTypeParsers = {
 // regexp used to guess the type of a file or URL from its file extension
 const fileTypesRegexp = new RegExp(`\\.(${fileTypes.join('|')})(\\.gz)?$`, 'i')
 
+/**
+ * #stateModel SpreadsheetImportWizard
+ * #category view
+ */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const ImportWizard = types
   .model('SpreadsheetImportWizard', {
+    /**
+     * #property
+     */
     fileType: types.optional(types.enumeration(fileTypes), 'CSV'),
+    /**
+     * #property
+     */
     hasColumnNameLine: true,
+    /**
+     * #property
+     */
     columnNameLineNumber: 1,
+    /**
+     * #property
+     */
     selectedAssemblyName: types.maybe(types.string),
   })
   .volatile(() => ({

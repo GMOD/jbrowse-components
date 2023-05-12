@@ -5,7 +5,10 @@ import { addDisposer, types } from 'mobx-state-tree'
 
 /**
  * #stateModel HistoryManagementMixin
+ * #category root
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 export const HistoryManagement = types
   .model({
     /**

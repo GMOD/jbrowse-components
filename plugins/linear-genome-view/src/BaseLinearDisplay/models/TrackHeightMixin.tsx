@@ -5,6 +5,7 @@ const minDisplayHeight = 20
 
 /**
  * #stateModel TrackHeightMixin
+ * #category display
  */
 export default function TrackHeightMixin() {
   return types

@@ -1,17 +1,14 @@
 ---
 id: jbrowsewebconfiguration
 title: JBrowseWebConfiguration
-toplevel: true
 ---
 
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-## Source file
+### Source file
 
 [products/jbrowse-web/src/jbrowseConfig.ts](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-web/src/jbrowseConfig.ts)
-
-## Docs
 
 configuration in a config.json
 

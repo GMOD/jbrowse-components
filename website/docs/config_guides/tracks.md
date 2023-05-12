@@ -1,6 +1,5 @@
 ---
 id: tracks
-toplevel: true
 title: Configuring tracks
 ---
 

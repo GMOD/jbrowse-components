@@ -1,6 +1,6 @@
 ---
 id: config_guide
-title: Overview
+title: Config guide
 toplevel: true
 ---
 

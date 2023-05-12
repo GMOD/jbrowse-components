@@ -1,17 +1,14 @@
 ---
 id: linearwiggledisplay
 title: LinearWiggleDisplay
-toplevel: true
 ---
 
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-## Source file
+### Source file
 
 [plugins/wiggle/src/LinearWiggleDisplay/models/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/LinearWiggleDisplay/models/configSchema.ts)
-
-## Docs
 
 ### LinearWiggleDisplay - Slots
 
@@ -115,7 +112,7 @@ renderers: ConfigurationSchema('RenderersConfiguration', {
 })
 ```
 
-## LinearWiggleDisplay - Derives from
+### LinearWiggleDisplay - Derives from
 
 ```js
 baseConfiguration: baseLinearDisplayConfigSchema

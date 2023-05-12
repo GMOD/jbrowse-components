@@ -1,7 +1,6 @@
 ---
 id: assembly
 title: Assembly
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,11 +8,9 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Source file
+### Source file
 
 [packages/core/assemblyManager/assembly.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/assemblyManager/assembly.ts)
-
-## Docs
 
 ### Assembly - Properties
 

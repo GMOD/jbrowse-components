@@ -21,6 +21,7 @@ interface Id {
 interface Conf {
   name: string
   docs: string
+  category?: string
   id: string
 }
 interface Slot {
@@ -53,9 +54,35 @@ function generateConfigDocs(files: string[]) {
     }
     const current = contents[fn]
     const name = rm(obj.comment, '#' + obj.type) || obj.name
-    const docs = filter(obj.comment, '#' + obj.type)
+    const docs = filter(filter(obj.comment, '#' + obj.type), '#category')
     const code = removeComments(obj.node)
     const id = slugify(name, { lower: true })
+
+    // category currently unused, but can organize sidebar
+    let category = rm(obj.comment, '#category')
+
+    if (!category) {
+      if (name.endsWith('Adapter')) {
+        category = 'adapter'
+      } else if (name.endsWith('Display')) {
+        category = 'display'
+      } else if (name.endsWith('View')) {
+        category = 'view'
+      } else if (name.endsWith('Renderer')) {
+        category = 'renderer'
+      } else if (name.includes('Root')) {
+        category = 'root'
+      } else if (name.endsWith('Track')) {
+        category = 'track'
+      } else if (name.endsWith('InternetAccount')) {
+        category = 'internetAccount'
+      } else if (name.endsWith('Connection')) {
+        category = 'connection'
+      } else if (name.endsWith('RpcDriver')) {
+        category = 'rpcDriver'
+      }
+    }
+
     if (obj.type === 'baseConfiguration') {
       current.derives = { ...obj, name, docs, code }
     } else if (obj.type === 'identifier') {
@@ -63,7 +90,7 @@ function generateConfigDocs(files: string[]) {
     } else if (obj.type === 'slot') {
       current.slots.push({ ...obj, name, docs, code })
     } else if (obj.type === 'config') {
-      current.config = { ...obj, name, docs, id }
+      current.config = { ...obj, name, docs, id, category }
     }
   })
   return contents
@@ -82,7 +109,7 @@ function generateConfigDocs(files: string[]) {
 #### slot: ${id.name}`
           : ''
         const derivesstr = derives
-          ? `## ${config.name} - Derives from
+          ? `### ${config.name} - Derives from
 
 
 ${derives.docs}
@@ -108,32 +135,30 @@ ${code}
             })
             .join('\n')
 
+        const dir = `website/docs/config`
+        try {
+          fs.mkdirSync(dir)
+        } catch (e) {}
         fs.writeFileSync(
-          `website/docs/config/${config.name}.md`,
+          `${dir}/${config.name}.md`,
           `---
 id: ${config.id}
 title: ${config.name}
-toplevel: true
 ---
 Note: this document is automatically generated from configuration objects in
 our source code. See [Config guide](/docs/config_guide) for more info
 
-## Source file
+### Source file
 
 [${filename}](https://github.com/GMOD/jbrowse-components/blob/main/${filename})
-
-## Docs
 
 ${config.docs}
 
 ${idstr}
 
-
-
 ${slotstr}
 
 ${derivesstr}
-
 `,
         )
       }
