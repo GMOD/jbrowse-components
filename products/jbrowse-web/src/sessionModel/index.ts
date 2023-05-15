@@ -36,7 +36,16 @@ const AboutDialog = lazy(() => import('./AboutDialog'))
 
 /**
  * #stateModel JBrowseWebSessionModel
- * inherits SnackbarModel
+ * composed of
+ * - SnackbarModel
+ * - JBrowseWebSessionConnectionsModel
+ * - JBrowseWebSessionAssembliesModel
+ * - ReferenceManagementSessionMixin
+ * - DrawerWidgetSessionMixin
+ * - DialogQueueSessionMixin
+ * - ThemeManagerSessionMixin
+ * - MultipleViewsSessionMixin
+ * - SessionTracksManagerSessionMixin
  */
 export default function sessionModelFactory(
   pluginManager: PluginManager,

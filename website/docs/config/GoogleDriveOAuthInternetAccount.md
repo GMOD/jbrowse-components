@@ -1,17 +1,14 @@
 ---
 id: googledriveoauthinternetaccount
 title: GoogleDriveOAuthInternetAccount
-toplevel: true
 ---
 
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-## Source file
+### Source file
 
 [plugins/authentication/src/GoogleDriveOAuthModel/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/GoogleDriveOAuthModel/configSchema.ts)
-
-## Docs
 
 ### GoogleDriveOAuthInternetAccount - Slots
 
@@ -56,7 +53,7 @@ responseType: {
     }
 ```
 
-## GoogleDriveOAuthInternetAccount - Derives from
+### GoogleDriveOAuthInternetAccount - Derives from
 
 ```js
 baseConfiguration: OAuthConfigSchema

@@ -1,7 +1,6 @@
 ---
-id: jbrowsedesktopmodel
-title: JBrowseDesktopModel
-toplevel: true
+id: jbrowsewebconfigmodel
+title: JBrowseWebConfigModel
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,22 +8,13 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Source file
+### Source file
 
-[products/jbrowse-desktop/src/jbrowseModel.ts](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-desktop/src/jbrowseModel.ts)
+[products/jbrowse-web/src/jbrowseModel.ts](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-web/src/jbrowseModel.ts)
 
-## Docs
+the rootModel.jbrowse state model for JBrowse Web
 
-the rootModel.jbrowse state model for JBrowse Desktop
-
-### JBrowseDesktopModel - Getters
-
-#### getter: savedSessionNames
-
-```js
-// type
-string[]
-```
+### JBrowseWebConfigModel - Getters
 
 #### getter: assemblyNames
 
@@ -40,7 +30,7 @@ string[]
 RpcManager
 ```
 
-### JBrowseDesktopModel - Actions
+### JBrowseWebConfigModel - Actions
 
 #### action: addAssemblyConf
 
@@ -62,6 +52,18 @@ removeAssemblyConf: (assemblyName: string) => void
 // type signature
 addTrackConf: (
   trackConf: { [x: string]: any } & NonEmptyObject & {
+      setSubschema(slotName: string, data: unknown): any,
+    } & IStateTreeNode<AnyConfigurationSchemaType>,
+) => any
+```
+
+#### action: addDisplayConf
+
+```js
+// type signature
+addDisplayConf: (
+  trackId: string,
+  displayConf: { [x: string]: any } & NonEmptyObject & {
       setSubschema(slotName: string, data: unknown): any,
     } & IStateTreeNode<AnyConfigurationSchemaType>,
 ) => any
@@ -92,6 +94,13 @@ deleteConnectionConf: (configuration: { [x: string]: any; } & NonEmptyObject & {
 deleteTrackConf: (trackConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => any[]
 ```
 
+#### action: setDefaultSessionConf
+
+```js
+// type signature
+setDefaultSessionConf: (sessionConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
+```
+
 #### action: addPlugin
 
 ```js
@@ -111,7 +120,7 @@ removePlugin: (pluginDefinition: PluginDefinition) => void
 ```js
 // type signature
 addInternetAccountConf: (
-  internetAccountConf: { [x: string]: any } & NonEmptyObject & {
+  config: { [x: string]: any } & NonEmptyObject & {
       setSubschema(slotName: string, data: unknown): any,
     } & IStateTreeNode<AnyConfigurationSchemaType>,
 ) => any
@@ -121,5 +130,5 @@ addInternetAccountConf: (
 
 ```js
 // type signature
-deleteInternetAccountConf: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => any[]
+deleteInternetAccountConf: (config: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => any[]
 ```

@@ -51,7 +51,6 @@
     "shortid": "^2.2.15"
   },
   "peerDependencies": {
-    "@mui/icons-material": "^5.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^7.0.0",
     "mobx-state-tree": "^5.0.0",

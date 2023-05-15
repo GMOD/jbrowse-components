@@ -8,6 +8,10 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseSession } from '@jbrowse/product-core/src/Session/Base'
 
+/**
+ * #stateModel JBrowseWebSessionAssembliesMixin
+ * #category root
+ */
 export default function Assemblies(
   pluginManager: PluginManager,
   assemblyConfigSchemasType = types.frozen(),

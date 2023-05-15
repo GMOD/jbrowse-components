@@ -1,7 +1,6 @@
 ---
 id: extension_points
 title: Extension points
-toplevel: true
 ---
 
 The basic API is that producers can say:

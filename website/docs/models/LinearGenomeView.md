@@ -1,7 +1,6 @@
 ---
 id: lineargenomeview
 title: LinearGenomeView
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,11 +8,9 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Source file
+### Source file
 
 [plugins/linear-genome-view/src/LinearGenomeView/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/LinearGenomeView/model.ts)
-
-## Docs
 
 ### LinearGenomeView - Properties
 
@@ -687,7 +684,7 @@ toggleTrack: (trackId: string) => void
 
 ```js
 // type signature
-setTrackLabels: (setting: "offset" | "hidden" | "overlapping") => void
+setTrackLabels: (setting: "hidden" | "offset" | "overlapping") => void
 ```
 
 #### action: toggleCenterLine

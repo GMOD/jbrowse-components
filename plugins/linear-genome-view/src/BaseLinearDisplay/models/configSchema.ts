@@ -2,6 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
  * #config BaseLinearDisplay
+ * #category display
  * `BaseLinearDisplay` is a "base" config that is extended by classes like
  * `LinearBasicDisplay` (used for feature tracks, etc) and `LinearBareDisplay`
  * (more stripped down than even the basic display, not commonly used)

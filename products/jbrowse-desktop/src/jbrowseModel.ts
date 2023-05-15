@@ -20,7 +20,7 @@ window.getSnapshot = getSnapshot
 window.resolveIdentifier = resolveIdentifier
 
 /**
- * #stateModel JBrowseDesktopModel
+ * #stateModel JBrowseDesktopConfigModel
  * the rootModel.jbrowse state model for JBrowse Desktop
  */
 export default function JBrowseDesktop(

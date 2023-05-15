@@ -1,7 +1,6 @@
 ---
 id: jexl
 title: Using jexl callbacks
-toplevel: true
 ---
 
 We use [Jexl](https://github.com/TomFrost/Jexl) for defining configuration

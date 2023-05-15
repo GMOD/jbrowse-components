@@ -15,13 +15,14 @@ import RedoIcon from '@mui/icons-material/Redo'
 import type { MenuItem } from '@jbrowse/core/ui'
 import { Save, SaveAs, DNA, Cable } from '@jbrowse/core/ui/Icons'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-
-import OpenSequenceDialog from '../OpenSequenceDialog'
 import type { SessionWithDialogs } from '@jbrowse/product-core/src/Session/DialogQueue'
+
+// locals
 import { getSaveSession } from './Sessions'
 import { DesktopRootModel } from '.'
+import OpenSequenceDialog from '../components/OpenSequenceDialog'
 
-const PreferencesDialog = lazy(() => import('../PreferencesDialog'))
+const PreferencesDialog = lazy(() => import('../components/PreferencesDialog'))
 const { ipcRenderer } = window.require('electron')
 
 export interface Menu {
@@ -31,6 +32,7 @@ export interface Menu {
 
 /**
  * #stateModel DesktopMenusMixin
+ * #category root
  */
 export default function Menus(pluginManager: PluginManager) {
   return types

@@ -3,7 +3,7 @@ import React from 'react'
 import { QueryParamProvider } from 'use-query-params'
 import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
 
-import { Loader } from '../Loader'
+import { Loader } from '../components/Loader'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 

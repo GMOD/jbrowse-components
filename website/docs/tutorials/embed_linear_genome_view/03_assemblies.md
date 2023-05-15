@@ -3,6 +3,8 @@ id: 03_assemblies
 title: About assemblies
 ---
 
+import Figure from '../../figure'
+
 ## What is an assembly?
 
 An assembly in JBrowse 2 is a collection of information that describes the
@@ -47,7 +49,7 @@ The instructions for installing JBrowse CLI are on the
 "[Introduction](../01_introduction)" page. After installing, if you run the
 command `jbrowse --help` in the terminal, you should see something like this:
 
-![The output of `jbrowse --help` in a terminal](./img/jbrowse_help.png)
+<Figure caption="The output of `jbrowse --help` in a terminal" src="/img/embed_linear_genome_view/jbrowse_help.png"/>
 
 :::note
 

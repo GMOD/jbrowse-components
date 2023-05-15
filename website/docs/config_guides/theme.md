@@ -1,6 +1,5 @@
 ---
 id: theme
-toplevel: true
 title: Coloring/theming
 ---
 

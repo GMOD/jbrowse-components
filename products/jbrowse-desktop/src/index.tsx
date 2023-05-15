@@ -7,7 +7,7 @@ import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
 import '@fontsource/roboto'
 
 import factoryReset from './factoryReset'
-import Loader from './Loader'
+import Loader from './components/Loader'
 
 if (window?.name.startsWith('JBrowseAuthWindow')) {
   window.opener?.postMessage({

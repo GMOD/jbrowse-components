@@ -1,7 +1,6 @@
 ---
 id: feature_sequence
 title: Feature sequence panel
-toplevel: true
 ---
 
 import Figure from '../figure'

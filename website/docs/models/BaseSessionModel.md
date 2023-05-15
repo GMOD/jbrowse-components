@@ -1,7 +1,6 @@
 ---
 id: basesessionmodel
 title: BaseSessionModel
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,11 +8,9 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Source file
+### Source file
 
 [packages/product-core/src/Session/Base.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/Base.ts)
-
-## Docs
 
 base session shared by **all** JBrowse products. Be careful what you include
 here, everything will use it.

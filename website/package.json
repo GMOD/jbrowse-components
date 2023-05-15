@@ -19,11 +19,11 @@
   },
   "dependencies": {
     "@cmfcmf/docusaurus-search-local": "^1.1.0",
-    "@docusaurus/core": "0.0.0-5562",
-    "@docusaurus/preset-classic": "0.0.0-5562",
+    "@docusaurus/core": "^2.4.1",
+    "@docusaurus/preset-classic": "^2.4.1",
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
-    "@mdx-js/react": "^2.3.0",
+    "@mdx-js/react": "^1.0.0",
     "@mui/icons-material": "^5.11.16",
     "@mui/material": "^5.12.0",
     "acorn": "^8.8.2",
@@ -36,7 +36,7 @@
     "react-player": "^2.12.0"
   },
   "devDependencies": {
-    "@docusaurus/module-type-aliases": "0.0.0-5562",
+    "@docusaurus/module-type-aliases": "^2.4.1",
     "@tsconfig/docusaurus": "^1.0.7",
     "typescript": "^5.0.4"
   },

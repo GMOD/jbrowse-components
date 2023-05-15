@@ -1,7 +1,6 @@
 ---
 id: trackheightmixin
 title: TrackHeightMixin
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,11 +8,9 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Source file
+### Source file
 
 [plugins/linear-genome-view/src/BaseLinearDisplay/models/TrackHeightMixin.tsx](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/BaseLinearDisplay/models/TrackHeightMixin.tsx)
-
-## Docs
 
 ### TrackHeightMixin - Properties
 
@@ -32,7 +29,23 @@ heightPreConfig: types.maybe(
       )
 ```
 
+#### property: scrollTop
+
+```js
+// type signature
+number
+// code
+scrollTop: 0
+```
+
 ### TrackHeightMixin - Actions
+
+#### action: setScrollTop
+
+```js
+// type signature
+setScrollTop: (scrollTop: number) => void
+```
 
 #### action: setHeight
 

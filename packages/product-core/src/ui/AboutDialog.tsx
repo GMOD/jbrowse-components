@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import copy from 'copy-to-clipboard'
-import { Button, DialogContent, Typography } from '@mui/material'
+import { Button, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import {
   getConf,
@@ -85,6 +85,7 @@ export function AboutContents({ config }: { config: AnyConfigurationModel }) {
   const [copied, setCopied] = useState(false)
   const conf = readConfObject(config)
   const session = getSession(config)
+  const { classes } = useStyles()
 
   const hideUris =
     getConf(session, ['formatAbout', 'hideUris']) ||
@@ -112,7 +113,7 @@ export function AboutContents({ config }: { config: AnyConfigurationModel }) {
   ) as { name: string; Component: React.FC<any> }
 
   return (
-    <>
+    <div className={classes.content}>
       <BaseCard title="Configuration">
         {!hideUris ? (
           <Button
@@ -139,18 +140,17 @@ export function AboutContents({ config }: { config: AnyConfigurationModel }) {
         </BaseCard>
       ) : null}
       <FileInfoPanel config={config} />
-    </>
+    </div>
   )
 }
 
 export default function AboutDialog({
   config,
-  onClose,
+  handleClose,
 }: {
   config: AnyConfigurationModel
-  onClose: () => void
+  handleClose: () => void
 }) {
-  const { classes } = useStyles()
   const session = getSession(config)
   const trackName = getTrackName(config, session)
   const { pluginManager } = getEnv(session)
@@ -163,10 +163,8 @@ export default function AboutDialog({
   ) as React.FC<any>
 
   return (
-    <Dialog open onClose={onClose} title={trackName} maxWidth="xl">
-      <DialogContent className={classes.content}>
-        <AboutComponent config={config} />
-      </DialogContent>
+    <Dialog open onClose={handleClose} title={trackName} maxWidth="xl">
+      <AboutComponent config={config} />
     </Dialog>
   )
 }

@@ -8,7 +8,8 @@ import { types } from 'mobx-state-tree'
 
 /**
  * #stateModel LinearGCContentDisplay
- * base model BaseWiggleDisplayModel
+ * #category display
+ * base model `BaseWiggleDisplayModel`
  */
 export default function stateModelFactory(
   pluginManager: PluginManager,

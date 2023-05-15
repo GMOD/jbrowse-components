@@ -1,25 +1,22 @@
 ---
-id: internetaccount
-title: InternetAccount
-toplevel: true
+id: baseinternetaccount
+title: BaseInternetAccount
 ---
 
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-## Source file
+### Source file
 
 [packages/core/pluggableElementTypes/models/baseInternetAccountConfig.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/pluggableElementTypes/models/baseInternetAccountConfig.ts)
 
-## Docs
-
 the "base" internet account type
 
-### InternetAccount - Identifier
+### BaseInternetAccount - Identifier
 
 #### slot: explicitIdentifier
 
-### InternetAccount - Slots
+### BaseInternetAccount - Slots
 
 #### slot: name
 

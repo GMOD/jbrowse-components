@@ -1,7 +1,6 @@
 ---
 id: jbrowsewebrootmodel
 title: JBrowseWebRootModel
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,11 +8,9 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Source file
+### Source file
 
 [products/jbrowse-web/src/rootModel/rootModel.ts](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-web/src/rootModel/rootModel.ts)
-
-## Docs
 
 composed of
 

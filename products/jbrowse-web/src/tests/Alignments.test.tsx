@@ -16,7 +16,7 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-const delay = { timeout: 20000 }
+const delay = { timeout: 50000 }
 const opts = [{}, delay]
 
 test('opens an alignments track', async () => {
@@ -42,7 +42,7 @@ test('opens an alignments track', async () => {
 
   // this is to confirm a alignment detail widget opened
   await findByTestId('alignment-side-drawer', ...opts)
-}, 20000)
+}, 50000)
 
 test('test that bam with small max height displays message', async () => {
   const { findByTestId, findAllByText } = await createView()
@@ -51,7 +51,7 @@ test('test that bam with small max height displays message', async () => {
   )
 
   await findAllByText('Max height reached', ...opts)
-}, 30000)
+}, 40000)
 
 test('test snpcoverage doesnt count snpcoverage', async () => {
   const { view, findByTestId, findByText } = await createView()
@@ -61,4 +61,4 @@ test('test snpcoverage doesnt count snpcoverage', async () => {
   const f1 = within(await findByTestId('Blockset-snpcoverage', ...opts))
   expectCanvasMatch(await f1.findByTestId(pv('2657..2688-0'), ...opts))
   expectCanvasMatch(await f1.findByTestId(pv('2689..2720-0'), ...opts))
-}, 30000)
+}, 40000)

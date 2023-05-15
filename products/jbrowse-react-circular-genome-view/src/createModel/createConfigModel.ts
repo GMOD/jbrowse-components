@@ -9,6 +9,7 @@ import { getParent, types } from 'mobx-state-tree'
 
 /**
  * #config JBrowseReactCircularGenomeViewConfig
+ * #category root
  */
 export default function createConfigModel(
   pluginManager: PluginManager,

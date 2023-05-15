@@ -24,21 +24,13 @@ export default function DialogQueue(pluginManager: PluginManager) {
        * #getter
        */
       get DialogComponent() {
-        if (self.queueOfDialogs.length) {
-          const firstInQueue = self.queueOfDialogs[0]
-          return firstInQueue && firstInQueue[0]
-        }
-        return undefined
+        return self.queueOfDialogs[0]?.[0]
       },
       /**
        * #getter
        */
       get DialogProps() {
-        if (self.queueOfDialogs.length) {
-          const firstInQueue = self.queueOfDialogs[0]
-          return firstInQueue && firstInQueue[1]
-        }
-        return undefined
+        return self.queueOfDialogs[0]?.[1]
       },
     }))
     .actions(self => ({
@@ -52,9 +44,9 @@ export default function DialogQueue(pluginManager: PluginManager) {
        * #action
        */
       queueDialog(
-        callback: (doneCallback: () => void) => [DialogComponentType, unknown],
-      ): void {
-        const [component, props] = callback(() => {
+        cb: (doneCallback: () => void) => [DialogComponentType, unknown],
+      ) {
+        const [component, props] = cb(() => {
           this.removeActiveDialog()
         })
         self.queueOfDialogs = [...self.queueOfDialogs, [component, props]]

@@ -1,17 +1,14 @@
 ---
 id: gff3tabixadapter
 title: Gff3TabixAdapter
-toplevel: true
 ---
 
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-## Source file
+### Source file
 
 [plugins/gff3/src/Gff3TabixAdapter/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gff3/src/Gff3TabixAdapter/configSchema.ts)
-
-## Docs
 
 ### Gff3TabixAdapter - Slots
 

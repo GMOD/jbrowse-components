@@ -7,6 +7,7 @@ import { BaseRootModelType } from './Base'
 
 /**
  * #stateModel InternetAccountsMixin
+ * #category root
  */
 export default function InternetAccountsF(pluginManager: PluginManager) {
   return types

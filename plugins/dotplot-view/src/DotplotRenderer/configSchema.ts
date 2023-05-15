@@ -3,6 +3,7 @@ import { types } from 'mobx-state-tree'
 
 /**
  * #config DotplotRenderer
+ * #category renderer
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 

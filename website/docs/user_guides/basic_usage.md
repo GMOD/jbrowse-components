@@ -1,6 +1,5 @@
 ---
 id: basic_usage
-toplevel: true
 title: Basic usage
 ---
 

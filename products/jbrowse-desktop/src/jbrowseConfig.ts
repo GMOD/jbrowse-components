@@ -10,6 +10,7 @@ import { types } from 'mobx-state-tree'
 
 /**
  * #config JBrowseDesktopConfiguration
+ * #category root
  * configuration in a config.json/file.jbrowse
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars

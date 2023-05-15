@@ -1,7 +1,6 @@
 ---
 id: dotplot1dview
 title: Dotplot1DView
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,11 +8,9 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Source file
+### Source file
 
 [plugins/dotplot-view/src/DotplotView/1dview.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotView/1dview.ts)
-
-## Docs
 
 ref https://mobx-state-tree.js.org/concepts/volatiles on volatile state used
 here

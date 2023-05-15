@@ -1,7 +1,6 @@
 ---
 id: base1dview
 title: Base1DView
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,11 +8,9 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Source file
+### Source file
 
 [packages/core/util/Base1DViewModel.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/util/Base1DViewModel.ts)
-
-## Docs
 
 used in non-lgv view representations of a 1d view e.g. the two axes of the
 dotplot use this

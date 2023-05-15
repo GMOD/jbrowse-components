@@ -1,7 +1,6 @@
 ---
 id: jbrowsedesktopsessionmodel
 title: JBrowseDesktopSessionModel
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,15 +8,32 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Source file
+### Source file
 
 [products/jbrowse-desktop/src/sessionModel/index.ts](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-desktop/src/sessionModel/index.ts)
 
-## Docs
+composed of
 
-inherits SnackbarModel
+- ReferenceManagementSessionMixin
+- ConnectionManagementSessionMixin
+- DrawerWidgetSessionMixin
+- DialogQueueSessionMixin
+- ThemeManagerSessionMixin
+- TracksManagerSessionMixin
+- MultipleViewsSessionMixin
+- JBrowseDesktopSessionMixin
+- JBrowseDesktopSessionAssembliesModel
+- JBrowseDesktopSessionTrackMenuMixin
+- SnackbarModel
 
 ### JBrowseDesktopSessionModel - Getters
+
+#### getter: root
+
+```js
+// type
+{ jbrowse: any; version: string; session: any; sessionPath: string; assemblyManager: { assemblies: IMSTArray<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { ...; } & ... 4 more ... & { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>; } & ... 4 more ... & IStateTreeNode<...>; interne...
+```
 
 #### getter: history
 

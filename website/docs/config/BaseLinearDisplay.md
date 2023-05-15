@@ -1,17 +1,14 @@
 ---
 id: baselineardisplay
 title: BaseLinearDisplay
-toplevel: true
 ---
 
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-## Source file
+### Source file
 
 [plugins/linear-genome-view/src/BaseLinearDisplay/models/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/BaseLinearDisplay/models/configSchema.ts)
-
-## Docs
 
 `BaseLinearDisplay` is a "base" config that is extended by classes like
 `LinearBasicDisplay` (used for feature tracks, etc) and `LinearBareDisplay`
