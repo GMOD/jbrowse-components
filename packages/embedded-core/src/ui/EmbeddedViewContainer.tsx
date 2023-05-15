@@ -1,11 +1,5 @@
 import React, { Suspense } from 'react'
-import {
-  Paper,
-  Theme,
-  ThemeProvider,
-  ScopedCssBaseline,
-  useTheme,
-} from '@mui/material'
+import { Paper, ScopedCssBaseline, useTheme } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
@@ -54,21 +48,17 @@ const ViewContainer = observer(function ({
 const ViewContainerWrapper = observer(function ({
   view,
   children,
-  theme,
 }: {
   view: IBaseViewModel
   children: React.ReactNode
-  theme: Theme
 }) {
   const { classes } = useStyles()
   return (
-    <ThemeProvider theme={theme}>
-      <div className={classes.avoidParentStyle}>
-        <ScopedCssBaseline>
-          <ViewContainer view={view}>{children}</ViewContainer>
-        </ScopedCssBaseline>
-      </div>
-    </ThemeProvider>
+    <div className={classes.avoidParentStyle}>
+      <ScopedCssBaseline>
+        <ViewContainer view={view}>{children}</ViewContainer>
+      </ScopedCssBaseline>
+    </div>
   )
 })
 export default ViewContainerWrapper

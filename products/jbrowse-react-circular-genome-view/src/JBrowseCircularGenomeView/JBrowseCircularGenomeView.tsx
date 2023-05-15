@@ -1,4 +1,5 @@
 import React, { Suspense } from 'react'
+import { ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
 import { getEnv } from '@jbrowse/core/util'
 import { readConfObject } from '@jbrowse/core/configuration'
@@ -26,14 +27,14 @@ const JBrowseCircularGenomeView = observer(function ({
   )
 
   return (
-    <>
-      <EmbeddedViewContainer key={`view-${view.id}`} view={view} theme={theme}>
+    <ThemeProvider theme={theme}>
+      <EmbeddedViewContainer key={`view-${view.id}`} view={view}>
         <Suspense fallback={<div>Loading...</div>}>
           <ReactComponent model={view} session={session} />
         </Suspense>
       </EmbeddedViewContainer>
       <ModalWidget session={session} />
-    </>
+    </ThemeProvider>
   )
 })
 
