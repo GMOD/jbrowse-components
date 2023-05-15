@@ -2,12 +2,12 @@ import React from 'react'
 import {
   Dialog,
   DialogTitle,
-  IconButton,
-  Divider,
   DialogProps,
+  Divider,
+  IconButton,
   ScopedCssBaseline,
-  createTheme,
   ThemeProvider,
+  createTheme,
   useTheme,
 } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -36,28 +36,36 @@ function DialogError({ error }: { error: unknown }) {
   )
 }
 
-function JBrowseDialog(props: DialogProps & { title: string }) {
+interface Props extends DialogProps {
+  header?: React.ReactNode
+}
+
+export default observer(function JBrowseDialog(props: Props) {
   const { classes } = useStyles()
-  const { title, children, onClose } = props
+  const { title, header, children, onClose } = props
   const theme = useTheme()
 
   return (
     <Dialog {...props}>
       <ScopedCssBaseline>
-        <DialogTitle>
-          {title}
-          {onClose ? (
-            <IconButton
-              className={classes.closeButton}
-              onClick={() => {
-                // @ts-expect-error
-                onClose()
-              }}
-            >
-              <CloseIcon />
-            </IconButton>
-          ) : null}
-        </DialogTitle>
+        {React.isValidElement(header) ? (
+          <>{header}</>
+        ) : (
+          <DialogTitle>
+            {title}
+            {onClose ? (
+              <IconButton
+                className={classes.closeButton}
+                onClick={() => {
+                  // @ts-expect-error
+                  onClose()
+                }}
+              >
+                <CloseIcon />
+              </IconButton>
+            ) : null}
+          </DialogTitle>
+        )}
         <Divider />
 
         <ErrorBoundary FallbackComponent={DialogError}>
@@ -81,5 +89,4 @@ function JBrowseDialog(props: DialogProps & { title: string }) {
       </ScopedCssBaseline>
     </Dialog>
   )
-}
-export default observer(JBrowseDialog)
+})

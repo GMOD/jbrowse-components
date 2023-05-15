@@ -14,7 +14,7 @@ plugins/wiggle/src/util.ts
 plugins/protein/src/ProteinReferenceSequenceRenderer/aminoAcids.js
 plugins/spreadsheet-view/src/SpreadsheetView/test_data/starfusion_example.fusion_predictions.tsv
 products/jbrowse-aws-lambda-functions/
-products/jbrowse-desktop/src/JBrowse.test.tsx
+products/jbrowse-desktop/src/components/JBrowse.test.tsx
 test_data/volvox/names/
 products/jbrowse-web/src/sessionSharing.ts
 website/docs/models/

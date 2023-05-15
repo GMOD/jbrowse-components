@@ -11,6 +11,7 @@ import { ElementId } from '../../util/types/mst'
 
 /**
  * #stateModel BaseDisplay
+ * #category display
  */
 function stateModelFactory() {
   return types

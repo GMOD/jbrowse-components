@@ -1,6 +1,5 @@
 ---
 id: creating_view
-toplevel: true
 title: Creating a custom view type
 ---
 

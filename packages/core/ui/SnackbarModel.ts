@@ -4,6 +4,7 @@ import { NotificationLevel, SnackAction } from '../util/types'
 
 /**
  * #stateModel SnackbarModel
+ * #category session
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function makeExtension(snackbarMessages: IObservableArray<any>) {

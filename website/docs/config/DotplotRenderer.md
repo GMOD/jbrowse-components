@@ -1,17 +1,14 @@
 ---
 id: dotplotrenderer
 title: DotplotRenderer
-toplevel: true
 ---
 
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-## Source file
+### Source file
 
 [plugins/dotplot-view/src/DotplotRenderer/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotRenderer/configSchema.ts)
-
-## Docs
 
 ### DotplotRenderer - Slots
 

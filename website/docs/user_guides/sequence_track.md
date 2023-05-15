@@ -1,12 +1,9 @@
 ---
 id: sequence_track
-toplevel: true
 title: Sequence track
 ---
 
 import Figure from '../figure'
-
-## Sequence track
 
 The sequence track shows the reference sequence and a three-frame translation.
 If the view is horizontally flipped, the sequence is "reverse complemented" so

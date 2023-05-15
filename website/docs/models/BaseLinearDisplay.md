@@ -1,7 +1,6 @@
 ---
 id: baselineardisplay
 title: BaseLinearDisplay
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,11 +8,9 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Source file
+### Source file
 
 [plugins/linear-genome-view/src/BaseLinearDisplay/models/BaseLinearDisplayModel.tsx](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/BaseLinearDisplay/models/BaseLinearDisplayModel.tsx)
-
-## Docs
 
 extends `BaseDisplay`
 
@@ -161,13 +158,6 @@ renderSvg: (opts: ExportSvgOptions & { overrideHeight: number; theme: ThemeOptio
 ```
 
 ### BaseLinearDisplay - Actions
-
-#### action: setScrollTop
-
-```js
-// type signature
-setScrollTop: (scrollTop: number) => void
-```
 
 #### action: addBlock
 

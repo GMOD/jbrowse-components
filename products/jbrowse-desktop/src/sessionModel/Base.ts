@@ -4,6 +4,7 @@ import { Session as CoreSession } from '@jbrowse/product-core'
 
 /**
  * #stateModel JBrowseDesktopSessionMixin
+ * #category session
  */
 export default function BaseSession(pluginManager: PluginManager) {
   return CoreSession.Base(pluginManager)

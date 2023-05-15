@@ -1,17 +1,14 @@
 ---
 id: multilinearwiggledisplay
 title: MultiLinearWiggleDisplay
-toplevel: true
 ---
 
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-## Source file
+### Source file
 
 [plugins/wiggle/src/MultiLinearWiggleDisplay/models/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/MultiLinearWiggleDisplay/models/configSchema.ts)
-
-## Docs
 
 ### MultiLinearWiggleDisplay - Slots
 
@@ -132,7 +129,7 @@ height: {
       }
 ```
 
-## MultiLinearWiggleDisplay - Derives from
+### MultiLinearWiggleDisplay - Derives from
 
 ```js
 baseConfiguration: baseLinearDisplayConfigSchema

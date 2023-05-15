@@ -8,7 +8,7 @@ logic: instead "display" types register themselves to a track type, to display
 data in a particular view. Then, the renderers are called by the display type on
 e.g. a per-block basis
 
-## Examples of track types
+### Examples of track types
 
 For examples of custom track types, refer to things like:
 

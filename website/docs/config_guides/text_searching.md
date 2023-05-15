@@ -1,10 +1,7 @@
 ---
 id: text_searching
-toplevel: true
 title: Text searching
 ---
-
-## Text searching
 
 Text searching appears in two forms: "per-track indexes" and "aggregate indexes"
 which search across multiple tracks.

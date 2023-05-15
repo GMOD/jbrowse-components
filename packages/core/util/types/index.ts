@@ -165,6 +165,7 @@ export interface SessionWithWidgets extends AbstractSessionModel {
   minimized: boolean
   visibleWidget?: Widget
   widgets: Map<string, Widget>
+  hideAllWidgets: () => void
   activeWidgets: Map<string, Widget>
   addWidget(
     typeName: string,

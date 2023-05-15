@@ -56,6 +56,8 @@ export interface ExportSvgOptions {
 
 /**
  * #stateModel DotplotView
+ * #category view
+ * extends  `BaseViewModel`
  */
 export default function stateModelFactory(pm: PluginManager) {
   return types

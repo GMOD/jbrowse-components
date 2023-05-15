@@ -15,6 +15,7 @@ import {
   types,
   Instance,
   SnapshotIn,
+  isStateTreeNode,
 } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
@@ -32,11 +33,20 @@ import Assemblies from './Assemblies'
 import SessionConnections from './SessionConnections'
 import { WebRootModel } from '../rootModel/rootModel'
 
-const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
+const AboutDialog = lazy(() => import('./AboutDialog'))
 
 /**
  * #stateModel JBrowseWebSessionModel
- * inherits SnackbarModel
+ * composed of
+ * - SnackbarModel
+ * - JBrowseWebSessionConnectionsModel
+ * - JBrowseWebSessionAssembliesModel
+ * - ReferenceManagementSessionMixin
+ * - DrawerWidgetSessionMixin
+ * - DialogQueueSessionMixin
+ * - ThemeManagerSessionMixin
+ * - MultipleViewsSessionMixin
+ * - SessionTracksManagerSessionMixin
  */
 export default function sessionModelFactory(
   pluginManager: PluginManager,
@@ -302,12 +312,14 @@ export default function sessionModelFactory(
             label: 'Copy track',
             disabled: isRefSeq,
             onClick: () => {
-              const snap = clone(getSnapshot(config)) as any
+              const s = isStateTreeNode(config) ? getSnapshot(config) : config
+              const snap = clone(s) as any
               const now = Date.now()
               snap.trackId += `-${now}`
-              snap.displays.forEach((display: { displayId: string }) => {
+              snap.displays?.forEach((display: { displayId: string }) => {
                 display.displayId += `-${now}`
               })
+
               // the -sessionTrack suffix to trackId is used as metadata for
               // the track selector to store the track in a special category,
               // and default category is also cleared

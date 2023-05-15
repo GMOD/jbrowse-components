@@ -16,7 +16,7 @@ import type { SessionWithTracks } from '@jbrowse/product-core/src/Session/Tracks
 import type { SessionWithDrawerWidgets } from '@jbrowse/product-core/src/Session/DrawerWidgets'
 import { DesktopRootModel } from '../rootModel'
 
-const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
+const AboutDialog = lazy(() => import('./AboutDialog'))
 
 /**
  * #stateModel JBrowseDesktopSessionTrackMenuMixin

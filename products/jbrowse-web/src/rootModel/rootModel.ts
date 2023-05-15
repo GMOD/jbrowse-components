@@ -47,7 +47,7 @@ import type {
 } from '@jbrowse/product-core/src/Session/Base'
 import type { SessionWithDialogs } from '@jbrowse/product-core/src/Session/DialogQueue'
 
-const PreferencesDialog = lazy(() => import('../PreferencesDialog'))
+const PreferencesDialog = lazy(() => import('../components/PreferencesDialog'))
 
 export interface Menu {
   label: string

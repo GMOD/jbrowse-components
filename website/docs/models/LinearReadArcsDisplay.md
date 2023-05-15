@@ -1,7 +1,6 @@
 ---
 id: linearreadarcsdisplay
 title: LinearReadArcsDisplay
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,11 +8,9 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Source file
+### Source file
 
 [plugins/alignments/src/LinearReadArcsDisplay/model.tsx](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearReadArcsDisplay/model.tsx)
-
-## Docs
 
 extends `BaseDisplay`, it is not a block based track, hence not
 BaseLinearDisplay
@@ -100,6 +97,13 @@ drawLongRange: true
 
 ### LinearReadArcsDisplay - Getters
 
+#### getter: drawn
+
+```js
+// type
+boolean
+```
+
 #### getter: lineWidthSetting
 
 ```js
@@ -140,6 +144,27 @@ renderSvg: (opts: { rasterizeLayers?: boolean; }) => Promise<React.ReactNode>
 ```
 
 ### LinearReadArcsDisplay - Actions
+
+#### action: setLastDrawnOffsetPx
+
+```js
+// type signature
+setLastDrawnOffsetPx: (n: number) => void
+```
+
+#### action: setLastDrawnBpPerPx
+
+```js
+// type signature
+setLastDrawnBpPerPx: (n: number) => void
+```
+
+#### action: setLoading
+
+```js
+// type signature
+setLoading: (f: boolean) => void
+```
 
 #### action: reload
 
@@ -184,22 +209,6 @@ setDrawInter: (f: boolean) => void
 ```js
 // type signature
 setDrawLongRange: (f: boolean) => void
-```
-
-#### action: setLoading
-
-```js
-// type signature
-setLoading: (f: boolean) => void
-```
-
-#### action: setDrawn
-
-used during tests to detect when we can complete a snapshot test
-
-```js
-// type signature
-setDrawn: (f: boolean) => void
 ```
 
 #### action: setFilterBy

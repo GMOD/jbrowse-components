@@ -26,15 +26,13 @@ From there, run the command `npx serve`. It should print out a message that
 looks something like this:
 
 ```
-   ┌────────────────────────────────────────┐
-   │                                        │
-   │   Serving!                             │
-   │                                        │
-   │   Local:  http://localhost:5000        │
-   │                                        │
-   │   Copied local address to clipboard!   │
-   │                                        │
-   └────────────────────────────────────────┘
+
+   Serving!
+
+   Local:  http://localhost:5000
+
+   Copied local address to clipboard!
+
 ```
 
 Now open your web browser and navigate to the url (e.g.
@@ -82,7 +80,7 @@ developer tools (You can use <kbd>F12</kbd> or
 a status of 200 for "react-linear-genome-view.umd.development.js,"
 "react-dom.development.js," and "react.development.js," then you are good to go!
 
-![Network tab of developer tools showing that scripts have loaded correctly](./img/network_success.png)
+<Figure caption="Network tab of developer tools showing that scripts have loaded correctly" src="/img/embed_linear_genome_view/network_success.png"/>
 
 Now we need to actually create the view. The code to do so looks like this:
 

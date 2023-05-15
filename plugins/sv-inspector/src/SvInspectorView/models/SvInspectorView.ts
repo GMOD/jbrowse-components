@@ -22,6 +22,7 @@ import {
 
 /**
  * #stateModel SvInspectorView
+ * #category view
  * combination of a spreadsheetview and a circularview
  */
 function SvInspectorViewF(pluginManager: PluginManager) {

@@ -32,12 +32,10 @@ function ColorByTagDlg(props: {
           placeholder="Enter tag name"
           inputProps={{
             maxLength: 2,
-            'data-testid': 'color-tag-name-input',
           }}
           error={tag.length === 2 && !validTag}
           helperText={tag.length === 2 && !validTag ? 'Not a valid tag' : ''}
           autoComplete="off"
-          data-testid="color-tag-name"
         />
         <DialogActions>
           <Button

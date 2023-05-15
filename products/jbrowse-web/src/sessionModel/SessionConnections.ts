@@ -8,6 +8,10 @@ import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
 import { SessionWithSessionTracks } from '@jbrowse/product-core/src/Session/SessionTracks'
 
+/**
+ * #stateModel JBrowseWebSessionConnectionsMixin
+ * #category session
+ */
 export default function SessionConnections(pluginManager: PluginManager) {
   return types
     .compose(

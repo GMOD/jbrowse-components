@@ -1,7 +1,7 @@
 ---
 id: user_guide
 toplevel: true
-title: Overview
+title: User guide
 ---
 
 import Figure from './figure'

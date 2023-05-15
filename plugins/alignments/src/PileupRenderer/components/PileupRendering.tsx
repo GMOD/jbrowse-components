@@ -17,6 +17,7 @@ function PileupRendering(props: {
   bpPerPx: number
   sortedBy?: { type: string; pos: number; refName: string }
   colorBy?: { type: string; tag?: string }
+  filterBy?: { tagFilter?: { tag: string } }
   onMouseMove?: (event: React.MouseEvent, featureId?: string) => void
 }) {
   const {
@@ -29,6 +30,7 @@ function PileupRendering(props: {
     bpPerPx,
     sortedBy,
     colorBy,
+    filterBy,
   } = props
   const { selectedFeatureId, featureIdUnderMouse, contextMenuFeature } =
     displayModel
@@ -167,7 +169,12 @@ function PileupRendering(props: {
   // need to call this in render so we get the right observer behavior
   return (
     <div
-      data-testid={`pileup-${[sortedBy?.type, colorBy?.type, colorBy?.tag]
+      data-testid={`pileup-${[
+        sortedBy?.type,
+        colorBy?.type,
+        colorBy?.tag,
+        filterBy?.tagFilter?.tag,
+      ]
         .filter(f => !!f)
         .join('-')}`}
       style={{ position: 'relative', width: canvasWidth, height }}

@@ -20,6 +20,7 @@ type SessionModelFactory = (
 
 /**
  * #stateModel JBrowseDesktopRootModel
+ * #category root
  * composed of
  * - BaseRootModel
  * - InternetAccountsMixin

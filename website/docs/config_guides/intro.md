@@ -1,7 +1,6 @@
 ---
 id: intro
 title: Intro to the config.json format
-toplevel: true
 ---
 
 A JBrowse 2 configuration for jbrowse-web is stored in a file (often called

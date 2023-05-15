@@ -1,6 +1,5 @@
 ---
 id: alignments_track
-toplevel: true
 title: Alignments track
 ---
 
@@ -191,4 +190,4 @@ display" will re-pack features into that area.
 Users can create a more compact display of alignments using Track menu->Pileup
 settings->Set feature height->Compact
 
-![](/img/alignments/compact.png)
+<Figure caption="Compact view of alignments" src="/img/alignments/compact.png" />

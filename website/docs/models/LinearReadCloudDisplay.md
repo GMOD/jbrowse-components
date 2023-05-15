@@ -1,7 +1,6 @@
 ---
 id: linearreadclouddisplay
 title: LinearReadCloudDisplay
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,11 +8,9 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Source file
+### Source file
 
 [plugins/alignments/src/LinearReadCloudDisplay/model.tsx](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearReadCloudDisplay/model.tsx)
-
-## Docs
 
 extends `BaseDisplay`, it is not a block based track, hence not
 BaseLinearDisplay
@@ -80,6 +77,27 @@ renderSvg: (opts: { rasterizeLayers?: boolean; }) => Promise<React.ReactNode>
 
 ### LinearReadCloudDisplay - Actions
 
+#### action: setLastDrawnOffsetPx
+
+```js
+// type signature
+setLastDrawnOffsetPx: (n: number) => void
+```
+
+#### action: setLastDrawnBpPerPx
+
+```js
+// type signature
+setLastDrawnBpPerPx: (n: number) => void
+```
+
+#### action: setLoading
+
+```js
+// type signature
+setLoading: (f: boolean) => void
+```
+
 #### action: reload
 
 ```js
@@ -102,20 +120,6 @@ setRef: (ref: HTMLCanvasElement) => void
 ```js
 // type signature
 setChainData: (args: ChainData) => void
-```
-
-#### action: setLoading
-
-```js
-// type signature
-setLoading: (f: boolean) => void
-```
-
-#### action: setDrawn
-
-```js
-// type signature
-setDrawn: (f: boolean) => void
 ```
 
 #### action: setFilterBy

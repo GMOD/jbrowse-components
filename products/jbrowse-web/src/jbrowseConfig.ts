@@ -9,6 +9,7 @@ import { types } from 'mobx-state-tree'
 
 /**
  * #config JBrowseWebConfiguration
+ * #category root
  * configuration in a config.json
  */
 export default function JBrowseConfigF(

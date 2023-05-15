@@ -68,6 +68,7 @@ export interface Filter {
 
 /**
  * #stateModel LinearPileupDisplay
+ * #category display
  * extends `BaseLinearDisplay`
  */
 function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
