@@ -1,6 +1,6 @@
-import { Feature } from '@jbrowse/core/util'
+import { groupBy, Feature } from '@jbrowse/core/util'
 import { drawXY } from '../drawxy'
-import { groupBy, YSCALEBAR_LABEL_OFFSET } from '../util'
+import { YSCALEBAR_LABEL_OFFSET } from '../util'
 
 import WiggleBaseRenderer, {
   MultiRenderArgsDeserialized as MultiArgs,

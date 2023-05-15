@@ -1,5 +1,6 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 
 // locals
 import {
@@ -9,7 +10,6 @@ import {
 } from '../shared/color'
 import { ChainData } from '../shared/fetchChains'
 import { featurizeSA } from '../MismatchParser'
-import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import { LinearReadArcsDisplayModel } from './model'
 
 export function hasPairedReads(features: ChainData) {
@@ -179,30 +179,21 @@ export default function drawFeats(
   }
 
   for (const chain of chains) {
+    // chain.length === 1, singleton (other pairs/mates not in view)
     if (chain.length === 1 && drawLongRange) {
-      // singleton feature
       const f = chain[0]
-
-      // special case where we look at RPOS/RNEXT
-      if (hasPaired) {
-        const coord = f.next_pos || 0
-        draw(
-          f,
-          {
-            refName: f.next_ref || '',
-            start: coord,
-            end: coord,
-            strand: f.strand,
-          },
-          asm,
-          true,
+      if (hasPaired && !(f.flags & 8)) {
+        const mate = {
+          refName: f.next_ref || '',
+          start: f.next_pos || 0,
+          end: f.next_pos || 0,
+          strand: f.strand,
+        }
+        draw(f, mate, asm, true)
+      } else {
+        const features = [f, ...featurizeSA(f.SA, f.id, f.strand, f.name)].sort(
+          (a, b) => a.clipPos - b.clipPos,
         )
-      }
-
-      // special case where we look at SA
-      else {
-        const suppAlns = featurizeSA(f.SA, f.id, f.strand, f.name)
-        const features = [f, ...suppAlns].sort((a, b) => a.clipPos - b.clipPos)
         for (let i = 0; i < features.length - 1; i++) {
           const f = features[i]
           const v1 = features[i + 1]
@@ -211,7 +202,7 @@ export default function drawFeats(
       }
     } else {
       const res = hasPaired
-        ? chain.filter(f => !(f.flags & 2048))
+        ? chain.filter(f => !(f.flags & 2048) && !(f.flags & 8))
         : chain
             .sort((a, b) => a.clipPos - b.clipPos)
             .filter(f => !(f.flags & 256))

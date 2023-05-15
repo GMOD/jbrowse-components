@@ -1,5 +1,4 @@
-import { Feature } from '@jbrowse/core/util'
-import { groupBy } from '../util'
+import { groupBy, Feature } from '@jbrowse/core/util'
 import WiggleBaseRenderer, {
   MultiRenderArgsDeserialized as MultiArgs,
 } from '../WiggleBaseRenderer'
