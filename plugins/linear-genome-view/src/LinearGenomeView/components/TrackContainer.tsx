@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useRef } from 'react'
 import { Paper } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
@@ -7,13 +7,13 @@ import { ErrorBoundary } from 'react-error-boundary'
 
 // jbrowse core
 import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
-import { getConf } from '@jbrowse/core/configuration'
 import { ResizeHandle, ErrorMessage } from '@jbrowse/core/ui'
 import { useDebouncedCallback } from '@jbrowse/core/util'
 
 // locals
 import { LinearGenomeViewModel } from '..'
 import TrackLabelContainer from './TrackLabelContainer'
+import TrackRenderingContainer from './TrackRenderingContainer'
 
 const useStyles = makeStyles()({
   root: {
@@ -33,30 +33,11 @@ const useStyles = makeStyles()({
     width: '100%',
     zIndex: 3,
   },
-
-  // aligns with block boundaries. check for example the breakpoint split view
-  // demo to see if features align if wanting to change things
-  renderingComponentContainer: {
-    position: 'absolute',
-    // -1 offset because of the 1px border of the Paper
-    left: -1,
-    height: '100%',
-    width: '100%',
-  },
-
-  trackRenderingContainer: {
-    overflowY: 'auto',
-    overflowX: 'hidden',
-    whiteSpace: 'nowrap',
-    position: 'relative',
-    background: 'none',
-    zIndex: 2,
-  },
 })
 
 type LGV = LinearGenomeViewModel
 
-function TrackContainer({
+export default observer(function TrackContainer({
   model,
   track,
 }: {
@@ -65,76 +46,34 @@ function TrackContainer({
 }) {
   const { classes } = useStyles()
   const display = track.displays[0]
-  const { horizontalScroll, draggingTrackId, moveTrack } = model
-  const { height, RenderingComponent, DisplayBlurb } = display
-  const trackId = getConf(track, 'trackId')
-  const ref = useRef<HTMLDivElement>(null)
+  const { draggingTrackId } = model
+  const ref2 = useRef<HTMLDivElement>(null)
   const dimmed = draggingTrackId !== undefined && draggingTrackId !== display.id
-  const minimized = track.minimized
   const debouncedOnDragEnter = useDebouncedCallback(() => {
     if (isAlive(display) && dimmed) {
-      moveTrack(draggingTrackId, track.id)
+      model.moveTrack(draggingTrackId, track.id)
     }
   }, 100)
-  useEffect(() => {
-    if (ref.current) {
-      model.trackRefs[trackId] = ref.current
-    }
-    return () => {
-      delete model.trackRefs[trackId]
-    }
-  }, [model.trackRefs, trackId])
 
   return (
     <Paper
-      ref={ref}
+      ref={ref2}
       className={classes.root}
       variant="outlined"
       onClick={event => {
         if (event.detail === 2 && !track.displays[0].featureIdUnderMouse) {
-          const left = ref.current?.getBoundingClientRect().left || 0
+          const left = ref2.current?.getBoundingClientRect().left || 0
           model.zoomTo(model.bpPerPx / 2, event.clientX - left, true)
         }
       }}
     >
       <TrackLabelContainer track={track} view={model} />
-      <ErrorBoundary
-        key={track.id}
-        FallbackComponent={({ error }) => <ErrorMessage error={error} />}
-      >
-        <div
-          className={classes.trackRenderingContainer}
-          style={{ height: minimized ? 20 : height }}
-          onScroll={evt => display.setScrollTop(evt.currentTarget.scrollTop)}
+      <ErrorBoundary FallbackComponent={e => <ErrorMessage error={e.error} />}>
+        <TrackRenderingContainer
+          model={model}
+          track={track}
           onDragEnter={debouncedOnDragEnter}
-          data-testid={`trackRenderingContainer-${model.id}-${trackId}`}
-        >
-          {!minimized ? (
-            <>
-              <div
-                className={classes.renderingComponentContainer}
-                style={{ transform: `scaleX(${model.scaleFactor})` }}
-              >
-                <RenderingComponent
-                  model={display}
-                  onHorizontalScroll={horizontalScroll}
-                />
-              </div>
-
-              {DisplayBlurb ? (
-                <div
-                  style={{
-                    position: 'absolute',
-                    left: 0,
-                    top: display.height - 20,
-                  }}
-                >
-                  <DisplayBlurb model={display} />
-                </div>
-              ) : null}
-            </>
-          ) : null}
-        </div>
+        />
       </ErrorBoundary>
       <div
         className={classes.overlay}
@@ -150,6 +89,4 @@ function TrackContainer({
       />
     </Paper>
   )
-}
-
-export default observer(TrackContainer)
+})
