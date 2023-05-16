@@ -1,5 +1,5 @@
 import { getConf } from '@jbrowse/core/configuration'
-import { getContainingView, getSession, max } from '@jbrowse/core/util'
+import { getContainingView, getSession, max, min } from '@jbrowse/core/util'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
@@ -146,16 +146,17 @@ export default function drawFeats(
   }
 
   const halfHeight = featureHeight / 2 - 0.5
-  const scaler =
-    (displayHeight - 20) / Math.log(max(coords.map(c => c.distance)))
+  const maxD = Math.log(max(coords.map(c => c.distance)))
+  const minD = Math.max(Math.log(min(coords.map(c => c.distance))) - 1, 0)
+  const scaler = (displayHeight - 20) / (maxD - minD)
 
   for (let i = 0; i < coords.length; i++) {
     const { r1s, r1e, r2s, r2e, v0, v1, distance } = coords[i]
     const type = self.colorBy?.type || 'insertSizeAndOrientation'
 
-    const top = Math.log(distance) * scaler
-    ctx.fillStyle = 'black'
+    const top = (Math.log(distance) - minD) * scaler
     const w = r2s - r1e
+    ctx.fillStyle = 'black'
     fillRectCtx(r1e - view.offsetPx, top + halfHeight, w, 1, ctx)
 
     if (type === 'insertSizeAndOrientation') {
@@ -172,6 +173,7 @@ export default function drawFeats(
 
     const w1 = Math.max(r1e - r1s, 2)
     const w2 = Math.max(r2e - r2s, 2)
+    console.log({ top })
     fillRectCtx(r1s - view.offsetPx, top, w1, featureHeight, ctx)
     fillRectCtx(r2s - view.offsetPx, top, w2, featureHeight, ctx)
   }
