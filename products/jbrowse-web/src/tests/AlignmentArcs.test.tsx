@@ -1,4 +1,5 @@
-import { fireEvent, waitFor } from '@testing-library/react'
+import { waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
 // locals
 import { setup, expectCanvasMatch, doBeforeEach, createView, hts } from './util'
@@ -21,73 +22,81 @@ const delay = { timeout: 50000 }
 const opts = [{}, delay]
 
 test('toggle short-read arc display', async () => {
+  const user = userEvent.setup()
   const { view, getByTestId, findByTestId, findAllByText, findByText } =
     await createView()
   await view.navToLocString('ctgA:1-50000')
-  fireEvent.click(await findByTestId(hts('volvox_sv_cram'), ...opts))
-  fireEvent.click(await findByTestId('track_menu_icon', ...opts))
-  fireEvent.click(await findByText('Replace lower panel with...'))
-  fireEvent.click((await findAllByText('Arc display'))[0])
+  await user.click(await findByTestId(hts('volvox_sv_cram'), ...opts))
+  await user.click(await findByTestId('track_menu_icon', ...opts))
+  await user.click(await findByText('Replace lower panel with...'))
+  await user.click((await findAllByText('Arc display'))[0])
   await wait(view)
   expectCanvasMatch(getByTestId('arc-canvas'))
 }, 50000)
 
 test('toggle short-read cloud display', async () => {
+  const user = userEvent.setup()
   const { view, getByTestId, findByTestId, findAllByText, findByText } =
     await createView()
   await view.navToLocString('ctgA:1-50000')
-  fireEvent.click(await findByTestId(hts('volvox_sv_cram'), ...opts))
-  fireEvent.click(await findByTestId('track_menu_icon', ...opts))
-  fireEvent.click(await findByText('Replace lower panel with...'))
-  fireEvent.click((await findAllByText('Read cloud display'))[0])
+  await user.click(await findByTestId(hts('volvox_sv_cram'), ...opts))
+  await user.click(await findByTestId('track_menu_icon', ...opts))
+  await user.click(await findByText('Replace lower panel with...'))
+  await user.click((await findAllByText('Read cloud display'))[0])
   await wait(view)
   expectCanvasMatch(getByTestId('cloud-canvas'))
 }, 50000)
 
 test('toggle long-read cloud display', async () => {
+  const user = userEvent.setup()
   const { view, getByTestId, findByTestId, findAllByText, findByText } =
     await createView()
   await view.navToLocString('ctgA:19,101..32,027')
-  fireEvent.click(await findByTestId(hts('volvox-simple-inv.bam'), ...opts))
-  fireEvent.click(await findByTestId('track_menu_icon', ...opts))
-  fireEvent.click(await findByText('Replace lower panel with...'))
-  fireEvent.click((await findAllByText('Read cloud display'))[0])
+  await user.click(await findByTestId(hts('volvox-simple-inv.bam'), ...opts))
+  await user.click(await findByTestId('track_menu_icon', ...opts))
+  await user.click(await findByText('Replace lower panel with...'))
+  await user.click((await findAllByText('Read cloud display'))[0])
   await wait(view)
   expectCanvasMatch(getByTestId('cloud-canvas'))
 }, 50000)
 
 test('toggle long-read arc display', async () => {
+  const user = userEvent.setup()
   const { view, getByTestId, findByTestId, findAllByText, findByText } =
     await createView()
   await view.navToLocString('ctgA:19,101..32,027')
-  fireEvent.click(await findByTestId(hts('volvox-simple-inv.bam'), ...opts))
-  fireEvent.click(await findByTestId('track_menu_icon', ...opts))
-  fireEvent.click(await findByText('Replace lower panel with...'))
-  fireEvent.click((await findAllByText('Arc display'))[0])
+  await user.click(await findByTestId(hts('volvox-simple-inv.bam'), ...opts))
+  await user.click(await findByTestId('track_menu_icon', ...opts))
+  await user.click(await findByText('Replace lower panel with...'))
+  await user.click((await findAllByText('Arc display'))[0])
   await wait(view)
   expectCanvasMatch(getByTestId('arc-canvas'))
 }, 50000)
 
 test('toggle long-read arc display, use out of view pairing', async () => {
+  const user = userEvent.setup()
   const { view, getByTestId, findByTestId, findAllByText, findByText } =
     await createView()
   await view.navToLocString('ctgA:478..6,191')
-  fireEvent.click(await findByTestId(hts('volvox-long-reads-sv-cram'), ...opts))
-  fireEvent.click(await findByTestId('track_menu_icon', ...opts))
-  fireEvent.click(await findByText('Replace lower panel with...'))
-  fireEvent.click((await findAllByText('Arc display'))[0])
+  await user.click(
+    await findByTestId(hts('volvox-long-reads-sv-cram'), ...opts),
+  )
+  await user.click(await findByTestId('track_menu_icon', ...opts))
+  await user.click(await findByText('Replace lower panel with...'))
+  await user.click((await findAllByText('Arc display'))[0])
   await wait(view)
   expectCanvasMatch(getByTestId('arc-canvas'))
 }, 50000)
 
 test('toggle short-read arc display, use out of view pairing', async () => {
+  const user = userEvent.setup()
   const { view, getByTestId, findByTestId, findAllByText, findByText } =
     await createView()
   await view.navToLocString('ctgA:478..6,191')
-  fireEvent.click(await findByTestId(hts('volvox_sv_cram'), ...opts))
-  fireEvent.click(await findByTestId('track_menu_icon', ...opts))
-  fireEvent.click(await findByText('Replace lower panel with...'))
-  fireEvent.click((await findAllByText('Arc display'))[0])
+  await user.click(await findByTestId(hts('volvox_sv_cram'), ...opts))
+  await user.click(await findByTestId('track_menu_icon', ...opts))
+  await user.click(await findByText('Replace lower panel with...'))
+  await user.click((await findAllByText('Arc display'))[0])
   await wait(view)
   expectCanvasMatch(getByTestId('arc-canvas'))
 }, 50000)
