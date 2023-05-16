@@ -1,11 +1,30 @@
 import { orientationTypes } from '../util'
 import { ChainStats } from './fetchChains'
 
-const alignmentColoring: { [key: string]: string } = {
-  color_pair_lr: '#c8c8c8',
-  color_pair_rr: 'navy',
-  color_pair_rl: 'teal',
-  color_pair_ll: 'green',
+const fillColor: { [key: string]: string } = {
+  LR: '#c8c8c8',
+  RR: 'navy',
+  RL: 'teal',
+  LL: 'green',
+  large: 'red',
+  small: '#f0f',
+  interchrom: 'purple',
+  unknown: 'grey',
+}
+
+// manually calculated by running
+// Object.fromEntries(Object.entries(fillColor).map(([key,val])=>{
+//   return [key, color(val).darken('0.3').hex()]
+// }))
+const strokeColor: { [key: string]: string } = {
+  LR: '#8C8C8C',
+  RR: '#00005A',
+  RL: '#005A5A',
+  LL: '#005A00',
+  large: '#B30000',
+  small: '#B300B2',
+  interchrom: '#5A005A',
+  unknown: '#5A5A5A',
 }
 
 export function getInsertSizeColor(
@@ -16,13 +35,13 @@ export function getInsertSizeColor(
   const sameRef = f1.refName === f2.refName
   const tlen = Math.abs(f1.tlen || 0)
   if (sameRef && tlen > (stats?.upper || 0)) {
-    return 'red'
+    return [fillColor.large, strokeColor.large] as const
   } else if (sameRef && tlen < (stats?.lower || 0)) {
-    return '#f0f'
+    return [fillColor.small, strokeColor.small] as const
   } else if (!sameRef) {
-    return 'purple'
+    return [fillColor.interchrom, strokeColor.interchrom] as const
   }
-  return ''
+  return undefined
 }
 
 export function getInsertSizeAndOrientationColor(
@@ -34,14 +53,10 @@ export function getInsertSizeAndOrientationColor(
 }
 
 export function getOrientationColor(f: { pair_orientation?: string }) {
-  const type = orientationTypes['fr']
-  const orientation = type[f.pair_orientation || '']
-  const map = {
-    LR: 'color_pair_lr',
-    RR: 'color_pair_rr',
-    RL: 'color_pair_rl',
-    LL: 'color_pair_ll',
-  }
-  const val = map[orientation as keyof typeof map]
-  return alignmentColoring[val] || 'grey'
+  const type = orientationTypes.fr
+  const type2 = type[f.pair_orientation || '']
+  return [
+    fillColor[type2] || fillColor.unknown,
+    strokeColor[type2] || strokeColor.unknown,
+  ] as const
 }

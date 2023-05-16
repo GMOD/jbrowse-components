@@ -1276,7 +1276,14 @@ export function sum(arr: number[]) {
 export function avg(arr: number[]) {
   return sum(arr) / arr.length
 }
-
+export function groupBy<T>(array: T[], predicate: (v: T) => string) {
+  const result = {} as { [key: string]: T[] }
+  for (const value of array) {
+    const entry = (result[predicate(value)] ||= [])
+    entry.push(value)
+  }
+  return result
+}
 export {
   default as SimpleFeature,
   type Feature,

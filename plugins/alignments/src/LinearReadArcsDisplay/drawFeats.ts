@@ -1,5 +1,6 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 
 // locals
 import {
@@ -7,19 +8,9 @@ import {
   getInsertSizeColor,
   getInsertSizeAndOrientationColor,
 } from '../shared/color'
-import { ChainData } from '../shared/fetchChains'
 import { featurizeSA } from '../MismatchParser'
-import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import { LinearReadArcsDisplayModel } from './model'
-
-export function hasPairedReads(features: ChainData) {
-  for (const f of features.chains.values()) {
-    if (f[0].flags & 1) {
-      return true
-    }
-  }
-  return false
-}
+import { hasPairedReads } from './util'
 
 type LGV = LinearGenomeViewModel
 
@@ -91,14 +82,14 @@ export default function drawFeats(
     const p2 = hasPaired ? (f2 ? k2.start : k2.end) : f2 ? k2.end : k2.start
     const ra1 = assembly.getCanonicalRefName(k1.refName) || k1.refName
     const ra2 = assembly.getCanonicalRefName(k2.refName) || k2.refName
-    const r1 = view.bpToPx({ refName: ra1, coord: p1 })
-    const r2 = view.bpToPx({ refName: ra2, coord: p2 })
+    const r1 = view.bpToPx({ refName: ra1, coord: p1 })?.offsetPx
+    const r2 = view.bpToPx({ refName: ra2, coord: p2 })?.offsetPx
 
-    if (r1 && r2) {
-      const radius = (r2.offsetPx - r1.offsetPx) / 2
+    if (r1 !== undefined && r2 !== undefined) {
+      const radius = (r2 - r1) / 2
       const absrad = Math.abs(radius)
-      const p = r1.offsetPx - view.offsetPx
-      const p2 = r2.offsetPx - view.offsetPx
+      const p = r1 - view.offsetPx
+      const p2 = r2 - view.offsetPx
       const drawArcInsteadOfBezier = absrad > 10_000
 
       // bezier (used for non-long-range arcs) requires moveTo before beginPath
@@ -117,11 +108,11 @@ export default function drawFeats(
       } else {
         if (hasPaired) {
           if (type === 'insertSizeAndOrientation') {
-            ctx.strokeStyle = getInsertSizeAndOrientationColor(k1, k2, stats)
+            ctx.strokeStyle = getInsertSizeAndOrientationColor(k1, k2, stats)[0]
           } else if (type === 'orientation') {
-            ctx.strokeStyle = getOrientationColor(k1)
+            ctx.strokeStyle = getOrientationColor(k1)[0]
           } else if (type === 'insertSize') {
-            ctx.strokeStyle = getInsertSizeColor(k1, k2, stats) || 'grey'
+            ctx.strokeStyle = getInsertSizeColor(k1, k2, stats)?.[0] || 'grey'
           } else if (type === 'gradient') {
             ctx.strokeStyle = `hsl(${Math.log10(absrad) * 10},50%,50%)`
           }
@@ -174,35 +165,26 @@ export default function drawFeats(
         ctx.stroke()
       }
     } else if (r1 && drawInter) {
-      drawLineAtOffset(ctx, r1.offsetPx - view.offsetPx, height, 'purple')
+      drawLineAtOffset(ctx, r1 - view.offsetPx, height, 'purple')
     }
   }
 
   for (const chain of chains) {
+    // chain.length === 1, singleton (other pairs/mates not in view)
     if (chain.length === 1 && drawLongRange) {
-      // singleton feature
       const f = chain[0]
-
-      // special case where we look at RPOS/RNEXT
-      if (hasPaired) {
-        const coord = f.next_pos || 0
-        draw(
-          f,
-          {
-            refName: f.next_ref || '',
-            start: coord,
-            end: coord,
-            strand: f.strand,
-          },
-          asm,
-          true,
+      if (hasPaired && !(f.flags & 8)) {
+        const mate = {
+          refName: f.next_ref || '',
+          start: f.next_pos || 0,
+          end: f.next_pos || 0,
+          strand: f.strand,
+        }
+        draw(f, mate, asm, true)
+      } else {
+        const features = [f, ...featurizeSA(f.SA, f.id, f.strand, f.name)].sort(
+          (a, b) => a.clipPos - b.clipPos,
         )
-      }
-
-      // special case where we look at SA
-      else {
-        const suppAlns = featurizeSA(f.SA, f.id, f.strand, f.name)
-        const features = [f, ...suppAlns].sort((a, b) => a.clipPos - b.clipPos)
         for (let i = 0; i < features.length - 1; i++) {
           const f = features[i]
           const v1 = features[i + 1]
@@ -211,7 +193,7 @@ export default function drawFeats(
       }
     } else {
       const res = hasPaired
-        ? chain.filter(f => !(f.flags & 2048))
+        ? chain.filter(f => !(f.flags & 2048) && !(f.flags & 8))
         : chain
             .sort((a, b) => a.clipPos - b.clipPos)
             .filter(f => !(f.flags & 256))

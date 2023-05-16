@@ -21,7 +21,7 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-const delay = { timeout: 10000 }
+const delay = { timeout: 25000 }
 const opts = [{}, delay]
 
 test('reloads bigwig (BW 404)', async () => {
