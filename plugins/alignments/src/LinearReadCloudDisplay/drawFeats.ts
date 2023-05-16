@@ -49,51 +49,16 @@ export default function drawFeats(
     // if we're looking at a paired read (flag 1) then assume it is just two
     // reads (some small cases may defy this assumption such as secondary
     // alignments but this may be uncommon)
-    if (chain[0].flags & 1 && chain.length > 1) {
-      const v0 = chain[0]
-      const v1 = chain[1]
-      const ra1 = asm.getCanonicalRefName(v0.refName) || v0.refName
-      const ra2 = asm.getCanonicalRefName(v1.refName) || v1.refName
-      const r1s = view.bpToPx({ refName: ra1, coord: v0.start })
-      const r1e = view.bpToPx({ refName: ra1, coord: v0.end })
-      const r2s = view.bpToPx({ refName: ra2, coord: v1.start })
-      const r2e = view.bpToPx({ refName: ra2, coord: v1.end })
-
-      let distance = 0
-
-      if (
-        r1s !== undefined &&
-        r1e !== undefined &&
-        r2s !== undefined &&
-        r2e !== undefined
-      ) {
-        if (v0.refName === v1.refName) {
-          const s = Math.min(v0.start, v1.start)
-          const e = Math.max(v0.end, v1.end)
-          distance = Math.abs(e - s)
-        }
-        coords.push({
-          r1s: r1s.offsetPx,
-          r1e: r1e.offsetPx,
-          r2s: r2s.offsetPx,
-          r2e: r2e.offsetPx,
-          v0,
-          v1,
-          distance,
-        })
-      }
-    } else {
-      // if we're not looking at pairs, then it could be a multiply-split-long
-      // read, so traverse chain
-      for (let i = 1; i < chain.length; i++) {
-        const v0 = chain[i - 1]
-        const v1 = chain[i]
+    if (chain[0].flags & 1) {
+      if (chain.length > 1) {
+        const v0 = chain[0]
+        const v1 = chain[1]
         const ra1 = asm.getCanonicalRefName(v0.refName) || v0.refName
         const ra2 = asm.getCanonicalRefName(v1.refName) || v1.refName
-        const r1s = view.bpToPx({ refName: ra1, coord: v0.start })
-        const r1e = view.bpToPx({ refName: ra1, coord: v0.end })
-        const r2s = view.bpToPx({ refName: ra2, coord: v1.start })
-        const r2e = view.bpToPx({ refName: ra2, coord: v1.end })
+        const r1s = view.bpToPx({ refName: ra1, coord: v0.start })?.offsetPx
+        const r1e = view.bpToPx({ refName: ra1, coord: v0.end })?.offsetPx
+        const r2s = view.bpToPx({ refName: ra2, coord: v1.start })?.offsetPx
+        const r2e = view.bpToPx({ refName: ra2, coord: v1.end })?.offsetPx
 
         let distance = 0
 
@@ -109,10 +74,58 @@ export default function drawFeats(
             distance = Math.abs(e - s)
           }
           coords.push({
-            r1s: r1s.offsetPx,
-            r1e: r1e.offsetPx,
-            r2s: r2s.offsetPx,
-            r2e: r2e.offsetPx,
+            r1s,
+            r1e,
+            r2s,
+            r2e,
+            v0,
+            v1,
+            distance,
+          })
+        }
+      } else if (self.drawSingletons) {
+        const v0 = chain[0]
+
+        const ra1 = asm.getCanonicalRefName(v0.refName) || v0.refName
+        const r1s = view.bpToPx({ refName: ra1, coord: v0.start })?.offsetPx
+        const r1e = view.bpToPx({ refName: ra1, coord: v0.end })?.offsetPx
+        if (r1s !== undefined && r1e !== undefined) {
+          const w1 = Math.max(r1e - r1s, 2)
+          ctx.fillStyle = 'red'
+          fillRectCtx(r1s - view.offsetPx, 0, w1, featureHeight, ctx)
+        }
+      }
+    } else {
+      // if we're not looking at pairs, then it could be a multiply-split-long
+      // read, so traverse chain
+      for (let i = 1; i < chain.length; i++) {
+        const v0 = chain[i - 1]
+        const v1 = chain[i]
+        const ra1 = asm.getCanonicalRefName(v0.refName) || v0.refName
+        const ra2 = asm.getCanonicalRefName(v1.refName) || v1.refName
+        const r1s = view.bpToPx({ refName: ra1, coord: v0.start })?.offsetPx
+        const r1e = view.bpToPx({ refName: ra1, coord: v0.end })?.offsetPx
+        const r2s = view.bpToPx({ refName: ra2, coord: v1.start })?.offsetPx
+        const r2e = view.bpToPx({ refName: ra2, coord: v1.end })?.offsetPx
+
+        let distance = 0
+
+        if (
+          r1s !== undefined &&
+          r1e !== undefined &&
+          r2s !== undefined &&
+          r2e !== undefined
+        ) {
+          if (v0.refName === v1.refName) {
+            const s = Math.min(v0.start, v1.start)
+            const e = Math.max(v0.end, v1.end)
+            distance = Math.abs(e - s)
+          }
+          coords.push({
+            r1s,
+            r1e,
+            r2s,
+            r2e,
             v0,
             v1,
             distance,
