@@ -56,7 +56,7 @@ const useStyles = makeStyles()({
 
 type LGV = LinearGenomeViewModel
 
-function TrackContainer({
+export default observer(function TrackContainer({
   model,
   track,
 }: {
@@ -68,7 +68,7 @@ function TrackContainer({
   const { horizontalScroll, draggingTrackId, moveTrack } = model
   const { height, RenderingComponent, DisplayBlurb } = display
   const trackId = getConf(track, 'trackId')
-  const ref = useRef<HTMLDivElement>(null)
+  const ref = useRef(null)
   const dimmed = draggingTrackId !== undefined && draggingTrackId !== display.id
   const minimized = track.minimized
   const debouncedOnDragEnter = useDebouncedCallback(() => {
@@ -86,22 +86,9 @@ function TrackContainer({
   }, [model.trackRefs, trackId])
 
   return (
-    <Paper
-      ref={ref}
-      className={classes.root}
-      variant="outlined"
-      onClick={event => {
-        if (event.detail === 2 && !track.displays[0].featureIdUnderMouse) {
-          const left = ref.current?.getBoundingClientRect().left || 0
-          model.zoomTo(model.bpPerPx / 2, event.clientX - left, true)
-        }
-      }}
-    >
+    <Paper className={classes.root} variant="outlined">
       <TrackLabelContainer track={track} view={model} />
-      <ErrorBoundary
-        key={track.id}
-        FallbackComponent={({ error }) => <ErrorMessage error={error} />}
-      >
+      <ErrorBoundary FallbackComponent={e => <ErrorMessage error={e.error} />}>
         <div
           className={classes.trackRenderingContainer}
           style={{ height: minimized ? 20 : height }}
@@ -112,6 +99,7 @@ function TrackContainer({
           {!minimized ? (
             <>
               <div
+                ref={ref}
                 className={classes.renderingComponentContainer}
                 style={{ transform: `scaleX(${model.scaleFactor})` }}
               >
@@ -150,6 +138,4 @@ function TrackContainer({
       />
     </Paper>
   )
-}
-
-export default observer(TrackContainer)
+})
