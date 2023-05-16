@@ -91,14 +91,14 @@ export default function drawFeats(
     const p2 = hasPaired ? (f2 ? k2.start : k2.end) : f2 ? k2.end : k2.start
     const ra1 = assembly.getCanonicalRefName(k1.refName) || k1.refName
     const ra2 = assembly.getCanonicalRefName(k2.refName) || k2.refName
-    const r1 = view.bpToPx({ refName: ra1, coord: p1 })
-    const r2 = view.bpToPx({ refName: ra2, coord: p2 })
+    const r1 = view.bpToPx({ refName: ra1, coord: p1 })?.offsetPx
+    const r2 = view.bpToPx({ refName: ra2, coord: p2 })?.offsetPx
 
-    if (r1 && r2) {
-      const radius = (r2.offsetPx - r1.offsetPx) / 2
+    if (r1 !== undefined && r2 !== undefined) {
+      const radius = (r2 - r1) / 2
       const absrad = Math.abs(radius)
-      const p = r1.offsetPx - view.offsetPx
-      const p2 = r2.offsetPx - view.offsetPx
+      const p = r1 - view.offsetPx
+      const p2 = r2 - view.offsetPx
       const drawArcInsteadOfBezier = absrad > 10_000
 
       // bezier (used for non-long-range arcs) requires moveTo before beginPath
@@ -174,7 +174,7 @@ export default function drawFeats(
         ctx.stroke()
       }
     } else if (r1 && drawInter) {
-      drawLineAtOffset(ctx, r1.offsetPx - view.offsetPx, height, 'purple')
+      drawLineAtOffset(ctx, r1 - view.offsetPx, height, 'purple')
     }
   }
 
