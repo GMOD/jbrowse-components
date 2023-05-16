@@ -8,7 +8,7 @@ import {
   getInsertSizeColor,
   getInsertSizeAndOrientationColor,
 } from '../shared/color'
-import { ReducedFeature } from '../shared/fetchChains'
+import { ChainStats, ReducedFeature } from '../shared/fetchChains'
 import { LinearReadCloudDisplayModel } from './model'
 import { fillRectCtx, strokeRectCtx } from './util'
 
@@ -43,12 +43,47 @@ export default function drawFeats(
   }
 
   const { chains, stats } = chainData
+  const type = self.colorBy?.type || 'insertSizeAndOrientation'
+
+  function fill({
+    r1s,
+    r1e,
+    r2s,
+    r2e,
+    distance,
+    v0,
+    v1,
+  }: {
+    r1s: number
+    r1e: number
+    r2s: number
+    r2e: number
+    distance: number
+    v0: ReducedFeature
+    v1: ReducedFeature
+  }) {
+    const w1 = Math.max(r1e - r1s, 2)
+    const w2 = Math.max(r2e - r2s, 2)
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const [fill, stroke] = getColor({ type, v0, v1, stats: stats! })
+
+    const top = (Math.log(distance) - minD) * scaler
+    const halfHeight = featureHeight / 2 - 0.5
+    const w = r2s - r1e
+    fillRectCtx(r1e - view.offsetPx, top + halfHeight, w, 1, ctx, 'black')
+
+    strokeRectCtx(r1s - view.offsetPx, top, w1, featureHeight, ctx, stroke)
+    strokeRectCtx(r2s - view.offsetPx, top, w2, featureHeight, ctx, stroke)
+    fillRectCtx(r1s - view.offsetPx, top, w1, featureHeight, ctx, fill)
+    fillRectCtx(r2s - view.offsetPx, top, w2, featureHeight, ctx, fill)
+  }
+
   const coords: ChainCoord[] = []
   for (let i = 0; i < chains.length; i++) {
     const chain = chains[i]
-    // if we're looking at a paired read (flag 1) then assume it is just two
-    // reads (some small cases may defy this assumption such as secondary
-    // alignments but this may be uncommon)
+    // if we're looking at a paired read (flag 1) then assume it is just
+    // two reads (some small cases may defy this assumption such as
+    // secondary alignments but this may be uncommon)
     if (chain[0].flags & 1) {
       if (chain.length > 1) {
         const v0 = chain[0]
@@ -91,13 +126,13 @@ export default function drawFeats(
         const r1e = view.bpToPx({ refName: ra1, coord: v0.end })?.offsetPx
         if (r1s !== undefined && r1e !== undefined) {
           const w1 = Math.max(r1e - r1s, 2)
-          ctx.fillStyle = 'red'
-          fillRectCtx(r1s - view.offsetPx, 0, w1, featureHeight, ctx)
+          fillRectCtx(r1s - view.offsetPx, 0, w1, featureHeight, ctx, '#f00')
+          strokeRectCtx(r1s - view.offsetPx, 0, w1, featureHeight, ctx, '#a00')
         }
       }
     } else {
-      // if we're not looking at pairs, then it could be a multiply-split-long
-      // read, so traverse chain
+      // if we're not looking at pairs, then it could be a
+      // multiply-split-long read, so traverse chain
       for (let i = 1; i < chain.length; i++) {
         const v0 = chain[i - 1]
         const v1 = chain[i]
@@ -135,38 +170,39 @@ export default function drawFeats(
     }
   }
 
-  const halfHeight = featureHeight / 2 - 0.5
   const maxD = Math.log(max(coords.map(c => c.distance)))
   const minD = Math.max(Math.log(min(coords.map(c => c.distance))) - 1, 0)
   const scaler = (displayHeight - 20) / (maxD - minD)
 
-  ctx.strokeStyle = '#ddd'
   for (let i = 0; i < coords.length; i++) {
-    const { r1s, r1e, r2s, r2e, v0, v1, distance } = coords[i]
-    const type = self.colorBy?.type || 'insertSizeAndOrientation'
-
-    const top = (Math.log(distance) - minD) * scaler
-    const w = r2s - r1e
-    ctx.fillStyle = 'black'
-    fillRectCtx(r1e - view.offsetPx, top + halfHeight, w, 1, ctx)
-
-    if (type === 'insertSizeAndOrientation') {
-      ctx.fillStyle = getInsertSizeAndOrientationColor(v0, v1, stats)
-    } else if (type === 'orientation') {
-      ctx.fillStyle = getOrientationColor(v0)
-    } else if (type === 'insertSize') {
-      ctx.fillStyle = getInsertSizeColor(v0, v1, stats) || 'grey'
-    } else if (type === 'gradient') {
-      const s = Math.min(v0.start, v1.start)
-      const e = Math.max(v0.end, v1.end)
-      ctx.fillStyle = `hsl(${Math.log10(Math.abs(e - s)) * 10},50%,50%)`
-    }
-
-    const w1 = Math.max(r1e - r1s, 2)
-    const w2 = Math.max(r2e - r2s, 2)
-    fillRectCtx(r1s - view.offsetPx, top, w1, featureHeight, ctx)
-    fillRectCtx(r2s - view.offsetPx, top, w2, featureHeight, ctx)
-    strokeRectCtx(r2s - view.offsetPx, top, w2, featureHeight, ctx)
-    strokeRectCtx(r2s - view.offsetPx, top, w2, featureHeight, ctx)
+    fill(coords[i])
   }
+}
+
+function getColor({
+  type,
+  v0,
+  v1,
+  stats,
+}: {
+  type: string
+  v0: ReducedFeature
+  v1: ReducedFeature
+  stats: ChainStats
+}) {
+  if (type === 'insertSizeAndOrientation') {
+    return getInsertSizeAndOrientationColor(v0, v1, stats)
+  } else if (type === 'orientation') {
+    return getOrientationColor(v0)
+  } else if (type === 'insertSize') {
+    return getInsertSizeColor(v0, v1, stats) || 'grey'
+  } else if (type === 'gradient') {
+    const s = Math.min(v0.start, v1.start)
+    const e = Math.max(v0.end, v1.end)
+    return [
+      `hsl(${Math.log10(Math.abs(e - s)) * 10},50%,50%)`,
+      `hsl(${Math.log10(Math.abs(e - s)) * 10},50%,30%)`,
+    ]
+  }
+  return []
 }

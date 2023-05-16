@@ -108,11 +108,11 @@ export default function drawFeats(
       } else {
         if (hasPaired) {
           if (type === 'insertSizeAndOrientation') {
-            ctx.strokeStyle = getInsertSizeAndOrientationColor(k1, k2, stats)
+            ctx.strokeStyle = getInsertSizeAndOrientationColor(k1, k2, stats)[0]
           } else if (type === 'orientation') {
-            ctx.strokeStyle = getOrientationColor(k1)
+            ctx.strokeStyle = getOrientationColor(k1)[0]
           } else if (type === 'insertSize') {
-            ctx.strokeStyle = getInsertSizeColor(k1, k2, stats) || 'grey'
+            ctx.strokeStyle = getInsertSizeColor(k1, k2, stats)?.[0] || 'grey'
           } else if (type === 'gradient') {
             ctx.strokeStyle = `hsl(${Math.log10(absrad) * 10},50%,50%)`
           }
