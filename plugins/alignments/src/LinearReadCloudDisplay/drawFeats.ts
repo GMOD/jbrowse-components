@@ -10,6 +10,7 @@ import {
 } from '../shared/color'
 import { ReducedFeature } from '../shared/fetchChains'
 import { LinearReadCloudDisplayModel } from './model'
+import { fillRectCtx, strokeRectCtx } from './util'
 
 type LGV = LinearGenomeViewModel
 
@@ -21,30 +22,6 @@ interface ChainCoord {
   r2e: number
   v0: ReducedFeature
   v1: ReducedFeature
-}
-
-// avoid drawing negative width features for SVG exports
-function fillRectCtx(
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  ctx: CanvasRenderingContext2D,
-  color?: string,
-) {
-  if (width < 0) {
-    x += width
-    width = -width
-  }
-  if (height < 0) {
-    y += height
-    height = -height
-  }
-
-  if (color) {
-    ctx.fillStyle = color
-  }
-  ctx.fillRect(x, y, width, height)
 }
 
 export default function drawFeats(
@@ -150,6 +127,7 @@ export default function drawFeats(
   const minD = Math.max(Math.log(min(coords.map(c => c.distance))) - 1, 0)
   const scaler = (displayHeight - 20) / (maxD - minD)
 
+  ctx.strokeStyle = '#ddd'
   for (let i = 0; i < coords.length; i++) {
     const { r1s, r1e, r2s, r2e, v0, v1, distance } = coords[i]
     const type = self.colorBy?.type || 'insertSizeAndOrientation'
@@ -173,8 +151,9 @@ export default function drawFeats(
 
     const w1 = Math.max(r1e - r1s, 2)
     const w2 = Math.max(r2e - r2s, 2)
-    console.log({ top })
     fillRectCtx(r1s - view.offsetPx, top, w1, featureHeight, ctx)
     fillRectCtx(r2s - view.offsetPx, top, w2, featureHeight, ctx)
+    strokeRectCtx(r2s - view.offsetPx, top, w2, featureHeight, ctx)
+    strokeRectCtx(r2s - view.offsetPx, top, w2, featureHeight, ctx)
   }
 }

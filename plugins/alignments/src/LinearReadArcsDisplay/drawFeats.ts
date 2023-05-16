@@ -8,18 +8,9 @@ import {
   getInsertSizeColor,
   getInsertSizeAndOrientationColor,
 } from '../shared/color'
-import { ChainData } from '../shared/fetchChains'
 import { featurizeSA } from '../MismatchParser'
 import { LinearReadArcsDisplayModel } from './model'
-
-export function hasPairedReads(features: ChainData) {
-  for (const f of features.chains.values()) {
-    if (f[0].flags & 1) {
-      return true
-    }
-  }
-  return false
-}
+import { hasPairedReads } from './util'
 
 type LGV = LinearGenomeViewModel
 
@@ -181,25 +172,25 @@ export default function drawFeats(
   for (const chain of chains) {
     // chain.length === 1, singleton (other pairs/mates not in view)
     if (chain.length === 1 && drawLongRange) {
-      // const f = chain[0]
-      // if (hasPaired && !(f.flags & 8)) {
-      //   const mate = {
-      //     refName: f.next_ref || '',
-      //     start: f.next_pos || 0,
-      //     end: f.next_pos || 0,
-      //     strand: f.strand,
-      //   }
-      //   draw(f, mate, asm, true)
-      // } else {
-      //   const features = [f, ...featurizeSA(f.SA, f.id, f.strand, f.name)].sort(
-      //     (a, b) => a.clipPos - b.clipPos,
-      //   )
-      //   for (let i = 0; i < features.length - 1; i++) {
-      //     const f = features[i]
-      //     const v1 = features[i + 1]
-      //     draw(f, v1, asm, true)
-      //   }
-      // }
+      const f = chain[0]
+      if (hasPaired && !(f.flags & 8)) {
+        const mate = {
+          refName: f.next_ref || '',
+          start: f.next_pos || 0,
+          end: f.next_pos || 0,
+          strand: f.strand,
+        }
+        draw(f, mate, asm, true)
+      } else {
+        const features = [f, ...featurizeSA(f.SA, f.id, f.strand, f.name)].sort(
+          (a, b) => a.clipPos - b.clipPos,
+        )
+        for (let i = 0; i < features.length - 1; i++) {
+          const f = features[i]
+          const v1 = features[i + 1]
+          draw(f, v1, asm, true)
+        }
+      }
     } else {
       const res = hasPaired
         ? chain.filter(f => !(f.flags & 2048) && !(f.flags & 8))
