@@ -69,7 +69,11 @@ export default observer(function TrackContainer({
     >
       <TrackLabelContainer track={track} view={model} />
       <ErrorBoundary FallbackComponent={e => <ErrorMessage error={e.error} />}>
-        <TrackRenderingContainer model={model} track={track} />
+        <TrackRenderingContainer
+          model={model}
+          track={track}
+          onDragEnter={debouncedOnDragEnter}
+        />
       </ErrorBoundary>
       <div
         className={classes.overlay}

@@ -1,12 +1,10 @@
 import React, { useEffect, useRef } from 'react'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import { isAlive } from 'mobx-state-tree'
 
 // jbrowse core
 import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getConf } from '@jbrowse/core/configuration'
-import { useDebouncedCallback } from '@jbrowse/core/util'
 
 // locals
 import { LinearGenomeViewModel } from '..'
@@ -37,23 +35,19 @@ type LGV = LinearGenomeViewModel
 export default observer(function TrackRenderingContainer({
   model,
   track,
+  onDragEnter,
 }: {
   model: LGV
   track: BaseTrackModel
+  onDragEnter: () => void
 }) {
   const { classes } = useStyles()
   const display = track.displays[0]
-  const { draggingTrackId } = model
   const { height, RenderingComponent, DisplayBlurb } = display
   const trackId = getConf(track, 'trackId')
   const ref = useRef<HTMLDivElement>(null)
-  const dimmed = draggingTrackId !== undefined && draggingTrackId !== display.id
   const minimized = track.minimized
-  const debouncedOnDragEnter = useDebouncedCallback(() => {
-    if (isAlive(display) && dimmed) {
-      model.moveTrack(draggingTrackId, track.id)
-    }
-  }, 100)
+
   useEffect(() => {
     if (ref.current) {
       model.trackRefs[trackId] = ref.current
@@ -68,7 +62,7 @@ export default observer(function TrackRenderingContainer({
       className={classes.trackRenderingContainer}
       style={{ height: minimized ? 20 : height }}
       onScroll={evt => display.setScrollTop(evt.currentTarget.scrollTop)}
-      onDragEnter={debouncedOnDragEnter}
+      onDragEnter={onDragEnter}
       data-testid={`trackRenderingContainer-${model.id}-${trackId}`}
     >
       {!minimized ? (
