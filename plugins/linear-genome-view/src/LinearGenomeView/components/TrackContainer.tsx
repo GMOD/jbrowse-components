@@ -69,6 +69,7 @@ export default observer(function TrackContainer({
   const { height, RenderingComponent, DisplayBlurb } = display
   const trackId = getConf(track, 'trackId')
   const ref = useRef(null)
+  const ref2 = useRef<HTMLDivElement>(null)
   const dimmed = draggingTrackId !== undefined && draggingTrackId !== display.id
   const minimized = track.minimized
   const debouncedOnDragEnter = useDebouncedCallback(() => {
@@ -86,7 +87,17 @@ export default observer(function TrackContainer({
   }, [model.trackRefs, trackId])
 
   return (
-    <Paper className={classes.root} variant="outlined">
+    <Paper
+      ref={ref2}
+      className={classes.root}
+      variant="outlined"
+      onClick={event => {
+        if (event.detail === 2 && !track.displays[0].featureIdUnderMouse) {
+          const left = ref2.current?.getBoundingClientRect().left || 0
+          model.zoomTo(model.bpPerPx / 2, event.clientX - left, true)
+        }
+      }}
+    >
       <TrackLabelContainer track={track} view={model} />
       <ErrorBoundary FallbackComponent={e => <ErrorMessage error={e.error} />}>
         <div

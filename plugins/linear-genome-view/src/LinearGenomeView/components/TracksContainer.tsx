@@ -20,15 +20,11 @@ const useStyles = makeStyles()({
     position: 'relative',
     overflow: 'hidden',
   },
-  spacer: {
-    position: 'relative',
-    height: 3,
-  },
 })
 
 type LGV = LinearGenomeViewModel
 
-function TracksContainer({
+export default observer(function TracksContainer({
   children,
   model,
 }: {
@@ -106,6 +102,4 @@ function TracksContainer({
       {children}
     </div>
   )
-}
-
-export default observer(TracksContainer)
+})

@@ -1,4 +1,4 @@
-import React, { lazy } from 'react'
+import React, { Ref, lazy } from 'react'
 import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { Region } from '@jbrowse/core/util/types'
@@ -251,8 +251,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       // which is basically like an onLoad
       afterDisplayedRegionsSetCallbacks: [] as Function[],
       scaleFactor: 1,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      trackRefs: {} as { [key: string]: any },
+      trackRefs: {} as { [key: string]: HTMLDivElement },
       coarseDynamicBlocks: [] as BaseBlock[],
       coarseTotalBp: 0,
       leftOffset: undefined as undefined | BpOffset,
