@@ -68,7 +68,7 @@ export default observer(function TrackContainer({
   const { horizontalScroll, draggingTrackId, moveTrack } = model
   const { height, RenderingComponent, DisplayBlurb } = display
   const trackId = getConf(track, 'trackId')
-  const ref = useRef(null)
+  const ref = useRef<HTMLDivElement>(null)
   const ref2 = useRef<HTMLDivElement>(null)
   const dimmed = draggingTrackId !== undefined && draggingTrackId !== display.id
   const minimized = track.minimized
