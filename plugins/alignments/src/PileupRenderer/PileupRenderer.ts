@@ -33,12 +33,14 @@ import {
   orientationTypes,
   fetchSequence,
   shouldFetchReferenceSequence,
+  pairMap,
 } from '../util'
 import {
   PileupLayoutSession,
   PileupLayoutSessionProps,
 } from './PileupLayoutSession'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { fillColor } from '../shared/color'
 
 function fillRect(
   ctx: CanvasRenderingContext2D,
@@ -112,25 +114,6 @@ interface LayoutRecord {
   rightPx: number
   topPx: number
   heightPx: number
-}
-
-const alignmentColoring: { [key: string]: string } = {
-  color_fwd_strand_not_proper: '#ECC8C8',
-  color_rev_strand_not_proper: '#BEBED8',
-  color_fwd_strand: '#EC8B8B',
-  color_rev_strand: '#8F8FD8',
-  color_fwd_missing_mate: '#D11919',
-  color_rev_missing_mate: '#1919D1',
-  color_fwd_diff_chr: '#000',
-  color_rev_diff_chr: '#969696',
-  color_pair_lr: '#c8c8c8',
-  color_pair_rr: 'navy',
-  color_pair_rl: 'teal',
-  color_pair_ll: 'green',
-  color_nostrand: '#c8c8c8',
-  color_interchrom: 'orange',
-  color_longinsert: 'red',
-  color_shortinsert: 'pink',
 }
 
 interface LayoutFeature {
@@ -238,9 +221,7 @@ export default class PileupRenderer extends BoxRendererType {
   }
 
   colorByOrientation(feature: Feature, config: AnyConfigurationModel) {
-    return alignmentColoring[
-      this.getOrientation(feature, config) || 'color_nostrand'
-    ]
+    return fillColor[this.getOrientation(feature, config) || 'color_nostrand']
   }
 
   getOrientation(feature: Feature, config: AnyConfigurationModel) {
@@ -249,14 +230,10 @@ export default class PileupRenderer extends BoxRendererType {
       | 'ff'
       | 'rf'
     const type = orientationTypes[orientationType]
-    const orientation = type[feature.get('pair_orientation') as string]
-    const map: { [key: string]: string } = {
-      LR: 'color_pair_lr',
-      RR: 'color_pair_rr',
-      RL: 'color_pair_rl',
-      LL: 'color_pair_ll',
-    }
-    return map[orientation]
+    const orientation = type[
+      feature.get('pair_orientation') as string
+    ] as keyof typeof pairMap
+    return pairMap[orientation]
   }
 
   colorByInsertSize(feature: Feature, _config: AnyConfigurationModel) {
@@ -273,22 +250,22 @@ export default class PileupRenderer extends BoxRendererType {
     if (flags & 1) {
       const revflag = flags & 64
       const flipper = revflag ? -1 : 1
+
       // proper pairing
       if (flags & 2) {
         return strand * flipper === 1 ? 'color_rev_strand' : 'color_fwd_strand'
-      }
-      if (feature.get('multi_segment_next_segment_unmapped')) {
+      } else if (feature.get('multi_segment_next_segment_unmapped')) {
         return strand * flipper === 1
           ? 'color_rev_missing_mate'
           : 'color_fwd_missing_mate'
-      }
-      if (feature.get('refName') === feature.get('next_refName')) {
+      } else if (feature.get('refName') === feature.get('next_refName')) {
         return strand * flipper === 1
           ? 'color_rev_strand_not_proper'
           : 'color_fwd_strand_not_proper'
+      } else {
+        // should only leave aberrant chr
+        return strand === 1 ? 'color_fwd_diff_chr' : 'color_rev_diff_chr'
       }
-      // should only leave aberrant chr
-      return strand === 1 ? 'color_fwd_diff_chr' : 'color_rev_diff_chr'
     }
     return strand === 1 ? 'color_fwd_strand' : 'color_rev_strand'
   }
@@ -338,20 +315,12 @@ export default class PileupRenderer extends BoxRendererType {
           const letter = seq[soffset + m]
           const r = start + roffset + m
           const [leftPx] = bpSpanPx(r, r + 1, region, bpPerPx)
-          fillRect(
-            ctx,
-            leftPx,
-            topPx,
-            w + 0.5,
-            heightPx,
-            canvasWidth,
-            colorForBase[letter],
-          )
+          const c = colorForBase[letter]
+          fillRect(ctx, leftPx, topPx, w + 0.5, heightPx, canvasWidth, c)
 
           if (w >= charWidth && heightPx >= heightLim) {
             // normal SNP coloring
             ctx.fillStyle = contrastForBase[letter]
-
             ctx.fillText(
               letter,
               leftPx + (w - charWidth) / 2 + 1,
@@ -397,21 +366,10 @@ export default class PileupRenderer extends BoxRendererType {
       } else if (op === 'M' || op === 'X' || op === '=') {
         for (let m = 0; m < len; m++) {
           const score = scores[soffset + m]
-          const [leftPx] = bpSpanPx(
-            start + roffset + m,
-            start + roffset + m + 1,
-            region,
-            bpPerPx,
-          )
-          fillRect(
-            ctx,
-            leftPx,
-            topPx,
-            width + 0.5,
-            heightPx,
-            canvasWidth,
-            `hsl(${score === 255 ? 150 : score * 1.5},55%,50%)`,
-          )
+          const start0 = start + roffset + m
+          const leftPx = bpSpanPx(start0, start0 + 1, region, bpPerPx)[0]
+          const c = `hsl(${score === 255 ? 150 : score * 1.5},55%,50%)`
+          fillRect(ctx, leftPx, topPx, width + 0.5, heightPx, canvasWidth, c)
         }
         soffset += len
         roffset += len
@@ -467,21 +425,15 @@ export default class PileupRenderer extends BoxRendererType {
         const r = start + readPos
         const [leftPx, rightPx] = bpSpanPx(r, r + 1, region, bpPerPx)
         const prob = probabilities?.[probIndex] || 0
-
-        fillRect(
-          ctx,
-          leftPx,
-          topPx,
-          rightPx - leftPx + 0.5,
-          heightPx,
-          canvasWidth,
+        const c =
           prob !== 1
             ? base
                 .alpha(prob + 0.1)
                 .hsl()
                 .string()
-            : col,
-        )
+            : col
+        const w = rightPx - leftPx + 0.5
+        fillRect(ctx, leftPx, topPx, w, heightPx, canvasWidth, c)
         probIndex++
       }
     }
@@ -644,42 +596,47 @@ export default class PileupRenderer extends BoxRendererType {
         ctx.fillStyle = this.colorByOrientation(feature, config)
         break
       case 'stranded':
-        ctx.fillStyle = alignmentColoring[this.colorByStranded(feature, config)]
+        ctx.fillStyle = fillColor[this.colorByStranded(feature, config)]
         break
+
       case 'xs':
       case 'tag': {
         const tags = feature.get('tags')
-        const val = tags ? tags[tag] : feature.get(tag)
+        const val: string = tags ? tags[tag] : feature.get(tag)
 
         // special for for XS/TS tag
         if (tag === 'XS' || tag === 'TS') {
-          const map: { [key: string]: string | undefined } = {
-            '-': 'color_rev_strand',
-            '+': 'color_fwd_strand',
-          }
-          ctx.fillStyle = alignmentColoring[map[val] || 'color_nostrand']
+          ctx.fillStyle =
+            fillColor[
+              {
+                '-': 'color_rev_strand' as const,
+                '+': 'color_fwd_strand' as const,
+              }[val] || 'color_nostrand'
+            ]
         }
 
         // lower case 'ts' from minimap2 is flipped from xs
         if (tag === 'ts') {
-          const map: { [key: string]: string } = {
-            '-':
-              feature.get('strand') === -1
-                ? 'color_fwd_strand'
-                : 'color_rev_strand',
-            '+':
-              feature.get('strand') === -1
-                ? 'color_rev_strand'
-                : 'color_fwd_strand',
-          }
-          ctx.fillStyle = alignmentColoring[map[val] || 'color_nostrand']
+          ctx.fillStyle =
+            fillColor[
+              {
+                '-':
+                  feature.get('strand') === -1
+                    ? ('color_fwd_strand' as const)
+                    : ('color_rev_strand' as const),
+                '+':
+                  feature.get('strand') === -1
+                    ? ('color_rev_strand' as const)
+                    : ('color_fwd_strand' as const),
+              }[val] || 'color_nostrand'
+            ]
         }
 
         // tag is not one of the autofilled tags, has color-value pairs from
         // fetchValues
         else {
           const foundValue = colorTagMap[val]
-          ctx.fillStyle = foundValue || alignmentColoring['color_nostrand']
+          ctx.fillStyle = foundValue || fillColor['color_nostrand']
         }
         break
       }
@@ -815,30 +772,23 @@ export default class PileupRenderer extends BoxRendererType {
       const mlen = mismatch.length
       const mbase = mismatch.base
       const [leftPx, rightPx] = bpSpanPx(mstart, mstart + mlen, region, bpPerPx)
-      const widthPx = Math.max(minSubfeatureWidth, Math.abs(leftPx - rightPx))
+      const w = Math.max(minSubfeatureWidth, Math.abs(leftPx - rightPx))
       if (mismatch.type === 'mismatch') {
         if (!drawSNPsMuted) {
           const baseColor = colorForBase[mismatch.base] || '#888'
+          const c = mismatchAlpha
+            ? mismatch.qual === undefined
+              ? baseColor
+              : Color(baseColor)
+                  .alpha(Math.min(1, mismatch.qual / 50))
+                  .hsl()
+                  .string()
+            : baseColor
 
-          fillRect(
-            ctx,
-            Math.round(leftPx),
-            topPx,
-            widthPx,
-            heightPx,
-            canvasWidth,
-            mismatchAlpha
-              ? mismatch.qual === undefined
-                ? baseColor
-                : Color(baseColor)
-                    .alpha(Math.min(1, mismatch.qual / 50))
-                    .hsl()
-                    .string()
-              : baseColor,
-          )
+          fillRect(ctx, Math.round(leftPx), topPx, w, heightPx, canvasWidth, c)
         }
 
-        if (widthPx >= charWidth && heightPx >= heightLim) {
+        if (w >= charWidth && heightPx >= heightLim) {
           // normal SNP coloring
           const contrastColor = drawSNPsMuted
             ? 'black'
@@ -853,7 +803,7 @@ export default class PileupRenderer extends BoxRendererType {
             : contrastColor
           ctx.fillText(
             mbase,
-            leftPx + (widthPx - charWidth) / 2 + 1,
+            leftPx + (w - charWidth) / 2 + 1,
             topPx + heightPx,
           )
         }
@@ -869,7 +819,7 @@ export default class PileupRenderer extends BoxRendererType {
         )
         const txt = `${mismatch.length}`
         const rwidth = measureText(txt, 10)
-        if (widthPx >= rwidth && heightPx >= heightLim) {
+        if (w >= rwidth && heightPx >= heightLim) {
           ctx.fillStyle = contrastForBase.deletion
           ctx.fillText(
             txt,
@@ -917,9 +867,9 @@ export default class PileupRenderer extends BoxRendererType {
         // fix to avoid bad rendering note that this was also related to chrome
         // bug https://bugs.chromium.org/p/chromium/issues/detail?id=1131528
         // also affected firefox ref #1236 #2750
-        if (leftPx + widthPx > 0) {
+        if (leftPx + w > 0) {
           // make small exons more visible when zoomed far out
-          const adjustPx = widthPx - (bpPerPx > 10 ? 1.5 : 0)
+          const adjustPx = w - (bpPerPx > 10 ? 1.5 : 0)
           ctx.clearRect(leftPx, topPx, adjustPx, heightPx)
           fillRect(
             ctx,
@@ -1028,12 +978,8 @@ export default class PileupRenderer extends BoxRendererType {
             return
           }
 
-          const [leftPx, rightPx] = bpSpanPx(
-            start + k,
-            start + k + 1,
-            region,
-            bpPerPx,
-          )
+          const s0 = start + k
+          const [leftPx, rightPx] = bpSpanPx(s0, s0 + 1, region, bpPerPx)
           const widthPx = Math.max(minFeatWidth, rightPx - leftPx)
 
           // Black accounts for IUPAC ambiguity code bases such as N that

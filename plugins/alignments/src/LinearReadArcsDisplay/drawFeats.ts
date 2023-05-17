@@ -4,13 +4,13 @@ import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 
 // locals
 import {
-  getOrientationColor,
-  getInsertSizeColor,
-  getInsertSizeAndOrientationColor,
+  getPairedOrientationColor,
+  getPairedInsertSizeColor,
+  getPairedInsertSizeAndOrientationColor,
 } from '../shared/color'
 import { featurizeSA } from '../MismatchParser'
 import { LinearReadArcsDisplayModel } from './model'
-import { hasPairedReads } from './util'
+import { hasPairedReads } from '../shared/util'
 
 type LGV = LinearGenomeViewModel
 
@@ -108,11 +108,16 @@ export default function drawFeats(
       } else {
         if (hasPaired) {
           if (type === 'insertSizeAndOrientation') {
-            ctx.strokeStyle = getInsertSizeAndOrientationColor(k1, k2, stats)[0]
+            ctx.strokeStyle = getPairedInsertSizeAndOrientationColor(
+              k1,
+              k2,
+              stats,
+            )[0]
           } else if (type === 'orientation') {
-            ctx.strokeStyle = getOrientationColor(k1)[0]
+            ctx.strokeStyle = getPairedOrientationColor(k1)[0]
           } else if (type === 'insertSize') {
-            ctx.strokeStyle = getInsertSizeColor(k1, k2, stats)?.[0] || 'grey'
+            ctx.strokeStyle =
+              getPairedInsertSizeColor(k1, k2, stats)?.[0] || 'grey'
           } else if (type === 'gradient') {
             ctx.strokeStyle = `hsl(${Math.log10(absrad) * 10},50%,50%)`
           }
