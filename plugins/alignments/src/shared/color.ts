@@ -1,33 +1,53 @@
-import { orientationTypes } from '../util'
+import { orientationTypes, pairMap } from '../util'
 import { ChainStats } from './fetchChains'
 
-const fillColor: { [key: string]: string } = {
-  LR: '#c8c8c8',
-  RR: 'navy',
-  RL: 'teal',
-  LL: 'green',
-  large: 'red',
-  small: '#f0f',
-  interchrom: 'purple',
-  unknown: 'grey',
+export const fillColor = {
+  color_fwd_strand_not_proper: '#ECC8C8',
+  color_rev_strand_not_proper: '#BEBED8',
+  color_fwd_strand: '#EC8B8B',
+  color_rev_strand: '#8F8FD8',
+  color_fwd_missing_mate: '#D11919',
+  color_rev_missing_mate: '#1919D1',
+  color_fwd_diff_chr: '#000',
+  color_rev_diff_chr: '#969696',
+  color_pair_lr: '#c8c8c8',
+  color_pair_rr: 'navy',
+  color_pair_rl: 'teal',
+  color_pair_ll: 'green',
+  color_nostrand: '#c8c8c8',
+  color_interchrom: 'purple',
+  color_longinsert: 'red',
+  color_shortinsert: 'pink',
+  color_unknown: 'grey',
 }
 
 // manually calculated by running
+// const color = require('color')
 // Object.fromEntries(Object.entries(fillColor).map(([key,val])=>{
 //   return [key, color(val).darken('0.3').hex()]
 // }))
-const strokeColor: { [key: string]: string } = {
-  LR: '#8C8C8C',
-  RR: '#00005A',
-  RL: '#005A5A',
-  LL: '#005A00',
-  large: '#B30000',
-  small: '#B300B2',
-  interchrom: '#5A005A',
-  unknown: '#5A5A5A',
+// this avoids (expensive) use of Color module at runtime
+export const strokeColor = {
+  color_fwd_strand_not_proper: '#CA6767',
+  color_rev_strand_not_proper: '#7272AA',
+  color_fwd_strand: '#DC2A2A',
+  color_rev_strand: '#4141BA',
+  color_fwd_missing_mate: '#921111',
+  color_rev_missing_mate: '#111192',
+  color_fwd_diff_chr: '#000000',
+  color_rev_diff_chr: '#696969',
+  color_pair_lr: '#8C8C8C',
+  color_pair_rr: '#00005A',
+  color_pair_rl: '#005A5A',
+  color_pair_ll: '#005A00',
+  color_nostrand: '#8C8C8C',
+  color_interchrom: '#5A005A',
+  color_longinsert: '#B30000',
+  color_shortinsert: '#FF3A5C',
+  color_unknown: 'grey',
 }
 
-export function getInsertSizeColor(
+export function getPairedInsertSizeColor(
   f1: { refName: string; tlen?: number },
   f2: { refName: string },
   stats?: ChainStats,
@@ -35,28 +55,32 @@ export function getInsertSizeColor(
   const sameRef = f1.refName === f2.refName
   const tlen = Math.abs(f1.tlen || 0)
   if (sameRef && tlen > (stats?.upper || 0)) {
-    return [fillColor.large, strokeColor.large] as const
+    return [fillColor.color_longinsert, strokeColor.color_longinsert] as const
   } else if (sameRef && tlen < (stats?.lower || 0)) {
-    return [fillColor.small, strokeColor.small] as const
+    return [fillColor.color_shortinsert, strokeColor.color_shortinsert] as const
   } else if (!sameRef) {
-    return [fillColor.interchrom, strokeColor.interchrom] as const
+    return [fillColor.color_interchrom, strokeColor.color_interchrom] as const
   }
   return undefined
 }
 
-export function getInsertSizeAndOrientationColor(
+export function getPairedInsertSizeAndOrientationColor(
   f1: { refName: string; pair_orientation?: string; tlen?: number },
   f2: { refName: string },
   stats?: ChainStats,
 ) {
-  return getInsertSizeColor(f1, f2, stats) || getOrientationColor(f1)
+  return (
+    getPairedInsertSizeColor(f1, f2, stats) || getPairedOrientationColor(f1)
+  )
 }
 
-export function getOrientationColor(f: { pair_orientation?: string }) {
+export function getPairedOrientationColor(f: { pair_orientation?: string }) {
   const type = orientationTypes.fr
-  const type2 = type[f.pair_orientation || '']
+  const type2 = pairMap[
+    type[f.pair_orientation || ''] as keyof typeof pairMap
+  ] as keyof typeof fillColor
   return [
-    fillColor[type2] || fillColor.unknown,
-    strokeColor[type2] || strokeColor.unknown,
+    fillColor[type2] || fillColor.color_unknown,
+    strokeColor[type2] || strokeColor.color_unknown,
   ] as const
 }
