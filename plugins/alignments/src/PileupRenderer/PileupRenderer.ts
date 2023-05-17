@@ -351,7 +351,7 @@ export default class PileupRenderer extends BoxRendererType {
     const qual: string = feature.get('qual') || ''
     const scores = qual.split(' ').map(val => +val)
     const cigarOps = parseCigar(feature.get('CIGAR'))
-    const width = 1 / bpPerPx
+    const w = 1 / bpPerPx
     const start = feature.get('start')
     let soffset = 0 // sequence offset
     let roffset = 0 // reference offset
@@ -369,7 +369,7 @@ export default class PileupRenderer extends BoxRendererType {
           const start0 = start + roffset + m
           const leftPx = bpSpanPx(start0, start0 + 1, region, bpPerPx)[0]
           const c = `hsl(${score === 255 ? 150 : score * 1.5},55%,50%)`
-          fillRect(ctx, leftPx, topPx, width + 0.5, heightPx, canvasWidth, c)
+          fillRect(ctx, leftPx, topPx, w + 0.5, heightPx, canvasWidth, c)
         }
         soffset += len
         roffset += len
@@ -750,7 +750,6 @@ export default class PileupRenderer extends BoxRendererType {
     const start = feature.get('start')
 
     const pxPerBp = Math.min(1 / bpPerPx, 2)
-    const w = Math.max(minSubfeatureWidth, pxPerBp)
     const mismatches = feature.get('mismatches') as Mismatch[] | undefined
     const heightLim = charHeight - 2
 
@@ -772,7 +771,7 @@ export default class PileupRenderer extends BoxRendererType {
       const mlen = mismatch.length
       const mbase = mismatch.base
       const [leftPx, rightPx] = bpSpanPx(mstart, mstart + mlen, region, bpPerPx)
-      const w = Math.max(minSubfeatureWidth, Math.abs(leftPx - rightPx))
+      const widthPx = Math.max(minSubfeatureWidth, Math.abs(leftPx - rightPx))
       if (mismatch.type === 'mismatch') {
         if (!drawSNPsMuted) {
           const baseColor = colorForBase[mismatch.base] || '#888'
@@ -785,10 +784,18 @@ export default class PileupRenderer extends BoxRendererType {
                   .string()
             : baseColor
 
-          fillRect(ctx, Math.round(leftPx), topPx, w, heightPx, canvasWidth, c)
+          fillRect(
+            ctx,
+            Math.round(leftPx),
+            topPx,
+            widthPx,
+            heightPx,
+            canvasWidth,
+            c,
+          )
         }
 
-        if (w >= charWidth && heightPx >= heightLim) {
+        if (widthPx >= charWidth && heightPx >= heightLim) {
           // normal SNP coloring
           const contrastColor = drawSNPsMuted
             ? 'black'
@@ -803,7 +810,7 @@ export default class PileupRenderer extends BoxRendererType {
             : contrastColor
           ctx.fillText(
             mbase,
-            leftPx + (w - charWidth) / 2 + 1,
+            leftPx + (widthPx - charWidth) / 2 + 1,
             topPx + heightPx,
           )
         }
@@ -819,7 +826,7 @@ export default class PileupRenderer extends BoxRendererType {
         )
         const txt = `${mismatch.length}`
         const rwidth = measureText(txt, 10)
-        if (w >= rwidth && heightPx >= heightLim) {
+        if (widthPx >= rwidth && heightPx >= heightLim) {
           ctx.fillStyle = contrastForBase.deletion
           ctx.fillText(
             txt,
@@ -835,41 +842,30 @@ export default class PileupRenderer extends BoxRendererType {
         if (len < 10) {
           fillRect(ctx, pos, topPx, insW, heightPx, canvasWidth, 'purple')
           if (1 / bpPerPx >= charWidth && heightPx >= heightLim) {
-            fillRect(ctx, pos - insW, topPx, insW * 3, 1, canvasWidth)
-            fillRect(
-              ctx,
-              pos - insW,
-              topPx + heightPx - 1,
-              insW * 3,
-              1,
-              canvasWidth,
-            )
+            const l = pos - insW
+            fillRect(ctx, l, topPx, insW * 3, 1, canvasWidth)
+            fillRect(ctx, l, topPx + heightPx - 1, insW * 3, 1, canvasWidth)
             ctx.fillText(`(${mismatch.base})`, pos + 3, topPx + heightPx)
           }
         }
       } else if (mismatch.type === 'hardclip' || mismatch.type === 'softclip') {
         const pos = leftPx + extraHorizontallyFlippedOffset
-        fillRect(
-          ctx,
-          pos,
-          topPx,
-          w,
-          heightPx,
-          canvasWidth,
-          mismatch.type === 'hardclip' ? 'red' : 'blue',
-        )
+        const c = mismatch.type === 'hardclip' ? 'red' : 'blue'
+        const clipW = Math.max(minSubfeatureWidth, pxPerBp)
+        fillRect(ctx, pos, topPx, clipW, heightPx, canvasWidth, c)
         if (1 / bpPerPx >= charWidth && heightPx >= heightLim) {
-          fillRect(ctx, pos - w, topPx, w * 3, 1, canvasWidth)
-          fillRect(ctx, pos - w, topPx + heightPx - 1, w * 3, 1, canvasWidth)
+          const l = pos - clipW
+          fillRect(ctx, l, topPx, clipW * 3, 1, canvasWidth)
+          fillRect(ctx, l, topPx + heightPx - 1, clipW * 3, 1, canvasWidth)
           ctx.fillText(`(${mismatch.base})`, pos + 3, topPx + heightPx)
         }
       } else if (mismatch.type === 'skip') {
         // fix to avoid bad rendering note that this was also related to chrome
         // bug https://bugs.chromium.org/p/chromium/issues/detail?id=1131528
         // also affected firefox ref #1236 #2750
-        if (leftPx + w > 0) {
+        if (leftPx + widthPx > 0) {
           // make small exons more visible when zoomed far out
-          const adjustPx = w - (bpPerPx > 10 ? 1.5 : 0)
+          const adjustPx = widthPx - (bpPerPx > 10 ? 1.5 : 0)
           ctx.clearRect(leftPx, topPx, adjustPx, heightPx)
           fillRect(
             ctx,

@@ -2,7 +2,6 @@
 
 exports[`no features 1`] = `
 <svg
-  class="LollipopRendering"
   height="20"
   style="position: relative;"
   width="100"
@@ -11,7 +10,6 @@ exports[`no features 1`] = `
 
 exports[`one feature 1`] = `
 <svg
-  class="LollipopRendering"
   height="16.286652959662007"
   style="position: relative;"
   width="333.3333333333333"

@@ -117,7 +117,7 @@ export default observer(function LollipopRendering(props: Record<string, any>) {
       {records.map(layoutRecord => {
         const feature = features.get(layoutRecord.data.featureId)
         return (
-          <>
+          <React.Fragment key={feature.id()}>
             <Stick
               {...props}
               config={config}
@@ -132,7 +132,7 @@ export default observer(function LollipopRendering(props: Record<string, any>) {
               key={`body-${feature.id()}`}
               selectedFeatureId={selectedFeatureId}
             />
-          </>
+          </React.Fragment>
         )
       })}
     </svg>

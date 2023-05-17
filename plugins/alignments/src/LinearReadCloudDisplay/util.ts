@@ -1,5 +1,3 @@
-
-
 // avoid drawing negative width features for SVG exports
 export function fillRectCtx(
   x: number,
@@ -47,4 +45,3 @@ export function strokeRectCtx(
   }
   ctx.strokeRect(x, y, width, height)
 }
-
