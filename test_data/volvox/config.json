@@ -2086,6 +2086,31 @@
         "assemblyNames": ["volvox_random_inv", "volvox"]
       },
       "assemblyNames": ["volvox_random_inv", "volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "volvox-inv-pbsim",
+      "name": "volvox-inv-pbsim",
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "volvox-inv-pbsim.cram",
+          "locationType": "UriLocation"
+        },
+        "craiLocation": {
+          "uri": "volvox-inv-pbsim.cram.crai",
+          "locationType": "UriLocation"
+        },
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "category": ["Alignments"],
+      "assemblyNames": ["volvox"]
     }
   ],
   "plugins": [
