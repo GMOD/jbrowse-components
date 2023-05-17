@@ -117,6 +117,17 @@
     "appId": "org.jbrowse2.app",
     "productName": "JBrowse 2",
     "copyright": "Copyright © 2019",
+    "snap": {
+      "confinement": "strict",
+      "plugs": [
+        "default",
+        "removable-media"
+      ],
+      "slots": [
+        "default",
+        "removable-media"
+      ]
+    },
     "win": {
       "publish": [
         "github"
