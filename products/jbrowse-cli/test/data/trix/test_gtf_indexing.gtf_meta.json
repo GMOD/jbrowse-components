@@ -1,0 +1,18 @@
+{
+  "dateCreated": "2023-05-18T17:41:22.681Z",
+  "tracks": [
+    {
+      "trackId": "test_gtf_indexing.gtf",
+      "attributesIndexed": ["Name", "ID"],
+      "excludedTypes": ["CDS", "exon"],
+      "adapterConf": {
+        "type": "GtfAdapter",
+        "gtfLocation": {
+          "uri": "/home/cdiesh/src/jbrowse-components/products/jbrowse-cli/test/data/test_gtf_indexing.gtf",
+          "locationType": "UriLocation"
+        }
+      }
+    }
+  ],
+  "assemblyNames": []
+}

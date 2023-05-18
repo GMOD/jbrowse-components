@@ -19,15 +19,7 @@ const volvoxDir = path.join(
   'test_data',
   'volvox',
 )
-const gtfIndexTestDir = path.join(
-  __dirname,
-  '..',
-  '..',
-  '..',
-  '..',
-  'test_data',
-  'gtf_index_test',
-)
+const gtfIndexTestDir = path.join(__dirname, '..', '..', 'test', 'data')
 
 function mockRemote1(exampleSite: Scope) {
   return exampleSite
@@ -311,15 +303,6 @@ describe('run with a volvox config', () => {
 describe('run for testing gtf file indexing', () => {
   let preGtfIndexTestIx = ''
   let preGtfIndexTestIxx = ''
-  const input_file_path = path.join(
-    __dirname,
-    '..',
-    '..',
-    'test',
-    'data',
-    'test_gtf_indexing.gtf',
-  )
-  const output_file_path = path.join(__dirname, '..', '..', 'test', 'data')
 
   setup
     .do(async ctx => {
@@ -328,13 +311,7 @@ describe('run for testing gtf file indexing', () => {
       preGtfIndexTestIx = readTrix(ctx.dir, 'test_gtf_indexing.gtf.ix')
       preGtfIndexTestIxx = readTrix(ctx.dir, 'test_gtf_indexing.gtf.ixx')
     })
-    .command([
-      'text-index',
-      '--file=' + input_file_path,
-      '--out=' + output_file_path,
-    ])
-    // to update run:
-    // bin/run text-index --file <full path_to__test_gtf_indexing.gtf> --out ../../test_data/gtf_index_test/
+    .command(['text-index', '--file', 'test_gtf_indexing.gtf'])
     .it('Indexes the gtf file', ctx => {
       expect(readTrix(ctx.dir, 'test_gtf_indexing.gtf.ix')).toEqual(
         preGtfIndexTestIx,

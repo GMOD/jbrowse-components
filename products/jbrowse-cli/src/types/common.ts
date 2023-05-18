@@ -110,7 +110,7 @@ export function supported(type: string) {
     'VcfTabixAdapter',
     'Gff3Adapter',
     'VcfAdapter',
-    'GtfAdapter'
+    'GtfAdapter',
   ].includes(type)
 }
 

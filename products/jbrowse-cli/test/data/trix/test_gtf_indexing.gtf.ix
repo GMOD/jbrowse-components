@@ -1,0 +1,7 @@
+cluharg00000005458 ["scaffold625%3A337818..343277"|"test_gtf_indexing.gtf"|"TUBB3_2"|"CLUHARG00000005458"],1
+cluhart00000008717 ["scaffold625%3A337818..343277"|"test_gtf_indexing.gtf"|"CLUHART00000008717"],1
+cluhart00000008717:five_prime_utr ["scaffold625%3A337818..337914"|"test_gtf_indexing.gtf"|"CLUHART00000008717%3Afive_prime_utr"],1
+cluhart00000008717:start ["scaffold625%3A337916..337918"|"test_gtf_indexing.gtf"|"CLUHART00000008717%3Astart"],1
+cluhart00000008717:stop ["scaffold625%3A343031..343033"|"test_gtf_indexing.gtf"|"CLUHART00000008717%3Astop"],1
+cluhart00000008717:three_prime_utr ["scaffold625%3A343034..343277"|"test_gtf_indexing.gtf"|"CLUHART00000008717%3Athree_prime_utr"],1
+tubb3_2 ["scaffold625%3A337818..343277"|"test_gtf_indexing.gtf"|"TUBB3_2"|"CLUHARG00000005458"],1
