@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { types, Instance } from 'mobx-state-tree'
 import { ConfigurationSchema } from '../../configuration'
 import PluginManager from '../../PluginManager'
@@ -139,15 +138,23 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
       }),
     },
     {
-      preProcessSnapshot: s => {
-        const snap = JSON.parse(JSON.stringify(s))
+      preProcessSnapshot: s2 => {
+        const snap = pluginManager.evaluateExtensionPoint(
+          'Core-preProcessTrackConfig',
+          JSON.parse(JSON.stringify(s2)),
+        ) as {
+          trackId: string
+          name: string
+          type: string
+          displays: { type: string; displayId: string }[]
+        }
         const displayTypes = new Set()
         const { displays = [] } = snap
         if (snap.trackId !== 'placeholderId') {
           // Gets the displays on the track snapshot and the possible displays
           // from the track type and adds any missing possible displays to the
           // snapshot
-          displays.forEach((d: any) => d && displayTypes.add(d.type))
+          displays.forEach(d => d && displayTypes.add(d.type))
           const trackType = pluginManager.getTrackType(snap.type)
           trackType.displayTypes.forEach(displayType => {
             if (!displayTypes.has(displayType.name)) {
@@ -165,6 +172,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
        */
       explicitIdentifier: 'trackId',
       explicitlyTyped: true,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       actions: (self: any) => ({
         addDisplayConf(conf: { type: string; displayId: string }) {
           const { type } = conf
@@ -172,6 +180,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
             throw new Error(`unknown display type ${type}`)
           }
           const display = self.displays.find(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (d: any) => d?.displayId === conf.displayId,
           )
           if (display) {

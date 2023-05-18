@@ -5,7 +5,7 @@ title: Extension points
 
 The basic API is that producers can say:
 
-```js
+```typescript
 const ret = pluginManager.evaluateExtensionPoint('ExtensionPointName', {
   value: 1,
 })
@@ -13,7 +13,7 @@ const ret = pluginManager.evaluateExtensionPoint('ExtensionPointName', {
 
 And consumers can say:
 
-```js
+```typescript
 pluginManager.addToExtensionPoint('ExtensionPointName', arg => {
   return arg.value + 1
 })
@@ -37,7 +37,7 @@ call or add to.
 
 The API is
 
-```js
+```typescript
 // extra props are optional, can pass an extra context object your extension
 // point receives
 pluginManager.evaluateExtensionPoint(extensionPointName, args, props)
@@ -48,7 +48,7 @@ along to the args argument of the next one), and props are just passed along
 
 There is also an async method:
 
-```js
+```typescript
 // extra props are optional, can pass an extra context object your extension
 // point receives
 pluginManager.evaluateAsyncExtensionPoint(extensionPointName, args, props)
@@ -57,7 +57,7 @@ pluginManager.evaluateAsyncExtensionPoint(extensionPointName, args, props)
 Users can additionally add to extension points, so that when they are evaluated,
 it runs a chain of callbacks that are registered to that extension point:
 
-```js
+```typescript
 pluginManager.addToExtensionPoint(extensionPointName, callback => newArgs)
 ```
 
@@ -395,7 +395,7 @@ use for the panel
 
 Example:
 
-```js
+```typescript
 pluginManager.addToExtensionPoint(
   'Core-extraFeaturePanel',
   (DefaultFeatureExtra, { model }) => {
@@ -404,6 +404,26 @@ pluginManager.addToExtensionPoint(
       : DefaultFeatureExtra
   },
 )
+```
+
+### Core-preProcessTrackConfig
+
+type: synchronous
+
+- `args` - `SnapshotIn<AnyConfigurationModel>` - Copy of the current track
+  config
+
+Return value: A new track config
+
+Example:
+
+```typescript
+pluginManager.addToExtensionPoint('Core-preProcessTrackConfig', snap => {
+  return {
+    ...snap.metadata,
+    extraMetadata: 'extra metadata',
+  }
+})
 ```
 
 ### LinearGenomeView-TracksContainer
