@@ -62,8 +62,8 @@ function parseStrand(strand: string) {
 export default class BedpeAdapter extends BaseFeatureDataAdapter {
   protected bedpeFeatures?: Promise<{
     header: string
-    feats1: Record<string, string[]>
-    feats2: Record<string, string[]>
+    feats1: Record<string, string[] | undefined>
+    feats2: Record<string, string[] | undefined>
     columnNames: string[]
   }>
 
@@ -90,8 +90,8 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
       headerLines.push(lines[i])
     }
     const header = headerLines.join('\n')
-    const feats1 = {} as Record<string, string[]>
-    const feats2 = {} as Record<string, string[]>
+    const feats1 = {} as Record<string, string[] | undefined>
+    const feats2 = {} as Record<string, string[] | undefined>
     for (; i < lines.length; i++) {
       const line = lines[i]
       const cols = line.split('\t')
@@ -103,8 +103,10 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
       if (!feats2[r2]) {
         feats2[r2] = []
       }
-      feats1[r1].push(line)
-      feats2[r2].push(line)
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      feats1[r1]!.push(line)
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      feats2[r2]!.push(line)
     }
     const columnNames = this.getConf('columnNames')
 
@@ -168,12 +170,16 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
       return featureData(f, uniqueId, true, names)
     })
 
-    for (const obj of ret1) {
-      intervalTree.insert([obj.get('start'), obj.get('end')], obj)
+    if (ret1) {
+      for (const obj of ret1) {
+        intervalTree.insert([obj.get('start'), obj.get('end')], obj)
+      }
     }
 
-    for (const obj of ret2) {
-      intervalTree.insert([obj.get('start'), obj.get('end')], obj)
+    if (ret2) {
+      for (const obj of ret2) {
+        intervalTree.insert([obj.get('start'), obj.get('end')], obj)
+      }
     }
 
     return intervalTree
