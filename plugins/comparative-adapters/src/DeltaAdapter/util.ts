@@ -1,3 +1,6 @@
+const decoder =
+  typeof TextDecoder !== 'undefined' ? new TextDecoder('utf8') : undefined
+
 /* paf2delta from paftools.js in the minimap2 repository, license reproduced below
  *
  * The MIT License
@@ -26,7 +29,7 @@
  * SOFTWARE.
  */
 
-export function paf_delta2paf(lines: string[]) {
+export function paf_delta2paf(buffer: Buffer) {
   let rname = ''
   let qname = ''
   let qs = 0
@@ -42,89 +45,101 @@ export function paf_delta2paf(lines: string[]) {
 
   const records = []
   const regex = new RegExp(/^>(\S+)\s+(\S+)\s+(\d+)\s+(\d+)/)
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i]
-    const m = regex.exec(line)
-    if (m !== null) {
-      rname = m[1]
-      qname = m[2]
-      seen_gt = true
-      continue
-    }
-    if (!seen_gt) {
-      continue
-    }
-    const t = line.split(' ')
-    if (t.length === 7) {
-      const t0 = +t[0]
-      const t1 = +t[1]
-      const t2 = +t[2]
-      const t3 = +t[3]
-      const t4 = +t[4]
-      strand = (t0 < t1 && t2 < t3) || (t0 > t1 && t2 > t3) ? 1 : -1
-      rs = +(t0 < t1 ? t0 : t1) - 1
-      re = +(t1 > t0 ? t1 : t0)
-      qs = +(t2 < t3 ? t2 : t3) - 1
-      qe = +(t3 > t2 ? t3 : t2)
-      x = y = 0
-      NM = t4
-      cigar = []
-    } else if (t.length === 1) {
-      const d = +t[0]
-      if (d === 0) {
-        let blen = 0
-        const cigar_str = []
 
-        if (re - rs - x !== qe - qs - y) {
-          throw new Error(`inconsistent alignment on line ${i}`)
-        }
-        cigar.push((re - rs - x) << 4)
-        for (let i = 0; i < cigar.length; ++i) {
-          const rlen = cigar[i] >> 4
-          blen += rlen
-          cigar_str.push(rlen + 'MID'.charAt(cigar[i] & 0xf))
-        }
+  let blockStart = 0
+  let i = 0
+  while (blockStart < buffer.length) {
+    const n = buffer.indexOf('\n', blockStart)
+    if (n === -1) {
+      break
+    }
+    const b = buffer.slice(blockStart, n)
+    const line = (decoder?.decode(b) || b.toString()).trim()
+    blockStart = n + 1
+    i++
+    if (line) {
+      const m = regex.exec(line)
+      if (m !== null) {
+        rname = m[1]
+        qname = m[2]
+        seen_gt = true
+        continue
+      }
+      if (!seen_gt) {
+        continue
+      }
+      const t = line.split(' ')
+      if (t.length === 7) {
+        const t0 = +t[0]
+        const t1 = +t[1]
+        const t2 = +t[2]
+        const t3 = +t[3]
+        const t4 = +t[4]
+        strand = (t0 < t1 && t2 < t3) || (t0 > t1 && t2 > t3) ? 1 : -1
+        rs = +(t0 < t1 ? t0 : t1) - 1
+        re = +(t1 > t0 ? t1 : t0)
+        qs = +(t2 < t3 ? t2 : t3) - 1
+        qe = +(t3 > t2 ? t3 : t2)
+        x = y = 0
+        NM = t4
+        cigar = []
+      } else if (t.length === 1) {
+        const d = +t[0]
+        if (d === 0) {
+          let blen = 0
+          const cigar_str = []
 
-        records.push({
-          qname,
-          qstart: qs,
-          qend: qe,
-          tname: rname,
-          tstart: rs,
-          tend: re,
-          strand,
-          extra: {
-            numMatches: blen - NM,
-            blockLen: blen,
-            mappingQual: 0,
-            NM,
-            cg: cigar_str.join(''),
-          },
-        })
-      } else if (d > 0) {
-        const l = d - 1
-        x += l + 1
-        y += l
-        if (l > 0) {
-          cigar.push(l << 4)
-        }
-        if (cigar.length > 0 && (cigar[cigar.length - 1] & 0xf) === 2) {
-          cigar[cigar.length - 1] += 1 << 4
+          if (re - rs - x !== qe - qs - y) {
+            throw new Error(`inconsistent alignment on line ${i}`)
+          }
+          cigar.push((re - rs - x) << 4)
+          for (let i = 0; i < cigar.length; ++i) {
+            const rlen = cigar[i] >> 4
+            blen += rlen
+            cigar_str.push(rlen + 'MID'.charAt(cigar[i] & 0xf))
+          }
+
+          records.push({
+            qname,
+            qstart: qs,
+            qend: qe,
+            tname: rname,
+            tstart: rs,
+            tend: re,
+            strand,
+            extra: {
+              numMatches: blen - NM,
+              blockLen: blen,
+              mappingQual: 0,
+              NM,
+              cg: cigar_str.join(''),
+            },
+          })
+        } else if (d > 0) {
+          const l = d - 1
+          x += l + 1
+          y += l
+          if (l > 0) {
+            cigar.push(l << 4)
+          }
+          if (cigar.length > 0 && (cigar[cigar.length - 1] & 0xf) === 2) {
+            cigar[cigar.length - 1] += 1 << 4
+          } else {
+            cigar.push((1 << 4) | 2)
+          } // deletion
         } else {
-          cigar.push((1 << 4) | 2)
-        } // deletion
-      } else {
-        const l = -d - 1
-        x += l
-        y += l + 1
-        if (l > 0) {
-          cigar.push(l << 4)
+          const l = -d - 1
+          x += l
+          y += l + 1
+          if (l > 0) {
+            cigar.push(l << 4)
+          }
+          if (cigar.length > 0 && (cigar[cigar.length - 1] & 0xf) === 1) {
+            cigar[cigar.length - 1] += 1 << 4
+          } else {
+            cigar.push((1 << 4) | 1)
+          } // insertion
         }
-        if (cigar.length > 0 && (cigar[cigar.length - 1] & 0xf) === 1) {
-          cigar[cigar.length - 1] += 1 << 4
-        } else {
-          cigar.push((1 << 4) | 1)
-        } // insertion
       }
     }
   }
