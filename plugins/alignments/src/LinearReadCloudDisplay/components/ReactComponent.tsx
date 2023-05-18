@@ -22,11 +22,13 @@ const Cloud = observer(function ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [model, width, height],
   )
+
+  // note: the position absolute below avoids scrollbar from appearing on track
   return (
     <canvas
       data-testid="cloud-canvas"
       ref={cb}
-      style={{ width, height }}
+      style={{ width, height, position: 'absolute' }}
       width={width * 2}
       height={height * 2}
     />

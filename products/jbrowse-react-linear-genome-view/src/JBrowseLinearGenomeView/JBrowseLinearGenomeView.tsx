@@ -7,6 +7,7 @@ import { EmbeddedViewContainer, ModalWidget } from '@jbrowse/embedded-core'
 
 // locals
 import { ViewModel } from '../createModel/createModel'
+import { ThemeProvider } from '@mui/material'
 
 const JBrowseLinearGenomeView = observer(function ({
   viewState,
@@ -26,14 +27,14 @@ const JBrowseLinearGenomeView = observer(function ({
   )
 
   return (
-    <>
-      <EmbeddedViewContainer key={`view-${view.id}`} view={view} theme={theme}>
+    <ThemeProvider theme={theme}>
+      <EmbeddedViewContainer key={`view-${view.id}`} view={view}>
         <Suspense fallback={<div>Loading...</div>}>
           <ReactComponent model={view} session={session} />
         </Suspense>
       </EmbeddedViewContainer>
       <ModalWidget session={session} />
-    </>
+    </ThemeProvider>
   )
 })
 

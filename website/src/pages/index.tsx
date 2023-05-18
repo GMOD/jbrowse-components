@@ -122,7 +122,7 @@ function Home() {
               <ul>
                 <li>
                   Improved <b>structural variant</b> and{' '}
-                  <b>compariative genomics visualization</b> with linear,
+                  <b>comparative genomics visualization</b> with linear,
                   circular, dotplot, and synteny views
                 </li>
                 <li>

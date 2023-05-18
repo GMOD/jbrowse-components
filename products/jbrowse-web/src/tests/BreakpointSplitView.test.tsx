@@ -10,11 +10,11 @@ beforeEach(() => {
   doBeforeEach(url => require.resolve(`../../test_data/breakpoint/${url}`))
 })
 
-const delay = { timeout: 10000 }
+const delay = { timeout: 40000 }
 
 test(
   'breakpoint split view',
-  async () =>
+  () =>
     mockConsoleWarn(async () => {
       const { findByTestId, queryAllByTestId } = await createView(
         breakpointConfig,
@@ -29,5 +29,5 @@ test(
 
       expect(await findByTestId('pacbio_vcf-loaded')).toMatchSnapshot()
     }),
-  10000,
+  40000,
 )

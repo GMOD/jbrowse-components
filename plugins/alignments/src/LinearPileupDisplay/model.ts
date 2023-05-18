@@ -815,7 +815,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                     assemblyName,
                   },
                 ],
-                adapterConfig: adapterConfig,
+                adapterConfig,
                 rendererType: rendererType.name,
                 sessionId: getRpcSessionId(self),
                 layoutId: view.id,

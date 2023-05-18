@@ -67,6 +67,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             extra: types.frozen(),
           }),
         ),
+
+        /**
+         * #property
+         */
+        drawSingletons: true,
       }),
     )
     .volatile(() => ({
@@ -77,6 +82,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       ref: null as HTMLCanvasElement | null,
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      setDrawSingletons(f: boolean) {
+        self.drawSingletons = f
+      },
       /**
        * #action
        */
@@ -156,6 +167,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
+            {
+              label: 'Draw singletons',
+              type: 'checkbox',
+              checked: self.drawSingletons,
+              onClick: () => self.setDrawSingletons(!self.drawSingletons),
+            },
             {
               label: 'Filter by',
               icon: FilterListIcon,
