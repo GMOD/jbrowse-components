@@ -28,6 +28,13 @@ export default function Tracks(pluginManager: PluginManager) {
       get tracks(): AnyConfigurationModel[] {
         return self.jbrowse.tracks
       },
+
+      /**
+       * #getter
+       */
+      get tracksById(): Record<string, AnyConfigurationModel> {
+        return Object.fromEntries(this.tracks.map(t => [t.trackId, t]))
+      },
     }))
     .actions(self => ({
       /**

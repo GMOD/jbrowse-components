@@ -128,8 +128,12 @@ export default function JBrowseWeb(
         if (track) {
           return track
         }
-        const length = self.tracks.push(trackConf)
-        return self.tracks[length - 1]
+        if (adminMode) {
+          self.tracks.push(trackConf)
+        } else {
+          self.tracks = [...self.tracks, trackConf]
+        }
+        return self.tracks[self.tracks.length - 1]
       },
       /**
        * #action

@@ -2737,14 +2737,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "craiLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-inv-pbsim.cram.crai",
         },
         "cramLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-inv-pbsim.cram",
         },
@@ -2762,28 +2758,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "category": [
         "Alignments",
-      ],
-      "displays": [
-        {
-          "displayId": "volvox-inv-pbsim-LinearAlignmentsDisplay",
-          "type": "LinearAlignmentsDisplay",
-        },
-        {
-          "displayId": "volvox-inv-pbsim-LinearPileupDisplay",
-          "type": "LinearPileupDisplay",
-        },
-        {
-          "displayId": "volvox-inv-pbsim-LinearSNPCoverageDisplay",
-          "type": "LinearSNPCoverageDisplay",
-        },
-        {
-          "displayId": "volvox-inv-pbsim-LinearReadArcsDisplay",
-          "type": "LinearReadArcsDisplay",
-        },
-        {
-          "displayId": "volvox-inv-pbsim-LinearReadCloudDisplay",
-          "type": "LinearReadCloudDisplay",
-        },
       ],
       "name": "volvox-inv-pbsim",
       "trackId": "volvox-inv-pbsim",
