@@ -2,7 +2,8 @@ import { PluginConstructor } from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { Instance } from 'mobx-state-tree'
 import corePlugins from '../corePlugins'
-import createRootModel from '../rootModel'
+import createRootModel from '../rootModel/rootModel'
+import sessionModelFactory from '../sessionModel'
 
 type WorkerCb = () => Worker
 
@@ -20,7 +21,12 @@ export default function createModel(
     ...runtimePlugins.map(P => new P()),
   ])
   pluginManager.createPluggableElements()
-  const rootModel = createRootModel(pluginManager, false, makeWorkerInstance)
+  const rootModel = createRootModel(
+    pluginManager,
+    sessionModelFactory,
+    false,
+    makeWorkerInstance,
+  )
   return { model: rootModel, pluginManager }
 }
 
