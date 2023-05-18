@@ -47,7 +47,7 @@ import CopyIcon from '@mui/icons-material/FileCopy'
 import DeleteIcon from '@mui/icons-material/Delete'
 import InfoIcon from '@mui/icons-material/Info'
 
-const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
+const AboutDialog = lazy(() => import('./createModel/AboutDialog'))
 
 export declare interface ReferringNode {
   node: IAnyStateTreeNode
@@ -303,6 +303,7 @@ export default function sessionModelFactory(
        * #method
        */
       renderProps() {
+        // @ts-expect-error
         return { theme: getConf(self, 'theme') }
       },
 

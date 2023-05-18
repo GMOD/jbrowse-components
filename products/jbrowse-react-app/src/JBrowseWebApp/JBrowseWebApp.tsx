@@ -4,7 +4,7 @@ import { ThemeProvider, ScopedCssBaseline } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
 // locals
-import App from '@jbrowse/core/ui/App'
+import { App } from '@jbrowse/app-core'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getConf } from '@jbrowse/core/configuration'
 
