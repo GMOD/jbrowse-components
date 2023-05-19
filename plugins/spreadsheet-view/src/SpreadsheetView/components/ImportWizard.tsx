@@ -131,6 +131,7 @@ const ImportWizard = observer(({ model }: { model: ImportWizardModel }) => {
           {canCancel ? (
             <Button
               variant="contained"
+              color="secondary"
               onClick={() => model.cancelButton()}
               disabled={!canCancel}
             >

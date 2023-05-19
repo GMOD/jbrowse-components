@@ -13,9 +13,15 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 const headerHeight = 52
 
 const useStyles = makeStyles()(theme => ({
-  resizeHandle: {
-    width: 4,
+  resizeHandleVert: {
     background: theme.palette.action.selected,
+    width: 4,
+    boxSizing: 'border-box',
+    borderTop: '1px solid #fafafa',
+  },
+  resizeHandleHoriz: {
+    background: theme.palette.action.selected,
+    height: 4,
     boxSizing: 'border-box',
     borderTop: '1px solid #fafafa',
   },
@@ -99,26 +105,29 @@ const CircularViewOptions = observer(function ({
   )
 })
 
-function SvInspectorView({ model }: { model: SvInspectorViewModel }) {
+export default observer(function SvInspectorView({
+  model,
+}: {
+  model: SvInspectorViewModel
+}) {
   const { classes } = useStyles()
 
   const {
-    resizeHeight,
-    dragHandleHeight,
     SpreadsheetViewReactComponent,
     CircularViewReactComponent,
+    dragHandleHeight,
     showCircularView,
   } = model
 
   return (
-    <div className={classes.root} data-testid={model.id}>
+    <div>
       <Grid container direction="row" className={classes.header}>
         <Grid item>
           <ViewControls model={model} />
         </Grid>
       </Grid>
       <div className={classes.viewsContainer}>
-        <div className={classes.spreadsheetViewContainer}>
+        <div style={{ width: model.spreadsheetView.width }}>
           <SpreadsheetViewReactComponent model={model.spreadsheetView} />
         </div>
 
@@ -132,7 +141,7 @@ function SvInspectorView({ model }: { model: SvInspectorViewModel }) {
               }}
               vertical
               flexbox
-              className={classes.resizeHandle}
+              className={classes.resizeHandleVert}
             />
             <div style={{ width: model.circularView.width }}>
               <CircularViewOptions svInspector={model} />
@@ -142,16 +151,10 @@ function SvInspectorView({ model }: { model: SvInspectorViewModel }) {
         ) : null}
       </div>
       <ResizeHandle
-        onDrag={resizeHeight}
-        style={{
-          height: dragHandleHeight,
-          background: '#ccc',
-          boxSizing: 'border-box',
-          borderTop: '1px solid #fafafa',
-        }}
+        onDrag={model.resizeHeight}
+        className={classes.resizeHandleHoriz}
+        style={{ height: dragHandleHeight, width: 4 }}
       />
     </div>
   )
-}
-
-export default observer(SvInspectorView)
+})
