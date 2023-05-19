@@ -45,9 +45,8 @@ export default observer(function ({
   const ref = useWidthSetter(view, theme.spacing(1))
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  // scroll the view into view when first mounted
-  // note that this effect will run only once, because of
-  // the empty array second param
+  // scroll the view into view when first mounted. note: this effect will run
+  // only once, because of the empty array second param
   useEffect(() => {
     scrollRef.current?.scrollIntoView?.({ block: 'center' })
   }, [])

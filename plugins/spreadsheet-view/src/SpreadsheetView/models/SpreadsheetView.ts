@@ -13,6 +13,7 @@ import { getSession } from '@jbrowse/core/util'
 
 // icons
 import DoneIcon from '@mui/icons-material/Done'
+import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 
 import SpreadsheetModel from './Spreadsheet'
 import ImportWizardModel from './ImportWizard'
@@ -74,11 +75,6 @@ const model = types
       ),
       defaultHeight,
     ),
-
-    /**
-     * #property
-     */
-    hideViewControls: false,
     /**
      * #property
      */
@@ -222,6 +218,20 @@ const model = types
     closeView() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       getParent<any>(self, 2).removeView(self)
+    },
+  }))
+  .views(self => ({
+    /**
+     * #method
+     */
+    menuItems() {
+      return [
+        {
+          label: 'Return to import form',
+          onClick: () => self.setImportMode(),
+          icon: FolderOpenIcon,
+        },
+      ]
     },
   }))
 
