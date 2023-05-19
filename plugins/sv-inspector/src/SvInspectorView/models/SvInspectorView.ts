@@ -81,7 +81,6 @@ function SvInspectorViewF(pluginManager: PluginManager) {
         spreadsheetView: types.optional(SpreadsheetModel, () =>
           SpreadsheetModel.create({
             type: 'SpreadsheetView',
-            hideViewControls: true,
             hideVerticalResizeHandle: true,
           }),
         ),

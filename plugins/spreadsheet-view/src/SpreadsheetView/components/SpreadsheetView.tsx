@@ -1,23 +1,17 @@
 import React, { useState } from 'react'
-import { FormGroup, Grid, IconButton, TablePagination } from '@mui/material'
+import { FormGroup, Grid, TablePagination } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import { Instance } from 'mobx-state-tree'
 import { ResizeHandle } from '@jbrowse/core/ui'
-
-// icons
-import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 
 // locals
 import ImportWizard from './ImportWizard'
 import Spreadsheet from './Spreadsheet'
 import GlobalFilterControls from './GlobalFilterControls'
 import ColumnFilterControls from './ColumnFilterControls'
-import SpreadsheetStateModel from '../models/Spreadsheet'
-import SpreadsheetStateViewModel from '../models/SpreadsheetView'
-
-type SpreadsheetModel = Instance<typeof SpreadsheetStateModel>
-type SpreadsheetViewModel = Instance<typeof SpreadsheetStateViewModel>
+import RowCountMessage from './RowCountMessage'
+import { SpreadsheetModel } from '../models/Spreadsheet'
+import { SpreadsheetViewModel } from '../models/SpreadsheetView'
 
 const headerHeight = 52
 const colFilterHeight = 46
@@ -82,64 +76,6 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const ViewControls = observer(({ model }: { model: SpreadsheetViewModel }) => {
-  const { classes } = useStyles()
-  return (
-    <Grid
-      className={classes.viewControls}
-      container
-      spacing={1}
-      direction="row"
-      alignItems="center"
-    >
-      <Grid item>
-        <IconButton
-          onClick={() => model.setImportMode()}
-          title="open a tabular file"
-          data-testid="spreadsheet_view_open"
-        >
-          <FolderOpenIcon />
-        </IconButton>
-      </Grid>
-    </Grid>
-  )
-})
-
-const RowCountMessage = observer(function ({
-  spreadsheet,
-}: {
-  spreadsheet: SpreadsheetModel
-}) {
-  if (spreadsheet.rowSet.isLoaded) {
-    const {
-      passingFiltersCount,
-      count,
-      selectedCount,
-      selectedAndPassingFiltersCount,
-    } = spreadsheet.rowSet
-
-    let rowMessage
-    if (passingFiltersCount !== count) {
-      rowMessage = `${spreadsheet.rowSet.passingFiltersCount} rows of ${spreadsheet.rowSet.count} total`
-      if (selectedCount) {
-        rowMessage += `, ${selectedAndPassingFiltersCount} selected`
-        const selectedAndNotPassingFiltersCount =
-          selectedCount - selectedAndPassingFiltersCount
-        if (selectedAndNotPassingFiltersCount) {
-          rowMessage += ` (${selectedAndNotPassingFiltersCount} selected rows do not pass filters)`
-        }
-      }
-    } else {
-      rowMessage = `${spreadsheet.rowSet.count} rows`
-      if (selectedCount) {
-        rowMessage += `, ${selectedCount} selected`
-      }
-    }
-    return <>{rowMessage}</>
-  }
-  return null
-})
-
 function StatusBar({
   page,
   rowsPerPage,
@@ -191,41 +127,24 @@ export default observer(function ({ model }: { model: SpreadsheetViewModel }) {
   const {
     spreadsheet,
     filterControls,
-    hideViewControls,
     hideFilterControls,
     hideVerticalResizeHandle,
     mode,
     height,
-    resizeHeight,
   } = model
-
-  const colFilterCount = filterControls.columnFilters.length
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(100)
 
-  const hide1 = hideViewControls
-  const hide2 = mode !== 'display' || hideFilterControls
-
   return (
-    <div className={classes.root} data-testid={model.id}>
-      {!hide1 || !hide2 ? (
-        <Grid container direction="row" className={classes.header}>
-          {hide1 ? null : (
-            <Grid item>
-              <ViewControls model={model} />
-            </Grid>
-          )}
-          {hide2 ? null : (
+    <div>
+      {mode !== 'display' || hideFilterControls ? null : (
+        <>
+          <Grid container direction="row" className={classes.header}>
             <Grid item>
               <GlobalFilterControls model={model} />
             </Grid>
-          )}
-        </Grid>
-      ) : null}
-
-      {hide2
-        ? null
-        : filterControls.columnFilters.map((f, i) => (
+          </Grid>
+          {filterControls.columnFilters.map((f, i) => (
             <ColumnFilterControls
               key={`${f.columnNumber}-${i}`}
               viewModel={model}
@@ -234,6 +153,9 @@ export default observer(function ({ model }: { model: SpreadsheetViewModel }) {
               height={colFilterHeight}
             />
           ))}
+        </>
+      )}
+
       {mode === 'import' ? (
         <ImportWizard model={model.importWizard} />
       ) : (
@@ -255,7 +177,7 @@ export default observer(function ({ model }: { model: SpreadsheetViewModel }) {
                 height={
                   height -
                   headerHeight -
-                  colFilterCount * colFilterHeight -
+                  filterControls.columnFilters.length * colFilterHeight -
                   statusBarHeight
                 }
               />
@@ -274,7 +196,10 @@ export default observer(function ({ model }: { model: SpreadsheetViewModel }) {
         />
       ) : null}
       {hideVerticalResizeHandle ? null : (
-        <ResizeHandle onDrag={resizeHeight} className={classes.resizeHandle} />
+        <ResizeHandle
+          onDrag={model.resizeHeight}
+          className={classes.resizeHandle}
+        />
       )}
     </div>
   )
