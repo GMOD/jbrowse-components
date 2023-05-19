@@ -12,6 +12,7 @@ import { CircularViewStateModel } from '@jbrowse/plugin-circular-view'
 
 // icons
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
+import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 
 // locals
 import {
@@ -99,7 +100,6 @@ function SvInspectorViewF(pluginManager: PluginManager) {
     )
     .volatile(() => ({
       width: 800,
-      dragHandleHeight: 4,
     }))
     .views(self => ({
       /**
@@ -123,6 +123,9 @@ function SvInspectorViewF(pluginManager: PluginManager) {
         return self.spreadsheetView.mode === 'display'
       },
 
+      /**
+       * #getter
+       */
       get features() {
         const session = getSession(self)
         const { spreadsheetView } = self
@@ -218,6 +221,17 @@ function SvInspectorViewF(pluginManager: PluginManager) {
        */
       setOnlyDisplayRelevantRegionsInCircularView(val: boolean) {
         self.onlyDisplayRelevantRegionsInCircularView = Boolean(val)
+      },
+    }))
+    .views(self => ({
+      get menuItems() {
+        return [
+          {
+            label: 'Return to import form',
+            onClick: () => self.setImportMode(),
+            icon: FolderOpenIcon,
+          },
+        ]
       },
     }))
     .actions(self => ({

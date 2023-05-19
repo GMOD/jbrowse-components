@@ -1,16 +1,11 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { IconButton, Grid, FormControlLabel, Checkbox } from '@mui/material'
+import { Grid, FormControlLabel, Checkbox } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { ResizeHandle } from '@jbrowse/core/ui'
 
 // locals
 import { SvInspectorViewModel } from '../models/SvInspectorView'
-
-// icons
-import FolderOpenIcon from '@mui/icons-material/FolderOpen'
-
-const headerHeight = 52
 
 const useStyles = makeStyles()(theme => ({
   resizeHandleVert: {
@@ -24,16 +19,6 @@ const useStyles = makeStyles()(theme => ({
     height: 4,
     boxSizing: 'border-box',
     borderTop: '1px solid #fafafa',
-  },
-  root: {
-    marginBottom: theme.spacing(1),
-    overflow: 'hidden',
-  },
-  header: {
-    overflow: 'hidden',
-    whiteSpace: 'nowrap',
-    boxSizing: 'border-box',
-    height: headerHeight,
   },
   viewControls: {
     margin: 0,
@@ -49,29 +34,6 @@ const useStyles = makeStyles()(theme => ({
     padding: theme.spacing(1),
   },
 }))
-
-const ViewControls = observer(({ model }: { model: SvInspectorViewModel }) => {
-  const { classes } = useStyles()
-  return (
-    <Grid
-      className={classes.viewControls}
-      container
-      spacing={1}
-      direction="row"
-      alignItems="center"
-    >
-      <Grid item>
-        <IconButton
-          onClick={() => model.setImportMode()}
-          title="open a tabular file"
-          data-testid="sv_inspector_view_open"
-        >
-          <FolderOpenIcon />
-        </IconButton>
-      </Grid>
-    </Grid>
-  )
-})
 
 const CircularViewOptions = observer(function ({
   svInspector,
@@ -115,17 +77,11 @@ export default observer(function SvInspectorView({
   const {
     SpreadsheetViewReactComponent,
     CircularViewReactComponent,
-    dragHandleHeight,
     showCircularView,
   } = model
 
   return (
     <div>
-      <Grid container direction="row" className={classes.header}>
-        <Grid item>
-          <ViewControls model={model} />
-        </Grid>
-      </Grid>
       <div className={classes.viewsContainer}>
         <div style={{ width: model.spreadsheetView.width }}>
           <SpreadsheetViewReactComponent model={model.spreadsheetView} />
@@ -153,7 +109,6 @@ export default observer(function SvInspectorView({
       <ResizeHandle
         onDrag={model.resizeHeight}
         className={classes.resizeHandleHoriz}
-        style={{ height: dragHandleHeight, width: 4 }}
       />
     </div>
   )
