@@ -223,7 +223,10 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       },
     }))
     .views(self => ({
-      get menuItems() {
+      /**
+       * #method
+       */
+      menuItems() {
         return [
           {
             label: 'Return to import form',
@@ -274,8 +277,9 @@ function SvInspectorViewF(pluginManager: PluginManager) {
             { name: 'SvInspectorView height binding' },
           ),
         )
-        // bind circularview displayedRegions to spreadsheet assembly, mediated by
-        // the onlyRelevantRegions toggle
+
+        // bind circularview displayedRegions to spreadsheet assembly, mediated
+        // by the onlyRelevantRegions toggle
         addDisposer(
           self,
           autorun(
