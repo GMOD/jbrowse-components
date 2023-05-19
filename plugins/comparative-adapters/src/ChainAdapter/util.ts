@@ -1,3 +1,6 @@
+const decoder =
+  typeof TextDecoder !== 'undefined' ? new TextDecoder('utf8') : undefined
+
 /* adapted from chain2paf by Andrea Guarracino, license reproduced below
  *
  * MIT License
@@ -51,7 +54,7 @@ function generate_record(
   }
 }
 
-export function paf_chain2paf(lines: string[]) {
+export function paf_chain2paf(buffer: Buffer) {
   let t_name = ''
   let t_start = 0
   let t_end = 0
@@ -63,8 +66,16 @@ export function paf_chain2paf(lines: string[]) {
   let num_matches = 0
   let cigar = ''
   const records = []
-  for (let i = 0; i < lines.length; i++) {
-    const l = lines[i]
+
+  let blockStart = 0
+  while (blockStart < buffer.length) {
+    const n = buffer.indexOf('\n', blockStart)
+    if (n === -1) {
+      break
+    }
+    const b = buffer.slice(blockStart, n)
+    const l = (decoder?.decode(b) || b.toString()).trim()
+    blockStart = n + 1
     const l_tab = l.replace(/ /g, '\t') // There are CHAIN files with space-separated fields
     const l_vec = l_tab.split('\t')
 

@@ -112,52 +112,47 @@ function weightedMean(tuples: [number, number][]) {
   return valueSum / weightSum
 }
 
-export function parsePAF(text: string) {
-  return text
-    .split(/\n|\r\n|\r/)
-    .filter(line => !!line)
-    .map(line => {
-      const [
-        qname,
-        ,
-        qstart,
-        qend,
-        strand,
-        tname,
-        ,
-        tstart,
-        tend,
-        numMatches,
-        blockLen,
-        mappingQual,
-        ...fields
-      ] = line.split('\t')
+export function parsePAFLine(line: string) {
+  const [
+    qname,
+    ,
+    qstart,
+    qend,
+    strand,
+    tname,
+    ,
+    tstart,
+    tend,
+    numMatches,
+    blockLen,
+    mappingQual,
+    ...fields
+  ] = line.split('\t')
 
-      const rest = Object.fromEntries(
-        fields.map(field => {
-          const r = field.indexOf(':')
-          const fieldName = field.slice(0, r)
-          const fieldValue = field.slice(r + 3)
-          return [fieldName, fieldValue]
-        }),
-      )
+  const rest = Object.fromEntries(
+    fields.map(field => {
+      const r = field.indexOf(':')
+      const fieldName = field.slice(0, r)
+      const fieldValue = field.slice(r + 3)
+      return [fieldName, fieldValue]
+    }),
+  )
 
-      return {
-        tname,
-        tstart: +tstart,
-        tend: +tend,
-        qname,
-        qstart: +qstart,
-        qend: +qend,
-        strand: strand === '-' ? -1 : 1,
-        extra: {
-          numMatches: +numMatches,
-          blockLen: +blockLen,
-          mappingQual: +mappingQual,
-          ...rest,
-        },
-      } as PAFRecord
-    })
+  return {
+    tname,
+    tstart: +tstart,
+    tend: +tend,
+    qname,
+    qstart: +qstart,
+    qend: +qend,
+    strand: strand === '-' ? -1 : 1,
+    extra: {
+      numMatches: +numMatches,
+      blockLen: +blockLen,
+      mappingQual: +mappingQual,
+      ...rest,
+    },
+  } as PAFRecord
 }
 
 export function flipCigar(cigar: string[]) {
