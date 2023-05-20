@@ -1,25 +1,24 @@
-import React, { Suspense } from 'react'
+import React from 'react'
 import { AppBar, Fab, Tooltip } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-
-// icons
-import LaunchIcon from '@mui/icons-material/Launch'
-
-// locals
 import {
   NotificationLevel,
   SessionWithDrawerWidgets,
   SnackAction,
 } from '@jbrowse/core/util'
-
-// ui elements
-import DrawerWidget from './DrawerWidget'
-import AppToolbar from './AppToolbar'
 import Snackbar from '@jbrowse/core/ui/Snackbar'
 import { MenuItem as JBMenuItem } from '@jbrowse/core/ui/Menu'
+
+// icons
+import LaunchIcon from '@mui/icons-material/Launch'
+
+// locals
+import DrawerWidget from './DrawerWidget'
+import AppToolbar from './AppToolbar'
 import ViewLauncher from './ViewLauncher'
 import ViewPanel from './ViewPanel'
+import DialogQueue from './DialogQueue'
 
 const useStyles = makeStyles()(theme => ({
   root: {
@@ -61,7 +60,7 @@ const useStyles = makeStyles()(theme => ({
 
 type SnackbarMessage = [string, NotificationLevel, SnackAction]
 
-const App = observer(function (props: {
+type Props = {
   HeaderButtons?: React.ReactElement
   session: SessionWithDrawerWidgets & {
     savedSessionNames: string[]
@@ -70,7 +69,9 @@ const App = observer(function (props: {
     snackbarMessages: SnackbarMessage[]
     popSnackbarMessage: () => unknown
   }
-}) {
+}
+
+const App = observer(function (props: Props) {
   const { session } = props
   const { classes } = useStyles()
 
@@ -79,7 +80,6 @@ const App = observer(function (props: {
     visibleWidget,
     drawerWidth,
     activeWidgets,
-    views,
     drawerPosition,
   } = session
 
@@ -98,29 +98,7 @@ const App = observer(function (props: {
         <DrawerWidget session={session} />
       ) : null}
       <DialogQueue session={session} />
-      <div className={classes.menuBarAndComponents}>
-        <div className={classes.menuBar}>
-          <AppBar className={classes.appBar} position="static">
-            <AppToolbar {...props} />
-          </AppBar>
-        </div>
-        <div className={classes.components}>
-          {views.length > 0 ? (
-            views.map(view => (
-              <ViewPanel
-                key={`view-${view.id}`}
-                view={view}
-                session={session}
-              />
-            ))
-          ) : (
-            <ViewLauncher {...props} />
-          )}
-
-          {/* blank space at the bottom of screen allows scroll */}
-          <div style={{ height: 300 }} />
-        </div>
-      </div>
+      <AppContainer {...props} />
 
       {activeWidgets.size > 0 && minimized ? (
         <Tooltip title="Open drawer widget">
@@ -146,19 +124,37 @@ const App = observer(function (props: {
   )
 })
 
-const DialogQueue = observer(function ({
-  session,
-}: {
-  session: SessionWithDrawerWidgets
-}) {
+const AppContainer = observer(function AppContainer(props: Props) {
+  const { classes } = useStyles()
   return (
-    <>
-      {session.DialogComponent ? (
-        <Suspense fallback={<React.Fragment />}>
-          <session.DialogComponent {...session.DialogProps} />
-        </Suspense>
-      ) : null}
-    </>
+    <div className={classes.menuBarAndComponents}>
+      <div className={classes.menuBar}>
+        <AppBar className={classes.appBar} position="static">
+          <AppToolbar {...props} />
+        </AppBar>
+      </div>
+      <ViewContainer {...props} />
+    </div>
+  )
+})
+
+const ViewContainer = observer(function ViewContainer(props: Props) {
+  const { session } = props
+  const { views } = session
+  const { classes } = useStyles()
+  return (
+    <div className={classes.components}>
+      {views.length > 0 ? (
+        views.map(view => (
+          <ViewPanel key={`view-${view.id}`} view={view} session={session} />
+        ))
+      ) : (
+        <ViewLauncher {...props} />
+      )}
+
+      {/* blank space at the bottom of screen allows scroll */}
+      <div style={{ height: 300 }} />
+    </div>
   )
 })
 

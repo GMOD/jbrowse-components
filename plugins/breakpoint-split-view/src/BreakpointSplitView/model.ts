@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { lazy } from 'react'
 import {
   types,
   getParent,
@@ -26,8 +26,9 @@ import LinkIcon from '@mui/icons-material/Link'
 
 // locals
 import { intersect } from './util'
-import { renderToSvg } from './svgcomponents/SVGBreakpointSplitView'
-import ExportSvgDlg from './components/ExportSvgDialog'
+
+// lazies
+const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))
 
 function calc(
   track: { displays: { searchFeatureByID: (str: string) => LayoutRecord }[] },
@@ -120,8 +121,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * creates an svg export and save using FileSaver
        */
       async exportSvg(opts: ExportSvgOptions = {}) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const html = await renderToSvg(self as any, opts)
+        const { renderToSvg } = await import(
+          './svgcomponents/SVGBreakpointSplitView'
+        )
+        const html = await renderToSvg(self as BreakpointViewModel, opts)
         const blob = new Blob([html], { type: 'image/svg+xml' })
         saveAs(blob, opts.filename || 'image.svg')
       },
@@ -320,7 +323,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             icon: PhotoCamera,
             onClick: () => {
               getSession(self).queueDialog(handleClose => [
-                ExportSvgDlg,
+                ExportSvgDialog,
                 { model: self, handleClose },
               ])
             },

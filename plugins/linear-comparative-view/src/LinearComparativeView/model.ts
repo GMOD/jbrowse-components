@@ -1,3 +1,4 @@
+import { lazy } from 'react'
 import {
   addDisposer,
   cast,
@@ -14,7 +15,7 @@ import { autorun, transaction } from 'mobx'
 
 // jbrowse
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
-import { MenuItem, ReturnToImportFormDialog } from '@jbrowse/core/ui'
+import { MenuItem } from '@jbrowse/core/ui'
 import { getSession, isSessionModelWithWidgets, avg } from '@jbrowse/core/util'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -27,6 +28,11 @@ import {
 // icons
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
+
+// lazies
+const ReturnToImportFormDialog = lazy(
+  () => import('@jbrowse/core/ui/ReturnToImportFormDialog'),
+)
 
 /**
  * #stateModel LinearComparativeView
