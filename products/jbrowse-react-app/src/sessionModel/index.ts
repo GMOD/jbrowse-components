@@ -20,6 +20,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import { Session as CoreSession } from '@jbrowse/product-core'
+import { SessionConnections } from '@jbrowse/web-core'
 
 // icons
 import SettingsIcon from '@mui/icons-material/Settings'
@@ -29,7 +30,6 @@ import InfoIcon from '@mui/icons-material/Info'
 
 // locals
 import Assemblies from './Assemblies'
-import SessionConnections from './SessionConnections'
 import { WebRootModel } from '../rootModel/rootModel'
 
 const AboutDialog = lazy(() => import('./AboutDialog'))
