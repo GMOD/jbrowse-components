@@ -1,4 +1,4 @@
-import React, { lazy, useEffect, Suspense } from 'react'
+import React, { lazy, useEffect, useState, Suspense } from 'react'
 import { observer } from 'mobx-react'
 import { ErrorBoundary } from 'react-error-boundary'
 import {
@@ -16,6 +16,8 @@ import JBrowse from './JBrowse'
 import factoryReset from '../factoryReset'
 import SessionLoader, { SessionLoaderModel } from '../SessionLoader'
 import StartScreenErrorMessage from './StartScreenErrorMessage'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { createPluginManager } from '../createPluginManager'
 
 const ConfigTriaged = lazy(() => import('./ConfigWarningDialog'))
 const SessionTriaged = lazy(() => import('./SessionWarningDialog'))
@@ -70,9 +72,24 @@ const Renderer = observer(function ({
 }: {
   loader: SessionLoaderModel
 }) {
-  const { configError, pluginManager: pm } = loader
-  if (configError) {
-    throw configError
+  const { configError, ready, shareWarningOpen } = loader
+  const [pluginManager, setPluginManager] = useState<PluginManager>()
+  const [error, setError] = useState<unknown>()
+
+  useEffect(() => {
+    try {
+      if (!ready || shareWarningOpen) {
+        return
+      }
+      const pm = createPluginManager(loader)
+      setPluginManager(pm)
+    } catch (e) {
+      console.error(e)
+      setError(e)
+    }
+  }, [loader, ready, shareWarningOpen])
+  if (configError || error) {
+    return <StartScreenErrorMessage error={configError || error} />
   }
 
   if (loader.sessionTriaged) {
@@ -92,28 +109,16 @@ const Renderer = observer(function ({
       </Suspense>
     )
   }
-  if (pm) {
-    return (
-      <ErrorBoundary
-        FallbackComponent={props => (
-          <FatalErrorDialog
-            {...props}
-            resetButtonText="Reset Session"
-            onFactoryReset={factoryReset}
-          />
-        )}
-      >
-        {!pm.rootModel?.session ? (
-          <Suspense fallback={<LoadingEllipses />}>
-            <StartScreen
-              rootModel={pm.rootModel}
-              onFactoryReset={factoryReset}
-            />
-          </Suspense>
-        ) : (
-          <JBrowse pluginManager={pm} />
-        )}
-      </ErrorBoundary>
+  if (pluginManager) {
+    return !pluginManager.rootModel?.session ? (
+      <Suspense fallback={<LoadingEllipses />}>
+        <StartScreen
+          rootModel={pluginManager.rootModel}
+          onFactoryReset={factoryReset}
+        />
+      </Suspense>
+    ) : (
+      <JBrowse pluginManager={pluginManager} />
     )
   }
   return <Loading />
@@ -122,7 +127,13 @@ const Renderer = observer(function ({
 const LoaderWrapper = ({ initialTimestamp }: { initialTimestamp: number }) => {
   return (
     <ErrorBoundary
-      FallbackComponent={props => <StartScreenErrorMessage {...props} />}
+      FallbackComponent={props => (
+        <FatalErrorDialog
+          {...props}
+          resetButtonText="Reset Session"
+          onFactoryReset={factoryReset}
+        />
+      )}
     >
       <QueryParamProvider adapter={WindowHistoryAdapter}>
         <Loader initialTimestamp={initialTimestamp} />

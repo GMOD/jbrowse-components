@@ -27,11 +27,10 @@ export default function NoConfigMessage() {
   const root = href.split('?')[0]
   return (
     <div>
-      <h4>Configuration not found or error occurred</h4>
-      <p>
-        You may have encountered an error (see message below) or requested a
-        config that does not exist
-      </p>
+      <h4>
+        Configuration not found. You may have arrived here if you requested a
+        config that does not exist or you have not set up your JBrowse yet.
+      </h4>
       {inDevelopment ? (
         <>
           <div>Sample JBrowse configs:</div>

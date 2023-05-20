@@ -1,8 +1,7 @@
 import React from 'react'
 
-const ErrorMessage = ({ error }: { error: unknown }) => {
+function parseError(str: string) {
   let snapshotError = ''
-  let str = `${error}`
   const findStr = 'is not assignable'
   const idx = str.indexOf(findStr)
   if (idx !== -1) {
@@ -26,6 +25,12 @@ const ErrorMessage = ({ error }: { error: unknown }) => {
       snapshotError = match2[1]
     }
   }
+  return snapshotError
+}
+
+const ErrorMessage = ({ error }: { error: unknown }) => {
+  const str = `${error}`
+  const snapshotError = parseError(str)
   return (
     <div
       style={{
