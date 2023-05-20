@@ -40,7 +40,6 @@ test(
       const { view, findByTestId, queryByText, findAllByTestId, findByText } =
         await createView(undefined, true)
 
-      await findByText('Help')
       view.setNewView(0.05, 5000)
       fireEvent.click(
         await findByTestId('htsTrackEntryMenu-volvox_filtered_vcf', {}, delay),
@@ -73,7 +72,6 @@ test(
       // @ts-expect-error
       const { assemblyManager } = rootModel
 
-      await findByText('Help')
       view.setNewView(0.05, 5000)
       const trackConf = getConf(assemblyManager.get('volvox'), 'sequence')
 
@@ -101,7 +99,6 @@ test(
       const { view, findByTestId, findAllByTestId, findByText } =
         await createView(undefined, false)
 
-      await findByText('Help')
       view.setNewView(0.05, 5000)
       fireEvent.click(
         await findByTestId('htsTrackEntryMenu-volvox_filtered_vcf', {}, delay),
@@ -123,7 +120,6 @@ xtest('delete connection', async () => {
   const { findAllByTestId, findByText } = render(
     <JBrowse pluginManager={pluginManager} />,
   )
-  await findByText('Help')
 
   const deleteButtons = await findAllByTestId('delete-connection')
   expect(deleteButtons.length).toBe(2)

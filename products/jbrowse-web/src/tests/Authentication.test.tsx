@@ -24,7 +24,7 @@ beforeEach(() => {
 const delay = { timeout: 20000 }
 
 test('open a bigwig track that needs oauth authentication and has existing token', async () => {
-  const { rootModel, view, findByTestId, findByText } = await createView({
+  const { rootModel, view, findByTestId } = await createView({
     ...config,
     tracks: [
       {
@@ -54,7 +54,6 @@ test('open a bigwig track that needs oauth authentication and has existing token
   rootModel.internetAccounts[0].openLocation = jest
     .fn()
     .mockReturnValue(new RemoteFile('volvox_microarray_dropbox.bw'))
-  await findByText('Help')
   view.setNewView(5, 0)
   fireEvent.click(
     await findByTestId(hts('volvox_microarray_dropbox'), {}, delay),

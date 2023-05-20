@@ -9,6 +9,7 @@ import {
   pv,
   createView,
   mockConsole,
+  mockFile404,
 } from './util'
 
 const readBuffer = generateReadBuffer(
@@ -26,17 +27,9 @@ const opts = [{}, delay]
 
 test('reloads bigwig (BW 404)', async () => {
   await mockConsole(async () => {
-    // @ts-expect-error
-    fetch.mockResponse(async request => {
-      if (request.url === 'volvox_microarray.bw') {
-        return { status: 404 }
-      }
-      return readBuffer(request)
-    })
-
+    mockFile404('volvox_microarray.bw', readBuffer)
     const { view, findByTestId, findByText, findAllByTestId, findAllByText } =
       await createView()
-    await findByText('Help')
     view.setNewView(10, 0)
     fireEvent.click(await findByTestId(hts('volvox_microarray'), ...opts))
     await findAllByText(/HTTP 404/, ...opts)

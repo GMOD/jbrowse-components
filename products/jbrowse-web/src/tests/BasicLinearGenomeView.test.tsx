@@ -12,8 +12,8 @@ const opts = [{}, delay]
 test('access about menu', async () => {
   const { findByText, findAllByText } = await createView()
 
-  fireEvent.click(await findByText('Help'))
-  fireEvent.click(await findByText('About'))
+  fireEvent.click(await findByText('Help', ...opts))
+  fireEvent.click(await findByText('About', ...opts))
 
   await findByText(/The Evolutionary Software Foundation/, ...opts)
 
@@ -132,7 +132,6 @@ test('click to display center line with correct value', async () => {
 
 test('test choose option from dropdown refName autocomplete', async () => {
   const {
-    findByText,
     findByTestId,
     findAllByText,
     findByPlaceholderText,
@@ -140,7 +139,6 @@ test('test choose option from dropdown refName autocomplete', async () => {
   } = await createView()
 
   await findAllByText('ctgA', ...opts)
-  fireEvent.click(await findByText('Help'))
   fireEvent.click(await findByPlaceholderText('Search for location'))
   const autocomplete = await findByTestId('autocomplete')
   autocomplete.focus()

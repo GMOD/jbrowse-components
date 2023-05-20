@@ -10,8 +10,7 @@ beforeEach(() => {
 })
 
 test('opens feature detail from left click', async () => {
-  const { view, findByTestId, findAllByTestId, findByText } = await createView()
-  await findByText('Help')
+  const { view, findByTestId, findAllByTestId } = await createView()
   view.setNewView(0.05, 5000)
   fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), {}, delay))
 
@@ -24,7 +23,6 @@ test('opens feature detail from left click', async () => {
 
 test('open feature detail from right click', async () => {
   const { view, findByTestId, findAllByTestId, findByText } = await createView()
-  await findByText('Help')
   view.setNewView(0.05, 5000)
   fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), {}, delay))
   view.tracks[0].displays[0].setFeatureIdUnderMouse('test-vcf-604453')
@@ -40,7 +38,6 @@ test('open feature detail from right click', async () => {
 
 test('widget drawer navigation', async () => {
   const { view, session, findByTestId, findByText } = await createView()
-  await findByText('Help')
   view.setNewView(0.05, 5000)
   // opens a config editor widget
   fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), {}, delay))

@@ -5,7 +5,7 @@ import FileSaver from 'file-saver'
 import volvoxConfig from '../../test_data/volvox/config.json'
 
 // locals
-import { hts, createView, setup, doBeforeEach } from './util'
+import { hts, createView, setup, doBeforeEach, mockConsoleWarn } from './util'
 
 // @ts-expect-error
 global.Blob = (content, options) => ({ content, options })
@@ -26,7 +26,6 @@ const opts = [{}, delay]
 test('export svg of lgv', async () => {
   const { view, findByTestId, findByText } = await createView()
 
-  await findByText('Help')
   view.setNewView(0.1, 1)
   fireEvent.click(
     await findByTestId(hts('volvox_alignments_pileup_coverage'), ...opts),
@@ -46,161 +45,162 @@ test('export svg of lgv', async () => {
 }, 45000)
 
 test('export svg of synteny', async () => {
-  console.warn = jest.fn()
-  const { findByTestId, findAllByText, findByText } = await createView({
-    ...volvoxConfig,
-    defaultSession: {
-      id: 'session_testing',
-      name: 'Integration test example 2/13/2023, 3:23:07 PM',
-      margin: 0,
-      drawerWidth: 384,
-      views: [
-        {
-          id: 'p1',
-          minimized: false,
-          type: 'LinearSyntenyView',
-          trackSelectorType: 'hierarchical',
-          showIntraviewLinks: true,
-          linkViews: true,
-          interactToggled: false,
-          middleComparativeHeight: 174,
-          tracks: [
-            {
-              id: 's1',
-              type: 'SyntenyTrack',
-              configuration: 'volvox_inv_indels',
-              minimized: false,
-              displays: [
-                {
-                  id: 's1-display',
-                  type: 'LinearSyntenyDisplay',
-                  configuration: 'volvox_inv_indels-LinearSyntenyDisplay',
-                  height: 100,
-                },
-              ],
-            },
-          ],
-          views: [
-            {
-              id: 'view1',
-              minimized: false,
-              type: 'LinearGenomeView',
-              offsetPx: 3677,
-              bpPerPx: 0.47741687344913153,
-              displayedRegions: [
-                {
-                  refName: 'ctgA',
-                  start: 0,
-                  end: 50001,
-                  reversed: false,
-                  assemblyName: 'volvox',
-                },
-                {
-                  refName: 'ctgB',
-                  start: 0,
-                  end: 6079,
-                  reversed: false,
-                  assemblyName: 'volvox',
-                },
-              ],
-              tracks: [
-                {
-                  id: 't1',
-                  type: 'SyntenyTrack',
-                  configuration: 'volvox_inv_indels',
-                  minimized: false,
-                  displays: [
-                    {
-                      id: 't1-display',
-                      type: 'LGVSyntenyDisplay',
-                      configuration: 'volvox_inv_indels-LGVSyntenyDisplay',
-                      showSoftClipping: false,
-                      colorBy: {
-                        type: 'strand',
+  await mockConsoleWarn(async () => {
+    const { findByTestId, findAllByText, findByText } = await createView({
+      ...volvoxConfig,
+      defaultSession: {
+        id: 'session_testing',
+        name: 'Integration test example 2/13/2023, 3:23:07 PM',
+        margin: 0,
+        drawerWidth: 384,
+        views: [
+          {
+            id: 'p1',
+            minimized: false,
+            type: 'LinearSyntenyView',
+            trackSelectorType: 'hierarchical',
+            showIntraviewLinks: true,
+            linkViews: true,
+            interactToggled: false,
+            middleComparativeHeight: 174,
+            tracks: [
+              {
+                id: 's1',
+                type: 'SyntenyTrack',
+                configuration: 'volvox_inv_indels',
+                minimized: false,
+                displays: [
+                  {
+                    id: 's1-display',
+                    type: 'LinearSyntenyDisplay',
+                    configuration: 'volvox_inv_indels-LinearSyntenyDisplay',
+                    height: 100,
+                  },
+                ],
+              },
+            ],
+            views: [
+              {
+                id: 'view1',
+                minimized: false,
+                type: 'LinearGenomeView',
+                offsetPx: 3677,
+                bpPerPx: 0.47741687344913153,
+                displayedRegions: [
+                  {
+                    refName: 'ctgA',
+                    start: 0,
+                    end: 50001,
+                    reversed: false,
+                    assemblyName: 'volvox',
+                  },
+                  {
+                    refName: 'ctgB',
+                    start: 0,
+                    end: 6079,
+                    reversed: false,
+                    assemblyName: 'volvox',
+                  },
+                ],
+                tracks: [
+                  {
+                    id: 't1',
+                    type: 'SyntenyTrack',
+                    configuration: 'volvox_inv_indels',
+                    minimized: false,
+                    displays: [
+                      {
+                        id: 't1-display',
+                        type: 'LGVSyntenyDisplay',
+                        configuration: 'volvox_inv_indels-LGVSyntenyDisplay',
+                        showSoftClipping: false,
+                        colorBy: {
+                          type: 'strand',
+                        },
+                        filterBy: {
+                          flagInclude: 0,
+                          flagExclude: 1540,
+                        },
                       },
-                      filterBy: {
-                        flagInclude: 0,
-                        flagExclude: 1540,
+                    ],
+                  },
+                ],
+              },
+              {
+                id: 'view2',
+                minimized: false,
+                type: 'LinearGenomeView',
+                offsetPx: 3627,
+                bpPerPx: 0.47741687344913153,
+                displayedRegions: [
+                  {
+                    refName: 'ctgA',
+                    start: 0,
+                    end: 49186,
+                    reversed: false,
+                    assemblyName: 'volvox_random_inv',
+                  },
+                ],
+                tracks: [
+                  {
+                    id: 't2',
+                    type: 'SyntenyTrack',
+                    configuration: 'volvox_inv_indels',
+                    minimized: false,
+                    displays: [
+                      {
+                        id: 't2-display',
+                        type: 'LGVSyntenyDisplay',
+                        configuration: 'volvox_inv_indels-LGVSyntenyDisplay',
+                        showSoftClipping: false,
+                        colorBy: {
+                          type: 'strand',
+                        },
+                        filterBy: {
+                          flagInclude: 0,
+                          flagExclude: 1540,
+                        },
                       },
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              id: 'view2',
-              minimized: false,
-              type: 'LinearGenomeView',
-              offsetPx: 3627,
-              bpPerPx: 0.47741687344913153,
-              displayedRegions: [
-                {
-                  refName: 'ctgA',
-                  start: 0,
-                  end: 49186,
-                  reversed: false,
-                  assemblyName: 'volvox_random_inv',
-                },
-              ],
-              tracks: [
-                {
-                  id: 't2',
-                  type: 'SyntenyTrack',
-                  configuration: 'volvox_inv_indels',
-                  minimized: false,
-                  displays: [
-                    {
-                      id: 't2-display',
-                      type: 'LGVSyntenyDisplay',
-                      configuration: 'volvox_inv_indels-LGVSyntenyDisplay',
-                      showSoftClipping: false,
-                      colorBy: {
-                        type: 'strand',
-                      },
-                      filterBy: {
-                        flagInclude: 0,
-                        flagExclude: 1540,
-                      },
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-          viewTrackConfigs: [],
-          drawCIGAR: true,
-          drawCurves: true,
+                    ],
+                  },
+                ],
+              },
+            ],
+            viewTrackConfigs: [],
+            drawCIGAR: true,
+            drawCurves: true,
+          },
+        ],
+        widgets: {
+          hierarchicalTrackSelector: {
+            id: 'hierarchicalTrackSelector',
+            type: 'HierarchicalTrackSelectorWidget',
+            collapsed: {},
+            view: 'WqWgaqv_gB',
+          },
         },
-      ],
-      widgets: {
-        hierarchicalTrackSelector: {
-          id: 'hierarchicalTrackSelector',
-          type: 'HierarchicalTrackSelectorWidget',
-          collapsed: {},
-          view: 'WqWgaqv_gB',
+        activeWidgets: {
+          hierarchicalTrackSelector: 'hierarchicalTrackSelector',
         },
-      },
-      activeWidgets: {
-        hierarchicalTrackSelector: 'hierarchicalTrackSelector',
-      },
 
-      minimized: false,
-      drawerPosition: 'right',
-      sessionThemeName: 'default',
-    },
+        minimized: false,
+        drawerPosition: 'right',
+        sessionThemeName: 'default',
+      },
+    })
+
+    fireEvent.click(await findByTestId('view_menu_icon'))
+    fireEvent.click((await findAllByText('Export SVG'))[0])
+    fireEvent.click(await findByText('Submit'))
+
+    await waitFor(() => expect(FileSaver.saveAs).toHaveBeenCalled(), delay)
+
+    // @ts-expect-error
+    const svg = FileSaver.saveAs.mock.calls[0][0].content[0]
+    const dir = path.dirname(module.filename)
+    fs.writeFileSync(`${dir}/__image_snapshots__/synteny_snapshot.svg`, svg)
+    expect(svg).toMatchSnapshot()
   })
-
-  fireEvent.click(await findByTestId('view_menu_icon'))
-  fireEvent.click((await findAllByText('Export SVG'))[0])
-  fireEvent.click(await findByText('Submit'))
-
-  await waitFor(() => expect(FileSaver.saveAs).toHaveBeenCalled(), delay)
-
-  // @ts-expect-error
-  const svg = FileSaver.saveAs.mock.calls[0][0].content[0]
-  const dir = path.dirname(module.filename)
-  fs.writeFileSync(`${dir}/__image_snapshots__/synteny_snapshot.svg`, svg)
-  expect(svg).toMatchSnapshot()
 }, 45000)
 
 test('export svg of circular', async () => {

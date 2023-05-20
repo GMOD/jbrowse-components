@@ -210,3 +210,16 @@ export async function mockConsoleWarn(fn: () => Promise<void>) {
   await fn()
   consoleMock.mockRestore()
 }
+
+export function mockFile404(
+  str: string,
+  readBuffer: (request: Request) => Promise<Response>,
+) {
+  // @ts-expect-error
+  fetch.mockResponse(async request => {
+    if (request.url === str) {
+      return { status: 404 }
+    }
+    return readBuffer(request)
+  })
+}

@@ -24,8 +24,6 @@ test('export svg of breakpoint split view', async () => {
     breakpointConfig,
   )
 
-  await findByText('Help')
-
   // the breakpoint split view requires that the view was rendered first,
   // so add an arbitrary delay here. would need refactoring to fix properly
   await new Promise(resolve => setTimeout(resolve, 10000))
