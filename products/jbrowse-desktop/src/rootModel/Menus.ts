@@ -15,7 +15,7 @@ import RedoIcon from '@mui/icons-material/Redo'
 import type { MenuItem } from '@jbrowse/core/ui'
 import { Save, SaveAs, DNA, Cable } from '@jbrowse/core/ui/Icons'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { SessionWithDialogs } from '@jbrowse/product-core/src/Session/DialogQueue'
+import { SessionWithDialogs } from '@jbrowse/product-core'
 
 // locals
 import { getSaveSession } from './Sessions'

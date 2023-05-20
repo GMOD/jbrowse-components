@@ -13,14 +13,14 @@ import {
   AnyConfigurationModel,
   isConfigurationModel,
 } from '@jbrowse/core/configuration'
-import { isBaseSession } from './Base'
+import { isBaseSession } from './BaseSession'
 
 const minDrawerWidth = 128
 
 /**
  * #stateModel DrawerWidgetSessionMixin
  */
-export default function DrawerWidgets(pluginManager: PluginManager) {
+export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
   const widgetStateModelType = pluginManager.pluggableMstType(
     'widget',
     'stateModel',
@@ -204,7 +204,9 @@ export default function DrawerWidgets(pluginManager: PluginManager) {
 }
 
 /** Session mixin MST type for a session that manages drawer widgets */
-export type SessionWithDrawerWidgetsType = ReturnType<typeof DrawerWidgets>
+export type SessionWithDrawerWidgetsType = ReturnType<
+  typeof DrawerWidgetSessionMixin
+>
 
 /** Instance of a session that manages drawer widgets */
 export type SessionWithDrawerWidgets = Instance<SessionWithDrawerWidgetsType>

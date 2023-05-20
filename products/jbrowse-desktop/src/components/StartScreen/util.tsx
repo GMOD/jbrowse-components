@@ -172,5 +172,5 @@ export interface RecentSessionData {
   path: string
   name: string
   screenshot?: string
-  updated: number
+  updated?: number
 }

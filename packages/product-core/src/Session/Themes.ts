@@ -11,14 +11,16 @@ import { createJBrowseTheme, defaultThemes } from '@jbrowse/core/ui'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
 import { ThemeOptions } from '@mui/material'
 import { autorun } from 'mobx'
-import { BaseSession } from './Base'
+
+// locals
+import { BaseSession } from './BaseSession'
 
 type ThemeMap = { [key: string]: ThemeOptions }
 
 /**
  * #stateModel ThemeManagerSessionMixin
  */
-export default function Themes(pluginManager: PluginManager) {
+export function ThemeManagerSessionMixin(pluginManager: PluginManager) {
   return types
     .model({})
     .volatile(() => ({
@@ -70,7 +72,7 @@ export default function Themes(pluginManager: PluginManager) {
 }
 
 /** Session mixin MST type for a session that supports theming */
-export type SessionWithThemesType = ReturnType<typeof Themes>
+export type SessionWithThemesType = ReturnType<typeof ThemeManagerSessionMixin>
 
 /** Instance of a session that has theming support */
 export type SessionWithThemes = Instance<SessionWithThemesType>

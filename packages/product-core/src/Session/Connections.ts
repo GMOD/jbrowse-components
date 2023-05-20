@@ -7,15 +7,15 @@ import {
 } from '@jbrowse/core/configuration'
 import { IAnyStateTreeNode, Instance, types } from 'mobx-state-tree'
 import type { SessionWithReferenceManagementType } from './ReferenceManagement'
-import type { BaseRootModelType } from '../RootModel/Base'
+import type { BaseRootModelType } from '../RootModel/BaseRootModel'
 import { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
 import { BaseConnectionModel } from '@jbrowse/core/pluggableElementTypes/models/BaseConnectionModelFactory'
-import { isBaseSession } from './Base'
+import { isBaseSession } from './BaseSession'
 
 /**
  * #stateModel ConnectionManagementSessionMixin
  */
-export default function Connections(pluginManager: PluginManager) {
+export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
   return types
     .model({
       /**
@@ -131,7 +131,9 @@ export default function Connections(pluginManager: PluginManager) {
 }
 
 /** Session mixin MST type for a session that has connections */
-export type SessionWithConnectionsType = ReturnType<typeof Connections>
+export type SessionWithConnectionsType = ReturnType<
+  typeof ConnectionManagementSessionMixin
+>
 
 /** Instance of a session that has connections: `connectionInstances`, `makeConnection()`, etc. */
 export type SessionWithConnections = Instance<SessionWithConnectionsType>

@@ -8,7 +8,7 @@ import {
   isStateTreeNode,
   types,
 } from 'mobx-state-tree'
-import type { BaseRootModelType } from '../RootModel/Base'
+import type { BaseRootModelType } from '../RootModel/BaseRootModel'
 import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 
@@ -17,7 +17,7 @@ import { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
  * base session shared by **all** JBrowse products. Be careful what you include
  * here, everything will use it.
  */
-export default function BaseSessionFactory<
+export function BaseSessionModel<
   ROOT_MODEL_TYPE extends BaseRootModelType,
   JB_CONFIG_SCHEMA extends AnyConfigurationSchemaType,
 >(pluginManager: PluginManager) {
@@ -112,7 +112,7 @@ export default function BaseSessionFactory<
 }
 
 /** Session mixin MST type for the most basic session */
-export type BaseSessionType = ReturnType<typeof BaseSessionFactory>
+export type BaseSessionType = ReturnType<typeof BaseSessionModel>
 
 /** Instance of the most basic possible session */
 export type BaseSession = Instance<BaseSessionType>

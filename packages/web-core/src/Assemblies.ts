@@ -6,13 +6,13 @@ import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import { BaseSession } from '@jbrowse/product-core/src/Session/Base'
+import { BaseSession } from '@jbrowse/product-core'
 
 /**
- * #stateModel JBrowseWebSessionAssembliesMixin
+ * #stateModel WebSessionAssembliesMixin
  * #category root
  */
-export default function Assemblies(
+export function WebSessionAssembliesMixin(
   pluginManager: PluginManager,
   assemblyConfigSchemasType = types.frozen(),
 ) {

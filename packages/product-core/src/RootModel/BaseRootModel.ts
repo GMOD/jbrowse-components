@@ -19,7 +19,7 @@ import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
  * #category root
  * factory function for the Base-level root model shared by all products
  */
-export default function BaseRootModelTypeF(
+export function BaseRootModelFactory(
   pluginManager: PluginManager,
   jbrowseModelType: IAnyType,
   sessionModelType: IAnyType,
@@ -120,7 +120,7 @@ export default function BaseRootModelTypeF(
     }))
 }
 
-export type BaseRootModelType = ReturnType<typeof BaseRootModelTypeF>
+export type BaseRootModelType = ReturnType<typeof BaseRootModelFactory>
 export type BaseRootModel = Instance<BaseRootModelType>
 
 /** Type guard for checking if something is a JB root model */

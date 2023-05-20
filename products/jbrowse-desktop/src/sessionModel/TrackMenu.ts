@@ -11,17 +11,19 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import { supportedIndexingAdapters } from '@jbrowse/text-indexing'
 
-import type { SessionWithDialogs } from '@jbrowse/product-core/src/Session/DialogQueue'
-import type { SessionWithTracks } from '@jbrowse/product-core/src/Session/Tracks'
-import type { SessionWithDrawerWidgets } from '@jbrowse/product-core/src/Session/DrawerWidgets'
+import type {
+  SessionWithDialogs,
+  SessionWithTracks,
+  SessionWithDrawerWidgets,
+} from '@jbrowse/product-core'
 import { DesktopRootModel } from '../rootModel'
 
 const AboutDialog = lazy(() => import('./AboutDialog'))
 
 /**
- * #stateModel JBrowseDesktopSessionTrackMenuMixin
+ * #stateModel DesktopSessionTrackMenuMixin
  */
-export default function TrackMenu(pluginManager: PluginManager) {
+export function DesktopSessionTrackMenuMixin(pluginManager: PluginManager) {
   return types.model({}).views(self => ({
     /**
      * #method

@@ -1,13 +1,13 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { Instance } from 'mobx-state-tree'
-import { Session as CoreSession } from '@jbrowse/product-core'
+import { BaseSessionModel } from '@jbrowse/product-core'
 
 /**
- * #stateModel JBrowseDesktopSessionMixin
+ * #stateModel DesktopSessionModel
  * #category session
  */
-export default function BaseSession(pluginManager: PluginManager) {
-  return CoreSession.Base(pluginManager)
+export function DesktopSessionFactory(pluginManager: PluginManager) {
+  return BaseSessionModel(pluginManager)
     .props({
       /**
        * #property
@@ -38,4 +38,6 @@ export default function BaseSession(pluginManager: PluginManager) {
     }))
 }
 
-export type BaseSessionModel = Instance<ReturnType<typeof BaseSession>>
+export type DesktopSessionModel = Instance<
+  ReturnType<typeof DesktopSessionFactory>
+>

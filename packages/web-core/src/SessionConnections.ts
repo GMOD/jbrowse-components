@@ -1,22 +1,24 @@
 import { types } from 'mobx-state-tree'
 
-import { Session as CoreSession } from '@jbrowse/product-core'
-import type { BaseSession } from '@jbrowse/product-core/src/Session/Base'
+import {
+  ConnectionManagementSessionMixin,
+  SessionWithSessionTracks,
+} from '@jbrowse/product-core'
+import type { BaseSession } from '@jbrowse/product-core'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
-import { SessionWithSessionTracks } from '@jbrowse/product-core/src/Session/SessionTracks'
 
 /**
- * #stateModel JBrowseWebSessionConnectionsMixin
+ * #stateModel WebSessionConnectionsMixin
  * #category session
  */
-export default function SessionConnections(pluginManager: PluginManager) {
+export function WebSessionConnectionsMixin(pluginManager: PluginManager) {
   return types
     .compose(
       'SessionConnectionsManagement',
-      CoreSession.Connections(pluginManager),
+      ConnectionManagementSessionMixin(pluginManager),
       types.model({
         /**
          * #property
@@ -28,12 +30,12 @@ export default function SessionConnections(pluginManager: PluginManager) {
     )
     .actions(s => {
       const self = s as typeof s & BaseSession & SessionWithSessionTracks
-      const super_deleteConnection = self.deleteConnection
-      const super_addConnectionConf = self.addConnectionConf
+      const superDeleteConnection = self.deleteConnection
+      const superAddConnectionConf = self.addConnectionConf
       return {
         addConnectionConf(connectionConf: BaseConnectionConfigModel) {
           if (self.adminMode) {
-            return super_addConnectionConf(connectionConf)
+            return superAddConnectionConf(connectionConf)
           }
           const { connectionId, type } = connectionConf
           if (!type) {
@@ -52,7 +54,7 @@ export default function SessionConnections(pluginManager: PluginManager) {
         deleteConnection(configuration: AnyConfigurationModel) {
           let deletedConn
           if (self.adminMode) {
-            deletedConn = super_deleteConnection(configuration)
+            deletedConn = superDeleteConnection(configuration)
           }
           if (!deletedConn) {
             const { connectionId } = configuration

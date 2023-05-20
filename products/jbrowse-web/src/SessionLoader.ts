@@ -1,78 +1,16 @@
-import { types, addDisposer, Instance, SnapshotOut } from 'mobx-state-tree'
+import { types, addDisposer, Instance } from 'mobx-state-tree'
 import { autorun } from 'mobx'
-import PluginManager from '@jbrowse/core/PluginManager'
 import PluginLoader, {
   PluginDefinition,
   PluginRecord,
-  isUMDPluginDefinition,
-  isCJSPluginDefinition,
-  isESMPluginDefinition,
 } from '@jbrowse/core/PluginLoader'
-import { fromUrlSafeB64 } from './util'
-import { readSessionFromDynamo } from './sessionSharing'
+import PluginManager from '@jbrowse/core/PluginManager'
 import { openLocation } from '@jbrowse/core/util/io'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import shortid from 'shortid'
 
-type Config = SnapshotOut<AnyConfigurationModel>
-
-function addRelativeUris(config: Config, base: URL) {
-  if (typeof config === 'object') {
-    for (const key of Object.keys(config)) {
-      if (typeof config[key] === 'object') {
-        addRelativeUris(config[key], base)
-      } else if (key === 'uri') {
-        config.baseUri = base.href
-      }
-    }
-  }
-}
-
-type Root = { configuration?: Config }
-
-// raw readConf alternative for before conf is initialized
-function readConf({ configuration }: Root, attr: string, def: string) {
-  return configuration?.[attr] || def
-}
-
-async function fetchPlugins() {
-  const response = await fetch('https://jbrowse.org/plugin-store/plugins.json')
-  if (!response.ok) {
-    throw new Error(
-      `HTTP ${response.status} ${response.statusText} fetching plugins`,
-    )
-  }
-  return response.json() as Promise<{ plugins: PluginDefinition[] }>
-}
-
-async function checkPlugins(pluginsToCheck: PluginDefinition[]) {
-  if (pluginsToCheck.length === 0) {
-    return true
-  }
-  const storePlugins = await fetchPlugins()
-  return pluginsToCheck.every(p => {
-    if (isUMDPluginDefinition(p)) {
-      return storePlugins.plugins.some(
-        pp =>
-          isUMDPluginDefinition(p) &&
-          (('url' in pp && 'url' in p && p.url === pp.url) ||
-            ('umdUrl' in pp && 'umdUrl' in p && p.umdUrl === pp.umdUrl)),
-      )
-    }
-    if (isESMPluginDefinition(p)) {
-      return storePlugins.plugins.some(
-        pp =>
-          isESMPluginDefinition(p) && 'esmUrl' in p && p.esmUrl === pp.esmUrl,
-      )
-    }
-    if (isCJSPluginDefinition(p)) {
-      return storePlugins.plugins.some(
-        pp => isCJSPluginDefinition(p) && p.cjsUrl === pp.cjsUrl,
-      )
-    }
-    return false
-  })
-}
+// locals
+import { readSessionFromDynamo } from './sessionSharing'
+import { addRelativeUris, checkPlugins, fromUrlSafeB64, readConf } from './util'
 
 const SessionLoader = types
   .model({
@@ -84,6 +22,7 @@ const SessionLoader = types
     sessionTracks: types.maybe(types.string),
     assembly: types.maybe(types.string),
     tracks: types.maybe(types.string),
+    initialTimestamp: types.number,
   })
   .volatile(() => ({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any,

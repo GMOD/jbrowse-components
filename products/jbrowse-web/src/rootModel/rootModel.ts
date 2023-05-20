@@ -40,12 +40,13 @@ import { Cable } from '@jbrowse/core/ui/Icons'
 import makeWorkerInstance from '../makeWorkerInstance'
 import jbrowseWebFactory from '../jbrowseModel'
 import { filterSessionInPlace } from '../util'
-import { RootModel as CoreRootModel } from '@jbrowse/product-core'
-import type {
+import {
   BaseSession,
   BaseSessionType,
-} from '@jbrowse/product-core/src/Session/Base'
-import type { SessionWithDialogs } from '@jbrowse/product-core/src/Session/DialogQueue'
+  SessionWithDialogs,
+  InternetAccountsRootModelMixin,
+  BaseRootModelFactory,
+} from '@jbrowse/product-core'
 
 const PreferencesDialog = lazy(() => import('../components/PreferencesDialog'))
 
@@ -55,6 +56,10 @@ export interface Menu {
 }
 
 type AssemblyConfig = ReturnType<typeof assemblyConfigSchemaFactory>
+type SessionModelFactory = (args: {
+  pluginManager: PluginManager
+  assemblyConfigSchema: AssemblyConfig
+}) => IAnyType
 
 /**
  * #stateModel JBrowseWebRootModel
@@ -67,24 +72,25 @@ type AssemblyConfig = ReturnType<typeof assemblyConfigSchemaFactory>
  * and we generally prefer using the session model (via e.g. getSession) over
  * the root model (via e.g. getRoot) in plugin code
  */
-export default function RootModel(
-  pluginManager: PluginManager,
-  sessionModelFactory: (
-    p: PluginManager,
-    assemblyConfigSchema: AssemblyConfig,
-  ) => IAnyType,
+export default function RootModel({
+  pluginManager,
+  sessionModelFactory,
   adminMode = false,
-) {
+}: {
+  pluginManager: PluginManager
+  sessionModelFactory: SessionModelFactory
+  adminMode?: boolean
+}) {
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
   return types
     .compose(
-      CoreRootModel.BaseRootModel(
+      BaseRootModelFactory(
         pluginManager,
         jbrowseWebFactory(pluginManager, assemblyConfigSchema),
-        sessionModelFactory(pluginManager, assemblyConfigSchema),
+        sessionModelFactory({ pluginManager, assemblyConfigSchema }),
         assemblyConfigSchema,
       ),
-      CoreRootModel.InternetAccounts(pluginManager),
+      InternetAccountsRootModelMixin(pluginManager),
     )
     .props({
       /**
@@ -105,9 +111,7 @@ export default function RootModel(
         pluginManager,
         self.jbrowse.configuration.rpc,
         {
-          WebWorkerRpcDriver: {
-            makeWorkerInstance,
-          },
+          WebWorkerRpcDriver: { makeWorkerInstance },
           MainThreadRpcDriver: {},
         },
       ),

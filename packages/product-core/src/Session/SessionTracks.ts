@@ -5,14 +5,16 @@ import {
   AnyConfiguration,
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
-import Tracks from './Tracks'
-import { isBaseSession } from './Base'
+
+// locals
+import { TracksManagerSessionMixin } from './Tracks'
+import { isBaseSession } from './BaseSession'
 
 /**
  * #stateModel SessionTracksManagerSessionMixin
  */
-export default function SessionTracks(pluginManager: PluginManager) {
-  return Tracks(pluginManager)
+export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
+  return TracksManagerSessionMixin(pluginManager)
     .named('SessionTracksManagerSessionMixin')
     .props({
       /**
@@ -81,7 +83,9 @@ export default function SessionTracks(pluginManager: PluginManager) {
 }
 
 /** Session mixin MST type for a session that has `sessionTracks` */
-export type SessionWithSessionTracksType = ReturnType<typeof SessionTracks>
+export type SessionWithSessionTracksType = ReturnType<
+  typeof SessionTracksManagerSessionMixin
+>
 
 /** Instance of a session that has `sessionTracks` */
 export type SessionWithSessionTracks = Instance<SessionWithSessionTracksType>

@@ -20,7 +20,8 @@ import {
 } from 'mobx-state-tree'
 
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
-import { isBaseSession } from './Base'
+// locals
+import { isBaseSession } from './BaseSession'
 
 export interface ReferringNode {
   node: IAnyStateTreeNode
@@ -30,7 +31,7 @@ export interface ReferringNode {
 /**
  * #stateModel ReferenceManagementSessionMixin
  */
-export default function ReferenceManagement(pluginManager: PluginManager) {
+export function ReferenceManagementSessionMixin(pluginManager: PluginManager) {
   return types
     .model('ReferenceManagementSessionMixin', {})
     .views(self => ({
@@ -112,7 +113,7 @@ export default function ReferenceManagement(pluginManager: PluginManager) {
 
 /** Session mixin MST type for a session that manages multiple views */
 export type SessionWithReferenceManagementType = ReturnType<
-  typeof ReferenceManagement
+  typeof ReferenceManagementSessionMixin
 >
 
 /** Instance of a session with MST reference management (`getReferring()`, `removeReferring()`)  */

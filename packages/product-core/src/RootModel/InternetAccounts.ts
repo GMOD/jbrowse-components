@@ -3,13 +3,13 @@ import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { UriLocation } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
 import { Instance, addDisposer, types } from 'mobx-state-tree'
-import { BaseRootModelType } from './Base'
+import { BaseRootModelType } from './BaseRootModel'
 
 /**
  * #stateModel InternetAccountsMixin
  * #category root
  */
-export default function InternetAccountsF(pluginManager: PluginManager) {
+export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
   return types
     .model({
       /**
@@ -121,7 +121,7 @@ export default function InternetAccountsF(pluginManager: PluginManager) {
 }
 
 export type RootModelWithInternetAccountsType = ReturnType<
-  typeof InternetAccountsF
+  typeof InternetAccountsRootModelMixin
 >
 export type RootModelWithInternetAccounts =
   Instance<RootModelWithInternetAccountsType>

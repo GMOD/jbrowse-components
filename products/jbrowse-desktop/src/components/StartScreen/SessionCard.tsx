@@ -34,7 +34,7 @@ const useStyles = makeStyles()({
 interface RecentSessionData {
   path: string
   name: string
-  updated: number
+  updated?: number
   screenshotPath?: string
 }
 
@@ -117,7 +117,9 @@ function RecentSessionCard({
             >
               Last modified{' '}
               {sessionData
-                ? `${new Date(sessionData.updated).toLocaleString('en-US')}`
+                ? `${new Date(sessionData.updated || 0).toLocaleString(
+                    'en-US',
+                  )}`
                 : null}
             </Typography>
           }
