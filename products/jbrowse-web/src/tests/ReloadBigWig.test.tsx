@@ -28,7 +28,7 @@ const opts = [{}, delay]
 test('reloads bigwig (BW 404)', async () => {
   await mockConsole(async () => {
     mockFile404('volvox_microarray.bw', readBuffer)
-    const { view, findByTestId, findByText, findAllByTestId, findAllByText } =
+    const { view, findByTestId, findAllByTestId, findAllByText } =
       await createView()
     view.setNewView(10, 0)
     fireEvent.click(await findByTestId(hts('volvox_microarray'), ...opts))
