@@ -67,21 +67,25 @@ type AssemblyConfig = ReturnType<typeof assemblyConfigSchemaFactory>
  * and we generally prefer using the session model (via e.g. getSession) over
  * the root model (via e.g. getRoot) in plugin code
  */
-export default function RootModel(
-  pluginManager: PluginManager,
-  sessionModelFactory: (
-    p: PluginManager,
-    assemblyConfigSchema: AssemblyConfig,
-  ) => IAnyType,
+export default function RootModel({
+  pluginManager,
+  sessionModelFactory,
   adminMode = false,
-) {
+}: {
+  pluginManager: PluginManager
+  sessionModelFactory: (args: {
+    pluginManager: PluginManager
+    assemblyConfigSchema: AssemblyConfig
+  }) => IAnyType
+  adminMode?: boolean
+}) {
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
   return types
     .compose(
       CoreRootModel.BaseRootModel(
         pluginManager,
         jbrowseWebFactory(pluginManager, assemblyConfigSchema),
-        sessionModelFactory(pluginManager, assemblyConfigSchema),
+        sessionModelFactory({ pluginManager, assemblyConfigSchema }),
         assemblyConfigSchema,
       ),
       CoreRootModel.InternetAccounts(pluginManager),
@@ -105,9 +109,7 @@ export default function RootModel(
         pluginManager,
         self.jbrowse.configuration.rpc,
         {
-          WebWorkerRpcDriver: {
-            makeWorkerInstance,
-          },
+          WebWorkerRpcDriver: { makeWorkerInstance },
           MainThreadRpcDriver: {},
         },
       ),

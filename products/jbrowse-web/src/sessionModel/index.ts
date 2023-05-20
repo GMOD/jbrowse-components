@@ -15,6 +15,7 @@ import {
   types,
   Instance,
   SnapshotIn,
+  IAnyType,
 } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
@@ -47,10 +48,13 @@ const AboutDialog = lazy(() => import('./AboutDialog'))
  * - MultipleViewsSessionMixin
  * - SessionTracksManagerSessionMixin
  */
-export default function sessionModelFactory(
-  pluginManager: PluginManager,
-  assemblyConfigSchemasType = types.frozen(),
-) {
+export default function sessionModelFactory({
+  pluginManager,
+  assemblyConfigSchema = types.frozen(),
+}: {
+  pluginManager: PluginManager
+  assemblyConfigSchema: IAnyType
+}) {
   const sessionModel = types
     .compose(
       'JBrowseWebSessionModel',
@@ -60,7 +64,7 @@ export default function sessionModelFactory(
       CoreSession.Themes(pluginManager),
       CoreSession.MultipleViews(pluginManager),
       CoreSession.SessionTracks(pluginManager),
-      Assemblies(pluginManager, assemblyConfigSchemasType),
+      Assemblies(pluginManager, assemblyConfigSchema),
       SessionConnections(pluginManager),
     )
     .props({

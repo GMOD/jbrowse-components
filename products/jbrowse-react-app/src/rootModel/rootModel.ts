@@ -56,7 +56,7 @@ export interface Menu {
 type AssemblyConfig = ReturnType<typeof assemblyConfigSchemaFactory>
 
 /**
- * #stateModel JBrowseWebRootModel
+ * #stateModel JBrowseReactAppRootModel
  *
  * composed of
  * - BaseRootModel
@@ -66,17 +66,20 @@ type AssemblyConfig = ReturnType<typeof assemblyConfigSchemaFactory>
  * and we generally prefer using the session model (via e.g. getSession) over
  * the root model (via e.g. getRoot) in plugin code
  */
-export default function RootModel(
-  pluginManager: PluginManager,
+export default function RootModel({
+  pluginManager,
+  sessionModelFactory,
+  makeWorkerInstance = () => {
+    throw new Error('no makeWorkerInstance supplied')
+  },
+}: {
+  pluginManager: PluginManager
   sessionModelFactory: (
     p: PluginManager,
     assemblyConfigSchema: AssemblyConfig,
-  ) => IAnyType,
-  adminMode = false,
-  makeWorkerInstance: () => Worker = () => {
-    throw new Error('no makeWorkerInstance supplied')
-  },
-) {
+  ) => IAnyType
+  makeWorkerInstance?: () => Worker
+}) {
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
   return types
     .compose(
@@ -502,23 +505,6 @@ export default function RootModel(
             },
           ],
         },
-        ...(adminMode
-          ? [
-              {
-                label: 'Admin',
-                menuItems: [
-                  {
-                    label: 'Open assembly manager',
-                    onClick: () => self.setAssemblyEditing(true),
-                  },
-                  {
-                    label: 'Set default session',
-                    onClick: () => self.setDefaultSessionEditing(true),
-                  },
-                ],
-              },
-            ]
-          : []),
         {
           label: 'Add',
           menuItems: [],
@@ -578,7 +564,6 @@ export default function RootModel(
           ],
         },
       ] as Menu[],
-      adminMode,
     }))
     .actions(self => ({
       /**

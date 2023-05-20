@@ -13,7 +13,7 @@ describe('Root MST model', () => {
     const pluginManager = new PluginManager(corePlugins.map(P => new P()))
     pluginManager.createPluggableElements()
     pluginManager.configure()
-    rootModel = rootModelFactory(pluginManager, sessionModelFactory)
+    rootModel = rootModelFactory({ pluginManager, sessionModelFactory })
   })
 
   afterEach(() => {

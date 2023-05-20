@@ -41,12 +41,11 @@ export function getPluginManager(initialState?: any, adminMode = true) {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.createPluggableElements()
 
-  const JBrowseRootModel = JBrowseRootModelFactory(
+  const rootModel = JBrowseRootModelFactory({
     pluginManager,
     sessionModelFactory,
     adminMode,
-  )
-  const rootModel = JBrowseRootModel.create(
+  }).create(
     {
       jbrowse: initialState || configSnapshot,
       assemblyManager: {},

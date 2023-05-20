@@ -7,7 +7,11 @@ export function createTestSession(snapshot = {}, adminMode = false) {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.createPluggableElements()
 
-  const root = RootModel(pluginManager, sessionModelFactory, adminMode).create(
+  const root = RootModel({
+    pluginManager,
+    sessionModelFactory,
+    adminMode,
+  }).create(
     {
       jbrowse: {
         configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },

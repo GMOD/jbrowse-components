@@ -44,20 +44,21 @@ test('lollipop track test', async () => {
 }, 30000)
 
 test('toplevel configuration', () => {
-  const pm = new PluginManager([...corePlugins, TestPlugin].map(P => new P()))
-  pm.createPluggableElements()
-  const rootModel = JBrowseRootModelFactory(
-    pm,
+  const pluginManager = new PluginManager(
+    [...corePlugins, TestPlugin].map(P => new P()),
+  ).createPluggableElements()
+  const rootModel = JBrowseRootModelFactory({
+    pluginManager,
     sessionModelFactory,
-    true,
-  ).create({
+    adminMode: true,
+  }).create({
     jbrowse: volvoxConfigSnapshot,
     assemblyManager: {},
   })
   rootModel.setDefaultSession()
-  pm.setRootModel(rootModel)
-  pm.configure()
-  const state = pm.rootModel
+  pluginManager.setRootModel(rootModel)
+  pluginManager.configure()
+  const state = pluginManager.rootModel
   const { jbrowse } = state!
   const { configuration } = jbrowse
   // test reading top level configurations added by Test Plugin
