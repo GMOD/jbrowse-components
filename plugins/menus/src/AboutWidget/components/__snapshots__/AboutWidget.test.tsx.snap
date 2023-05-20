@@ -54,6 +54,12 @@ exports[`<AboutWidget /> renders 1`] = `
         </a>
       </li>
     </ul>
+    <h6
+      class="MuiTypography-root MuiTypography-h6 css-2ulfj5-MuiTypography-root"
+    >
+      Core plugins loaded
+    </h6>
+    <ul />
   </div>
 </div>
 `;

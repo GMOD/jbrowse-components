@@ -10,7 +10,6 @@ import {
   Instance,
   IAnyType,
 } from 'mobx-state-tree'
-
 import { saveAs } from 'file-saver'
 import { observable, autorun } from 'mobx'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
@@ -20,6 +19,13 @@ import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import TimeTraveller from '@jbrowse/core/util/TimeTraveller'
 import { AbstractSessionModel, SessionWithWidgets } from '@jbrowse/core/util'
 import { MenuItem } from '@jbrowse/core/ui'
+import {
+  BaseRootModelFactory,
+  InternetAccountsRootModelMixin,
+  BaseSession,
+  BaseSessionType,
+  SessionWithDialogs,
+} from '@jbrowse/product-core'
 
 // icons
 import AddIcon from '@mui/icons-material/Add'
@@ -39,12 +45,6 @@ import { Cable } from '@jbrowse/core/ui/Icons'
 // other
 import jbrowseWebFactory from '../jbrowseModel'
 import { filterSessionInPlace } from '../util'
-import { RootModel as CoreRootModel } from '@jbrowse/product-core'
-import type {
-  BaseSession,
-  BaseSessionType,
-} from '@jbrowse/product-core/src/Session/Base'
-import type { SessionWithDialogs } from '@jbrowse/product-core/src/Session/DialogQueue'
 
 const PreferencesDialog = lazy(() => import('../components/PreferencesDialog'))
 
@@ -54,12 +54,16 @@ export interface Menu {
 }
 
 type AssemblyConfig = ReturnType<typeof assemblyConfigSchemaFactory>
+type SessionModelFactory = (
+  p: PluginManager,
+  assemblyConfigSchema: AssemblyConfig,
+) => IAnyType
 
 /**
  * #stateModel JBrowseReactAppRootModel
  *
  * composed of
- * - BaseRootModel
+ * - BaseRootModelFactory
  * - InternetAccountsMixin
  *
  * note: many properties of the root model are available through the session,
@@ -74,22 +78,19 @@ export default function RootModel({
   },
 }: {
   pluginManager: PluginManager
-  sessionModelFactory: (
-    p: PluginManager,
-    assemblyConfigSchema: AssemblyConfig,
-  ) => IAnyType
+  sessionModelFactory: SessionModelFactory
   makeWorkerInstance?: () => Worker
 }) {
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
   return types
     .compose(
-      CoreRootModel.BaseRootModel(
+      BaseRootModelFactory(
         pluginManager,
         jbrowseWebFactory(pluginManager, assemblyConfigSchema),
         sessionModelFactory(pluginManager, assemblyConfigSchema),
         assemblyConfigSchema,
       ),
-      CoreRootModel.InternetAccounts(pluginManager),
+      InternetAccountsRootModelMixin(pluginManager),
     )
     .props({
       /**

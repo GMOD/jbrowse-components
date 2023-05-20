@@ -49,6 +49,7 @@
     "@jbrowse/plugin-wiggle": "^2.5.0",
     "@jbrowse/product-core": "^2.5.0",
     "@jbrowse/app-core": "^2.5.0",
+    "@jbrowse/web-core": "^2.5.0",
     "@mui/icons-material": "^5.0.0",
     "@mui/material": "^5.10.17",
     "@mui/x-data-grid": "^6.0.1",

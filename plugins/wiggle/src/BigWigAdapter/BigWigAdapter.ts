@@ -28,11 +28,9 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
 
   private async setupPre(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts || {}
+    const pm = this.pluginManager
     const bigwig = new BigWig({
-      filehandle: openLocation(
-        this.getConf('bigWigLocation'),
-        this.pluginManager,
-      ),
+      filehandle: openLocation(this.getConf('bigWigLocation'), pm),
     })
     const header = await updateStatus(
       'Downloading bigwig header',

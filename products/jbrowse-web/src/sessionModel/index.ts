@@ -20,8 +20,18 @@ import {
 import PluginManager from '@jbrowse/core/PluginManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
-import { Session as CoreSession } from '@jbrowse/product-core'
-import { SessionConnections } from '@jbrowse/web-core'
+import {
+  DialogQueueSessionMixin,
+  DrawerWidgetSessionMixin,
+  MultipleViewsSessionMixin,
+  ReferenceManagementSessionMixin,
+  SessionTracksManagerSessionMixin,
+  ThemeManagerSessionMixin,
+} from '@jbrowse/product-core'
+import {
+  WebSessionAssembliesMixin,
+  WebSessionConnectionsMixin,
+} from '@jbrowse/web-core'
 
 // icons
 import SettingsIcon from '@mui/icons-material/Settings'
@@ -30,7 +40,6 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import InfoIcon from '@mui/icons-material/Info'
 
 // locals
-import Assemblies from './Assemblies'
 import { WebRootModel } from '../rootModel/rootModel'
 
 const AboutDialog = lazy(() => import('./AboutDialog'))
@@ -39,33 +48,33 @@ const AboutDialog = lazy(() => import('./AboutDialog'))
  * #stateModel JBrowseWebSessionModel
  * composed of
  * - SnackbarModel
- * - JBrowseWebSessionConnectionsModel
- * - JBrowseWebSessionAssembliesModel
  * - ReferenceManagementSessionMixin
  * - DrawerWidgetSessionMixin
  * - DialogQueueSessionMixin
  * - ThemeManagerSessionMixin
  * - MultipleViewsSessionMixin
  * - SessionTracksManagerSessionMixin
+ * - WebSessionAssembliesMixin
+ * - WebSessionConnectionsMixin
  */
 export default function sessionModelFactory({
   pluginManager,
   assemblyConfigSchema = types.frozen(),
 }: {
   pluginManager: PluginManager
-  assemblyConfigSchema: IAnyType
+  assemblyConfigSchema?: IAnyType
 }) {
   const sessionModel = types
     .compose(
       'JBrowseWebSessionModel',
-      CoreSession.ReferenceManagement(pluginManager),
-      CoreSession.DrawerWidgets(pluginManager),
-      CoreSession.DialogQueue(pluginManager),
-      CoreSession.Themes(pluginManager),
-      CoreSession.MultipleViews(pluginManager),
-      CoreSession.SessionTracks(pluginManager),
-      Assemblies(pluginManager, assemblyConfigSchema),
-      SessionConnections(pluginManager),
+      ReferenceManagementSessionMixin(pluginManager),
+      DrawerWidgetSessionMixin(pluginManager),
+      DialogQueueSessionMixin(pluginManager),
+      ThemeManagerSessionMixin(pluginManager),
+      MultipleViewsSessionMixin(pluginManager),
+      SessionTracksManagerSessionMixin(pluginManager),
+      WebSessionAssembliesMixin(pluginManager, assemblyConfigSchema),
+      WebSessionConnectionsMixin(pluginManager),
     )
     .props({
       /**

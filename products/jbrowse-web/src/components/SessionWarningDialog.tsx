@@ -6,9 +6,12 @@ import {
   DialogContentText,
   DialogActions,
 } from '@mui/material'
+import shortid from 'shortid'
+import { SessionLoaderModel } from '../SessionLoader'
+
 import WarningIcon from '@mui/icons-material/Warning'
 
-export default function SessionWarningModal({
+function SessionWarningDialog({
   onConfirm,
   onCancel,
   reason,
@@ -49,5 +52,30 @@ export default function SessionWarningModal({
         </Button>
       </DialogActions>
     </Dialog>
+  )
+}
+
+export default function SessionTriaged({
+  loader,
+  handleClose,
+}: {
+  loader: SessionLoaderModel
+  handleClose: () => void
+}) {
+  return (
+    <SessionWarningDialog
+      onConfirm={async () => {
+        const session = JSON.parse(JSON.stringify(loader.sessionTriaged.snap))
+
+        // second param true says we passed user confirmation
+        await loader.setSessionSnapshot({ ...session, id: shortid() }, true)
+        handleClose()
+      }}
+      onCancel={() => {
+        loader.setBlankSession(true)
+        handleClose()
+      }}
+      reason={loader.sessionTriaged.reason}
+    />
   )
 }

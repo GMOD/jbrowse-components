@@ -2,14 +2,22 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
 import { types, Instance, getParent } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { Session as CoreSession } from '@jbrowse/product-core'
 
 // icons
-import Base from './Base'
-import Assemblies from './Assemblies'
-import TrackMenu from './TrackMenu'
+import { DesktopSessionAssembliesModel } from './Assemblies'
+import { DesktopSessionTrackMenuMixin } from './TrackMenu'
 import { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import { DesktopRootModel } from '../rootModel'
+import {
+  ConnectionManagementSessionMixin,
+  DialogQueueSessionMixin,
+  DrawerWidgetSessionMixin,
+  MultipleViewsSessionMixin,
+  ReferenceManagementSessionMixin,
+  ThemeManagerSessionMixin,
+  TracksManagerSessionMixin,
+} from '@jbrowse/product-core'
+import { DesktopSessionFactory } from './DesktopSession'
 
 /**
  * #stateModel JBrowseDesktopSessionModel
@@ -21,9 +29,9 @@ import { DesktopRootModel } from '../rootModel'
  * - ThemeManagerSessionMixin
  * - TracksManagerSessionMixin
  * - MultipleViewsSessionMixin
- * - JBrowseDesktopSessionMixin
- * - JBrowseDesktopSessionAssembliesModel
- * - JBrowseDesktopSessionTrackMenuMixin
+ * - DesktopSessionMixin
+ * - DesktopSessionAssembliesModel
+ * - DesktopSessionTrackMenuMixin
  * - SnackbarModel
  */
 export default function sessionModelFactory(
@@ -34,17 +42,17 @@ export default function sessionModelFactory(
     .compose(
       'JBrowseDesktopSessionModel',
       types.compose(
-        CoreSession.ReferenceManagement(pluginManager),
-        CoreSession.Connections(pluginManager),
-        CoreSession.DrawerWidgets(pluginManager),
-        CoreSession.DialogQueue(pluginManager),
-        CoreSession.Themes(pluginManager),
-        CoreSession.Tracks(pluginManager),
-        CoreSession.MultipleViews(pluginManager),
+        ReferenceManagementSessionMixin(pluginManager),
+        ConnectionManagementSessionMixin(pluginManager),
+        DrawerWidgetSessionMixin(pluginManager),
+        DialogQueueSessionMixin(pluginManager),
+        ThemeManagerSessionMixin(pluginManager),
+        TracksManagerSessionMixin(pluginManager),
+        MultipleViewsSessionMixin(pluginManager),
       ),
-      Base(pluginManager),
-      Assemblies(pluginManager, assemblyConfigSchemasType),
-      TrackMenu(pluginManager),
+      DesktopSessionFactory(pluginManager),
+      DesktopSessionAssembliesModel(pluginManager, assemblyConfigSchemasType),
+      DesktopSessionTrackMenuMixin(pluginManager),
     )
     .views(self => ({
       /**

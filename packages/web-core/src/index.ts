@@ -1,1 +1,2 @@
-export { default as SessionConnections } from './SessionConnections'
+export * from './SessionConnections'
+export * from './Assemblies'

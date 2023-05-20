@@ -5,8 +5,8 @@ import {
   AnyConfiguration,
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
-import BaseSession, { isBaseSession } from './Base'
-import ReferenceManagement from './ReferenceManagement'
+import { BaseSessionModel, isBaseSession } from './BaseSession'
+import { ReferenceManagementSessionMixin } from './ReferenceManagement'
 
 /**
  * #stateModel TracksManagerSessionMixin
@@ -14,12 +14,12 @@ import ReferenceManagement from './ReferenceManagement'
  * - BaseSessionModel
  * - ReferenceManagementSessionMixin
  */
-export default function Tracks(pluginManager: PluginManager) {
+export function TracksManagerSessionMixin(pluginManager: PluginManager) {
   return types
     .compose(
       'TracksManagerSessionMixin',
-      BaseSession(pluginManager),
-      ReferenceManagement(pluginManager),
+      BaseSessionModel(pluginManager),
+      ReferenceManagementSessionMixin(pluginManager),
     )
     .views(self => ({
       /**
@@ -59,7 +59,7 @@ export default function Tracks(pluginManager: PluginManager) {
 }
 
 /** Session mixin MST type for a session that has tracks */
-export type SessionWithTracksType = ReturnType<typeof Tracks>
+export type SessionWithTracksType = ReturnType<typeof TracksManagerSessionMixin>
 
 /** Instance of a session that has tracks */
 export type SessionWithTracks = Instance<SessionWithTracksType>

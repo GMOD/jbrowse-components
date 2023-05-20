@@ -40,12 +40,13 @@ import { Cable } from '@jbrowse/core/ui/Icons'
 import makeWorkerInstance from '../makeWorkerInstance'
 import jbrowseWebFactory from '../jbrowseModel'
 import { filterSessionInPlace } from '../util'
-import { RootModel as CoreRootModel } from '@jbrowse/product-core'
-import type {
+import {
   BaseSession,
   BaseSessionType,
-} from '@jbrowse/product-core/src/Session/Base'
-import type { SessionWithDialogs } from '@jbrowse/product-core/src/Session/DialogQueue'
+  SessionWithDialogs,
+  InternetAccountsRootModelMixin,
+  BaseRootModelFactory,
+} from '@jbrowse/product-core'
 
 const PreferencesDialog = lazy(() => import('../components/PreferencesDialog'))
 
@@ -55,6 +56,10 @@ export interface Menu {
 }
 
 type AssemblyConfig = ReturnType<typeof assemblyConfigSchemaFactory>
+type SessionModelFactory = (args: {
+  pluginManager: PluginManager
+  assemblyConfigSchema: AssemblyConfig
+}) => IAnyType
 
 /**
  * #stateModel JBrowseWebRootModel
@@ -73,22 +78,19 @@ export default function RootModel({
   adminMode = false,
 }: {
   pluginManager: PluginManager
-  sessionModelFactory: (args: {
-    pluginManager: PluginManager
-    assemblyConfigSchema: AssemblyConfig
-  }) => IAnyType
+  sessionModelFactory: SessionModelFactory
   adminMode?: boolean
 }) {
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
   return types
     .compose(
-      CoreRootModel.BaseRootModel(
+      BaseRootModelFactory(
         pluginManager,
         jbrowseWebFactory(pluginManager, assemblyConfigSchema),
         sessionModelFactory({ pluginManager, assemblyConfigSchema }),
         assemblyConfigSchema,
       ),
-      CoreRootModel.InternetAccounts(pluginManager),
+      InternetAccountsRootModelMixin(pluginManager),
     )
     .props({
       /**

@@ -43,12 +43,10 @@ export default class TwoBitAdapter extends BaseSequenceAdapter {
     pluginManager?: PluginManager,
   ) {
     super(config, getSubAdapter, pluginManager)
+    const pm = this.pluginManager
     this.chromSizesData = this.initChromSizes()
     this.twobit = new TwoBitFile({
-      filehandle: openLocation(
-        readConfObject(config, 'twoBitLocation'),
-        this.pluginManager,
-      ),
+      filehandle: openLocation(this.getConf('twoBitLocation'), pm),
     })
   }
 

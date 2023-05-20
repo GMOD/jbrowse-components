@@ -1,14 +1,18 @@
 import React from 'react'
-import { Dialog } from '@jbrowse/core/ui'
 import {
   Button,
   DialogActions,
   DialogContent,
   DialogContentText,
 } from '@mui/material'
+import { Dialog } from '@jbrowse/core/ui'
+import shortid from 'shortid'
+import factoryReset from '../factoryReset'
+import { SessionLoaderModel } from '../SessionLoader'
+
 import WarningIcon from '@mui/icons-material/Warning'
 
-export default function ConfigWarningModal({
+function ConfigWarningDialog({
   onConfirm,
   onCancel,
   reason,
@@ -51,5 +55,29 @@ export default function ConfigWarningModal({
         </Button>
       </DialogActions>
     </Dialog>
+  )
+}
+
+export default function ConfigTriaged({
+  loader,
+  handleClose,
+}: {
+  loader: SessionLoaderModel
+  handleClose: () => void
+}) {
+  return (
+    <ConfigWarningDialog
+      onConfirm={async () => {
+        const session = JSON.parse(JSON.stringify(loader.sessionTriaged.snap))
+        await loader.fetchPlugins(session)
+        loader.setConfigSnapshot({ ...session, id: shortid() })
+        handleClose()
+      }}
+      onCancel={async () => {
+        await factoryReset()
+        handleClose()
+      }}
+      reason={loader.sessionTriaged.reason}
+    />
   )
 }

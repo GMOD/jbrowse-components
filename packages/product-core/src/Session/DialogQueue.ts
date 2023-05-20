@@ -3,17 +3,12 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { DialogComponentType } from '@jbrowse/core/util'
 import { IAnyStateTreeNode, Instance, types } from 'mobx-state-tree'
-import { isBaseSession } from './Base'
-
-export interface ReferringNode {
-  node: IAnyStateTreeNode
-  key: string
-}
+import { isBaseSession } from './BaseSession'
 
 /**
  * #stateModel DialogQueueSessionMixin
  */
-export default function DialogQueue(pluginManager: PluginManager) {
+export function DialogQueueSessionMixin(pluginManager: PluginManager) {
   return types
     .model('DialogQueueSessionMixin', {})
     .volatile(() => ({
@@ -55,7 +50,7 @@ export default function DialogQueue(pluginManager: PluginManager) {
 }
 
 /** Session mixin MST type for a session that has `queueOfDialogs`, etc. */
-export type SessionWithDialogsType = ReturnType<typeof DialogQueue>
+export type SessionWithDialogsType = ReturnType<typeof DialogQueueSessionMixin>
 
 /** Instance of a session that has dialogs */
 export type SessionWithDialogs = Instance<SessionWithDialogsType>

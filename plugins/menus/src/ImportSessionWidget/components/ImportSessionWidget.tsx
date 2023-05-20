@@ -7,7 +7,10 @@ import { useDropzone } from 'react-dropzone'
 
 // icons
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
-import ErrorIcon from '@mui/icons-material/Error'
+
+// locals
+import ImportError from './ImportError'
+import { IAnyStateTreeNode } from 'mobx-state-tree'
 
 const MAX_FILE_SIZE = 512 * 1024 ** 2 // 512 MiB
 
@@ -51,27 +54,6 @@ const useStyles = makeStyles()(theme => ({
   uploadIcon: {
     color: theme.palette.text.secondary,
   },
-  rejectedFiles: {
-    marginTop: theme.spacing(4),
-  },
-  listItem: {
-    padding: theme.spacing(0, 4),
-  },
-  expandIcon: {
-    color: theme.palette.tertiary.contrastText,
-  },
-  error: {
-    margin: theme.spacing(2),
-  },
-  errorHeader: {
-    background: theme.palette.error.light,
-    color: theme.palette.error.contrastText,
-    padding: theme.spacing(2),
-    textAlign: 'center',
-  },
-  errorMessage: {
-    padding: theme.spacing(2),
-  },
 }))
 
 export function readBlobAsText(blob: Blob): Promise<string> {
@@ -88,8 +70,7 @@ export function readBlobAsText(blob: Blob): Promise<string> {
   })
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function ImportSession({ model }: { model: any }) {
+function ImportSession({ model }: { model: IAnyStateTreeNode }) {
   const [error, setError] = useState<unknown>()
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     // @ts-expect-error
@@ -134,19 +115,7 @@ function ImportSession({ model }: { model: any }) {
           </Button>
         </div>
       </Paper>
-      {error ? (
-        <Paper className={classes.error}>
-          <div className={classes.errorHeader}>
-            <ErrorIcon color="inherit" fontSize="large" />
-            <div>
-              <Typography variant="h6" color="inherit" align="center">
-                Import error
-              </Typography>
-            </div>
-          </div>
-          <Typography className={classes.errorMessage}>{`${error}`}</Typography>
-        </Paper>
-      ) : null}
+      {error ? <ImportError error={error} /> : null}
     </div>
   )
 }

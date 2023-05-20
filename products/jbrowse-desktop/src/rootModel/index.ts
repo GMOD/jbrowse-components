@@ -4,7 +4,10 @@ import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyC
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 
-import { RootModel } from '@jbrowse/product-core'
+import {
+  BaseRootModelFactory,
+  InternetAccountsRootModelMixin,
+} from '@jbrowse/product-core'
 
 // locals
 import jobsModelFactory from '../indexJobsModel'
@@ -14,7 +17,7 @@ import SessionManagement from './Sessions'
 import { HistoryManagement } from './HistoryManagement'
 
 type SessionModelFactory = (
-  pm: PluginManager,
+  pluginManager: PluginManager,
   assemblyConfigSchema: ReturnType<typeof assemblyConfigSchemaFactory>,
 ) => IAnyType
 
@@ -42,13 +45,13 @@ export default function rootModelFactory(
   return types
     .compose(
       'JBrowseDesktopRootModel',
-      RootModel.BaseRootModel(
+      BaseRootModelFactory(
         pluginManager,
         JBrowseDesktop(pluginManager, assemblyConfigSchema),
         Session,
         assemblyConfigSchema,
       ),
-      RootModel.InternetAccounts(pluginManager),
+      InternetAccountsRootModelMixin(pluginManager),
       Menus(pluginManager),
       SessionManagement(pluginManager),
       HistoryManagement,
@@ -64,9 +67,7 @@ export default function rootModelFactory(
         pluginManager,
         self.jbrowse.configuration.rpc,
         {
-          WebWorkerRpcDriver: {
-            makeWorkerInstance,
-          },
+          WebWorkerRpcDriver: { makeWorkerInstance },
           MainThreadRpcDriver: {},
         },
       ),

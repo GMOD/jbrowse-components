@@ -83,7 +83,7 @@ export default function RecentSessionPanel({
   )
 
   const sortedSessions = useMemo(
-    () => sessions?.sort((a, b) => b.updated - a.updated),
+    () => sessions?.sort((a, b) => (b.updated || 0) - (a.updated || 0)),
     [sessions],
   )
 

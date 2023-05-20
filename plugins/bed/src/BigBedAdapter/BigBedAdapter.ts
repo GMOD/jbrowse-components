@@ -10,7 +10,6 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { map, mergeAll } from 'rxjs/operators'
-import { readConfObject } from '@jbrowse/core/configuration'
 import { ucscProcessedTranscript } from '../util'
 
 function isUCSC(f: Feature) {
@@ -21,11 +20,9 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
   private cached?: Promise<{ bigbed: BigBed; header: any; parser: BED }>
 
   public async configurePre(opts?: BaseOptions) {
+    const pm = this.pluginManager
     const bigbed = new BigBed({
-      filehandle: openLocation(
-        readConfObject(this.config, 'bigBedLocation'),
-        this.pluginManager,
-      ),
+      filehandle: openLocation(this.getConf('bigBedLocation'), pm),
     })
     const header = await bigbed.getHeader(opts)
     const parser = new BED({ autoSql: header.autoSql })

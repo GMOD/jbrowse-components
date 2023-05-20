@@ -6,7 +6,14 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
 import InfoIcon from '@mui/icons-material/Info'
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
-import { Session as CoreSession } from '@jbrowse/product-core'
+import {
+  BaseSessionModel,
+  ConnectionManagementSessionMixin,
+  DialogQueueSessionMixin,
+  DrawerWidgetSessionMixin,
+  ReferenceManagementSessionMixin,
+  TracksManagerSessionMixin,
+} from '@jbrowse/product-core'
 
 const AboutDialog = lazy(() => import('./AboutDialog'))
 
@@ -25,12 +32,12 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
   const model = types
     .compose(
       'ReactCircularGenomeViewSession',
-      CoreSession.Base(pluginManager),
-      CoreSession.DrawerWidgets(pluginManager),
-      CoreSession.Connections(pluginManager),
-      CoreSession.DialogQueue(pluginManager),
-      CoreSession.Tracks(pluginManager),
-      CoreSession.ReferenceManagement(pluginManager),
+      BaseSessionModel(pluginManager),
+      DrawerWidgetSessionMixin(pluginManager),
+      ConnectionManagementSessionMixin(pluginManager),
+      DialogQueueSessionMixin(pluginManager),
+      TracksManagerSessionMixin(pluginManager),
+      ReferenceManagementSessionMixin(pluginManager),
     )
     .props({
       /**

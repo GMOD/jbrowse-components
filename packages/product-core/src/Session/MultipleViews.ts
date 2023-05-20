@@ -8,17 +8,22 @@ import {
 import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { Region } from '@jbrowse/core/util'
-import DrawerWidgets from './DrawerWidgets'
+import { DrawerWidgetSessionMixin } from './DrawerWidgets'
 import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes'
 import { IBaseViewModelWithDisplayedRegions } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
-import Base, { isBaseSession } from './Base'
+
+// locals
+import { BaseSessionModel, isBaseSession } from './BaseSession'
 
 /**
  * #stateModel MultipleViewsSessionMixin
  */
-export default function MultipleViews(pluginManager: PluginManager) {
+export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
   return types
-    .compose(Base(pluginManager), DrawerWidgets(pluginManager))
+    .compose(
+      BaseSessionModel(pluginManager),
+      DrawerWidgetSessionMixin(pluginManager),
+    )
     .props({
       /**
        * #property
@@ -131,7 +136,9 @@ export default function MultipleViews(pluginManager: PluginManager) {
 }
 
 /** Session mixin MST type for a session that manages multiple views */
-export type SessionWithMultipleViewsType = ReturnType<typeof MultipleViews>
+export type SessionWithMultipleViewsType = ReturnType<
+  typeof MultipleViewsSessionMixin
+>
 
 /** Instance of a session with multiple views */
 export type SessionWithMultipleViews = Instance<SessionWithMultipleViewsType>

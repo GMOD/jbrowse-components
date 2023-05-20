@@ -7,12 +7,13 @@ import {
   DialogTitle,
 } from '@mui/material'
 import FactoryResetDialog from './FactoryResetDialog'
+import ErrorMessage from './ErrorMessage'
 
 const ResetComponent = ({
   onFactoryReset,
   resetButtonText,
 }: {
-  onFactoryReset: Function
+  onFactoryReset: () => void
   resetButtonText: string
 }) => {
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -36,7 +37,7 @@ const ResetComponent = ({
   )
 }
 
-const FatalErrorDialog = ({
+export default function FatalErrorDialog({
   componentStack,
   error = 'No error message provided',
   onFactoryReset,
@@ -44,17 +45,15 @@ const FatalErrorDialog = ({
 }: {
   componentStack?: string
   error?: unknown
-  onFactoryReset: Function
+  onFactoryReset: () => void
   resetButtonText?: string
-}) => {
+}) {
   return (
-    <Dialog open>
-      <DialogTitle style={{ background: '#e88' }}>Fatal error</DialogTitle>
+    <Dialog maxWidth="xl" open>
+      <DialogTitle>Fatal error</DialogTitle>
       <DialogContent>
-        <pre>
-          {`${error}`}
-          {componentStack}
-        </pre>
+        <ErrorMessage error={error} />
+        <pre>{componentStack}</pre>
       </DialogContent>
       <DialogActions>
         <Button
@@ -72,5 +71,3 @@ const FatalErrorDialog = ({
     </Dialog>
   )
 }
-
-export default FatalErrorDialog

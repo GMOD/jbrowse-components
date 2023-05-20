@@ -52,6 +52,7 @@ function AddTrackWorkflow({ model }: { model: AddTrackModel }) {
             model.clearData()
             session.hideWidget(model)
           } catch (e) {
+            console.error(e)
             setError(e)
           }
         }}

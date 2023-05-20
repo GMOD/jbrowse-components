@@ -1,22 +1,24 @@
 import { types } from 'mobx-state-tree'
 
-import { Session as CoreSession } from '@jbrowse/product-core'
-import type { BaseSession } from '@jbrowse/product-core/src/Session/Base'
+import {
+  ConnectionManagementSessionMixin,
+  SessionWithSessionTracks,
+} from '@jbrowse/product-core'
+import type { BaseSession } from '@jbrowse/product-core'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
-import { SessionWithSessionTracks } from '@jbrowse/product-core/src/Session/SessionTracks'
 
 /**
- * #stateModel JBrowseWebSessionConnectionsMixin
+ * #stateModel WebSessionConnectionsMixin
  * #category session
  */
-export default function SessionConnections(pluginManager: PluginManager) {
+export function WebSessionConnectionsMixin(pluginManager: PluginManager) {
   return types
     .compose(
       'SessionConnectionsManagement',
-      CoreSession.Connections(pluginManager),
+      ConnectionManagementSessionMixin(pluginManager),
       types.model({
         /**
          * #property

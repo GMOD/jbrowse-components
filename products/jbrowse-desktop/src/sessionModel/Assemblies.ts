@@ -2,16 +2,16 @@ import { Instance, types } from 'mobx-state-tree'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { Base } from '@jbrowse/product-core/src/Session'
+import { BaseSessionModel } from '@jbrowse/product-core'
 
 /**
- * #stateModel JBrowseDesktopSessionAssembliesModel
+ * #stateModel DesktopSessionAssembliesModel
  */
-export default function Assemblies(
+export function DesktopSessionAssembliesModel(
   pluginManager: PluginManager,
   assemblyConfigSchemasType = types.frozen(),
 ) {
-  return Base(pluginManager)
+  return BaseSessionModel(pluginManager)
     .props({
       /**
        * #property

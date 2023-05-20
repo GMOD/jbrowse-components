@@ -7,7 +7,15 @@ import { cast, getParent, types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import InfoIcon from '@mui/icons-material/Info'
 import { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
-import { Session as CoreSession } from '@jbrowse/product-core'
+import {
+  BaseSessionModel,
+  ConnectionManagementSessionMixin,
+  DialogQueueSessionMixin,
+  DrawerWidgetSessionMixin,
+  ReferenceManagementSessionMixin,
+  SessionTracksManagerSessionMixin,
+  TracksManagerSessionMixin,
+} from '@jbrowse/product-core'
 
 const AboutDialog = lazy(() => import('./AboutDialog'))
 
@@ -27,13 +35,13 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
   const model = types
     .compose(
       'ReactLinearGenomeViewSession',
-      CoreSession.Base(pluginManager),
-      CoreSession.DrawerWidgets(pluginManager),
-      CoreSession.Connections(pluginManager),
-      CoreSession.DialogQueue(pluginManager),
-      CoreSession.Tracks(pluginManager),
-      CoreSession.ReferenceManagement(pluginManager),
-      CoreSession.SessionTracks(pluginManager),
+      BaseSessionModel(pluginManager),
+      DrawerWidgetSessionMixin(pluginManager),
+      ConnectionManagementSessionMixin(pluginManager),
+      DialogQueueSessionMixin(pluginManager),
+      TracksManagerSessionMixin(pluginManager),
+      ReferenceManagementSessionMixin(pluginManager),
+      SessionTracksManagerSessionMixin(pluginManager),
     )
     .props({
       /**

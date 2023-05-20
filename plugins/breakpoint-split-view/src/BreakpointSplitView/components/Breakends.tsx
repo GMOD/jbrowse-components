@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from 'react'
-import Path from 'svg-path-generator'
 import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
@@ -92,24 +91,26 @@ const Breakends = observer(function ({
           if (!relevantAlt) {
             console.warn('the relevant ALT allele was not found, cannot render')
           } else {
-            const path = Path()
-              .moveTo(
-                x1 -
-                  20 *
-                    (relevantAlt.Join === 'left' ? -1 : 1) *
-                    (reversed1 ? -1 : 1),
-                y1,
-              )
-              .lineTo(x1, y1)
-              .lineTo(x2, y2)
-              .lineTo(
-                x2 -
-                  20 *
-                    (relevantAlt.MateDirection === 'left' ? 1 : -1) *
-                    (reversed2 ? -1 : 1),
-                y2,
-              )
-              .end()
+            const path = [
+              'M', // move to
+              x1 -
+                20 *
+                  (relevantAlt.Join === 'left' ? -1 : 1) *
+                  (reversed1 ? -1 : 1),
+              y1,
+              'L', // line to
+              x1,
+              y1,
+              'L', // line to
+              x2,
+              y2,
+              'L', // line to
+              x2 -
+                20 *
+                  (relevantAlt.MateDirection === 'left' ? 1 : -1) *
+                  (reversed2 ? -1 : 1),
+              y2,
+            ].join(' ')
             ret.push(
               <path
                 d={path}
