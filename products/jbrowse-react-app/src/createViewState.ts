@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { PluginConstructor } from '@jbrowse/core/Plugin'
-// import { autorun } from 'mobx'
 import { onPatch, IJsonPatch } from 'mobx-state-tree'
 import createModel from './createModel'
 
@@ -11,7 +10,7 @@ interface Location {
   assemblyName?: string
 }
 
-interface ViewStateOptions {
+export default function createViewState(opts: {
   assemblies: any[]
   tracks: any[]
   internetAccounts?: any[]
@@ -23,29 +22,19 @@ interface ViewStateOptions {
   disableAddTracks?: boolean
   onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
   makeWorkerInstance?: () => Worker
-}
-
-export default function createViewState(opts: ViewStateOptions) {
+}) {
   const {
     assemblies,
     tracks,
     internetAccounts,
     configuration,
     aggregateTextSearchAdapters,
-    plugins,
+    defaultSession = { name: 'New session' },
+    plugins = [],
     onChange,
     makeWorkerInstance,
   } = opts
-  const { model, pluginManager } = createModel(
-    plugins || [],
-    makeWorkerInstance,
-  )
-  let { defaultSession } = opts
-  if (!defaultSession) {
-    defaultSession = {
-      name: 'this session',
-    }
-  }
+  const { model, pluginManager } = createModel(plugins, makeWorkerInstance)
   const stateTree = model.create(
     {
       jbrowse: {
@@ -59,39 +48,10 @@ export default function createViewState(opts: ViewStateOptions) {
     },
     { pluginManager },
   )
-  // stateTree.jbrowse.internetAccounts.forEach(account => {
-  //   const internetAccountType = pluginManager.getInternetAccountType(
-  //     account.type,
-  //   )
-  //   if (!internetAccountType) {
-  //     throw new Error(`unknown internet account type ${account.type}`)
-  //   }
-  //   stateTree.addInternetAccount({
-  //     type: account.type,
-  //     configuration: account,
-  //   })
-  // })
+
   pluginManager.setRootModel(stateTree)
   pluginManager.configure()
-  // if (location) {
-  //   autorun(async reaction => {
-  //     const { session } = stateTree
-  //     try {
-  //       if (!session.view.initialized) {
-  //         return
-  //       }
 
-  //       if (typeof location === 'string') {
-  //         await session.view.navToLocString(location, assembly.name)
-  //       } else {
-  //         session.view.navTo(location)
-  //       }
-  //     } catch (e) {
-  //       session.notify(`${e}`, 'error')
-  //     }
-  //     reaction.dispose()
-  //   })
-  // }
   if (onChange) {
     onPatch(stateTree, onChange)
   }

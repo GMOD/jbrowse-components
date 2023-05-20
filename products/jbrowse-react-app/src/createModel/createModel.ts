@@ -1,15 +1,15 @@
 import { PluginConstructor } from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { Instance } from 'mobx-state-tree'
+
+// locals
 import corePlugins from '../corePlugins'
 import createRootModel from '../rootModel/rootModel'
 import sessionModelFactory from '../sessionModel'
 
-type WorkerCb = () => Worker
-
 export default function createModel(
   runtimePlugins: PluginConstructor[],
-  makeWorkerInstance: WorkerCb = () => {
+  makeWorkerInstance = () => {
     throw new Error('no makeWorkerInstance supplied')
   },
 ) {
@@ -19,15 +19,17 @@ export default function createModel(
       metadata: { isCore: true },
     })),
     ...runtimePlugins.map(P => new P()),
-  ])
-  pluginManager.createPluggableElements()
-  const rootModel = createRootModel(
+  ]).createPluggableElements()
+
+  return {
+    model: createRootModel(
+      pluginManager,
+      sessionModelFactory,
+      false,
+      makeWorkerInstance,
+    ),
     pluginManager,
-    sessionModelFactory,
-    false,
-    makeWorkerInstance,
-  )
-  return { model: rootModel, pluginManager }
+  }
 }
 
 export type ViewStateModel = ReturnType<typeof createModel>['model']
