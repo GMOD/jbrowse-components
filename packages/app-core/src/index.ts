@@ -1,2 +1,3 @@
 export * from './ui'
-export * from './RootConfig'
+export * from './JBrowseConfig'
+export * from './JBrowseModel'
