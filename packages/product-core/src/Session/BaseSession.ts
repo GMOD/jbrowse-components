@@ -93,9 +93,8 @@ export function BaseSessionModel<
     .actions(self => ({
       /**
        * #action
-       * set the global selection, i.e. the globally-selected object.
-       * can be a feature, a view, just about anything
-       * @param thing -
+       * set the global selection, i.e. the globally-selected object. can be a
+       * feature, a view, just about anything
        */
       setSelection(thing: unknown) {
         self.selection = thing

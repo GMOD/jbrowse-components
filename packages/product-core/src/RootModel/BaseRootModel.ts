@@ -104,7 +104,7 @@ export function BaseRootModelFactory(
       /**
        * #action
        */
-      async renameCurrentSession(newName: string) {
+      renameCurrentSession(newName: string) {
         if (self.session) {
           const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
           snapshot.name = newName

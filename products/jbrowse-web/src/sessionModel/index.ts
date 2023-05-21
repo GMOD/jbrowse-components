@@ -2,8 +2,16 @@
 import { lazy } from 'react'
 import clone from 'clone'
 import { PluginDefinition } from '@jbrowse/core/PluginLoader'
-import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { AbstractSessionModel, JBrowsePlugin } from '@jbrowse/core/util/types'
+import {
+  getConf,
+  AnyConfigurationModel,
+  readConfObject,
+} from '@jbrowse/core/configuration'
+import {
+  AbstractSessionModel,
+  AssemblyManager,
+  JBrowsePlugin,
+} from '@jbrowse/core/util/types'
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
@@ -28,10 +36,7 @@ import {
   SessionTracksManagerSessionMixin,
   ThemeManagerSessionMixin,
 } from '@jbrowse/product-core'
-import {
-  WebSessionAssembliesMixin,
-  WebSessionConnectionsMixin,
-} from '@jbrowse/web-core'
+import { WebSessionConnectionsMixin } from '@jbrowse/web-core'
 
 // icons
 import SettingsIcon from '@mui/icons-material/Settings'
@@ -41,6 +46,11 @@ import InfoIcon from '@mui/icons-material/Info'
 
 // locals
 import { WebRootModel } from '../rootModel/rootModel'
+import {
+  SessionAssembliesMixin,
+  TemporaryAssembliesMixin,
+} from '@jbrowse/app-core'
+import { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 
 const AboutDialog = lazy(() => import('./AboutDialog'))
 
@@ -59,10 +69,10 @@ const AboutDialog = lazy(() => import('./AboutDialog'))
  */
 export default function sessionModelFactory({
   pluginManager,
-  assemblyConfigSchema = types.frozen(),
+  assemblyConfigSchema,
 }: {
   pluginManager: PluginManager
-  assemblyConfigSchema?: IAnyType
+  assemblyConfigSchema: BaseAssemblyConfigSchema
 }) {
   const sessionModel = types
     .compose(
@@ -73,7 +83,8 @@ export default function sessionModelFactory({
       ThemeManagerSessionMixin(pluginManager),
       MultipleViewsSessionMixin(pluginManager),
       SessionTracksManagerSessionMixin(pluginManager),
-      WebSessionAssembliesMixin(pluginManager, assemblyConfigSchema),
+      SessionAssembliesMixin(pluginManager, assemblyConfigSchema),
+      TemporaryAssembliesMixin(pluginManager, assemblyConfigSchema),
       WebSessionConnectionsMixin(pluginManager),
     )
     .props({
@@ -87,6 +98,17 @@ export default function sessionModelFactory({
       sessionPlugins: types.array(types.frozen()),
     })
     .views(self => ({
+      /**
+       * #getter
+       * list of sessionAssemblies and jbrowse config assemblies, does not
+       * include temporaryAssemblies. basically the list to be displayed in a
+       * AssemblySelector dropdown
+       */
+      get assemblyNames() {
+        return [...self.assemblies, ...self.sessionAssemblies].map(f =>
+          readConfObject(f, 'name'),
+        )
+      },
       /**
        * #getter
        */
@@ -130,6 +152,12 @@ export default function sessionModelFactory({
        */
       get textSearchManager(): TextSearchManager {
         return this.root.textSearchManager
+      },
+      /**
+       * #getter
+       */
+      get assemblyManager(): AssemblyManager {
+        return this.root.assemblyManager
       },
       /**
        * #getter

@@ -3,6 +3,7 @@ import { Instance, types } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { BaseSessionModel } from '@jbrowse/product-core'
+import { TemporaryAssembliesMixin } from '@jbrowse/app-core'
 
 /**
  * #stateModel DesktopSessionAssembliesModel
@@ -11,17 +12,12 @@ export function DesktopSessionAssembliesModel(
   pluginManager: PluginManager,
   assemblyConfigSchemasType = types.frozen(),
 ) {
-  return BaseSessionModel(pluginManager)
-    .props({
-      /**
-       * #property
-       */
-      sessionAssemblies: types.array(assemblyConfigSchemasType),
-      /**
-       * #property
-       */
-      temporaryAssemblies: types.array(assemblyConfigSchemasType),
-    })
+  return types
+    .compose(
+      BaseSessionModel(pluginManager),
+      TemporaryAssembliesMixin(pluginManager, assemblyConfigSchemasType),
+    )
+
     .views(self => ({
       /**
        * #getter
@@ -37,53 +33,6 @@ export function DesktopSessionAssembliesModel(
       },
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      addAssembly(assemblyConfig: Instance<typeof assemblyConfigSchemasType>) {
-        self.sessionAssemblies.push(assemblyConfig)
-      },
-
-      /**
-       * #action
-       */
-      removeAssembly(assemblyName: string) {
-        const index = self.sessionAssemblies.findIndex(
-          asm => asm.name === assemblyName,
-        )
-        if (index !== -1) {
-          self.sessionAssemblies.splice(index, 1)
-        }
-      },
-
-      /**
-       * #action
-       */
-      removeTemporaryAssembly(assemblyName: string) {
-        const index = self.temporaryAssemblies.findIndex(
-          asm => asm.name === assemblyName,
-        )
-        if (index !== -1) {
-          self.temporaryAssemblies.splice(index, 1)
-        }
-      },
-
-      /**
-       * #action
-       * used for read vs ref type assemblies
-       */
-      addTemporaryAssembly(assemblyConfig: AnyConfigurationModel) {
-        const asm = self.sessionAssemblies.find(
-          f => f.name === assemblyConfig.name,
-        )
-        if (asm) {
-          console.warn(`Assembly ${assemblyConfig.name} was already existing`)
-          return asm
-        }
-        const length = self.temporaryAssemblies.push(assemblyConfig)
-        return self.temporaryAssemblies[length - 1]
-      },
-
       /**
        * #action
        */

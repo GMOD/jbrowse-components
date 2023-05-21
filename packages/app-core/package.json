@@ -43,6 +43,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.16.3",
+    "@jbrowse/product-core": "^2.5.0",
     "@mui/icons-material": "^5.0.0",
     "@mui/material": "^5.10.17",
     "copy-to-clipboard": "^3.3.1",
