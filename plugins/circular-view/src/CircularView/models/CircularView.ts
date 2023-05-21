@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { lazy } from 'react'
 import PluginManager from '@jbrowse/core/PluginManager'
 import {
   cast,
@@ -12,7 +12,6 @@ import {
 import { Region } from '@jbrowse/core/util/types/mst'
 import { transaction } from 'mobx'
 import { saveAs } from 'file-saver'
-import { renderToSvg } from '../svgcomponents/SVGCircularView'
 import {
   AnyConfigurationModel,
   readConfObject,
@@ -31,9 +30,11 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 
 // locals
-import ExportSvgDlg from '../components/ExportSvgDialog'
 import { calculateStaticSlices, sliceIsVisible, SliceRegion } from './slices'
 import { viewportVisibleSection } from './viewportVisibleRegion'
+
+// lazies
+const ExportSvgDialog = lazy(() => import('../components/ExportSvgDialog'))
 
 export interface ExportSvgOptions {
   rasterizeLayers?: boolean
@@ -576,8 +577,8 @@ function stateModelFactory(pluginManager: PluginManager) {
        * creates an svg export and save using FileSaver
        */
       async exportSvg(opts: ExportSvgOptions = {}) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const html = await renderToSvg(self as any, opts)
+        const { renderToSvg } = await import('../svgcomponents/SVGCircularView')
+        const html = await renderToSvg(self as CircularViewModel, opts)
         const blob = new Blob([html], { type: 'image/svg+xml' })
         saveAs(blob, opts.filename || 'image.svg')
       },
@@ -599,7 +600,7 @@ function stateModelFactory(pluginManager: PluginManager) {
             icon: PhotoCameraIcon,
             onClick: () => {
               getSession(self).queueDialog(handleClose => [
-                ExportSvgDlg,
+                ExportSvgDialog,
                 { model: self, handleClose },
               ])
             },

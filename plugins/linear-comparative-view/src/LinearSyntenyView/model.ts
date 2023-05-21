@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { lazy } from 'react'
 import { types, Instance } from 'mobx-state-tree'
 import { transaction } from 'mobx'
 import { getSession } from '@jbrowse/core/util'
@@ -14,8 +14,9 @@ import { Curves } from './components/Icons'
 
 // locals
 import baseModel from '../LinearComparativeView/model'
-import ExportSvgDlg from './components/ExportSvgDialog'
-import { renderToSvg } from './svgcomponents/SVGLinearSyntenyView'
+
+// lazies
+const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))
 
 export interface ExportSvgOptions {
   rasterizeLayers?: boolean
@@ -80,8 +81,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     }))
     .actions(self => ({
       async exportSvg(opts: ExportSvgOptions) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const html = await renderToSvg(self as any, opts)
+        const { renderToSvg } = await import(
+          './svgcomponents/SVGLinearSyntenyView'
+        )
+        const html = await renderToSvg(self as LinearSyntenyViewModel, opts)
         const blob = new Blob([html], { type: 'image/svg+xml' })
         saveAs(blob, opts.filename || 'image.svg')
       },
@@ -137,7 +140,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               icon: PhotoCameraIcon,
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
-                  ExportSvgDlg,
+                  ExportSvgDialog,
                   { model: self, handleClose },
                 ])
               },
@@ -152,7 +155,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               icon: PhotoCameraIcon,
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
-                  ExportSvgDlg,
+                  ExportSvgDialog,
                   { model: self, handleClose },
                 ])
               },

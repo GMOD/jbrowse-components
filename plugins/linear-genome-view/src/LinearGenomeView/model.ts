@@ -3,7 +3,7 @@ import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { Region } from '@jbrowse/core/util/types'
 import { ElementId, Region as MUIRegion } from '@jbrowse/core/util/types/mst'
-import { MenuItem, ReturnToImportFormDialog } from '@jbrowse/core/ui'
+import { MenuItem } from '@jbrowse/core/ui'
 import {
   assembleLocString,
   clamp,
@@ -51,21 +51,19 @@ import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
-// locals
-import { renderToSvg } from './svgcomponents/SVGLinearGenomeView'
-
-import ExportSvgDlg from './components/ExportSvgDialog'
 import MiniControls from './components/MiniControls'
 import Header from './components/Header'
 import { generateLocations, parseLocStrings } from './util'
 
 // lazies
+const ReturnToImportFormDialog = lazy(
+  () => import('@jbrowse/core/ui/ReturnToImportFormDialog'),
+)
 const SequenceSearchDialog = lazy(
   () => import('./components/SequenceSearchDialog'),
 )
-
+const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))
 const GetSequenceDialog = lazy(() => import('./components/GetSequenceDialog'))
-
 const SearchResultsDialog = lazy(
   () => import('./components/SearchResultsDialog'),
 )
@@ -622,10 +620,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       ) {
         getSession(self).queueDialog(handleClose => [
           SearchResultsDialog,
-
           {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            model: self as any,
+            model: self as LinearGenomeViewModel,
             searchResults,
             searchQuery,
             handleClose,
@@ -926,8 +922,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * creates an svg export and save using FileSaver
        */
       async exportSvg(opts: ExportSvgOptions = {}) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const html = await renderToSvg(self as any, opts)
+        const { renderToSvg } = await import(
+          './svgcomponents/SVGLinearGenomeView'
+        )
+        const html = await renderToSvg(self as LinearGenomeViewModel, opts)
         const blob = new Blob([html], { type: 'image/svg+xml' })
         saveAs(blob, opts.filename || 'image.svg')
       },
@@ -1056,7 +1054,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             icon: PhotoCameraIcon,
             onClick: () => {
               getSession(self).queueDialog(handleClose => [
-                ExportSvgDlg,
+                ExportSvgDialog,
                 { model: self, handleClose },
               ])
             },

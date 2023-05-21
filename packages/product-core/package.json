@@ -1,6 +1,7 @@
 {
   "name": "@jbrowse/product-core",
   "version": "2.5.0",
+  "sideEffects": false,
   "description": "JBrowse 2 code shared between products but not used by plugins",
   "keywords": [
     "jbrowse",
@@ -23,7 +24,7 @@
   "srcMain": "src/index.ts",
   "srcModule": "src/index.ts",
   "main": "src/index.ts",
-  "module": "",
+  "module": "src/index.ts",
   "files": [
     "dist",
     "esm",
