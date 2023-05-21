@@ -8,13 +8,13 @@ import {
   BaseRootModelFactory,
   InternetAccountsRootModelMixin,
 } from '@jbrowse/product-core'
+import { HistoryManagementMixin } from '@jbrowse/app-core'
 
 // locals
 import jobsModelFactory from '../indexJobsModel'
 import JBrowseDesktop from '../jbrowseModel'
-import Menus from './Menus'
-import SessionManagement from './Sessions'
-import { HistoryManagement } from './HistoryManagement'
+import { DesktopMenusMixin } from './Menus'
+import { DesktopSessionManagementMixin } from './Sessions'
 
 type SessionModelFactory = (
   pluginManager: PluginManager,
@@ -45,16 +45,16 @@ export default function rootModelFactory(
   return types
     .compose(
       'JBrowseDesktopRootModel',
-      BaseRootModelFactory(
+      BaseRootModelFactory({
         pluginManager,
-        JBrowseDesktop(pluginManager, assemblyConfigSchema),
-        Session,
+        jbrowseModelType: JBrowseDesktop(pluginManager, assemblyConfigSchema),
+        sessionModelType: Session,
         assemblyConfigSchema,
-      ),
+      }),
       InternetAccountsRootModelMixin(pluginManager),
-      Menus(pluginManager),
-      SessionManagement(pluginManager),
-      HistoryManagement,
+      DesktopMenusMixin(pluginManager),
+      DesktopSessionManagementMixin(pluginManager),
+      HistoryManagementMixin(),
     )
     .props({
       /**

@@ -47,6 +47,7 @@ import {
   InternetAccountsRootModelMixin,
   BaseRootModelFactory,
 } from '@jbrowse/product-core'
+import { HistoryManagementMixin } from '@jbrowse/app-core'
 
 const PreferencesDialog = lazy(() => import('../components/PreferencesDialog'))
 
@@ -84,24 +85,26 @@ export default function RootModel({
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
   return types
     .compose(
-      BaseRootModelFactory(
+      BaseRootModelFactory({
         pluginManager,
-        jbrowseWebFactory(pluginManager, assemblyConfigSchema),
-        sessionModelFactory({ pluginManager, assemblyConfigSchema }),
+        jbrowseModelType: jbrowseWebFactory(
+          pluginManager,
+          assemblyConfigSchema,
+        ),
+        sessionModelType: sessionModelFactory({
+          pluginManager,
+          assemblyConfigSchema,
+        }),
         assemblyConfigSchema,
-      ),
+      }),
       InternetAccountsRootModelMixin(pluginManager),
+      HistoryManagementMixin(),
     )
     .props({
       /**
        * #property
        */
       configPath: types.maybe(types.string),
-      /**
-       * #property
-       * used for undo/redo
-       */
-      history: types.optional(TimeTraveller, { targetPath: '../session' }),
     })
     .volatile(self => ({
       isAssemblyEditing: false,
@@ -168,27 +171,6 @@ export default function RootModel({
     .actions(self => {
       return {
         afterCreate() {
-          document.addEventListener('keydown', e => {
-            const cm = e.ctrlKey || e.metaKey
-            if (
-              self.history.canRedo &&
-              // ctrl+shift+z or cmd+shift+z
-              ((cm && e.shiftKey && e.code === 'KeyZ') ||
-                // ctrl+y
-                (e.ctrlKey && !e.shiftKey && e.code === 'KeyY'))
-            ) {
-              self.history.redo()
-            }
-            if (
-              self.history.canUndo && // ctrl+z or cmd+z
-              cm &&
-              !e.shiftKey &&
-              e.code === 'KeyZ'
-            ) {
-              self.history.undo()
-            }
-          })
-
           for (const [key, val] of Object.entries(localStorage)
             .filter(([key, _val]) => key.startsWith('localSaved-'))
             .filter(([key]) => key.includes(self.configPath || 'undefined'))) {
@@ -220,42 +202,28 @@ export default function RootModel({
 
           addDisposer(
             self,
-            autorun(() => {
-              if (self.session) {
-                // we use a specific initialization routine after session is
-                // created to get it to start tracking itself sort of related
-                // issue here
-                // https://github.com/mobxjs/mobx-state-tree/issues/1089#issuecomment-441207911
-                self.history.initialize()
-              }
-            }),
-          )
-          addDisposer(
-            self,
             autorun(
               () => {
-                if (self.session) {
-                  const noSession = { name: 'empty' }
-                  const snapshot =
-                    getSnapshot(self.session as BaseSession) || noSession
-                  sessionStorage.setItem(
-                    'current',
-                    JSON.stringify({ session: snapshot }),
-                  )
-
-                  localStorage.setItem(
-                    `autosave-${self.configPath}`,
-                    JSON.stringify({
-                      session: {
-                        ...snapshot,
-                        name: `${snapshot.name}-autosaved`,
-                      },
-                    }),
-                  )
-                  if (self.pluginsUpdated) {
-                    // reload app to get a fresh plugin manager
-                    window.location.reload()
-                  }
+                if (!self.session) {
+                  return
+                }
+                const snapshot = getSnapshot(self.session as BaseSession) || {
+                  name: 'empty',
+                }
+                const s = JSON.stringify
+                sessionStorage.setItem('current', s({ session: snapshot }))
+                localStorage.setItem(
+                  `autosave-${self.configPath}`,
+                  s({
+                    session: {
+                      ...snapshot,
+                      name: `${snapshot.name}-autosaved`,
+                    },
+                  }),
+                )
+                if (self.pluginsUpdated) {
+                  // reload app to get a fresh plugin manager
+                  window.location.reload()
                 }
               },
               { delay: 400 },

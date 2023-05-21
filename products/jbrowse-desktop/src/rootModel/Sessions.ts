@@ -17,7 +17,7 @@ export function getSaveSession(model: BaseRootModel) {
  * #stateModel DesktopSessionManagementMixin
  * #category root
  */
-export default function SessionManagement(pluginManager: PluginManager) {
+export function DesktopSessionManagementMixin(pluginManager: PluginManager) {
   return types
     .model({
       /**
@@ -92,4 +92,6 @@ export default function SessionManagement(pluginManager: PluginManager) {
     })
 }
 
-export type SessionManagerType = ReturnType<typeof SessionManagement>
+export type SessionManagerType = ReturnType<
+  typeof DesktopSessionManagementMixin
+>

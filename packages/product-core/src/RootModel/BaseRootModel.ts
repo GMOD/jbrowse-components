@@ -19,12 +19,17 @@ import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
  * #category root
  * factory function for the Base-level root model shared by all products
  */
-export function BaseRootModelFactory(
-  pluginManager: PluginManager,
-  jbrowseModelType: IAnyType,
-  sessionModelType: IAnyType,
-  assemblyConfigSchema: BaseAssemblyConfigSchema,
-) {
+export function BaseRootModelFactory({
+  pluginManager,
+  jbrowseModelType,
+  sessionModelType,
+  assemblyConfigSchema,
+}: {
+  pluginManager: PluginManager
+  jbrowseModelType: IAnyType
+  sessionModelType: IAnyType
+  assemblyConfigSchema: BaseAssemblyConfigSchema
+}) {
   return types
     .model('BaseRootModel', {
       /**

@@ -34,7 +34,7 @@ export interface Menu {
  * #stateModel DesktopMenusMixin
  * #category root
  */
-export default function Menus(pluginManager: PluginManager) {
+export function DesktopMenusMixin(pluginManager: PluginManager) {
   return types
     .model({})
     .volatile(s => {
@@ -389,5 +389,5 @@ export default function Menus(pluginManager: PluginManager) {
     }))
 }
 
-export type DesktopMenusType = ReturnType<typeof Menus>
+export type DesktopMenusType = ReturnType<typeof DesktopMenusMixin>
 export type DesktopMenus = Instance<DesktopMenusType>

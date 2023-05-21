@@ -115,6 +115,12 @@ export default function sessionModelFactory({
       get tracks(): AnyConfigurationModel[] {
         return [...self.sessionTracks, ...self.jbrowse.tracks]
       },
+      /**
+       * #getter
+       */
+      get root() {
+        return getParent<WebRootModel>(self)
+      },
     }))
     .actions(self => ({
       /**
@@ -137,10 +143,8 @@ export default function sessionModelFactory({
        */
       task: undefined,
     }))
+
     .views(self => ({
-      get root() {
-        return getParent<WebRootModel>(self)
-      },
       /**
        * #getter
        */
@@ -151,49 +155,49 @@ export default function sessionModelFactory({
        * #getter
        */
       get textSearchManager(): TextSearchManager {
-        return this.root.textSearchManager
+        return self.root.textSearchManager
       },
       /**
        * #getter
        */
       get assemblyManager(): AssemblyManager {
-        return this.root.assemblyManager
+        return self.root.assemblyManager
       },
       /**
        * #getter
        */
       get savedSessions() {
-        return this.root.savedSessions
+        return self.root.savedSessions
       },
       /**
        * #getter
        */
       get previousAutosaveId() {
-        return this.root.previousAutosaveId
+        return self.root.previousAutosaveId
       },
       /**
        * #getter
        */
       get savedSessionNames() {
-        return this.root.savedSessionNames
+        return self.root.savedSessionNames
       },
       /**
        * #getter
        */
       get history() {
-        return this.root.history
+        return self.root.history
       },
       /**
        * #getter
        */
       get menus() {
-        return this.root.menus
+        return self.root.menus
       },
       /**
        * #getter
        */
       get version() {
-        return this.root.version
+        return self.root.version
       },
 
       /**
@@ -206,6 +210,12 @@ export default function sessionModelFactory({
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      addAssemblyConf(conf: AnyConfigurationModel) {
+        self.root.addAssemblyConf(conf)
+      },
       /**
        * #action
        */
