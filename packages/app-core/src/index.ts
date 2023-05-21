@@ -1,1 +1,2 @@
-export { default as App } from './ui/App'
+export * from './ui'
+export * from './RootConfig'

@@ -15,27 +15,17 @@ import {
 } from 'mobx-state-tree'
 import { toJS } from 'mobx'
 import clone from 'clone'
+import RpcManager from '@jbrowse/core/rpc/RpcManager'
 
 // locals
-import JBrowseConfigF from './jbrowseConfig'
-import RpcManager from '@jbrowse/core/rpc/RpcManager'
+import { removeAttr } from './util'
+import { JBrowseConfigF } from '@jbrowse/app-core'
 
 // poke some things for testing (this stuff will eventually be removed)
 // @ts-expect-error
 window.getSnapshot = getSnapshot
 // @ts-expect-error
 window.resolveIdentifier = resolveIdentifier
-
-function removeAttr(obj: Record<string, unknown>, attr: string) {
-  for (const prop in obj) {
-    if (prop === attr) {
-      delete obj[prop]
-    } else if (typeof obj[prop] === 'object') {
-      removeAttr(obj[prop] as Record<string, unknown>, attr)
-    }
-  }
-  return obj
-}
 
 /**
  * #stateModel JBrowseWebConfigModel
@@ -63,21 +53,6 @@ export default function JBrowseWeb(
       },
     }))
     .actions(self => ({
-      afterCreate() {
-        const seen = [] as string[]
-        self.assemblyNames.forEach(assemblyName => {
-          if (!assemblyName) {
-            throw new Error('Encountered an assembly with no "name" defined')
-          }
-          if (seen.includes(assemblyName)) {
-            throw new Error(
-              `Found two assemblies with the same name: ${assemblyName}`,
-            )
-          } else {
-            seen.push(assemblyName)
-          }
-        })
-      },
       /**
        * #action
        */
@@ -104,9 +79,7 @@ export default function JBrowseWeb(
        * #action
        */
       removeAssemblyConf(assemblyName: string) {
-        const toRemove = self.assemblies.find(
-          assembly => assembly.name === assemblyName,
-        )
+        const toRemove = self.assemblies.find(a => a.name === assemblyName)
         if (toRemove) {
           self.assemblies.remove(toRemove)
         }
@@ -130,10 +103,6 @@ export default function JBrowseWeb(
        * #action
        */
       addDisplayConf(trackId: string, displayConf: AnyConfigurationModel) {
-        const { type } = displayConf
-        if (!type) {
-          throw new Error(`unknown display type ${type}`)
-        }
         const track = self.tracks.find(t => t.trackId === trackId)
         if (!track) {
           throw new Error(`could not find track with id ${trackId}`)
@@ -144,36 +113,22 @@ export default function JBrowseWeb(
        * #action
        */
       addConnectionConf(connectionConf: AnyConfigurationModel) {
-        const { type } = connectionConf
-        if (!type) {
-          throw new Error(`unknown connection type ${type}`)
-        }
         const length = self.connections.push(connectionConf)
         return self.connections[length - 1]
       },
       /**
        * #action
        */
-      deleteConnectionConf(configuration: AnyConfigurationModel) {
-        const idx = self.connections.findIndex(
-          conn => conn.id === configuration.id,
-        )
-        if (idx === -1) {
-          return undefined
-        }
-        return self.connections.splice(idx, 1)
+      deleteConnectionConf(conf: AnyConfigurationModel) {
+        const elt = self.connections.find(conn => conn.id === conf.id)
+        self.connections.remove(elt)
       },
       /**
        * #action
        */
       deleteTrackConf(trackConf: AnyConfigurationModel) {
-        const { trackId } = trackConf
-        const idx = self.tracks.findIndex(t => t.trackId === trackId)
-        if (idx === -1) {
-          return undefined
-        }
-
-        return self.tracks.splice(idx, 1)
+        const elt = self.tracks.find(t => t.trackId === trackConf.trackId)
+        self.tracks.remove(elt)
       },
       /**
        * #action
@@ -219,10 +174,6 @@ export default function JBrowseWeb(
        * #action
        */
       addInternetAccountConf(config: AnyConfigurationModel) {
-        const { type } = config
-        if (!type) {
-          throw new Error(`unknown internetAccount type ${type}`)
-        }
         const length = self.internetAccounts.push(config)
         return self.internetAccounts[length - 1]
       },
@@ -230,11 +181,8 @@ export default function JBrowseWeb(
        * #action
        */
       deleteInternetAccountConf(config: AnyConfigurationModel) {
-        const idx = self.internetAccounts.findIndex(a => a.id === config.id)
-        if (idx === -1) {
-          return undefined
-        }
-        return self.internetAccounts.splice(idx, 1)
+        const elt = self.internetAccounts.find(a => a.id === config.id)
+        self.internetAccounts.remove(elt)
       },
     }))
 

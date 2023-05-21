@@ -185,3 +185,14 @@ export async function checkPlugins(pluginsToCheck: PluginDefinition[]) {
     return false
   })
 }
+
+export function removeAttr(obj: Record<string, unknown>, attr: string) {
+  for (const prop in obj) {
+    if (prop === attr) {
+      delete obj[prop]
+    } else if (typeof obj[prop] === 'object') {
+      removeAttr(obj[prop] as Record<string, unknown>, attr)
+    }
+  }
+  return obj
+}

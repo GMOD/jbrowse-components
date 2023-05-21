@@ -120,4 +120,4 @@ const App = observer(function (props: Props) {
   )
 })
 
-export default App
+export { App }

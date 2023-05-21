@@ -131,8 +131,11 @@ export default function JBrowseConfigF(
      * #slot
      */
     assemblies: types.array(assemblyConfigSchemasType),
-    // track configuration is an array of track config schemas. multiple
-    // instances of a track can exist that use the same configuration
+    /**
+     * #slot
+     * track configuration is an array of track config schemas. multiple
+     * instances of a track can exist that use the same configuration
+     */
     tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
     /**
      * #slot

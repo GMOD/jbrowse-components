@@ -9,8 +9,8 @@ import {
   getSnapshot,
   resolveIdentifier,
 } from 'mobx-state-tree'
-import JBrowseConfigF from './jbrowseConfig'
 import { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
+import { JBrowseConfigF } from '@jbrowse/app-core'
 
 // poke some things for testing (this stuff will eventually be removed)
 // @ts-expect-error
@@ -21,7 +21,7 @@ window.resolveIdentifier = resolveIdentifier
 
 /**
  * #stateModel JBrowseDesktopConfigModel
- * the rootModel.jbrowse state model for JBrowse Desktop
+ * the rootModel.jbrowse state model for JBrowseDesktop
  */
 export default function JBrowseDesktop(
   pluginManager: PluginManager,

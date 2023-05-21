@@ -9,17 +9,17 @@ import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { types } from 'mobx-state-tree'
 
 /**
- * #config JBrowseDesktopConfiguration
+ * #config JBrowseRootConfig
  * #category root
  * configuration in a config.json/file.jbrowse
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
-export default function JBrowseConfigF(
+export function JBrowseConfigF(
   pluginManager: PluginManager,
   assemblyConfigSchemasType: AnyConfigurationSchemaType,
 ) {
-  return types.model('JBrowseDesktop', {
+  return types.model('JBrowseConfig', {
     configuration: ConfigurationSchema('Root', {
       /**
        * #slot configuration.rpc
