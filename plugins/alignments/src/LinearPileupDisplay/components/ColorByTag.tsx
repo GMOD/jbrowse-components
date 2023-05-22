@@ -42,10 +42,7 @@ function ColorByTagDlg(props: {
             variant="contained"
             color="primary"
             onClick={() => {
-              model.setColorScheme({
-                type: 'tag',
-                tag,
-              })
+              model.setColorScheme({ type: 'tag', tag })
               handleClose()
             }}
             disabled={!validTag}
