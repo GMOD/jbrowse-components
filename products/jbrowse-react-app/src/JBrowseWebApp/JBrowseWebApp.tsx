@@ -1,12 +1,14 @@
-import React from 'react'
+import React, { Suspense, lazy } from 'react'
 import { observer } from 'mobx-react'
 import { ThemeProvider, ScopedCssBaseline } from '@mui/material'
+import { LoadingEllipses, createJBrowseTheme } from '@jbrowse/core/ui'
+import { getConf } from '@jbrowse/core/configuration'
 import { makeStyles } from 'tss-react/mui'
 
 // locals
-import { App } from '@jbrowse/app-core'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { getConf } from '@jbrowse/core/configuration'
+import { ViewModel } from '../createModel'
+
+const App = lazy(() => import('./App'))
 
 const useStyles = makeStyles()({
   // avoid parent styles getting into this div
@@ -16,10 +18,8 @@ const useStyles = makeStyles()({
   },
 })
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default observer(function ({ viewState }: { viewState: any }) {
+export default observer(function ({ viewState }: { viewState: ViewModel }) {
   const { classes } = useStyles()
-
   const session = viewState?.session
   const theme = createJBrowseTheme(getConf(viewState.jbrowse, 'theme'))
 
@@ -27,7 +27,9 @@ export default observer(function ({ viewState }: { viewState: any }) {
     <ThemeProvider theme={theme}>
       <div className={classes.avoidParentStyle}>
         <ScopedCssBaseline>
-          <App session={session} />
+          <Suspense fallback={<LoadingEllipses />}>
+            <App session={session} />
+          </Suspense>
         </ScopedCssBaseline>
       </div>
     </ThemeProvider>

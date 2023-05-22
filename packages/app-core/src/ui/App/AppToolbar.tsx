@@ -54,16 +54,6 @@ const AppToolbar = observer(function ({
   const { classes } = useStyles()
   const { savedSessionNames, name, menus } = session
 
-  function handleNameChange(newName: string) {
-    if (savedSessionNames?.includes(newName)) {
-      session.notify(
-        `Cannot rename session to "${newName}", a saved session with that name already exists`,
-        'warning',
-      )
-    } else {
-      session.renameCurrentSession(newName)
-    }
-  }
   return (
     <Toolbar>
       {menus.map(menu => (
@@ -78,7 +68,16 @@ const AppToolbar = observer(function ({
       <Tooltip title="Rename Session" arrow>
         <EditableTypography
           value={name}
-          setValue={handleNameChange}
+          setValue={newName => {
+            if (savedSessionNames?.includes(newName)) {
+              session.notify(
+                `Cannot rename session to "${newName}", a saved session with that name already exists`,
+                'warning',
+              )
+            } else {
+              session.renameCurrentSession(newName)
+            }
+          }}
           variant="body1"
           classes={{
             inputBase: classes.inputBase,

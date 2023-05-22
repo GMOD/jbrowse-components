@@ -1,6 +1,8 @@
 import { types, Instance, IAnyType } from 'mobx-state-tree'
 import makeWorkerInstance from '../makeWorkerInstance'
-import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
+import assemblyConfigSchemaF, {
+  BaseAssemblyConfigSchema,
+} from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 
@@ -8,18 +10,18 @@ import {
   BaseRootModelFactory,
   InternetAccountsRootModelMixin,
 } from '@jbrowse/product-core'
-import { HistoryManagementMixin } from '@jbrowse/app-core'
+import { HistoryManagementMixin, RootAppMenuMixin } from '@jbrowse/app-core'
 
 // locals
 import jobsModelFactory from '../indexJobsModel'
 import JBrowseDesktop from '../jbrowseModel'
 import { DesktopMenusMixin } from './Menus'
-import { DesktopSessionManagementMixin } from './Sessions'
+import { DesktopSessionManagementMixin, getSaveSession } from './Sessions'
 import packageJSON from '../../package.json'
 
 type SessionModelFactory = (args: {
   pluginManager: PluginManager
-  assemblyConfigSchema: ReturnType<typeof assemblyConfigSchemaFactory>
+  assemblyConfigSchema: BaseAssemblyConfigSchema
 }) => IAnyType
 
 /**
@@ -43,7 +45,7 @@ export default function rootModelFactory({
   pluginManager: PluginManager
   sessionModelFactory: SessionModelFactory
 }) {
-  const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
+  const assemblyConfigSchema = assemblyConfigSchemaF(pluginManager)
   const sessionModelType = sessionModelFactory({
     pluginManager,
     assemblyConfigSchema,
@@ -63,6 +65,7 @@ export default function rootModelFactory({
       DesktopMenusMixin(pluginManager),
       DesktopSessionManagementMixin(pluginManager),
       HistoryManagementMixin(),
+      RootAppMenuMixin(),
     )
     .props({
       /**
@@ -91,6 +94,16 @@ export default function rootModelFactory({
        */
       setOpenNewSessionCallback(cb: (arg: string) => Promise<void>) {
         self.openNewSessionCallback = cb
+      },
+      /**
+       * #action
+       */
+      async setPluginsUpdated() {
+        const root = self as DesktopRootModel
+        if (root.session) {
+          await root.saveSession(getSaveSession(root))
+        }
+        await root.openNewSessionCallback(root.sessionPath)
       },
     }))
 }
