@@ -39,7 +39,7 @@ function About({ model }: { model: IAnyStateTreeNode }) {
       <Typography variant="h6" align="center" className={classes.subtitle}>
         {version}
       </Typography>
-      <Typography align="center" variant="body2">
+      <Typography align="center">
         JBrowse is a{' '}
         <Link href="http://gmod.org/" target="_blank" rel="noopener noreferrer">
           GMOD
@@ -51,7 +51,7 @@ function About({ model }: { model: IAnyStateTreeNode }) {
         © 2019-2022 The Evolutionary Software Foundation
       </Typography>
       <div className={classes.pluginList}>
-        <Typography variant="h6">External plugins loaded</Typography>
+        <Typography>External plugins loaded</Typography>
         <ul>
           {plugins
             .filter(plugin => !corePlugins.has(plugin.name))
@@ -71,7 +71,7 @@ function About({ model }: { model: IAnyStateTreeNode }) {
               )
             })}
         </ul>
-        <Typography variant="h6">Core plugins loaded</Typography>
+        <Typography>Core plugins loaded</Typography>
         <ul>
           {plugins
             .filter(plugin => corePlugins.has(plugin.name))

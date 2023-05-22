@@ -1,5 +1,6 @@
 import { lazy } from 'react'
 import { getParent, getSnapshot, types } from 'mobx-state-tree'
+import clone from 'clone'
 
 import SettingsIcon from '@mui/icons-material/Settings'
 import CopyIcon from '@mui/icons-material/FileCopy'
@@ -32,7 +33,7 @@ export function DesktopSessionTrackMenuMixin(pluginManager: PluginManager) {
       const session = self as SessionWithDialogs &
         SessionWithTracks &
         SessionWithDrawerWidgets
-      const trackSnapshot = JSON.parse(JSON.stringify(getSnapshot(trackConfig)))
+      const trackSnapshot = clone(getSnapshot(trackConfig))
       return [
         {
           label: 'About track',
@@ -70,35 +71,43 @@ export function DesktopSessionTrackMenuMixin(pluginManager: PluginManager) {
           },
           icon: CopyIcon,
         },
-        {
-          label: trackSnapshot.textSearching ? 'Re-index track' : 'Index track',
-          disabled: !supportedIndexingAdapters(trackSnapshot.adapter.type),
-          onClick: () => {
-            const rootModel = getParent<DesktopRootModel>(self)
-            const { jobsManager } = rootModel
-            const { trackId, assemblyNames, textSearching, name } =
-              trackSnapshot
-            const indexName = `${name}-index`
-            // TODO: open jobs list widget
-            jobsManager?.queueJob({
-              indexingParams: {
-                attributes: textSearching?.indexingAttributes || ['Name', 'ID'],
-                exclude: textSearching?.indexingFeatureTypesToExclude || [
-                  'CDS',
-                  'exon',
-                ],
-                assemblies: assemblyNames,
-                tracks: [trackId],
-                indexType: 'perTrack',
-                timestamp: new Date().toISOString(),
-                name: indexName,
+        ...(supportedIndexingAdapters(trackSnapshot.adapter.type)
+          ? [
+              {
+                label: trackSnapshot.textSearching
+                  ? 'Re-index track'
+                  : 'Index track',
+                onClick: () => {
+                  const rootModel = getParent<DesktopRootModel>(self)
+                  const { jobsManager } = rootModel
+                  const { trackId, assemblyNames, textSearching, name } =
+                    trackSnapshot
+                  const indexName = `${name}-index`
+                  // TODO: open jobs list widget
+                  jobsManager?.queueJob({
+                    indexingParams: {
+                      attributes: textSearching?.indexingAttributes || [
+                        'Name',
+                        'ID',
+                      ],
+                      exclude: textSearching?.indexingFeatureTypesToExclude || [
+                        'CDS',
+                        'exon',
+                      ],
+                      assemblies: assemblyNames,
+                      tracks: [trackId],
+                      indexType: 'perTrack',
+                      timestamp: new Date().toISOString(),
+                      name: indexName,
+                    },
+                    name: indexName,
+                    cancelCallback: () => jobsManager.abortJob(),
+                  })
+                },
+                icon: Indexing,
               },
-              name: indexName,
-              cancelCallback: () => jobsManager.abortJob(),
-            })
-          },
-          icon: Indexing,
-        },
+            ]
+          : []),
       ]
     },
   }))

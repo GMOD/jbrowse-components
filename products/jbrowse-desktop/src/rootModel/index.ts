@@ -8,18 +8,19 @@ import {
   BaseRootModelFactory,
   InternetAccountsRootModelMixin,
 } from '@jbrowse/product-core'
+import { HistoryManagementMixin } from '@jbrowse/app-core'
 
 // locals
 import jobsModelFactory from '../indexJobsModel'
 import JBrowseDesktop from '../jbrowseModel'
-import Menus from './Menus'
-import SessionManagement from './Sessions'
-import { HistoryManagement } from './HistoryManagement'
+import { DesktopMenusMixin } from './Menus'
+import { DesktopSessionManagementMixin } from './Sessions'
+import packageJSON from '../../package.json'
 
-type SessionModelFactory = (
-  pluginManager: PluginManager,
-  assemblyConfigSchema: ReturnType<typeof assemblyConfigSchemaFactory>,
-) => IAnyType
+type SessionModelFactory = (args: {
+  pluginManager: PluginManager
+  assemblyConfigSchema: ReturnType<typeof assemblyConfigSchemaFactory>
+}) => IAnyType
 
 /**
  * #stateModel JBrowseDesktopRootModel
@@ -35,26 +36,33 @@ type SessionModelFactory = (
  * and we generally prefer using the session model (via e.g. getSession) over
  * the root model (via e.g. getRoot) in plugin code
  */
-export default function rootModelFactory(
-  pluginManager: PluginManager,
-  sessionModelFactory: SessionModelFactory,
-) {
+export default function rootModelFactory({
+  pluginManager,
+  sessionModelFactory,
+}: {
+  pluginManager: PluginManager
+  sessionModelFactory: SessionModelFactory
+}) {
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
-  const Session = sessionModelFactory(pluginManager, assemblyConfigSchema)
+  const sessionModelType = sessionModelFactory({
+    pluginManager,
+    assemblyConfigSchema,
+  })
+  const jbrowseModelType = JBrowseDesktop(pluginManager, assemblyConfigSchema)
   const JobsManager = jobsModelFactory(pluginManager)
   return types
     .compose(
       'JBrowseDesktopRootModel',
-      BaseRootModelFactory(
+      BaseRootModelFactory({
         pluginManager,
-        JBrowseDesktop(pluginManager, assemblyConfigSchema),
-        Session,
+        jbrowseModelType,
+        sessionModelType,
         assemblyConfigSchema,
-      ),
+      }),
       InternetAccountsRootModelMixin(pluginManager),
-      Menus(pluginManager),
-      SessionManagement(pluginManager),
-      HistoryManagement,
+      DesktopMenusMixin(pluginManager),
+      DesktopSessionManagementMixin(pluginManager),
+      HistoryManagementMixin(),
     )
     .props({
       /**
@@ -63,6 +71,7 @@ export default function rootModelFactory(
       jobsManager: types.maybe(JobsManager),
     })
     .volatile(self => ({
+      version: packageJSON.version,
       rpcManager: new RpcManager(
         pluginManager,
         self.jbrowse.configuration.rpc,

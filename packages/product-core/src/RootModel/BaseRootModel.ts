@@ -19,12 +19,17 @@ import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
  * #category root
  * factory function for the Base-level root model shared by all products
  */
-export function BaseRootModelFactory(
-  pluginManager: PluginManager,
-  jbrowseModelType: IAnyType,
-  sessionModelType: IAnyType,
-  assemblyConfigSchema: BaseAssemblyConfigSchema,
-) {
+export function BaseRootModelFactory({
+  pluginManager,
+  jbrowseModelType,
+  sessionModelType,
+  assemblyConfigSchema,
+}: {
+  pluginManager: PluginManager
+  jbrowseModelType: IAnyType
+  sessionModelType: IAnyType
+  assemblyConfigSchema: BaseAssemblyConfigSchema
+}) {
   return types
     .model('BaseRootModel', {
       /**
@@ -33,10 +38,6 @@ export function BaseRootModelFactory(
        * tree
        */
       jbrowse: jbrowseModelType,
-      /**
-       * #property
-       */
-      version: 'development',
 
       /**
        * #property
@@ -66,10 +67,6 @@ export function BaseRootModelFactory(
         },
       ),
 
-      /**
-       * #volatile
-       * Boolean indicating whether the session is in admin mode or not
-       */
       adminMode: true,
       isAssemblyEditing: false,
       error: undefined as unknown,
@@ -104,7 +101,7 @@ export function BaseRootModelFactory(
       /**
        * #action
        */
-      async renameCurrentSession(newName: string) {
+      renameCurrentSession(newName: string) {
         if (self.session) {
           const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
           snapshot.name = newName

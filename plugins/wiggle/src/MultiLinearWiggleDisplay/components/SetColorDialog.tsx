@@ -13,7 +13,6 @@ import clone from 'clone'
 // locals
 import DraggableDialog from './DraggableDialog'
 import ColorPicker, { ColorPopover } from '@jbrowse/core/ui/ColorPicker'
-import { UriLink } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import { moveUp, moveDown } from './util'
 import { Source } from '../../util'
 
@@ -22,6 +21,7 @@ import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp
 import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
+import UriLink from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/UriLink'
 
 const useStyles = makeStyles()({
   content: {

@@ -17,7 +17,6 @@ import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyC
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
-import TimeTraveller from '@jbrowse/core/util/TimeTraveller'
 import { AbstractSessionModel, SessionWithWidgets } from '@jbrowse/core/util'
 import { MenuItem } from '@jbrowse/core/ui'
 
@@ -40,6 +39,7 @@ import { Cable } from '@jbrowse/core/ui/Icons'
 import makeWorkerInstance from '../makeWorkerInstance'
 import jbrowseWebFactory from '../jbrowseModel'
 import { filterSessionInPlace } from '../util'
+import packageJSON from '../../package.json'
 import {
   BaseSession,
   BaseSessionType,
@@ -47,6 +47,7 @@ import {
   InternetAccountsRootModelMixin,
   BaseRootModelFactory,
 } from '@jbrowse/product-core'
+import { HistoryManagementMixin } from '@jbrowse/app-core'
 
 const PreferencesDialog = lazy(() => import('../components/PreferencesDialog'))
 
@@ -82,28 +83,33 @@ export default function RootModel({
   adminMode?: boolean
 }) {
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
+  const jbrowseModelType = jbrowseWebFactory({
+    pluginManager,
+    assemblyConfigSchema,
+  })
+  const sessionModelType = sessionModelFactory({
+    pluginManager,
+    assemblyConfigSchema,
+  })
   return types
     .compose(
-      BaseRootModelFactory(
+      BaseRootModelFactory({
         pluginManager,
-        jbrowseWebFactory(pluginManager, assemblyConfigSchema),
-        sessionModelFactory({ pluginManager, assemblyConfigSchema }),
+        jbrowseModelType,
+        sessionModelType,
         assemblyConfigSchema,
-      ),
+      }),
       InternetAccountsRootModelMixin(pluginManager),
+      HistoryManagementMixin(),
     )
     .props({
       /**
        * #property
        */
       configPath: types.maybe(types.string),
-      /**
-       * #property
-       * used for undo/redo
-       */
-      history: types.optional(TimeTraveller, { targetPath: '../session' }),
     })
     .volatile(self => ({
+      version: packageJSON.version,
       isAssemblyEditing: false,
       isDefaultSessionEditing: false,
       pluginsUpdated: false,
@@ -165,237 +171,202 @@ export default function RootModel({
       },
     }))
 
-    .actions(self => {
-      return {
-        afterCreate() {
-          document.addEventListener('keydown', e => {
-            const cm = e.ctrlKey || e.metaKey
-            if (
-              self.history.canRedo &&
-              // ctrl+shift+z or cmd+shift+z
-              ((cm && e.shiftKey && e.code === 'KeyZ') ||
-                // ctrl+y
-                (e.ctrlKey && !e.shiftKey && e.code === 'KeyY'))
-            ) {
-              self.history.redo()
-            }
-            if (
-              self.history.canUndo && // ctrl+z or cmd+z
-              cm &&
-              !e.shiftKey &&
-              e.code === 'KeyZ'
-            ) {
-              self.history.undo()
-            }
-          })
-
-          for (const [key, val] of Object.entries(localStorage)
-            .filter(([key, _val]) => key.startsWith('localSaved-'))
-            .filter(([key]) => key.includes(self.configPath || 'undefined'))) {
-            try {
-              const { session } = JSON.parse(val)
-              self.savedSessionsVolatile.set(key, session)
-            } catch (e) {
-              console.error('bad session encountered', key, val)
-            }
+    .actions(self => ({
+      afterCreate() {
+        for (const [key, val] of Object.entries(localStorage)
+          .filter(([key, _val]) => key.startsWith('localSaved-'))
+          .filter(([key]) => key.includes(self.configPath || 'undefined'))) {
+          try {
+            const { session } = JSON.parse(val)
+            self.savedSessionsVolatile.set(key, session)
+          } catch (e) {
+            console.error('bad session encountered', key, val)
           }
-          addDisposer(
-            self,
-            autorun(() => {
-              for (const [, val] of self.savedSessionsVolatile.entries()) {
-                try {
-                  const key = self.localStorageId(val.name)
-                  localStorage.setItem(key, JSON.stringify({ session: val }))
-                } catch (e) {
-                  // @ts-expect-error
-                  if (e.code === '22' || e.code === '1024') {
-                    alert(
-                      'Local storage is full! Please use the "Open sessions" panel to remove old sessions',
-                    )
-                  }
+        }
+        addDisposer(
+          self,
+          autorun(() => {
+            for (const [, val] of self.savedSessionsVolatile.entries()) {
+              try {
+                const key = self.localStorageId(val.name)
+                localStorage.setItem(key, JSON.stringify({ session: val }))
+              } catch (e) {
+                // @ts-expect-error
+                if (e.code === '22' || e.code === '1024') {
+                  alert(
+                    'Local storage is full! Please use the "Open sessions" panel to remove old sessions',
+                  )
                 }
               }
-            }),
-          )
+            }
+          }),
+        )
 
-          addDisposer(
-            self,
-            autorun(() => {
-              if (self.session) {
-                // we use a specific initialization routine after session is
-                // created to get it to start tracking itself sort of related
-                // issue here
-                // https://github.com/mobxjs/mobx-state-tree/issues/1089#issuecomment-441207911
-                self.history.initialize()
+        addDisposer(
+          self,
+          autorun(
+            () => {
+              if (!self.session) {
+                return
               }
-            }),
-          )
-          addDisposer(
-            self,
-            autorun(
-              () => {
-                if (self.session) {
-                  const noSession = { name: 'empty' }
-                  const snapshot =
-                    getSnapshot(self.session as BaseSession) || noSession
-                  sessionStorage.setItem(
-                    'current',
-                    JSON.stringify({ session: snapshot }),
-                  )
+              const snapshot = getSnapshot(self.session as BaseSession) || {
+                name: 'empty',
+              }
+              const s = JSON.stringify
+              sessionStorage.setItem('current', s({ session: snapshot }))
+              localStorage.setItem(
+                `autosave-${self.configPath}`,
+                s({
+                  session: {
+                    ...snapshot,
+                    name: `${snapshot.name}-autosaved`,
+                  },
+                }),
+              )
+            },
+            { delay: 400 },
+          ),
+        )
 
-                  localStorage.setItem(
-                    `autosave-${self.configPath}`,
-                    JSON.stringify({
-                      session: {
-                        ...snapshot,
-                        name: `${snapshot.name}-autosaved`,
-                      },
-                    }),
-                  )
-                  if (self.pluginsUpdated) {
-                    // reload app to get a fresh plugin manager
-                    window.location.reload()
-                  }
-                }
-              },
-              { delay: 400 },
-            ),
-          )
-        },
-        /**
-         * #action
-         */
-        setSession(sessionSnapshot?: SnapshotIn<BaseSessionType>) {
-          const oldSession = self.session
-          self.session = cast(sessionSnapshot)
-          if (self.session) {
-            // validate all references in the session snapshot
-            try {
-              filterSessionInPlace(self.session, getType(self.session))
-            } catch (error) {
-              // throws error if session filtering failed
-              self.session = oldSession
-              throw error
+        addDisposer(
+          self,
+          autorun(() => {
+            if (self.pluginsUpdated) {
+              // reload app to get a fresh plugin manager
+              window.location.reload()
             }
+          }),
+        )
+      },
+      /**
+       * #action
+       */
+      setSession(sessionSnapshot?: SnapshotIn<BaseSessionType>) {
+        const oldSession = self.session
+        self.session = cast(sessionSnapshot)
+        if (self.session) {
+          // validate all references in the session snapshot
+          try {
+            filterSessionInPlace(self.session, getType(self.session))
+          } catch (error) {
+            // throws error if session filtering failed
+            self.session = oldSession
+            throw error
           }
-        },
-        /**
-         * #action
-         */
-        setAssemblyEditing(flag: boolean) {
-          self.isAssemblyEditing = flag
-        },
-        /**
-         * #action
-         */
-        setDefaultSessionEditing(flag: boolean) {
-          self.isDefaultSessionEditing = flag
-        },
-        /**
-         * #action
-         */
-        setPluginsUpdated(flag: boolean) {
-          self.pluginsUpdated = flag
-        },
-        /**
-         * #action
-         */
-        setDefaultSession() {
-          const { defaultSession } = self.jbrowse
-          const newSession = {
-            ...defaultSession,
-            name: `${defaultSession.name} ${new Date().toLocaleString()}`,
-          }
+        }
+      },
+      /**
+       * #action
+       */
+      setAssemblyEditing(flag: boolean) {
+        self.isAssemblyEditing = flag
+      },
+      /**
+       * #action
+       */
+      setDefaultSessionEditing(flag: boolean) {
+        self.isDefaultSessionEditing = flag
+      },
+      /**
+       * #action
+       */
+      setPluginsUpdated(flag: boolean) {
+        self.pluginsUpdated = flag
+      },
+      /**
+       * #action
+       */
+      setDefaultSession() {
+        const { defaultSession } = self.jbrowse
+        const newSession = {
+          ...defaultSession,
+          name: `${defaultSession.name} ${new Date().toLocaleString()}`,
+        }
 
-          this.setSession(newSession)
-        },
-        /**
-         * #action
-         */
-        renameCurrentSession(sessionName: string) {
-          if (self.session) {
-            const snapshot = JSON.parse(
-              JSON.stringify(getSnapshot(self.session)),
-            )
-            snapshot.name = sessionName
-            this.setSession(snapshot)
+        this.setSession(newSession)
+      },
+      /**
+       * #action
+       */
+      renameCurrentSession(sessionName: string) {
+        if (self.session) {
+          const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
+          snapshot.name = sessionName
+          this.setSession(snapshot)
+        }
+      },
+      /**
+       * #action
+       */
+      addSavedSession(session: { name: string }) {
+        const key = self.localStorageId(session.name)
+        self.savedSessionsVolatile.set(key, session)
+      },
+      /**
+       * #action
+       */
+      removeSavedSession(session: { name: string }) {
+        const key = self.localStorageId(session.name)
+        localStorage.removeItem(key)
+        self.savedSessionsVolatile.delete(key)
+      },
+      /**
+       * #action
+       */
+      duplicateCurrentSession() {
+        if (self.session) {
+          const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
+          let newSnapshotName = `${self.session.name} (copy)`
+          if (self.savedSessionNames.includes(newSnapshotName)) {
+            let newSnapshotCopyNumber = 2
+            do {
+              newSnapshotName = `${self.session.name} (copy ${newSnapshotCopyNumber})`
+              newSnapshotCopyNumber += 1
+            } while (self.savedSessionNames.includes(newSnapshotName))
           }
-        },
-        /**
-         * #action
-         */
-        addSavedSession(session: { name: string }) {
-          const key = self.localStorageId(session.name)
-          self.savedSessionsVolatile.set(key, session)
-        },
-        /**
-         * #action
-         */
-        removeSavedSession(session: { name: string }) {
-          const key = self.localStorageId(session.name)
-          localStorage.removeItem(key)
-          self.savedSessionsVolatile.delete(key)
-        },
-        /**
-         * #action
-         */
-        duplicateCurrentSession() {
-          if (self.session) {
-            const snapshot = JSON.parse(
-              JSON.stringify(getSnapshot(self.session)),
-            )
-            let newSnapshotName = `${self.session.name} (copy)`
-            if (self.savedSessionNames.includes(newSnapshotName)) {
-              let newSnapshotCopyNumber = 2
-              do {
-                newSnapshotName = `${self.session.name} (copy ${newSnapshotCopyNumber})`
-                newSnapshotCopyNumber += 1
-              } while (self.savedSessionNames.includes(newSnapshotName))
-            }
-            snapshot.name = newSnapshotName
-            this.setSession(snapshot)
-          }
-        },
-        /**
-         * #action
-         */
-        activateSession(name: string) {
-          const localId = self.localStorageId(name)
-          const newSessionSnapshot = localStorage.getItem(localId)
-          if (!newSessionSnapshot) {
-            throw new Error(
-              `Can't activate session ${name}, it is not in the savedSessions`,
-            )
-          }
+          snapshot.name = newSnapshotName
+          this.setSession(snapshot)
+        }
+      },
+      /**
+       * #action
+       */
+      activateSession(name: string) {
+        const localId = self.localStorageId(name)
+        const newSessionSnapshot = localStorage.getItem(localId)
+        if (!newSessionSnapshot) {
+          throw new Error(
+            `Can't activate session ${name}, it is not in the savedSessions`,
+          )
+        }
 
-          this.setSession(JSON.parse(newSessionSnapshot).session)
-        },
-        /**
-         * #action
-         */
-        saveSessionToLocalStorage() {
-          if (self.session) {
-            const key = self.localStorageId(self.session.name)
-            self.savedSessionsVolatile.set(key, getSnapshot(self.session))
-          }
-        },
-        loadAutosaveSession() {
-          const previousAutosave = localStorage.getItem(self.previousAutosaveId)
-          const autosavedSession = previousAutosave
-            ? JSON.parse(previousAutosave).session
-            : {}
-          const { name } = autosavedSession
-          autosavedSession.name = `${name.replace('-autosaved', '')}-restored`
-          this.setSession(autosavedSession)
-        },
-        /**
-         * #action
-         */
-        setError(error?: unknown) {
-          self.error = error
-        },
-      }
-    })
+        this.setSession(JSON.parse(newSessionSnapshot).session)
+      },
+      /**
+       * #action
+       */
+      saveSessionToLocalStorage() {
+        if (self.session) {
+          const key = self.localStorageId(self.session.name)
+          self.savedSessionsVolatile.set(key, getSnapshot(self.session))
+        }
+      },
+      loadAutosaveSession() {
+        const previousAutosave = localStorage.getItem(self.previousAutosaveId)
+        const autosavedSession = previousAutosave
+          ? JSON.parse(previousAutosave).session
+          : {}
+        const { name } = autosavedSession
+        autosavedSession.name = `${name.replace('-autosaved', '')}-restored`
+        this.setSession(autosavedSession)
+      },
+      /**
+       * #action
+       */
+      setError(error?: unknown) {
+        self.error = error
+      },
+    }))
     .volatile(self => ({
       menus: [
         {

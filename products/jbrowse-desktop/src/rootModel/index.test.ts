@@ -4,22 +4,19 @@ import 'electron'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSnapshot } from 'mobx-state-tree'
 import corePlugins from '../corePlugins'
-import rootModelFactory, { DesktopRootModelType } from '.'
+import rootModelFactory from '.'
 import sessionModelFactory from '../sessionModel'
+
 jest.mock('../makeWorkerInstance', () => () => {})
-
+function getRootModel() {
+  const pluginManager = new PluginManager(corePlugins.map(P => new P()))
+    .createPluggableElements()
+    .configure()
+  return rootModelFactory({ pluginManager, sessionModelFactory })
+}
 describe('Root MST model', () => {
-  let rootModel: DesktopRootModelType | undefined
-
-  beforeAll(() => {
-    const pluginManager = new PluginManager(corePlugins.map(P => new P()))
-    pluginManager.createPluggableElements()
-    pluginManager.configure()
-    rootModel = rootModelFactory(pluginManager, sessionModelFactory)
-  })
-
   it('creates with defaults', () => {
-    const root = rootModel!.create({
+    const root = getRootModel().create({
       jbrowse: {
         configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
       },
@@ -33,7 +30,7 @@ describe('Root MST model', () => {
   })
 
   it('adds menus', () => {
-    const root = rootModel!.create({
+    const root = getRootModel().create({
       jbrowse: {
         configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
       },

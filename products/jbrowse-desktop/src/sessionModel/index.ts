@@ -4,7 +4,6 @@ import { types, Instance, getParent } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 // icons
-import { DesktopSessionAssembliesModel } from './Assemblies'
 import { DesktopSessionTrackMenuMixin } from './TrackMenu'
 import { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import { DesktopRootModel } from '../rootModel'
@@ -18,6 +17,12 @@ import {
   TracksManagerSessionMixin,
 } from '@jbrowse/product-core'
 import { DesktopSessionFactory } from './DesktopSession'
+import {
+  SessionAssembliesMixin,
+  TemporaryAssembliesMixin,
+} from '@jbrowse/app-core'
+import { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
+import { AbstractSessionModel } from '@jbrowse/core/util'
 
 /**
  * #stateModel JBrowseDesktopSessionModel
@@ -30,14 +35,18 @@ import { DesktopSessionFactory } from './DesktopSession'
  * - TracksManagerSessionMixin
  * - MultipleViewsSessionMixin
  * - DesktopSessionMixin
- * - DesktopSessionAssembliesModel
+ * - SessionAssembliesMixin
+ * - TemporaryAssembliesMixin
  * - DesktopSessionTrackMenuMixin
  * - SnackbarModel
  */
-export default function sessionModelFactory(
-  pluginManager: PluginManager,
-  assemblyConfigSchemasType = types.frozen(),
-) {
+export default function sessionModelFactory({
+  pluginManager,
+  assemblyConfigSchema,
+}: {
+  pluginManager: PluginManager
+  assemblyConfigSchema: BaseAssemblyConfigSchema
+}) {
   const sessionModel = types
     .compose(
       'JBrowseDesktopSessionModel',
@@ -49,42 +58,26 @@ export default function sessionModelFactory(
         ThemeManagerSessionMixin(pluginManager),
         TracksManagerSessionMixin(pluginManager),
         MultipleViewsSessionMixin(pluginManager),
+        DesktopSessionFactory(pluginManager),
       ),
-      DesktopSessionFactory(pluginManager),
-      DesktopSessionAssembliesModel(pluginManager, assemblyConfigSchemasType),
+      SessionAssembliesMixin(pluginManager, assemblyConfigSchema),
+      TemporaryAssembliesMixin(pluginManager, assemblyConfigSchema),
       DesktopSessionTrackMenuMixin(pluginManager),
     )
     .views(self => ({
       /**
        * #getter
        */
+      get assemblyNames() {
+        return [...self.assemblies, ...self.sessionAssemblies].map(r =>
+          readConfObject(r, 'name'),
+        )
+      },
+      /**
+       * #getter
+       */
       get root() {
         return getParent<DesktopRootModel>(self)
-      },
-      /**
-       * #getter
-       */
-      get history() {
-        return this.root.history
-      },
-      /**
-       * #getter
-       */
-      get menus() {
-        return this.root.menus
-      },
-      /**
-       * #getter
-       */
-      get savedSessionNames() {
-        return this.root.savedSessionNames
-      },
-
-      /**
-       * #method
-       */
-      renderProps() {
-        return { theme: readConfObject(self.configuration, 'theme') }
       },
     }))
     .actions(self => ({
@@ -99,6 +92,45 @@ export default function sessionModelFactory(
        */
       editTrackConfiguration(configuration: BaseTrackConfig) {
         self.editConfiguration(configuration)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get version() {
+        return self.root.version
+      },
+      /**
+       * #getter
+       */
+      get history() {
+        return self.root.history
+      },
+      /**
+       * #getter
+       */
+      get menus() {
+        return self.root.menus
+      },
+      /**
+       * #getter
+       */
+      get assemblyManager() {
+        return self.root.assemblyManager
+      },
+      /**
+       * #getter
+       */
+      get savedSessionNames() {
+        return self.root.savedSessionNames
+      },
+
+      /**
+       * #method
+       */
+      renderProps() {
+        return { theme: readConfObject(self.configuration, 'theme') }
       },
     }))
 
@@ -125,5 +157,12 @@ export default function sessionModelFactory(
   })
 }
 
-export type SessionStateModelType = ReturnType<typeof sessionModelFactory>
-export type SessionStateModel = Instance<SessionStateModelType>
+export type DesktopSessionModelType = ReturnType<typeof sessionModelFactory>
+export type SessionStateModel = Instance<DesktopSessionModelType>
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function z(x: Instance<DesktopSessionModelType>): AbstractSessionModel {
+  // this function's sole purpose is to get typescript to check
+  // that the session model implements all of AbstractSessionModel
+  return x
+}

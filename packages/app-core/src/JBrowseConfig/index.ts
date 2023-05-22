@@ -9,17 +9,18 @@ import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { types } from 'mobx-state-tree'
 
 /**
- * #config JBrowseDesktopConfiguration
+ * #config JBrowseRootConfig
  * #category root
  * configuration in a config.json/file.jbrowse
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
-
-export default function JBrowseConfigF(
-  pluginManager: PluginManager,
-  assemblyConfigSchemasType: AnyConfigurationSchemaType,
-) {
-  return types.model('JBrowseDesktop', {
+export function JBrowseConfigF({
+  pluginManager,
+  assemblyConfigSchema,
+}: {
+  pluginManager: PluginManager
+  assemblyConfigSchema: AnyConfigurationSchemaType
+}) {
+  return types.model('JBrowseConfig', {
     configuration: ConfigurationSchema('Root', {
       /**
        * #slot configuration.rpc
@@ -78,7 +79,7 @@ export default function JBrowseConfigF(
      * #slot
      * configuration of the assemblies in the instance, see BaseAssembly
      */
-    assemblies: types.array(assemblyConfigSchemasType),
+    assemblies: types.array(assemblyConfigSchema),
     /**
      * #slot
      * track configuration is an array of track config schemas. multiple

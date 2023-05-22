@@ -14,18 +14,12 @@ export function DesktopSessionFactory(pluginManager: PluginManager) {
        */
       margin: 0,
     })
-    .views(self => ({
+    .views(() => ({
       /**
        * #getter
        */
       get adminMode() {
         return true
-      },
-      /**
-       * #getter
-       */
-      get version() {
-        return self.root.version
       },
     }))
     .volatile((/* self */) => ({

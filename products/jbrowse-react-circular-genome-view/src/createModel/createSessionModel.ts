@@ -57,6 +57,12 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
+      get version() {
+        return getParent<any>(self).version
+      },
+      /**
+       * #getter
+       */
       get assemblies() {
         return [getParent<any>(self).config.assembly]
       },

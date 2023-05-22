@@ -14,8 +14,10 @@ describe('JBrowse model', () => {
       .createPluggableElements()
       .configure()
 
-    const assemblyConfigSchema = assemblyConfigSchemasFactory(pluginManager)
-    JBrowseModel = jbrowseModelFactory(pluginManager, assemblyConfigSchema)
+    JBrowseModel = jbrowseModelFactory({
+      pluginManager,
+      assemblyConfigSchema: assemblyConfigSchemasFactory(pluginManager),
+    })
   })
 
   it('creates with empty snapshot', () => {

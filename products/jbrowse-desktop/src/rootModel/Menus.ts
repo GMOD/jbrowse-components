@@ -34,7 +34,7 @@ export interface Menu {
  * #stateModel DesktopMenusMixin
  * #category root
  */
-export default function Menus(pluginManager: PluginManager) {
+export function DesktopMenusMixin(pluginManager: PluginManager) {
   return types
     .model({})
     .volatile(s => {
@@ -96,26 +96,27 @@ export default function Menus(pluginManager: PluginManager) {
                 label: 'Open assembly...',
                 icon: DNA,
                 onClick: () => {
-                  if (self.session) {
-                    const session = self.session as SessionWithDialogs
-                    session.queueDialog(doneCallback => [
-                      OpenSequenceDialog,
-                      {
-                        model: self,
-                        onClose: (confs: AnyConfigurationModel[]) => {
-                          try {
-                            confs?.forEach(conf => {
-                              self.jbrowse.addAssemblyConf(conf)
-                            })
-                          } catch (e) {
-                            console.error(e)
-                            self.session?.notify(`${e}`)
-                          }
-                          doneCallback()
-                        },
-                      },
-                    ])
+                  if (!self.session) {
+                    return
                   }
+                  const session = self.session as SessionWithDialogs
+                  session.queueDialog(doneCallback => [
+                    OpenSequenceDialog,
+                    {
+                      model: self,
+                      onClose: (confs?: AnyConfigurationModel[]) => {
+                        try {
+                          confs?.forEach(conf => {
+                            self.jbrowse.addAssemblyConf(conf)
+                          })
+                        } catch (e) {
+                          console.error(e)
+                          self.session?.notify(`${e}`)
+                        }
+                        doneCallback()
+                      },
+                    },
+                  ])
                 },
               },
               {
@@ -389,5 +390,5 @@ export default function Menus(pluginManager: PluginManager) {
     }))
 }
 
-export type DesktopMenusType = ReturnType<typeof Menus>
+export type DesktopMenusType = ReturnType<typeof DesktopMenusMixin>
 export type DesktopMenus = Instance<DesktopMenusType>

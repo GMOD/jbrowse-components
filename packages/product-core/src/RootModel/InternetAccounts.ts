@@ -3,7 +3,7 @@ import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { UriLocation } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
 import { Instance, addDisposer, types } from 'mobx-state-tree'
-import { BaseRootModelType } from './BaseRootModel'
+import { BaseRootModel } from './BaseRootModel'
 
 /**
  * #stateModel InternetAccountsMixin
@@ -111,8 +111,7 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
         addDisposer(
           self,
           autorun(() => {
-            const { jbrowse } = self as typeof self &
-              Instance<BaseRootModelType>
+            const { jbrowse } = self as typeof self & BaseRootModel
             jbrowse.internetAccounts.forEach(self.initializeInternetAccount)
           }),
         )

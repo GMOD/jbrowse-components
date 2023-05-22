@@ -17,6 +17,7 @@ import sessionModelFactory from '../sessionModel'
 jest.mock('../makeWorkerInstance', () => () => {})
 
 type JBrowseRootModel = ReturnType<typeof JBrowseRootModelFactory>
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ;(configSnapshot as any).configuration = {
   rpc: {
@@ -28,20 +29,11 @@ function getPluginManager(initialState?: SnapshotIn<JBrowseRootModel>) {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.createPluggableElements()
 
-  const JBrowseRootModel = JBrowseRootModelFactory(
+  const rootModel = JBrowseRootModelFactory({
     pluginManager,
     sessionModelFactory,
-  )
-  const rootModel = JBrowseRootModel.create(
-    {
-      jbrowse: initialState || configSnapshot,
-      assemblyManager: {},
-      version: 'testing',
-    },
-    { pluginManager },
-  )
+  }).create({ jbrowse: initialState || configSnapshot }, { pluginManager })
   pluginManager.setRootModel(rootModel)
-
   pluginManager.configure()
   return pluginManager
 }
@@ -55,14 +47,10 @@ test('basic test of electron-mock-ipc', () => {
   ipcRenderer.send('test-event', testMessage)
 })
 
-xdescribe('JBrowse Desktop', () => {
-  it('renders start screen', async () => {
-    ipcMain.handle('listSessions', () => ({}))
+xit('renders start screen', async () => {
+  ipcMain.handle('listSessions', () => ({}))
 
-    const { findByText } = render(
-      <JBrowse pluginManager={getPluginManager()} />,
-    )
-    fireEvent.click(await findByText('Empty'))
-    await findByText('Help')
-  })
+  const { findByText } = render(<JBrowse pluginManager={getPluginManager()} />)
+  fireEvent.click(await findByText('Empty'))
+  await findByText('Help')
 })
