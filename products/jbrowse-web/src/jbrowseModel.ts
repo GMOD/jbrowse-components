@@ -18,16 +18,20 @@ window.resolveIdentifier = resolveIdentifier
  * #category root
  * the rootModel.jbrowse state model for JBrowse Web
  */
-export default function JBrowseWeb(
-  pluginManager: PluginManager,
-  assemblyConfigSchemasType: AnyConfigurationSchemaType,
-) {
-  const JBrowseModel = JBrowseModelF(pluginManager, assemblyConfigSchemasType)
-
-  return types.snapshotProcessor(JBrowseModel, {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    postProcessor(snapshot: { [key: string]: any }) {
-      return removeAttr(clone(snapshot), 'baseUri')
+export default function JBrowseWeb({
+  pluginManager,
+  assemblyConfigSchema,
+}: {
+  pluginManager: PluginManager
+  assemblyConfigSchema: AnyConfigurationSchemaType
+}) {
+  return types.snapshotProcessor(
+    JBrowseModelF({ pluginManager, assemblyConfigSchema }),
+    {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      postProcessor(snapshot: { [key: string]: any }) {
+        return removeAttr(clone(snapshot), 'baseUri')
+      },
     },
-  })
+  )
 }

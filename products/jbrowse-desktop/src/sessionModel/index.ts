@@ -4,7 +4,6 @@ import { types, Instance, getParent } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 // icons
-import { DesktopSessionAssembliesModel } from './Assemblies'
 import { DesktopSessionTrackMenuMixin } from './TrackMenu'
 import { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import { DesktopRootModel } from '../rootModel'
@@ -41,10 +40,13 @@ import { AbstractSessionModel } from '@jbrowse/core/util'
  * - DesktopSessionTrackMenuMixin
  * - SnackbarModel
  */
-export default function sessionModelFactory(
-  pluginManager: PluginManager,
-  assemblyConfigSchemasType: BaseAssemblyConfigSchema,
-) {
+export default function sessionModelFactory({
+  pluginManager,
+  assemblyConfigSchema,
+}: {
+  pluginManager: PluginManager
+  assemblyConfigSchema: BaseAssemblyConfigSchema
+}) {
   const sessionModel = types
     .compose(
       'JBrowseDesktopSessionModel',
@@ -58,8 +60,8 @@ export default function sessionModelFactory(
         MultipleViewsSessionMixin(pluginManager),
         DesktopSessionFactory(pluginManager),
       ),
-      SessionAssembliesMixin(pluginManager, assemblyConfigSchemasType),
-      TemporaryAssembliesMixin(pluginManager, assemblyConfigSchemasType),
+      SessionAssembliesMixin(pluginManager, assemblyConfigSchema),
+      TemporaryAssembliesMixin(pluginManager, assemblyConfigSchema),
       DesktopSessionTrackMenuMixin(pluginManager),
     )
     .views(self => ({
@@ -77,37 +79,6 @@ export default function sessionModelFactory(
       get root() {
         return getParent<DesktopRootModel>(self)
       },
-      /**
-       * #getter
-       */
-      get history() {
-        return this.root.history
-      },
-      /**
-       * #getter
-       */
-      get menus() {
-        return this.root.menus
-      },
-      /**
-       * #getter
-       */
-      get assemblyManager() {
-        return this.root.assemblyManager
-      },
-      /**
-       * #getter
-       */
-      get savedSessionNames() {
-        return this.root.savedSessionNames
-      },
-
-      /**
-       * #method
-       */
-      renderProps() {
-        return { theme: readConfObject(self.configuration, 'theme') }
-      },
     }))
     .actions(self => ({
       /**
@@ -121,6 +92,45 @@ export default function sessionModelFactory(
        */
       editTrackConfiguration(configuration: BaseTrackConfig) {
         self.editConfiguration(configuration)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get version() {
+        return self.root.version
+      },
+      /**
+       * #getter
+       */
+      get history() {
+        return self.root.history
+      },
+      /**
+       * #getter
+       */
+      get menus() {
+        return self.root.menus
+      },
+      /**
+       * #getter
+       */
+      get assemblyManager() {
+        return self.root.assemblyManager
+      },
+      /**
+       * #getter
+       */
+      get savedSessionNames() {
+        return self.root.savedSessionNames
+      },
+
+      /**
+       * #method
+       */
+      renderProps() {
+        return { theme: readConfObject(self.configuration, 'theme') }
       },
     }))
 

@@ -8,7 +8,6 @@ import { Link, Typography } from '@mui/material'
 const useStyles = makeStyles()(theme => ({
   root: {
     margin: theme.spacing(2),
-    fontSize: '1.2em',
   },
   subtitle: {
     margin: theme.spacing(1),

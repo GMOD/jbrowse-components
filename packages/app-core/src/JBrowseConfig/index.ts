@@ -13,12 +13,13 @@ import { types } from 'mobx-state-tree'
  * #category root
  * configuration in a config.json/file.jbrowse
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
-
-export function JBrowseConfigF(
-  pluginManager: PluginManager,
-  assemblyConfigSchemasType: AnyConfigurationSchemaType,
-) {
+export function JBrowseConfigF({
+  pluginManager,
+  assemblyConfigSchema,
+}: {
+  pluginManager: PluginManager
+  assemblyConfigSchema: AnyConfigurationSchemaType
+}) {
   return types.model('JBrowseConfig', {
     configuration: ConfigurationSchema('Root', {
       /**
@@ -78,7 +79,7 @@ export function JBrowseConfigF(
      * #slot
      * configuration of the assemblies in the instance, see BaseAssembly
      */
-    assemblies: types.array(assemblyConfigSchemasType),
+    assemblies: types.array(assemblyConfigSchema),
     /**
      * #slot
      * track configuration is an array of track config schemas. multiple

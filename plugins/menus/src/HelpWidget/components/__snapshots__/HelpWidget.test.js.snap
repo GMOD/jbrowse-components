@@ -2,7 +2,7 @@
 
 exports[`<HelpWidget /> renders 1`] = `
 <div
-  class="css-yyj9d3-root"
+  class="css-dpbaeg-root"
 >
   <h4
     class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-149xwtl-MuiTypography-root"

@@ -60,6 +60,12 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
+      get version() {
+        return getParent<any>(self).version
+      },
+      /**
+       * #getter
+       */
       get disableAddTracks() {
         return getParent<any>(self).disableAddTracks
       },

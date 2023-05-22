@@ -7,7 +7,7 @@ exports[`JBrowse model creates with empty snapshot 1`] = `
   "configuration": {},
   "connections": [],
   "defaultSession": {
-    "name": "New session",
+    "name": "New Session",
   },
   "internetAccounts": [],
   "plugins": [],

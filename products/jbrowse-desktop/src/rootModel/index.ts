@@ -15,11 +15,12 @@ import jobsModelFactory from '../indexJobsModel'
 import JBrowseDesktop from '../jbrowseModel'
 import { DesktopMenusMixin } from './Menus'
 import { DesktopSessionManagementMixin } from './Sessions'
+import packageJSON from '../../package.json'
 
-type SessionModelFactory = (
-  pluginManager: PluginManager,
-  assemblyConfigSchema: ReturnType<typeof assemblyConfigSchemaFactory>,
-) => IAnyType
+type SessionModelFactory = (args: {
+  pluginManager: PluginManager
+  assemblyConfigSchema: ReturnType<typeof assemblyConfigSchemaFactory>
+}) => IAnyType
 
 /**
  * #stateModel JBrowseDesktopRootModel
@@ -35,20 +36,27 @@ type SessionModelFactory = (
  * and we generally prefer using the session model (via e.g. getSession) over
  * the root model (via e.g. getRoot) in plugin code
  */
-export default function rootModelFactory(
-  pluginManager: PluginManager,
-  sessionModelFactory: SessionModelFactory,
-) {
+export default function rootModelFactory({
+  pluginManager,
+  sessionModelFactory,
+}: {
+  pluginManager: PluginManager
+  sessionModelFactory: SessionModelFactory
+}) {
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
-  const Session = sessionModelFactory(pluginManager, assemblyConfigSchema)
+  const sessionModelType = sessionModelFactory({
+    pluginManager,
+    assemblyConfigSchema,
+  })
+  const jbrowseModelType = JBrowseDesktop(pluginManager, assemblyConfigSchema)
   const JobsManager = jobsModelFactory(pluginManager)
   return types
     .compose(
       'JBrowseDesktopRootModel',
       BaseRootModelFactory({
         pluginManager,
-        jbrowseModelType: JBrowseDesktop(pluginManager, assemblyConfigSchema),
-        sessionModelType: Session,
+        jbrowseModelType,
+        sessionModelType,
         assemblyConfigSchema,
       }),
       InternetAccountsRootModelMixin(pluginManager),
@@ -63,6 +71,7 @@ export default function rootModelFactory(
       jobsManager: types.maybe(JobsManager),
     })
     .volatile(self => ({
+      version: packageJSON.version,
       rpcManager: new RpcManager(
         pluginManager,
         self.jbrowse.configuration.rpc,

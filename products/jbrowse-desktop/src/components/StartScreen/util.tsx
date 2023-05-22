@@ -12,7 +12,6 @@ import {
 // locals
 import JBrowseRootModelFactory from '../../rootModel'
 import corePlugins from '../../corePlugins'
-import packageJSON from '../../../package.json'
 import sessionModelFactory from '../../sessionModel'
 
 const { ipcRenderer } = window.require('electron')
@@ -101,7 +100,7 @@ export async function createPluginManager(
   })
   pluginLoader.installGlobalReExports(window)
   const runtimePlugins = await pluginLoader.load(window.location.href)
-  const pm = new PluginManager([
+  const pluginManager = new PluginManager([
     ...corePlugins.map(P => ({
       plugin: new P(),
       metadata: { isCore: true },
@@ -117,9 +116,12 @@ export async function createPluginManager(
       },
     })),
   ])
-  pm.createPluggableElements()
+  pluginManager.createPluggableElements()
 
-  const JBrowseRootModel = JBrowseRootModelFactory(pm, sessionModelFactory)
+  const JBrowseRootModel = JBrowseRootModelFactory({
+    pluginManager,
+    sessionModelFactory,
+  })
 
   const jbrowse = deepmerge(configSnapshot, {
     internetAccounts: defaultInternetAccounts,
@@ -143,17 +145,16 @@ export async function createPluginManager(
       jbrowse,
       jobsManager: {},
       assemblyManager: {},
-      version: packageJSON.version,
     },
-    { pluginManager: pm },
+    { pluginManager },
   )
 
   const config = rootModel.jbrowse.configuration
   const { rpc } = config
   rpc.defaultDriver.set('WebWorkerRpcDriver')
 
-  pm.setRootModel(rootModel)
-  pm.configure()
+  pluginManager.setRootModel(rootModel)
+  pluginManager.configure()
 
   if (rootModel && !readConfObject(config, 'disableAnalytics')) {
     // these are ok if they are uncaught promises
@@ -165,7 +166,7 @@ export async function createPluginManager(
 
   rootModel.setDefaultSession()
 
-  return pm
+  return pluginManager
 }
 
 export interface RecentSessionData {

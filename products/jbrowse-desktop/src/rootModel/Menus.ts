@@ -96,26 +96,27 @@ export function DesktopMenusMixin(pluginManager: PluginManager) {
                 label: 'Open assembly...',
                 icon: DNA,
                 onClick: () => {
-                  if (self.session) {
-                    const session = self.session as SessionWithDialogs
-                    session.queueDialog(doneCallback => [
-                      OpenSequenceDialog,
-                      {
-                        model: self,
-                        onClose: (confs: AnyConfigurationModel[]) => {
-                          try {
-                            confs?.forEach(conf => {
-                              self.jbrowse.addAssemblyConf(conf)
-                            })
-                          } catch (e) {
-                            console.error(e)
-                            self.session?.notify(`${e}`)
-                          }
-                          doneCallback()
-                        },
-                      },
-                    ])
+                  if (!self.session) {
+                    return
                   }
+                  const session = self.session as SessionWithDialogs
+                  session.queueDialog(doneCallback => [
+                    OpenSequenceDialog,
+                    {
+                      model: self,
+                      onClose: (confs?: AnyConfigurationModel[]) => {
+                        try {
+                          confs?.forEach(conf => {
+                            self.jbrowse.addAssemblyConf(conf)
+                          })
+                        } catch (e) {
+                          console.error(e)
+                          self.session?.notify(`${e}`)
+                        }
+                        doneCallback()
+                      },
+                    },
+                  ])
                 },
               },
               {

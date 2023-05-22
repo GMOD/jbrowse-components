@@ -1,11 +1,13 @@
 import React from 'react'
-import { generateMaxWidth } from './util'
-import DataGridDetails from './DataGrid'
-import ArrayValue from './ArrayValue'
 import isObject from 'is-object'
+
+// locals
+import { accessNested, generateMaxWidth } from './util'
 import { isUriLocation } from '../../util'
+import DataGridDetails from './DataGridDetails'
+import ArrayValue from './ArrayValue'
 import UriAttribute from './UriField'
-import BasicField from './BasicField'
+import SimpleField from './SimpleField'
 
 const MAX_FIELD_NAME_WIDTH = 170
 
@@ -21,25 +23,6 @@ const globalOmit = [
   'thickStart',
   'thickEnd',
 ]
-
-// pick using a path from an object, similar to _.get from lodash with special
-// logic for Descriptions from e.g. VCF headers
-//
-// @param arr  example ['a','b'], obj = {a:{b:'hello}}
-// @returns hello (with special addition to grab description also)
-function accessNested(arr: string[], obj: Record<string, unknown> = {}) {
-  let obj2: unknown = obj
-  arr.forEach(elt => {
-    if (obj2) {
-      obj2 = obj[elt]
-    }
-  })
-  return typeof obj === 'string'
-    ? obj
-    : typeof obj?.Description === 'string'
-    ? obj.Description
-    : undefined
-}
 
 export default function Attributes(props: {
   attributes: {
@@ -121,7 +104,7 @@ export default function Attributes(props: {
             )
           } else {
             return (
-              <BasicField
+              <SimpleField
                 key={key}
                 name={key}
                 value={formatter(value, key)}

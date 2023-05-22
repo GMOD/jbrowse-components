@@ -2,7 +2,6 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { doAnalytics } from '@jbrowse/core/util/analytics'
 
 // locals
-import packageJSON from '../package.json'
 import JBrowseRootModelFactory from './rootModel/rootModel'
 import sessionModelFactory from './sessionModel'
 import corePlugins from './corePlugins'
@@ -41,7 +40,6 @@ export function createPluginManager(self: SessionLoaderModel) {
   const rootModel = RootModel.create(
     {
       jbrowse: self.configSnapshot,
-      version: packageJSON.version,
       configPath: self.configPath,
     },
     { pluginManager },

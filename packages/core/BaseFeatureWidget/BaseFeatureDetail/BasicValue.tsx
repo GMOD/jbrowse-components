@@ -1,8 +1,10 @@
 import React from 'react'
 import { makeStyles } from 'tss-react/mui'
-import { SanitizedHTML } from '../../ui'
 import isObject from 'is-object'
 import { Link } from '@mui/material'
+
+// locals
+import { SanitizedHTML } from '../../ui'
 
 export const useStyles = makeStyles()(theme => ({
   fieldValue: {

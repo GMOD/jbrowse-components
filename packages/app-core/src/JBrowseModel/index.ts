@@ -1,6 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
-import { JBrowseConfigF } from '../JBrowseConfig'
 import { cast, getParent } from 'mobx-state-tree'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import {
@@ -9,11 +8,17 @@ import {
 } from '@jbrowse/core/configuration'
 import { PluginDefinition } from '@jbrowse/core/PluginLoader'
 
-export function JBrowseModelF(
-  pluginManager: PluginManager,
-  assemblyConfigSchemasType: BaseAssemblyConfigSchema,
-) {
-  return JBrowseConfigF(pluginManager, assemblyConfigSchemasType)
+// locals
+import { JBrowseConfigF } from '../JBrowseConfig'
+
+export function JBrowseModelF({
+  pluginManager,
+  assemblyConfigSchema,
+}: {
+  pluginManager: PluginManager
+  assemblyConfigSchema: BaseAssemblyConfigSchema
+}) {
+  return JBrowseConfigF({ pluginManager, assemblyConfigSchema })
     .views(self => ({
       /**
        * #getter
@@ -30,21 +35,6 @@ export function JBrowseModelF(
       },
     }))
     .actions(self => ({
-      afterCreate() {
-        const seen = [] as string[]
-        self.assemblyNames.forEach(assemblyName => {
-          if (!assemblyName) {
-            throw new Error('Encountered an assembly with no "name" defined')
-          }
-          if (seen.includes(assemblyName)) {
-            throw new Error(
-              `Found two assemblies with the same name: ${assemblyName}`,
-            )
-          } else {
-            seen.push(assemblyName)
-          }
-        })
-      },
       /**
        * #action
        */

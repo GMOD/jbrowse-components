@@ -2,6 +2,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { autorun } from 'mobx'
 import { SnapshotIn, addDisposer, getSnapshot, types } from 'mobx-state-tree'
 import { BaseSession, BaseRootModel } from '@jbrowse/product-core'
+import clone from 'clone'
 
 const { ipcRenderer } = window.require('electron')
 
@@ -44,21 +45,22 @@ export function DesktopSessionManagementMixin(pluginManager: PluginManager) {
          * #action
          */
         duplicateCurrentSession() {
-          if (self.session) {
-            const snapshot = JSON.parse(
-              JSON.stringify(getSnapshot(self.session)),
-            )
-            let newSnapshotName = `${self.session.name} (copy)`
-            if (self.jbrowse.savedSessionNames.includes(newSnapshotName)) {
-              let newSnapshotCopyNumber = 2
-              do {
-                newSnapshotName = `${self.session.name} (copy ${newSnapshotCopyNumber})`
-                newSnapshotCopyNumber += 1
-              } while (self.jbrowse.savedSessionNames.includes(newSnapshotName))
-            }
-            snapshot.name = newSnapshotName
-            self.setSession(snapshot)
+          if (!self.session) {
+            return
           }
+          const snapshot = clone(getSnapshot(self.session))
+          let newSnapshotName = `${self.session.name} (copy)`
+          if (self.jbrowse.savedSessionNames.includes(newSnapshotName)) {
+            let newSnapshotCopyNumber = 2
+            do {
+              newSnapshotName = `${self.session.name} (copy ${newSnapshotCopyNumber})`
+              newSnapshotCopyNumber += 1
+            } while (self.jbrowse.savedSessionNames.includes(newSnapshotName))
+          }
+          self.setSession({
+            ...(snapshot as Record<string, unknown>),
+            name: newSnapshotName,
+          })
         },
         /**
          * #action
@@ -76,12 +78,13 @@ export function DesktopSessionManagementMixin(pluginManager: PluginManager) {
             self,
             autorun(
               async () => {
-                if (self.session) {
-                  try {
-                    await self.saveSession(getSaveSession(self))
-                  } catch (e) {
-                    console.error(e)
-                  }
+                if (!self.session) {
+                  return
+                }
+                try {
+                  await self.saveSession(getSaveSession(self))
+                } catch (e) {
+                  console.error(e)
                 }
               },
               { delay: 1000 },

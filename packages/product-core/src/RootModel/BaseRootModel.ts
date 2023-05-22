@@ -38,10 +38,6 @@ export function BaseRootModelFactory({
        * tree
        */
       jbrowse: jbrowseModelType,
-      /**
-       * #property
-       */
-      version: 'development',
 
       /**
        * #property
@@ -71,10 +67,6 @@ export function BaseRootModelFactory({
         },
       ),
 
-      /**
-       * #volatile
-       * Boolean indicating whether the session is in admin mode or not
-       */
       adminMode: true,
       isAssemblyEditing: false,
       error: undefined as unknown,

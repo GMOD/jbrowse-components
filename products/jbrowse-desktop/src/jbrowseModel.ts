@@ -16,7 +16,7 @@ window.resolveIdentifier = resolveIdentifier
  */
 export default function JBrowseDesktop(
   pluginManager: PluginManager,
-  assemblyConfigSchemasType: BaseAssemblyConfigSchema,
+  assemblyConfigSchema: BaseAssemblyConfigSchema,
 ) {
-  return JBrowseModelF(pluginManager, assemblyConfigSchemasType)
+  return JBrowseModelF({ pluginManager, assemblyConfigSchema })
 }

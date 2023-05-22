@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { lazy } from 'react'
 import clone from 'clone'
 import { PluginDefinition } from '@jbrowse/core/PluginLoader'
@@ -6,6 +5,7 @@ import {
   getConf,
   AnyConfigurationModel,
   readConfObject,
+  AnyConfiguration,
 } from '@jbrowse/core/configuration'
 import {
   AbstractSessionModel,
@@ -23,7 +23,6 @@ import {
   types,
   Instance,
   SnapshotIn,
-  IAnyType,
 } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
@@ -64,7 +63,8 @@ const AboutDialog = lazy(() => import('./AboutDialog'))
  * - ThemeManagerSessionMixin
  * - MultipleViewsSessionMixin
  * - SessionTracksManagerSessionMixin
- * - WebSessionAssembliesMixin
+ * - SessionAssembliesMixin
+ * - TemporaryAssembliesMixin
  * - WebSessionConnectionsMixin
  */
 export default function sessionModelFactory({
@@ -148,6 +148,12 @@ export default function sessionModelFactory({
       /**
        * #getter
        */
+      get version() {
+        return self.root.version
+      },
+      /**
+       * #getter
+       */
       get shareURL() {
         return getConf(self.jbrowse, 'shareURL')
       },
@@ -194,13 +200,6 @@ export default function sessionModelFactory({
         return self.root.menus
       },
       /**
-       * #getter
-       */
-      get version() {
-        return self.root.version
-      },
-
-      /**
        * #method
        */
       renderProps() {
@@ -213,8 +212,8 @@ export default function sessionModelFactory({
       /**
        * #action
        */
-      addAssemblyConf(conf: AnyConfigurationModel) {
-        self.root.addAssemblyConf(conf)
+      addAssemblyConf(conf: AnyConfiguration) {
+        self.jbrowse.addAssemblyConf(conf)
       },
       /**
        * #action
@@ -240,8 +239,7 @@ export default function sessionModelFactory({
               plugin.esmUrl !== pluginDefinition.esmUrl,
           ),
         )
-        const rootModel = getParent<any>(self)
-        rootModel.setPluginsUpdated(true)
+        getParent<WebRootModel>(self).setPluginsUpdated(true)
       },
 
       /**
@@ -254,7 +252,7 @@ export default function sessionModelFactory({
       /**
        * #action
        */
-      removeSavedSession(sessionSnapshot: any) {
+      removeSavedSession(sessionSnapshot: { name: string }) {
         return self.root.removeSavedSession(sessionSnapshot)
       },
 
@@ -274,7 +272,7 @@ export default function sessionModelFactory({
       /**
        * #action
        */
-      activateSession(sessionName: any) {
+      activateSession(sessionName: string) {
         return self.root.activateSession(sessionName)
       },
 
@@ -356,10 +354,14 @@ export default function sessionModelFactory({
             label: 'Copy track',
             disabled: isRefSeq,
             onClick: () => {
-              const snap = clone(getSnapshot(config)) as any
+              type Display = { displayId: string }
+              const snap = clone(getSnapshot(config)) as {
+                [key: string]: unknown
+                displays: Display[]
+              }
               const now = Date.now()
               snap.trackId += `-${now}`
-              snap.displays.forEach((display: { displayId: string }) => {
+              snap.displays.forEach(display => {
                 display.displayId += `-${now}`
               })
               // the -sessionTrack suffix to trackId is used as metadata for
