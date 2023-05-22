@@ -33,7 +33,7 @@ function main() {
       process.exit(status || 1)
     }
   })
-  const subDirs = ['cgv', 'lgv', 'react_app']
+  const subDirs = ['cgv', 'lgv', 'react-app']
   subDirs.forEach(dir => {
     fs.mkdirSync(path.join('component_tests', dir, 'packed'), {
       recursive: true,
