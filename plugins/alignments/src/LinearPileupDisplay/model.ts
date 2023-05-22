@@ -1,6 +1,12 @@
 import { lazy } from 'react'
 import { autorun, observable } from 'mobx'
-import { cast, types, addDisposer, Instance } from 'mobx-state-tree'
+import {
+  cast,
+  types,
+  addDisposer,
+  getSnapshot,
+  Instance,
+} from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
 import {
   AnyConfigurationModel,
@@ -499,8 +505,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             notReady: superProps.notReady || !self.renderReady,
             rpcDriverName,
             displayModel: self,
-            sortedBy,
-            colorBy,
+            sortedBy: sortedBy ? getSnapshot(sortedBy) : undefined,
+            colorBy: colorBy ? getSnapshot(colorBy) : undefined,
             filterBy: JSON.parse(JSON.stringify(filterBy)),
             colorTagMap: Object.fromEntries(colorTagMap.toJSON()),
             modificationTagMap: Object.fromEntries(modificationTagMap.toJSON()),
