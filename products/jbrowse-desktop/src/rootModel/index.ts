@@ -72,6 +72,7 @@ export default function rootModelFactory({
     })
     .volatile(self => ({
       version: packageJSON.version,
+      adminMode: true,
       rpcManager: new RpcManager(
         pluginManager,
         self.jbrowse.configuration.rpc,

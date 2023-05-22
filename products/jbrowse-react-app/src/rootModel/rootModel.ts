@@ -54,10 +54,10 @@ export interface Menu {
 }
 
 type AssemblyConfig = ReturnType<typeof assemblyConfigSchemaFactory>
-type SessionModelFactory = (
-  p: PluginManager,
-  assemblyConfigSchema: AssemblyConfig,
-) => IAnyType
+type SessionModelFactory = (args: {
+  pluginManager: PluginManager
+  assemblyConfigSchema: AssemblyConfig
+}) => IAnyType
 
 /**
  * #stateModel JBrowseReactAppRootModel
@@ -84,12 +84,18 @@ export default function RootModel({
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
   return types
     .compose(
-      BaseRootModelFactory(
+      BaseRootModelFactory({
         pluginManager,
-        jbrowseWebFactory(pluginManager, assemblyConfigSchema),
-        sessionModelFactory(pluginManager, assemblyConfigSchema),
+        jbrowseModelType: jbrowseWebFactory({
+          pluginManager,
+          assemblyConfigSchema,
+        }),
+        sessionModelType: sessionModelFactory({
+          pluginManager,
+          assemblyConfigSchema,
+        }),
         assemblyConfigSchema,
-      ),
+      }),
       InternetAccountsRootModelMixin(pluginManager),
     )
     .props({
@@ -549,17 +555,18 @@ export default function RootModel({
               label: 'Preferences',
               icon: SettingsIcon,
               onClick: () => {
-                if (self.session) {
-                  ;(self.session as SessionWithDialogs).queueDialog(
-                    handleClose => [
-                      PreferencesDialog,
-                      {
-                        session: self.session,
-                        handleClose,
-                      },
-                    ],
-                  )
+                if (!self.session) {
+                  return
                 }
+                ;(self.session as SessionWithDialogs).queueDialog(
+                  handleClose => [
+                    PreferencesDialog,
+                    {
+                      session: self.session,
+                      handleClose,
+                    },
+                  ],
+                )
               },
             },
           ],

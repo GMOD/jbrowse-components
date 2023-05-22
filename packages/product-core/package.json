@@ -24,7 +24,7 @@
   "srcMain": "src/index.ts",
   "srcModule": "src/index.ts",
   "main": "src/index.ts",
-  "module": "src/index.ts",
+  "module": "",
   "files": [
     "dist",
     "esm",

@@ -67,7 +67,7 @@ export function BaseRootModelFactory({
         },
       ),
 
-      adminMode: true,
+      adminMode: false,
       isAssemblyEditing: false,
       error: undefined as unknown,
       textSearchManager: new TextSearchManager(pluginManager),
