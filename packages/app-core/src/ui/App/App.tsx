@@ -21,7 +21,6 @@ const DrawerWidget = lazy(() => import('./DrawerWidget'))
 
 const useStyles = makeStyles()(theme => ({
   root: {
-    fontFamily: 'Roboto',
     display: 'grid',
     height: '100vh',
     width: '100%',

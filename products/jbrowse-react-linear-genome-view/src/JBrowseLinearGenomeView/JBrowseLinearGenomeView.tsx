@@ -2,7 +2,7 @@ import React, { Suspense } from 'react'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { LoadingEllipses, createJBrowseTheme } from '@jbrowse/core/ui'
 import { EmbeddedViewContainer, ModalWidget } from '@jbrowse/embedded-core'
 
 // locals
@@ -29,7 +29,7 @@ const JBrowseLinearGenomeView = observer(function ({
   return (
     <ThemeProvider theme={theme}>
       <EmbeddedViewContainer key={`view-${view.id}`} view={view}>
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<LoadingEllipses />}>
           <ReactComponent model={view} session={session} />
         </Suspense>
       </EmbeddedViewContainer>

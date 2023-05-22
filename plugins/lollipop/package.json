@@ -46,7 +46,6 @@
     "prop-types": "^15.0.0",
     "react": ">=16.8.0"
   },
-  "private": true,
   "distModule": "esm/index.js",
   "srcModule": "src/index.ts",
   "module": ""
