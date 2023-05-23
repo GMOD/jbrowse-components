@@ -9,6 +9,7 @@ import {
   measureText,
   Region,
   Feature,
+  notEmpty,
 } from '@jbrowse/core/util'
 import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
@@ -1164,7 +1165,7 @@ export default class PileupRenderer extends BoxRendererType {
     const res = await renderToAbstractCanvas(width, height, renderProps, ctx =>
       this.makeImageData({
         ctx,
-        layoutRecords: layoutRecords.filter((f): f is LayoutRecord => !!f),
+        layoutRecords: layoutRecords.filter(notEmpty),
         canvasWidth: width,
         renderArgs: {
           ...renderProps,

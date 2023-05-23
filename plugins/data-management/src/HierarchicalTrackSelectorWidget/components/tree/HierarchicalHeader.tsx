@@ -27,11 +27,9 @@ const useStyles = makeStyles()(theme => ({
 function HierarchicalTrackSelectorHeader({
   model,
   setHeaderHeight,
-  setAssemblyIdx,
 }: {
   model: HierarchicalTrackSelectorModel
   setHeaderHeight: (n: number) => void
-  setAssemblyIdx: (n: number) => void
 }) {
   const { classes } = useStyles()
   const [facetedOpen, setFacetedOpen] = useState(false)
@@ -43,7 +41,7 @@ function HierarchicalTrackSelectorHeader({
       data-testid="hierarchical_track_selector"
     >
       <div style={{ display: 'flex' }}>
-        <HamburgerMenu model={model} setAssemblyIdx={setAssemblyIdx} />
+        <HamburgerMenu model={model} />
         <ShoppingCart model={model} />
 
         <TextField

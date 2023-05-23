@@ -55,10 +55,8 @@ interface DialogDetails {
 
 export default observer(function HamburgerMenu({
   model,
-  setAssemblyIdx,
 }: {
   model: HierarchicalTrackSelectorModel
-  setAssemblyIdx: Function
 }) {
   const session = getSession(model)
   const [menuEl, setMenuEl] = useState<HTMLButtonElement>()
@@ -67,7 +65,6 @@ export default observer(function HamburgerMenu({
   const [connectionToggleOpen, setConnectionToggleOpen] = useState(false)
   const [connectionManagerOpen, setConnectionManagerOpen] = useState(false)
   const { classes } = useStyles()
-  const { assemblyNames } = model
 
   function breakConnection(
     connectionConf: AnyConfigurationModel,
@@ -153,18 +150,6 @@ export default observer(function HamburgerMenu({
         menuItems={[
           ...(isSessionWithAddTracks(session) ? trackMenuItems : []),
           ...(session.makeConnection ? connectionMenuItems : []),
-
-          ...(assemblyNames.length > 1
-            ? [
-                {
-                  label: 'Select assembly...',
-                  subMenu: assemblyNames.map((name, idx) => ({
-                    label: name,
-                    onClick: () => setAssemblyIdx(idx),
-                  })),
-                },
-              ]
-            : []),
         ]}
       />
       <Suspense fallback={<div />}>
