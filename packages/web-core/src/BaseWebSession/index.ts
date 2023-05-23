@@ -19,6 +19,7 @@ import {
   getSnapshot,
   types,
   SnapshotIn,
+  Instance,
 } from 'mobx-state-tree'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
@@ -91,6 +92,15 @@ export function BaseWebSession({
        */
       get root() {
         return getParent<any>(self)
+      },
+      /**
+       * #getter
+       * list of sessionAssemblies and jbrowse config assemblies, does not
+       * include temporaryAssemblies. basically the list to be displayed in a
+       * AssemblySelector dropdown
+       */
+      get assemblies(): Instance<BaseAssemblyConfigSchema[]> {
+        return [...self.jbrowse.assemblies, ...self.sessionAssemblies]
       },
     }))
     .actions(self => ({
