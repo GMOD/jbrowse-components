@@ -123,7 +123,9 @@ export function BaseWebSession({
        * AssemblySelector dropdown
        */
       get assemblyNames() {
-        return self.assemblies.map(f => readConfObject(f, 'name') as string)
+        return [...self.assemblies, ...self.sessionAssemblies].map(
+          f => readConfObject(f, 'name') as string,
+        )
       },
       /**
        * #getter
