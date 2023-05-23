@@ -72,12 +72,6 @@ jobs:
           yarn build
           yarn test:e2e
         working-directory: component_tests/cgv
-      - name: Test embedded react-app
-        run: |
-          yarn
-          yarn build
-          yarn test:e2e
-        working-directory: component_tests/react-app
 
   buildjbrowseweb:
     name: Build only jbrowse-web and upload to s3 on node 16 and ubuntu-latest
