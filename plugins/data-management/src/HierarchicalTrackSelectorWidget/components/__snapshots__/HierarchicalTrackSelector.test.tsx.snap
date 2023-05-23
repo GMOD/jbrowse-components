@@ -1,26 +1,91 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`renders nothing with no assembly 1`] = `
-<button
-  class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-secondary MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-secondary css-15opis6-MuiButtonBase-root-MuiFab-root-fab"
-  tabindex="0"
-  type="button"
+<div
+  data-testid="hierarchical_track_selector"
 >
-  <svg
-    aria-hidden="true"
-    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
-    data-testid="AddIcon"
-    focusable="false"
-    viewBox="0 0 24 24"
+  <div
+    style="display: flex;"
   >
-    <path
-      d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
-    />
-  </svg>
-  <span
-    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-  />
-</button>
+    <button
+      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1kgqocu-MuiButtonBase-root-MuiIconButton-root-menuIcon"
+      tabindex="0"
+      type="button"
+    >
+      <svg
+        aria-hidden="true"
+        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+        data-testid="MenuIcon"
+        focusable="false"
+        viewBox="0 0 24 24"
+      >
+        <path
+          d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"
+        />
+      </svg>
+      <span
+        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+      />
+    </button>
+    <div
+      class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-rlnh8o-MuiFormControl-root-MuiTextField-root-searchBox"
+    >
+      <label
+        class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard css-1s1jvl0-MuiFormLabel-root-MuiInputLabel-root"
+        data-shrink="false"
+        for="mui-1"
+        id="mui-1-label"
+      >
+        Filter tracks
+      </label>
+      <div
+        class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-1blad95-MuiInputBase-root-MuiInput-root"
+      >
+        <input
+          aria-invalid="false"
+          class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd css-nz481w-MuiInputBase-input-MuiInput-input"
+          id="mui-1"
+          type="text"
+          value=""
+        />
+        <div
+          class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-1laqsz7-MuiInputAdornment-root"
+        >
+          <button
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
+            tabindex="0"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+              data-testid="ClearIcon"
+              focusable="false"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+              />
+            </svg>
+            <span
+              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+            />
+          </button>
+        </div>
+      </div>
+    </div>
+    <button
+      class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeSmall MuiButton-textSizeSmall css-1c8zr45-MuiButtonBase-root-MuiButton-root-menuIcon"
+      tabindex="0"
+      type="button"
+    >
+      Open faceted selector
+      <span
+        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+      />
+    </button>
+  </div>
+</div>
 `;
 
 exports[`renders with a couple of categorized tracks 1`] = `
@@ -56,8 +121,8 @@ exports[`renders with a couple of categorized tracks 1`] = `
       <label
         class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard css-1s1jvl0-MuiFormLabel-root-MuiInputLabel-root"
         data-shrink="false"
-        for="mui-5"
-        id="mui-5-label"
+        for="mui-6"
+        id="mui-6-label"
       >
         Filter tracks
       </label>
@@ -67,7 +132,7 @@ exports[`renders with a couple of categorized tracks 1`] = `
         <input
           aria-invalid="false"
           class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd css-nz481w-MuiInputBase-input-MuiInput-input"
-          id="mui-5"
+          id="mui-6"
           type="text"
           value=""
         />
@@ -144,8 +209,8 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
       <label
         class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard css-1s1jvl0-MuiFormLabel-root-MuiInputLabel-root"
         data-shrink="false"
-        for="mui-1"
-        id="mui-1-label"
+        for="mui-2"
+        id="mui-2-label"
       >
         Filter tracks
       </label>
@@ -155,7 +220,7 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
         <input
           aria-invalid="false"
           class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd css-nz481w-MuiInputBase-input-MuiInput-input"
-          id="mui-1"
+          id="mui-2"
           type="text"
           value=""
         />

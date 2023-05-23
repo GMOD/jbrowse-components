@@ -50,10 +50,15 @@ export type TreeNode = {
 
 function filterTracks(
   tracks: AnyConfigurationModel[],
-  self: { view: { type: string }; assemblyNames: string[] },
+  self: {
+    view: { type: string; trackSelectorAnyOverlap?: boolean }
+    assemblyNames: string[]
+  },
 ) {
   const { assemblyManager } = getSession(self)
   const { pluginManager } = getEnv(self)
+  const { view } = self
+  const { trackSelectorAnyOverlap } = view
   const trackListAssemblies = self.assemblyNames
     .map(a => assemblyManager.get(a))
     .filter(notEmpty)
@@ -63,13 +68,15 @@ function filterTracks(
       const trackAssemblyNames = readConfObject(c, 'assemblyNames') as string[]
       const trackAssemblies = new Set(
         trackAssemblyNames
-          .map(name => assemblyManager.get(name))
-          .filter(notEmpty),
+          ?.map(name => assemblyManager.get(name))
+          .filter(notEmpty) || [],
       )
-      return trackListAssemblies.every(a => trackAssemblies.has(a))
+      return trackSelectorAnyOverlap
+        ? trackListAssemblies.some(a => trackAssemblies.has(a))
+        : trackListAssemblies.every(a => trackAssemblies.has(a))
     })
     .filter(c => {
-      const { displayTypes } = pluginManager.getViewType(self.view.type)
+      const { displayTypes } = pluginManager.getViewType(view.type)
       const compatDisplays = displayTypes.map(d => d.name)
       const trackDisplays = c.displays.map((d: { type: string }) => d.type)
       return hasAnyOverlap(compatDisplays, trackDisplays)
