@@ -68,10 +68,8 @@ export default function sessionModelFactory({
       /**
        * #getter
        */
-      get assemblyNames() {
-        return [...self.assemblies, ...self.sessionAssemblies].map(r =>
-          readConfObject(r, 'name'),
-        )
+      get assemblies(): Instance<BaseAssemblyConfigSchema[]> {
+        return [...self.jbrowse.assemblies, ...self.sessionAssemblies]
       },
       /**
        * #getter
@@ -95,6 +93,12 @@ export default function sessionModelFactory({
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
+      get assemblyNames(): string[] {
+        return self.assemblies.map(a => readConfObject(a, 'name'))
+      },
       /**
        * #getter
        */
