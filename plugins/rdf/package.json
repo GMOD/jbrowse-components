@@ -46,7 +46,6 @@
     "mobx-state-tree": "^5.0.0",
     "rxjs": "^7.0.0"
   },
-  "private": true,
   "distModule": "esm/index.js",
   "srcModule": "src/index.ts",
   "module": ""

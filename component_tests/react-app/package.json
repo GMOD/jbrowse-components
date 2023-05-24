@@ -5,7 +5,7 @@
   "dependencies": {
     "@craco/craco": "^7.0.0",
     "@fontsource/roboto": "^4.5.5",
-    "@jbrowse/react-app": "^2.0.0",
+    "@jbrowse/react-app": "file:./packed/jbrowse-react-app.tgz",
     "@testing-library/cypress": "^9.0.0",
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^12.1.4",
