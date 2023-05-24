@@ -2,7 +2,7 @@ import React from 'react'
 
 // replace with import {createViewState,JBrowseWebApp} from '@jbrowse/react-app' in your code
 import { createViewState, JBrowseWebApp } from '../../src'
-// replace with import makeWorkerInstance from '@jbrowse/react-app/esm/makeWorkerInstance' in your codea
+// replace with import makeWorkerInstance from '@jbrowse/react-app/esm/makeWorkerInstance' in your code
 import makeWorkerInstance from '../../src/makeWorkerInstance'
 import volvoxConfig from '../../public/test_data/volvox/config.json'
 import { addRelativeUris } from '../util'
