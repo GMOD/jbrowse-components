@@ -19,7 +19,6 @@ import LinearGenomeViewF, {
 } from './LinearGenomeView'
 
 import LinearBasicDisplayF from './LinearBasicDisplay'
-
 import FeatureTrackF from './FeatureTrack'
 import BasicTrackF from './BasicTrack'
 import LaunchLinearGenomeViewF from './LaunchLinearGenomeView'

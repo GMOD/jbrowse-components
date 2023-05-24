@@ -1,15 +1,18 @@
-import React from 'react'
+import React, { lazy } from 'react'
 import { Button, Paper, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
+
+// icons
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 
 // locals
 import { LinearGenomeViewModel } from '..'
 import TrackContainer from './TrackContainer'
 import TracksContainer from './TracksContainer'
-import ImportForm from './ImportForm'
+
+const ImportForm = lazy(() => import('./ImportForm'))
 
 type LGV = LinearGenomeViewModel
 
