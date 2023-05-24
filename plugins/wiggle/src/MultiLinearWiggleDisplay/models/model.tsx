@@ -1,6 +1,6 @@
 import React, { lazy } from 'react'
 import { addDisposer, isAlive, types, Instance } from 'mobx-state-tree'
-import { autorun, when } from 'mobx'
+import { autorun } from 'mobx'
 import { axisPropsFromTickScale } from 'react-d3-axis-mod'
 import deepEqual from 'fast-deep-equal'
 
@@ -14,7 +14,6 @@ import {
 import {
   getSession,
   getEnv,
-  getContainingView,
   isSelectionContainer,
   Feature,
 } from '@jbrowse/core/util'
@@ -23,7 +22,7 @@ import { set1 as colors } from '@jbrowse/core/ui/colors'
 import PluginManager from '@jbrowse/core/PluginManager'
 import {
   BaseLinearDisplay,
-  LinearGenomeViewModel,
+  ExportSvgDisplayOptions,
 } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
@@ -35,12 +34,11 @@ import {
 } from '../../util'
 
 import Tooltip from '../components/Tooltip'
-import { StatBars } from '../components/WiggleDisplayComponent'
 
 const randomColor = () =>
   '#000000'.replace(/0/g, () => (~~(Math.random() * 16)).toString(16))
 
-// lazt components
+// lazy components
 const SetMinMaxDlg = lazy(() => import('../../shared/SetMinMaxDialog'))
 const SetColorDlg = lazy(() => import('../components/SetColorDialog'))
 
@@ -53,38 +51,88 @@ const rendererTypes = new Map([
   ['multirowline', 'MultiRowLineRenderer'],
 ])
 
-type LGV = LinearGenomeViewModel
-
 interface Source {
   name: string
   color?: string
   group?: string
 }
 
-const stateModelFactory = (
+/**
+ * #stateModel
+ * MultiLinearWiggleDisplay
+ */
+export function stateModelFactory(
   pluginManager: PluginManager,
   configSchema: AnyConfigurationSchemaType,
-) =>
-  types
+) {
+  return types
     .compose(
       'MultiLinearWiggleDisplay',
       BaseLinearDisplay,
       types.model({
+        /**
+         * #property
+         */
         type: types.literal('MultiLinearWiggleDisplay'),
+        /**
+         * #property
+         */
         configuration: ConfigurationReference(configSchema),
+        /**
+         * #property
+         */
         selectedRendering: types.optional(types.string, ''),
+        /**
+         * #property
+         */
         resolution: types.optional(types.number, 1),
+        /**
+         * #property
+         */
         fill: types.maybe(types.boolean),
+        /**
+         * #property
+         */
         minSize: types.maybe(types.number),
+        /**
+         * #property
+         */
         color: types.maybe(types.string),
+        /**
+         * #property
+         */
         posColor: types.maybe(types.string),
+        /**
+         * #property
+         */
         negColor: types.maybe(types.string),
+        /**
+         * #property
+         */
         summaryScoreMode: types.maybe(types.string),
+        /**
+         * #property
+         */
         rendererTypeNameState: types.maybe(types.string),
+        /**
+         * #property
+         */
         scale: types.maybe(types.string),
+        /**
+         * #property
+         */
         autoscale: types.maybe(types.string),
+        /**
+         * #property
+         */
         displayCrossHatches: types.maybe(types.boolean),
+        /**
+         * #property
+         */
         layout: types.optional(types.frozen<Source[]>(), []),
+        /**
+         * #property
+         */
         constraints: types.optional(
           types.model({
             max: types.maybe(types.number),
@@ -103,12 +151,21 @@ const stateModelFactory = (
       sourcesVolatile: undefined as Source[] | undefined,
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
       setLayout(layout: Source[]) {
         self.layout = layout
       },
+      /**
+       * #action
+       */
       clearLayout() {
         self.layout = []
       },
+      /**
+       * #action
+       */
       updateQuantitativeStats(stats: { scoreMin: number; scoreMax: number }) {
         const { scoreMin, scoreMax } = stats
         const EPSILON = 0.000001
@@ -121,21 +178,35 @@ const stateModelFactory = (
           self.stats = { scoreMin, scoreMax }
         }
       },
+      /**
+       * #action
+       */
       setSources(sources: Source[]) {
         if (!deepEqual(sources, self.sourcesVolatile)) {
           self.sourcesVolatile = sources
         }
       },
+      /**
+       * #action
+       */
       setColor(color: string) {
         self.color = color
       },
+      /**
+       * #action
+       */
       setPosColor(color: string) {
         self.posColor = color
       },
+      /**
+       * #action
+       */
       setNegColor(color: string) {
         self.negColor = color
       },
-
+      /**
+       * #action
+       */
       setLoading(aborter: AbortController) {
         const { statsFetchInProgress: statsFetch } = self
         if (statsFetch !== undefined && !statsFetch.signal.aborted) {
@@ -143,10 +214,12 @@ const stateModelFactory = (
         }
         self.statsFetchInProgress = aborter
       },
-
-      // this overrides the BaseLinearDisplayModel to avoid popping up a
-      // feature detail display, but still sets the feature selection on the
-      // model so listeners can detect a click
+      /**
+       * #action
+       * this overrides the BaseLinearDisplayModel to avoid popping up a
+       * feature detail display, but still sets the feature selection on the
+       * model so listeners can detect a click
+       */
       selectFeature(feature: Feature) {
         const session = getSession(self)
         if (isSelectionContainer(session)) {
@@ -154,13 +227,21 @@ const stateModelFactory = (
         }
       },
 
+      /**
+       * #action
+       */
       setFeatureUnderMouse(f?: Feature) {
         self.featureUnderMouseVolatile = f
       },
+      /**
+       * #action
+       */
       setResolution(res: number) {
         self.resolution = res
       },
-
+      /**
+       * #action
+       */
       setFill(fill: number) {
         if (fill === 0) {
           self.fill = true
@@ -173,15 +254,21 @@ const stateModelFactory = (
           self.minSize = 2
         }
       },
-
+      /**
+       * #action
+       */
       toggleLogScale() {
         self.scale = self.scale === 'log' ? 'linear' : 'log'
       },
-
+      /**
+       * #action
+       */
       setScaleType(scale?: string) {
         self.scale = scale
       },
-
+      /**
+       * #action
+       */
       setSummaryScoreMode(val: string) {
         self.summaryScoreMode = val
       },
@@ -197,33 +284,53 @@ const stateModelFactory = (
       setRendererType(val: string) {
         self.rendererTypeNameState = val
       },
-
+      /**
+       * #action
+       */
       setMinScore(val?: number) {
         self.constraints.min = val
       },
-
+      /**
+       * #action
+       */
       toggleCrossHatches() {
         self.displayCrossHatches = !self.displayCrossHatches
       },
-
+      /**
+       * #action
+       */
       setCrossHatches(cross: boolean) {
         self.displayCrossHatches = cross
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
       get featureUnderMouse() {
         return self.featureUnderMouseVolatile
       },
+      /**
+       * #getter
+       */
       get TooltipComponent() {
         return Tooltip as unknown as React.FC
       },
-
+      /**
+       * #getter
+       */
       get adapterTypeName() {
         return self.adapterConfig.type
       },
+      /**
+       * #getter
+       */
       get rendererTypeNameSimple() {
         return self.rendererTypeNameState || getConf(self, 'defaultRendering')
       },
+      /**
+       * #getter
+       */
       get rendererTypeName() {
         const name = this.rendererTypeNameSimple
         const rendererType = rendererTypes.get(name)
@@ -233,24 +340,37 @@ const stateModelFactory = (
         return rendererType
       },
 
-      // subclasses can define these, as snpcoverage track does
+      /**
+       * #getter
+       * subclasses can define these, as snpcoverage track does
+       */
       get filters() {
         return undefined
       },
 
+      /**
+       * #getter
+       */
       get scaleType() {
         return self.scale ?? (getConf(self, 'scaleType') as string)
       },
-
+      /**
+       * #getter
+       */
       get maxScore() {
         return self.constraints.max ?? (getConf(self, 'maxScore') as number)
       },
-
+      /**
+       * #getter
+       */
       get minScore() {
         return self.constraints.min ?? (getConf(self, 'minScore') as number)
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
       get rendererConfig() {
         const configBlob =
           getConf(self, ['renderers', self.rendererTypeName]) || {}
@@ -285,7 +405,9 @@ const stateModelFactory = (
       },
     }))
     .views(self => ({
-      // everything except density gets a numerical scalebar
+      /**
+       * #getter
+       */
       get needsScalebar() {
         return (
           self.rendererTypeName === 'MultiXYPlotRenderer' ||
@@ -294,14 +416,18 @@ const stateModelFactory = (
           self.rendererTypeName === 'MultiRowLineRenderer'
         )
       },
-
+      /**
+       * #getter
+       */
       get needsFullHeightScalebar() {
         return (
           self.rendererTypeName === 'MultiXYPlotRenderer' ||
           self.rendererTypeName === 'MultiLineRenderer'
         )
       },
-
+      /**
+       * #getter
+       */
       get isMultiRow() {
         return (
           self.rendererTypeName === 'MultiRowXYPlotRenderer' ||
@@ -309,9 +435,11 @@ const stateModelFactory = (
           self.rendererTypeName === 'MultiDensityRenderer'
         )
       },
-
-      // can be used to give it a "color scale" like a R heatmap, not
-      // implemented like this yet but flag can be used for this
+      /**
+       * #getter
+       * can be used to give it a "color scale" like a R heatmap, not
+       * implemented like this yet but flag can be used for this
+       */
       get needsCustomLegend() {
         return self.rendererTypeName === 'MultiDensityRenderer'
       },
@@ -322,22 +450,29 @@ const stateModelFactory = (
           self.rendererTypeName === 'MultiRowXYPlotRenderer'
         )
       },
-
-      // the multirowxy and multiline don't need to use colors on the legend
-      // boxes since their track is drawn with the color. sort of a stylistic choice
+      /**
+       * #getter
+       * the multirowxy and multiline don't need to use colors on the legend
+       * boxes since their track is drawn with the color. sort of a stylistic
+       * choice
+       */
       get renderColorBoxes() {
         return !(
           self.rendererTypeName === 'MultiRowLineRenderer' ||
           self.rendererTypeName === 'MultiRowXYPlotRenderer'
         )
       },
-
-      // positions multi-row below the tracklabel even if using overlap
-      // tracklabels for everything else
+      /**
+       * #getter
+       * positions multi-row below the tracklabel even if using overlap
+       * tracklabels for everything else
+       */
       get prefersOffset() {
         return this.isMultiRow
       },
-
+      /**
+       * #getter
+       */
       get sources() {
         const sources = Object.fromEntries(
           self.sourcesVolatile?.map(s => [s.name, s]) || [],
@@ -355,19 +490,28 @@ const stateModelFactory = (
               (!this.isMultiRow ? colors[i] || randomColor() : 'blue'),
           }))
       },
+      /**
+       * #getter
+       */
+      get filled(): boolean {
+        const { fill, rendererConfig } = self
+        return fill ?? readConfObject(rendererConfig, 'filled')
+      },
+      /**
+       * #getter
+       */
+      get summaryScoreModeSetting(): string {
+        const { summaryScoreMode: scoreMode, rendererConfig } = self
+        return scoreMode ?? readConfObject(rendererConfig, 'summaryScoreMode')
+      },
     }))
 
     .views(self => {
       let oldDomain: [number, number] = [0, 0]
       return {
-        get filled(): boolean {
-          const { fill, rendererConfig } = self
-          return fill ?? readConfObject(rendererConfig, 'filled')
-        },
-        get summaryScoreModeSetting(): string {
-          const { summaryScoreMode: scoreMode, rendererConfig } = self
-          return scoreMode ?? readConfObject(rendererConfig, 'summaryScoreMode')
-        },
+        /**
+         * #getter
+         */
         get domain() {
           const { stats, scaleType, minScore, maxScore } = self
           if (!stats) {
@@ -393,7 +537,9 @@ const stateModelFactory = (
 
           return oldDomain
         },
-
+        /**
+         * #getter
+         */
         get scaleOpts() {
           const { scaleType, stats } = self
           return {
@@ -404,11 +550,15 @@ const stateModelFactory = (
             inverted: getConf(self, 'inverted'),
           }
         },
-
+        /**
+         * #getter
+         */
         get autoscaleType() {
           return self.autoscale ?? (getConf(self, 'autoscale') as string)
         },
-
+        /**
+         * #getter
+         */
         get displayCrossHatchesSetting() {
           const { displayCrossHatches, rendererConfig } = self
           return (
@@ -416,15 +566,23 @@ const stateModelFactory = (
             (readConfObject(rendererConfig, 'displayCrossHatches') as boolean)
           )
         },
+        /**
+         * #getter
+         */
         get rowHeight() {
           const { sources, height, isMultiRow } = self
           return isMultiRow ? height / (sources?.length || 1) : height
         },
-
+        /**
+         * #getter
+         */
         get rowHeightTooSmallForScalebar() {
           return this.rowHeight < 70
         },
 
+        /**
+         * #getter
+         */
         get useMinimalTicks() {
           return (
             getConf(self, 'minimalTicks') || this.rowHeightTooSmallForScalebar
@@ -433,6 +591,9 @@ const stateModelFactory = (
       }
     })
     .views(self => ({
+      /**
+       * #getter
+       */
       get ticks() {
         const { scaleType, domain, isMultiRow, rowHeight, useMinimalTicks } =
           self
@@ -454,6 +615,9 @@ const stateModelFactory = (
         return useMinimalTicks ? { ...ticks, values: domain } : ticks
       },
 
+      /**
+       * #getter
+       */
       get colors() {
         return [
           'red',
@@ -469,6 +633,9 @@ const stateModelFactory = (
         ]
       },
 
+      /**
+       * #getter
+       */
       get adapterCapabilities() {
         const { adapterTypeName } = self
         return pluginManager.getAdapterType(adapterTypeName).adapterCapabilities
@@ -477,6 +644,9 @@ const stateModelFactory = (
     .views(self => {
       const { renderProps: superRenderProps } = self
       return {
+        /**
+         * #method
+         */
         renderProps() {
           const superProps = superRenderProps()
           const {
@@ -510,14 +680,23 @@ const stateModelFactory = (
           }
         },
 
+        /**
+         * #getter
+         */
         get hasResolution() {
           return self.adapterCapabilities.includes('hasResolution')
         },
 
+        /**
+         * #getter
+         */
         get hasGlobalStats() {
           return self.adapterCapabilities.includes('hasGlobalStats')
         },
 
+        /**
+         * #getter
+         */
         get fillSetting() {
           if (self.filled) {
             return 0
@@ -533,6 +712,9 @@ const stateModelFactory = (
       const { trackMenuItems: superTrackMenuItems } = self
       const hasRenderings = getConf(self, 'defaultRendering')
       return {
+        /**
+         * #method
+         */
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
@@ -657,14 +839,15 @@ const stateModelFactory = (
     })
     .actions(self => {
       const { reload: superReload, renderSvg: superRenderSvg } = self
-
-      type ExportSvgOpts = Parameters<typeof superRenderSvg>[0]
-
       return {
+        /**
+         * #action
+         */
         async reload() {
           self.setError()
           superReload()
         },
+
         afterAttach() {
           quantitativeStatsAutorun(self)
           addDisposer(
@@ -687,20 +870,17 @@ const stateModelFactory = (
             }),
           )
         },
-        async renderSvg(opts: ExportSvgOpts) {
-          await when(() => !!self.stats && !!self.regionCannotBeRenderedText)
-          const { offsetPx } = getContainingView(self) as LGV
-          return (
-            <>
-              <g id="snpcov">{await superRenderSvg(opts)}</g>
-              <g transform={`translate(${Math.max(-offsetPx, 0)})`}>
-                <StatBars model={self} orientation="left" exportSVG />
-              </g>
-            </>
-          )
+
+        /**
+         * #action
+         */
+        async renderSvg(opts: ExportSvgDisplayOptions) {
+          const { renderSvg } = await import('./renderSvg')
+          return renderSvg(self, opts, superRenderSvg)
         },
       }
     })
+}
 
 export type WiggleDisplayStateModel = ReturnType<typeof stateModelFactory>
 export type WiggleDisplayModel = Instance<WiggleDisplayStateModel>

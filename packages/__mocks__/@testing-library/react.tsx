@@ -1,11 +1,13 @@
 import { createTheme, ThemeProvider } from '@mui/material/styles'
 
-import React from 'react'
+import React, { Suspense } from 'react'
 
 const react = jest.requireActual('@testing-library/react')
 const render = (args: React.ReactNode) => {
   return react.render(
-    <ThemeProvider theme={createTheme()}>{args}</ThemeProvider>,
+    <Suspense fallback={<div />}>
+      <ThemeProvider theme={createTheme()}>{args}</ThemeProvider>
+    </Suspense>,
   )
 }
 

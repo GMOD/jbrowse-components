@@ -57,7 +57,11 @@ export default class LinearGenomeViewPlugin extends Plugin {
   }
 }
 
-export type { BaseLinearDisplayModel, BlockModel } from './BaseLinearDisplay'
+export type {
+  ExportSvgDisplayOptions,
+  BaseLinearDisplayModel,
+  BlockModel,
+} from './BaseLinearDisplay'
 
 export { configSchemaFactory as linearBareDisplayConfigSchemaFactory } from './LinearBareDisplay'
 export {

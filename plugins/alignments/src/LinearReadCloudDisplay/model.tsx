@@ -1,10 +1,15 @@
 import React, { lazy } from 'react'
 import { cast, types, Instance } from 'mobx-state-tree'
+import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import {
   AnyConfigurationSchemaType,
   ConfigurationReference,
 } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
+import {
+  FeatureDensityMixin,
+  TrackHeightMixin,
+} from '@jbrowse/plugin-linear-genome-view'
 
 // icons
 import PaletteIcon from '@mui/icons-material/Palette'
@@ -13,13 +18,6 @@ import FilterListIcon from '@mui/icons-material/ClearAll'
 // locals
 import { FilterModel } from '../shared'
 import { ChainData } from '../shared/fetchChains'
-import drawFeats from './drawFeats'
-import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import {
-  FeatureDensityMixin,
-  TrackHeightMixin,
-} from '@jbrowse/plugin-linear-genome-view'
-import { doAfterAttach } from '../shared/dynamicTrackAfterAttach'
 
 // async
 const FilterByTagDlg = lazy(() => import('../shared/FilterByTag'))
@@ -217,13 +215,24 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           rasterizeLayers?: boolean
         }): Promise<React.ReactNode> {
           const { renderSvg } = await import('../shared/renderSvg')
+          const { drawFeats } = await import('./drawFeats')
           return renderSvg(self as LinearReadCloudDisplayModel, opts, drawFeats)
         },
       }
     })
     .actions(self => ({
       afterAttach() {
-        doAfterAttach(self, drawFeats)
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        ;(async () => {
+          try {
+            const { doAfterAttach } = await import('../shared/afterAttach')
+            const { drawFeats } = await import('./drawFeats')
+            doAfterAttach(self, drawFeats)
+          } catch (e) {
+            console.error(e)
+            self.setError(e)
+          }
+        })()
       },
     }))
 }
