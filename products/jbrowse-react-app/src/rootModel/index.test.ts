@@ -2,27 +2,25 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSnapshot } from 'mobx-state-tree'
 import corePlugins from '../corePlugins'
-import rootModelFactory, { WebRootModelType } from './rootModel'
+import rootModelFactory from './'
 import sessionModelFactory from '../sessionModel'
+
 jest.mock('../makeWorkerInstance', () => () => {})
 
+function getRootModel() {
+  const pluginManager = new PluginManager(corePlugins.map(P => new P()))
+  pluginManager.createPluggableElements()
+  pluginManager.configure()
+  return rootModelFactory({ pluginManager, sessionModelFactory })
+}
 describe('Root MST model', () => {
-  let rootModel: WebRootModelType | undefined
-
-  beforeAll(() => {
-    const pluginManager = new PluginManager(corePlugins.map(P => new P()))
-    pluginManager.createPluggableElements()
-    pluginManager.configure()
-    rootModel = rootModelFactory({ pluginManager, sessionModelFactory })
-  })
-
   afterEach(() => {
     localStorage.clear()
     sessionStorage.clear()
   })
 
   it('creates with defaults', () => {
-    const root = rootModel!.create({
+    const root = getRootModel().create({
       jbrowse: {
         configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
       },
@@ -36,7 +34,7 @@ describe('Root MST model', () => {
   })
 
   it('creates with a minimal session', () => {
-    const root = rootModel!.create({
+    const root = getRootModel().create({
       jbrowse: {
         configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
       },
@@ -52,7 +50,7 @@ describe('Root MST model', () => {
     Storage.prototype.getItem = jest.fn(
       () => `{"session": {"name": "testSession"}}`,
     )
-    const root = rootModel!.create({
+    const root = getRootModel().create({
       jbrowse: {
         configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
       },
@@ -64,7 +62,7 @@ describe('Root MST model', () => {
   })
 
   it('adds track and connection configs to an assembly', () => {
-    const root = rootModel!.create({
+    const root = getRootModel().create({
       jbrowse: {
         configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
         assemblies: [
@@ -111,7 +109,7 @@ describe('Root MST model', () => {
 
   it('throws if session is invalid', () => {
     expect(() =>
-      rootModel!.create({
+      getRootModel().create({
         jbrowse: {
           configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
         },
@@ -122,7 +120,7 @@ describe('Root MST model', () => {
   })
 
   it('throws if session snapshot is invalid', () => {
-    const root = rootModel!.create({
+    const root = getRootModel().create({
       jbrowse: {
         configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
       },
@@ -132,7 +130,7 @@ describe('Root MST model', () => {
   })
 
   it('adds menus', () => {
-    const root = rootModel!.create({
+    const root = getRootModel().create({
       jbrowse: {
         configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
       },

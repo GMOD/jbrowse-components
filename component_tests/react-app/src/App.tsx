@@ -6,9 +6,10 @@ import tracks from './tracks'
 
 export default function App() {
   const state = createViewState({
-    assemblies: [assembly],
-    tracks,
-    location: 'ctgA:1105..1221',
+    config: {
+      assemblies: [assembly],
+      tracks,
+    },
   })
 
   return <JBrowseApp viewState={state} />

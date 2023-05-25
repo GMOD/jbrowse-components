@@ -8,12 +8,14 @@ import rootModelFactory from '.'
 import sessionModelFactory from '../sessionModel'
 
 jest.mock('../makeWorkerInstance', () => () => {})
+
 function getRootModel() {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
     .createPluggableElements()
     .configure()
   return rootModelFactory({ pluginManager, sessionModelFactory })
 }
+
 describe('Root MST model', () => {
   it('creates with defaults', () => {
     const root = getRootModel().create({

@@ -1,14 +1,14 @@
-# jbrowse-react-linear-genome-view-nextjs
+# jbrowse-react-app-nextjs
 
-This is a demo of using the linear genome view with next.js 11 (which uses
-webpack 5)
+This is a demo of using the @jbrowse/react-app NPM package with next.js (which
+uses webpack 5)
 
-# Demo of `@jbrowse/react-linear-genome-view` with next.js
+# Demo of `@jbrowse/react-app` with next.js
 
-See this app running at https://jbrowse.org/demos/lgv-nextjs/.
+See this app running at https://jbrowse.org/demos/app-nextjs/.
 
 Download this directory from the monorepo using
-https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2FGMOD%2Fjbrowse-components%2Ftree%2Fmain%2Fembedded_demos%2Fjbrowse-react-linear-genome-view-nextjs
+https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2FGMOD%2Fjbrowse-components%2Ftree%2Fmain%2Fembedded_demos%2Fjbrowse-react-app-nextjs
 
 ## Getting Started
 
