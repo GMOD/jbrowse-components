@@ -4,7 +4,7 @@ import { Instance } from 'mobx-state-tree'
 
 // locals
 import corePlugins from './corePlugins'
-import createRootModel from './rootModel/rootModel'
+import createRootModel from './rootModel'
 import sessionModelFactory from './sessionModel'
 
 export default function createModel(

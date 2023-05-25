@@ -28,3 +28,8 @@ cp base/circular/tracks.ts jbrowse-react-circular-genome-view-vanillajs/tracks.j
 cp base/circular/defaultSession.ts jbrowse-react-circular-genome-view/src/
 cp base/circular/defaultSession.ts jbrowse-react-circular-genome-view-cra5/src/
 cp base/circular/defaultSession.ts jbrowse-react-circular-genome-view-vanillajs/defaultSession.js
+
+## react app
+cp base/app/config.ts jbrowse-react-app-cra5/src/
+cp base/app/config.ts jbrowse-react-app-vite/src/
+cp base/app/config.ts jbrowse-react-app-nextjs/utils/

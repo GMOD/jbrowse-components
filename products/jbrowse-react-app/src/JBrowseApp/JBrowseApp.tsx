@@ -8,7 +8,7 @@ import { makeStyles } from 'tss-react/mui'
 // locals
 import { ViewModel } from '../createModel'
 
-const App = lazy(() => import('./App'))
+const App = lazy(() => import('./AppReExport'))
 
 const useStyles = makeStyles()({
   // avoid parent styles getting into this div
