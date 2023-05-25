@@ -10,12 +10,6 @@ import { types } from 'mobx-state-tree'
 
 // locals
 import configSchema from './configSchema'
-import {
-  fetchGenomesFile,
-  fetchHubFile,
-  fetchTrackDbFile,
-  generateTracks,
-} from './ucscTrackHub'
 
 export default function UCSCTrackHubConnection(pluginManager: PluginManager) {
   return types
@@ -31,8 +25,15 @@ export default function UCSCTrackHubConnection(pluginManager: PluginManager) {
       async connect() {
         const session = getSession(self)
         try {
-          const connectionName = getConf(self, 'name') // NOTE: name comes from the base configuration
+          // NOTE: name comes from the base configuration
+          const connectionName = getConf(self, 'name')
           const hubFileLocation = getConf(self, 'hubTxtLocation')
+          const {
+            generateTracks,
+            fetchGenomesFile,
+            fetchTrackDbFile,
+            fetchHubFile,
+          } = await import('./ucscTrackHub')
           const hubFile = await fetchHubFile(hubFileLocation)
           const genomeFile = hubFile.get('genomesFile')
           if (!genomeFile) {

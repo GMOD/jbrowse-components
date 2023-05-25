@@ -1,13 +1,6 @@
 import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { getSnapshot, resolveIdentifier } from 'mobx-state-tree'
 import { JBrowseModelF } from '@jbrowse/app-core'
-
-// poke some things for testing (this stuff will eventually be removed)
-// @ts-expect-error
-window.getSnapshot = getSnapshot
-// @ts-expect-error
-window.resolveIdentifier = resolveIdentifier
 
 /**
  * #stateModel JBrowseReactAppConfigModel

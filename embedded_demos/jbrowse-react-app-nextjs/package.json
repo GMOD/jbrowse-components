@@ -1,0 +1,32 @@
+{
+  "name": "jbrowse-react-app-next",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "export": "next export",
+    "start": "next start",
+    "predeploy": "npm run build && npm run export",
+    "deploy": "aws s3 sync --delete out s3://jbrowse.org/demos/app-nextjs/",
+    "postdeploy": "aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths \"/demos/app-nextjs/*\""
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.21.5",
+    "@fontsource/roboto": "^4.5.7",
+    "@jbrowse/react-app": "^2.0.0",
+    "@mui/system": "^5.13.2",
+    "next": "^13.0.7",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.9",
+    "@types/react": "^18.0.25",
+    "@types/react-dom": "^18.0.9",
+    "eslint": "^8.28.0",
+    "eslint-config-next": "^13.0.4",
+    "typescript": "^4.9.3"
+  }
+}

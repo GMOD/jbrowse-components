@@ -1,49 +1,47 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { PluginConstructor } from '@jbrowse/core/Plugin'
-import { onPatch, IJsonPatch } from 'mobx-state-tree'
+import { onPatch, IJsonPatch, SnapshotIn } from 'mobx-state-tree'
+import { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
+
+// locals
 import createModel from './createModel'
 
-interface Location {
-  refName: string
-  start?: number
-  end?: number
-  assemblyName?: string
+interface TextSearchAdapterConfig {
+  textSearchAdapterId: string
+  [key: string]: unknown
+}
+interface InternetAccountConfig {
+  internetAccountId: string
+  [key: string]: unknown
+}
+interface TrackConfig {
+  trackId: string
+  [key: string]: unknown
+}
+interface SessionSnapshot {
+  name: string
+  [key: string]: unknown
+}
+interface Config {
+  assemblies: SnapshotIn<BaseAssemblyConfigSchema>[]
+  tracks: TrackConfig[]
+  internetAccounts?: InternetAccountConfig[]
+  aggregateTextSearchAdapters?: TextSearchAdapterConfig[]
+  configuration?: Record<string, unknown>
+  defaultSession?: SessionSnapshot
 }
 
 export default function createViewState(opts: {
-  assemblies: any[]
-  tracks: any[]
-  internetAccounts?: any[]
-  aggregateTextSearchAdapters?: any[]
-  configuration?: Record<string, unknown>
+  config: Config
   plugins?: PluginConstructor[]
-  location?: string | Location
-  defaultSession?: any
-  disableAddTracks?: boolean
   onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
   makeWorkerInstance?: () => Worker
 }) {
-  const {
-    assemblies,
-    tracks,
-    internetAccounts,
-    configuration,
-    aggregateTextSearchAdapters,
-    defaultSession = { name: 'New session' },
-    plugins = [],
-    onChange,
-    makeWorkerInstance,
-  } = opts
+  const { config, plugins = [], onChange, makeWorkerInstance } = opts
+  const { defaultSession = { name: 'NewSession' } } = config
   const { model, pluginManager } = createModel(plugins, makeWorkerInstance)
   const stateTree = model.create(
     {
-      jbrowse: {
-        configuration,
-        assemblies,
-        tracks,
-        internetAccounts,
-        aggregateTextSearchAdapters,
-      },
+      jbrowse: config,
       session: defaultSession,
     },
     { pluginManager },

@@ -1,0 +1,31 @@
+{
+  "name": "vite-jbrowse-react-app",
+  "version": "0.0.0",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "predeploy": "npm run build",
+    "deploy": "aws s3 sync --delete dist s3://jbrowse.org/demos/app-vite/",
+    "postdeploy": "aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths \"/demos/app-vite/*\""
+  },
+  "dependencies": {
+    "@esbuild-plugins/node-modules-polyfill": "^0.2.2",
+    "@fontsource/roboto": "^4.5.3",
+    "@jbrowse/core": "^2.0.0",
+    "@jbrowse/react-app": "^2.0.0",
+    "@types/node": "^18.11.12",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.26",
+    "@types/react-dom": "^18.0.9",
+    "@vitejs/plugin-react": "^3.0.0",
+    "buffer": "^6.0.3",
+    "stream-browserify": "^3.0.0",
+    "typescript": "^4.9.4",
+    "vite": "^4.0.0"
+  }
+}

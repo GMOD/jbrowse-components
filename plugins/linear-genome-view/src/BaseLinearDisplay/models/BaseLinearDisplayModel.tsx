@@ -43,6 +43,11 @@ export interface Layout {
 
 type LayoutRecord = [number, number, number, number]
 
+export interface ExportSvgDisplayOptions extends ExportSvgOptions {
+  overrideHeight: number
+  theme: ThemeOptions
+}
+
 /**
  * #stateModel BaseLinearDisplay
  * #category display
@@ -348,12 +353,7 @@ function stateModelFactory() {
       /**
        * #method
        */
-      async renderSvg(
-        opts: ExportSvgOptions & {
-          overrideHeight: number
-          theme: ThemeOptions
-        },
-      ) {
+      async renderSvg(opts: ExportSvgDisplayOptions) {
         return renderBaseLinearDisplaySvg(self as BaseLinearDisplayModel, opts)
       },
       afterAttach() {

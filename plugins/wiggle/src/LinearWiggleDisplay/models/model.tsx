@@ -8,15 +8,10 @@ import {
 import {
   getEnv,
   getSession,
-  getContainingView,
   isSelectionContainer,
   Feature,
 } from '@jbrowse/core/util'
-import {
-  BaseLinearDisplay,
-  LinearGenomeViewModel,
-} from '@jbrowse/plugin-linear-genome-view'
-import { when } from 'mobx'
+import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import { types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
@@ -29,7 +24,6 @@ import {
 } from '../../util'
 
 import Tooltip from '../components/Tooltip'
-import YScaleBar from '../../shared/YScaleBar'
 
 const SetMinMaxDlg = lazy(() => import('../../shared/SetMinMaxDialog'))
 const SetColorDlg = lazy(() => import('../components/SetColorDialog'))
@@ -40,8 +34,6 @@ const rendererTypes = new Map([
   ['density', 'DensityRenderer'],
   ['line', 'LinePlotRenderer'],
 ])
-
-type LGV = LinearGenomeViewModel
 
 /**
  * #stateModel LinearWiggleDisplay
@@ -689,22 +681,8 @@ function stateModelFactory(
          * #action
          */
         async renderSvg(opts: ExportSvgOpts) {
-          await when(() => !!self.stats && !!self.regionCannotBeRenderedText)
-          const { needsScalebar, stats } = self
-          const { offsetPx } = getContainingView(self) as LGV
-          return (
-            <>
-              <g id="snpcov">{await superRenderSvg(opts)}</g>
-              {needsScalebar && stats ? (
-                <g transform={`translate(${Math.max(-offsetPx, 0)})`}>
-                  <YScaleBar
-                    model={self as WiggleDisplayModel}
-                    orientation="left"
-                  />
-                </g>
-              ) : null}
-            </>
-          )
+          const { renderSvg } = await import('./renderSvg')
+          return renderSvg(self, opts, superRenderSvg)
         },
       }
     })

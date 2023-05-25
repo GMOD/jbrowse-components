@@ -1,6 +1,6 @@
 # jbrowse-react-linear-genome-view-nextjs
 
-This is a demo of using the linear genome view with next.js 11 (which uses
+This is a demo of using the linear genome view with next.js (which uses
 webpack 5)
 
 # Demo of `@jbrowse/react-linear-genome-view` with next.js

@@ -9,7 +9,7 @@ import { drawLongReadChains } from './drawLongReadChains'
 
 type LGV = LinearGenomeViewModel
 
-export default function drawFeats(
+export function drawFeats(
   self: LinearReadCloudDisplayModel,
   ctx: CanvasRenderingContext2D,
 ) {
