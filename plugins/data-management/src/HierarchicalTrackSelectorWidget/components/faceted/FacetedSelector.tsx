@@ -46,7 +46,7 @@ export default observer(function FacetedSelector({
 }: {
   model: HierarchicalTrackSelectorModel
 }) {
-  const { assemblyNames, view, selection } = model
+  const { view, selection } = model
   const { pluginManager } = getEnv(model)
   const { ref, scrollLeft } = useResizeBar()
 
@@ -56,10 +56,9 @@ export default observer(function FacetedSelector({
   const [useShoppingCart, setUseShoppingCart] = useState(false)
   const [hideSparse, setHideSparse] = useState(true)
   const [panelWidth, setPanelWidth] = useState(400)
-
-  const assemblyName = assemblyNames[0]
   const session = getSession(model)
   const filterDebounced = useDebounce(filterText, 400)
+  const tracks = view.tracks as AnyConfigurationModel[]
   const [filters, dispatch] = useReducer(
     (
       state: Record<string, string[]>,
@@ -73,8 +72,7 @@ export default observer(function FacetedSelector({
   const rows = useMemo(() => {
     // metadata is spread onto the object for easier access and sorting
     // by the mui data grid (it's unable to sort by nested objects)
-    return model
-      .trackConfigurations(assemblyName)
+    return model.trackConfigurations
       .filter(conf => matches(filterDebounced, conf, session))
       .map(track => {
         const metadata = readConfObject(track, 'metadata')
@@ -89,7 +87,7 @@ export default observer(function FacetedSelector({
           ...metadata,
         }
       })
-  }, [assemblyName, model, filterDebounced, session])
+  }, [model, filterDebounced, session])
 
   const filteredNonMetadataKeys = useMemo(
     () =>
@@ -109,9 +107,10 @@ export default observer(function FacetedSelector({
     [hideSparse, rows],
   )
 
-  const fields = useMemo(() => {
-    return ['name', ...filteredNonMetadataKeys, ...filteredMetadataKeys]
-  }, [filteredNonMetadataKeys, filteredMetadataKeys])
+  const fields = useMemo(
+    () => ['name', ...filteredNonMetadataKeys, ...filteredMetadataKeys],
+    [filteredNonMetadataKeys, filteredMetadataKeys],
+  )
 
   const [widths, setWidths] = useState({
     name:
@@ -137,7 +136,7 @@ export default observer(function FacetedSelector({
         ),
       ]),
     ),
-  } as { [key: string]: number })
+  } as { [key: string]: number | undefined })
 
   const [visible, setVisible] = useState(
     Object.fromEntries(fields.map(c => [c, true])),
@@ -202,11 +201,11 @@ export default observer(function FacetedSelector({
           </>
         )
       },
-      width: widthsDebounced.name || 100, // can be undefined before useEffect update
+      width: widthsDebounced.name ?? 100,
     },
     ...filteredNonMetadataKeys.map(e => ({
       field: e,
-      width: widthsDebounced[e] || 100, // can be undefined before useEffect update
+      width: widthsDebounced[e] ?? 100,
       renderCell: (params: GridCellParams) => {
         const { value } = params
         return value ? <SanitizedHTML html={value as string} /> : ''
@@ -214,7 +213,7 @@ export default observer(function FacetedSelector({
     })),
     ...filteredMetadataKeys.map(e => ({
       field: e,
-      width: widthsDebounced[e] || 100, // can be undefined before useEffect update
+      width: widthsDebounced[e] ?? 100,
       renderCell: (params: GridCellParams) => {
         const { value } = params
         return value ? <SanitizedHTML html={value as string} /> : ''
@@ -222,10 +221,7 @@ export default observer(function FacetedSelector({
     })),
   ]
 
-  const shownTrackIds = view.tracks.map(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (t: any) => t.configuration.trackId,
-  ) as string[]
+  const shownTrackIds = tracks.map(t => t.configuration.trackId as string)
 
   const arrFilters = Object.entries(filters).filter(f => f[1].length > 0)
   return (
@@ -271,7 +267,7 @@ export default observer(function FacetedSelector({
         >
           <ResizeBar
             checkbox
-            widths={Object.values(widths)}
+            widths={Object.values(widths).map(f => f ?? 100)}
             setWidths={newWidths =>
               setWidths(
                 Object.fromEntries(

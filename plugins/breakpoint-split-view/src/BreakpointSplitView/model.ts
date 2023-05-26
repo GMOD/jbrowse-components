@@ -17,7 +17,7 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
-import { getSession, Feature } from '@jbrowse/core/util'
+import { getSession, Feature, notEmpty } from '@jbrowse/core/util'
 import { AnyConfigurationModel, getConf } from '@jbrowse/core/configuration'
 
 // icons
@@ -179,15 +179,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   }
                 : undefined
             })
-            .filter(
-              (
-                f,
-              ): f is {
-                feature: Feature
-                layout: LayoutRecord
-                level: number
-              } => !!f,
-            ),
+            .filter(notEmpty),
         )
       },
     }))

@@ -1276,6 +1276,7 @@ export function sum(arr: number[]) {
 export function avg(arr: number[]) {
   return sum(arr) / arr.length
 }
+
 export function groupBy<T>(array: T[], predicate: (v: T) => string) {
   const result = {} as { [key: string]: T[] }
   for (const value of array) {
@@ -1284,6 +1285,11 @@ export function groupBy<T>(array: T[], predicate: (v: T) => string) {
   }
   return result
 }
+
+export function notEmpty<T>(value: T | null | undefined): value is T {
+  return value !== null && value !== undefined
+}
+
 export {
   default as SimpleFeature,
   type Feature,

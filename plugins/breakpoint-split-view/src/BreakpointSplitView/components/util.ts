@@ -1,6 +1,6 @@
-import { Feature } from '@jbrowse/core/util'
+import { Feature, notEmpty } from '@jbrowse/core/util'
 
-import { parseBreakend, Breakend } from '@gmod/vcf'
+import { parseBreakend } from '@gmod/vcf'
 
 // this finds candidate alignment features, aimed at plotting split reads
 // from BAM/CRAM files
@@ -76,7 +76,7 @@ export function findMatchingAlt(feat1: Feature, feat2: Feature) {
     return new Map(
       alts
         ?.map(alt => parseBreakend(alt))
-        .filter((f): f is Breakend => !!f)
+        .filter(notEmpty)
         .map(bnd => [bnd.MatePosition, bnd]),
     ).get(`${feat2.get('refName')}:${feat2.get('start') + 1}`)
   }
