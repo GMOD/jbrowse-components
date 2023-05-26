@@ -41,7 +41,15 @@ const defaultSession = {
 
 export const WithWebWorker = () => {
   const state = createViewState({
-    config: { ...volvoxConfig, defaultSession },
+    config: {
+      ...volvoxConfig,
+      configuration: {
+        rpc: {
+          defaultDriver: 'WebWorkerRpcDriver',
+        },
+      },
+      defaultSession,
+    },
     makeWorkerInstance,
   })
   state.session.views[0]?.showTrack('Deep sequencing')
