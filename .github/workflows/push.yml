@@ -187,5 +187,5 @@ jobs:
         run: |
           pwd
           aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/cgv/$(echo ${{github.ref}} | cut -d "/" -f3-)
-          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths \"/storybook/cg/$(echo ${{github.ref}})/*\"
+          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths \"/storybook/cgv/$(echo ${{github.ref}})/*\"
         working-directory: products/jbrowse-react-circular-genome-view
