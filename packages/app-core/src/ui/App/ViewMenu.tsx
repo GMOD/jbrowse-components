@@ -1,12 +1,11 @@
-import React, { useState } from 'react'
+import React from 'react'
 import {
   SvgIconProps,
-  IconButton,
   IconButtonProps as IconButtonPropsType,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import Menu from '@jbrowse/core/ui/Menu'
 import { getSession } from '@jbrowse/core/util'
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 // icons
@@ -23,7 +22,6 @@ const ViewMenu = observer(function ({
   IconButtonProps?: IconButtonPropsType
   IconProps: SvgIconProps
 }) {
-  const [anchorEl, setAnchorEl] = useState<HTMLElement>()
   const { menuItems } = model
   const session = getSession(model)
 
@@ -48,25 +46,9 @@ const ViewMenu = observer(function ({
   ]
 
   return (
-    <>
-      <IconButton
-        {...IconButtonProps}
-        onClick={event => setAnchorEl(event.currentTarget)}
-        data-testid="view_menu_icon"
-      >
-        <MenuIcon {...IconProps} fontSize="small" />
-      </IconButton>
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onMenuItemClick={(_event, callback) => {
-          callback()
-          setAnchorEl(undefined)
-        }}
-        onClose={() => setAnchorEl(undefined)}
-        menuItems={items}
-      />
-    </>
+    <CascadingMenuButton menuItems={items} data-testid="view_menu_icon">
+      <MenuIcon {...IconProps} fontSize="small" />
+    </CascadingMenuButton>
   )
 })
 export default ViewMenu
