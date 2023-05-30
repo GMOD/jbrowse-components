@@ -18,7 +18,7 @@ export const fillColor = {
   color_interchrom: 'purple',
   color_longinsert: 'red',
   color_shortinsert: 'pink',
-  color_unknown: 'grey',
+  color_unknown: '#c8c8c8',
 }
 
 // manually calculated by running
