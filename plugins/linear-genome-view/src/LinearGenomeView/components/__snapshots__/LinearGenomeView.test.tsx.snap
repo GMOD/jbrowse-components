@@ -484,7 +484,7 @@ exports[`renders one track, one region 1`] = `
           </span>
           <button
             aria-haspopup="true"
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-15mrns3-MuiButtonBase-root-MuiIconButton-root-iconButton"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
             data-testid="track_menu_icon"
             tabindex="0"
             type="button"
@@ -1303,7 +1303,7 @@ exports[`renders two tracks, two regions 1`] = `
           </span>
           <button
             aria-haspopup="true"
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-15mrns3-MuiButtonBase-root-MuiIconButton-root-iconButton"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
             data-testid="track_menu_icon"
             tabindex="0"
             type="button"
@@ -1435,7 +1435,7 @@ exports[`renders two tracks, two regions 1`] = `
           </span>
           <button
             aria-haspopup="true"
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-15mrns3-MuiButtonBase-root-MuiIconButton-root-iconButton"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
             data-testid="track_menu_icon"
             tabindex="0"
             type="button"

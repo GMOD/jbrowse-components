@@ -7,13 +7,7 @@ import { getSession, getContainingView } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { SanitizedHTML } from '@jbrowse/core/ui'
-import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
-
-import {
-  bindTrigger,
-  bindPopover,
-  usePopupState,
-} from 'material-ui-popup-state/hooks'
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 
 // icons
 import MoreVertIcon from '@mui/icons-material/MoreVert'
@@ -71,12 +65,6 @@ const TrackLabel = React.forwardRef<HTMLDivElement, Props>(function (
   const minimized = track.minimized
   const trackId = getConf(track, 'trackId')
   const trackName = getTrackName(trackConf, session)
-
-  const popupState = usePopupState({
-    popupId: 'trackLabelMenu',
-    variant: 'popover',
-  })
-
   const items = [
     {
       label: minimized ? 'Restore track' : 'Minimize track',
@@ -119,23 +107,15 @@ const TrackLabel = React.forwardRef<HTMLDivElement, Props>(function (
         className={classes.trackName}
       >
         <SanitizedHTML
-          html={`${trackName}${minimized ? ' (minimized)' : ''}`}
+          html={[trackName, minimized ? '(minimized)' : '']
+            .filter(f => !!f)
+            .join(' ')}
         />
       </Typography>
-      <IconButton
-        {...bindTrigger(popupState)}
-        className={classes.iconButton}
-        data-testid="track_menu_icon"
-        disabled={items.length === 0}
-      >
+
+      <CascadingMenuButton menuItems={items} data-testid="track_menu_icon">
         <MoreVertIcon fontSize="small" />
-      </IconButton>
-      <CascadingMenu
-        {...bindPopover(popupState)}
-        onMenuItemClick={(_: unknown, callback: Function) => callback()}
-        menuItems={items}
-        popupState={popupState}
-      />
+      </CascadingMenuButton>
     </Paper>
   )
 })
