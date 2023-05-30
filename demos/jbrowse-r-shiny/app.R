@@ -1,9 +1,14 @@
 # Load packages ---
 library(shiny)
 library(JBrowseR)
+library(bslib)
+
+# Bootstrap ---
+bs_theme <- bs_theme(version = 5)
 
 # User interface ---
 ui <- fluidPage(
+  theme = bs_theme,
   titlePanel("JBrowseR Demo (with Shiny)"),
   tags$head(
     tags$style(
