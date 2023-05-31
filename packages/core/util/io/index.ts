@@ -134,7 +134,7 @@ function getInternetAccount(
         location.internetAccountPreAuthorization.authInfo.configuration,
     })
   }
-  return
+  return undefined
 }
 
 // This fetch throws a special error if the response is "401" and includes a

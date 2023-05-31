@@ -113,11 +113,10 @@ export function ucscProcessedTranscript(feature: Feature) {
   delete newData.blockCount
   delete newData.thickStart
   delete newData.thickEnd
-  const newFeature = new SimpleFeature({
+  return new SimpleFeature({
     data: newData,
     id: feature.id(),
   })
-  return newFeature
 }
 
 function defaultParser(fields: string[], line: string) {

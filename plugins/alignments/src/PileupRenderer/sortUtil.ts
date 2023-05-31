@@ -98,12 +98,10 @@ export const sortFeature = (
     }
   }
 
-  const sortedMap = new Map(
+  return new Map(
     [...featuresInCenterLine, ...featuresOutsideCenter].map(feature => [
       feature.id(),
       feature,
     ]),
   )
-
-  return sortedMap
 }

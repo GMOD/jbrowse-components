@@ -25,14 +25,8 @@ export interface RpcDriverConstructorArgs {
   config: AnyConfigurationModel
 }
 
-function isClonable(thing: unknown): boolean {
-  if (typeof thing === 'function') {
-    return false
-  }
-  if (thing instanceof Error) {
-    return false
-  }
-  return true
+function isClonable(thing: unknown) {
+  return !(typeof thing === 'function') && !(thing instanceof Error)
 }
 
 // watches the given worker object, returns a promise that will be rejected if

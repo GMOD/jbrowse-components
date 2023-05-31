@@ -454,7 +454,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          */
         contextMenuItems() {
           const feat = self.contextMenuFeature
-          const contextMenuItems = feat
+          return feat
             ? [
                 {
                   label: 'Open feature details',
@@ -477,7 +477,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 },
               ]
             : []
-          return contextMenuItems
         },
 
         /**

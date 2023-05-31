@@ -59,8 +59,7 @@ export default observer(function SvInspectorView({
             <ResizeHandle
               onDrag={distance => {
                 const ret1 = model.circularView.resizeWidth(-distance)
-                const ret2 = model.spreadsheetView.resizeWidth(-ret1)
-                return ret2
+                return model.spreadsheetView.resizeWidth(-ret1)
               }}
               vertical
               flexbox

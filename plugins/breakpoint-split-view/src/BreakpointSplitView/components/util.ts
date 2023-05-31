@@ -2,8 +2,8 @@ import { Feature, notEmpty } from '@jbrowse/core/util'
 
 import { parseBreakend } from '@gmod/vcf'
 
-// this finds candidate alignment features, aimed at plotting split reads
-// from BAM/CRAM files
+// this finds candidate alignment features, aimed at plotting split reads from
+// BAM/CRAM files
 export function getBadlyPairedAlignments(features: Map<string, Feature>) {
   const candidates = new Map<string, Feature[]>()
   const alreadySeen = new Set<string>()
@@ -35,8 +35,8 @@ function getTag(f: Feature, tag: string) {
   return tags ? tags[tag] : f.get(tag)
 }
 
-// this finds candidate alignment features, aimed at plotting split reads
-// from BAM/CRAM files
+// this finds candidate alignment features, aimed at plotting split reads from
+// BAM/CRAM files
 export function getMatchedAlignmentFeatures(features: Map<string, Feature>) {
   const candidates = new Map<string, Feature[]>()
   const alreadySeen = new Set<string>()
@@ -83,29 +83,27 @@ export function findMatchingAlt(feat1: Feature, feat2: Feature) {
   return undefined
 }
 
-// Returns paired BND features across multiple views by inspecting
-// the ALT field to get exact coordinate matches
+// Returns paired BND features across multiple views by inspecting the ALT
+// field to get exact coordinate matches
 export function getMatchedBreakendFeatures(feats: Map<string, Feature>) {
   const candidates = new Map<string, Feature[]>()
   const alreadySeen = new Set<string>()
 
   for (const f of feats.values()) {
-    if (!alreadySeen.has(f.id())) {
-      if (f.get('type') === 'breakend') {
-        const alts = f.get('ALT') as string[] | undefined
-        alts?.forEach(a => {
-          const cur = `${f.get('refName')}:${f.get('start') + 1}`
-          const bnd = parseBreakend(a)
-          if (bnd) {
-            const val = candidates.get(cur)
-            if (!val) {
-              candidates.set(bnd.MatePosition || 'none', [f])
-            } else {
-              val.push(f)
-            }
+    if (!alreadySeen.has(f.id()) && f.get('type') === 'breakend') {
+      const alts = f.get('ALT') as string[] | undefined
+      alts?.forEach(a => {
+        const cur = `${f.get('refName')}:${f.get('start') + 1}`
+        const bnd = parseBreakend(a)
+        if (bnd) {
+          const val = candidates.get(cur)
+          if (!val) {
+            candidates.set(bnd.MatePosition || 'none', [f])
+          } else {
+            val.push(f)
           }
-        })
-      }
+        }
+      })
     }
     alreadySeen.add(f.id())
   }

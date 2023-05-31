@@ -70,7 +70,7 @@ export default class extends Plugin {
                 },
                 views: {
                   menuItems() {
-                    const newMenuItems = [
+                    return [
                       ...superMenuItems(),
                       { type: 'divider' },
                       {
@@ -86,12 +86,10 @@ export default class extends Plugin {
                         onClick: self.bookmarkCurrentRegion,
                       },
                     ]
-
-                    return newMenuItems
                   },
 
                   rubberBandMenuItems() {
-                    const newRubberBandMenuItems = [
+                    return [
                       ...superRubberBandMenuItems(),
                       {
                         label: 'Bookmark region',
@@ -118,8 +116,6 @@ export default class extends Plugin {
                         },
                       },
                     ]
-
-                    return newRubberBandMenuItems
                   },
                 },
               }
