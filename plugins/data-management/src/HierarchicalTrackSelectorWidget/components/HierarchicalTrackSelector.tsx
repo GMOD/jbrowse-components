@@ -21,10 +21,10 @@ const AutoSizedHierarchicalTree = ({
 }) => {
   return typeof jest === 'undefined' ? (
     <AutoSizer disableWidth>
-      {({ height }) => {
+      {args => {
         return (
           <HierarchicalTree
-            height={(height || offset) - offset}
+            height={(args.height || offset) - offset}
             model={model}
             tree={tree}
           />
