@@ -81,7 +81,7 @@ export function getAlignmentShapeColor({
 
     default:
       return defaultColor
-        ? '#c8c8c8'
+        ? 'lightgrey'
         : readConfObject(config, 'color', { feature })
   }
 }
