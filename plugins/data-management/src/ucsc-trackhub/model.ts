@@ -24,6 +24,8 @@ export default function UCSCTrackHubConnection(pluginManager: PluginManager) {
     .actions(self => ({
       async connect() {
         const session = getSession(self)
+        const notLoadedAssemblies = [] as string[]
+        const loadedAssemblies = [] as string[]
         try {
           // NOTE: name comes from the base configuration
           const connectionName = getConf(self, 'name')
@@ -63,9 +65,10 @@ export default function UCSCTrackHubConnection(pluginManager: PluginManager) {
 
             const conf = session.assemblyManager.get(genomeName)?.configuration
             if (!conf) {
-              throw new Error(
-                `Cannot find assembly for "${genomeName}" from the genomes file for connection "${connectionName}"`,
-              )
+              notLoadedAssemblies.push(genomeName)
+              continue
+            } else {
+              loadedAssemblies.push(genomeName)
             }
             const db = genome.get('trackDb')
             if (!db) {
@@ -95,6 +98,17 @@ export default function UCSCTrackHubConnection(pluginManager: PluginManager) {
               generateTracks(trackDbFile, trackDbLoc, genomeName, seqAdapter),
             )
           }
+          const str1 = loadedAssemblies.length
+            ? `Loaded data from these assemblies: ${loadedAssemblies.join(
+                ', ',
+              )}`
+            : ''
+          const str2 = notLoadedAssemblies.length
+            ? `Skipped data from these assemblies: ${notLoadedAssemblies.join(
+                ', ',
+              )}`
+            : ''
+          session.notify([str1, str2].filter(f => !!f).join('. '))
         } catch (e) {
           console.error(e)
           session.notify(
