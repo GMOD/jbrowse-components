@@ -1344,8 +1344,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * Navigate to a location based on its refName and optionally start, end,
        * and assemblyName. Will not try to change displayed regions, use
        * `navToLocations` instead. Only navigates to a location if it is
-       * entirely within a displayedRegion. Navigates to the first matching location
-       * encountered.
+       * entirely within a displayedRegion. Navigates to the first matching
+       * location encountered.
        *
        * Throws an error if navigation was unsuccessful
        *
