@@ -41,8 +41,9 @@
   "dependencies": {
     "@emotion/cache": "^11.7.1",
     "@emotion/react": "^11.9.0",
-    "@fontsource/roboto": "^4.5.0",
+    "@fontsource/roboto": "^5.0.2",
     "@gmod/faidx": "^1.0.1",
+    "@jbrowse/app-core": "^2.5.0",
     "@jbrowse/core": "^2.5.0",
     "@jbrowse/plugin-alignments": "^2.5.0",
     "@jbrowse/plugin-arc": "^2.5.0",
@@ -74,9 +75,8 @@
     "@jbrowse/plugin-trix": "^2.5.0",
     "@jbrowse/plugin-variants": "^2.5.0",
     "@jbrowse/plugin-wiggle": "^2.5.0",
-    "@jbrowse/text-indexing": "^2.5.0",
     "@jbrowse/product-core": "^2.5.0",
-    "@jbrowse/app-core": "^2.5.0",
+    "@jbrowse/text-indexing": "^2.5.0",
     "@mui/icons-material": "^5.0.0",
     "@mui/material": "^5.10.17",
     "@mui/x-data-grid": "^6.0.1",
@@ -105,13 +105,13 @@
     "webpack": "^5.72.0"
   },
   "devDependencies": {
-    "electron": "24.1.2"
+    "electron": "25.0.1"
   },
   "browserslist": [
     "last 1 chrome version"
   ],
   "build": {
-    "electronVersion": "24.1.2",
+    "electronVersion": "25.0.1",
     "extraMetadata": {
       "main": "build/electron.js"
     },
