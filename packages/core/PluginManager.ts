@@ -232,7 +232,7 @@ export default class PluginManager {
 
     this.pluginMetadata[plugin.name] = metadata
     if ('definition' in load) {
-      this.runtimePluginDefinitions.push(load.definition as PluginDefinition)
+      this.runtimePluginDefinitions.push(load.definition)
     }
     plugin.install(this)
     this.plugins.push(plugin)

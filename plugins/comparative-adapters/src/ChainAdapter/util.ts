@@ -76,7 +76,7 @@ export function paf_chain2paf(buffer: Buffer) {
     const b = buffer.slice(blockStart, n)
     const l = (decoder?.decode(b) || b.toString()).trim()
     blockStart = n + 1
-    const l_tab = l.replace(/ /g, '\t') // There are CHAIN files with space-separated fields
+    const l_tab = l.replaceAll(' ', '\t') // There are CHAIN files with space-separated fields
     const l_vec = l_tab.split('\t')
 
     if (l_vec[0] === 'chain') {

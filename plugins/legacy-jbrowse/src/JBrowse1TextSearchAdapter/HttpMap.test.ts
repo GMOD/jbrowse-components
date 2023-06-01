@@ -7,7 +7,7 @@ import HttpMap from './HttpMap'
 test('read from meta', async () => {
   const rootTemplate = path
     .join(__dirname, '..', '..', '..', '..', 'test_data', 'names')
-    .replace(/\\/g, '\\\\')
+    .replaceAll('\\', '\\\\')
 
   jest.spyOn(global, 'fetch').mockImplementation(url => {
     const response = `${url}`.includes('names/meta.json') ? meta : {}
@@ -23,7 +23,7 @@ test('read from meta', async () => {
 test('get bucket contents', async () => {
   const rootTemplate = path
     .join(__dirname, '..', '..', '..', '..', 'test_data', 'names')
-    .replace(/\\/g, '\\\\')
+    .replaceAll('\\', '\\\\')
 
   const spy = jest.spyOn(global, 'fetch')
   spy.mockImplementation(url => {

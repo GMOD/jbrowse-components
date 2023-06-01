@@ -5,7 +5,7 @@ export class BlockSet {
 
   push(block: BaseBlock) {
     if (block instanceof ElidedBlock && this.blocks.length > 0) {
-      const lastBlock = this.blocks[this.blocks.length - 1]
+      const lastBlock = this.blocks.at(-1)
       if (lastBlock instanceof ElidedBlock) {
         lastBlock.push(block)
         return

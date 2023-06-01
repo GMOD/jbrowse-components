@@ -96,8 +96,8 @@ export function convertTrackConfig(
 
   const resolveUrlTemplate = (urlTemplate: string) => {
     return new URL(urlTemplate, `${dataRoot}/`).href
-      .replace(/%7B/gi, '{')
-      .replace(/%7D/gi, '}')
+      .replaceAll(/%7B/gi, '{')
+      .replaceAll(/%7D/gi, '}')
   }
   const urlTemplate = resolveUrlTemplate(jb1TrackConfig.urlTemplate)
 

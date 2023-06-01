@@ -156,9 +156,7 @@ export default class CramSlightlyLazyFeature implements Feature {
     const mismatches = this.get('mismatches')
     if (mismatches.length) {
       const record =
-        this.get('strand') === -1
-          ? mismatches[mismatches.length - 1]
-          : mismatches[0]
+        this.get('strand') === -1 ? mismatches.at(-1) : mismatches[0]
       const { type, cliplen } = record
       if (type === 'softclip' || type === 'hardclip') {
         return cliplen

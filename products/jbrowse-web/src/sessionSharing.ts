@@ -8,7 +8,7 @@ function generateUID(length: number) {
         .map(b => String.fromCharCode(b))
         .join(''),
     )
-    .replace(/[+/]/g, '')
+    .replaceAll(/[+/]/g, '')
     .slice(0, length)
 }
 

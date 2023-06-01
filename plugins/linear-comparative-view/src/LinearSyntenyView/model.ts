@@ -138,7 +138,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             {
               label: 'Export SVG',
               icon: PhotoCameraIcon,
-              onClick: () => {
+              onClick: (): void => {
                 getSession(self).queueDialog(handleClose => [
                   ExportSvgDialog,
                   { model: self, handleClose },

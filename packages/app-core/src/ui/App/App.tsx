@@ -2,12 +2,9 @@ import React, { Suspense, lazy } from 'react'
 import { AppBar } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import {
-  NotificationLevel,
-  SessionWithDrawerWidgets,
-  SnackAction,
-} from '@jbrowse/core/util'
+import { SessionWithDrawerWidgets } from '@jbrowse/core/util'
 import Snackbar from '@jbrowse/core/ui/Snackbar'
+import { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
 import { MenuItem as JBMenuItem } from '@jbrowse/core/ui/Menu'
 
 // locals
@@ -41,8 +38,6 @@ const useStyles = makeStyles()(theme => ({
     gridRow: 'menubar',
   },
 }))
-
-type SnackbarMessage = [string, NotificationLevel, SnackAction]
 
 type Props = {
   HeaderButtons?: React.ReactElement

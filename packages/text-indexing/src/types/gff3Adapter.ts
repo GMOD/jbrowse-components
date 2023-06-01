@@ -63,7 +63,7 @@ export async function* indexGff3(
           encodeURIComponent(locStr),
           encodeURIComponent(trackId),
           ...attrs.map(a => encodeURIComponent(a)),
-        ]).replace(/,/g, '|')
+        ]).replaceAll(',', '|')
 
         // Check abort signal
         checkAbortSignal(signal)

@@ -459,7 +459,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 {
                   label: 'Open feature details',
                   icon: MenuOpenIcon,
-                  onClick: () => {
+                  onClick: (): void => {
                     self.clearFeatureSelection()
                     if (feat) {
                       self.selectFeature(feat)
@@ -469,7 +469,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 {
                   label: 'Copy info to clipboard',
                   icon: ContentCopyIcon,
-                  onClick: () => {
+                  onClick: (): void => {
                     if (feat) {
                       self.copyFeatureToClipboard(feat)
                     }

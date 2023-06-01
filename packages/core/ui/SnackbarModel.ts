@@ -2,12 +2,17 @@ import { IModelType, ModelProperties } from 'mobx-state-tree'
 import { IObservableArray, observable } from 'mobx'
 import { NotificationLevel, SnackAction } from '../util/types'
 
+export interface SnackbarMessage {
+  message: string
+  level?: NotificationLevel
+  action?: SnackAction
+}
+
 /**
  * #stateModel SnackbarModel
  * #category session
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function makeExtension(snackbarMessages: IObservableArray<any>) {
+function makeExtension(snackbarMessages: IObservableArray<SnackbarMessage>) {
   return {
     views: {
       /**
@@ -37,7 +42,7 @@ function makeExtension(snackbarMessages: IObservableArray<any>) {
         level?: NotificationLevel,
         action?: SnackAction,
       ) {
-        return snackbarMessages.push([message, level, action])
+        return snackbarMessages.push({ message, level, action })
       },
       /**
        * #action
@@ -49,7 +54,7 @@ function makeExtension(snackbarMessages: IObservableArray<any>) {
        * #action
        */
       removeSnackbarMessage(message: string) {
-        const element = snackbarMessages.find(f => f[0] === message)
+        const element = snackbarMessages.find(f => f.message === message)
         if (element) {
           snackbarMessages.remove(element)
         }
@@ -70,7 +75,7 @@ export default function addSnackbarToModel<
     ReturnType<typeof makeExtension>['views']
 > {
   return tree.extend(() => {
-    const snackbarMessages = observable.array()
+    const snackbarMessages = observable.array<SnackbarMessage>()
 
     return makeExtension(snackbarMessages)
   })

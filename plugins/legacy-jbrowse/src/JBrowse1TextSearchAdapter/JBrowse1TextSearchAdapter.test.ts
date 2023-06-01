@@ -22,7 +22,7 @@ function mockFetch(url: RequestInfo | URL) {
 
 const rootTemplate = path
   .join(__dirname, '..', '..', '..', '..', 'test_data', 'names')
-  .replace(/\\/g, '\\\\')
+  .replaceAll('\\', '\\\\')
 
 test('search upper case', async () => {
   const spy = jest.spyOn(global, 'fetch')

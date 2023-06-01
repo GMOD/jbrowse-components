@@ -107,7 +107,7 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
       return columnNames
     }
     const defs = header.split(/\n|\r\n|\r/).filter(f => !!f)
-    const defline = defs[defs.length - 1]
+    const defline = defs.at(-1)
     return defline?.includes('\t')
       ? defline
           .slice(1)

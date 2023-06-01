@@ -308,12 +308,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             type: 'checkbox',
             icon: LinkIcon,
             checked: self.linkViews,
-            onClick: () => self.toggleLinkViews(),
+            onClick: () => {
+              self.toggleLinkViews()
+            },
           },
           {
             label: 'Export SVG',
             icon: PhotoCamera,
-            onClick: () => {
+            onClick: (): void => {
               getSession(self).queueDialog(handleClose => [
                 ExportSvgDialog,
                 { model: self, handleClose },
