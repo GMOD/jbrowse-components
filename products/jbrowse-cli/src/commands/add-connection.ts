@@ -6,13 +6,11 @@ import parseJSON from 'json-parse-better-errors'
 import JBrowseCommand from '../base'
 
 interface Connection {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any
+  [key: string]: unknown
 }
 
 interface Config {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  assemblies?: { name: string; sequence: { [key: string]: any } }[]
+  assemblies?: { name: string; sequence: { [key: string]: unknown } }[]
   configuration?: {}
   connections?: Connection[]
   defaultSession?: {}
@@ -48,10 +46,10 @@ export default class AddConnection extends JBrowseCommand {
       description:
         'type of connection, ex. JBrowse1Connection, UCSCTrackHubConnection, custom',
     }),
-    assemblyName: flags.string({
+    assemblyNames: flags.string({
       char: 'a',
       description:
-        'Assembly name of the connection If none, will default to the assembly in your config file',
+        'Comma separated list of assembly name(s) to filter from this connection. Optional, will show all assemblies from connection if unspecified',
     }),
     config: flags.string({
       char: 'c',
@@ -96,71 +94,36 @@ export default class AddConnection extends JBrowseCommand {
     const { connectionUrlOrPath: argsPath } = runArgs as {
       connectionUrlOrPath: string
     }
-    const { config } = runFlags
-    let { type, name, connectionId, assemblyName } = runFlags
+    const { config, assemblyNames } = runFlags
+    let { type, name, connectionId } = runFlags
     const { skipCheck, force } = runFlags
     const url = await this.resolveURL(argsPath, !(skipCheck || force))
 
     const configContents: Config = await this.readJsonFile(this.target)
     this.debug(`Using config file ${this.target}`)
 
-    if (!configContents.assemblies || configContents.assemblies.length === 0) {
+    if (!configContents.assemblies?.length) {
       this.error(
         'No assemblies found. Please add one before adding connections',
         { exit: 120 },
       )
-    } else if (configContents.assemblies.length > 1 && !assemblyName) {
-      this.error(
-        'Too many assemblies, cannot default to one. Please specify the assembly with the --assemblyNames flag',
-      )
     }
 
-    if (assemblyName) {
-      configContents.assemblies.findIndex(
-        assemblies => assemblies.name === assemblyName,
-      ) === -1
-        ? this.error(
-            `Assembly name provided does not match any in config. Valid assembly names are ${configContents.assemblies.map(
-              assembly => assembly.name,
-            )}`,
-            { exit: 130 },
-          )
-        : this.debug(`Assembly name(s) is :${assemblyName}`)
-    } else {
-      assemblyName = configContents.assemblies[0].name
-      this.log(`Inferred default assembly name ${assemblyName}`)
-    }
-
-    if (type) {
-      this.debug(`Type is ${type}`)
-    } else {
-      type = this.determineConnectionType(url, config)
-    }
-    if (connectionId) {
-      this.debug(`Connection id is ${connectionId}`)
-    } else {
-      connectionId = `${type}-${assemblyName}-${Date.now()}`
-    }
-
-    if (name) {
-      this.debug(`Name is: ${name}`)
-    } else {
-      name = connectionId
-    }
+    type = type || this.determineConnectionType(url, config)
+    connectionId =
+      connectionId ||
+      [type, assemblyNames, +Date.now()].filter(f => !!f).join('-')
+    name = name || connectionId
 
     let configObj = {}
     if (config) {
-      try {
-        configObj = parseJSON(config)
-      } catch (error) {
-        this.error('Could not parse provided JSON object')
-      }
+      configObj = parseJSON(config)
     }
     const connectionConfig: Connection = {
       type,
       connectionId,
       name: name || connectionId,
-      assemblyName,
+      assemblyNames: assemblyNames?.split(','),
       ...configObj,
     }
 
