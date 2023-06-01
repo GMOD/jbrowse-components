@@ -6,10 +6,9 @@ import { observer } from 'mobx-react'
 import {
   getEnv,
   AbstractViewModel,
-  NotificationLevel,
   SessionWithDrawerWidgets,
-  SnackAction,
 } from '@jbrowse/core/util'
+import { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
 
 // ui elements
 import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
@@ -18,8 +17,6 @@ import { MenuItem as JBMenuItem } from '@jbrowse/core/ui/Menu'
 
 // locals
 import ViewContainer from './ViewContainer'
-
-type SnackbarMessage = [string, NotificationLevel, SnackAction]
 
 type AppSession = SessionWithDrawerWidgets & {
   savedSessionNames: string[]

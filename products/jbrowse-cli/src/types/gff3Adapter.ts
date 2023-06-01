@@ -85,7 +85,7 @@ export async function* indexGff3({
           encodeURIComponent(locStr),
           encodeURIComponent(trackId),
           ...attrs.map(a => encodeURIComponent(a)),
-        ]).replace(/,/g, '|')
+        ]).replaceAll(',', '|')
 
         yield `${record} ${[...new Set(attrs)].join(' ')}\n`
       }

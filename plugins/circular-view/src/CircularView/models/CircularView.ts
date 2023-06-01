@@ -280,7 +280,7 @@ function stateModelFactory(pluginManager: PluginManager) {
           const widthPx = widthBp / self.bpPerPx
           if (widthPx < self.minVisibleWidth) {
             // too small to see, collapse into a single elision region
-            const lastVisible = visible[visible.length - 1]
+            const lastVisible = visible.at(-1)
             if (lastVisible?.elided) {
               lastVisible.regions.push({ ...region })
               lastVisible.widthBp += widthBp

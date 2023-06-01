@@ -79,7 +79,7 @@ export default class TrixTextSearchAdapter
         ),
       )
       .map(([term, data]) => {
-        const result = JSON.parse(data.replace(/\|/g, ',')) as string[]
+        const result = JSON.parse(data.replaceAll('|', ',')) as string[]
         const [loc, trackId, ...rest] = result.map(record =>
           decodeURIComponentNoThrow(record),
         )

@@ -11,10 +11,14 @@ import { Dialog } from '@jbrowse/core/ui'
 import { makeStyles } from 'tss-react/mui'
 import { getConf } from '@jbrowse/core/configuration'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { getSession, getContainingView, Feature } from '@jbrowse/core/util'
+import {
+  getSession,
+  getContainingView,
+  gatherOverlaps,
+  Feature,
+} from '@jbrowse/core/util'
 
 // locals
-import { mergeIntervals } from './util'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 const { featurizeSA, getClip, getLength, getLengthSansClipping, getTag } =
   MismatchParser
@@ -42,29 +46,6 @@ const useStyles = makeStyles()({
     width: 300,
   },
 })
-
-interface BasicFeature {
-  end: number
-  start: number
-  refName: string
-}
-
-// hashmap of refName->array of features
-type FeaturesPerRef = { [key: string]: BasicFeature[] }
-
-function gatherOverlaps(regions: BasicFeature[]) {
-  const memo = {} as FeaturesPerRef
-  for (const x of regions) {
-    if (!memo[x.refName]) {
-      memo[x.refName] = []
-    }
-    memo[x.refName].push(x)
-  }
-
-  return Object.values(memo).flatMap(group =>
-    mergeIntervals(group.sort((a, b) => a.start - b.start)),
-  )
-}
 
 export default function ReadVsRefDialog({
   track,

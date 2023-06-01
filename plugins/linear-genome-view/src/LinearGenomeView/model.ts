@@ -1376,8 +1376,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
         ) {
           throw new Error('found start greater than end')
         }
-        const f1 = locations[0]
-        const f2 = locations[locations.length - 1]
+        const f1 = locations.at(0)
+        const f2 = locations.at(-1)
+        if (!f1 || !f2) {
+          return
+        }
         const a = self.assemblyNames[0]
         const { assemblyManager } = getSession(self)
         const assembly1 = assemblyManager.get(f1.assemblyName || a)

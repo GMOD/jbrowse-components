@@ -49,7 +49,9 @@ export function b64PadSuffix(b64: string): string {
  * @param b64 - a base64 string to decode and inflate
  */
 export async function fromUrlSafeB64(b64: string) {
-  const originalB64 = b64PadSuffix(b64.replace(/-/g, '+').replace(/_/g, '/'))
+  const originalB64 = b64PadSuffix(
+    b64.replaceAll('-', '+').replaceAll('_', '/'),
+  )
   const { toByteArray } = await import('base64-js')
   const { inflate } = await import('pako')
   const bytes = toByteArray(originalB64)
@@ -70,8 +72,8 @@ export async function toUrlSafeB64(str: string) {
   const encoded = fromByteArray(deflated)
   const pos = encoded.indexOf('=')
   return pos > 0
-    ? encoded.slice(0, pos).replace(/\+/g, '-').replace(/\//g, '_')
-    : encoded.replace(/\+/g, '-').replace(/\//g, '_')
+    ? encoded.slice(0, pos).replaceAll('+', '-').replaceAll('/', '_')
+    : encoded.replaceAll('+', '-').replaceAll('/', '_')
 }
 
 type MSTArray = Instance<ReturnType<typeof types.array>>

@@ -156,7 +156,8 @@ export function pxToBp(
   }
 
   if (bp >= bpSoFar && displayedRegions.length > 0) {
-    const r = displayedRegions[displayedRegions.length - 1]
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const r = displayedRegions.at(-1)!
     const len = r.end - r.start
     const offset = bp - bpSoFar + len
 

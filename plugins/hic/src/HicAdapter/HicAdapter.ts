@@ -106,9 +106,9 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
   }
 
   async getResolution(bpPerPx: number, opts?: BaseOptions) {
-    const metadata = await this.setup(opts)
-    const { resolutions } = metadata
-    let chosenResolution = resolutions[resolutions.length - 1]
+    const { resolutions } = await this.setup(opts)
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    let chosenResolution = resolutions.at(-1)!
 
     for (let i = resolutions.length - 1; i >= 0; i -= 1) {
       const r = resolutions[i]

@@ -2,19 +2,12 @@ import React from 'react'
 import { Toolbar, Tooltip } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-
-// locals
-import {
-  NotificationLevel,
-  SessionWithDrawerWidgets,
-  SnackAction,
-} from '@jbrowse/core/util'
-
-// ui elements
+import { SessionWithDrawerWidgets } from '@jbrowse/core/util'
 import DropDownMenu from '@jbrowse/core/ui/DropDownMenu'
 import EditableTypography from '@jbrowse/core/ui/EditableTypography'
 import AppLogo from '@jbrowse/core/ui/AppLogo'
 import { MenuItem as JBMenuItem } from '@jbrowse/core/ui/Menu'
+import { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
 
 const useStyles = makeStyles()(theme => ({
   grow: {
@@ -33,8 +26,6 @@ const useStyles = makeStyles()(theme => ({
     backgroundColor: theme.palette.primary.light,
   },
 }))
-
-type SnackbarMessage = [string, NotificationLevel, SnackAction]
 
 type AppSession = SessionWithDrawerWidgets & {
   savedSessionNames: string[]

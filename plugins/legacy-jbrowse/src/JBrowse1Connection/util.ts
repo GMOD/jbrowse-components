@@ -33,6 +33,7 @@ export function deepUpdate(a: Obj, b: Obj): Obj {
 
 /**
  * replace variables in a template string with values
+ *
  * @param template - String with variable names in curly brackets
  * e.g., `http://foo/{bar}?arg={baz.foo}`
  * @param fillWith - object with attribute-value mappings
@@ -41,14 +42,11 @@ export function deepUpdate(a: Obj, b: Obj): Obj {
  * e.g., 'htp://foo/someurl?arg=valueforbaz'
  */
 export function fillTemplate(template: string, fillWith: Obj): string {
-  return template.replace(/{([\s\w.]+)}/g, (match, varName: string): string => {
-    varName = varName.replace(/\s+/g, '') // remove all whitespace
+  return template.replaceAll(/{([\s\w.]+)}/g, (match, varName) => {
+    varName = varName.replaceAll(/\s+/g, '')
     const fill = getValue(fillWith, varName)
     if (fill !== undefined) {
-      if (typeof fill === 'function') {
-        return fill(varName)
-      }
-      return fill
+      return typeof fill === 'function' ? fill(varName) : fill
     }
     if (fillWith.callback) {
       // @ts-expect-error

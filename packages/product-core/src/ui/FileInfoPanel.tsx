@@ -56,8 +56,8 @@ export default function FileInfoPanel({
     typeof info === 'string'
       ? {
           header: `<pre>${info
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')}</pre>`,
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')}</pre>`,
         }
       : info || {}
 
