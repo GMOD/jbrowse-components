@@ -1,7 +1,5 @@
 import React from 'react'
 import {
-  Dialog,
-  DialogTitle,
   DialogContent,
   DialogContentText,
   Button,
@@ -9,23 +7,23 @@ import {
   ListItem,
   DialogActions,
 } from '@mui/material'
+import { Dialog } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 
-function CloseConnectionDialog({
+export default observer(function CloseConnectionDialog({
   modalInfo = {},
-  setModalInfo,
+  onClose,
 }: {
   modalInfo?: {
     name?: string
     dereferenceTypeCount?: { [key: string]: number }
-    safelyBreakConnection?: Function
+    safelyBreakConnection?: () => void
   }
-  setModalInfo: Function
+  onClose: () => void
 }) {
   const { name, dereferenceTypeCount, safelyBreakConnection } = modalInfo
   return (
-    <Dialog open>
-      <DialogTitle>Close connection &quot;{name}&quot;</DialogTitle>
+    <Dialog open maxWidth="lg" title={`Close connection "${name}"`}>
       <DialogContent>
         {dereferenceTypeCount ? (
           <>
@@ -44,7 +42,7 @@ function CloseConnectionDialog({
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => setModalInfo()} color="primary">
+        <Button onClick={() => onClose()} color="primary">
           Cancel
         </Button>
         <Button
@@ -53,7 +51,7 @@ function CloseConnectionDialog({
             modalInfo
               ? () => {
                   safelyBreakConnection?.()
-                  setModalInfo()
+                  onClose()
                 }
               : () => {}
           }
@@ -64,6 +62,4 @@ function CloseConnectionDialog({
       </DialogActions>
     </Dialog>
   )
-}
-
-export default observer(CloseConnectionDialog)
+})

@@ -192,14 +192,22 @@ export function isSessionModelWithWidgets(
 ): thing is SessionWithWidgets {
   return isSessionModel(thing) && 'widgets' in thing
 }
-
 interface SessionWithConnections {
-  addConnectionConf: (arg: AnyConfigurationModel) => void
+  makeConnection: (arg: AnyConfigurationModel) => void
 }
-
 export function isSessionModelWithConnections(
   thing: unknown,
 ): thing is SessionWithConnections {
+  return isSessionModel(thing) && 'makeConnection' in thing
+}
+
+interface SessionWithConnectionEditing {
+  addConnectionConf: (arg: AnyConfigurationModel) => void
+}
+
+export function isSessionModelWithConnectionEditing(
+  thing: unknown,
+): thing is SessionWithConnectionEditing {
   return isSessionModel(thing) && 'addConnectionConf' in thing
 }
 
