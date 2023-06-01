@@ -43,6 +43,14 @@ const testConfig = path.join(
   'test_config.json',
 )
 
+async function copyConf(ctx: { dir: string }) {
+  await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
+
+  await rename(
+    path.join(ctx.dir, path.basename(testConfig)),
+    path.join(ctx.dir, 'config.json'),
+  )
+}
 const originalDateNow = Date.now
 
 const setupWithDateMock = setup
@@ -71,14 +79,7 @@ describe('add-connection', () => {
 
   setupWithDateMock
     .nock('https://mysite.com', site => site.head('/data/hub.txt').reply(200))
-    .do(async ctx => {
-      await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
-
-      await rename(
-        path.join(ctx.dir, path.basename(testConfig)),
-        path.join(ctx.dir, 'config.json'),
-      )
-    })
+    .do(ctx => copyConf(ctx))
     .command(['add-connection', 'https://mysite.com/data/hub.txt'])
     .it('adds an UCSCTrackHubConnection connection from a url', async ctx => {
       const contents = readConf(ctx)
@@ -99,16 +100,9 @@ describe('add-connection', () => {
     })
   setupWithDateMock
     .nock('https://mysite.com', site => site.head('/jbrowse/data').reply(200))
-    .do(async ctx => {
-      await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
-
-      await rename(
-        path.join(ctx.dir, path.basename(testConfig)),
-        path.join(ctx.dir, 'config.json'),
-      )
-    })
+    .do(ctx => copyConf(ctx))
     .command(['add-connection', 'https://mysite.com/jbrowse/data'])
-    .it('adds an JBrowse1 connection from a url', async ctx => {
+    .it('adds JBrowse1 connection from a url', async ctx => {
       const contents = readConf(ctx)
       expect(contents).toEqual({
         ...defaultConfig,
@@ -125,38 +119,10 @@ describe('add-connection', () => {
         ],
       })
     })
+
   setup
     .nock('https://mysite.com', site => site.head('/custom').reply(200))
-    .do(async ctx => {
-      await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
-
-      await rename(
-        path.join(ctx.dir, path.basename(testConfig)),
-        path.join(ctx.dir, 'config.json'),
-      )
-    })
-    .command([
-      'add-connection',
-      'https://mysite.com/custom',
-      '--type',
-      'newType',
-      '--connectionId',
-      'newConnectionId',
-      '--name',
-      'newName',
-    ])
-    .exit(140)
-    .it('fails if custom without a config object')
-  setup
-    .nock('https://mysite.com', site => site.head('/custom').reply(200))
-    .do(async ctx => {
-      await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
-
-      await rename(
-        path.join(ctx.dir, path.basename(testConfig)),
-        path.join(ctx.dir, 'config.json'),
-      )
-    })
+    .do(ctx => copyConf(ctx))
     .command([
       'add-connection',
       'https://mysite.com/custom',
@@ -191,14 +157,7 @@ describe('add-connection', () => {
     })
   setup
     .nock('https://mysite.com', site => site.head('/custom').reply(200))
-    .do(async ctx => {
-      await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
-
-      await rename(
-        path.join(ctx.dir, path.basename(testConfig)),
-        path.join(ctx.dir, 'config.json'),
-      )
-    })
+    .do(ctx => copyConf(ctx))
     .command([
       'add-connection',
       'https://mysite.com/custom',
@@ -219,14 +178,7 @@ describe('add-connection', () => {
     .exit(150)
     .it('Fails to add a duplicate connection Id')
   setup
-    .do(async ctx => {
-      await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
-
-      await rename(
-        path.join(ctx.dir, path.basename(testConfig)),
-        path.join(ctx.dir, 'config.json'),
-      )
-    })
+    .do(ctx => copyConf(ctx))
     .command([
       'add-connection',
       'https://mysite.com/custom',

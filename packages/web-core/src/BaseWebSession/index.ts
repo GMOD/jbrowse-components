@@ -47,6 +47,7 @@ import {
 import { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 // locals
 import { WebSessionConnectionsMixin } from '../SessionConnections'
+import { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
 
 const AboutDialog = lazy(() => import('./AboutDialog'))
 
@@ -101,6 +102,13 @@ export function BaseWebSession({
        */
       get assemblies(): Instance<BaseAssemblyConfigSchema[]> {
         return [...self.jbrowse.assemblies, ...self.sessionAssemblies]
+      },
+      /**
+       * #getter
+       * list of config connections and session connections
+       */
+      get connections(): BaseConnectionConfigModel[] {
+        return [...self.jbrowse.connections, ...self.sessionConnections]
       },
     }))
     .actions(self => ({

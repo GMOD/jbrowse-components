@@ -27,7 +27,73 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function ToggleConnectionDialog({
+const ConnectionRow = observer(function ConnectionRow({
+  conf,
+  session,
+  breakConnection,
+}: {
+  conf: AnyConfigurationModel
+  session: AbstractSessionModel
+  breakConnection: (arg: AnyConfigurationModel) => void
+}) {
+  const { connectionInstances: instances = [] } = session
+  const name = readConfObject(conf, 'name')
+  const assemblyNames = readConfObject(conf, 'assemblyNames')
+  const found = instances.find(conn => name === conn.name)
+  return (
+    <FormControlLabel
+      key={conf.connectionId}
+      control={
+        <Checkbox
+          checked={!!found}
+          onChange={() => {
+            if (found) {
+              breakConnection(conf)
+            } else {
+              session.makeConnection?.(conf)
+            }
+          }}
+          color="primary"
+        />
+      }
+      label={[
+        name,
+        assemblyNames.length ? `(${ellipses(assemblyNames.join(','))})` : '',
+      ]
+        .filter(f => !!f)
+        .join(' ')}
+    />
+  )
+})
+
+const ConnectionList = observer(function ConnectionsList({
+  session,
+  breakConnection,
+}: {
+  session: AbstractSessionModel
+  breakConnection: (arg: AnyConfigurationModel) => void
+}) {
+  const { classes } = useStyles()
+  return (
+    <div className={classes.connectionContainer}>
+      {!session.connections.length ? (
+        <Typography>No connections found</Typography>
+      ) : (
+        session.connections.map((conf, idx) => (
+          <div key={conf.name + '_' + idx}>
+            <ConnectionRow
+              conf={conf}
+              session={session}
+              breakConnection={breakConnection}
+            />
+          </div>
+        ))
+      )}
+    </div>
+  )
+})
+
+export default observer(function ToggleConnectionDialog({
   session,
   handleClose,
   breakConnection,
@@ -36,8 +102,6 @@ function ToggleConnectionDialog({
   session: AbstractSessionModel
   breakConnection: (arg: AnyConfigurationModel) => void
 }) {
-  const { classes } = useStyles()
-  const { connections, connectionInstances: instances = [] } = session
   return (
     <Dialog
       open
@@ -47,39 +111,7 @@ function ToggleConnectionDialog({
     >
       <DialogContent>
         <Typography>Use the checkbox to turn on/off connections</Typography>
-        <div className={classes.connectionContainer}>
-          {connections.map(conf => {
-            const name = readConfObject(conf, 'name')
-            const assemblyNames = readConfObject(conf, 'assemblyNames')
-            const found = instances.find(conn => name === conn.name)
-            return (
-              <FormControlLabel
-                key={conf.connectionId}
-                control={
-                  <Checkbox
-                    checked={!!found}
-                    onChange={() => {
-                      if (found) {
-                        breakConnection(conf)
-                      } else {
-                        session.makeConnection?.(conf)
-                      }
-                    }}
-                    color="primary"
-                  />
-                }
-                label={`${name} ${
-                  assemblyNames.length
-                    ? '(' + ellipses(assemblyNames.join(',')) + ')'
-                    : ''
-                }`}
-              />
-            )
-          })}
-          {!connections.length ? (
-            <Typography>No connections found</Typography>
-          ) : null}
-        </div>
+        <ConnectionList session={session} breakConnection={breakConnection} />
       </DialogContent>
       <DialogActions>
         <Button
@@ -92,6 +124,4 @@ function ToggleConnectionDialog({
       </DialogActions>
     </Dialog>
   )
-}
-
-export default observer(ToggleConnectionDialog)
+})
