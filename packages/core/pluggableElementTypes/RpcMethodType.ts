@@ -42,14 +42,8 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     const account = rootModel.findAppropriateInternetAccount(loc)
 
     if (account) {
-      // spread here instead of directly assigning
-      // internetAccountPreAuthorization avoids this intermittent error:
-      // `Cannot assign to read only property 'internetAccountPreAuthorization' of object '#<Object>'`
-      loc = {
-        ...loc,
-        internetAccountPreAuthorization:
-          await account.getPreAuthorizationInformation(loc),
-      }
+      loc.internetAccountPreAuthorization =
+        await account.getPreAuthorizationInformation(loc)
     }
     return loc
   }
