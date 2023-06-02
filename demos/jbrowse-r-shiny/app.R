@@ -2,6 +2,9 @@
 library(shiny)
 library(JBrowseR)
 library(bslib)
+library(tibble)
+library(DT)
+library(dplyr)
 
 # Bootstrap ---
 bs_theme <- bs_theme(version = 5)
@@ -27,6 +30,36 @@ ui <- fluidPage(
       br(),
       actionButton("cyp", "CYP2C19"),
       actionButton("brc", "BRCA2"),
+      h4("Using dataframes"),
+      h5("Add a track"),
+      span("You can use dataframes to render tracks in JBrowse R.
+        Click the button below to add the track data represented in
+        the table below to a new track in JBrowse R."),
+      br(),
+      actionButton(
+        "add",
+        label = "Add track",
+        icon = icon("plus")
+      ),
+      tableOutput("tracks"),
+      h5("Add or remove bookmarks"),
+      span("You can use dataframes to add or remove bookmarks in JBrowse R.\n
+        Click on a feature on a JBrowse track to add a bookmark.\n
+        Select a row and click the delete button to remove a bookmark.\n
+        Select a row and click the navigate button to navigate to a bookmark."),
+      br(),
+      actionButton(
+        "delete",
+        label = "Delete selected table rows",
+        icon = icon("trash")
+      ),
+      actionButton(
+        "navigate",
+        label = "Navigate to selected bookmark",
+        icon = icon("arrow-right")
+      ),
+      br(),
+      dataTableOutput("bookmarks"),
       h4("See the state"),
       span("The button below will show you the current 'session', which
         includes things like what region the view is showing and which
@@ -37,19 +70,6 @@ ui <- fluidPage(
       br(),
       actionButton("session", "Show session"),
       verbatimTextOutput("text"),
-      h4("React to the view"),
-      span("Manipulate the view using the checkboxes below to show or hide
-        the tracks available:"),
-      checkboxInput("checkref", "Reference sequence (hg38)", value = TRUE),
-      checkboxGroupInput(
-        "checks",
-        NULL,
-        c(
-          "(Annotations) GCA_000001405" = "an", "(Alignments) NA12878" = "al",
-          "(BigWig) hg38" = "bw", "(Variants) ALL" = "va"
-        ),
-        c("an", "bw", "va"),
-      ),
       h4("Docs"),
       span("Full documentation for JBrowse R is available at "),
       a(
@@ -114,18 +134,18 @@ server <- function(input, output, session) {
     assembly
   )
 
-  tracks <- tracks(
-    annotations,
-    variants,
-    alignments,
-    wiggles
-  )
-
   text_index <- text_index(
     "https://jbrowse.org/genomes/GRCh38/ncbi_refseq/trix/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.ix", # nolint
     "https://jbrowse.org/genomes/GRCh38/ncbi_refseq/trix/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.ixx", # nolint
     "https://jbrowse.org/genomes/GRCh38/ncbi_refseq/trix/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz_meta.json", # nolint
     "hg38"
+  )
+
+  tracks <- tracks(
+    annotations,
+    variants,
+    alignments,
+    wiggles
   )
 
   # set up the default session for the browser
@@ -134,6 +154,7 @@ server <- function(input, output, session) {
     c(alignments, wiggles, variants),
   )
 
+  # some reactive values that our UI can change
   loc <- reactiveValues(val = "10:29,838,565..29,838,860")
   shown_tracks <- reactiveValues(val = c(alignments, wiggles, variants))
 
@@ -149,7 +170,7 @@ server <- function(input, output, session) {
     )
   )
 
-  # interactive events in the shiny app
+  # buttons to nav to specific locations
   observeEvent(input$cyp, {
     loc$val <- "10:94762681..94855547"
   })
@@ -178,43 +199,75 @@ server <- function(input, output, session) {
     })
   })
 
-  observeEvent(input$checkref, {
+  # add or remove bookmark logic
+  values <- reactiveValues()
+
+  values$bookmark_df <- tibble::tibble(
+    chrom = character(),
+    start = numeric(),
+    end = numeric(),
+    name = character()
+  )
+
+  observeEvent(input$selectedFeature, {
+    values$bookmark_df <- values$bookmark_df %>%
+      add_row(
+        chrom = input$selectedFeature$refName,
+        start = input$selectedFeature$start,
+        end = input$selectedFeature$end,
+        name = input$selectedFeautre$name
+      )
+  })
+
+  observeEvent(input$delete, {
+    if (!is.null(input$bookmarks_rows_selected)) {
+      values$bookmark_df <- values$bookmark_df %>%
+        slice(-input$bookmarks_rows_selected)
+    }
+  })
+
+  output$bookmarks <- DT::renderDT(values$bookmark_df)
+
+  # navigate to bookmark logic
+  observeEvent(input$navigate, {
+    if (!is.null(input$bookmarks_rows_selected)) {
+      loc$val <- paste0(
+        values$bookmark_df[input$bookmarks_rows_selected, "chrom"],
+        ":",
+        values$bookmark_df[input$bookmarks_rows_selected, "start"],
+        "..",
+        values$bookmark_df[input$bookmarks_rows_selected, "end"]
+      )
+    }
+  })
+
+  # logic for adding sample track df to JBrowse R
+  values$tracks_df <- data.frame(
+    chrom = c("10", "10", "13"),
+    start = c(94780000, 29838600, 32330000),
+    end = c(94810000, 29838760, 32370000),
+    name = c("feature1", "feature2", "feature3")
+  )
+
+  output$tracks <- renderTable(values$tracks_df)
+
+  observeEvent(input$add, {
+    df_track <- track_data_frame(values$tracks_df, "new_track", assembly)
+    shown_tracks$val <- append(shown_tracks$val, df_track)
+
     output$browserOutput <- renderJBrowseR(
       JBrowseR(
         "View",
         assembly = assembly,
-        tracks = tracks,
+        tracks = tracks(wiggles, annotations, alignments, variants, df_track),
         location = loc$val,
         text_index = text_index,
         defaultSession = default_session(
           assembly,
           shown_tracks$val,
-          input$checkref
         )
       )
     )
-  })
-
-  observe({
-    if (!is.null(input$checks)) {
-      temp <- c()
-      for (val in input$checks) {
-        if (val == "an") {
-          temp <- append(temp, annotations)
-        }
-        if (val == "al") {
-          temp <- append(temp, alignments)
-        }
-        if (val == "va") {
-          temp <- append(temp, variants)
-        }
-        if (val == "bw") {
-          temp <- append(temp, wiggles)
-        }
-      }
-      shown_tracks$val <- temp
-    }
-    # possibly have an else here for empty input?
   })
 }
 
