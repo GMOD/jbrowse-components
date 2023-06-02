@@ -1,7 +1,7 @@
 import { fireEvent, waitFor, within } from '@testing-library/react'
 import { RemoteFile } from 'generic-filehandle'
 import crypto from 'crypto'
-import config from '../../test_data/volvox/config.json'
+import config from '../../test_data/volvox/config_oauth.json'
 import {
   setup,
   pv,

@@ -428,38 +428,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "type": "ReferenceSequenceTrack",
       },
     },
-    {
-      "name": "volvox_oauth",
-      "sequence": {
-        "adapter": {
-          "chromSizesLocation": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "/path/to/default.chrom.sizes",
-          },
-          "twoBitLocation": {
-            "internetAccountId": "customOAuth",
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "http://localhost:3030/data/volvox.2bit",
-          },
-          "type": "TwoBitAdapter",
-        },
-        "displays": [
-          {
-            "displayId": "volvox_oauth-ReferenceSequenceTrack-LinearReferenceSequenceDisplay",
-            "type": "LinearReferenceSequenceDisplay",
-          },
-          {
-            "displayId": "volvox_oauth-ReferenceSequenceTrack-LinearGCContentDisplay",
-            "type": "LinearGCContentDisplay",
-          },
-        ],
-        "trackId": "volvox_oauth-ReferenceSequenceTrack",
-        "type": "ReferenceSequenceTrack",
-      },
-    },
   ],
   "configuration": {
     "extraThemes": {
@@ -520,32 +488,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       },
     },
   },
-  "internetAccounts": [
-    {
-      "clientId": "50knr6xrjfc39sk",
-      "description": "Account to access Dropbox files",
-      "internetAccountId": "dropboxOAuth",
-      "name": "Dropbox",
-      "type": "DropboxOAuthInternetAccount",
-    },
-    {
-      "clientId": "109518325434-udfch80a0v70mgu65d5fejqsq5kvhm1b.apps.googleusercontent.com",
-      "description": "Account to access Google Drive files",
-      "internetAccountId": "googleOAuth",
-      "name": "Google Drive",
-      "type": "GoogleDriveOAuthInternetAccount",
-    },
-    {
-      "authEndpoint": "http://localhost:3030/oauth",
-      "clientId": "myClientId",
-      "description": "OAuth account for testing",
-      "hasRefreshToken": true,
-      "internetAccountId": "customOAuth",
-      "name": "OAuth test account",
-      "tokenEndpoint": "http://localhost:3030/oauth/token",
-      "type": "OAuthInternetAccount",
-    },
-  ],
+  "internetAccounts": [],
   "plugins": [
     {
       "name": "UMDLocPlugin",
@@ -1560,124 +1503,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "name": "wiggle_track xyplot",
       "trackId": "volvox_microarray",
       "type": "QuantitativeTrack",
-    },
-    {
-      "adapter": {
-        "bigWigLocation": {
-          "internetAccountId": "dropboxOAuth",
-          "internetAccountPreAuthorization": undefined,
-          "locationType": "UriLocation",
-          "uri": "https://www.dropbox.com/s/96wflrzcbmf7nlj/volvox.bw?dl=0",
-        },
-        "type": "BigWigAdapter",
-      },
-      "assemblyNames": [
-        "volvox",
-      ],
-      "category": [
-        "Authentication",
-      ],
-      "displays": [
-        {
-          "displayId": "dropbox_bigwig-LinearWiggleDisplay",
-          "type": "LinearWiggleDisplay",
-        },
-      ],
-      "name": "Dropbox BigWig",
-      "trackId": "dropbox_bigwig",
-      "type": "QuantitativeTrack",
-    },
-    {
-      "adapter": {
-        "bigWigLocation": {
-          "internetAccountId": "googleOAuth",
-          "internetAccountPreAuthorization": undefined,
-          "locationType": "UriLocation",
-          "uri": "https://drive.google.com/file/d/1PIvZCOJioK9eBL1Vuvfa4L_Fv9zTooHk/view?usp=sharing",
-        },
-        "type": "BigWigAdapter",
-      },
-      "assemblyNames": [
-        "volvox",
-      ],
-      "category": [
-        "Authentication",
-      ],
-      "displays": [
-        {
-          "displayId": "google_bigwig-LinearWiggleDisplay",
-          "type": "LinearWiggleDisplay",
-        },
-      ],
-      "name": "Google Drive BigWig",
-      "trackId": "google_bigwig",
-      "type": "QuantitativeTrack",
-    },
-    {
-      "adapter": {
-        "bigWigLocation": {
-          "internetAccountId": "customOAuth",
-          "internetAccountPreAuthorization": undefined,
-          "locationType": "UriLocation",
-          "uri": "http://localhost:3030/data/volvox.bw",
-        },
-        "type": "BigWigAdapter",
-      },
-      "assemblyNames": [
-        "volvox",
-        "volvox_oauth",
-      ],
-      "category": [
-        "Authentication",
-      ],
-      "displays": [
-        {
-          "displayId": "oauth_bigwig-LinearWiggleDisplay",
-          "type": "LinearWiggleDisplay",
-        },
-      ],
-      "name": "Custom OAuth BigWig",
-      "trackId": "oauth_bigwig",
-      "type": "QuantitativeTrack",
-    },
-    {
-      "adapter": {
-        "index": {
-          "location": {
-            "internetAccountId": "customOAuth",
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "http://localhost:3030/data/volvox.filtered.vcf.gz.tbi",
-          },
-        },
-        "type": "VcfTabixAdapter",
-        "vcfGzLocation": {
-          "internetAccountId": "customOAuth",
-          "internetAccountPreAuthorization": undefined,
-          "locationType": "UriLocation",
-          "uri": "http://localhost:3030/data/volvox.filtered.vcf.gz",
-        },
-      },
-      "assemblyNames": [
-        "volvox",
-        "volvox_oauth",
-      ],
-      "category": [
-        "Authentication",
-      ],
-      "displays": [
-        {
-          "displayId": "oauth_vcf-LinearVariantDisplay",
-          "type": "LinearVariantDisplay",
-        },
-        {
-          "displayId": "oauth_vcf-ChordVariantDisplay",
-          "type": "ChordVariantDisplay",
-        },
-      ],
-      "name": "Custom OAuth VCF",
-      "trackId": "oauth_vcf",
-      "type": "VariantTrack",
     },
     {
       "adapter": {
