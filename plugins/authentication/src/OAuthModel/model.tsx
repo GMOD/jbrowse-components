@@ -1,20 +1,11 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
-import { getEnv, isElectron, UriLocation } from '@jbrowse/core/util'
+import { isElectron, UriLocation } from '@jbrowse/core/util'
 import { Instance, types } from 'mobx-state-tree'
 
 // locals
 import { OAuthInternetAccountConfigModel } from './configSchema'
-
-function fixup(buf: string) {
-  return buf.replaceAll('+', '-').replaceAll('/', '_').replaceAll('=', '')
-}
-
-async function generateChallenge(val: string) {
-  const sha256 = await import('crypto-js/sha256').then(f => f.default)
-  const Base64 = await import('crypto-js/enc-base64')
-  return fixup(Base64.stringify(sha256(val)))
-}
+import { fixup, generateChallenge } from './util'
 
 /**
  * #stateModel OAuthInternetAccount
