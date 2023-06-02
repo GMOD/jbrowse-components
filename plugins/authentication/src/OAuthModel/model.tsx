@@ -8,6 +8,25 @@ import { OAuthInternetAccountConfigModel } from './configSchema'
 import { fixup, generateChallenge } from './util'
 import { getResponseError } from '../util'
 
+interface OAuthData {
+  client_id: string
+  redirect_uri: string
+  response_type: 'token' | 'code'
+  scope?: string
+  code_challenge?: string
+  code_challenge_method?: string
+  token_access_type?: string
+  state?: string
+}
+
+interface OAuthExchangeData {
+  code: string
+  grant_type: string
+  client_id: string
+  redirect_uri: string
+  code_verifier?: string
+}
+
 /**
  * #stateModel OAuthInternetAccount
  */
@@ -23,10 +42,6 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
        */
       configuration: ConfigurationReference(configSchema),
     })
-    .volatile(() => ({
-      listener: undefined as undefined | ((event: MessageEvent) => void),
-      exchangedTokenPromise: undefined as Promise<string> | undefined,
-    }))
     .views(() => {
       let codeVerifier: string | undefined = undefined
       return {
@@ -129,20 +144,22 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
         token: string,
         redirectUri: string,
       ): Promise<string> {
+        const data: OAuthExchangeData = {
+          code: token,
+          grant_type: 'authorization_code',
+          client_id: self.clientId,
+          redirect_uri: redirectUri,
+        }
+        if (self.needsPKCE) {
+          data.code_verifier = self.codeVerifierPKCE
+        }
+
+        const params = new URLSearchParams(Object.entries(data))
+
         const response = await fetch(self.tokenEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams(
-            Object.entries({
-              code: token,
-              grant_type: 'authorization_code' as const,
-              client_id: self.clientId,
-              redirect_uri: redirectUri,
-              ...(self.needsPKCE
-                ? { code_verifier: self.codeVerifierPKCE }
-                : {}),
-            }),
-          ).toString(),
+          body: params.toString(),
         })
 
         if (!response.ok) {
@@ -166,32 +183,36 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
       async exchangeRefreshForAccessToken(
         refreshToken: string,
       ): Promise<string> {
+        const data = {
+          grant_type: 'refresh_token',
+          refresh_token: refreshToken,
+          client_id: self.clientId,
+        }
+
+        const params = new URLSearchParams(Object.entries(data))
+
         const response = await fetch(self.tokenEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams(
-            Object.entries({
-              grant_type: 'refresh_token',
-              refresh_token: refreshToken,
-              client_id: self.clientId,
-            }),
-          ).toString(),
+          body: params.toString(),
         })
 
         if (!response.ok) {
           self.removeToken()
-          let statusText = await response.text()
+          let text = await response.text()
           try {
-            const obj = JSON.parse(statusText)
+            const obj = JSON.parse(text)
             if (obj.error === 'invalid_grant') {
               this.removeRefreshToken()
             }
-            statusText = obj?.error_description ?? statusText
+            text = obj?.error_description ?? text
           } catch (e) {
             /* just use original text as error */
           }
 
-          throw new Error(await getResponseError({ response, statusText }))
+          throw new Error(
+            await getResponseError({ response, statusText: text }),
+          )
         }
 
         const accessToken = await response.json()
@@ -201,193 +222,189 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
         return accessToken.access_token
       },
     }))
-    .actions(self => ({
-      /**
-       * #action
-       */
-      setExchangedTokenPromise(p?: Promise<string>) {
-        self.exchangedTokenPromise = p
-      },
-      /**
-       * #action
-       * used to listen to child window for auth code/token
-       */
-      addMessageChannel(
-        resolve: (token: string) => void,
-        reject: (error: Error) => void,
-      ) {
-        self.listener = event => {
-          // this should probably get better handling, but ignored for now
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          this.finishOAuthWindow(event, resolve, reject)
-        }
-        window.addEventListener('message', self.listener)
-      },
-      /**
-       * #action
-       */
-
-      deleteMessageChannel() {
-        if (self.listener) {
-          window.removeEventListener('message', self.listener)
-        }
-      },
-      /**
-       * #action
-       */
-      async finishOAuthWindow(
-        event: MessageEvent,
-        resolve: (token: string) => void,
-        reject: (error: Error) => void,
-      ) {
-        if (event.data.name !== `JBrowseAuthWindow-${self.internetAccountId}`) {
-          return this.deleteMessageChannel()
-        }
-        const redirectUriWithInfo = event.data.redirectUri
-        const fixedQueryString = redirectUriWithInfo.replace('#', '?')
-        const redirectUrl = new URL(fixedQueryString)
-        const queryStringSearch = redirectUrl.search
-        const urlParams = new URLSearchParams(queryStringSearch)
-        if (urlParams.has('access_token')) {
-          const token = urlParams.get('access_token')
-          if (!token) {
-            return reject(new Error('Error with token endpoint'))
+    .actions(self => {
+      let listener: (event: MessageEvent) => void | undefined
+      let exchangedTokenPromise: Promise<string> | undefined = undefined
+      return {
+        /**
+         * #action
+         * used to listen to child window for auth code/token
+         */
+        addMessageChannel(
+          resolve: (token: string) => void,
+          reject: (error: Error) => void,
+        ) {
+          listener = event => {
+            // this should probably get better handling, but ignored for now
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            this.finishOAuthWindow(event, resolve, reject)
           }
-          self.storeToken(token)
-          return resolve(token)
-        }
-        if (urlParams.has('code')) {
-          const code = urlParams.get('code')
-          if (!code) {
-            return reject(new Error('Error with authorization endpoint'))
+          window.addEventListener('message', listener)
+        },
+        /**
+         * #action
+         */
+        deleteMessageChannel() {
+          window.removeEventListener('message', listener)
+        },
+        /**
+         * #action
+         */
+        async finishOAuthWindow(
+          event: MessageEvent,
+          resolve: (token: string) => void,
+          reject: (error: Error) => void,
+        ) {
+          if (
+            event.data.name !== `JBrowseAuthWindow-${self.internetAccountId}`
+          ) {
+            return this.deleteMessageChannel()
           }
-          try {
-            const token = await self.exchangeAuthorizationForAccessToken(
-              code,
-              redirectUrl.origin + redirectUrl.pathname,
-            )
+          const redirectUriWithInfo = event.data.redirectUri
+          const fixedQueryString = redirectUriWithInfo.replace('#', '?')
+          const redirectUrl = new URL(fixedQueryString)
+          const queryStringSearch = redirectUrl.search
+          const urlParams = new URLSearchParams(queryStringSearch)
+          if (urlParams.has('access_token')) {
+            const token = urlParams.get('access_token')
+            if (!token) {
+              return reject(new Error('Error with token endpoint'))
+            }
             self.storeToken(token)
             return resolve(token)
-          } catch (e) {
-            return reject(e instanceof Error ? e : new Error(String(e)))
           }
-        }
-        if (redirectUriWithInfo.includes('access_denied')) {
-          return reject(new Error('OAuth flow was cancelled'))
-        }
-        if (redirectUriWithInfo.includes('error')) {
-          return reject(new Error('Oauth flow error: ' + queryStringSearch))
-        }
-        this.deleteMessageChannel()
-      },
-      /**
-       * #action
-       * opens external OAuth flow, popup for web and new browser window for
-       * desktop
-       */
-      async useEndpointForAuthorization(
-        resolve: (token: string) => void,
-        reject: (e: Error) => void,
-      ) {
-        const {
-          clientId: client_id,
-          responseType: response_type = 'code',
-          needsPKCE,
-          scopes,
-          hasRefreshToken,
-        } = self
-        const state = self.state()
-        const data = {
-          client_id,
-          response_type,
-          redirect_uri: isElectron
+          if (urlParams.has('code')) {
+            const code = urlParams.get('code')
+            if (!code) {
+              return reject(new Error('Error with authorization endpoint'))
+            }
+            try {
+              const token = await self.exchangeAuthorizationForAccessToken(
+                code,
+                redirectUrl.origin + redirectUrl.pathname,
+              )
+              self.storeToken(token)
+              return resolve(token)
+            } catch (error) {
+              return error instanceof Error
+                ? reject(error)
+                : reject(new Error(String(error)))
+            }
+          }
+          if (redirectUriWithInfo.includes('access_denied')) {
+            return reject(new Error('OAuth flow was cancelled'))
+          }
+          if (redirectUriWithInfo.includes('error')) {
+            return reject(new Error('Oauth flow error: ' + queryStringSearch))
+          }
+          this.deleteMessageChannel()
+        },
+        /**
+         * #action
+         * opens external OAuth flow, popup for web and new browser window for
+         * desktop
+         */
+        async useEndpointForAuthorization(
+          resolve: (token: string) => void,
+          reject: (error: Error) => void,
+        ) {
+          const redirectUri = isElectron
             ? 'http://localhost/auth'
-            : window.location.origin + window.location.pathname,
-          ...(state ? { state } : {}),
-          ...(scopes ? { scopes } : {}),
-          ...(hasRefreshToken ? { token_access_type: 'offline' } : {}),
-          ...(needsPKCE
-            ? {
-                code_challenge: await generateChallenge(self.codeVerifierPKCE),
-                code_challenge_method: 'S256',
-              }
-            : {}),
-        }
-        const params = new URLSearchParams(Object.entries(data))
-        const url = new URL(self.authEndpoint)
-        url.search = params.toString()
-
-        const eventName = `JBrowseAuthWindow-${self.internetAccountId}`
-        if (isElectron) {
-          const { ipcRenderer } = window.require('electron')
-          const redirectUri = await ipcRenderer.invoke('openAuthWindow', {
-            internetAccountId: self.internetAccountId,
-            data,
-            url: url.toString(),
-          })
-
-          const eventFromDesktop = new MessageEvent('message', {
-            data: {
-              name: eventName,
-              redirectUri,
-            },
-          })
-          // may want to improve handling
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          this.finishOAuthWindow(eventFromDesktop, resolve, reject)
-        } else {
-          window.open(url, eventName, `width=500,height=600,left=0,top=0`)
-        }
-      },
-      /**
-       * #action
-       */
-      async getTokenFromUser(
-        resolve: (token: string) => void,
-        reject: (e: Error) => void,
-      ): Promise<void> {
-        const refreshToken = self.hasRefreshToken && self.retrieveRefreshToken()
-        if (refreshToken) {
-          try {
-            const token = await self.exchangeRefreshForAccessToken(refreshToken)
-            resolve(token)
-          } catch (err) {
-            self.removeRefreshToken()
+            : window.location.origin + window.location.pathname
+          const data: OAuthData = {
+            client_id: self.clientId,
+            redirect_uri: redirectUri,
+            response_type: self.responseType || 'code',
           }
-        }
-        this.addMessageChannel(resolve, reject)
-        // may want to improve handling
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        this.useEndpointForAuthorization(resolve, reject)
-      },
-      /**
-       * #action
-       */
-      async validateToken(
-        token: string,
-        location: UriLocation,
-      ): Promise<string> {
-        const newInit = self.addAuthHeaderToInit({ method: 'HEAD' }, token)
-        const response = await fetch(location.uri, newInit)
-        if (!response.ok) {
-          self.removeToken()
+
+          if (self.state()) {
+            data.state = self.state()
+          }
+
+          if (self.scopes) {
+            data.scope = self.scopes
+          }
+
+          if (self.needsPKCE) {
+            data.code_challenge = await generateChallenge(self.codeVerifierPKCE)
+            data.code_challenge_method = 'S256'
+          }
+
+          if (self.hasRefreshToken) {
+            data.token_access_type = 'offline'
+          }
+
+          const params = new URLSearchParams(Object.entries(data))
+
+          const url = new URL(self.authEndpoint)
+          url.search = params.toString()
+
+          const eventName = `JBrowseAuthWindow-${self.internetAccountId}`
+          if (isElectron) {
+            const { ipcRenderer } = window.require('electron')
+            const redirectUri = await ipcRenderer.invoke('openAuthWindow', {
+              internetAccountId: self.internetAccountId,
+              data,
+              url: url.toString(),
+            })
+
+            const eventFromDesktop = new MessageEvent('message', {
+              data: { name: eventName, redirectUri: redirectUri },
+            })
+            // may want to improve handling
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            this.finishOAuthWindow(eventFromDesktop, resolve, reject)
+          } else {
+            const options = `width=500,height=600,left=0,top=0`
+            window.open(url, eventName, options)
+          }
+        },
+        /**
+         * #action
+         */
+        async getTokenFromUser(
+          resolve: (token: string) => void,
+          reject: (error: Error) => void,
+        ) {
           const refreshToken =
             self.hasRefreshToken && self.retrieveRefreshToken()
           if (refreshToken) {
             try {
-              let p = self.exchangedTokenPromise
-              if (!p) {
-                p = self.exchangeRefreshForAccessToken(refreshToken)
-                this.setExchangedTokenPromise(p)
-              }
-              const newToken = await p
-              this.setExchangedTokenPromise(undefined)
-              return newToken
+              const token = await self.exchangeRefreshForAccessToken(
+                refreshToken,
+              )
+              resolve(token)
             } catch (err) {
-              console.error('Token could not be refreshed', err)
-              // let original error be thrown
+              self.removeRefreshToken()
             }
-          } else {
+          }
+          this.addMessageChannel(resolve, reject)
+          // may want to improve handling
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          this.useEndpointForAuthorization(resolve, reject)
+        },
+        async validateToken(token: string, location: UriLocation) {
+          const newInit = self.addAuthHeaderToInit({ method: 'HEAD' }, token)
+          const response = await fetch(location.uri, newInit)
+          if (!response.ok) {
+            self.removeToken()
+            const refreshToken =
+              self.hasRefreshToken && self.retrieveRefreshToken()
+            if (refreshToken) {
+              try {
+                if (!exchangedTokenPromise) {
+                  exchangedTokenPromise =
+                    self.exchangeRefreshForAccessToken(refreshToken)
+                }
+                const newToken = await exchangedTokenPromise
+                exchangedTokenPromise = undefined
+                return newToken
+              } catch (err) {
+                console.error('Token could not be refreshed', err)
+                // let original error be thrown
+              }
+            }
+
             throw new Error(
               await getResponseError({
                 response,
@@ -395,11 +412,10 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
               }),
             )
           }
-        }
-
-        return token
-      },
-    }))
+          return token
+        },
+      }
+    })
     .actions(self => {
       const superGetFetcher = self.getFetcher
       return {
