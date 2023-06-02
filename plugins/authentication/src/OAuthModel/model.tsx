@@ -5,7 +5,7 @@ import { Instance, types } from 'mobx-state-tree'
 
 // locals
 import { OAuthInternetAccountConfigModel } from './configSchema'
-import { fixup, generateChallenge, getError } from './util'
+import { fixup, generateChallenge, getError, getResponseError } from './util'
 
 /**
  * #stateModel OAuthInternetAccount
@@ -128,7 +128,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
         token: string,
         redirectUri: string,
       ): Promise<string> {
-        const res = await fetch(self.tokenEndpoint, {
+        const response = await fetch(self.tokenEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: new URLSearchParams(
@@ -144,13 +144,18 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           ).toString(),
         })
 
-        if (!res.ok) {
+        if (!response.ok) {
           throw new Error(
-            `Failed to obtain token: ${res.status} ${await getError(res)}`,
+            [
+              `HTTP ${response.status} - Failed to obtain token`,
+              await getError(response),
+            ]
+              .filter(f => !!f)
+              .join(' - '),
           )
         }
 
-        const accessToken = await res.json()
+        const accessToken = await response.json()
         if (accessToken.refresh_token) {
           this.storeRefreshToken(accessToken.refresh_token)
         }
@@ -176,20 +181,18 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
 
         if (!response.ok) {
           self.removeToken()
-          let text = await getError(response)
+          let statusText = await getError(response)
           try {
-            const obj = JSON.parse(text)
+            const obj = JSON.parse(statusText)
             if (obj.error === 'invalid_grant') {
               this.removeRefreshToken()
             }
-            text = obj?.error_description ?? text
+            statusText = obj?.error_description ?? statusText
           } catch (e) {
             /* just use original text as error */
           }
 
-          throw new Error(
-            [`HTTP ${response.status}`, text].filter(f => !!f).join(' - '),
-          )
+          throw new Error(await getResponseError({ response, statusText }))
         }
 
         const accessToken = await response.json()
@@ -387,12 +390,10 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             }
           } else {
             throw new Error(
-              [
-                `HTTP ${response.status} - Error validating token`,
-                await getError(response),
-              ]
-                .filter(f => !!f)
-                .join(' - '),
+              await getResponseError({
+                response,
+                reason: 'Error validating token',
+              }),
             )
           }
         }
@@ -422,15 +423,11 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
                 /* ignore error */
               }
             }
-            const res = await fetcher(input, init)
-            if (!res.ok) {
-              throw new Error(
-                [`HTTP ${res.status}`, await getError(res)]
-                  .filter(f => !!f)
-                  .join(' - '),
-              )
+            const response = await fetcher(input, init)
+            if (!response.ok) {
+              throw new Error(await getResponseError({ response }))
             }
-            return res
+            return response
           }
         },
       }

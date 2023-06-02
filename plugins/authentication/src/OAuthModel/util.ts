@@ -15,3 +15,21 @@ export async function getError(response: Response) {
     return response.statusText
   }
 }
+
+export async function getResponseError({
+  response,
+  reason,
+  statusText,
+}: {
+  response: Response
+  reason?: string
+  statusText?: string
+}) {
+  return [
+    `HTTP ${response.status}`,
+    reason,
+    statusText ?? (await getError(response)),
+  ]
+    .filter(f => !!f)
+    .join(' - ')
+}
