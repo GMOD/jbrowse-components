@@ -6,6 +6,7 @@ import { Instance, types, getRoot } from 'mobx-state-tree'
 // locals
 import { HTTPBasicInternetAccountConfigModel } from './configSchema'
 import { HTTPBasicLoginForm } from './HTTPBasicLoginForm'
+import { getResponseError } from '../util'
 
 /**
  * #stateModel HTTPBasicInternetAccount
@@ -50,7 +51,7 @@ const stateModelFactory = (
               if (token) {
                 resolve(token)
               } else {
-                reject(new Error('user cancelled entry'))
+                reject(new Error('User cancelled entry'))
               }
               doneCallback()
             },
@@ -65,10 +66,13 @@ const stateModelFactory = (
           return token
         }
         const newInit = self.addAuthHeaderToInit({ method: 'HEAD' }, token)
-        const res = await fetch(location.uri, newInit)
-        if (!res.ok) {
+        const response = await fetch(location.uri, newInit)
+        if (!response.ok) {
           throw new Error(
-            `Error validating token — ${res.status} ${await res.text()})`,
+            await getResponseError({
+              response,
+              reason: 'Error validating token',
+            }),
           )
         }
         return token

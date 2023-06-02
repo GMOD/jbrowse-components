@@ -7,29 +7,3 @@ export async function generateChallenge(val: string) {
   const Base64 = await import('crypto-js/enc-base64')
   return fixup(Base64.stringify(sha256(val)))
 }
-
-export async function getError(response: Response) {
-  try {
-    return response.text()
-  } catch (e) {
-    return response.statusText
-  }
-}
-
-export async function getResponseError({
-  response,
-  reason,
-  statusText,
-}: {
-  response: Response
-  reason?: string
-  statusText?: string
-}) {
-  return [
-    `HTTP ${response.status}`,
-    reason,
-    statusText ?? (await getError(response)),
-  ]
-    .filter(f => !!f)
-    .join(' - ')
-}

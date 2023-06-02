@@ -5,7 +5,8 @@ import { Instance, types } from 'mobx-state-tree'
 
 // locals
 import { OAuthInternetAccountConfigModel } from './configSchema'
-import { fixup, generateChallenge, getError, getResponseError } from './util'
+import { fixup, generateChallenge } from './util'
+import { getResponseError } from '../util'
 
 /**
  * #stateModel OAuthInternetAccount
@@ -146,12 +147,10 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
 
         if (!response.ok) {
           throw new Error(
-            [
-              `HTTP ${response.status} - Failed to obtain token`,
-              await getError(response),
-            ]
-              .filter(f => !!f)
-              .join(' - '),
+            await getResponseError({
+              response,
+              reason: 'Failed to obtain token',
+            }),
           )
         }
 
@@ -181,7 +180,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
 
         if (!response.ok) {
           self.removeToken()
-          let statusText = await getError(response)
+          let statusText = await response.text()
           try {
             const obj = JSON.parse(statusText)
             if (obj.error === 'invalid_grant') {
