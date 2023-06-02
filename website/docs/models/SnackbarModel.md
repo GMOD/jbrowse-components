@@ -18,7 +18,7 @@ info
 
 ```js
 // type
-IObservableArray<any>
+IObservableArray<SnackbarMessage>
 ```
 
 ### SnackbarModel - Actions
@@ -45,7 +45,7 @@ pushSnackbarMessage: (
 
 ```js
 // type signature
-popSnackbarMessage: () => any
+popSnackbarMessage: () => SnackbarMessage
 ```
 
 #### action: removeSnackbarMessage

@@ -10,7 +10,7 @@ info
 
 ### Source file
 
-[packages/product-core/src/Session/Base.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/Base.ts)
+[packages/product-core/src/Session/BaseSession.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/BaseSession.ts)
 
 base session shared by **all** JBrowse products. Be careful what you include
 here, everything will use it.
@@ -57,7 +57,7 @@ any
 
 ```js
 // type
-any
+RpcManager
 ```
 
 #### getter: configuration
@@ -67,25 +67,25 @@ any
 Instance<JB_CONFIG_SCHEMA>
 ```
 
-#### getter: assemblies
+#### getter: adminMode
 
 ```js
 // type
-({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<ConfigurationSchemaType<{ aliases: { type: string; defaultValue: any[]; description: string; }; sequence: AnyConfigurationSchemaType; refNameColors: { ...; }; refNameAliases: ConfigurationSchemaType<......
+boolean
 ```
 
 #### getter: textSearchManager
 
 ```js
 // type
-any
+TextSearchManager
 ```
 
-#### getter: version
+#### getter: assemblies
 
 ```js
 // type
-any
+({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<ConfigurationSchemaType<{ aliases: { type: string; defaultValue: any[]; description: string; }; sequence: AnyConfigurationSchemaType; refNameColors: { ...; }; refNameAliases: ConfigurationSchemaType<......
 ```
 
 ### BaseSessionModel - Actions

@@ -48,6 +48,13 @@ sessionTracks: types.array(
 
 ### JBrowseReactLinearGenomeViewSessionModel - Getters
 
+#### getter: version
+
+```js
+// type
+any
+```
+
 #### getter: disableAddTracks
 
 ```js

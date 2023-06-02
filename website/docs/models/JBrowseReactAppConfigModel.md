@@ -1,6 +1,6 @@
 ---
-id: jbrowsewebconfigmodel
-title: JBrowseWebConfigModel
+id: jbrowsereactappconfigmodel
+title: JBrowseReactAppConfigModel
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -10,6 +10,6 @@ info
 
 ### Source file
 
-[products/jbrowse-web/src/jbrowseModel.ts](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-web/src/jbrowseModel.ts)
+[products/jbrowse-react-app/src/jbrowseModel.ts](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-app/src/jbrowseModel.ts)
 
 the rootModel.jbrowse state model for JBrowse Web

@@ -21,39 +21,68 @@ composed of
 - ThemeManagerSessionMixin
 - TracksManagerSessionMixin
 - MultipleViewsSessionMixin
-- JBrowseDesktopSessionMixin
-- JBrowseDesktopSessionAssembliesModel
-- JBrowseDesktopSessionTrackMenuMixin
+- DesktopSessionMixin
+- SessionAssembliesMixin
+- TemporaryAssembliesMixin
+- DesktopSessionTrackMenuMixin
 - SnackbarModel
 
 ### JBrowseDesktopSessionModel - Getters
+
+#### getter: assemblies
+
+```js
+// type
+ConfigurationSchemaType<{ aliases: { type: string; defaultValue: any[]; description: string; }; sequence: AnyConfigurationSchemaType; refNameColors: { type: string; defaultValue: any[]; description: string; }; refNameAliases: ConfigurationSchemaType<...>; cytobands: ConfigurationSchemaType<...>; displayName: { ...; ...
+```
 
 #### getter: root
 
 ```js
 // type
-{ jbrowse: any; version: string; session: any; sessionPath: string; assemblyManager: { assemblies: IMSTArray<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { ...; } & ... 4 more ... & { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>; } & ... 4 more ... & IStateTreeNode<...>; interne...
+{ jbrowse: any; session: any; sessionPath: string; assemblyManager: { assemblies: IMSTArray<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { ...; } & ... 4 more ... & { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>; } & ... 5 more ... & IStateTreeNode<...>; internetAccounts: IMSTAr...
+```
+
+#### getter: assemblyNames
+
+```js
+// type
+string[]
+```
+
+#### getter: version
+
+```js
+// type
+any
 ```
 
 #### getter: history
 
 ```js
 // type
-any
+{ undoIdx: number; targetPath: string; } & NonEmptyObject & { history: unknown[]; notTrackingUndo: boolean; } & { readonly canUndo: boolean; readonly canRedo: boolean; } & { stopTrackingUndo(): void; ... 5 more ...; redo(): void; } & IStateTreeNode<...>
 ```
 
 #### getter: menus
 
 ```js
 // type
-any
+Menu[]
+```
+
+#### getter: assemblyManager
+
+```js
+// type
+{ assemblies: IMSTArray<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loaded: boolean; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; lowerCaseRefNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 4 more ... & { ...; }, _NotCustom...
 ```
 
 #### getter: savedSessionNames
 
 ```js
 // type
-any
+IMSTArray<ISimpleType<string>> & IStateTreeNode<IMaybe<IArrayType<ISimpleType<string>>>>
 ```
 
 ### JBrowseDesktopSessionModel - Methods
@@ -73,7 +102,7 @@ renderProps: () => {
 
 ```js
 // type signature
-renameCurrentSession: (sessionName: string) => Promise<void>
+renameCurrentSession: (sessionName: string) => void
 ```
 
 #### action: editTrackConfiguration

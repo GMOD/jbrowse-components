@@ -684,7 +684,7 @@ toggleTrack: (trackId: string) => void
 
 ```js
 // type signature
-setTrackLabels: (setting: "hidden" | "offset" | "overlapping") => void
+setTrackLabels: (setting: "offset" | "hidden" | "overlapping") => void
 ```
 
 #### action: toggleCenterLine
