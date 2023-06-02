@@ -20,7 +20,7 @@ const dropboxErrorMessages: Record<string, string | undefined> = {
   shared_link_is_directory: 'Directories cannot be retrieved by this endpoint.',
 }
 
-export async function getDropboxErrorMessage(
+export async function getDescriptiveErrorMessage(
   response: Response,
   reason?: string,
 ) {

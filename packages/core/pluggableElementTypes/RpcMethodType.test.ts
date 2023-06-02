@@ -7,17 +7,6 @@ export class MockRpcMethodType extends RpcMethodType {
   async execute() {}
 }
 
-const locationInAdapter = {
-  locationType: 'UriLocation',
-  uri: 'test',
-  internetAccountId: 'HTTPBasicInternetAccount-test',
-}
-const deeplyNestedLocation = {
-  locationType: 'UriLocation',
-  uri: 'test2',
-  internetAccountId: 'HTTPBasicInternetAccount-test2',
-}
-
 test('test serialize arguments with augmentLocationObject', async () => {
   const mockRpc = new MockRpcMethodType(pluginManager)
   mockRpc.serializeNewAuthArguments = jest.fn().mockReturnValue({
@@ -25,6 +14,16 @@ test('test serialize arguments with augmentLocationObject', async () => {
     uri: 'test',
     internetAccountId: 'HTTPBasicInternetAccount-test',
   })
+  const locationInAdapter = {
+    locationType: 'UriLocation',
+    uri: 'test',
+    internetAccountId: 'HTTPBasicInternetAccount-test',
+  }
+  const deeplyNestedLocation = {
+    locationType: 'UriLocation',
+    uri: 'test2',
+    internetAccountId: 'HTTPBasicInternetAccount-test2',
+  }
 
   await mockRpc.serializeArguments(
     {
@@ -45,7 +44,6 @@ test('test serialize arguments with augmentLocationObject', async () => {
   expect(mockRpc.serializeNewAuthArguments).toHaveBeenCalledTimes(2)
   expect(mockRpc.serializeNewAuthArguments).toHaveBeenCalledWith(
     locationInAdapter,
-
     '',
   )
   expect(mockRpc.serializeNewAuthArguments).toHaveBeenCalledWith(

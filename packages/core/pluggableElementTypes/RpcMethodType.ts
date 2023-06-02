@@ -27,13 +27,16 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     super({})
   }
 
-  async serializeArguments(args: {}, rpcDriver: string): Promise<{}> {
+  async serializeArguments(args: {}, rpcDriverClassName: string): Promise<{}> {
     const blobMap = getBlobMap()
-    await this.augmentLocationObjects(args, rpcDriver)
+    await this.augmentLocationObjects(args, rpcDriverClassName)
     return { ...args, blobMap }
   }
 
-  async serializeNewAuthArguments(loc: UriLocation, rpcDriver: string) {
+  async serializeNewAuthArguments(
+    loc: UriLocation,
+    rpcDriverClassName: string,
+  ) {
     const rootModel = this.pluginManager.rootModel
 
     // args dont need auth or already have auth
@@ -42,7 +45,10 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     }
 
     const account = rootModel.findAppropriateInternetAccount(loc)
-    if (account && rpcDriver !== 'MainThreadRpcDriver') {
+
+    // mutating loc object is not allowed in MainThreadRpcDriver, and is only
+    // needed for web worker RPC
+    if (account && rpcDriverClassName !== 'MainThreadRpcDriver') {
       loc.internetAccountPreAuthorization =
         await account.getPreAuthorizationInformation(loc)
     }
@@ -51,7 +57,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
 
   async deserializeArguments<T extends SerializedArgs>(
     serializedArgs: T,
-    _rpcDriver: string,
+    _rpcDriverClassName: string,
   ) {
     if (serializedArgs.blobMap) {
       setBlobMap(serializedArgs.blobMap)
@@ -66,12 +72,15 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     }
   }
 
-  abstract execute(serializedArgs: unknown, rpcDriver: string): Promise<unknown>
+  abstract execute(
+    serializedArgs: unknown,
+    rpcDriverClassName: string,
+  ): Promise<unknown>
 
   async serializeReturn(
     originalReturn: unknown,
     _args: unknown,
-    _rpcDriver: string,
+    _rpcDriverClassName: string,
   ) {
     return originalReturn
   }
@@ -79,7 +88,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
   async deserializeReturn(
     serializedReturn: unknown,
     _args: unknown,
-    _rpcDriver: string,
+    _rpcDriverClassName: string,
   ) {
     let r
     try {
@@ -105,7 +114,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
 
   private async augmentLocationObjects(
     thing: Record<string, unknown>,
-    rpcDriver: string,
+    rpcDriverClassName: string,
   ) {
     const uris = [] as UriLocation[]
 
@@ -116,7 +125,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
       }
     })
     for (const uri of uris) {
-      await this.serializeNewAuthArguments(uri, rpcDriver)
+      await this.serializeNewAuthArguments(uri, rpcDriverClassName)
     }
     return thing
   }

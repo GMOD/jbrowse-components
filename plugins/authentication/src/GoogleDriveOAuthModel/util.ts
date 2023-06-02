@@ -14,7 +14,7 @@ interface GoogleDriveError {
   }
 }
 
-export async function getGoogleDriveErrorMessage(
+export async function getDescriptiveErrorMessage(
   response: Response,
   reason?: string,
 ) {

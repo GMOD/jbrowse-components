@@ -8,7 +8,7 @@ import { Instance, types } from 'mobx-state-tree'
 import { DropboxOAuthInternetAccountConfigModel } from './configSchema'
 import baseModel from '../OAuthModel/model'
 import { configSchema as OAuthConfigSchema } from '../OAuthModel'
-import { getDropboxErrorMessage } from './util'
+import { getDescriptiveErrorMessage } from './util'
 
 export function DropboxIcon(props: SvgIconProps) {
   return (
@@ -71,7 +71,7 @@ const stateModelFactory = (
             newInit,
           )
           if (!response.ok) {
-            throw new Error(await getDropboxErrorMessage(response))
+            throw new Error(await getDescriptiveErrorMessage(response))
           }
           return response
         }
@@ -107,7 +107,7 @@ const stateModelFactory = (
             return this.validateToken(newToken, location)
           }
           throw new Error(
-            await getDropboxErrorMessage(
+            await getDescriptiveErrorMessage(
               response,
               'Token could not be validated',
             ),

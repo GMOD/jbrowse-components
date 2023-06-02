@@ -119,7 +119,7 @@ export const InternetAccount = types
     getTokenFromUser(
       resolve: (token: string) => void,
       reject: (error: Error) => void,
-    ) {
+    ): void {
       throw new Error('getTokenFromUser must be implemented by extending model')
     },
     /**
@@ -166,6 +166,7 @@ export const InternetAccount = types
        * Try to get the token from the location pre-auth, from local storage,
        * or from a previously cached promise. If token is not available, uses
        * `getTokenFromUser`.
+       *
        * @param location - UriLocation of the resource
        * @returns A promise for the token
        */
@@ -188,17 +189,18 @@ export const InternetAccount = types
           tokenPromise = Promise.resolve(token)
           return tokenPromise
         }
-        tokenPromise = new Promise((r, x) => {
-          function resolve(token: string) {
-            self.storeToken(token)
-            r(token)
-          }
-          function reject(error: Error) {
-            self.removeToken()
-            x(error)
-          }
-          self.getTokenFromUser(resolve, reject)
-        })
+        tokenPromise = new Promise((resolve, reject) =>
+          self.getTokenFromUser(
+            token => {
+              self.storeToken(token)
+              resolve(token)
+            },
+            error => {
+              self.removeToken()
+              reject(error)
+            },
+          ),
+        )
         return tokenPromise
       },
     }
@@ -208,11 +210,11 @@ export const InternetAccount = types
      * #action
      */
     addAuthHeaderToInit(init: RequestInit = {}, token: string) {
-      const tokenInfoString = self.tokenType
-        ? `${self.tokenType} ${token}`
-        : token
       const newHeaders = new Headers(init.headers || {})
-      newHeaders.append(self.authHeader, tokenInfoString)
+      newHeaders.append(
+        self.authHeader,
+        self.tokenType ? `${self.tokenType} ${token}` : token,
+      )
       return { ...init, headers: newHeaders }
     },
     /**
@@ -225,17 +227,19 @@ export const InternetAccount = types
      */
     async getPreAuthorizationInformation(location: UriLocation) {
       const authToken = await self.getToken(location)
+      let validatedToken: string | undefined
       try {
-        return {
-          internetAccountType: self.type,
-          authInfo: {
-            token: await self.validateToken(authToken, location),
-            configuration: getConf(self),
-          },
-        }
+        validatedToken = await self.validateToken(authToken, location)
       } catch (error) {
         self.removeToken()
         throw error
+      }
+      return {
+        internetAccountType: self.type,
+        authInfo: {
+          token: validatedToken,
+          configuration: getConf(self),
+        },
       }
     },
   }))

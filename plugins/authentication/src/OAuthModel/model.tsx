@@ -49,11 +49,12 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
          * #getter
          */
         get codeVerifierPKCE() {
-          if (!codeVerifier) {
-            const array = new Uint8Array(32)
-            globalThis.crypto.getRandomValues(array)
-            codeVerifier = fixup(Buffer.from(array).toString('base64'))
+          if (codeVerifier) {
+            return codeVerifier
           }
+          const array = new Uint8Array(32)
+          globalThis.crypto.getRandomValues(array)
+          codeVerifier = fixup(Buffer.from(array).toString('base64'))
           return codeVerifier
         },
       }
@@ -426,7 +427,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
          * #action
          * Get a fetch method that will add any needed authentication headers to
          * the request before sending it. If location is provided, it will be
-         * checked to see if it includes a token in it pre-auth information.
+         * checked to see if it includes a token in it's pre-auth information.
          *
          * @param loc - UriLocation of the resource
          * @returns A function that can be used to fetch

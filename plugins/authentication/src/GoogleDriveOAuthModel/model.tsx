@@ -8,7 +8,7 @@ import { SvgIconProps, SvgIcon } from '@mui/material'
 import { GoogleDriveOAuthInternetAccountConfigModel } from './configSchema'
 import baseModel from '../OAuthModel/model'
 import { configSchema as OAuthConfigSchema } from '../OAuthModel'
-import { getGoogleDriveErrorMessage } from './util'
+import { getDescriptiveErrorMessage } from './util'
 import { GoogleDriveFile } from './GoogleDriveFilehandle'
 
 export interface RequestInitWithMetadata extends RequestInit {
@@ -67,23 +67,24 @@ export default function stateModelFactory(
        */
       getFetcher(location?: UriLocation) {
         return async (input: RequestInfo, init?: RequestInitWithMetadata) => {
-          const url = new URL(getUri(String(input)))
+          const driveUrl = new URL(getUri(String(input)))
           const searchParams = new URLSearchParams()
           if (init?.metadataOnly) {
             searchParams.append('fields', 'size')
           } else {
             searchParams.append('alt', 'media')
           }
-          url.search = searchParams.toString()
+          driveUrl.search = searchParams.toString()
+          const authToken = await self.getToken(location)
           const response = await fetch(
-            url,
+            driveUrl,
             self.addAuthHeaderToInit(
               { ...init, method: 'GET', credentials: 'same-origin' },
-              await self.getToken(location),
+              authToken,
             ),
           )
           if (!response.ok) {
-            throw new Error(await getGoogleDriveErrorMessage(response))
+            throw new Error(await getDescriptiveErrorMessage(response))
           }
           return response
         }
@@ -108,7 +109,7 @@ export default function stateModelFactory(
         })
         if (!response.ok) {
           throw new Error(
-            await getGoogleDriveErrorMessage(
+            await getDescriptiveErrorMessage(
               response,
               'Token could not be validated',
             ),
