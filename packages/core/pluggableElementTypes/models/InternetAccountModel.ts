@@ -119,7 +119,7 @@ export const InternetAccount = types
     getTokenFromUser(
       resolve: (token: string) => void,
       reject: (error: Error) => void,
-    ): void {
+    ) {
       throw new Error('getTokenFromUser must be implemented by extending model')
     },
     /**
@@ -143,12 +143,13 @@ export const InternetAccount = types
     /**
      * #action
      * This can be used by an internetAccount to validate a token works before
-     * it is used. This is run when preAuthorizationInformation is requested, so
-     * it can be used to check that a token is valid before sending it to a
+     * it is used. This is run when preAuthorizationInformation is requested,
+     * so it can be used to check that a token is valid before sending it to a
      * worker thread. It expects the token to be returned so that this action
      * can also be used to generate a new token (e.g. by using a refresh token)
      * if the original one was invalid. Should throw an error if a token is
      * invalid.
+     *
      * @param token - Auth token
      * @param loc - UriLocation of the resource
      * @returns - Valid auth token
@@ -223,8 +224,8 @@ export const InternetAccount = types
      * @returns
      */
     async getPreAuthorizationInformation(location: UriLocation) {
+      const authToken = await self.getToken(location)
       try {
-        const authToken = await self.getToken(location)
         return {
           internetAccountType: self.type,
           authInfo: {
@@ -244,6 +245,7 @@ export const InternetAccount = types
      * Get a fetch method that will add any needed authentication headers to
      * the request before sending it. If location is provided, it will be
      * checked to see if it includes a token in it pre-auth information.
+     *
      * @param loc - UriLocation of the resource
      * @returns A function that can be used to fetch
      */

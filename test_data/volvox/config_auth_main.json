@@ -211,21 +211,6 @@
           }
         }
       }
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "volvox_microarray_httpbasic",
-      "name": "wiggle_track xyplot httpbasic",
-      "category": ["Integration test"],
-      "assemblyNames": ["volvox"],
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "http://localhost:3040/data/volvox.bw",
-          "locationType": "UriLocation",
-          "internetAccountId": "HTTPBasicInternetAccount-HTTPBasicTest"
-        }
-      }
     }
   ],
 

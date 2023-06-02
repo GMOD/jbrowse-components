@@ -55,13 +55,8 @@ const stateModelFactory = (
       /**
        * #method
        */
-      getFetcher(
-        location?: UriLocation,
-      ): (input: RequestInfo, init?: RequestInit) => Promise<Response> {
-        return async (
-          input: RequestInfo,
-          init?: RequestInit,
-        ): Promise<Response> => {
+      getFetcher(location?: UriLocation) {
+        return async (input: RequestInfo, init?: RequestInit) => {
           const authToken = await self.getToken(location)
           const newInit = self.addAuthHeaderToInit(
             { ...init, method: 'POST' },
@@ -76,8 +71,7 @@ const stateModelFactory = (
             newInit,
           )
           if (!response.ok) {
-            const message = await getDropboxErrorMessage(response)
-            throw new Error(message)
+            throw new Error(await getDropboxErrorMessage(response))
           }
           return response
         }

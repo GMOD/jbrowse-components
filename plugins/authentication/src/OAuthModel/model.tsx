@@ -295,7 +295,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             return reject(new Error('OAuth flow was cancelled'))
           }
           if (redirectUriWithInfo.includes('error')) {
-            return reject(new Error('Oauth flow error: ' + queryStringSearch))
+            return reject(new Error('OAuth flow error: ' + queryStringSearch))
           }
           this.deleteMessageChannel()
         },
@@ -383,6 +383,9 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           this.useEndpointForAuthorization(resolve, reject)
         },
+        /**
+         * #action
+         */
         async validateToken(token: string, location: UriLocation) {
           const newInit = self.addAuthHeaderToInit({ method: 'HEAD' }, token)
           const response = await fetch(location.uri, newInit)
