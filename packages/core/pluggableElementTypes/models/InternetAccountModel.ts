@@ -218,21 +218,23 @@ export const InternetAccount = types
      * #action
      * Gets the token and returns it along with the information needed to
      * create a new internetAccount.
+     *
      * @param location - UriLocation of the resource
      * @returns
      */
     async getPreAuthorizationInformation(location: UriLocation) {
-      const authToken = await self.getToken(location)
-      let validatedToken: string
       try {
-        validatedToken = await self.validateToken(authToken, location)
+        const authToken = await self.getToken(location)
+        return {
+          internetAccountType: self.type,
+          authInfo: {
+            token: await self.validateToken(authToken, location),
+            configuration: getConf(self),
+          },
+        }
       } catch (error) {
         self.removeToken()
         throw error
-      }
-      return {
-        internetAccountType: self.type,
-        authInfo: { token: validatedToken, configuration: getConf(self) },
       }
     },
   }))
