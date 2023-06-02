@@ -1,18 +1,15 @@
 import React, { lazy } from 'react'
 import {
-  ConfigurationReference,
   AnyConfigurationSchemaType,
   getConf,
-  readConfObject,
 } from '@jbrowse/core/configuration'
-import { getEnv, getSession } from '@jbrowse/core/util'
-import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
+import { getSession } from '@jbrowse/core/util'
 import { types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
-
 import { axisPropsFromTickScale } from 'react-d3-axis-mod'
+
+// locals
 import {
-  getNiceDomain,
   getScale,
   quantitativeStatsAutorun,
   YSCALEBAR_LABEL_OFFSET,
@@ -21,7 +18,7 @@ import {
 import Tooltip from '../components/Tooltip'
 import SharedWiggleMixin from '../../shared/modelShared'
 
-const SetMinMaxDlg = lazy(() => import('../../shared/SetMinMaxDialog'))
+// lazies
 const SetColorDlg = lazy(() => import('../components/SetColorDialog'))
 
 // using a map because it preserves order
@@ -42,17 +39,12 @@ function stateModelFactory(
   return types
     .compose(
       'LinearWiggleDisplay',
-      BaseLinearDisplay,
-      SharedWiggleMixin(),
+      SharedWiggleMixin(configSchema),
       types.model({
         /**
          * #property
          */
         type: types.literal('LinearWiggleDisplay'),
-        /**
-         * #property
-         */
-        configuration: ConfigurationReference(configSchema),
       }),
     )
 
@@ -60,144 +52,23 @@ function stateModelFactory(
       /**
        * #getter
        */
+      get TooltipComponent() {
+        return Tooltip as React.FC
+      },
+
+      /**
+       * #getter
+       */
       get rendererTypeName() {
-        const name = this.rendererTypeNameSimple
+        const name = self.rendererTypeNameSimple
         const rendererType = rendererTypes.get(name)
         if (!rendererType) {
           throw new Error(`unknown renderer ${name}`)
         }
         return rendererType
       },
-      /**
-       * #getter
-       */
-      get TooltipComponent() {
-        return Tooltip as React.FC
-      },
-      /**
-       * #getter
-       */
-      get rendererConfig() {
-        const {
-          color,
-          displayCrossHatches,
-          fill,
-          minSize,
-          negColor,
-          posColor,
-          summaryScoreMode,
-          scaleType,
-          rendererTypeName,
-        } = self
-        const configBlob = getConf(self, ['renderers', rendererTypeName]) || {}
-        return self.rendererType.configSchema.create(
-          {
-            ...configBlob,
-            ...(scaleType ? { scaleType } : {}),
-            ...(fill !== undefined ? { filled: fill } : {}),
-            ...(displayCrossHatches !== undefined
-              ? { displayCrossHatches }
-              : {}),
-            ...(summaryScoreMode !== undefined ? { summaryScoreMode } : {}),
-            ...(color !== undefined ? { color } : {}),
-            ...(negColor !== undefined ? { negColor } : {}),
-            ...(posColor !== undefined ? { posColor } : {}),
-            ...(minSize !== undefined ? { minSize } : {}),
-          },
-          getEnv(self),
-        )
-      },
     }))
-    .views(self => {
-      let oldDomain: [number, number] = [0, 0]
-      return {
-        /**
-         * #getter
-         */
-        get filled() {
-          return readConfObject(self.rendererConfig, 'filled')
-        },
-        /**
-         * #getter
-         */
-        get summaryScoreModeSetting() {
-          return readConfObject(self.rendererConfig, 'summaryScoreMode')
-        },
-        /**
-         * #getter
-         */
-        get domain() {
-          const { stats, scaleType, minScore, maxScore } = self
-          if (!stats) {
-            return undefined
-          }
 
-          const ret = getNiceDomain({
-            domain: [stats.scoreMin, stats.scoreMax],
-            bounds: [minScore, maxScore],
-            scaleType,
-          })
-
-          // avoid weird scalebar if log value and empty region displayed
-          if (scaleType === 'log' && ret[1] === Number.MIN_VALUE) {
-            return [0, Number.MIN_VALUE]
-          }
-
-          // avoid returning a new object if it matches the old value
-          if (JSON.stringify(oldDomain) !== JSON.stringify(ret)) {
-            oldDomain = ret
-          }
-
-          return oldDomain
-        },
-
-        /**
-         * #getter
-         */
-        get needsScalebar() {
-          return (
-            self.rendererTypeName === 'XYPlotRenderer' ||
-            self.rendererTypeName === 'LinePlotRenderer'
-          )
-        },
-        /**
-         * #getter
-         */
-        get scaleOpts() {
-          return {
-            domain: this.domain,
-            stats: self.stats,
-            autoscaleType: this.autoscaleType,
-            scaleType: self.scaleType,
-            inverted: getConf(self, 'inverted'),
-          }
-        },
-
-        /**
-         * #getter
-         */
-        get canHaveFill() {
-          return self.rendererTypeName === 'XYPlotRenderer'
-        },
-
-        /**
-         * #getter
-         */
-        get autoscaleType() {
-          return self.autoscale ?? getConf(self, 'autoscale')
-        },
-
-        /**
-         * #getter
-         */
-        get displayCrossHatchesSetting() {
-          return (
-            self.displayCrossHatches ??
-            readConfObject(self.rendererConfig, 'displayCrossHatches')
-          )
-        },
-      }
-    })
     .views(self => ({
       /**
        * #getter
@@ -220,14 +91,6 @@ function stateModelFactory(
         return height < 100 || minimalTicks
           ? { ...ticks, values: domain }
           : ticks
-      },
-
-      /**
-       * #getter
-       */
-      get adapterCapabilities() {
-        const type = self.adapterTypeName
-        return pluginManager.getAdapterType(type).adapterCapabilities
       },
     }))
     .views(self => {
@@ -253,20 +116,14 @@ function stateModelFactory(
             filters,
           }
         },
-        /**
-         * #getter
-         */
-        get hasResolution() {
-          return self.adapterCapabilities.includes('hasResolution')
-        },
 
         /**
          * #getter
          */
-        get hasGlobalStats() {
-          return self.adapterCapabilities.includes('hasGlobalStats')
+        get needsScalebar() {
+          const { rendererTypeName: type } = self
+          return type === 'XYPlotRenderer' || type === 'LinePlotRenderer'
         },
-
         /**
          * #getter
          */
@@ -292,71 +149,8 @@ function stateModelFactory(
           return [
             ...superTrackMenuItems(),
             {
-              label: 'score',
-              subMenu: [
-                ...(self.hasResolution
-                  ? [
-                      {
-                        label: 'Resolution',
-                        subMenu: [
-                          {
-                            label: 'Finer resolution',
-                            onClick: () =>
-                              self.setResolution(self.resolution * 5),
-                          },
-                          {
-                            label: 'Coarser resolution',
-                            onClick: () =>
-                              self.setResolution(self.resolution / 5),
-                          },
-                        ],
-                      },
-                      {
-                        label: 'Summary score mode',
-                        subMenu: ['min', 'max', 'avg', 'whiskers'].map(elt => ({
-                          label: elt,
-                          type: 'radio',
-                          checked: self.summaryScoreModeSetting === elt,
-                          onClick: () => self.setSummaryScoreMode(elt),
-                        })),
-                      },
-                    ]
-                  : []),
-                {
-                  label:
-                    self.scaleType === 'log'
-                      ? 'Set linear scale'
-                      : 'Set log scale',
-                  onClick: () => self.toggleLogScale(),
-                },
-                {
-                  label: 'Autoscale type',
-                  subMenu: [
-                    ['local', 'Local'],
-                    ...(self.hasGlobalStats
-                      ? [
-                          ['global', 'Global'],
-                          ['globalsd', 'Global ± 3σ'],
-                        ]
-                      : []),
-                    ['localsd', 'Local ± 3σ'],
-                  ].map(([val, label]) => ({
-                    label,
-                    type: 'radio',
-                    checked: self.autoscaleType === val,
-                    onClick: () => self.setAutoscale(val),
-                  })),
-                },
-                {
-                  label: 'Set min/max score',
-                  onClick: () => {
-                    getSession(self).queueDialog(handleClose => [
-                      SetMinMaxDlg,
-                      { model: self, handleClose },
-                    ])
-                  },
-                },
-              ],
+              label: 'Score',
+              subMenu: self.scoreTrackMenuItems(),
             },
 
             ...(self.canHaveFill
