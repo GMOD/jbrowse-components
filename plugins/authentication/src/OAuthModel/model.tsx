@@ -5,7 +5,7 @@ import { Instance, types } from 'mobx-state-tree'
 
 // locals
 import { OAuthInternetAccountConfigModel } from './configSchema'
-import { fixup, generateChallenge } from './util'
+import { fixup, generateChallenge, getError } from './util'
 
 /**
  * #stateModel OAuthInternetAccount
@@ -128,7 +128,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
         token: string,
         redirectUri: string,
       ): Promise<string> {
-        const response = await fetch(self.tokenEndpoint, {
+        const res = await fetch(self.tokenEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: new URLSearchParams(
@@ -144,15 +144,13 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           ).toString(),
         })
 
-        if (!response.ok) {
+        if (!res.ok) {
           throw new Error(
-            `Failed to obtain token from endpoint: ${
-              response.status
-            } ${await response.text()}`,
+            `Failed to obtain token: ${res.status} ${await getError(res)}`,
           )
         }
 
-        const accessToken = await response.json()
+        const accessToken = await res.json()
         if (accessToken.refresh_token) {
           this.storeRefreshToken(accessToken.refresh_token)
         }
@@ -178,7 +176,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
 
         if (!response.ok) {
           self.removeToken()
-          let text = await response.text()
+          let text = await getError(response)
           try {
             const obj = JSON.parse(text)
             if (obj.error === 'invalid_grant') {
@@ -190,9 +188,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           }
 
           throw new Error(
-            `Network response failure — ${response.status} (${
-              response.statusText
-            }) ${text ? ` (${text})` : ''}`,
+            [`HTTP ${response.status}`, text].filter(f => !!f).join(' - '),
           )
         }
 
@@ -285,7 +281,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
       /**
        * #action
        * opens external OAuth flow, popup for web and new browser window for
-       *  desktop
+       * desktop
        */
       async useEndpointForAuthorization(
         resolve: (token: string) => void,
@@ -370,8 +366,8 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
         location: UriLocation,
       ): Promise<string> {
         const newInit = self.addAuthHeaderToInit({ method: 'HEAD' }, token)
-        const res = await fetch(location.uri, newInit)
-        if (!res.ok) {
+        const response = await fetch(location.uri, newInit)
+        if (!response.ok) {
           self.removeToken()
           const refreshToken =
             self.hasRefreshToken && self.retrieveRefreshToken()
@@ -391,7 +387,12 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             }
           } else {
             throw new Error(
-              `Error validating token - ${res.status} ${await res.text()}`,
+              [
+                `HTTP ${response.status} - Error validating token`,
+                await getError(response),
+              ]
+                .filter(f => !!f)
+                .join(' - '),
             )
           }
         }
@@ -414,23 +415,22 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
         getFetcher(loc?: UriLocation) {
           const fetcher = superGetFetcher(loc)
           return async (input: RequestInfo, init?: RequestInit) => {
-            try {
-              if (loc) {
-                try {
-                  await self.getPreAuthorizationInformation(loc)
-                } catch (e) {
-                  /* ignore error */
-                }
+            if (loc) {
+              try {
+                await self.getPreAuthorizationInformation(loc)
+              } catch (e) {
+                /* ignore error */
               }
-              const res = await fetcher(input, init)
-              if (!res.ok) {
-                throw new Error(`HTTP ${res.status} ${await res.text()}`)
-              }
-              return res
-            } catch (e) {
-              console.error(e)
-              throw e
             }
+            const res = await fetcher(input, init)
+            if (!res.ok) {
+              throw new Error(
+                [`HTTP ${res.status}`, await getError(res)]
+                  .filter(f => !!f)
+                  .join(' - '),
+              )
+            }
+            return res
           }
         },
       }
