@@ -7,6 +7,7 @@ import { getSession } from '@jbrowse/core/util'
 import { types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { axisPropsFromTickScale } from 'react-d3-axis-mod'
+import { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
 import {
@@ -30,7 +31,7 @@ const rendererTypes = new Map([
 
 /**
  * #stateModel LinearWiggleDisplay
- * Extends `BaseLinearDisplay`
+ * extends `SharedWiggleMixin`
  */
 function stateModelFactory(
   pluginManager: PluginManager,
@@ -208,27 +209,16 @@ function stateModelFactory(
       }
     })
     .actions(self => {
-      const { reload: superReload, renderSvg: superRenderSvg } = self
-
-      type ExportSvgOpts = Parameters<typeof superRenderSvg>[0]
+      const { renderSvg: superRenderSvg } = self
 
       return {
-        /**
-         * #action
-         * re-runs stats and refresh whole display on reload
-         */
-        async reload() {
-          self.setError()
-          superReload()
-        },
-
         afterAttach() {
           quantitativeStatsAutorun(self)
         },
         /**
          * #action
          */
-        async renderSvg(opts: ExportSvgOpts) {
+        async renderSvg(opts: ExportSvgDisplayOptions) {
           const { renderSvg } = await import('./renderSvg')
           return renderSvg(self, opts, superRenderSvg)
         },

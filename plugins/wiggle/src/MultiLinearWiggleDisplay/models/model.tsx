@@ -6,28 +6,17 @@ import deepEqual from 'fast-deep-equal'
 
 // jbrowse imports
 import {
-  ConfigurationReference,
   AnyConfigurationSchemaType,
   getConf,
-  readConfObject,
 } from '@jbrowse/core/configuration'
-import {
-  getSession,
-  getEnv,
-  isSelectionContainer,
-  Feature,
-} from '@jbrowse/core/util'
+import { getSession, Feature } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { set1 as colors } from '@jbrowse/core/ui/colors'
 import PluginManager from '@jbrowse/core/PluginManager'
-import {
-  BaseLinearDisplay,
-  ExportSvgDisplayOptions,
-} from '@jbrowse/plugin-linear-genome-view'
+import { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
 import {
-  getNiceDomain,
   getScale,
   quantitativeStatsAutorun,
   YSCALEBAR_LABEL_OFFSET,
@@ -39,8 +28,7 @@ import SharedWiggleMixin from '../../shared/modelShared'
 const randomColor = () =>
   '#000000'.replaceAll('0', () => (~~(Math.random() * 16)).toString(16))
 
-// lazy components
-const SetMinMaxDlg = lazy(() => import('../../shared/SetMinMaxDialog'))
+// lazies
 const SetColorDlg = lazy(() => import('../components/SetColorDialog'))
 
 // using a map because it preserves order
@@ -59,8 +47,8 @@ interface Source {
 }
 
 /**
- * #stateModel
- * MultiLinearWiggleDisplay
+ * #stateModel MultiLinearWiggleDisplay
+ * extends `SharedWiggleMixin`
  */
 export function stateModelFactory(
   pluginManager: PluginManager,
@@ -439,16 +427,8 @@ export function stateModelFactory(
       }
     })
     .actions(self => {
-      const { reload: superReload, renderSvg: superRenderSvg } = self
+      const { renderSvg: superRenderSvg } = self
       return {
-        /**
-         * #action
-         */
-        async reload() {
-          self.setError()
-          superReload()
-        },
-
         afterAttach() {
           quantitativeStatsAutorun(self)
           addDisposer(

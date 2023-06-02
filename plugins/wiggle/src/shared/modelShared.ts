@@ -21,7 +21,7 @@ import { lazy } from 'react'
 const SetMinMaxDlg = lazy(() => import('./SetMinMaxDialog'))
 
 /**
- * #stateModel SharedWiggleModel
+ * #stateModel SharedWiggleMixin
  */
 export default function SharedWiggleMixin(
   configSchema: AnyConfigurationSchemaType,
@@ -429,6 +429,9 @@ export default function SharedWiggleMixin(
       },
     }))
     .views(self => ({
+      /**
+       * #method
+       */
       scoreTrackMenuItems() {
         return [
           ...(self.hasResolution
@@ -492,4 +495,16 @@ export default function SharedWiggleMixin(
         ]
       },
     }))
+    .actions(self => {
+      const { reload: superReload } = self
+      return {
+        /**
+         * #action
+         */
+        async reload() {
+          self.setError()
+          superReload()
+        },
+      }
+    })
 }
