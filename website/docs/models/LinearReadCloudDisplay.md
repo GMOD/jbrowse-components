@@ -59,13 +59,22 @@ colorBy: types.maybe(
         )
 ```
 
+#### property: drawSingletons
+
+```js
+// type signature
+true
+// code
+drawSingletons: true
+```
+
 ### LinearReadCloudDisplay - Methods
 
 #### method: trackMenuItems
 
 ```js
 // type signature
-trackMenuItems: () => MenuItem[]
+trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
 ```
 
 #### method: renderSvg
@@ -76,6 +85,13 @@ renderSvg: (opts: { rasterizeLayers?: boolean; }) => Promise<React.ReactNode>
 ```
 
 ### LinearReadCloudDisplay - Actions
+
+#### action: setDrawSingletons
+
+```js
+// type signature
+setDrawSingletons: (f: boolean) => void
+```
 
 #### action: setLastDrawnOffsetPx
 

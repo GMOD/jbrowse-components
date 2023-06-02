@@ -10,7 +10,7 @@ info
 
 ### Source file
 
-[packages/product-core/src/RootModel/Base.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/RootModel/Base.ts)
+[packages/product-core/src/RootModel/BaseRootModel.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/RootModel/BaseRootModel.ts)
 
 factory function for the Base-level root model shared by all products
 
@@ -25,15 +25,6 @@ factory function for the Base-level root model shared by all products
 IAnyType
 // code
 jbrowse: jbrowseModelType
-```
-
-#### property: version
-
-```js
-// type signature
-string
-// code
-version: 'development'
 ```
 
 #### property: session
@@ -103,7 +94,7 @@ setSessionPath: (path: string) => void
 
 ```js
 // type signature
-renameCurrentSession: (newName: string) => Promise<void>
+renameCurrentSession: (newName: string) => void
 ```
 
 #### action: setAssemblyEditing

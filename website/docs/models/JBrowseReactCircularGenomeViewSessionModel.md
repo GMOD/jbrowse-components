@@ -35,6 +35,13 @@ view: pluginManager.getViewType('CircularView').stateModel
 
 ### JBrowseReactCircularGenomeViewSessionModel - Getters
 
+#### getter: version
+
+```js
+// type
+any
+```
+
 #### getter: assemblies
 
 ```js

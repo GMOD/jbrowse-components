@@ -43,3 +43,10 @@ jobsManager: types.maybe(JobsManager)
 // type signature
 setOpenNewSessionCallback: (cb: (arg: string) => Promise<void>) => void
 ```
+
+#### action: setPluginsUpdated
+
+```js
+// type signature
+setPluginsUpdated: () => Promise<void>
+```
