@@ -547,32 +547,73 @@ function stateModelFactory(
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
-            ...(self.hasResolution
-              ? [
-                  {
-                    label: 'Resolution',
-                    subMenu: [
+            {
+              label: 'score',
+              subMenu: [
+                ...(self.hasResolution
+                  ? [
                       {
-                        label: 'Finer resolution',
-                        onClick: () => self.setResolution(self.resolution * 5),
+                        label: 'Resolution',
+                        subMenu: [
+                          {
+                            label: 'Finer resolution',
+                            onClick: () =>
+                              self.setResolution(self.resolution * 5),
+                          },
+                          {
+                            label: 'Coarser resolution',
+                            onClick: () =>
+                              self.setResolution(self.resolution / 5),
+                          },
+                        ],
                       },
                       {
-                        label: 'Coarser resolution',
-                        onClick: () => self.setResolution(self.resolution / 5),
+                        label: 'Summary score mode',
+                        subMenu: ['min', 'max', 'avg', 'whiskers'].map(elt => ({
+                          label: elt,
+                          type: 'radio',
+                          checked: self.summaryScoreModeSetting === elt,
+                          onClick: () => self.setSummaryScoreMode(elt),
+                        })),
                       },
-                    ],
+                    ]
+                  : []),
+                {
+                  label:
+                    self.scaleType === 'log'
+                      ? 'Set linear scale'
+                      : 'Set log scale',
+                  onClick: () => self.toggleLogScale(),
+                },
+                {
+                  label: 'Autoscale type',
+                  subMenu: [
+                    ['local', 'Local'],
+                    ...(self.hasGlobalStats
+                      ? [
+                          ['global', 'Global'],
+                          ['globalsd', 'Global ± 3σ'],
+                        ]
+                      : []),
+                    ['localsd', 'Local ± 3σ'],
+                  ].map(([val, label]) => ({
+                    label,
+                    type: 'radio',
+                    checked: self.autoscaleType === val,
+                    onClick: () => self.setAutoscale(val),
+                  })),
+                },
+                {
+                  label: 'Set min/max score',
+                  onClick: () => {
+                    getSession(self).queueDialog(handleClose => [
+                      SetMinMaxDlg,
+                      { model: self, handleClose },
+                    ])
                   },
-                  {
-                    label: 'Summary score mode',
-                    subMenu: ['min', 'max', 'avg', 'whiskers'].map(elt => ({
-                      label: elt,
-                      type: 'radio',
-                      checked: self.summaryScoreModeSetting === elt,
-                      onClick: () => self.setSummaryScoreMode(elt),
-                    })),
-                  },
-                ]
-              : []),
+                },
+              ],
+            },
 
             ...(self.canHaveFill
               ? [
@@ -589,11 +630,6 @@ function stateModelFactory(
                   },
                 ]
               : []),
-            {
-              label:
-                self.scaleType === 'log' ? 'Set linear scale' : 'Set log scale',
-              onClick: () => self.toggleLogScale(),
-            },
 
             ...(self.needsScalebar
               ? [
@@ -619,33 +655,7 @@ function stateModelFactory(
                   },
                 ]
               : []),
-            {
-              label: 'Autoscale type',
-              subMenu: [
-                ['local', 'Local'],
-                ...(self.hasGlobalStats
-                  ? [
-                      ['global', 'Global'],
-                      ['globalsd', 'Global ± 3σ'],
-                    ]
-                  : []),
-                ['localsd', 'Local ± 3σ'],
-              ].map(([val, label]) => ({
-                label,
-                type: 'radio',
-                checked: self.autoscaleType === val,
-                onClick: () => self.setAutoscale(val),
-              })),
-            },
-            {
-              label: 'Set min/max score',
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  SetMinMaxDlg,
-                  { model: self, handleClose },
-                ])
-              },
-            },
+
             {
               label: 'Set color',
               onClick: () => {
