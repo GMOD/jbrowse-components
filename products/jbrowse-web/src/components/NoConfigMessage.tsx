@@ -4,10 +4,6 @@ import { inDevelopment } from '@jbrowse/core/util'
 export default function NoConfigMessage() {
   const links = [
     ['test_data/volvox/config.json', 'Volvox (sample data)'],
-    ['test_data/volvox/config_main_thread.json', 'Volvox (mainthreadrpc)'],
-    ['test_data/volvox/config_oauth.json', 'Volvox (auth)'],
-    ['test_data/volvox/config_oauth_main.json', 'Volvox (auth, mainthreadrpc)'],
-    ['test_data/volvoxhub/config.json', 'Volvox hub sample data'],
     ['test_data/config.json', 'Human basic'],
     ['test_data/config_demo.json', 'Human sample data'],
     ['test_data/tomato/config.json', 'Tomato SVs'],
@@ -24,6 +20,10 @@ export default function NoConfigMessage() {
     ['test_data/volvox/theme2.json', 'Theme test (wormbase color)'],
     ['test_data/wgbs/config.json', 'WGBS methylation'],
     ['test_data/methylation_test/config.json', 'Nanopore methylation'],
+    ['test_data/volvox/config_main_thread.json', 'Volvox (mainthreadrpc)'],
+    ['test_data/volvox/config_auth.json', 'Volvox (auth)'],
+    ['test_data/volvox/config_auth_main.json', 'Volvox (auth, mainthreadrpc)'],
+    ['test_data/volvoxhub/config.json', 'Volvox hub sample data'],
   ]
   const { href, search } = window.location
   const { config, ...rest } = Object.fromEntries(new URLSearchParams(search))

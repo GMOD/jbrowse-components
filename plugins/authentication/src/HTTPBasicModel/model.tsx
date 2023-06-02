@@ -1,25 +1,41 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import { UriLocation } from '@jbrowse/core/util/types'
-import { HTTPBasicInternetAccountConfigModel } from './configSchema'
 import { Instance, types, getRoot } from 'mobx-state-tree'
 
+// locals
+import { HTTPBasicInternetAccountConfigModel } from './configSchema'
 import { HTTPBasicLoginForm } from './HTTPBasicLoginForm'
 
+/**
+ * #stateModel HTTPBasicInternetAccount
+ */
 const stateModelFactory = (
   configSchema: HTTPBasicInternetAccountConfigModel,
 ) => {
   return InternetAccount.named('HTTPBasicInternetAccount')
     .props({
+      /**
+       * #property
+       */
       type: types.literal('HTTPBasicInternetAccount'),
+      /**
+       * #property
+       */
       configuration: ConfigurationReference(configSchema),
     })
     .views(self => ({
+      /**
+       * #getter
+       */
       get validateWithHEAD(): boolean {
         return getConf(self, 'validateWithHEAD')
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
       getTokenFromUser(
         resolve: (token: string) => void,
         reject: (error: Error) => void,
@@ -41,23 +57,18 @@ const stateModelFactory = (
           },
         ])
       },
+      /**
+       * #action
+       */
       async validateToken(token: string, location: UriLocation) {
         if (!self.validateWithHEAD) {
           return token
         }
         const newInit = self.addAuthHeaderToInit({ method: 'HEAD' }, token)
-        const response = await fetch(location.uri, newInit)
-        if (!response.ok) {
-          let errorMessage
-          try {
-            errorMessage = await response.text()
-          } catch (error) {
-            errorMessage = ''
-          }
+        const res = await fetch(location.uri, newInit)
+        if (!res.ok) {
           throw new Error(
-            `Error validating token — ${response.status} (${
-              response.statusText
-            })${errorMessage ? ` (${errorMessage})` : ''}`,
+            `Error validating token — ${res.status} ${await res.text()})`,
           )
         }
         return token

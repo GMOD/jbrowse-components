@@ -1,4 +1,9 @@
 {
+  "configuration": {
+    "rpc": {
+      "defaultDriver": "MainThreadRpcDriver"
+    }
+  },
   "assemblies": [
     {
       "name": "volvox",
@@ -51,6 +56,21 @@
             "uri": "http://localhost:3030/data/volvox.2bit",
             "locationType": "UriLocation",
             "internetAccountId": "customOAuth"
+          }
+        }
+      }
+    },
+    {
+      "name": "volvox_basic_auth",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "volvox_basic_auth-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "http://localhost:3040/data/volvox.2bit",
+            "locationType": "UriLocation",
+            "internetAccountId": "customBasicAuth"
           }
         }
       }
@@ -121,9 +141,9 @@
     {
       "type": "QuantitativeTrack",
       "trackId": "oauth_bigwig",
-      "name": "Custom OAuth BigWig",
+      "name": "OAuth BigWig",
       "category": ["Authentication"],
-      "assemblyNames": ["volvox", "volvox_oauth"],
+      "assemblyNames": ["volvox", "volvox_oauth", "volvox_basic_auth"],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -136,8 +156,8 @@
     {
       "type": "VariantTrack",
       "trackId": "oauth_vcf",
-      "name": "Custom OAuth VCF",
-      "assemblyNames": ["volvox", "volvox_oauth"],
+      "name": "OAuth VCF",
+      "assemblyNames": ["volvox", "volvox_oauth", "volvox_basic_auth"],
       "category": ["Authentication"],
       "adapter": {
         "type": "VcfTabixAdapter",
@@ -152,6 +172,58 @@
             "locationType": "UriLocation",
             "internetAccountId": "customOAuth"
           }
+        }
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "basicauth_bigwig",
+      "name": "BasicAuth BigWig",
+      "category": ["Authentication"],
+      "assemblyNames": ["volvox", "volvox_basic_auth"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "locationType": "UriLocation",
+          "uri": "http://localhost:3040/data/volvox.bw",
+          "internetAccountId": "customBasicAuth"
+        }
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "basicauth_vcf",
+      "name": "BasicAuth VCF",
+      "assemblyNames": ["volvox", "volvox_basic_auth"],
+      "category": ["Authentication"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "http://localhost:3040/data/volvox.filtered.vcf.gz",
+          "locationType": "UriLocation",
+          "internetAccountId": "customBasicAuth"
+        },
+        "index": {
+          "location": {
+            "uri": "http://localhost:3040/data/volvox.filtered.vcf.gz.tbi",
+            "locationType": "UriLocation",
+            "internetAccountId": "customBasicAuth"
+          }
+        }
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "volvox_microarray_httpbasic",
+      "name": "wiggle_track xyplot httpbasic",
+      "category": ["Integration test"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "http://localhost:3040/data/volvox.bw",
+          "locationType": "UriLocation",
+          "internetAccountId": "HTTPBasicInternetAccount-HTTPBasicTest"
         }
       }
     }
@@ -181,6 +253,12 @@
       "authEndpoint": "http://localhost:3030/oauth",
       "tokenEndpoint": "http://localhost:3030/oauth/token",
       "hasRefreshToken": true
+    },
+    {
+      "type": "HTTPBasicInternetAccount",
+      "internetAccountId": "customBasicAuth",
+      "name": "HTTP BasicAuth test account",
+      "description": "HTTP BasicAuth account for testing"
     }
   ]
 }
