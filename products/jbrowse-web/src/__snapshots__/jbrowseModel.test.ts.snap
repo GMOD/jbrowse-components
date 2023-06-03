@@ -7,7 +7,7 @@ exports[`JBrowse model creates with empty snapshot 1`] = `
   "configuration": {},
   "connections": [],
   "defaultSession": {
-    "name": "New session",
+    "name": "New Session",
   },
   "internetAccounts": [],
   "plugins": [],
@@ -4178,6 +4178,61 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "name": "volvox_inv_indels",
       "trackId": "volvox_inv_indels",
       "type": "SyntenyTrack",
+    },
+    {
+      "adapter": {
+        "craiLocation": {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "volvox-inv-pbsim.cram.crai",
+        },
+        "cramLocation": {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "volvox-inv-pbsim.cram",
+        },
+        "sequenceAdapter": {
+          "twoBitLocation": {
+            "locationType": "UriLocation",
+            "uri": "volvox.2bit",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "type": "CramAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Alignments",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox-inv-pbsim-LinearAlignmentsDisplay",
+          "type": "LinearAlignmentsDisplay",
+        },
+        {
+          "displayId": "volvox-inv-pbsim-LinearPileupDisplay",
+          "type": "LinearPileupDisplay",
+        },
+        {
+          "displayId": "volvox-inv-pbsim-LinearSNPCoverageDisplay",
+          "type": "LinearSNPCoverageDisplay",
+        },
+        {
+          "displayId": "volvox-inv-pbsim-LinearReadArcsDisplay",
+          "type": "LinearReadArcsDisplay",
+        },
+        {
+          "displayId": "volvox-inv-pbsim-LinearReadCloudDisplay",
+          "type": "LinearReadCloudDisplay",
+        },
+      ],
+      "name": "volvox-inv-pbsim",
+      "trackId": "volvox-inv-pbsim",
+      "type": "AlignmentsTrack",
     },
   ],
 }

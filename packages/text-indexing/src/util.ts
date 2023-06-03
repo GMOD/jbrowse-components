@@ -162,7 +162,7 @@ export function findTrackConfigsToIndex(
   trackIds: string[],
   assemblyName?: string,
 ) {
-  const configs = trackIds
+  return trackIds
     .map(trackId => {
       const currentTrack = tracks.find(t => trackId === t.trackId)
       if (!currentTrack) {
@@ -174,5 +174,4 @@ export function findTrackConfigsToIndex(
       assemblyName ? track.assemblyNames.includes(assemblyName) : true,
     )
     .filter(track => supportedIndexingAdapters(track.adapter.type))
-  return configs
 }

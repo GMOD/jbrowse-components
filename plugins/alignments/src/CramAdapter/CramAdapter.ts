@@ -246,26 +246,28 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
         readName,
       } = filterBy || {}
 
-      let filtered = records.filter(record => {
+      for (const record of records) {
         const flags = record.flags
-        return (flags & flagInclude) === flagInclude && !(flags & flagExclude)
-      })
+        if ((flags & flagInclude) !== flagInclude && !(flags & flagExclude)) {
+          continue
+        }
 
-      if (tagFilter) {
-        filtered = filtered.filter(record => {
-          // @ts-expect-error
-          const val = record[tagFilter.tag]
-          return val === '*' ? val !== undefined : val === tagFilter.value
-        })
-      }
+        if (tagFilter) {
+          const v =
+            tagFilter.tag === 'RG'
+              ? this.samHeader.readGroups?.[record.readGroupId]
+              : record.tags[tagFilter.tag]
+          if (!(v === '*' ? v !== undefined : `${v}` === tagFilter.value)) {
+            continue
+          }
+        }
 
-      if (readName) {
-        filtered = filtered.filter(record => record.readName === readName)
-      }
-
-      filtered.forEach(record => {
+        if (readName && record.readName !== readName) {
+          continue
+        }
         observer.next(this.cramRecordToFeature(record))
-      })
+      }
+
       statusCallback('')
       observer.complete()
     }, signal)

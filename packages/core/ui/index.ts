@@ -1,6 +1,5 @@
 export * from './theme'
 export { LogoFull, Logomark } from './Logo'
-export { default as App } from './App'
 export { default as AssemblySelector } from './AssemblySelector'
 export { default as CascadingMenu } from './CascadingMenu'
 export { default as Dialog } from './Dialog'

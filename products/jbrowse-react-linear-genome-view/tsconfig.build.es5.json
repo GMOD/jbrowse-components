@@ -12,8 +12,7 @@
   "exclude": [
     "src/**/*.test.ts*",
     "src/**/*.test.js*",
-    "src/makeWorkerInstance.ts",
-    "src/indexESM.ts"
+    "src/makeWorkerInstance.ts"
   ],
   "references": [
     { "path": "../../packages/core/tsconfig.build.json" },

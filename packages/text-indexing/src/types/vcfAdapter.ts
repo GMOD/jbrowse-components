@@ -76,7 +76,7 @@ export async function* indexVcf(
         encodeURIComponent(trackId),
         encodeURIComponent(id || ''),
         ...infoAttrs.map(a => encodeURIComponent(a || '')),
-      ]).replace(/,/g, '|')
+      ]).replaceAll(',', '|')
 
       // Check abort signal
       checkAbortSignal(signal)

@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-hic",
-  "version": "2.4.2",
+  "version": "2.5.0",
   "description": "JBrowse 2 hic adapters, tracks, etc.",
   "keywords": [
     "jbrowse",
@@ -50,7 +50,6 @@
     "react": ">=16.8.0",
     "rxjs": "^7.0.0"
   },
-  "private": true,
   "distModule": "esm/index.js",
   "srcModule": "src/index.ts",
   "module": ""

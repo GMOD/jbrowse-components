@@ -10,12 +10,6 @@ import { types } from 'mobx-state-tree'
 
 // locals
 import configSchema from './configSchema'
-import {
-  fetchGenomesFile,
-  fetchHubFile,
-  fetchTrackDbFile,
-  generateTracks,
-} from './ucscTrackHub'
 
 export default function UCSCTrackHubConnection(pluginManager: PluginManager) {
   return types
@@ -30,9 +24,15 @@ export default function UCSCTrackHubConnection(pluginManager: PluginManager) {
     .actions(self => ({
       async connect() {
         const session = getSession(self)
+        const notLoadedAssemblies = [] as string[]
         try {
-          const connectionName = getConf(self, 'name')
           const hubFileLocation = getConf(self, 'hubTxtLocation')
+          const {
+            generateTracks,
+            fetchGenomesFile,
+            fetchTrackDbFile,
+            fetchHubFile,
+          } = await import('./ucscTrackHub')
           const hubFile = await fetchHubFile(hubFileLocation)
           const genomeFile = hubFile.get('genomesFile')
           if (!genomeFile) {
@@ -50,7 +50,7 @@ export default function UCSCTrackHubConnection(pluginManager: PluginManager) {
                 locationType: 'LocalPathLocation' as const,
               }
           const genomesFile = await fetchGenomesFile(genomesFileLocation)
-          const trackDbData = []
+          const map = {} as { [key: string]: number }
           for (const [genomeName, genome] of genomesFile) {
             const assemblyNames = getConf(self, 'assemblyNames')
             if (
@@ -62,16 +62,15 @@ export default function UCSCTrackHubConnection(pluginManager: PluginManager) {
 
             const conf = session.assemblyManager.get(genomeName)?.configuration
             if (!conf) {
-              throw new Error(
-                `Cannot find assembly for "${genomeName}" from the genomes file for connection "${connectionName}"`,
-              )
+              notLoadedAssemblies.push(genomeName)
+              continue
             }
             const db = genome.get('trackDb')
             if (!db) {
               throw new Error('genomesFile not found on hub')
             }
             const base = new URL(genomeFile, hubUri)
-            const trackDbLoc = hubUri
+            const loc = hubUri
               ? {
                   uri: new URL(db, base).href,
                   locationType: 'UriLocation' as const,
@@ -80,20 +79,25 @@ export default function UCSCTrackHubConnection(pluginManager: PluginManager) {
                   localPath: db,
                   locationType: 'LocalPathLocation' as const,
                 }
-            const trackDb = await fetchTrackDbFile(trackDbLoc)
-            trackDbData.push([trackDbLoc, trackDb, genomeName, conf] as const)
-          }
-          for (const [
-            trackDbLoc,
-            trackDbFile,
-            genomeName,
-            conf,
-          ] of trackDbData) {
+            const trackDb = await fetchTrackDbFile(loc)
             const seqAdapter = readConfObject(conf, ['sequence', 'adapter'])
-            self.addTrackConfs(
-              generateTracks(trackDbFile, trackDbLoc, genomeName, seqAdapter),
-            )
+            const tracks = generateTracks(trackDb, loc, genomeName, seqAdapter)
+            self.addTrackConfs(tracks)
+            map[genomeName] = tracks.length
           }
+
+          const loadedAssemblies = Object.entries(map)
+          const str1 = loadedAssemblies.length
+            ? `Loaded data from these assemblies: ${loadedAssemblies
+                .map(([key, val]) => `${key} (${val} tracks)`)
+                .join(', ')}`
+            : ''
+          const str2 = notLoadedAssemblies.length
+            ? `Skipped data from these assemblies: ${notLoadedAssemblies.join(
+                ', ',
+              )}`
+            : ''
+          session.notify([str1, str2].filter(f => !!f).join('. '), 'success')
         } catch (e) {
           console.error(e)
           session.notify(

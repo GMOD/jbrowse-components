@@ -2,7 +2,7 @@
 
 exports[`<HelpWidget /> renders 1`] = `
 <div
-  class="css-yyj9d3-root"
+  class="css-dpbaeg-root"
 >
   <h4
     class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-149xwtl-MuiTypography-root"
@@ -12,7 +12,9 @@ exports[`<HelpWidget /> renders 1`] = `
   <h6
     class="MuiTypography-root MuiTypography-h6 MuiTypography-alignCenter css-1l8stdg-MuiTypography-root-subtitle"
   />
-  <p>
+  <p
+    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+  >
     Here are some resources to get help. Please report the version number above when asking questions. Thanks!
   </p>
   <ul>

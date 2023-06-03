@@ -1,7 +1,6 @@
 ---
 id: desktop_spec_plugin_tutorial
 title: Writing a desktop specific plugin
-toplevel: true
 ---
 
 import Figure from '../figure'

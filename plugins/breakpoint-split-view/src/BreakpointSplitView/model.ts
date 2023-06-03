@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { lazy } from 'react'
 import {
   types,
   getParent,
@@ -17,7 +17,7 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
-import { getSession, Feature } from '@jbrowse/core/util'
+import { getSession, Feature, notEmpty } from '@jbrowse/core/util'
 import { AnyConfigurationModel, getConf } from '@jbrowse/core/configuration'
 
 // icons
@@ -26,8 +26,9 @@ import LinkIcon from '@mui/icons-material/Link'
 
 // locals
 import { intersect } from './util'
-import { renderToSvg } from './svgcomponents/SVGBreakpointSplitView'
-import ExportSvgDlg from './components/ExportSvgDialog'
+
+// lazies
+const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))
 
 function calc(
   track: { displays: { searchFeatureByID: (str: string) => LayoutRecord }[] },
@@ -120,8 +121,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * creates an svg export and save using FileSaver
        */
       async exportSvg(opts: ExportSvgOptions = {}) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const html = await renderToSvg(self as any, opts)
+        const { renderToSvg } = await import(
+          './svgcomponents/SVGBreakpointSplitView'
+        )
+        const html = await renderToSvg(self as BreakpointViewModel, opts)
         const blob = new Blob([html], { type: 'image/svg+xml' })
         saveAs(blob, opts.filename || 'image.svg')
       },
@@ -176,15 +179,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   }
                 : undefined
             })
-            .filter(
-              (
-                f,
-              ): f is {
-                feature: Feature
-                layout: LayoutRecord
-                level: number
-              } => !!f,
-            ),
+            .filter(notEmpty),
         )
       },
     }))
@@ -313,14 +308,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             type: 'checkbox',
             icon: LinkIcon,
             checked: self.linkViews,
-            onClick: () => self.toggleLinkViews(),
+            onClick: () => {
+              self.toggleLinkViews()
+            },
           },
           {
             label: 'Export SVG',
             icon: PhotoCamera,
-            onClick: () => {
+            onClick: (): void => {
               getSession(self).queueDialog(handleClose => [
-                ExportSvgDlg,
+                ExportSvgDialog,
                 { model: self, handleClose },
               ])
             },

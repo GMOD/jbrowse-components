@@ -3,8 +3,10 @@ import {
   getContainingView,
   getSession,
 } from '@jbrowse/core/util'
-import { getSnapshot, IAnyStateTreeNode } from 'mobx-state-tree'
+import { getSnapshot } from 'mobx-state-tree'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { LinearReadArcsDisplayModel } from '../LinearReadArcsDisplay/model'
+import { LinearReadCloudDisplayModel } from '../LinearReadCloudDisplay/model'
 
 type LGV = LinearGenomeViewModel
 
@@ -36,28 +38,25 @@ export interface ChainData {
   stats?: ChainStats
 }
 
-export async function fetchChains(self: IAnyStateTreeNode) {
-  try {
-    const { rpcSessionId: sessionId } = getContainingTrack(self)
-    const { rpcManager } = getSession(self)
-    const view = getContainingView(self) as LGV
+export async function fetchChains(
+  self: LinearReadArcsDisplayModel | LinearReadCloudDisplayModel,
+) {
+  const { rpcSessionId: sessionId } = getContainingTrack(self)
+  const { rpcManager } = getSession(self)
+  const view = getContainingView(self) as LGV
 
-    if (!view.initialized || self.error) {
-      return
-    }
-    self.setLoading(true)
-
-    const ret = (await rpcManager.call(sessionId, 'PileupGetReducedFeatures', {
-      sessionId,
-      regions: view.staticBlocks.contentBlocks,
-      filterBy: getSnapshot(self.filterBy),
-      adapterConfig: self.adapterConfig,
-    })) as ChainData
-
-    self.setChainData(ret)
-    self.setLoading(false)
-  } catch (e) {
-    console.error(e)
-    self.setError(e)
+  if (!view.initialized || self.error || self.regionTooLarge) {
+    return
   }
+
+  self.setLoading(true)
+  const ret = (await rpcManager.call(sessionId, 'PileupGetReducedFeatures', {
+    sessionId,
+    regions: view.staticBlocks.contentBlocks,
+    filterBy: getSnapshot(self.filterBy),
+    adapterConfig: self.adapterConfig,
+  })) as ChainData
+
+  self.setChainData(ret)
+  self.setLoading(false)
 }

@@ -1,5 +1,5 @@
 import { PluginConstructor } from '@jbrowse/core/Plugin'
-import { autorun } from 'mobx'
+import { assembleLocString } from '@jbrowse/core/util'
 import { SnapshotIn, onPatch, IJsonPatch } from 'mobx-state-tree'
 import createModel, {
   createSessionModel,
@@ -90,23 +90,18 @@ export default function createViewState(opts: ViewStateOptions) {
   pluginManager.setRootModel(stateTree)
   pluginManager.configure()
   if (location) {
-    autorun(async reaction => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    ;(async () => {
       const { session } = stateTree
       try {
-        if (!session.view.initialized) {
-          return
-        }
-
-        if (typeof location === 'string') {
-          await session.view.navToLocString(location, assembly.name)
-        } else {
-          session.view.navTo(location)
-        }
+        await session.view.navToLocString(
+          typeof location === 'string' ? location : assembleLocString(location),
+          assembly.name,
+        )
       } catch (e) {
         session.notify(`${e}`, 'error')
       }
-      reaction.dispose()
-    })
+    })()
   }
   if (onChange) {
     onPatch(stateTree, onChange)

@@ -17,7 +17,8 @@ function PileupRendering(props: {
   bpPerPx: number
   sortedBy?: { type: string; pos: number; refName: string }
   colorBy?: { type: string; tag?: string }
-  onMouseMove?: (event: React.MouseEvent, featureId: string | undefined) => void
+  filterBy?: { tagFilter?: { tag: string } }
+  onMouseMove?: (event: React.MouseEvent, featureId?: string) => void
 }) {
   const {
     onMouseMove,
@@ -29,6 +30,7 @@ function PileupRendering(props: {
     bpPerPx,
     sortedBy,
     colorBy,
+    filterBy,
   } = props
   const { selectedFeatureId, featureIdUnderMouse, contextMenuFeature } =
     displayModel
@@ -131,31 +133,22 @@ function PileupRendering(props: {
   }
 
   function mouseMove(event: React.MouseEvent) {
+    if (!highlightOverlayCanvas.current) {
+      return
+    }
     if (mouseIsDown) {
       setMovedDuringLastMouseDown(true)
     }
-    let offsetX = 0
-    let offsetY = 0
-    const canvas = highlightOverlayCanvas.current
-    if (canvas) {
-      const { left, top } = canvas.getBoundingClientRect()
-      offsetX = left
-      offsetY = top
-    }
-    offsetX = event.clientX - offsetX
-    offsetY = event.clientY - offsetY
+    const rect = highlightOverlayCanvas.current.getBoundingClientRect()
+    const offsetX = event.clientX - rect.left
+    const offsetY = event.clientY - rect.top
     const px = region.reversed ? width - offsetX : offsetX
     const clientBp = region.start + bpPerPx * px
 
-    const featIdUnderMouse = displayModel.getFeatureOverlapping(
-      blockKey,
-      clientBp,
-      offsetY,
+    onMouseMove?.(
+      event,
+      displayModel.getFeatureOverlapping(blockKey, clientBp, offsetY),
     )
-
-    if (onMouseMove) {
-      onMouseMove(event, featIdUnderMouse)
-    }
   }
 
   function callMouseHandler(handlerName: string, event: React.MouseEvent) {
@@ -176,12 +169,14 @@ function PileupRendering(props: {
   // need to call this in render so we get the right observer behavior
   return (
     <div
-      className="PileupRendering"
-      data-testid={`pileup-${
-        sortedBy || colorBy
-          ? `${sortedBy?.type || ''}${colorBy?.type || ''}${colorBy?.tag || ''}`
-          : 'normal'
-      }`}
+      data-testid={`pileup-${[
+        sortedBy?.type,
+        colorBy?.type,
+        colorBy?.tag,
+        filterBy?.tagFilter?.tag,
+      ]
+        .filter(f => !!f)
+        .join('-')}`}
       style={{ position: 'relative', width: canvasWidth, height }}
     >
       <PrerenderedCanvas

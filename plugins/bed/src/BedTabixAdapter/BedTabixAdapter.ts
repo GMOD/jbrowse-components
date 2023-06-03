@@ -60,7 +60,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
     }
     const header = await this.bed.getHeader()
     const defs = header.split(/\n|\r\n|\r/).filter(f => !!f)
-    const defline = defs[defs.length - 1]
+    const defline = defs.at(-1)
     return defline?.includes('\t')
       ? defline
           .slice(1)

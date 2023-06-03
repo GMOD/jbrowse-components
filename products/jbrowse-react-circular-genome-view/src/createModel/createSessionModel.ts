@@ -1,117 +1,64 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  AbstractSessionModel,
-  TrackViewModel,
-  DialogComponentType,
-} from '@jbrowse/core/util/types'
-import { getContainingView } from '@jbrowse/core/util'
-import AboutDialog from '@jbrowse/core/ui/AboutDialog'
-import {
-  getMembers,
-  getParent,
-  getSnapshot,
-  getType,
-  IAnyStateTreeNode,
-  isAlive,
-  isModelType,
-  isReferenceType,
-  types,
-  walk,
-  Instance,
-} from 'mobx-state-tree'
+import { lazy } from 'react'
+import { AbstractSessionModel } from '@jbrowse/core/util/types'
+import { getParent, types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
-import {
-  readConfObject,
-  AnyConfigurationModel,
-} from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import InfoIcon from '@mui/icons-material/Info'
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
-import { ReferringNode } from '../types'
-import { version } from '../version'
+import {
+  BaseSessionModel,
+  ConnectionManagementSessionMixin,
+  DialogQueueSessionMixin,
+  DrawerWidgetSessionMixin,
+  ReferenceManagementSessionMixin,
+  TracksManagerSessionMixin,
+} from '@jbrowse/product-core'
+
+const AboutDialog = lazy(() => import('./AboutDialog'))
 
 /**
- * #stateModel JBrowseReactCGVSessionModel
+ * #stateModel JBrowseReactCircularGenomeViewSessionModel
+ * composed of
+ * - BaseSessionModel
+ * - DrawerWidgetSessionMixin
+ * - ConnectionManagementSessionMixin
+ * - DialogQueueSessionMixin
+ * - TracksManagerSessionMixin
+ * - ReferenceManagementSessionMixin
+ * - SnackbarModel
  */
 export default function sessionModelFactory(pluginManager: PluginManager) {
   const model = types
-    .model('ReactCircularGenomeViewSession', {
-      /**
-       * #property
-       */
-      name: types.identifier,
+    .compose(
+      'ReactCircularGenomeViewSession',
+      BaseSessionModel(pluginManager),
+      DrawerWidgetSessionMixin(pluginManager),
+      ConnectionManagementSessionMixin(pluginManager),
+      DialogQueueSessionMixin(pluginManager),
+      TracksManagerSessionMixin(pluginManager),
+      ReferenceManagementSessionMixin(pluginManager),
+    )
+    .props({
       /**
        * #property
        */
       view: pluginManager.getViewType('CircularView').stateModel,
-      /**
-       * #property
-       */
-      widgets: types.map(
-        pluginManager.pluggableMstType('widget', 'stateModel'),
-      ),
-      /**
-       * #property
-       */
-      activeWidgets: types.map(
-        types.safeReference(
-          pluginManager.pluggableMstType('widget', 'stateModel'),
-        ),
-      ),
-      /**
-       * #property
-       */
-      connectionInstances: types.array(
-        pluginManager.pluggableMstType('connection', 'stateModel'),
-      ),
     })
     .volatile((/* self */) => ({
-      /**
-       * this is the globally "selected" object. can be anything.
-       * code that wants to deal with this should examine it to see what
-       * kind of thing it is.
-       */
-      selection: undefined,
       /**
        * this is the current "task" that is being performed in the UI.
        * this is usually an object of the form
        * `{ taskName: "configure", target: thing_being_configured }`
        */
       task: undefined,
-
-      queueOfDialogs: [] as [DialogComponentType, any][],
     }))
     .views(self => ({
       /**
        * #getter
        */
-      get DialogComponent() {
-        if (self.queueOfDialogs.length) {
-          const firstInQueue = self.queueOfDialogs[0]
-          return firstInQueue && firstInQueue[0]
-        }
-        return undefined
-      },
-      /**
-       * #getter
-       */
-      get DialogProps() {
-        if (self.queueOfDialogs.length) {
-          const firstInQueue = self.queueOfDialogs[0]
-          return firstInQueue && firstInQueue[1]
-        }
-        return undefined
-      },
-      /**
-       * #getter
-       */
-      get rpcManager() {
-        return getParent<any>(self).rpcManager
-      },
-      /**
-       * #getter
-       */
-      get configuration() {
-        return getParent<any>(self).config.configuration
+      get version() {
+        return getParent<any>(self).version
       },
       /**
        * #getter
@@ -128,38 +75,14 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get tracks() {
-        return getParent<any>(self).config.tracks
-      },
-      /**
-       * #getter
-       */
-      get aggregateTextSearchAdapters() {
-        return getParent<any>(self).config.aggregateTextSearchAdapters
-      },
-      /**
-       * #getter
-       */
       get connections() {
         return getParent<any>(self).config.connections
       },
       /**
        * #getter
        */
-      get adminMode() {
-        return false
-      },
-      /**
-       * #getter
-       */
       get assemblyManager() {
         return getParent<any>(self).assemblyManager
-      },
-      /**
-       * #getter
-       */
-      get version() {
-        return version
       },
       /**
        * #getter
@@ -171,166 +94,10 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
        * #method
        */
       renderProps() {
-        return { theme: readConfObject(this.configuration, 'theme') }
-      },
-
-      /**
-       * #getter
-       */
-      get visibleWidget() {
-        if (isAlive(self)) {
-          // returns most recently added item in active widgets
-          return [...self.activeWidgets.values()][self.activeWidgets.size - 1]
-        }
-        return undefined
-      },
-      /**
-       * #method
-       * See if any MST nodes currently have a types.reference to this object.
-       * @param object - object
-       * @returns An array where the first element is the node referring
-       * to the object and the second element is they property name the node is
-       * using to refer to the object
-       */
-      getReferring(object: IAnyStateTreeNode) {
-        const refs: ReferringNode[] = []
-        walk(getParent<any>(self), node => {
-          if (isModelType(getType(node))) {
-            const members = getMembers(node)
-            Object.entries(members.properties).forEach(([key, value]) => {
-              // @ts-ignore
-              if (isReferenceType(value) && node[key] === object) {
-                refs.push({ node, key })
-              }
-            })
-          }
-        })
-        return refs
+        return { theme: readConfObject(self.configuration, 'theme') }
       },
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      queueDialog(
-        callback: (doneCallback: () => void) => [DialogComponentType, any],
-      ): void {
-        const [component, props] = callback(() => {
-          this.removeActiveDialog()
-        })
-        self.queueOfDialogs = [...self.queueOfDialogs, [component, props]]
-      },
-      /**
-       * #action
-       */
-      removeActiveDialog() {
-        self.queueOfDialogs = self.queueOfDialogs.slice(1)
-      },
-      /**
-       * #action
-       */
-      makeConnection(
-        configuration: AnyConfigurationModel,
-        initialSnapshot = {},
-      ) {
-        const { type } = configuration
-        if (!type) {
-          throw new Error('track configuration has no `type` listed')
-        }
-        const name = readConfObject(configuration, 'name')
-        const connectionType = pluginManager.getConnectionType(type)
-        if (!connectionType) {
-          throw new Error(`unknown connection type ${type}`)
-        }
-        const connectionData = {
-          ...initialSnapshot,
-          name,
-          type,
-          configuration,
-        }
-        const length = self.connectionInstances.push(connectionData)
-        return self.connectionInstances[length - 1]
-      },
-
-      /**
-       * #action
-       */
-      removeReferring(
-        referring: any,
-        track: any,
-        callbacks: Function[],
-        dereferenceTypeCount: Record<string, number>,
-      ) {
-        referring.forEach(({ node }: ReferringNode) => {
-          let dereferenced = false
-          try {
-            // If a view is referring to the track config, remove the track
-            // from the view
-            const type = 'open track(s)'
-            const view = getContainingView(node) as TrackViewModel
-            callbacks.push(() => view.hideTrack(track.trackId))
-            dereferenced = true
-            if (!dereferenceTypeCount[type]) {
-              dereferenceTypeCount[type] = 0
-            }
-            dereferenceTypeCount[type] += 1
-          } catch (err1) {
-            // ignore
-          }
-          if (this.hasWidget(node)) {
-            // If a configuration editor widget has the track config
-            // open, close the widget
-            const type = 'configuration editor widget(s)'
-            callbacks.push(() => this.hideWidget(node))
-            dereferenced = true
-            if (!dereferenceTypeCount[type]) {
-              dereferenceTypeCount[type] = 0
-            }
-            dereferenceTypeCount[type] += 1
-          }
-          if (!dereferenced) {
-            throw new Error(
-              `Error when closing this connection, the following node is still referring to a track configuration: ${JSON.stringify(
-                getSnapshot(node),
-              )}`,
-            )
-          }
-        })
-      },
-
-      /**
-       * #action
-       */
-      prepareToBreakConnection(configuration: AnyConfigurationModel) {
-        const callbacksToDereferenceTrack: Function[] = []
-        const dereferenceTypeCount: Record<string, number> = {}
-        const name = readConfObject(configuration, 'name')
-        const connection = self.connectionInstances.find(c => c.name === name)
-        connection.tracks.forEach((track: any) => {
-          const referring = self.getReferring(track)
-          this.removeReferring(
-            referring,
-            track,
-            callbacksToDereferenceTrack,
-            dereferenceTypeCount,
-          )
-        })
-        const safelyBreakConnection = () => {
-          callbacksToDereferenceTrack.forEach(cb => cb())
-          this.breakConnection(configuration)
-        }
-        return [safelyBreakConnection, dereferenceTypeCount]
-      },
-
-      /**
-       * #action
-       */
-      breakConnection(configuration: AnyConfigurationModel) {
-        const name = readConfObject(configuration, 'name')
-        const connection = self.connectionInstances.find(c => c.name === name)
-        self.connectionInstances.remove(connection)
-      },
-
       /**
        * #action
        * replaces view in this case
@@ -353,92 +120,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
        * does nothing
        */
       removeView() {},
-
-      /**
-       * #action
-       */
-      addWidget(
-        typeName: string,
-        id: string,
-        initialState = {},
-        conf?: unknown,
-      ) {
-        const typeDefinition = pluginManager.getElementType('widget', typeName)
-        if (!typeDefinition) {
-          throw new Error(`unknown widget type ${typeName}`)
-        }
-        const data = {
-          ...initialState,
-          id,
-          type: typeName,
-          configuration: conf || { type: typeName },
-        }
-        self.widgets.set(id, data)
-        return self.widgets.get(id)
-      },
-
-      /**
-       * #action
-       */
-      showWidget(widget: any) {
-        if (self.activeWidgets.has(widget.id)) {
-          self.activeWidgets.delete(widget.id)
-        }
-        self.activeWidgets.set(widget.id, widget)
-      },
-
-      /**
-       * #action
-       */
-      hasWidget(widget: any) {
-        return self.activeWidgets.has(widget.id)
-      },
-
-      /**
-       * #action
-       */
-      hideWidget(widget: any) {
-        self.activeWidgets.delete(widget.id)
-      },
-
-      /**
-       * #action
-       */
-      hideAllWidgets() {
-        self.activeWidgets.clear()
-      },
-
-      /**
-       * #action
-       * set the global selection, i.e. the globally-selected object.
-       * can be a feature, a view, just about anything
-       * @param thing -
-       */
-      setSelection(thing: any) {
-        self.selection = thing
-      },
-
-      /**
-       * #action
-       * clears the global selection
-       */
-      clearSelection() {
-        self.selection = undefined
-      },
-
-      /**
-       * #action
-       */
-      clearConnections() {
-        self.connectionInstances.length = 0
-      },
-
-      /**
-       * #action
-       */
-      renameCurrentSession(sessionName: string) {
-        return getParent<any>(self).renameCurrentSession(sessionName)
-      },
     }))
     .views(self => ({
       /**

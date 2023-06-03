@@ -1,7 +1,6 @@
 ---
 id: baseinternetaccountmodel
 title: BaseInternetAccountModel
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,11 +8,9 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Source file
+### Source file
 
 [packages/core/pluggableElementTypes/models/InternetAccountModel.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/pluggableElementTypes/models/InternetAccountModel.ts)
-
-## Docs
 
 ### BaseInternetAccountModel - Properties
 
@@ -33,6 +30,15 @@ id: ElementId
 ISimpleType<string>
 // code
 type: types.string
+```
+
+#### property: configuration
+
+```js
+// type signature
+ConfigurationSchemaType<{ name: { description: string; type: string; defaultValue: string; }; description: { description: string; type: string; defaultValue: string; }; authHeader: { description: string; type: string; defaultValue: string; }; tokenType: { ...; }; domains: { ...; }; }, ConfigurationSchemaOptions<...>>
+// code
+configuration: ConfigurationReference(BaseInternetAccountConfig)
 ```
 
 ### BaseInternetAccountModel - Getters

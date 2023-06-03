@@ -8,10 +8,10 @@ import { bytesForRegions, updateStatus, Feature } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { toArray } from 'rxjs/operators'
+import { firstValueFrom } from 'rxjs'
 
 // locals
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
-import { firstValueFrom } from 'rxjs'
 
 interface Header {
   idToName: string[]
@@ -203,15 +203,13 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
         }
 
         const flags = record.flags
-        if (
-          !((flags & flagInclude) === flagInclude && !(flags & flagExclude))
-        ) {
+        if ((flags & flagInclude) !== flagInclude && !(flags & flagExclude)) {
           continue
         }
 
         if (tagFilter) {
-          const val = record.get(tagFilter.tag)
-          if (!(val === '*' ? val !== undefined : val === tagFilter.value)) {
+          const v = record.get(tagFilter.tag)
+          if (!(v === '*' ? v !== undefined : `${v}` === tagFilter.value)) {
             continue
           }
         }

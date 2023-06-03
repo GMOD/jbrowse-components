@@ -7,14 +7,14 @@ import { LayoutRecord } from './model'
 
 type LGV = LinearGenomeViewModel
 
+interface Display {
+  height: number
+  scrollTop: number
+  SNPCoverageDisplay?: { height: number }
+}
+
 interface Track {
-  displays: [
-    {
-      height: number
-      scrollTop: number
-      SNPCoverageDisplay?: { height: number }
-    },
-  ]
+  displays: Display[]
 }
 
 const [, TOP, , BOTTOM] = [0, 1, 2, 3]
@@ -63,10 +63,10 @@ export function yPos(
   )
 }
 
-// we combo a useEffect and useState combo to force rerender on snap
-// changing. the setup of this being a useEffect+useState makes it
-// re-render once the useEffect is called, which is generally the
-// "next frame". If we removed the below use
+// we combo a useEffect and useState combo to force rerender on snap changing.
+// the setup of this being a useEffect+useState makes it re-render once the
+// useEffect is called, which is generally the "next frame". If we removed the
+// below use
 export const useNextFrame = (variable: unknown) => {
   const [, setNextFrameState] = useState<unknown>()
   useEffect(() => {

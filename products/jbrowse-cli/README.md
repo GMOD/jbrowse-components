@@ -173,7 +173,7 @@ EXAMPLES
 ```
 
 _See code:
-[src/commands/add-assembly.ts](https://github.com/GMOD/jbrowse-components/blob/v2.4.2/products/jbrowse-cli/src/commands/add-assembly.ts)_
+[src/commands/add-assembly.ts](https://github.com/GMOD/jbrowse-components/blob/v2.5.0/products/jbrowse-cli/src/commands/add-assembly.ts)_
 
 ## `jbrowse add-connection CONNECTIONURLORPATH`
 
@@ -189,46 +189,45 @@ ARGUMENTS
                        For JBrowse 1, location of JB1 data directory similar to http://mysite.com/jbrowse/data/
 
 OPTIONS
-  -a, --assemblyName=assemblyName  Assembly name of the connection If none, will default to the assembly in your config
-                                   file
+  -a, --assemblyNames=assemblyNames  For UCSC, optional: Comma separated list of assembly name(s) to filter from this
+                                     connection. For JBrowse: a single assembly name
 
-  -c, --config=config              Any extra config settings to add to connection in JSON object format, such as
-                                   '{"uri":"url":"https://sample.com"}, "locationType": "UriLocation"}'
+  -c, --config=config                Any extra config settings to add to connection in JSON object format, such as
+                                     '{"uri":"url":"https://sample.com"}, "locationType": "UriLocation"}'
 
-  -f, --force                      Equivalent to `--skipCheck --overwrite`
+  -f, --force                        Equivalent to `--skipCheck --overwrite`
 
-  -h, --help                       show CLI help
+  -h, --help                         show CLI help
 
-  -n, --name=name                  Name of the connection. Defaults to connectionId if not provided
+  -n, --name=name                    Name of the connection. Defaults to connectionId if not provided
 
-  -t, --type=type                  type of connection, ex. JBrowse1Connection, UCSCTrackHubConnection, custom
+  -t, --type=type                    type of connection, ex. JBrowse1Connection, UCSCTrackHubConnection, custom
 
-  --connectionId=connectionId      Id for the connection that must be unique to JBrowse.  Defaults to
-                                   'connectionType-assemblyName-currentTime'
+  --connectionId=connectionId        Id for the connection that must be unique to JBrowse.  Defaults to
+                                     'connectionType-assemblyName-currentTime'
 
-  --out=out                        synonym for target
+  --out=out                          synonym for target
 
-  --overwrite                      Overwrites any existing connections if same connection id
+  --overwrite                        Overwrites any existing connections if same connection id
 
-  --skipCheck                      Don't check whether or not the data directory URL exists or if you are in a JBrowse
-                                   directory
+  --skipCheck                        Don't check whether or not the data directory URL exists or if you are in a JBrowse
+                                     directory
 
-  --target=target                  path to config file in JB2 installation directory to write out to.
+  --target=target                    path to config file in JB2 installation directory to write out to.
 
 EXAMPLES
-  $ jbrowse add-connection http://mysite.com/jbrowse/data/
-  $ jbrowse add-connection http://mysite.com/jbrowse/custom_data_folder/ --type JBrowse1Connection
-  $ jbrowse add-connection http://mysite.com/path/to/hub.txt --assemblyName hg19
-  $ jbrowse add-connection http://mysite.com/path/to/custom_hub_name.txt --type UCSCTrackHubConnection --assemblyName
-  hg19
+  $ jbrowse add-connection http://mysite.com/jbrowse/data/ -a hg19
+  $ jbrowse add-connection http://mysite.com/jbrowse/custom_data_folder/ --type JBrowse1Connection -a hg38
+  $ jbrowse add-connection http://mysite.com/path/to/hub.txt
+  $ jbrowse add-connection http://mysite.com/path/to/custom_hub_name.txt --type UCSCTrackHubConnection
   $ jbrowse add-connection http://mysite.com/path/to/custom --type custom --config
-  '{"uri":{"url":"https://mysite.com/path/to/custom"}, "locationType": "UriLocation"}' --assemblyName hg19
+  '{"uri":{"url":"https://mysite.com/path/to/custom"}, "locationType": "UriLocation"}' -a hg19
   $ jbrowse add-connection https://mysite.com/path/to/hub.txt --connectionId newId --name newName --target
   /path/to/jb2/installation/config.json
 ```
 
 _See code:
-[src/commands/add-connection.ts](https://github.com/GMOD/jbrowse-components/blob/v2.4.2/products/jbrowse-cli/src/commands/add-connection.ts)_
+[src/commands/add-connection.ts](https://github.com/GMOD/jbrowse-components/blob/v2.5.0/products/jbrowse-cli/src/commands/add-connection.ts)_
 
 ## `jbrowse add-track TRACK`
 
@@ -307,7 +306,7 @@ EXAMPLES
 ```
 
 _See code:
-[src/commands/add-track.ts](https://github.com/GMOD/jbrowse-components/blob/v2.4.2/products/jbrowse-cli/src/commands/add-track.ts)_
+[src/commands/add-track.ts](https://github.com/GMOD/jbrowse-components/blob/v2.5.0/products/jbrowse-cli/src/commands/add-track.ts)_
 
 ## `jbrowse add-track-json TRACK`
 
@@ -334,7 +333,7 @@ EXAMPLES
 ```
 
 _See code:
-[src/commands/add-track-json.ts](https://github.com/GMOD/jbrowse-components/blob/v2.4.2/products/jbrowse-cli/src/commands/add-track-json.ts)_
+[src/commands/add-track-json.ts](https://github.com/GMOD/jbrowse-components/blob/v2.5.0/products/jbrowse-cli/src/commands/add-track-json.ts)_
 
 ## `jbrowse admin-server`
 
@@ -365,7 +364,7 @@ EXAMPLES
 ```
 
 _See code:
-[src/commands/admin-server.ts](https://github.com/GMOD/jbrowse-components/blob/v2.4.2/products/jbrowse-cli/src/commands/admin-server.ts)_
+[src/commands/admin-server.ts](https://github.com/GMOD/jbrowse-components/blob/v2.5.0/products/jbrowse-cli/src/commands/admin-server.ts)_
 
 ## `jbrowse create LOCALPATH`
 
@@ -410,7 +409,7 @@ EXAMPLES
 ```
 
 _See code:
-[src/commands/create.ts](https://github.com/GMOD/jbrowse-components/blob/v2.4.2/products/jbrowse-cli/src/commands/create.ts)_
+[src/commands/create.ts](https://github.com/GMOD/jbrowse-components/blob/v2.5.0/products/jbrowse-cli/src/commands/create.ts)_
 
 ## `jbrowse help [COMMAND]`
 
@@ -453,7 +452,7 @@ EXAMPLE
 ```
 
 _See code:
-[src/commands/remove-track.ts](https://github.com/GMOD/jbrowse-components/blob/v2.4.2/products/jbrowse-cli/src/commands/remove-track.ts)_
+[src/commands/remove-track.ts](https://github.com/GMOD/jbrowse-components/blob/v2.5.0/products/jbrowse-cli/src/commands/remove-track.ts)_
 
 ## `jbrowse set-default-session`
 
@@ -491,7 +490,7 @@ EXAMPLES
 ```
 
 _See code:
-[src/commands/set-default-session.ts](https://github.com/GMOD/jbrowse-components/blob/v2.4.2/products/jbrowse-cli/src/commands/set-default-session.ts)_
+[src/commands/set-default-session.ts](https://github.com/GMOD/jbrowse-components/blob/v2.5.0/products/jbrowse-cli/src/commands/set-default-session.ts)_
 
 ## `jbrowse text-index`
 
@@ -555,7 +554,7 @@ EXAMPLES
 ```
 
 _See code:
-[src/commands/text-index.ts](https://github.com/GMOD/jbrowse-components/blob/v2.4.2/products/jbrowse-cli/src/commands/text-index.ts)_
+[src/commands/text-index.ts](https://github.com/GMOD/jbrowse-components/blob/v2.5.0/products/jbrowse-cli/src/commands/text-index.ts)_
 
 ## `jbrowse upgrade [LOCALPATH]`
 
@@ -604,7 +603,7 @@ EXAMPLES
 ```
 
 _See code:
-[src/commands/upgrade.ts](https://github.com/GMOD/jbrowse-components/blob/v2.4.2/products/jbrowse-cli/src/commands/upgrade.ts)_
+[src/commands/upgrade.ts](https://github.com/GMOD/jbrowse-components/blob/v2.5.0/products/jbrowse-cli/src/commands/upgrade.ts)_
 
 <!-- commandsstop -->
 

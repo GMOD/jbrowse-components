@@ -1,8 +1,8 @@
 import { flags } from '@oclif/command'
 import fs from 'fs'
 import fetch from '../fetchWithProxy'
-import unzip from 'unzipper'
 import JBrowseCommand from '../base'
+import decompress from 'decompress'
 
 const fsPromises = fs.promises
 
@@ -107,8 +107,8 @@ export default class Create extends JBrowseCommand {
         'The URL provided does not seem to be a JBrowse installation URL',
       )
     }
+    await decompress(Buffer.from(await response.arrayBuffer()), argsPath)
 
-    await response.body.pipe(unzip.Extract({ path: argsPath })).promise()
     this.log(`Unpacked ${locationUrl} at ${argsPath}`)
   }
 
@@ -124,7 +124,7 @@ export default class Create extends JBrowseCommand {
 
   async catch(error: unknown) {
     // @ts-expect-error
-    if (error.parse && error.parse.output.flags.listVersions) {
+    if (error.parse?.output.flags.listVersions) {
       const versions = (await this.fetchGithubVersions()).map(
         version => version.tag_name,
       )

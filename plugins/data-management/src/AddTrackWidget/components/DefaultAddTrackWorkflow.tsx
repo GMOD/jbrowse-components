@@ -81,13 +81,13 @@ function AddTrackWorkflow({ model }: { model: AddTrackModel }) {
     }
 
     const trackId = [
-      `${trackName.toLowerCase().replace(/ /g, '_')}-${Date.now()}`,
+      `${trackName.toLowerCase().replaceAll(' ', '_')}-${Date.now()}`,
       `${session.adminMode ? '' : '-sessionTrack'}`,
     ].join('')
 
     const assemblyInstance = session.assemblyManager.get(assembly)
 
-    if (trackAdapter && trackAdapter.type !== 'UNKNOWN') {
+    if (assemblyInstance && trackAdapter && trackAdapter.type !== 'UNKNOWN') {
       session.addTrackConf({
         trackId,
         type: trackType,

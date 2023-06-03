@@ -1,10 +1,8 @@
 import React from 'react'
 import { Checkbox, FormControlLabel, FormGroup } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import {
-  BaseCard,
-  SimpleValue,
-} from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
+import { BaseCard } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
+import SimpleField from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/SimpleField'
 
 const useStyles = makeStyles()({
   compact: {
@@ -36,7 +34,7 @@ export default function AlignmentFlags(props: { feature: { flags: number } }) {
 
   return (
     <BaseCard {...props} title="Flags">
-      <SimpleValue name="Flag" value={flags} />
+      <SimpleField name="Flag" value={flags} />
       <FormGroup>
         {flagNames.map((name, idx) => {
           const val = flags & (1 << idx)

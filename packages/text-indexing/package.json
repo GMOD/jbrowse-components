@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/text-indexing",
-  "version": "2.4.2",
+  "version": "2.5.0",
   "description": "JBrowse 2 text indexing for desktop",
   "keywords": [
     "jbrowse",
@@ -53,6 +53,5 @@
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
     "rxjs": "^7.0.0"
-  },
-  "private": true
+  }
 }

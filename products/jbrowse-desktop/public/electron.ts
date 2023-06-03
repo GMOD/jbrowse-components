@@ -461,8 +461,9 @@ ipcMain.handle(
 
     return new Promise(resolve => {
       win.webContents.on(
+        // @ts-expect-error unclear why this is needed
         'will-redirect',
-        function (event: Event, redirectUrl: string) {
+        (event: Event, redirectUrl: string) => {
           if (redirectUrl.startsWith(data.redirect_uri)) {
             event.preventDefault()
             resolve(redirectUrl)

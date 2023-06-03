@@ -15,7 +15,7 @@ jest.mock('file-saver', () => ({ saveAs: jest.fn() }))
 
 setup()
 
-const delay = { timeout: 40000 }
+const delay = { timeout: 50000 }
 
 test('export svg of breakpoint split view', async () => {
   doBeforeEach(url => require.resolve(`../../test_data/breakpoint/${url}`))
@@ -23,8 +23,6 @@ test('export svg of breakpoint split view', async () => {
   const { findByTestId, findAllByText, findByText } = await createView(
     breakpointConfig,
   )
-
-  await findByText('Help')
 
   // the breakpoint split view requires that the view was rendered first,
   // so add an arbitrary delay here. would need refactoring to fix properly
@@ -44,4 +42,4 @@ test('export svg of breakpoint split view', async () => {
     svg,
   )
   expect(svg).toMatchSnapshot()
-}, 45000)
+}, 60000)

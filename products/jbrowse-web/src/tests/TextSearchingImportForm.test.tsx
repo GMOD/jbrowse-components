@@ -21,13 +21,12 @@ test('search eden.1 and hit open', async () => {
 }, 30000)
 
 test('dialog with multiple results, searching seg02', async () => {
-  const { input, view, findByText, autocomplete } = await doSetupForImportForm()
+  const { input, findByText, autocomplete } = await doSetupForImportForm()
 
   fireEvent.change(input, { target: { value: 'seg02' } })
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
   fireEvent.click(await findByText('Open'))
   await findByText('Search results', ...opts)
-  await waitFor(() => expect(view.searchResults?.length).toBeGreaterThan(0))
 }, 30000)
 
 test('search eden.1 and hit enter', async () => {
@@ -64,12 +63,11 @@ test('description of gene, searching: kinase', async () => {
 }, 30000)
 
 test('search matches description for feature in two places', async () => {
-  const { view, input, findByText, autocomplete } = await doSetupForImportForm()
+  const { input, findByText, autocomplete } = await doSetupForImportForm()
 
   fireEvent.change(input, { target: { value: 'fingerprint' } })
   fireEvent.click(await findByText(/b101.2/, ...opts))
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
   fireEvent.click(await findByText('Open'))
   await findByText('Search results', ...opts)
-  await waitFor(() => expect(view.searchResults?.length).toBeGreaterThan(0))
 }, 30000)

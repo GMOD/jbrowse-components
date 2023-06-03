@@ -49,32 +49,10 @@ class MyPlugin extends Plugin {
 }
 ```
 
-This example uses `rootModel.appendToMenu`. See
-[top-level menu API](/docs/api_guide#rootmodel-menu-api) for more details on
-available functions.
-
-### Adding menu items to a custom track
+### Adding track menu items
 
 If you create a custom track, you can populate the track menu items in it using
 the `trackMenuItems` property in the track model. For example:
-
-```js
-types
-  .model({
-    // model
-  })
-  .views(self => ({
-    trackMenuItems() {
-      return [
-        {
-          label: 'Menu Item',
-          icon: AddIcon,
-          onClick: () => {},
-        },
-      ]
-    },
-  }))
-```
 
 If you'd prefer to append your track menu items onto menu items available from
 the base display, you can grab the `trackMenuItems` property from the extended
@@ -91,6 +69,8 @@ types
     return {
       get trackMenuItems() {
         return [
+          // calling superTrackMenuItems retains the menu items from the base
+          // model
           ...superTrackMenuItems(),
           {
             label: 'Menu Item',
@@ -159,3 +139,97 @@ class SomePlugin extends Plugin {
   }
 }
 ```
+
+### MenuItems objects
+
+You can add menus or add items to existing menus in several places.
+
+In these different places, a `MenuItem` object defines the menu item's text,
+icon, action, and other attributes.
+
+Types of `MenuItem`s:
+
+- **Normal**: a standard menu item that performs an action when clicked
+- **Checkbox**: a menu item that has a checkbox
+- **Radio**: a menu item that has a radio button icon
+- **Divider**: a horizontal line (not clickable) that can be used to visually
+  divide menus
+- **SubHeader**: text (not clickable) that can be used to visually label a
+  section of a menu
+- **SubMenu**: contains menu items, for making nested menus
+
+| Name     | Description                                                                                                                                                                                              |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| type     | Options are 'normal', 'radio', 'checkbox', 'subMenu', 'subHeader', or 'divider'. If not provided, defaults to 'normal', unless a `subMenu` attribute is present, in which case it defaults to 'subMenu'. |
+| label    | The text for the menu item. Not applicable to 'divider', required for all others.                                                                                                                        |
+| subLabel | Additional descriptive text for the menu item. Not applicable to 'divider' or 'subHeader', optional for all others.                                                                                      |
+| icon     | An icon for the menu item. Must be compatible with Material-UI's [Icons](https://material-ui.com/components/icons/). Not applicable to 'divider' or 'subHeader', optional for all others.                |
+| disabled | Whether or not the menu item is disabled (meaning grayed out and not clickable). Not applicable to 'divider' or 'subHeader', optional for all others.                                                    |
+| checked  | Whether or not the checkbox or radio button are selected. Only applicable to 'radio' and 'checkbox'                                                                                                      |
+| onClick  | Callback of action to perform on click. Function signature is `(session) => undefined`. Required for 'normal', 'radio', and 'checkbox', not applicable to any others.                                    |
+| subMenu  | An array of menu items. Applicable only to 'subMenu'.                                                                                                                                                    |
+
+As an example, the here is an array of MenuItems and the resulting menu:
+
+```js
+;[
+  {
+    label: 'Normal menu item',
+    icon: AddIcon,
+    onClick: () => {},
+  },
+  {
+    label: 'Normal',
+    subLabel: 'with subLabel',
+    icon: AddIcon,
+    onClick: () => {},
+  },
+  {
+    label: 'Disabled menu item',
+    disabled: true,
+    icon: AddIcon,
+    onClick: () => {},
+  },
+  {
+    type: 'radio',
+    label: 'Radio checked',
+    checked: true,
+    onClick: () => {},
+  },
+  {
+    type: 'radio',
+    label: 'Radio unchecked',
+    checked: false,
+    onClick: () => {},
+  },
+  {
+    type: 'checkbox',
+    label: 'Checkbox checked',
+    checked: true,
+    onClick: () => {},
+  },
+  {
+    type: 'checkbox',
+    label: 'Checkbox unchecked',
+    checked: false,
+    onClick: () => {},
+  },
+  { type: 'divider' },
+  { type: 'subHeader', label: 'This is a subHeader' },
+  {
+    label: 'SubMenu',
+    subMenu: [
+      {
+        label: 'SubMenu item one',
+        onClick: () => {},
+      },
+      {
+        label: 'SubMenu item two',
+        onClick: () => {},
+      },
+    ],
+  },
+]
+```
+
+<Figure src="/img/menu_demo.png" caption="This screenshot shows all the various track menu options, generated by the code listing"/>

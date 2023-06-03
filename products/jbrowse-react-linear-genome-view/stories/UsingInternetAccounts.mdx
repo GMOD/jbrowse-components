@@ -1,0 +1,57 @@
+import { Meta, Story } from '@storybook/blocks'
+import { WithInternetAccounts } from './JBrowseLinearGenomeView.stories'
+
+<Meta title="Using InternetAccounts" />
+
+# Internet accounts
+
+"Internet accounts" are used to access authenticated resources or otherwise
+override the 'fetch' behavior of the app. Starting with v2.2.1 of
+`@jbrowse/react-linear-genome-view`, developers can use InternetAccounts in the
+embedded components.
+
+## Using InternetAccounts
+
+InternetAccount configurations are passed to `createViewState` like this:
+
+```js
+const state = createViewState({
+  assembly,
+  tracks,
+  location: 'ctgA:1105..1221',
+  internetAccounts: [
+    {
+      type: 'ExternalTokenInternetAccount',
+      internetAccountId: 'manualGoogleEntry',
+      name: 'Google Drive Manual Token Entry',
+      description: 'Manually enter a token to access Google Drive files',
+      tokenType: 'Bearer',
+    },
+  ],
+})
+```
+
+Then any file location in your tracks that specifies an `internetAccountId` of
+"manualGoogleEntry" will use the specified InternetAccount.
+
+<Story of={WithInternetAccounts} />
+
+The above example lets the user manually enter a token already retrieved
+elsewhere. An "Authorization" header is then set on any request to that resource
+with a value of `Bearer <token>`.
+
+## Notes
+
+Normally, internet accounts are used for accessing information from external
+third party resources. For accessing authenticated non-external resources,
+you'll more likely be 'automatically' be authenticated via cookies.
+
+Note that JBrowse's `DropboxOAuthInternetAccount` and
+`GoogleDriveOAuthInternetAccount` will not work as-is because
+`@jbrowse/react-linear-genome-view` doesn't have the app-level control needed to
+properly execute an OAuth 2.0 login flow.
+
+There are some instances where InternetAccounts could be useful for non-external
+resources too though. For example, you can use a custom InternetAccount to
+override the `fetch` behavior of a particular track, allowing you to customize
+where and how the data is retrieved.

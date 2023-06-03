@@ -78,14 +78,14 @@ The directory where you downloaded JBrowse should look something like this:
 
 ```txt
 jbrowse2/
-├── asset-manifest.json
-├── favicon.ico
-├── index.html
-├── manifest.json
-├── robots.txt
-├── static/
-├── test_data/
-└── version.txt
+- asset-manifest.json
+- favicon.ico
+- index.html
+- manifest.json
+- robots.txt
+- static/
+- test_data/
+- version.txt
 ```
 
 ## Running JBrowse 2

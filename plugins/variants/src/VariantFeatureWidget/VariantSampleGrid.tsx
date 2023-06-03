@@ -7,7 +7,7 @@ import {
   Typography,
 } from '@mui/material'
 
-import { DataGrid } from '@mui/x-data-grid'
+import { DataGrid, GridToolbar } from '@mui/x-data-grid'
 import { BaseCard } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import { measureGridWidth, SimpleFeatureSerialized } from '@jbrowse/core/util'
 import ResizeBar, { useResizeBar } from '@jbrowse/core/ui/ResizeBar'
@@ -30,46 +30,31 @@ function SampleFilters({
   filter: Filters
   setFilter: (arg: Filters) => void
 }) {
-  const [showFilters, setShowFilters] = useState(false)
   return (
     <>
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={showFilters}
-            onChange={() => setShowFilters(f => !f)}
-          />
-        }
-        label="Show sample filters"
-      />
-      {showFilters ? (
-        <>
-          <Typography>
-            These filters can use a plain text search or regex style query, e.g.
-            in the genotype field, entering 1 will query for all genotypes that
-            include the first alternate allele e.g. 0|1 or 1|1, entering
-            [1-9]\d* will find any non-zero allele e.g. 0|2 or 2/33
-          </Typography>
-          {columns.map(({ field }) => (
-            <TextField
-              key={`filter-${field}`}
-              placeholder={`Filter ${field}`}
-              value={filter[field] || ''}
-              onChange={event =>
-                setFilter({ ...filter, [field]: event.target.value })
-              }
-            />
-          ))}
-        </>
-      ) : null}
+      <Typography>
+        These filters can use a plain text search or regex style query, e.g. in
+        the genotype field, entering 1 will query for all genotypes that include
+        the first alternate allele e.g. 0|1 or 1|1, entering [1-9]\d* will find
+        any non-zero allele e.g. 0|2 or 2/33
+      </Typography>
+      {columns.map(({ field }) => (
+        <TextField
+          key={`filter-${field}`}
+          placeholder={`Filter ${field}`}
+          value={filter[field] || ''}
+          onChange={event =>
+            setFilter({ ...filter, [field]: event.target.value })
+          }
+        />
+      ))}
     </>
   )
 }
 
 export default function VariantSamples(props: {
   feature: SimpleFeatureSerialized
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  descriptions: any
+  descriptions: { FORMAT?: { [key: string]: { Description?: string } } }
 }) {
   const { feature, descriptions = {} } = props
   const { ref, scrollLeft } = useResizeBar()
@@ -98,9 +83,10 @@ export default function VariantSamples(props: {
       .filter(row =>
         filters.length
           ? filters.every(key => {
-              const val = row[key]
               const currFilter = filter[key]
-              return currFilter ? val.match(new RegExp(currFilter, 'i')) : true
+              return currFilter
+                ? row[key].match(new RegExp(currFilter, 'i'))
+                : true
             })
           : true,
       )
@@ -109,7 +95,7 @@ export default function VariantSamples(props: {
   }
 
   const keys = ['sample', ...Object.keys(preFilteredRows[0]?.[1] || {})]
-
+  const [checked, setChecked] = useState(false)
   const [widths, setWidths] = useState(
     keys.map(e => measureGridWidth(rows.map(r => r[e]))),
   )
@@ -124,23 +110,41 @@ export default function VariantSamples(props: {
   return !preFilteredRows.length ? null : (
     <BaseCard {...props} title="Samples">
       {error ? <Typography color="error">{`${error}`}</Typography> : null}
-      <SampleFilters setFilter={setFilter} columns={columns} filter={filter} />
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={checked}
+            onChange={event => setChecked(event.target.checked)}
+          />
+        }
+        label={<Typography variant="body2">Show options</Typography>}
+      />
+      {checked ? (
+        <SampleFilters
+          setFilter={setFilter}
+          columns={columns}
+          filter={filter}
+        />
+      ) : null}
       <div ref={ref}>
         <ResizeBar
           widths={widths}
           setWidths={setWidths}
           scrollLeft={scrollLeft}
         />
-        <div ref={ref} style={{ height: 600, width: '100%', overflow: 'auto' }}>
-          <DataGrid
-            rows={rows}
-            columns={columns}
-            disableRowSelectionOnClick
-            rowHeight={25}
-            columnHeaderHeight={35}
-            disableColumnMenu
-          />
-        </div>
+        <DataGrid
+          rows={rows}
+          hideFooter={rows.length < 100}
+          columns={columns}
+          disableRowSelectionOnClick
+          rowHeight={25}
+          columnHeaderHeight={35}
+          disableColumnMenu
+          slots={{ toolbar: checked ? GridToolbar : null }}
+          slotProps={{
+            toolbar: { printOptions: { disableToolbarButton: true } },
+          }}
+        />
       </div>
     </BaseCard>
   )

@@ -19,6 +19,6 @@ export interface AnyAdapter {
   new (
     config: AnyConfigurationModel,
     getSubAdapter?: getSubAdapterType,
-    pluginManager?: PluginManager | undefined,
+    pluginManager?: PluginManager,
   ): AnyDataAdapter
 }

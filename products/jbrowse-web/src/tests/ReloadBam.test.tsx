@@ -9,6 +9,7 @@ import {
   createView,
   mockConsole,
   pv,
+  mockFile404,
 } from './util'
 
 const readBuffer = generateReadBuffer(
@@ -26,17 +27,9 @@ const opts = [{}, delay]
 
 test('reloads alignments track (BAI 404)', async () => {
   await mockConsole(async () => {
-    // @ts-expect-error
-    fetch.mockResponse(async request => {
-      if (request.url === 'volvox-sorted-altname.bam.bai') {
-        return { status: 404 }
-      }
-      return readBuffer(request)
-    })
-
-    const { view, findByTestId, findByText, findAllByTestId, findAllByText } =
+    mockFile404('volvox-sorted-altname.bam.bai', readBuffer)
+    const { view, findByTestId, findAllByTestId, findAllByText } =
       await createView()
-    await findByText('Help')
     view.setNewView(0.5, 0)
     fireEvent.click(await findByTestId(hts('volvox_bam_snpcoverage'), ...opts))
     await findAllByText(/HTTP 404/, ...opts)
@@ -47,19 +40,12 @@ test('reloads alignments track (BAI 404)', async () => {
     expectCanvasMatch(await findByTestId(pv('1..400-0'), ...opts))
   })
 }, 40000)
+
 test('reloads alignments track (BAM 404)', async () => {
   await mockConsole(async () => {
-    // @ts-expect-error
-    fetch.mockResponse(async request => {
-      if (request.url === 'volvox-sorted-altname.bam') {
-        return { status: 404 }
-      }
-      return readBuffer(request)
-    })
-
-    const { view, findByTestId, findByText, findAllByTestId, findAllByText } =
+    mockFile404('volvox-sorted-altname.bam', readBuffer)
+    const { view, findByTestId, findAllByTestId, findAllByText } =
       await createView()
-    await findByText('Help')
     view.setNewView(0.5, 0)
     fireEvent.click(await findByTestId(hts('volvox_bam_pileup'), ...opts))
     await findAllByText(/HTTP 404/, ...opts)

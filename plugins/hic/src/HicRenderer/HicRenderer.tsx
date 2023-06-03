@@ -11,7 +11,7 @@ import { toArray } from 'rxjs/operators'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 interface HicFeature {
   bin1: number
@@ -61,7 +61,9 @@ export default class HicRenderer extends ServerSideRendererType {
       resolution,
       sessionId,
       adapterConfig,
+      regions,
     } = props
+    const [region] = regions
     const { dataAdapter } = await getAdapter(
       this.pluginManager,
       sessionId,
@@ -87,6 +89,14 @@ export default class HicRenderer extends ServerSideRendererType {
         maxBin = Math.max(Math.max(bin1, bin2), maxBin)
       }
       await abortBreakPoint(signal)
+      function horizontallyFlip() {
+        ctx.scale(-1, 1)
+        const width = (region.end - region.start) / bpPerPx
+        ctx.translate(-width, 0)
+      }
+      if (region.reversed === true) {
+        horizontallyFlip()
+      }
       ctx.rotate(-Math.PI / 4)
       let start = Date.now()
       for (let i = 0; i < features.length; i++) {

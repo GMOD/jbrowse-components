@@ -2,10 +2,13 @@ import React from 'react'
 import {
   Dialog,
   DialogTitle,
-  IconButton,
-  Divider,
   DialogProps,
+  Divider,
+  IconButton,
   ScopedCssBaseline,
+  ThemeProvider,
+  createTheme,
+  useTheme,
 } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
@@ -33,34 +36,57 @@ function DialogError({ error }: { error: unknown }) {
   )
 }
 
-function JBrowseDialog(props: DialogProps & { title: string }) {
+interface Props extends DialogProps {
+  header?: React.ReactNode
+}
+
+export default observer(function JBrowseDialog(props: Props) {
   const { classes } = useStyles()
-  const { title, children, onClose } = props
+  const { title, header, children, onClose } = props
+  const theme = useTheme()
 
   return (
     <Dialog {...props}>
       <ScopedCssBaseline>
-        <DialogTitle>
-          {title}
-          {onClose ? (
-            <IconButton
-              className={classes.closeButton}
-              onClick={() => {
-                // @ts-expect-error
-                onClose()
-              }}
-            >
-              <CloseIcon />
-            </IconButton>
-          ) : null}
-        </DialogTitle>
+        {React.isValidElement(header) ? (
+          <>{header}</>
+        ) : (
+          <DialogTitle>
+            {title}
+            {onClose ? (
+              <IconButton
+                className={classes.closeButton}
+                onClick={() => {
+                  // @ts-expect-error
+                  onClose()
+                }}
+              >
+                <CloseIcon />
+              </IconButton>
+            ) : null}
+          </DialogTitle>
+        )}
         <Divider />
 
         <ErrorBoundary FallbackComponent={DialogError}>
-          {children}
+          <ThemeProvider
+            theme={createTheme(theme, {
+              components: {
+                MuiInputBase: {
+                  styleOverrides: {
+                    input: {
+                      // xref https://github.com/GMOD/jbrowse-components/pull/3666
+                      boxSizing: 'content-box!important' as 'content-box',
+                    },
+                  },
+                },
+              },
+            })}
+          >
+            {children}
+          </ThemeProvider>
         </ErrorBoundary>
       </ScopedCssBaseline>
     </Dialog>
   )
-}
-export default observer(JBrowseDialog)
+})

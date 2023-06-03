@@ -16,12 +16,12 @@ import { MismatchParser } from '@jbrowse/plugin-alignments'
 
 // locals
 import SyntenyFeature from './SyntenyFeature'
-import { isGzip } from '../util'
+import { isGzip, parseLineByLine } from '../util'
 import {
   getWeightedMeans,
   flipCigar,
-  parsePAF,
   swapIndelCigar,
+  parsePAFLine,
   PAFRecord,
 } from './util'
 
@@ -51,12 +51,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     const pafLocation = openLocation(this.getConf('pafLocation'), pm)
     const buffer = (await pafLocation.readFile(opts)) as Buffer
     const buf = isGzip(buffer) ? await unzip(buffer) : buffer
-    // 512MB  max chrome string length is 512MB
-    if (buf.length > 536_870_888) {
-      throw new Error('Data exceeds maximum string length (512MB)')
-    }
-    const text = new TextDecoder('utf8', { fatal: true }).decode(buf)
-    return parsePAF(text)
+    return parseLineByLine(buf, parsePAFLine)
   }
 
   async hasDataForRefName() {

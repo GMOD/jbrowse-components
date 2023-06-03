@@ -8,7 +8,7 @@
     "composite": true
   },
   "include": ["./src/**/*.ts*", "./src/**/*.js*"],
-  "exclude": ["src/**/*.test.ts*", "src/**/*.test.js*", "src/indexES5.ts"],
+  "exclude": ["src/**/*.test.ts*", "src/**/*.test.js*"],
   "references": [
     { "path": "../../packages/core/tsconfig.build.json" },
     { "path": "../../plugins/alignments/tsconfig.build.esm.json" },

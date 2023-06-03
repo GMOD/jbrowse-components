@@ -9,43 +9,7 @@ import {
   Typography,
 } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
-import { makeStyles } from 'tss-react/mui'
-
-const useStyles = makeStyles()(theme => ({
-  table: {
-    border: '1px solid #888',
-    margin: theme.spacing(4),
-    '& td': {
-      padding: theme.spacing(1),
-    },
-  },
-}))
-
-function ModificationTable({
-  modifications,
-}: {
-  modifications: [string, string][]
-}) {
-  const { classes } = useStyles()
-  return (
-    <table className={classes.table}>
-      <tbody>
-        {modifications.map(([key, value]) => (
-          <tr key={key}>
-            <td>{key}</td>
-            <td>{value}</td>
-            <td
-              style={{
-                width: '1em',
-                background: value,
-              }}
-            />
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  )
-}
+import ModificationTable from './ModificationsTable'
 
 function ColorByTagDlg(props: {
   model: {
@@ -84,13 +48,13 @@ function ColorByTagDlg(props: {
                   />
                 </>
               ) : (
-                <div>
+                <>
                   <Typography>
                     Note: color by modifications is already enabled. Loading
                     current modifications...
                   </Typography>
                   <CircularProgress size={15} />
-                </div>
+                </>
               )}
             </div>
           ) : null}

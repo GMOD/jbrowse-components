@@ -19,7 +19,6 @@ import LinearGenomeViewF, {
 } from './LinearGenomeView'
 
 import LinearBasicDisplayF from './LinearBasicDisplay'
-
 import FeatureTrackF from './FeatureTrack'
 import BasicTrackF from './BasicTrack'
 import LaunchLinearGenomeViewF from './LaunchLinearGenomeView'
@@ -58,19 +57,26 @@ export default class LinearGenomeViewPlugin extends Plugin {
   }
 }
 
-export type { BaseLinearDisplayModel, BlockModel } from './BaseLinearDisplay'
+export type {
+  ExportSvgDisplayOptions,
+  BaseLinearDisplayModel,
+  BlockModel,
+} from './BaseLinearDisplay'
 
 export { configSchemaFactory as linearBareDisplayConfigSchemaFactory } from './LinearBareDisplay'
 export {
-  BlockMsg,
   baseLinearDisplayConfigSchema,
-  BaseLinearDisplayComponent,
   BaseLinearDisplay,
+  BlockMsg,
+  BaseLinearDisplayComponent,
+  TrackHeightMixin,
+  FeatureDensityMixin,
+  TooLargeMessage,
 } from './BaseLinearDisplay'
 export {
   type LinearGenomeViewModel,
-  RefNameAutocomplete,
   type LinearGenomeViewStateModel,
+  RefNameAutocomplete,
   SearchBox,
 } from './LinearGenomeView'
 export {

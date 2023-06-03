@@ -109,6 +109,3 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
 
   freeResources(/* { region } */): void {}
 }
-
-const { capabilities } = SNPCoverageAdapter
-export { capabilities }

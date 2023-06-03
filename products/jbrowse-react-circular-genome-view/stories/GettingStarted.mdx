@@ -1,0 +1,81 @@
+import { Meta, Story } from '@storybook/blocks'
+import { Volvox, ShowTrack } from './JBrowseCircularGenomeView.stories'
+
+<Meta title="Getting Started" />
+
+# Welcome!
+
+This site contains the [Storybook](https://storybook.js.org/) docs for the
+[JBrowse 2 React Circular Genome View Component](https://www.npmjs.com/package/@jbrowse/react-circular-genome-view).
+The component makes it possible to embed an interactive genome browser in any
+React application. The Storybook docs make it possible to provide an interactive
+demonstration of how the component looks and works.
+
+## Using the docs
+
+This is an example of what a story looks like:
+
+<Story of={Volvox} />
+
+You can test out the various features of the component, and open tracks and
+interact with it as you would in your app. You can also click on the code button
+on the bottom right to see what the code looks like for the component being
+viewed.
+
+## An overview of the CGV API
+
+The CGV component relies on the same
+[configuration](https://jbrowse.org/jb2/docs/config_guide) as the main JB2 app,
+with a few noteworthy differences.
+
+First, the component can be configured using a standalone JSON file like JB2, or
+can be configured with JavaScript objects in the source code of the app where it
+is being used, as shown
+[here](https://github.com/GMOD/jbrowse-components/blob/HEAD/products/jbrowse-react-circular-genome-view/docs/example.md).
+
+Second, while this is the structure of a JB2 configuration file:
+
+```json
+{
+  "configuration": {
+    /* global configs here */
+  },
+  "assemblies": [
+    /* list of assembly configurations, e.g. the genomes being viewed */
+  ],
+  "tracks": [
+    /* array of tracks being loaded, contain reference to which assembl(y/ies)
+    they belong to */
+  ],
+  "defaultSession": {
+    /* optional default session */
+  }
+}
+```
+
+The CGV component only accepts a single assembly object instead of an array:
+
+```json
+{
+  "assembly": {
+    /* the assembly being used for the browser */
+  }
+}
+```
+
+## Opening up tracks by default
+
+You can call "showTrack" on the object returned by createViewState
+
+<Story of={ShowTrack} />
+
+## Additional resources
+
+This overview is intended as a launching point for initial use of the CGV
+component. Make sure to check out the rest of the stories to get a better feel
+for what is possible with the component.
+
+Here are a few more resources that may help:
+
+- [Code example](https://github.com/GMOD/jbrowse-components/blob/HEAD/products/jbrowse-react-circular-genome-view/docs/example.md)
+- [Story source code](https://github.com/GMOD/jbrowse-components/tree/main/products/jbrowse-react-circular-genome-view/stories)

@@ -5,8 +5,10 @@ import { observer } from 'mobx-react'
 import JBrowseMenu from '@jbrowse/core/ui/Menu'
 import {
   getSession,
-  isSessionModelWithWidgets,
+  isSessionModelWithConnectionEditing,
   isSessionModelWithConnections,
+  isSessionModelWithWidgets,
+  isSessionWithAddTracks,
 } from '@jbrowse/core/util'
 import {
   AnyConfigurationModel,
@@ -42,7 +44,7 @@ const useStyles = makeStyles()(theme => ({
 
 interface ModalArgs {
   connectionConf: AnyConfigurationModel
-  safelyBreakConnection: Function
+  safelyBreakConnection: () => void
   dereferenceTypeCount: { [key: string]: number }
   name: string
 }
@@ -54,10 +56,8 @@ interface DialogDetails {
 
 export default observer(function HamburgerMenu({
   model,
-  setAssemblyIdx,
 }: {
   model: HierarchicalTrackSelectorModel
-  setAssemblyIdx: Function
 }) {
   const session = getSession(model)
   const [menuEl, setMenuEl] = useState<HTMLButtonElement>()
@@ -66,7 +66,6 @@ export default observer(function HamburgerMenu({
   const [connectionToggleOpen, setConnectionToggleOpen] = useState(false)
   const [connectionManagerOpen, setConnectionManagerOpen] = useState(false)
   const { classes } = useStyles()
-  const { assemblyNames } = model
 
   function breakConnection(
     connectionConf: AnyConfigurationModel,
@@ -92,30 +91,6 @@ export default observer(function HamburgerMenu({
     }
   }
 
-  const connectionMenuItems = [
-    {
-      label: 'Turn on/off connections...',
-      onClick: () => setConnectionToggleOpen(true),
-    },
-  ]
-
-  if (isSessionModelWithConnections(session)) {
-    connectionMenuItems.unshift({
-      label: 'Add connection...',
-      onClick: () => {
-        if (isSessionModelWithWidgets(session)) {
-          session.showWidget(
-            session.addWidget('AddConnectionWidget', 'addConnectionWidget'),
-          )
-        }
-      },
-    })
-
-    connectionMenuItems.push({
-      label: 'Delete connections...',
-      onClick: () => setConnectionManagerOpen(true),
-    })
-  }
   return (
     <>
       <IconButton
@@ -134,38 +109,58 @@ export default observer(function HamburgerMenu({
         }}
         onClose={() => setMenuEl(undefined)}
         menuItems={[
-          {
-            label: 'Add track...',
-            onClick: () => {
-              if (isSessionModelWithWidgets(session)) {
-                session.showWidget(
-                  session.addWidget('AddTrackWidget', 'addTrackWidget', {
-                    view: model.view.id,
-                  }),
-                )
-              }
-            },
-          },
-          ...(session.makeConnection ? connectionMenuItems : []),
-
-          ...(assemblyNames.length > 1
+          ...(isSessionWithAddTracks(session)
             ? [
                 {
-                  label: 'Select assembly...',
-                  subMenu: assemblyNames.map((name, idx) => ({
-                    label: name,
-                    onClick: () => setAssemblyIdx(idx),
-                  })),
+                  label: 'Add track...',
+                  onClick: () => {
+                    if (isSessionModelWithWidgets(session)) {
+                      session.showWidget(
+                        session.addWidget('AddTrackWidget', 'addTrackWidget', {
+                          view: model.view.id,
+                        }),
+                      )
+                    }
+                  },
+                },
+              ]
+            : []),
+          ...(isSessionModelWithConnections(session)
+            ? [
+                {
+                  label: 'Turn on/off connections...',
+                  onClick: () => setConnectionToggleOpen(true),
+                },
+              ]
+            : []),
+          ...(isSessionModelWithConnectionEditing(session)
+            ? [
+                {
+                  label: 'Add connection...',
+                  onClick: () => {
+                    if (isSessionModelWithWidgets(session)) {
+                      session.showWidget(
+                        session.addWidget(
+                          'AddConnectionWidget',
+                          'addConnectionWidget',
+                        ),
+                      )
+                    }
+                  },
+                },
+                {
+                  label: 'Delete connections...',
+                  onClick: () => setConnectionManagerOpen(true),
                 },
               ]
             : []),
         ]}
       />
-      <Suspense fallback={<div />}>
+      <Suspense fallback={<React.Fragment />}>
         {modalInfo ? (
           <CloseConnectionDlg
             modalInfo={modalInfo}
-            setModalInfo={setModalInfo}
+            onClose={() => setModalInfo(undefined)}
           />
         ) : null}
         {deleteDlgDetails ? (

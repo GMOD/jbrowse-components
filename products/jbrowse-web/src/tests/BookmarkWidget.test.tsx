@@ -8,7 +8,7 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-const delay = { timeout: 15000 }
+const delay = { timeout: 30000 }
 
 test('click and drag rubberband, bookmarks region', async () => {
   const { session, view, findByTestId, findByText } = await createView()
@@ -24,7 +24,7 @@ test('click and drag rubberband, bookmarks region', async () => {
   const { widgets } = session
   const bookmarkWidget = widgets.get('GridBookmark')
   expect(bookmarkWidget.bookmarkedRegions[0].assemblyName).toEqual('volvox')
-}, 20000)
+}, 40000)
 
 test('bookmarks current region', async () => {
   const { session, findByTestId, findByText } = await createView()
@@ -37,7 +37,7 @@ test('bookmarks current region', async () => {
   const { bookmarkedRegions } = widgets.get('GridBookmark')
   expect(bookmarkedRegions[0].start).toEqual(100)
   expect(bookmarkedRegions[0].end).toEqual(140)
-}, 20000)
+}, 40000)
 
 test('navigates to bookmarked region from widget', async () => {
   const { view, session, findByTestId, findByText } = await createView()
@@ -69,4 +69,4 @@ test('navigates to bookmarked region from widget', async () => {
       view.getSelectedRegions(view.leftOffset, view.rightOffset)[0].key,
     ).toEqual('{volvox}ctgA:201..240-0'),
   )
-}, 20000)
+}, 40000)

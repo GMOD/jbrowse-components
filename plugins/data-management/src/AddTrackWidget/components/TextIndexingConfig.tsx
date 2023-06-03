@@ -32,7 +32,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const TextIndexingConfig = observer(({ model }: { model: AddTrackModel }) => {
+const TextIndexingConfig = observer(function ({
+  model,
+}: {
+  model: AddTrackModel
+}) {
   const { classes } = useStyles()
   const [value1, setValue1] = useState('')
   const [value2, setValue2] = useState('')
@@ -69,9 +73,9 @@ const TextIndexingConfig = observer(({ model }: { model: AddTrackModel }) => {
                         <InputAdornment position="end">
                           <IconButton
                             onClick={() => {
-                              const newAttr = section.values.filter((a, i) => {
-                                return i !== idx
-                              })
+                              const newAttr = section.values.filter(
+                                (_, i) => i !== idx,
+                              )
                               index === 0
                                 ? setAttributes(newAttr)
                                 : setExclude(newAttr)
@@ -100,14 +104,10 @@ const TextIndexingConfig = observer(({ model }: { model: AddTrackModel }) => {
                         <IconButton
                           onClick={() => {
                             if (index === 0) {
-                              const newAttr: string[] = attributes
-                              newAttr.push(value1)
-                              setAttributes(newAttr)
+                              setAttributes([...attributes, value1])
                               setValue1('')
                             } else {
-                              const newFeat: string[] = exclude
-                              newFeat.push(value2)
-                              setExclude(newFeat)
+                              setExclude([...exclude, value2])
                               setValue2('')
                             }
                           }}

@@ -6,7 +6,7 @@ import {
 import { observer } from 'mobx-react'
 import { Feature } from '@jbrowse/core/util'
 
-function Stick({
+export default observer(function Stick({
   feature,
   config,
   layoutRecord: {
@@ -33,6 +33,4 @@ function Stick({
       strokeWidth={readConfObject(config, 'stickWidth', { feature })}
     />
   )
-}
-
-export default observer(Stick)
+})

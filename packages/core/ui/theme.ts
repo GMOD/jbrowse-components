@@ -167,7 +167,7 @@ export const defaultThemes = {
   darkStock: getDarkStockTheme(),
 } as ThemeMap
 
-function createDefaultProps(theme?: ThemeOptions) {
+function createDefaultProps(theme?: ThemeOptions): ThemeOptions {
   return {
     components: {
       MuiButton: {
@@ -278,11 +278,6 @@ function createDefaultProps(theme?: ThemeOptions) {
           transitionDuration: 0,
         },
       },
-      MuiMenuList: {
-        defaultProps: {
-          dense: true,
-        },
-      },
       MuiMenuItem: {
         defaultProps: {
           dense: true,
@@ -299,9 +294,7 @@ function createDefaultProps(theme?: ThemeOptions) {
         styleOverrides: {
           // the default link color uses theme.palette.primary.main which is
           // very bad with dark mode+midnight primary
-          //
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          root: ({ theme }: any) => ({
+          root: ({ theme }) => ({
             color: theme.palette.text.secondary,
           }),
         },
@@ -315,10 +308,7 @@ function createDefaultProps(theme?: ThemeOptions) {
           // keeps the forest-green checkbox by default but for darkmode, uses
           // a text-like coloring to ensure contrast
           // xref https://stackoverflow.com/a/72546130/2129219
-          //
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          root: (props: any) => {
-            const { theme } = props
+          root: ({ theme }) => {
             return theme.palette.mode === 'dark'
               ? {
                   color: theme.palette.text.secondary,
@@ -339,10 +329,7 @@ function createDefaultProps(theme?: ThemeOptions) {
           // keeps the forest-green checkbox by default but for darkmode, uses
           // a text-like coloring to ensure contrast
           // xref https://stackoverflow.com/a/72546130/2129219
-          //
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          root: (props: any) => {
-            const { theme } = props
+          root: ({ theme }) => {
             return theme.palette.mode === 'dark'
               ? {
                   color: theme.palette.text.secondary,
@@ -364,9 +351,8 @@ function createDefaultProps(theme?: ThemeOptions) {
           // a text-like coloring to ensure contrast
           // xref https://stackoverflow.com/a/72546130/2129219
           //
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          root: (props: any) => {
-            const { theme } = props
+
+          root: ({ theme }) => {
             return theme.palette.mode === 'dark'
               ? {
                   color: theme.palette.text.secondary,

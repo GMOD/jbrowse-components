@@ -43,6 +43,14 @@ const testConfig = path.join(
   'test_config.json',
 )
 
+async function copyConf(ctx: { dir: string }) {
+  await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
+
+  await rename(
+    path.join(ctx.dir, path.basename(testConfig)),
+    path.join(ctx.dir, 'config.json'),
+  )
+}
 const originalDateNow = Date.now
 
 const setupWithDateMock = setup
@@ -68,35 +76,10 @@ describe('add-connection', () => {
     .command(['add-connection', 'https://mysite.com/notafile.txt'])
     .exit(170)
     .it('fails when fetching from url fails')
-  setup
-    .nock('https://example.com', site => site.head('/hub.txt').reply(200))
-    .do(async ctx => {
-      await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
-
-      await rename(
-        path.join(ctx.dir, path.basename(testConfig)),
-        path.join(ctx.dir, 'config.json'),
-      )
-    })
-    .command([
-      'add-connection',
-      'https://example.com/hub.txt',
-      '--assemblyName',
-      'nonexistAssembly',
-    ])
-    .exit(130)
-    .it('fails if not a matching assembly name')
 
   setupWithDateMock
     .nock('https://mysite.com', site => site.head('/data/hub.txt').reply(200))
-    .do(async ctx => {
-      await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
-
-      await rename(
-        path.join(ctx.dir, path.basename(testConfig)),
-        path.join(ctx.dir, 'config.json'),
-      )
-    })
+    .do(ctx => copyConf(ctx))
     .command(['add-connection', 'https://mysite.com/data/hub.txt'])
     .it('adds an UCSCTrackHubConnection connection from a url', async ctx => {
       const contents = readConf(ctx)
@@ -105,56 +88,41 @@ describe('add-connection', () => {
         connections: [
           {
             type: 'UCSCTrackHubConnection',
-            assemblyName: 'testAssembly',
-            connectionId: 'UCSCTrackHubConnection-testAssembly-1',
+            connectionId: 'UCSCTrackHubConnection-1',
             hubTxtLocation: {
               uri: 'https://mysite.com/data/hub.txt',
               locationType: 'UriLocation',
             },
-            name: 'UCSCTrackHubConnection-testAssembly-1',
+            name: 'UCSCTrackHubConnection-1',
           },
         ],
       })
     })
   setupWithDateMock
     .nock('https://mysite.com', site => site.head('/jbrowse/data').reply(200))
-    .do(async ctx => {
-      await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
-
-      await rename(
-        path.join(ctx.dir, path.basename(testConfig)),
-        path.join(ctx.dir, 'config.json'),
-      )
-    })
+    .do(ctx => copyConf(ctx))
     .command(['add-connection', 'https://mysite.com/jbrowse/data'])
-    .it('adds an JBrowse1 connection from a url', async ctx => {
+    .it('adds JBrowse1 connection from a url', async ctx => {
       const contents = readConf(ctx)
       expect(contents).toEqual({
         ...defaultConfig,
         connections: [
           {
             type: 'JBrowse1Connection',
-            assemblyName: 'testAssembly',
-            connectionId: 'JBrowse1Connection-testAssembly-1',
+            connectionId: 'JBrowse1Connection-1',
             dataDirLocation: {
               uri: 'https://mysite.com/jbrowse/data',
               locationType: 'UriLocation',
             },
-            name: 'JBrowse1Connection-testAssembly-1',
+            name: 'JBrowse1Connection-1',
           },
         ],
       })
     })
+
   setup
     .nock('https://mysite.com', site => site.head('/custom').reply(200))
-    .do(async ctx => {
-      await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
-
-      await rename(
-        path.join(ctx.dir, path.basename(testConfig)),
-        path.join(ctx.dir, 'config.json'),
-      )
-    })
+    .do(ctx => copyConf(ctx))
     .command([
       'add-connection',
       'https://mysite.com/custom',
@@ -164,29 +132,7 @@ describe('add-connection', () => {
       'newConnectionId',
       '--name',
       'newName',
-    ])
-    .exit(140)
-    .it('fails if custom without a config object')
-  setup
-    .nock('https://mysite.com', site => site.head('/custom').reply(200))
-    .do(async ctx => {
-      await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
-
-      await rename(
-        path.join(ctx.dir, path.basename(testConfig)),
-        path.join(ctx.dir, 'config.json'),
-      )
-    })
-    .command([
-      'add-connection',
-      'https://mysite.com/custom',
-      '--type',
-      'newType',
-      '--connectionId',
-      'newConnectionId',
-      '--name',
-      'newName',
-      '--assemblyName',
+      '--assemblyNames',
       'testAssembly',
       '--config',
       '{"url":{"uri":"https://mysite.com/custom"}, "locationType": "UriLocation"}',
@@ -198,7 +144,7 @@ describe('add-connection', () => {
         connections: [
           {
             type: 'newType',
-            assemblyName: 'testAssembly',
+            assemblyNames: ['testAssembly'],
             connectionId: 'newConnectionId',
             locationType: 'UriLocation',
             url: {
@@ -211,14 +157,7 @@ describe('add-connection', () => {
     })
   setup
     .nock('https://mysite.com', site => site.head('/custom').reply(200))
-    .do(async ctx => {
-      await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
-
-      await rename(
-        path.join(ctx.dir, path.basename(testConfig)),
-        path.join(ctx.dir, 'config.json'),
-      )
-    })
+    .do(ctx => copyConf(ctx))
     .command([
       'add-connection',
       'https://mysite.com/custom',
@@ -239,14 +178,7 @@ describe('add-connection', () => {
     .exit(150)
     .it('Fails to add a duplicate connection Id')
   setup
-    .do(async ctx => {
-      await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
-
-      await rename(
-        path.join(ctx.dir, path.basename(testConfig)),
-        path.join(ctx.dir, 'config.json'),
-      )
-    })
+    .do(ctx => copyConf(ctx))
     .command([
       'add-connection',
       'https://mysite.com/custom',
@@ -274,7 +206,6 @@ describe('add-connection', () => {
           connections: [
             {
               type: 'custom',
-              assemblyName: 'testAssembly',
               connectionId: 'newConnectionId',
               locationType: 'UriLocation',
               url: {

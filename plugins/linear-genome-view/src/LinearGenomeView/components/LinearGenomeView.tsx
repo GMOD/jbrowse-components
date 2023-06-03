@@ -1,17 +1,18 @@
-import React from 'react'
+import React, { lazy } from 'react'
 import { Button, Paper, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
+
+// icons
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 
 // locals
 import { LinearGenomeViewModel } from '..'
 import TrackContainer from './TrackContainer'
 import TracksContainer from './TracksContainer'
-import ImportForm from './ImportForm'
-import GetSequenceDialog from './GetSequenceDialog'
-import SearchResultsDialog from './SearchResultsDialog'
+
+const ImportForm = lazy(() => import('./ImportForm'))
 
 type LGV = LinearGenomeViewModel
 
@@ -39,18 +40,6 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
 
   return (
     <div style={{ position: 'relative' }}>
-      {model.seqDialogDisplayed ? (
-        <GetSequenceDialog
-          model={model}
-          handleClose={() => model.setGetSequenceDialogOpen(false)}
-        />
-      ) : null}
-      {model.isSearchDialogDisplayed ? (
-        <SearchResultsDialog
-          model={model}
-          handleClose={() => model.setSearchResults(undefined, undefined)}
-        />
-      ) : null}
       <HeaderComponent model={model} />
       <MiniControlsComponent model={model} />
       <TracksContainer model={model}>

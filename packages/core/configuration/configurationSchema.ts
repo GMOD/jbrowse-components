@@ -1,10 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   types,
   isStateTreeNode,
   isType,
   isLateType,
   getSnapshot,
-  Instance,
   IAnyType,
   SnapshotOut,
 } from 'mobx-state-tree'
@@ -13,6 +13,14 @@ import { ElementId } from '../util/types/mst'
 
 import ConfigSlot, { ConfigSlotDefinition } from './configurationSlot'
 import { isConfigurationSchemaType } from './util'
+import { AnyConfigurationSchemaType } from './types'
+
+export type {
+  AnyConfigurationSchemaType,
+  AnyConfigurationModel,
+  AnyConfigurationSlot,
+  AnyConfigurationSlotType,
+} from './types'
 
 function isEmptyObject(thing: unknown) {
   return (
@@ -36,22 +44,25 @@ export interface ConfigurationSchemaDefinition {
     | IAnyType
 }
 
-interface ConfigurationSchemaOptions {
+export interface ConfigurationSchemaOptions<
+  BASE_SCHEMA extends AnyConfigurationSchemaType | undefined,
+  EXPLICIT_IDENTIFIER extends string | undefined,
+> {
   explicitlyTyped?: boolean
-  explicitIdentifier?: string
+  explicitIdentifier?: EXPLICIT_IDENTIFIER
   implicitIdentifier?: string | boolean
-  baseConfiguration?: AnyConfigurationSchemaType
+  baseConfiguration?: BASE_SCHEMA
 
-  actions?: (self: unknown) => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  views?: (self: unknown) => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  extend?: (self: unknown) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  actions?: (self: unknown) => any
+  views?: (self: unknown) => any
+  extend?: (self: unknown) => any
   preProcessSnapshot?: (snapshot: {}) => {}
 }
 
 function preprocessConfigurationSchemaArguments(
   modelName: string,
   inputSchemaDefinition: ConfigurationSchemaDefinition,
-  inputOptions: ConfigurationSchemaOptions = {},
+  inputOptions: ConfigurationSchemaOptions<any, any> = {},
 ) {
   if (typeof modelName !== 'string') {
     throw new Error(
@@ -82,10 +93,9 @@ function preprocessConfigurationSchemaArguments(
 
 function makeConfigurationSchemaModel<
   DEFINITION extends ConfigurationSchemaDefinition,
-  OPTIONS extends ConfigurationSchemaOptions,
+  OPTIONS extends ConfigurationSchemaOptions<any, any>,
 >(modelName: string, schemaDefinition: DEFINITION, options: OPTIONS) {
   // now assemble the MST model of the configuration schema
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const modelDefinition: Record<string, any> = {}
   let identifier
 
@@ -116,7 +126,6 @@ function makeConfigurationSchemaModel<
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const volatileConstants: Record<string, any> = {
     isJBrowseConfigurationSchema: true,
     jbrowseSchema: {
@@ -231,29 +240,27 @@ function makeConfigurationSchemaModel<
   return types.optional(completeModel, modelDefault)
 }
 
-export interface AnyConfigurationSchemaType
-  extends ReturnType<typeof makeConfigurationSchemaModel> {
+export interface ConfigurationSchemaType<
+  DEFINITION extends ConfigurationSchemaDefinition,
+  OPTIONS extends ConfigurationSchemaOptions<any, any>,
+> extends ReturnType<typeof makeConfigurationSchemaModel<DEFINITION, OPTIONS>> {
   isJBrowseConfigurationSchema: boolean
-  jbrowseSchemaDefinition: ConfigurationSchemaDefinition
-  jbrowseSchemaOptions: ConfigurationSchemaOptions
+  jbrowseSchemaDefinition: DEFINITION
+  jbrowseSchemaOptions: OPTIONS
   type: string
+  [key: string]: unknown
 }
-
-export type AnyConfigurationModel = Instance<AnyConfigurationSchemaType>
-export type AnyConfigurationSlotType = ReturnType<typeof ConfigSlot>
-export type AnyConfigurationSlot = Instance<AnyConfigurationSlotType>
-
-export type ConfigurationModel<SCHEMA extends AnyConfigurationSchemaType> =
-  Instance<SCHEMA>
 
 export function ConfigurationSchema<
   DEFINITION extends ConfigurationSchemaDefinition,
-  OPTIONS extends ConfigurationSchemaOptions,
+  OPTIONS extends ConfigurationSchemaOptions<BASE_SCHEMA, EXPLICIT_IDENTIFIER>,
+  BASE_SCHEMA extends AnyConfigurationSchemaType | undefined = undefined,
+  EXPLICIT_IDENTIFIER extends string | undefined = undefined,
 >(
   modelName: string,
   inputSchemaDefinition: DEFINITION,
-  inputOptions?: OPTIONS,
-) {
+  inputOptions?: ConfigurationSchemaOptions<BASE_SCHEMA, EXPLICIT_IDENTIFIER>,
+): ConfigurationSchemaType<DEFINITION, OPTIONS> {
   const { schemaDefinition, options } = preprocessConfigurationSchemaArguments(
     modelName,
     inputSchemaDefinition,
@@ -271,6 +278,11 @@ export function ConfigurationSchema<
   return schemaType
 }
 
-export function ConfigurationReference(schemaType: IAnyType) {
-  return types.union(types.reference(schemaType), schemaType)
+export function ConfigurationReference<
+  SCHEMATYPE extends AnyConfigurationSchemaType,
+>(schemaType: SCHEMATYPE) {
+  // we cast this to SCHEMATYPE, because the reference *should* behave just
+  // like the object it points to. It won't be undefined (this is a
+  // `reference`, not a `safeReference`)
+  return types.union(types.reference(schemaType), schemaType) as SCHEMATYPE
 }

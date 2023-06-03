@@ -154,16 +154,13 @@ function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
         ) : pluginArray ? (
           pluginArray
             .filter(plugin => {
-              // If pugin only has cjsUrl, don't display outside desktop
-              if (
-                !isElectron &&
-                !(plugin.esmUrl || plugin.url || plugin.umdUrl)
-              ) {
-                return false
-              }
-              return plugin.name
-                .toLowerCase()
-                .includes(model.filterText.toLowerCase())
+              // If plugin only has cjsUrl, don't display outside desktop
+              return (
+                !(isElectron && plugin.cjsUrl) &&
+                plugin.name
+                  .toLowerCase()
+                  .includes(model.filterText.toLowerCase())
+              )
             })
             .map(plugin => (
               <PluginCard

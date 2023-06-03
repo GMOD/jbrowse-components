@@ -9,6 +9,7 @@ import {
   Paper,
   Radio,
   RadioGroup,
+  Typography,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
@@ -155,9 +156,9 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
       >
         <Grid item>
           <Paper style={{ padding: 12 }}>
-            <p style={{ textAlign: 'center' }}>
+            <Typography style={{ textAlign: 'center' }}>
               Select assemblies for dotplot view
-            </p>
+            </Typography>
             <Grid
               container
               spacing={1}

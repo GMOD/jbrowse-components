@@ -1,7 +1,6 @@
 ---
 id: baseconnectionmodel
 title: BaseConnectionModel
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,11 +8,9 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Source file
+### Source file
 
 [packages/core/pluggableElementTypes/models/BaseConnectionModelFactory.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/pluggableElementTypes/models/BaseConnectionModelFactory.ts)
-
-## Docs
 
 ### BaseConnectionModel - Properties
 
@@ -33,6 +30,15 @@ name: types.identifier
 IArrayType<IAnyModelType>
 // code
 tracks: types.array(pluginManager.pluggableConfigSchemaType('track'))
+```
+
+#### property: configuration
+
+```js
+// type signature
+ConfigurationSchemaType<{ name: { type: string; defaultValue: string; description: string; }; assemblyNames: { type: string; defaultValue: any[]; description: string; }; }, ConfigurationSchemaOptions<undefined, "connectionId">>
+// code
+configuration: ConfigurationReference(configSchema)
 ```
 
 ### BaseConnectionModel - Actions

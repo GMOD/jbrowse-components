@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-breakpoint-split-view",
-  "version": "2.4.2",
+  "version": "2.5.0",
   "description": "JBrowse 2 breakpoint detail split view",
   "keywords": [
     "jbrowse",
@@ -40,8 +40,7 @@
     "@gmod/vcf": "^5.0.9",
     "@mui/icons-material": "^5.0.1",
     "@types/file-saver": "^2.0.1",
-    "file-saver": "^2.0.0",
-    "svg-path-generator": "^1.1.0"
+    "file-saver": "^2.0.0"
   },
   "peerDependencies": {
     "@jbrowse/core": "^2.0.0",
@@ -54,7 +53,6 @@
     "react-dom": ">=16.8.4",
     "tss-react": "^4.0.0"
   },
-  "private": true,
   "distModule": "esm/index.js",
   "srcModule": "src/index.ts",
   "module": ""

@@ -144,7 +144,7 @@ test('can catch error from loading a bad config', async () => {
   const { findAllByText } = render(
     <App search="?config=test_data/bad_config_for_testing_error_catcher.json" />,
   )
-  await findAllByText(/Failed to load/)
+  await findAllByText(/Error while converting/)
 }, 20000)
 
 test('can use a spec url for lgv', async () => {

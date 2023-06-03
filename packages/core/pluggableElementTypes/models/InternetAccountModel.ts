@@ -1,14 +1,16 @@
 import React from 'react'
 import { Instance, types } from 'mobx-state-tree'
-import { getConf } from '../../configuration'
+import { ConfigurationReference, getConf } from '../../configuration'
 import { RemoteFileWithRangeCache } from '../../util/io'
 import { ElementId } from '../../util/types/mst'
 import { UriLocation, AnyReactComponentType } from '../../util/types'
+import { BaseInternetAccountConfig } from './baseInternetAccountConfig'
 
 const inWebWorker = typeof sessionStorage === 'undefined'
 
 /**
  * #stateModel BaseInternetAccountModel
+ * #category internetAccount
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
@@ -22,6 +24,10 @@ export const InternetAccount = types
      * #property
      */
     type: types.string,
+    /**
+     * #property
+     */
+    configuration: ConfigurationReference(BaseInternetAccountConfig),
   })
   .views(self => ({
     /**
@@ -40,7 +46,7 @@ export const InternetAccount = types
      * #getter
      */
     get internetAccountId(): string {
-      return getConf(self, 'internetAccountId')
+      return getConf(self, 'internetAccountId') // NOTE: this is the explicitIdentifier of the config schema
     },
     /**
      * #getter

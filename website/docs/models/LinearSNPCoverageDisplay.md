@@ -1,7 +1,6 @@
 ---
 id: linearsnpcoveragedisplay
 title: LinearSNPCoverageDisplay
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,11 +8,9 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Source file
+### Source file
 
 [plugins/alignments/src/LinearSNPCoverageDisplay/models/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearSNPCoverageDisplay/models/model.ts)
-
-## Docs
 
 extends `LinearWiggleDisplay`
 
@@ -108,7 +105,7 @@ any
 any
 ```
 
-#### getter: modificationsReady
+#### getter: autorunReady
 
 ```js
 // type
@@ -203,6 +200,13 @@ setColorBy: (colorBy?: { type: string; tag?: string; }) => void
 ```js
 // type signature
 updateModificationColorMap: (uniqueModifications: string[]) => void
+```
+
+#### action: setModificationsReady
+
+```js
+// type signature
+setModificationsReady: (flag: boolean) => void
 ```
 
 #### action: toggleDrawIndicators

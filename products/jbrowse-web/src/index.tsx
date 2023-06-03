@@ -1,8 +1,8 @@
 import React, { lazy, Suspense } from 'react'
 import { render } from 'react-dom'
-import Loading from './Loading'
+import Loading from './components/Loading'
 
-const Main = lazy(() => import('./Loader'))
+const Main = lazy(() => import('./components/Loader'))
 const initialTimeStamp = Date.now()
 
 if (window?.name.startsWith('JBrowseAuthWindow')) {

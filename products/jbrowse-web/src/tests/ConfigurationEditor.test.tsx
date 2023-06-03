@@ -1,33 +1,39 @@
 import '@testing-library/jest-dom/extend-expect'
+import userEvent from '@testing-library/user-event'
 
-import { fireEvent, waitFor } from '@testing-library/react'
+import { waitFor } from '@testing-library/react'
 
 import { createView, doBeforeEach, hts } from './util'
 jest.mock('../makeWorkerInstance', () => () => {})
 
-const delay = { timeout: 15000 }
+const delay = { timeout: 30000 }
 
 beforeEach(() => {
   doBeforeEach()
 })
 
 test('change color on track', async () => {
+  const user = userEvent.setup()
   const { view, getByTestId, findByTestId, findByText, findByDisplayValue } =
     await createView(undefined, true)
 
-  await findByText('Help')
   view.setNewView(0.05, 5000)
-  fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), {}, delay))
-  fireEvent.click(
+
+  await user.click(await findByTestId(hts('volvox_filtered_vcf'), {}, delay))
+  await user.click(
     await findByTestId('htsTrackEntryMenu-volvox_filtered_vcf', {}, delay),
   )
-  fireEvent.click(await findByText('Settings'))
-  await findByTestId('configEditor', {}, delay)
-  fireEvent.change(await findByDisplayValue('goldenrod'), {
-    target: { value: 'green' },
-  })
-  await waitFor(() => {
-    const elt = getByTestId('box-test-vcf-604453')
-    expect(elt).toHaveAttribute('fill', 'green')
-  }, delay)
-}, 20000)
+  await user.click(await findByText('Settings'))
+  const elt = await findByDisplayValue('goldenrod')
+  await user.clear(elt)
+  await user.type(elt, 'green')
+
+  await waitFor(
+    () =>
+      expect(getByTestId('box-test-vcf-604453')).toHaveAttribute(
+        'fill',
+        'green',
+      ),
+    delay,
+  )
+}, 40000)

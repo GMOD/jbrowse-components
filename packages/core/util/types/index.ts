@@ -7,7 +7,7 @@ import {
   IStateTreeNode,
   IType,
 } from 'mobx-state-tree'
-import { AnyConfigurationModel } from '../../configuration/configurationSchema'
+import { AnyConfigurationModel } from '../../configuration'
 
 import assemblyManager from '../../assemblyManager'
 import TextSearchManager from '../../TextSearch/TextSearchManager'
@@ -103,8 +103,8 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   sessionConnections?: AnyConfigurationModel[]
   connectionInstances?: {
     name: string
-    connectionId: string
     tracks: AnyConfigurationModel[]
+    configuration: AnyConfigurationModel
   }[]
   makeConnection?: Function
   adminMode?: boolean
@@ -165,6 +165,7 @@ export interface SessionWithWidgets extends AbstractSessionModel {
   minimized: boolean
   visibleWidget?: Widget
   widgets: Map<string, Widget>
+  hideAllWidgets: () => void
   activeWidgets: Map<string, Widget>
   addWidget(
     typeName: string,
@@ -191,14 +192,22 @@ export function isSessionModelWithWidgets(
 ): thing is SessionWithWidgets {
   return isSessionModel(thing) && 'widgets' in thing
 }
-
 interface SessionWithConnections {
-  addConnectionConf: (arg: AnyConfigurationModel) => void
+  makeConnection: (arg: AnyConfigurationModel) => void
 }
-
 export function isSessionModelWithConnections(
   thing: unknown,
 ): thing is SessionWithConnections {
+  return isSessionModel(thing) && 'makeConnection' in thing
+}
+
+interface SessionWithConnectionEditing {
+  addConnectionConf: (arg: AnyConfigurationModel) => void
+}
+
+export function isSessionModelWithConnectionEditing(
+  thing: unknown,
+): thing is SessionWithConnectionEditing {
   return isSessionModel(thing) && 'addConnectionConf' in thing
 }
 
@@ -252,6 +261,7 @@ export function isViewModel(thing: unknown): thing is AbstractViewModel {
 
 export interface AbstractTrackModel {
   displays: AbstractDisplayModel[]
+  configuration: AnyConfigurationModel
 }
 
 export function isTrackModel(thing: unknown): thing is AbstractTrackModel {

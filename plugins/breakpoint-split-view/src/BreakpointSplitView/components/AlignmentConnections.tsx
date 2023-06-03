@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from 'react'
-import Path from 'svg-path-generator'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 import { useTheme } from '@mui/material'
@@ -113,21 +112,22 @@ const AlignmentConnections = observer(function ({
 
           // possible todo: use totalCurveHeight to possibly make alternative
           // squiggle if the S is too small
-          const path = Path()
-            .moveTo(x1, y1)
-            .curveTo(
-              x1 + 200 * f1.get('strand') * (reversed1 ? -1 : 1),
-              y1,
-              x2 -
-                200 *
-                  f2.get('strand') *
-                  (reversed2 ? -1 : 1) *
-                  (hasPaired ? -1 : 1),
-              y2,
-              x2,
-              y2,
-            )
-            .end()
+          const path = [
+            'M',
+            x1,
+            y1,
+            'C',
+            x1 + 200 * f1.get('strand') * (reversed1 ? -1 : 1),
+            y1,
+            x2 -
+              200 *
+                f2.get('strand') *
+                (reversed2 ? -1 : 1) *
+                (hasPaired ? -1 : 1),
+            y2,
+            x2,
+            y2,
+          ].join(' ')
           const id = `${f1.id()}-${f2.id()}`
           ret.push(
             <path

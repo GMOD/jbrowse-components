@@ -13,7 +13,7 @@ exports[`<AboutWidget /> renders 1`] = `
     class="MuiTypography-root MuiTypography-h6 MuiTypography-alignCenter css-1l8stdg-MuiTypography-root-subtitle"
   />
   <p
-    class="MuiTypography-root MuiTypography-body2 MuiTypography-alignCenter css-1ypfif-MuiTypography-root"
+    class="MuiTypography-root MuiTypography-body1 MuiTypography-alignCenter css-1uwgr7b-MuiTypography-root"
   >
     JBrowse is a
      
@@ -37,11 +37,11 @@ exports[`<AboutWidget /> renders 1`] = `
   <div
     class="css-la8yjp-pluginList"
   >
-    <h6
-      class="MuiTypography-root MuiTypography-h6 css-2ulfj5-MuiTypography-root"
+    <p
+      class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
     >
       External plugins loaded
-    </h6>
+    </p>
     <ul>
       <li>
         <a
@@ -54,6 +54,12 @@ exports[`<AboutWidget /> renders 1`] = `
         </a>
       </li>
     </ul>
+    <p
+      class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+    >
+      Core plugins loaded
+    </p>
+    <ul />
   </div>
 </div>
 `;

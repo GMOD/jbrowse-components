@@ -1,12 +1,11 @@
 ---
 id: extension_points
 title: Extension points
-toplevel: true
 ---
 
 The basic API is that producers can say:
 
-```js
+```typescript
 const ret = pluginManager.evaluateExtensionPoint('ExtensionPointName', {
   value: 1,
 })
@@ -14,7 +13,7 @@ const ret = pluginManager.evaluateExtensionPoint('ExtensionPointName', {
 
 And consumers can say:
 
-```js
+```typescript
 pluginManager.addToExtensionPoint('ExtensionPointName', arg => {
   return arg.value + 1
 })
@@ -38,22 +37,27 @@ call or add to.
 
 The API is
 
-```js
-// extra props are optional, can pass an extra context object your extension point receives
+```typescript
+// extra props are optional, can pass an extra context object your extension
+// point receives
 pluginManager.evaluateExtensionPoint(extensionPointName, args, props)
 ```
 
+Args are 'accumulated' (e.g. the return value of your extension point is passed
+along to the args argument of the next one), and props are just passed along
+
 There is also an async method:
 
-```js
-// extra props are optional, can pass an extra context object your extension point receives
+```typescript
+// extra props are optional, can pass an extra context object your extension
+// point receives
 pluginManager.evaluateAsyncExtensionPoint(extensionPointName, args, props)
 ```
 
 Users can additionally add to extension points, so that when they are evaluated,
 it runs a chain of callbacks that are registered to that extension point:
 
-```js
+```typescript
 pluginManager.addToExtensionPoint(extensionPointName, callback => newArgs)
 ```
 
@@ -64,9 +68,8 @@ Here are the extension points in the core codebase:
 
 ### Core-extendPluggableElement
 
-`args`:
-
-- `pluggableElement:PluggableElement` - this
+- `args` - `pluggableElement:PluggableElement` - this
+- `props` - none
 
 type: synchronous
 
@@ -80,6 +83,8 @@ https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6
 
 type: synchronous
 
+- `args` - adapter config
+
 used to infer an adapter type given a location type from the "Add track"
 workflow. you will receive a callback asking if you can provide an adapter
 config given a location object
@@ -89,6 +94,8 @@ https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6
 ### Core-guessTrackTypeForLocation
 
 type: synchronous
+
+- `args` - `FileLocation` object
 
 used to infer a track type given a location type from the "Add track workflow"
 
@@ -101,19 +108,28 @@ type: synchronous
 
 used to extend the session model itself with new features
 
-- `session: AbstractSessionModel` - instance of the session model to customize
+- `args` - `AbstractSessionModel` - instance of the session model to customize
   the about dialog
 
 ### Core-customizeAbout
 
 type: synchronous
 
-- `config: Record<string,unknown>` - a snapshot of a configuration object that
+- `args` - `Record<string,unknown>` - a snapshot of a configuration object that
   is displayed in the about dialog
 
 ### TrackSelector-multiTrackMenuItems
 
 type: synchronous
+
+- `args` - `MenuItem[]` - an array of items that you can accumulate on
+- `props` - an object of the form below
+
+```typescript
+interface props {
+  session: AbstractSessionModel
+}
+```
 
 used to add new menu items to the "shopping cart" in the header of the
 hierarchical track menu when tracks are added to the selection
@@ -129,11 +145,16 @@ launches a linear genome view given parameters. it is not common to extend this
 extension point, but you can use it as an example to create a LaunchView type
 for your own view
 
-- `session: AbstractSessionModel` - instance of the session which you can call
-  actions on
-- `assembly: string` - assembly name
-- `loc: string` - a locstring
-- `tracks: string[]` - array of trackIds
+- `args` - an object with the following format
+
+```typescript
+interface args {
+  session: AbstractSessionModel // the session model
+  assembly: string // assembly name
+  loc: string // locstring
+  tracks: string[] // array of track IDs
+}
+```
 
 https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/linear-genome-view/src/index.ts#L131-L189
 
@@ -144,10 +165,15 @@ type: async
 similar to LaunchView-LinearGenomeView, this is not common to extend, but you
 can use it as an example to create a LaunchView type for your own view
 
-- `session: AbstractSessionModel` - instance of the session which you can call
-  actions on
-- `assembly: string` - assembly name
-- `tracks: string[]` - array of trackIds
+- `args` - an object with the following format
+
+```typescript
+interface args {
+  session: AbstractSessionModel // the session model
+  assembly: string // assembly name
+  tracks: string[] // array of track IDs
+}
+```
 
 https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/circular-view/src/index.ts#L30-L66
 
@@ -159,12 +185,16 @@ launches a sv inspector with given parameters. it is not common to extend this
 extension point, but you can use it as an example to create a LaunchView type
 for your own view
 
-- `session: AbstractSessionModel` - instance of the session which you can call
-  actions on
-- `assembly: string` - assembly name
-- `uri: string` - a url to load
-- `fileType?: string` - type of file referred to by locstring (VCF|CSV|BEDPE,
-  etc)
+- `args` - an object with the following format
+
+```typescript
+interface args {
+  session: AbstractSessionModel // the session model
+  assembly: string // assembly name
+  uri: string // uri for file to load into the SV inspector
+  fileType?: string // type of file referred to by the uri ("VCF"|"CSV"|"BEDPE",etc) if uri extension does not properly hint at the file type
+}
+```
 
 https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/sv-inspector/src/index.ts#L21-L61
 
@@ -176,12 +206,16 @@ launches a sv inspector with given parameters. it is not common to extend this
 extension point, but you can use it as an example to create a LaunchView type
 for your own view
 
-- `session: AbstractSessionModel` - instance of the session which you can call
-  actions on
-- `assembly: string` - assembly name
-- `uri: string` - a url to load
-- `fileType?: string` - type of file referred to by locstring (VCF|CSV|BEDPE,
-  etc)
+- `args` - an object with the following format
+
+```typescript
+interface args {
+  session: AbstractSessionModel // the session model
+  assembly: string // assembly name
+  uri: string // uri for file to load into the SV inspector
+  fileType?: string // type of file referred to by the uri ("VCF"|"CSV"|"BEDPE",etc) if uri extension does not properly hint at the file type
+}
+```
 
 https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/spreadsheet-view/src/index.ts#L26-L59
 
@@ -193,15 +227,21 @@ launches a dotplot with given parameters. it is not common to extend this
 extension point, but you can use it as an example to create a LaunchView type
 for your own view
 
-- `session: AbstractSessionModel` - instance of the session which you can call
-  actions on
-- `views: { loc: string; assembly: string; tracks?: string[] }[]` - view params
-  for vertical and horizontal
-- `tracks: string[]` - trackIds to turn on
+```typescript
+interface args {
+  session: AbstractSessionModel // the session model
+  views: {
+    loc: string
+    assembly: string
+    tracks?: string[]
+  }[] // array of length 2, for vert and horiz
+  tracks: string[] // synteny track IDs to load on open
+}
+```
 
 https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/dotplot-view/src/LaunchDotplotView.ts#L7-L46
 
-### LaunchView-DotplotView
+### LaunchView-LinearSyntenyView
 
 type: async
 
@@ -209,11 +249,17 @@ launches a linear synteny view with given parameters. it is not common to extend
 this extension point, but you can use it as an example to create a LaunchView
 type for your own view
 
-- `session: AbstractSessionModel` - instance of the session which you can call
-  actions on
-- `views: { loc: string; assembly: string; tracks?: string[] }[]` - view params
-  for vertical and horizontal
-- `tracks: string[]` - trackIds to turn on
+```typescript
+interface args {
+  session: AbstractSessionModel // the session model
+  views: {
+    loc: string // locstring
+    assembly: string // assembly name
+    tracks?: string[] // trackIDs to open on top and bottom
+  }[] // array of length 2, for top and bottom rows of synteny view
+  tracks: string[] // synteny track IDs to load on open
+}
+```
 
 https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/linear-comparative-view/src/LaunchLinearSyntenyView.ts#L9-L68
 
@@ -223,14 +269,19 @@ type: synchronous
 
 adds option to provide a different component for the "About this track" dialog
 
-- `session: AbstractSessionModel` - instance of the session which you can call
-- `config: AnyConfigurationModel` - a configuration object for the track
+- `args` - a `ReactComponent`, by default the AboutTrack dialog
+- `props` - an argument of the format below
 
-Return value: The new React component you want to use
+```typescript
+interface props {
+  session: AbstractSessionModel
+  config: AnyConfigurationModel
+}
+```
 
-example: replaces about dialog for a particular track ID
+Example: returns a new about track dialog for a particular track
 
-```js
+```typescript
 pluginManager.addToExtensionPoint(
   'Core-replaceAbout',
   (DefaultAboutComponent, { session, config }) => {
@@ -247,18 +298,22 @@ type: synchronous
 
 adds option to provide a different component for the "About this track" dialog
 
-- `session: AbstractSessionModel` - instance of the session which you can call
-- `config: AnyConfigurationModel` - a configuration object for the track
+```typescript
+interface props {
+  session: AbstractSessionModel
+  config: AnyConfigurationModel
+}
+```
 
 Return value: An object with the name of the panel and the React component to
 use for the panel
 
-example: adds an extra about dialog panel for a particular track ID
+Example: adds an extra about dialog panel for a particular track ID
 
-```js
+```typescript
 pluginManager.addToExtensionPoint(
   'Core-extraAboutPanel',
-  (DefaultAboutExtra, { /*session,*/ config }) => {
+  (DefaultAboutExtra, { session, config }) => {
     return config.trackId === 'volvox_sv_test'
       ? { name: 'More info', Component: ExtraAboutPanel }
       : DefaultAboutExtra
@@ -270,8 +325,8 @@ pluginManager.addToExtensionPoint(
 
 type: synchronous
 
-- `config: Record<string, unknown>` a snapshot of a configuration object for the
-  track, with `formatAbout` already applied to it
+- `args` - a config snapshot `Record<string, unknown>` for the track, with
+  `formatAbout` already applied to it
 
 Return value: New config snapshot object
 
@@ -281,17 +336,25 @@ type: synchronous
 
 adds option to provide a different component for the "About this track" dialog
 
-- `session: AbstractSessionModel` - instance of the session which you can call
-- `model: WidgetModel` - a widget model. this is called for every widget type,
-  including configuration, feature details, about panel, and more. The feature
-  details may be a common one. See `Core-extraFeaturePanel` also, matches the
-  model attribute from there
+- `args` - a `ReactComponent`, the default AboutTrack dialog
+- `props` - an object of the type below
+
+```typescript
+interface props {
+  session: AbstractSessionModel
+  model: WidgetModel
+}
+```
+
+note: this is called for every widget type, including configuration, feature
+details, about panel, and more. The feature details may be a common one. See
+`Core-extraFeaturePanel` also, matches the model attribute from there
 
 Return value: The new React component you want to use
 
-example: replaces about feature details widget for a particular track ID
+Example: replaces about feature details widget for a particular track ID
 
-```js
+```typescript
 pluginManager.addToExtensionPoint(
   'Core-replaceAbout',
   (DefaultAboutComponent, { model }) => {
@@ -312,19 +375,27 @@ track will have a timestamp and -sessionTrack added to it).
 
 type: synchronous
 
-- `model: BaseFeatureWidget` - the BaseFeatureWidget model. This has properties
-  `model.trackId`, `model.trackType`, and `model.track`, though track may be
-  undefined if the user closed the track, while trackId and trackType will be
-  defined even if user closed the track
-- `feature: Record<string, unknown>` a snapshot of a feature object
-- `session: AbstractSessionModel` - instance of the session which you can call
+- `args` - a `ReactComponent`, the default AboutTrack dialog
+- `props` - an object of the type below
+
+```typescript
+interface props {
+  model: BaseFeatureWidget // a widget model, has model.trackId defined if you want to check track
+  feature: Record<string, unknown> // snapshot of feature object
+  session: AbstractSessionModel
+}
+```
+
+Note: the model has properties `model.trackId`, `model.trackType`, and
+`model.track`, though `model.track` may be undefined if the user closed the
+track, while trackId and trackType will be defined even if user closed the track
 
 Return value: An object with the name of the panel and the React component to
 use for the panel
 
-example
+Example:
 
-```js
+```typescript
 pluginManager.addToExtensionPoint(
   'Core-extraFeaturePanel',
   (DefaultFeatureExtra, { model }) => {
@@ -335,11 +406,49 @@ pluginManager.addToExtensionPoint(
 )
 ```
 
+### Core-preProcessTrackConfig
+
+type: synchronous
+
+- `args` - `SnapshotIn<AnyConfigurationModel>` - Copy of the current track
+  config
+
+Return value: A new track config
+
+Example:
+
+```typescript
+pluginManager.addToExtensionPoint('Core-preProcessTrackConfig', snap => {
+  return {
+    ...snap.metadata,
+    extraMetadata: 'extra metadata',
+  }
+})
+```
+
+### LinearGenomeView-TracksContainer
+
+type: synchronous
+
+- `args` - `React.ReactNode[]` - an array of rendered react components
+  (ReactNode) which you can append to
+- `props` - an object of the type below
+
+```typescript
+interface props {
+  model: LinearGenomeViewModel // instance of the linear genome view model
+}
+```
+
+Allows rendering a custom component as a child of the LinearGenomeView's
+"TracksContainer". Used to render highlights for example with a div of height
+100% over the TracksContainer
+
 ### Extension point footnote
 
 Users that want to add further extension points can do so, by simply calling
 
-```js
+```typescript
 const returnVal = pluginManager.evaluateExtensionPoint(
   'YourCustomNameHere',
   processThisValue,
@@ -349,7 +458,7 @@ const returnVal = pluginManager.evaluateExtensionPoint(
 
 Then, any code that had used:
 
-```js
+```typescript
 pluginManager.addToExtensionPoint(
   'YourCustomNameHere',
   (processThisValue, extraContext) => {

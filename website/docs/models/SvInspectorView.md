@@ -1,7 +1,6 @@
 ---
 id: svinspectorview
 title: SvInspectorView
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,11 +8,9 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Source file
+### Source file
 
 [plugins/sv-inspector/src/SvInspectorView/models/SvInspectorView.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sv-inspector/src/SvInspectorView/models/SvInspectorView.ts)
-
-## Docs
 
 combination of a spreadsheetview and a circularview
 
@@ -81,12 +78,11 @@ mode: types.optional(
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 4 more ... & { ...; }, _NotCustomized, _NotCustomized>, [...]>
+IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 5 more ... & { ...; }, _NotCustomized, _NotCustomized>, [...]>
 // code
 spreadsheetView: types.optional(SpreadsheetModel, () =>
           SpreadsheetModel.create({
             type: 'SpreadsheetView',
-            hideViewControls: true,
             hideVerticalResizeHandle: true,
           }),
         )
@@ -131,6 +127,13 @@ any
 boolean
 ```
 
+#### getter: features
+
+```js
+// type
+any
+```
+
 #### getter: featuresAdapterConfigSnapshot
 
 ```js
@@ -153,6 +156,15 @@ any[]
 ```js
 // type
 { type: string; trackId: string; name: string; adapter: any; assemblyNames: any[]; displays: { type: string; displayId: string; onChordClick: string; renderer: { type: string; }; }[]; }
+```
+
+### SvInspectorView - Methods
+
+#### method: menuItems
+
+```js
+// type signature
+menuItems: () => { label: string; onClick: () => void; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; }[]
 ```
 
 ### SvInspectorView - Actions

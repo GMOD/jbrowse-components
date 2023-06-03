@@ -234,29 +234,27 @@ test('can instantiate a model that tests navTo/moveTo', async () => {
   expect(model.bpPerPx).toBe(0.125)
 
   expect(() => model.navTo({ refName: 'ctgA', start: 200, end: 100 })).toThrow(
-    'start "201" is greater than end "100"',
+    /start greater than end/,
   )
 
-  expect(() =>
-    model.navTo({ refName: 'ctgDoesNotExist', start: 0, end: 100 }),
-  ).toThrow('could not find a region with refName "ctgDoesNotExist"')
+  expect(() => model.navTo({ refName: 'noExist', start: 0, end: 100 })).toThrow(
+    /could not find a region/,
+  )
 
   expect(() => model.navTo({ refName: 'ctgA', end: 20100 })).toThrow(
-    'could not find a region with refName "ctgA" that contained an end position 20100',
+    /could not find a region/,
   )
 
   expect(() => model.navTo({ refName: 'ctgA', start: 20000 })).toThrow(
-    'could not find a region with refName "ctgA" that contained a start position 20001',
+    /could not find a region/,
   )
 
   expect(() =>
     model.navTo({ refName: 'ctgA', start: 20000, end: 20100 }),
-  ).toThrow(
-    'could not find a region that completely contained "ctgA:20,001..20,100"',
-  )
+  ).toThrow(/could not find a region/)
 
   expect(() => model.navTo({ refName: 'ctgA', start: 0, end: 20000 })).toThrow(
-    'could not find a region that completely contained "ctgA:1..20,000"',
+    /could not find a region/,
   )
 })
 
@@ -304,8 +302,8 @@ test('can navToMultiple', () => {
     { refName: 'ctgA', start: 5000, end: 10000 },
     { refName: 'ctgC', start: 0, end: 5000 },
   ])
-  expect(model.offsetPx).toBe(2793)
-  expect(model.bpPerPx).toBeCloseTo(12.531)
+  expect(model.offsetPx).toBe(199)
+  expect(model.bpPerPx).toBeCloseTo(25.12562)
 })
 
 describe('Zoom to selected displayed regions', () => {

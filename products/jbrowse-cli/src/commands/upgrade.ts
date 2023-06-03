@@ -1,9 +1,9 @@
 import { flags } from '@oclif/command'
-import rimraf from 'rimraf'
+import { rimrafSync } from 'rimraf'
 import fs from 'fs'
 import path from 'path'
+import decompress from 'decompress'
 import fetch from '../fetchWithProxy'
-import unzip from 'unzipper'
 import JBrowseCommand from '../base'
 
 export default class Upgrade extends JBrowseCommand {
@@ -113,12 +113,13 @@ export default class Upgrade extends JBrowseCommand {
     }
 
     if (clean) {
-      rimraf.sync(path.join(argsPath, 'static'))
+      rimrafSync(path.join(argsPath, 'static'))
       fs.readdirSync(argsPath)
         .filter(f => f.includes('worker.js'))
         .forEach(f => fs.unlinkSync(path.join(argsPath, f)))
     }
-    await response.body.pipe(unzip.Extract({ path: argsPath })).promise()
+
+    await decompress(Buffer.from(await response.arrayBuffer()), argsPath)
     this.log(`Unpacked ${locationUrl} at ${argsPath}`)
   }
 }

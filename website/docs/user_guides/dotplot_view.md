@@ -1,7 +1,6 @@
 ---
 id: dotplot_view
 title: Dotplot view
-toplevel: true
 ---
 
 import Figure from '../figure'

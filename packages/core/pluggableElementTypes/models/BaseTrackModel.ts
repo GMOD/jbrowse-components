@@ -31,6 +31,7 @@ export function getCompatibleDisplays(self: IAnyStateTreeNode) {
 
 /**
  * #stateModel BaseTrackModel
+ * #category track
  * these MST models only exist for tracks that are *shown*. they should contain
  * only UI state for the track, and have a reference to a track configuration.
  * note that multiple displayed tracks could use the same configuration.
@@ -69,7 +70,7 @@ export function createBaseTrackModel(
        * determines which webworker to send the track to, currently based on trackId
        */
       get rpcSessionId() {
-        return self.configuration.trackId
+        return self.configuration?.trackId
       },
       /**
        * #getter
@@ -117,7 +118,7 @@ export function createBaseTrackModel(
           (adminMode ||
             sessionTracks.find(
               (track: { trackId: string }) =>
-                track.trackId === self.configuration.trackId,
+                track.trackId === self.configuration?.trackId,
             ))
         )
       },

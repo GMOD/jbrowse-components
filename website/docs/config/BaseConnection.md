@@ -1,17 +1,14 @@
 ---
 id: baseconnection
 title: BaseConnection
-toplevel: true
 ---
 
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-## Source file
+### Source file
 
 [packages/core/pluggableElementTypes/models/baseConnectionConfig.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/pluggableElementTypes/models/baseConnectionConfig.ts)
-
-## Docs
 
 ### BaseConnection - Identifier
 

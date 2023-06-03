@@ -111,7 +111,7 @@ function getAdapterId(adapterConf: unknown) {
   return jsonStableStringify(adapterConf)
 }
 
-type RefNameAliases = Record<string, string>
+type RefNameAliases = Record<string, string | undefined>
 
 interface CacheData {
   adapterConf: unknown
@@ -381,9 +381,9 @@ export default function assemblyFactory(
        */
       async loadPre() {
         const conf = self.configuration
-        const refNameAliasesAdapterConf = conf.refNameAliases?.adapter
-        const cytobandAdapterConf = conf.cytobands?.adapter
-        const sequenceAdapterConf = conf.sequence.adapter
+        const refNameAliasesAdapterConf = conf?.refNameAliases?.adapter
+        const cytobandAdapterConf = conf?.cytobands?.adapter
+        const sequenceAdapterConf = conf?.sequence.adapter
         const assemblyName = self.name
 
         const regions = await getAssemblyRegions(sequenceAdapterConf, pm)
@@ -451,7 +451,7 @@ export default function assemblyFactory(
        * get Map of `canonical-name -> adapter-specific-name`
        */
       async getRefNameMapForAdapter(adapterConf: unknown, opts: BaseOptions) {
-        if (!opts || !opts.sessionId) {
+        if (!opts?.sessionId) {
           throw new Error('sessionId is required')
         }
         const map = await this.getAdapterMapEntry(adapterConf, opts)

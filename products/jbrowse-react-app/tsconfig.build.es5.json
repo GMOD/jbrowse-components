@@ -1,0 +1,32 @@
+{
+  "extends": "./tsconfig",
+  "compilerOptions": {
+    "noEmit": false,
+    "module": "commonjs",
+    "outDir": "dist",
+    "rootDir": "./src",
+    "target": "es2018",
+    "composite": true
+  },
+  "include": ["./src/**/*.ts*", "./src/**/*.js*"],
+  "exclude": [
+    "src/**/*.test.ts*",
+    "src/**/*.test.js*",
+    "src/makeWorkerInstance.ts"
+  ],
+  "references": [
+    { "path": "../../packages/core/tsconfig.build.json" },
+    { "path": "../../plugins/alignments/tsconfig.build.es5.json" },
+    { "path": "../../plugins/bed/tsconfig.build.es5.json" },
+    { "path": "../../plugins/config/tsconfig.build.es5.json" },
+    { "path": "../../plugins/data-management/tsconfig.build.es5.json" },
+    { "path": "../../plugins/gff3/tsconfig.build.es5.json" },
+    { "path": "../../plugins/linear-genome-view/tsconfig.build.es5.json" },
+    { "path": "../../plugins/sequence/tsconfig.build.es5.json" },
+    { "path": "../../plugins/svg/tsconfig.build.es5.json" },
+    { "path": "../../plugins/hic/tsconfig.build.es5.json" },
+    { "path": "../../plugins/trix/tsconfig.build.es5.json" },
+    { "path": "../../plugins/variants/tsconfig.build.es5.json" },
+    { "path": "../../plugins/wiggle/tsconfig.build.es5.json" }
+  ]
+}

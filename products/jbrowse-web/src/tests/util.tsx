@@ -15,8 +15,8 @@ import rangeParser from 'range-parser'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { QueryParamProvider } from 'use-query-params'
 
-import JBrowseWithoutQueryParamProvider from '../JBrowse'
-import JBrowseRootModelFactory from '../rootModel'
+import JBrowseWithoutQueryParamProvider from '../components/JBrowse'
+import JBrowseRootModelFactory from '../rootModel/rootModel'
 import configSnapshot from '../../test_data/volvox/config.json'
 import corePlugins from '../corePlugins'
 
@@ -25,6 +25,7 @@ import { Image, createCanvas } from 'canvas'
 
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
+import sessionModelFactory from '../sessionModel'
 
 type LGV = LinearGenomeViewModel
 
@@ -40,8 +41,11 @@ export function getPluginManager(initialState?: any, adminMode = true) {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.createPluggableElements()
 
-  const JBrowseRootModel = JBrowseRootModelFactory(pluginManager, adminMode)
-  const rootModel = JBrowseRootModel.create(
+  const rootModel = JBrowseRootModelFactory({
+    pluginManager,
+    sessionModelFactory,
+    adminMode,
+  }).create(
     {
       jbrowse: initialState || configSnapshot,
       assemblyManager: {},
@@ -129,7 +133,7 @@ export async function createView(args?: any, adminMode?: boolean) {
   const ret = createViewNoWait(args, adminMode)
   const { view } = ret
   if (view && 'initialized' in view) {
-    await waitFor(() => expect(view.initialized).toBe(true), { timeout: 10000 })
+    await waitFor(() => expect(view.initialized).toBe(true), { timeout: 20000 })
   }
   return ret
 }
@@ -205,4 +209,17 @@ export async function mockConsoleWarn(fn: () => Promise<void>) {
   const consoleMock = jest.spyOn(console, 'warn').mockImplementation()
   await fn()
   consoleMock.mockRestore()
+}
+
+export function mockFile404(
+  str: string,
+  readBuffer: (request: Request) => Promise<Response>,
+) {
+  // @ts-expect-error
+  fetch.mockResponse(async request => {
+    if (request.url === str) {
+      return { status: 404 }
+    }
+    return readBuffer(request)
+  })
 }

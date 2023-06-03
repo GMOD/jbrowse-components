@@ -26,7 +26,7 @@ interface OAuthExchangeData {
 }
 
 function fixup(buf: string) {
-  return buf.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
+  return buf.replaceAll('+', '-').replaceAll('/', '_').replaceAll('=', '')
 }
 
 const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {

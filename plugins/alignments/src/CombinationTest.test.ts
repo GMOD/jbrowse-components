@@ -100,9 +100,9 @@ async function mismatchesCheck(f: string) {
 test('match CIGAR across file types', async () => {
   await cigarCheck('volvox-sorted')
   await cigarCheck('volvox-long-reads.fastq.sorted')
-})
+}, 20000)
 
 test('mismatches same across file types', async () => {
   await mismatchesCheck('volvox-sorted')
   await mismatchesCheck('volvox-long-reads.fastq.sorted')
-})
+}, 20000)

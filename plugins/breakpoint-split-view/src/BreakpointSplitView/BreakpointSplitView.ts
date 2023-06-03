@@ -55,19 +55,17 @@ export default class BreakpointSplitViewType extends ViewType {
     }
 
     if (!mateRefName) {
-      console.warn(
+      throw new Error(
         `unable to resolve mate refName ${mateRefName} in reference genome`,
       )
-      return {}
     }
 
     const bottomRegion = assembly.regions.find(f => f.refName === mateRefName)
 
     if (!topRegion || !bottomRegion) {
-      console.warn(
+      throw new Error(
         `unable to find the refName for the top or bottom of the breakpoint view`,
       )
-      return {}
     }
 
     const topMarkedRegion = [{ ...topRegion }, { ...topRegion }]
@@ -76,7 +74,7 @@ export default class BreakpointSplitViewType extends ViewType {
     topMarkedRegion[1].start = startPos + startMod
     bottomMarkedRegion[0].end = endPos + endMod
     bottomMarkedRegion[1].start = endPos + endMod
-    const snapshot = {
+    return {
       type: 'BreakpointSplitView',
       views: [
         {
@@ -98,6 +96,5 @@ export default class BreakpointSplitViewType extends ViewType {
         feature.get('name') || feature.get('id') || 'breakend'
       } split detail`,
     }
-    return snapshot
   }
 }

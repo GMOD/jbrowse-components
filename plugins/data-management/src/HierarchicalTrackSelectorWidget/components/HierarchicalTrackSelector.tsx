@@ -21,15 +21,13 @@ const AutoSizedHierarchicalTree = ({
 }) => {
   return typeof jest === 'undefined' ? (
     <AutoSizer disableWidth>
-      {({ height }) => {
-        return (
-          <HierarchicalTree
-            height={(height || offset) - offset}
-            model={model}
-            tree={tree}
-          />
-        )
-      }}
+      {args => (
+        <HierarchicalTree
+          height={(args.height || offset) - offset}
+          model={model}
+          tree={tree}
+        />
+      )}
     </AutoSizer>
   ) : (
     <HierarchicalTree height={9000} model={model} tree={tree} />
@@ -73,25 +71,17 @@ const HierarchicalTrackSelector = observer(function ({
   model: HierarchicalTrackSelectorModel
   toolbarHeight?: number
 }) {
-  const [assemblyIdx, setAssemblyIdx] = useState(0)
   const [headerHeight, setHeaderHeight] = useState(0)
-
-  const { assemblyNames } = model
-  const assemblyName = assemblyNames[assemblyIdx]
-  return assemblyName ? (
+  return (
     <>
-      <HierarchicalHeader
-        model={model}
-        setHeaderHeight={setHeaderHeight}
-        setAssemblyIdx={setAssemblyIdx}
-      />
+      <HierarchicalHeader model={model} setHeaderHeight={setHeaderHeight} />
       <AutoSizedHierarchicalTree
-        tree={model.hierarchy(assemblyName)}
+        tree={model.hierarchy}
         model={model}
         offset={toolbarHeight + headerHeight}
       />
     </>
-  ) : null
+  )
 })
 
 export default HierarchicalTrackSelectorContainer

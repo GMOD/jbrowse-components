@@ -29,11 +29,22 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       assemblies: types.array(assemblyFactory(conf, pm)),
     })
     .views(self => ({
+      get assemblyNameMap() {
+        const obj = {} as { [key: string]: Assembly | undefined }
+        for (const assembly of self.assemblies) {
+          for (const name of assembly.allAliases) {
+            obj[name] = assembly
+          }
+        }
+        return obj
+      },
+    }))
+    .views(self => ({
       /**
        * #method
        */
       get(asmName: string) {
-        return self.assemblies.find(asm => asm.hasName(asmName))
+        return self.assemblyNameMap[asmName]
       },
 
       /**

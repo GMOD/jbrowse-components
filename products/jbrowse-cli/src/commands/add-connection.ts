@@ -1,18 +1,23 @@
 import { flags } from '@oclif/command'
-import fetch from '../fetchWithProxy'
 import fs from 'fs'
 import path from 'path'
 import parseJSON from 'json-parse-better-errors'
+
+// locals
+import fetch from '../fetchWithProxy'
 import JBrowseCommand from '../base'
 
 interface Connection {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any
+  [key: string]: unknown
+}
+
+interface Assembly {
+  name: string
+  sequence: { [key: string]: unknown }
 }
 
 interface Config {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  assemblies?: { name: string; sequence: { [key: string]: any } }[]
+  assemblies?: Assembly[]
   configuration?: {}
   connections?: Connection[]
   defaultSession?: {}
@@ -26,11 +31,11 @@ export default class AddConnection extends JBrowseCommand {
   static description = 'Add a connection to a JBrowse 2 configuration'
 
   static examples = [
-    '$ jbrowse add-connection http://mysite.com/jbrowse/data/',
-    '$ jbrowse add-connection http://mysite.com/jbrowse/custom_data_folder/ --type JBrowse1Connection',
-    '$ jbrowse add-connection http://mysite.com/path/to/hub.txt --assemblyName hg19',
-    '$ jbrowse add-connection http://mysite.com/path/to/custom_hub_name.txt --type UCSCTrackHubConnection --assemblyName hg19',
-    `$ jbrowse add-connection http://mysite.com/path/to/custom --type custom --config '{"uri":{"url":"https://mysite.com/path/to/custom"}, "locationType": "UriLocation"}' --assemblyName hg19`,
+    '$ jbrowse add-connection http://mysite.com/jbrowse/data/ -a hg19',
+    '$ jbrowse add-connection http://mysite.com/jbrowse/custom_data_folder/ --type JBrowse1Connection -a hg38',
+    '$ jbrowse add-connection http://mysite.com/path/to/hub.txt',
+    '$ jbrowse add-connection http://mysite.com/path/to/custom_hub_name.txt --type UCSCTrackHubConnection',
+    `$ jbrowse add-connection http://mysite.com/path/to/custom --type custom --config '{"uri":{"url":"https://mysite.com/path/to/custom"}, "locationType": "UriLocation"}' -a hg19`,
     '$ jbrowse add-connection https://mysite.com/path/to/hub.txt --connectionId newId --name newName --target /path/to/jb2/installation/config.json',
   ]
 
@@ -48,10 +53,10 @@ export default class AddConnection extends JBrowseCommand {
       description:
         'type of connection, ex. JBrowse1Connection, UCSCTrackHubConnection, custom',
     }),
-    assemblyName: flags.string({
+    assemblyNames: flags.string({
       char: 'a',
       description:
-        'Assembly name of the connection If none, will default to the assembly in your config file',
+        'For UCSC, optional: Comma separated list of assembly name(s) to filter from this connection. For JBrowse: a single assembly name',
     }),
     config: flags.string({
       char: 'c',
@@ -93,115 +98,63 @@ export default class AddConnection extends JBrowseCommand {
     const isDir = fs.lstatSync(output).isDirectory()
     this.target = isDir ? `${output}/config.json` : output
 
-    const { connectionUrlOrPath: argsPath } = runArgs as {
-      connectionUrlOrPath: string
-    }
-    const { config } = runFlags
-    let { type, name, connectionId, assemblyName } = runFlags
+    const { connectionUrlOrPath } = runArgs
+    const { assemblyNames, type, name, config, connectionId } = runFlags
     const { skipCheck, force } = runFlags
-    const url = await this.resolveURL(argsPath, !(skipCheck || force))
-
-    const configContents: Config = await this.readJsonFile(this.target)
+    const url = await this.resolveURL(
+      connectionUrlOrPath,
+      !(skipCheck || force),
+    )
+    const configContents = await this.readJsonFile<Config>(this.target)
     this.debug(`Using config file ${this.target}`)
 
-    if (!configContents.assemblies || configContents.assemblies.length === 0) {
+    if (!configContents.assemblies?.length) {
       this.error(
         'No assemblies found. Please add one before adding connections',
         { exit: 120 },
       )
-    } else if (configContents.assemblies.length > 1 && !assemblyName) {
-      this.error(
-        'Too many assemblies, cannot default to one. Please specify the assembly with the --assemblyNames flag',
-      )
     }
 
-    if (assemblyName) {
-      configContents.assemblies.findIndex(
-        assemblies => assemblies.name === assemblyName,
-      ) === -1
-        ? this.error(
-            `Assembly name provided does not match any in config. Valid assembly names are ${configContents.assemblies.map(
-              assembly => assembly.name,
-            )}`,
-            { exit: 130 },
-          )
-        : this.debug(`Assembly name(s) is :${assemblyName}`)
-    } else {
-      assemblyName = configContents.assemblies[0].name
-      this.log(`Inferred default assembly name ${assemblyName}`)
-    }
-
-    if (type) {
-      this.debug(`Type is ${type}`)
-    } else {
-      type = this.determineConnectionType(url, config)
-    }
-    if (connectionId) {
-      this.debug(`Connection id is ${connectionId}`)
-    } else {
-      connectionId = `${type}-${assemblyName}-${Date.now()}`
-    }
-
-    if (name) {
-      this.debug(`Name is: ${name}`)
-    } else {
-      name = connectionId
-    }
-
-    let configObj = {}
-    if (config) {
-      try {
-        configObj = parseJSON(config)
-      } catch (error) {
-        this.error('Could not parse provided JSON object')
-      }
-    }
-    const connectionConfig: Connection = {
-      type,
-      connectionId,
-      name: name || connectionId,
-      assemblyName,
-      ...configObj,
-    }
-
-    switch (type) {
-      case 'UCSCTrackHubConnection': {
-        connectionConfig.hubTxtLocation = {
-          uri: url,
-          locationType: 'UriLocation',
-        }
-        break
-      }
-      case 'JBrowse1Connection': {
-        connectionConfig.dataDirLocation = {
-          uri: url,
-          locationType: 'UriLocation',
-        }
-        break
-      }
-      default: {
-        if (!config || !this.isValidJSON(config)) {
-          this.error(
-            'When type is not UCSCTrackHubConnection or JBrowse1Connection, config object must be provided.\nPlease enter a config object using --config',
-            { exit: 140 },
-          )
-        }
-
-        break
-      }
+    const configType = type || this.determineConnectionType(url)
+    const id =
+      connectionId ||
+      [configType, assemblyNames, +Date.now()].filter(f => !!f).join('-')
+    const connectionConfig = {
+      type: configType,
+      name: name || id,
+      ...(configType === 'UCSCTrackHubConnection'
+        ? {
+            hubTxtLocation: {
+              uri: url,
+              locationType: 'UriLocation',
+            },
+          }
+        : {}),
+      ...(configType === 'JBrowse1Connection'
+        ? {
+            dataDirLocation: {
+              uri: url,
+              locationType: 'UriLocation',
+            },
+          }
+        : {}),
+      connectionId: id,
+      assemblyNames:
+        assemblyNames || type === 'JBrowse1Connection'
+          ? [configContents.assemblies[0]?.name]
+          : undefined,
+      ...(config ? parseJSON(config) : {}),
     }
 
     if (!configContents.connections) {
       configContents.connections = []
     }
     const idx = configContents.connections.findIndex(
-      configConnection => configConnection.connectionId === connectionId,
+      c => c.connectionId === connectionId,
     )
 
     if (idx !== -1) {
-      this.debug(`Found existing connectionId ${connectionId} in configuration`)
       if (runFlags.force || runFlags.overwrite) {
-        this.debug(`Overwriting connection ${connectionId} in configuration`)
         configContents.connections[idx] = connectionConfig
       } else {
         this.error(
@@ -250,19 +203,14 @@ export default class AddConnection extends JBrowseCommand {
     })
   }
 
-  determineConnectionType(url: string, config: string | undefined) {
+  determineConnectionType(url: string) {
     if (path.basename(url) === 'hub.txt') {
       return 'UCSCTrackHubConnection'
     }
     if (url.includes('jbrowse/data')) {
       return 'JBrowse1Connection'
     }
-    if (config && this.isValidJSON(config)) {
-      return 'custom'
-    }
-    return this.error(
-      `Unable to determine a specific connection from URL given.\nPlease specify a type with --type.\nIf you want a custom type, please provide the config object with --config`,
-    )
+    return 'custom'
   }
 
   isValidJSON(str: string) {
