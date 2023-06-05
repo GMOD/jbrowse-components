@@ -215,7 +215,7 @@ server <- function(input, output, session) {
         chrom = input$selectedFeature$refName,
         start = input$selectedFeature$start,
         end = input$selectedFeature$end,
-        name = input$selectedFeautre$name
+        name = input$selectedFeature$name
       )
   })
 
