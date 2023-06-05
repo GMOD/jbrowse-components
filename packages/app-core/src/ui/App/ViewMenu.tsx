@@ -45,10 +45,10 @@ const ViewMenu = observer(function ({
     ...((typeof menuItems === 'function' ? menuItems() : menuItems) || []),
   ]
 
-  return (
+  return items.length ? (
     <CascadingMenuButton menuItems={items} data-testid="view_menu_icon">
       <MenuIcon {...IconProps} fontSize="small" />
     </CascadingMenuButton>
-  )
+  ) : null
 })
 export default ViewMenu
