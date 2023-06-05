@@ -1344,8 +1344,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * Navigate to a location based on its refName and optionally start, end,
        * and assemblyName. Will not try to change displayed regions, use
        * `navToLocations` instead. Only navigates to a location if it is
-       * entirely within a displayedRegion. Navigates to the first matching location
-       * encountered.
+       * entirely within a displayedRegion. Navigates to the first matching
+       * location encountered.
        *
        * Throws an error if navigation was unsuccessful
        *
@@ -1376,8 +1376,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
         ) {
           throw new Error('found start greater than end')
         }
-        const f1 = locations[0]
-        const f2 = locations[locations.length - 1]
+        const f1 = locations.at(0)
+        const f2 = locations.at(-1)
+        if (!f1 || !f2) {
+          return
+        }
         const a = self.assemblyNames[0]
         const { assemblyManager } = getSession(self)
         const assembly1 = assemblyManager.get(f1.assemblyName || a)

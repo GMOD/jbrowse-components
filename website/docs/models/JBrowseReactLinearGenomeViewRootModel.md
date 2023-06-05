@@ -27,7 +27,7 @@ config: createConfigModel(pluginManager, assemblyConfig)
 
 ```js
 // type signature
-IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number, number, number>; } & { ...; } & { ...; } & { ...; } & { ...; }, { ...; } & ... 19 more ... & { ...; }, _NotCustomized, _NotCustomized>
+IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number, number, number>; } & { ...; } & { ...; } & { ...; } & { ...; }, { ...; } & ... 21 more ... & { ...; }, _NotCustomized, _NotCustomized>
 // code
 session: Session
 ```

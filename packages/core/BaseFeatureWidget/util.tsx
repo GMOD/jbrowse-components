@@ -48,10 +48,15 @@ export function revlist(list: Feat[], seqlen: number) {
     .sort((a, b) => a.start - b.start)
 }
 
-// calculates UTRs using impliedUTRs logic
 export function calculateUTRs(cds: Feat[], exons: Feat[]) {
-  const firstCds = cds[0]
-  const lastCds = cds[cds.length - 1]
+  // checking length ensures the .at below are valid
+  if (!cds.length) {
+    return []
+  }
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const firstCds = cds.at(0)!
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const lastCds = cds.at(-1)!
   const firstCdsIdx = exons.findIndex(
     exon => exon.end >= firstCds.start && exon.start <= firstCds.start,
   )
@@ -76,8 +81,13 @@ export function calculateUTRs(cds: Feat[], exons: Feat[]) {
 
 // calculates UTRs using impliedUTRs logic, but there are no exon subfeatures
 export function calculateUTRs2(cds: Feat[], parentFeat: Feat) {
-  const firstCds = cds[0]
-  const lastCds = cds[cds.length - 1]
+  if (!cds.length) {
+    return []
+  }
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const firstCds = cds.at(0)!
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const lastCds = cds.at(-1)!
 
   const fiveUTRs = [{ start: parentFeat.start, end: firstCds.start }].map(
     elt => ({ ...elt, type: 'five_prime_UTR' }),

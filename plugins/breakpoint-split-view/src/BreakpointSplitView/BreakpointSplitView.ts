@@ -74,7 +74,7 @@ export default class BreakpointSplitViewType extends ViewType {
     topMarkedRegion[1].start = startPos + startMod
     bottomMarkedRegion[0].end = endPos + endMod
     bottomMarkedRegion[1].start = endPos + endMod
-    const snapshot = {
+    return {
       type: 'BreakpointSplitView',
       views: [
         {
@@ -96,6 +96,5 @@ export default class BreakpointSplitViewType extends ViewType {
         feature.get('name') || feature.get('id') || 'breakend'
       } split detail`,
     }
-    return snapshot
   }
 }

@@ -78,12 +78,11 @@ mode: types.optional(
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 4 more ... & { ...; }, _NotCustomized, _NotCustomized>, [...]>
+IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 5 more ... & { ...; }, _NotCustomized, _NotCustomized>, [...]>
 // code
 spreadsheetView: types.optional(SpreadsheetModel, () =>
           SpreadsheetModel.create({
             type: 'SpreadsheetView',
-            hideViewControls: true,
             hideVerticalResizeHandle: true,
           }),
         )
@@ -128,6 +127,13 @@ any
 boolean
 ```
 
+#### getter: features
+
+```js
+// type
+any
+```
+
 #### getter: featuresAdapterConfigSnapshot
 
 ```js
@@ -150,6 +156,15 @@ any[]
 ```js
 // type
 { type: string; trackId: string; name: string; adapter: any; assemblyNames: any[]; displays: { type: string; displayId: string; onChordClick: string; renderer: { type: string; }; }[]; }
+```
+
+### SvInspectorView - Methods
+
+#### method: menuItems
+
+```js
+// type signature
+menuItems: () => { label: string; onClick: () => void; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; }[]
 ```
 
 ### SvInspectorView - Actions

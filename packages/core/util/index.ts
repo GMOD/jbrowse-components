@@ -372,8 +372,8 @@ export function parseLocStringOneBased(
           return {
             assemblyName,
             refName: prefix,
-            start: +start.replace(/,/g, ''),
-            end: +end.replace(/,/g, ''),
+            start: +start.replaceAll(',', ''),
+            end: +end.replaceAll(',', ''),
             reversed,
           }
         }
@@ -385,15 +385,15 @@ export function parseLocStringOneBased(
             return {
               assemblyName,
               refName: prefix,
-              start: +start.replace(/,/g, ''),
+              start: +start.replaceAll(',', ''),
               reversed,
             }
           }
           return {
             assemblyName,
             refName: prefix,
-            start: +start.replace(/,/g, ''),
-            end: +start.replace(/,/g, ''),
+            start: +start.replaceAll(',', ''),
+            end: +start.replaceAll(',', ''),
             reversed,
           }
         }
@@ -879,7 +879,7 @@ export const complement = (() => {
   } as { [key: string]: string }
 
   return (seqString: string) => {
-    return seqString.replace(complementRegex, m => complementTable[m] || '')
+    return seqString.replaceAll(complementRegex, m => complementTable[m] || '')
   }
 })()
 
@@ -1203,7 +1203,7 @@ export function getStr(obj: unknown) {
 
 // tries to measure grid width without HTML tags included
 function coarseStripHTML(s: string) {
-  return s.replace(/(<([^>]+)>)/gi, '')
+  return s.replaceAll(/(<([^>]+)>)/gi, '')
 }
 
 // heuristic measurement for a column of a @mui/x-data-grid, pass in values from a column
@@ -1288,6 +1288,70 @@ export function groupBy<T>(array: T[], predicate: (v: T) => string) {
 
 export function notEmpty<T>(value: T | null | undefined): value is T {
   return value !== null && value !== undefined
+}
+
+export function mergeIntervals<T extends { start: number; end: number }>(
+  intervals: T[],
+  w = 5000,
+) {
+  // test if there are at least 2 intervals
+  if (intervals.length <= 1) {
+    return intervals
+  }
+
+  const stack = []
+  let top = null
+
+  // sort the intervals based on their start values
+  intervals = intervals.sort((a, b) => a.start - b.start)
+
+  // push the 1st interval into the stack
+  stack.push(intervals[0])
+
+  // start from the next interval and merge if needed
+  for (let i = 1; i < intervals.length; i++) {
+    // get the top element
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    top = stack.at(-1)!
+
+    // if the current interval doesn't overlap with the
+    // stack top element, push it to the stack
+    if (top.end + w < intervals[i].start - w) {
+      stack.push(intervals[i])
+    }
+    // otherwise update the end value of the top element
+    // if end of current interval is higher
+    else if (top.end < intervals[i].end) {
+      top.end = Math.max(top.end, intervals[i].end)
+      stack.pop()
+      stack.push(top)
+    }
+  }
+
+  return stack
+}
+
+interface BasicFeature {
+  end: number
+  start: number
+  refName: string
+}
+
+// hashmap of refName->array of features
+type FeaturesPerRef = { [key: string]: BasicFeature[] }
+
+export function gatherOverlaps(regions: BasicFeature[]) {
+  const memo = {} as FeaturesPerRef
+  for (const x of regions) {
+    if (!memo[x.refName]) {
+      memo[x.refName] = []
+    }
+    memo[x.refName].push(x)
+  }
+
+  return Object.values(memo).flatMap(group =>
+    mergeIntervals(group.sort((a, b) => a.start - b.start)),
+  )
 }
 
 export {

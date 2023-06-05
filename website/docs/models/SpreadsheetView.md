@@ -48,15 +48,6 @@ height: types.optional(
     )
 ```
 
-#### property: hideViewControls
-
-```js
-// type signature
-false
-// code
-hideViewControls: false
-```
-
 #### property: hideVerticalResizeHandle
 
 ```js
@@ -149,6 +140,15 @@ any
 ```js
 // type
 { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>
+```
+
+### SpreadsheetView - Methods
+
+#### method: menuItems
+
+```js
+// type signature
+menuItems: () => { label: string; onClick: () => void; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; }[]
 ```
 
 ### SpreadsheetView - Actions

@@ -5,9 +5,10 @@ import { observer } from 'mobx-react'
 import JBrowseMenu from '@jbrowse/core/ui/Menu'
 import {
   getSession,
+  isSessionModelWithConnectionEditing,
+  isSessionModelWithConnections,
   isSessionModelWithWidgets,
   isSessionWithAddTracks,
-  isSessionModelWithConnections,
 } from '@jbrowse/core/util'
 import {
   AnyConfigurationModel,
@@ -43,7 +44,7 @@ const useStyles = makeStyles()(theme => ({
 
 interface ModalArgs {
   connectionConf: AnyConfigurationModel
-  safelyBreakConnection: Function
+  safelyBreakConnection: () => void
   dereferenceTypeCount: { [key: string]: number }
   name: string
 }
@@ -90,46 +91,6 @@ export default observer(function HamburgerMenu({
     }
   }
 
-  const connectionMenuItems = [
-    {
-      label: 'Turn on/off connections...',
-      onClick: () => setConnectionToggleOpen(true),
-    },
-  ]
-
-  if (isSessionModelWithConnections(session)) {
-    connectionMenuItems.unshift({
-      label: 'Add connection...',
-      onClick: () => {
-        if (isSessionModelWithWidgets(session)) {
-          session.showWidget(
-            session.addWidget('AddConnectionWidget', 'addConnectionWidget'),
-          )
-        }
-      },
-    })
-
-    connectionMenuItems.push({
-      label: 'Delete connections...',
-      onClick: () => setConnectionManagerOpen(true),
-    })
-  }
-
-  const trackMenuItems = [
-    {
-      label: 'Add track...',
-      onClick: () => {
-        if (isSessionModelWithWidgets(session)) {
-          session.showWidget(
-            session.addWidget('AddTrackWidget', 'addTrackWidget', {
-              view: model.view.id,
-            }),
-          )
-        }
-      },
-    },
-  ]
-
   return (
     <>
       <IconButton
@@ -148,15 +109,58 @@ export default observer(function HamburgerMenu({
         }}
         onClose={() => setMenuEl(undefined)}
         menuItems={[
-          ...(isSessionWithAddTracks(session) ? trackMenuItems : []),
-          ...(session.makeConnection ? connectionMenuItems : []),
+          ...(isSessionWithAddTracks(session)
+            ? [
+                {
+                  label: 'Add track...',
+                  onClick: () => {
+                    if (isSessionModelWithWidgets(session)) {
+                      session.showWidget(
+                        session.addWidget('AddTrackWidget', 'addTrackWidget', {
+                          view: model.view.id,
+                        }),
+                      )
+                    }
+                  },
+                },
+              ]
+            : []),
+          ...(isSessionModelWithConnections(session)
+            ? [
+                {
+                  label: 'Turn on/off connections...',
+                  onClick: () => setConnectionToggleOpen(true),
+                },
+              ]
+            : []),
+          ...(isSessionModelWithConnectionEditing(session)
+            ? [
+                {
+                  label: 'Add connection...',
+                  onClick: () => {
+                    if (isSessionModelWithWidgets(session)) {
+                      session.showWidget(
+                        session.addWidget(
+                          'AddConnectionWidget',
+                          'addConnectionWidget',
+                        ),
+                      )
+                    }
+                  },
+                },
+                {
+                  label: 'Delete connections...',
+                  onClick: () => setConnectionManagerOpen(true),
+                },
+              ]
+            : []),
         ]}
       />
-      <Suspense fallback={<div />}>
+      <Suspense fallback={<React.Fragment />}>
         {modalInfo ? (
           <CloseConnectionDlg
             modalInfo={modalInfo}
-            setModalInfo={setModalInfo}
+            onClose={() => setModalInfo(undefined)}
           />
         ) : null}
         {deleteDlgDetails ? (

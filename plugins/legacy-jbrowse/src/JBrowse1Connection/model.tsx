@@ -30,10 +30,7 @@ export default function (pluginManager: PluginManager) {
           const { fetchJb1 } = await import('./jb1ConfigLoad')
           const { convertTrackConfig } = await import('./jb1ToJb2')
           const config = await fetchJb1(dataDirLocation)
-          const assemblyName = readConfObject(
-            self.configuration,
-            'assemblyNames',
-          )[0]
+          const assemblyName = getConf(self, 'assemblyNames')[0]
           if (!assemblyName) {
             throw new Error('assembly name required for JBrowse 1 connection')
           }

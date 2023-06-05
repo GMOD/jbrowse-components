@@ -97,7 +97,7 @@ export async function* indexVcf({
         encodeURIComponent(trackId),
         encodeURIComponent(id || ''),
         ...infoAttrs.map(a => encodeURIComponent(a || '')),
-      ]).replace(/,/g, '|')
+      ]).replaceAll(',', '|')
       yield `${record} ${[...new Set(attrs)].join(' ')}\n`
     }
   }

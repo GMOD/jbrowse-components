@@ -101,8 +101,7 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
         }
         const oldDrawerWidth = self.drawerWidth
         const newDrawerWidth = this.updateDrawerWidth(oldDrawerWidth - distance)
-        const actualDistance = oldDrawerWidth - newDrawerWidth
-        return actualDistance
+        return oldDrawerWidth - newDrawerWidth
       },
 
       /**

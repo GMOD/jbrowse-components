@@ -11,16 +11,11 @@ import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 // locals
-import {
-  getEnv,
-  NotificationLevel,
-  SnackAction,
-  SessionWithDrawerWidgets,
-} from '@jbrowse/core/util'
+import { getEnv, SessionWithDrawerWidgets } from '@jbrowse/core/util'
 
 // ui elements
 import { MenuItem as JBMenuItem } from '@jbrowse/core/ui/Menu'
-type SnackbarMessage = [string, NotificationLevel, SnackAction]
+import { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
 
 type AppSession = SessionWithDrawerWidgets & {
   savedSessionNames: string[]

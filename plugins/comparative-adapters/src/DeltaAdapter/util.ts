@@ -122,6 +122,7 @@ export function paf_delta2paf(buffer: Buffer) {
           if (l > 0) {
             cigar.push(l << 4)
           }
+          // eslint-disable-next-line unicorn/prefer-at
           if (cigar.length > 0 && (cigar[cigar.length - 1] & 0xf) === 2) {
             cigar[cigar.length - 1] += 1 << 4
           } else {
@@ -134,6 +135,7 @@ export function paf_delta2paf(buffer: Buffer) {
           if (l > 0) {
             cigar.push(l << 4)
           }
+          // eslint-disable-next-line unicorn/prefer-at
           if (cigar.length > 0 && (cigar[cigar.length - 1] & 0xf) === 1) {
             cigar[cigar.length - 1] += 1 << 4
           } else {

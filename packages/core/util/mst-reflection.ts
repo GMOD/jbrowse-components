@@ -71,8 +71,7 @@ export function getPropertyType(
   type: IModelReflectionPropertiesData,
   propertyName: string,
 ) {
-  const propertyType = type.properties[propertyName]
-  return propertyType
+  return type.properties[propertyName]
 }
 
 /**

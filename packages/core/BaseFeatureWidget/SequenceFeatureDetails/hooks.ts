@@ -13,7 +13,7 @@ interface CoordFeat extends SimpleFeatureSerialized {
 }
 
 export function useFeatureSequence(
-  model: { view: { assemblyNames: string[] } } | undefined,
+  model: { view?: { assemblyNames?: string[] } } | undefined,
   feature: SimpleFeatureSerialized,
   upDownBp: number,
   forceLoad: boolean,

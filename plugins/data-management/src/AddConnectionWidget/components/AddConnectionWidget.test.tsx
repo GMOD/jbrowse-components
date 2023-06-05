@@ -79,7 +79,7 @@ type bigWig
     expect(session.connections.length).toBe(0)
     fireEvent.mouseDown(getAllByRole('button')[0])
     const ucscTrackHubSelection = await findAllByText('UCSC Track Hub')
-    fireEvent.click(ucscTrackHubSelection[ucscTrackHubSelection.length - 1])
+    fireEvent.click(ucscTrackHubSelection.at(-1)!)
     fireEvent.click(await findByTestId('addConnectionNext'))
     fireEvent.change(await findByDisplayValue('nameOfConnection'), {
       target: { value: 'Test UCSC connection name' },

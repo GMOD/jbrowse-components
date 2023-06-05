@@ -60,7 +60,7 @@ function parse(text: string, url: string): Config {
         }
         // parse numbers if it looks numeric
         else if (/^[+-]?[\d.,]+([eE][-+]?\d+)?$/.test(value)) {
-          parsedValue = parseFloat(value.replace(/,/g, ''))
+          parsedValue = parseFloat(value.replaceAll(',', ''))
         } else {
           parsedValue = value
         }

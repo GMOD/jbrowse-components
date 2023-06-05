@@ -10,15 +10,13 @@ import { Polygon } from '../components/OverviewScalebar'
 import SVGRuler from './SVGRuler'
 import SVGScalebar from './SVGScalebar'
 
-type LGV = LinearGenomeViewModel
-
 export default function SVGHeader({
   model,
   fontSize,
   cytobandHeight,
   rulerHeight,
 }: {
-  model: LGV
+  model: LinearGenomeViewModel
   rulerHeight: number
   fontSize: number
   cytobandHeight: number
@@ -35,19 +33,23 @@ export default function SVGHeader({
     minimumBlockWidth: model.minimumBlockWidth,
   })
   const visibleRegions = model.dynamicBlocks.contentBlocks
+  if (!visibleRegions.length) {
+    return null
+  }
 
   overview.setVolatileWidth(width)
   overview.showAllRegions()
   const block = overview.dynamicBlocks.contentBlocks[0]
-
-  const first = visibleRegions[0]
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const first = visibleRegions.at(0)!
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const last = visibleRegions.at(-1)!
   const firstOverviewPx =
     overview.bpToPx({
       ...first,
       coord: first.reversed ? first.end : first.start,
     }) || 0
 
-  const last = visibleRegions[visibleRegions.length - 1]
   const lastOverviewPx =
     overview.bpToPx({
       ...last,

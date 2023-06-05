@@ -56,20 +56,6 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export function readBlobAsText(blob: Blob): Promise<string> {
-  const a = new FileReader()
-  return new Promise((resolve, reject) => {
-    a.onload = e => {
-      if (e.target) {
-        resolve(e.target.result as string)
-      } else {
-        reject(new Error('unknown result reading blob from canvas'))
-      }
-    }
-    a.readAsText(blob)
-  })
-}
-
 function ImportSession({ model }: { model: IAnyStateTreeNode }) {
   const [error, setError] = useState<unknown>()
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -84,7 +70,7 @@ function ImportSession({ model }: { model: IAnyStateTreeNode }) {
             `${rejectedFiles[0].errors.map(e => `${e}`).join(', ')}`,
           )
         } else {
-          const sessionText = await readBlobAsText(acceptedFiles[0])
+          const sessionText = await acceptedFiles[0].text()
           getSession(model).setSession(JSON.parse(sessionText).session)
         }
       } catch (e) {

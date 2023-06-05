@@ -1,6 +1,6 @@
 ---
-id: jbrowsewebsessionconnectionsmixin
-title: JBrowseWebSessionConnectionsMixin
+id: websessionconnectionsmixin
+title: WebSessionConnectionsMixin
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -10,9 +10,9 @@ info
 
 ### Source file
 
-[products/jbrowse-web/src/sessionModel/SessionConnections.ts](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-web/src/sessionModel/SessionConnections.ts)
+[packages/web-core/src/SessionConnections.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/web-core/src/SessionConnections.ts)
 
-### JBrowseWebSessionConnectionsMixin - Properties
+### WebSessionConnectionsMixin - Properties
 
 #### property: sessionConnections
 

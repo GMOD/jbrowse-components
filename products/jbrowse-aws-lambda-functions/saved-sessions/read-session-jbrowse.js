@@ -22,7 +22,7 @@ exports.handler = async event => {
 
   // workaround for '+' character being encoded by api gateway (?) as space, xref
   // https://github.com/GMOD/jbrowse-components/pull/3524
-  sessionId = sessionId.replace(/ /g, '+')
+  sessionId = sessionId.replaceAll(' ', '+')
   try {
     tableData = await readSession(sessionId)
   } catch (e) {

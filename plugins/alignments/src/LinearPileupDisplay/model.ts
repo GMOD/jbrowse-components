@@ -454,12 +454,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          */
         contextMenuItems() {
           const feat = self.contextMenuFeature
-          const contextMenuItems = feat
+          return feat
             ? [
                 {
                   label: 'Open feature details',
                   icon: MenuOpenIcon,
-                  onClick: () => {
+                  onClick: (): void => {
                     self.clearFeatureSelection()
                     if (feat) {
                       self.selectFeature(feat)
@@ -469,7 +469,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 {
                   label: 'Copy info to clipboard',
                   icon: ContentCopyIcon,
-                  onClick: () => {
+                  onClick: (): void => {
                     if (feat) {
                       self.copyFeatureToClipboard(feat)
                     }
@@ -477,7 +477,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 },
               ]
             : []
-          return contextMenuItems
         },
 
         /**

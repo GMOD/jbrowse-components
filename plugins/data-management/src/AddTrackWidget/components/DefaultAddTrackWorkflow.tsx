@@ -81,7 +81,7 @@ function AddTrackWorkflow({ model }: { model: AddTrackModel }) {
     }
 
     const trackId = [
-      `${trackName.toLowerCase().replace(/ /g, '_')}-${Date.now()}`,
+      `${trackName.toLowerCase().replaceAll(' ', '_')}-${Date.now()}`,
       `${session.adminMode ? '' : '-sessionTrack'}`,
     ].join('')
 

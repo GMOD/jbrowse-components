@@ -93,11 +93,14 @@ const Polygon = observer(function ({
   const { tertiary, primary } = theme.palette
   const polygonColor = tertiary ? tertiary.light : primary.light
 
+  // catches possible null from at's below
   if (!contentBlocks.length) {
     return null
   }
-  const first = contentBlocks[0]
-  const last = contentBlocks[contentBlocks.length - 1]
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const first = contentBlocks.at(0)!
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const last = contentBlocks.at(-1)!
   const topLeft =
     (overview.bpToPx({
       ...first,
@@ -238,18 +241,21 @@ const Scalebar = observer(function ({
 
   const { tertiary, primary } = theme.palette
   const scalebarColor = tertiary ? tertiary.light : primary.light
-
+  // catches possible null from at's below
   if (!visibleRegions.length) {
     return null
   }
-  const first = visibleRegions[0]
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const first = visibleRegions.at(0)!
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const last = visibleRegions.at(-1)!
+
   const firstOverviewPx =
     overview.bpToPx({
       ...first,
       coord: first.reversed ? first.end : first.start,
     }) || 0
 
-  const last = visibleRegions[visibleRegions.length - 1]
   const lastOverviewPx =
     overview.bpToPx({
       ...last,

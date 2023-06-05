@@ -188,8 +188,7 @@ export default class BoxRendererType extends FeatureRendererType {
   createLayoutInWorker(args: RenderArgsDeserialized) {
     const { regions } = args
     const session = this.getWorkerSession(args)
-    const subLayout = session.layout.getSublayout(regions[0].refName)
-    return subLayout
+    return session.layout.getSublayout(regions[0].refName)
   }
 
   serializeResultsInWorker(

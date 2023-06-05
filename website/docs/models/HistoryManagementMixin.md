@@ -10,7 +10,7 @@ info
 
 ### Source file
 
-[products/jbrowse-desktop/src/rootModel/HistoryManagement.ts](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-desktop/src/rootModel/HistoryManagement.ts)
+[packages/app-core/src/HistoryManagement/index.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/HistoryManagement/index.ts)
 
 ### HistoryManagementMixin - Properties
 
