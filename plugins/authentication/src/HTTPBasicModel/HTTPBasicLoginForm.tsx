@@ -17,7 +17,7 @@ export const HTTPBasicLoginForm = ({
       open
       maxWidth="xl"
       data-testid="login-httpbasic"
-      title={`Log In for {internetAccountId}`}
+      title={`Log In for ${internetAccountId}`}
     >
       <form
         onSubmit={event => {
