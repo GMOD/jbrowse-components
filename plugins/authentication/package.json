@@ -38,8 +38,7 @@
   },
   "dependencies": {
     "crypto-js": "^3.0.0",
-    "generic-filehandle": "^3.0.0",
-    "jwt-decode": "^3.1.2"
+    "generic-filehandle": "^3.0.0"
   },
   "peerDependencies": {
     "@jbrowse/core": "^2.0.0",

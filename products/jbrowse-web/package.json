@@ -14,7 +14,9 @@
     "checktypes": "tsc --noEmit",
     "jtest": "jest --config ../../jest.config.js --roots products/jbrowse-web/",
     "lint": "eslint --ext .js,.ts,.jsx,.tsx src",
-    "prepack": "yarn build"
+    "prepack": "yarn build",
+    "start-oauth-server": "ts-node --project tsconfig.oauth.json src/tests/OAuthServer/app.ts",
+    "start-basicauth-server": "ts-node --project tsconfig.oauth.json src/tests/HTTPBasicAuthServer/app.ts"
   },
   "dependencies": {
     "@fontsource/roboto": "^5.0.2",

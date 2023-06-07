@@ -1,25 +1,42 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import { UriLocation } from '@jbrowse/core/util/types'
-import { HTTPBasicInternetAccountConfigModel } from './configSchema'
 import { Instance, types, getRoot } from 'mobx-state-tree'
 
+// locals
+import { HTTPBasicInternetAccountConfigModel } from './configSchema'
 import { HTTPBasicLoginForm } from './HTTPBasicLoginForm'
+import { getResponseError } from '../util'
 
+/**
+ * #stateModel HTTPBasicInternetAccount
+ */
 const stateModelFactory = (
   configSchema: HTTPBasicInternetAccountConfigModel,
 ) => {
   return InternetAccount.named('HTTPBasicInternetAccount')
     .props({
+      /**
+       * #property
+       */
       type: types.literal('HTTPBasicInternetAccount'),
+      /**
+       * #property
+       */
       configuration: ConfigurationReference(configSchema),
     })
     .views(self => ({
+      /**
+       * #getter
+       */
       get validateWithHEAD(): boolean {
         return getConf(self, 'validateWithHEAD')
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
       getTokenFromUser(
         resolve: (token: string) => void,
         reject: (error: Error) => void,
@@ -34,13 +51,16 @@ const stateModelFactory = (
               if (token) {
                 resolve(token)
               } else {
-                reject(new Error('user cancelled entry'))
+                reject(new Error('User cancelled entry'))
               }
               doneCallback()
             },
           },
         ])
       },
+      /**
+       * #action
+       */
       async validateToken(token: string, location: UriLocation) {
         if (!self.validateWithHEAD) {
           return token
@@ -48,16 +68,11 @@ const stateModelFactory = (
         const newInit = self.addAuthHeaderToInit({ method: 'HEAD' }, token)
         const response = await fetch(location.uri, newInit)
         if (!response.ok) {
-          let errorMessage
-          try {
-            errorMessage = await response.text()
-          } catch (error) {
-            errorMessage = ''
-          }
           throw new Error(
-            `Error validating token — ${response.status} (${
-              response.statusText
-            })${errorMessage ? ` (${errorMessage})` : ''}`,
+            await getResponseError({
+              response,
+              reason: 'Error validating token',
+            }),
           )
         }
         return token

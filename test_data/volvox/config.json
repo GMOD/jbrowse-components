@@ -756,36 +756,6 @@
     },
     {
       "type": "QuantitativeTrack",
-      "trackId": "dropbox_bigwig",
-      "name": "Dropbox BigWig",
-      "category": ["Authentication"],
-      "assemblyNames": ["volvox"],
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "https://www.dropbox.com/s/96wflrzcbmf7nlj/volvox.bw?dl=0",
-          "locationType": "UriLocation",
-          "internetAccountId": "dropboxOAuth"
-        }
-      }
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "google_bigwig",
-      "name": "Google Drive BigWig",
-      "category": ["Authentication"],
-      "assemblyNames": ["volvox"],
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "locationType": "UriLocation",
-          "uri": "https://drive.google.com/file/d/1PIvZCOJioK9eBL1Vuvfa4L_Fv9zTooHk/view?usp=sharing",
-          "internetAccountId": "googleOAuth"
-        }
-      }
-    },
-    {
-      "type": "QuantitativeTrack",
       "trackId": "volvox_microarray_line",
       "name": "wiggle_track lineplot",
       "category": ["Integration test", "Wiggle"],
@@ -2159,22 +2129,6 @@
         "locationType": "UriLocation"
       },
       "assemblyNames": ["volvox-rev-del"]
-    }
-  ],
-  "internetAccounts": [
-    {
-      "type": "DropboxOAuthInternetAccount",
-      "internetAccountId": "dropboxOAuth",
-      "name": "Dropbox",
-      "description": "Account to access Dropbox files",
-      "clientId": "50knr6xrjfc39sk"
-    },
-    {
-      "type": "GoogleDriveOAuthInternetAccount",
-      "internetAccountId": "googleOAuth",
-      "name": "Google Drive",
-      "description": "Account to access Google Drive files",
-      "clientId": "109518325434-udfch80a0v70mgu65d5fejqsq5kvhm1b.apps.googleusercontent.com"
     }
   ]
 }

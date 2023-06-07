@@ -1,0 +1,12 @@
+{
+  "extends": "ts-node/node16/tsconfig.json",
+  "include": ["src/tests/oauthServer"],
+  "ts-node": {
+    "transpileOnly": true,
+
+    "files": true,
+
+    "compilerOptions": {}
+  },
+  "compilerOptions": {}
+}
