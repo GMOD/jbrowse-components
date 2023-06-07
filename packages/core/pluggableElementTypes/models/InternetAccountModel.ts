@@ -210,12 +210,15 @@ export const InternetAccount = types
      * #action
      */
     addAuthHeaderToInit(init: RequestInit = {}, token: string) {
-      const newHeaders = new Headers(init.headers || {})
-      newHeaders.append(
-        self.authHeader,
-        self.tokenType ? `${self.tokenType} ${token}` : token,
-      )
-      return { ...init, headers: newHeaders }
+      return {
+        ...init,
+        headers: new Headers({
+          ...init.headers,
+          [self.authHeader]: self.tokenType
+            ? `${self.tokenType} ${token}`
+            : token,
+        }),
+      }
     },
     /**
      * #action
