@@ -20,11 +20,11 @@ const ViewMenu = observer(function ({
   IconProps: SvgIconProps
 }) {
   const items = model.menuItems()
-  return (
+  return items.length ? (
     <CascadingMenuButton menuItems={items} data-testid="view_menu_icon">
       <MenuIcon {...IconProps} />
     </CascadingMenuButton>
-  )
+  ) : null
 })
 
 export default ViewMenu

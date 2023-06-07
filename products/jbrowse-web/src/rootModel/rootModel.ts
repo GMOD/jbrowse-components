@@ -224,19 +224,16 @@ export default function RootModel({
                   },
                 }),
               )
+
+              // this check is not able to be modularized into it's own autorun
+              // at current time because it depends on session storage snapshot
+              // being set above
+              if (self.pluginsUpdated) {
+                window.location.reload()
+              }
             },
             { delay: 400 },
           ),
-        )
-
-        addDisposer(
-          self,
-          autorun(() => {
-            if (self.pluginsUpdated) {
-              // reload app to get a fresh plugin manager
-              window.location.reload()
-            }
-          }),
         )
       },
       /**

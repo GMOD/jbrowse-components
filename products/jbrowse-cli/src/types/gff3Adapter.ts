@@ -53,7 +53,9 @@ export async function* indexGff3({
   })
 
   for await (const line of rl) {
-    if (line.startsWith('#')) {
+    if (!line.trim()) {
+      continue
+    } else if (line.startsWith('#')) {
       continue
     } else if (line.startsWith('>')) {
       break
