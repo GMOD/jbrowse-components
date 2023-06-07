@@ -1,16 +1,13 @@
 import React from 'react'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
-// eslint-disable-next-line import/no-extraneous-dependencies
+
 import { render, waitFor } from '@testing-library/react'
 
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { LocalFile, GenericFilehandle } from 'generic-filehandle'
 
-// eslint-disable-next-line import/no-extraneous-dependencies
 import rangeParser from 'range-parser'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { QueryParamProvider } from 'use-query-params'
@@ -20,7 +17,6 @@ import JBrowseRootModelFactory from '../rootModel/rootModel'
 import configSnapshot from '../../test_data/volvox/config.json'
 import corePlugins from '../corePlugins'
 
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { Image, createCanvas } from 'canvas'
 
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -143,9 +139,8 @@ export function createViewNoWait(args?: any, adminMode?: boolean) {
   const pluginManager = getPluginManager(args, adminMode)
   const rest = render(<JBrowse pluginManager={pluginManager} />)
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const rootModel = pluginManager.rootModel!
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
   const session = rootModel.session!
 
   const view = session.views[0] as LGV

@@ -1,64 +1,18 @@
 import React from 'react'
 import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { Instance, types } from 'mobx-state-tree'
-import { RemoteFileWithRangeCache } from '@jbrowse/core/util/io'
 import { UriLocation } from '@jbrowse/core/util/types'
 import { SvgIconProps, SvgIcon } from '@mui/material'
-import {
-  FilehandleOptions,
-  Stats,
-  PolyfilledResponse,
-} from 'generic-filehandle'
 
 // locals
 import { GoogleDriveOAuthInternetAccountConfigModel } from './configSchema'
 import baseModel from '../OAuthModel/model'
 import { configSchema as OAuthConfigSchema } from '../OAuthModel'
+import { getDescriptiveErrorMessage } from './util'
+import { GoogleDriveFile } from './GoogleDriveFilehandle'
 
 export interface RequestInitWithMetadata extends RequestInit {
   metadataOnly?: boolean
-}
-
-interface GoogleDriveFilehandleOptions extends FilehandleOptions {
-  fetch(
-    input: RequestInfo,
-    opts?: RequestInitWithMetadata,
-  ): Promise<PolyfilledResponse>
-}
-
-interface GoogleDriveError {
-  error: {
-    errors: {
-      domain: string
-      reason: string
-      message: string
-      locationType?: string
-      location?: string
-    }[]
-    code: number
-    message: string
-  }
-}
-
-export class GoogleDriveFile extends RemoteFileWithRangeCache {
-  private statsPromise: Promise<{ size: number }>
-  constructor(source: string, opts: GoogleDriveFilehandleOptions) {
-    super(source, opts)
-    this.statsPromise = this.fetch(source, {
-      metadataOnly: true,
-    }).then((response: Response) => response.json())
-  }
-
-  async fetch(
-    input: RequestInfo,
-    opts?: RequestInitWithMetadata,
-  ): Promise<PolyfilledResponse> {
-    return super.fetch(input, opts)
-  }
-
-  async stat(): Promise<Stats> {
-    return this.statsPromise
-  }
 }
 
 function GoogleDriveIcon(props: SvgIconProps) {
@@ -69,58 +23,51 @@ function GoogleDriveIcon(props: SvgIconProps) {
   )
 }
 
-async function getDescriptiveErrorMessage(response: Response) {
-  let errorMessage
-  try {
-    errorMessage = await response.text()
-  } catch (error) {
-    errorMessage = ''
-  }
-  if (errorMessage) {
-    let errorMessageParsed: GoogleDriveError | undefined
-    try {
-      errorMessageParsed = JSON.parse(errorMessage)
-    } catch (error) {
-      errorMessageParsed = undefined
-    }
-    if (errorMessageParsed) {
-      errorMessage = errorMessageParsed.error.message
-    }
-  }
-  return `Network response failure — ${response.status} (${
-    response.statusText
-  })${errorMessage ? ` (${errorMessage})` : ''}`
+function getUri(str: string) {
+  const urlId = str.match(/[-\w]{25,}/)
+  return `https://www.googleapis.com/drive/v3/files/${urlId}`
 }
 
-const stateModelFactory = (
+/**
+ * #stateModel GoogleDriveOAuthInternetAccount
+ */
+export default function stateModelFactory(
   configSchema: GoogleDriveOAuthInternetAccountConfigModel,
-) => {
+) {
   return baseModel(OAuthConfigSchema)
     .named('GoogleDriveOAuthInternetAccount')
     .props({
+      /**
+       * #property
+       */
       type: types.literal('GoogleDriveOAuthInternetAccount'),
+      /**
+       * #property
+       */
       configuration: ConfigurationReference(configSchema),
     })
     .views(() => ({
+      /**
+       * #getter
+       * The FileSelector icon for Google drive
+       */
       get toggleContents() {
         return <GoogleDriveIcon />
       },
+      /**
+       * #getter
+       */
       get selectorLabel() {
         return 'Enter Google Drive share link'
       },
     }))
     .actions(self => ({
-      getFetcher(
-        location?: UriLocation,
-      ): (input: RequestInfo, init?: RequestInit) => Promise<Response> {
-        return async (
-          input: RequestInfo,
-          init?: RequestInitWithMetadata,
-        ): Promise<Response> => {
-          const urlId = String(input).match(/[-\w]{25,}/)
-          const driveUrl = new URL(
-            `https://www.googleapis.com/drive/v3/files/${urlId}`,
-          )
+      /**
+       * #method
+       */
+      getFetcher(location?: UriLocation) {
+        return async (input: RequestInfo, init?: RequestInitWithMetadata) => {
+          const driveUrl = new URL(getUri(String(input)))
           const searchParams = new URLSearchParams()
           if (init?.metadataOnly) {
             searchParams.append('fields', 'size')
@@ -129,46 +76,49 @@ const stateModelFactory = (
           }
           driveUrl.search = searchParams.toString()
           const authToken = await self.getToken(location)
-          const newInit = self.addAuthHeaderToInit(
-            { ...init, method: 'GET', credentials: 'same-origin' },
-            authToken,
+          const response = await fetch(
+            driveUrl,
+            self.addAuthHeaderToInit(
+              { ...init, method: 'GET', credentials: 'same-origin' },
+              authToken,
+            ),
           )
-          const response = await fetch(driveUrl.toString(), newInit)
           if (!response.ok) {
-            const message = await getDescriptiveErrorMessage(response)
-            throw new Error(message)
+            throw new Error(await getDescriptiveErrorMessage(response))
           }
           return response
         }
       },
+      /**
+       * #method
+       */
       openLocation(location: UriLocation) {
         return new GoogleDriveFile(location.uri, {
           fetch: this.getFetcher(location),
         })
       },
-      async validateToken(
-        token: string,
-        location: UriLocation,
-      ): Promise<string> {
-        const urlId = location.uri.match(/[-\w]{25,}/)
-        const response = await fetch(
-          `https://www.googleapis.com/drive/v3/files/${urlId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/x-www-form-urlencoded',
-            },
+      /**
+       * #action
+       */
+      async validateToken(token: string, location: UriLocation) {
+        const response = await fetch(getUri(location.uri), {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/x-www-form-urlencoded',
           },
-        )
+        })
         if (!response.ok) {
-          const message = await getDescriptiveErrorMessage(response)
-          throw new Error(`Token could not be validated. ${message}`)
+          throw new Error(
+            await getDescriptiveErrorMessage(
+              response,
+              'Token could not be validated',
+            ),
+          )
         }
         return token
       },
     }))
 }
 
-export default stateModelFactory
 export type GoogleDriveOAuthStateModel = ReturnType<typeof stateModelFactory>
 export type GoogleDriveOAuthModel = Instance<GoogleDriveOAuthStateModel>

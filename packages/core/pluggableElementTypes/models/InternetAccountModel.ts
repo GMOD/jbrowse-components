@@ -143,12 +143,13 @@ export const InternetAccount = types
     /**
      * #action
      * This can be used by an internetAccount to validate a token works before
-     * it is used. This is run when preAuthorizationInformation is requested, so
-     * it can be used to check that a token is valid before sending it to a
+     * it is used. This is run when preAuthorizationInformation is requested,
+     * so it can be used to check that a token is valid before sending it to a
      * worker thread. It expects the token to be returned so that this action
      * can also be used to generate a new token (e.g. by using a refresh token)
      * if the original one was invalid. Should throw an error if a token is
      * invalid.
+     *
      * @param token - Auth token
      * @param loc - UriLocation of the resource
      * @returns - Valid auth token
@@ -165,6 +166,7 @@ export const InternetAccount = types
        * Try to get the token from the location pre-auth, from local storage,
        * or from a previously cached promise. If token is not available, uses
        * `getTokenFromUser`.
+       *
        * @param location - UriLocation of the resource
        * @returns A promise for the token
        */
@@ -187,17 +189,18 @@ export const InternetAccount = types
           tokenPromise = Promise.resolve(token)
           return tokenPromise
         }
-        tokenPromise = new Promise((r, x) => {
-          function resolve(token: string) {
-            self.storeToken(token)
-            r(token)
-          }
-          function reject(error: Error) {
-            self.removeToken()
-            x(error)
-          }
-          self.getTokenFromUser(resolve, reject)
-        })
+        tokenPromise = new Promise((resolve, reject) =>
+          self.getTokenFromUser(
+            token => {
+              self.storeToken(token)
+              resolve(token)
+            },
+            error => {
+              self.removeToken()
+              reject(error)
+            },
+          ),
+        )
         return tokenPromise
       },
     }
@@ -207,23 +210,24 @@ export const InternetAccount = types
      * #action
      */
     addAuthHeaderToInit(init: RequestInit = {}, token: string) {
-      const tokenInfoString = self.tokenType
-        ? `${self.tokenType} ${token}`
-        : token
       const newHeaders = new Headers(init.headers || {})
-      newHeaders.append(self.authHeader, tokenInfoString)
+      newHeaders.append(
+        self.authHeader,
+        self.tokenType ? `${self.tokenType} ${token}` : token,
+      )
       return { ...init, headers: newHeaders }
     },
     /**
      * #action
      * Gets the token and returns it along with the information needed to
      * create a new internetAccount.
+     *
      * @param location - UriLocation of the resource
      * @returns
      */
     async getPreAuthorizationInformation(location: UriLocation) {
       const authToken = await self.getToken(location)
-      let validatedToken: string
+      let validatedToken: string | undefined
       try {
         validatedToken = await self.validateToken(authToken, location)
       } catch (error) {
@@ -232,7 +236,10 @@ export const InternetAccount = types
       }
       return {
         internetAccountType: self.type,
-        authInfo: { token: validatedToken, configuration: getConf(self) },
+        authInfo: {
+          token: validatedToken,
+          configuration: getConf(self),
+        },
       }
     },
   }))
@@ -242,6 +249,7 @@ export const InternetAccount = types
      * Get a fetch method that will add any needed authentication headers to
      * the request before sending it. If location is provided, it will be
      * checked to see if it includes a token in it pre-auth information.
+     *
      * @param loc - UriLocation of the resource
      * @returns A function that can be used to fetch
      */

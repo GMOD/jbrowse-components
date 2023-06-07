@@ -5,6 +5,8 @@ import { Instance, types } from 'mobx-state-tree'
 
 // locals
 import { OAuthInternetAccountConfigModel } from './configSchema'
+import { fixup, generateChallenge } from './util'
+import { getResponseError } from '../util'
 
 interface OAuthData {
   client_id: string
@@ -25,19 +27,27 @@ interface OAuthExchangeData {
   code_verifier?: string
 }
 
-function fixup(buf: string) {
-  return buf.replaceAll('+', '-').replaceAll('/', '_').replaceAll('=', '')
-}
-
+/**
+ * #stateModel OAuthInternetAccount
+ */
 const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
   return InternetAccount.named('OAuthInternetAccount')
     .props({
+      /**
+       * #property
+       */
       type: types.literal('OAuthInternetAccount'),
+      /**
+       * #property
+       */
       configuration: ConfigurationReference(configSchema),
     })
     .views(() => {
       let codeVerifier: string | undefined = undefined
       return {
+        /**
+         * #getter
+         */
         get codeVerifierPKCE() {
           if (codeVerifier) {
             return codeVerifier
@@ -50,48 +60,87 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
       }
     })
     .views(self => ({
+      /**
+       * #getter
+       */
       get authEndpoint(): string {
         return getConf(self, 'authEndpoint')
       },
+      /**
+       * #getter
+       */
       get tokenEndpoint(): string {
         return getConf(self, 'tokenEndpoint')
       },
+      /**
+       * #getter
+       */
       get needsPKCE(): boolean {
         return getConf(self, 'needsPKCE')
       },
+      /**
+       * #getter
+       */
       get clientId(): string {
         return getConf(self, 'clientId')
       },
+      /**
+       * #getter
+       */
       get scopes(): string {
         return getConf(self, 'scopes')
       },
       /**
-       * OAuth state parameter: https://www.rfc-editor.org/rfc/rfc6749#section-4.1.1
+       * #method
+       * OAuth state parameter:
+       * https://www.rfc-editor.org/rfc/rfc6749#section-4.1.1
+       *
        * Can override or extend if dynamic state is needed.
        */
       state(): string | undefined {
         return getConf(self, 'state') || undefined
       },
+      /**
+       * #getter
+       */
       get responseType(): 'token' | 'code' {
         return getConf(self, 'responseType')
       },
+      /**
+       * #getter
+       */
       get hasRefreshToken(): boolean {
         return getConf(self, 'hasRefreshToken')
       },
+      /**
+       * #getter
+       */
       get refreshTokenKey() {
         return `${self.internetAccountId}-refreshToken`
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
       storeRefreshToken(refreshToken: string) {
         localStorage.setItem(self.refreshTokenKey, refreshToken)
       },
+      /**
+       * #action
+       */
       removeRefreshToken() {
         localStorage.removeItem(self.refreshTokenKey)
       },
+      /**
+       * #method
+       */
       retrieveRefreshToken() {
         return localStorage.getItem(self.refreshTokenKey)
       },
+      /**
+       * #action
+       */
       async exchangeAuthorizationForAccessToken(
         token: string,
         redirectUri: string,
@@ -115,16 +164,11 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
         })
 
         if (!response.ok) {
-          let errorMessage
-          try {
-            errorMessage = await response.text()
-          } catch (error) {
-            errorMessage = ''
-          }
           throw new Error(
-            `Failed to obtain token from endpoint: ${response.status} (${
-              response.statusText
-            })${errorMessage ? ` (${errorMessage})` : ''}`,
+            await getResponseError({
+              response,
+              reason: 'Failed to obtain token',
+            }),
           )
         }
 
@@ -134,6 +178,9 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
         }
         return accessToken.access_token
       },
+      /**
+       * #action
+       */
       async exchangeRefreshForAccessToken(
         refreshToken: string,
       ): Promise<string> {
@@ -165,9 +212,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           }
 
           throw new Error(
-            `Network response failure — ${response.status} (${
-              response.statusText
-            }) ${text ? ` (${text})` : ''}`,
+            await getResponseError({ response, statusText: text }),
           )
         }
 
@@ -179,10 +224,13 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
       },
     }))
     .actions(self => {
-      let listener: (event: MessageEvent) => void
+      let listener: (event: MessageEvent) => void | undefined
       let exchangedTokenPromise: Promise<string> | undefined = undefined
       return {
-        // used to listen to child window for auth code/token
+        /**
+         * #action
+         * used to listen to child window for auth code/token
+         */
         addMessageChannel(
           resolve: (token: string) => void,
           reject: (error: Error) => void,
@@ -194,9 +242,15 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           }
           window.addEventListener('message', listener)
         },
+        /**
+         * #action
+         */
         deleteMessageChannel() {
           window.removeEventListener('message', listener)
         },
+        /**
+         * #action
+         */
         async finishOAuthWindow(
           event: MessageEvent,
           resolve: (token: string) => void,
@@ -242,11 +296,15 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             return reject(new Error('OAuth flow was cancelled'))
           }
           if (redirectUriWithInfo.includes('error')) {
-            return reject(new Error('Oauth flow error: ' + queryStringSearch))
+            return reject(new Error('OAuth flow error: ' + queryStringSearch))
           }
           this.deleteMessageChannel()
         },
-        // opens external OAuth flow, popup for web and new browser window for desktop
+        /**
+         * #action
+         * opens external OAuth flow, popup for web and new browser window for
+         * desktop
+         */
         async useEndpointForAuthorization(
           resolve: (token: string) => void,
           reject: (error: Error) => void,
@@ -269,14 +327,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           }
 
           if (self.needsPKCE) {
-            const { codeVerifierPKCE } = self
-
-            const sha256 = await import('crypto-js/sha256').then(f => f.default)
-            const Base64 = await import('crypto-js/enc-base64')
-            const codeChallenge = fixup(
-              Base64.stringify(sha256(codeVerifierPKCE)),
-            )
-            data.code_challenge = codeChallenge
+            data.code_challenge = await generateChallenge(self.codeVerifierPKCE)
             data.code_challenge_method = 'S256'
           }
 
@@ -309,10 +360,13 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             window.open(url, eventName, options)
           }
         },
+        /**
+         * #action
+         */
         async getTokenFromUser(
           resolve: (token: string) => void,
           reject: (error: Error) => void,
-        ): Promise<void> {
+        ) {
           const refreshToken =
             self.hasRefreshToken && self.retrieveRefreshToken()
           if (refreshToken) {
@@ -330,10 +384,10 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           this.useEndpointForAuthorization(resolve, reject)
         },
-        async validateToken(
-          token: string,
-          location: UriLocation,
-        ): Promise<string> {
+        /**
+         * #action
+         */
+        async validateToken(token: string, location: UriLocation) {
           const newInit = self.addAuthHeaderToInit({ method: 'HEAD' }, token)
           const response = await fetch(location.uri, newInit)
           if (!response.ok) {
@@ -354,19 +408,46 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
                 // let original error be thrown
               }
             }
-            let errorMessage
-            try {
-              errorMessage = await response.text()
-            } catch (error) {
-              errorMessage = ''
-            }
+
             throw new Error(
-              `Error validating token — ${response.status} (${
-                response.statusText
-              })${errorMessage ? ` (${errorMessage})` : ''}`,
+              await getResponseError({
+                response,
+                reason: 'Error validating token',
+              }),
             )
           }
           return token
+        },
+      }
+    })
+    .actions(self => {
+      const superGetFetcher = self.getFetcher
+      return {
+        /**
+         * #action
+         * Get a fetch method that will add any needed authentication headers to
+         * the request before sending it. If location is provided, it will be
+         * checked to see if it includes a token in it's pre-auth information.
+         *
+         * @param loc - UriLocation of the resource
+         * @returns A function that can be used to fetch
+         */
+        getFetcher(loc?: UriLocation) {
+          const fetcher = superGetFetcher(loc)
+          return async (input: RequestInfo, init?: RequestInit) => {
+            if (loc) {
+              try {
+                await self.getPreAuthorizationInformation(loc)
+              } catch (e) {
+                /* ignore error */
+              }
+            }
+            const response = await fetcher(input, init)
+            if (!response.ok) {
+              throw new Error(await getResponseError({ response }))
+            }
+            return response
+          }
         },
       }
     })

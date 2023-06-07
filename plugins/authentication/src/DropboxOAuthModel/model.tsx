@@ -3,26 +3,12 @@ import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { UriLocation } from '@jbrowse/core/util/types'
 import { SvgIconProps, SvgIcon } from '@mui/material'
 import { Instance, types } from 'mobx-state-tree'
+
+// locals
 import { DropboxOAuthInternetAccountConfigModel } from './configSchema'
 import baseModel from '../OAuthModel/model'
 import { configSchema as OAuthConfigSchema } from '../OAuthModel'
-
-interface DropboxError {
-  error_summary: string
-  error: {
-    '.tag': string
-  }
-}
-
-/** Error messages from https://www.dropbox.com/developers/documentation/http/documentation#sharing-get_shared_link_file */
-const dropboxErrorMessages: Record<string, string | undefined> = {
-  shared_link_not_found: "The shared link wasn't found.",
-  shared_link_access_denied:
-    'The caller is not allowed to access this shared link.',
-  unsupported_link_type:
-    'This type of link is not supported; use files/export instead.',
-  shared_link_is_directory: 'Directories cannot be retrieved by this endpoint.',
-}
+import { getDescriptiveErrorMessage } from './util'
 
 export function DropboxIcon(props: SvgIconProps) {
   return (
@@ -32,55 +18,45 @@ export function DropboxIcon(props: SvgIconProps) {
   )
 }
 
-async function getDescriptiveErrorMessage(response: Response) {
-  let errorMessage
-  try {
-    errorMessage = await response.text()
-  } catch (error) {
-    errorMessage = ''
-  }
-  if (errorMessage) {
-    let errorMessageParsed: DropboxError | undefined
-    try {
-      errorMessageParsed = JSON.parse(errorMessage)
-    } catch (error) {
-      errorMessageParsed = undefined
-    }
-    if (errorMessageParsed) {
-      const messageTag = errorMessageParsed.error['.tag']
-      errorMessage = dropboxErrorMessages[messageTag] || messageTag
-    }
-  }
-  return `Network response failure — ${response.status} (${
-    response.statusText
-  })${errorMessage ? ` (${errorMessage})` : ''}`
-}
-
+/**
+ * #stateModel DropboxOAuthInternetAccount
+ */
 const stateModelFactory = (
   configSchema: DropboxOAuthInternetAccountConfigModel,
 ) => {
   return baseModel(OAuthConfigSchema)
     .named('DropboxOAuthInternetAccount')
     .props({
+      /**
+       * #property
+       */
       type: types.literal('DropboxOAuthInternetAccount'),
+      /**
+       * #property
+       */
       configuration: ConfigurationReference(configSchema),
     })
     .views(() => ({
+      /**
+       * #getter
+       * The FileSelector icon for Dropbox
+       */
       get toggleContents() {
         return <DropboxIcon />
       },
+      /**
+       * #getter
+       */
       get selectorLabel() {
         return 'Enter Dropbox share link'
       },
     }))
     .actions(self => ({
-      getFetcher(
-        location?: UriLocation,
-      ): (input: RequestInfo, init?: RequestInit) => Promise<Response> {
-        return async (
-          input: RequestInfo,
-          init?: RequestInit,
-        ): Promise<Response> => {
+      /**
+       * #method
+       */
+      getFetcher(location?: UriLocation) {
+        return async (input: RequestInfo, init?: RequestInit) => {
           const authToken = await self.getToken(location)
           const newInit = self.addAuthHeaderToInit(
             { ...init, method: 'POST' },
@@ -95,12 +71,14 @@ const stateModelFactory = (
             newInit,
           )
           if (!response.ok) {
-            const message = await getDescriptiveErrorMessage(response)
-            throw new Error(message)
+            throw new Error(await getDescriptiveErrorMessage(response))
           }
           return response
         }
       },
+      /**
+       * #action
+       */
       async validateToken(
         token: string,
         location: UriLocation,
@@ -128,8 +106,12 @@ const stateModelFactory = (
             )
             return this.validateToken(newToken, location)
           }
-          const message = await getDescriptiveErrorMessage(response)
-          throw new Error(`Token could not be validated. ${message}`)
+          throw new Error(
+            await getDescriptiveErrorMessage(
+              response,
+              'Token could not be validated',
+            ),
+          )
         }
         return token
       },

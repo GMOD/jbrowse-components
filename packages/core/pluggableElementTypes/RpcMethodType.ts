@@ -16,8 +16,10 @@ import {
   RemoteAbortSignal,
 } from '../rpc/remoteAbortSignals'
 
-type Obj = Record<string, unknown>
-
+interface SerializedArgs {
+  signal?: RemoteAbortSignal
+  blobMap?: Record<string, File>
+}
 export type RpcMethodConstructor = new (pm: PluginManager) => RpcMethodType
 
 export default abstract class RpcMethodType extends PluggableElementBase {
@@ -25,13 +27,16 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     super({})
   }
 
-  async serializeArguments(args: {}, _rpcDriverClassName: string): Promise<{}> {
+  async serializeArguments(args: {}, rpcDriverClassName: string): Promise<{}> {
     const blobMap = getBlobMap()
-    await this.augmentLocationObjects(args)
+    await this.augmentLocationObjects(args, rpcDriverClassName)
     return { ...args, blobMap }
   }
 
-  async serializeNewAuthArguments(loc: UriLocation) {
+  async serializeNewAuthArguments(
+    loc: UriLocation,
+    rpcDriverClassName: string,
+  ) {
     const rootModel = this.pluginManager.rootModel
 
     // args dont need auth or already have auth
@@ -41,25 +46,19 @@ export default abstract class RpcMethodType extends PluggableElementBase {
 
     const account = rootModel.findAppropriateInternetAccount(loc)
 
-    if (account) {
-      // spread here instead of directly assigning
-      // internetAccountPreAuthorization avoids this intermittent error:
-      // `Cannot assign to read only property 'internetAccountPreAuthorization' of object '#<Object>'`
-      loc = {
-        ...loc,
-        internetAccountPreAuthorization:
-          await account.getPreAuthorizationInformation(loc),
-      }
+    // mutating loc object is not allowed in MainThreadRpcDriver, and is only
+    // needed for web worker RPC
+    if (account && rpcDriverClassName !== 'MainThreadRpcDriver') {
+      loc.internetAccountPreAuthorization =
+        await account.getPreAuthorizationInformation(loc)
     }
     return loc
   }
 
-  async deserializeArguments<
-    T extends {
-      signal?: RemoteAbortSignal
-      blobMap?: Record<string, File>
-    },
-  >(serializedArgs: T, _rpcDriverClassName: string) {
+  async deserializeArguments<T extends SerializedArgs>(
+    serializedArgs: T,
+    _rpcDriverClassName: string,
+  ) {
     if (serializedArgs.blobMap) {
       setBlobMap(serializedArgs.blobMap)
     }
@@ -89,7 +88,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
   async deserializeReturn(
     serializedReturn: unknown,
     _args: unknown,
-    _rpcDriver: string,
+    _rpcDriverClassName: string,
   ) {
     let r
     try {
@@ -113,7 +112,10 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     return r
   }
 
-  private async augmentLocationObjects(thing: Obj) {
+  private async augmentLocationObjects(
+    thing: Record<string, unknown>,
+    rpcDriverClassName: string,
+  ) {
     const uris = [] as UriLocation[]
 
     // using map-obj avoids cycles, seen in circular view svg export
@@ -123,7 +125,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
       }
     })
     for (const uri of uris) {
-      await this.serializeNewAuthArguments(uri)
+      await this.serializeNewAuthArguments(uri, rpcDriverClassName)
     }
     return thing
   }

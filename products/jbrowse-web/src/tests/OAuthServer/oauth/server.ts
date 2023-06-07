@@ -1,8 +1,8 @@
-import OAuthServer from 'express-oauth-server'
+import OAuthServer from '@node-oauth/express-oauth-server'
 import model from './model'
 
 export default new OAuthServer({
-  model: model,
+  model,
   accessTokenLifetime: 5,
   allowEmptyState: true,
   allowExtendedTokenAttributes: true,
