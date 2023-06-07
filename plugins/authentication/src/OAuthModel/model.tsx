@@ -342,17 +342,23 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           reject: (error: Error) => void,
         ) {
           const refreshToken = self.retrieveRefreshToken()
+          let doUserFlow = true
+
+          // if there is a refresh token, then try it out, and only if that
+          // refresh token succeeds, set doUserFlow to false
           if (refreshToken) {
             try {
               const token = await self.exchangeRefreshForAccessToken(
                 refreshToken,
               )
               resolve(token)
+              doUserFlow = false
             } catch (e) {
               console.error(e)
               self.removeRefreshToken()
             }
-          } else {
+          }
+          if (doUserFlow) {
             this.addMessageChannel(resolve, reject)
             // may want to improve handling
             // eslint-disable-next-line @typescript-eslint/no-floating-promises

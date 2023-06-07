@@ -51,14 +51,6 @@ const DropboxOAuthConfigSchema = ConfigurationSchema(
         'getdropbox.com',
       ],
     },
-    /**
-     * #slot
-     */
-    hasRefreshToken: {
-      description: 'true if the endpoint can supply a refresh token',
-      type: 'boolean',
-      defaultValue: true,
-    },
   },
   {
     /**

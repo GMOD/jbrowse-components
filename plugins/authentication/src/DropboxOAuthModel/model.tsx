@@ -97,8 +97,7 @@ const stateModelFactory = (
           },
         )
         if (!response.ok) {
-          const refreshToken =
-            self.hasRefreshToken && self.retrieveRefreshToken()
+          const refreshToken = self.retrieveRefreshToken()
           if (refreshToken) {
             self.removeRefreshToken()
             const newToken = await self.exchangeRefreshForAccessToken(
