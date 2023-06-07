@@ -416,18 +416,9 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           const fetcher = superGetFetcher(loc)
           return async (input: RequestInfo, init?: RequestInit) => {
             if (loc) {
-              try {
-                await self.getPreAuthorizationInformation(loc)
-              } catch (e) {
-                console.error(e)
-                /* ignore error */
-              }
+              await self.validateToken(await self.getToken(loc), loc)
             }
-            const response = await fetcher(input, init)
-            if (!response.ok) {
-              throw new Error(await getResponseError({ response }))
-            }
-            return response
+            return fetcher(input, init)
           }
         },
       }
