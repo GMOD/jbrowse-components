@@ -86,19 +86,10 @@ state: {
 
 ```js
 responseType: {
-      description: 'the type of response from the authorization endpoint',
+      description:
+        "the type of response from the authorization endpoint. can be 'token' or 'code'",
       type: 'string',
       defaultValue: 'code',
-    }
-```
-
-#### slot: hasRefreshToken
-
-```js
-hasRefreshToken: {
-      description: 'true if the endpoint can supply a refresh token',
-      type: 'boolean',
-      defaultValue: false,
     }
 ```
 

@@ -61,16 +61,6 @@ domains: {
     }
 ```
 
-#### slot: hasRefreshToken
-
-```js
-hasRefreshToken: {
-      description: 'true if the endpoint can supply a refresh token',
-      type: 'boolean',
-      defaultValue: true,
-    }
-```
-
 ### DropboxOAuthInternetAccount - Derives from
 
 ```js
