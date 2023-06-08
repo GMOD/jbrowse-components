@@ -5,7 +5,12 @@ import { Instance, types } from 'mobx-state-tree'
 
 // locals
 import { OAuthInternetAccountConfigModel } from './configSchema'
-import { fixup, generateChallenge } from './util'
+import {
+  fixup,
+  generateChallenge,
+  processError,
+  processTokenResponse,
+} from './util'
 import { getResponseError } from '../util'
 
 interface OAuthData {
@@ -17,14 +22,6 @@ interface OAuthData {
   code_challenge_method?: string
   token_access_type?: string
   state?: string
-}
-
-interface OAuthExchangeData {
-  code: string
-  grant_type: string
-  client_id: string
-  redirect_uri: string
-  code_verifier?: string
 }
 
 /**
@@ -98,7 +95,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
        * Can override or extend if dynamic state is needed.
        */
       state(): string | undefined {
-        return getConf(self, 'state') || undefined
+        return getConf(self, 'state')
       },
       /**
        * #getter
@@ -109,16 +106,11 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
       /**
        * #getter
        */
-      get hasRefreshToken(): boolean {
-        return getConf(self, 'hasRefreshToken')
-      },
-      /**
-       * #getter
-       */
       get refreshTokenKey() {
         return `${self.internetAccountId}-refreshToken`
       },
     }))
+
     .actions(self => ({
       /**
        * #action
@@ -145,17 +137,15 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
         token: string,
         redirectUri: string,
       ): Promise<string> {
-        const data: OAuthExchangeData = {
-          code: token,
-          grant_type: 'authorization_code',
-          client_id: self.clientId,
-          redirect_uri: redirectUri,
-        }
-        if (self.needsPKCE) {
-          data.code_verifier = self.codeVerifierPKCE
-        }
-
-        const params = new URLSearchParams(Object.entries(data))
+        const params = new URLSearchParams(
+          Object.entries({
+            code: token,
+            grant_type: 'authorization_code',
+            client_id: self.clientId,
+            redirect_uri: redirectUri,
+            ...(self.needsPKCE ? { code_verifier: self.codeVerifierPKCE } : {}),
+          }),
+        )
 
         const response = await fetch(self.tokenEndpoint, {
           method: 'POST',
@@ -172,11 +162,10 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           )
         }
 
-        const accessToken = await response.json()
-        if (accessToken.refresh_token) {
-          this.storeRefreshToken(accessToken.refresh_token)
-        }
-        return accessToken.access_token
+        const data = await response.json()
+        return processTokenResponse(data, token =>
+          this.storeRefreshToken(token),
+        )
       },
       /**
        * #action
@@ -184,43 +173,32 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
       async exchangeRefreshForAccessToken(
         refreshToken: string,
       ): Promise<string> {
-        const data = {
-          grant_type: 'refresh_token',
-          refresh_token: refreshToken,
-          client_id: self.clientId,
-        }
-
-        const params = new URLSearchParams(Object.entries(data))
-
         const response = await fetch(self.tokenEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: params.toString(),
+          body: new URLSearchParams(
+            Object.entries({
+              grant_type: 'refresh_token',
+              refresh_token: refreshToken,
+              client_id: self.clientId,
+            }),
+          ).toString(),
         })
 
         if (!response.ok) {
           self.removeToken()
-          let text = await response.text()
-          try {
-            const obj = JSON.parse(text)
-            if (obj.error === 'invalid_grant') {
-              this.removeRefreshToken()
-            }
-            text = obj?.error_description ?? text
-          } catch (e) {
-            /* just use original text as error */
-          }
-
+          const text = await response.text()
           throw new Error(
-            await getResponseError({ response, statusText: text }),
+            await getResponseError({
+              response,
+              statusText: processError(text, () => this.removeRefreshToken()),
+            }),
           )
         }
-
-        const accessToken = await response.json()
-        if (accessToken.refresh_token) {
-          this.storeRefreshToken(accessToken.refresh_token)
-        }
-        return accessToken.access_token
+        const data = await response.json()
+        return processTokenResponse(data, token =>
+          this.storeRefreshToken(token),
+        )
       },
     }))
     .actions(self => {
@@ -286,10 +264,10 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
               )
               self.storeToken(token)
               return resolve(token)
-            } catch (error) {
-              return error instanceof Error
-                ? reject(error)
-                : reject(new Error(String(error)))
+            } catch (e) {
+              return e instanceof Error
+                ? reject(e)
+                : reject(new Error(String(e)))
             }
           }
           if (redirectUriWithInfo.includes('access_denied')) {
@@ -316,6 +294,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             client_id: self.clientId,
             redirect_uri: redirectUri,
             response_type: self.responseType || 'code',
+            token_access_type: 'offline',
           }
 
           if (self.state()) {
@@ -329,10 +308,6 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           if (self.needsPKCE) {
             data.code_challenge = await generateChallenge(self.codeVerifierPKCE)
             data.code_challenge_method = 'S256'
-          }
-
-          if (self.hasRefreshToken) {
-            data.token_access_type = 'offline'
           }
 
           const params = new URLSearchParams(Object.entries(data))
@@ -356,8 +331,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this.finishOAuthWindow(eventFromDesktop, resolve, reject)
           } else {
-            const options = `width=500,height=600,left=0,top=0`
-            window.open(url, eventName, options)
+            window.open(url, eventName, `width=500,height=600,left=0,top=0`)
           }
         },
         /**
@@ -367,22 +341,29 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           resolve: (token: string) => void,
           reject: (error: Error) => void,
         ) {
-          const refreshToken =
-            self.hasRefreshToken && self.retrieveRefreshToken()
+          const refreshToken = self.retrieveRefreshToken()
+          let doUserFlow = true
+
+          // if there is a refresh token, then try it out, and only if that
+          // refresh token succeeds, set doUserFlow to false
           if (refreshToken) {
             try {
               const token = await self.exchangeRefreshForAccessToken(
                 refreshToken,
               )
               resolve(token)
-            } catch (err) {
+              doUserFlow = false
+            } catch (e) {
+              console.error(e)
               self.removeRefreshToken()
             }
           }
-          this.addMessageChannel(resolve, reject)
-          // may want to improve handling
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          this.useEndpointForAuthorization(resolve, reject)
+          if (doUserFlow) {
+            this.addMessageChannel(resolve, reject)
+            // may want to improve handling
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            this.useEndpointForAuthorization(resolve, reject)
+          }
         },
         /**
          * #action
@@ -392,8 +373,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           const response = await fetch(location.uri, newInit)
           if (!response.ok) {
             self.removeToken()
-            const refreshToken =
-              self.hasRefreshToken && self.retrieveRefreshToken()
+            const refreshToken = self.retrieveRefreshToken()
             if (refreshToken) {
               try {
                 if (!exchangedTokenPromise) {
@@ -436,17 +416,9 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           const fetcher = superGetFetcher(loc)
           return async (input: RequestInfo, init?: RequestInit) => {
             if (loc) {
-              try {
-                await self.getPreAuthorizationInformation(loc)
-              } catch (e) {
-                /* ignore error */
-              }
+              await self.validateToken(await self.getToken(loc), loc)
             }
-            const response = await fetcher(input, init)
-            if (!response.ok) {
-              throw new Error(await getResponseError({ response }))
-            }
-            return response
+            return fetcher(input, init)
           }
         },
       }
