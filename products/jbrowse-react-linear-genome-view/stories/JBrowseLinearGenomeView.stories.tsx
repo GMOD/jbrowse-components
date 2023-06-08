@@ -11,6 +11,7 @@ export {
   WithInlinePlugins,
   WithInternetAccounts,
   WithObserveVisibleRegions,
+  WithObserveVisibleFeatures,
   WithOutsideStyling,
   WithPerTrackTextSearching,
   WithShowTrack,
