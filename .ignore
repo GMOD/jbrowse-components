@@ -18,4 +18,5 @@ products/jbrowse-desktop/src/components/JBrowse.test.tsx
 test_data/volvox/names/
 products/jbrowse-web/src/sessionSharing.ts
 website/docs/models/
+website/src/pages/index.tsx
 *.snap
