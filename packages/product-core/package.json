@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/product-core",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "sideEffects": false,
   "description": "JBrowse 2 code shared between products but not used by plugins",
   "keywords": [

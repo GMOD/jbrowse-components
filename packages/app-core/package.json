@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/app-core",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "description": "JBrowse 2 code shared between the 'full featured' apps e.g. jbrowse-web and jbrowse-desktop",
   "keywords": [
     "jbrowse",
