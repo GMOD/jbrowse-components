@@ -4,7 +4,12 @@ import {
   BaseOptions,
   BaseSequenceAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { checkAbortSignal, Region, Feature } from '@jbrowse/core/util'
+import {
+  checkAbortSignal,
+  Region,
+  Feature,
+  updateStatus,
+} from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { toArray } from 'rxjs/operators'
@@ -142,36 +147,36 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
 
   private async setupPre(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts || {}
-    const conf = await this.configure()
-    statusCallback('Downloading index')
-    const { cram } = conf
-    const samHeader = await cram.cram.getSamHeader()
+    return updateStatus('Downloading index', statusCallback, async () => {
+      const conf = await this.configure()
+      const { cram } = conf
+      const samHeader = await cram.cram.getSamHeader()
 
-    // use the @SQ lines in the header to figure out the
-    // mapping between ref ID numbers and names
-    const idToName: string[] = []
-    const nameToId: Record<string, number> = {}
-    samHeader
-      .filter(l => l.tag === 'SQ')
-      .forEach((sqLine, refId) => {
-        sqLine.data.forEach(item => {
-          if (item.tag === 'SN') {
-            // this is the ref name
-            const refName = item.value
-            nameToId[refName] = refId
-            idToName[refId] = refName
-          }
+      // use the @SQ lines in the header to figure out the
+      // mapping between ref ID numbers and names
+      const idToName: string[] = []
+      const nameToId: Record<string, number> = {}
+      samHeader
+        .filter(l => l.tag === 'SQ')
+        .forEach((sqLine, refId) => {
+          sqLine.data.forEach(item => {
+            if (item.tag === 'SN') {
+              // this is the ref name
+              const refName = item.value
+              nameToId[refName] = refId
+              idToName[refId] = refName
+            }
+          })
         })
-      })
 
-    const readGroups = samHeader
-      .filter(l => l.tag === 'RG')
-      .map(rgLine => rgLine.data.find(item => item.tag === 'ID')?.value)
+      const readGroups = samHeader
+        .filter(l => l.tag === 'RG')
+        .map(rgLine => rgLine.data.find(item => item.tag === 'ID')?.value)
 
-    const data = { idToName, nameToId, readGroups }
-    statusCallback('')
-    this.samHeader = data
-    return { samHeader: data, ...conf }
+      const data = { idToName, nameToId, readGroups }
+      this.samHeader = data
+      return { samHeader: data, ...conf }
+    })
   }
 
   private async setup(opts?: BaseOptions) {
@@ -236,40 +241,44 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       if (originalRefName) {
         this.seqIdToOriginalRefName[refId] = originalRefName
       }
-      statusCallback('Downloading alignments')
-      const records = await cram.getRecordsForRange(refId, start, end)
+      const records = await updateStatus(
+        'Downloading alignments',
+        statusCallback,
+        () => cram.getRecordsForRange(refId, start, end),
+      )
       checkAbortSignal(signal)
-      const {
-        flagInclude = 0,
-        flagExclude = 0,
-        tagFilter,
-        readName,
-      } = filterBy || {}
+      await updateStatus('Processing alignments', statusCallback, () => {
+        const {
+          flagInclude = 0,
+          flagExclude = 0,
+          tagFilter,
+          readName,
+        } = filterBy || {}
 
-      for (const record of records) {
-        const flags = record.flags
-        if ((flags & flagInclude) !== flagInclude && !(flags & flagExclude)) {
-          continue
-        }
-
-        if (tagFilter) {
-          const v =
-            tagFilter.tag === 'RG'
-              ? this.samHeader.readGroups?.[record.readGroupId]
-              : record.tags[tagFilter.tag]
-          if (!(v === '*' ? v !== undefined : `${v}` === tagFilter.value)) {
+        for (const record of records) {
+          const flags = record.flags
+          if ((flags & flagInclude) !== flagInclude && !(flags & flagExclude)) {
             continue
           }
+
+          if (tagFilter) {
+            const v =
+              tagFilter.tag === 'RG'
+                ? this.samHeader.readGroups?.[record.readGroupId]
+                : record.tags[tagFilter.tag]
+            if (!(v === '*' ? v !== undefined : `${v}` === tagFilter.value)) {
+              continue
+            }
+          }
+
+          if (readName && record.readName !== readName) {
+            continue
+          }
+          observer.next(this.cramRecordToFeature(record))
         }
 
-        if (readName && record.readName !== readName) {
-          continue
-        }
-        observer.next(this.cramRecordToFeature(record))
-      }
-
-      statusCallback('')
-      observer.complete()
+        observer.complete()
+      })
     }, signal)
   }
 
