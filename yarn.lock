@@ -1917,19 +1917,17 @@
   resolved "https://registry.yarnpkg.com/@gar/promisify/-/promisify-1.1.3.tgz#555193ab2e3bb3b6adc3d551c9c030d9e860daf6"
   integrity sha512-k2Ty1JcVojjJFwrg/ThKi2ujJ7XNLYaFGNB/bWT9wGR+oSMJHMa5w+CUq6p/pVrKeNNgA7pCqEcjSnHVoqJQFw==
 
-"@gmod/bam@^1.1.15":
-  version "1.1.18"
-  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-1.1.18.tgz#de28533289f0f659f962a59226d9c342590a0d50"
-  integrity sha512-2Sn4zLV7DKYyrmYbNJRMchKGfhfIVm6LZEl2h7MSuGmAEtGfa1RBVOfG8Cu6VDC+lIFrgS4ys4vUFFxaWaxgSQ==
+"@gmod/bam@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-2.0.0.tgz#a3be53304bd723b90e245823db9cf7ac26421603"
+  integrity sha512-jzm19zQcDGtKApr9vs1WAMfjfjdRVQTvYfyTcdbLwbCILG0bYqQLCnptrKRqV1w5powOBmcXwUu1Pm2NORnjkQ==
   dependencies:
     "@gmod/bgzf-filehandle" "^1.4.4"
     abortable-promise-cache "^1.5.0"
     buffer-crc32 "^0.2.13"
-    cross-fetch "^3.0.2"
     generic-filehandle "^3.0.0"
     long "^4.0.0"
-    object.entries-ponyfill "^1.0.1"
-    quick-lru "^2.0.0"
+    quick-lru "^4.0.0"
 
 "@gmod/bbi@^4.0.0":
   version "4.0.0"
@@ -7975,7 +7973,7 @@ cross-env@^7.0.2:
   dependencies:
     cross-spawn "^7.0.1"
 
-cross-fetch@^3.0.0, cross-fetch@^3.0.2, cross-fetch@^3.0.4:
+cross-fetch@^3.0.0, cross-fetch@^3.0.4:
   version "3.1.6"
   resolved "https://registry.yarnpkg.com/cross-fetch/-/cross-fetch-3.1.6.tgz#bae05aa31a4da760969756318feeee6e70f15d6c"
   integrity sha512-riRvo06crlE8HiqOwIpQhxwdOk4fOeR7FVM/wXoxchFEqMNUjvbs3bfo4OTgMEMHzppd4DxFBDbyySj8Cv781g==

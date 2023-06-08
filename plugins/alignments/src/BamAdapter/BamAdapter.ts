@@ -43,8 +43,6 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       // chunkSizeLimit and fetchSizeLimit are more troublesome than
       // helpful, and have given overly large values on the ultra long
       // nanopore reads even with 500MB limits, so disabled with infinity
-      chunkSizeLimit: Infinity,
-      fetchSizeLimit: Infinity,
       yieldThreadTime: Infinity,
     })
 
@@ -89,7 +87,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
         const idToName: string[] = []
         const nameToId: Record<string, number> = {}
         samHeader
-          .filter(l => l.tag === 'SQ')
+          ?.filter(l => l.tag === 'SQ')
           .forEach((sqLine, refId) => {
             sqLine.data.forEach(item => {
               if (item.tag === 'SN') {
@@ -182,46 +180,50 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     return ObservableCreate<Feature>(async observer => {
       const { bam } = await this.configure()
       await this.setup(opts)
-      statusCallback('Downloading alignments')
-      const records = await bam.getRecordsForRange(refName, start, end, opts)
+      const records = await updateStatus(
+        'Downloading alignments',
+        statusCallback,
+        () => bam.getRecordsForRange(refName, start, end, opts),
+      )
 
-      const {
-        flagInclude = 0,
-        flagExclude = 0,
-        tagFilter,
-        readName,
-      } = filterBy || {}
+      await updateStatus('Processing alignments', statusCallback, async () => {
+        const {
+          flagInclude = 0,
+          flagExclude = 0,
+          tagFilter,
+          readName,
+        } = filterBy || {}
 
-      for (const record of records) {
-        let ref: string | undefined
-        if (!record.get('MD')) {
-          ref = await this.seqFetch(
-            originalRefName || refName,
-            record.get('start'),
-            record.get('end'),
-          )
-        }
+        for (const record of records) {
+          let ref: string | undefined
+          if (!record.get('MD')) {
+            ref = await this.seqFetch(
+              originalRefName || refName,
+              record.get('start'),
+              record.get('end'),
+            )
+          }
 
-        const flags = record.flags
-        if ((flags & flagInclude) !== flagInclude && !(flags & flagExclude)) {
-          continue
-        }
-
-        if (tagFilter) {
-          const v = record.get(tagFilter.tag)
-          if (!(v === '*' ? v !== undefined : `${v}` === tagFilter.value)) {
+          const flags = record.flags
+          if ((flags & flagInclude) !== flagInclude && !(flags & flagExclude)) {
             continue
           }
-        }
 
-        if (readName && record.get('name') !== readName) {
-          continue
-        }
+          if (tagFilter) {
+            const v = record.get(tagFilter.tag)
+            if (!(v === '*' ? v !== undefined : `${v}` === tagFilter.value)) {
+              continue
+            }
+          }
 
-        observer.next(new BamSlightlyLazyFeature(record, this, ref))
-      }
-      statusCallback('')
-      observer.complete()
+          if (readName && record.get('name') !== readName) {
+            continue
+          }
+
+          observer.next(new BamSlightlyLazyFeature(record, this, ref))
+        }
+        observer.complete()
+      })
     }, signal)
   }
 
@@ -231,8 +233,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   ) {
     const { bam } = await this.configure()
     // this is a method to avoid calling on htsget adapters
-    // @ts-expect-error
-    if (bam.index.filehandle !== '?') {
+    if (bam.index) {
       const bytes = await bytesForRegions(regions, bam)
       const fetchSizeLimit = this.getConf('fetchSizeLimit')
       return { bytes, fetchSizeLimit }
