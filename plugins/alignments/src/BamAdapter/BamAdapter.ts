@@ -43,8 +43,6 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       // chunkSizeLimit and fetchSizeLimit are more troublesome than
       // helpful, and have given overly large values on the ultra long
       // nanopore reads even with 500MB limits, so disabled with infinity
-      chunkSizeLimit: Infinity,
-      fetchSizeLimit: Infinity,
       yieldThreadTime: Infinity,
     })
 
@@ -89,7 +87,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
         const idToName: string[] = []
         const nameToId: Record<string, number> = {}
         samHeader
-          .filter(l => l.tag === 'SQ')
+          ?.filter(l => l.tag === 'SQ')
           .forEach((sqLine, refId) => {
             sqLine.data.forEach(item => {
               if (item.tag === 'SN') {
