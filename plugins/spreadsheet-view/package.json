@@ -57,5 +57,8 @@
   },
   "distModule": "esm/index.js",
   "srcModule": "src/index.ts",
-  "module": ""
+  "module": "",
+  "publishConfig": {
+    "access": "public"
+  }
 }
