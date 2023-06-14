@@ -361,10 +361,14 @@ function stateModelFactory(
          * #method
          */
         trackMenuItems(): MenuItem[] {
+          if (!self.PileupDisplay) {
+            return []
+          }
           const extra = getLowerPanelDisplays(pluginManager).map(d => ({
             type: 'radio',
             label: d.displayName,
-            checked: d.name === self.PileupDisplay.type,
+            checked:
+              d.name === self.PileupDisplay ? self.PileupDisplay.type : false,
             onClick: () => self.setLowerPanelType(d.name),
           }))
           return [
