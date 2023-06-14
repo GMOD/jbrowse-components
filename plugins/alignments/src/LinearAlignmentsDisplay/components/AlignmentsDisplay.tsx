@@ -21,7 +21,7 @@ function AlignmentsDisplay({ model }: { model: AlignmentsDisplayModel }) {
   if (!SNPCoverageDisplay) {
     return null
   }
-  const top = SNPCoverageDisplay.height ? SNPCoverageDisplay.height : 100
+  const top = SNPCoverageDisplay.height ?? 100
   return (
     <div
       data-testid={`display-${getConf(model, 'displayId')}`}
