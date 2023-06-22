@@ -221,7 +221,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       }) {
         self.colorTagMap = observable.map({}) // clear existing mapping
         self.colorBy = cast(colorScheme)
-        self.tagsReady = false
+        if (colorScheme.tag) self.tagsReady = false
         self.modificationsReady = false
       },
 
