@@ -1,3 +1,4 @@
+import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
 import {
   AnyConfigurationModel,
   readConfObject,
@@ -77,4 +78,8 @@ function getStranded(feature: Feature) {
 
 export function colorByStrandedRnaSeq(feature: Feature) {
   return fillColor[getStranded(feature)]
+}
+
+export function colorByCustom(feature: Feature, expr: string) {
+  return stringToJexlExpression(expr).evalSync({ feature })
 }

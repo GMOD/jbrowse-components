@@ -30,7 +30,7 @@ export function renderAlignment({
   canvasWidth: number
 }) {
   const { config, bpPerPx, regions, colorBy, colorTagMap = {} } = renderArgs
-  const { tag = '', type: colorType = '' } = colorBy || {}
+  const { tag = '', type: colorType = '', expr = '' } = colorBy || {}
   const { feature } = feat
   const region = regions[0]
 
@@ -38,6 +38,7 @@ export function renderAlignment({
     feature,
     config,
     tag,
+    expr,
     defaultColor,
     colorType,
     colorTagMap,

@@ -56,6 +56,7 @@ const SortByTagDlg = lazy(() => import('./components/SortByTag'))
 const SetFeatureHeightDlg = lazy(() => import('./components/SetFeatureHeight'))
 const SetMaxHeightDlg = lazy(() => import('./components/SetMaxHeight'))
 const ModificationsDlg = lazy(() => import('./components/ColorByModifications'))
+const ColorByCustomDlg = lazy(() => import('./components/ColorByCustom'))
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -136,6 +137,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           types.model({
             type: types.string,
             tag: types.maybe(types.string),
+            expr: types.maybe(types.string),
             extra: types.frozen(),
           }),
         ),
@@ -212,7 +214,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setColorScheme(colorScheme: { type: string; tag?: string }) {
+      setColorScheme(colorScheme: {
+        type: string
+        tag?: string
+        expr?: string
+      }) {
         self.colorTagMap = observable.map({}) // clear existing mapping
         self.colorBy = cast(colorScheme)
         self.tagsReady = false
@@ -691,6 +697,15 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   onClick: () => {
                     getSession(self).queueDialog(doneCallback => [
                       ColorByTagDlg,
+                      { model: self, handleClose: doneCallback },
+                    ])
+                  },
+                },
+                {
+                  label: 'Custom color scheme...',
+                  onClick: () => {
+                    getSession(self).queueDialog(doneCallback => [
+                      ColorByCustomDlg,
                       { model: self, handleClose: doneCallback },
                     ])
                   },
