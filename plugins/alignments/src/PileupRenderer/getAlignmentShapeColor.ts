@@ -10,11 +10,13 @@ import {
   colorByOrientation,
   colorByStrand,
   colorByStrandedRnaSeq,
+  colorByCustom,
 } from './colorBy'
 
 export function getAlignmentShapeColor({
   colorType,
   tag,
+  expr,
   feature,
   config,
   defaultColor,
@@ -22,6 +24,7 @@ export function getAlignmentShapeColor({
 }: {
   colorType: string
   tag: string
+  expr: string
   feature: Feature
   defaultColor: boolean
   config: AnyConfigurationModel
@@ -78,7 +81,8 @@ export function getAlignmentShapeColor({
       // strand reads differently because their c-g will be flipped (e.g. g-c
       // read right to left)
       return feature.get('flags') & 16 ? '#c8dcc8' : '#c8c8c8'
-
+    case 'custom':
+      return colorByCustom(feature, expr)
     default:
       return defaultColor
         ? 'lightgrey'

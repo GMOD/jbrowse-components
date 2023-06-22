@@ -22,7 +22,7 @@ import { makeImageData } from './makeImageData'
 import { readConfObject } from '@jbrowse/core/configuration'
 
 export interface RenderArgsDeserialized extends BoxRenderArgsDeserialized {
-  colorBy?: { type: string; tag?: string }
+  colorBy?: { type: string; tag?: string; expr?: string }
   colorTagMap?: Record<string, string>
   modificationTagMap?: Record<string, string | undefined>
   sortedBy?: {
