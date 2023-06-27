@@ -9,8 +9,8 @@
     "export": "next export",
     "start": "next start",
     "predeploy": "npm run build && npm run export",
-    "deploy": "aws s3 sync --delete out s3://jbrowse.org/demos/lgv-nextjs/",
-    "postdeploy": "aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths \"/demos/lgv-nextjs/*\""
+    "deploy": "aws s3 sync --delete out s3://jbrowse.org/demos/cgv-nextjs/",
+    "postdeploy": "aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths \"/demos/cgv-nextjs/*\""
   },
   "dependencies": {
     "@fontsource/roboto": "^4.5.7",

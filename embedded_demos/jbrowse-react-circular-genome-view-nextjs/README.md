@@ -1,7 +1,7 @@
-# jbrowse-react-linear-genome-view-nextjs
+# jbrowse-react-circular-genome-view-nextjs
 
-This is a demo of using the linear genome view with next.js (which uses webpack
-5).
+This is a demo of using the circular genome view with next.js (which uses
+webpack 5).
 
 # Demo of `@jbrowse/react-circular-genome-view` with next.js
 
