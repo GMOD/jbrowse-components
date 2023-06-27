@@ -193,7 +193,7 @@ function stateModelFactory(
        * #method
        */
       searchFeatureByID(id: string) {
-        return self.PileupDisplay.searchFeatureByID(id)
+        return self.PileupDisplay.searchFeatureByID?.(id)
       },
 
       /**
