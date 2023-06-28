@@ -3,6 +3,6 @@
   "include": ["./src/**/*.ts*", "./src/**/*.js*"],
   "compilerOptions": {
     "strict": true,
-    "rootDir": "./src"
+    "rootDir": "src"
   }
 }

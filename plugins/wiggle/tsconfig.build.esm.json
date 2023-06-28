@@ -1,10 +1,5 @@
 {
   "extends": "./tsconfig",
-  "compilerOptions": {
-    "outDir": "esm",
-    "rootDir": "./src",
-    "composite": true,
-    "target": "es2018"
-  },
+  "compilerOptions": { "outDir": "esm", "composite": true, "target": "es2018" },
   "references": [{ "path": "../../packages/core/tsconfig.build.json" }]
 }

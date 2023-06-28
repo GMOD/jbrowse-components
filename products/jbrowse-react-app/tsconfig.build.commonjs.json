@@ -3,16 +3,10 @@
   "compilerOptions": {
     "module": "commonjs",
     "outDir": "dist",
-    "rootDir": "./src",
     "target": "es2018",
     "composite": true
   },
-  "include": ["./src/**/*.ts*", "./src/**/*.js*"],
-  "exclude": [
-    "src/**/*.test.ts*",
-    "src/**/*.test.js*",
-    "src/makeWorkerInstance.ts"
-  ],
+  "exclude": ["src/makeWorkerInstance.ts"],
   "references": [
     { "path": "../../packages/core/tsconfig.build.json" },
     { "path": "../../plugins/alignments/tsconfig.build.commonjs.json" },

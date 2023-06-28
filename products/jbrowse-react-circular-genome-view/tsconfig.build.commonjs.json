@@ -2,7 +2,6 @@
   "extends": "./tsconfig",
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "./src",
     "target": "es2018",
     "module": "commonjs",
     "composite": true

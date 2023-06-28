@@ -1,13 +1,6 @@
 {
   "extends": "./tsconfig",
-  "compilerOptions": {
-    "outDir": "esm",
-    "rootDir": "./src",
-    "target": "es2018",
-    "composite": true
-  },
-  "include": ["./src/**/*.ts*", "./src/**/*.js*"],
-  "exclude": ["src/**/*.test.ts*", "src/**/*.test.js*"],
+  "compilerOptions": { "outDir": "esm", "target": "es2018", "composite": true },
   "references": [
     { "path": "../../packages/core/tsconfig.build.json" },
     { "path": "../../plugins/alignments/tsconfig.build.esm.json" },
