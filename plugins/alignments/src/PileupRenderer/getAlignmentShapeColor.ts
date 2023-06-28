@@ -10,13 +10,12 @@ import {
   colorByOrientation,
   colorByStrand,
   colorByStrandedRnaSeq,
-  colorByCustom,
 } from './colorBy'
 
 export function getAlignmentShapeColor({
   colorType,
   tag,
-  expr,
+  extra,
   feature,
   config,
   defaultColor,
@@ -24,7 +23,7 @@ export function getAlignmentShapeColor({
 }: {
   colorType: string
   tag: string
-  expr: string
+  extra: any
   feature: Feature
   defaultColor: boolean
   config: AnyConfigurationModel
@@ -36,27 +35,29 @@ export function getAlignmentShapeColor({
     case 'insertSize':
       return colorByInsertSize(feature)
     case 'strand':
-      return colorByStrand(feature)
+      return colorByStrand(feature, extra.custom)
     case 'mappingQuality':
       return colorByMappingQuality(feature)
     case 'pairOrientation':
-      return colorByOrientation(feature, config)
+      return colorByOrientation(feature, config, extra.custom)
     case 'stranded':
-      return colorByStrandedRnaSeq(feature)
+      return colorByStrandedRnaSeq(feature, extra.custom)
     case 'xs':
     case 'tag': {
       const tags = feature.get('tags')
       const val = tags ? tags[tag] : feature.get(tag)
 
+      const colorPivot = extra.custom ?? fillColor
+
       if (tag === 'XS' || tag === 'TS') {
-        return fillColor[
+        return colorPivot[
           {
             '-': 'color_rev_strand' as const,
             '+': 'color_fwd_strand' as const,
           }[val as '-' | '+'] || 'color_nostrand'
         ]
       } else if (tag === 'ts') {
-        return fillColor[
+        return colorPivot[
           {
             '-':
               feature.get('strand') === -1
@@ -69,7 +70,7 @@ export function getAlignmentShapeColor({
           }[val as '-' | '+'] || 'color_nostrand'
         ]
       } else {
-        return colorTagMap[val] || fillColor['color_nostrand']
+        return colorTagMap[val] || colorPivot['color_nostrand']
       }
     }
     case 'insertSizeAndPairOrientation':
@@ -80,12 +81,14 @@ export function getAlignmentShapeColor({
       // this coloring is similar to igv.js, and is helpful to color negative
       // strand reads differently because their c-g will be flipped (e.g. g-c
       // read right to left)
-      return feature.get('flags') & 16 ? '#c8dcc8' : '#c8c8c8'
-    case 'custom':
-      return colorByCustom(feature, expr)
+      return feature.get('flags') & 16
+        ? (extra.custom && extra.custom['color_modifications']) ??
+            fillColor['color_modifications']
+        : (extra.custom && extra.custom['color_methylation']) ??
+            fillColor['color_methylation']
     default:
       return defaultColor
-        ? 'lightgrey'
+        ? (extra.custom && extra.custom['color_unknown']) ?? 'lightgrey'
         : readConfObject(config, 'color', { feature })
   }
 }

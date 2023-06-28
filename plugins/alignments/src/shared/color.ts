@@ -18,6 +18,8 @@ export const fillColor = {
   color_interchrom: 'purple',
   color_longinsert: 'red',
   color_shortinsert: 'pink',
+  color_modifications: '#c8dcc8',
+  color_methylation: '#c8c8c8',
   color_unknown: 'grey',
 }
 
@@ -44,6 +46,8 @@ export const strokeColor = {
   color_interchrom: '#5A005A',
   color_longinsert: '#B30000',
   color_shortinsert: '#FF3A5C',
+  color_modifications: '#c8dcc8',
+  color_methylation: '#c8c8c8',
   color_unknown: 'grey',
 }
 
