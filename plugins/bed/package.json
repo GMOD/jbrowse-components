@@ -54,7 +54,5 @@
   },
   "distModule": "esm/index.js",
   "srcModule": "src/index.ts",
-  "module": "",
-  "build:esm": "tsc --build ../tsconfig.base.build.esm.json",
-  "build:commonjs": "tsc --build ../tsconfig.base.build.commonjs.json"
+  "module": ""
 }

@@ -5,7 +5,7 @@
     "target": "es2018",
     "composite": true
   },
-  "include": "src",
+  "include": ["src"],
   "references": [
     { "path": "../../packages/core/tsconfig.build.json" },
     { "path": "../../plugins/circular-view/tsconfig.build.esm.json" },
