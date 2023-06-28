@@ -64,5 +64,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "module": ""
+  "module": "",
+  "build:esm": "tsc --build ../tsconfig.base.build.esm.json",
+  "build:commonjs": "tsc --build ../tsconfig.base.build.commonjs.json"
 }

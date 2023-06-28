@@ -1,9 +1,0 @@
-{
-  "extends": "./tsconfig",
-  "compilerOptions": { "outDir": "esm", "composite": true, "target": "es2018" },
-  "references": [
-    { "path": "../../packages/core/tsconfig.build.json" },
-    { "path": "../wiggle/tsconfig.build.esm.json" },
-    { "path": "../alignments/tsconfig.build.esm.json" }
-  ]
-}

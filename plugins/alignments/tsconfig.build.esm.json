@@ -1,9 +1,0 @@
-{
-  "extends": "./tsconfig",
-  "compilerOptions": { "composite": true, "outDir": "esm", "target": "es2018" },
-  "references": [
-    { "path": "../../packages/core/tsconfig.build.json" },
-    { "path": "../wiggle/tsconfig.build.esm.json" },
-    { "path": "../linear-genome-view/tsconfig.build.esm.json" }
-  ]
-}
