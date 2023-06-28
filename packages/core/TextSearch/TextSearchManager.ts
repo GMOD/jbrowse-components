@@ -38,9 +38,11 @@ export default class TextSearchManager {
 
   relevantAdapters(searchScope: SearchScope) {
     const pm = this.pluginManager
-    const { aggregateTextSearchAdapters, tracks } = pm.rootModel?.jbrowse as {
-      tracks: AnyConfigurationModel[]
+    const { aggregateTextSearchAdapters } = pm.rootModel?.jbrowse as {
       aggregateTextSearchAdapters: AnyConfigurationModel[]
+    }
+    const { tracks } = pm.rootModel?.session as {
+      tracks: AnyConfigurationModel[]
     }
 
     const { assemblyName } = searchScope
