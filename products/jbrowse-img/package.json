@@ -13,8 +13,7 @@
   },
   "files": [
     "dist",
-    "esm",
-    "src"
+    "esm"
   ],
   "scripts": {
     "test": "cd ../../; jest --env node --testMatch '**/*testmod.js' products/jbrowse-img",

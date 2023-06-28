@@ -22,7 +22,6 @@
   "main": "src/index.ts",
   "files": [
     "dist",
-    "src",
     "esm"
   ],
   "scripts": {

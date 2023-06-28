@@ -19,7 +19,6 @@
   "module": "esm/index.js",
   "files": [
     "dist",
-    "src",
     "esm",
     "docs"
   ],
