@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig",
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "dist",
+    "rootDir": "./src",
+    "target": "es2018",
+    "module": "commonjs"
+  },
+  "references": [
+    { "path": "../../packages/core/tsconfig.build.json" },
+    { "path": "../wiggle/tsconfig.build.commonjs.json" },
+    { "path": "../linear-genome-view/tsconfig.build.commonjs.json" }
+  ]
+}

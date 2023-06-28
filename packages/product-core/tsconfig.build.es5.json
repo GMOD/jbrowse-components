@@ -1,8 +1,6 @@
 {
   "extends": "./tsconfig",
   "compilerOptions": {
-    "declaration": true,
-    "noEmit": false,
     "outDir": "dist",
     "rootDir": "./src",
     "target": "es2018",

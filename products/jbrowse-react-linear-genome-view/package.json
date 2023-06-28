@@ -31,7 +31,7 @@
     "build": "npm-run-all build:*",
     "prepublishOnly": "node output-version.js > src/version.js && git add -A src && git commit -m '[skip ci] Bump version.js'",
     "build:esm": "tsc --build tsconfig.build.esm.json",
-    "build:es5": "tsc --build tsconfig.build.es5.json",
+    "build:commonjs": "tsc --build tsconfig.build.commonjs.json",
     "build:webpack": "npm-run-all build:webpack:*",
     "build:webpack:dev": "cross-env NODE_ENV=development webpack",
     "build:webpack:prod": "cross-env NODE_ENV=production webpack",

@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "./src",
+    "composite": true,
+    "target": "es2018",
+    "module": "commonjs"
+  },
+  "references": [
+    { "path": "../../packages/core/tsconfig.build.json" },
+    { "path": "../wiggle/tsconfig.build.commonjs.json" },
+    { "path": "../alignments/tsconfig.build.commonjs.json" }
+  ]
+}

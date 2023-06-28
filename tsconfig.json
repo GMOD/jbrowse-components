@@ -15,7 +15,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "react",
-    "downlevelIteration": true,
+    "inlineSourceMap": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true
   },
