@@ -137,7 +137,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           types.model({
             type: types.string,
             tag: types.maybe(types.string),
-            expr: types.maybe(types.string),
             extra: types.frozen(),
           }),
         ),
@@ -214,15 +213,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setColorScheme(colorScheme: {
-        type: string
-        tag?: string
-        expr?: string
-      }) {
+      setColorScheme(colorScheme: { type: string; tag?: string; extra?: any }) {
         self.colorTagMap = observable.map({}) // clear existing mapping
         self.colorBy = cast(colorScheme)
-        if (colorScheme.tag) self.tagsReady = false
-        self.modificationsReady = false
+        if (colorScheme.tag) {
+          self.tagsReady = false
+          self.modificationsReady = false
+        }
       },
 
       /**

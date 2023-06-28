@@ -1,4 +1,3 @@
-import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
 import {
   AnyConfigurationModel,
   readConfObject,
@@ -33,15 +32,19 @@ function getOrientation(feature: Feature, config: AnyConfigurationModel) {
   }[orientation]
 }
 
-export function colorByStrand(feature: Feature) {
-  return feature.get('strand') === -1 ? '#8F8FD8' : '#EC8B8B'
+export function colorByStrand(feature: Feature, custom: any) {
+  return feature.get('strand') === -1
+    ? (custom && custom['color_rev_strand']) ?? fillColor['color_rev_strand']
+    : (custom && custom['color_fwd_strand']) ?? fillColor['color_fwd_strand']
 }
 
 export function colorByOrientation(
   feature: Feature,
   config: AnyConfigurationModel,
+  custom: any,
 ) {
-  return fillColor[getOrientation(feature, config) || 'color_nostrand']
+  const colorPivot = custom ?? fillColor
+  return colorPivot[getOrientation(feature, config) || 'color_nostrand']
 }
 function getStranded(feature: Feature) {
   const flags = feature.get('flags')
@@ -70,10 +73,7 @@ function getStranded(feature: Feature) {
   return strand === 1 ? 'color_fwd_strand' : 'color_rev_strand'
 }
 
-export function colorByStrandedRnaSeq(feature: Feature) {
-  return fillColor[getStranded(feature)]
-}
-
-export function colorByCustom(feature: Feature, expr: string) {
-  return stringToJexlExpression(expr).evalSync({ feature })
+export function colorByStrandedRnaSeq(feature: Feature, custom: any) {
+  const colorPivot = custom ?? fillColor
+  return colorPivot[getStranded(feature)]
 }
