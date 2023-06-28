@@ -1,8 +1,6 @@
 {
   "extends": "./tsconfig",
   "compilerOptions": {
-    "composite": true,
-
-    "declaration": true
+    "composite": true
   }
 }
