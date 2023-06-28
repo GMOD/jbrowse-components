@@ -3,11 +3,10 @@
   "exclude": ["src/**/*.test.ts*", "src/**/*.test.js*"],
   "include": ["src/**/*.ts*", "src/**/*.js*"],
   "compilerOptions": {
-    "outDir": "dist",
+    "outDir": "esm",
     "rootDir": "src",
     "composite": true,
-    "target": "es2018",
-    "module": "commonjs"
+    "target": "es2018"
   },
-  "references": [{ "path": "../../packages/core/tsconfig.build.json" }]
+  "references": [{ "path": "../core/tsconfig.build.json" }]
 }

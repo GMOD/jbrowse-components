@@ -9,5 +9,5 @@
     "target": "es2018",
     "module": "commonjs"
   },
-  "references": [{ "path": "../../packages/core/tsconfig.build.json" }]
+  "references": [{ "path": "../core/tsconfig.build.json" }]
 }
