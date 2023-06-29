@@ -19,7 +19,7 @@ export function renderAlignmentShape({
   const [leftPx, rightPx] = bpSpanPx(s, e, region, bpPerPx)
   const flip = region.reversed ? -1 : 1
   const strand = feature.get('strand') * flip
-  if (bpPerPx < 10) {
+  if (bpPerPx < 10 && heightPx > 5) {
     if (strand === -1) {
       ctx.beginPath()
       ctx.moveTo(leftPx - 5, topPx + heightPx / 2)
