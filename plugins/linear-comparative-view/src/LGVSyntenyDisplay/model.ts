@@ -166,10 +166,51 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         },
       }
     })
+    .views(self => {
+      const superTrackMenuItems = self.trackMenuItems()
+      const toFind = [
+        'Show soft clipping',
+        'Sort by',
+        'Fade mismatches by quality',
+        'Color scheme',
+      ]
+
+      toFind.forEach((target: string) => {
+        const index = superTrackMenuItems.findIndex(
+          (item: any) => item.label === target,
+        )
+        if (target === 'Color scheme') {
+          const toFindColor = [
+            'Pair orientation',
+            'Modifications or methylation',
+            'Insert size',
+          ]
+          toFindColor.forEach((colorTarget: string) => {
+            // @ts-ignore
+            const tIndex = superTrackMenuItems[index].subMenu.findIndex(
+              (item: any) => item.label === colorTarget,
+            )
+            // @ts-ignore
+            superTrackMenuItems[index].subMenu.splice(tIndex, 1)
+          })
+        } else {
+          superTrackMenuItems.splice(index, 1)
+        }
+      })
+      return {
+        trackMenuItems() {
+          return [...superTrackMenuItems]
+        },
+      }
+    })
     .actions(self => ({
       afterCreate() {
-        // use color by strand to help indicate inversions better
-        self.setColorScheme({ type: 'strand' })
+        // use color by stand to help indicate inversions better on first load, otherwise use selected orientation
+        if (self.colorBy) {
+          self.setColorScheme({ ...self.colorBy })
+        } else {
+          self.setColorScheme({ type: 'strand' })
+        }
       },
     }))
 }

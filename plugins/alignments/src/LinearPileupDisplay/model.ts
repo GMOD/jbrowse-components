@@ -749,7 +749,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               ],
             },
             {
-              label: 'Set max height',
+              label: 'Set max height...',
               onClick: () => {
                 getSession(self).queueDialog(doneCallback => [
                   SetMaxHeightDlg,
