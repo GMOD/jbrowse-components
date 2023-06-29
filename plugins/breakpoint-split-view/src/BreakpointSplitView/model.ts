@@ -30,11 +30,16 @@ import { intersect } from './util'
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))
 
-function calc(
-  track: { displays: { searchFeatureByID: (str: string) => LayoutRecord }[] },
-  feat: Feature,
-) {
-  return track.displays[0].searchFeatureByID(feat.id())
+interface Display {
+  searchFeatureByID?: (str: string) => LayoutRecord
+}
+
+interface Track {
+  displays: Display[]
+}
+
+function calc(track: Track, f: Feature) {
+  return track.displays[0].searchFeatureByID?.(f.id())
 }
 
 export interface ExportSvgOptions {
