@@ -20,8 +20,7 @@
   "main": "src/index.ts",
   "files": [
     "dist",
-    "esm",
-    "src"
+    "esm"
   ],
   "scripts": {
     "build": "npm-run-all build:*",
@@ -33,7 +32,7 @@
     "useSrc": "node ../../scripts/useSrc.js",
     "prebuild": "npm run clean",
     "build:esm": "tsc --build tsconfig.build.esm.json",
-    "build:es5": "tsc --build tsconfig.build.es5.json",
+    "build:commonjs": "tsc --build tsconfig.build.commonjs.json",
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
