@@ -2081,6 +2081,34 @@
       },
       "category": ["Alignments"],
       "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "paired_end_stranded_rnaseq",
+      "name": "volvox-stranded-rnaseq",
+      "category": ["Alignments"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "paired_end_stranded_rnaseq.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "paired_end_stranded_rnaseq.bam.bai",
+            "locationType": "UriLocation"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "assemblyNames": ["volvox"]
     }
   ],
   "plugins": [
