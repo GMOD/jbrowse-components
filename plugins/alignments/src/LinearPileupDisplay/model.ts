@@ -683,9 +683,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   onClick: () => self.setColorScheme({ type: 'insertSize' }),
                 },
                 {
-                  label: 'Stranded paired-end',
-                  onClick: () =>
-                    self.setColorScheme({ type: 'reverseTemplate' }),
+                  label: 'First-of-pair strand',
+                  onClick: () => self.setColorScheme({ type: 'stranded' }),
                 },
                 {
                   label: 'Color by tag...',
