@@ -367,7 +367,7 @@ function stateModelFactory(
           const extra = getLowerPanelDisplays(pluginManager).map(d => ({
             type: 'radio',
             label: d.displayName,
-            checked: d.name === self.PileupDisplay ?? false,
+            checked: d.name === self.PileupDisplay.type,
             onClick: () => self.setLowerPanelType(d.name),
           }))
           return [
