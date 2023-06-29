@@ -37,7 +37,7 @@
     "@babel/preset-react": "^7.0.0",
     "@babel/preset-typescript": "^7.3.3",
     "@craco/craco": "^7.0.0",
-    "@electron/notarize": "^1.2.3",
+    "@electron/notarize": "^2.0.0",
     "@emotion/cache": "^11.7.1",
     "@emotion/react": "^11.9.0",
     "@emotion/styled": "^11.8.1",
