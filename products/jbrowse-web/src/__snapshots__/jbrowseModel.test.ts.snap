@@ -4059,6 +4059,63 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "trackId": "volvox-inv-pbsim",
       "type": "AlignmentsTrack",
     },
+    {
+      "adapter": {
+        "bamLocation": {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "paired_end_stranded_rnaseq.bam",
+        },
+        "index": {
+          "location": {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
+            "locationType": "UriLocation",
+            "uri": "paired_end_stranded_rnaseq.bam.bai",
+          },
+        },
+        "sequenceAdapter": {
+          "twoBitLocation": {
+            "locationType": "UriLocation",
+            "uri": "volvox.2bit",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "type": "BamAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Alignments",
+      ],
+      "displays": [
+        {
+          "displayId": "paired_end_stranded_rnaseq-LinearAlignmentsDisplay",
+          "type": "LinearAlignmentsDisplay",
+        },
+        {
+          "displayId": "paired_end_stranded_rnaseq-LinearPileupDisplay",
+          "type": "LinearPileupDisplay",
+        },
+        {
+          "displayId": "paired_end_stranded_rnaseq-LinearSNPCoverageDisplay",
+          "type": "LinearSNPCoverageDisplay",
+        },
+        {
+          "displayId": "paired_end_stranded_rnaseq-LinearReadArcsDisplay",
+          "type": "LinearReadArcsDisplay",
+        },
+        {
+          "displayId": "paired_end_stranded_rnaseq-LinearReadCloudDisplay",
+          "type": "LinearReadCloudDisplay",
+        },
+      ],
+      "name": "volvox-stranded-rnaseq",
+      "trackId": "paired_end_stranded_rnaseq",
+      "type": "AlignmentsTrack",
+    },
   ],
 }
 `;
