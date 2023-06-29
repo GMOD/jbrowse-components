@@ -125,8 +125,7 @@
         "removable-media"
       ],
       "slots": [
-        "default",
-        "removable-media"
+        "default"
       ]
     },
     "win": {
