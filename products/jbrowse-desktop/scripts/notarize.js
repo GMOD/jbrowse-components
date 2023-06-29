@@ -11,6 +11,7 @@ exports.default = async function notarizing(context) {
 
   return notarize({
     tool: 'notarytool',
+    teamId: process.env.APPLETEAMID,
     appBundleId: 'org.jbrowse2.app',
     appPath: `${appOutDir}/${appName}.app`,
     appleId: process.env.APPLEID,
