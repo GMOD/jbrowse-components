@@ -1,15 +1,6 @@
 import { lazy } from 'react'
-import { autorun, observable } from 'mobx'
+import { types, getSnapshot, Instance } from 'mobx-state-tree'
 import {
-  cast,
-  types,
-  addDisposer,
-  getSnapshot,
-  Instance,
-} from 'mobx-state-tree'
-import copy from 'copy-to-clipboard'
-import {
-  AnyConfigurationModel,
   AnyConfigurationSchemaType,
   ConfigurationReference,
   readConfObject,
@@ -19,50 +10,24 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import {
   getEnv,
   getSession,
-  isSessionModelWithWidgets,
   getContainingView,
   SimpleFeature,
-  Feature,
 } from '@jbrowse/core/util'
 
-import {
-  LinearGenomeViewModel,
-  BaseLinearDisplay,
-} from '@jbrowse/plugin-linear-genome-view'
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // icons
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
-import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import SortIcon from '@mui/icons-material/Sort'
-import PaletteIcon from '@mui/icons-material/Palette'
-import FilterListIcon from '@mui/icons-material/ClearAll'
 
 // locals
-import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
-import {
-  getUniqueTagValues,
-  getUniqueModificationValues,
-  FilterModel,
-} from '../shared'
 import { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
-import { createAutorun, modificationColors } from '../util'
-import { randomColor } from '../util'
+import { createAutorun } from '../util'
+import { SharedLinearPileupDisplayMixin } from './SharedLinearPileupDisplayMixin'
 
 // async
-const FilterByTagDlg = lazy(() => import('../shared/FilterByTag'))
-const ColorByTagDlg = lazy(() => import('./components/ColorByTag'))
 const SortByTagDlg = lazy(() => import('./components/SortByTag'))
-const SetFeatureHeightDlg = lazy(() => import('./components/SetFeatureHeight'))
-const SetMaxHeightDlg = lazy(() => import('./components/SetMaxHeight'))
 const ModificationsDlg = lazy(() => import('./components/ColorByModifications'))
-const ColorByCustomDlg = lazy(() => import('./components/ColorByCustom'))
-
-// using a map because it preserves order
-const rendererTypes = new Map([
-  ['pileup', 'PileupRenderer'],
-  ['svg', 'SvgFeatureRenderer'],
-])
 
 type LGV = LinearGenomeViewModel
 
@@ -82,7 +47,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
     .compose(
       'LinearPileupDisplay',
-      BaseLinearDisplay,
+      SharedLinearPileupDisplayMixin(configSchema),
       types.model({
         /**
          * #property
@@ -96,22 +61,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         showSoftClipping: false,
-        /**
-         * #property
-         */
-        featureHeight: types.maybe(types.number),
-        /**
-         * #property
-         */
-        noSpacing: types.maybe(types.boolean),
-        /**
-         * #property
-         */
-        fadeLikelihood: types.maybe(types.boolean),
-        /**
-         * #property
-         */
-        trackMaxHeight: types.maybe(types.number),
         /**
          * #property
          */
@@ -129,56 +78,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             assemblyName: types.string,
           }),
         ),
-
-        /**
-         * #property
-         */
-        colorBy: types.maybe(
-          types.model({
-            type: types.string,
-            tag: types.maybe(types.string),
-            extra: types.frozen(),
-          }),
-        ),
-
-        /**
-         * #property
-         */
-        filterBy: types.optional(FilterModel, {}),
       }),
     )
     .volatile(() => ({
-      colorTagMap: observable.map<string, string>({}),
-      modificationTagMap: observable.map<string, string>({}),
-      featureUnderMouseVolatile: undefined as undefined | Feature,
-      currSortBpPerPx: 0,
-      modificationsReady: false,
       sortReady: false,
-      tagsReady: false,
-    }))
-    .views(self => ({
-      get autorunReady() {
-        const view = getContainingView(self) as LGV
-        return (
-          view.initialized &&
-          self.featureDensityStatsReady &&
-          !self.regionTooLarge
-        )
-      },
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      setModificationsReady(flag: boolean) {
-        self.modificationsReady = flag
-      },
-      /**
-       * #action
-       */
-      setTagsReady(flag: boolean) {
-        self.tagsReady = flag
-      },
       /**
        * #action
        */
@@ -188,143 +93,21 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setCurrSortBpPerPx(n: number) {
-        self.currSortBpPerPx = n
-      },
-      /**
-       * #action
-       */
-      setMaxHeight(n: number) {
-        self.trackMaxHeight = n
-      },
-      /**
-       * #action
-       */
-      setFeatureHeight(n?: number) {
-        self.featureHeight = n
-      },
-      /**
-       * #action
-       */
-      setNoSpacing(flag?: boolean) {
-        self.noSpacing = flag
-      },
-
-      /**
-       * #action
-       */
-      setColorScheme(colorScheme: { type: string; tag?: string; extra?: any }) {
-        self.colorTagMap = observable.map({}) // clear existing mapping
-        self.colorBy = cast(colorScheme)
-        if (colorScheme.tag) {
-          self.tagsReady = false
-          self.modificationsReady = false
-        }
-      },
-
-      /**
-       * #action
-       */
-      updateModificationColorMap(uniqueModifications: string[]) {
-        uniqueModifications.forEach(value => {
-          if (!self.modificationTagMap.has(value)) {
-            self.modificationTagMap.set(
-              value,
-              modificationColors[value] || randomColor(),
-            )
-          }
-        })
-      },
-
-      /**
-       * #action
-       */
-      updateColorTagMap(uniqueTag: string[]) {
-        // pale color scheme
-        // https://cran.r-project.org/web/packages/khroma/vignettes/tol.html
-        // e.g. "tol_light"
-        const colorPalette = [
-          '#BBCCEE',
-          'pink',
-          '#CCDDAA',
-          '#EEEEBB',
-          '#FFCCCC',
-          'lightblue',
-          'lightgreen',
-          'tan',
-          '#CCEEFF',
-          'lightsalmon',
-        ]
-
-        uniqueTag.forEach(value => {
-          if (!self.colorTagMap.has(value)) {
-            const totalKeys = [...self.colorTagMap.keys()].length
-            self.colorTagMap.set(value, colorPalette[totalKeys])
-          }
-        })
-      },
-      /**
-       * #action
-       */
-      setFeatureUnderMouse(feat?: Feature) {
-        self.featureUnderMouseVolatile = feat
-      },
-
-      /**
-       * #action
-       */
-      selectFeature(feature: Feature) {
-        const session = getSession(self)
-        if (isSessionModelWithWidgets(session)) {
-          const featureWidget = session.addWidget(
-            'AlignmentsFeatureWidget',
-            'alignmentFeature',
-            { featureData: feature.toJSON(), view: getContainingView(self) },
-          )
-          session.showWidget(featureWidget)
-        }
-        session.setSelection(feature)
-      },
-
-      /**
-       * #action
-       */
       clearSelected() {
         self.sortedBy = undefined
       },
-
-      /**
-       * #action
-       * uses copy-to-clipboard and generates notification
-       */
-      copyFeatureToClipboard(feature: Feature) {
-        const { uniqueId, ...rest } = feature.toJSON()
-        const session = getSession(self)
-        copy(JSON.stringify(rest, null, 4))
-        session.notify('Copied to clipboard', 'success')
-      },
-
       /**
        * #action
        */
       toggleSoftClipping() {
         self.showSoftClipping = !self.showSoftClipping
       },
-
       /**
        * #action
        */
       toggleMismatchAlpha() {
         self.mismatchAlpha = !self.mismatchAlpha
       },
-
-      /**
-       * #action
-       */
-      setConfig(conf: AnyConfigurationModel) {
-        self.configuration = conf
-      },
-
       /**
        * #action
        */
@@ -348,9 +131,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           assemblyName,
           tag,
         }
-      },
-      setFilterBy(filter: Filter) {
-        self.filterBy = cast(filter)
       },
     }))
     .actions(self => {
@@ -399,27 +179,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #getter
        */
-      get maxHeight() {
-        return readConfObject(self.rendererConfig, 'maxHeight')
-      },
-
-      /**
-       * #getter
-       */
-      get featureHeightSetting() {
-        return readConfObject(self.rendererConfig, 'height')
-      },
-      /**
-       * #getter
-       */
       get mismatchAlphaSetting() {
         return readConfObject(self.rendererConfig, 'mismatchAlpha')
-      },
-      /**
-       * #getter
-       */
-      get featureUnderMouse() {
-        return self.featureUnderMouseVolatile
       },
       /**
        * #getter
@@ -437,57 +198,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       const {
         trackMenuItems: superTrackMenuItems,
         renderProps: superRenderProps,
+        colorSchemeSubMenuItems: superColorSchemeSubMenuItems,
       } = self
 
+      console.log(superColorSchemeSubMenuItems())
+
       return {
-        /**
-         * #getter
-         */
-        get rendererTypeName() {
-          const viewName = getConf(self, 'defaultRendering')
-          const rendererType = rendererTypes.get(viewName)
-          if (!rendererType) {
-            throw new Error(`unknown alignments view name ${viewName}`)
-          }
-          return rendererType
-        },
-
-        /**
-         * #method
-         */
-        contextMenuItems() {
-          const feat = self.contextMenuFeature
-          return feat
-            ? [
-                {
-                  label: 'Open feature details',
-                  icon: MenuOpenIcon,
-                  onClick: (): void => {
-                    self.clearFeatureSelection()
-                    if (feat) {
-                      self.selectFeature(feat)
-                    }
-                  },
-                },
-                {
-                  label: 'Copy info to clipboard',
-                  icon: ContentCopyIcon,
-                  onClick: (): void => {
-                    if (feat) {
-                      self.copyFeatureToClipboard(feat)
-                    }
-                  },
-                },
-              ]
-            : []
-        },
-
-        /**
-         * #getter
-         */
-        get DisplayBlurb() {
-          return LinearPileupDisplayBlurb
-        },
         /**
          * #method
          */
@@ -642,35 +358,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             },
             {
               label: 'Color scheme',
-              icon: PaletteIcon,
               subMenu: [
-                {
-                  label: 'Normal',
-                  onClick: () => self.setColorScheme({ type: 'normal' }),
-                },
-                {
-                  label: 'Mapping quality',
-                  onClick: () =>
-                    self.setColorScheme({ type: 'mappingQuality' }),
-                },
-                {
-                  label: 'Strand',
-                  onClick: () => self.setColorScheme({ type: 'strand' }),
-                },
                 {
                   label: 'Pair orientation',
                   onClick: () =>
                     self.setColorScheme({ type: 'pairOrientation' }),
-                },
-                {
-                  label: 'Per-base quality',
-                  onClick: () =>
-                    self.setColorScheme({ type: 'perBaseQuality' }),
-                },
-                {
-                  label: 'Per-base lettering',
-                  onClick: () =>
-                    self.setColorScheme({ type: 'perBaseLettering' }),
                 },
                 {
                   label: 'Modifications or methylation',
@@ -685,77 +377,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   label: 'Insert size',
                   onClick: () => self.setColorScheme({ type: 'insertSize' }),
                 },
-                {
-                  label: 'Stranded paired-end',
-                  onClick: () =>
-                    self.setColorScheme({ type: 'reverseTemplate' }),
-                },
-                {
-                  label: 'Color by tag...',
-                  onClick: () => {
-                    getSession(self).queueDialog(doneCallback => [
-                      ColorByTagDlg,
-                      { model: self, handleClose: doneCallback },
-                    ])
-                  },
-                },
-                {
-                  label: 'Custom color scheme...',
-                  onClick: () => {
-                    getSession(self).queueDialog(doneCallback => [
-                      ColorByCustomDlg,
-                      { model: self, handleClose: doneCallback },
-                    ])
-                  },
-                },
+                ...superColorSchemeSubMenuItems(),
               ],
-            },
-            {
-              label: 'Filter by',
-              icon: FilterListIcon,
-              onClick: () => {
-                getSession(self).queueDialog(doneCallback => [
-                  FilterByTagDlg,
-                  { model: self, handleClose: doneCallback },
-                ])
-              },
-            },
-            {
-              label: 'Set feature height',
-              subMenu: [
-                {
-                  label: 'Normal',
-                  onClick: () => {
-                    self.setFeatureHeight(7)
-                    self.setNoSpacing(false)
-                  },
-                },
-                {
-                  label: 'Compact',
-                  onClick: () => {
-                    self.setFeatureHeight(2)
-                    self.setNoSpacing(true)
-                  },
-                },
-                {
-                  label: 'Manually set height',
-                  onClick: () => {
-                    getSession(self).queueDialog(doneCallback => [
-                      SetFeatureHeightDlg,
-                      { model: self, handleClose: doneCallback },
-                    ])
-                  },
-                },
-              ],
-            },
-            {
-              label: 'Set max height...',
-              onClick: () => {
-                getSession(self).queueDialog(doneCallback => [
-                  SetMaxHeightDlg,
-                  { model: self, handleClose: doneCallback },
-                ])
-              },
             },
             {
               label: 'Fade mismatches by quality',
@@ -769,43 +392,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     })
     .actions(self => ({
       afterAttach() {
-        createAutorun(
-          self,
-          async () => {
-            const view = getContainingView(self) as LGV
-            if (!self.autorunReady) {
-              return
-            }
-
-            const { colorBy } = self
-            const { staticBlocks } = view
-            if (colorBy?.tag) {
-              const vals = await getUniqueTagValues(self, colorBy, staticBlocks)
-              self.updateColorTagMap(vals)
-            }
-            self.setTagsReady(true)
-          },
-          { delay: 1000 },
-        )
-        createAutorun(self, async () => {
-          if (!self.autorunReady) {
-            return
-          }
-          const { parentTrack, colorBy } = self
-          const { staticBlocks } = getContainingView(self) as LGV
-          if (colorBy?.type === 'modifications') {
-            const adapter = getConf(parentTrack, ['adapter'])
-            const vals = await getUniqueModificationValues(
-              self,
-              adapter,
-              colorBy,
-              staticBlocks,
-            )
-            self.updateModificationColorMap(vals)
-          }
-          self.setModificationsReady(true)
-        })
-
         createAutorun(
           self,
           async () => {
@@ -844,48 +430,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             self.setSortReady(true)
           },
           { delay: 1000 },
-        )
-
-        // autorun synchronizes featureUnderMouse with featureIdUnderMouse
-        // asynchronously. this is needed due to how we do not serialize all
-        // features from the BAM/CRAM over the rpc
-        addDisposer(
-          self,
-          autorun(async () => {
-            const session = getSession(self)
-            try {
-              const featureId = self.featureIdUnderMouse
-              if (self.featureUnderMouse?.id() !== featureId) {
-                if (!featureId) {
-                  self.setFeatureUnderMouse(undefined)
-                } else {
-                  const sessionId = getRpcSessionId(self)
-                  const view = getContainingView(self)
-                  const { feature } = (await session.rpcManager.call(
-                    sessionId,
-                    'CoreGetFeatureDetails',
-                    {
-                      featureId,
-                      sessionId,
-                      layoutId: view.id,
-                      rendererType: 'PileupRenderer',
-                    },
-                  )) as { feature: SimpleFeatureSerialized }
-
-                  // check featureIdUnderMouse is still the same as the
-                  // feature.id that was returned e.g. that the user hasn't
-                  // moused over to a new position during the async operation
-                  // above
-                  if (self.featureIdUnderMouse === feature.uniqueId) {
-                    self.setFeatureUnderMouse(new SimpleFeature(feature))
-                  }
-                }
-              }
-            } catch (e) {
-              console.error(e)
-              session.notify(`${e}`, 'error')
-            }
-          }),
         )
       },
     }))
