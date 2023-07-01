@@ -25,7 +25,7 @@ describe('Root MST model', () => {
       jbrowse: {
         configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
       },
-      assemblyManager: {},
+      
     })
     expect(root.session).toBeUndefined()
     root.setDefaultSession()
@@ -40,7 +40,7 @@ describe('Root MST model', () => {
         configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
       },
       session: { name: 'testSession' },
-      assemblyManager: {},
+      
     })
     expect(root.session).toBeTruthy()
   })
@@ -55,7 +55,7 @@ describe('Root MST model', () => {
       jbrowse: {
         configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
       },
-      assemblyManager: {},
+      
     })
     expect(root.session).toBeUndefined()
     root.setSession(session)
@@ -90,7 +90,7 @@ describe('Root MST model', () => {
           },
         ],
       },
-      assemblyManager: {},
+      
     })
     expect(root.jbrowse.assemblies.length).toBe(1)
     expect(getSnapshot(root.jbrowse.assemblies[0])).toMatchSnapshot()
@@ -115,7 +115,7 @@ describe('Root MST model', () => {
           configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
         },
         session: {},
-        assemblyManager: {},
+        
       }),
     ).toThrow()
   })
@@ -125,7 +125,7 @@ describe('Root MST model', () => {
       jbrowse: {
         configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
       },
-      assemblyManager: {},
+      
     })
     expect(() => root.setSession({})).toThrow()
   })
@@ -135,7 +135,7 @@ describe('Root MST model', () => {
       jbrowse: {
         configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
       },
-      assemblyManager: {},
+      
     })
     expect(root.menus).toMatchSnapshot()
     root.appendMenu('Third Menu')
