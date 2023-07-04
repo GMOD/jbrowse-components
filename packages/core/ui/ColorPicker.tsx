@@ -5,7 +5,7 @@ import { makeStyles } from 'tss-react/mui'
 
 // locals
 import * as paletteColors from './colors'
-import { useLocalStorage } from '../util'
+import { useLocalStorage, useDebounce } from '../util'
 
 // we are using a vendored copy of react-colorful because the default uses
 // pure-ESM which is difficult to make pass with jest e.g.
@@ -91,6 +91,8 @@ export function ColorPicker({
   const palettes = Object.keys(paletteColors)
   const [text, setText] = useState(color)
   const rgb = Color(color).rgb().toString()
+  const rgbDebounced = useDebounce(rgb, 1000)
+
   const handleChange = (val: string) => {
     setText(val)
     try {
@@ -100,7 +102,7 @@ export function ColorPicker({
   return (
     <div style={{ display: 'flex', padding: 10 }}>
       <div style={{ width: 200, margin: 5 }}>
-        <RgbaStringColorPicker color={rgb} onChange={handleChange} />
+        <RgbaStringColorPicker color={rgbDebounced} onChange={handleChange} />
       </div>
       <div style={{ width: 200, margin: 5 }}>
         <Select
