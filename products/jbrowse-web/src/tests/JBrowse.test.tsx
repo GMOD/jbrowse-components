@@ -46,7 +46,6 @@ test('toplevel configuration', () => {
     adminMode: true,
   }).create({
     jbrowse: volvoxConfigSnapshot,
-    
   })
   rootModel.setDefaultSession()
   pluginManager.setRootModel(rootModel)

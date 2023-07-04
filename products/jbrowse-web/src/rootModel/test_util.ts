@@ -16,7 +16,6 @@ export function createTestSession(snapshot = {}, adminMode = false) {
       jbrowse: {
         configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
       },
-      
     },
     { pluginManager },
   )
