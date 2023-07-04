@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig",
+  "exclude": ["src/**/*.test.ts*", "src/**/*.test.js*"],
+  "include": ["src/**/*.ts*", "src/**/*.js*"],
+  "compilerOptions": {
+    "outDir": "esm",
+    "rootDir": "src",
+    "composite": true,
+    "target": "es2018"
+  },
+  "references": [{ "path": "../../packages/core/tsconfig.build.json" }]
+}

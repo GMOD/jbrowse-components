@@ -22,7 +22,7 @@ describe('Root MST model', () => {
       jbrowse: {
         configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
       },
-      assemblyManager: {},
+      
     })
     expect(root.session).toBeUndefined()
     root.setDefaultSession()
@@ -36,7 +36,7 @@ describe('Root MST model', () => {
       jbrowse: {
         configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
       },
-      assemblyManager: {},
+      
     })
     expect(root.menus).toMatchSnapshot()
     root.appendMenu('Third Menu')

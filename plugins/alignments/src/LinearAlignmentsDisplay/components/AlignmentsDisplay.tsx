@@ -18,7 +18,10 @@ const useStyles = makeStyles()({
 function AlignmentsDisplay({ model }: { model: AlignmentsDisplayModel }) {
   const { PileupDisplay, SNPCoverageDisplay } = model
   const { classes } = useStyles()
-  const top = SNPCoverageDisplay.height
+  if (!SNPCoverageDisplay) {
+    return null
+  }
+  const top = SNPCoverageDisplay.height ?? 100
   return (
     <div
       data-testid={`display-${getConf(model, 'displayId')}`}

@@ -4,28 +4,28 @@ on: pull_request
 
 jobs:
   lint:
-    name: Lint on node 16 and ubuntu-latest
+    name: Lint on node 20 and ubuntu-latest
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Use Node.js 16
+      - name: Use Node.js 20
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '20'
       - name: Install deps and build (with cache)
         uses: bahmutov/npm-install@v1
       - name: Lint codebase
         run: yarn lint
 
   format:
-    name: Format on node 16 and ubuntu-latest
+    name: Format on node 20 and ubuntu-latest
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Use Node.js 16
+      - name: Use Node.js 20
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '20'
       - name: Install deps and build (with cache)
         uses: bahmutov/npm-install@v1
       - name: Check codebase format

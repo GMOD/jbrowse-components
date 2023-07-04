@@ -4,14 +4,14 @@ on: push
 
 jobs:
   test:
-    name: Test and typecheck on node 16.x and ubuntu-latest
+    name: Test and typecheck on node 20.x and ubuntu-latest
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Use Node.js 16.x
+      - name: Use Node.js 20.x
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '20'
       - name: Install deps (with cache)
         uses: bahmutov/npm-install@v1
       - name: Test codebase
@@ -22,14 +22,14 @@ jobs:
         run: yarn typecheck
 
   buildwebsite:
-    name: Build website on node 16 and ubuntu-latest
+    name: Build website on node 20 and ubuntu-latest
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Use Node.js 16
+      - name: Use Node.js 20
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '20'
       - name: Install website deps (with cache)
         uses: bahmutov/npm-install@v1
         with:
@@ -46,14 +46,14 @@ jobs:
           args: website/testing/ --check-anchors
 
   buildwholerepo:
-    name: Build whole repo on node 16 and ubuntu-latest
+    name: Build whole repo on node 20 and ubuntu-latest
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Use Node.js 16
+      - name: Use Node.js 20
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '20'
       - name: Install deps (with cache)
         uses: bahmutov/npm-install@v1
       - name: Build codebase
@@ -80,14 +80,14 @@ jobs:
         working-directory: component_tests/react-app
 
   buildjbrowseweb:
-    name: Build only jbrowse-web and upload to s3 on node 16 and ubuntu-latest
+    name: Build only jbrowse-web and upload to s3 on node 20 and ubuntu-latest
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Use Node.js 16
+      - name: Use Node.js 20
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '20'
       - name: Install deps (with cache)
         uses: bahmutov/npm-install@v1
       - name: Build project
@@ -112,10 +112,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Use Node.js 16
+      - name: Use Node.js 20
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '20'
       - name: Install deps (with cache)
         uses: bahmutov/npm-install@v1
       - name: Build Storybook static site
@@ -139,10 +139,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 16
+      - name: Use Node.js 20
         uses: actions/setup-node@v2
         with:
-          node-version: '16'
+          node-version: '20'
       - name: Install deps (with cache)
         uses: bahmutov/npm-install@v1
       - name: Build Storybook static site
@@ -167,10 +167,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Use Node.js 16
+      - name: Use Node.js 20
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '20'
       - name: Install deps (with cache)
         uses: bahmutov/npm-install@v1
       - name: Build Storybook static site

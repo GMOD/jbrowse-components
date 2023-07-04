@@ -144,7 +144,7 @@ export async function createPluginManager(
     {
       jbrowse,
       jobsManager: {},
-      assemblyManager: {},
+      
     },
     { pluginManager },
   )

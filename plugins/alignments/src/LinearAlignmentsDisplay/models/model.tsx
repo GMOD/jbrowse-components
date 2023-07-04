@@ -193,7 +193,7 @@ function stateModelFactory(
        * #method
        */
       searchFeatureByID(id: string) {
-        return self.PileupDisplay.searchFeatureByID(id)
+        return self.PileupDisplay.searchFeatureByID?.(id)
       },
 
       /**
@@ -361,6 +361,9 @@ function stateModelFactory(
          * #method
          */
         trackMenuItems(): MenuItem[] {
+          if (!self.PileupDisplay) {
+            return []
+          }
           const extra = getLowerPanelDisplays(pluginManager).map(d => ({
             type: 'radio',
             label: d.displayName,

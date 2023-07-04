@@ -19,7 +19,6 @@
   "module": "esm/index.js",
   "files": [
     "dist",
-    "src",
     "esm",
     "docs"
   ],
@@ -29,7 +28,7 @@
     "prepublishOnly": "node output-version.js > src/version.js && git add -A src && git commit -m '[skip ci] Bump version.js'",
     "prepack": "npm run build",
     "build:esm": "tsc -b tsconfig.build.esm.json",
-    "build:es5": "tsc -b tsconfig.build.es5.json",
+    "build:commonjs": "tsc -b tsconfig.build.commonjs.json",
     "build:webpack": "npm-run-all build:webpack:*",
     "build:webpack:dev": "cross-env NODE_ENV=development webpack",
     "build:webpack:prod": "cross-env NODE_ENV=production webpack",

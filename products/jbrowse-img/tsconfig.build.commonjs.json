@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig",
+  "compilerOptions": {
+    "outDir": "dist",
+    "composite": true,
+    "target": "es2018",
+    "module": "commonjs"
+  },
+  "references": [
+    {
+      "path": "../../packages/core/tsconfig.build.json"
+    }
+  ]
+}
