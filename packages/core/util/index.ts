@@ -805,18 +805,26 @@ export function shorten(name: string, max = 70, short = 30) {
     : name
 }
 
-export function stringify({
-  refName,
-  coord,
-  oob,
-}: {
-  coord: number
-  refName?: string
-  oob?: boolean
-}) {
-  return refName
-    ? `${shorten(refName)}:${toLocale(coord)}${oob ? ' (out of bounds)' : ''}`
-    : ''
+export function stringify(
+  {
+    refName,
+    coord,
+    assemblyName,
+    oob,
+  }: {
+    assemblyName?: string
+    coord: number
+    refName?: string
+    oob?: boolean
+  },
+  useAssemblyName?: boolean,
+) {
+  return [
+    assemblyName && useAssemblyName ? `{${assemblyName}}` : '',
+    refName
+      ? `${shorten(refName)}:${toLocale(coord)}${oob ? ' (out of bounds)' : ''}`
+      : '',
+  ].join('')
 }
 
 // this is recommended in a later comment in
