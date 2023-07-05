@@ -3,7 +3,7 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { Feature } from '@jbrowse/core/util'
-import { fillColor } from '../shared/color'
+import { fillColor, ExtraColorBy } from '../shared/color'
 import {
   colorByInsertSize,
   colorByMappingQuality,
@@ -11,7 +11,6 @@ import {
   colorByStrand,
   colorByStrandedRnaSeq,
 } from './colorBy'
-import { ExtraColorBy } from '../LinearPileupDisplay/SharedLinearPileupDisplayMixin'
 
 export function getAlignmentShapeColor({
   colorType,

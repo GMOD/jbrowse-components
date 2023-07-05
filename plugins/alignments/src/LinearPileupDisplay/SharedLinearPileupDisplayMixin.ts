@@ -1,12 +1,6 @@
 import { lazy } from 'react'
 import { autorun, observable } from 'mobx'
-import {
-  cast,
-  types,
-  addDisposer,
-  getSnapshot,
-  Instance,
-} from 'mobx-state-tree'
+import { cast, types, addDisposer, getSnapshot } from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
 import {
   AnyConfigurationModel,
@@ -45,6 +39,7 @@ import {
 import { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 import { createAutorun, modificationColors } from '../util'
 import { randomColor } from '../util'
+import { ColorByModel, ExtraColorBy } from '../shared/color'
 
 // async
 const FilterByTagDlg = lazy(() => import('../shared/FilterByTag'))
@@ -67,18 +62,6 @@ export interface Filter {
   readName?: string
   tagFilter?: { tag: string; value: string }
 }
-
-export interface ExtraColorBy {
-  custom?: Record<string, string>
-}
-
-export const ColorByModel = types.model({
-  type: types.string,
-  tag: types.maybe(types.string),
-  extra: types.frozen(),
-})
-
-export type IColorByModel = Instance<typeof ColorByModel>
 
 /**
  * #stateModel SharedLinearPileupDisplayMixin
