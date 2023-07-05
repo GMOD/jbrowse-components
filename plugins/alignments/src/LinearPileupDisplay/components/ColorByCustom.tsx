@@ -6,15 +6,17 @@ import { ColorPicker } from '@jbrowse/core/ui/ColorPicker'
 
 import { fillColor } from '../../shared/color'
 
+import { IColorByModel } from '../SharedLinearPileupDisplayMixin'
+
 function ColorByCustomDlg(props: {
   model: {
-    colorBy: any
+    colorBy: IColorByModel
     setColorScheme: Function
   }
   handleClose: () => void
 }) {
   const { model, handleClose } = props
-  const { type = 'normal', tag, extra } = model.colorBy
+  const { type = 'normal', tag = '', extra } = model.colorBy
 
   const colorOptionMap = {
     normal: ['color_unknown'],

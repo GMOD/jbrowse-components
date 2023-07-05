@@ -201,8 +201,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         colorSchemeSubMenuItems: superColorSchemeSubMenuItems,
       } = self
 
-      console.log(superColorSchemeSubMenuItems())
-
       return {
         /**
          * #method

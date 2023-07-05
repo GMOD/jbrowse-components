@@ -33,7 +33,6 @@ import {
 // icons
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
-import PaletteIcon from '@mui/icons-material/Palette'
 import FilterListIcon from '@mui/icons-material/ClearAll'
 
 // locals
@@ -68,6 +67,18 @@ export interface Filter {
   readName?: string
   tagFilter?: { tag: string; value: string }
 }
+
+export interface ExtraColorBy {
+  custom?: Record<string, string>
+}
+
+export const ColorByModel = types.model({
+  type: types.string,
+  tag: types.maybe(types.string),
+  extra: types.frozen(),
+})
+
+export type IColorByModel = Instance<typeof ColorByModel>
 
 /**
  * #stateModel SharedLinearPileupDisplayMixin
@@ -104,13 +115,7 @@ export function SharedLinearPileupDisplayMixin(
         /**
          * #property
          */
-        colorBy: types.maybe(
-          types.model({
-            type: types.string,
-            tag: types.maybe(types.string),
-            extra: types.frozen(),
-          }),
-        ),
+        colorBy: ColorByModel,
         /**
          * #property
          */
@@ -179,7 +184,11 @@ export function SharedLinearPileupDisplayMixin(
       /**
        * #action
        */
-      setColorScheme(colorScheme: { type: string; tag?: string; extra?: any }) {
+      setColorScheme(colorScheme: {
+        type: string
+        tag?: string
+        extra?: ExtraColorBy
+      }) {
         self.colorTagMap = observable.map({}) // clear existing mapping
         self.colorBy = cast(colorScheme)
         if (colorScheme.tag) {

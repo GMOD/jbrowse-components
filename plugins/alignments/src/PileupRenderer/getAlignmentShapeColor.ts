@@ -11,6 +11,7 @@ import {
   colorByStrand,
   colorByStrandedRnaSeq,
 } from './colorBy'
+import { ExtraColorBy } from '../LinearPileupDisplay/SharedLinearPileupDisplayMixin'
 
 export function getAlignmentShapeColor({
   colorType,
@@ -23,7 +24,7 @@ export function getAlignmentShapeColor({
 }: {
   colorType: string
   tag: string
-  extra: any
+  extra: ExtraColorBy
   feature: Feature
   defaultColor: boolean
   config: AnyConfigurationModel

@@ -32,7 +32,10 @@ function getOrientation(feature: Feature, config: AnyConfigurationModel) {
   }[orientation]
 }
 
-export function colorByStrand(feature: Feature, custom: any) {
+export function colorByStrand(
+  feature: Feature,
+  custom?: Record<string, string>,
+) {
   return feature.get('strand') === -1
     ? (custom && custom['color_rev_strand']) ?? fillColor['color_rev_strand']
     : (custom && custom['color_fwd_strand']) ?? fillColor['color_fwd_strand']
@@ -41,7 +44,7 @@ export function colorByStrand(feature: Feature, custom: any) {
 export function colorByOrientation(
   feature: Feature,
   config: AnyConfigurationModel,
-  custom: any,
+  custom?: Record<string, string>,
 ) {
   const colorPivot = custom ?? fillColor
   return colorPivot[getOrientation(feature, config) || 'color_nostrand']
@@ -73,7 +76,10 @@ function getStranded(feature: Feature) {
   return strand === 1 ? 'color_fwd_strand' : 'color_rev_strand'
 }
 
-export function colorByStrandedRnaSeq(feature: Feature, custom: any) {
+export function colorByStrandedRnaSeq(
+  feature: Feature,
+  custom?: Record<string, string>,
+) {
   const colorPivot = custom ?? fillColor
   return colorPivot[getStranded(feature)]
 }
