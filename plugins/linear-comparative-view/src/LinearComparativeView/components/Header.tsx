@@ -11,6 +11,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert'
 // locals
 import { LinearComparativeViewModel } from '../model'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 
 type LCV = LinearComparativeViewModel
 
@@ -40,12 +41,20 @@ const useStyles = makeStyles()(() => ({
 
 const TrackSelector = observer(({ model }: { model: LCV }) => {
   return (
-    <IconButton
-      onClick={model.activateTrackSelector}
-      title="Open track selector"
+    <CascadingMenuButton
+      menuItems={[
+        {
+          label: 'Synteny track selector',
+          onClick: () => model.activateTrackSelector(),
+        },
+        ...model.views.map((view, idx) => ({
+          label: `View ${idx + 1} track selector`,
+          onClick: () => view.activateTrackSelector(),
+        })),
+      ]}
     >
       <TrackSelectorIcon />
-    </IconButton>
+    </CascadingMenuButton>
   )
 })
 
