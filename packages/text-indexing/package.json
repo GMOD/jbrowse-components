@@ -26,13 +26,12 @@
   "module": "",
   "files": [
     "dist",
-    "esm",
-    "src"
+    "esm"
   ],
   "scripts": {
     "build:esm": "tsc --build tsconfig.build.esm.json",
-    "build:es5": "tsc --build tsconfig.build.es5.json",
-    "build": "npm run build:esm && npm run build:es5",
+    "build:commonjs": "tsc --build tsconfig.build.commonjs.json",
+    "build": "npm run build:esm && npm run build:commonjs",
     "test": "cd ../..; jest packages/text-indexing",
     "clean": "rimraf dist esm *.tsbuildinfo",
     "prebuild": "yarn clean",

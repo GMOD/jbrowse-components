@@ -54,7 +54,7 @@ export default function createViewState(opts: ViewStateOptions) {
       aggregateTextSearchAdapters,
       defaultSession,
     },
-    assemblyManager: {},
+
     session: defaultSession,
   }
   const stateTree = model.create(stateSnapshot, { pluginManager })

@@ -73,7 +73,7 @@ const TrackLabel = React.forwardRef<HTMLDivElement, Props>(function (
     },
     ...(session.getTrackActionMenuItems?.(trackConf) || []),
     ...track.trackMenuItems(),
-  ].sort((a, b) => (b.priority || 0) - (a.priority || 0))
+  ].sort((a, b) => (b?.priority || 0) - (a?.priority || 0))
 
   return (
     <Paper ref={ref} className={cx(className, classes.root)}>
