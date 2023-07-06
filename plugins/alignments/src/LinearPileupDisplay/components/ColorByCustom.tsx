@@ -18,6 +18,7 @@ function ColorByCustomDlg(props: {
 
   const colorOptionMap = {
     normal: ['color_unknown'],
+    mappingQuality: ['hsl'],
     strand: ['color_fwd_strand', 'color_rev_strand'],
     pairOrientation: [
       'color_nostrand',
@@ -26,6 +27,11 @@ function ColorByCustomDlg(props: {
       'color_pair_rl',
       'color_pair_ll',
     ],
+    perBaseQuality: ['hsl'],
+    perBaseLettering: ['hsl'],
+    modifications: ['color_modifications'],
+    methylation: ['color_methylation'],
+    insertSize: ['hsl'],
     stranded: [
       'color_fwd_strand',
       'color_rev_strand',
@@ -37,39 +43,49 @@ function ColorByCustomDlg(props: {
       'color_rev_diff_chr',
     ],
     tag: ['color_fwd_strand', 'color_rev_strand', 'color_nostrand'],
-    modifications: ['color_modifications'],
-    methylation: ['color_methylation'],
   }
 
   return (
     <Dialog open onClose={handleClose} title="Apply custom color scheme">
       <DialogContent>
-        <Typography>
-          Select custom color options for the track display.
+        <Typography variant="body1">
+          Select custom color options (color by {type}) for the track display.
         </Typography>
         {/* @ts-ignore */}
         {colorOptionMap[type].map((colorOption: string) => {
           return (
             <div key={colorOption}>
-              <Typography variant="h6">{colorOption}</Typography>
-              <ColorPicker
-                // @ts-ignore
-                color={extra?.custom[colorOption] || fillColor[colorOption]}
-                onChange={event => {
-                  const scheme = {
-                    type: model.colorBy.type,
-                    tag: tag,
-                    extra: {
-                      ...extra,
-                      custom: {
-                        ...extra?.custom,
-                        [colorOption]: event,
-                      },
-                    },
-                  }
-                  model.setColorScheme(scheme)
-                }}
-              />
+              {colorOption === 'hsl' ? (
+                <>
+                  <br />
+                  <Typography variant="body2">
+                    There is no colour configurations for the {type} color
+                    scheme setting.
+                  </Typography>
+                </>
+              ) : (
+                <>
+                  <Typography variant="h6">{colorOption}</Typography>
+                  <ColorPicker
+                    // @ts-ignore
+                    color={extra?.custom[colorOption] || fillColor[colorOption]}
+                    onChange={event => {
+                      const scheme = {
+                        type: model.colorBy.type,
+                        tag: tag,
+                        extra: {
+                          ...extra,
+                          custom: {
+                            ...extra?.custom,
+                            [colorOption]: event,
+                          },
+                        },
+                      }
+                      model.setColorScheme(scheme)
+                    }}
+                  />
+                </>
+              )}
             </div>
           )
         })}
