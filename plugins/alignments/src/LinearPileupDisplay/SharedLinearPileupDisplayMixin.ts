@@ -506,8 +506,8 @@ export function SharedLinearPileupDisplayMixin(
               onClick: () => self.setColorScheme({ type: 'perBaseLettering' }),
             },
             {
-              label: 'Stranded paired-end',
-              onClick: () => self.setColorScheme({ type: 'reverseTemplate' }),
+              label: 'First-of-pair strand',
+              onClick: () => self.setColorScheme({ type: 'stranded' }),
             },
             {
               label: 'Color by tag...',

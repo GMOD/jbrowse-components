@@ -39,7 +39,7 @@ export default function createModel(runtimePlugins: PluginConstructor[]) {
       /**
        * #property
        */
-      assemblyManager: assemblyManagerType,
+      assemblyManager: types.optional(assemblyManagerType, {}),
       /**
        * #property
        */

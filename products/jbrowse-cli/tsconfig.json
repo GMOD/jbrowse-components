@@ -3,12 +3,11 @@
   // can re-enable if https://github.com/oclif/config/pull/177 is merged
   // "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "declaration": true,
     "module": "commonjs",
     "outDir": "lib",
     "rootDir": "src",
     "strict": true,
-    "noEmit": false,
+
     "target": "es2017",
     "esModuleInterop": true,
     "skipLibCheck": true
