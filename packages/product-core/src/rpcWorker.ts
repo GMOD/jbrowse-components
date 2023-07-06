@@ -7,6 +7,7 @@ import PluginLoader, {
   PluginDefinition,
 } from '@jbrowse/core/PluginLoader'
 import { PluginConstructor } from '@jbrowse/core/Plugin'
+import { serializeError } from 'serialize-error'
 
 interface WorkerConfiguration {
   plugins: PluginDefinition[]
@@ -72,9 +73,11 @@ function wrapForRpc(func: RpcFunc) {
 
 export async function initializeWorker(
   corePlugins: PluginConstructor[],
-  opts: { fetchESM?: (url: string) => Promise<LoadedPlugin> },
+  opts: {
+    fetchESM?: (url: string) => Promise<LoadedPlugin>
+    fetchCJS?: (url: string) => Promise<LoadedPlugin>
+  },
 ) {
-  const { serializeError } = await import('serialize-error')
   try {
     const pluginManager = await getPluginManager(corePlugins, opts)
     const rpcConfig = Object.fromEntries(

@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-globals */
 import './workerPolyfill'
 import { initializeWorker } from '@jbrowse/product-core'
 import { enableStaticRendering } from 'mobx-react'

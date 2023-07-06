@@ -4,6 +4,7 @@ import shortid from 'shortid'
 // locals
 import BaseRpcDriver, { RpcDriverConstructorArgs } from './BaseRpcDriver'
 import { PluginDefinition } from '../PluginLoader'
+import { deserializeError } from 'serialize-error'
 
 interface WebWorkerRpcDriverConstructorArgs extends RpcDriverConstructorArgs {
   makeWorkerInstance: () => Worker
@@ -68,9 +69,6 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
         instance,
       )
     }
-
-    // async import helps us use latest version esm version of serialize-error
-    const { deserializeError } = await import('serialize-error')
 
     // send the worker its boot configuration using info from the pluginManager
     return new Promise((resolve: (w: WebWorkerHandle) => void, reject) => {
