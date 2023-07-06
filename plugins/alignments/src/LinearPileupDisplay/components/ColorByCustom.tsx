@@ -4,17 +4,20 @@ import { Button, DialogContent, DialogActions, Typography } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
 import { ColorPicker } from '@jbrowse/core/ui/ColorPicker'
 
-import { fillColor } from '../../shared/color'
+import { fillColor, IColorByModel } from '../../shared/color'
 
 function ColorByCustomDlg(props: {
   model: {
-    colorBy: any
+    colorBy: IColorByModel
     setColorScheme: Function
   }
   handleClose: () => void
 }) {
   const { model, handleClose } = props
-  const { type = 'normal', tag, extra } = model.colorBy
+
+  const type = model.colorBy ? model.colorBy.type : 'normal'
+  const tag = model.colorBy ? model.colorBy.tag : ''
+  const extra = model.colorBy ? model.colorBy.extra : undefined
 
   const colorOptionMap = {
     normal: ['color_unknown'],
@@ -71,7 +74,7 @@ function ColorByCustomDlg(props: {
                     color={extra?.custom[colorOption] || fillColor[colorOption]}
                     onChange={event => {
                       const scheme = {
-                        type: model.colorBy.type,
+                        type: type,
                         tag: tag,
                         extra: {
                           ...extra,
@@ -95,12 +98,12 @@ function ColorByCustomDlg(props: {
             color="secondary"
             onClick={() => {
               const scheme = {
-                type: model.colorBy.type,
-                tag: model.colorBy?.tag,
+                type: type,
+                tag: tag,
                 extra: {
-                  ...model.colorBy?.extra,
+                  ...extra,
                   custom: {
-                    ...model.colorBy?.extra?.custom,
+                    ...extra?.custom,
                     ...fillColor,
                   },
                 },
