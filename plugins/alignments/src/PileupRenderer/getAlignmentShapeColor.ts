@@ -3,7 +3,7 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { Feature } from '@jbrowse/core/util'
-import { fillColor } from '../shared/color'
+import { fillColor, ExtraColorBy } from '../shared/color'
 import {
   colorByInsertSize,
   colorByMappingQuality,
@@ -23,7 +23,7 @@ export function getAlignmentShapeColor({
 }: {
   colorType: string
   tag: string
-  extra: any
+  extra: ExtraColorBy
   feature: Feature
   defaultColor: boolean
   config: AnyConfigurationModel

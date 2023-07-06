@@ -10,7 +10,7 @@ import {
 } from '@jbrowse/core/util'
 import {
   MismatchParser,
-  linearPileupDisplayStateModelFactory,
+  SharedLinearPileupDisplayMixin,
 } from '@jbrowse/plugin-alignments'
 import { IAnyStateTreeNode, types } from 'mobx-state-tree'
 import { when } from 'mobx'
@@ -135,7 +135,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
   return types
     .compose(
       'LGVSyntenyDisplay',
-      linearPileupDisplayStateModelFactory(schema),
+      SharedLinearPileupDisplayMixin(schema),
       types.model({
         /**
          * #property
@@ -167,39 +167,19 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       }
     })
     .views(self => {
-      const superTrackMenuItems = self.trackMenuItems()
-      const toFind = [
-        'Show soft clipping',
-        'Sort by',
-        'Fade mismatches by quality',
-        'Color scheme',
-      ]
-
-      toFind.forEach((target: string) => {
-        const index = superTrackMenuItems.findIndex(
-          (item: any) => item.label === target,
-        )
-        if (target === 'Color scheme') {
-          const toFindColor = [
-            'Pair orientation',
-            'Modifications or methylation',
-            'Insert size',
-          ]
-          toFindColor.forEach((colorTarget: string) => {
-            // @ts-ignore
-            const tIndex = superTrackMenuItems[index].subMenu.findIndex(
-              (item: any) => item.label === colorTarget,
-            )
-            // @ts-ignore
-            superTrackMenuItems[index].subMenu.splice(tIndex, 1)
-          })
-        } else {
-          superTrackMenuItems.splice(index, 1)
-        }
-      })
+      const {
+        trackMenuItems: superTrackMenuItems,
+        colorSchemeSubMenuItems: superColorSchemeSubMenuItems,
+      } = self
       return {
         trackMenuItems() {
-          return [...superTrackMenuItems]
+          return [
+            ...superTrackMenuItems(),
+            {
+              label: 'Color scheme',
+              subMenu: [...superColorSchemeSubMenuItems()],
+            },
+          ]
         },
       }
     })
