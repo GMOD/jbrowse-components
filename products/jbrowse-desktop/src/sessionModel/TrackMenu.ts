@@ -84,7 +84,7 @@ export function DesktopSessionTrackMenuMixin(pluginManager: PluginManager) {
                     trackSnapshot
                   const indexName = `${name}-index`
                   // TODO: open jobs list widget
-                  jobsManager?.queueJob({
+                  jobsManager.queueJob({
                     indexingParams: {
                       attributes: textSearching?.indexingAttributes || [
                         'Name',

@@ -1107,7 +1107,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                         aria-hidden="true"
                         class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputMultiline css-os06jd-MuiInputBase-input-MuiOutlinedInput-input-textAreaFont"
                         readonly=""
-                        style="visibility: hidden; position: absolute; overflow: hidden; height: 0px; top: 0px; left: 0px; transform: translateZ(0); padding: 0px; width: 100%;"
+                        style="visibility: hidden; position: absolute; overflow: hidden; height: 0px; top: 0px; left: 0px; transform: translateZ(0); padding-top: 0px; padding-bottom: 0px; width: 100%;"
                         tabindex="-1"
                       />
                       <fieldset

@@ -71,7 +71,7 @@ export default function rootModelFactory({
       /**
        * #property
        */
-      jobsManager: types.maybe(JobsManager),
+      jobsManager: types.optional(JobsManager, {}),
     })
     .volatile(self => ({
       version: packageJSON.version,

@@ -1,8 +1,7 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import PluginLoader, { LoadedPlugin } from '@jbrowse/core/PluginLoader'
+import PluginLoader from '@jbrowse/core/PluginLoader'
 import { readConfObject } from '@jbrowse/core/configuration'
 import deepmerge from 'deepmerge'
-import sanitize from 'sanitize-filename'
 
 import {
   writeAWSAnalytics,
@@ -13,6 +12,7 @@ import {
 import JBrowseRootModelFactory from '../../rootModel'
 import corePlugins from '../../corePlugins'
 import sessionModelFactory from '../../sessionModel'
+import { fetchCJS } from '../../util'
 
 const { ipcRenderer } = window.require('electron')
 
@@ -57,46 +57,7 @@ export async function createPluginManager(
 ) {
   const pluginLoader = new PluginLoader(configSnapshot.plugins, {
     fetchESM: url => import(/* webpackIgnore:true */ url),
-    fetchCJS: async url => {
-      const fs: typeof import('fs') = window.require('fs')
-      const path: typeof import('path') = window.require('path')
-      const os: typeof import('os') = window.require('os')
-      const http: typeof import('http') = window.require('http')
-      const fsPromises = fs.promises
-      // On macOS `os.tmpdir()` returns the path to a symlink, see:
-      // https://github.com/nodejs/node/issues/11422
-      const tmpDir = await fsPromises.mkdtemp(
-        path.join(await fsPromises.realpath(os.tmpdir()), 'jbrowse-plugin-'),
-      )
-      let plugin: LoadedPlugin | undefined = undefined
-      try {
-        const pluginLocation = path.join(tmpDir, sanitize(url))
-        const pluginLocationRelative = path.relative('.', pluginLocation)
-
-        await new Promise((resolve, reject) => {
-          const file = fs.createWriteStream(pluginLocation)
-          http
-            .get(url, res => {
-              res.pipe(file)
-              file.on('finish', resolve)
-            })
-            .on('error', err => {
-              fs.unlinkSync(pluginLocation)
-              reject(err)
-            })
-        })
-        plugin = window.require(pluginLocationRelative) as
-          | LoadedPlugin
-          | undefined
-      } finally {
-        await fsPromises.rmdir(tmpDir, { recursive: true })
-      }
-
-      if (!plugin) {
-        throw new Error(`Could not load CJS plugin: ${url}`)
-      }
-      return plugin
-    },
+    fetchCJS,
   })
   pluginLoader.installGlobalReExports(window)
   const runtimePlugins = await pluginLoader.load(window.location.href)
@@ -140,14 +101,7 @@ export async function createPluginManager(
     acct => acct.internetAccountId,
   )
 
-  const rootModel = JBrowseRootModel.create(
-    {
-      jbrowse,
-      jobsManager: {},
-    },
-    { pluginManager },
-  )
-
+  const rootModel = JBrowseRootModel.create({ jbrowse }, { pluginManager })
   const config = rootModel.jbrowse.configuration
   const { rpc } = config
   rpc.defaultDriver.set('WebWorkerRpcDriver')
