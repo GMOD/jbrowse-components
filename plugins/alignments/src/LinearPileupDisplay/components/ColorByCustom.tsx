@@ -8,7 +8,7 @@ import { fillColor, IColorByModel } from '../../shared/color'
 
 function ColorByCustomDlg(props: {
   model: {
-    colorBy: IColorByModel
+    colorBy?: IColorByModel
     setColorScheme: Function
   }
   handleClose: () => void
