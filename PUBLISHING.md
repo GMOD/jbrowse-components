@@ -13,7 +13,7 @@ basically means you have to run another release because it is difficult to
 continue the release process after that failure. See
 https://github.com/GMOD/jbrowse-components/issues/2697#issuecomment-1045209088
 
-### Step 1. Create announcement file in website/release_announcement_drafts/<tag>.md
+### Step 1. Create announcement file in `website/release_announcement_drafts/<tag>.md`
 
 We first edit a file e.g. `website/release_announcement_drafts/v2.6.2.md` and
 make a pull request to propose the release.
