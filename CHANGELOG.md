@@ -1,3 +1,62 @@
+yarn run v1.22.18 $ lerna-changelog 2.6.2
+
+## Unreleased (2023-07-12)
+
+#### :rocket: Enhancement
+
+- [#3783](https://github.com/GMOD/jbrowse-components/pull/3783) Add ability for
+  track selector button in synteny view to select individual views
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#3452](https://github.com/GMOD/jbrowse-components/pull/3452) Use notarytool
+  for macOS desktop signing ([@cmdcolin](https://github.com/cmdcolin))
+- [#3766](https://github.com/GMOD/jbrowse-components/pull/3766) Add nextjs
+  circular genome view demo ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- `core`
+  - [#3784](https://github.com/GMOD/jbrowse-components/pull/3784) Fix synteny
+    rubberband tooltips when views are exactly the same
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3782](https://github.com/GMOD/jbrowse-components/pull/3782) Fix crash on
+    color picker component using debounce on color property
+    ([@carolinebridge-oicr](https://github.com/carolinebridge-oicr))
+  - [#3767](https://github.com/GMOD/jbrowse-components/pull/3767) Check session
+    tracks for text search adapters
+    ([@garrettjstevens](https://github.com/garrettjstevens))
+- Other
+  - [#3775](https://github.com/GMOD/jbrowse-components/pull/3775) Fix stranded
+    RNA-seq rendering and rename option Color by -> "First-of-pair strand"
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3758](https://github.com/GMOD/jbrowse-components/pull/3758) Adds safety
+    checks on AlignmentsDisplay properties to avoid undefined rendering
+    ([@carolinebridge-oicr](https://github.com/carolinebridge-oicr))
+  - [#3770](https://github.com/GMOD/jbrowse-components/pull/3770) Fix potential
+    issue with display searchFeatureByID being undefined
+    ([@cmdcolin](https://github.com/cmdcolin))
+- `app-core`, `core`, `embedded-core`, `product-core`, `text-indexing`,
+  `web-core`
+  - [#3771](https://github.com/GMOD/jbrowse-components/pull/3771) Use
+    inlineSourceMaps for tsc builds and other misc changes
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :house: Internal
+
+- Other
+  - [#3794](https://github.com/GMOD/jbrowse-components/pull/3794) Move embedded
+    demos to individual repos ([@cmdcolin](https://github.com/cmdcolin))
+- `core`, `product-core`
+  - [#3786](https://github.com/GMOD/jbrowse-components/pull/3786) Centralize
+    rpcWorker in product-core ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 3
+
+- Caroline Bridge
+  ([@carolinebridge-oicr](https://github.com/carolinebridge-oicr))
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens)) Done
+  in 1.48s.
+
 yarn run v1.22.18 $ lerna-changelog 2.6.1
 
 ## Unreleased (2023-06-08)
