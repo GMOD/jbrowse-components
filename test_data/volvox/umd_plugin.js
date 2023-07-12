@@ -122,6 +122,14 @@
             : DefaultWidget
         },
       )
+      pluginManager.addToExtensionPoint('Core-preProcessTrackConfig', snap => {
+        snap.metadata = {
+          ...snap.metadata,
+          'metadata from plugin':
+            'added by umd_plugin.js using Core-preProcessTrackConfig',
+        }
+        return snap
+      })
     }
 
     configure(/* pluginManager */) {}
