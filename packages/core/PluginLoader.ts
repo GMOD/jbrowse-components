@@ -1,4 +1,4 @@
-import domLoadScript from 'load-script2'
+import domLoadScript from 'load-script'
 
 // locals
 import Plugin, { PluginConstructor } from './Plugin'
@@ -58,6 +58,34 @@ export function isESMPluginDefinition(
 
 export interface CJSPluginDefinition {
   cjsUrl: string
+}
+
+function promisifiedLoadScript(src: string) {
+  return new Promise((resolve, reject) => {
+    domLoadScript(src, (err, script) => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve(script.src)
+      }
+    })
+  })
+}
+
+async function loadScript(scriptUrl: string) {
+  if (!isInWebWorker()) {
+    return promisifiedLoadScript(scriptUrl)
+  }
+
+  // @ts-expect-error
+  if (globalThis?.importScripts) {
+    // @ts-expect-error
+    await globalThis.importScripts(scriptUrl)
+    return
+  }
+  throw new Error(
+    'cannot figure out how to load external JS scripts in this environment',
+  )
 }
 
 export function isCJSPluginDefinition(
@@ -121,22 +149,6 @@ export default class PluginLoader {
     this.definitions = JSON.parse(JSON.stringify(defs))
   }
 
-  async loadScript(scriptUrl: string) {
-    if (!isInWebWorker()) {
-      return domLoadScript(scriptUrl)
-    }
-
-    // @ts-expect-error
-    if (globalThis?.importScripts) {
-      // @ts-expect-error
-      await globalThis.importScripts(scriptUrl)
-      return
-    }
-    throw new Error(
-      'cannot figure out how to load external JS scripts in this environment',
-    )
-  }
-
   async loadCJSPlugin(def: CJSPluginDefinition, baseUri?: string) {
     const parsedUrl = new URL(def.cjsUrl, baseUri)
     if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
@@ -193,7 +205,7 @@ export default class PluginLoader {
     const moduleName = def.name
     const umdName = `JBrowsePlugin${moduleName}`
     if (typeof jest === 'undefined') {
-      await this.loadScript(parsedUrl.href)
+      await loadScript(parsedUrl.href)
     } else {
       // @ts-expect-error
       globalThis[umdName] = { default: Plugin }
