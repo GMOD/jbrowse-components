@@ -114,6 +114,10 @@ class TypeRecord<ElementClass extends PluggableElementBase> {
   all() {
     return Object.values(this.registeredTypes)
   }
+
+  entries() {
+    return Object.entries(this.registeredTypes)
+  }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
