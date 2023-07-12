@@ -100,3 +100,26 @@ Then you can manually check e.g. https://jbrowse.org/demos/lgv and see that the
 
 Note that the deploy step requires that you have the AWS CLI tools, and have
 authenticated with the jbrowse.org account
+
+## Troubleshooting
+
+### Re-agree to mac app signing terms
+
+The Mac app signing system frequently wants you to agree to their updated
+license terms. Log in to https://developer.apple.com/account if you have access
+or ask team member to do so. This error will manifest as an error such as:
+
+```
+
+"Error: HTTP status code: 403. A required agreement is missing or has expired.
+This request requires an in-effect agreement that has not been signed or has
+expired. Ensure your team has signed the necessary legal agreements and that
+they are not expired."
+```
+
+Note: this will fail just the mac build. You can see the progress of it in the
+[update docs] v2.6.2. If the NPM packages haven't finished publishing yet, you
+can cancel the scripts/release.sh script and then revert the commits it made,
+and then re-run the release/scripts.sh. If the NPM scripts did already publish
+though, you will have to publish yet another new version, complete with new
+release draft, etc.
