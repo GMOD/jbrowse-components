@@ -46,7 +46,7 @@ export default class VCFFeature implements Feature {
   get(field: string): any {
     return field === 'samples'
       ? this.variant.SAMPLES
-      : this.data[field] || this.variant[field]
+      : this.data[field] ?? this.variant[field]
   }
 
   set() {}
