@@ -14,19 +14,13 @@ export async function fetchCJS(url: string): Promise<LoadedPlugin> {
   try {
     const pluginLocation = path.join(tmpDir, sanitize(url))
     const pluginLocationRelative = path.relative('.', pluginLocation)
-
-    let pluginText = ''
-    try {
-      const pluginResponse = await fetch(url)
-      if (!pluginResponse.ok) {
-        throw new Error('Bad response')
-      }
-      pluginText = await pluginResponse.text()
-    } catch (error) {
-      console.error(error)
-      await fsPromises.unlink(pluginLocation)
-      throw error
+    const response = await fetch(url)
+    if (!response.ok) {
+      throw new Error(
+        `HTTP ${response.status} ${response.statusText} when fetching plugin: ${url})`,
+      )
     }
+    const pluginText = await response.text()
     await fsPromises.writeFile(pluginLocation, pluginText)
     return globalThis.require(pluginLocationRelative) as LoadedPlugin
   } finally {
