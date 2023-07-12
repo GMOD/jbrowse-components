@@ -61,7 +61,7 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
               return { track, result: await d.renderSvg({ ...opts, theme }) }
             }),
           ),
-        } as const),
+        }) as const,
     ),
   )
 

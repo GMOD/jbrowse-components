@@ -404,7 +404,10 @@ export function isUriLocation(location: unknown): location is UriLocation {
   )
 }
 export class AuthNeededError extends Error {
-  constructor(public message: string, public url: string) {
+  constructor(
+    public message: string,
+    public url: string,
+  ) {
     super(message)
     this.name = 'AuthNeededError'
 
@@ -413,7 +416,10 @@ export class AuthNeededError extends Error {
 }
 
 export class RetryError extends Error {
-  constructor(public message: string, public internetAccountId: string) {
+  constructor(
+    public message: string,
+    public internetAccountId: string,
+  ) {
     super(message)
     this.name = 'RetryError'
   }

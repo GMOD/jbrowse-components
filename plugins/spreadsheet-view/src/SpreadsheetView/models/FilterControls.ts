@@ -49,7 +49,7 @@ const model = types
         ({
           type: 'RowFullText',
           stringToFind: '',
-        } as SnapshotIn<typeof RowFullTextFilter>),
+        }) as SnapshotIn<typeof RowFullTextFilter>,
     ),
     columnFilters: types.array(AnyColumnFilter),
   })

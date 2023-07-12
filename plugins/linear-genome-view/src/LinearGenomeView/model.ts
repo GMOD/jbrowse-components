@@ -1205,7 +1205,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 ...block,
                 start: Math.floor(block.start),
                 end: Math.ceil(block.end),
-              } as BaseBlock),
+              }) as BaseBlock,
           )
         },
 

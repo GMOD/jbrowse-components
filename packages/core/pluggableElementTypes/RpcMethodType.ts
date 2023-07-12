@@ -95,8 +95,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
       r = await serializedReturn
     } catch (error) {
       if (isAuthNeededException(error)) {
-        const retryAccount =
-          // @ts-expect-error
+        const retryAccount = // @ts-expect-error
           this.pluginManager.rootModel?.createEphemeralInternetAccount(
             `HTTPBasicInternetAccount-${new URL(error.url).origin}`,
             {},

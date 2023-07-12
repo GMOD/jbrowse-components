@@ -45,7 +45,9 @@
     "testing-library/prefer-screen-queries": 0,
 
     "unicorn/no-new-array": 0,
+    "unicorn/no-empty-file": 0,
     "unicorn/prefer-type-error": 0,
+    "unicorn/prefer-modern-math-apis": 0,
     "unicorn/prefer-node-protocol": 0,
     "unicorn/no-unreadable-array-destructuring": 0,
     "unicorn/no-abusive-eslint-disable": 0,
