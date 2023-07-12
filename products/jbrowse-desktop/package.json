@@ -16,7 +16,7 @@
     "preelectron": "npm run electron-ts",
     "prebuild": "npm run electron-ts",
     "prepack": "yarn build",
-    "build": "craco build",
+    "build": "CI=false craco build",
     "build-electron": "yarn build && electron-builder build --windows --mac --linux",
     "build-electron:win": "yarn build && electron-builder build --windows",
     "build-electron:mac": "yarn build && electron-builder build --mac",
