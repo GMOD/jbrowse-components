@@ -89,6 +89,8 @@ automated, but you can run each step and check that there aren't any errors
 
 ```bash
 cd embedded_demos
+export NODE_OPTIONS=--openssl-legacy-provider # needed to deploy the CRA4 demos
+export JB2TMP=~/jb2tmp # the embedded demo repos are cloned to this folder instead of the embedded_demos folder to avoid typescript and eslint complaining about ../ related weirdness
 ./clone_demos.sh # clones embedded demo repos to local folder
 ./update_demos.sh # runs yarn upgrade in each embedded demo to get latest jbrowse code
 ./deploy_demos.sh # runs build and uploads to amazon s3 bucket
