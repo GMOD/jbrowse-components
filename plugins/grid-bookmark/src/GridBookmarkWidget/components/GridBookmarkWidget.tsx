@@ -34,7 +34,7 @@ const BookmarkGrid = observer(({ model }: { model: GridBookmarkModel }) => {
   const { classes } = useStyles()
   const [dialogRowNumber, setDialogRowNumber] = useState<number>()
   const { bookmarkedRegions, selectedAssembly } = model
-  const { views } = getSession(model)
+  const session = getSession(model)
 
   const bookmarkRows = bookmarkedRegions
     .filter(
@@ -68,7 +68,7 @@ const BookmarkGrid = observer(({ model }: { model: GridBookmarkModel }) => {
                 href="#"
                 onClick={async event => {
                   event.preventDefault()
-                  await navToBookmark(params.value, views, model)
+                  await navToBookmark(params.value, session.views, model)
                 }}
               >
                 {params.value}
@@ -98,9 +98,13 @@ const BookmarkGrid = observer(({ model }: { model: GridBookmarkModel }) => {
             ),
           },
         ]}
-        onCellEditStop={({ id, value }) =>
-          model.updateBookmarkLabel(id as number, value)
-        }
+        processRowUpdate={row => {
+          model.updateBookmarkLabel(row.id, row.label)
+          return row
+        }}
+        onProcessRowUpdateError={e => {
+          session.notify(e.message, 'error')
+        }}
         disableRowSelectionOnClick
       />
 
