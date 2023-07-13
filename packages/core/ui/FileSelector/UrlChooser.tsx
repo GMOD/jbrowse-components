@@ -7,13 +7,15 @@ export default observer(function UrlChooser(props: {
   location?: FileLocation
   setLocation: Function
   label?: string
+  error?: boolean
 }) {
-  const { location, setLocation, label } = props
+  const { location, setLocation, label, error } = props
 
   return (
     <TextField
       fullWidth
       variant="outlined"
+      error={error}
       inputProps={{ 'data-testid': 'urlInput' }}
       defaultValue={location && isUriLocation(location) ? location.uri : ''}
       label={label || 'Enter URL'}

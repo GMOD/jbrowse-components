@@ -49,6 +49,7 @@ const FileSelector: React.FC<{
   name?: string
   description?: string
   rootModel?: AbstractRootModel
+  error?: boolean
 }> = observer(props => {
   const { location, name, description, rootModel, setLocation } = props
   const fileOrUrl = !location || isUriLocation(location) ? 'url' : 'file'
@@ -118,7 +119,7 @@ const FileSelector: React.FC<{
             value={toggleButtonValue}
             exclusive
             onChange={(_event, newState) => {
-              if (newState) {
+              if (newState && newState !== 'more') {
                 setToggleButtonValue(newState)
               }
               if (isUriLocation(location)) {
@@ -150,10 +151,10 @@ const FileSelector: React.FC<{
               </ToggleButtonWithTooltip>
             ))}
             {hiddenAccts.length > 0 ? (
-              // @ts-expect-error
               <ToggleButton
                 onClick={event => setAnchorEl(event.target as HTMLElement)}
                 selected={false}
+                value={'more'}
               >
                 More
                 <ArrowDropDownIcon />
@@ -193,7 +194,7 @@ const FileSelector: React.FC<{
         </Box>
       </Box>
       {locationInput}
-      <FormHelperText>{description}</FormHelperText>
+      <FormHelperText error={props.error}>{description}</FormHelperText>
     </>
   )
 })

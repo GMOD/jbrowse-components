@@ -24,9 +24,10 @@ const useStyles = makeStyles()(theme => ({
 function LocalFileChooser(props: {
   location?: FileLocation
   setLocation: Function
+  error?: boolean
 }) {
   const { classes } = useStyles()
-  const { location, setLocation } = props
+  const { location, setLocation, error } = props
 
   const filename =
     location &&
@@ -39,7 +40,7 @@ function LocalFileChooser(props: {
   return (
     <Box display="flex" flexDirection="row" alignItems="center">
       <Box>
-        <FormControl fullWidth>
+        <FormControl error={error} fullWidth>
           <Button variant="outlined" component="label">
             Choose File
             <input
