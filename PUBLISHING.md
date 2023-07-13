@@ -13,6 +13,28 @@ basically means you have to run another release because it is difficult to
 continue the release process after that failure. See
 https://github.com/GMOD/jbrowse-components/issues/2697#issuecomment-1045209088
 
+### Step 0. (optional) Check developer.apple.com for updated mac app signing terms
+
+The Mac app signing system frequently wants you to agree to their updated
+license terms. Log in to https://developer.apple.com/account if you have access
+or ask team member to do so.
+
+The Mac specific electron build github action may otherwise fail with an error
+such as:
+
+```
+Error: HTTP status code: 403. A required agreement is missing or has expired.
+This request requires an in-effect agreement that has not been signed or has
+expired. Ensure your team has signed the necessary legal agreements and that
+they are not expired.
+```
+
+Note: you can possibly recover from this if the electron builds fail and the NPM
+versions haven't published yet. You can cancel the scripts/release.sh script and
+then revert the commits it made, and then re-run the release/scripts.sh. If the
+NPM scripts did already publish though, you will have to publish yet another new
+version, complete with new release draft, etc.
+
 ### Step 1. Create announcement file in `website/release_announcement_drafts/<tag>.md`
 
 We first edit a file e.g. `website/release_announcement_drafts/v2.6.2.md` and
@@ -103,25 +125,72 @@ Then you can manually check e.g. https://jbrowse.org/demos/lgv and see that the
 Note that the deploy step requires that you have the AWS CLI tools, and have
 authenticated with the jbrowse.org account
 
-## Troubleshooting
+### Step 6. Publish JBrowseR update to CRAN
 
-### Re-agree to mac app signing terms
+Make sure you have role c("aut","cre") in the JBrowseR DESCRIPTION file or else
+add yourself and make it so. Then run steps similar to the following
 
-The Mac app signing system frequently wants you to agree to their updated
-license terms. Log in to https://developer.apple.com/account if you have access
-or ask team member to do so. This error will manifest as an error such as:
+```bash
+git clone git@github.com:GMOD/JBrowseR
+cd JBrowseR
 
+>> manually update DESCRIPTION with new version number to be used, and NEWS.md with changelog
+
+# get latest @jbrowse/react-linear-genome-view, repo has a normal package.json
+# and yarn.lock
+yarn upgrade
+
+# runs webpack
+yarn build
+
+
+# commit built artifacts
+git add .
+git commit -m "Update deps"
+
+# start R session
+R
+> install.packages(devtools)
+> devtools::submit_cran()
 ```
 
-"Error: HTTP status code: 403. A required agreement is missing or has expired.
-This request requires an in-effect agreement that has not been signed or has
-expired. Ensure your team has signed the necessary legal agreements and that
-they are not expired."
-```
+### Step 7. Publish dash_jbrowse update to PyPI
 
-Note: this will fail just the mac build. You can see the progress of it in the
-[update docs] v2.6.2. If the NPM packages haven't finished publishing yet, you
-can cancel the scripts/release.sh script and then revert the commits it made,
-and then re-run the release/scripts.sh. If the NPM scripts did already publish
-though, you will have to publish yet another new version, complete with new
-release draft, etc.
+```bash
+
+# clone repo and use virtualenv for installing deps, needed for building (e.g.
+# dash-generate-components)
+pip install virtualenv
+
+git clone git@github.com:GMOD/dash_jbrowse
+cd dash_jbrowse
+python3 -m venv ./venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+## check that it works as-is in local browser
+python usage.py
+
+
+
+# get latest @jbrowse/react-linear-genome-view, repo has a normal package.json
+# and yarn.lock
+yarn upgrade
+
+# runs webpack
+yarn build
+
+# commit built artifacts
+git add .
+git commit -m "Update deps"
+
+# create new tag e.g.
+git tag v1.2.3
+git push --tags
+
+# then go to https://github.com/GMOD/dash_jbrowse/tags and select "create
+release" from the tag you created
+
+# a github action will then run to create the release on PyPI
+
+```
