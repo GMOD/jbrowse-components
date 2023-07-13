@@ -99,7 +99,7 @@ const BookmarkGrid = observer(({ model }: { model: GridBookmarkModel }) => {
           },
         ]}
         processRowUpdate={row => {
-          model.updateBookmarkLabel(row.id as number, row.label)
+          model.updateBookmarkLabel(row.id, row.label)
           return row
         }}
         onProcessRowUpdateError={e => {
