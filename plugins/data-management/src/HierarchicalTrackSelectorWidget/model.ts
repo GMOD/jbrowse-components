@@ -92,56 +92,50 @@ export function generateHierarchy(
   const hierarchy = { children: [] as TreeNode[] } as TreeNode
   const { filterText, view } = model
   const session = getSession(model)
+  const viewTracks = view.tracks as { configuration: AnyConfigurationModel }[]
+  const relevantTracks = trackConfigurations.filter(c =>
+    matches(filterText, c, session),
+  )
+  for (const conf of relevantTracks) {
+    // copy the categories since this array can be mutated downstream
+    const categories = [...(readConfObject(conf, 'category') || [])]
 
-  trackConfigurations
-    .filter(conf => matches(filterText, conf, session))
-    .forEach(conf => {
-      // copy the categories since this array can be mutated downstream
-      const categories = [...(readConfObject(conf, 'category') || [])]
+    // hack where if trackId ends with sessionTrack, then push it to a
+    // category that starts with a space to force sort to the top
+    if (conf.trackId.endsWith('sessionTrack')) {
+      categories.unshift(' Session tracks')
+    }
 
-      // silly thing where if trackId ends with sessionTrack, then push it to
-      // a category that starts with a space to force sort to the top...
-      // double whammy hackyness
-      if (conf.trackId.endsWith('sessionTrack')) {
-        categories.unshift(' Session tracks')
-      }
+    let currLevel = hierarchy
 
-      let currLevel = hierarchy
-
-      // find existing category to put track into or create it
-      for (let i = 0; i < categories.length; i++) {
-        const category = categories[i]
-        const ret = currLevel.children.find(c => c.name === category)
-        const id = extra + '-' + categories.slice(0, i + 1).join(',')
-        if (!ret) {
-          const n = {
-            children: [],
-            name: category,
-            id,
-            isOpenByDefault: !collapsed.get(id),
-          }
-          currLevel.children.push(n)
-          currLevel = n
-        } else {
-          currLevel = ret
-        }
-      }
-      const tracks = view.tracks as { configuration: AnyConfigurationModel }[]
-
-      // using splice here tries to group leaf nodes above hierarchical nodes
-      currLevel.children.splice(
-        currLevel.children.findIndex(elt => elt.children.length),
-        0,
-        {
-          id: conf.trackId,
-          name: getTrackName(conf, session),
-          conf,
-          checked: tracks.some(f => f.configuration === conf),
+    // find existing category to put track into or create it
+    for (let i = 0; i < categories.length; i++) {
+      const category = categories[i]
+      const ret = currLevel.children.find(c => c.name === category)
+      const id = extra + '-' + categories.slice(0, i + 1).join(',')
+      if (!ret) {
+        const n = {
           children: [],
-        },
-      )
-    })
+          name: category,
+          id,
+          isOpenByDefault: !collapsed.get(id),
+        }
+        currLevel.children.push(n)
+        currLevel = n
+      } else {
+        currLevel = ret
+      }
+    }
 
+    // using splice here tries to group leaf nodes above hierarchical nodes
+    currLevel.children.push({
+      id: conf.trackId,
+      name: getTrackName(conf, session),
+      conf,
+      checked: viewTracks.some(f => f.configuration === conf),
+      children: [],
+    })
+  }
   return hierarchy.children
 }
 
