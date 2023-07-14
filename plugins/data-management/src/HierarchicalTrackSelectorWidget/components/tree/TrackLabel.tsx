@@ -61,7 +61,10 @@ export default function TrackLabel({ data }: { data: NodeData }) {
             />
           }
           label={
-            <div style={{ background: selected ? '#cccc' : undefined }}>
+            <div
+              data-testid={`htsTrackLabel-${id}`}
+              style={{ background: selected ? '#cccc' : undefined }}
+            >
               <SanitizedHTML html={name} />
             </div>
           }

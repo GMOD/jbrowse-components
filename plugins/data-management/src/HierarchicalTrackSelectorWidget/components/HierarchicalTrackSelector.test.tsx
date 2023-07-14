@@ -7,11 +7,9 @@ import { ThemeProvider } from '@mui/material/styles'
 // locals
 import HierarchicalTrackSelector from './HierarchicalTrackSelector'
 
-jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
+import conf from '../../../../../test_data/test_order/config.json'
 
-// @ts-expect-error
-window.requestIdleCallback = cb => cb()
-window.cancelIdleCallback = () => {}
+jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 
 test('renders nothing with no assembly', () => {
   const session = createTestSession()
@@ -20,11 +18,10 @@ test('renders nothing with no assembly', () => {
 
   const { container } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
-      {/* @ts-expect-error*/}
-      <HierarchicalTrackSelector model={model} />
+      <HierarchicalTrackSelector model={model} toolbarHeight={20} />
     </ThemeProvider>,
   )
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
 })
 
 test('renders with a couple of uncategorized tracks', async () => {
@@ -76,12 +73,11 @@ test('renders with a couple of uncategorized tracks', async () => {
 
   const { container, findByTestId } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
-      {/* @ts-expect-error*/}
-      <HierarchicalTrackSelector model={model} />
+      <HierarchicalTrackSelector model={model} toolbarHeight={20} />
     </ThemeProvider>,
   )
   await findByTestId('hierarchical_track_selector')
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
 })
 
 test('renders with a couple of categorized tracks', async () => {
@@ -139,10 +135,63 @@ test('renders with a couple of categorized tracks', async () => {
 
   const { container, findByTestId } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
-      {/* @ts-expect-error*/}
-      <HierarchicalTrackSelector model={model} />
+      <HierarchicalTrackSelector model={model} toolbarHeight={20} />
     </ThemeProvider>,
   )
   await findByTestId('hierarchical_track_selector')
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
+})
+
+test('right order when using multiple categories', async () => {
+  const session = createTestSession()
+  session.addAssemblyConf({
+    name: 'volvox',
+    sequence: {
+      trackId: 'sequenceConfigId',
+      type: 'ReferenceSequenceTrack',
+      adapter: {
+        type: 'FromConfigSequenceAdapter',
+        features: [
+          {
+            refName: 'ctgA',
+            uniqueId: 'firstId',
+            start: 0,
+            end: 10,
+            seq: 'cattgttgcg',
+          },
+        ],
+      },
+    },
+  })
+
+  for (const track of conf.tracks) {
+    session.addTrackConf(track)
+  }
+
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      {
+        assemblyName: 'volMyt1',
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+      },
+    ],
+  })
+
+  const model = firstView.activateTrackSelector()
+
+  const { getAllByTestId, findByTestId } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <HierarchicalTrackSelector model={model} toolbarHeight={20} />
+    </ThemeProvider>,
+  )
+  await findByTestId('hierarchical_track_selector')
+
+  const list = getAllByTestId('htsTrackLabel', {
+    exact: false,
+  })
+  for (let i = 0; i < list.length; i++) {
+    expect(list[i].textContent).toMatchSnapshot()
+  }
 })
