@@ -22,7 +22,7 @@ export const fillColor = {
   color_shortinsert: 'pink',
   color_modifications: '#c8dcc8',
   color_methylation: '#c8c8c8',
-  color_unknown: 'grey',
+  color_unknown: 'lightgrey',
 }
 
 // manually calculated by running
@@ -50,7 +50,7 @@ export const strokeColor = {
   color_shortinsert: '#FF3A5C',
   color_modifications: '#c8dcc8',
   color_methylation: '#c8c8c8',
-  color_unknown: 'grey',
+  color_unknown: 'lightgrey',
 }
 
 export function getPairedInsertSizeColor(

@@ -1,6 +1,12 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { Button, DialogContent, DialogActions, Typography } from '@mui/material'
+import {
+  Button,
+  DialogContent,
+  DialogActions,
+  Typography,
+  Alert,
+} from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
 import { ColorPicker } from '@jbrowse/core/ui/ColorPicker'
 
@@ -51,9 +57,17 @@ function ColorByCustomDlg(props: {
   return (
     <Dialog open onClose={handleClose} title="Apply custom color scheme">
       <DialogContent>
+        <Alert severity="info" title="Note">
+          Configuring the renderer for a given display in your
+          "jbrowse_config.json" file will override these settings.
+        </Alert>
+        <br />
         <Typography variant="body1">
-          Select custom color options (color by {type}) for the track display.
+          <strong>
+            Select custom color options (color by {type}) for the track display.
+          </strong>
         </Typography>
+        <br />
         {/* @ts-ignore */}
         {colorOptionMap[type].map((colorOption: string) => {
           return (
