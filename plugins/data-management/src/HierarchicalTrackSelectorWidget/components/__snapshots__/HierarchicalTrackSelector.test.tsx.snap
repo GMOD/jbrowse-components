@@ -1,265 +1,1195 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`renders nothing with no assembly 1`] = `
-<div
-  data-testid="hierarchical_track_selector"
->
+<div>
   <div
-    style="display: flex;"
+    data-testid="hierarchical_track_selector"
   >
-    <button
-      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1kgqocu-MuiButtonBase-root-MuiIconButton-root-menuIcon"
-      tabindex="0"
-      type="button"
-    >
-      <svg
-        aria-hidden="true"
-        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
-        data-testid="MenuIcon"
-        focusable="false"
-        viewBox="0 0 24 24"
-      >
-        <path
-          d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"
-        />
-      </svg>
-      <span
-        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-      />
-    </button>
     <div
-      class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-rlnh8o-MuiFormControl-root-MuiTextField-root-searchBox"
+      style="display: flex;"
     >
-      <label
-        class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard css-1s1jvl0-MuiFormLabel-root-MuiInputLabel-root"
-        data-shrink="false"
-        for="mui-1"
-        id="mui-1-label"
+      <button
+        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1kgqocu-MuiButtonBase-root-MuiIconButton-root-menuIcon"
+        tabindex="0"
+        type="button"
       >
-        Filter tracks
-      </label>
-      <div
-        class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-1blad95-MuiInputBase-root-MuiInput-root"
-      >
-        <input
-          aria-invalid="false"
-          class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd css-nz481w-MuiInputBase-input-MuiInput-input"
-          id="mui-1"
-          type="text"
-          value=""
-        />
-        <div
-          class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-1laqsz7-MuiInputAdornment-root"
+        <svg
+          aria-hidden="true"
+          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+          data-testid="MenuIcon"
+          focusable="false"
+          viewBox="0 0 24 24"
         >
-          <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
-            tabindex="0"
-            type="button"
+          <path
+            d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"
+          />
+        </svg>
+        <span
+          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+        />
+      </button>
+      <div
+        class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-rlnh8o-MuiFormControl-root-MuiTextField-root-searchBox"
+      >
+        <label
+          class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard css-1s1jvl0-MuiFormLabel-root-MuiInputLabel-root"
+          data-shrink="false"
+          for="mui-1"
+          id="mui-1-label"
+        >
+          Filter tracks
+        </label>
+        <div
+          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-1blad95-MuiInputBase-root-MuiInput-root"
+        >
+          <input
+            aria-invalid="false"
+            class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd css-nz481w-MuiInputBase-input-MuiInput-input"
+            id="mui-1"
+            type="text"
+            value=""
+          />
+          <div
+            class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-1laqsz7-MuiInputAdornment-root"
           >
-            <svg
-              aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
-              data-testid="ClearIcon"
-              focusable="false"
-              viewBox="0 0 24 24"
+            <button
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
+              tabindex="0"
+              type="button"
             >
-              <path
-                d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                data-testid="ClearIcon"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+                />
+              </svg>
+              <span
+                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
               />
-            </svg>
-            <span
-              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-            />
-          </button>
+            </button>
+          </div>
+        </div>
+      </div>
+      <button
+        class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeSmall MuiButton-textSizeSmall css-1c8zr45-MuiButtonBase-root-MuiButton-root-menuIcon"
+        tabindex="0"
+        type="button"
+      >
+        Open faceted selector
+        <span
+          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+        />
+      </button>
+    </div>
+  </div>
+  <div
+    style="position: relative; height: 9000px; overflow: auto; will-change: transform; direction: ltr;"
+  >
+    <div
+      style="height: 40px; width: 100%;"
+    >
+      <div
+        class="css-11rl2vh-accordionBase"
+        style="position: absolute; left: 0px; top: 0px; height: 40px; width: 100%;"
+      >
+        <div
+          class="css-1eoby3c-accordionCard"
+          style="margin-left: 0px; white-space: nowrap; width: 100%;"
+        >
+          <div
+            class="css-1dqsl7q-accordionColor"
+          >
+            <div
+              class="css-1c2x1yy-accordionText"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                  data-testid="ArrowDropDownIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="m7 10 5 5 5-5z"
+                  />
+                </svg>
+                Tracks
+                <button
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9ivluk-MuiButtonBase-root-MuiIconButton-root-contrastColor"
+                  tabindex="0"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                    data-testid="MoreHorizIcon"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                    />
+                  </svg>
+                  <span
+                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                  />
+                </button>
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-    <button
-      class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeSmall MuiButton-textSizeSmall css-1c8zr45-MuiButtonBase-root-MuiButton-root-menuIcon"
-      tabindex="0"
-      type="button"
-    >
-      Open faceted selector
-      <span
-        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-      />
-    </button>
   </div>
+  <button
+    class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-secondary MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-secondary css-15opis6-MuiButtonBase-root-MuiFab-root-fab"
+    tabindex="0"
+    type="button"
+  >
+    <svg
+      aria-hidden="true"
+      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+      data-testid="AddIcon"
+      focusable="false"
+      viewBox="0 0 24 24"
+    >
+      <path
+        d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+      />
+    </svg>
+    <span
+      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+    />
+  </button>
 </div>
 `;
 
 exports[`renders with a couple of categorized tracks 1`] = `
-<div
-  data-testid="hierarchical_track_selector"
->
+<div>
   <div
-    style="display: flex;"
+    data-testid="hierarchical_track_selector"
   >
-    <button
-      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1kgqocu-MuiButtonBase-root-MuiIconButton-root-menuIcon"
-      tabindex="0"
-      type="button"
-    >
-      <svg
-        aria-hidden="true"
-        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
-        data-testid="MenuIcon"
-        focusable="false"
-        viewBox="0 0 24 24"
-      >
-        <path
-          d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"
-        />
-      </svg>
-      <span
-        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-      />
-    </button>
     <div
-      class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-rlnh8o-MuiFormControl-root-MuiTextField-root-searchBox"
+      style="display: flex;"
     >
-      <label
-        class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard css-1s1jvl0-MuiFormLabel-root-MuiInputLabel-root"
-        data-shrink="false"
-        for="mui-6"
-        id="mui-6-label"
+      <button
+        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1kgqocu-MuiButtonBase-root-MuiIconButton-root-menuIcon"
+        tabindex="0"
+        type="button"
       >
-        Filter tracks
-      </label>
+        <svg
+          aria-hidden="true"
+          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+          data-testid="MenuIcon"
+          focusable="false"
+          viewBox="0 0 24 24"
+        >
+          <path
+            d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"
+          />
+        </svg>
+        <span
+          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+        />
+      </button>
       <div
-        class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-1blad95-MuiInputBase-root-MuiInput-root"
+        class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-rlnh8o-MuiFormControl-root-MuiTextField-root-searchBox"
       >
-        <input
-          aria-invalid="false"
-          class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd css-nz481w-MuiInputBase-input-MuiInput-input"
-          id="mui-6"
-          type="text"
-          value=""
+        <label
+          class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard css-1s1jvl0-MuiFormLabel-root-MuiInputLabel-root"
+          data-shrink="false"
+          for="mui-6"
+          id="mui-6-label"
+        >
+          Filter tracks
+        </label>
+        <div
+          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-1blad95-MuiInputBase-root-MuiInput-root"
+        >
+          <input
+            aria-invalid="false"
+            class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd css-nz481w-MuiInputBase-input-MuiInput-input"
+            id="mui-6"
+            type="text"
+            value=""
+          />
+          <div
+            class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-1laqsz7-MuiInputAdornment-root"
+          >
+            <button
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
+              tabindex="0"
+              type="button"
+            >
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                data-testid="ClearIcon"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+                />
+              </svg>
+              <span
+                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+              />
+            </button>
+          </div>
+        </div>
+      </div>
+      <button
+        class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeSmall MuiButton-textSizeSmall css-1c8zr45-MuiButtonBase-root-MuiButton-root-menuIcon"
+        tabindex="0"
+        type="button"
+      >
+        Open faceted selector
+        <span
+          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+        />
+      </button>
+    </div>
+  </div>
+  <div
+    style="position: relative; height: 9000px; overflow: auto; will-change: transform; direction: ltr;"
+  >
+    <div
+      style="height: 186px; width: 100%;"
+    >
+      <div
+        class="css-11rl2vh-accordionBase"
+        style="position: absolute; left: 0px; top: 0px; height: 40px; width: 100%;"
+      >
+        <div
+          class="css-1eoby3c-accordionCard"
+          style="margin-left: 0px; white-space: nowrap; width: 100%;"
+        >
+          <div
+            class="css-1dqsl7q-accordionColor"
+          >
+            <div
+              class="css-1c2x1yy-accordionText"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                  data-testid="ArrowDropDownIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="m7 10 5 5 5-5z"
+                  />
+                </svg>
+                Tracks
+                <button
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9ivluk-MuiButtonBase-root-MuiIconButton-root-contrastColor"
+                  tabindex="0"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                    data-testid="MoreHorizIcon"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                    />
+                  </svg>
+                  <span
+                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                  />
+                </button>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        style="position: absolute; left: 0px; top: 40px; height: 22px; width: 100%;"
+      >
+        <div
+          class="css-1a5q6y9-nestingLevelMarker"
+          style="left: 4px; height: 22px;"
         />
         <div
-          class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-1laqsz7-MuiInputAdornment-root"
+          style="margin-left: 20px; white-space: nowrap; width: 100%;"
         >
-          <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
-            tabindex="0"
-            type="button"
-          >
-            <svg
-              aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
-              data-testid="ClearIcon"
-              focusable="false"
-              viewBox="0 0 24 24"
+          <div>
+            <label
+              aria-label=""
+              class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-h6tcxi-MuiFormControlLabel-root-checkboxLabel"
+              data-mui-internal-clone-element="true"
             >
-              <path
-                d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+              <span
+                class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-root MuiCheckbox-colorPrimary css-5qvvf1-MuiButtonBase-root-MuiCheckbox-root-compactCheckbox"
+              >
+                <input
+                  class="PrivateSwitchBase-input css-1m9pwf3"
+                  data-indeterminate="false"
+                  data-testid="htsTrackEntry-sequenceConfigId"
+                  type="checkbox"
+                />
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                  data-testid="CheckBoxOutlineBlankIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
+                  />
+                </svg>
+                <span
+                  class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                />
+              </span>
+              <span
+                class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label css-k0xfey-MuiTypography-root"
+              >
+                <div
+                  data-testid="htsTrackLabel-sequenceConfigId"
+                >
+                  <span>
+                    Reference sequence (volMyt1)
+                  </span>
+                </div>
+              </span>
+            </label>
+            <button
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
+              data-testid="htsTrackEntryMenu-sequenceConfigId"
+              style="padding: 0px;"
+              tabindex="0"
+              type="button"
+            >
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                data-testid="MoreHorizIcon"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                />
+              </svg>
+              <span
+                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
               />
-            </svg>
-            <span
-              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-            />
-          </button>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div
+        class="css-11rl2vh-accordionBase"
+        style="position: absolute; left: 0px; top: 62px; height: 40px; width: 100%;"
+      >
+        <div
+          class="css-1a5q6y9-nestingLevelMarker"
+          style="left: 4px; height: 40px;"
+        />
+        <div
+          class="css-1eoby3c-accordionCard"
+          style="margin-left: 10px; white-space: nowrap; width: 100%;"
+        >
+          <div
+            class="css-1dqsl7q-accordionColor"
+          >
+            <div
+              class="css-1c2x1yy-accordionText"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                  data-testid="ArrowDropDownIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="m7 10 5 5 5-5z"
+                  />
+                </svg>
+                Foo Category
+                <button
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9ivluk-MuiButtonBase-root-MuiIconButton-root-contrastColor"
+                  tabindex="0"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                    data-testid="MoreHorizIcon"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                    />
+                  </svg>
+                  <span
+                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                  />
+                </button>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        style="position: absolute; left: 0px; top: 102px; height: 22px; width: 100%;"
+      >
+        <div
+          class="css-1a5q6y9-nestingLevelMarker"
+          style="left: 4px; height: 22px;"
+        />
+        <div
+          class="css-1a5q6y9-nestingLevelMarker"
+          style="left: 14px; height: 22px;"
+        />
+        <div
+          style="margin-left: 30px; white-space: nowrap; width: 100%;"
+        >
+          <div>
+            <label
+              aria-label=""
+              class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-h6tcxi-MuiFormControlLabel-root-checkboxLabel"
+              data-mui-internal-clone-element="true"
+            >
+              <span
+                class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary Mui-checked MuiCheckbox-root MuiCheckbox-colorPrimary css-5qvvf1-MuiButtonBase-root-MuiCheckbox-root-compactCheckbox"
+              >
+                <input
+                  checked=""
+                  class="PrivateSwitchBase-input css-1m9pwf3"
+                  data-indeterminate="false"
+                  data-testid="htsTrackEntry-fooC"
+                  type="checkbox"
+                />
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                  data-testid="CheckBoxIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                  />
+                </svg>
+                <span
+                  class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                />
+              </span>
+              <span
+                class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label css-k0xfey-MuiTypography-root"
+              >
+                <div
+                  data-testid="htsTrackLabel-fooC"
+                >
+                  <span>
+                    Track
+                  </span>
+                </div>
+              </span>
+            </label>
+            <button
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
+              data-testid="htsTrackEntryMenu-fooC"
+              style="padding: 0px;"
+              tabindex="0"
+              type="button"
+            >
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                data-testid="MoreHorizIcon"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                />
+              </svg>
+              <span
+                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+              />
+            </button>
+          </div>
+        </div>
+      </div>
+      <div
+        class="css-11rl2vh-accordionBase"
+        style="position: absolute; left: 0px; top: 124px; height: 40px; width: 100%;"
+      >
+        <div
+          class="css-1a5q6y9-nestingLevelMarker"
+          style="left: 4px; height: 40px;"
+        />
+        <div
+          class="css-1a5q6y9-nestingLevelMarker"
+          style="left: 14px; height: 40px;"
+        />
+        <div
+          class="css-1eoby3c-accordionCard"
+          style="margin-left: 20px; white-space: nowrap; width: 100%;"
+        >
+          <div
+            class="css-1dqsl7q-accordionColor"
+          >
+            <div
+              class="css-1c2x1yy-accordionText"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                  data-testid="ArrowDropDownIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="m7 10 5 5 5-5z"
+                  />
+                </svg>
+                Bar Category
+                <button
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9ivluk-MuiButtonBase-root-MuiIconButton-root-contrastColor"
+                  tabindex="0"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                    data-testid="MoreHorizIcon"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                    />
+                  </svg>
+                  <span
+                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                  />
+                </button>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        style="position: absolute; left: 0px; top: 164px; height: 22px; width: 100%;"
+      >
+        <div
+          class="css-1a5q6y9-nestingLevelMarker"
+          style="left: 4px; height: 22px;"
+        />
+        <div
+          class="css-1a5q6y9-nestingLevelMarker"
+          style="left: 14px; height: 22px;"
+        />
+        <div
+          class="css-1a5q6y9-nestingLevelMarker"
+          style="left: 24px; height: 22px;"
+        />
+        <div
+          style="margin-left: 40px; white-space: nowrap; width: 100%;"
+        >
+          <div>
+            <label
+              aria-label=""
+              class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-h6tcxi-MuiFormControlLabel-root-checkboxLabel"
+              data-mui-internal-clone-element="true"
+            >
+              <span
+                class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary Mui-checked MuiCheckbox-root MuiCheckbox-colorPrimary css-5qvvf1-MuiButtonBase-root-MuiCheckbox-root-compactCheckbox"
+              >
+                <input
+                  checked=""
+                  class="PrivateSwitchBase-input css-1m9pwf3"
+                  data-indeterminate="false"
+                  data-testid="htsTrackEntry-barC"
+                  type="checkbox"
+                />
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                  data-testid="CheckBoxIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                  />
+                </svg>
+                <span
+                  class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                />
+              </span>
+              <span
+                class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label css-k0xfey-MuiTypography-root"
+              >
+                <div
+                  data-testid="htsTrackLabel-barC"
+                >
+                  <span>
+                    Track
+                  </span>
+                </div>
+              </span>
+            </label>
+            <button
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
+              data-testid="htsTrackEntryMenu-barC"
+              style="padding: 0px;"
+              tabindex="0"
+              type="button"
+            >
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                data-testid="MoreHorizIcon"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                />
+              </svg>
+              <span
+                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+              />
+            </button>
+          </div>
         </div>
       </div>
     </div>
-    <button
-      class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeSmall MuiButton-textSizeSmall css-1c8zr45-MuiButtonBase-root-MuiButton-root-menuIcon"
-      tabindex="0"
-      type="button"
-    >
-      Open faceted selector
-      <span
-        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-      />
-    </button>
   </div>
+  <button
+    class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-secondary MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-secondary css-15opis6-MuiButtonBase-root-MuiFab-root-fab"
+    tabindex="0"
+    type="button"
+  >
+    <svg
+      aria-hidden="true"
+      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+      data-testid="AddIcon"
+      focusable="false"
+      viewBox="0 0 24 24"
+    >
+      <path
+        d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+      />
+    </svg>
+    <span
+      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+    />
+  </button>
 </div>
 `;
 
 exports[`renders with a couple of uncategorized tracks 1`] = `
-<div
-  data-testid="hierarchical_track_selector"
->
+<div>
   <div
-    style="display: flex;"
+    data-testid="hierarchical_track_selector"
   >
-    <button
-      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1kgqocu-MuiButtonBase-root-MuiIconButton-root-menuIcon"
-      tabindex="0"
-      type="button"
-    >
-      <svg
-        aria-hidden="true"
-        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
-        data-testid="MenuIcon"
-        focusable="false"
-        viewBox="0 0 24 24"
-      >
-        <path
-          d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"
-        />
-      </svg>
-      <span
-        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-      />
-    </button>
     <div
-      class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-rlnh8o-MuiFormControl-root-MuiTextField-root-searchBox"
+      style="display: flex;"
     >
-      <label
-        class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard css-1s1jvl0-MuiFormLabel-root-MuiInputLabel-root"
-        data-shrink="false"
-        for="mui-2"
-        id="mui-2-label"
+      <button
+        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1kgqocu-MuiButtonBase-root-MuiIconButton-root-menuIcon"
+        tabindex="0"
+        type="button"
       >
-        Filter tracks
-      </label>
+        <svg
+          aria-hidden="true"
+          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+          data-testid="MenuIcon"
+          focusable="false"
+          viewBox="0 0 24 24"
+        >
+          <path
+            d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"
+          />
+        </svg>
+        <span
+          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+        />
+      </button>
       <div
-        class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-1blad95-MuiInputBase-root-MuiInput-root"
+        class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-rlnh8o-MuiFormControl-root-MuiTextField-root-searchBox"
       >
-        <input
-          aria-invalid="false"
-          class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd css-nz481w-MuiInputBase-input-MuiInput-input"
-          id="mui-2"
-          type="text"
-          value=""
+        <label
+          class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard css-1s1jvl0-MuiFormLabel-root-MuiInputLabel-root"
+          data-shrink="false"
+          for="mui-2"
+          id="mui-2-label"
+        >
+          Filter tracks
+        </label>
+        <div
+          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-1blad95-MuiInputBase-root-MuiInput-root"
+        >
+          <input
+            aria-invalid="false"
+            class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd css-nz481w-MuiInputBase-input-MuiInput-input"
+            id="mui-2"
+            type="text"
+            value=""
+          />
+          <div
+            class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-1laqsz7-MuiInputAdornment-root"
+          >
+            <button
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
+              tabindex="0"
+              type="button"
+            >
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                data-testid="ClearIcon"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+                />
+              </svg>
+              <span
+                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+              />
+            </button>
+          </div>
+        </div>
+      </div>
+      <button
+        class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeSmall MuiButton-textSizeSmall css-1c8zr45-MuiButtonBase-root-MuiButton-root-menuIcon"
+        tabindex="0"
+        type="button"
+      >
+        Open faceted selector
+        <span
+          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+        />
+      </button>
+    </div>
+  </div>
+  <div
+    style="position: relative; height: 9000px; overflow: auto; will-change: transform; direction: ltr;"
+  >
+    <div
+      style="height: 106px; width: 100%;"
+    >
+      <div
+        class="css-11rl2vh-accordionBase"
+        style="position: absolute; left: 0px; top: 0px; height: 40px; width: 100%;"
+      >
+        <div
+          class="css-1eoby3c-accordionCard"
+          style="margin-left: 0px; white-space: nowrap; width: 100%;"
+        >
+          <div
+            class="css-1dqsl7q-accordionColor"
+          >
+            <div
+              class="css-1c2x1yy-accordionText"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                  data-testid="ArrowDropDownIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="m7 10 5 5 5-5z"
+                  />
+                </svg>
+                Tracks
+                <button
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9ivluk-MuiButtonBase-root-MuiIconButton-root-contrastColor"
+                  tabindex="0"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                    data-testid="MoreHorizIcon"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                    />
+                  </svg>
+                  <span
+                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                  />
+                </button>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        style="position: absolute; left: 0px; top: 40px; height: 22px; width: 100%;"
+      >
+        <div
+          class="css-1a5q6y9-nestingLevelMarker"
+          style="left: 4px; height: 22px;"
         />
         <div
-          class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-1laqsz7-MuiInputAdornment-root"
+          style="margin-left: 20px; white-space: nowrap; width: 100%;"
         >
-          <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
-            tabindex="0"
-            type="button"
-          >
-            <svg
-              aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
-              data-testid="ClearIcon"
-              focusable="false"
-              viewBox="0 0 24 24"
+          <div>
+            <label
+              aria-label=""
+              class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-h6tcxi-MuiFormControlLabel-root-checkboxLabel"
+              data-mui-internal-clone-element="true"
             >
-              <path
-                d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+              <span
+                class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-root MuiCheckbox-colorPrimary css-5qvvf1-MuiButtonBase-root-MuiCheckbox-root-compactCheckbox"
+              >
+                <input
+                  class="PrivateSwitchBase-input css-1m9pwf3"
+                  data-indeterminate="false"
+                  data-testid="htsTrackEntry-sequenceConfigId"
+                  type="checkbox"
+                />
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                  data-testid="CheckBoxOutlineBlankIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
+                  />
+                </svg>
+                <span
+                  class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                />
+              </span>
+              <span
+                class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label css-k0xfey-MuiTypography-root"
+              >
+                <div
+                  data-testid="htsTrackLabel-sequenceConfigId"
+                >
+                  <span>
+                    Reference sequence (volMyt1)
+                  </span>
+                </div>
+              </span>
+            </label>
+            <button
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
+              data-testid="htsTrackEntryMenu-sequenceConfigId"
+              style="padding: 0px;"
+              tabindex="0"
+              type="button"
+            >
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                data-testid="MoreHorizIcon"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                />
+              </svg>
+              <span
+                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
               />
-            </svg>
-            <span
-              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-            />
-          </button>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div
+        style="position: absolute; left: 0px; top: 62px; height: 22px; width: 100%;"
+      >
+        <div
+          class="css-1a5q6y9-nestingLevelMarker"
+          style="left: 4px; height: 22px;"
+        />
+        <div
+          style="margin-left: 20px; white-space: nowrap; width: 100%;"
+        >
+          <div>
+            <label
+              aria-label=""
+              class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-h6tcxi-MuiFormControlLabel-root-checkboxLabel"
+              data-mui-internal-clone-element="true"
+            >
+              <span
+                class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary Mui-checked MuiCheckbox-root MuiCheckbox-colorPrimary css-5qvvf1-MuiButtonBase-root-MuiCheckbox-root-compactCheckbox"
+              >
+                <input
+                  checked=""
+                  class="PrivateSwitchBase-input css-1m9pwf3"
+                  data-indeterminate="false"
+                  data-testid="htsTrackEntry-fooC"
+                  type="checkbox"
+                />
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                  data-testid="CheckBoxIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                  />
+                </svg>
+                <span
+                  class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                />
+              </span>
+              <span
+                class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label css-k0xfey-MuiTypography-root"
+              >
+                <div
+                  data-testid="htsTrackLabel-fooC"
+                >
+                  <span>
+                    Track
+                  </span>
+                </div>
+              </span>
+            </label>
+            <button
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
+              data-testid="htsTrackEntryMenu-fooC"
+              style="padding: 0px;"
+              tabindex="0"
+              type="button"
+            >
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                data-testid="MoreHorizIcon"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                />
+              </svg>
+              <span
+                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+              />
+            </button>
+          </div>
+        </div>
+      </div>
+      <div
+        style="position: absolute; left: 0px; top: 84px; height: 22px; width: 100%;"
+      >
+        <div
+          class="css-1a5q6y9-nestingLevelMarker"
+          style="left: 4px; height: 22px;"
+        />
+        <div
+          style="margin-left: 20px; white-space: nowrap; width: 100%;"
+        >
+          <div>
+            <label
+              aria-label=""
+              class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-h6tcxi-MuiFormControlLabel-root-checkboxLabel"
+              data-mui-internal-clone-element="true"
+            >
+              <span
+                class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary Mui-checked MuiCheckbox-root MuiCheckbox-colorPrimary css-5qvvf1-MuiButtonBase-root-MuiCheckbox-root-compactCheckbox"
+              >
+                <input
+                  checked=""
+                  class="PrivateSwitchBase-input css-1m9pwf3"
+                  data-indeterminate="false"
+                  data-testid="htsTrackEntry-barC"
+                  type="checkbox"
+                />
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                  data-testid="CheckBoxIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                  />
+                </svg>
+                <span
+                  class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                />
+              </span>
+              <span
+                class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label css-k0xfey-MuiTypography-root"
+              >
+                <div
+                  data-testid="htsTrackLabel-barC"
+                >
+                  <span>
+                    Track
+                  </span>
+                </div>
+              </span>
+            </label>
+            <button
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
+              data-testid="htsTrackEntryMenu-barC"
+              style="padding: 0px;"
+              tabindex="0"
+              type="button"
+            >
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                data-testid="MoreHorizIcon"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                />
+              </svg>
+              <span
+                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+              />
+            </button>
+          </div>
         </div>
       </div>
     </div>
-    <button
-      class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeSmall MuiButton-textSizeSmall css-1c8zr45-MuiButtonBase-root-MuiButton-root-menuIcon"
-      tabindex="0"
-      type="button"
-    >
-      Open faceted selector
-      <span
-        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-      />
-    </button>
   </div>
+  <button
+    class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-secondary MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-secondary css-15opis6-MuiButtonBase-root-MuiFab-root-fab"
+    tabindex="0"
+    type="button"
+  >
+    <svg
+      aria-hidden="true"
+      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+      data-testid="AddIcon"
+      focusable="false"
+      viewBox="0 0 24 24"
+    >
+      <path
+        d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+      />
+    </svg>
+    <span
+      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+    />
+  </button>
 </div>
 `;
+
+exports[`right order when using multiple categories 1`] = `"1 toplevel"`;
+
+exports[`right order when using multiple categories 2`] = `"2 toplevel"`;
+
+exports[`right order when using multiple categories 3`] = `"3 toplevel"`;
+
+exports[`right order when using multiple categories 4`] = `"4 toplevel"`;
+
+exports[`right order when using multiple categories 5`] = `"5 toplevel"`;
+
+exports[`right order when using multiple categories 6`] = `"6 toplevel"`;
+
+exports[`right order when using multiple categories 7`] = `"7 toplevel"`;
+
+exports[`right order when using multiple categories 8`] = `"8 toplevel"`;
+
+exports[`right order when using multiple categories 9`] = `"9 toplevel"`;
+
+exports[`right order when using multiple categories 10`] = `"10 toplevel"`;
+
+exports[`right order when using multiple categories 11`] = `"1 cat1"`;
+
+exports[`right order when using multiple categories 12`] = `"2 cat1"`;
+
+exports[`right order when using multiple categories 13`] = `"3 cat1"`;
+
+exports[`right order when using multiple categories 14`] = `"4 cat1"`;
+
+exports[`right order when using multiple categories 15`] = `"5 cat1"`;
+
+exports[`right order when using multiple categories 16`] = `"6 cat1"`;
+
+exports[`right order when using multiple categories 17`] = `"7 cat1"`;
+
+exports[`right order when using multiple categories 18`] = `"8 cat1"`;
+
+exports[`right order when using multiple categories 19`] = `"9 cat1"`;
+
+exports[`right order when using multiple categories 20`] = `"10 cat1"`;
+
+exports[`right order when using multiple categories 21`] = `"1 cat1 cat2"`;
+
+exports[`right order when using multiple categories 22`] = `"2 cat1 cat2"`;
+
+exports[`right order when using multiple categories 23`] = `"3 cat1 cat2"`;
+
+exports[`right order when using multiple categories 24`] = `"4 cat1 cat2"`;
+
+exports[`right order when using multiple categories 25`] = `"5 cat1 cat2"`;
+
+exports[`right order when using multiple categories 26`] = `"6 cat1 cat2"`;
+
+exports[`right order when using multiple categories 27`] = `"7 cat1 cat2"`;
+
+exports[`right order when using multiple categories 28`] = `"8 cat1 cat2"`;
+
+exports[`right order when using multiple categories 29`] = `"9 cat1 cat2"`;
+
+exports[`right order when using multiple categories 30`] = `"10 cat1 cat2"`;
+
+exports[`right order when using multiple categories 31`] = `"1 cat3"`;
+
+exports[`right order when using multiple categories 32`] = `"2 cat3"`;
+
+exports[`right order when using multiple categories 33`] = `"3 cat3"`;
+
+exports[`right order when using multiple categories 34`] = `"4 cat3"`;
+
+exports[`right order when using multiple categories 35`] = `"5 cat3"`;
+
+exports[`right order when using multiple categories 36`] = `"1 cat3 cat4"`;
+
+exports[`right order when using multiple categories 37`] = `"2 cat3 cat4"`;
+
+exports[`right order when using multiple categories 38`] = `"3 cat3 cat4"`;
+
+exports[`right order when using multiple categories 39`] = `"4 cat3 cat4"`;
+
+exports[`right order when using multiple categories 40`] = `"5 cat3 cat4"`;

@@ -92,16 +92,15 @@ export function generateHierarchy(
   const hierarchy = { children: [] as TreeNode[] } as TreeNode
   const { filterText, view } = model
   const session = getSession(model)
-
+  const viewTracks = view.tracks as { configuration: AnyConfigurationModel }[]
   trackConfigurations
     .filter(conf => matches(filterText, conf, session))
     .forEach(conf => {
       // copy the categories since this array can be mutated downstream
       const categories = [...(readConfObject(conf, 'category') || [])]
 
-      // silly thing where if trackId ends with sessionTrack, then push it to
-      // a category that starts with a space to force sort to the top...
-      // double whammy hackyness
+      // hack where if trackId ends with sessionTrack, then push it to a
+      // category that starts with a space to force sort to the top
       if (conf.trackId.endsWith('sessionTrack')) {
         categories.unshift(' Session tracks')
       }
@@ -126,22 +125,20 @@ export function generateHierarchy(
           currLevel = ret
         }
       }
-      const tracks = view.tracks as { configuration: AnyConfigurationModel }[]
 
-      // using splice here tries to group leaf nodes above hierarchical nodes
-      currLevel.children.splice(
-        currLevel.children.findIndex(elt => elt.children.length),
-        0,
-        {
-          id: conf.trackId,
-          name: getTrackName(conf, session),
-          conf,
-          checked: tracks.some(f => f.configuration === conf),
-          children: [],
-        },
-      )
+      // uses splice to try to put all leaf nodes above "category nodes" if you
+      // change the splice to a simple push and open
+      // test_data/test_order/config.json you will see the weirdness
+      const r = currLevel.children.findIndex(elt => elt.children.length)
+      const idx = r === -1 ? currLevel.children.length : r
+      currLevel.children.splice(idx, 0, {
+        id: conf.trackId,
+        name: getTrackName(conf, session),
+        conf,
+        checked: viewTracks.some(f => f.configuration === conf),
+        children: [],
+      })
     })
-
   return hierarchy.children
 }
 
