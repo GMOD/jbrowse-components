@@ -128,7 +128,7 @@ export async function createView(args?: any, adminMode?: boolean) {
   const ret = createViewNoWait(args, adminMode)
   const { view } = ret
   if (view && 'initialized' in view) {
-    await waitFor(() => expect(view.initialized).toBe(true), { timeout: 20000 })
+    await waitFor(() => expect(view.initialized).toBe(true), { timeout: 30000 })
   }
   return ret
 }

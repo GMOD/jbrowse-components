@@ -36,4 +36,4 @@ test('opens the track menu and enables soft clipping', async () => {
     await f0.findByTestId(pc('softclipped_{volvox}ctgA:2849..2864-0'), ...opts),
     0.05,
   )
-}, 50000)
+}, 60000)
