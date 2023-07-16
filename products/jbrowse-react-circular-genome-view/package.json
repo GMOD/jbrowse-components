@@ -48,6 +48,7 @@
     "@jbrowse/plugin-config": "^2.6.2",
     "@jbrowse/plugin-data-management": "^2.6.2",
     "@jbrowse/plugin-sequence": "^2.6.2",
+    "@jbrowse/plugin-linear-genome-view": "^2.6.2",
     "@jbrowse/plugin-variants": "^2.6.2",
     "@jbrowse/plugin-wiggle": "^2.6.2",
     "@jbrowse/product-core": "^2.6.2",
