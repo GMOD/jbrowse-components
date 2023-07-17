@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
-import { IconButton, Typography } from '@mui/material'
+import { Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import JBrowseMenu from '@jbrowse/core/ui/Menu'
 
 // icons
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
@@ -10,6 +9,7 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 
 // locals
 import { getAllChildren, treeToMap, NodeData } from '../util'
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 
 const useStyles = makeStyles()(theme => ({
   contrastColor: {
@@ -34,14 +34,14 @@ export default function Category({
   data: NodeData
 }) {
   const { classes } = useStyles()
-  const [menuEl, setMenuEl] = useState<HTMLElement | null>(null)
+  const [menuOpen, setMenuOpen] = useState(false)
   const { name, model, id, tree, toggleCollapse } = data
 
   return (
     <div
       className={classes.accordionText}
       onClick={() => {
-        if (!menuEl) {
+        if (!menuOpen) {
           toggleCollapse(id)
           setOpen(!isOpen)
         }
@@ -50,19 +50,12 @@ export default function Category({
       <Typography>
         {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
         {name}
-        <IconButton
-          onClick={event => {
-            setMenuEl(event.currentTarget)
-            event.stopPropagation()
-          }}
+        <CascadingMenuButton
           className={classes.contrastColor}
-        >
-          <MoreHorizIcon />
-        </IconButton>
-      </Typography>
-      {menuEl ? (
-        <JBrowseMenu
-          anchorEl={menuEl}
+          onClickExtra={event => event.stopPropagation()}
+          onTouchExtra={event => event.stopPropagation()}
+          onMenuOpen={() => setMenuOpen(true)}
+          onMenuClose={() => setMenuOpen(false)}
           menuItems={[
             {
               label: 'Add to selection',
@@ -78,15 +71,31 @@ export default function Category({
                 model.removeFromSelection(getAllChildren(r))
               },
             },
+            {
+              label: 'Show all tracks',
+              onClick: () => {
+                for (const entry of treeToMap(tree).get(id)?.children || []) {
+                  if (!entry.children.length) {
+                    model.view.showTrack(entry.id)
+                  }
+                }
+              },
+            },
+            {
+              label: 'Hide all tracks',
+              onClick: () => {
+                for (const entry of treeToMap(tree).get(id)?.children || []) {
+                  if (!entry.children.length) {
+                    model.view.hideTrack(entry.id)
+                  }
+                }
+              },
+            },
           ]}
-          onMenuItemClick={(_event, callback) => {
-            callback()
-            setMenuEl(null)
-          }}
-          open={Boolean(menuEl)}
-          onClose={() => setMenuEl(null)}
-        />
-      ) : null}
+        >
+          <MoreHorizIcon />
+        </CascadingMenuButton>
+      </Typography>
     </div>
   )
 }
