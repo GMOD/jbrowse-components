@@ -41,8 +41,8 @@ export type TreeNode = {
 export function generateHierarchy(
   model: {
     filterText: string
-    hierarchicalSort: boolean
-    hierarchicalSortCategories: boolean
+    hSortTrackNames: boolean
+    hSortCategories: boolean
     view?: {
       tracks: { configuration: AnyConfigurationModel }[]
     }
@@ -52,21 +52,16 @@ export function generateHierarchy(
   extra?: string,
 ): TreeNode[] {
   const hierarchy = { children: [] as TreeNode[] } as TreeNode
-  const { filterText, hierarchicalSort, hierarchicalSortCategories, view } =
-    model
-  const session = getSession(model)
+  const { filterText, hSortTrackNames, hSortCategories, view } = model
   if (!view) {
     return []
   }
+  const session = getSession(model)
   const viewTracks = view.tracks
   const confs = trackConfs.filter(conf => matches(filterText, conf, session))
 
   // uses getConf
-  for (const conf of sortConfs(
-    confs,
-    hierarchicalSort,
-    hierarchicalSortCategories,
-  )) {
+  for (const conf of sortConfs(confs, hSortTrackNames, hSortCategories)) {
     // copy the categories since this array can be mutated downstream
     const categories = [...(readConfObject(conf, 'category') || [])]
 

@@ -97,13 +97,23 @@ export function JBrowseConfigF({
         type: 'boolean',
         defaultValue: false,
       },
-      /**
-       * configuration.hierarchicalSort
-       */
-      hierarchicalSort: {
-        type: 'boolean',
-        defaultValue: false,
-      },
+
+      hierarchical: ConfigurationSchema('hierarchical', {
+        /**
+         * configuration.hierarchical.sortTrackNames
+         */
+        sortTrackNames: {
+          type: 'boolean',
+          defaultValue: false,
+        },
+        /**
+         * configuration.hierarchical.sortCategories
+         */
+        sortCategories: {
+          type: 'boolean',
+          defaultValue: true,
+        },
+      }),
       /**
        * #slot configuration.theme
        */

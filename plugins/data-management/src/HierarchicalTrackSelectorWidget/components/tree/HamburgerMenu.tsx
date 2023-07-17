@@ -87,17 +87,14 @@ export default observer(function HamburgerMenu({
           {
             label: 'Sort tracks by name',
             type: 'checkbox',
-            checked: model.hierarchicalSort,
-            onClick: () => model.setHierarchicalSort(!model.hierarchicalSort),
+            checked: model.hSortTrackNames,
+            onClick: () => model.setSortTrackNames(!model.hSortTrackNames),
           },
           {
             label: 'Sort categories by name',
             type: 'checkbox',
-            checked: model.hierarchicalSortCategories,
-            onClick: () =>
-              model.setHierarchicalSortCategories(
-                !model.hierarchicalSortCategories,
-              ),
+            checked: model.hSortCategories,
+            onClick: () => model.setSortCategories(!model.hSortCategories),
           },
           { type: 'divider' },
           {

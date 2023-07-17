@@ -30,7 +30,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #property
        */
-      sort: types.maybe(types.boolean),
+      sortTrackNames: types.maybe(types.boolean),
       /**
        * #property
        */
@@ -50,13 +50,13 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setHierarchicalSort(val: boolean) {
-        self.sort = val
+      setSortTrackNames(val: boolean) {
+        self.sortTrackNames = val
       },
       /**
        * #action
        */
-      setHierarchicalSortCategories(val: boolean) {
+      setSortCategories(val: boolean) {
         self.sortCategories = val
       },
       /**
@@ -155,16 +155,19 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get hierarchicalSort() {
-        return self.sort ?? getConf(getSession(self), 'hierarchicalSort')
+      get hSortTrackNames() {
+        return (
+          self.sortTrackNames ??
+          getConf(getSession(self), ['hierarchical', 'sortTrackNames'])
+        )
       },
       /**
        * #getter
        */
-      get hierarchicalSortCategories() {
+      get hSortCategories() {
         return (
           self.sortCategories ??
-          getConf(getSession(self), 'hierarchicalSortCategories')
+          getConf(getSession(self), ['hierarchical', 'sortCategories'])
         )
       },
       /**
