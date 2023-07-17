@@ -98,6 +98,13 @@ export function JBrowseConfigF({
         defaultValue: false,
       },
       /**
+       * configuration.hierarchicalSort
+       */
+      hierarchicalSort: {
+        type: 'boolean',
+        defaultValue: true,
+      },
+      /**
        * #slot configuration.theme
        */
       theme: {
