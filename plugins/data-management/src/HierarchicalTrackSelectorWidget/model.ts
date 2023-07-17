@@ -251,7 +251,11 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       collapseTopLevelCategories() {
         const paths = [] as string[]
-        findTopLevelCategories(self.hierarchy.children, paths)
+        for (const trackGroups of self.hierarchy.children) {
+          if (trackGroups.children.length) {
+            findTopLevelCategories(trackGroups.children, paths)
+          }
+        }
         for (const path of paths) {
           self.setCategoryCollapsed(path, true)
         }
