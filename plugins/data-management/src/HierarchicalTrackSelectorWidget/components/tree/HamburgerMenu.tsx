@@ -1,8 +1,5 @@
 import React, { Suspense, lazy, useState } from 'react'
-import { IconButton } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import JBrowseMenu from '@jbrowse/core/ui/Menu'
 import {
   getSession,
   isSessionModelWithConnectionEditing,
@@ -14,6 +11,7 @@ import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 
 // icons
 import MenuIcon from '@mui/icons-material/Menu'
@@ -35,13 +33,6 @@ const ToggleConnectionsDlg = lazy(
   () => import('../dialogs/ToggleConnectionsDialog'),
 )
 
-const useStyles = makeStyles()(theme => ({
-  menuIcon: {
-    marginRight: theme.spacing(1),
-    marginBottom: 0,
-  },
-}))
-
 interface ModalArgs {
   connectionConf: AnyConfigurationModel
   safelyBreakConnection: () => void
@@ -60,12 +51,10 @@ export default observer(function HamburgerMenu({
   model: HierarchicalTrackSelectorModel
 }) {
   const session = getSession(model)
-  const [menuEl, setMenuEl] = useState<HTMLButtonElement>()
   const [modalInfo, setModalInfo] = useState<ModalArgs>()
   const [deleteDlgDetails, setDeleteDlgDetails] = useState<DialogDetails>()
   const [connectionToggleOpen, setConnectionToggleOpen] = useState(false)
   const [connectionManagerOpen, setConnectionManagerOpen] = useState(false)
-  const { classes } = useStyles()
 
   function breakConnection(
     connectionConf: AnyConfigurationModel,
@@ -93,22 +82,14 @@ export default observer(function HamburgerMenu({
 
   return (
     <>
-      <IconButton
-        className={classes.menuIcon}
-        onClick={event => setMenuEl(event.currentTarget)}
-      >
-        <MenuIcon />
-      </IconButton>
-
-      <JBrowseMenu
-        anchorEl={menuEl}
-        open={Boolean(menuEl)}
-        onMenuItemClick={(_, callback) => {
-          callback()
-          setMenuEl(undefined)
-        }}
-        onClose={() => setMenuEl(undefined)}
+      <CascadingMenuButton
         menuItems={[
+          {
+            label: 'Sort tracks',
+            type: 'checkbox',
+            checked: model.hierarchicalSort,
+            onClick: () => model.setHierarchicalSort(!model.hierarchicalSort),
+          },
           ...(isSessionWithAddTracks(session)
             ? [
                 {
@@ -155,7 +136,9 @@ export default observer(function HamburgerMenu({
               ]
             : []),
         ]}
-      />
+      >
+        <MenuIcon />
+      </CascadingMenuButton>
       <Suspense fallback={<React.Fragment />}>
         {modalInfo ? (
           <CloseConnectionDlg

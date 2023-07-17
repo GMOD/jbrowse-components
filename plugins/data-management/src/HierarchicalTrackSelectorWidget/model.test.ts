@@ -9,16 +9,16 @@ xtest('can generate hierarchy correctly', () => {
     { trackId: 'zoo' },
     { trackId: 'bee', category: { expr: { evalSync: () => ['Bar'] } } },
   ]
-  expect(generateHierarchy(trackConfigurations)).toEqual(
-    new Map([
-      [
-        'Bar',
-        new Map([
-          ['bee', trackConfigurations[2]],
-          ['Baz', new Map([['zonker', trackConfigurations[0]]])],
-        ]),
-      ],
-      ['zoo', trackConfigurations[1]],
-    ]),
-  )
+  // expect(generateHierarchy(trackConfigurations)).toEqual(
+  //   new Map([
+  //     [
+  //       'Bar',
+  //       new Map([
+  //         ['bee', trackConfigurations[2]],
+  //         ['Baz', new Map([['zonker', trackConfigurations[0]]])],
+  //       ]),
+  //     ],
+  //     ['zoo', trackConfigurations[1]],
+  //   ]),
+  // )
 })

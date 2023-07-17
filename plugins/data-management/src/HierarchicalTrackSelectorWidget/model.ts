@@ -1,162 +1,12 @@
 import { types, getSnapshot, Instance } from 'mobx-state-tree'
-import {
-  getConf,
-  readConfObject,
-  AnyConfigurationModel,
-} from '@jbrowse/core/configuration'
-import {
-  AbstractSessionModel,
-  dedupe,
-  getSession,
-  getEnv,
-  notEmpty,
-} from '@jbrowse/core/util'
-import { getTrackName } from '@jbrowse/core/util/tracks'
+import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
+import { dedupe, getSession, notEmpty } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import PluginManager from '@jbrowse/core/PluginManager'
 
-function hasAnyOverlap<T>(a1: T[] = [], a2: T[] = []) {
-  // shortcut case is that arrays are single entries, and are equal
-  // long case is that we use a set
-  if (a1[0] === a2[0]) {
-    return true
-  } else {
-    const s1 = new Set(a1)
-    return a2.some(a => s1.has(a))
-  }
-}
-
-function hasAllOverlap<T>(a1: T[] = [], a2: T[] = []) {
-  const s1 = new Set(a1)
-  return a2.every(a => s1.has(a))
-}
-
-export function matches(
-  query: string,
-  conf: AnyConfigurationModel,
-  session: AbstractSessionModel,
-) {
-  const categories = (readConfObject(conf, 'category') || []) as string[]
-  const queryLower = query.toLowerCase()
-  return (
-    getTrackName(conf, session).toLowerCase().includes(queryLower) ||
-    !!categories.filter(c => c.toLowerCase().includes(queryLower)).length
-  )
-}
-
-export type TreeNode = {
-  name: string
-  id: string
-  conf?: AnyConfigurationModel
-  checked?: boolean
-  isOpenByDefault?: boolean
-  children: TreeNode[]
-}
-
-function filterTracks(
-  tracks: AnyConfigurationModel[],
-  self: {
-    view: { type: string; trackSelectorAnyOverlap?: boolean }
-    assemblyNames: string[]
-  },
-) {
-  const { assemblyManager } = getSession(self)
-  const { pluginManager } = getEnv(self)
-  const { view } = self
-  const { trackSelectorAnyOverlap } = view
-  const trackListAssemblies = self.assemblyNames
-    .map(a => assemblyManager.get(a))
-    .filter(notEmpty)
-
-  return tracks
-    .filter(c => {
-      const trackAssemblyNames = readConfObject(c, 'assemblyNames') as string[]
-      const trackAssemblies =
-        trackAssemblyNames
-          ?.map(name => assemblyManager.get(name))
-          .filter(notEmpty) || []
-      return trackSelectorAnyOverlap
-        ? hasAnyOverlap(trackAssemblies, trackListAssemblies)
-        : hasAllOverlap(trackAssemblies, trackListAssemblies)
-    })
-    .filter(c => {
-      const { displayTypes } = pluginManager.getViewType(view.type)
-      const compatDisplays = displayTypes.map(d => d.name)
-      const trackDisplays = c.displays.map((d: { type: string }) => d.type)
-      return hasAnyOverlap(compatDisplays, trackDisplays)
-    })
-}
-
-function sortConfs(confs: AnyConfigurationModel[]) {
-  // uses readConfObject instead of getTrackName so that the undefined
-  // assembly track is sorted to the top
-  return confs
-    .map(c => [c, readConfObject(c, 'name')])
-    .sort((a, b) => a[1].localeCompare(b[1]))
-    .map(a => a[0])
-}
-
-export function generateHierarchy(
-  model: HierarchicalTrackSelectorModel,
-  trackConfs: AnyConfigurationModel[],
-  collapsed: { get: (arg: string) => boolean | undefined },
-  extra?: string,
-) {
-  const hierarchy = { children: [] as TreeNode[] } as TreeNode
-  const { filterText, view } = model
-  const session = getSession(model)
-  const hierarchicalSort = getConf(session, 'hierarchicalSort')
-  const viewTracks = view.tracks as { configuration: AnyConfigurationModel }[]
-  const confs = trackConfs.filter(conf => matches(filterText, conf, session))
-
-  // uses getConf
-  for (const conf of hierarchicalSort ? sortConfs(confs) : confs) {
-    // copy the categories since this array can be mutated downstream
-    const categories = [...(readConfObject(conf, 'category') || [])]
-
-    // hack where if trackId ends with sessionTrack, then push it to a
-    // category that starts with a space to force sort to the top
-    if (conf.trackId.endsWith('sessionTrack')) {
-      categories.unshift(' Session tracks')
-    }
-
-    let currLevel = hierarchy
-
-    // find existing category to put track into or create it
-    for (let i = 0; i < categories.length; i++) {
-      const category = categories[i]
-      const ret = currLevel.children.find(c => c.name === category)
-      const id = `${extra}-${categories.slice(0, i + 1).join(',')}`
-      if (!ret) {
-        const n = {
-          children: [],
-          name: category,
-          id,
-          isOpenByDefault: !collapsed.get(id),
-        }
-        currLevel.children.push(n)
-        currLevel = n
-      } else {
-        currLevel = ret
-      }
-    }
-
-    // uses splice to try to put all leaf nodes above "category nodes" if you
-    // change the splice to a simple push and open
-    // test_data/test_order/config.json you will see the weirdness
-    const r = currLevel.children.findIndex(elt => elt.children.length)
-    const idx = r === -1 ? currLevel.children.length : r
-    currLevel.children.splice(idx, 0, {
-      id: conf.trackId,
-      name: getTrackName(conf, session),
-      conf,
-      checked: viewTracks.some(f => f.configuration === conf),
-      children: [],
-    })
-  }
-
-  return hierarchy.children
-}
+// locals
+import { filterTracks } from './filterTracks'
+import { generateHierarchy } from './generateHierarchy'
 
 /**
  * #stateModel HierarchicalTrackSelectorWidget
@@ -179,6 +29,10 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #property
        */
+      sort: types.maybe(types.boolean),
+      /**
+       * #property
+       */
       view: types.safeReference(
         pluginManager.pluggableMstType('view', 'stateModel'),
       ),
@@ -188,6 +42,12 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       filterText: '',
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      setHierarchicalSort(val: boolean) {
+        self.sort = val
+      },
       /**
        * #action
        */
@@ -269,6 +129,12 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
     }))
     .views(self => ({
       /**
+       * #getter
+       */
+      get hierarchicalSort() {
+        return self.sort ?? getConf(getSession(self), 'hierarchicalSort')
+      },
+      /**
        * #method
        * filter out tracks that don't match the current display types
        */
@@ -283,12 +149,12 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * filter out tracks that don't match the current assembly/display types
        */
       get trackConfigurations(): AnyConfigurationModel[] {
-        return !self.view
-          ? ([] as AnyConfigurationModel[])
-          : [
+        return self.view
+          ? [
               ...self.assemblyNames.map(a => self.getRefSeqTrackConf(a)),
               ...filterTracks(getSession(self).tracks, self),
             ].filter(notEmpty)
+          : []
       },
     }))
     .views(self => ({

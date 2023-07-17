@@ -102,7 +102,7 @@ export function JBrowseConfigF({
        */
       hierarchicalSort: {
         type: 'boolean',
-        defaultValue: true,
+        defaultValue: false,
       },
       /**
        * #slot configuration.theme
