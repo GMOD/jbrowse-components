@@ -1,10 +1,11 @@
-import React, { useEffect, useRef } from 'react'
+import React, { Suspense, useEffect, useRef } from 'react'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 
 // jbrowse core
 import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getConf } from '@jbrowse/core/configuration'
+import { LoadingEllipses } from '@jbrowse/core/ui'
 
 // locals
 import { LinearGenomeViewModel } from '..'
@@ -72,10 +73,12 @@ export default observer(function TrackRenderingContainer({
             className={classes.renderingComponentContainer}
             style={{ transform: `scaleX(${model.scaleFactor})` }}
           >
-            <RenderingComponent
-              model={display}
-              onHorizontalScroll={model.horizontalScroll}
-            />
+            <Suspense fallback={<LoadingEllipses />}>
+              <RenderingComponent
+                model={display}
+                onHorizontalScroll={model.horizontalScroll}
+              />
+            </Suspense>
           </div>
 
           {DisplayBlurb ? (
