@@ -100,14 +100,14 @@ export function JBrowseConfigF({
 
       hierarchical: ConfigurationSchema('hierarchical', {
         /**
-         * configuration.hierarchical.sortTrackNames
+         * #slot configuration.hierarchical.sortTrackNames
          */
         sortTrackNames: {
           type: 'boolean',
           defaultValue: false,
         },
         /**
-         * configuration.hierarchical.sortCategories
+         * #slot configuration.hierarchical.sortCategories
          */
         sortCategories: {
           type: 'boolean',
