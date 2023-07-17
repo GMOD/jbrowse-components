@@ -84,32 +84,6 @@ export default observer(function HamburgerMenu({
     <>
       <CascadingMenuButton
         menuItems={[
-          {
-            label: 'Sort tracks by name',
-            type: 'checkbox',
-            checked: model.hSortTrackNames,
-            onClick: () => model.setSortTrackNames(!model.hSortTrackNames),
-          },
-          {
-            label: 'Sort categories by name',
-            type: 'checkbox',
-            checked: model.hSortCategories,
-            onClick: () => model.setSortCategories(!model.hSortCategories),
-          },
-          { type: 'divider' },
-          {
-            label: 'Collapse subcategories',
-            onClick: () => model.collapseSubCategories(),
-          },
-          {
-            label: 'Collapse top-level categories',
-            onClick: () => model.collapseTopLevelCategories(),
-          },
-          {
-            label: 'Expand all categories',
-            onClick: () => model.expandAllCategories(),
-          },
-          { type: 'divider' },
           ...(isSessionWithAddTracks(session)
             ? [
                 {
@@ -155,6 +129,32 @@ export default observer(function HamburgerMenu({
                 },
               ]
             : []),
+          { type: 'divider' },
+          {
+            label: 'Sort tracks by name',
+            type: 'checkbox',
+            checked: model.hSortTrackNames,
+            onClick: () => model.setSortTrackNames(!model.hSortTrackNames),
+          },
+          {
+            label: 'Sort categories by name',
+            type: 'checkbox',
+            checked: model.hSortCategories,
+            onClick: () => model.setSortCategories(!model.hSortCategories),
+          },
+          { type: 'divider' },
+          {
+            label: 'Collapse subcategories',
+            onClick: () => model.collapseSubCategories(),
+          },
+          {
+            label: 'Collapse top-level categories',
+            onClick: () => model.collapseTopLevelCategories(),
+          },
+          {
+            label: 'Expand all categories',
+            onClick: () => model.expandAllCategories(),
+          },
         ]}
       >
         <MenuIcon />

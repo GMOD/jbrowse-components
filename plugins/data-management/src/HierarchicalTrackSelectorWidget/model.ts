@@ -181,7 +181,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       connectionTrackConfigurations(connection: {
         tracks: AnyConfigurationModel[]
       }) {
-        return !self.view ? [] : filterTracks(connection.tracks, self)
+        return filterTracks(connection.tracks, self)
       },
 
       /**
