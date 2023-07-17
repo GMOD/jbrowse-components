@@ -26,6 +26,10 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #property
        */
+      initialized: types.maybe(types.boolean),
+      /**
+       * #property
+       */
       collapsed: types.map(types.boolean),
       /**
        * #property
@@ -158,7 +162,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       get hSortTrackNames() {
         return (
           self.sortTrackNames ??
-          getConf(getSession(self), ['hierarchical', 'sortTrackNames'])
+          getConf(getSession(self), ['hierarchical', 'sort', 'trackNames'])
         )
       },
       /**
@@ -167,7 +171,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       get hSortCategories() {
         return (
           self.sortCategories ??
-          getConf(getSession(self), ['hierarchical', 'sortCategories'])
+          getConf(getSession(self), ['hierarchical', 'sort', 'categories'])
         )
       },
       /**
@@ -258,6 +262,39 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         }
         for (const path of paths) {
           self.setCategoryCollapsed(path, true)
+        }
+      },
+    }))
+    .actions(self => ({
+      afterCreate() {
+        if (!self.initialized) {
+          const session = getSession(self)
+          if (
+            getConf(session, [
+              'hierarchical',
+              'defaultCollapsed',
+              'topLevelCategories',
+            ])
+          ) {
+            self.collapseTopLevelCategories()
+          } else if (
+            getConf(session, [
+              'hierarchical',
+              'defaultCollapsed',
+              'subCategories',
+            ])
+          ) {
+            self.collapseSubCategories()
+          } else {
+            for (const entry of getConf(session, [
+              'hierarchical',
+              'defaultCollapsed',
+              'categoryNames',
+            ])) {
+              self.collapsed.set(entry, true)
+            }
+          }
+          self.initialized = true
         }
       },
     }))

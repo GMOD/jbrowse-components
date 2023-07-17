@@ -90,7 +90,9 @@ export function generateHierarchy(
     for (let i = 0; i < categories.length; i++) {
       const category = categories[i]
       const ret = currLevel.children.find(c => c.name === category)
-      const id = `${extra}-${categories.slice(0, i + 1).join(',')}`
+      const id = [extra, categories.slice(0, i + 1).join(',')]
+        .filter(f => !!f)
+        .join('-')
       if (!ret) {
         const n = {
           children: [],

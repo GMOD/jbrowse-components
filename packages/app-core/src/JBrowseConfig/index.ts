@@ -99,20 +99,45 @@ export function JBrowseConfigF({
       },
 
       hierarchical: ConfigurationSchema('hierarchical', {
-        /**
-         * #slot configuration.hierarchical.sortTrackNames
-         */
-        sortTrackNames: {
-          type: 'boolean',
-          defaultValue: false,
-        },
-        /**
-         * #slot configuration.hierarchical.sortCategories
-         */
-        sortCategories: {
-          type: 'boolean',
-          defaultValue: true,
-        },
+        sort: ConfigurationSchema('hierarchicalSort', {
+          /**
+           * #slot configuration.hierarchical.sort.trackNames
+           */
+          trackNames: {
+            type: 'boolean',
+            defaultValue: false,
+          },
+          /**
+           * #slot configuration.hierarchical.sort.categories
+           */
+          categories: {
+            type: 'boolean',
+            defaultValue: false,
+          },
+        }),
+        defaultCollapsed: ConfigurationSchema('defaultCollapsed', {
+          /**
+           * #slot configuration.hierarchical.defaultCollapse.categoryNames
+           */
+          categoryNames: {
+            type: 'stringArray',
+            defaultValue: [],
+          },
+          /**
+           * #slot configuration.hierarchical.defaultCollapse.topLevelCategories
+           */
+          topLevelCategories: {
+            type: 'boolean',
+            defaultValue: false,
+          },
+          /**
+           * #slot configuration.hierarchical.defaultCollapse.subCategories
+           */
+          subCategories: {
+            type: 'boolean',
+            defaultValue: false,
+          },
+        }),
       }),
       /**
        * #slot configuration.theme
@@ -124,7 +149,10 @@ export function JBrowseConfigF({
       /**
        * #slot configuration.extraThemes
        */
-      extraThemes: { type: 'frozen', defaultValue: {} },
+      extraThemes: {
+        type: 'frozen',
+        defaultValue: {},
+      },
       /**
        * #slot configuration.logoPath
        */
