@@ -8,7 +8,7 @@ import { hasAllOverlap, hasAnyOverlap } from './util'
 export function filterTracks(
   tracks: AnyConfigurationModel[],
   self: {
-    view: {
+    view?: {
       type: string
       trackSelectorAnyOverlap?: boolean
     }
@@ -18,19 +18,20 @@ export function filterTracks(
   const { assemblyManager } = getSession(self)
   const { pluginManager } = getEnv(self)
   const { view } = self
-  const { trackSelectorAnyOverlap } = view
+
+  if (!view) {
+    return []
+  }
   const trackListAssemblies = self.assemblyNames
     .map(a => assemblyManager.get(a))
     .filter(notEmpty)
-
   return tracks
     .filter(c => {
       const trackAssemblyNames = readConfObject(c, 'assemblyNames') as string[]
-      const trackAssemblies =
-        trackAssemblyNames
-          ?.map(name => assemblyManager.get(name))
-          .filter(notEmpty) || []
-      return trackSelectorAnyOverlap
+      const trackAssemblies = trackAssemblyNames
+        ?.map(name => assemblyManager.get(name))
+        .filter(notEmpty)
+      return view.trackSelectorAnyOverlap
         ? hasAnyOverlap(trackAssemblies, trackListAssemblies)
         : hasAllOverlap(trackAssemblies, trackListAssemblies)
     })

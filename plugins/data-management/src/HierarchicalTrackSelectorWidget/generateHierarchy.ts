@@ -43,16 +43,21 @@ export function generateHierarchy(
     filterText: string
     hierarchicalSort: boolean
     hierarchicalSortCategories: boolean
-    view: { tracks: { configuration: AnyConfigurationModel }[] }
+    view?: {
+      tracks: { configuration: AnyConfigurationModel }[]
+    }
   },
   trackConfs: AnyConfigurationModel[],
   collapsed: { get: (arg: string) => boolean | undefined },
   extra?: string,
-) {
+): TreeNode[] {
   const hierarchy = { children: [] as TreeNode[] } as TreeNode
   const { filterText, hierarchicalSort, hierarchicalSortCategories, view } =
     model
   const session = getSession(model)
+  if (!view) {
+    return []
+  }
   const viewTracks = view.tracks
   const confs = trackConfs.filter(conf => matches(filterText, conf, session))
 

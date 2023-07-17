@@ -2693,6 +2693,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "category": [
         "BigWig",
+        "XYPlot",
       ],
       "displays": [
         {

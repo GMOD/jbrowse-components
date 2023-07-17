@@ -33,3 +33,31 @@ export function matches(
     !!categories.filter(c => c.toLowerCase().includes(queryLower)).length
   )
 }
+
+interface Node {
+  children: Node[]
+  id: string
+}
+
+export function findSubCategories(obj: Node[], paths: string[]) {
+  let hasSubs = false
+  for (const elt of obj) {
+    if (elt.children.length) {
+      const hasSubCategories = findSubCategories(elt.children, paths)
+      if (hasSubCategories) {
+        paths.push(elt.id)
+      }
+    } else {
+      hasSubs = true
+    }
+  }
+  return hasSubs
+}
+
+export function findTopLevelCategories(obj: Node[], paths: string[]) {
+  for (const elt of obj) {
+    if (elt.children.length) {
+      paths.push(elt.id)
+    }
+  }
+}

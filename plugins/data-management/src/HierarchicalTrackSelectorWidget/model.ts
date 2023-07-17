@@ -1,4 +1,4 @@
-import { types, getSnapshot, Instance } from 'mobx-state-tree'
+import { types, Instance } from 'mobx-state-tree'
 import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { dedupe, getSession, notEmpty } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
@@ -6,7 +6,8 @@ import PluginManager from '@jbrowse/core/PluginManager'
 
 // locals
 import { filterTracks } from './filterTracks'
-import { generateHierarchy } from './generateHierarchy'
+import { TreeNode, generateHierarchy } from './generateHierarchy'
+import { findSubCategories, findTopLevelCategories } from './util'
 
 /**
  * #stateModel HierarchicalTrackSelectorWidget
@@ -180,13 +181,27 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * #getter
        * filter out tracks that don't match the current assembly/display types
        */
-      get trackConfigurations(): AnyConfigurationModel[] {
-        return self.view
-          ? [
-              ...self.assemblyNames.map(a => self.getRefSeqTrackConf(a)),
-              ...filterTracks(getSession(self).tracks, self),
-            ].filter(notEmpty)
-          : []
+      get trackConfigurations() {
+        return [
+          ...self.assemblyNames.map(a => self.getRefSeqTrackConf(a)),
+          ...filterTracks(getSession(self).tracks, self),
+        ].filter(notEmpty)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       */
+      connectionHierarchy(connection: {
+        name: string
+        tracks: AnyConfigurationModel[]
+      }): TreeNode[] {
+        return generateHierarchy(
+          self as HierarchicalTrackSelectorModel,
+          self.connectionTrackConfigurations(connection),
+          self.collapsed,
+          connection.name,
+        )
       },
     }))
     .views(self => ({
@@ -195,52 +210,26 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       get hierarchy() {
         const hier = generateHierarchy(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          self as any,
+          self as HierarchicalTrackSelectorModel,
           self.trackConfigurations,
           self.collapsed,
         )
-
-        const session = getSession(self)
-        const { connectionInstances } = session
-
-        const conns =
-          connectionInstances
-            ?.map(c => ({
-              // @ts-expect-error
-              id: getSnapshot(c).configuration,
-              name: getConf(c, 'name'),
-              children: this.connectionHierarchy(c),
-              state: {
-                expanded: true,
-              },
-            }))
-            .filter(f => f.children.length) || []
+        const { connectionInstances = [] } = getSession(self)
 
         return {
           name: 'Root',
           id: 'Root',
           children: [
             { name: 'Tracks', id: 'Tracks', children: hier },
-            ...conns,
+            ...connectionInstances
+              .map(c => ({
+                id: getConf(c, 'name'),
+                name: getConf(c, 'name'),
+                children: self.connectionHierarchy(c),
+              }))
+              .filter(f => f.children.length),
           ],
         }
-      },
-
-      /**
-       * #method
-       */
-      connectionHierarchy(connection: {
-        name: string
-        tracks: AnyConfigurationModel[]
-      }) {
-        return generateHierarchy(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          self as any,
-          self.connectionTrackConfigurations(connection),
-          self.collapsed,
-          connection.name,
-        )
       },
     }))
     .actions(self => ({
@@ -259,36 +248,12 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       collapseTopLevelCategories() {
         const paths = [] as string[]
-        for (const elt of self.hierarchy.children) {
-          if (elt.children.length) {
-            paths.push(elt.id)
-          }
-        }
+        findTopLevelCategories(self.hierarchy.children, paths)
         for (const path of paths) {
           self.setCategoryCollapsed(path, true)
         }
       },
     }))
-}
-
-interface Node {
-  children: Node[]
-  id: string
-}
-
-function findSubCategories(obj: Node[], paths: string[]) {
-  let hasSubs = false
-  for (const elt of obj) {
-    if (elt.children.length) {
-      const hasSubCategories = findSubCategories(elt.children, paths)
-      if (hasSubCategories) {
-        paths.push(elt.id)
-      }
-    } else {
-      hasSubs = true
-    }
-  }
-  return hasSubs
 }
 
 export type HierarchicalTrackSelectorStateModel = ReturnType<
