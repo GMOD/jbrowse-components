@@ -8,7 +8,10 @@ import { hasAllOverlap, hasAnyOverlap } from './util'
 export function filterTracks(
   tracks: AnyConfigurationModel[],
   self: {
-    view: { type: string; trackSelectorAnyOverlap?: boolean }
+    view: {
+      type: string
+      trackSelectorAnyOverlap?: boolean
+    }
     assemblyNames: string[]
   },
 ) {

@@ -1395,7 +1395,7 @@
       "trackId": "pOOtg9wxcUC",
       "name": "Volvox - BAM coverage",
       "assemblyNames": ["volvox"],
-      "category": ["BigWig"],
+      "category": ["BigWig", "XYPlot"],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {

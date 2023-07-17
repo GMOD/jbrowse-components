@@ -90,16 +90,25 @@ export default observer(function HamburgerMenu({
             checked: model.hierarchicalSort,
             onClick: () => model.setHierarchicalSort(!model.hierarchicalSort),
           },
+          { type: 'divider' },
           {
-            label: 'Collapse all categories',
-            onClick: () => {
-              model.collapseAllCategories()
-            },
+            label: 'Collapse categories without further sub-categories',
+            onClick: () =>
+              model.collapseSubCategoriesWithoutFurtherSubCategories(),
+          },
+          {
+            label: 'Collapse categories with non-category nodes',
+            onClick: () => model.collapseSubCategoriesWithAnyNonCategoryNodes(),
+          },
+          {
+            label: 'Collapse top-level categories',
+            onClick: () => model.collapseTopLevelCategories(),
           },
           {
             label: 'Expand all categories',
-            onClick: () => {},
+            onClick: () => model.expandAllCategories(),
           },
+          { type: 'divider' },
           ...(isSessionWithAddTracks(session)
             ? [
                 {

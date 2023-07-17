@@ -7,7 +7,6 @@ import { getTrackName } from '@jbrowse/core/util/tracks'
 
 // locals
 import { matches } from './util'
-import { HierarchicalTrackSelectorModel } from './model'
 
 function sortConfs(confs: AnyConfigurationModel[]) {
   // uses readConfObject instead of getTrackName so that the undefined
@@ -28,6 +27,7 @@ export type TreeNode = {
 }
 
 export function generateHierarchy(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   model: { filterText: string; hierarchicalSort: boolean; view: any },
   trackConfs: AnyConfigurationModel[],
   collapsed: { get: (arg: string) => boolean | undefined },

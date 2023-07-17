@@ -84,7 +84,12 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       toggleCategory(pathName: string) {
         self.collapsed.set(pathName, !self.collapsed.get(pathName))
       },
-
+      /**
+       * #action
+       */
+      setCategoryCollapsed(pathName: string, status: boolean) {
+        self.collapsed.set(pathName, status)
+      },
       /**
        * #action
        */
@@ -171,7 +176,8 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       get hierarchy() {
         const hier = generateHierarchy(
-          self as HierarchicalTrackSelectorModel,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          self as any,
           self.trackConfigurations,
           self.collapsed,
         )
@@ -210,7 +216,8 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         tracks: AnyConfigurationModel[]
       }) {
         return generateHierarchy(
-          self as HierarchicalTrackSelectorModel,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          self as any,
           self.connectionTrackConfigurations(connection),
           self.collapsed,
           connection.name,
@@ -221,8 +228,82 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      collapseAllCategories() {},
+      collapseSubCategoriesWithoutFurtherSubCategories() {
+        const paths = [] as string[]
+        findSubCategoriesWithoutAnyFurtherSubCategories(
+          self.hierarchy.children,
+          paths,
+        )
+        for (const path of paths) {
+          self.setCategoryCollapsed(path, true)
+        }
+      },
+      /**
+       * #action
+       */
+      collapseSubCategoriesWithAnyNonCategoryNodes() {
+        const paths = [] as string[]
+        findSubCategoriesWithTracks(self.hierarchy.children, paths)
+        console.log({ paths })
+        for (const path of paths) {
+          self.setCategoryCollapsed(path, true)
+        }
+      },
+      /**
+       * #action
+       */
+      collapseTopLevelCategories() {
+        const paths = [] as string[]
+        for (const elt of self.hierarchy.children) {
+          if (elt.children.length) {
+            paths.push(elt.id)
+          }
+        }
+        for (const path of paths) {
+          self.setCategoryCollapsed(path, true)
+        }
+      },
     }))
+}
+
+interface Node {
+  children: Node[]
+  id: string
+}
+
+function findSubCategoriesWithoutAnyFurtherSubCategories(
+  obj: Node[],
+  paths: string[],
+) {
+  let hasSubs = false
+  for (const elt of obj) {
+    if (elt.children.length) {
+      hasSubs = true
+      const hasSubCategories = findSubCategoriesWithoutAnyFurtherSubCategories(
+        elt.children,
+        paths,
+      )
+      if (!hasSubCategories) {
+        paths.push(elt.id)
+      }
+    }
+  }
+  return hasSubs
+}
+
+function findSubCategoriesWithTracks(obj: Node[], paths: string[]) {
+  let hasSubs = false
+  for (const elt of obj) {
+    if (elt.children.length) {
+      const hasSubCategories = findSubCategoriesWithTracks(elt.children, paths)
+      if (hasSubCategories) {
+        paths.push(elt.id)
+      }
+    } else {
+      hasSubs = true
+    }
+  }
+  return hasSubs
 }
 
 export type HierarchicalTrackSelectorStateModel = ReturnType<
