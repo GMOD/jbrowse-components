@@ -8,13 +8,25 @@ import { getTrackName } from '@jbrowse/core/util/tracks'
 // locals
 import { matches } from './util'
 
-function sortConfs(confs: AnyConfigurationModel[]) {
+function sortConfs(
+  confs: AnyConfigurationModel[],
+  sortNames: boolean,
+  sortCategories: boolean,
+) {
   // uses readConfObject instead of getTrackName so that the undefined
   // reference sequence track is sorted to the top
-  return confs
-    .map(c => [c, readConfObject(c, 'name')])
-    .sort((a, b) => a[1].localeCompare(b[1]))
-    .map(a => a[0])
+  const ret = confs.map(c => [
+    c,
+    readConfObject(c, 'name'),
+    readConfObject(c, 'category')?.[0] || '',
+  ])
+  if (sortNames) {
+    ret.sort((a, b) => a[1].localeCompare(b[1]))
+  }
+  if (sortCategories) {
+    ret.sort((a, b) => a[2].localeCompare(b[2]))
+  }
+  return ret.map(a => a[0])
 }
 
 export type TreeNode = {
@@ -27,20 +39,29 @@ export type TreeNode = {
 }
 
 export function generateHierarchy(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  model: { filterText: string; hierarchicalSort: boolean; view: any },
+  model: {
+    filterText: string
+    hierarchicalSort: boolean
+    hierarchicalSortCategories: boolean
+    view: { tracks: { configuration: AnyConfigurationModel }[] }
+  },
   trackConfs: AnyConfigurationModel[],
   collapsed: { get: (arg: string) => boolean | undefined },
   extra?: string,
 ) {
   const hierarchy = { children: [] as TreeNode[] } as TreeNode
-  const { filterText, hierarchicalSort, view } = model
+  const { filterText, hierarchicalSort, hierarchicalSortCategories, view } =
+    model
   const session = getSession(model)
-  const viewTracks = view.tracks as { configuration: AnyConfigurationModel }[]
+  const viewTracks = view.tracks
   const confs = trackConfs.filter(conf => matches(filterText, conf, session))
 
   // uses getConf
-  for (const conf of hierarchicalSort ? sortConfs(confs) : confs) {
+  for (const conf of sortConfs(
+    confs,
+    hierarchicalSort,
+    hierarchicalSortCategories,
+  )) {
     // copy the categories since this array can be mutated downstream
     const categories = [...(readConfObject(conf, 'category') || [])]
 

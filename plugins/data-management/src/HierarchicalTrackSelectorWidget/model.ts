@@ -33,6 +33,10 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #property
        */
+      sortCategories: types.maybe(types.boolean),
+      /**
+       * #property
+       */
       view: types.safeReference(
         pluginManager.pluggableMstType('view', 'stateModel'),
       ),
@@ -47,6 +51,12 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       setHierarchicalSort(val: boolean) {
         self.sort = val
+      },
+      /**
+       * #action
+       */
+      setHierarchicalSortCategories(val: boolean) {
+        self.sortCategories = val
       },
       /**
        * #action
@@ -148,6 +158,15 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         return self.sort ?? getConf(getSession(self), 'hierarchicalSort')
       },
       /**
+       * #getter
+       */
+      get hierarchicalSortCategories() {
+        return (
+          self.sortCategories ??
+          getConf(getSession(self), 'hierarchicalSortCategories')
+        )
+      },
+      /**
        * #method
        * filter out tracks that don't match the current display types
        */
@@ -228,23 +247,9 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      collapseSubCategoriesWithoutFurtherSubCategories() {
+      collapseSubCategories() {
         const paths = [] as string[]
-        findSubCategoriesWithoutAnyFurtherSubCategories(
-          self.hierarchy.children,
-          paths,
-        )
-        for (const path of paths) {
-          self.setCategoryCollapsed(path, true)
-        }
-      },
-      /**
-       * #action
-       */
-      collapseSubCategoriesWithAnyNonCategoryNodes() {
-        const paths = [] as string[]
-        findSubCategoriesWithTracks(self.hierarchy.children, paths)
-        console.log({ paths })
+        findSubCategories(self.hierarchy.children, paths)
         for (const path of paths) {
           self.setCategoryCollapsed(path, true)
         }
@@ -271,31 +276,11 @@ interface Node {
   id: string
 }
 
-function findSubCategoriesWithoutAnyFurtherSubCategories(
-  obj: Node[],
-  paths: string[],
-) {
+function findSubCategories(obj: Node[], paths: string[]) {
   let hasSubs = false
   for (const elt of obj) {
     if (elt.children.length) {
-      hasSubs = true
-      const hasSubCategories = findSubCategoriesWithoutAnyFurtherSubCategories(
-        elt.children,
-        paths,
-      )
-      if (!hasSubCategories) {
-        paths.push(elt.id)
-      }
-    }
-  }
-  return hasSubs
-}
-
-function findSubCategoriesWithTracks(obj: Node[], paths: string[]) {
-  let hasSubs = false
-  for (const elt of obj) {
-    if (elt.children.length) {
-      const hasSubCategories = findSubCategoriesWithTracks(elt.children, paths)
+      const hasSubCategories = findSubCategories(elt.children, paths)
       if (hasSubCategories) {
         paths.push(elt.id)
       }

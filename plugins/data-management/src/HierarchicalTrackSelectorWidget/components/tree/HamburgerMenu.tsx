@@ -85,20 +85,24 @@ export default observer(function HamburgerMenu({
       <CascadingMenuButton
         menuItems={[
           {
-            label: 'Sort tracks',
+            label: 'Sort tracks by name',
             type: 'checkbox',
             checked: model.hierarchicalSort,
             onClick: () => model.setHierarchicalSort(!model.hierarchicalSort),
           },
+          {
+            label: 'Sort categories by name',
+            type: 'checkbox',
+            checked: model.hierarchicalSortCategories,
+            onClick: () =>
+              model.setHierarchicalSortCategories(
+                !model.hierarchicalSortCategories,
+              ),
+          },
           { type: 'divider' },
           {
-            label: 'Collapse categories without further sub-categories',
-            onClick: () =>
-              model.collapseSubCategoriesWithoutFurtherSubCategories(),
-          },
-          {
-            label: 'Collapse categories with non-category nodes',
-            onClick: () => model.collapseSubCategoriesWithAnyNonCategoryNodes(),
+            label: 'Collapse subcategories',
+            onClick: () => model.collapseSubCategories(),
           },
           {
             label: 'Collapse top-level categories',
