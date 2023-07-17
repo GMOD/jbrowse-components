@@ -78,6 +78,26 @@ export default function Category({
                 model.removeFromSelection(getAllChildren(r))
               },
             },
+            {
+              label: 'Show all tracks',
+              onClick: () => {
+                for (const entry of treeToMap(tree).get(id)?.children || []) {
+                  if (!entry.children.length) {
+                    model.view.showTrack(entry.id)
+                  }
+                }
+              },
+            },
+            {
+              label: 'Hide all tracks',
+              onClick: () => {
+                for (const entry of treeToMap(tree).get(id)?.children || []) {
+                  if (!entry.children.length) {
+                    model.view.hideTrack(entry.id)
+                  }
+                }
+              },
+            },
           ]}
           onMenuItemClick={(_event, callback) => {
             callback()
