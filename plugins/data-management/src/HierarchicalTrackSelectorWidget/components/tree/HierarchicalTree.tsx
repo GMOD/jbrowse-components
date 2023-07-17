@@ -3,7 +3,8 @@ import { observer } from 'mobx-react'
 import { VariableSizeTree } from 'react-vtree'
 import { getSession } from '@jbrowse/core/util'
 // locals
-import { TreeNode, HierarchicalTrackSelectorModel } from '../../model'
+import { TreeNode } from '../../generateHierarchy'
+import { HierarchicalTrackSelectorModel } from '../../model'
 import Node from './TrackListNode'
 
 function getNodeData(

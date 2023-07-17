@@ -90,6 +90,16 @@ export default observer(function HamburgerMenu({
             checked: model.hierarchicalSort,
             onClick: () => model.setHierarchicalSort(!model.hierarchicalSort),
           },
+          {
+            label: 'Collapse all categories',
+            onClick: () => {
+              model.collapseAllCategories()
+            },
+          },
+          {
+            label: 'Expand all categories',
+            onClick: () => {},
+          },
           ...(isSessionWithAddTracks(session)
             ? [
                 {

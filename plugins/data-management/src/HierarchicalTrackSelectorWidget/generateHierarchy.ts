@@ -1,5 +1,4 @@
 import {
-  getConf,
   readConfObject,
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
@@ -29,7 +28,7 @@ export type TreeNode = {
 }
 
 export function generateHierarchy(
-  model: HierarchicalTrackSelectorModel,
+  model: { filterText: string; hierarchicalSort: boolean; view: any },
   trackConfs: AnyConfigurationModel[],
   collapsed: { get: (arg: string) => boolean | undefined },
   extra?: string,

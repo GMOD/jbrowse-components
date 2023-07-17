@@ -84,6 +84,14 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       toggleCategory(pathName: string) {
         self.collapsed.set(pathName, !self.collapsed.get(pathName))
       },
+
+      /**
+       * #action
+       */
+      expandAllCategories() {
+        self.collapsed.clear()
+      },
+
       /**
        * #action
        */
@@ -208,6 +216,12 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           connection.name,
         )
       },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       */
+      collapseAllCategories() {},
     }))
 }
 
