@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
-import { Typography } from '@mui/material'
+import { IconButton, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+import JBrowseMenu from '@jbrowse/core/ui/Menu'
 
 // icons
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
@@ -9,7 +10,6 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 
 // locals
 import { getAllChildren, treeToMap, NodeData } from '../util'
-import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 
 const useStyles = makeStyles()(theme => ({
   contrastColor: {
@@ -34,14 +34,14 @@ export default function Category({
   data: NodeData
 }) {
   const { classes } = useStyles()
-  const [menuOpen, setMenuOpen] = useState(false)
+  const [menuEl, setMenuEl] = useState<HTMLElement | null>(null)
   const { name, model, id, tree, toggleCollapse } = data
 
   return (
     <div
       className={classes.accordionText}
       onClick={() => {
-        if (!menuOpen) {
+        if (!menuEl) {
           toggleCollapse(id)
           setOpen(!isOpen)
         }
@@ -50,12 +50,19 @@ export default function Category({
       <Typography>
         {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
         {name}
-        <CascadingMenuButton
+        <IconButton
+          onClick={event => {
+            setMenuEl(event.currentTarget)
+            event.stopPropagation()
+          }}
           className={classes.contrastColor}
-          onClickExtra={event => event.stopPropagation()}
-          onTouchExtra={event => event.stopPropagation()}
-          onMenuOpen={() => setMenuOpen(true)}
-          onMenuClose={() => setMenuOpen(false)}
+        >
+          <MoreHorizIcon />
+        </IconButton>
+      </Typography>
+      {menuEl ? (
+        <JBrowseMenu
+          anchorEl={menuEl}
           menuItems={[
             {
               label: 'Add to selection',
@@ -92,10 +99,14 @@ export default function Category({
               },
             },
           ]}
-        >
-          <MoreHorizIcon />
-        </CascadingMenuButton>
-      </Typography>
+          onMenuItemClick={(_event, callback) => {
+            callback()
+            setMenuEl(null)
+          }}
+          open={Boolean(menuEl)}
+          onClose={() => setMenuEl(null)}
+        />
+      ) : null}
     </div>
   )
 }
