@@ -86,8 +86,8 @@ class TypeRecord<ElementClass extends PluggableElementBase> {
 
   constructor(
     public typeName: string,
-    public baseClass: // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    | { new (...args: any[]): ElementClass }
+    public baseClass:
+      | { new (...args: unknown[]): ElementClass }
       // covers abstract class case
       | (Function & {
           prototype: ElementClass

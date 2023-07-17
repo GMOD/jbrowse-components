@@ -90,7 +90,7 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
               return { track, result: await d.renderSvg({ ...opts, theme }) }
             }),
           ),
-        } as const),
+        }) as const,
     ),
   )
 
