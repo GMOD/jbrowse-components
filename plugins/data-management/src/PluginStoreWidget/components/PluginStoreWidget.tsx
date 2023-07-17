@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react'
-
+import React, { useState, lazy, Suspense } from 'react'
 import {
   Accordion,
   AccordionSummary,
@@ -12,7 +11,6 @@ import {
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
-import { JBrowsePlugin } from '@jbrowse/core/util/types'
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { getSession, isElectron } from '@jbrowse/core/util'
 
@@ -24,18 +22,17 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 // locals
 import InstalledPluginsList from './InstalledPluginsList'
 import PluginCard from './PluginCard'
-import CustomPluginForm from './CustomPluginForm'
 import { PluginStoreModel } from '../model'
+import { useFetchPlugins } from './util'
+
+// lazies
+const AddCustomPluginDialog = lazy(() => import('./AddCustomPluginDialog'))
 
 const useStyles = makeStyles()(theme => ({
-  root: {
-    margin: theme.spacing(1),
-  },
   expandIcon: {
     color: theme.palette.tertiary.contrastText,
   },
   adminBadge: {
-    margin: '0.5em',
     borderRadius: 3,
     backgroundColor: theme.palette.quaternary.main,
     padding: '1em',
@@ -43,54 +40,20 @@ const useStyles = makeStyles()(theme => ({
     alignContent: 'center',
   },
   customPluginButton: {
-    margin: '0.5em',
+    margin: '1em auto',
     display: 'flex',
-    justifyContent: 'center',
   },
 }))
 
 function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
   const { classes } = useStyles()
-  const [pluginArray, setPluginArray] = useState<JBrowsePlugin[]>()
-  const [error, setError] = useState<unknown>()
-  const [customPluginFormOpen, setCustomPluginFormOpen] = useState(false)
+  const { plugins, error } = useFetchPlugins()
+  const [open, setOpen] = useState(false)
   const { adminMode } = getSession(model)
   const { pluginManager } = getEnv(model)
 
-  useEffect(() => {
-    const controller = new AbortController()
-    const { signal } = controller
-
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ;(async () => {
-      try {
-        const response = await fetch(
-          'https://jbrowse.org/plugin-store/plugins.json',
-          { signal },
-        )
-        if (!response.ok) {
-          const err = await response.text()
-          throw new Error(
-            `Failed to fetch plugin data: ${response.status} ${response.statusText} ${err}`,
-          )
-        }
-        const array = await response.json()
-        if (!signal.aborted) {
-          setPluginArray(array.plugins)
-        }
-      } catch (e) {
-        console.error(e)
-        setError(e)
-      }
-    })()
-
-    return () => {
-      controller.abort()
-    }
-  }, [])
-
   return (
-    <div className={classes.root}>
+    <div>
       {adminMode && (
         <>
           {!isElectron && (
@@ -103,19 +66,21 @@ function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
               </Typography>
             </div>
           )}
-          <div className={classes.customPluginButton}>
-            <Button
-              variant="contained"
-              onClick={() => setCustomPluginFormOpen(true)}
-            >
-              Add custom plugin
-            </Button>
-          </div>
-          <CustomPluginForm
-            open={customPluginFormOpen}
-            onClose={() => setCustomPluginFormOpen(false)}
-            model={model}
-          />
+          <Button
+            className={classes.customPluginButton}
+            variant="contained"
+            onClick={() => setOpen(true)}
+          >
+            Add custom plugin
+          </Button>
+          {open ? (
+            <Suspense fallback={<React.Fragment />}>
+              <AddCustomPluginDialog
+                onClose={() => setOpen(false)}
+                model={model}
+              />
+            </Suspense>
+          ) : null}
         </>
       )}
       <TextField
@@ -151,8 +116,8 @@ function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
         </AccordionSummary>
         {error ? (
           <Typography color="error">{`${error}`}</Typography>
-        ) : pluginArray ? (
-          pluginArray
+        ) : plugins ? (
+          plugins
             .filter(plugin => {
               // If plugin only has cjsUrl, don't display outside desktop
               return (
