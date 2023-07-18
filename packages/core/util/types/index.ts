@@ -403,6 +403,25 @@ export function isUriLocation(location: unknown): location is UriLocation {
     !!location.uri
   )
 }
+export function isLocalPathLocation(
+  location: unknown,
+): location is LocalPathLocation {
+  return (
+    typeof location === 'object' &&
+    location !== null &&
+    'localPath' in location &&
+    !!location.localPath
+  )
+}
+
+export function isBlobLocation(location: unknown): location is BlobLocation {
+  return (
+    typeof location === 'object' &&
+    location !== null &&
+    'blobId' in location &&
+    !!location.blobId
+  )
+}
 export class AuthNeededError extends Error {
   constructor(
     public message: string,
