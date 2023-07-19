@@ -7,6 +7,7 @@ import { makeTicks } from '../util'
 
 import { LinearGenomeViewModel } from '..'
 import SVGRegionSeparators from './SVGRegionSeparators'
+import Color from 'color'
 
 type LGV = LinearGenomeViewModel
 
@@ -29,19 +30,20 @@ function Ruler({
 }) {
   const ticks = makeTicks(start, end, bpPerPx, major, minor)
   const theme = useTheme()
+  const c = Color(theme.palette.text.secondary).hex()
   return (
     <>
       {ticks.map(tick => {
         const x = (reversed ? end - tick.base : tick.base - start) / bpPerPx
         return (
           <line
-            key={tick.base}
+            key={'tick-' + tick.base}
             x1={x}
             x2={x}
             y1={0}
             y2={tick.type === 'major' ? 6 : 4}
             strokeWidth={1}
-            stroke={theme.palette.text.secondary}
+            stroke={c}
           />
         )
       })}
@@ -53,11 +55,11 @@ function Ruler({
                 (reversed ? end - tick.base : tick.base - start) / bpPerPx
               return (
                 <text
+                  key={`label-${tick.base}`}
                   x={x - 3}
                   y={7 + 11}
-                  key={`label-${tick.base}`}
                   fontSize={11}
-                  fill={theme.palette.text.primary}
+                  fill={c}
                 >
                   {getTickDisplayStr(tick.base + 1, bpPerPx)}
                 </text>
@@ -82,6 +84,7 @@ export default function SVGRuler({
   } = model
   const renderRuler = contentBlocks.length < 5
   const theme = useTheme()
+  const c = Color(theme.palette.text.primary).hex()
   return (
     <>
       <SVGRegionSeparators model={model} height={30} />
@@ -98,12 +101,7 @@ export default function SVGRuler({
             </defs>
             <g transform={`translate(${offset} 0)`}>
               <g clipPath={`url(#${clipid})`}>
-                <text
-                  x={4}
-                  y={fontSize}
-                  fontSize={fontSize}
-                  fill={theme.palette.text.primary}
-                >
+                <text x={4} y={fontSize} fontSize={fontSize} fill={c}>
                   {refName}
                 </text>
                 <g transform="translate(0 20)">
