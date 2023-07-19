@@ -11,7 +11,7 @@ import { SessionWithDrawerWidgets } from '@jbrowse/core/util/types'
 import Drawer from './Drawer'
 import DrawerHeader from './DrawerHeader'
 
-interface AdditonalComponentsObject {
+interface AdditionalComponentsObject {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Components: React.FC<any>
   configuration: 'top' | 'bottom'
@@ -45,7 +45,7 @@ const DrawerWidget = observer(function ({
           session,
           model: visibleWidget,
         },
-      ) as AdditonalComponentsObject)
+      ) as AdditionalComponentsObject)
     : null
 
   // we track the toolbar height because components that use virtualized

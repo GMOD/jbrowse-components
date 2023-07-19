@@ -6,7 +6,7 @@ import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import { SessionWithWidgets } from '@jbrowse/core/util'
 
-interface AdditonalComponentsObject {
+interface AdditionalComponentsObject {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Components: React.FC<any>
   configuration: 'top' | 'bottom'
@@ -52,7 +52,7 @@ export default observer(function ({
           session,
           model: visibleWidget,
         },
-      ) as AdditonalComponentsObject)
+      ) as AdditionalComponentsObject)
     : null
   return (
     <Dialog
