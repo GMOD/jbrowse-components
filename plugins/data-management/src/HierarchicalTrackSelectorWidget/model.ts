@@ -242,11 +242,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
             .map(s => ({
               name: s.group,
               id: s.group,
-              children: generateHierarchy(
-                self as any,
-                s.tracks,
-                self.collapsed,
-              ),
+              children: generateHierarchy(self, s.tracks, self.collapsed),
             }))
             .filter(f => !!f.children.length),
         }
