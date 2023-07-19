@@ -1,5 +1,5 @@
 import { lazy } from 'react'
-import { types, getSnapshot, Instance } from 'mobx-state-tree'
+import { types, Instance } from 'mobx-state-tree'
 import {
   AnyConfigurationSchemaType,
   ConfigurationReference,
@@ -7,13 +7,10 @@ import {
   getConf,
 } from '@jbrowse/core/configuration'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import {
-  getEnv,
-  getSession,
-  getContainingView,
-  SimpleFeature,
-} from '@jbrowse/core/util'
+import { getEnv, getSession, getContainingView } from '@jbrowse/core/util'
+import { getUniqueModificationValues } from '../shared'
 
+import { createAutorun, randomColor, modificationColors } from '../util'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // icons
@@ -21,9 +18,8 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import SortIcon from '@mui/icons-material/Sort'
 
 // locals
-import { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
-import { createAutorun } from '../util'
 import { SharedLinearPileupDisplayMixin } from './SharedLinearPileupDisplayMixin'
+import { observable } from 'mobx'
 
 // async
 const SortByTagDlg = lazy(() => import('./components/SortByTag'))
@@ -82,8 +78,29 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     )
     .volatile(() => ({
       sortReady: false,
+      modificationTagMap: observable.map<string, string>({}),
+      modificationsReady: false,
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      updateModificationColorMap(uniqueModifications: string[]) {
+        uniqueModifications.forEach(value => {
+          if (!self.modificationTagMap.has(value)) {
+            self.modificationTagMap.set(
+              value,
+              modificationColors[value] || randomColor(),
+            )
+          }
+        })
+      },
+      /**
+       * #action
+       */
+      setModificationsReady(flag: boolean) {
+        self.modificationsReady = flag
+      },
       /**
        * #action
        */
@@ -175,29 +192,27 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         )
       },
     }))
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get mismatchAlphaSetting() {
-        return readConfObject(self.rendererConfig, 'mismatchAlpha')
-      },
-      /**
-       * #getter
-       */
-      get renderReady() {
-        const view = getContainingView(self) as LGV
-        return (
-          self.modificationsReady &&
-          self.tagsReady &&
-          self.currSortBpPerPx === view.bpPerPx
-        )
-      },
-    }))
+    .views(self => {
+      const { renderReady: superRenderReady } = self
+      return {
+        /**
+         * #getter
+         */
+        get mismatchAlphaSetting() {
+          return readConfObject(self.rendererConfig, 'mismatchAlpha')
+        },
+        /**
+         * #getter
+         */
+        renderReady() {
+          return self.modificationsReady && superRenderReady()
+        },
+      }
+    })
     .views(self => {
       const {
         trackMenuItems: superTrackMenuItems,
-        renderProps: superRenderProps,
+        renderPropsPre: superRenderPropsPre,
         colorSchemeSubMenuItems: superColorSchemeSubMenuItems,
       } = self
 
@@ -206,105 +221,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #method
          */
         renderPropsPre() {
-          const {
-            colorTagMap,
-            modificationTagMap,
-            sortedBy,
-            colorBy,
-            filterBy,
-            rpcDriverName,
-          } = self
-
-          const superProps = superRenderProps()
+          const { modificationTagMap } = self
+          const superProps = superRenderPropsPre()
           return {
             ...superProps,
-            notReady: superProps.notReady || !self.renderReady,
-            rpcDriverName,
-            displayModel: self,
-            sortedBy: sortedBy ? getSnapshot(sortedBy) : undefined,
-            colorBy: colorBy ? getSnapshot(colorBy) : undefined,
-            filterBy: JSON.parse(JSON.stringify(filterBy)),
-            colorTagMap: Object.fromEntries(colorTagMap.toJSON()),
+
             modificationTagMap: Object.fromEntries(modificationTagMap.toJSON()),
-            showSoftClip: self.showSoftClipping,
-            config: self.rendererConfig,
-            async onFeatureClick(_: unknown, featureId?: string) {
-              const session = getSession(self)
-              const { rpcManager } = session
-              try {
-                const f = featureId || self.featureIdUnderMouse
-                if (!f) {
-                  self.clearFeatureSelection()
-                } else {
-                  const sessionId = getRpcSessionId(self)
-                  const { feature } = (await rpcManager.call(
-                    sessionId,
-                    'CoreGetFeatureDetails',
-                    {
-                      featureId: f,
-                      sessionId,
-                      layoutId: getContainingView(self).id,
-                      rendererType: 'PileupRenderer',
-                    },
-                  )) as { feature: SimpleFeatureSerialized | undefined }
-
-                  if (feature) {
-                    self.selectFeature(new SimpleFeature(feature))
-                  }
-                }
-              } catch (e) {
-                console.error(e)
-                session.notify(`${e}`)
-              }
-            },
-
-            onClick() {
-              self.clearFeatureSelection()
-            },
-            // similar to click but opens a menu with further options
-            async onFeatureContextMenu(_: unknown, featureId?: string) {
-              const session = getSession(self)
-              const { rpcManager } = session
-              try {
-                const f = featureId || self.featureIdUnderMouse
-                if (!f) {
-                  self.clearFeatureSelection()
-                } else {
-                  const sessionId = getRpcSessionId(self)
-                  const { feature } = (await rpcManager.call(
-                    sessionId,
-                    'CoreGetFeatureDetails',
-                    {
-                      featureId: f,
-                      sessionId,
-                      layoutId: getContainingView(self).id,
-                      rendererType: 'PileupRenderer',
-                    },
-                  )) as { feature: SimpleFeatureSerialized }
-
-                  if (feature) {
-                    self.setContextMenuFeature(new SimpleFeature(feature))
-                  }
-                }
-              } catch (e) {
-                console.error(e)
-                session.notify(`${e}`)
-              }
-            },
-          }
-        },
-
-        // renderProps and renderPropsPre are separated due to sortReady
-        // causing a infinite loop in the sort autorun, since the sort autorun
-        // uses renderProps
-        /**
-         * #method
-         */
-        renderProps() {
-          const pre = this.renderPropsPre()
-          return {
-            ...pre,
-            notReady: pre.notReady || !self.sortReady,
           }
         },
 
@@ -429,6 +351,25 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           },
           { delay: 1000 },
         )
+
+        createAutorun(self, async () => {
+          if (!self.autorunReady) {
+            return
+          }
+          const { parentTrack, colorBy } = self
+          const { staticBlocks } = getContainingView(self) as LGV
+          if (colorBy?.type === 'modifications') {
+            const adapter = getConf(parentTrack, ['adapter'])
+            const vals = await getUniqueModificationValues(
+              self,
+              adapter,
+              colorBy,
+              staticBlocks,
+            )
+            self.updateModificationColorMap(vals)
+          }
+          self.setModificationsReady(true)
+        })
       },
     }))
 }

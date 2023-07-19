@@ -102,10 +102,8 @@ export function SharedLinearPileupDisplayMixin(
     )
     .volatile(() => ({
       colorTagMap: observable.map<string, string>({}),
-      modificationTagMap: observable.map<string, string>({}),
       featureUnderMouseVolatile: undefined as undefined | Feature,
       currSortBpPerPx: 0,
-      modificationsReady: false,
       tagsReady: false,
     }))
     .views(self => ({
@@ -119,12 +117,6 @@ export function SharedLinearPileupDisplayMixin(
       },
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      setModificationsReady(flag: boolean) {
-        self.modificationsReady = flag
-      },
       /**
        * #action
        */
@@ -171,7 +163,6 @@ export function SharedLinearPileupDisplayMixin(
         self.colorBy = cast(colorScheme)
         if (colorScheme.tag) {
           self.tagsReady = false
-          self.modificationsReady = false
         }
       },
 
@@ -308,13 +299,9 @@ export function SharedLinearPileupDisplayMixin(
       /**
        * #getter
        */
-      get renderReady() {
+      renderReady() {
         const view = getContainingView(self) as LGV
-        return (
-          self.modificationsReady &&
-          self.tagsReady &&
-          self.currSortBpPerPx === view.bpPerPx
-        )
+        return self.tagsReady && self.currSortBpPerPx === view.bpPerPx
       },
     }))
     .views(self => {
@@ -375,13 +362,13 @@ export function SharedLinearPileupDisplayMixin(
         /**
          * #method
          */
-        renderProps() {
+        renderPropsPre() {
           const { colorTagMap, colorBy, filterBy, rpcDriverName } = self
 
           const superProps = superRenderProps()
           return {
             ...superProps,
-            notReady: superProps.notReady || !self.renderReady,
+            notReady: superProps.notReady || !self.renderReady(),
             rpcDriverName,
             displayModel: self,
             colorBy: colorBy ? getSnapshot(colorBy) : undefined,
@@ -561,6 +548,11 @@ export function SharedLinearPileupDisplayMixin(
         },
       }
     })
+    .views(self => ({
+      renderProps() {
+        return self.renderPropsPre()
+      },
+    }))
     .actions(self => ({
       afterAttach() {
         createAutorun(
