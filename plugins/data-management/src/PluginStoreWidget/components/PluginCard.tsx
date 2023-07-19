@@ -26,7 +26,7 @@ import { PluginStoreModel } from '../model'
 
 const useStyles = makeStyles()({
   card: {
-    margin: '1em',
+    margin: '0.5em',
   },
   icon: {
     marginLeft: '0.5em',
@@ -38,7 +38,6 @@ const useStyles = makeStyles()({
   dataField: {
     display: 'flex',
     alignItems: 'center',
-    margin: '0.4em 0em',
   },
 })
 
@@ -66,17 +65,15 @@ export default observer(function PluginCard({
   return (
     <Card variant="outlined" key={plugin.name} className={classes.card}>
       <CardContent>
-        <div className={classes.dataField}>
-          <Typography variant="h5">
-            <Link
-              href={`${plugin.location}#readme`}
-              target="_blank"
-              rel="noopener"
-            >
-              {plugin.name}
-            </Link>
-          </Typography>
-        </div>
+        <Typography variant="h5">
+          <Link
+            href={`${plugin.location}#readme`}
+            target="_blank"
+            rel="noopener"
+          >
+            {plugin.name}
+          </Link>
+        </Typography>
         <div className={classes.dataField}>
           <PersonIcon style={{ marginRight: '0.5em' }} />
           <Typography>{plugin.authors.join(', ')}</Typography>

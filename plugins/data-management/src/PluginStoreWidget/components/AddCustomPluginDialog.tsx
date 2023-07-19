@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import { getRoot } from 'mobx-state-tree'
 import { Dialog } from '@jbrowse/core/ui'
 import {
   Button,
@@ -11,6 +10,7 @@ import {
   TextField,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+import { getSession } from '@jbrowse/core/util'
 
 // icons
 import IconButton from '@mui/material/IconButton'
@@ -36,13 +36,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function CustomPluginForm({
-  open,
+export default observer(function ({
   onClose,
   model,
 }: {
-  open: boolean
-  onClose(): void
+  onClose: () => void
   model: PluginStoreModel
 }) {
   const { classes, cx } = useStyles()
@@ -51,10 +49,7 @@ function CustomPluginForm({
   const [esmPluginUrl, setESMPluginUrl] = useState('')
   const [cjsPluginUrl, setCJSPluginUrl] = useState('')
   const [advancedOptionsOpen, setAdvancedOptionsOpen] = useState(false)
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { jbrowse } = getRoot<any>(model)
-
+  const { jbrowse } = getSession(model)
   const ready = Boolean(
     (umdPluginName && umdPluginUrl) || esmPluginUrl || cjsPluginUrl,
   )
@@ -62,25 +57,15 @@ function CustomPluginForm({
   function handleSubmit() {
     if (umdPluginName && umdPluginUrl) {
       jbrowse.addPlugin({ name: umdPluginName, umdUrl: umdPluginUrl })
-    }
-    if (esmPluginUrl) {
+    } else if (esmPluginUrl) {
       jbrowse.addPlugin({ esmUrl: esmPluginUrl })
-    }
-    if (cjsPluginUrl) {
+    } else if (cjsPluginUrl) {
       jbrowse.addPlugin({ cjsUrl: cjsPluginUrl })
     }
   }
 
-  function handleClose() {
-    setUMDPluginName('')
-    setUMDPluginUrl('')
-    setESMPluginUrl('')
-    setCJSPluginUrl('')
-    onClose()
-  }
-
   return (
-    <Dialog open={open} onClose={handleClose} title="Add custom plugin">
+    <Dialog open onClose={onClose} title="Add custom plugin">
       <form onSubmit={handleSubmit}>
         <DialogContent className={classes.dialogContent}>
           <DialogContentText>
@@ -88,16 +73,12 @@ function CustomPluginForm({
             is defined in the plugin&apos;s build.
           </DialogContentText>
           <TextField
-            id="umd-name-input"
-            name="umdName"
             label="Plugin name"
             variant="outlined"
             value={umdPluginName}
             onChange={event => setUMDPluginName(event.target.value)}
           />
           <TextField
-            id="umd-url-input"
-            name="umdUrl"
             label="Plugin URL"
             variant="outlined"
             value={umdPluginUrl}
@@ -126,16 +107,12 @@ function CustomPluginForm({
                 APIs in desktop), you can enter the URLs for those builds below.
               </DialogContentText>
               <TextField
-                id="esm-url-input"
-                name="esmUrl"
                 label="ESM build URL"
                 variant="outlined"
                 value={esmPluginUrl}
                 onChange={event => setESMPluginUrl(event.target.value)}
               />
               <TextField
-                id="cjs-url-input"
-                name="cjsUrl"
                 label="CJS build URL"
                 variant="outlined"
                 value={cjsPluginUrl}
@@ -145,7 +122,7 @@ function CustomPluginForm({
           </Collapse>
         </DialogContent>
         <DialogActions>
-          <Button variant="contained" onClick={handleClose}>
+          <Button variant="contained" onClick={onClose}>
             Cancel
           </Button>
           <Button
@@ -160,6 +137,4 @@ function CustomPluginForm({
       </form>
     </Dialog>
   )
-}
-
-export default observer(CustomPluginForm)
+})
