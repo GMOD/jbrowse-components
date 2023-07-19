@@ -41,7 +41,6 @@ const FilterByTagDlg = lazy(() => import('../shared/FilterByTag'))
 const ColorByTagDlg = lazy(() => import('./components/ColorByTag'))
 const SetFeatureHeightDlg = lazy(() => import('./components/SetFeatureHeight'))
 const SetMaxHeightDlg = lazy(() => import('./components/SetMaxHeight'))
-const ColorByCustomDlg = lazy(() => import('./components/ColorByCustom'))
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -103,7 +102,6 @@ export function SharedLinearPileupDisplayMixin(
     .volatile(() => ({
       colorTagMap: observable.map<string, string>({}),
       featureUnderMouseVolatile: undefined as undefined | Feature,
-      currSortBpPerPx: 0,
       tagsReady: false,
     }))
     .views(self => ({
@@ -122,12 +120,6 @@ export function SharedLinearPileupDisplayMixin(
        */
       setTagsReady(flag: boolean) {
         self.tagsReady = flag
-      },
-      /**
-       * #action
-       */
-      setCurrSortBpPerPx(n: number) {
-        self.currSortBpPerPx = n
       },
 
       /**
@@ -242,19 +234,7 @@ export function SharedLinearPileupDisplayMixin(
         self.filterBy = cast(filter)
       },
     }))
-    .actions(self => {
-      // resets the sort object and refresh whole display on reload
-      const superReload = self.reload
 
-      return {
-        /**
-         * #action
-         */
-        reload() {
-          superReload()
-        },
-      }
-    })
     .views(self => ({
       /**
        * #getter
@@ -300,8 +280,7 @@ export function SharedLinearPileupDisplayMixin(
        * #getter
        */
       renderReady() {
-        const view = getContainingView(self) as LGV
-        return self.tagsReady && self.currSortBpPerPx === view.bpPerPx
+        return self.tagsReady
       },
     }))
     .views(self => {
@@ -479,15 +458,6 @@ export function SharedLinearPileupDisplayMixin(
                 ])
               },
             },
-            {
-              label: 'Custom color scheme...',
-              onClick: () => {
-                getSession(self).queueDialog(doneCallback => [
-                  ColorByCustomDlg,
-                  { model: self, handleClose: doneCallback },
-                ])
-              },
-            },
           ]
         },
 
@@ -570,21 +540,6 @@ export function SharedLinearPileupDisplayMixin(
               self.updateColorTagMap(vals)
             }
             self.setTagsReady(true)
-          },
-          { delay: 1000 },
-        )
-
-        createAutorun(
-          self,
-          async () => {
-            const view = getContainingView(self) as LGV
-            if (!self.autorunReady) {
-              return
-            }
-
-            const { bpPerPx } = view
-
-            self.setCurrSortBpPerPx(bpPerPx)
           },
           { delay: 1000 },
         )

@@ -3,7 +3,7 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { Feature } from '@jbrowse/core/util'
-import { fillColor, ExtraColorBy } from '../shared/color'
+import { fillColor } from '../shared/color'
 import {
   colorByInsertSize,
   colorByMappingQuality,
@@ -15,7 +15,6 @@ import {
 export function getAlignmentShapeColor({
   colorType,
   tag,
-  extra,
   feature,
   config,
   defaultColor,
@@ -23,7 +22,6 @@ export function getAlignmentShapeColor({
 }: {
   colorType: string
   tag: string
-  extra: ExtraColorBy
   feature: Feature
   defaultColor: boolean
   config: AnyConfigurationModel
@@ -35,29 +33,27 @@ export function getAlignmentShapeColor({
     case 'insertSize':
       return colorByInsertSize(feature)
     case 'strand':
-      return colorByStrand(feature, extra.custom)
+      return colorByStrand(feature)
     case 'mappingQuality':
       return colorByMappingQuality(feature)
     case 'pairOrientation':
-      return colorByOrientation(feature, config, extra.custom)
+      return colorByOrientation(feature, config)
     case 'stranded':
-      return colorByStrandedRnaSeq(feature, extra.custom)
+      return colorByStrandedRnaSeq(feature)
     case 'xs':
     case 'tag': {
       const tags = feature.get('tags')
       const val = tags ? tags[tag] : feature.get(tag)
 
-      const colorPivot = extra.custom ?? fillColor
-
       if (tag === 'XS' || tag === 'TS') {
-        return colorPivot[
+        return fillColor[
           {
             '-': 'color_rev_strand' as const,
             '+': 'color_fwd_strand' as const,
           }[val as '-' | '+'] || 'color_nostrand'
         ]
       } else if (tag === 'ts') {
-        return colorPivot[
+        return fillColor[
           {
             '-':
               feature.get('strand') === -1
@@ -70,7 +66,7 @@ export function getAlignmentShapeColor({
           }[val as '-' | '+'] || 'color_nostrand'
         ]
       } else {
-        return colorTagMap[val] || colorPivot['color_nostrand']
+        return colorTagMap[val] || fillColor['color_nostrand']
       }
     }
     case 'insertSizeAndPairOrientation':
@@ -81,14 +77,11 @@ export function getAlignmentShapeColor({
       // this coloring is similar to igv.js, and is helpful to color negative
       // strand reads differently because their c-g will be flipped (e.g. g-c
       // read right to left)
-      return feature.get('flags') & 16
-        ? (extra.custom && extra.custom['color_modifications']) ??
-            fillColor['color_modifications']
-        : (extra.custom && extra.custom['color_methylation']) ??
-            fillColor['color_methylation']
+      return feature.get('flags') & 16 ? '#c8dcc8' : '#c8c8c8'
+
     default:
       return defaultColor
-        ? (extra.custom && extra.custom['color_unknown']) ?? 'lightgrey'
+        ? 'lightgrey'
         : readConfObject(config, 'color', { feature })
   }
 }

@@ -78,10 +78,17 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     )
     .volatile(() => ({
       sortReady: false,
+      currSortBpPerPx: 0,
       modificationTagMap: observable.map<string, string>({}),
       modificationsReady: false,
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      setCurrSortBpPerPx(n: number) {
+        self.currSortBpPerPx = n
+      },
       /**
        * #action
        */
@@ -205,7 +212,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #getter
          */
         renderReady() {
-          return self.modificationsReady && superRenderReady()
+          const view = getContainingView(self) as LGV
+          return (
+            self.modificationsReady &&
+            self.currSortBpPerPx === view.bpPerPx &&
+            superRenderReady()
+          )
         },
       }
     })
@@ -213,6 +225,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       const {
         trackMenuItems: superTrackMenuItems,
         renderPropsPre: superRenderPropsPre,
+        renderProps: superRenderProps,
         colorSchemeSubMenuItems: superColorSchemeSubMenuItems,
       } = self
 
@@ -221,12 +234,24 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #method
          */
         renderPropsPre() {
-          const { modificationTagMap } = self
+          const { sortedBy, showSoftClipping, modificationTagMap } = self
           const superProps = superRenderPropsPre()
           return {
             ...superProps,
-
+            showSoftClip: showSoftClipping,
+            sortedBy,
             modificationTagMap: Object.fromEntries(modificationTagMap.toJSON()),
+          }
+        },
+        /**
+         * #method
+         */
+        renderProps() {
+          const { sortReady } = self
+          const result = superRenderProps()
+          return {
+            ...result,
+            notReady: result.notReady || !sortReady,
           }
         },
 
@@ -312,6 +337,20 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     })
     .actions(self => ({
       afterAttach() {
+        createAutorun(
+          self,
+          async () => {
+            const view = getContainingView(self) as LGV
+            if (!self.autorunReady) {
+              return
+            }
+
+            const { bpPerPx } = view
+
+            self.setCurrSortBpPerPx(bpPerPx)
+          },
+          { delay: 1000 },
+        )
         createAutorun(
           self,
           async () => {
