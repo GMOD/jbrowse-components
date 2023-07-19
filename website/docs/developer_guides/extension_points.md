@@ -396,7 +396,7 @@ details, about panel, and more. The feature details may be a common one. See
 Return value: an object of the type:
 
 ```ts
-interface AdditonalComponentsObject {
+interface AdditionalComponentsObject {
   Components: React.FC<any>
   configuration: 'top' | 'bottom'
 }
