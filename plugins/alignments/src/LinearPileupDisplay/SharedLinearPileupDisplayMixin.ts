@@ -31,14 +31,9 @@ import FilterListIcon from '@mui/icons-material/ClearAll'
 
 // locals
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
-import {
-  getUniqueTagValues,
-  getUniqueModificationValues,
-  FilterModel,
-} from '../shared'
+import { getUniqueTagValues, FilterModel } from '../shared'
 import { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
-import { createAutorun, modificationColors } from '../util'
-import { randomColor } from '../util'
+import { createAutorun } from '../util'
 import { ColorByModel, ExtraColorBy } from '../shared/color'
 
 // async
@@ -178,20 +173,6 @@ export function SharedLinearPileupDisplayMixin(
           self.tagsReady = false
           self.modificationsReady = false
         }
-      },
-
-      /**
-       * #action
-       */
-      updateModificationColorMap(uniqueModifications: string[]) {
-        uniqueModifications.forEach(value => {
-          if (!self.modificationTagMap.has(value)) {
-            self.modificationTagMap.set(
-              value,
-              modificationColors[value] || randomColor(),
-            )
-          }
-        })
       },
 
       /**
@@ -395,13 +376,7 @@ export function SharedLinearPileupDisplayMixin(
          * #method
          */
         renderProps() {
-          const {
-            colorTagMap,
-            modificationTagMap,
-            colorBy,
-            filterBy,
-            rpcDriverName,
-          } = self
+          const { colorTagMap, colorBy, filterBy, rpcDriverName } = self
 
           const superProps = superRenderProps()
           return {
@@ -412,7 +387,6 @@ export function SharedLinearPileupDisplayMixin(
             colorBy: colorBy ? getSnapshot(colorBy) : undefined,
             filterBy: JSON.parse(JSON.stringify(filterBy)),
             colorTagMap: Object.fromEntries(colorTagMap.toJSON()),
-            modificationTagMap: Object.fromEntries(modificationTagMap.toJSON()),
             config: self.rendererConfig,
             async onFeatureClick(_: unknown, featureId?: string) {
               const session = getSession(self)
@@ -607,24 +581,6 @@ export function SharedLinearPileupDisplayMixin(
           },
           { delay: 1000 },
         )
-        createAutorun(self, async () => {
-          if (!self.autorunReady) {
-            return
-          }
-          const { parentTrack, colorBy } = self
-          const { staticBlocks } = getContainingView(self) as LGV
-          if (colorBy?.type === 'modifications') {
-            const adapter = getConf(parentTrack, ['adapter'])
-            const vals = await getUniqueModificationValues(
-              self,
-              adapter,
-              colorBy,
-              staticBlocks,
-            )
-            self.updateModificationColorMap(vals)
-          }
-          self.setModificationsReady(true)
-        })
 
         createAutorun(
           self,
