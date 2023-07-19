@@ -61,7 +61,6 @@
     "@types/cors": "^2.8.13",
     "@types/cross-spawn": "^6.0.2",
     "@types/crypto-js": "^4.0.1",
-    "@types/d3-scale": "^3.0.0",
     "@types/decompress": "^4.2.4",
     "@types/deep-equal": "^1.0.1",
     "@types/detect-node": "^2.0.0",
