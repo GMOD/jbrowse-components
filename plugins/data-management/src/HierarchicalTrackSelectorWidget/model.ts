@@ -1,5 +1,9 @@
 import { types, Instance } from 'mobx-state-tree'
-import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
+import {
+  getConf,
+  readConfObject,
+  AnyConfigurationModel,
+} from '@jbrowse/core/configuration'
 import { dedupe, getSession, notEmpty } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -212,30 +216,39 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       },
     }))
     .views(self => ({
+      get allTracks() {
+        const { connectionInstances = [] } = getSession(self)
+        return [
+          {
+            group: 'Tracks',
+            tracks: self.trackConfigurations,
+          },
+          ...connectionInstances.flatMap(c => ({
+            group: getConf(c, 'name'),
+            tracks: c.tracks,
+          })),
+        ]
+      },
+    }))
+    .views(self => ({
       /**
        * #getter
        */
       get hierarchy() {
-        const hier = generateHierarchy(
-          self as HierarchicalTrackSelectorModel,
-          self.trackConfigurations,
-          self.collapsed,
-        )
-        const { connectionInstances = [] } = getSession(self)
-
         return {
           name: 'Root',
           id: 'Root',
-          children: [
-            { name: 'Tracks', id: 'Tracks', children: hier },
-            ...connectionInstances
-              .map(c => ({
-                id: getConf(c, 'name'),
-                name: getConf(c, 'name'),
-                children: self.connectionHierarchy(c),
-              }))
-              .filter(f => f.children.length),
-          ],
+          children: self.allTracks
+            .map(s => ({
+              name: s.group,
+              id: s.group,
+              children: generateHierarchy(
+                self as any,
+                s.tracks,
+                self.collapsed,
+              ),
+            }))
+            .filter(f => !!f.children.length),
         }
       },
     }))
@@ -296,6 +309,15 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           }
           self.initialized = true
         }
+      },
+    }))
+    .views(self => ({
+      get hasAnySubcategories() {
+        return self.allTracks.some(group =>
+          group.tracks.some(
+            track => readConfObject(track, 'category')?.length > 1,
+          ),
+        )
       },
     }))
 }

@@ -143,10 +143,14 @@ export default observer(function HamburgerMenu({
             onClick: () => model.setSortCategories(!model.hSortCategories),
           },
           { type: 'divider' },
-          {
-            label: 'Collapse subcategories',
-            onClick: () => model.collapseSubCategories(),
-          },
+          ...(model.hasAnySubcategories
+            ? [
+                {
+                  label: 'Collapse subcategories',
+                  onClick: () => model.collapseSubCategories(),
+                },
+              ]
+            : []),
           {
             label: 'Collapse top-level categories',
             onClick: () => model.collapseTopLevelCategories(),
