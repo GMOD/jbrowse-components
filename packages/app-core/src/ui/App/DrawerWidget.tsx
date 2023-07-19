@@ -27,6 +27,12 @@ import MoreVertIcon from '@mui/icons-material/MoreVert'
 // locals
 import Drawer from './Drawer'
 
+interface AdditonalComponentsObject {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Components: React.FC<any>
+  configuration: 'top' | 'bottom'
+}
+
 const useStyles = makeStyles()(theme => ({
   formControl: {
     margin: 0,
@@ -207,6 +213,17 @@ const DrawerWidget = observer(function ({
       ) as React.FC<any>)
     : null
 
+  const AdditionalComponents = visibleWidget
+    ? (pluginManager.evaluateExtensionPoint(
+        'Core-addToWidget',
+        pluginManager.getWidgetType(visibleWidget.type).ReactComponent,
+        {
+          session,
+          model: visibleWidget,
+        },
+      ) as AdditonalComponentsObject)
+    : null
+
   // we track the toolbar height because components that use virtualized
   // height want to be able to fill the contained, minus the toolbar height
   // (the position static/sticky is included in AutoSizer estimates)
@@ -219,6 +236,13 @@ const DrawerWidget = observer(function ({
         <ErrorBoundary
           FallbackComponent={({ error }) => <ErrorMessage error={error} />}
         >
+          {AdditionalComponents?.Components &&
+          AdditionalComponents.configuration === 'top' ? (
+            <AdditionalComponents.Components
+              model={visibleWidget}
+              session={session}
+            />
+          ) : null}
           {DrawerComponent ? (
             <>
               <DrawerComponent
@@ -228,6 +252,13 @@ const DrawerWidget = observer(function ({
               />
               <div style={{ height: 300 }} />
             </>
+          ) : null}
+          {AdditionalComponents?.Components &&
+          AdditionalComponents?.configuration === 'bottom' ? (
+            <AdditionalComponents.Components
+              model={visibleWidget}
+              session={session}
+            />
           ) : null}
         </ErrorBoundary>
       </Suspense>

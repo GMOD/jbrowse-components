@@ -6,6 +6,12 @@ import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import { SessionWithWidgets } from '@jbrowse/core/util'
 
+interface AdditonalComponentsObject {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Components: React.FC<any>
+  configuration: 'top' | 'bottom'
+}
+
 const useStyles = makeStyles()({
   paper: {
     overflow: 'auto',
@@ -38,6 +44,16 @@ export default observer(function ({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ) as React.FC<any>)
     : null
+  const AdditionalComponents = visibleWidget
+    ? (pluginManager.evaluateExtensionPoint(
+        'Core-addToWidget',
+        pluginManager.getWidgetType(visibleWidget.type).ReactComponent,
+        {
+          session,
+          model: visibleWidget,
+        },
+      ) as AdditonalComponentsObject)
+    : null
   return (
     <Dialog
       open
@@ -58,6 +74,13 @@ export default observer(function ({
       {Component ? (
         <Suspense fallback={<div>Loading...</div>}>
           <Paper className={classes.paper}>
+            {AdditionalComponents?.Components &&
+            AdditionalComponents.configuration === 'top' ? (
+              <AdditionalComponents.Components
+                model={visibleWidget}
+                session={session}
+              />
+            ) : null}
             <Component
               model={visibleWidget}
               session={session}
@@ -66,6 +89,13 @@ export default observer(function ({
                 width: 800,
               }}
             />
+            {AdditionalComponents?.Components &&
+            AdditionalComponents?.configuration === 'bottom' ? (
+              <AdditionalComponents.Components
+                model={visibleWidget}
+                session={session}
+              />
+            ) : null}
           </Paper>
         </Suspense>
       ) : null}

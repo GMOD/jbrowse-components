@@ -334,9 +334,9 @@ Return value: New config snapshot object
 
 type: synchronous
 
-adds option to provide a different component for the "About this track" dialog
+adds option to provide a different component for a given widget, drawer or modal
 
-- `args` - a `ReactComponent`, the default AboutTrack dialog
+- `args` - a `ReactComponent`
 - `props` - an object of the type below
 
 ```typescript
@@ -356,7 +356,7 @@ Example: replaces about feature details widget for a particular track ID
 
 ```typescript
 pluginManager.addToExtensionPoint(
-  'Core-replaceAbout',
+  'Core-replaceWidget',
   (DefaultAboutComponent, { model }) => {
     return model.trackId === 'volvox.inv.vcf'
       ? NewAboutComponent
@@ -370,6 +370,50 @@ track that produced the feature details. Therefore, we check model.trackId that
 produced the popup instead. note that if you want copies of your track to get
 same treatment, might use a regex to loose match the trackId (the copy of a
 track will have a timestamp and -sessionTrack added to it).
+
+### Core-addToWidget
+
+type: synchronous
+
+adds option to append UI components to the top or bottom of a given widget,
+drawer or modal
+
+- `args` - a `ReactComponent`, default for the Widget of choice
+
+- `props` - an object of the type:
+
+```ts
+interface props {
+  session: AbstractSessionModel
+  model: WidgetModel
+}
+```
+
+note: this is called for every widget type, including configuration, feature
+details, about panel, and more. The feature details may be a common one. See
+`Core-extraFeaturePanel` also, matches the model attribute from there
+
+Return value: an object of the type:
+
+```ts
+interface AdditonalComponentsObject {
+  Components: React.FC<any>
+  configuration: 'top' | 'bottom'
+}
+```
+
+Example: appends a UI element to the top of the GridBookmark Widget
+
+```ts
+pluginManager.addToExtensionPoint(
+  'Core-addToWidget',
+  (DefaultComponent, { model }) => {
+    // @ts-ignore
+    return model.type === 'GridBookmarkWidget'
+      ? { Components: AdditionalComponent, configuration: 'top' }
+      : DefaultComponent
+  },
+```
 
 ### Core-extraFeaturePanel
 
