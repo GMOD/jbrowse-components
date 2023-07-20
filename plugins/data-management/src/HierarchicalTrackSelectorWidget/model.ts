@@ -244,7 +244,8 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
               id: s.group,
               children: generateHierarchy(self, s.tracks, self.collapsed),
             }))
-            .filter(f => !!f.children.length),
+            // always keep the Tracks entry at idx 0
+            .filter((f, idx) => idx === 0 || !!f.children.length),
         }
       },
     }))
