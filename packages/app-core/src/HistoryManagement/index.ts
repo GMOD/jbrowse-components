@@ -24,7 +24,8 @@ export function HistoryManagementMixin() {
             // ctrl+shift+z or cmd+shift+z
             (((e.ctrlKey || e.metaKey) && e.shiftKey && e.code === 'KeyZ') ||
               // ctrl+y
-              (e.ctrlKey && !e.shiftKey && e.code === 'KeyY'))
+              (e.ctrlKey && !e.shiftKey && e.code === 'KeyY')) &&
+            document.activeElement?.tagName.toUpperCase() !== 'INPUT'
           ) {
             self.history.redo()
           }
@@ -33,7 +34,8 @@ export function HistoryManagementMixin() {
             // ctrl+z or cmd+z
             (e.ctrlKey || e.metaKey) &&
             !e.shiftKey &&
-            e.code === 'KeyZ'
+            e.code === 'KeyZ' &&
+            document.activeElement?.tagName.toUpperCase() !== 'INPUT'
           ) {
             self.history.undo()
           }
