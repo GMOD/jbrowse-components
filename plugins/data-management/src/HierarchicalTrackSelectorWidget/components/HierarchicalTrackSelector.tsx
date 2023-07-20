@@ -3,7 +3,8 @@ import { observer } from 'mobx-react'
 import AutoSizer from 'react-virtualized-auto-sizer'
 
 // locals
-import { TreeNode, HierarchicalTrackSelectorModel } from '../model'
+import { HierarchicalTrackSelectorModel } from '../model'
+import { TreeNode } from '../generateHierarchy'
 import HierarchicalFab from './HierarchicalFab'
 import HierarchicalTree from './tree/HierarchicalTree'
 import HierarchicalHeader from './tree/HierarchicalHeader'

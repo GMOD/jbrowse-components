@@ -176,6 +176,11 @@
     }
   ],
   "configuration": {
+    "hierarchical": {
+      "defaultCollapsed": {
+        "categoryNames": ["Methylation"]
+      }
+    },
     "extraThemes": {
       "darkForest": {
         "name": "Dark (forest, from config file)",
@@ -1395,7 +1400,7 @@
       "trackId": "pOOtg9wxcUC",
       "name": "Volvox - BAM coverage",
       "assemblyNames": ["volvox"],
-      "category": ["BigWig"],
+      "category": ["BigWig", "XYPlot"],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {

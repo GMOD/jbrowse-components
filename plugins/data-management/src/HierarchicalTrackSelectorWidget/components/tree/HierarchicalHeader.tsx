@@ -24,6 +24,33 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+const SearchTracksTextField = observer(function ({
+  model,
+}: {
+  model: HierarchicalTrackSelectorModel
+}) {
+  const { filterText } = model
+  const { classes } = useStyles()
+  return (
+    <TextField
+      className={classes.searchBox}
+      label="Filter tracks"
+      value={filterText}
+      onChange={event => model.setFilterText(event.target.value)}
+      fullWidth
+      InputProps={{
+        endAdornment: (
+          <InputAdornment position="end">
+            <IconButton onClick={() => model.clearFilterText()}>
+              <ClearIcon />
+            </IconButton>
+          </InputAdornment>
+        ),
+      }}
+    />
+  )
+})
+
 function HierarchicalTrackSelectorHeader({
   model,
   setHeaderHeight,
@@ -33,7 +60,6 @@ function HierarchicalTrackSelectorHeader({
 }) {
   const { classes } = useStyles()
   const [facetedOpen, setFacetedOpen] = useState(false)
-  const { filterText } = model
 
   return (
     <div
@@ -43,23 +69,7 @@ function HierarchicalTrackSelectorHeader({
       <div style={{ display: 'flex' }}>
         <HamburgerMenu model={model} />
         <ShoppingCart model={model} />
-
-        <TextField
-          className={classes.searchBox}
-          label="Filter tracks"
-          value={filterText}
-          onChange={event => model.setFilterText(event.target.value)}
-          fullWidth
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton onClick={() => model.clearFilterText()}>
-                  <ClearIcon />
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-        />
+        <SearchTracksTextField model={model} />
         <Button
           className={classes.menuIcon}
           onClick={() => setFacetedOpen(true)}
