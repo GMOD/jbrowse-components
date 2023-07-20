@@ -1,5 +1,6 @@
 import React from 'react'
 import { useTheme } from '@mui/material'
+import Color from 'color'
 
 export default function SVGBackground({
   width,
@@ -15,7 +16,7 @@ export default function SVGBackground({
     <rect
       width={width + shift * 2}
       height={height}
-      fill={theme.palette.background.default}
+      fill={Color(theme.palette.background.default).hex()}
     />
   )
 }
