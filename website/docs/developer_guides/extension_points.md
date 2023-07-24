@@ -413,6 +413,7 @@ pluginManager.addToExtensionPoint(
       ? { Components: AdditionalComponent, configuration: 'top' }
       : DefaultComponent
   },
+)
 ```
 
 ### Core-extraFeaturePanel

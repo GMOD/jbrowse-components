@@ -68,14 +68,11 @@ const DrawerWidget = observer(function ({
             />
           ) : null}
           {DrawerComponent ? (
-            <>
-              <DrawerComponent
-                model={visibleWidget}
-                session={session}
-                toolbarHeight={toolbarHeight}
-              />
-              <div style={{ height: 300 }} />
-            </>
+            <DrawerComponent
+              model={visibleWidget}
+              session={session}
+              toolbarHeight={toolbarHeight}
+            />
           ) : null}
           {AdditionalComponents?.Components &&
           AdditionalComponents?.configuration === 'bottom' ? (
@@ -83,6 +80,9 @@ const DrawerWidget = observer(function ({
               model={visibleWidget}
               session={session}
             />
+          ) : null}
+          {DrawerComponent || AdditionalComponents?.Components ? (
+            <div style={{ height: 300 }} />
           ) : null}
         </ErrorBoundary>
       </Suspense>
