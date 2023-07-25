@@ -30,6 +30,56 @@ export default class extends Plugin {
               const superRubberBandMenuItems = self.rubberBandMenuItems
               return {
                 actions: {
+                  afterCreate() {
+                    document.addEventListener('keydown', e => {
+                      // ctrl+shift+d or cmd+shift+d
+                      if (
+                        (e.ctrlKey || e.metaKey) &&
+                        e.shiftKey &&
+                        e.code === 'KeyD'
+                      ) {
+                        e.preventDefault()
+                        // @ts-ignore
+                        self.bookmarkCurrentRegion()
+                        getSession(self).notify('Bookmark created.', 'success')
+                      }
+                      // ctrl+shift+m or cmd+shift+m
+                      if (
+                        (e.ctrlKey || e.metaKey) &&
+                        e.shiftKey &&
+                        e.code === 'KeyM'
+                      ) {
+                        e.preventDefault()
+                        this.navigateNewestBookmark()
+                      }
+                    })
+                  },
+                  navigateNewestBookmark() {
+                    const session = getSession(self)
+                    if (isSessionModelWithWidgets(session)) {
+                      const { widgets } = session
+                      let bookmarkWidget = widgets.get('GridBookmark')
+                      if (!bookmarkWidget) {
+                        // @ts-ignore
+                        self.activateBookmarkWidget()
+                        bookmarkWidget = widgets.get('GridBookmark')
+                      }
+                      // @ts-expect-error
+                      const regions = bookmarkWidget.bookmarkedRegions
+                      if (regions.length !== 0) {
+                        self.navTo(regions[regions.length - 1])
+                        session.notify(
+                          'Navigated to the most recently created bookmark.',
+                          'success',
+                        )
+                      } else {
+                        session.notify(
+                          'There are no recent bookmarks to navigate to.',
+                          'info',
+                        )
+                      }
+                    }
+                  },
                   activateBookmarkWidget() {
                     const session = getSession(self)
                     if (isSessionModelWithWidgets(session)) {
