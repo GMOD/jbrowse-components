@@ -12,6 +12,7 @@ import {
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
+import { getRoot } from 'mobx-state-tree'
 import { getEnv } from '@jbrowse/core/util'
 import { SessionWithDrawerWidgets } from '@jbrowse/core/util/types'
 
@@ -39,6 +40,9 @@ const useStyles = makeStyles()(theme => ({
   header: {
     background: theme.palette.secondary.main,
   },
+  focusedViewHeader: {
+    background: `repeating-linear-gradient(45deg, ${theme.palette.secondary.main}, ${theme.palette.secondary.main} 5px, ${theme.palette.secondary.light} 5px, ${theme.palette.secondary.light} 10px)`,
+  },
 }))
 
 export default observer(function ({
@@ -49,11 +53,18 @@ export default observer(function ({
   setToolbarHeight: (arg: number) => void
 }) {
   const { classes } = useStyles()
+  // @ts-ignore
+  const focusedViewId = getRoot(session.visibleWidget).focusedViewId
+  const isFocused =
+    focusedViewId &&
+    focusedViewId ===
+      // @ts-ignore
+      session.visibleWidget?.view?.id
 
   return (
     <AppBar
       position="sticky"
-      className={classes.header}
+      className={isFocused ? classes.focusedViewHeader : classes.header}
       ref={ref => setToolbarHeight(ref?.getBoundingClientRect().height || 0)}
     >
       <Toolbar disableGutters>
