@@ -61,7 +61,7 @@ export default observer(function ({
   useEffect(() => {
     function handleSelectView(e: Event) {
       if (e.target instanceof Element) {
-        if (ref.current && ref.current.contains(e.target)) {
+        if (ref?.current && ref.current.contains(e.target)) {
           // @ts-ignore
           getRoot(view).setFocusedViewId(view.id)
         }
