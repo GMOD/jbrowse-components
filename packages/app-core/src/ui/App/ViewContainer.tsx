@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { IconButton, Paper, useTheme } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
@@ -74,7 +74,7 @@ export default observer(function ({
       document.removeEventListener('mousedown', handleSelectView)
       document.removeEventListener('keydown', handleSelectView)
     }
-  }, [ref])
+  }, [ref, view])
 
   return (
     <Paper

@@ -53,7 +53,7 @@ function Drawer({
       document.removeEventListener('mousedown', handleSelectView)
       document.removeEventListener('keydown', handleSelectView)
     }
-  }, [ref])
+  }, [ref, session.visibleWidget])
 
   return (
     <Paper ref={ref} className={classes.paper} elevation={16} square>
