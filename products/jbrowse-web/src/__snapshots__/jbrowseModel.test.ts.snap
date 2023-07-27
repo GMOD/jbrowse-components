@@ -450,6 +450,13 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         },
       },
     },
+    "hierarchical": {
+      "defaultCollapsed": {
+        "categoryNames": [
+          "Methylation",
+        ],
+      },
+    },
     "logoPath": {
       "internetAccountId": undefined,
       "internetAccountPreAuthorization": undefined,
@@ -2693,6 +2700,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "category": [
         "BigWig",
+        "XYPlot",
       ],
       "displays": [
         {

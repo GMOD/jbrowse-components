@@ -2,7 +2,7 @@ import React from 'react'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 import { render } from '@testing-library/react'
-import { ThemeProvider } from '@mui/material/styles'
+import { ThemeProvider } from '@mui/material'
 
 // locals
 import HierarchicalTrackSelector from './HierarchicalTrackSelector'

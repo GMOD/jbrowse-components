@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react'
 import { IconButton, Paper, useTheme } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
+import { getRoot } from 'mobx-state-tree'
 import { useWidthSetter } from '@jbrowse/core/util'
 import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 
@@ -27,6 +28,12 @@ const useStyles = makeStyles()(theme => ({
   grow: {
     flexGrow: 1,
   },
+  focusedView: {
+    overflow: 'hidden',
+    background: `repeating-linear-gradient(45deg, ${theme.palette.secondary.main}, ${theme.palette.secondary.main} 5px, ${theme.palette.secondary.light} 5px, ${theme.palette.secondary.light} 10px)`,
+    margin: theme.spacing(0.5),
+    padding: `0 ${theme.spacing(1)} ${theme.spacing(1)}`,
+  },
 }))
 
 export default observer(function ({
@@ -51,8 +58,35 @@ export default observer(function ({
     scrollRef.current?.scrollIntoView?.({ block: 'center' })
   }, [])
 
+  useEffect(() => {
+    function handleSelectView(e: Event) {
+      if (e.target instanceof Element) {
+        if (ref?.current && ref.current.contains(e.target)) {
+          // @ts-ignore
+          getRoot(view).setFocusedViewId(view.id)
+        }
+      }
+    }
+
+    document.addEventListener('mousedown', handleSelectView)
+    document.addEventListener('keydown', handleSelectView)
+    return () => {
+      document.removeEventListener('mousedown', handleSelectView)
+      document.removeEventListener('keydown', handleSelectView)
+    }
+  }, [ref, view])
+
   return (
-    <Paper ref={ref} elevation={12} className={classes.viewContainer}>
+    <Paper
+      ref={ref}
+      elevation={12}
+      className={
+        // @ts-ignore
+        getRoot(view).focusedViewId === view.id
+          ? classes.focusedView
+          : classes.viewContainer
+      }
+    >
       <div ref={scrollRef} style={{ display: 'flex' }}>
         <ViewMenu model={view} IconProps={{ className: classes.icon }} />
         <div className={classes.grow} />

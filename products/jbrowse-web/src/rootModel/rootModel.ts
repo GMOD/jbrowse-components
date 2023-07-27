@@ -47,7 +47,11 @@ import {
   InternetAccountsRootModelMixin,
   BaseRootModelFactory,
 } from '@jbrowse/product-core'
-import { HistoryManagementMixin, RootAppMenuMixin } from '@jbrowse/app-core'
+import {
+  AppFocusMixin,
+  HistoryManagementMixin,
+  RootAppMenuMixin,
+} from '@jbrowse/app-core'
 
 const PreferencesDialog = lazy(() => import('../components/PreferencesDialog'))
 
@@ -68,6 +72,9 @@ type SessionModelFactory = (args: {
  * composed of
  * - BaseRootModel
  * - InternetAccountsMixin
+ * - HistoryManagementMixin
+ * - AppFocusMixin
+ * - RootAppMenuMixin
  *
  * note: many properties of the root model are available through the session,
  * and we generally prefer using the session model (via e.g. getSession) over
@@ -101,6 +108,7 @@ export default function RootModel({
       }),
       InternetAccountsRootModelMixin(pluginManager),
       HistoryManagementMixin(),
+      AppFocusMixin(),
       RootAppMenuMixin(),
     )
     .props({
