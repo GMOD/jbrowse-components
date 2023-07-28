@@ -5,42 +5,59 @@ import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
 import { FileLocation } from '@jbrowse/core/util/types'
 import { FileSelector } from '@jbrowse/core/ui'
 import { openLocation } from '@jbrowse/core/util/io'
-import { Button, DialogContent, DialogActions, Typography } from '@mui/material'
+import {
+  Button,
+  DialogContent,
+  DialogActions,
+  Typography,
+  TextField,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+} from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
 import { makeStyles } from 'tss-react/mui'
 
 // icons
 import ImportIcon from '@mui/icons-material/Publish'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 
 // locals
 import { GridBookmarkModel } from '../model'
 
-const useStyles = makeStyles()(() => ({
+const useStyles = makeStyles()(theme => ({
   dialogContainer: {
     margin: 15,
   },
   flexItem: {
     margin: 5,
   },
+  expandIcon: {
+    color: theme.palette.tertiary?.contrastText || '#fff',
+  },
 }))
 
-function ImportBookmarks({
-  model,
-  assemblyName,
-}: {
-  model: GridBookmarkModel
-  assemblyName: string
-}) {
+function ImportBookmarks({ model }: { model: GridBookmarkModel }) {
   const { classes } = useStyles()
   const session = getSession(model)
   const { assemblyNames } = session
   const [dialogOpen, setDialogOpen] = useState(false)
   const [location, setLocation] = useState<FileLocation>()
   const [error, setError] = useState<unknown>()
-  const [selectedAsm, setSelectedAsm] = useState(
-    assemblyName || assemblyNames[0],
+  // TODO: assemblies
+  const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0])
+  const [shareLink, setShareLink] = useState('')
+
+  const [expanded, setExpanded] = React.useState<string | false>(
+    'shareLinkAccordion',
   )
 
+  const handleChange =
+    (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
+      setExpanded(isExpanded ? panel : false)
+    }
+
+  // TODO: possible UI here; accordion options?
   return (
     <>
       <Button startIcon={<ImportIcon />} onClick={() => setDialogOpen(true)}>
@@ -53,24 +70,48 @@ function ImportBookmarks({
         title="Import bookmarks"
       >
         <DialogContent>
-          <Typography>
-            Choose a BED format file to import. The first 4 columns will be used
-          </Typography>
-
-          <FileSelector
-            location={location}
-            setLocation={setLocation}
-            name="File"
-          />
-          <Typography>Select assembly that your data belongs to</Typography>
-          <AssemblySelector
-            onChange={val => setSelectedAsm(val)}
-            session={session}
-            selected={selectedAsm}
-          />
-          {error ? (
-            <Typography color="error" variant="h6">{`${error}`}</Typography>
-          ) : null}
+          <Accordion
+            expanded={expanded === 'shareLinkAccordion'}
+            onChange={handleChange('shareLinkAccordion')}
+          >
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
+            >
+              <Typography>Import from share link</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <TextField
+                label="Enter URL"
+                variant="outlined"
+                style={{ width: '100%' }}
+                value={shareLink}
+                onChange={e => {
+                  setShareLink(e.target.value)
+                }}
+              />
+            </AccordionDetails>
+          </Accordion>
+          <Accordion
+            expanded={expanded === 'fileAccordion'}
+            onChange={handleChange('fileAccordion')}
+          >
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
+            >
+              <Typography>Import from file</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <FileSelector
+                location={location}
+                setLocation={setLocation}
+                name="File"
+                description="Choose a BED or TSV format file to import. The first 4 columns will be used."
+              />
+              {error ? (
+                <Typography color="error" variant="h6">{`${error}`}</Typography>
+              ) : null}
+            </AccordionDetails>
+          </Accordion>
         </DialogContent>
         <DialogActions>
           <Button
@@ -85,34 +126,23 @@ function ImportBookmarks({
             data-testid="dialogImport"
             variant="contained"
             color="primary"
-            disabled={!location}
+            disabled={!location && !shareLink}
             startIcon={<ImportIcon />}
             onClick={async () => {
+              // TODO: implement
+              // clear field
               try {
-                if (!location) {
+                if (!location && !shareLink) {
                   return
                 }
-                const data = await openLocation(location).readFile('utf8')
-                const regions = data
-                  .split(/\n|\r\n|\r/)
-                  .filter(f => !!f.trim())
-                  .filter(
-                    f =>
-                      !f.startsWith('#') &&
-                      !f.startsWith('track') &&
-                      !f.startsWith('browser'),
-                  )
-                  .map(line => {
-                    const [refName, start, end, name] = line.split('\t')
-                    return {
-                      assemblyName: selectedAsm,
-                      refName,
-                      start: +start,
-                      end: +end,
-                      label: name === '.' ? undefined : name,
-                    }
-                  })
-                model.importBookmarks(regions)
+                if (location) {
+                  // const regions = await handleLocation(location, selectedAsm)
+                  // model.importBookmarks(regions)
+                }
+                if (shareLink) {
+                  // const regions = await handleShareLink(shareLink, selectedAsm)
+                  // model.importBookmarks(regions)
+                }
                 setDialogOpen(false)
               } catch (e) {
                 console.error(e)

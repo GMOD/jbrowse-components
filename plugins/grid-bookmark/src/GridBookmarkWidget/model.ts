@@ -19,9 +19,6 @@ export default function f(pluginManager: PluginManager) {
     .model('GridBookmarkModel', {
       id: ElementId,
       type: types.literal('GridBookmarkWidget'),
-      view: types.safeReference(
-        pluginManager.pluggableMstType('view', 'stateModel'),
-      ),
       bookmarkedRegions: types.array(LabeledRegionModel),
       modelSelectedAssembly: '',
     })

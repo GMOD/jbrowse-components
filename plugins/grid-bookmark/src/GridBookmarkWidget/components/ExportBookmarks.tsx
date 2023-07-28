@@ -15,6 +15,9 @@ import GetAppIcon from '@mui/icons-material/GetApp'
 
 import { GridBookmarkModel } from '../model'
 import { downloadBookmarkFile } from '../utils'
+import { getSession } from '@jbrowse/core/util'
+
+import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 
 const useStyles = makeStyles()(() => ({
   flexItem: {
@@ -22,25 +25,27 @@ const useStyles = makeStyles()(() => ({
   },
 }))
 
-function DownloadBookmarks({ model }: { model: GridBookmarkModel }) {
+function ExportBookmarks({ model }: { model: GridBookmarkModel }) {
   const { classes } = useStyles()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [fileType, setFileType] = useState('BED')
   const { bookmarkedRegions } = model
+  const session = getSession(model)
 
   return (
     <>
       <Button startIcon={<GetAppIcon />} onClick={() => setDialogOpen(true)}>
-        Download
+        Export
       </Button>
       <Dialog
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
-        title="Download bookmarks"
+        title="Export bookmarks"
       >
-        <DialogContent>
-          <Typography>Format to download</Typography>
+        <DialogContent style={{ display: 'flex', alignItems: 'center' }}>
+          <Typography variant="h6">Format to download:</Typography>
           <Select
+            size="small"
             className={classes.flexItem}
             data-testid="selectFileType"
             value={fileType}
@@ -54,9 +59,13 @@ function DownloadBookmarks({ model }: { model: GridBookmarkModel }) {
           <Button
             variant="contained"
             color="secondary"
-            onClick={() => setDialogOpen(false)}
+            startIcon={<ContentCopyIcon />}
+            onClick={() => {
+              // shareSession(session)
+              // TODO: implement
+            }}
           >
-            Cancel
+            Copy share link to clipboard
           </Button>
           <Button
             className={classes.flexItem}
@@ -77,4 +86,4 @@ function DownloadBookmarks({ model }: { model: GridBookmarkModel }) {
   )
 }
 
-export default observer(DownloadBookmarks)
+export default observer(ExportBookmarks)

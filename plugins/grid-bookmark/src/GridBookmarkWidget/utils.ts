@@ -6,6 +6,7 @@ import { AbstractViewModel } from '@jbrowse/core/util/types'
 // locals
 import { GridBookmarkModel } from './model'
 import { LabeledRegion } from './types'
+import { getRoot } from 'mobx-state-tree'
 
 type LGV = LinearGenomeViewModel
 
@@ -22,16 +23,34 @@ export async function navToBookmark(
     // any lgv that looks like it is relevant to what we are browsing
     const { selectedAssembly } = model
     const newViewId = `${model.id}_${selectedAssembly}`
-    let view = (views.find(
-      v => v.type === 'LinearGenomeView' && v.id === newViewId,
-    ) ||
-      views.find(
-        v =>
-          v.type === 'LinearGenomeView' &&
-          // @ts-expect-error
-          v.assemblyNames[0] === selectedAssembly,
-      )) as MaybeLGV
 
+    // get the focused view
+    let view = views.find(
+      // @ts-ignore
+      view => view.id === getRoot(model).focusedViewId,
+    ) as MaybeLGV
+
+    // check if the focused view is the appropriate assembly, if not proceed
+    if (!view || view?.assemblyNames[0] !== selectedAssembly) {
+      // find number of instances open with the selectedAssembly
+      let viewsOfSelectedAssembly: Array<AbstractViewModel> = []
+      views.forEach(element => {
+        if (
+          element.type === 'LinearGenomeView' &&
+          // @ts-expect-error
+          element.assemblyNames[0] === selectedAssembly
+        )
+          viewsOfSelectedAssembly.push(element)
+      })
+      // if one instance open, that is the view to nav to
+      if (viewsOfSelectedAssembly.length > 1) {
+        view = viewsOfSelectedAssembly[0] as LGV
+      } else {
+        // what do we want to do if there are multiple views open of the same assembly none of which are in foucs?
+      }
+    }
+
+    // if no view is opened of the selectedAssembly, open a new view with that assembly
     if (!view) {
       view = session.addView('LinearGenomeView', {
         id: newViewId,

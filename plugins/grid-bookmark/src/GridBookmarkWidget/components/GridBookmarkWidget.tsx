@@ -1,139 +1,46 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { observer } from 'mobx-react'
-import { Link, IconButton, Typography } from '@mui/material'
+import { Alert, Card } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { DataGrid } from '@mui/x-data-grid'
-import {
-  getSession,
-  assembleLocString,
-  measureGridWidth,
-} from '@jbrowse/core/util'
-
-// icons
-import DeleteIcon from '@mui/icons-material/Delete'
 
 // locals
 import AssemblySelector from './AssemblySelector'
-import DeleteBookmarkDialog from './DeleteBookmark'
-import DownloadBookmarks from './DownloadBookmarks'
+import BookmarkGrid from './BookmarkGrid'
+import DeleteBookmarks from './DeleteBookmarks'
+import ExportBookmarks from './ExportBookmarks'
 import ImportBookmarks from './ImportBookmarks'
-import ClearBookmarks from './ClearBookmarks'
+
 import { GridBookmarkModel } from '../model'
-import { navToBookmark } from '../utils'
 
 const useStyles = makeStyles()(theme => ({
-  link: {
-    cursor: 'pointer',
-  },
-  margin: {
-    margin: theme.spacing(2),
+  card: {
+    display: 'flex',
+    flexFlow: 'column',
+    margin: '5px',
+    padding: '5px',
+    gap: '5px',
   },
 }))
 
-const BookmarkGrid = observer(({ model }: { model: GridBookmarkModel }) => {
-  const { classes } = useStyles()
-  const [dialogRowNumber, setDialogRowNumber] = useState<number>()
-  const { bookmarkedRegions, selectedAssembly } = model
-  const session = getSession(model)
-
-  const bookmarkRows = bookmarkedRegions
-    .filter(
-      r => selectedAssembly === 'all' || r.assemblyName === selectedAssembly,
-    )
-    .map((region, index) => {
-      const { assemblyName, ...rest } = region
-      return {
-        ...region,
-        id: index,
-        delete: index,
-        locString: assembleLocString(
-          selectedAssembly === 'all' ? region : rest,
-        ),
-      }
-    })
-
-  return (
-    <>
-      <DataGrid
-        density="compact"
-        rows={bookmarkRows}
-        columns={[
-          {
-            field: 'locString',
-            headerName: 'bookmark link',
-            width: measureGridWidth(bookmarkRows.map(row => row.locString)),
-            renderCell: params => (
-              <Link
-                className={classes.link}
-                href="#"
-                onClick={async event => {
-                  event.preventDefault()
-                  await navToBookmark(params.value, session.views, model)
-                }}
-              >
-                {params.value}
-              </Link>
-            ),
-          },
-          {
-            field: 'label',
-            width: measureGridWidth(bookmarkRows.map(row => row.label)),
-            editable: true,
-          },
-          {
-            field: 'delete',
-            width: 100,
-            renderCell: params => (
-              <IconButton
-                data-testid="deleteBookmark"
-                aria-label="delete"
-                onClick={() => {
-                  if (params.value != null) {
-                    setDialogRowNumber(+params.value)
-                  }
-                }}
-              >
-                <DeleteIcon />
-              </IconButton>
-            ),
-          },
-        ]}
-        processRowUpdate={row => {
-          model.updateBookmarkLabel(row.id, row.label)
-          return row
-        }}
-        onProcessRowUpdateError={e => {
-          session.notify(e.message, 'error')
-        }}
-        disableRowSelectionOnClick
-      />
-
-      <DeleteBookmarkDialog
-        rowNumber={dialogRowNumber}
-        model={model}
-        onClose={() => setDialogRowNumber(undefined)}
-      />
-    </>
-  )
-})
-
 function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
-  const { selectedAssembly } = model
   const { classes } = useStyles()
 
-  return (
-    <>
-      <AssemblySelector model={model} />
-      <DownloadBookmarks model={model} />
-      <ImportBookmarks model={model} assemblyName={selectedAssembly} />
-      <ClearBookmarks model={model} />
+  if (!model) return null
 
-      <Typography className={classes.margin}>
-        Note: you can double click the <code>label</code> field to add your own
-        custom notes
-      </Typography>
+  return (
+    <Card className={classes.card}>
+      <AssemblySelector model={model} />
+      <div>
+        <ExportBookmarks model={model} />
+        <ImportBookmarks model={model} />
+        <DeleteBookmarks model={model} />
+      </div>
+      <Alert severity="info">
+        Click or double click the <strong>label</strong> field to notate your
+        bookmark.
+      </Alert>
       <BookmarkGrid model={model} />
-    </>
+    </Card>
   )
 }
 

@@ -1,7 +1,13 @@
+import { getRoot } from 'mobx-state-tree'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
+import {
+  SessionWithWidgets,
+  getSession,
+  isAbstractMenuManager,
+  isSessionModelWithWidgets,
+} from '@jbrowse/core/util'
 import {
   PluggableElementType,
   ViewType,
@@ -88,7 +94,6 @@ export default class extends Plugin {
                         bookmarkWidget = session.addWidget(
                           'GridBookmarkWidget',
                           'GridBookmark',
-                          { view: self },
                         )
                       }
 
@@ -100,21 +105,24 @@ export default class extends Plugin {
                   },
 
                   bookmarkCurrentRegion() {
-                    const selectedRegions = self.getSelectedRegions(
-                      self.leftOffset,
-                      self.rightOffset,
-                    )
-                    const firstRegion = selectedRegions[0]
-                    const session = getSession(self)
-                    if (isSessionModelWithWidgets(session)) {
-                      const { widgets } = session
-                      let bookmarkWidget = widgets.get('GridBookmark')
-                      if (!bookmarkWidget) {
-                        this.activateBookmarkWidget()
-                        bookmarkWidget = widgets.get('GridBookmark')
+                    // @ts-ignore
+                    if (self.id === getRoot(self).focusedViewId) {
+                      const selectedRegions = self.getSelectedRegions(
+                        self.leftOffset,
+                        self.rightOffset,
+                      )
+                      const firstRegion = selectedRegions[0]
+                      const session = getSession(self)
+                      if (isSessionModelWithWidgets(session)) {
+                        const { widgets } = session
+                        let bookmarkWidget = widgets.get('GridBookmark')
+                        if (!bookmarkWidget) {
+                          this.activateBookmarkWidget()
+                          bookmarkWidget = widgets.get('GridBookmark')
+                        }
+                        // @ts-expect-error
+                        bookmarkWidget.addBookmark(firstRegion)
                       }
-                      // @ts-expect-error
-                      bookmarkWidget.addBookmark(firstRegion)
                     }
                   },
                 },
@@ -179,5 +187,22 @@ export default class extends Plugin {
     )
   }
 
-  configure(_pluginManager: PluginManager) {}
+  configure(pluginManager: PluginManager) {
+    if (isAbstractMenuManager(pluginManager.rootModel)) {
+      pluginManager.rootModel.appendToMenu('Tools', {
+        label: 'Bookmarks',
+        icon: BookmarksIcon,
+        onClick: (session: SessionWithWidgets) => {
+          let bookmarkWidget = session.widgets.get('GridBookmark')
+          if (!bookmarkWidget) {
+            bookmarkWidget = session.addWidget(
+              'GridBookmarkWidget',
+              'GridBookmark',
+            )
+          }
+          session.showWidget(bookmarkWidget)
+        },
+      })
+    }
+  }
 }
