@@ -38,5 +38,27 @@ export function AppFocusMixin() {
       setFocusedViewId(viewId: string) {
         self.focusedViewId = viewId
       },
+      afterCreate() {
+        document.addEventListener('keydown', e => {
+          if (self.focusedView) {
+            if (e.code === 'ArrowLeft') {
+              // pan left
+              self.focusedView.slide(-0.9)
+            }
+            if (e.code === 'ArrowRight') {
+              // pan right
+              self.focusedView.slide(0.9)
+            }
+            if (e.shiftKey && e.code === 'ArrowUp') {
+              // zoom in
+              self.focusedView.zoom(self.focusedView.bpPerPx / 2)
+            }
+            if (e.shiftKey && e.code === 'ArrowDown') {
+              // zoom out
+              self.focusedView.zoom(self.focusedView.bpPerPx * 2)
+            }
+          }
+        })
+      },
     }))
 }
