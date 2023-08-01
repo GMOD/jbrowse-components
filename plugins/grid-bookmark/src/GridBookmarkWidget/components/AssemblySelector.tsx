@@ -44,7 +44,6 @@ function AssemblySelector({ model }: { model: GridBookmarkModel }) {
 
   return (
     <div className={classes.container}>
-      {/* <Typography className={classes.selectText}>Select assembly:</Typography> */}
       <FormControl
         className={classes.flexItem}
         disabled={noAssemblies}

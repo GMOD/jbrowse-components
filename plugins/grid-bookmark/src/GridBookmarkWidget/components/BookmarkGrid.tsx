@@ -9,7 +9,7 @@ import {
   TextField,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { DataGrid } from '@mui/x-data-grid'
+import { DataGrid, GridRowSelectionModel } from '@mui/x-data-grid'
 import {
   getSession,
   assembleLocString,
@@ -34,6 +34,8 @@ const BookmarkGrid = ({ model }: { model: GridBookmarkModel }) => {
   const [dialogRow, setDialogRow] = useState<any>()
   const [newLabel, setNewLabel] = useState<string>()
   const { bookmarkedRegions, selectedAssembly } = model
+  const [rowSelectionModel, setRowSelectionModel] =
+    useState<GridRowSelectionModel>(model.selectedBookmarkIndexes || [])
   const { views } = getSession(model)
   const session = getSession(model)
 
@@ -110,6 +112,13 @@ const BookmarkGrid = ({ model }: { model: GridBookmarkModel }) => {
           session.notify(e.message, 'error')
         }}
         checkboxSelection
+        onRowSelectionModelChange={newRowSelectionModel => {
+          model.setSelectedBookmarkIndexes(
+            newRowSelectionModel as Array<number>,
+          )
+          setRowSelectionModel(newRowSelectionModel)
+        }}
+        rowSelectionModel={rowSelectionModel}
         /* @ts-ignore */
         disableRowSelectionOnClick
       />

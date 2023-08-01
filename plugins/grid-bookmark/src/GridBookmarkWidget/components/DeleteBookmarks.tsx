@@ -6,8 +6,12 @@ import {
   DialogActions,
   Typography,
   Alert,
+  List,
+  ListItemText,
+  ListItem,
 } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
+import { assembleLocString } from '@jbrowse/core/util'
 
 // icons
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -33,6 +37,16 @@ function DeleteBookmarks({ model }: { model: GridBookmarkModel }) {
       >
         <DialogContent>
           <Alert severity="warning">Delete selected bookmarks?</Alert>
+          <List dense>
+            {model.selectedBookmarks.map((bookmark: any) => (
+              <>
+                <ListItem>
+                  {/* @ts-ignore */}
+                  <ListItemText primary={assembleLocString(bookmark)} />
+                </ListItem>
+              </>
+            ))}
+          </List>
         </DialogContent>
         <DialogActions>
           <Button
@@ -48,9 +62,8 @@ function DeleteBookmarks({ model }: { model: GridBookmarkModel }) {
             variant="contained"
             color="primary"
             onClick={() => {
-              console.log('TODO: implement clear selected bookmarks')
-              //model.clearSelectedBookmarks()
-              model.clearAllBookmarks()
+              model.clearSelectedBookmarks()
+              // model.clearAllBookmarks()
               setDialogOpen(false)
             }}
           >
