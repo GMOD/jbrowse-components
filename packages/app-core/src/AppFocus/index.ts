@@ -1,4 +1,5 @@
 import { types } from 'mobx-state-tree'
+import { AbstractViewModel } from '@jbrowse/core/util'
 
 /**
  * #stateModel AppFocusMixin
@@ -13,6 +14,14 @@ export function AppFocusMixin() {
        */
       focusedViewId: types.maybe(types.string),
     })
+    .views(self => ({
+      get focusedView() {
+        // @ts-ignore
+        return self.session.views.find(
+          (view: AbstractViewModel) => view.id === self.focusedViewId,
+        )
+      },
+    }))
     .actions(self => ({
       setFocusedViewId(viewId: string) {
         self.focusedViewId = viewId
