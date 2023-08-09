@@ -338,7 +338,7 @@ exports[`renders with a couple of categorized tracks 1`] = `
               data-mui-internal-clone-element="true"
             >
               <span
-                class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium css-5qvvf1-MuiButtonBase-root-MuiCheckbox-root-compactCheckbox"
+                class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-root MuiCheckbox-colorPrimary css-5qvvf1-MuiButtonBase-root-MuiCheckbox-root-compactCheckbox"
               >
                 <input
                   class="PrivateSwitchBase-input css-1m9pwf3"
@@ -477,7 +477,7 @@ exports[`renders with a couple of categorized tracks 1`] = `
               data-mui-internal-clone-element="true"
             >
               <span
-                class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium Mui-checked MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium css-5qvvf1-MuiButtonBase-root-MuiCheckbox-root-compactCheckbox"
+                class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary Mui-checked MuiCheckbox-root MuiCheckbox-colorPrimary css-5qvvf1-MuiButtonBase-root-MuiCheckbox-root-compactCheckbox"
               >
                 <input
                   checked=""
@@ -625,7 +625,7 @@ exports[`renders with a couple of categorized tracks 1`] = `
               data-mui-internal-clone-element="true"
             >
               <span
-                class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium Mui-checked MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium css-5qvvf1-MuiButtonBase-root-MuiCheckbox-root-compactCheckbox"
+                class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary Mui-checked MuiCheckbox-root MuiCheckbox-colorPrimary css-5qvvf1-MuiButtonBase-root-MuiCheckbox-root-compactCheckbox"
               >
                 <input
                   checked=""
@@ -876,7 +876,7 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
               data-mui-internal-clone-element="true"
             >
               <span
-                class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium css-5qvvf1-MuiButtonBase-root-MuiCheckbox-root-compactCheckbox"
+                class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-root MuiCheckbox-colorPrimary css-5qvvf1-MuiButtonBase-root-MuiCheckbox-root-compactCheckbox"
               >
                 <input
                   class="PrivateSwitchBase-input css-1m9pwf3"
@@ -953,7 +953,7 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
               data-mui-internal-clone-element="true"
             >
               <span
-                class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium Mui-checked MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium css-5qvvf1-MuiButtonBase-root-MuiCheckbox-root-compactCheckbox"
+                class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary Mui-checked MuiCheckbox-root MuiCheckbox-colorPrimary css-5qvvf1-MuiButtonBase-root-MuiCheckbox-root-compactCheckbox"
               >
                 <input
                   checked=""
@@ -1031,7 +1031,7 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
               data-mui-internal-clone-element="true"
             >
               <span
-                class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium Mui-checked MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium css-5qvvf1-MuiButtonBase-root-MuiCheckbox-root-compactCheckbox"
+                class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary Mui-checked MuiCheckbox-root MuiCheckbox-colorPrimary css-5qvvf1-MuiButtonBase-root-MuiCheckbox-root-compactCheckbox"
               >
                 <input
                   checked=""

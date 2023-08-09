@@ -785,7 +785,7 @@ exports[`renders with the available plugins 1`] = `
                     class="MuiTypography-root MuiTypography-h5 css-1ldbtdh-MuiTypography-root"
                   >
                     <a
-                      class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-6z5vhu-MuiTypography-root-MuiLink-root"
+                      class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-ygjubp-MuiTypography-root-MuiLink-root"
                       href="https://github.com/GMOD/jbrowse-plugin-msaview#readme"
                       rel="noopener"
                       target="_blank"
