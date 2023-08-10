@@ -1516,6 +1516,31 @@ export function stateModelFactory(pluginManager: PluginManager) {
           : undefined
       },
     }))
+    .actions(self => ({
+      afterCreate() {
+        document.addEventListener('keydown', e => {
+          const session = getSession(self)
+          if (session.focusedView?.type === 'LinearGenomeView') {
+            if (e.code === 'ArrowLeft') {
+              // pan left
+              session.focusedView.slide(-0.9)
+            }
+            if (e.code === 'ArrowRight') {
+              // pan right
+              session.focusedView.slide(0.9)
+            }
+            if (e.shiftKey && e.code === 'ArrowUp') {
+              // zoom in
+              session.focusedView.zoom(session.focusedView.bpPerPx / 2)
+            }
+            if (e.shiftKey && e.code === 'ArrowDown') {
+              // zoom out
+              session.focusedView.zoom(session.focusedView.bpPerPx * 2)
+            }
+          }
+        })
+      },
+    }))
 }
 
 export type LinearGenomeViewStateModel = ReturnType<typeof stateModelFactory>
