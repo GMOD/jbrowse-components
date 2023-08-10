@@ -2,8 +2,7 @@ import React, { useEffect, useRef } from 'react'
 import { IconButton, Paper, useTheme } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import { getRoot } from 'mobx-state-tree'
-import { useWidthSetter } from '@jbrowse/core/util'
+import { getSession, useWidthSetter } from '@jbrowse/core/util'
 import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 // icons
@@ -18,7 +17,7 @@ import ViewContainerTitle from './ViewContainerTitle'
 const useStyles = makeStyles()(theme => ({
   viewContainer: {
     overflow: 'hidden',
-    background: theme.palette.secondary.main,
+    background: theme.palette.secondary.dark,
     margin: theme.spacing(0.5),
     padding: `0 ${theme.spacing(1)} ${theme.spacing(1)}`,
   },
@@ -30,7 +29,7 @@ const useStyles = makeStyles()(theme => ({
   },
   focusedView: {
     overflow: 'hidden',
-    background: `repeating-linear-gradient(45deg, ${theme.palette.secondary.main}, ${theme.palette.secondary.main} 5px, ${theme.palette.secondary.light} 5px, ${theme.palette.secondary.light} 10px)`,
+    background: theme.palette.secondary.light,
     margin: theme.spacing(0.5),
     padding: `0 ${theme.spacing(1)} ${theme.spacing(1)}`,
   },
@@ -51,6 +50,7 @@ export default observer(function ({
   const theme = useTheme()
   const ref = useWidthSetter(view, theme.spacing(1))
   const scrollRef = useRef<HTMLDivElement>(null)
+  const session = getSession(view)
 
   // scroll the view into view when first mounted. note: this effect will run
   // only once, because of the empty array second param
@@ -62,8 +62,7 @@ export default observer(function ({
     function handleSelectView(e: Event) {
       if (e.target instanceof Element) {
         if (ref?.current && ref.current.contains(e.target)) {
-          // @ts-ignore
-          getRoot(view).setFocusedViewId(view.id)
+          session.setFocusedViewId(view.id)
         }
       }
     }
@@ -74,15 +73,14 @@ export default observer(function ({
       document.removeEventListener('mousedown', handleSelectView)
       document.removeEventListener('keydown', handleSelectView)
     }
-  }, [ref, view])
+  }, [ref, session, view])
 
   return (
     <Paper
       ref={ref}
       elevation={12}
       className={
-        // @ts-ignore
-        getRoot(view).focusedViewId === view.id
+        session.focusedViewId === view.id
           ? classes.focusedView
           : classes.viewContainer
       }

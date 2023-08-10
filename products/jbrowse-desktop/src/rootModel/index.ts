@@ -10,11 +10,7 @@ import {
   BaseRootModelFactory,
   InternetAccountsRootModelMixin,
 } from '@jbrowse/product-core'
-import {
-  AppFocusMixin,
-  HistoryManagementMixin,
-  RootAppMenuMixin,
-} from '@jbrowse/app-core'
+import { HistoryManagementMixin, RootAppMenuMixin } from '@jbrowse/app-core'
 
 // locals
 import jobsModelFactory from '../indexJobsModel'
@@ -37,7 +33,6 @@ type SessionModelFactory = (args: {
  * - DesktopMenuMixin
  * - DesktopSessionManagementMixin
  * - HistoryManagementMixin
- * - AppFocusMixin
  * - RootAppMenuMixin
  *
  * note: many properties of the root model are available through the session,
@@ -71,7 +66,6 @@ export default function rootModelFactory({
       DesktopMenusMixin(pluginManager),
       DesktopSessionManagementMixin(pluginManager),
       HistoryManagementMixin(),
-      AppFocusMixin(),
       RootAppMenuMixin(),
     )
     .props({

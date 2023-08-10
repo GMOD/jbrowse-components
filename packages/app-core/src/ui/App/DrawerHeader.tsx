@@ -12,7 +12,6 @@ import {
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import { getRoot } from 'mobx-state-tree'
 import { getEnv } from '@jbrowse/core/util'
 import { SessionWithDrawerWidgets } from '@jbrowse/core/util/types'
 
@@ -39,9 +38,13 @@ const useStyles = makeStyles()(theme => ({
   },
   header: {
     background: theme.palette.secondary.main,
+    padding: `0 ${theme.spacing(0.75)} ${theme.spacing(0.75)}`,
   },
-  focusedViewHeader: {
-    background: `repeating-linear-gradient(45deg, ${theme.palette.secondary.main}, ${theme.palette.secondary.main} 5px, ${theme.palette.secondary.light} 5px, ${theme.palette.secondary.light} 10px)`,
+  headerFocused: {
+    background: theme.palette.secondary.light,
+  },
+  headerUnfocused: {
+    background: theme.palette.secondary.dark,
   },
 }))
 
@@ -53,18 +56,22 @@ export default observer(function ({
   setToolbarHeight: (arg: number) => void
 }) {
   const { classes } = useStyles()
+  const focusedViewId = session.focusedViewId
   // @ts-ignore
-  const focusedViewId = getRoot(session.visibleWidget).focusedViewId
-  const isFocused =
-    focusedViewId &&
-    focusedViewId ===
-      // @ts-ignore
-      session.visibleWidget?.view?.id
+  const viewWidgetId = session.visibleWidget?.view?.id
+  const isFocused = focusedViewId && focusedViewId === viewWidgetId
 
   return (
     <AppBar
       position="sticky"
-      className={isFocused ? classes.focusedViewHeader : classes.header}
+      elevation={0}
+      className={
+        isFocused
+          ? `${classes.header} ${classes.headerFocused}`
+          : viewWidgetId
+          ? `${classes.header} ${classes.headerUnfocused}`
+          : classes.header
+      }
       ref={ref => setToolbarHeight(ref?.getBoundingClientRect().height || 0)}
     >
       <Toolbar disableGutters>

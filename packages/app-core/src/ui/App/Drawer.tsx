@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from 'react'
 import { Paper } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import { getRoot } from 'mobx-state-tree'
 import ResizeHandle from '@jbrowse/core/ui/ResizeHandle'
 import { SessionWithDrawerWidgets } from '@jbrowse/core/util/types'
 
@@ -40,8 +39,7 @@ function Drawer({
           // @ts-ignore
           const visibleWidgetId = session.visibleWidget?.view?.id
           if (visibleWidgetId) {
-            // @ts-ignore
-            getRoot(session.visibleWidget).setFocusedViewId(visibleWidgetId)
+            session.setFocusedViewId(visibleWidgetId)
           }
         }
       }
@@ -53,7 +51,7 @@ function Drawer({
       document.removeEventListener('mousedown', handleSelectView)
       document.removeEventListener('keydown', handleSelectView)
     }
-  }, [ref, session.visibleWidget])
+  }, [ref, session])
 
   return (
     <Paper ref={ref} className={classes.paper} elevation={16} square>

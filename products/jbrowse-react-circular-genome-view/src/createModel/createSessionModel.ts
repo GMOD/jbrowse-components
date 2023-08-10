@@ -14,6 +14,7 @@ import {
   ReferenceManagementSessionMixin,
   TracksManagerSessionMixin,
 } from '@jbrowse/product-core'
+import { AppFocusMixin } from '@jbrowse/app-core'
 
 const AboutDialog = lazy(() => import('./AboutDialog'))
 
@@ -27,6 +28,7 @@ const AboutDialog = lazy(() => import('./AboutDialog'))
  * - TracksManagerSessionMixin
  * - ReferenceManagementSessionMixin
  * - SnackbarModel
+ * - AppFocusMixin
  */
 export default function sessionModelFactory(pluginManager: PluginManager) {
   const model = types
@@ -38,6 +40,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       DialogQueueSessionMixin(pluginManager),
       TracksManagerSessionMixin(pluginManager),
       ReferenceManagementSessionMixin(pluginManager),
+      AppFocusMixin(),
     )
     .props({
       /**

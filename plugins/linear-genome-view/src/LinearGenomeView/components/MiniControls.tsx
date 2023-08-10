@@ -11,13 +11,20 @@ import ArrowDown from '@mui/icons-material/KeyboardArrowDown'
 import { LinearGenomeViewModel } from '..'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { makeStyles } from 'tss-react/mui'
+import { getSession } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
-  bg: {
+  background: {
     position: 'absolute',
     right: 0,
     zIndex: 1001,
     background: theme.palette.background.paper,
+  },
+  focusedBackground: {
+    background: theme.palette.secondary.light,
+    svg: {
+      fill: 'white',
+    },
   },
 }))
 
@@ -28,8 +35,15 @@ const MiniControls = observer(function ({
 }) {
   const { classes } = useStyles()
   const { bpPerPx, maxBpPerPx, minBpPerPx, scaleFactor, hideHeader } = model
+  const session = getSession(model)
   return hideHeader ? (
-    <Paper className={classes.bg}>
+    <Paper
+      className={
+        session.focusedViewId === model.id
+          ? `${classes.background} ${classes.focusedBackground}`
+          : classes.background
+      }
+    >
       <CascadingMenuButton menuItems={model.menuItems()}>
         <ArrowDown fontSize="small" />
       </CascadingMenuButton>

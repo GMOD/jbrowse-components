@@ -1,5 +1,5 @@
-import React, { lazy } from 'react'
-import { Button, Paper, Typography } from '@mui/material'
+import React, { lazy, useEffect } from 'react'
+import { Button, Paper, Typography, useTheme } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
@@ -11,6 +11,7 @@ import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { LinearGenomeViewModel } from '..'
 import TrackContainer from './TrackContainer'
 import TracksContainer from './TracksContainer'
+import { getSession, useWidthSetter } from '@jbrowse/core/util'
 
 const ImportForm = lazy(() => import('./ImportForm'))
 
@@ -27,6 +28,27 @@ const useStyles = makeStyles()(theme => ({
 const LinearGenomeView = observer(({ model }: { model: LGV }) => {
   const { tracks, error, initialized, hasDisplayedRegions } = model
   const { classes } = useStyles()
+  const theme = useTheme()
+  const ref = useWidthSetter(model, theme.spacing(1))
+  const session = getSession(model)
+
+  useEffect(() => {
+    // sets the focused view id based on a click within the LGV; necessary for subviews to be focused properly
+    function handleSelectView(e: Event) {
+      if (e.target instanceof Element) {
+        if (ref?.current && ref.current.contains(e.target)) {
+          session.setFocusedViewId(model.id)
+        }
+      }
+    }
+
+    document.addEventListener('mousedown', handleSelectView)
+    document.addEventListener('keydown', handleSelectView)
+    return () => {
+      document.removeEventListener('mousedown', handleSelectView)
+      document.removeEventListener('keydown', handleSelectView)
+    }
+  }, [ref, session, model])
 
   if (!initialized && !error) {
     return <LoadingEllipses variant="h6" />
@@ -39,7 +61,7 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
   const HeaderComponent = model.HeaderComponent()
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div style={{ position: 'relative' }} ref={ref}>
       <HeaderComponent model={model} />
       <MiniControlsComponent model={model} />
       <TracksContainer model={model}>

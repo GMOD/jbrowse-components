@@ -16,10 +16,22 @@ export function AppFocusMixin() {
     })
     .views(self => ({
       get focusedView() {
+        let target = undefined as unknown
         // @ts-ignore
-        return self.session.views.find(
-          (view: AbstractViewModel) => view.id === self.focusedViewId,
-        )
+        self.views.forEach((view: AbstractViewModel) => {
+          // seeks out potential matches for view and subviews
+          // @ts-ignore
+          if (view.views) {
+            // @ts-ignore
+            target = view.views.find(
+              (subView: AbstractViewModel) => subView.id === self.focusedViewId,
+            )
+          }
+          if (view.id === self.focusedViewId) {
+            target = view
+          }
+        })
+        return target as AbstractViewModel
       },
     }))
     .actions(self => ({
