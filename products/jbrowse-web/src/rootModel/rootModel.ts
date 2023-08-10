@@ -47,11 +47,7 @@ import {
   InternetAccountsRootModelMixin,
   BaseRootModelFactory,
 } from '@jbrowse/product-core'
-import {
-  AppFocusMixin,
-  HistoryManagementMixin,
-  RootAppMenuMixin,
-} from '@jbrowse/app-core'
+import { HistoryManagementMixin, RootAppMenuMixin } from '@jbrowse/app-core'
 
 const PreferencesDialog = lazy(() => import('../components/PreferencesDialog'))
 
@@ -108,7 +104,6 @@ export default function RootModel({
       }),
       InternetAccountsRootModelMixin(pluginManager),
       HistoryManagementMixin(),
-      AppFocusMixin(),
       RootAppMenuMixin(),
     )
     .props({
