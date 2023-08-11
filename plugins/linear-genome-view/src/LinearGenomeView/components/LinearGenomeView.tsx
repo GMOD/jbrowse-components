@@ -11,7 +11,7 @@ import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { LinearGenomeViewModel } from '..'
 import TrackContainer from './TrackContainer'
 import TracksContainer from './TracksContainer'
-import { getSession, useWidthSetter } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 
 const ImportForm = lazy(() => import('./ImportForm'))
 
