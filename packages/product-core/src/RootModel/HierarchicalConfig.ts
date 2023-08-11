@@ -1,5 +1,9 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+/**
+ * #config HierarchicalConfigSchema
+ * generally exists on the config.json or root config as configuration.hierarchical
+ */
 export function HierarchicalConfigSchemaFactory() {
   return ConfigurationSchema('hierarchical', {
     sort: ConfigurationSchema('hierarchicalSort', {

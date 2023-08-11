@@ -1,5 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-
+/**
+ * #config FormatAbout
+ * generally exists on the config.json or root config as configuration.formatAbout
+ */
 export function FormatAboutConfigSchemaFactory() {
   return ConfigurationSchema('FormatAbout', {
     /**
