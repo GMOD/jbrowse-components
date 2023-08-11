@@ -74,7 +74,11 @@ export function generateHierarchy(
   const confs = trackConfs.filter(conf => matches(filterText, conf, session))
 
   // uses getConf
-  for (const conf of sortConfs(confs, activeSortTrackNames, activeSortCategories)) {
+  for (const conf of sortConfs(
+    confs,
+    activeSortTrackNames,
+    activeSortCategories,
+  )) {
     // copy the categories since this array can be mutated downstream
     const categories = [...(readConfObject(conf, 'category') || [])]
 
