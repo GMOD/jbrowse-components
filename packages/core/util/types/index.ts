@@ -120,8 +120,6 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   name: string
   id?: string
   tracks: AnyConfigurationModel[]
-  focusedViewId: string | undefined
-  setFocusedViewId(id: string): void
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (
