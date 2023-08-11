@@ -1,5 +1,5 @@
 import React, { lazy, useEffect, useRef } from 'react'
-import { Button, Paper, Typography, useTheme } from '@mui/material'
+import { Button, Paper, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
