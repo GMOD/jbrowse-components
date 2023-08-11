@@ -3,7 +3,7 @@ import { AbstractViewModel } from '@jbrowse/core/util'
 
 /**
  * #stateModel AppFocusMixin
- * #category root
+ * #category session
  */
 export function AppFocusMixin() {
   return types

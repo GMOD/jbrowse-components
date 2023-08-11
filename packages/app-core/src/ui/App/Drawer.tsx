@@ -3,7 +3,7 @@ import { Paper } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import ResizeHandle from '@jbrowse/core/ui/ResizeHandle'
-import { SessionWithDrawerWidgets } from '@jbrowse/core/util/types'
+import { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
 
 const useStyles = makeStyles()(theme => ({
   paper: {
@@ -26,7 +26,7 @@ function Drawer({
   session,
 }: {
   children: React.ReactNode
-  session: SessionWithDrawerWidgets
+  session: SessionWithFocusedViewAndDrawerWidgets
 }) {
   const { drawerPosition, drawerWidth } = session
   const { classes } = useStyles()

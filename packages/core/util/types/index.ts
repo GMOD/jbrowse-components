@@ -120,8 +120,6 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   name: string
   id?: string
   tracks: AnyConfigurationModel[]
-  focusedViewId: string | undefined
-  setFocusedViewId(id: string): void
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (
@@ -238,6 +236,13 @@ export function isSelectionContainer(
     'selection' in thing &&
     'setSelection' in thing
   )
+}
+
+/** abstract interface for a session allows applying focus to views and widgets */
+export interface SessionWithFocusedViewAndDrawerWidgets
+  extends SessionWithDrawerWidgets {
+  focusedViewId: string | undefined
+  setFocusedViewId(id: string): void
 }
 
 /** minimum interface that all view state models must implement */

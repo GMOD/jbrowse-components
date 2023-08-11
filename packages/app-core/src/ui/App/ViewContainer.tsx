@@ -4,6 +4,7 @@ import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getSession, useWidthSetter } from '@jbrowse/core/util'
 import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
+import { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util'
 
 // icons
 import CloseIcon from '@mui/icons-material/Close'
@@ -28,10 +29,7 @@ const useStyles = makeStyles()(theme => ({
     flexGrow: 1,
   },
   focusedView: {
-    overflow: 'hidden',
     background: theme.palette.secondary.light,
-    margin: theme.spacing(0.5),
-    padding: `0 ${theme.spacing(1)} ${theme.spacing(1)}`,
   },
 }))
 
@@ -50,7 +48,7 @@ export default observer(function ({
   const theme = useTheme()
   const ref = useWidthSetter(view, theme.spacing(1))
   const scrollRef = useRef<HTMLDivElement>(null)
-  const session = getSession(view)
+  const session = getSession(view) as SessionWithFocusedViewAndDrawerWidgets
 
   // scroll the view into view when first mounted. note: this effect will run
   // only once, because of the empty array second param
@@ -81,7 +79,7 @@ export default observer(function ({
       elevation={12}
       className={
         session.focusedViewId === view.id
-          ? classes.focusedView
+          ? `${classes.viewContainer} ${classes.focusedView}`
           : classes.viewContainer
       }
     >

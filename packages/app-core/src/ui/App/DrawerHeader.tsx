@@ -13,7 +13,7 @@ import {
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getEnv } from '@jbrowse/core/util'
-import { SessionWithDrawerWidgets } from '@jbrowse/core/util/types'
+import { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
 
 // icons
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -38,7 +38,6 @@ const useStyles = makeStyles()(theme => ({
   },
   header: {
     background: theme.palette.secondary.main,
-    padding: `0 ${theme.spacing(0.75)} ${theme.spacing(0.75)}`,
   },
   headerFocused: {
     background: theme.palette.secondary.light,
@@ -52,7 +51,7 @@ export default observer(function ({
   session,
   setToolbarHeight,
 }: {
-  session: SessionWithDrawerWidgets
+  session: SessionWithFocusedViewAndDrawerWidgets
   setToolbarHeight: (arg: number) => void
 }) {
   const { classes } = useStyles()
@@ -67,9 +66,9 @@ export default observer(function ({
       elevation={0}
       className={
         isFocused
-          ? `${classes.header} ${classes.headerFocused}`
+          ? `${classes.headerFocused}`
           : viewWidgetId
-          ? `${classes.header} ${classes.headerUnfocused}`
+          ? `${classes.headerUnfocused}`
           : classes.header
       }
       ref={ref => setToolbarHeight(ref?.getBoundingClientRect().height || 0)}
@@ -86,7 +85,7 @@ export default observer(function ({
 const DrawerWidgetSelector = observer(function ({
   session,
 }: {
-  session: SessionWithDrawerWidgets
+  session: SessionWithFocusedViewAndDrawerWidgets
 }) {
   const { visibleWidget, activeWidgets } = session
   const { classes } = useStyles()
@@ -161,7 +160,7 @@ const DrawerWidgetSelector = observer(function ({
 const DrawerControls = observer(function ({
   session,
 }: {
-  session: SessionWithDrawerWidgets
+  session: SessionWithFocusedViewAndDrawerWidgets
 }) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const { drawerPosition, visibleWidget } = session
