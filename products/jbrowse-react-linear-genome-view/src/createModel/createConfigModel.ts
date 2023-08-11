@@ -4,6 +4,11 @@ import {
 } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
+import {
+  FormatAboutConfigSchemaFactory,
+  FormatDetailsConfigSchemaFactory,
+  HierarchicalConfigSchemaFactory,
+} from '@jbrowse/product-core'
 import { getParent, IAnyType, types } from 'mobx-state-tree'
 
 /**
@@ -28,53 +33,9 @@ export default function createConfigModel(
           type: 'number',
           defaultValue: 2,
         },
-        formatDetails: ConfigurationSchema('FormatDetails', {
-          /**
-           * #slot configuration.formatDetails.feature
-           */
-          feature: {
-            type: 'frozen',
-            description: 'adds extra fields to the feature details',
-            defaultValue: {},
-            contextVariable: ['feature'],
-          },
-          /**
-           * #slot configuration.formatDetails.subfeatures
-           */
-          subfeatures: {
-            type: 'frozen',
-            description: 'adds extra fields to the subfeatures of a feature',
-            defaultValue: {},
-            contextVariable: ['feature'],
-          },
-          /**
-           * #slot configuration.formatDetails.depth
-           */
-          depth: {
-            type: 'number',
-            defaultValue: 2,
-            description: 'depth to iterate on subfeatures',
-          },
-        }),
-        formatAbout: ConfigurationSchema('FormatAbout', {
-          /**
-           * #slot configuration.formatAbout.config
-           */
-          config: {
-            type: 'frozen',
-            description: 'formats configuration object in about dialog',
-            defaultValue: {},
-            contextVariable: ['config'],
-          },
-          /**
-           * #slot configuration.formatAbout.hideUris
-           */
-
-          hideUris: {
-            type: 'boolean',
-            defaultValue: false,
-          },
-        }),
+        hierarchical: HierarchicalConfigSchemaFactory(),
+        formatDetails: FormatDetailsConfigSchemaFactory(),
+        formatAbout: FormatAboutConfigSchemaFactory(),
         /**
          * #slot configuration.theme
          */

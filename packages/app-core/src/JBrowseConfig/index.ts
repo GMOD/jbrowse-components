@@ -6,6 +6,11 @@ import {
 import { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
+import {
+  FormatAboutConfigSchemaFactory,
+  FormatDetailsConfigSchemaFactory,
+  HierarchicalConfigSchemaFactory,
+} from '@jbrowse/product-core'
 import { types } from 'mobx-state-tree'
 
 /**
@@ -35,53 +40,8 @@ export function JBrowseConfigF({
         defaultValue: 2,
       },
 
-      formatDetails: ConfigurationSchema('FormatDetails', {
-        /**
-         * #slot configuration.formatDetails.feature
-         */
-        feature: {
-          type: 'frozen',
-          description: 'adds extra fields to the feature details',
-          defaultValue: {},
-          contextVariable: ['feature'],
-        },
-        /**
-         * #slot configuration.formatDetails.subfeatures
-         */
-        subfeatures: {
-          type: 'frozen',
-          description: 'adds extra fields to the subfeatures of a feature',
-          defaultValue: {},
-          contextVariable: ['feature'],
-        },
-        /**
-         * #slot configuration.formatDetails.depth
-         */
-        depth: {
-          type: 'number',
-          defaultValue: 2,
-          description: 'depth to iterate on subfeatures',
-        },
-      }),
-      formatAbout: ConfigurationSchema('FormatAbout', {
-        /**
-         * #slot configuration.formatAbout.config
-         */
-        config: {
-          type: 'frozen',
-          description: 'formats configuration object in about dialog',
-          defaultValue: {},
-          contextVariable: ['config'],
-        },
-        /**
-         * #slot configuration.formatAbout.hideUris
-         */
-
-        hideUris: {
-          type: 'boolean',
-          defaultValue: false,
-        },
-      }),
+      formatDetails: FormatDetailsConfigSchemaFactory(),
+      formatAbout: FormatAboutConfigSchemaFactory(),
 
       /*
        * #slot configuration.shareURL
@@ -98,47 +58,7 @@ export function JBrowseConfigF({
         defaultValue: false,
       },
 
-      hierarchical: ConfigurationSchema('hierarchical', {
-        sort: ConfigurationSchema('hierarchicalSort', {
-          /**
-           * #slot configuration.hierarchical.sort.trackNames
-           */
-          trackNames: {
-            type: 'boolean',
-            defaultValue: false,
-          },
-          /**
-           * #slot configuration.hierarchical.sort.categories
-           */
-          categories: {
-            type: 'boolean',
-            defaultValue: false,
-          },
-        }),
-        defaultCollapsed: ConfigurationSchema('defaultCollapsed', {
-          /**
-           * #slot configuration.hierarchical.defaultCollapse.categoryNames
-           */
-          categoryNames: {
-            type: 'stringArray',
-            defaultValue: [],
-          },
-          /**
-           * #slot configuration.hierarchical.defaultCollapse.topLevelCategories
-           */
-          topLevelCategories: {
-            type: 'boolean',
-            defaultValue: false,
-          },
-          /**
-           * #slot configuration.hierarchical.defaultCollapse.subCategories
-           */
-          subCategories: {
-            type: 'boolean',
-            defaultValue: false,
-          },
-        }),
-      }),
+      hierarchical: HierarchicalConfigSchemaFactory(),
       /**
        * #slot configuration.theme
        */
