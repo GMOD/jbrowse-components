@@ -29,58 +29,6 @@ highResolutionScaling: {
       }
 ```
 
-#### slot: configuration.formatDetails.feature
-
-```js
-feature: {
-          type: 'frozen',
-          description: 'adds extra fields to the feature details',
-          defaultValue: {},
-          contextVariable: ['feature'],
-        }
-```
-
-#### slot: configuration.formatDetails.subfeatures
-
-```js
-subfeatures: {
-          type: 'frozen',
-          description: 'adds extra fields to the subfeatures of a feature',
-          defaultValue: {},
-          contextVariable: ['feature'],
-        }
-```
-
-#### slot: configuration.formatDetails.depth
-
-```js
-depth: {
-          type: 'number',
-          defaultValue: 2,
-          description: 'depth to iterate on subfeatures',
-        }
-```
-
-#### slot: configuration.formatAbout.config
-
-```js
-config: {
-          type: 'frozen',
-          description: 'formats configuration object in about dialog',
-          defaultValue: {},
-          contextVariable: ['config'],
-        }
-```
-
-#### slot: configuration.formatAbout.hideUris
-
-```js
-hideUris: {
-          type: 'boolean',
-          defaultValue: false,
-        }
-```
-
 #### slot: configuration.disableAnalytics
 
 ```js
@@ -102,7 +50,10 @@ theme: {
 #### slot: configuration.extraThemes
 
 ```js
-extraThemes: { type: 'frozen', defaultValue: {} }
+extraThemes: {
+        type: 'frozen',
+        defaultValue: {},
+      }
 ```
 
 #### slot: configuration.logoPath

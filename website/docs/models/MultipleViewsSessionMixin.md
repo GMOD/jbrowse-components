@@ -64,11 +64,7 @@ addLinearGenomeViewOfAssembly: (assemblyName: string, initialState?: {}) => any
 
 ```js
 // type signature
-addViewOfAssembly: (
-  viewType: string,
-  assemblyName: string,
-  initialState?: Record<string, unknown>,
-) => any
+addViewOfAssembly: (viewType: string, assemblyName: string, initialState?: Record<string, unknown>) => any
 ```
 
 #### action: addViewFromAnotherView

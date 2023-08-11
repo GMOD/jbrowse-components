@@ -32,6 +32,15 @@ ISimpleType<"HierarchicalTrackSelectorWidget">
 type: types.literal('HierarchicalTrackSelectorWidget')
 ```
 
+#### property: initialized
+
+```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
+initialized: types.maybe(types.boolean)
+```
+
 #### property: collapsed
 
 ```js
@@ -39,6 +48,24 @@ type: types.literal('HierarchicalTrackSelectorWidget')
 IMapType<ISimpleType<boolean>>
 // code
 collapsed: types.map(types.boolean)
+```
+
+#### property: sortTrackNames
+
+```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
+sortTrackNames: types.maybe(types.boolean)
+```
+
+#### property: sortCategories
+
+```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
+sortCategories: types.maybe(types.boolean)
 ```
 
 #### property: view
@@ -61,6 +88,20 @@ view: types.safeReference(
 string[]
 ```
 
+#### getter: activeSortTrackNames
+
+```js
+// type
+any
+```
+
+#### getter: activeSortCategories
+
+```js
+// type
+any
+```
+
 #### getter: trackConfigurations
 
 filter out tracks that don't match the current assembly/display types
@@ -74,7 +115,7 @@ filter out tracks that don't match the current assembly/display types
 
 ```js
 // type
-{ name: string; id: string; children: ({ id: any; name: any; children: any; state: { expanded: boolean; }; } | { name: string; id: string; children: TreeNode[]; })[]; }
+{ name: string; id: string; children: { name: any; id: any; children: TreeNode[]; }[]; }
 ```
 
 ### HierarchicalTrackSelectorWidget - Methods
@@ -103,6 +144,20 @@ connectionHierarchy: (connection: { name: string; tracks: ({ [x: string]: any; }
 ```
 
 ### HierarchicalTrackSelectorWidget - Actions
+
+#### action: setSortTrackNames
+
+```js
+// type signature
+setSortTrackNames: (val: boolean) => void
+```
+
+#### action: setSortCategories
+
+```js
+// type signature
+setSortCategories: (val: boolean) => void
+```
 
 #### action: setSelection
 
@@ -146,6 +201,20 @@ setView: (view: unknown) => void
 toggleCategory: (pathName: string) => void
 ```
 
+#### action: setCategoryCollapsed
+
+```js
+// type signature
+setCategoryCollapsed: (pathName: string, status: boolean) => void
+```
+
+#### action: expandAllCategories
+
+```js
+// type signature
+expandAllCategories: () => void
+```
+
 #### action: clearFilterText
 
 ```js
@@ -158,4 +227,18 @@ clearFilterText: () => void
 ```js
 // type signature
 setFilterText: (newText: string) => void
+```
+
+#### action: collapseSubCategories
+
+```js
+// type signature
+collapseSubCategories: () => void
+```
+
+#### action: collapseTopLevelCategories
+
+```js
+// type signature
+collapseTopLevelCategories: () => void
 ```

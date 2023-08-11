@@ -30,9 +30,9 @@ model (via e.g. getRoot) in plugin code
 
 ```js
 // type signature
-IMaybe<IModelType<{}, { running: boolean; statusMessage: string; progressPct: number; jobName: string; controller: AbortController; jobsQueue: IObservableArray<TextJobsEntry>; finishedJobs: IObservableArray<...>; } & { ...; } & { ...; } & { ...; }, _NotCustomized, _NotCustomized>>
+IOptionalIType<IModelType<{}, { running: boolean; statusMessage: string; progressPct: number; jobName: string; controller: AbortController; jobsQueue: IObservableArray<TextJobsEntry>; finishedJobs: IObservableArray<...>; } & { ...; } & { ...; } & { ...; }, _NotCustomized, _NotCustomized>, [...]>
 // code
-jobsManager: types.maybe(JobsManager)
+jobsManager: types.optional(JobsManager, {})
 ```
 
 ### JBrowseDesktopRootModel - Actions
