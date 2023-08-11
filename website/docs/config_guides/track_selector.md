@@ -5,7 +5,7 @@ title: Hierarchical track selector
 
 import Figure from '../figure'
 
-In v2.7.0 several options were added for configuring the hierarchical track
+In v2.6.3 several options were added for configuring the hierarchical track
 selector.
 
 By default, the order of the tracks in the track selector tries to follow the
