@@ -17,7 +17,7 @@ exports[`renders one track, one region 1`] = `
           >
             <div
               class="css-den3n5-scalebarVisibleRegion"
-              style="width: 792px; left: 0px; background: rgba(66, 165, 245, 0.3); border-color: #42a5f5;"
+              style="width: 800px; left: 0px; background: rgba(66, 165, 245, 0.3); border-color: #42a5f5;"
             />
             <div
               class="css-2jeg0a-scalebarContig"
@@ -32,35 +32,35 @@ exports[`renders one track, one region 1`] = `
               </p>
               <div
                 class="css-rtx9ov-scalebarContig-scalebarContigForward-scalebarBorder"
-                style="left: 0px; width: 792px; border-color: rgb(153, 102, 0);"
+                style="left: 0px; width: 800px; border-color: rgb(153, 102, 0);"
               >
                 <p
                   class="MuiTypography-root MuiTypography-body2 css-7mggk8-MuiTypography-root-scalebarLabel"
-                  style="left: 158.39999999999998px; pointer-events: none; color: rgb(153, 102, 0);"
+                  style="left: 160px; pointer-events: none; color: rgb(153, 102, 0);"
                 >
                   20
                 </p>
                 <p
                   class="MuiTypography-root MuiTypography-body2 css-7mggk8-MuiTypography-root-scalebarLabel"
-                  style="left: 316.79999999999995px; pointer-events: none; color: rgb(153, 102, 0);"
+                  style="left: 320px; pointer-events: none; color: rgb(153, 102, 0);"
                 >
                   40
                 </p>
                 <p
                   class="MuiTypography-root MuiTypography-body2 css-7mggk8-MuiTypography-root-scalebarLabel"
-                  style="left: 475.2px; pointer-events: none; color: rgb(153, 102, 0);"
+                  style="left: 480px; pointer-events: none; color: rgb(153, 102, 0);"
                 >
                   60
                 </p>
                 <p
                   class="MuiTypography-root MuiTypography-body2 css-7mggk8-MuiTypography-root-scalebarLabel"
-                  style="left: 633.5999999999999px; pointer-events: none; color: rgb(153, 102, 0);"
+                  style="left: 640px; pointer-events: none; color: rgb(153, 102, 0);"
                 >
                   80
                 </p>
                 <p
                   class="MuiTypography-root MuiTypography-body2 css-7mggk8-MuiTypography-root-scalebarLabel"
-                  style="left: 792px; pointer-events: none; color: rgb(153, 102, 0);"
+                  style="left: 800px; pointer-events: none; color: rgb(153, 102, 0);"
                 >
                   100
                 </p>
@@ -68,7 +68,7 @@ exports[`renders one track, one region 1`] = `
             </div>
             <div
               class="css-2jeg0a-scalebarContig"
-              style="width: 0px; left: 792px; background-color: rgb(153, 153, 153);"
+              style="width: 0px; left: 800px; background-color: rgb(153, 153, 153);"
             />
           </div>
         </div>
@@ -82,7 +82,7 @@ exports[`renders one track, one region 1`] = `
         >
           <polygon
             fill="rgba(66, 165, 245, 0.3)"
-            points="0,48,101,48,792,0,0,0"
+            points="0,48,101,48,800,0,0,0"
             stroke="rgba(66, 165, 245, 0.8)"
           />
         </svg>
@@ -282,15 +282,15 @@ exports[`renders one track, one region 1`] = `
                 <input
                   aria-orientation="horizontal"
                   aria-valuemax="564.3856189774724"
-                  aria-valuemin="283.3497336859835"
-                  aria-valuenow="283.3497336859835"
+                  aria-valuemin="284.799690655495"
+                  aria-valuenow="284.799690655495"
                   data-index="0"
                   max="564.3856189774724"
-                  min="283.3497336859835"
+                  min="284.799690655495"
                   step="1"
                   style="border: 0px; height: 100%; margin: -1px; overflow: hidden; padding: 0px; position: absolute; white-space: nowrap; width: 100%; direction: ltr;"
                   type="range"
-                  value="283.3497336859835"
+                  value="284.799690655495"
                 />
               </span>
             </span>

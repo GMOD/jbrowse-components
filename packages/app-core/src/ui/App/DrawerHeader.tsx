@@ -63,7 +63,6 @@ export default observer(function ({
   return (
     <AppBar
       position="sticky"
-      elevation={0}
       className={
         isFocused
           ? `${classes.headerFocused}`

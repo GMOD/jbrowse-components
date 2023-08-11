@@ -1,4 +1,4 @@
-import React, { lazy, useEffect } from 'react'
+import React, { lazy, useEffect, useRef } from 'react'
 import { Button, Paper, Typography, useTheme } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { LoadingEllipses } from '@jbrowse/core/ui'
@@ -28,8 +28,7 @@ const useStyles = makeStyles()(theme => ({
 const LinearGenomeView = observer(({ model }: { model: LGV }) => {
   const { tracks, error, initialized, hasDisplayedRegions } = model
   const { classes } = useStyles()
-  const theme = useTheme()
-  const ref = useWidthSetter(model, theme.spacing(1))
+  const ref = useRef<HTMLDivElement>(null)
   const session = getSession(model)
 
   useEffect(() => {
