@@ -103,13 +103,13 @@
     "webpack": "^5.72.0"
   },
   "devDependencies": {
-    "electron": "25.3.0"
+    "electron": "25.5.0"
   },
   "browserslist": [
     "last 1 chrome version"
   ],
   "build": {
-    "electronVersion": "25.3.0",
+    "electronVersion": "25.5.0",
     "extraMetadata": {
       "main": "build/electron.js"
     },
