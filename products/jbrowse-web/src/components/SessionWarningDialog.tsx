@@ -6,7 +6,7 @@ import {
   DialogContentText,
   DialogActions,
 } from '@mui/material'
-import shortid from 'shortid'
+import { nanoid } from 'nanoid'
 import { SessionLoaderModel } from '../SessionLoader'
 
 import WarningIcon from '@mui/icons-material/Warning'
@@ -68,7 +68,7 @@ export default function SessionTriaged({
         const session = JSON.parse(JSON.stringify(loader.sessionTriaged.snap))
 
         // second param true says we passed user confirmation
-        await loader.setSessionSnapshot({ ...session, id: shortid() }, true)
+        await loader.setSessionSnapshot({ ...session, id: nanoid() }, true)
         handleClose()
       }}
       onCancel={() => {

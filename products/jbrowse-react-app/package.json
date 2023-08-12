@@ -93,7 +93,7 @@
     "prop-types": "^15.0.0",
     "react-error-boundary": "^4.0.0",
     "rxjs": "^7.0.0",
-    "shortid": "^2.2.15",
+    "nanoid": "^3.0.0",
     "tss-react": "^4.4.1",
     "use-query-params": "^2.0.0",
     "webpack": "^5.72.0"

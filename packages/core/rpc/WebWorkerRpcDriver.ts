@@ -1,5 +1,5 @@
 import Rpc from 'librpc-web-mod'
-import shortid from 'shortid'
+import { nanoid } from 'nanoid'
 
 // locals
 import BaseRpcDriver, { RpcDriverConstructorArgs } from './BaseRpcDriver'
@@ -22,7 +22,7 @@ class WebWorkerHandle extends Rpc.Client {
 
   async call(funcName: string, args: Record<string, unknown>, opts: Options) {
     const { statusCallback, rpcDriverClassName } = opts
-    const channel = `message-${shortid.generate()}`
+    const channel = `message-${nanoid()}`
     const listener = (message: string) => {
       statusCallback?.(message)
     }

@@ -90,7 +90,6 @@
     "@types/react-dom": "^18.0.0",
     "@types/react-virtualized-auto-sizer": "^1.0.0",
     "@types/set-value": "^2.0.0",
-    "@types/shortid": "^0.0.29",
     "@types/string-template": "^1.0.2",
     "@types/tmp": "^0.2.1",
     "@typescript-eslint/parser": "^6.0.0",

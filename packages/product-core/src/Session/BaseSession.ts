@@ -1,4 +1,4 @@
-import shortid from 'shortid'
+import { nanoid } from 'nanoid'
 import PluginManager from '@jbrowse/core/PluginManager'
 import {
   IAnyStateTreeNode,
@@ -27,7 +27,7 @@ export function BaseSessionModel<
       /**
        * #property
        */
-      id: types.optional(types.identifier, shortid()),
+      id: types.optional(types.identifier, nanoid()),
       /**
        * #property
        */

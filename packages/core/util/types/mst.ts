@@ -1,9 +1,9 @@
-import shortid from 'shortid'
+import { nanoid } from 'nanoid'
 import { types } from 'mobx-state-tree'
 import propTypes from 'prop-types'
 import { PropTypes as MxPropTypes } from 'mobx-react'
 
-export const ElementId = types.optional(types.identifier, shortid.generate)
+export const ElementId = types.optional(types.identifier, () => nanoid())
 
 // PropTypes that are useful when working with instances of these in react components
 export const PropTypes = {
