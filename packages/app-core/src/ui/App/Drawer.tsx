@@ -1,9 +1,9 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import { Paper } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import ResizeHandle from '@jbrowse/core/ui/ResizeHandle'
-import { SessionWithDrawerWidgets } from '@jbrowse/core/util/types'
+import { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
 
 const useStyles = makeStyles()(theme => ({
   paper: {
@@ -26,13 +26,35 @@ function Drawer({
   session,
 }: {
   children: React.ReactNode
-  session: SessionWithDrawerWidgets
+  session: SessionWithFocusedViewAndDrawerWidgets
 }) {
   const { drawerPosition, drawerWidth } = session
   const { classes } = useStyles()
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleSelectView(e: Event) {
+      if (e.target instanceof Element) {
+        if (ref?.current && ref.current.contains(e.target)) {
+          // @ts-ignore
+          const visibleWidgetId = session.visibleWidget?.view?.id
+          if (visibleWidgetId) {
+            session.setFocusedViewId(visibleWidgetId)
+          }
+        }
+      }
+    }
+
+    document.addEventListener('mousedown', handleSelectView)
+    document.addEventListener('keydown', handleSelectView)
+    return () => {
+      document.removeEventListener('mousedown', handleSelectView)
+      document.removeEventListener('keydown', handleSelectView)
+    }
+  }, [ref, session])
 
   return (
-    <Paper className={classes.paper} elevation={16} square>
+    <Paper ref={ref} className={classes.paper} elevation={16} square>
       {drawerPosition === 'right' ? (
         <ResizeHandle
           onDrag={session.resizeDrawer}
