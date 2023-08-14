@@ -8,10 +8,8 @@
   "scripts": {
     "start": "NODE_ENV=development webpack serve",
     "build": "NODE_ENV=production webpack",
-    "postbuild": "node -e \"fs.writeFileSync('build/version.txt',JSON.parse(require('fs').readFileSync('package.json', 'utf8')).version)\"",
-    "test": "craco test",
+    "postbuild": "node -e \"fs.writeFileSync('build/version.txt',JSON.parse(require('fs').readFileSync('package.json', 'utf8')).version)\" && cp -R public/test_data build/test_data",
     "checktypes": "tsc --noEmit",
-    "jtest": "jest --config ../../jest.config.js --roots products/jbrowse-web/",
     "lint": "eslint --ext .js,.ts,.jsx,.tsx src",
     "prepack": "yarn build",
     "start-oauth-server": "ts-node --project tsconfig.oauth.json src/tests/OAuthServer/app.ts",
