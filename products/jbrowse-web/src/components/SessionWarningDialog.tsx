@@ -6,7 +6,7 @@ import {
   DialogContentText,
   DialogActions,
 } from '@mui/material'
-import { nanoid } from 'nanoid'
+import { nanoid } from '@jbrowse/core/util/nanoid'
 import { SessionLoaderModel } from '../SessionLoader'
 
 import WarningIcon from '@mui/icons-material/Warning'

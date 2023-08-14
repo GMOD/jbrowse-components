@@ -6,7 +6,7 @@ import {
   DialogContentText,
 } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
-import { nanoid } from 'nanoid'
+import { nanoid } from '@jbrowse/core/util/nanoid'
 import factoryReset from '../factoryReset'
 import { SessionLoaderModel } from '../SessionLoader'
 

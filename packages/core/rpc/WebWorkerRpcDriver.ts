@@ -1,5 +1,5 @@
 import Rpc from 'librpc-web-mod'
-import { nanoid } from 'nanoid'
+import { nanoid } from '@jbrowse/core/util/nanoid'
 
 // locals
 import BaseRpcDriver, { RpcDriverConstructorArgs } from './BaseRpcDriver'

@@ -1,4 +1,4 @@
-import { nanoid } from 'nanoid'
+import { nanoid } from '@jbrowse/core/util/nanoid'
 import PluginManager from '@jbrowse/core/PluginManager'
 import {
   IAnyStateTreeNode,

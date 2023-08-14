@@ -6,7 +6,7 @@ import PluginLoader, {
 } from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { openLocation } from '@jbrowse/core/util/io'
-import { nanoid } from 'nanoid'
+import { nanoid } from '@jbrowse/core/util/nanoid'
 
 // locals
 import { readSessionFromDynamo } from './sessionSharing'
