@@ -94,7 +94,7 @@ export function SharedLinearPileupDisplayMixin(
         /**
          * #property
          */
-        customFilters: types.optional(types.array(types.string), []),
+        jexlFilters: types.optional(types.array(types.string), []),
       }),
     )
     .volatile(() => ({
@@ -235,9 +235,9 @@ export function SharedLinearPileupDisplayMixin(
       /**
        * #action
        */
-      setCustomFilters(filters: string[]) {
+      setJexlFilters(filters: string[]) {
         filters.forEach((filter: string) => {
-          self.customFilters.push(filter)
+          self.jexlFilters.push(filter)
         })
       },
     }))
@@ -293,7 +293,7 @@ export function SharedLinearPileupDisplayMixin(
        * #getter
        */
       get filters() {
-        return new SerializableFilterChain({ filters: self.customFilters })
+        return new SerializableFilterChain({ filters: self.jexlFilters })
       },
     }))
     .views(self => {

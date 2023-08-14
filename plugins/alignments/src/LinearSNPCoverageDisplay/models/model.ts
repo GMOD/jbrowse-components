@@ -70,7 +70,7 @@ function stateModelFactory(
         /**
          * #property
          */
-        customFilters: types.optional(types.array(types.string), []),
+        jexlFilters: types.optional(types.array(types.string), []),
       }),
     )
     .volatile(() => ({
@@ -99,9 +99,9 @@ function stateModelFactory(
       /**
        * #action
        */
-      setCustomFilters(filters: string[]) {
+      setJexlFilters(filters: string[]) {
         filters.forEach((filter: string) => {
-          self.customFilters.push(filter)
+          self.jexlFilters.push(filter)
         })
       },
 
@@ -341,7 +341,7 @@ function stateModelFactory(
          * #getter
          */
         get filters() {
-          return new SerializableFilterChain({ filters: self.customFilters })
+          return new SerializableFilterChain({ filters: self.jexlFilters })
         },
       }
     })
