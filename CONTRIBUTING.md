@@ -83,7 +83,7 @@ the code is organized.
 
 #### products/jbrowse-web
 
-This is the full JBrowse Web app. It is built using
+This is the full JBrowse Web app. It is based on
 [create-react-app](https://create-react-app.dev/).
 
 It includes many other packages as core plugins, can load other plugins at
