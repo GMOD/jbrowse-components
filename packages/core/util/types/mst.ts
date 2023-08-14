@@ -1,7 +1,8 @@
-import { nanoid } from '@jbrowse/core/util/nanoid'
 import { types } from 'mobx-state-tree'
 import propTypes from 'prop-types'
 import { PropTypes as MxPropTypes } from 'mobx-react'
+
+import { nanoid } from '../nanoid'
 
 export const ElementId = types.optional(types.identifier, () => nanoid())
 

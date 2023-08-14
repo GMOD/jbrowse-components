@@ -1,10 +1,10 @@
 import Rpc from 'librpc-web-mod'
-import { nanoid } from '@jbrowse/core/util/nanoid'
+import { deserializeError } from 'serialize-error'
 
 // locals
+import { nanoid } from '../util/nanoid'
 import BaseRpcDriver, { RpcDriverConstructorArgs } from './BaseRpcDriver'
 import { PluginDefinition } from '../PluginLoader'
-import { deserializeError } from 'serialize-error'
 
 interface WebWorkerRpcDriverConstructorArgs extends RpcDriverConstructorArgs {
   makeWorkerInstance: () => Worker
