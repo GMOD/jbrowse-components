@@ -56,7 +56,7 @@ export let nanoid = (size = 21) =>
     // It is incorrect to use bytes exceeding the alphabet size.
     // The following mask reduces the random byte in the 0-255 value
     // range to the 0-63 value range. Therefore, adding hacks, such
-    // as empty string fallback or magic numbers, is unneccessary because
+    // as empty string fallback or magic numbers, is unnecessary because
     // the bitmask trims bytes down to the alphabet size.
     byte &= 63
     if (byte < 36) {
