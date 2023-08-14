@@ -3,7 +3,6 @@
 const fs = require('fs')
 const path = require('path')
 const webpack = require('webpack')
-const resolve = require('resolve')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin')
 const InlineChunkHtmlPlugin = require('react-dev-utils/InlineChunkHtmlPlugin')
@@ -11,10 +10,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const { WebpackManifestPlugin } = require('webpack-manifest-plugin')
 const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin')
 const WorkboxWebpackPlugin = require('workbox-webpack-plugin')
-const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin')
-const getCSSModuleLocalIdent = require('react-dev-utils/getCSSModuleLocalIdent')
 const paths = require('./config/paths')
-const modules = require('./config/modules')
 const getClientEnvironment = require('./config/env')
 const ModuleNotFoundPlugin = require('react-dev-utils/ModuleNotFoundPlugin')
 
@@ -38,19 +34,6 @@ const createEnvironmentHash = require('./config/webpack/persistentCache/createEn
 // Source maps are resource heavy and can cause out of memory issue for large source files.
 const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false'
 
-const reactRefreshRuntimeEntry = require.resolve('react-refresh/runtime')
-const reactRefreshWebpackPluginRuntimeEntry = require.resolve(
-  '@pmmmwh/react-refresh-webpack-plugin',
-)
-const babelRuntimeEntry = require.resolve('babel-preset-react-app')
-const babelRuntimeEntryHelpers = require.resolve(
-  '@babel/runtime/helpers/esm/assertThisInitialized',
-  { paths: [babelRuntimeEntry] },
-)
-const babelRuntimeRegenerator = require.resolve('@babel/runtime/regenerator', {
-  paths: [babelRuntimeEntry],
-})
-
 // Some apps do not need the benefits of saving a web request, so not inlining the chunk
 // makes for a smoother build process.
 const shouldInlineRuntimeChunk = process.env.INLINE_RUNTIME_CHUNK !== 'false'
@@ -61,20 +44,6 @@ const imageInlineSizeLimit = parseInt(
 
 // Check if TypeScript is setup
 const useTypeScript = fs.existsSync(paths.appTsConfig)
-
-// Check if Tailwind config exists
-const useTailwind = fs.existsSync(
-  path.join(paths.appPath, 'tailwind.config.js'),
-)
-
-// Get the path to the uncompiled service worker (if it exists).
-const swSrc = paths.swSrc
-
-// style files regexes
-const cssRegex = /\.css$/
-const cssModuleRegex = /\.module\.css$/
-const sassRegex = /\.(scss|sass)$/
-const sassModuleRegex = /\.module\.(scss|sass)$/
 
 const hasJsxRuntime = (() => {
   if (process.env.DISABLE_NEW_JSX_TRANSFORM === 'true') {
@@ -94,11 +63,6 @@ const hasJsxRuntime = (() => {
 module.exports = function (webpackEnv) {
   const isEnvProduction = process.env.NODE_ENV === 'production'
   const isEnvDevelopment = !isEnvProduction
-
-  // Variable used for enabling profiling in Production
-  // passed into alias object. Uses a flag if passed into the build command
-  const isEnvProductionProfile =
-    isEnvProduction && process.argv.includes('--profile')
 
   // We will provide `paths.publicUrlOrPath` to our app
   // as %PUBLIC_URL% in `index.html` and `process.env.PUBLIC_URL` in JavaScript.
@@ -166,13 +130,6 @@ module.exports = function (webpackEnv) {
     },
 
     resolve: {
-      // This allows you to set a fallback for where webpack should look for modules.
-      // We placed these paths second because we want `node_modules` to "win"
-      // if there are any conflicts. This matches Node resolution mechanism.
-      // https://github.com/facebook/create-react-app/issues/253
-      modules: ['node_modules', paths.appNodeModules].concat(
-        modules.additionalModulePaths || [],
-      ),
       // These are the reasonable defaults supported by the Node ecosystem.
       // We also include JSX as a common component filename extension to support
       // some tools, although we do not recommend using it, see:
@@ -182,32 +139,6 @@ module.exports = function (webpackEnv) {
       extensions: paths.moduleFileExtensions
         .map(ext => `.${ext}`)
         .filter(ext => useTypeScript || !ext.includes('ts')),
-      alias: {
-        // Support React Native Web
-        // https://www.smashingmagazine.com/2016/08/a-glimpse-into-the-future-with-react-native-for-web/
-        'react-native': 'react-native-web',
-        // Allows for better profiling with ReactDevTools
-        ...(isEnvProductionProfile && {
-          'react-dom$': 'react-dom/profiling',
-          'scheduler/tracing': 'scheduler/tracing-profiling',
-        }),
-        ...(modules.webpackAliases || {}),
-      },
-      plugins: [
-        // Prevents users from importing files from outside of src/ (or node_modules/).
-        // This often causes confusion because we only process files within src/ with babel.
-        // To fix this, we prevent you from importing files out of src/ -- if you'd like to,
-        // please link the files into your node_modules/ and let module-resolution kick in.
-        // Make sure your source files are compiled, as they will not be processed in any way.
-        new ModuleScopePlugin(paths.appSrc, [
-          paths.appPackageJson,
-          reactRefreshRuntimeEntry,
-          reactRefreshWebpackPluginRuntimeEntry,
-          babelRuntimeEntry,
-          babelRuntimeEntryHelpers,
-          babelRuntimeRegenerator,
-        ]),
-      ],
     },
     module: {
       strictExportPresence: true,
@@ -453,28 +384,6 @@ module.exports = function (webpackEnv) {
           }
         },
       }),
-      // Moment.js is an extremely popular library that bundles large locale files
-      // by default due to how webpack interprets its code. This is a practical
-      // solution that requires the user to opt into importing specific locales.
-      // https://github.com/jmblog/how-to-optimize-momentjs-with-webpack
-      // You can remove this if you don't use Moment.js:
-      new webpack.IgnorePlugin({
-        resourceRegExp: /^\.\/locale$/,
-        contextRegExp: /moment$/,
-      }),
-      // Generate a service worker script that will precache, and keep up to date,
-      // the HTML & assets that are part of the webpack build.
-      isEnvProduction &&
-        fs.existsSync(swSrc) &&
-        new WorkboxWebpackPlugin.InjectManifest({
-          swSrc,
-          dontCacheBustURLsMatching: /\.[0-9a-f]{8}\./,
-          exclude: [/\.map$/, /asset-manifest\.json$/, /LICENSE/],
-          // Bump up the default maximum size (2mb) that's precached,
-          // to make lazy-loading failure scenarios less likely.
-          // See https://github.com/cra-template/pwa/issues/13#issuecomment-722667270
-          maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
-        }),
     ].filter(Boolean),
     // Turn off performance processing because we utilize
     // our own hints via the FileSizeReporter
