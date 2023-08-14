@@ -12,8 +12,6 @@ const getClientEnvironment = require('./config/env')
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin')
 const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
 
-const createEnvironmentHash = require('./config/webpack/persistentCache/createEnvironmentHash')
-
 const path = require('path')
 const cp = require('child_process')
 
@@ -67,19 +65,6 @@ module.exports = function (webpackEnv) {
       chunkFilename: 'static/js/[name].[contenthash:8].chunk.js',
       assetModuleFilename: 'static/media/[name].[hash][ext]',
       publicPath: 'auto',
-    },
-    cache: {
-      type: 'filesystem',
-      version: createEnvironmentHash(env.raw),
-      cacheDirectory: paths.appWebpackCache,
-      store: 'pack',
-      buildDependencies: {
-        defaultWebpack: ['webpack/lib/'],
-        config: [__filename],
-        tsconfig: [paths.appTsConfig, paths.appJsConfig].filter(f =>
-          fs.existsSync(f),
-        ),
-      },
     },
 
     resolve: {
