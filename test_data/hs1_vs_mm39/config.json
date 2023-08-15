@@ -14,6 +14,15 @@
             "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/hs1.chrom.sizes.txt"
           }
         }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "location": {
+            "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/hs1.chromAlias.txt",
+            "locationType": "UriLocation"
+          }
+        }
       }
     },
     {
@@ -91,6 +100,26 @@
           "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hs1/liftOver/hs1ToMm39.over.chain.gz",
           "locationType": "UriLocation"
         },
+        "targetAssembly": "hs1",
+        "queryAssembly": "mm39"
+      },
+      "assemblyNames": ["hs1", "mm39"]
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "liftover_pairwise_paf",
+      "name": "liftover_pairwise_paf",
+      "adapter": {
+        "type": "PairwiseIndexedPAFAdapter",
+        "pafGzLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hs1_vs_mm39/hs1_vs_mm39.paf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hs1_vs_mm39/hs1_vs_mm39.paf.gz.tbi"
+          }
+        },
+
         "targetAssembly": "hs1",
         "queryAssembly": "mm39"
       },

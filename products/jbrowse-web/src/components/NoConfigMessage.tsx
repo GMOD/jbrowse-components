@@ -9,7 +9,7 @@ export default function NoConfigMessage() {
     ['test_data/breakpoint/config.json', 'Breakpoint'],
     ['test_data/config_dotplot.json', 'Grape/Peach dotplot'],
     ['test_data/config_synteny_grape_peach.json', 'Grape/Peach synteny'],
-    ['test_data/human_vs_mouse.json', 'Human vs mouse synteny'],
+    ['test_data/hs1_vs_mm39/config.json', 'Hs1 vs mm39 synteny'],
     ['test_data/yeast_synteny/config.json', 'Yeast synteny'],
     ['test_data/config_many_contigs.json', 'Many contigs'],
     ['test_data/config_honeybee.json', 'Honeybee'],

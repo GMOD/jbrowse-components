@@ -3,6 +3,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { FileLocation } from '@jbrowse/core/util/types'
 
 import PAFAdapterF from './PAFAdapter'
+import PairwiseIndexedPAFAdapterF from './PairwiseIndexedPAFAdapter'
 import MCScanAnchorsAdapterF from './MCScanAnchorsAdapter'
 import MCScanSimpleAnchorsAdapterF from './MCScanSimpleAnchorsAdapter'
 import MashMapAdapterF from './MashMapAdapter'
@@ -20,6 +21,7 @@ export default class ComparativeAdaptersPlugin extends Plugin {
 
   install(pluginManager: PluginManager) {
     PAFAdapterF(pluginManager)
+    PairwiseIndexedPAFAdapterF(pluginManager)
     DeltaAdapterF(pluginManager)
     ChainAdapterF(pluginManager)
     MCScanAnchorsAdapterF(pluginManager)
@@ -50,12 +52,10 @@ export default class ComparativeAdaptersPlugin extends Plugin {
     pluginManager.addToExtensionPoint(
       'Core-guessTrackTypeForLocation',
       (trackTypeGuesser: TrackTypeGuesser) => {
-        return (adapterName: string) => {
-          if (adapterName === 'PAFAdapter') {
-            return 'SyntenyTrack'
-          }
-          return trackTypeGuesser(adapterName)
-        }
+        return (adapterName: string) =>
+          adapterName === 'PAFAdapter'
+            ? 'SyntenyTrack'
+            : trackTypeGuesser(adapterName)
       },
     )
   }
