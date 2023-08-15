@@ -106,7 +106,7 @@ export default class extends Plugin {
 
                   bookmarkCurrentRegion() {
                     // @ts-ignore
-                    if (self.id === getRoot(self).focusedViewId) {
+                    if (self.id === getSession(self).focusedViewId) {
                       const selectedRegions = self.getSelectedRegions(
                         self.leftOffset,
                         self.rightOffset,
