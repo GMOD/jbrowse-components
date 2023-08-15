@@ -31,23 +31,14 @@ internetAccounts: types.array(
 
 ```js
 // type signature
-initializeInternetAccount: (
-  internetAccountConfig: { [x: string]: any } & NonEmptyObject & {
-      setSubschema(slotName: string, data: unknown): any,
-    } & IStateTreeNode<AnyConfigurationSchemaType>,
-  initialSnapshot?: {},
-) => any
+initializeInternetAccount: (internetAccountConfig: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>, initialSnapshot?: {}) => any
 ```
 
 #### action: createEphemeralInternetAccount
 
 ```js
 // type signature
-createEphemeralInternetAccount: (
-  internetAccountId: string,
-  initialSnapshot: {},
-  url: string,
-) => any
+createEphemeralInternetAccount: (internetAccountId: string, initialSnapshot: {}, url: string) => any
 ```
 
 #### action: findAppropriateInternetAccount

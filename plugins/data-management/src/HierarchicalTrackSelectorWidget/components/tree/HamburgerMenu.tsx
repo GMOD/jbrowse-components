@@ -133,14 +133,14 @@ export default observer(function HamburgerMenu({
           {
             label: 'Sort tracks by name',
             type: 'checkbox',
-            checked: model.hSortTrackNames,
-            onClick: () => model.setSortTrackNames(!model.hSortTrackNames),
+            checked: model.activeSortTrackNames,
+            onClick: () => model.setSortTrackNames(!model.activeSortTrackNames),
           },
           {
             label: 'Sort categories by name',
             type: 'checkbox',
-            checked: model.hSortCategories,
-            onClick: () => model.setSortCategories(!model.hSortCategories),
+            checked: model.activeSortCategories,
+            onClick: () => model.setSortCategories(!model.activeSortCategories),
           },
           { type: 'divider' },
           ...(model.hasAnySubcategories

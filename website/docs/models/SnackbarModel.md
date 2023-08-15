@@ -34,11 +34,7 @@ notify: (message: string, level?: NotificationLevel, action?: SnackAction) => vo
 
 ```js
 // type signature
-pushSnackbarMessage: (
-  message: string,
-  level?: NotificationLevel,
-  action?: SnackAction,
-) => number
+pushSnackbarMessage: (message: string, level?: NotificationLevel, action?: SnackAction) => number
 ```
 
 #### action: popSnackbarMessage

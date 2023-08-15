@@ -34,7 +34,7 @@ function binaryRangeFetch(
 const globalRangeCache = new HttpRangeFetcher({
   fetch: binaryRangeFetch,
   size: 500 * 1024 ** 2, // 500MiB
-  chunkSize: 128 * 124, // 128KiB
+  chunkSize: 128 * 1024, // 128KiB
   maxFetchSize: 100 * 1024 ** 2, // 100MiB
   minimumTTL: 24 * 60 * 60 * 1000, // 1 day
 })

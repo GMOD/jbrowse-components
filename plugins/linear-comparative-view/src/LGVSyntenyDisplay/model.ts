@@ -10,7 +10,7 @@ import {
 } from '@jbrowse/core/util'
 import {
   MismatchParser,
-  linearPileupDisplayStateModelFactory,
+  SharedLinearPileupDisplayMixin,
 } from '@jbrowse/plugin-alignments'
 import { IAnyStateTreeNode, types } from 'mobx-state-tree'
 import { when } from 'mobx'
@@ -135,7 +135,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
   return types
     .compose(
       'LGVSyntenyDisplay',
-      linearPileupDisplayStateModelFactory(schema),
+      SharedLinearPileupDisplayMixin(schema),
       types.model({
         /**
          * #property
@@ -166,10 +166,31 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         },
       }
     })
+    .views(self => {
+      const {
+        trackMenuItems: superTrackMenuItems,
+        colorSchemeSubMenuItems: superColorSchemeSubMenuItems,
+      } = self
+      return {
+        trackMenuItems() {
+          return [
+            ...superTrackMenuItems(),
+            {
+              label: 'Color scheme',
+              subMenu: [...superColorSchemeSubMenuItems()],
+            },
+          ]
+        },
+      }
+    })
     .actions(self => ({
       afterCreate() {
-        // use color by strand to help indicate inversions better
-        self.setColorScheme({ type: 'strand' })
+        // use color by stand to help indicate inversions better on first load, otherwise use selected orientation
+        if (self.colorBy) {
+          self.setColorScheme({ ...self.colorBy })
+        } else {
+          self.setColorScheme({ type: 'strand' })
+        }
       },
     }))
 }

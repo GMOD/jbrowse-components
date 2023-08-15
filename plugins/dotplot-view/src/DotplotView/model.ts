@@ -37,6 +37,7 @@ import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 // locals
 import { Dotplot1DView, DotplotHView, DotplotVView } from './1dview'
 import { getBlockLabelKeysToHide, makeTicks } from './components/util'
+import { BaseBlock } from './blockTypes'
 
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))
@@ -51,6 +52,16 @@ export interface ExportSvgOptions {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Wrapper?: React.FC<any>
   themeName?: string
+}
+
+const len = (a: string) => measureText(a.slice(0, 30))
+const pxWidthForBlocks = (blocks: BaseBlock[], hide: Set<string>) => {
+  return max([
+    ...blocks.filter(b => !hide.has(b.key)).map(b => len(b.refName)),
+    ...blocks
+      .filter(b => !hide.has(b.key))
+      .map(b => len(b.end.toLocaleString('en-us'))),
+  ])
 }
 
 /**
@@ -612,14 +623,9 @@ export default function stateModelFactory(pm: PluginManager) {
 
             const vhide = getBlockLabelKeysToHide(vblocks, viewHeight, voffset)
             const hhide = getBlockLabelKeysToHide(hblocks, viewWidth, hoffset)
+            const by = pxWidthForBlocks(hblocks, hhide)
+            const bx = pxWidthForBlocks(vblocks, vhide)
 
-            const len = (a: string) => measureText(a.slice(0, 30))
-            const by = max(
-              hblocks.filter(b => !hhide.has(b.key)).map(b => len(b.refName)),
-            )
-            const bx = max(
-              vblocks.filter(b => !vhide.has(b.key)).map(b => len(b.refName)),
-            )
             // these are set via autorun to avoid dependency cycle
             self.setBorderY(Math.max(by + padding, 50))
             self.setBorderX(Math.max(bx + padding, 50))

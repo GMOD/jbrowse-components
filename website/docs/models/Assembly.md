@@ -64,7 +64,7 @@ string
 
 ```js
 // type
-;(name: string) => any
+(name: string) => any
 ```
 
 #### getter: allAliases

@@ -142,32 +142,14 @@ any
 
 ```js
 // type signature
-pxToBp: (px: number) => {
-  coord: number
-  index: number
-  refName: string
-  oob: boolean
-  assemblyName: string
-  offset: number
-  start: number
-  end: number
-  reversed: boolean
-}
+pxToBp: (px: number) => { coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed: boolean; }
 ```
 
 #### method: bpToPx
 
 ```js
 // type signature
-bpToPx: ({
-  refName,
-  coord,
-  regionNumber,
-}: {
-  refName: string,
-  coord: number,
-  regionNumber?: number,
-}) => number
+bpToPx: ({ refName, coord, regionNumber, }: { refName: string; coord: number; regionNumber?: number; }) => number
 ```
 
 ### Base1DView - Actions

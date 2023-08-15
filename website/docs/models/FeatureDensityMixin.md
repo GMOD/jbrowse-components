@@ -99,8 +99,7 @@ string
 
 ```js
 // type signature
-regionCannotBeRenderedText: (_region: Region) =>
-  '' | 'Force load to see features'
+regionCannotBeRenderedText: (_region: Region) => "" | "Force load to see features"
 ```
 
 #### method: regionCannotBeRendered

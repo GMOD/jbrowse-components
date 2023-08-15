@@ -37,7 +37,6 @@ type SessionModelFactory = (args: {
  * - DesktopMenuMixin
  * - DesktopSessionManagementMixin
  * - HistoryManagementMixin
- * - AppFocusMixin
  * - RootAppMenuMixin
  *
  * note: many properties of the root model are available through the session,

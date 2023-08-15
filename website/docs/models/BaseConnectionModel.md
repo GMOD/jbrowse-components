@@ -47,11 +47,7 @@ configuration: ConfigurationReference(configSchema)
 
 ```js
 // type signature
-addTrackConf: (
-  trackConf: { [x: string]: any } & NonEmptyObject & {
-      setSubschema(slotName: string, data: unknown): any,
-    } & IStateTreeNode<AnyConfigurationSchemaType>,
-) => any
+addTrackConf: (trackConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => any
 ```
 
 #### action: addTrackConfs

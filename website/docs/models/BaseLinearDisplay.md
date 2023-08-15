@@ -110,21 +110,21 @@ any
 
 ```js
 // type
-;(blockKey: string, x: number, y: number) => string
+(blockKey: string, x: number, y: number) => string
 ```
 
 #### getter: getFeatureByID
 
 ```js
 // type
-;(blockKey: string, id: string) => LayoutRecord
+(blockKey: string, id: string) => LayoutRecord
 ```
 
 #### getter: searchFeatureByID
 
 ```js
 // type
-;(id: string) => LayoutRecord
+(id: string) => LayoutRecord
 ```
 
 ### BaseLinearDisplay - Methods

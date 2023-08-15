@@ -18,6 +18,7 @@ import {
 } from '@jbrowse/product-core'
 import { DesktopSessionFactory } from './DesktopSession'
 import {
+  AppFocusMixin,
   SessionAssembliesMixin,
   TemporaryAssembliesMixin,
 } from '@jbrowse/app-core'
@@ -39,6 +40,8 @@ import { AbstractSessionModel } from '@jbrowse/core/util'
  * - TemporaryAssembliesMixin
  * - DesktopSessionTrackMenuMixin
  * - SnackbarModel
+ * - AppFocusMixin
+ *
  */
 export default function sessionModelFactory({
   pluginManager,
@@ -63,6 +66,7 @@ export default function sessionModelFactory({
       SessionAssembliesMixin(pluginManager, assemblyConfigSchema),
       TemporaryAssembliesMixin(pluginManager, assemblyConfigSchema),
       DesktopSessionTrackMenuMixin(pluginManager),
+      AppFocusMixin(),
     )
     .views(self => ({
       /**

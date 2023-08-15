@@ -1,3 +1,5 @@
+import { types, Instance } from 'mobx-state-tree'
+
 import { orientationTypes, pairMap } from '../util'
 import { ChainStats } from './fetchChains'
 
@@ -84,3 +86,17 @@ export function getPairedOrientationColor(f: { pair_orientation?: string }) {
     strokeColor[type2] || strokeColor.color_unknown,
   ] as const
 }
+
+export interface ExtraColorBy {
+  custom?: Record<string, string>
+}
+
+export const ColorByModel = types.maybe(
+  types.model({
+    type: types.string,
+    tag: types.maybe(types.string),
+    extra: types.frozen(),
+  }),
+)
+
+export type IColorByModel = Instance<typeof ColorByModel>

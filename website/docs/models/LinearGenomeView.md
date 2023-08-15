@@ -503,18 +503,7 @@ rubberBandMenuItems: () => MenuItem[]
 
 ```js
 // type signature
-bpToPx: ({
-  refName,
-  coord,
-  regionNumber,
-}: {
-  refName: string,
-  coord: number,
-  regionNumber?: number,
-}) => {
-  index: number
-  offsetPx: number
-}
+bpToPx: ({ refName, coord, regionNumber, }: { refName: string; coord: number; regionNumber?: number; }) => { index: number; offsetPx: number; }
 ```
 
 #### method: centerAt
@@ -531,17 +520,7 @@ centerAt: (coord: number, refName: string, regionNumber: number) => void
 
 ```js
 // type signature
-pxToBp: (px: number) => {
-  coord: number
-  index: number
-  refName: string
-  oob: boolean
-  assemblyName: string
-  offset: number
-  start: number
-  end: number
-  reversed: boolean
-}
+pxToBp: (px: number) => { coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed: boolean; }
 ```
 
 ### LinearGenomeView - Actions
@@ -645,11 +624,7 @@ horizontallyFlip: () => void
 
 ```js
 // type signature
-showTrack: (
-  trackId: string,
-  initialSnapshot?: {},
-  displayInitialSnapshot?: {},
-) => any
+showTrack: (trackId: string, initialSnapshot?: {}, displayInitialSnapshot?: {}) => any
 ```
 
 #### action: hideTrack
