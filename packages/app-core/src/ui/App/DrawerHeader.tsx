@@ -55,19 +55,16 @@ export default observer(function ({
   setToolbarHeight: (arg: number) => void
 }) {
   const { classes } = useStyles()
-  const focusedViewId = session.focusedViewId
   // @ts-ignore
   const viewWidgetId = session.visibleWidget?.view?.id
-  const isFocused = focusedViewId && focusedViewId === viewWidgetId
-
   return (
     <AppBar
       position="sticky"
       className={
-        isFocused
-          ? `${classes.headerFocused}`
-          : viewWidgetId
-          ? `${classes.headerUnfocused}`
+        session.focusedView
+          ? session.focusedView.id === viewWidgetId
+            ? classes.headerFocused
+            : classes.headerUnfocused
           : classes.header
       }
       ref={ref => setToolbarHeight(ref?.getBoundingClientRect().height || 0)}

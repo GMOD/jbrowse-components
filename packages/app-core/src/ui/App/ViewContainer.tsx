@@ -18,7 +18,7 @@ import ViewContainerTitle from './ViewContainerTitle'
 const useStyles = makeStyles()(theme => ({
   viewContainer: {
     overflow: 'hidden',
-    background: theme.palette.secondary.dark,
+    background: theme.palette.secondary.main,
     margin: theme.spacing(0.5),
     padding: `0 ${theme.spacing(1)} ${theme.spacing(1)}`,
   },
@@ -27,6 +27,9 @@ const useStyles = makeStyles()(theme => ({
   },
   grow: {
     flexGrow: 1,
+  },
+  unfocusedView: {
+    background: theme.palette.secondary.dark,
   },
   focusedView: {
     background: theme.palette.secondary.light,
@@ -78,8 +81,10 @@ export default observer(function ({
       ref={ref}
       elevation={12}
       className={
-        session.focusedViewId === view.id
-          ? `${classes.viewContainer} ${classes.focusedView}`
+        session.focusedView
+          ? session.focusedView.id === view.id
+            ? `${classes.viewContainer} ${classes.focusedView}`
+            : `${classes.viewContainer} ${classes.unfocusedView}`
           : classes.viewContainer
       }
     >

@@ -39,7 +39,7 @@ const MiniControls = observer(function ({
   return hideHeader ? (
     <Paper
       className={
-        session.focusedViewId === model.id
+        session.focusedView?.id === model.id
           ? `${classes.background} ${classes.focusedBackground}`
           : classes.background
       }
