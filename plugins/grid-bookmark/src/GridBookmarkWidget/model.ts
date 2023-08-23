@@ -1,4 +1,4 @@
-import { types, cast, Instance, SnapshotIn } from 'mobx-state-tree'
+import { types, cast, Instance, SnapshotIn, IMSTArray } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { Region } from '@jbrowse/core/util/types'
 import { Region as RegionModel, ElementId } from '@jbrowse/core/util/types/mst'
@@ -75,6 +75,9 @@ export default function f(pluginManager: PluginManager) {
       },
       setSelectedBookmarkIndexes(indexes: Array<number>) {
         self.selectedBookmarkIndexes = indexes
+      },
+      setBookmarkedRegions(a: IMSTArray<typeof LabeledRegionModel>) {
+        self.bookmarkedRegions = a
       },
     }))
     .views(self => ({

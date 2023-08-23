@@ -14,6 +14,7 @@ type MaybeLGV = LGV | undefined
 
 export async function navToBookmark(
   locString: string,
+  assembly: string,
   views: AbstractViewModel[],
   model: GridBookmarkModel,
 ) {
@@ -21,24 +22,22 @@ export async function navToBookmark(
   try {
     // search for exact match to an lgv that this bookmark widget launched, or
     // any lgv that looks like it is relevant to what we are browsing
-    const { selectedAssembly } = model
-    const newViewId = `${model.id}_${selectedAssembly}`
+    const newViewId = `${model.id}_${assembly}`
 
     // get the focused view
     let view = views.find(
-      // @ts-ignore
-      view => view.id === getRoot(model).focusedViewId,
+      view => view.id === getSession(model).focusedViewId,
     ) as MaybeLGV
 
     // check if the focused view is the appropriate assembly, if not proceed
-    if (!view || view?.assemblyNames[0] !== selectedAssembly) {
+    if (!view || view?.assemblyNames[0] !== assembly) {
       // find number of instances open with the selectedAssembly
       let viewsOfSelectedAssembly: Array<AbstractViewModel> = []
       views.forEach(element => {
         if (
           element.type === 'LinearGenomeView' &&
           // @ts-expect-error
-          element.assemblyNames[0] === selectedAssembly
+          element.assemblyNames[0] === assembly
         )
           viewsOfSelectedAssembly.push(element)
       })
@@ -56,7 +55,8 @@ export async function navToBookmark(
         id: newViewId,
       }) as LGV
     }
-    await view.navToLocString(locString, selectedAssembly)
+    await view.navToLocString(locString, assembly)
+    session.notify('Navigated to the selected bookmark.', 'success')
   } catch (e) {
     console.error(e)
     session.notify(`${e}`, 'error')

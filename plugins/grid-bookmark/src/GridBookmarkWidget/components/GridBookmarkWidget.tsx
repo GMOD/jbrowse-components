@@ -12,7 +12,7 @@ import ImportBookmarks from './ImportBookmarks'
 
 import { GridBookmarkModel } from '../model'
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()({
   card: {
     display: 'flex',
     flexFlow: 'column',
@@ -20,7 +20,7 @@ const useStyles = makeStyles()(theme => ({
     padding: '5px',
     gap: '5px',
   },
-}))
+})
 
 function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
   const { classes } = useStyles()
@@ -29,7 +29,6 @@ function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
 
   return (
     <Card className={classes.card}>
-      <AssemblySelector model={model} />
       <div>
         <ExportBookmarks model={model} />
         <ImportBookmarks model={model} />

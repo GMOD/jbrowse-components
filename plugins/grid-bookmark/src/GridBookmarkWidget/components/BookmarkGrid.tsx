@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
 import {
   Link,
@@ -15,12 +15,13 @@ import {
   assembleLocString,
   measureGridWidth,
   measureText,
+  useLocalStorage,
 } from '@jbrowse/core/util'
 import { Dialog } from '@jbrowse/core/ui'
 
 // locals
 import { navToBookmark } from '../utils'
-import { GridBookmarkModel } from '../model'
+import { GridBookmarkModel, ILabeledRegionModel } from '../model'
 
 const useStyles = makeStyles()(theme => ({
   link: {
@@ -33,27 +34,40 @@ const BookmarkGrid = ({ model }: { model: GridBookmarkModel }) => {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [dialogRow, setDialogRow] = useState<any>()
   const [newLabel, setNewLabel] = useState<string>()
-  const { bookmarkedRegions, selectedAssembly } = model
+  const { bookmarkedRegions } = model
   const [rowSelectionModel, setRowSelectionModel] =
     useState<GridRowSelectionModel>(model.selectedBookmarkIndexes || [])
-  const { views } = getSession(model)
   const session = getSession(model)
+  const { assemblyNames, views } = session
 
-  const bookmarkRows = bookmarkedRegions
-    .filter(
-      r => selectedAssembly === 'all' || r.assemblyName === selectedAssembly,
-    )
+  const [localBookmarks, setLocalBookmarks] =
+    typeof jest === 'undefined'
+      ? useLocalStorage(
+          `bookmarks-${[window.location.host + window.location.pathname].join(
+            '-',
+          )}`,
+          bookmarkedRegions,
+        )
+      : useState(bookmarkedRegions)
+
+  if (localBookmarks.length > 0) model.setBookmarkedRegions(localBookmarks)
+
+  const bookmarkRows = localBookmarks
+    .filter((r: ILabeledRegionModel) => assemblyNames.includes(r.assemblyName))
     .map((region, index) => {
       const { assemblyName, ...rest } = region
       return {
         ...region,
         id: index,
         delete: index,
-        locString: assembleLocString(
-          selectedAssembly === 'all' ? region : rest,
-        ),
+        assemblyName,
+        locString: assembleLocString(rest),
       }
     })
+
+  useEffect(() => {
+    setLocalBookmarks(bookmarkedRegions)
+  }, [bookmarkedRegions.length])
 
   return (
     <>
@@ -75,7 +89,12 @@ const BookmarkGrid = ({ model }: { model: GridBookmarkModel }) => {
                 href="#"
                 onClick={async event => {
                   event.preventDefault()
-                  await navToBookmark(params.value, views, model)
+                  await navToBookmark(
+                    params.value,
+                    params.row.assemblyName,
+                    views,
+                    model,
+                  )
                 }}
               >
                 {params.value}
@@ -84,6 +103,7 @@ const BookmarkGrid = ({ model }: { model: GridBookmarkModel }) => {
           },
           {
             field: 'label',
+            headerName: 'Label',
             width:
               bookmarkRows.length > 0
                 ? measureGridWidth(bookmarkRows.map(row => row.label))
@@ -91,7 +111,8 @@ const BookmarkGrid = ({ model }: { model: GridBookmarkModel }) => {
             editable: true,
           },
           {
-            field: 'assembly',
+            field: 'assemblyName',
+            headerName: 'Assembly',
             width:
               bookmarkRows.length > 0
                 ? measureGridWidth(bookmarkRows.map(row => row.assemblyName))
@@ -154,6 +175,7 @@ const BookmarkGrid = ({ model }: { model: GridBookmarkModel }) => {
             color="primary"
             onClick={() => {
               if (newLabel) model.updateBookmarkLabel(dialogRow.id, newLabel)
+              setLocalBookmarks(model.bookmarkedRegions)
               setDialogRow(undefined)
               setDialogOpen(false)
             }}
