@@ -6,7 +6,7 @@ import {
   DialogContentText,
 } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
-import shortid from 'shortid'
+import { nanoid } from '@jbrowse/core/util/nanoid'
 import factoryReset from '../factoryReset'
 import { SessionLoaderModel } from '../SessionLoader'
 
@@ -70,7 +70,7 @@ export default function ConfigTriaged({
       onConfirm={async () => {
         const session = JSON.parse(JSON.stringify(loader.sessionTriaged.snap))
         await loader.fetchPlugins(session)
-        loader.setConfigSnapshot({ ...session, id: shortid() })
+        loader.setConfigSnapshot({ ...session, id: nanoid() })
         handleClose()
       }}
       onCancel={async () => {

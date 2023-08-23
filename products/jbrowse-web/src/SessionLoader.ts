@@ -6,7 +6,7 @@ import PluginLoader, {
 } from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { openLocation } from '@jbrowse/core/util/io'
-import shortid from 'shortid'
+import { nanoid } from '@jbrowse/core/util/nanoid'
 
 // locals
 import { readSessionFromDynamo } from './sessionSharing'
@@ -242,7 +242,7 @@ const SessionLoader = types
               setTimeout(() => reject(), 1000)
             },
           )
-          return this.setSessionSnapshot({ ...result, id: shortid() })
+          return this.setSessionSnapshot({ ...result, id: nanoid() })
         } catch (e) {
           // the broadcast channels did not find the session in another tab
           // clear session param, so just ignore
@@ -260,7 +260,7 @@ const SessionLoader = types
       )
 
       const session = JSON.parse(await fromUrlSafeB64(decryptedSession))
-      await this.setSessionSnapshot({ ...session, id: shortid() })
+      await this.setSessionSnapshot({ ...session, id: nanoid() })
     },
 
     async decodeEncodedUrlSession() {
@@ -268,7 +268,7 @@ const SessionLoader = types
         // @ts-expect-error
         await fromUrlSafeB64(self.sessionQuery.replace('encoded-', '')),
       )
-      await this.setSessionSnapshot({ ...session, id: shortid() })
+      await this.setSessionSnapshot({ ...session, id: nanoid() })
     },
 
     decodeSessionSpec() {
@@ -299,7 +299,7 @@ const SessionLoader = types
     async decodeJsonUrlSession() {
       // @ts-expect-error
       const session = JSON.parse(self.sessionQuery.replace('json-', ''))
-      await this.setSessionSnapshot({ ...session.session, id: shortid() })
+      await this.setSessionSnapshot({ ...session.session, id: nanoid() })
     },
 
     async afterCreate() {
