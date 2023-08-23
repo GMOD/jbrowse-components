@@ -6,7 +6,7 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { SceneGraph } from '@jbrowse/core/util/layouts'
-import { Region, Feature } from '@jbrowse/core/util'
+import { Region, Feature, stripAlpha } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
 const Arrow = ({
@@ -28,7 +28,7 @@ const Arrow = ({
 
   const c = readConfObject(config, 'color2', { feature })
   const theme = useTheme()
-  const color2 = c === '#f0f' ? theme.palette.text.secondary : c
+  const color2 = c === '#f0f' ? stripAlpha(theme.palette.text.secondary) : c
   const p =
     strand * reverseFlip === -1
       ? left
