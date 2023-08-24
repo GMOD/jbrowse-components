@@ -30,6 +30,7 @@ import { isAbortException, checkAbortSignal } from './aborting'
 import { BaseBlock } from './blockTypes'
 import { isUriLocation } from './types'
 import useMeasure from '@jbrowse/core/util/useMeasure'
+import Color from 'color'
 
 export * from './types'
 export * from './aborting'
@@ -1368,3 +1369,8 @@ export {
   type SimpleFeatureSerialized,
   isFeature,
 } from './simpleFeature'
+
+export function stripAlpha(str: string) {
+  const c = Color(str)
+  return c.hex()
+}
