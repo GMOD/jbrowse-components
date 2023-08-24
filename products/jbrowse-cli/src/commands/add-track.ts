@@ -383,9 +383,7 @@ export default class AddTrack extends JBrowseCommand {
     if (/\.anchors(.simple)?$/i.test(location)) {
       return {
         file: location,
-
         bed1: bed1!,
-
         bed2: bed2!,
       }
     }

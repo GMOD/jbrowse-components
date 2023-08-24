@@ -9,8 +9,8 @@
   "dir": "src",
   "repository": "https://github.com/GMOD/jbrowse-components.git",
   "scripts": {
-    "start": "NODE_ENV=development BROWSER=none webpack serve --port 3000",
-    "build": "NODE_ENV=production webpack",
+    "start": "cross-env NODE_ENV=development BROWSER=none webpack serve --port 3000",
+    "build": "cross-env NODE_ENV=production webpack",
     "electron": "electron .",
     "electron-ts": "yarn tsc --strict --esModuleInterop --skipLibCheck public/electron.ts",
     "preelectron": "npm run electron-ts",

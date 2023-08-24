@@ -41,9 +41,7 @@ export default function SVGHeader({
   overview.setVolatileWidth(width)
   overview.showAllRegions()
   const block = overview.dynamicBlocks.contentBlocks[0]
-
   const first = visibleRegions.at(0)!
-
   const last = visibleRegions.at(-1)!
   const firstOverviewPx =
     overview.bpToPx({

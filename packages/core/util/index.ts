@@ -1320,7 +1320,6 @@ export function mergeIntervals<T extends { start: number; end: number }>(
   // start from the next interval and merge if needed
   for (let i = 1; i < intervals.length; i++) {
     // get the top element
-
     top = stack.at(-1)!
 
     // if the current interval doesn't overlap with the
