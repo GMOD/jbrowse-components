@@ -1,3 +1,5 @@
+'use strict'
+
 const fs = require('fs')
 const path = require('path')
 const paths = require('./paths')
@@ -30,7 +32,7 @@ const dotenvFiles = [
 // https://github.com/motdotla/dotenv-expand
 dotenvFiles.forEach(dotenvFile => {
   if (fs.existsSync(dotenvFile)) {
-    require('dotenv-expand').expand(
+    require('dotenv-expand')(
       require('dotenv').config({
         path: dotenvFile,
       }),
