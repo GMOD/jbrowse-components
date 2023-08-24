@@ -17,7 +17,7 @@ import RpcManager from '../rpc/RpcManager'
  * #stateModel AssemblyManager
  */
 function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
-  type Conf = Instance<typeof conf> | string
+  type Conf = Instance<typeof conf>
   return types
     .model({
       /**

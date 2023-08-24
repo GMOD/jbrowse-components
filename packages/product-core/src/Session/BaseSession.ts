@@ -21,7 +21,7 @@ import type { BaseRootModelType } from '../RootModel/BaseRootModel'
 export function BaseSessionModel<
   ROOT_MODEL_TYPE extends BaseRootModelType,
   JB_CONFIG_SCHEMA extends AnyConfigurationSchemaType,
->(pluginManager: PluginManager) {
+>(_pluginManager: PluginManager) {
   return types
     .model({
       /**

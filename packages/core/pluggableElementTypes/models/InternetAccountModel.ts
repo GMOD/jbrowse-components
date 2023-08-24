@@ -117,8 +117,8 @@ export const InternetAccount = types
      * @param reject - If there is an error getting the token, call this function
      */
     getTokenFromUser(
-      resolve: (token: string) => void,
-      reject: (error: Error) => void,
+      _resolve: (token: string) => void,
+      _reject: (error: Error) => void,
     ): void {
       throw new Error('getTokenFromUser must be implemented by extending model')
     },
@@ -154,7 +154,7 @@ export const InternetAccount = types
      * @param loc - UriLocation of the resource
      * @returns - Valid auth token
      */
-    async validateToken(token: string, loc: UriLocation) {
+    async validateToken(token: string, _loc: UriLocation) {
       return token
     },
   }))

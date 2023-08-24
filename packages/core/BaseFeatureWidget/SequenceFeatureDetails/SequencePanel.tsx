@@ -21,7 +21,7 @@ interface SeqPanelProps {
   intronBp?: number
 }
 const SeqPanel = React.forwardRef<HTMLDivElement, SeqPanelProps>(
-  function (props, ref) {
+  function SeqPanel2(props, ref) {
     const { feature, mode, intronBp = 10 } = props
     let {
       sequence: { seq, upstream = '', downstream = '' },

@@ -7,14 +7,14 @@ import {
 } from '@mui/material'
 import Dialog from '@jbrowse/core/ui/Dialog'
 
-export default function FactoryResetDialog({
+function FactoryResetDialog({
   onClose,
   open,
   onFactoryReset,
 }: {
-  onClose: Function
+  onClose: () => void
   open: boolean
-  onFactoryReset: Function
+  onFactoryReset: () => void
 }) {
   function handleDialogClose(action?: string) {
     if (action === 'reset') {
@@ -46,3 +46,5 @@ export default function FactoryResetDialog({
     </Dialog>
   )
 }
+
+export default FactoryResetDialog

@@ -21,9 +21,11 @@ export default class extends BaseFeatureDataAdapter {
     intervalTree: Record<string, IntervalTree>
   }>
 
-  private async loadDataP() {
+  private async loadDataP(opts: BaseOptions = {}) {
     const pm = this.pluginManager
-    const buf = await openLocation(this.getConf('gffLocation'), pm).readFile()
+    const buf = await openLocation(this.getConf('gffLocation'), pm).readFile(
+      opts,
+    )
     const buffer = isGzip(buf) ? await unzip(buf) : buf
     // 512MB  max chrome string length is 512MB
     if (buffer.length > 536_870_888) {
@@ -63,9 +65,9 @@ export default class extends BaseFeatureDataAdapter {
     return { header, intervalTree }
   }
 
-  private async loadData() {
+  private async loadData(opts?: BaseOptions) {
     if (!this.gffFeatures) {
-      this.gffFeatures = this.loadDataP().catch(e => {
+      this.gffFeatures = this.loadDataP(opts).catch(e => {
         this.gffFeatures = undefined
         throw e
       })
@@ -74,8 +76,8 @@ export default class extends BaseFeatureDataAdapter {
     return this.gffFeatures
   }
 
-  public async getRefNames(opts: BaseOptions = {}) {
-    const { intervalTree } = await this.loadData()
+  public async getRefNames(opts: BaseOptions) {
+    const { intervalTree } = await this.loadData(opts)
     return Object.keys(intervalTree)
   }
 

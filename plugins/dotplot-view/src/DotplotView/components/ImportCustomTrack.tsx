@@ -99,7 +99,6 @@ type Conf = SnapshotIn<AnyConfigurationModel>
 
 const OpenTrack = observer(
   ({
-    sessionTrackData,
     assembly1,
     assembly2,
     setSessionTrackData,

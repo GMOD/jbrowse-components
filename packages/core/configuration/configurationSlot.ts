@@ -37,6 +37,10 @@ const fallbackDefaults: { [typeName: string]: any } = {
   frozen: {},
 }
 
+function json(value: any) {
+  return value.toJSON ? value.toJSON() : `"${value}"`
+}
+
 const literalJSON = (self: { value: any }) => ({
   views: {
     get valueJSON() {
@@ -229,12 +233,7 @@ export default function ConfigSlot(
         if (self.isCallback) {
           return undefined
         }
-        function json(value: { toJSON: Function } | any) {
-          if (value && value.toJSON) {
-            return value.toJSON()
-          }
-          return `"${value}"`
-        }
+
         return json(self.value)
       },
     }))
