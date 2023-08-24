@@ -12,35 +12,34 @@ interface Props {
   feature: Feature
 }
 
-const TooltipContents = React.forwardRef<HTMLDivElement, Props>(function (
-  { feature },
-  ref,
-) {
-  const start = feature.get('start')
-  const end = feature.get('end')
-  const name = feature.get('refName')
-  const loc = [name, start === end ? en(start) : `${en(start)}..${en(end)}`]
-    .filter(f => !!f)
-    .join(':')
+const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
+  function TooltipContents2({ feature }, ref) {
+    const start = feature.get('start')
+    const end = feature.get('end')
+    const name = feature.get('refName')
+    const loc = [name, start === end ? en(start) : `${en(start)}..${en(end)}`]
+      .filter(f => !!f)
+      .join(':')
 
-  return feature.get('summary') !== undefined ? (
-    <div ref={ref}>
-      {loc}
-      <br />
-      Max: {toP(feature.get('maxScore'))}
-      <br />
-      Avg: {toP(feature.get('score'))}
-      <br />
-      Min: {toP(feature.get('minScore'))}
-    </div>
-  ) : (
-    <div ref={ref}>
-      {loc}
-      <br />
-      {`${toP(feature.get('score'))}`}
-    </div>
-  )
-})
+    return feature.get('summary') !== undefined ? (
+      <div ref={ref}>
+        {loc}
+        <br />
+        Max: {toP(feature.get('maxScore'))}
+        <br />
+        Avg: {toP(feature.get('score'))}
+        <br />
+        Min: {toP(feature.get('minScore'))}
+      </div>
+    ) : (
+      <div ref={ref}>
+        {loc}
+        <br />
+        {`${toP(feature.get('score'))}`}
+      </div>
+    )
+  },
+)
 
 type Coord = [number, number]
 

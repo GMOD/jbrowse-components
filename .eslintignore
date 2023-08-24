@@ -23,3 +23,4 @@ packages/core/util/QuickLRU.d.ts
 packages/core/util/nanoid.js
 packages/core/util/nanoid.d.ts
 **/umd_plugin.js
+.eslintrc.js

@@ -7,7 +7,7 @@ import {
 } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
 
-export default ({
+export default function FactoryResetDialog({
   open,
   onClose,
   onFactoryReset,
@@ -15,7 +15,7 @@ export default ({
   open: boolean
   onClose: Function
   onFactoryReset: Function
-}) => {
+}) {
   return (
     <Dialog open={open} onClose={() => onClose()} title="Reset">
       <DialogContent>

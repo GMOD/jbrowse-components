@@ -15,7 +15,6 @@ import ArrowUpward from '@mui/icons-material/ArrowUpward'
 
 const ViewMenu = observer(function ({
   model,
-  IconButtonProps,
   IconProps,
 }: {
   model: IBaseViewModel

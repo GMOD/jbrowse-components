@@ -106,7 +106,7 @@ export default function StartScreen({
   onFactoryReset,
 }: {
   rootModel: any
-  onFactoryReset: Function
+  onFactoryReset: () => void
 }) {
   const { classes } = useStyles()
 
