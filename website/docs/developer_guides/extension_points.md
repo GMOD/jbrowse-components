@@ -352,7 +352,7 @@ details, about panel, and more. The feature details may be a common one. See
 
 Return value: The new React component you want to use
 
-Example: replaces about feature details widget for a particular track ID
+#### Replace widget example: replaces about feature details widget for a particular track ID
 
 ```typescript
 pluginManager.addToExtensionPoint(
@@ -365,11 +365,31 @@ pluginManager.addToExtensionPoint(
 )
 ```
 
-Note: it is not always possible to retrieve the configuration associated with a
-track that produced the feature details. Therefore, we check model.trackId that
-produced the popup instead. note that if you want copies of your track to get
-same treatment, might use a regex to loose match the trackId (the copy of a
-track will have a timestamp and -sessionTrack added to it).
+#### Replace widget example: add widget above the default widget
+
+```typescript
+pluginManager.addToExtensionPoint(
+  'Core-replaceWidget',
+  (DefaultWidget, { model }) => {
+    return function NewWidget(props) {
+      return (
+        <div>
+          <div>Custom content here above the default widget</div>
+          <DefaultWidget {...props} />
+        </div>
+      )
+    }
+  },
+)
+```
+
+Note 1: it is not always possible to retrieve the configuration associated with
+a track that produced the feature details. Therefore, we check model.trackId
+that produced the popup instead.
+
+Note 2: If you want e.g. a "User copy" of your track to get same treatment,
+might use a regex to loose match the trackId (the copy of a track will have a
+timestamp and -sessionTrack added to it).
 
 ### Core-extraFeaturePanel
 
