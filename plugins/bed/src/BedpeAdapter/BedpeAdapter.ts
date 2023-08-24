@@ -103,9 +103,9 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
       if (!feats2[r2]) {
         feats2[r2] = []
       }
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
       feats1[r1]!.push(line)
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
       feats2[r2]!.push(line)
     }
     const columnNames = this.getConf('columnNames')

@@ -383,9 +383,9 @@ export default class AddTrack extends JBrowseCommand {
     if (/\.anchors(.simple)?$/i.test(location)) {
       return {
         file: location,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
         bed1: bed1!,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
         bed2: bed2!,
       }
     }

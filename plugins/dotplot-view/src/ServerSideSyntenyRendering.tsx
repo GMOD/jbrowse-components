@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import React, { useRef, useState, useEffect } from 'react'
 import { observer, PropTypes } from 'mobx-react'
 import { drawImageOntoCanvasContext } from '@jbrowse/core/util/offscreenCanvasPonyfill'

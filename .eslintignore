@@ -9,6 +9,7 @@
 **/tmp/**
 **/website/**
 # TODO: decide whether or not to bring these up to eslint standards
+component_tests
 products/jbrowse-web/scripts/**
 /config/
 /products/jbrowse-web/config/

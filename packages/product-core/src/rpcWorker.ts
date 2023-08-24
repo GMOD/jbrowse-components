@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-globals */
 import RpcServer from 'librpc-web-mod'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { remoteAbortRpcHandler } from '@jbrowse/core/rpc/remoteAbortSignals'

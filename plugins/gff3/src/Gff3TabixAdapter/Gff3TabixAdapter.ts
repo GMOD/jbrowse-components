@@ -185,7 +185,7 @@ export default class extends BaseFeatureDataAdapter {
       featureLoc =>
         new SimpleFeature({
           data: this.featureData(featureLoc),
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
           id: `${this.id}-offset-${featureLoc.attributes!._lineHash![0]}`,
         }),
     )
