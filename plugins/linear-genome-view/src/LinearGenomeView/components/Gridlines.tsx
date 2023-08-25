@@ -44,43 +44,51 @@ const useStyles = makeStyles()(theme => ({
     background: theme.palette.divider,
   },
 }))
-const RenderedVerticalGuides = observer(({ model }: { model: LGV }) => {
+
+function RenderedBlockLines({
+  block,
+  bpPerPx,
+}: {
+  block: ContentBlock
+  bpPerPx: number
+}) {
   const { classes, cx } = useStyles()
+  const ticks = makeTicks(block.start, block.end, bpPerPx)
+  return (
+    <ContentBlockComponent block={block}>
+      {ticks.map(({ type, base }) => {
+        const x =
+          (block.reversed ? block.end - base : base - block.start) / bpPerPx
+        return (
+          <div
+            key={base}
+            className={cx(
+              classes.tick,
+              type === 'major' || type === 'labeledMajor'
+                ? classes.majorTick
+                : classes.minorTick,
+            )}
+            style={{ left: x }}
+          />
+        )
+      })}
+    </ContentBlockComponent>
+  )
+}
+const RenderedVerticalGuides = observer(({ model }: { model: LGV }) => {
+  const { staticBlocks, bpPerPx } = model
   return (
     <>
-      {model.staticBlocks.map((block, index) => {
+      {staticBlocks.map((block, index) => {
+        const k = `${block.key}-${index}`
         if (block instanceof ContentBlock) {
-          const ticks = makeTicks(block.start, block.end, model.bpPerPx)
-          return (
-            <ContentBlockComponent key={`${block.key}-${index}`} block={block}>
-              {ticks.map(tick => {
-                const x =
-                  (block.reversed
-                    ? block.end - tick.base
-                    : tick.base - block.start) / model.bpPerPx
-                return (
-                  <div
-                    key={tick.base}
-                    className={cx(
-                      classes.tick,
-                      tick.type === 'major' || tick.type === 'labeledMajor'
-                        ? classes.majorTick
-                        : classes.minorTick,
-                    )}
-                    style={{ left: x }}
-                  />
-                )
-              })}
-            </ContentBlockComponent>
-          )
-        }
-        if (block instanceof ElidedBlock) {
-          return <ElidedBlockComponent key={block.key} width={block.widthPx} />
-        }
-        if (block instanceof InterRegionPaddingBlock) {
+          return <RenderedBlockLines key={k} block={block} bpPerPx={bpPerPx} />
+        } else if (block instanceof ElidedBlock) {
+          return <ElidedBlockComponent key={k} width={block.widthPx} />
+        } else if (block instanceof InterRegionPaddingBlock) {
           return (
             <InterRegionPaddingBlockComponent
-              key={block.key}
+              key={k}
               width={block.widthPx}
               boundary={block.variant === 'boundary'}
             />
