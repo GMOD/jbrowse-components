@@ -334,9 +334,9 @@ Return value: New config snapshot object
 
 type: synchronous
 
-adds option to provide a different component for the "About this track" dialog
+adds option to provide a different component for a given widget, drawer or modal
 
-- `args` - a `ReactComponent`, the default AboutTrack dialog
+- `args` - a `ReactComponent`
 - `props` - an object of the type below
 
 ```typescript
@@ -346,9 +346,11 @@ interface props {
 }
 ```
 
-note: this is called for every widget type, including configuration, feature
-details, about panel, and more. The feature details may be a common one. See
-`Core-extraFeaturePanel` also, matches the model attribute from there
+Note: this is called for every widget type, including configuration, feature
+details, and more. The feature details may be a common one that users may want
+to customize, but there may be others people are interested in as well.
+
+See also: `Core-extraFeaturePanel`
 
 Return value: The new React component you want to use
 
@@ -356,7 +358,7 @@ Return value: The new React component you want to use
 
 ```typescript
 pluginManager.addToExtensionPoint(
-  'Core-replaceAbout',
+  'Core-replaceWidget',
   (DefaultAboutComponent, { model }) => {
     return model.trackId === 'volvox.inv.vcf'
       ? NewAboutComponent
@@ -369,12 +371,12 @@ pluginManager.addToExtensionPoint(
 
 ```typescript
 pluginManager.addToExtensionPoint(
-  'Core-replaceWidget',
+  'Core-replaceAbout',
   (DefaultWidget, { model }) => {
     return function NewWidget(props) {
       return (
         <div>
-          <div>Custom content here above the default widget</div>
+          <div>Custom content here above the default details widget</div>
           <DefaultWidget {...props} />
         </div>
       )
