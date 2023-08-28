@@ -42,8 +42,12 @@ export async function* indexVcf({
     progressBar.start(totalBytes, 0)
   }
 
+  if (!stream) {
+    throw new Error('no stream')
+  }
+
   // @ts-expect-error
-  stream.on('data', chunk => {
+  stream.on('data', (chunk: { length: number }) => {
     receivedBytes += chunk.length
     progressBar.update(receivedBytes)
   })

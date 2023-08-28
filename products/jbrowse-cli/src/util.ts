@@ -2,6 +2,14 @@ import { isURL, createRemoteStream } from './types/common'
 import fs from 'fs'
 import path from 'path'
 
+export function writeJsonFile(filename: string, arg: unknown) {
+  fs.writeFileSync(filename, JSON.stringify(arg))
+}
+
+export function readJsonFile(filename: string) {
+  return JSON.parse(fs.readFileSync(filename, 'utf8'))
+}
+
 export async function getLocalOrRemoteStream(uri: string, out: string) {
   if (isURL(uri)) {
     const result = await createRemoteStream(uri)
@@ -26,3 +34,5 @@ export function decodeURIComponentNoThrow(uri: string) {
     return uri
   }
 }
+
+export { isURL }

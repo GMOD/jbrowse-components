@@ -1,7 +1,3 @@
-/**
- * By convention, exit codes in this base class are below 100
- */
-
 export interface UriLocation {
   uri: string
   locationType: 'UriLocation'
@@ -109,17 +105,22 @@ export interface Track {
   trackId: string
   name: string
   assemblyNames: string[]
-  adapter?: { type: string; [key: string]: unknown }
+  adapter:
+    | Gff3TabixAdapter
+    | GtfAdapter
+    | VcfTabixAdapter
+    | Gff3Adapter
+    | VcfAdapter
   textSearching?: TextSearching
 }
 
 export interface Config {
   assemblies?: Assembly[]
   assembly?: Assembly
-  configuration?: Record<string, unknown>
+  configuration?: {}
   aggregateTextSearchAdapters?: TrixTextSearchAdapter[]
-  connections?: { connectionId: string }[]
-  defaultSession?: Record<string, unknown>
+  connections?: unknown[]
+  defaultSession?: {}
   tracks?: Track[]
 }
 
