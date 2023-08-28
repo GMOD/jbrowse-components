@@ -1,0 +1,13 @@
+{
+  "name": "@jbrowse/cli",
+  "license": "Apache-2.0",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "yargs": "^14.0.0"
+  }
+}
