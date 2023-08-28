@@ -1520,22 +1520,26 @@ export function stateModelFactory(pluginManager: PluginManager) {
       afterCreate() {
         document.addEventListener('keydown', e => {
           const session = getSession(self)
-          if (session.focusedView?.type === 'LinearGenomeView') {
-            if (e.code === 'ArrowLeft') {
+          if (session.focusedView === self) {
+            if ((e.ctrlKey || e.metaKey) && e.code === 'ArrowLeft') {
+              e.preventDefault()
               // pan left
-              session.focusedView.slide(-0.9)
+              self.slide(-0.9)
             }
-            if (e.code === 'ArrowRight') {
+            if ((e.ctrlKey || e.metaKey) && e.code === 'ArrowRight') {
+              e.preventDefault()
               // pan right
-              session.focusedView.slide(0.9)
+              self.slide(0.9)
             }
-            if (e.shiftKey && e.code === 'ArrowUp') {
+            if ((e.ctrlKey || e.metaKey) && e.code === 'ArrowUp') {
+              e.preventDefault()
               // zoom in
-              session.focusedView.zoom(session.focusedView.bpPerPx / 2)
+              self.zoom(self.bpPerPx / 2)
             }
-            if (e.shiftKey && e.code === 'ArrowDown') {
+            if ((e.ctrlKey || e.metaKey) && e.code === 'ArrowDown') {
+              e.preventDefault()
               // zoom out
-              session.focusedView.zoom(session.focusedView.bpPerPx * 2)
+              self.zoom(self.bpPerPx * 2)
             }
           }
         })
