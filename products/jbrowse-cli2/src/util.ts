@@ -16,12 +16,14 @@ export async function readJsonFile<T>(location: string): Promise<T> {
     )
     throw error
   }
-  let result
   try {
-    result = JSON.parse(contents)
+    return JSON.parse(contents)
   } catch (error) {
     console.error(`Make sure "${location}" is a valid JSON file`)
     throw error
   }
-  return result
+}
+
+export function isUrl(loc?: string) {
+  return loc?.match(/^https?:\/\//)
 }

@@ -9,6 +9,6 @@
     "build": "tsc"
   },
   "dependencies": {
-    "yargs": "^14.0.0"
+    "yargs": "^17.0.0"
   }
 }
