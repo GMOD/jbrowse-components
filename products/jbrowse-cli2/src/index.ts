@@ -2,34 +2,10 @@
 import fs from 'fs'
 import path from 'path'
 import yargs from 'yargs'
+import { readJsonFile, writeJsonFile } from './util.js'
 
-const { copyFile, readFile, writeFile, rename, symlink } = fs.promises
+const { copyFile, rename, symlink } = fs.promises
 const { COPYFILE_EXCL } = fs.constants
-
-async function writeJsonFile(location: string, contents: unknown) {
-  return writeFile(location, JSON.stringify(contents, null, 2))
-}
-
-async function readJsonFile<T>(location: string): Promise<T> {
-  let contents
-  try {
-    contents = await readFile(location, { encoding: 'utf8' })
-  } catch (error) {
-    console.error(
-      `Make sure the file "${location}" exists or use --out to point to a directory with a config.json`,
-      'Run `jbrowse add-assembly` to create a config file',
-    )
-    throw error
-  }
-  let result
-  try {
-    result = JSON.parse(contents)
-  } catch (error) {
-    console.error(`Make sure "${location}" is a valid JSON file`)
-    throw error
-  }
-  return result
-}
 
 function makeLocationProtocol(protocol: string) {
   return (location: string) => {
