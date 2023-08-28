@@ -20,14 +20,8 @@ export async function navToBookmark(
 ) {
   const session = getSession(model)
   try {
-    // search for exact match to an lgv that this bookmark widget launched, or
-    // any lgv that looks like it is relevant to what we are browsing
-    const newViewId = `${model.id}_${assembly}`
-
     // get the focused view
-    let view = views.find(
-      view => view.id === getSession(model).focusedViewId,
-    ) as MaybeLGV
+    let view = views.find(view => view === session.focusedView) as MaybeLGV
 
     // check if the focused view is the appropriate assembly, if not proceed
     if (!view || view?.assemblyNames[0] !== assembly) {
@@ -41,16 +35,15 @@ export async function navToBookmark(
         )
           viewsOfSelectedAssembly.push(element)
       })
-      // if one instance open, that is the view to nav to
-      if (viewsOfSelectedAssembly.length > 1) {
+      // if 1+ instances open, that is the view to nav to
+      if (viewsOfSelectedAssembly.length >= 1) {
         view = viewsOfSelectedAssembly[0] as LGV
-      } else {
-        // what do we want to do if there are multiple views open of the same assembly none of which are in foucs?
       }
     }
 
     // if no view is opened of the selectedAssembly, open a new view with that assembly
     if (!view) {
+      const newViewId = `${model.id}_${assembly}`
       view = session.addView('LinearGenomeView', {
         id: newViewId,
       }) as LGV

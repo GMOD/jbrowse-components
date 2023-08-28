@@ -4,7 +4,6 @@ import { Alert, Card } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
 // locals
-import AssemblySelector from './AssemblySelector'
 import BookmarkGrid from './BookmarkGrid'
 import DeleteBookmarks from './DeleteBookmarks'
 import ExportBookmarks from './ExportBookmarks'

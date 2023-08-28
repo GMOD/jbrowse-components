@@ -57,7 +57,6 @@ function ImportBookmarks({ model }: { model: GridBookmarkModel }) {
       setExpanded(isExpanded ? panel : false)
     }
 
-  // TODO: possible UI here; accordion options?
   return (
     <>
       <Button startIcon={<ImportIcon />} onClick={() => setDialogOpen(true)}>
