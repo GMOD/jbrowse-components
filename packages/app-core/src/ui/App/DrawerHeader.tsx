@@ -13,7 +13,7 @@ import {
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getEnv } from '@jbrowse/core/util'
-import { SessionWithDrawerWidgets } from '@jbrowse/core/util/types'
+import { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
 
 // icons
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -39,21 +39,37 @@ const useStyles = makeStyles()(theme => ({
   header: {
     background: theme.palette.secondary.main,
   },
+  headerFocused: {
+    background: theme.palette.secondary.light,
+  },
+  headerUnfocused: {
+    background: theme.palette.secondary.dark,
+  },
 }))
 
 export default observer(function ({
   session,
   setToolbarHeight,
 }: {
-  session: SessionWithDrawerWidgets
+  session: SessionWithFocusedViewAndDrawerWidgets
   setToolbarHeight: (arg: number) => void
 }) {
   const { classes } = useStyles()
+  const focusedViewId = session.focusedViewId
+  // @ts-ignore
+  const viewWidgetId = session.visibleWidget?.view?.id
+  const isFocused = focusedViewId && focusedViewId === viewWidgetId
 
   return (
     <AppBar
       position="sticky"
-      className={classes.header}
+      className={
+        isFocused
+          ? `${classes.headerFocused}`
+          : viewWidgetId
+          ? `${classes.headerUnfocused}`
+          : classes.header
+      }
       ref={ref => setToolbarHeight(ref?.getBoundingClientRect().height || 0)}
     >
       <Toolbar disableGutters>
@@ -68,7 +84,7 @@ export default observer(function ({
 const DrawerWidgetSelector = observer(function ({
   session,
 }: {
-  session: SessionWithDrawerWidgets
+  session: SessionWithFocusedViewAndDrawerWidgets
 }) {
   const { visibleWidget, activeWidgets } = session
   const { classes } = useStyles()
@@ -143,7 +159,7 @@ const DrawerWidgetSelector = observer(function ({
 const DrawerControls = observer(function ({
   session,
 }: {
-  session: SessionWithDrawerWidgets
+  session: SessionWithFocusedViewAndDrawerWidgets
 }) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const { drawerPosition, visibleWidget } = session

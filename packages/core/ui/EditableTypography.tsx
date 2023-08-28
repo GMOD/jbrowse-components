@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { InputBase, Typography, TypographyProps, useTheme } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+import useMeasure from '@jbrowse/core/util/useMeasure'
 
 type Variant = TypographyProps['variant']
 
@@ -40,8 +41,8 @@ interface Props {
 const EditableTypography = React.forwardRef<HTMLDivElement, Props>(
   function (props, ref) {
     const { value, setValue, variant, ...other } = props
+    const [ref2, { width }] = useMeasure()
     const [editedValue, setEditedValue] = useState<string>()
-    const [sizerNode, setSizerNode] = useState<HTMLSpanElement | null>(null)
     const [inputNode, setInputNode] = useState<HTMLInputElement | null>(null)
     const [blur, setBlur] = useState(false)
 
@@ -58,16 +59,13 @@ const EditableTypography = React.forwardRef<HTMLDivElement, Props>(
     const { classes } = useStyles(props, { props })
     const theme = useTheme()
 
-    const clientWidth = sizerNode?.clientWidth
-    const width = clientWidth || 0
-
     const val = editedValue === undefined ? value : editedValue
 
     return (
       <div {...other} ref={ref}>
         <div style={{ position: 'relative' }}>
           <Typography
-            ref={(node: HTMLSpanElement) => setSizerNode(node)}
+            ref={ref2}
             component="span"
             variant={variant}
             className={classes.typography}

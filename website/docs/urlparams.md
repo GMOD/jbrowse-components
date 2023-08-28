@@ -283,10 +283,10 @@ Expanded
 ##### Linear synteny view
 
 ```
-https://jbrowse.org/code/jb2/main/?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"type":"LinearSyntenyView","tracks":["volvox_fake_synteny"],"views":[{"loc":"ctgA:1-100","assembly":"volvox"},{"loc":"ctgA:300-400","assembly":"volvox"}]}]}
+https://jbrowse.org/code/jb2/main/?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"type":"LinearSyntenyView","tracks":["volvox_fake_synteny"],"views":[{"loc":"ctgA:1-30000","assembly":"volvox"},{"loc":"ctgA:1000-31000","assembly":"volvox"}]}]}
 ```
 
-[Live link](https://jbrowse.org/code/jb2/main/?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"type":"LinearSyntenyView","tracks":["volvox_fake_synteny"],"views":[{"loc":"ctgA:1-100","assembly":"volvox"},{"loc":"ctgA:300-400","assembly":"volvox"}]}]})
+[Live link](https://jbrowse.org/code/jb2/main/?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"type":"LinearSyntenyView","tracks":["volvox_fake_synteny"],"views":[{"loc":"ctgA:1-30000","assembly":"volvox"},{"loc":"ctgA:1000-31000","assembly":"volvox"}]}]})
 
 Expanded
 
@@ -297,8 +297,8 @@ Expanded
       "type": "LinearSyntenyView",
       "tracks": ["volvox_fake_synteny"],
       "views": [
-        { "loc": "ctgA:1-100", "assembly": "volvox" },
-        { "loc": "ctgA:300-400", "assembly": "volvox" }
+        { "loc": "ctgA:1-30000", "assembly": "volvox" },
+        { "loc": "ctgA:1000-31000", "assembly": "volvox" }
       ]
     }
   ]

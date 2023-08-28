@@ -238,6 +238,13 @@ export function isSelectionContainer(
   )
 }
 
+/** abstract interface for a session allows applying focus to views and widgets */
+export interface SessionWithFocusedViewAndDrawerWidgets
+  extends SessionWithDrawerWidgets {
+  focusedViewId: string | undefined
+  setFocusedViewId(id: string): void
+}
+
 /** minimum interface that all view state models must implement */
 export interface AbstractViewModel {
   id: string

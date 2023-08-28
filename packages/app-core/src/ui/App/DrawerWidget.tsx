@@ -5,7 +5,7 @@ import { observer } from 'mobx-react'
 import { getEnv } from '@jbrowse/core/util'
 import LoadingEllipses from '@jbrowse/core/ui/LoadingEllipses'
 import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
-import { SessionWithDrawerWidgets } from '@jbrowse/core/util/types'
+import { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
 
 // locals
 import Drawer from './Drawer'
@@ -14,7 +14,7 @@ import DrawerHeader from './DrawerHeader'
 const DrawerWidget = observer(function ({
   session,
 }: {
-  session: SessionWithDrawerWidgets
+  session: SessionWithFocusedViewAndDrawerWidgets
 }) {
   const { visibleWidget } = session
   const { pluginManager } = getEnv(session)

@@ -1,3 +1,59 @@
+yarn run v1.22.18 $ lerna-changelog 2.6.3
+
+## Unreleased (2023-08-12)
+
+#### :rocket: Enhancement
+
+- Other
+  - [#3830](https://github.com/GMOD/jbrowse-components/pull/3830) Refactors LGV
+    synteny and pileup with shared mixins
+    ([@carolinebridge-oicr](https://github.com/carolinebridge-oicr))
+  - [#3811](https://github.com/GMOD/jbrowse-components/pull/3811) Add ability to
+    show/hide all tracks in category ([@cmdcolin](https://github.com/cmdcolin))
+- `app-core`
+  - [#3810](https://github.com/GMOD/jbrowse-components/pull/3810) Add sorting
+    and collapsing options to the hierarchical track selector
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3827](https://github.com/GMOD/jbrowse-components/pull/3827) Add check for
+    document.activeElement == INPUT before undo/redo
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- [#3839](https://github.com/GMOD/jbrowse-components/pull/3839) Fix bug where
+  multi-quantitative tracks plotted incorrectly for some bigwigs with empty
+  regions ([@cmdcolin](https://github.com/cmdcolin))
+- [#3837](https://github.com/GMOD/jbrowse-components/pull/3837) Fix text layout
+  in dotplots with long coordinate strings
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#3825](https://github.com/GMOD/jbrowse-components/pull/3825) Fix SVG export
+  compatibility by removing rgba strings
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#3814](https://github.com/GMOD/jbrowse-components/pull/3814) Fix suspense
+  fallback to track container for lazy loaded display components
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#3808](https://github.com/GMOD/jbrowse-components/pull/3808) Fix track
+  ordering of hierarchical track selector to more closely match the config.json
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#3806](https://github.com/GMOD/jbrowse-components/pull/3806) Fix a bug on the
+  BookmarkWidget mui data grid where labels were not saving
+  ([@carolinebridge-oicr](https://github.com/carolinebridge-oicr))
+- [#3804](https://github.com/GMOD/jbrowse-components/pull/3804) Fix version
+  missing from about menu in @jbrowse/react-app
+  ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :house: Internal
+
+- [#3818](https://github.com/GMOD/jbrowse-components/pull/3818) Miscellaneous
+  plugin store code refactoring ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 3
+
+- Caroline Bridge
+  ([@carolinebridge-oicr](https://github.com/carolinebridge-oicr))
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- Robert Buels ([@rbuels](https://github.com/rbuels)) Done in 1.50s.
+
 yarn run v1.22.18 $ lerna-changelog 2.6.2
 
 ## Unreleased (2023-07-12)

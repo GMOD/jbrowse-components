@@ -2,7 +2,7 @@ import React, { Suspense, lazy } from 'react'
 import { AppBar } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import { SessionWithDrawerWidgets } from '@jbrowse/core/util'
+import { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util'
 import Snackbar from '@jbrowse/core/ui/Snackbar'
 import { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
 import { MenuItem as JBMenuItem } from '@jbrowse/core/ui/Menu'
@@ -41,7 +41,7 @@ const useStyles = makeStyles()(theme => ({
 
 type Props = {
   HeaderButtons?: React.ReactElement
-  session: SessionWithDrawerWidgets & {
+  session: SessionWithFocusedViewAndDrawerWidgets & {
     savedSessionNames: string[]
     menus: { label: string; menuItems: JBMenuItem[] }[]
     renameCurrentSession: (arg: string) => void

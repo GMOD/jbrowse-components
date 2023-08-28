@@ -163,7 +163,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get hSortTrackNames() {
+      get activeSortTrackNames() {
         return (
           self.sortTrackNames ??
           getConf(getSession(self), ['hierarchical', 'sort', 'trackNames'])
@@ -172,7 +172,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get hSortCategories() {
+      get activeSortCategories() {
         return (
           self.sortCategories ??
           getConf(getSession(self), ['hierarchical', 'sort', 'categories'])
