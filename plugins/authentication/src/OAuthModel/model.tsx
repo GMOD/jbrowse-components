@@ -348,9 +348,8 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           // refresh token succeeds, set doUserFlow to false
           if (refreshToken) {
             try {
-              const token = await self.exchangeRefreshForAccessToken(
-                refreshToken,
-              )
+              const token =
+                await self.exchangeRefreshForAccessToken(refreshToken)
               resolve(token)
               doUserFlow = false
             } catch (e) {

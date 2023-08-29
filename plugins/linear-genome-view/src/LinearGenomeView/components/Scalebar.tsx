@@ -144,6 +144,7 @@ const RenderedScalebarLabels = observer(({ model }: { model: LGV }) => {
             <InterRegionPaddingBlockComponent
               key={k}
               width={widthPx}
+              style={{ background: 'none' }}
               boundary={block.variant === 'boundary'}
             />
           )
