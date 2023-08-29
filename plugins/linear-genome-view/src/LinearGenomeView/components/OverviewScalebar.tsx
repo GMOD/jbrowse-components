@@ -97,9 +97,9 @@ const Polygon = observer(function ({
   if (!contentBlocks.length) {
     return null
   }
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
   const first = contentBlocks.at(0)!
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
   const last = contentBlocks.at(-1)!
   const topLeft =
     (overview.bpToPx({
@@ -245,9 +245,9 @@ const Scalebar = observer(function ({
   if (!visibleRegions.length) {
     return null
   }
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
   const first = visibleRegions.at(0)!
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
   const last = visibleRegions.at(-1)!
 
   const firstOverviewPx =

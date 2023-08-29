@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import * as ts from 'typescript'
 import { promisify } from 'util'
 import { exec } from 'child_process'

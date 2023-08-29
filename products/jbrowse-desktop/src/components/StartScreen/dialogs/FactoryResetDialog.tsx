@@ -5,17 +5,17 @@ import {
   DialogContentText,
   DialogActions,
 } from '@mui/material'
-import { Dialog } from '@jbrowse/core/ui'
+import { Dialog, FactoryResetDialog } from '@jbrowse/core/ui'
 
-export default ({
+export default function FactoryResetDialog({
   open,
   onClose,
   onFactoryReset,
 }: {
   open: boolean
-  onClose: Function
+  onClose: () => void
   onFactoryReset: Function
-}) => {
+}) {
   return (
     <Dialog open={open} onClose={() => onClose()} title="Reset">
       <DialogContent>

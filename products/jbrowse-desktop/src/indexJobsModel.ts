@@ -41,7 +41,7 @@ export interface TextJobsEntry extends JobsEntry {
   statusMessage?: string
 }
 
-export default function jobsModelFactory(pluginManager: PluginManager) {
+export default function jobsModelFactory(_pluginManager: PluginManager) {
   return types
     .model('JobsManager', {})
     .volatile(() => ({

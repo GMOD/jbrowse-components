@@ -53,9 +53,9 @@ export function calculateUTRs(cds: Feat[], exons: Feat[]) {
   if (!cds.length) {
     return []
   }
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
   const firstCds = cds.at(0)!
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
   const lastCds = cds.at(-1)!
   const firstCdsIdx = exons.findIndex(
     exon => exon.end >= firstCds.start && exon.start <= firstCds.start,
@@ -84,9 +84,9 @@ export function calculateUTRs2(cds: Feat[], parentFeat: Feat) {
   if (!cds.length) {
     return []
   }
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
   const firstCds = cds.at(0)!
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
   const lastCds = cds.at(-1)!
 
   const fiveUTRs = [{ start: parentFeat.start, end: firstCds.start }].map(
