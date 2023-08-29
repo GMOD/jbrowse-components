@@ -28,9 +28,7 @@ export function readFeaturesToMismatches(
   let sublen = 0
   let lastPos = start
 
-  for (let i = 0; i < readFeatures.length; i++) {
-    const f = readFeatures[i]
-    const { code, pos, data, sub, ref } = f
+  for (const { refPos: p, code, pos, data, sub, ref } of readFeatures) {
     sublen = refPos - lastPos
     lastPos = refPos
 
@@ -43,7 +41,7 @@ export function readFeaturesToMismatches(
       }
       insLen = 0
     }
-    refPos = f.refPos - 1 - start
+    refPos = p - 1 - start
 
     if (code === 'X') {
       // substitution
@@ -150,8 +148,7 @@ export function readFeaturesToCIGAR(
   let sublen = 0
   let insLen = 0
   if (readFeatures !== undefined) {
-    for (let i = 0; i < readFeatures.length; i++) {
-      const { code, refPos, sub, data } = readFeatures[i]
+    for (const { code, refPos, sub, data } of readFeatures) {
       sublen = refPos - lastPos
       seq += ref.slice(lastPos - refStart, refPos - refStart)
       lastPos = refPos

@@ -25,10 +25,10 @@ export default class SerializableFilterChain {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   passes(...args: any[]) {
-    for (let i = 0; i < this.filterChain.length; i += 1) {
+    for (const entry of this.filterChain) {
       if (
         // @ts-expect-error
-        !this.filterChain[i].expr.evalSync({ feature: args[0] })
+        !entry.expr.evalSync({ feature: args[0] })
       ) {
         return false
       }

@@ -60,13 +60,13 @@ export default class extends BaseFeatureDataAdapter {
         let nc = 0
         let ng = 0
         let len = 0
-        for (let j = 0; j < r.length; j++) {
-          if (r[j] === 'c' || r[j] === 'C') {
+        for (const letter of r) {
+          if (letter === 'c' || letter === 'C') {
             nc++
-          } else if (r[j] === 'g' || r[j] === 'G') {
+          } else if (letter === 'g' || letter === 'G') {
             ng++
           }
-          if (r[j] !== 'N') {
+          if (letter !== 'N') {
             len++
           }
         }

@@ -42,8 +42,7 @@ export default class extends BaseFeatureDataAdapter {
       .split(/\n|\r\n|\r/)
       .filter(f => !!f && !f.startsWith('#'))
     const feats = {} as Record<string, string[]>
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i]
+    for (const line of lines) {
       if (line.startsWith('#')) {
         continue
       }
@@ -52,7 +51,7 @@ export default class extends BaseFeatureDataAdapter {
       if (!feats[refName]) {
         feats[refName] = []
       }
-      feats[refName].push(lines[i])
+      feats[refName].push(line)
     }
 
     return { feats }
@@ -96,8 +95,7 @@ export default class extends BaseFeatureDataAdapter {
         }),
     )
 
-    for (let i = 0; i < ret.length; i++) {
-      const obj = ret[i]
+    for (const obj of ret) {
       intervalTree.insert([obj.get('start'), obj.get('end')], obj)
     }
     return intervalTree

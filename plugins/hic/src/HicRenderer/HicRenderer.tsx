@@ -82,8 +82,7 @@ export default class HicRenderer extends ServerSideRendererType {
       let minBin = 0
       let maxBin = 0
       await abortBreakPoint(signal)
-      for (let i = 0; i < features.length; i++) {
-        const { bin1, bin2, counts } = features[i]
+      for (const { bin1, bin2, counts } of features) {
         maxScore = Math.max(counts, maxScore)
         minBin = Math.min(Math.min(bin1, bin2), minBin)
         maxBin = Math.max(Math.max(bin1, bin2), maxBin)
@@ -99,8 +98,7 @@ export default class HicRenderer extends ServerSideRendererType {
       }
       ctx.rotate(-Math.PI / 4)
       let start = Date.now()
-      for (let i = 0; i < features.length; i++) {
-        const { bin1, bin2, counts } = features[i]
+      for (const { bin1, bin2, counts } of features) {
         ctx.fillStyle = readConfObject(config, 'color', {
           count: counts,
           maxScore,

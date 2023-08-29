@@ -51,8 +51,7 @@ export function renderMismatches({
 
   // two pass rendering: first pass, draw all the mismatches except wide
   // insertion markers
-  for (let i = 0; i < mismatches.length; i += 1) {
-    const mismatch = mismatches[i]
+  for (const mismatch of mismatches) {
     const mstart = start + mismatch.start
     const mlen = mismatch.length
     const mbase = mismatch.base
@@ -164,8 +163,7 @@ export function renderMismatches({
 
   // second pass, draw wide insertion markers on top
   if (drawIndels) {
-    for (let i = 0; i < mismatches.length; i += 1) {
-      const mismatch = mismatches[i]
+    for (const mismatch of mismatches) {
       const mstart = start + mismatch.start
       const mlen = mismatch.length
       const [leftPx] = bpSpanPx(mstart, mstart + mlen, region, bpPerPx)

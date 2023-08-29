@@ -122,7 +122,7 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
   }
 
   private resultsToRefNames(response: SPARQLResponse): string[] {
-    const rows = ((response || {}).results || {}).bindings || []
+    const rows = response?.results?.bindings || []
     if (!rows.length) {
       return []
     }
@@ -137,7 +137,7 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
     results: SPARQLResponse,
     refName: string,
   ): SimpleFeature[] {
-    const rows = ((results || {}).results || {}).bindings || []
+    const rows = results?.results?.bindings || []
     if (!rows.length) {
       return []
     }

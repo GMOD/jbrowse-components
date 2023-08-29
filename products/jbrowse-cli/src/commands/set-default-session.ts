@@ -6,8 +6,9 @@ import JBrowseCommand from '../base'
 
 const fsPromises = fs.promises
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type DefaultSession = Record<string, any>
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Track = Record<string, any>
 
 interface Config {

@@ -39,8 +39,8 @@ describe('GranularRectLayout', () => {
       ['1,32', 239691, 245015, 16],
     ]
 
-    for (let i = 0; i < testRects.length; i += 1) {
-      const top = l.addRect(...testRects[i])
+    for (const rect of testRects) {
+      const top = l.addRect(...rect)
       expect(top).toEqual(0)
     }
   })

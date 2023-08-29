@@ -94,8 +94,7 @@ export function drawPairChains({
   const maxD = Math.log(max(coords.map(c => c.distance)))
   const minD = Math.max(Math.log(min(coords.map(c => c.distance))) - 1, 0)
   const scaler = (self.height - 20) / (maxD - minD)
-  for (let i = 0; i < coords.length; i++) {
-    const { r1e, r1s, r2e, r2s, distance, v0, v1 } = coords[i]
+  for (const { r1e, r1s, r2e, r2s, distance, v0, v1 } of coords) {
     const w1 = Math.max(r1e - r1s, 2)
     const w2 = Math.max(r2e - r2s, 2)
     const [fill, stroke] = getPairedColor({ type, v0, v1, stats }) || []

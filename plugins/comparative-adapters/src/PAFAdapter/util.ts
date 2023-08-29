@@ -57,8 +57,7 @@ export interface PAFRecord {
 
 export function getWeightedMeans(ret: PAFRecord[]) {
   const scoreMap: Record<string, { quals: number[]; len: number[] }> = {}
-  for (let i = 0; i < ret.length; i++) {
-    const entry = ret[i]
+  for (const entry of ret) {
     const query = entry.qname
     const target = entry.tname
     const key = query + '-' + target
@@ -75,8 +74,7 @@ export function getWeightedMeans(ret: PAFRecord[]) {
       return [key, weightedMean(vals)]
     }),
   )
-  for (let i = 0; i < ret.length; i++) {
-    const entry = ret[i]
+  for (const entry of ret) {
     const query = entry.qname
     const target = entry.tname
     const key = query + '-' + target
@@ -85,13 +83,11 @@ export function getWeightedMeans(ret: PAFRecord[]) {
 
   let min = 10000
   let max = 0
-  for (let i = 0; i < ret.length; i++) {
-    const entry = ret[i]
+  for (const entry of ret) {
     min = Math.min(entry.extra.meanScore || 0, min)
     max = Math.max(entry.extra.meanScore || 0, max)
   }
-  for (let i = 0; i < ret.length; i++) {
-    const entry = ret[i]
+  for (const entry of ret) {
     const b = entry.extra.meanScore || 0
     entry.extra.meanScore = (b - min) / (max - min)
   }

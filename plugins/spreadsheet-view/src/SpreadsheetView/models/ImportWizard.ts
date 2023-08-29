@@ -103,12 +103,12 @@ const ImportWizard = types
         const name = self.fileName
 
         if (name) {
-          const match = fileTypesRegexp.exec(name)
-          if (match && match[1]) {
+          const firstMatch = fileTypesRegexp.exec(name)?.[1]
+          if (firstMatch) {
             self.fileType =
-              match[1] === 'tsv' && name.includes('star-fusion')
+              firstMatch === 'tsv' && name.includes('star-fusion')
                 ? 'STAR-Fusion'
-                : match[1].toUpperCase()
+                : firstMatch.toUpperCase()
           }
         }
       }

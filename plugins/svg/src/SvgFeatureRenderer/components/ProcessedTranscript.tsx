@@ -67,20 +67,20 @@ function makeUTRs(parent: Feature, subs: Feature[]) {
 
   // gather exons, find coding start and end, and look for UTRs
   const exons = []
-  for (let i = 0; i < subparts.length; i++) {
-    const type = subparts[i].get('type')
+  for (const subpart of subparts) {
+    const type = subpart.get('type')
     if (/^cds/i.test(type)) {
-      if (codeStart > subparts[i].get('start')) {
-        codeStart = subparts[i].get('start')
+      if (codeStart > subpart.get('start')) {
+        codeStart = subpart.get('start')
       }
-      if (codeEnd < subparts[i].get('end')) {
-        codeEnd = subparts[i].get('end')
+      if (codeEnd < subpart.get('end')) {
+        codeEnd = subpart.get('end')
       }
     } else if (/exon/i.test(type)) {
-      exons.push(subparts[i])
-    } else if (isUTR(subparts[i])) {
-      haveLeftUTR = subparts[i].get('start') === parent.get('start')
-      haveRightUTR = subparts[i].get('end') === parent.get('end')
+      exons.push(subpart)
+    } else if (isUTR(subpart)) {
+      haveLeftUTR = subpart.get('start') === parent.get('start')
+      haveRightUTR = subpart.get('end') === parent.get('end')
     }
   }
 

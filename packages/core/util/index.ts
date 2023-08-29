@@ -1260,24 +1260,24 @@ export function localStorageSetItem(str: string, item: string) {
 
 export function max(arr: number[], init = -Infinity) {
   let max = init
-  for (let i = 0; i < arr.length; i++) {
-    max = arr[i] > max ? arr[i] : max
+  for (const entry of arr) {
+    max = entry > max ? entry : max
   }
   return max
 }
 
 export function min(arr: number[], init = Infinity) {
   let min = init
-  for (let i = 0; i < arr.length; i++) {
-    min = arr[i] < min ? arr[i] : min
+  for (const entry of arr) {
+    min = entry < min ? entry : min
   }
   return min
 }
 
 export function sum(arr: number[]) {
   let sum = 0
-  for (let i = 0; i < arr.length; i++) {
-    sum += arr[i]
+  for (const entry of arr) {
+    sum += entry
   }
   return sum
 }

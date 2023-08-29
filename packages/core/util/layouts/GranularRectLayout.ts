@@ -457,8 +457,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     const pLeft = Math.floor(left / this.pitchX)
     const pRight = Math.floor(right / this.pitchX)
     const { bitmap } = this
-    for (let y = 0; y < bitmap.length; y += 1) {
-      const row = bitmap[y]
+    for (const row of bitmap) {
       if (row) {
         row.discardRange(pLeft, pRight)
       }

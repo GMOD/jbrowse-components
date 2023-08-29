@@ -114,8 +114,7 @@ export function viewportVisibleSection(
       [viewR, viewB],
     ]
     let maxRho = -Infinity
-    for (let i = 0; i < vertices.length; i += 1) {
-      const [x, y] = vertices[i]
+    for (const [x, y] of vertices) {
       const rho = Math.sqrt(x * x + y * y)
       if (rho > maxRho) {
         maxRho = rho
@@ -231,9 +230,8 @@ export function viewportVisibleSection(
   let rhoMax = -Infinity
   let thetaMin = Infinity
   let thetaMax = -Infinity
-  for (let i = 0; i < vertices.length; i += 1) {
+  for (const [vx, vy] of vertices) {
     // ignore vertex if outside the viewport
-    const [vx, vy] = vertices[i]
     if (vx >= viewL && vx <= viewR && vy >= viewT && vy <= viewB) {
       const [rho, theta] = cartesianToPolar(vx * reflect, vy * reflect)
       // ignore vertex if outside the circle

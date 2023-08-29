@@ -191,7 +191,7 @@ test('right order when using multiple categories', async () => {
   const list = getAllByTestId('htsTrackLabel', {
     exact: false,
   })
-  for (let i = 0; i < list.length; i++) {
-    expect(list[i].textContent).toMatchSnapshot()
+  for (const entry of list) {
+    expect(entry.textContent).toMatchSnapshot()
   }
 })

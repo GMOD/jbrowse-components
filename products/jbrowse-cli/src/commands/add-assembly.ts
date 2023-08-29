@@ -398,7 +398,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
     const { name } = runFlags
 
     const assembly = await this.getAssembly()
-    if (runFlags.alias && runFlags.alias.length) {
+    if (runFlags.alias?.length) {
       this.debug(`Adding assembly aliases: ${runFlags.alias}`)
       assembly.aliases = runFlags.alias
     }

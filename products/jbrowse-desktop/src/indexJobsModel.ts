@@ -13,7 +13,9 @@ import {
 } from '@jbrowse/text-indexing'
 import { isAbortException, isSessionModelWithWidgets } from '@jbrowse/core/util'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Track = Record<string, any>
+
 interface TrackTextIndexing {
   attributes: string[]
   exclude: string[]
