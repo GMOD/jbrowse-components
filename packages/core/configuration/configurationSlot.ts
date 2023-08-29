@@ -142,7 +142,7 @@ const JexlStringType = types.refinement('JexlString', types.string, str =>
   str.startsWith('jexl:'),
 )
 function json(value: any) {
-  return value.toJSON ? value.toJSON() : `"${value}"`
+  return value?.toJSON ? value.toJSON() : `"${value}"`
 }
 export interface ConfigSlotDefinition {
   /** human-readable description of the slot's meaning */
