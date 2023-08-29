@@ -219,7 +219,7 @@ const SessionLoader = types
 
     async fetchSessionStorageSession() {
       const sessionStr = sessionStorage.getItem('current')
-      const query = (self.sessionQuery as string).replace('local-', '')
+      const query = self.sessionQuery!.replace('local-', '')
 
       // check if
       if (sessionStr) {

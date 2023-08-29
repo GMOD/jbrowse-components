@@ -612,7 +612,7 @@ export function iterMap<T, U>(
  * Otherwise, findLastIndex returns -1.
  */
 export function findLastIndex<T>(
-  array: Array<T>,
+  array: T[],
   predicate: (value: T, index: number, obj: T[]) => boolean,
 ): number {
   let l = array.length
@@ -625,7 +625,7 @@ export function findLastIndex<T>(
 }
 
 export function findLast<T>(
-  array: Array<T>,
+  array: T[],
   predicate: (value: T, index: number, obj: T[]) => boolean,
 ): T | undefined {
   let l = array.length
@@ -885,7 +885,7 @@ export const complement = (() => {
     b: 'v',
     R: 'Y',
     G: 'C',
-  } as { [key: string]: string }
+  } as Record<string, string>
 
   return (seqString: string) => {
     return seqString.replaceAll(complementRegex, m => complementTable[m] || '')
@@ -1005,7 +1005,7 @@ export const defaultCodonTable = {
  * permutations of upper and lower case nucleotides
  */
 export function generateCodonTable(table: any) {
-  const tempCodonTable: { [key: string]: string } = {}
+  const tempCodonTable: Record<string, string> = {}
   Object.keys(table).forEach(codon => {
     const aa = table[codon]
     const nucs: string[][] = []
@@ -1090,7 +1090,7 @@ export async function bytesForRegions(
     .reduce((a, b) => a + b.end - b.start, 0)
 }
 
-export type ViewSnap = {
+export interface ViewSnap {
   bpPerPx: number
   interRegionPaddingWidth: number
   minimumBlockWidth: number
@@ -1287,7 +1287,7 @@ export function avg(arr: number[]) {
 }
 
 export function groupBy<T>(array: T[], predicate: (v: T) => string) {
-  const result = {} as { [key: string]: T[] }
+  const result = {} as Record<string, T[]>
   for (const value of array) {
     const entry = (result[predicate(value)] ||= [])
     entry.push(value)
@@ -1347,7 +1347,7 @@ interface BasicFeature {
 }
 
 // hashmap of refName->array of features
-type FeaturesPerRef = { [key: string]: BasicFeature[] }
+type FeaturesPerRef = Record<string, BasicFeature[]>
 
 export function gatherOverlaps(regions: BasicFeature[]) {
   const memo = {} as FeaturesPerRef

@@ -56,7 +56,7 @@ export interface PAFRecord {
 // situations
 
 export function getWeightedMeans(ret: PAFRecord[]) {
-  const scoreMap: { [key: string]: { quals: number[]; len: number[] } } = {}
+  const scoreMap: Record<string, { quals: number[]; len: number[] }> = {}
   for (let i = 0; i < ret.length; i++) {
     const entry = ret[i]
     const query = entry.qname

@@ -66,7 +66,7 @@ export function getAlignmentShapeColor({
           }[val as '-' | '+'] || 'color_nostrand'
         ]
       } else {
-        return colorTagMap[val] || fillColor['color_nostrand']
+        return colorTagMap[val] || fillColor.color_nostrand
       }
     }
     case 'insertSizeAndPairOrientation':

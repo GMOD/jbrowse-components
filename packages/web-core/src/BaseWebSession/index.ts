@@ -360,7 +360,9 @@ export function BaseWebSession({
             label: 'Copy track',
             disabled: isRefSeq,
             onClick: () => {
-              type Display = { displayId: string }
+              interface Display {
+                displayId: string
+              }
               const snap = clone(getSnapshot(config)) as {
                 [key: string]: unknown
                 displays: Display[]

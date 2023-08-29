@@ -22,7 +22,7 @@ interface SearchResults {
   exact: [string, number, string, string, number, number][]
 }
 
-export type NamesIndexRecord = string | Array<string | number>
+export type NamesIndexRecord = string | (string | number)[]
 
 type IndexFile = Record<string, SearchResults>
 

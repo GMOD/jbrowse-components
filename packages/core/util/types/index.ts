@@ -386,20 +386,18 @@ export function isAbstractMenuManager(
 // Empty interfaces required by mobx-state-tree
 // See https://mobx-state-tree.js.org/tips/typescript#using-a-mst-type-at-design-time
 
-export interface NoAssemblyRegion
-  extends SnapshotIn<typeof MUNoAssemblyRegion> {}
+export type NoAssemblyRegion = SnapshotIn<typeof MUNoAssemblyRegion>
 
 /** a description of a specific genomic region. assemblyName, refName, start, end, and reversed */
-export interface Region extends SnapshotIn<typeof MUIRegion> {}
+export type Region = SnapshotIn<typeof MUIRegion>
 
 export interface AugmentedRegion extends Region {
   originalRefName?: string
 }
 
-export interface LocalPathLocation
-  extends SnapshotIn<typeof MULocalPathLocation> {}
+export type LocalPathLocation = SnapshotIn<typeof MULocalPathLocation>
 
-export interface UriLocation extends SnapshotIn<typeof MUUriLocation> {}
+export type UriLocation = SnapshotIn<typeof MUUriLocation>
 
 export function isUriLocation(location: unknown): location is UriLocation {
   return (
@@ -469,16 +467,22 @@ export function isRetryException(exception: Error): boolean {
   )
 }
 
-export interface BlobLocation extends SnapshotIn<typeof MUBlobLocation> {}
+export type BlobLocation = SnapshotIn<typeof MUBlobLocation>
 
 export type FileLocation = LocalPathLocation | UriLocation | BlobLocation
 
 // These types are slightly different than the MST models representing a
 // location because a blob cannot be stored in a MST, so this is the
 // pre-processed file location
-export type PreUriLocation = { uri: string }
-export type PreLocalPathLocation = { localPath: string }
-export type PreBlobLocation = { blob: File }
+export interface PreUriLocation {
+  uri: string
+}
+export interface PreLocalPathLocation {
+  localPath: string
+}
+export interface PreBlobLocation {
+  blob: File
+}
 export type PreFileLocation =
   | PreUriLocation
   | PreLocalPathLocation

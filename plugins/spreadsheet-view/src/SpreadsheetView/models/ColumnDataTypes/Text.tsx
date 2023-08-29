@@ -37,7 +37,7 @@ const OPERATION_PREDICATES = {
     return textInCell.toLowerCase() === stringToFind
   },
   'starts with': (textInCell, stringToFind) => {
-    return textInCell.toLowerCase().indexOf(stringToFind) === 0
+    return textInCell.toLowerCase().startsWith(stringToFind)
   },
   'ends with': (textInCell, stringToFind) => {
     const index = textInCell.toLowerCase().indexOf(stringToFind)
@@ -46,7 +46,7 @@ const OPERATION_PREDICATES = {
     }
     return index === textInCell.length - stringToFind.length
   },
-} as { [key: string]: (a: string, b: string) => boolean }
+} as Record<string, (a: string, b: string) => boolean>
 
 OPERATION_PREDICATES['does not contain'] = (textInCell, stringToFind) => {
   return !OPERATION_PREDICATES.contains(textInCell, stringToFind)
@@ -142,7 +142,7 @@ const ColumnTextFilter = types
       return function stringPredicate(_sheet: any, row: any) {
         const { cellsWithDerived } = row
         const cell = cellsWithDerived[columnNumber]
-        if (!cell || !cell.text) {
+        if (!cell?.text) {
           return false
         }
         const predicate = OPERATION_PREDICATES[operation]

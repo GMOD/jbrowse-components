@@ -16,7 +16,7 @@ function AddTrackSelector({ model }: { model: AddTrackModel }) {
     'Default add track workflow': DefaultAddTrackWorkflow,
     'Add track JSON': PasteConfigWorkflow,
     ...Object.fromEntries(widgets.map(w => [w.name, w.ReactComponent])),
-  } as { [key: string]: React.FC<{ model: AddTrackModel }> }
+  } as Record<string, React.FC<{ model: AddTrackModel }>>
 
   // make sure the selected value is in the list
   const val2 = ComponentMap[val] ? val : 'Default add track workflow'

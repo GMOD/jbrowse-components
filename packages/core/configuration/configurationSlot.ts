@@ -8,7 +8,7 @@ function isValidColorString(/* str */) {
   // TODO: check all the crazy cases for whether it's a valid HTML/CSS color string
   return true
 }
-const typeModels: { [typeName: string]: any } = {
+const typeModels: Record<string, any> = {
   stringArray: types.array(types.string),
   stringArrayMap: types.map(types.array(types.string)),
   numberMap: types.map(types.number),
@@ -23,7 +23,7 @@ const typeModels: { [typeName: string]: any } = {
 }
 
 // default values we use if the defaultValue is malformed or does not work
-const fallbackDefaults: { [typeName: string]: any } = {
+const fallbackDefaults: Record<string, any> = {
   stringArray: [],
   stringArrayMap: {},
   numberMap: {},
@@ -54,7 +54,7 @@ const objectJSON = (self: { value: any }) => ({
 })
 
 // custom actions for modifying the value models
-const typeModelExtensions: { [typeName: string]: (self: any) => any } = {
+const typeModelExtensions: Record<string, (self: any) => any> = {
   fileLocation: objectJSON,
   number: literalJSON,
   integer: literalJSON,

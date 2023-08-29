@@ -61,7 +61,9 @@ async function getFeats(f1: string, f2: string) {
   return { bamFeaturesArray, cramFeaturesArray }
 }
 
-type M = { start: number }
+interface M {
+  start: number
+}
 
 async function cigarCheck(f: string) {
   const { cramFeaturesArray, bamFeaturesArray } = await getFeats(

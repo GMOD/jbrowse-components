@@ -19,12 +19,13 @@ function isGzip(buf: Buffer) {
 
 export default class extends BaseFeatureDataAdapter {
   protected gtfFeatures?: Promise<{
-    feats: { [key: string]: string[] }
+    feats: Record<string, string[]>
   }>
 
-  protected intervalTrees: {
-    [key: string]: Promise<IntervalTree | undefined> | undefined
-  } = {}
+  protected intervalTrees: Record<
+    string,
+    Promise<IntervalTree | undefined> | undefined
+  > = {}
 
   private async loadDataP(opts: BaseOptions = {}) {
     const gtfLoc = this.getConf('gtfLocation')
@@ -40,7 +41,7 @@ export default class extends BaseFeatureDataAdapter {
     const lines = data
       .split(/\n|\r\n|\r/)
       .filter(f => !!f && !f.startsWith('#'))
-    const feats = {} as { [key: string]: string[] }
+    const feats = {} as Record<string, string[]>
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i]
       if (line.startsWith('#')) {

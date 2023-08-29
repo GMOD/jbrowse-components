@@ -14,8 +14,8 @@ import { IAnyStateTreeNode } from 'mobx-state-tree'
 
 const MAX_FILE_SIZE = 512 * 1024 ** 2 // 512 MiB
 
-function styledBy(property: string, mapping: { [key: string]: string }) {
-  return (props: { [key: string]: string }) => mapping[props[property]]
+function styledBy(property: string, mapping: Record<string, string>) {
+  return (props: Record<string, string>) => mapping[props[property]]
 }
 
 // @ts-expect-error

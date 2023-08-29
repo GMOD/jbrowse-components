@@ -67,9 +67,10 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
     columnNames: string[]
   }>
 
-  protected intervalTrees: {
-    [key: string]: Promise<IntervalTree | undefined> | undefined
-  } = {}
+  protected intervalTrees: Record<
+    string,
+    Promise<IntervalTree | undefined> | undefined
+  > = {}
 
   public static capabilities = ['getFeatures', 'getRefNames']
 

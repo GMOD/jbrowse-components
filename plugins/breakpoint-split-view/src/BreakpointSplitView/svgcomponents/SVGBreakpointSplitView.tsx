@@ -46,7 +46,7 @@ function getTrackOffsets(
   textOffset: number,
   extra = 0,
 ) {
-  const offsets = {} as { [key: string]: number }
+  const offsets = {} as Record<string, number>
   let curr = textOffset
   for (let i = 0; i < view.tracks.length; i++) {
     const track = view.tracks[i]

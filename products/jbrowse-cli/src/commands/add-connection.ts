@@ -7,13 +7,11 @@ import parseJSON from 'json-parse-better-errors'
 import fetch from '../fetchWithProxy'
 import JBrowseCommand from '../base'
 
-interface Connection {
-  [key: string]: unknown
-}
+type Connection = Record<string, unknown>
 
 interface Assembly {
   name: string
-  sequence: { [key: string]: unknown }
+  sequence: Record<string, unknown>
 }
 
 interface Config {

@@ -21,7 +21,7 @@ export function getAllChildren(subtree?: TreeNode): AnyConfigurationModel[] {
   // @ts-expect-error
   return (
     subtree?.children.map(t =>
-      t.children.length ? getAllChildren(t) : (t.conf as AnyConfigurationModel),
+      t.children.length ? getAllChildren(t) : t.conf!,
     ) || []
   ).flat(Infinity)
 }

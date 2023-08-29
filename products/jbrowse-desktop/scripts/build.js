@@ -125,7 +125,7 @@ checkBrowsers(paths.appPath, isInteractive)
     },
   )
   .catch(err => {
-    if (err && err.message) {
+    if (err?.message) {
       console.log(err.message)
     }
     process.exit(1)
@@ -149,8 +149,7 @@ function build(previousFileSizes) {
         // Add additional information for postcss errors
         if (Object.prototype.hasOwnProperty.call(err, 'postcssNode')) {
           errMessage +=
-            '\nCompileError: Begins at CSS selector ' +
-            err['postcssNode'].selector
+            '\nCompileError: Begins at CSS selector ' + err.postcssNode.selector
         }
 
         messages = formatWebpackMessages({

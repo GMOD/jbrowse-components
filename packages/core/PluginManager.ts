@@ -82,12 +82,12 @@ type PluggableElementTypeGroup =
 
 /** internal class that holds the info for a certain element type */
 class TypeRecord<ElementClass extends PluggableElementBase> {
-  registeredTypes: { [name: string]: ElementClass } = {}
+  registeredTypes: Record<string, ElementClass> = {}
 
   constructor(
     public typeName: string,
     public baseClass:
-      | { new (...args: unknown[]): ElementClass }
+      | (new (...args: unknown[]) => ElementClass)
       // covers abstract class case
       | (Function & {
           prototype: ElementClass
@@ -192,7 +192,7 @@ export default class PluginManager {
 
   rootModel?: AbstractRootModel
 
-  extensionPoints: Map<string, Function[]> = new Map()
+  extensionPoints = new Map<string, Function[]>()
 
   constructor(initialPlugins: (Plugin | PluginLoadRecord)[] = []) {
     // add the core plugin
@@ -205,7 +205,7 @@ export default class PluginManager {
   }
 
   pluginConfigurationSchemas() {
-    const configurationSchemas: { [key: string]: unknown } = {}
+    const configurationSchemas: Record<string, unknown> = {}
     this.plugins.forEach(plugin => {
       if (plugin.configurationSchema) {
         configurationSchemas[plugin.name] = plugin.configurationSchema

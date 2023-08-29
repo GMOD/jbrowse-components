@@ -25,9 +25,7 @@ export interface RenderArgsDeserializedWithFeatures
   modificationTagMap?: Record<string, string | undefined>
 }
 
-type Counts = {
-  [key: string]: { total: number; strands: { [key: string]: number } }
-}
+type Counts = Record<string, { total: number; strands: Record<string, number> }>
 
 interface SNPInfo {
   cov: Counts
@@ -95,7 +93,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     const toHeight2 = (n: number) => toY2(originLinear) - toY2(n)
 
     const { bases } = theme.palette
-    const colorForBase: { [key: string]: string } = {
+    const colorForBase: Record<string, string> = {
       A: bases.A.main,
       C: bases.C.main,
       G: bases.G.main,

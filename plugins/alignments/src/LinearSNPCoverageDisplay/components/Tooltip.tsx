@@ -3,16 +3,17 @@ import { observer } from 'mobx-react'
 import { Feature } from '@jbrowse/core/util'
 import { Tooltip } from '@jbrowse/plugin-wiggle'
 
-type Count = {
-  [key: string]: {
+type Count = Record<
+  string,
+  {
     total: number
     '-1': number
     '0': number
     '1': number
   }
-}
+>
 
-type SNPInfo = {
+interface SNPInfo {
   cov: Count
   lowqual: Count
   noncov: Count

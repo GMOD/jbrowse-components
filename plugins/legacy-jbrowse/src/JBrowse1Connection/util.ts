@@ -3,12 +3,12 @@ import { Track, Source } from './types'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isTrack(arg: any): arg is Track {
-  return arg && arg.label && typeof arg.label === 'string'
+  return arg?.label && typeof arg.label === 'string'
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isSource(arg: any): arg is Source {
-  return arg && arg.url && typeof arg.url === 'string'
+  return arg?.url && typeof arg.url === 'string'
 }
 
 /**

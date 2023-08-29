@@ -8,7 +8,7 @@ export interface FeatureLoc {
   child_features: FeatureLoc[][]
   data: unknown
   derived_features: unknown
-  attributes: { [key: string]: unknown[] }
+  attributes: Record<string, unknown[]>
 }
 
 export function featureData(data: FeatureLoc) {

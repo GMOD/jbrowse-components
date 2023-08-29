@@ -397,7 +397,7 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
   )
 }
 
-type ThemeMap = { [key: string]: ThemeOptions }
+type ThemeMap = Record<string, ThemeOptions>
 
 export function createJBrowseTheme(
   configTheme: ThemeOptions = {},
@@ -407,8 +407,8 @@ export function createJBrowseTheme(
   return createTheme(
     createJBrowseBaseTheme(
       themeName === 'default'
-        ? deepmerge(themes['default'], augmentTheme(configTheme))
-        : augmentThemePlus(themes[themeName]) || themes['default'],
+        ? deepmerge(themes.default, augmentTheme(configTheme))
+        : augmentThemePlus(themes[themeName]) || themes.default,
     ),
   )
 }

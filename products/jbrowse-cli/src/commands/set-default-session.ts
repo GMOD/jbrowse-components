@@ -6,19 +6,13 @@ import JBrowseCommand from '../base'
 
 const fsPromises = fs.promises
 
-interface DefaultSession {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any
-}
+type DefaultSession = Record<string, any>
 
-interface Track {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any
-}
+type Track = Record<string, any>
 
 interface Config {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  assemblies?: { name: string; sequence: { [key: string]: any } }[]
+  assemblies?: { name: string; sequence: Record<string, any> }[]
   configuration?: {}
   connections?: unknown[]
   defaultSession?: DefaultSession

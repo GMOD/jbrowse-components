@@ -65,7 +65,7 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
 
     const str = new TextDecoder().decode(buffer)
     const { header, lines } = readVcf(str)
-    const intervalTree = {} as { [key: string]: IntervalTree }
+    const intervalTree = {} as Record<string, IntervalTree>
 
     for (const obj of lines.map((line, id) => {
       const [refName, startP, , ref, , , , info] = line.split('\t')

@@ -21,8 +21,8 @@ export function renderMismatches({
   ctx: CanvasRenderingContext2D
   feat: LayoutFeature
   renderArgs: RenderArgsWithColor
-  colorForBase: { [key: string]: string }
-  contrastForBase: { [key: string]: string }
+  colorForBase: Record<string, string>
+  contrastForBase: Record<string, string>
   mismatchAlpha?: boolean
   drawIndels?: boolean
   drawSNPsMuted?: boolean

@@ -4,7 +4,7 @@ import { IAnyStateTreeNode } from 'mobx-state-tree'
 export function getTag(
   tag: string,
   feat: {
-    tags?: { [key: string]: unknown }
+    tags?: Record<string, unknown>
     [key: string]: unknown
   },
 ) {

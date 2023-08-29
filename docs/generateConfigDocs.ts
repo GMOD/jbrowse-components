@@ -39,7 +39,7 @@ interface Config {
 
 function generateConfigDocs(files: string[]) {
   const cwd = process.cwd() + '/'
-  const contents = {} as { [key: string]: Config }
+  const contents = {} as Record<string, Config>
   extractWithComment(files, obj => {
     const fn = obj.filename
     const fn2 = fn.replace(cwd, '')

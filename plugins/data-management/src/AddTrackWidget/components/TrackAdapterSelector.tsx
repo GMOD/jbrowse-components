@@ -18,7 +18,7 @@ const useStyles = makeStyles()(theme => ({
 // key: category
 // value: array of adapters with that category
 function categorizeAdapters(adaptersList: AdapterType[]) {
-  const map = {} as { [key: string]: AdapterType[] }
+  const map = {} as Record<string, AdapterType[]>
   adaptersList.forEach(adapter => {
     const key = adapter.adapterMetadata?.category || 'Default'
     if (!map[key]) {

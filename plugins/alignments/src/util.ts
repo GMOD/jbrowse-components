@@ -33,7 +33,7 @@ export const orientationTypes = {
 
     R1F2: 'RL',
     R2F1: 'RL',
-  } as { [key: string]: string },
+  } as Record<string, string>,
 
   rf: {
     R1F2: 'LR',
@@ -47,7 +47,7 @@ export const orientationTypes = {
 
     F1R2: 'RL',
     F2R1: 'RL',
-  } as { [key: string]: string },
+  } as Record<string, string>,
 
   ff: {
     F2F1: 'LR',
@@ -61,7 +61,7 @@ export const orientationTypes = {
 
     R2R1: 'RL',
     F1F2: 'RL',
-  } as { [key: string]: string },
+  } as Record<string, string>,
 }
 
 export const pairMap = {

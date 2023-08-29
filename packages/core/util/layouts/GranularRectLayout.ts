@@ -482,7 +482,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
   getByID(id: string) {
     const r = this.rectangles.get(id)
     if (r) {
-      const t = (r.top as number) * this.pitchY
+      const t = r.top! * this.pitchY
       return [
         r.l * this.pitchX,
         t,
@@ -520,7 +520,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
   }
 
   serializeRegion(region: { start: number; end: number }): SerializedLayout {
-    const regionRectangles: { [key: string]: RectTuple } = {}
+    const regionRectangles: Record<string, RectTuple> = {}
     let maxHeightReached = false
     for (const [id, rect] of this.rectangles.entries()) {
       const { l, r, originalHeight, top } = rect
