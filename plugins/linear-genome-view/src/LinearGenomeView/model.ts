@@ -54,7 +54,6 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import MiniControls from './components/MiniControls'
 import Header from './components/Header'
 import { generateLocations, parseLocStrings } from './util'
-
 // lazies
 const ReturnToImportFormDialog = lazy(
   () => import('@jbrowse/core/ui/ReturnToImportFormDialog'),
@@ -1518,30 +1517,34 @@ export function stateModelFactory(pluginManager: PluginManager) {
     }))
     .actions(self => ({
       afterCreate() {
-        document.addEventListener('keydown', e => {
+        function handler(e: KeyboardEvent) {
           const session = getSession(self)
-          if (session.focusedView === self) {
-            if ((e.ctrlKey || e.metaKey) && e.code === 'ArrowLeft') {
+          if (session.focusedView === self && (e.ctrlKey || e.metaKey)) {
+            if (e.code === 'ArrowLeft') {
               e.preventDefault()
               // pan left
               self.slide(-0.9)
             }
-            if ((e.ctrlKey || e.metaKey) && e.code === 'ArrowRight') {
+            if (e.code === 'ArrowRight') {
               e.preventDefault()
               // pan right
               self.slide(0.9)
             }
-            if ((e.ctrlKey || e.metaKey) && e.code === 'ArrowUp') {
+            if (e.code === 'ArrowUp') {
               e.preventDefault()
               // zoom in
               self.zoom(self.bpPerPx / 2)
             }
-            if ((e.ctrlKey || e.metaKey) && e.code === 'ArrowDown') {
+            if (e.code === 'ArrowDown') {
               e.preventDefault()
               // zoom out
               self.zoom(self.bpPerPx * 2)
             }
           }
+        }
+        document.addEventListener('keydown', handler)
+        addDisposer(self, () => {
+          document.removeEventListener('keydown', handler)
         })
       },
     }))
