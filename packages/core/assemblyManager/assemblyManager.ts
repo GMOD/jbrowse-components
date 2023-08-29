@@ -17,7 +17,7 @@ import RpcManager from '../rpc/RpcManager'
  * #stateModel AssemblyManager
  */
 function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
-  type Conf = Instance<typeof conf> | string
+  type Conf = Instance<typeof conf> // this is type any, try to narrow...
   return types
     .model({
       /**

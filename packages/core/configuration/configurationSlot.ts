@@ -141,7 +141,9 @@ const typeModelExtensions: { [typeName: string]: (self: any) => any } = {
 const JexlStringType = types.refinement('JexlString', types.string, str =>
   str.startsWith('jexl:'),
 )
-
+function json(value: any) {
+  return value.toJSON ? value.toJSON() : `"${value}"`
+}
 export interface ConfigSlotDefinition {
   /** human-readable description of the slot's meaning */
   description?: string
@@ -229,12 +231,7 @@ export default function ConfigSlot(
         if (self.isCallback) {
           return undefined
         }
-        function json(value: { toJSON: Function } | any) {
-          if (value && value.toJSON) {
-            return value.toJSON()
-          }
-          return `"${value}"`
-        }
+
         return json(self.value)
       },
     }))

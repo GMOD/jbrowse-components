@@ -5,7 +5,7 @@ import {
   DialogContentText,
   DialogActions,
 } from '@mui/material'
-import { Dialog, FactoryResetDialog } from '@jbrowse/core/ui'
+import { Dialog } from '@jbrowse/core/ui'
 
 export default function FactoryResetDialog({
   open,

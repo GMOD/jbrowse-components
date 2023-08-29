@@ -14,7 +14,6 @@ export default (pluginManager: PluginManager) => {
     async ({
       session,
       assembly,
-      loc,
       tracks = [],
     }: {
       session: AbstractSessionModel

@@ -20,7 +20,7 @@ type ThemeMap = { [key: string]: ThemeOptions }
 /**
  * #stateModel ThemeManagerSessionMixin
  */
-export function ThemeManagerSessionMixin(pluginManager: PluginManager) {
+export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
   return types
     .model({})
     .volatile(() => ({

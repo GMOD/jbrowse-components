@@ -58,7 +58,7 @@ const TrackAdapterSelector = observer(({ model }: { model: AddTrackModel }) => {
         // returning array avoids needing to use a react fragment which
         // Select/TextField sub-elements disagree with
         return [
-          <ListSubheader>{key}</ListSubheader>,
+          <ListSubheader key={key}>{key}</ListSubheader>,
           val.map(elt => (
             <MenuItem key={elt.name} value={elt.name}>
               {elt.displayName}

@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/no-array-reduce */
 'use strict'
 
 const fs = require('fs')

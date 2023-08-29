@@ -37,7 +37,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function JobsListWidget({ model }: { model: JobsListModel }) {
+export default observer(function JobsListWidget({
+  model,
+}: {
+  model: JobsListModel
+}) {
   const { classes } = useStyles()
   const { jobs, finished, queued } = model
   return (
@@ -98,6 +102,4 @@ function JobsListWidget({ model }: { model: JobsListModel }) {
       </Accordion>
     </div>
   )
-}
-
-export default observer(JobsListWidget)
+})

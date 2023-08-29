@@ -31,7 +31,7 @@ export interface ReferringNode {
 /**
  * #stateModel ReferenceManagementSessionMixin
  */
-export function ReferenceManagementSessionMixin(pluginManager: PluginManager) {
+export function ReferenceManagementSessionMixin(_pluginManager: PluginManager) {
   return types
     .model('ReferenceManagementSessionMixin', {})
     .views(self => ({
