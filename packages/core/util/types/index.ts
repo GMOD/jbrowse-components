@@ -385,19 +385,22 @@ export function isAbstractMenuManager(
 
 // Empty interfaces required by mobx-state-tree
 // See https://mobx-state-tree.js.org/tips/typescript#using-a-mst-type-at-design-time
+/* eslint-disable @typescript-eslint/no-empty-interface */
 
-export type NoAssemblyRegion = SnapshotIn<typeof MUNoAssemblyRegion>
+export interface NoAssemblyRegion
+  extends SnapshotIn<typeof MUNoAssemblyRegion> {}
 
 /** a description of a specific genomic region. assemblyName, refName, start, end, and reversed */
-export type Region = SnapshotIn<typeof MUIRegion>
+export interface Region extends SnapshotIn<typeof MUIRegion> {}
 
 export interface AugmentedRegion extends Region {
   originalRefName?: string
 }
 
-export type LocalPathLocation = SnapshotIn<typeof MULocalPathLocation>
+export interface LocalPathLocation
+  extends SnapshotIn<typeof MULocalPathLocation> {}
 
-export type UriLocation = SnapshotIn<typeof MUUriLocation>
+export interface UriLocation extends SnapshotIn<typeof MUUriLocation> {}
 
 export function isUriLocation(location: unknown): location is UriLocation {
   return (
@@ -467,7 +470,7 @@ export function isRetryException(exception: Error): boolean {
   )
 }
 
-export type BlobLocation = SnapshotIn<typeof MUBlobLocation>
+export interface BlobLocation extends SnapshotIn<typeof MUBlobLocation> {}
 
 export type FileLocation = LocalPathLocation | UriLocation | BlobLocation
 
