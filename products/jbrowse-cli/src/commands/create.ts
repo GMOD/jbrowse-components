@@ -1,4 +1,4 @@
-import { flags } from '@oclif/command'
+import { Args, Flags } from '@oclif/core'
 import fs from 'fs'
 import fetch from '../fetchWithProxy'
 import JBrowseCommand from '../base'
@@ -26,37 +26,36 @@ export default class Create extends JBrowseCommand {
     '$ jbrowse create --listVersions',
   ]
 
-  static args = [
-    {
-      name: 'localPath',
+  static args = {
+    localPath: Args.string({
       required: true,
       description: `Location where JBrowse 2 will be installed`,
-    },
-  ]
+    }),
+  }
 
   static flags = {
-    help: flags.help({ char: 'h' }),
-    force: flags.boolean({
+    help: Flags.help({ char: 'h' }),
+    force: Flags.boolean({
       char: 'f',
       description:
         'Overwrites existing JBrowse 2 installation if present in path',
     }),
     // will need to account for pagenation once there is a lot of releases
-    listVersions: flags.boolean({
+    listVersions: Flags.boolean({
       char: 'l',
       description: 'Lists out all versions of JBrowse 2',
     }),
-    branch: flags.string({
+    branch: Flags.string({
       description: 'Download a development build from a named git branch',
     }),
-    nightly: flags.boolean({
+    nightly: Flags.boolean({
       description: 'Download the latest development build from the main branch',
     }),
-    url: flags.string({
+    url: Flags.string({
       char: 'u',
       description: 'A direct URL to a JBrowse 2 release',
     }),
-    tag: flags.string({
+    tag: Flags.string({
       char: 't',
       description:
         'Version of JBrowse 2 to install. Format is v1.0.0.\nDefaults to latest',
@@ -64,7 +63,7 @@ export default class Create extends JBrowseCommand {
   }
 
   async run() {
-    const { args: runArgs, flags: runFlags } = this.parse(Create)
+    const { args: runArgs, flags: runFlags } = await this.parse(Create)
     const { localPath: argsPath } = runArgs as { localPath: string }
     this.debug(`Want to install path at: ${argsPath}`)
 
