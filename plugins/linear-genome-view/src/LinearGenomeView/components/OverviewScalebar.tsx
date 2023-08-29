@@ -97,9 +97,7 @@ const Polygon = observer(function ({
   if (!contentBlocks.length) {
     return null
   }
-
   const first = contentBlocks.at(0)!
-
   const last = contentBlocks.at(-1)!
   const topLeft =
     (overview.bpToPx({

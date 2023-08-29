@@ -230,13 +230,6 @@ module.exports = function (webpackEnv) {
       // It requires a trailing slash, or the file assets will get an incorrect path.
       // We inferred the "public path" (such as / or /my-project) from homepage.
 
-      // Begin: jbrowse-web customizations: auto needed for webworker
-      // the 'auto' setting is important for properly resolving the loading of
-      // worker chunks xref
-      // https://github.com/webpack/webpack/issues/13791#issuecomment-897579223
-      publicPath: 'auto',
-      // End: jbrowse-web customizations
-
       // Point sourcemap entries to original disk location (format as URL on Windows)
       devtoolModuleFilenameTemplate: isEnvProduction
         ? info =>
@@ -587,18 +580,6 @@ module.exports = function (webpackEnv) {
       ].filter(Boolean),
     },
     plugins: [
-      // Begin: jbrowse-web customizations
-      new NodePolyfillPlugin({
-        excludeAliases: ['console'],
-      }),
-      new webpack.DefinePlugin({
-        // Global mobx-state-tree configuration.
-        // Force type checking in production for easier debugging:
-        // xref https://github.com/GMOD/jbrowse-components/pull/1575
-        'process.env.ENABLE_TYPE_CHECK': '"true"',
-      }),
-
-      // End: jbrowse-web customizations
       // Generates an `index.html` file with the <script> injected.
       new HtmlWebpackPlugin(
         Object.assign(
