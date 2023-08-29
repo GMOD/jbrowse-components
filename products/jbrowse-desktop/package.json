@@ -9,14 +9,13 @@
   "dir": "src",
   "repository": "https://github.com/GMOD/jbrowse-components.git",
   "scripts": {
-    "start": "cross-env BROWSER=none craco start",
+    "start": "cross-env BROWSER=none node scripts/start.js",
     "electron": "electron .",
-    "test": "craco test",
-    "electron-ts": "yarn tsc --strict --esModuleInterop --skipLibCheck public/electron.ts",
+    "electron-ts": "tsc --strict --esModuleInterop --skipLibCheck public/electron.ts",
     "preelectron": "npm run electron-ts",
     "prebuild": "npm run electron-ts",
-    "prepack": "yarn build",
-    "build": "CI=false craco build",
+    "prepack": "npm run build",
+    "build": "node scripts/build.js",
     "build-electron": "yarn build && electron-builder build --windows --mac --linux",
     "build-electron:win": "yarn build && electron-builder build --windows",
     "build-electron:mac": "yarn build && electron-builder build --mac",
@@ -101,16 +100,10 @@
     "electron-is-dev": "^2.0.0",
     "electron-updater": "^6.1.1",
     "electron-window-state": "^5.0.3",
-    "eslint": "^8.3.0",
-    "eslint-config-react-app": "^7.0.1",
-    "eslint-webpack-plugin": "^3.1.1",
     "file-loader": "^6.2.0",
     "fs-extra": "^10.0.0",
     "html-webpack-plugin": "^5.5.0",
     "identity-obj-proxy": "^3.0.0",
-    "jest": "^27.4.3",
-    "jest-resolve": "^27.4.2",
-    "jest-watch-typeahead": "^1.0.0",
     "mini-css-extract-plugin": "^2.4.5",
     "mobx": "^6.6.0",
     "mobx-react": "^7.5.0",
@@ -201,62 +194,5 @@
     },
     "afterSign": "scripts/notarize.js"
   },
-  "private": true,
-  "jest": {
-    "roots": [
-      "<rootDir>/src"
-    ],
-    "collectCoverageFrom": [
-      "src/**/*.{js,jsx,ts,tsx}",
-      "!src/**/*.d.ts"
-    ],
-    "setupFiles": [
-      "react-app-polyfill/jsdom"
-    ],
-    "setupFilesAfterEnv": [],
-    "testMatch": [
-      "<rootDir>/src/**/__tests__/**/*.{js,jsx,ts,tsx}",
-      "<rootDir>/src/**/*.{spec,test}.{js,jsx,ts,tsx}"
-    ],
-    "testEnvironment": "jsdom",
-    "transform": {
-      "^.+\\.(js|jsx|mjs|cjs|ts|tsx)$": "<rootDir>/config/jest/babelTransform.js",
-      "^.+\\.css$": "<rootDir>/config/jest/cssTransform.js",
-      "^(?!.*\\.(js|jsx|mjs|cjs|ts|tsx|css|json)$)": "<rootDir>/config/jest/fileTransform.js"
-    },
-    "transformIgnorePatterns": [
-      "[/\\\\]node_modules[/\\\\].+\\.(js|jsx|mjs|cjs|ts|tsx)$",
-      "^.+\\.module\\.(css|sass|scss)$"
-    ],
-    "modulePaths": [],
-    "moduleNameMapper": {
-      "^react-native$": "react-native-web",
-      "^.+\\.module\\.(css|sass|scss)$": "identity-obj-proxy"
-    },
-    "moduleFileExtensions": [
-      "web.js",
-      "js",
-      "web.ts",
-      "ts",
-      "web.tsx",
-      "tsx",
-      "json",
-      "web.jsx",
-      "jsx",
-      "node"
-    ],
-    "watchPlugins": [
-      "jest-watch-typeahead/filename",
-      "jest-watch-typeahead/testname"
-    ],
-    "resetMocks": true
-  },
-  "babel": {
-    "presets": [
-      "react-app"
-    ]
-  },
-  "eslintConfig": {
-    "extends": "react-app"
-  }
+  "private": true
 }
