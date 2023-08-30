@@ -100,9 +100,7 @@ function stateModelFactory(
        * #action
        */
       setJexlFilters(filters: string[]) {
-        filters.forEach((filter: string) => {
-          self.jexlFilters.push(filter)
-        })
+        self.jexlFilters = cast(filters)
       },
 
       /**
