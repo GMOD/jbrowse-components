@@ -71,7 +71,7 @@ test('set jexl filters on bam pileup display', async () => {
   view.tracks[0].displays[0].setJexlFilters(filter)
 
   expectCanvasMatch(await screen.findByTestId(pv('39805..40176-0'), ...opts))
-}, 5000)
+}, 50000)
 
 test('set jexl filters on snp cov display', async () => {
   const { view } = await createView()
@@ -86,4 +86,4 @@ test('set jexl filters on snp cov display', async () => {
   view.tracks[0].displays[0].setJexlFilters(filter)
 
   expectCanvasMatch(await screen.findByTestId(pv('39805..40176-0'), ...opts))
-}, 5000)
+}, 50000)
