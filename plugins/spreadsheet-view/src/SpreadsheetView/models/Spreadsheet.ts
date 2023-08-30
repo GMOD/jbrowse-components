@@ -128,8 +128,7 @@ const Spreadsheet = types
      * #method
      */
     rowSortingComparisonFunction(rowA: Row, rowB: Row) {
-      for (let i = 0; i < self.sortColumns.length; i += 1) {
-        const { columnNumber, descending } = self.sortColumns[i]
+      for (const { columnNumber, descending } of self.sortColumns) {
         const { dataType } = self.columns[columnNumber]
         const result = dataType.compare(
           rowA.cellsWithDerived[columnNumber],

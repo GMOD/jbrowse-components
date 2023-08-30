@@ -89,7 +89,7 @@ export default class AdminServer extends JBrowseCommand {
           const filename = req.body.configPath
             ? path.join(baseDir, req.body.configPath)
             : outFile
-          if (filename.indexOf(baseDir) !== 0) {
+          if (!filename.startsWith(baseDir)) {
             throw new Error(
               `Cannot perform directory traversal outside of ${baseDir}`,
             )

@@ -162,7 +162,7 @@ interface ScalebarProps {
 }
 
 const Scalebar = React.forwardRef<HTMLDivElement, ScalebarProps>(
-  ({ model, style, className, ...other }, ref) => {
+  function Scalebar2({ model, style, className, ...other }, ref) {
     const { classes, cx } = useStyles()
 
     const offsetLeft = model.staticBlocks.offsetPx - model.offsetPx

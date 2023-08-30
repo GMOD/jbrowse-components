@@ -78,7 +78,7 @@ async function getFiles(dir) {
       } catch (error) {
         console.error(data.toString())
       }
-      if (response.request_seq && response.body && response.body.length) {
+      if (response.request_seq && response.body?.length) {
         const warnings = []
         response.body.forEach(contents => {
           warnings.push(

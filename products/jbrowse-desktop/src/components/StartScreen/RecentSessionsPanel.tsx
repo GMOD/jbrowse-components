@@ -205,7 +205,7 @@ export default function RecentSessionPanel({
               hidden
               onChange={async ({ target }) => {
                 try {
-                  const file = target && target.files && target.files[0]
+                  const file = target?.files?.[0]
                   if (file) {
                     const path = (file as File & { path: string }).path
                     setPluginManager(await loadPluginManager(path))

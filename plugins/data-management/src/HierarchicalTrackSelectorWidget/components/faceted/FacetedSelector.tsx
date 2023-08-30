@@ -137,7 +137,7 @@ export default observer(function FacetedSelector({
         ),
       ]),
     ),
-  } as { [key: string]: number | undefined })
+  } as Record<string, number | undefined>)
 
   const [visible, setVisible] = useState(
     Object.fromEntries(fields.map(c => [c, true])),

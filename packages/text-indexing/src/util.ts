@@ -85,10 +85,9 @@ export interface VcfAdapter {
   type: 'VcfAdapter'
   vcfLocation: UriLocation | LocalPathLocation
 }
-export interface Track {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any
-}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type Track = Record<string, any>
+
 export interface TextSearching {
   indexingFeatureTypesToExclude?: string[]
   indexingAttributes?: string[]

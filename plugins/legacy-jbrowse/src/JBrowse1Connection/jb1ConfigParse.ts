@@ -186,7 +186,7 @@ export function regularizeConf(conf: Config, url: string): Config {
 
   // regularize trackMetadata.sources
   const meta = conf.trackMetadata
-  if (meta && meta.sources) {
+  if (meta?.sources) {
     // if it's a single source config, wrap it in an arrayref
     if (typeof meta.sources === 'string') {
       meta.sources = [meta.sources]
@@ -409,7 +409,7 @@ function synthesizeTrackStoreConfig(
       storeClass === 'JBrowse/Store/SeqFeature/TwoBit' ||
       storeClass === 'JBrowse/Store/Sequence/TwoBit' ||
       trackConfig.useAsRefSeqStore) &&
-    !(mainConf.stores && mainConf.stores.refseqs)
+    !mainConf.stores?.refseqs
       ? 'refseqs'
       : `store${objectHash(storeConf)}`
   // record it

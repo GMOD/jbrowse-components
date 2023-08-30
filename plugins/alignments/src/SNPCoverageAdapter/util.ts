@@ -1,5 +1,6 @@
-export interface SkipMap {
-  [key: string]: {
+export type SkipMap = Record<
+  string,
+  {
     score: number
     feature: unknown
     start: number
@@ -7,7 +8,7 @@ export interface SkipMap {
     strand: number
     xs: string
   }
-}
+>
 
 // bins contain:
 // - cov feature if they contribute to coverage
@@ -15,7 +16,7 @@ export interface SkipMap {
 // - delskips deletions or introns that don't contribute to coverage
 export interface BinType {
   total?: number
-  strands?: { [key: string]: number }
+  strands?: Record<string, number>
 }
 
 export interface Bin {

@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-globals */
 import RpcServer from 'librpc-web-mod'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { remoteAbortRpcHandler } from '@jbrowse/core/rpc/remoteAbortSignals'
@@ -17,7 +16,7 @@ interface WorkerConfiguration {
 // waits for a message from the main thread containing our configuration, which
 // must be sent on boot
 function receiveConfiguration() {
-  const configurationP: Promise<WorkerConfiguration> = new Promise(resolve => {
+  const configurationP = new Promise<WorkerConfiguration>(resolve => {
     function listener(e: MessageEvent) {
       if (e.data.message === 'config') {
         resolve(e.data.config as WorkerConfiguration)

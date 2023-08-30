@@ -24,7 +24,7 @@ const AboutDialog = lazy(() => import('./AboutDialog'))
 /**
  * #stateModel DesktopSessionTrackMenuMixin
  */
-export function DesktopSessionTrackMenuMixin(pluginManager: PluginManager) {
+export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
   return types.model({}).views(self => ({
     /**
      * #method

@@ -2,9 +2,7 @@
 import { readConfObject } from '../configuration'
 import { isElectron } from '../util'
 
-interface AnalyticsObj {
-  [key: string]: any
-}
+type AnalyticsObj = Record<string, any>
 
 interface Track {
   type: string

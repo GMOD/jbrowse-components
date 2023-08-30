@@ -6,14 +6,9 @@
   "main": "build",
   "dir": "src",
   "scripts": {
-    "start": "craco --max-http-header-size=100000 start",
-    "build": "cross-env NODE_OPTIONS='--max-old-space-size=7000' craco build",
+    "start": "node scripts/start.js",
+    "build": "node scripts/build.js",
     "postbuild": "node -e \"fs.writeFileSync('build/version.txt',JSON.parse(require('fs').readFileSync('package.json', 'utf8')).version)\"",
-    "test": "craco test",
-    "eject": "craco eject",
-    "checktypes": "tsc --noEmit",
-    "jtest": "jest --config ../../jest.config.js --roots products/jbrowse-web/",
-    "lint": "eslint --ext .js,.ts,.jsx,.tsx src",
     "prepack": "yarn build",
     "start-oauth-server": "ts-node --project tsconfig.oauth.json src/tests/OAuthServer/app.ts",
     "start-basicauth-server": "ts-node --project tsconfig.oauth.json src/tests/HTTPBasicAuthServer/app.ts"
@@ -56,6 +51,7 @@
     "@mui/material": "^5.10.17",
     "@mui/x-data-grid": "^6.0.1",
     "base64-js": "^1.3.0",
+    "camelcase": "^6.2.1",
     "clone": "^2.1.2",
     "copy-to-clipboard": "^3.3.1",
     "crypto-js": "^3.0.0",
@@ -63,17 +59,19 @@
     "mobx": "^6.6.0",
     "mobx-react": "^7.5.0",
     "mobx-state-tree": "^5.0.0",
-    "node-polyfill-webpack-plugin": "^2.0.1",
     "pako": "^2.1.0",
+    "prompts": "^2.4.2",
     "prop-types": "^15.7.2",
     "react": "^17.0.0",
+    "react-dev-utils": "^12.0.1",
     "react-dom": "^17.0.0",
     "react-error-boundary": "^4.0.3",
     "requestidlecallback-polyfill": "^1.0.2",
+    "resolve": "^1.20.0",
     "rxjs": "^7.0.0",
+    "semver": "^7.3.5",
     "tss-react": "^4.4.1",
-    "use-query-params": "^2.0.0",
-    "webpack": "^5.72.0"
+    "use-query-params": "^2.0.0"
   },
   "browserslist": {
     "production": [

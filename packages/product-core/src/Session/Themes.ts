@@ -15,12 +15,12 @@ import { autorun } from 'mobx'
 // locals
 import { BaseSession } from './BaseSession'
 
-type ThemeMap = { [key: string]: ThemeOptions }
+type ThemeMap = Record<string, ThemeOptions>
 
 /**
  * #stateModel ThemeManagerSessionMixin
  */
-export function ThemeManagerSessionMixin(pluginManager: PluginManager) {
+export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
   return types
     .model({})
     .volatile(() => ({

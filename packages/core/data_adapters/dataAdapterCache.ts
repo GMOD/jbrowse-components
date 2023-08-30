@@ -34,10 +34,13 @@ export async function getAdapter(
   // cache the adapter object
   const cacheKey = adapterConfigCacheKey(adapterConfigSnapshot)
   if (!adapterCache[cacheKey]) {
-    const adapterType = (adapterConfigSnapshot || {}).type
+    const adapterType = adapterConfigSnapshot?.type
+
     if (!adapterType) {
       throw new Error(
-        'could not determine adapter type from adapter config snapshot',
+        `could not determine adapter type from adapter config snapshot ${JSON.stringify(
+          adapterConfigSnapshot,
+        )}`,
       )
     }
     const dataAdapterType = pluginManager.getAdapterType(adapterType)

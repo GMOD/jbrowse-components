@@ -50,7 +50,7 @@ export default function UCSCTrackHubConnection(pluginManager: PluginManager) {
                 locationType: 'LocalPathLocation' as const,
               }
           const genomesFile = await fetchGenomesFile(genomesFileLocation)
-          const map = {} as { [key: string]: number }
+          const map = {} as Record<string, number>
           for (const [genomeName, genome] of genomesFile) {
             const assemblyNames = getConf(self, 'assemblyNames')
             if (

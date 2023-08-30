@@ -115,7 +115,7 @@ export interface ResultsDeserialized extends FeatureResultsDeserialized {
 }
 
 export default class BoxRendererType extends FeatureRendererType {
-  sessions: { [key: string]: LayoutSession } = {}
+  sessions: Record<string, LayoutSession> = {}
 
   getWorkerSession(
     props: LayoutSessionProps & { sessionId: string; layoutId: string },

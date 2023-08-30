@@ -42,7 +42,7 @@ function sortConfs(
   return ret.map(a => a[0])
 }
 
-export type TreeNode = {
+export interface TreeNode {
   name: string
   id: string
   conf?: AnyConfigurationModel

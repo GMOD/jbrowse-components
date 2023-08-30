@@ -65,17 +65,15 @@ export default observer(function HierarchicalTree({
   )
   const treeWalker = useCallback(
     function* treeWalker() {
-      for (let i = 0; i < tree.children.length; i++) {
-        const r = tree.children[i]
-        yield getNodeData(r, 0, extra, obj)
+      for (const child of tree.children) {
+        yield getNodeData(child, 0, extra, obj)
       }
 
       while (true) {
         // @ts-expect-error
         const parentMeta = yield
 
-        for (let i = 0; i < parentMeta.node.children.length; i++) {
-          const curr = parentMeta.node.children[i]
+        for (const curr of parentMeta.node.children) {
           yield getNodeData(curr, parentMeta.nestingLevel + 1, extra, obj)
         }
       }

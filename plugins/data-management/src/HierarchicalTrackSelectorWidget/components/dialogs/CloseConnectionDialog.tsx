@@ -16,7 +16,7 @@ export default observer(function CloseConnectionDialog({
 }: {
   modalInfo?: {
     name?: string
-    dereferenceTypeCount?: { [key: string]: number }
+    dereferenceTypeCount?: Record<string, number>
     safelyBreakConnection?: () => void
   }
   onClose: () => void

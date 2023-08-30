@@ -60,7 +60,10 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 type Coord = [number, number] | undefined
-type Rect = { left: number; top: number }
+interface Rect {
+  left: number
+  top: number
+}
 
 // produces offsetX/offsetY coordinates from a clientX and an element's
 // getBoundingClientRect

@@ -19,12 +19,13 @@ function isGzip(buf: Buffer) {
 
 export default class extends BaseFeatureDataAdapter {
   protected gtfFeatures?: Promise<{
-    feats: { [key: string]: string[] }
+    feats: Record<string, string[]>
   }>
 
-  protected intervalTrees: {
-    [key: string]: Promise<IntervalTree | undefined> | undefined
-  } = {}
+  protected intervalTrees: Record<
+    string,
+    Promise<IntervalTree | undefined> | undefined
+  > = {}
 
   private async loadDataP(opts: BaseOptions = {}) {
     const gtfLoc = this.getConf('gtfLocation')
@@ -40,9 +41,8 @@ export default class extends BaseFeatureDataAdapter {
     const lines = data
       .split(/\n|\r\n|\r/)
       .filter(f => !!f && !f.startsWith('#'))
-    const feats = {} as { [key: string]: string[] }
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i]
+    const feats = {} as Record<string, string[]>
+    for (const line of lines) {
       if (line.startsWith('#')) {
         continue
       }
@@ -51,7 +51,7 @@ export default class extends BaseFeatureDataAdapter {
       if (!feats[refName]) {
         feats[refName] = []
       }
-      feats[refName].push(lines[i])
+      feats[refName].push(line)
     }
 
     return { feats }
@@ -95,8 +95,7 @@ export default class extends BaseFeatureDataAdapter {
         }),
     )
 
-    for (let i = 0; i < ret.length; i++) {
-      const obj = ret[i]
+    for (const obj of ret) {
       intervalTree.insert([obj.get('start'), obj.get('end')], obj)
     }
     return intervalTree

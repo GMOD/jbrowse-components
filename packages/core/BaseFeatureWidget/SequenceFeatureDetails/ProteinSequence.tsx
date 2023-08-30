@@ -9,7 +9,7 @@ export default function ProteinSequence({
 }: {
   cds: Feat[]
   sequence: string
-  codonTable: { [key: string]: string }
+  codonTable: Record<string, string>
 }) {
   const str = stitch(cds, sequence)
   let protein = ''

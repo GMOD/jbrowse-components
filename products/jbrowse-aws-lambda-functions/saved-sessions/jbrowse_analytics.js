@@ -16,7 +16,7 @@ function recordStats(event, context, done) {
   stats.acceptLanguage = headers['Accept-Language'] || null
   stats.acceptCharset = headers['Accept-Charset'] || null
   stats.host = stats.referer ? url_parser.parse(stats.referer).host : null
-  if (stats.host && stats.host.startsWith('www.')) {
+  if (stats.host?.startsWith('www.')) {
     stats.host = stats.host.slice(4)
   }
   // stats.fullHeaders = event.headers
@@ -25,7 +25,7 @@ function recordStats(event, context, done) {
   const trackTypes = {}
   const trackTypesRe = /^track-types-/
   for (const key in stats) {
-    if (trackTypesRe.test(key)) {
+    if (key.startsWith('track-types-')) {
       trackTypes[key.replace(trackTypesRe, '')] = parseInt(stats[key], 10)
       delete stats[key]
     }
@@ -37,7 +37,7 @@ function recordStats(event, context, done) {
     const sessionTrackTypes = {}
     const sessionTrackTypesRe = /^sessionTrack-types-/
     for (const key in stats) {
-      if (sessionTrackTypesRe.test(key)) {
+      if (key.startsWith('sessionTrack-types-')) {
         sessionTrackTypes[key.replace(sessionTrackTypesRe, '')] = parseInt(
           stats[key],
           10,

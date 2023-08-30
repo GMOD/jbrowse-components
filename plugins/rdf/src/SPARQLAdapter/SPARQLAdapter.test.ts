@@ -1,5 +1,4 @@
 import { toArray } from 'rxjs/operators'
-import 'whatwg-fetch'
 import Adapter from './SPARQLAdapter'
 import emptyQueryResponse from './test_data/emptyQueryResponse.json'
 import queryResponse from './test_data/queryResponse.json'

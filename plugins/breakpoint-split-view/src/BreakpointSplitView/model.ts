@@ -118,7 +118,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     })
     .volatile(() => ({
       width: 800,
-      matchedTrackFeatures: {} as { [key: string]: Feature[][] },
+      matchedTrackFeatures: {} as Record<string, Feature[][]>,
     }))
     .views(self => ({
       /**
@@ -226,7 +226,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       onSubviewAction(actionName: string, path: string, args?: unknown[]) {
         self.views.forEach(view => {
           const ret = getPath(view)
-          if (ret.lastIndexOf(path) !== ret.length - path.length) {
+          if (!ret.endsWith(path)) {
             // @ts-ignore
             view[actionName](args?.[0])
           }
@@ -256,7 +256,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       toggleLinkViews() {
         self.linkViews = !self.linkViews
       },
-      setMatchedTrackFeatures(obj: { [key: string]: Feature[][] }) {
+      setMatchedTrackFeatures(obj: Record<string, Feature[][]>) {
         self.matchedTrackFeatures = obj
       },
     }))

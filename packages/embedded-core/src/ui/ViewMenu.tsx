@@ -12,7 +12,6 @@ import MenuIcon from '@mui/icons-material/Menu'
 
 const ViewMenu = observer(function ({
   model,
-  IconButtonProps,
   IconProps,
 }: {
   model: IBaseViewModel

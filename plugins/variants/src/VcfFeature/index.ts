@@ -6,11 +6,10 @@ import { getSOTermAndDescription } from './util'
 
 /* eslint-disable no-underscore-dangle */
 
-interface Samples {
-  [key: string]: {
-    [key: string]: { values: string[] | number[] | null }
-  }
-}
+type Samples = Record<
+  string,
+  Record<string, { values: string[] | number[] | null }>
+>
 
 interface FeatureData {
   [key: string]: unknown

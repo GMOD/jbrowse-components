@@ -163,7 +163,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       onSubviewAction(actionName: string, path: string, args?: unknown[]) {
         self.views.forEach(view => {
           const ret = getPath(view)
-          if (ret.lastIndexOf(path) !== ret.length - path.length) {
+          if (!ret.endsWith(path)) {
             // @ts-expect-error
             view[actionName](args?.[0])
           }

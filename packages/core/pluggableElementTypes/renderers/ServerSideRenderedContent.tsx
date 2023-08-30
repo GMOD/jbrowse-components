@@ -12,7 +12,12 @@ interface Props extends ResultsSerialized, RenderArgs {
   RenderingComponent: React.ComponentType<any>
 }
 
-export default function ({ theme, html, RenderingComponent, ...rest }: Props) {
+export default function ServerSideRenderedContent({
+  theme,
+  html,
+  RenderingComponent,
+  ...rest
+}: Props) {
   const ref = useRef<HTMLDivElement>(null)
   const jbrowseTheme = createJBrowseTheme(theme)
 

@@ -54,7 +54,7 @@ function SampleFilters({
 
 export default function VariantSamples(props: {
   feature: SimpleFeatureSerialized
-  descriptions: { FORMAT?: { [key: string]: { Description?: string } } }
+  descriptions: { FORMAT?: Record<string, { Description?: string }> }
 }) {
   const { feature, descriptions = {} } = props
   const { ref, scrollLeft } = useResizeBar()

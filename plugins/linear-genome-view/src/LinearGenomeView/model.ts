@@ -248,7 +248,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       // which is basically like an onLoad
       afterDisplayedRegionsSetCallbacks: [] as Function[],
       scaleFactor: 1,
-      trackRefs: {} as { [key: string]: HTMLDivElement },
+      trackRefs: {} as Record<string, HTMLDivElement>,
       coarseDynamicBlocks: [] as BaseBlock[],
       coarseTotalBp: 0,
       leftOffset: undefined as undefined | BpOffset,
@@ -506,7 +506,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get trackTypeActions() {
-        const allActions: Map<string, MenuItem[]> = new Map()
+        const allActions = new Map<string, MenuItem[]>()
         self.tracks.forEach(track => {
           const trackInMap = allActions.get(track.type)
           if (!trackInMap) {
@@ -1181,7 +1181,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             currentlyCalculatedStaticBlocks = ret
             stringifiedCurrentlyCalculatedStaticBlocks = sret
           }
-          return currentlyCalculatedStaticBlocks as BlockSet
+          return currentlyCalculatedStaticBlocks!
         },
         /**
          * #getter

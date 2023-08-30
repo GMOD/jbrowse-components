@@ -50,7 +50,7 @@ function rightTriangle(x: number, y: number, width: number, height: number) {
   ].toString()
 }
 
-const colorMap: { [key: string]: string | undefined } = {
+const colorMap: Record<string, string | undefined> = {
   gneg: 'rgb(227,227,227)',
   gpos25: 'rgb(142,142,142)',
   gpos50: 'rgb(85,85,85)',
