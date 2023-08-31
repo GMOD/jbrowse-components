@@ -594,7 +594,7 @@ const libsList = Object.keys(libs)
 const inLibsOnly = libsList.filter(mod => !reExportsList.includes(mod))
 if (inLibsOnly.length > 0) {
   throw new Error(
-    `The following modules are in the re-exports list, but not the modules libs: ${inLibsOnly.join(
+    `The following modules are in the modules libs, but not the re-exports list: ${inLibsOnly.join(
       ', ',
     )}`,
   )
@@ -602,7 +602,7 @@ if (inLibsOnly.length > 0) {
 const inReExportsOnly = reExportsList.filter(mod => !libsList.includes(mod))
 if (inReExportsOnly.length) {
   throw new Error(
-    `The following modules are in the modules libs, but not the re-exports list: ${inReExportsOnly.join(
+    `The following modules are in the re-exports list, but not the modules libs: ${inReExportsOnly.join(
       ', ',
     )}`,
   )
