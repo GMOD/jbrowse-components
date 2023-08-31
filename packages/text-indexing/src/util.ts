@@ -1,4 +1,4 @@
-import { isSupportedIndexingAdapter } from "@jbrowse/core/util"
+import { isSupportedIndexingAdapter } from '@jbrowse/core/util'
 
 export interface UriLocation {
   uri: string

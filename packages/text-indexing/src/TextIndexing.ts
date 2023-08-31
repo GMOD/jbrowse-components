@@ -6,7 +6,10 @@ import { indexVcf } from './types/vcfAdapter'
 import { generateMeta } from './types/common'
 import { ixIxxStream } from 'ixixx'
 import { Track, indexType } from './util'
-import { checkAbortSignal, isSupportedIndexingAdapter } from '@jbrowse/core/util'
+import {
+  checkAbortSignal,
+  isSupportedIndexingAdapter,
+} from '@jbrowse/core/util'
 
 export async function indexTracks(args: {
   tracks: Track[]
