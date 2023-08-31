@@ -1108,7 +1108,7 @@ export interface ViewSnap {
 
 // supported adapter types by text indexer
 //  ensure that this matches the method found in @jbrowse/text-indexing/util
-export function supportedIndexingAdapters(type: string) {
+export function isSupportedIndexingAdapter(type: string) {
   return [
     'Gff3TabixAdapter',
     'VcfTabixAdapter',

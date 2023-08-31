@@ -1,3 +1,5 @@
+import { isSupportedIndexingAdapter } from "@jbrowse/core/util"
+
 export interface UriLocation {
   uri: string
   locationType: 'UriLocation'
@@ -115,17 +117,6 @@ export interface Config {
 
 export type indexType = 'aggregate' | 'perTrack'
 
-// supported adapter types by text indexer
-//  ensure that this matches the method found in @jbrowse/core/util
-export function supportedIndexingAdapters(type: string) {
-  return [
-    'Gff3TabixAdapter',
-    'VcfTabixAdapter',
-    'Gff3Adapter',
-    'VcfAdapter',
-  ].includes(type)
-}
-
 export function createTextSearchConf(
   name: string,
   trackIds: string[],
@@ -172,5 +163,5 @@ export function findTrackConfigsToIndex(
     .filter(track =>
       assemblyName ? track.assemblyNames.includes(assemblyName) : true,
     )
-    .filter(track => supportedIndexingAdapters(track.adapter.type))
+    .filter(track => isSupportedIndexingAdapter(track.adapter?.type))
 }
