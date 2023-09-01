@@ -1,4 +1,6 @@
-{
+/** @type {import("eslint").Linter.Config} */
+
+module.exports = {
   "env": {
     "browser": true,
     "node": true,
@@ -18,6 +20,7 @@
     "ecmaFeatures": {
       "jsx": true
     },
+    "tsconfigRootDir": __dirname,
     "project": "./tsconfig.json"
   },
   "plugins": ["eslint-plugin-tsdoc"],
