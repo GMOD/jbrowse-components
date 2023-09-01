@@ -14,7 +14,7 @@ import { getRoot } from 'mobx-state-tree'
 import {
   getSession,
   isElectron,
-  supportedIndexingAdapters,
+  isSupportedIndexingAdapter,
 } from '@jbrowse/core/util'
 import { getConf } from '@jbrowse/core/configuration'
 import { observer } from 'mobx-react'
@@ -103,7 +103,7 @@ function AddTrackWorkflow({ model }: { model: AddTrackModel }) {
         if (
           isElectron &&
           textIndexTrack &&
-          supportedIndexingAdapters(trackAdapter.type)
+          isSupportedIndexingAdapter(trackAdapter.type)
         ) {
           const attr = textIndexingConf || {
             attributes: ['Name', 'ID'],
