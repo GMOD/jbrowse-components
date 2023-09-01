@@ -6,13 +6,19 @@ import { Region as RegionModel, ElementId } from '@jbrowse/core/util/types/mst'
 const LabeledRegionModel = types
   .compose(
     RegionModel,
-    types.model('Label', { label: types.optional(types.string, '') }),
+    types.model('Label', {
+      label: types.optional(types.string, ''),
+    }),
   )
   .actions(self => ({
     setLabel(label: string) {
       self.label = label
     },
   }))
+
+const SharedBookmarksModel = types.model('SharedBookmarksModel', {
+  sharedBookmarks: types.maybe(types.array(LabeledRegionModel)),
+})
 
 export interface ILabeledRegionModel
   extends SnapshotIn<typeof LabeledRegionModel> {
@@ -26,24 +32,25 @@ export interface ILabeledRegionModel
   setLabel: (label: string) => void
 }
 
+export interface IExtendedLabeledRegionModel extends ILabeledRegionModel {
+  correspondingObj: ILabeledRegionModel
+}
+
 export default function f(pluginManager: PluginManager) {
   return types
     .model('GridBookmarkModel', {
       id: ElementId,
       type: types.literal('GridBookmarkWidget'),
       bookmarkedRegions: types.array(LabeledRegionModel),
-      modelSelectedAssembly: '',
     })
     .volatile(self => ({
-      selectedBookmarkIndexes: [] as Array<number>,
+      selectedBookmarks: [] as Array<IExtendedLabeledRegionModel>,
     }))
     .views(self => ({
-      get selectedBookmarks() {
-        const selectedBookmarks = [] as Array<ILabeledRegionModel>
-        self.selectedBookmarkIndexes.forEach((index: number) => {
-          selectedBookmarks.push(self.bookmarkedRegions[index])
+      get sharedBookmarksModel() {
+        return SharedBookmarksModel.create({
+          sharedBookmarks: self.selectedBookmarks,
         })
-        return selectedBookmarks
       },
     }))
     .actions(self => ({
@@ -61,34 +68,30 @@ export default function f(pluginManager: PluginManager) {
       },
       clearSelectedBookmarks() {
         self.selectedBookmarks.forEach(
-          (selectedBookmark: ILabeledRegionModel) => {
-            self.bookmarkedRegions.remove(selectedBookmark)
+          (selectedBookmark: IExtendedLabeledRegionModel) => {
+            self.bookmarkedRegions.remove(selectedBookmark.correspondingObj)
           },
         )
-        self.selectedBookmarkIndexes = []
+        self.selectedBookmarks = []
       },
-      updateBookmarkLabel(index: number, label: string) {
-        self.bookmarkedRegions[index]?.setLabel(label)
+      updateBookmarkLabel(bookmark: any, label: string) {
+        const target = self.bookmarkedRegions.find(
+          (element: ILabeledRegionModel) => {
+            return element === bookmark.correspondingObj
+          },
+        )
+        target?.setLabel(label)
       },
-      setSelectedAssembly(assembly: string) {
-        self.modelSelectedAssembly = assembly
+      setSelectedBookmarks(bookmarks: IExtendedLabeledRegionModel[]) {
+        self.selectedBookmarks = bookmarks
       },
-      setSelectedBookmarkIndexes(indexes: Array<number>) {
-        self.selectedBookmarkIndexes = indexes
-      },
-      setBookmarkedRegions(a: IMSTArray<typeof LabeledRegionModel>) {
-        self.bookmarkedRegions = a
+      setBookmarkedRegions(
+        bookmarkedRegions: IMSTArray<typeof LabeledRegionModel>,
+      ) {
+        self.bookmarkedRegions = bookmarkedRegions
       },
     }))
     .views(self => ({
-      get selectedAssembly() {
-        return (
-          self.modelSelectedAssembly ||
-          (self.bookmarkedRegions.length
-            ? self.bookmarkedRegions[0].assemblyName
-            : '')
-        )
-      },
       get assemblies() {
         return [
           ...new Set(self.bookmarkedRegions.map(region => region.assemblyName)),

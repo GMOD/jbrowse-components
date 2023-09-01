@@ -1,10 +1,8 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
-import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
 import { FileLocation } from '@jbrowse/core/util/types'
 import { FileSelector } from '@jbrowse/core/ui'
-import { openLocation } from '@jbrowse/core/util/io'
 import {
   Button,
   DialogContent,
@@ -24,6 +22,8 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 
 // locals
 import { GridBookmarkModel } from '../model'
+import { readSessionFromDynamo } from '@jbrowse/web/src/sessionSharing'
+import { fromUrlSafeB64, readConf } from '@jbrowse/web/src/util'
 
 const useStyles = makeStyles()(theme => ({
   dialogContainer: {
@@ -39,18 +39,30 @@ const useStyles = makeStyles()(theme => ({
 
 function ImportBookmarks({ model }: { model: GridBookmarkModel }) {
   const { classes } = useStyles()
-  const session = getSession(model)
-  const { assemblyNames } = session
   const [dialogOpen, setDialogOpen] = useState(false)
   const [location, setLocation] = useState<FileLocation>()
   const [error, setError] = useState<unknown>()
-  // TODO: assemblies
-  const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0])
   const [shareLink, setShareLink] = useState('')
 
   const [expanded, setExpanded] = React.useState<string | false>(
     'shareLinkAccordion',
   )
+
+  const handleShareLink = async () => {
+    const defaultURL = 'https://share.jbrowse.org/api/v1/'
+    const urlParams = new URLSearchParams(shareLink)
+    const sessionQueryParam = urlParams.get('session')
+    const password = urlParams.get('password')
+    const decryptedSession = await readSessionFromDynamo(
+      `${getSession(model).shareURL ?? defaultURL}load`,
+      sessionQueryParam || '',
+      password || '',
+    )
+
+    const session = JSON.parse(await fromUrlSafeB64(decryptedSession))
+
+    return session.sharedBookmarks
+  }
 
   const handleChange =
     (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
@@ -139,8 +151,8 @@ function ImportBookmarks({ model }: { model: GridBookmarkModel }) {
                   // model.importBookmarks(regions)
                 }
                 if (shareLink) {
-                  // const regions = await handleShareLink(shareLink, selectedAsm)
-                  // model.importBookmarks(regions)
+                  const regions = await handleShareLink()
+                  model.importBookmarks(regions)
                 }
                 setDialogOpen(false)
               } catch (e) {

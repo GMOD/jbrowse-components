@@ -9,7 +9,7 @@ import {
   TextField,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { DataGrid, GridRowSelectionModel } from '@mui/x-data-grid'
+import { DataGrid, GridRowId, GridRowSelectionModel } from '@mui/x-data-grid'
 import {
   getSession,
   assembleLocString,
@@ -21,7 +21,11 @@ import { Dialog } from '@jbrowse/core/ui'
 
 // locals
 import { navToBookmark } from '../utils'
-import { GridBookmarkModel, ILabeledRegionModel } from '../model'
+import {
+  GridBookmarkModel,
+  IExtendedLabeledRegionModel,
+  ILabeledRegionModel,
+} from '../model'
 
 const useStyles = makeStyles()(theme => ({
   link: {
@@ -36,7 +40,7 @@ const BookmarkGrid = ({ model }: { model: GridBookmarkModel }) => {
   const [newLabel, setNewLabel] = useState<string>()
   const { bookmarkedRegions } = model
   const [rowSelectionModel, setRowSelectionModel] =
-    useState<GridRowSelectionModel>(model.selectedBookmarkIndexes || [])
+    useState<GridRowSelectionModel>([])
   const session = getSession(model)
   const { assemblyNames, views } = session
 
@@ -59,14 +63,18 @@ const BookmarkGrid = ({ model }: { model: GridBookmarkModel }) => {
       return {
         ...region,
         id: index,
-        delete: index,
         assemblyName,
         locString: assembleLocString(rest),
+        correspondingObj: region,
       }
     })
 
   useEffect(() => {
     setLocalBookmarks(bookmarkedRegions)
+  }, [JSON.stringify(bookmarkedRegions)])
+
+  useEffect(() => {
+    setRowSelectionModel([])
   }, [bookmarkedRegions.length])
 
   return (
@@ -125,7 +133,8 @@ const BookmarkGrid = ({ model }: { model: GridBookmarkModel }) => {
         }}
         /* @ts-ignore */
         processRowUpdate={row => {
-          model.updateBookmarkLabel(row.id, row.label)
+          const target = bookmarkRows[row.id]
+          model.updateBookmarkLabel(target, row.label)
           setNewLabel(row.label)
           return row
         }}
@@ -134,9 +143,11 @@ const BookmarkGrid = ({ model }: { model: GridBookmarkModel }) => {
         }}
         checkboxSelection
         onRowSelectionModelChange={newRowSelectionModel => {
-          model.setSelectedBookmarkIndexes(
-            newRowSelectionModel as Array<number>,
-          )
+          const selectedBookmarks = [] as Array<IExtendedLabeledRegionModel>
+          newRowSelectionModel.forEach((value: GridRowId) => {
+            selectedBookmarks.push({ ...bookmarkRows[value as number] })
+          })
+          model.setSelectedBookmarks(selectedBookmarks)
           setRowSelectionModel(newRowSelectionModel)
         }}
         rowSelectionModel={rowSelectionModel}
@@ -174,8 +185,12 @@ const BookmarkGrid = ({ model }: { model: GridBookmarkModel }) => {
             variant="contained"
             color="primary"
             onClick={() => {
-              if (newLabel) model.updateBookmarkLabel(dialogRow.id, newLabel)
+              if (newLabel) {
+                const target = bookmarkRows[dialogRow.id]
+                model.updateBookmarkLabel(target, newLabel)
+              }
               setLocalBookmarks(model.bookmarkedRegions)
+              setNewLabel('')
               setDialogRow(undefined)
               setDialogOpen(false)
             }}

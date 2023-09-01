@@ -39,12 +39,9 @@ function DeleteBookmarks({ model }: { model: GridBookmarkModel }) {
           <Alert severity="warning">Delete selected bookmarks?</Alert>
           <List dense>
             {model.selectedBookmarks.map((bookmark: any) => (
-              <>
-                <ListItem>
-                  {/* @ts-ignore */}
-                  <ListItemText primary={assembleLocString(bookmark)} />
-                </ListItem>
-              </>
+              <ListItem key={assembleLocString(bookmark)}>
+                <ListItemText primary={assembleLocString(bookmark)} />
+              </ListItem>
             ))}
           </List>
         </DialogContent>
@@ -63,7 +60,6 @@ function DeleteBookmarks({ model }: { model: GridBookmarkModel }) {
             color="primary"
             onClick={() => {
               model.clearSelectedBookmarks()
-              // model.clearAllBookmarks()
               setDialogOpen(false)
             }}
           >
