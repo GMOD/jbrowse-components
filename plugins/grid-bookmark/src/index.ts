@@ -1,4 +1,3 @@
-import { getRoot } from 'mobx-state-tree'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -73,7 +72,7 @@ export default class extends Plugin {
                       // @ts-expect-error
                       const regions = bookmarkWidget.bookmarkedRegions
                       if (regions.length !== 0) {
-                        self.navTo(regions[regions.length - 1])
+                        self.navTo(regions.at(-1))
                         session.notify(
                           'Navigated to the most recently created bookmark.',
                           'success',

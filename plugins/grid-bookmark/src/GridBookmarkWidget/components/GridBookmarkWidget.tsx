@@ -24,7 +24,9 @@ const useStyles = makeStyles()({
 function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
   const { classes } = useStyles()
 
-  if (!model) return null
+  if (!model) {
+    return null
+  }
 
   return (
     <Card className={classes.card}>

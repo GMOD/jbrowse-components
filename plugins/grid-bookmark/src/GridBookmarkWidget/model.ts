@@ -33,6 +33,7 @@ export interface ILabeledRegionModel
 }
 
 export interface IExtendedLabeledRegionModel extends ILabeledRegionModel {
+  id: number
   correspondingObj: ILabeledRegionModel
 }
 
@@ -74,7 +75,10 @@ export default function f(pluginManager: PluginManager) {
         )
         self.selectedBookmarks = []
       },
-      updateBookmarkLabel(bookmark: any, label: string) {
+      updateBookmarkLabel(
+        bookmark: IExtendedLabeledRegionModel,
+        label: string,
+      ) {
         const target = self.bookmarkedRegions.find(
           (element: ILabeledRegionModel) => {
             return element === bookmark.correspondingObj

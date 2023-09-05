@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
 import { FileLocation } from '@jbrowse/core/util/types'
@@ -13,7 +13,11 @@ import {
   AccordionSummary,
   AccordionDetails,
 } from '@mui/material'
+import { openLocation } from '@jbrowse/core/util/io'
 import { Dialog } from '@jbrowse/core/ui'
+import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
+import { fromUrlSafeB64 } from '@jbrowse/web/src/util'
+import { readSessionFromDynamo } from '@jbrowse/web/src/sessionSharing'
 import { makeStyles } from 'tss-react/mui'
 
 // icons
@@ -22,8 +26,6 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 
 // locals
 import { GridBookmarkModel } from '../model'
-import { readSessionFromDynamo } from '@jbrowse/web/src/sessionSharing'
-import { fromUrlSafeB64, readConf } from '@jbrowse/web/src/util'
 
 const useStyles = makeStyles()(theme => ({
   dialogContainer: {
@@ -43,6 +45,9 @@ function ImportBookmarks({ model }: { model: GridBookmarkModel }) {
   const [location, setLocation] = useState<FileLocation>()
   const [error, setError] = useState<unknown>()
   const [shareLink, setShareLink] = useState('')
+  const session = getSession(model)
+  const { assemblyNames } = session
+  const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0])
 
   const [expanded, setExpanded] = React.useState<string | false>(
     'shareLinkAccordion',
@@ -54,20 +59,25 @@ function ImportBookmarks({ model }: { model: GridBookmarkModel }) {
     const sessionQueryParam = urlParams.get('session')
     const password = urlParams.get('password')
     const decryptedSession = await readSessionFromDynamo(
-      `${getSession(model).shareURL ?? defaultURL}load`,
+      `${session.shareURL ?? defaultURL}load`,
       sessionQueryParam || '',
       password || '',
     )
 
-    const session = JSON.parse(await fromUrlSafeB64(decryptedSession))
+    const sharedSession = JSON.parse(await fromUrlSafeB64(decryptedSession))
 
-    return session.sharedBookmarks
+    return sharedSession.sharedBookmarks
   }
 
   const handleChange =
     (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
       setExpanded(isExpanded ? panel : false)
     }
+
+  useEffect(() => {
+    setShareLink('')
+    setError(undefined)
+  }, [dialogOpen])
 
   return (
     <>
@@ -116,13 +126,19 @@ function ImportBookmarks({ model }: { model: GridBookmarkModel }) {
                 location={location}
                 setLocation={setLocation}
                 name="File"
-                description="Choose a BED or TSV format file to import. The first 4 columns will be used."
+                description="Choose a BED or TSV format file to import."
               />
-              {error ? (
-                <Typography color="error" variant="h6">{`${error}`}</Typography>
-              ) : null}
+              <AssemblySelector
+                onChange={val => setSelectedAsm(val)}
+                helperText={`Select the assembly your bookmarks belong to (BED or TSV without assembly column).`}
+                session={session}
+                selected={selectedAsm}
+              />
             </AccordionDetails>
           </Accordion>
+          {error ? (
+            <Typography color="error" variant="h6">{`${error}`}</Typography>
+          ) : null}
         </DialogContent>
         <DialogActions>
           <Button
@@ -140,21 +156,41 @@ function ImportBookmarks({ model }: { model: GridBookmarkModel }) {
             disabled={!location && !shareLink}
             startIcon={<ImportIcon />}
             onClick={async () => {
-              // TODO: implement
-              // clear field
               try {
+                let regions = undefined
                 if (!location && !shareLink) {
                   return
                 }
                 if (location) {
-                  // const regions = await handleLocation(location, selectedAsm)
-                  // model.importBookmarks(regions)
+                  const data = await openLocation(location).readFile('utf8')
+                  regions = data
+                    .split(/\n|\r\n|\r/)
+                    .filter(f => !!f.trim())
+                    .filter(
+                      f =>
+                        !f.startsWith('#') &&
+                        !f.startsWith('track') &&
+                        !f.startsWith('browser'),
+                    )
+                    .map(line => {
+                      const [refName, start, end, label, assembly] =
+                        line.split('\t')
+                      return {
+                        assemblyName: assembly ?? selectedAsm,
+                        refName,
+                        start: +start,
+                        end: +end,
+                        label: label === '.' ? undefined : label,
+                      }
+                    })
                 }
                 if (shareLink) {
-                  const regions = await handleShareLink()
-                  model.importBookmarks(regions)
+                  regions = await handleShareLink()
                 }
-                setDialogOpen(false)
+                if (regions) {
+                  model.importBookmarks(regions)
+                  setDialogOpen(false)
+                }
               } catch (e) {
                 console.error(e)
                 setError(e)

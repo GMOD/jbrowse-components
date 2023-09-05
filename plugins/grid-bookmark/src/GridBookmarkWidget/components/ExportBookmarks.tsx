@@ -9,6 +9,7 @@ import {
   MenuItem,
   Select,
   Typography,
+  Alert,
 } from '@mui/material'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import { makeStyles } from 'tss-react/mui'
@@ -19,7 +20,7 @@ import { getSession } from '@jbrowse/core/util'
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import { shareSessionToDynamo } from '@jbrowse/web/src/sessionSharing'
 
-//locals
+// ålocals
 import { GridBookmarkModel } from '../model'
 import { downloadBookmarkFile } from '../utils'
 
@@ -35,7 +36,6 @@ function ExportBookmarks({ model }: { model: GridBookmarkModel }) {
   const [fileType, setFileType] = useState('BED')
   const [url, setUrl] = useState('')
   const [loading, setLoading] = useState(true)
-  const { bookmarkedRegions } = model
   const session = getSession(model)
 
   useEffect(() => {
@@ -70,30 +70,41 @@ function ExportBookmarks({ model }: { model: GridBookmarkModel }) {
     return () => {
       cancelled = true
     }
-  }, [dialogOpen])
+  }, [dialogOpen, model.sharedBookmarksModel, session])
 
   return (
     <>
-      <Button startIcon={<GetAppIcon />} onClick={() => setDialogOpen(true)}>
+      <Button
+        startIcon={<GetAppIcon />}
+        onClick={() => setDialogOpen(true)}
+        disabled={model.selectedBookmarks.length === 0}
+      >
         Export
       </Button>
       <Dialog
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
-        title="Export bookmarks"
+        title="Export selected bookmarks"
       >
-        <DialogContent style={{ display: 'flex', alignItems: 'center' }}>
-          <Typography variant="h6">Format to download:</Typography>
-          <Select
-            size="small"
-            className={classes.flexItem}
-            data-testid="selectFileType"
-            value={fileType}
-            onChange={event => setFileType(event.target.value)}
-          >
-            <MenuItem value="BED">BED</MenuItem>
-            <MenuItem value="TSV">TSV</MenuItem>
-          </Select>
+        <DialogContent
+          style={{ display: 'flex', flexFlow: 'column', gap: '5px' }}
+        >
+          <Alert severity="info">
+            Only selected bookmarks will be exported.
+          </Alert>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <Typography>Format to download:</Typography>
+            <Select
+              size="small"
+              className={classes.flexItem}
+              data-testid="selectFileType"
+              value={fileType}
+              onChange={event => setFileType(event.target.value)}
+            >
+              <MenuItem value="BED">BED</MenuItem>
+              <MenuItem value="TSV">TSV</MenuItem>
+            </Select>
+          </div>
         </DialogContent>
         <DialogActions>
           <Button
@@ -115,7 +126,7 @@ function ExportBookmarks({ model }: { model: GridBookmarkModel }) {
             color="primary"
             startIcon={<GetAppIcon />}
             onClick={() => {
-              downloadBookmarkFile(bookmarkedRegions, fileType, model)
+              downloadBookmarkFile(fileType, model)
               setDialogOpen(false)
             }}
           >

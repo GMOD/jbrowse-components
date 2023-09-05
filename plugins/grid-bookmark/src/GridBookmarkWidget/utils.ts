@@ -5,8 +5,6 @@ import { AbstractViewModel } from '@jbrowse/core/util/types'
 
 // locals
 import { GridBookmarkModel } from './model'
-import { LabeledRegion } from './types'
-import { getRoot } from 'mobx-state-tree'
 
 type LGV = LinearGenomeViewModel
 
@@ -26,14 +24,15 @@ export async function navToBookmark(
     // check if the focused view is the appropriate assembly, if not proceed
     if (!view || view?.assemblyNames[0] !== assembly) {
       // find number of instances open with the selectedAssembly
-      let viewsOfSelectedAssembly: Array<AbstractViewModel> = []
+      const viewsOfSelectedAssembly: Array<AbstractViewModel> = []
       views.forEach(element => {
         if (
           element.type === 'LinearGenomeView' &&
           // @ts-expect-error
           element.assemblyNames[0] === assembly
-        )
+        ) {
           viewsOfSelectedAssembly.push(element)
+        }
       })
       // if 1+ instances open, that is the view to nav to
       if (viewsOfSelectedAssembly.length >= 1) {
@@ -57,46 +56,55 @@ export async function navToBookmark(
 }
 
 export function downloadBookmarkFile(
-  bookmarkedRegions: LabeledRegion[],
   fileFormat: string,
   model: GridBookmarkModel,
 ) {
-  const { selectedAssembly } = model
-  const fileHeader =
-    fileFormat === 'TSV'
-      ? 'chrom\tstart\tend\tlabel\tassembly_name\tcoord_range\n'
-      : ''
+  const { selectedBookmarks } = model
 
-  const fileContents = bookmarkedRegions
-    .map(b => {
-      const { label } = b
+  if (fileFormat === 'BED') {
+    const fileHeader = ''
+    const fileContents: Record<string, string[]> = {}
+
+    selectedBookmarks.forEach(bookmark => {
+      const { label } = bookmark
       const labelVal = label === '' ? '.' : label
-      const locString = assembleLocString(b)
+      const line = `${bookmark.refName}\t${bookmark.start}\t${bookmark.end}\t${labelVal}\n`
 
-      if (fileFormat === 'BED') {
-        if (b.assemblyName === selectedAssembly || selectedAssembly === 'all') {
-          return `${b.refName}\t${b.start}\t${b.end}\t${labelVal}\n`
-        }
-        return ''
-      } else {
-        return `${b.refName}\t${b.start + 1}\t${b.end}\t${labelVal}\t${
-          b.assemblyName
-        }\t${locString}\n`
-      }
+      fileContents[bookmark.assemblyName]
+        ? fileContents[bookmark.assemblyName].push(line)
+        : (fileContents[bookmark.assemblyName] = [line])
     })
-    .reduce((a, b) => a + b, fileHeader)
 
-  const blob = new Blob([fileContents || ''], {
-    type:
-      fileFormat === 'BED'
-        ? 'text/x-bed;charset=utf-8'
-        : 'text/tab-separated-values;charset=utf-8',
-  })
+    for (const assembly in fileContents) {
+      const fileContent = fileContents[assembly].reduce(
+        (a, b) => a + b,
+        fileHeader,
+      )
+      const blob = new Blob([fileContent || ''], {
+        type: 'text/x-bed;charset=utf-8',
+      })
+      const fileName = `jbrowse_bookmarks_${assembly}.bed`
+      saveAs(blob, fileName)
+    }
+  } else {
+    // TSV
+    const fileHeader = 'chrom\tstart\tend\tlabel\tassembly_name\tcoord_range\n'
 
-  const fileName =
-    fileFormat === 'BED'
-      ? `jbrowse_bookmarks_${selectedAssembly}.bed`
-      : 'jbrowse_bookmarks.tsv'
+    const fileContents = selectedBookmarks
+      .map(bookmark => {
+        const { label } = bookmark
+        const labelVal = label === '' ? '.' : label
+        const locString = assembleLocString(bookmark)
+        return `${bookmark.refName}\t${bookmark.start + 1}\t${
+          bookmark.end
+        }\t${labelVal}\t${bookmark.assemblyName}\t${locString}\n`
+      })
+      .reduce((a, b) => a + b, fileHeader)
 
-  saveAs(blob, fileName)
+    const blob = new Blob([fileContents || ''], {
+      type: 'text/tab-separated-values;charset=utf-8',
+    })
+    const fileName = 'jbrowse_bookmarks.tsv'
+    saveAs(blob, fileName)
+  }
 }

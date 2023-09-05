@@ -4,29 +4,30 @@ import {
   Button,
   DialogContent,
   DialogActions,
-  Typography,
   Alert,
   List,
   ListItemText,
   ListItem,
 } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
-import { assembleLocString } from '@jbrowse/core/util'
+import { assembleLocString, useLocalStorage } from '@jbrowse/core/util'
 
 // icons
 import DeleteIcon from '@mui/icons-material/Delete'
 
 // locals
-import { GridBookmarkModel } from '../model'
+import { GridBookmarkModel, IExtendedLabeledRegionModel } from '../model'
 
 function DeleteBookmarks({ model }: { model: GridBookmarkModel }) {
   const [dialogOpen, setDialogOpen] = useState(false)
+
   return (
     <>
       <Button
         startIcon={<DeleteIcon />}
         aria-label="clear bookmarks"
         onClick={() => setDialogOpen(true)}
+        disabled={model.selectedBookmarks.length === 0}
       >
         Delete selected bookmarks
       </Button>
@@ -38,11 +39,13 @@ function DeleteBookmarks({ model }: { model: GridBookmarkModel }) {
         <DialogContent>
           <Alert severity="warning">Delete selected bookmarks?</Alert>
           <List dense>
-            {model.selectedBookmarks.map((bookmark: any) => (
-              <ListItem key={assembleLocString(bookmark)}>
-                <ListItemText primary={assembleLocString(bookmark)} />
-              </ListItem>
-            ))}
+            {model.selectedBookmarks.map(
+              (bookmark: IExtendedLabeledRegionModel) => (
+                <ListItem key={assembleLocString(bookmark)}>
+                  <ListItemText primary={assembleLocString(bookmark)} />
+                </ListItem>
+              ),
+            )}
           </List>
         </DialogContent>
         <DialogActions>

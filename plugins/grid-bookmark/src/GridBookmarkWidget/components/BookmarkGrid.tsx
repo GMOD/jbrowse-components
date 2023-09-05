@@ -36,7 +36,7 @@ const useStyles = makeStyles()(theme => ({
 const BookmarkGrid = ({ model }: { model: GridBookmarkModel }) => {
   const { classes } = useStyles()
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [dialogRow, setDialogRow] = useState<any>()
+  const [dialogRow, setDialogRow] = useState<IExtendedLabeledRegionModel>()
   const [newLabel, setNewLabel] = useState<string>()
   const { bookmarkedRegions } = model
   const [rowSelectionModel, setRowSelectionModel] =
@@ -54,7 +54,9 @@ const BookmarkGrid = ({ model }: { model: GridBookmarkModel }) => {
         )
       : useState(bookmarkedRegions)
 
-  if (localBookmarks.length > 0) model.setBookmarkedRegions(localBookmarks)
+  if (localBookmarks.length > 0) {
+    model.setBookmarkedRegions(localBookmarks)
+  }
 
   const bookmarkRows = localBookmarks
     .filter((r: ILabeledRegionModel) => assemblyNames.includes(r.assemblyName))
@@ -186,7 +188,7 @@ const BookmarkGrid = ({ model }: { model: GridBookmarkModel }) => {
             color="primary"
             onClick={() => {
               if (newLabel) {
-                const target = bookmarkRows[dialogRow.id]
+                const target = bookmarkRows[dialogRow?.id as number]
                 model.updateBookmarkLabel(target, newLabel)
               }
               setLocalBookmarks(model.bookmarkedRegions)
