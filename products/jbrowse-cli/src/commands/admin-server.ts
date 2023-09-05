@@ -1,4 +1,4 @@
-import { flags } from '@oclif/command'
+import { Flags } from '@oclif/core'
 import path from 'path'
 import fs from 'fs'
 import crypto from 'crypto'
@@ -24,25 +24,25 @@ export default class AdminServer extends JBrowseCommand {
   static examples = ['$ jbrowse admin-server', '$ jbrowse admin-server -p 8888']
 
   static flags = {
-    port: flags.string({
+    port: Flags.string({
       char: 'p',
       description: 'Specifified port to start the server on;\nDefault is 9090.',
     }),
-    root: flags.string({
+    root: Flags.string({
       description:
         'path to the root of the JB2 installation.\nCreates ./config.json if nonexistent. note that you can navigate to ?config=path/to/subconfig.json in the web browser and it will write to rootDir/path/to/subconfig.json',
     }),
-    bodySizeLimit: flags.string({
+    bodySizeLimit: Flags.string({
       description:
         'Size limit of the update message; may need to increase if config is large.\nArgument is passed to bytes library for parsing: https://www.npmjs.com/package/bytes.',
       default: '25mb',
     }),
 
-    help: flags.help({ char: 'h' }),
+    help: Flags.help({ char: 'h' }),
   }
 
   async run() {
-    const { flags: runFlags } = this.parse(AdminServer)
+    const { flags: runFlags } = await this.parse(AdminServer)
     const { root, bodySizeLimit } = runFlags
 
     const output = root || '.'

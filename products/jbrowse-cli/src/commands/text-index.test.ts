@@ -75,7 +75,7 @@ describe('textIndexCommandErrors', () => {
 
   setup
     .command(['text-index', '--Command'])
-    .catch(err => expect(err.message).toContain('Unexpected argument:'))
+    .catch(err => expect(err.message).toContain('Nonexistent flag:'))
     .it('fails if there is an invalid flag')
 })
 

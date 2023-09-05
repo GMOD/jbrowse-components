@@ -1,4 +1,4 @@
-import { flags } from '@oclif/command'
+import { Args, Flags } from '@oclif/core'
 import { rimrafSync } from 'rimraf'
 import fs from 'fs'
 import path from 'path'
@@ -29,44 +29,43 @@ export default class Upgrade extends JBrowseCommand {
     '$ jbrowse upgrade --nightly',
   ]
 
-  static args = [
-    {
-      name: 'localPath',
+  static args = {
+    localPath: Args.string({
       required: false,
       description: `Location where JBrowse 2 is installed`,
       default: '.',
-    },
-  ]
+    }),
+  }
 
   static flags = {
-    help: flags.help({ char: 'h' }),
+    help: Flags.help({ char: 'h' }),
     // will need to account for pagenation once there is a lot of releases
-    listVersions: flags.boolean({
+    listVersions: Flags.boolean({
       char: 'l',
       description: 'Lists out all versions of JBrowse 2',
     }),
-    tag: flags.string({
+    tag: Flags.string({
       char: 't',
       description:
         'Version of JBrowse 2 to install. Format is v1.0.0.\nDefaults to latest',
     }),
-    branch: flags.string({
+    branch: Flags.string({
       description: 'Download a development build from a named git branch',
     }),
-    nightly: flags.boolean({
+    nightly: Flags.boolean({
       description: 'Download the latest development build from the main branch',
     }),
-    clean: flags.boolean({
+    clean: Flags.boolean({
       description: 'Removes old js,map,and LICENSE files in the installation',
     }),
-    url: flags.string({
+    url: Flags.string({
       char: 'u',
       description: 'A direct URL to a JBrowse 2 release',
     }),
   }
 
   async run() {
-    const { args: runArgs, flags: runFlags } = this.parse(Upgrade)
+    const { args: runArgs, flags: runFlags } = await this.parse(Upgrade)
     const { localPath: argsPath } = runArgs as { localPath: string }
     const { clean, listVersions, tag, url, branch, nightly } = runFlags
 

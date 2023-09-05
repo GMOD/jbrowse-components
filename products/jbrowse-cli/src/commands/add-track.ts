@@ -1,4 +1,4 @@
-import { flags } from '@oclif/command'
+import { Args, Flags } from '@oclif/core'
 import fs from 'fs'
 import path from 'path'
 import parseJSON from 'json-parse-better-errors'
@@ -80,90 +80,89 @@ export default class AddTrack extends JBrowseCommand {
     '$ jbrowse add-track /url/relative/path.bam --load inPlace',
   ]
 
-  static args = [
-    {
-      name: 'track',
+  static args = {
+    track: Args.string({
       required: true,
       description: `Track file or URL`,
-    },
-  ]
+    }),
+  }
 
   static flags = {
-    trackType: flags.string({
+    trackType: Flags.string({
       char: 't',
       description: `Type of track, by default inferred from track file`,
     }),
-    name: flags.string({
+    name: Flags.string({
       char: 'n',
       description:
         'Name of the track. Will be defaulted to the trackId if none specified',
     }),
-    indexFile: flags.string({
+    indexFile: Flags.string({
       description: 'Optional index file for the track',
     }),
-    description: flags.string({
+    description: Flags.string({
       char: 'd',
       description: 'Optional description of the track',
     }),
-    assemblyNames: flags.string({
+    assemblyNames: Flags.string({
       char: 'a',
       description:
         'Assembly name or names for track as comma separated string. If none, will default to the assembly in your config file',
     }),
-    category: flags.string({
+    category: Flags.string({
       description:
         'Optional Comma separated string of categories to group tracks',
     }),
-    config: flags.string({
+    config: Flags.string({
       description: `Any extra config settings to add to a track. i.e '{"defaultRendering": "density"}'`,
     }),
-    target: flags.string({
+    target: Flags.string({
       description: 'path to config file in JB2 installation to write out to.',
     }),
-    out: flags.string({
+    out: Flags.string({
       description: 'synonym for target',
     }),
-    subDir: flags.string({
+    subDir: Flags.string({
       description:
         'when using --load a file, output to a subdirectory of the target dir',
       default: '',
     }),
-    help: flags.help({ char: 'h' }),
-    trackId: flags.string({
+    help: Flags.help({ char: 'h' }),
+    trackId: Flags.string({
       description:
         'trackId for the track, by default inferred from filename, must be unique throughout config',
     }),
-    load: flags.string({
+    load: Flags.string({
       char: 'l',
       description:
         'Required flag when using a local file. Choose how to manage the track. Copy, symlink, or move the track to the JBrowse directory. Or inPlace to leave track alone',
       options: ['copy', 'symlink', 'move', 'inPlace'],
     }),
-    skipCheck: flags.boolean({
+    skipCheck: Flags.boolean({
       description:
         'Skip check for whether or not the file or URL exists or if you are in a JBrowse directory',
     }),
-    overwrite: flags.boolean({
+    overwrite: Flags.boolean({
       description: 'Overwrites existing track if it shares the same trackId',
     }),
-    force: flags.boolean({
+    force: Flags.boolean({
       char: 'f',
       description: 'Equivalent to `--skipCheck --overwrite`',
     }),
-    protocol: flags.string({
+    protocol: Flags.string({
       description: 'Force protocol to a specific value',
       default: 'uri',
     }),
-    bed1: flags.string({
+    bed1: Flags.string({
       description: 'Used only for mcscan anchors/simpleAnchors types',
     }),
-    bed2: flags.string({
+    bed2: Flags.string({
       description: 'Used only for mcscan anchors/simpleAnchors types',
     }),
   }
 
   async run() {
-    const { args: runArgs, flags: runFlags } = this.parse(AddTrack)
+    const { args: runArgs, flags: runFlags } = await this.parse(AddTrack)
 
     const { track: argsTrack } = runArgs
     const {

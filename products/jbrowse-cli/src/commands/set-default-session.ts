@@ -1,4 +1,4 @@
-import { flags } from '@oclif/command'
+import { Flags } from '@oclif/core'
 import fs from 'fs'
 
 import parseJSON from 'json-parse-better-errors'
@@ -33,52 +33,50 @@ export default class SetDefaultSession extends JBrowseCommand {
     '$ jbrowse set-default-session --currentSession # Prints out current default session',
   ]
 
-  static args = []
-
   static flags = {
-    session: flags.string({
+    session: Flags.string({
       char: 's',
       description: 'set path to a file containing session in json format',
     }),
-    name: flags.string({
+    name: Flags.string({
       char: 'n',
       description: 'Give a name for the default session',
       default: 'New Default Session',
     }),
-    view: flags.string({
+    view: Flags.string({
       char: 'v',
       description:
         'View type in config to be added as default session, i.e LinearGenomeView, CircularView, DotplotView.\nMust be provided if no default session file provided',
     }),
-    viewId: flags.string({
+    viewId: Flags.string({
       description: 'Identifier for the view. Will be generated on default',
     }),
-    tracks: flags.string({
+    tracks: Flags.string({
       char: 't',
       description:
         'Track id or track ids as comma separated string to put into default session',
     }),
-    currentSession: flags.boolean({
+    currentSession: Flags.boolean({
       char: 'c',
       description: 'List out the current default session',
     }),
-    target: flags.string({
+    target: Flags.string({
       description:
         'path to config file in JB2 installation directory to write out to',
     }),
-    out: flags.string({
+    out: Flags.string({
       description: 'synonym for target',
     }),
-    delete: flags.boolean({
+    delete: Flags.boolean({
       description: 'Delete any existing default session.',
     }),
-    help: flags.help({
+    help: Flags.help({
       char: 'h',
     }),
   }
 
   async run() {
-    const { flags: runFlags } = this.parse(SetDefaultSession)
+    const { flags: runFlags } = await this.parse(SetDefaultSession)
     const {
       session,
       name,

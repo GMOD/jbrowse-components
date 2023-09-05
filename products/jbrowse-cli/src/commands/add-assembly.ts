@@ -1,4 +1,4 @@
-import { flags } from '@oclif/command'
+import { Args, Flags } from '@oclif/core'
 import fs from 'fs'
 import path from 'path'
 import JBrowseCommand, { Assembly, Sequence, Config } from '../base'
@@ -46,9 +46,8 @@ export default class AddAssembly extends JBrowseCommand {
     '$ jbrowse add-assembly myfile.fa.gz --load copy',
   ]
 
-  static args = [
-    {
-      name: 'sequence',
+  static args = {
+    sequence: Args.string({
       required: true,
       description: `sequence file or URL
 
@@ -56,11 +55,11 @@ If TYPE is indexedFasta or bgzipFasta, the index file defaults to <location>.fai
 and can be optionally specified with --faiLocation
 If TYPE is bgzipFasta, the gzip index file defaults to <location>.gzi and can be
 optionally specified with --gziLocation`,
-    },
-  ]
+    }),
+  }
 
   static flags = {
-    type: flags.string({
+    type: Flags.string({
       char: 't',
       description: `type of sequence, by default inferred from sequence file
 
@@ -79,65 +78,65 @@ custom         Either a JSON file location or inline JSON that defines a custom
 
       options: ['indexedFasta', 'bgzipFasta', 'twoBit', 'chromSizes', 'custom'],
     }),
-    name: flags.string({
+    name: Flags.string({
       char: 'n',
       description:
         'Name of the assembly; if not specified, will be guessed using the sequence file name',
     }),
-    alias: flags.string({
+    alias: Flags.string({
       char: 'a',
       description:
         'An alias for the assembly name (e.g. "hg38" if the name of the assembly is "GRCh38");\ncan be specified multiple times',
       multiple: true,
     }),
-    displayName: flags.string({
+    displayName: Flags.string({
       description:
         'The display name to specify for the assembly, e.g. "Homo sapiens (hg38)" while the name can be a shorter identifier like "hg38"',
     }),
-    faiLocation: flags.string({
+    faiLocation: Flags.string({
       description: '[default: <fastaLocation>.fai] FASTA index file or URL',
     }),
-    gziLocation: flags.string({
+    gziLocation: Flags.string({
       description:
         '[default: <fastaLocation>.gzi] FASTA gzip index file or URL',
     }),
-    refNameAliases: flags.string({
+    refNameAliases: Flags.string({
       description:
         'Reference sequence name aliases file or URL; assumed to be a tab-separated aliases\nfile unless --refNameAliasesType is specified',
     }),
-    refNameAliasesType: flags.string({
+    refNameAliasesType: Flags.string({
       description:
         'Type of aliases defined by --refNameAliases; if "custom", --refNameAliases is either\na JSON file location or inline JSON that defines a custom sequence adapter',
       options: ['aliases', 'custom'],
       dependsOn: ['refNameAliases'],
     }),
-    refNameColors: flags.string({
+    refNameColors: Flags.string({
       description:
         'A comma-separated list of color strings for the reference sequence names; will cycle\nthrough colors if there are fewer colors than sequences',
     }),
-    target: flags.string({
+    target: Flags.string({
       description:
         'path to config file in JB2 installation directory to write out to.\nCreates ./config.json if nonexistent',
     }),
-    out: flags.string({
+    out: Flags.string({
       description: 'synonym for target',
     }),
-    help: flags.help({ char: 'h' }),
-    load: flags.string({
+    help: Flags.help({ char: 'h' }),
+    load: Flags.string({
       char: 'l',
       description:
         'Required flag when using a local file. Choose how to manage the data directory. Copy, symlink, or move the data directory to the JBrowse directory. Or use inPlace to modify the config without doing any file operations',
       options: ['copy', 'symlink', 'move', 'inPlace'],
     }),
-    skipCheck: flags.boolean({
+    skipCheck: Flags.boolean({
       description:
         "Don't check whether or not the sequence file or URL exists or if you are in a JBrowse directory",
     }),
-    overwrite: flags.boolean({
+    overwrite: Flags.boolean({
       description:
         'Overwrite existing assembly if one with the same name exists',
     }),
-    force: flags.boolean({
+    force: Flags.boolean({
       char: 'f',
       description: 'Equivalent to `--skipCheck --overwrite`',
     }),
@@ -145,7 +144,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
 
   async getAssembly(): Promise<Assembly> {
     let sequence: Sequence
-    const { args: runArgs, flags: runFlags } = this.parse(AddAssembly)
+    const { args: runArgs, flags: runFlags } = await this.parse(AddAssembly)
     const { sequence: argsSequence } = runArgs as { sequence: string }
 
     if (this.needLoadData(argsSequence) && !runFlags.load) {
@@ -379,7 +378,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
     const exists = (s: string) =>
       new Promise(r => fs.access(s, fs.constants.F_OK, e => r(!e)))
 
-    const { args: runArgs, flags: runFlags } = this.parse(AddAssembly)
+    const { args: runArgs, flags: runFlags } = await this.parse(AddAssembly)
 
     const output = runFlags.target || runFlags.out || '.'
 
