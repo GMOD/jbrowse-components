@@ -78,6 +78,7 @@ function ExportBookmarks({ model }: { model: GridBookmarkModel }) {
         startIcon={<GetAppIcon />}
         onClick={() => setDialogOpen(true)}
         disabled={model.selectedBookmarks.length === 0}
+        data-testid="export_button"
       >
         Export
       </Button>

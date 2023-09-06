@@ -3,6 +3,8 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { Region } from '@jbrowse/core/util/types'
 import { Region as RegionModel, ElementId } from '@jbrowse/core/util/types/mst'
 
+import { localStorageSetItem } from '@jbrowse/core/util'
+
 const LabeledRegionModel = types
   .compose(
     RegionModel,
@@ -59,7 +61,11 @@ export default function f(_pluginManager: PluginManager) {
         self.bookmarkedRegions = cast([...self.bookmarkedRegions, ...regions])
       },
       addBookmark(region: Region) {
+        const target = `bookmarks-${[
+          window.location.host + window.location.pathname,
+        ].join('-')}`
         self.bookmarkedRegions.push(region)
+        localStorageSetItem(target, JSON.stringify(self.bookmarkedRegions))
       },
       removeBookmark(index: number) {
         self.bookmarkedRegions.splice(index, 1)

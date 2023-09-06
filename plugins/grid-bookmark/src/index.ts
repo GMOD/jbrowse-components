@@ -45,6 +45,8 @@ export default class extends Plugin {
                       ) {
                         e.preventDefault()
                         // @ts-ignore
+                        self.activateBookmarkWidget()
+                        // @ts-ignore
                         self.bookmarkCurrentRegion()
                         getSession(self).notify('Bookmark created.', 'success')
                       }
@@ -63,28 +65,20 @@ export default class extends Plugin {
 
                   navigateNewestBookmark() {
                     const session = getSession(self)
-                    if (isSessionModelWithWidgets(session)) {
-                      const { widgets } = session
-                      let bookmarkWidget = widgets.get('GridBookmark')
-                      if (!bookmarkWidget) {
-                        // @ts-ignore
-                        self.activateBookmarkWidget()
-                        bookmarkWidget = widgets.get('GridBookmark')
-                      }
-                      // @ts-expect-error
-                      const regions = bookmarkWidget.bookmarkedRegions
-                      if (regions.length !== 0) {
-                        self.navTo(regions.at(-1))
-                        session.notify(
-                          'Navigated to the most recently created bookmark.',
-                          'success',
-                        )
-                      } else {
-                        session.notify(
-                          'There are no recent bookmarks to navigate to.',
-                          'info',
-                        )
-                      }
+                    // @ts-expect-error
+                    let bookmarkWidget = self.activateBookmarkWidget()
+                    const regions = bookmarkWidget.bookmarkedRegions
+                    if (regions.length !== 0) {
+                      self.navTo(regions.at(-1))
+                      session.notify(
+                        'Navigated to the most recently created bookmark.',
+                        'success',
+                      )
+                    } else {
+                      session.notify(
+                        'There are no recent bookmarks to navigate to.',
+                        'info',
+                      )
                     }
                   },
 
@@ -100,6 +94,7 @@ export default class extends Plugin {
                       }
 
                       session.showWidget(bookmarkWidget)
+                      bookmarkWidget = session.widgets.get('GridBookmark')
                       return bookmarkWidget
                     }
 
@@ -114,17 +109,9 @@ export default class extends Plugin {
                         self.rightOffset,
                       )
                       const firstRegion = selectedRegions[0]
-                      const session = getSession(self)
-                      if (isSessionModelWithWidgets(session)) {
-                        const { widgets } = session
-                        let bookmarkWidget = widgets.get('GridBookmark')
-                        if (!bookmarkWidget) {
-                          this.activateBookmarkWidget()
-                          bookmarkWidget = widgets.get('GridBookmark')
-                        }
-                        // @ts-expect-error
-                        bookmarkWidget.addBookmark(firstRegion)
-                      }
+                      const bookmarkWidget = this.activateBookmarkWidget()
+                      // @ts-expect-error
+                      bookmarkWidget.addBookmark(firstRegion)
                     }
                   },
                 },
@@ -161,18 +148,9 @@ export default class extends Plugin {
                             rightOffset,
                           )
                           const firstRegion = selectedRegions[0]
-                          const session = getSession(self)
-                          if (isSessionModelWithWidgets(session)) {
-                            const { widgets } = session
-                            let bookmarkWidget = widgets.get('GridBookmark')
-                            if (!bookmarkWidget) {
-                              // @ts-expect-error
-                              self.activateBookmarkWidget()
-                              bookmarkWidget = widgets.get('GridBookmark')
-                            }
-                            // @ts-expect-error
-                            bookmarkWidget.addBookmark(firstRegion)
-                          }
+                          // @ts-expect-error
+                          const bookmarkWidget = self.activateBookmarkWidget()
+                          bookmarkWidget.addBookmark(firstRegion)
                         },
                       },
                     ]
