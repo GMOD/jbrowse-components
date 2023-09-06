@@ -10,7 +10,7 @@ import {
   ListItem,
 } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
-import { assembleLocString, useLocalStorage } from '@jbrowse/core/util'
+import { assembleLocString } from '@jbrowse/core/util'
 
 // icons
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -18,7 +18,13 @@ import DeleteIcon from '@mui/icons-material/Delete'
 // locals
 import { GridBookmarkModel, IExtendedLabeledRegionModel } from '../model'
 
-function DeleteBookmarks({ model }: { model: GridBookmarkModel }) {
+function DeleteBookmarks({
+  model,
+  setLocalBookmarks,
+}: {
+  model: GridBookmarkModel
+  setLocalBookmarks: Function
+}) {
   const [dialogOpen, setDialogOpen] = useState(false)
 
   return (
@@ -63,6 +69,7 @@ function DeleteBookmarks({ model }: { model: GridBookmarkModel }) {
             color="primary"
             onClick={() => {
               model.clearSelectedBookmarks()
+              setLocalBookmarks(model.bookmarkedRegions)
               setDialogOpen(false)
             }}
           >

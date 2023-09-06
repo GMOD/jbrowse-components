@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { observer } from 'mobx-react'
 import { Alert, Card } from '@mui/material'
+import { useLocalStorage } from '@jbrowse/core/util'
 import { makeStyles } from 'tss-react/mui'
 
 // locals
@@ -23,6 +24,20 @@ const useStyles = makeStyles()({
 
 function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
   const { classes } = useStyles()
+  const { bookmarkedRegions } = model
+
+  const [localBookmarks, setLocalBookmarks] = useLocalStorage(
+    `bookmarks-${[window.location.host + window.location.pathname].join('-')}`,
+    bookmarkedRegions,
+  )
+
+  if (localBookmarks.length > 0) {
+    model.setBookmarkedRegions(localBookmarks)
+  }
+
+  useEffect(() => {
+    setLocalBookmarks(bookmarkedRegions)
+  }, [bookmarkedRegions, setLocalBookmarks])
 
   if (!model) {
     return null
@@ -33,13 +48,17 @@ function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
       <div>
         <ExportBookmarks model={model} />
         <ImportBookmarks model={model} />
-        <DeleteBookmarks model={model} />
+        <DeleteBookmarks model={model} setLocalBookmarks={setLocalBookmarks} />
       </div>
       <Alert severity="info">
         Click or double click the <strong>label</strong> field to notate your
         bookmark.
       </Alert>
-      <BookmarkGrid model={model} />
+      <BookmarkGrid
+        model={model}
+        localBookmarks={localBookmarks}
+        setLocalBookmarks={setLocalBookmarks}
+      />
     </Card>
   )
 }

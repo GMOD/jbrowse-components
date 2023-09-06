@@ -15,7 +15,6 @@ import {
   assembleLocString,
   measureGridWidth,
   measureText,
-  useLocalStorage,
 } from '@jbrowse/core/util'
 import { Dialog } from '@jbrowse/core/ui'
 
@@ -33,7 +32,15 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const BookmarkGrid = ({ model }: { model: GridBookmarkModel }) => {
+const BookmarkGrid = ({
+  model,
+  localBookmarks,
+  setLocalBookmarks,
+}: {
+  model: GridBookmarkModel
+  localBookmarks: ILabeledRegionModel[]
+  setLocalBookmarks: Function
+}) => {
   const { classes } = useStyles()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [dialogRow, setDialogRow] = useState<IExtendedLabeledRegionModel>()
@@ -43,20 +50,6 @@ const BookmarkGrid = ({ model }: { model: GridBookmarkModel }) => {
     useState<GridRowSelectionModel>([])
   const session = getSession(model)
   const { assemblyNames, views } = session
-
-  const [localBookmarks, setLocalBookmarks] =
-    typeof jest === 'undefined'
-      ? useLocalStorage(
-          `bookmarks-${[window.location.host + window.location.pathname].join(
-            '-',
-          )}`,
-          bookmarkedRegions,
-        )
-      : useState(bookmarkedRegions)
-
-  if (localBookmarks.length > 0) {
-    model.setBookmarkedRegions(localBookmarks)
-  }
 
   const bookmarkRows = localBookmarks
     .filter((r: ILabeledRegionModel) => assemblyNames.includes(r.assemblyName))
@@ -70,10 +63,6 @@ const BookmarkGrid = ({ model }: { model: GridBookmarkModel }) => {
         correspondingObj: region,
       }
     })
-
-  useEffect(() => {
-    setLocalBookmarks(bookmarkedRegions)
-  }, [JSON.stringify(bookmarkedRegions)])
 
   useEffect(() => {
     setRowSelectionModel([])
@@ -137,7 +126,7 @@ const BookmarkGrid = ({ model }: { model: GridBookmarkModel }) => {
         processRowUpdate={row => {
           const target = bookmarkRows[row.id]
           model.updateBookmarkLabel(target, row.label)
-          setNewLabel(row.label)
+          setLocalBookmarks(bookmarkedRegions)
           return row
         }}
         onProcessRowUpdateError={e => {
@@ -191,7 +180,7 @@ const BookmarkGrid = ({ model }: { model: GridBookmarkModel }) => {
                 const target = bookmarkRows[dialogRow?.id as number]
                 model.updateBookmarkLabel(target, newLabel)
               }
-              setLocalBookmarks(model.bookmarkedRegions)
+              setLocalBookmarks(bookmarkedRegions)
               setNewLabel('')
               setDialogRow(undefined)
               setDialogOpen(false)

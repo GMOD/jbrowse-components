@@ -37,7 +37,7 @@ export interface IExtendedLabeledRegionModel extends ILabeledRegionModel {
   correspondingObj: ILabeledRegionModel
 }
 
-export default function f(pluginManager: PluginManager) {
+export default function f(_pluginManager: PluginManager) {
   return types
     .model('GridBookmarkModel', {
       id: ElementId,
