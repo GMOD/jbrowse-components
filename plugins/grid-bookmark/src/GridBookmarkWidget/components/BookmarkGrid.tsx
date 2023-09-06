@@ -26,7 +26,7 @@ import {
   ILabeledRegionModel,
 } from '../model'
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()(() => ({
   link: {
     cursor: 'pointer',
   },
@@ -134,7 +134,7 @@ const BookmarkGrid = ({
         }}
         checkboxSelection
         onRowSelectionModelChange={newRowSelectionModel => {
-          const selectedBookmarks = [] as Array<IExtendedLabeledRegionModel>
+          const selectedBookmarks = [] as IExtendedLabeledRegionModel[]
           newRowSelectionModel.forEach((value: GridRowId) => {
             selectedBookmarks.push({ ...bookmarkRows[value as number] })
           })
@@ -177,7 +177,7 @@ const BookmarkGrid = ({
             color="primary"
             onClick={() => {
               if (newLabel) {
-                const target = bookmarkRows[dialogRow?.id as number]
+                const target = bookmarkRows[dialogRow!.id]
                 model.updateBookmarkLabel(target, newLabel)
               }
               setLocalBookmarks(bookmarkedRegions)

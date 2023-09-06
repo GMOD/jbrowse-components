@@ -12,7 +12,6 @@ import {
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import { getRoot } from 'mobx-state-tree'
 import { getEnv } from '@jbrowse/core/util'
 import { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
 

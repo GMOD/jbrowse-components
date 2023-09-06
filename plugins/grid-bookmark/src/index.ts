@@ -55,10 +55,12 @@ export default class extends Plugin {
                         e.code === 'KeyM'
                       ) {
                         e.preventDefault()
-                        this.navigateNewestBookmark()
+                        // @ts-ignore
+                        self.navigateNewestBookmark()
                       }
                     })
                   },
+
                   navigateNewestBookmark() {
                     const session = getSession(self)
                     if (isSessionModelWithWidgets(session)) {
@@ -85,6 +87,7 @@ export default class extends Plugin {
                       }
                     }
                   },
+
                   activateBookmarkWidget() {
                     const session = getSession(self)
                     if (isSessionModelWithWidgets(session)) {

@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from 'react'
 import { Paper } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import { getRoot } from 'mobx-state-tree'
 import ResizeHandle from '@jbrowse/core/ui/ResizeHandle'
 import { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
 

@@ -24,7 +24,7 @@ export async function navToBookmark(
     // check if the focused view is the appropriate assembly, if not proceed
     if (!view || view?.assemblyNames[0] !== assembly) {
       // find number of instances open with the selectedAssembly
-      const viewsOfSelectedAssembly: Array<AbstractViewModel> = []
+      const viewsOfSelectedAssembly: AbstractViewModel[] = []
       views.forEach(element => {
         if (
           element.type === 'LinearGenomeView' &&

@@ -44,8 +44,8 @@ export default function f(_pluginManager: PluginManager) {
       type: types.literal('GridBookmarkWidget'),
       bookmarkedRegions: types.array(LabeledRegionModel),
     })
-    .volatile(self => ({
-      selectedBookmarks: [] as Array<IExtendedLabeledRegionModel>,
+    .volatile(() => ({
+      selectedBookmarks: [] as IExtendedLabeledRegionModel[],
     }))
     .views(self => ({
       get sharedBookmarksModel() {
