@@ -73,17 +73,25 @@ apple2 ["ctgA%3A13000..17200"|"gff3tabix_gen"
 `;
 
 exports[`text-index tracks Indexes a remote and a local file 2`] = `
-"gA%3A46816..46992"|"gff3tabix_genes"|"seg14"],11 ["ctgA%3A47449..47829"|"gff3tabix_genes"|"seg14"],12
-seg15 ["ctgA%3A39265..39361"|"gff3tabix_genes"|"seg15"],1 ["ctgA%3A39753..40034"|"gff3tabix_genes"|"seg15"],2 ["ctgA%3A40515..40954"|"gff3tabix_genes"|"seg15"],3 ["ctgA%3A41252..41365"|"gff3tabix_genes"|"seg15"],4 ["ctgA%3A41492..41504"|"gff3tabix_genes"|"seg15"],5 ["ctgA%3A41941..42377"|"gff3tabix_genes"|"seg15"],6 ["ctgA%3A42748..42954"|"gff3tabix_genes"|"seg15"],7 ["ctgA%3A43401..43897"|"gff3tabix_genes"|"seg15"],8 ["ctgA%3A44043..44113"|"gff3tabix_genes"|"seg15"],9 ["ctgA%3A44399..44888"|"gff3tabix_genes"|"seg15"],10 ["ctgA%3A45281..45375"|"gff3tabix_genes"|"seg15"],11 ["ctgA%3A45711..46041"|"gff3tabix_genes"|"seg15"],12 ["ctgA%3A46425..46564"|"gff3tabix_genes"|"seg15"],13 ["ctgA%3A46738..47087"|"gff3tabix_genes"|"seg15"],14 ["ctgA%3A47329..47595"|"gff3tabix_genes"|"seg15"],15 ["ctgA%3A47858..47979"|"gff3tabix_genes"|"seg15"],16 ["ctgA%3A48169..48453"|"gff3tabix_genes"|"seg15"],17
+"au9_scaffold"|"au9.g8967.t1"|"au9.g8967.t1"],1
+au9.g8968 ["Group15.19%3A2331506..2333975"|"online_au9_scaffold"|"au9.g8968"|"au9.g8968"],1
+au9.g8968.t1 ["Group15.19%3A2331506..2333975"|"online_au9_scaffold"|"au9.g8968.t1"|"au9.g8968.t1"],1
+au9.g8969 ["Group15.19%3A2334188..2335205"|"online_au9_scaffold"|"au9.g8969"|"au9.g8969"],1
+au9.g8969.t1 ["Group15.19%3A2334188..2335205"|"online_au9_scaffold"|"au9.g8969.t1"|"au9.g8969.t1"],1
+au9.g897 ["Group1.33%3A233954..238223"|"online_au9_scaffold"|"au9.g897"|"au9.g897"],1
+au9.g897.t1 ["Group1.33%3A233954..238223"|"online_au9_scaffold"|"au9.g897.t1"|"au9.g897.t1"],1
+au9.g8970 ["Group15.19%3A2335096..2339134"|"online_au9_scaffold"|"au9.g8970"|"au9.g8970"],1
+au9.g8970.t1 ["Group15.19%3A2335096..2339134"|"online_au9_scaffold"|"au9.g8970.t1"|"au9.g8970.t1"],1
+au9.g8970.t2 ["Group15.19%3A2335306..2339134"|"online_au9_scaffold"|"au9.g8970.t2"|"au9.g8970.t2"],1
+au9.g8971 ["Group15.19%3A2339143..2340435"|"online_au9_scaffold"|"au9.g8971"|"au9.g8971"],1
 "
 `;
 
-exports[`text-index tracks Indexes a remote and a local file 3`] = `134774`;
+exports[`text-index tracks Indexes a remote and a local file 3`] = `98684`;
 
 exports[`text-index tracks Indexes a remote and a local file 4`] = `
 "agt220000000000
 au9.g000000044E
-seg090000020139
 "
 `;
 
