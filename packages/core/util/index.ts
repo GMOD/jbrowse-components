@@ -30,6 +30,7 @@ import { isAbortException, checkAbortSignal } from './aborting'
 import { BaseBlock } from './blockTypes'
 import { isUriLocation } from './types'
 import useMeasure from '@jbrowse/core/util/useMeasure'
+import Color from 'color'
 
 export * from './types'
 export * from './aborting'
@@ -611,7 +612,7 @@ export function iterMap<T, U>(
  * Otherwise, findLastIndex returns -1.
  */
 export function findLastIndex<T>(
-  array: Array<T>,
+  array: T[],
   predicate: (value: T, index: number, obj: T[]) => boolean,
 ): number {
   let l = array.length
@@ -624,7 +625,7 @@ export function findLastIndex<T>(
 }
 
 export function findLast<T>(
-  array: Array<T>,
+  array: T[],
   predicate: (value: T, index: number, obj: T[]) => boolean,
 ): T | undefined {
   let l = array.length
@@ -884,7 +885,7 @@ export const complement = (() => {
     b: 'v',
     R: 'Y',
     G: 'C',
-  } as { [key: string]: string }
+  } as Record<string, string>
 
   return (seqString: string) => {
     return seqString.replaceAll(complementRegex, m => complementTable[m] || '')
@@ -1004,7 +1005,7 @@ export const defaultCodonTable = {
  * permutations of upper and lower case nucleotides
  */
 export function generateCodonTable(table: any) {
-  const tempCodonTable: { [key: string]: string } = {}
+  const tempCodonTable: Record<string, string> = {}
   Object.keys(table).forEach(codon => {
     const aa = table[codon]
     const nucs: string[][] = []
@@ -1089,7 +1090,7 @@ export async function bytesForRegions(
     .reduce((a, b) => a + b.end - b.start, 0)
 }
 
-export type ViewSnap = {
+export interface ViewSnap {
   bpPerPx: number
   interRegionPaddingWidth: number
   minimumBlockWidth: number
@@ -1107,7 +1108,7 @@ export type ViewSnap = {
 
 // supported adapter types by text indexer
 //  ensure that this matches the method found in @jbrowse/text-indexing/util
-export function supportedIndexingAdapters(type: string) {
+export function isSupportedIndexingAdapter(type: string) {
   return [
     'Gff3TabixAdapter',
     'VcfTabixAdapter',
@@ -1259,24 +1260,24 @@ export function localStorageSetItem(str: string, item: string) {
 
 export function max(arr: number[], init = -Infinity) {
   let max = init
-  for (let i = 0; i < arr.length; i++) {
-    max = arr[i] > max ? arr[i] : max
+  for (const entry of arr) {
+    max = entry > max ? entry : max
   }
   return max
 }
 
 export function min(arr: number[], init = Infinity) {
   let min = init
-  for (let i = 0; i < arr.length; i++) {
-    min = arr[i] < min ? arr[i] : min
+  for (const entry of arr) {
+    min = entry < min ? entry : min
   }
   return min
 }
 
 export function sum(arr: number[]) {
   let sum = 0
-  for (let i = 0; i < arr.length; i++) {
-    sum += arr[i]
+  for (const entry of arr) {
+    sum += entry
   }
   return sum
 }
@@ -1286,7 +1287,7 @@ export function avg(arr: number[]) {
 }
 
 export function groupBy<T>(array: T[], predicate: (v: T) => string) {
-  const result = {} as { [key: string]: T[] }
+  const result = {} as Record<string, T[]>
   for (const value of array) {
     const entry = (result[predicate(value)] ||= [])
     entry.push(value)
@@ -1319,7 +1320,7 @@ export function mergeIntervals<T extends { start: number; end: number }>(
   // start from the next interval and merge if needed
   for (let i = 1; i < intervals.length; i++) {
     // get the top element
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
     top = stack.at(-1)!
 
     // if the current interval doesn't overlap with the
@@ -1346,7 +1347,7 @@ interface BasicFeature {
 }
 
 // hashmap of refName->array of features
-type FeaturesPerRef = { [key: string]: BasicFeature[] }
+type FeaturesPerRef = Record<string, BasicFeature[]>
 
 export function gatherOverlaps(regions: BasicFeature[]) {
   const memo = {} as FeaturesPerRef
@@ -1368,3 +1369,8 @@ export {
   type SimpleFeatureSerialized,
   isFeature,
 } from './simpleFeature'
+
+export function stripAlpha(str: string) {
+  const c = Color(str)
+  return c.hex()
+}

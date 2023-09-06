@@ -51,7 +51,7 @@ const model: MyModel = {
     }
     return db.token
   },
-  async getRefreshToken(token) {
+  async getRefreshToken(_token) {
     /* Retrieves the token from the database */
     const { token: dbToken } = db
     if (!dbToken) {
@@ -69,7 +69,7 @@ const model: MyModel = {
     }
     return true
   },
-  async generateAuthorizationCode(client, user, scope) {
+  async generateAuthorizationCode(_client, _user, _scope) {
     const seed = crypto.randomBytes(256)
     const code = crypto.createHash('sha1').update(seed).digest('hex')
     return code
@@ -85,17 +85,17 @@ const model: MyModel = {
     }
     return db.authorizationCode
   },
-  async getAuthorizationCode(authorizationCode) {
+  async getAuthorizationCode(_authorizationCode) {
     /* this is where we fetch the stored data from the code */
     return db.authorizationCode
   },
-  async revokeAuthorizationCode(authorizationCode) {
+  async revokeAuthorizationCode(_authorizationCode) {
     /* This is where we delete codes */
     delete db.authorizationCode
     const codeWasFoundAndDeleted = true // Return true if code found and deleted, false otherwise
     return codeWasFoundAndDeleted
   },
-  async verifyScope(token, scope) {
+  async verifyScope(_token, _scope) {
     /* This is where we check to make sure the client has access to this scope */
     const userHasAccess = true // return true if this user / client combo has access to this resource
     return userHasAccess

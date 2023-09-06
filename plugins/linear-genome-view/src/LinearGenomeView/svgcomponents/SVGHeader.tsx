@@ -41,9 +41,7 @@ export default function SVGHeader({
   overview.setVolatileWidth(width)
   overview.showAllRegions()
   const block = overview.dynamicBlocks.contentBlocks[0]
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const first = visibleRegions.at(0)!
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const last = visibleRegions.at(-1)!
   const firstOverviewPx =
     overview.bpToPx({

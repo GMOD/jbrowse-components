@@ -25,14 +25,12 @@ function makeLocationProtocol(protocol: string) {
   }
 }
 
-interface Track {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any
-}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Track = Record<string, any>
 
 interface Config {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  assemblies?: { name: string; sequence: { [key: string]: any } }[]
+  assemblies?: { name: string; sequence: Record<string, any> }[]
   configuration?: {}
   connections?: unknown[]
   defaultSession?: {}
@@ -258,7 +256,7 @@ export default class AddTrack extends JBrowseCommand {
     // only add track if there is an existing config.json
     const configContents: Config = await this.readJsonFile(this.target)
 
-    if (!configContents.assemblies || !configContents.assemblies.length) {
+    if (!configContents.assemblies?.length) {
       this.error('No assemblies found. Please add one before adding tracks', {
         exit: 150,
       })
@@ -383,9 +381,9 @@ export default class AddTrack extends JBrowseCommand {
     if (/\.anchors(.simple)?$/i.test(location)) {
       return {
         file: location,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
         bed1: bed1!,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
         bed2: bed2!,
       }
     }
@@ -673,7 +671,7 @@ export default class AddTrack extends JBrowseCommand {
   }
 
   guessTrackType(adapterType: string): string {
-    const known: { [key: string]: string | undefined } = {
+    const known: Record<string, string | undefined> = {
       BamAdapter: 'AlignmentsTrack',
       CramAdapter: 'AlignmentsTrack',
       BgzipFastaAdapter: 'ReferenceSequenceTrack',

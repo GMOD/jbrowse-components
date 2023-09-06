@@ -31,7 +31,7 @@ export default observer(function StructuralVariantChords({
 }) {
   // make a map of refName -> blockDefinition
   const blocksForRefsMemo = useMemo(() => {
-    const blocksForRefs = {} as { [key: string]: Block }
+    const blocksForRefs = {} as Record<string, Block>
     blockDefinitions.forEach(block => {
       ;(block.region.elided ? block.region.regions : [block.region]).forEach(
         r => (blocksForRefs[r.refName] = block),

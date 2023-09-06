@@ -89,9 +89,7 @@ export function makeTicks(
   const ticks = []
   const gridPitch = chooseGridPitch(bpPerPx, 60, 15)
   const iterPitch = gridPitch.minorPitch || gridPitch.majorPitch
-  for (let i = 0; i < regions.length; i++) {
-    const region = regions[i]
-    const { start, end, refName } = region
+  for (const { start, end, refName } of regions) {
     let index = 0
 
     const minBase = start
@@ -105,10 +103,7 @@ export function makeTicks(
       if (emitMinor && base % gridPitch.majorPitch) {
         ticks.push({ type: 'minor', base: base - 1, index, refName })
         index += 1
-      } else if (
-        emitMajor &&
-        Math.abs(base - region.start) > gridPitch.minorPitch
-      ) {
+      } else if (emitMajor && Math.abs(base - start) > gridPitch.minorPitch) {
         ticks.push({ type: 'major', base: base - 1, index, refName })
         index += 1
       }

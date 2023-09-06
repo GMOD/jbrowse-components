@@ -13,10 +13,9 @@ import {
 } from '@jbrowse/text-indexing'
 import { isAbortException, isSessionModelWithWidgets } from '@jbrowse/core/util'
 
-interface Track {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any
-}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Track = Record<string, any>
+
 interface TrackTextIndexing {
   attributes: string[]
   exclude: string[]
@@ -41,7 +40,7 @@ export interface TextJobsEntry extends JobsEntry {
   statusMessage?: string
 }
 
-export default function jobsModelFactory(pluginManager: PluginManager) {
+export default function jobsModelFactory(_pluginManager: PluginManager) {
   return types
     .model('JobsManager', {})
     .volatile(() => ({

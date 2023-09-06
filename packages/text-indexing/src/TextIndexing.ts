@@ -5,8 +5,11 @@ import { indexGff3 } from './types/gff3Adapter'
 import { indexVcf } from './types/vcfAdapter'
 import { generateMeta } from './types/common'
 import { ixIxxStream } from 'ixixx'
-import { Track, indexType, supportedIndexingAdapters } from './util'
-import { checkAbortSignal } from '@jbrowse/core/util'
+import { Track, indexType } from './util'
+import {
+  checkAbortSignal,
+  isSupportedIndexingAdapter,
+} from '@jbrowse/core/util'
 
 export async function indexTracks(args: {
   tracks: Track[]
@@ -75,7 +78,7 @@ async function perTrackIndex(
   const excludeTypes = exclude || ['exon', 'CDS']
   const force = true
   const supportedTracks = tracks.filter(track =>
-    supportedIndexingAdapters(track.adapter?.type),
+    isSupportedIndexingAdapter(track.adapter?.type),
   )
   for (const trackConfig of supportedTracks) {
     const { textSearching, trackId, assemblyNames } = trackConfig
@@ -133,7 +136,7 @@ async function aggregateIndex(
     const quiet = true
     // supported tracks for given assembly
     const supportedTracks = tracks
-      .filter(track => supportedIndexingAdapters(track.adapter?.type))
+      .filter(track => isSupportedIndexingAdapter(track.adapter?.type))
       .filter(track => (asm ? track.assemblyNames.includes(asm) : true))
 
     await indexDriver(

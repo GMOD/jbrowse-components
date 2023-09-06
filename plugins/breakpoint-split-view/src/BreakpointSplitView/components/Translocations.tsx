@@ -68,8 +68,7 @@ const Translocations = observer(function ({
         // we follow a path in the list of chunks, not from top to bottom,
         // just in series following x1,y1 -> x2,y2
         const ret = []
-        for (let i = 0; i < chunk.length; i += 1) {
-          const { layout: c1, feature: f1, level: level1 } = chunk[i]
+        for (const { layout: c1, feature: f1, level: level1 } of chunk) {
           const level2 = level1 === 0 ? 1 : 0
           const id = f1.id()
           if (!c1) {

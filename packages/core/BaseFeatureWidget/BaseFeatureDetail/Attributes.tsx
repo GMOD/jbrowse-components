@@ -27,7 +27,7 @@ const globalOmit = [
 export default function Attributes(props: {
   attributes: {
     [key: string]: unknown
-    __jbrowsefmt?: { [key: string]: unknown }
+    __jbrowsefmt?: Record<string, unknown>
   }
   omit?: string[]
   omitSingleLevel?: string[]

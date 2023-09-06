@@ -7,7 +7,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
-const GCContentAdapterF = (pluginManager: PluginManager) => {
+const GCContentAdapterF = (_pluginManager: PluginManager) => {
   return ConfigurationSchema(
     'GCContentAdapter',
     {

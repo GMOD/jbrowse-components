@@ -74,7 +74,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
             const data = parser.parseLine(
               `${refName}\t${r.start}\t${r.end}\t${r.rest}`,
               {
-                uniqueId: r.uniqueId as string,
+                uniqueId: r.uniqueId!,
               },
             )
 

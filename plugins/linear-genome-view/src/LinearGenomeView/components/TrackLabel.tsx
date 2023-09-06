@@ -54,7 +54,7 @@ interface Props {
   className?: string
 }
 
-const TrackLabel = React.forwardRef<HTMLDivElement, Props>(function (
+const TrackLabel = React.forwardRef<HTMLDivElement, Props>(function TrackLabel2(
   { track, className },
   ref,
 ) {

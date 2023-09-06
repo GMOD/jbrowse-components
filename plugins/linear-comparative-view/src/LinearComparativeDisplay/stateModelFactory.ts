@@ -98,14 +98,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
 
           let foundNewFeatureNotInExistingMap = false
           let foundExistingFeatureNotInNewMap = false
-          for (let i = 0; i < features.length; i++) {
-            if (!featIds.has(features[i].id())) {
+          for (const feat of features) {
+            if (!featIds.has(feat.id())) {
               foundNewFeatureNotInExistingMap = true
               break
             }
           }
-          for (let i = 0; i < existingFeatures.length; i++) {
-            if (!newFeatIds.has(existingFeatures[i].id())) {
+          for (const existingFeat of existingFeatures) {
+            if (!newFeatIds.has(existingFeat.id())) {
               foundExistingFeatureNotInNewMap = true
               break
             }

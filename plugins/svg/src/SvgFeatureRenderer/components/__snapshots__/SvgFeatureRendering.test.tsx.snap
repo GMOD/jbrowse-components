@@ -59,7 +59,7 @@ exports[`one feature (compact mode) 1`] = `
   <g>
     <line
       data-testid="one"
-      stroke="rgba(0, 0, 0, 0.6)"
+      stroke="#000000"
       x1="1991.7"
       x2="3248.0333333333333"
       y1="2.5"
@@ -192,19 +192,19 @@ exports[`one feature (compact mode) 1`] = `
       y="0.875"
     />
     <line
-      stroke="rgba(0, 0, 0, 0.6)"
+      stroke="#000000"
       x1="3248.0333333333333"
       x2="3255.0333333333333"
       y1="2.5"
       y2="2.5"
     />
     <polygon
-      fill="rgba(0, 0, 0, 0.6)"
+      fill="#000000"
       points="3251.5333333333333,0,3251.5333333333333,5,3255.0333333333333,2.5"
-      stroke="rgba(0, 0, 0, 0.6)"
+      stroke="#000000"
     />
     <text
-      fill="rgba(0, 0, 0, 0.87)"
+      fill="#000000"
       font-size="12"
       x="1991.7"
       y="17"
@@ -244,7 +244,7 @@ exports[`processed transcript (exons + impliedUTR) 1`] = `
   <g>
     <line
       data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0"
-      stroke="rgba(0, 0, 0, 0.6)"
+      stroke="#000000"
       x1="7759845"
       x2="7766453"
       y1="5"
@@ -395,19 +395,19 @@ exports[`processed transcript (exons + impliedUTR) 1`] = `
       y="1.75"
     />
     <line
-      stroke="rgba(0, 0, 0, 0.6)"
+      stroke="#000000"
       x1="7759845"
       x2="7759838"
       y1="5"
       y2="5"
     />
     <polygon
-      fill="rgba(0, 0, 0, 0.6)"
+      fill="#000000"
       points="7759841.5,2.5,7759841.5,7.5,7759838,5"
-      stroke="rgba(0, 0, 0, 0.6)"
+      stroke="#000000"
     />
     <text
-      fill="rgba(0, 0, 0, 0.87)"
+      fill="#000000"
       font-size="12"
       x="7759845"
       y="22"
@@ -455,7 +455,7 @@ exports[`processed transcript 1`] = `
   <g>
     <line
       data-testid="one"
-      stroke="rgba(0, 0, 0, 0.6)"
+      stroke="#000000"
       x1="1991.7"
       x2="3248.0333333333333"
       y1="5"
@@ -588,19 +588,19 @@ exports[`processed transcript 1`] = `
       y="1.75"
     />
     <line
-      stroke="rgba(0, 0, 0, 0.6)"
+      stroke="#000000"
       x1="3248.0333333333333"
       x2="3255.0333333333333"
       y1="5"
       y2="5"
     />
     <polygon
-      fill="rgba(0, 0, 0, 0.6)"
+      fill="#000000"
       points="3251.5333333333333,2.5,3251.5333333333333,7.5,3255.0333333333333,5"
-      stroke="rgba(0, 0, 0, 0.6)"
+      stroke="#000000"
     />
     <text
-      fill="rgba(0, 0, 0, 0.87)"
+      fill="#000000"
       font-size="12"
       x="1991.7"
       y="22"

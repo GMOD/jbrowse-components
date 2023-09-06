@@ -35,7 +35,7 @@ function heightFromSpecificLevel(
 }
 
 export function getPxFromCoordinate(view: LGV, refName: string, coord: number) {
-  return ((view.bpToPx({ refName, coord }) || {}).offsetPx || 0) - view.offsetPx
+  return (view.bpToPx({ refName, coord })?.offsetPx || 0) - view.offsetPx
 }
 
 // get's the yposition of a layout record in a track

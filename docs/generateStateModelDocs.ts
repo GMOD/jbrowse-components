@@ -46,7 +46,7 @@ interface StateModel {
 
 function generateStateModelDocs(files: string[]) {
   const cwd = process.cwd() + '/'
-  const contents = {} as { [key: string]: StateModel }
+  const contents = {} as Record<string, StateModel>
   extractWithComment(files, obj => {
     const fn = obj.filename
     const fn2 = fn.replace(cwd, '')

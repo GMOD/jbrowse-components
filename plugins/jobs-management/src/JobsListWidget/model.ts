@@ -8,7 +8,7 @@ export const Job = types
     statusMessage: types.maybe(types.string),
     progressPct: types.number,
   })
-  .volatile(self => ({
+  .volatile(() => ({
     cancelCallback() {},
   }))
   .actions(self => ({
@@ -27,7 +27,7 @@ export interface NewJob extends SnapshotIn<typeof Job> {
   cancelCallback(): void
 }
 
-export default function f(pluginManager: PluginManager) {
+export default function f(_pluginManager: PluginManager) {
   return types
     .model('JobsListModel', {
       id: ElementId,

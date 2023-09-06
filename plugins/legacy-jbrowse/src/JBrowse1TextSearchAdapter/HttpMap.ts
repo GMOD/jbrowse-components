@@ -9,7 +9,7 @@ export default class HttpMap {
 
   constructor(args: { url: string }) {
     // make sure url has a trailing slash
-    this.url = /\/$/.test(args.url) ? args.url : `${args.url}/`
+    this.url = args.url.endsWith('/') ? args.url : `${args.url}/`
   }
 
   /**

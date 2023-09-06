@@ -57,3 +57,33 @@ xtest('filter by RG tag cram (special case tag))', async () => {
   await testFilterTrack('volvox_cram', 'RG', '6', '1002..2002-0')
   expect(container).toMatchSnapshot()
 }, 50000)
+
+test('set jexl filters on bam pileup display', async () => {
+  const { view } = await createView()
+  view.setNewView(0.465, 85055)
+
+  const user = userEvent.setup()
+  await user.click(await screen.findByTestId(hts('volvox_bam'), ...opts))
+  await user.click(await screen.findByTestId('track_menu_icon', ...opts))
+  await user.click((await screen.findAllByText('Pileup display'))[1])
+
+  const filter = [`jexl:get(feature,'end')==${40005}`]
+  view.tracks[0].displays[0].setJexlFilters(filter)
+
+  expectCanvasMatch(await screen.findByTestId(pv('39805..40176-0'), ...opts))
+}, 50000)
+
+test('set jexl filters on snp cov display', async () => {
+  const { view } = await createView()
+  view.setNewView(0.465, 85055)
+
+  const user = userEvent.setup()
+  await user.click(await screen.findByTestId(hts('volvox_bam'), ...opts))
+  await user.click(await screen.findByTestId('track_menu_icon', ...opts))
+  await user.click(await screen.findByText('SNPCoverage display'))
+
+  const filter = [`jexl:get(feature,'end')==${40005}`]
+  view.tracks[0].displays[0].setJexlFilters(filter)
+
+  expectCanvasMatch(await screen.findByTestId(pv('39805..40176-0'), ...opts))
+}, 50000)

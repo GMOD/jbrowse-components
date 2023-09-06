@@ -34,7 +34,7 @@ export interface Menu {
  * #stateModel DesktopMenusMixin
  * #category root
  */
-export function DesktopMenusMixin(pluginManager: PluginManager) {
+export function DesktopMenusMixin(_pluginManager: PluginManager) {
   return types.model({}).volatile(s => {
     const self = s as DesktopRootModel
     return {

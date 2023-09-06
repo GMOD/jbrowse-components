@@ -179,8 +179,7 @@ export function mdToMismatches(
 
   // now actually parse the MD string
   const md = mdstring.match(mdRegex) || []
-  for (let i = 0; i < md.length; i++) {
-    const token = md[i]
+  for (const token of md) {
     const num = +token
     if (!Number.isNaN(num)) {
       curr.start += num
@@ -188,6 +187,7 @@ export function mdToMismatches(
       curr.start += token.length - 1
     } else {
       // mismatch
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let j = 0; j < token.length; j += 1) {
         curr.length = 1
 
@@ -315,8 +315,7 @@ export function getModificationPositions(
   const seq = fstrand === -1 ? revcom(fseq) : fseq
   const mods = mm.split(';').filter(mod => !!mod)
   const result = []
-  for (let i = 0; i < mods.length; i++) {
-    const mod = mods[i]
+  for (const mod of mods) {
     const [basemod, ...skips] = mod.split(',')
 
     // regexes based on parse_mm.pl from hts-specs
@@ -340,12 +339,11 @@ export function getModificationPositions(
     // sequence of the read, if we have a modification type e.g. C+m;2 and a
     // sequence ACGTACGTAC we skip the two instances of C and go to the last
     // C
-    for (let j = 0; j < types.length; j++) {
-      const type = types[j]
+    for (const type of types) {
       let i = 0
       const positions = []
-      for (let k = 0; k < skips.length; k++) {
-        let delta = +skips[k]
+      for (const d of skips) {
+        let delta = +d
         do {
           if (base === 'N' || base === seq[i]) {
             delta--

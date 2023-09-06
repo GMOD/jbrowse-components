@@ -5,8 +5,7 @@ export function dedupe<T>(list: T[], hasher: Hasher<T> = JSON.stringify) {
   const clone: T[] = []
   const lookup = new Set<string>()
 
-  for (let i = 0; i < list.length; i++) {
-    const entry = list[i]
+  for (const entry of list) {
     const hashed = hasher(entry)
 
     if (!lookup.has(hashed)) {

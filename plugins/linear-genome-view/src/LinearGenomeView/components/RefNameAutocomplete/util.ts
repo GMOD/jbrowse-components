@@ -34,7 +34,7 @@ export function getFiltered(opts: Option[], inputValue: string) {
 }
 
 export function aggregateResults(results: BaseResult[]) {
-  const m: { [key: string]: BaseResult[] } = {}
+  const m: Record<string, BaseResult[]> = {}
 
   for (const result of results) {
     const displayString = result.getDisplayString()

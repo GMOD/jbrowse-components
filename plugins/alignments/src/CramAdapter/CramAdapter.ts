@@ -14,19 +14,15 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { toArray } from 'rxjs/operators'
 import { firstValueFrom } from 'rxjs'
+
+// locals
 import CramSlightlyLazyFeature from './CramSlightlyLazyFeature'
+import { IFilter } from '../shared'
 
 interface Header {
   idToName?: string[]
   nameToId?: Record<string, number>
   readGroups?: (string | undefined)[]
-}
-
-interface FilterBy {
-  flagInclude: number
-  flagExclude: number
-  tagFilter: { tag: string; value: unknown }
-  readName: string
 }
 
 export default class CramAdapter extends BaseFeatureDataAdapter {
@@ -91,7 +87,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
     return this.configureP
   }
 
-  async getHeader(opts?: BaseOptions) {
+  async getHeader(_opts?: BaseOptions) {
     const { cram } = await this.configure()
     return cram.cram.getHeaderText()
   }
@@ -222,7 +218,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   getFeatures(
     region: Region & { originalRefName?: string },
     opts?: BaseOptions & {
-      filterBy: FilterBy
+      filterBy: IFilter
     },
   ) {
     const { signal, filterBy, statusCallback = () => {} } = opts || {}

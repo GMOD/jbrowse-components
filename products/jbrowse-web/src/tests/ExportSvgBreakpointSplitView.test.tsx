@@ -20,9 +20,8 @@ const delay = { timeout: 50000 }
 test('export svg of breakpoint split view', async () => {
   doBeforeEach(url => require.resolve(`../../test_data/breakpoint/${url}`))
   console.warn = jest.fn()
-  const { findByTestId, findAllByText, findByText } = await createView(
-    breakpointConfig,
-  )
+  const { findByTestId, findAllByText, findByText } =
+    await createView(breakpointConfig)
 
   // the breakpoint split view requires that the view was rendered first,
   // so add an arbitrary delay here. would need refactoring to fix properly

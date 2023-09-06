@@ -74,10 +74,7 @@ function preprocessConfigurationSchemaArguments(
   // extending, grab the slot definitions from that
   let schemaDefinition = inputSchemaDefinition
   let options = inputOptions
-  if (
-    inputOptions.baseConfiguration &&
-    inputOptions.baseConfiguration.jbrowseSchemaDefinition
-  ) {
+  if (inputOptions.baseConfiguration?.jbrowseSchemaDefinition) {
     schemaDefinition = {
       ...inputOptions.baseConfiguration.jbrowseSchemaDefinition,
       ...schemaDefinition,

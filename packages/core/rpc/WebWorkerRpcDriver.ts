@@ -1,10 +1,10 @@
 import Rpc from 'librpc-web-mod'
-import shortid from 'shortid'
+import { deserializeError } from 'serialize-error'
 
 // locals
+import { nanoid } from '../util/nanoid'
 import BaseRpcDriver, { RpcDriverConstructorArgs } from './BaseRpcDriver'
 import { PluginDefinition } from '../PluginLoader'
-import { deserializeError } from 'serialize-error'
 
 interface WebWorkerRpcDriverConstructorArgs extends RpcDriverConstructorArgs {
   makeWorkerInstance: () => Worker
@@ -22,7 +22,7 @@ class WebWorkerHandle extends Rpc.Client {
 
   async call(funcName: string, args: Record<string, unknown>, opts: Options) {
     const { statusCallback, rpcDriverClassName } = opts
-    const channel = `message-${shortid.generate()}`
+    const channel = `message-${nanoid()}`
     const listener = (message: string) => {
       statusCallback?.(message)
     }

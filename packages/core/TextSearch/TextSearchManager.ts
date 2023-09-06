@@ -10,7 +10,7 @@ import { readConfObject, AnyConfigurationModel } from '../configuration'
 export interface SearchScope {
   includeAggregateIndexes: boolean
   assemblyName: string
-  tracks?: Array<string>
+  tracks?: string[]
 }
 
 export default class TextSearchManager {

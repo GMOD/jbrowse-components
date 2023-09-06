@@ -7,8 +7,8 @@ import { LinearGenomeViewModel } from '../../LinearGenomeView'
 
 export interface RenderProps {
   rendererType: any // eslint-disable-line @typescript-eslint/no-explicit-any
-  renderArgs: { [key: string]: any } // eslint-disable-line @typescript-eslint/no-explicit-any
-  renderProps: { [key: string]: any } // eslint-disable-line @typescript-eslint/no-explicit-any
+  renderArgs: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
+  renderProps: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
   displayError: unknown
   rpcManager: { call: Function }
   cannotBeRenderedReason: string

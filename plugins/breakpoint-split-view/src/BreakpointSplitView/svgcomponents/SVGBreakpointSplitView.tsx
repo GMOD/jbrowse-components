@@ -46,10 +46,9 @@ function getTrackOffsets(
   textOffset: number,
   extra = 0,
 ) {
-  const offsets = {} as { [key: string]: number }
+  const offsets = {} as Record<string, number>
   let curr = textOffset
-  for (let i = 0; i < view.tracks.length; i++) {
-    const track = view.tracks[i]
+  for (const track of view.tracks) {
     offsets[track.configuration.trackId] = curr + extra
     curr += track.displays[0].height + textOffset
   }

@@ -39,7 +39,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-type Props = {
+interface Props {
   HeaderButtons?: React.ReactElement
   session: SessionWithFocusedViewAndDrawerWidgets & {
     savedSessionNames: string[]

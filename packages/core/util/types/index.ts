@@ -477,9 +477,15 @@ export type FileLocation = LocalPathLocation | UriLocation | BlobLocation
 // These types are slightly different than the MST models representing a
 // location because a blob cannot be stored in a MST, so this is the
 // pre-processed file location
-export type PreUriLocation = { uri: string }
-export type PreLocalPathLocation = { localPath: string }
-export type PreBlobLocation = { blob: File }
+export interface PreUriLocation {
+  uri: string
+}
+export interface PreLocalPathLocation {
+  localPath: string
+}
+export interface PreBlobLocation {
+  blob: File
+}
 export type PreFileLocation =
   | PreUriLocation
   | PreLocalPathLocation

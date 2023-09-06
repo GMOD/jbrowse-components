@@ -36,7 +36,7 @@ const ToggleConnectionsDlg = lazy(
 interface ModalArgs {
   connectionConf: AnyConfigurationModel
   safelyBreakConnection: () => void
-  dereferenceTypeCount: { [key: string]: number }
+  dereferenceTypeCount: Record<string, number>
   name: string
 }
 

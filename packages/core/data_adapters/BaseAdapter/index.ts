@@ -15,10 +15,8 @@ export type { RegionsAdapter } from './RegionsAdapter'
 // see
 // https://www.typescriptlang.org/docs/handbook/2/classes.html#abstract-construct-signatures
 // for why this is the abstract construct signature
-export interface AnyAdapter {
-  new (
-    config: AnyConfigurationModel,
-    getSubAdapter?: getSubAdapterType,
-    pluginManager?: PluginManager,
-  ): AnyDataAdapter
-}
+export type AnyAdapter = new (
+  config: AnyConfigurationModel,
+  getSubAdapter?: getSubAdapterType,
+  pluginManager?: PluginManager,
+) => AnyDataAdapter

@@ -63,7 +63,7 @@ jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
   try {
     const file = getFile(`${url}`)
     const maxRangeRequest = 2000000 // kind of arbitrary, part of the rangeParser
-    if (args && args.headers && 'range' in args.headers) {
+    if (args?.headers && 'range' in args.headers) {
       const range = rangeParser(maxRangeRequest, args.headers.range)
       if (range === -2 || range === -1) {
         throw new Error(`Error parsing range "${args.headers.range}"`)

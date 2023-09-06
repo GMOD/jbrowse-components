@@ -29,20 +29,22 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const TooltipContents = React.forwardRef<
-  HTMLDivElement,
-  { message: React.ReactNode | string }
->(({ message }: { message: React.ReactNode | string }, ref) => {
-  return (
-    <div ref={ref}>
-      {React.isValidElement(message) ? (
-        message
-      ) : message ? (
-        <SanitizedHTML html={String(message)} />
-      ) : null}
-    </div>
-  )
-})
+interface Props {
+  message: React.ReactNode | string
+}
+const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
+  function TooltipContents2({ message }, ref) {
+    return (
+      <div ref={ref}>
+        {React.isValidElement(message) ? (
+          message
+        ) : message ? (
+          <SanitizedHTML html={String(message)} />
+        ) : null}
+      </div>
+    )
+  },
+)
 
 type Coord = [number, number]
 const Tooltip = observer(

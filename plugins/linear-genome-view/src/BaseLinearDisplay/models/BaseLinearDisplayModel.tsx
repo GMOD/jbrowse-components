@@ -363,7 +363,7 @@ function stateModelFactory() {
         addDisposer(
           self,
           autorun(() => {
-            const blocksPresent: { [key: string]: boolean } = {}
+            const blocksPresent: Record<string, boolean> = {}
             const view = getContainingView(self) as LGV
             if (!view.initialized) {
               return
