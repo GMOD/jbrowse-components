@@ -9,6 +9,7 @@ import {
   readConfObject,
   getConf,
 } from '@jbrowse/core/configuration'
+import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import {
   getEnv,
@@ -31,7 +32,7 @@ import FilterListIcon from '@mui/icons-material/ClearAll'
 
 // locals
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
-import { getUniqueTagValues, FilterModel } from '../shared'
+import { getUniqueTagValues, FilterModel, IFilter } from '../shared'
 import { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 import { createAutorun } from '../util'
 import { ColorByModel, ExtraColorBy } from '../shared/color'
@@ -49,13 +50,6 @@ const rendererTypes = new Map([
 ])
 
 type LGV = LinearGenomeViewModel
-
-export interface Filter {
-  flagInclude: number
-  flagExclude: number
-  readName?: string
-  tagFilter?: { tag: string; value: string }
-}
 
 /**
  * #stateModel SharedLinearPileupDisplayMixin
@@ -97,6 +91,10 @@ export function SharedLinearPileupDisplayMixin(
          * #property
          */
         filterBy: types.optional(FilterModel, {}),
+        /**
+         * #property
+         */
+        jexlFilters: types.optional(types.array(types.string), []),
       }),
     )
     .volatile(() => ({
@@ -230,8 +228,15 @@ export function SharedLinearPileupDisplayMixin(
       /**
        * #action
        */
-      setFilterBy(filter: Filter) {
+      setFilterBy(filter: IFilter) {
         self.filterBy = cast(filter)
+      },
+
+      /**
+       * #action
+       */
+      setJexlFilters(filters: string[]) {
+        self.jexlFilters = cast(filters)
       },
     }))
 
@@ -281,6 +286,12 @@ export function SharedLinearPileupDisplayMixin(
        */
       renderReady() {
         return self.tagsReady
+      },
+      /**
+       * #getter
+       */
+      get filters() {
+        return new SerializableFilterChain({ filters: self.jexlFilters })
       },
     }))
     .views(self => {
@@ -352,6 +363,7 @@ export function SharedLinearPileupDisplayMixin(
             displayModel: self,
             colorBy: colorBy ? getSnapshot(colorBy) : undefined,
             filterBy: JSON.parse(JSON.stringify(filterBy)),
+            filters: self.filters,
             colorTagMap: Object.fromEntries(colorTagMap.toJSON()),
             config: self.rendererConfig,
             async onFeatureClick(_: unknown, featureId?: string) {

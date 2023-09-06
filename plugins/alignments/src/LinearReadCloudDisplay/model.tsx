@@ -16,18 +16,11 @@ import PaletteIcon from '@mui/icons-material/Palette'
 import FilterListIcon from '@mui/icons-material/ClearAll'
 
 // locals
-import { FilterModel } from '../shared'
+import { FilterModel, IFilter } from '../shared'
 import { ChainData } from '../shared/fetchChains'
 
 // async
 const FilterByTagDlg = lazy(() => import('../shared/FilterByTag'))
-
-interface Filter {
-  flagInclude: number
-  flagExclude: number
-  readName?: string
-  tagFilter?: { tag: string; value: string }
-}
 
 /**
  * #stateModel LinearReadCloudDisplay
@@ -134,7 +127,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setFilterBy(filter: Filter) {
+      setFilterBy(filter: IFilter) {
         self.filterBy = cast(filter)
       },
     }))

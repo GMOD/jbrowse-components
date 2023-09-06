@@ -27,13 +27,6 @@ const ModificationsDlg = lazy(() => import('./components/ColorByModifications'))
 
 type LGV = LinearGenomeViewModel
 
-export interface Filter {
-  flagInclude: number
-  flagExclude: number
-  readName?: string
-  tagFilter?: { tag: string; value: string }
-}
-
 /**
  * #stateModel LinearPileupDisplay
  * #category display
