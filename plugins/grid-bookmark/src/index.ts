@@ -66,7 +66,7 @@ export default class extends Plugin {
                   navigateNewestBookmark() {
                     const session = getSession(self)
                     // @ts-expect-error
-                    let bookmarkWidget = self.activateBookmarkWidget()
+                    const bookmarkWidget = self.activateBookmarkWidget()
                     const regions = bookmarkWidget.bookmarkedRegions
                     if (regions.length !== 0) {
                       self.navTo(regions.at(-1))
