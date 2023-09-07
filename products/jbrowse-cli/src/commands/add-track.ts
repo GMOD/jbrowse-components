@@ -381,9 +381,7 @@ export default class AddTrack extends JBrowseCommand {
     if (/\.anchors(.simple)?$/i.test(location)) {
       return {
         file: location,
-
         bed1: bed1!,
-
         bed2: bed2!,
       }
     }
@@ -434,6 +432,7 @@ export default class AddTrack extends JBrowseCommand {
       /\.out(.gz)?$/i.test(location) ||
       /\.paf(.gz)?$/i.test(location) ||
       /\.delta(.gz)?$/i.test(location) ||
+      /\.bed?$/i.test(location) ||
       /\.(bw|bigwig)$/i.test(location) ||
       /\.(bb|bigbed)$/i.test(location) ||
       /\.vcf$/i.test(location) ||
@@ -534,7 +533,8 @@ export default class AddTrack extends JBrowseCommand {
 
     if (/\.bed$/i.test(location)) {
       return {
-        type: 'UNSUPPORTED',
+        type: 'BedAdapter',
+        bedLocation: makeLocation(location),
       }
     }
 
