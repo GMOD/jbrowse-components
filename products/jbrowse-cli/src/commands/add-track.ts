@@ -384,22 +384,17 @@ export default class AddTrack extends JBrowseCommand {
         bed1: bed1!,
         bed2: bed2!,
       }
-    }
-    if (/\.bam$/i.test(location)) {
+    } else if (/\.bam$/i.test(location)) {
       return {
         file: location,
         index: index || `${location}.bai`,
       }
-    }
-
-    if (/\.cram$/i.test(location)) {
+    } else if (/\.cram$/i.test(location)) {
       return {
         file: location,
         index: index || `${location}.crai`,
       }
-    }
-
-    if (
+    } else if (
       /\.gff3?\.b?gz$/i.test(location) ||
       /\.vcf\.b?gz$/i.test(location) ||
       /\.bed\.b?gz$/i.test(location)
@@ -408,24 +403,18 @@ export default class AddTrack extends JBrowseCommand {
         file: location,
         index: index || `${location}.tbi`,
       }
-    }
-
-    if (/\.(fa|fasta|fas|fna|mfa)$/i.test(location)) {
+    } else if (/\.(fa|fasta|fas|fna|mfa)$/i.test(location)) {
       return {
         file: location,
         index: index || `${location}.fai`,
       }
-    }
-
-    if (/\.(fa|fasta|fas|fna|mfa)\.b?gz$/i.test(location)) {
+    } else if (/\.(fa|fasta|fas|fna|mfa)\.b?gz$/i.test(location)) {
       return {
         file: location,
         index: `${location}.fai`,
         index2: `${location}.gzi`,
       }
-    }
-
-    if (
+    } else if (
       /\.2bit$/i.test(location) ||
       /\/trackData.jsonz?$/i.test(location) ||
       /\/sparql$/i.test(location) ||
@@ -472,24 +461,18 @@ export default class AddTrack extends JBrowseCommand {
           indexType: index?.toUpperCase().endsWith('CSI') ? 'CSI' : 'BAI',
         },
       }
-    }
-
-    if (/\.cram$/i.test(location)) {
+    } else if (/\.cram$/i.test(location)) {
       return {
         type: 'CramAdapter',
         cramLocation: makeLocation(location),
         craiLocation: makeLocation(`${location}.crai`),
       }
-    }
-
-    if (/\.gff3?$/i.test(location)) {
+    } else if (/\.gff3?$/i.test(location)) {
       return {
         type: 'Gff3Adapter',
         gffLocation: makeLocation(location),
       }
-    }
-
-    if (/\.gff3?\.b?gz$/i.test(location)) {
+    } else if (/\.gff3?\.b?gz$/i.test(location)) {
       return {
         type: 'Gff3TabixAdapter',
         gffGzLocation: makeLocation(location),
@@ -498,23 +481,17 @@ export default class AddTrack extends JBrowseCommand {
           indexType: index?.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
         },
       }
-    }
-
-    if (/\.gtf?$/i.test(location)) {
+    } else if (/\.gtf?$/i.test(location)) {
       return {
         type: 'GtfAdapter',
         gtfLocation: makeLocation(location),
       }
-    }
-
-    if (/\.vcf$/i.test(location)) {
+    } else if (/\.vcf$/i.test(location)) {
       return {
         type: 'VcfAdapter',
         vcfLocation: makeLocation(location),
       }
-    }
-
-    if (/\.vcf\.b?gz$/i.test(location)) {
+    } else if (/\.vcf\.b?gz$/i.test(location)) {
       return {
         type: 'VcfTabixAdapter',
         vcfGzLocation: makeLocation(location),
@@ -523,22 +500,16 @@ export default class AddTrack extends JBrowseCommand {
           indexType: index?.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
         },
       }
-    }
-
-    if (/\.vcf\.idx$/i.test(location)) {
+    } else if (/\.vcf\.idx$/i.test(location)) {
       return {
         type: 'UNSUPPORTED',
       }
-    }
-
-    if (/\.bed$/i.test(location)) {
+    } else if (/\.bed$/i.test(location)) {
       return {
         type: 'BedAdapter',
         bedLocation: makeLocation(location),
       }
-    }
-
-    if (/\.bed\.b?gz$/i.test(location)) {
+    } else if (/\.bed\.b?gz$/i.test(location)) {
       return {
         type: 'BedTabixAdapter',
         bedGzLocation: makeLocation(location),
@@ -547,116 +518,81 @@ export default class AddTrack extends JBrowseCommand {
           indexType: index?.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
         },
       }
-    }
-
-    if (/\.bed$/i.test(location)) {
-      return {
-        type: 'BedAdapter',
-        bedLocation: makeLocation(location),
-      }
-    }
-
-    if (/\.(bb|bigbed)$/i.test(location)) {
+    } else if (/\.(bb|bigbed)$/i.test(location)) {
       return {
         type: 'BigBedAdapter',
         bigBedLocation: makeLocation(location),
       }
-    }
-
-    if (/\.(bw|bigwig)$/i.test(location)) {
+    } else if (/\.(bw|bigwig)$/i.test(location)) {
       return {
         type: 'BigWigAdapter',
         bigWigLocation: makeLocation(location),
       }
-    }
-
-    if (/\.(fa|fasta|fna|mfa)$/i.test(location)) {
+    } else if (/\.(fa|fasta|fna|mfa)$/i.test(location)) {
       return {
         type: 'IndexedFastaAdapter',
         fastaLocation: makeLocation(location),
         faiLocation: makeLocation(index || `${location}.fai`),
       }
-    }
-
-    if (/\.(fa|fasta|fna|mfa)\.b?gz$/i.test(location)) {
+    } else if (/\.(fa|fasta|fna|mfa)\.b?gz$/i.test(location)) {
       return {
         type: 'BgzipFastaAdapter',
         fastaLocation: makeLocation(location),
         faiLocation: makeLocation(`${location}.fai`),
         gziLocation: makeLocation(`${location}.gzi`),
       }
-    }
-
-    if (/\.2bit$/i.test(location)) {
+    } else if (/\.2bit$/i.test(location)) {
       return {
         type: 'TwoBitAdapter',
         twoBitLocation: makeLocation(location),
       }
-    }
-
-    if (/\.sizes$/i.test(location)) {
+    } else if (/\.sizes$/i.test(location)) {
       return {
         type: 'UNSUPPORTED',
       }
-    }
-
-    if (/\/trackData.jsonz?$/i.test(location)) {
+    } else if (/\/trackData.jsonz?$/i.test(location)) {
       return {
         type: 'NCListAdapter',
         rootUrlTemplate: makeLocation(location),
       }
-    }
-
-    if (/\/sparql$/i.test(location)) {
+    } else if (/\/sparql$/i.test(location)) {
       return {
         type: 'SPARQLAdapter',
         endpoint: location,
       }
-    }
-
-    if (/\.hic$/i.test(location)) {
+    } else if (/\.hic$/i.test(location)) {
       return {
         type: 'HicAdapter',
         hicLocation: makeLocation(location),
       }
-    }
-
-    if (/\.paf(.gz)?$/i.test(location)) {
+    } else if (/\.paf(.gz)?$/i.test(location)) {
       return {
         type: 'PAFAdapter',
         pafLocation: makeLocation(location),
       }
-    }
-
-    if (/\.out(.gz)?$/i.test(location)) {
+    } else if (/\.out(.gz)?$/i.test(location)) {
       return {
         type: 'MashMapAdapter',
         outLocation: makeLocation(location),
       }
-    }
-    if (/\.chain(.gz)?$/i.test(location)) {
+    } else if (/\.chain(.gz)?$/i.test(location)) {
       return {
         type: 'ChainAdapter',
         chainLocation: makeLocation(location),
       }
-    }
-    if (/\.delta(.gz)?$/i.test(location)) {
+    } else if (/\.delta(.gz)?$/i.test(location)) {
       return {
         type: 'DeltaAdapter',
         deltaLocation: makeLocation(location),
       }
-    }
-
-    if (/\.anchors(.gz)?$/i.test(location)) {
+    } else if (/\.anchors(.gz)?$/i.test(location)) {
       return {
         type: 'MCScanAnchorsAdapter',
         mcscanAnchorsLocation: makeLocation(location),
         bed1Location: bed1 ? makeLocation(bed1) : undefined,
         bed2Location: bed2 ? makeLocation(bed2) : undefined,
       }
-    }
-
-    if (/\.anchors.simple(.gz)?$/i.test(location)) {
+    } else if (/\.anchors.simple(.gz)?$/i.test(location)) {
       return {
         type: 'MCScanSimpleAnchorsAdapter',
         mcscanSimpleAnchorsLocation: makeLocation(location),
@@ -680,6 +616,7 @@ export default class AddTrack extends JBrowseCommand {
       TwoBitAdapter: 'ReferenceSequenceTrack',
       VcfTabixAdapter: 'VariantTrack',
       VcfAdapter: 'VariantTrack',
+      BedAdapter: 'FeatureTrack',
       HicAdapter: 'HicTrack',
       PAFAdapter: 'SyntenyTrack',
       DeltaAdapter: 'SyntenyTrack',
