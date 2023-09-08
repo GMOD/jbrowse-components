@@ -105,8 +105,8 @@ export default class extends Plugin {
                     // @ts-ignore
                     if (self.id === getSession(self).focusedViewId) {
                       const selectedRegions = self.getSelectedRegions(
-                        self.leftOffset,
-                        self.rightOffset,
+                        undefined,
+                        undefined,
                       )
                       const firstRegion = selectedRegions[0]
                       const bookmarkWidget = this.activateBookmarkWidget()

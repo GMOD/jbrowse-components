@@ -46,8 +46,8 @@ function DeleteBookmarks({
           <Alert severity="warning">Delete selected bookmarks?</Alert>
           <List dense>
             {model.selectedBookmarks.map(
-              (bookmark: IExtendedLabeledRegionModel) => (
-                <ListItem key={assembleLocString(bookmark)}>
+              (bookmark: IExtendedLabeledRegionModel, index: number) => (
+                <ListItem key={`${index}-${assembleLocString(bookmark)}`}>
                   <ListItemText primary={assembleLocString(bookmark)} />
                 </ListItem>
               ),
