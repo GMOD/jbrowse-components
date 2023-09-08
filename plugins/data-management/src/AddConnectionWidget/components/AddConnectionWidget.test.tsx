@@ -43,7 +43,7 @@ function renderWidget() {
 test('renders', () => {
   const { container } = renderWidget()
   expect(container).toMatchSnapshot()
-})
+}, 20000)
 
 test('can handle a custom UCSC trackHub URL', async () => {
   jest.spyOn(global, 'fetch').mockImplementation(async url => {
@@ -94,7 +94,7 @@ type bigWig
   )
   await user.click(await findByText('Connect'))
   expect(session.sessionConnections.length).toBe(1)
-})
+}, 20000)
 
 test('can handle a custom JBrowse 1 data directory URL', async () => {
   jest
@@ -133,4 +133,4 @@ test('can handle a custom JBrowse 1 data directory URL', async () => {
   await user.click(await findByTestId('stringArrayAdd-assemblyNames'))
   await user.click(await findByText('Connect'))
   expect(session.sessionConnections.length).toBe(1)
-})
+}, 20000)

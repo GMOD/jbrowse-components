@@ -322,11 +322,11 @@ exports[`renders with a couple of categorized tracks 1`] = `
         </div>
       </div>
       <div
-        style="position: absolute; left: 0px; top: 40px; height: 40px; width: 100%;"
+        style="position: absolute; left: 0px; top: 40px; height: 22px; width: 100%;"
       >
         <div
           class="css-1a5q6y9-nestingLevelMarker"
-          style="left: 4px; height: 40px;"
+          style="left: 4px; height: 22px;"
         />
         <div
           style="margin-left: 20px; white-space: nowrap; width: 100%;"
@@ -398,11 +398,11 @@ exports[`renders with a couple of categorized tracks 1`] = `
       </div>
       <div
         class="css-11rl2vh-accordionBase"
-        style="position: absolute; left: 0px; top: 80px; height: 22px; width: 100%;"
+        style="position: absolute; left: 0px; top: 62px; height: 40px; width: 100%;"
       >
         <div
           class="css-1a5q6y9-nestingLevelMarker"
-          style="left: 4px; height: 22px;"
+          style="left: 4px; height: 40px;"
         />
         <div
           class="css-1eoby3c-accordionCard"
@@ -455,15 +455,15 @@ exports[`renders with a couple of categorized tracks 1`] = `
         </div>
       </div>
       <div
-        style="position: absolute; left: 0px; top: 102px; height: 40px; width: 100%;"
+        style="position: absolute; left: 0px; top: 102px; height: 22px; width: 100%;"
       >
         <div
           class="css-1a5q6y9-nestingLevelMarker"
-          style="left: 4px; height: 40px;"
+          style="left: 4px; height: 22px;"
         />
         <div
           class="css-1a5q6y9-nestingLevelMarker"
-          style="left: 14px; height: 40px;"
+          style="left: 14px; height: 22px;"
         />
         <div
           style="margin-left: 30px; white-space: nowrap; width: 100%;"
@@ -536,15 +536,15 @@ exports[`renders with a couple of categorized tracks 1`] = `
       </div>
       <div
         class="css-11rl2vh-accordionBase"
-        style="position: absolute; left: 0px; top: 142px; height: 22px; width: 100%;"
+        style="position: absolute; left: 0px; top: 124px; height: 40px; width: 100%;"
       >
         <div
           class="css-1a5q6y9-nestingLevelMarker"
-          style="left: 4px; height: 22px;"
+          style="left: 4px; height: 40px;"
         />
         <div
           class="css-1a5q6y9-nestingLevelMarker"
-          style="left: 14px; height: 22px;"
+          style="left: 14px; height: 40px;"
         />
         <div
           class="css-1eoby3c-accordionCard"

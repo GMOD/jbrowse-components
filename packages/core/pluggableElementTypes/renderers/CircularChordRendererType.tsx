@@ -9,7 +9,12 @@ export default class CircularChordRendererType extends FeatureRenderer {
 
   deserializeResultsInClient(
     res: { features: SimpleFeatureSerialized[]; html: string },
-    args: { theme: ThemeOptions; exportSVG?: { rasterizeLayers?: boolean } },
+    args: {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      displayModel: any
+      theme: ThemeOptions
+      exportSVG?: { rasterizeLayers?: boolean }
+    },
   ) {
     const deserializedFeatures = new Map(
       res.features.map(f => SimpleFeature.fromJSON(f)).map(f => [f.id(), f]),

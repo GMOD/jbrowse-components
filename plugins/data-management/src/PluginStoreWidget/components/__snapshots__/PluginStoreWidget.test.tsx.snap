@@ -849,6 +849,9 @@ exports[`renders with the available plugins 1`] = `
                       </svg>
                     </span>
                     Install
+                    <span
+                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                    />
                   </button>
                 </div>
               </div>
