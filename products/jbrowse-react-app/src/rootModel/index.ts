@@ -1,3 +1,4 @@
+import React from 'react'
 import {
   addDisposer,
   cast,
@@ -68,10 +69,16 @@ export default function RootModel({
   makeWorkerInstance = () => {
     throw new Error('no makeWorkerInstance supplied')
   },
+  hydrateFn,
 }: {
   pluginManager: PluginManager
   sessionModelFactory: SessionModelFactory
   makeWorkerInstance?: () => Worker
+  hydrateFn?: (
+    container: Element | Document,
+    initialChildren: React.ReactNode,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ) => any
 }) {
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
   return types
@@ -107,7 +114,7 @@ export default function RootModel({
           MainThreadRpcDriver: {},
         },
       ),
-
+      hydrateFn,
       textSearchManager: new TextSearchManager(pluginManager),
       error: undefined as unknown,
     }))

@@ -2,13 +2,19 @@ import React from 'react'
 import { SimpleFeature, SimpleFeatureSerialized } from '../../util'
 import FeatureRenderer from './FeatureRendererType'
 import RpcRenderedSvgGroup from './RpcRenderedSvgGroup'
+import { ThemeOptions } from '@mui/material'
 
 export default class CircularChordRendererType extends FeatureRenderer {
   supportsSVG = true
 
   deserializeResultsInClient(
     res: { features: SimpleFeatureSerialized[]; html: string },
-    args: { exportSVG?: { rasterizeLayers?: boolean } },
+    args: {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      displayModel: any
+      theme: ThemeOptions
+      exportSVG?: { rasterizeLayers?: boolean }
+    },
   ) {
     const deserializedFeatures = new Map(
       res.features.map(f => SimpleFeature.fromJSON(f)).map(f => [f.id(), f]),

@@ -15,11 +15,12 @@ export default observer(function ConnectionTypeSelect({
   connectionType?: ConnectionType
   setConnectionType: (c?: ConnectionType) => void
 }) {
+  const firstChoice = connectionTypeChoices[0]
   useEffect(() => {
     if (!connectionType) {
-      setConnectionType(connectionTypeChoices[0])
+      setConnectionType(firstChoice)
     }
-  })
+  }, [connectionType, firstChoice, setConnectionType])
 
   return (
     <form autoComplete="off">

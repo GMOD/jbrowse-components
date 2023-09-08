@@ -11,6 +11,7 @@ import {
   InternetAccountsRootModelMixin,
 } from '@jbrowse/product-core'
 import { HistoryManagementMixin, RootAppMenuMixin } from '@jbrowse/app-core'
+import { hydrateRoot } from 'react-dom/client'
 
 // locals
 import jobsModelFactory from '../indexJobsModel'
@@ -77,6 +78,7 @@ export default function rootModelFactory({
     .volatile(self => ({
       version: packageJSON.version,
       adminMode: true,
+      hydrateFn: hydrateRoot,
       rpcManager: new RpcManager(
         pluginManager,
         self.jbrowse.configuration.rpc,
