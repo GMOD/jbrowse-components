@@ -62,8 +62,7 @@ export default class ProcessPAF extends JBrowseCommand {
 
     const rl1 = getReadline(filename)
     for await (const line of rl1) {
-      // eslint-disable-next-line no-console
-      console.log(`q${line}`)
+      this.log(`q${line}`)
     }
     rl1.close()
 
@@ -81,8 +80,7 @@ export default class ProcessPAF extends JBrowseCommand {
         }`
       }
 
-      // eslint-disable-next-line no-console
-      console.log(
+      this.log(
         [`t${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...rest].join('\t'),
       )
     }
