@@ -353,10 +353,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               return
             }
 
-            const { sortedBy, adapterConfig, rendererType } = self
+            const { sortedBy, adapterConfig, rendererType, sortReady } = self
             const { bpPerPx } = view
 
-            if (sortedBy) {
+            if (sortedBy && !sortReady) {
               const { pos, refName, assemblyName } = sortedBy
               // render just the sorted region first
               // @ts-expect-error
