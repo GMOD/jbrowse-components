@@ -159,8 +159,6 @@ describe('create', () => {
     .command(['create', '--listVersions'])
     .catch(/0/)
     .it('lists versions', ctx => {
-      expect(ctx.stdoutWrite).toHaveBeenCalledWith(
-        'All JBrowse versions:\nv0.0.1\n',
-      )
+      expect(ctx.stdout).toBe('All JBrowse versions:\nv0.0.1\n')
     })
 })

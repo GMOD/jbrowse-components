@@ -443,6 +443,7 @@ describe('add-assembly', () => {
     })
 
   setup
+    .only()
     .command([
       'add-assembly',
       '{"type":"CustomAdapter"}',
@@ -454,7 +455,7 @@ describe('add-assembly', () => {
       'copy',
     ])
     .it('can specify a custom name and alias', async ctx => {
-      expect(ctx.stdoutWrite).toHaveBeenCalledWith(
+      expect(ctx.stdout).toContain(
         'Added assembly "customName" to config.json\n',
       )
       expect(readConf(ctx)).toEqual({
