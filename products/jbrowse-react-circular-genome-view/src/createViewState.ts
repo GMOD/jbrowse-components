@@ -22,7 +22,7 @@ interface ViewStateOptions {
   configuration?: Record<string, unknown>
   plugins?: PluginConstructor[]
   makeWorkerInstance?: () => Worker
-  hydrateFn: (
+  hydrateFn?: (
     container: Element | Document,
     initialChildren: React.ReactNode,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
