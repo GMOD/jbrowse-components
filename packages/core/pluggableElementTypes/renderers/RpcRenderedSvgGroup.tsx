@@ -1,33 +1,47 @@
 import React, { useEffect, useRef } from 'react'
 import { observer } from 'mobx-react'
-import { hydrateRoot } from 'react-dom/client'
+import { Root, hydrateRoot } from 'react-dom/client'
 
 // locals
-import { AnyReactComponentType, Feature, rIC } from '../../util'
+import { AnyReactComponentType, Feature } from '../../util'
+import { ThemeOptions, ThemeProvider } from '@mui/material'
+import { createJBrowseTheme } from '../../ui'
 
 export default observer(function RpcRenderedSvgGroup(props: {
   html: string
   features: Map<string, Feature>
+  theme: ThemeOptions
   RenderingComponent: AnyReactComponentType
 }) {
-  const { html, RenderingComponent } = props
+  const { html, theme, RenderingComponent, ...rest } = props
   const ref = useRef<SVGGElement>(null)
+  const rootRef = useRef<Root>()
   useEffect(() => {
-    const domNode = ref.current
-    if (domNode && html) {
-      // setting outline:none fixes react "focusable" element issue. see
-      // https://github.com/GMOD/jbrowse-components/issues/2160
-      domNode.style.outline = 'none'
-      domNode.innerHTML = html
+    const renderTimeout = setTimeout(() => {
+      if (!ref.current) {
+        return
+      }
+      const jbrowseTheme = createJBrowseTheme(theme)
+      rootRef.current =
+        rootRef.current ??
+        hydrateRoot(
+          ref.current,
+          <ThemeProvider theme={jbrowseTheme}>
+            <RenderingComponent {...rest} />
+          </ThemeProvider>,
+        )
+    })
+    return () => {
+      clearTimeout(renderTimeout)
+      const root = rootRef.current
+      rootRef.current = undefined
 
-      // use requestIdleCallback to defer main-thread rendering
-      // and hydration for when we have some free time. helps
-      // keep the framerate up.
-      rIC(() => hydrateRoot(domNode, <RenderingComponent {...props} />), {
-        timeout: 300,
+      setTimeout(() => {
+        root?.unmount()
       })
     }
-  }, [html, RenderingComponent, props])
+  }, [html, RenderingComponent, theme, props, rest])
 
-  return <g ref={ref} />
+  // eslint-disable-next-line react/no-danger
+  return <g ref={ref} dangerouslySetInnerHTML={{ __html: html }} />
 })
