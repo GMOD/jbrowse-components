@@ -52,7 +52,7 @@ export default observer(function ({
   const totalWidth = featureWidth + allowedWidthExpansion
   const measuredTextWidth = measureText(text, fontHeight)
   const params =
-    isStateTreeNode(displayModel) && isAlive(displayModel)
+    isStateTreeNode(displayModel) && isAlive(displayModel) && !exportSVG
       ? getViewParams(displayModel)
       : viewParams
 
