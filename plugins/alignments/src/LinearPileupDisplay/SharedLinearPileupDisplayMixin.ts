@@ -545,9 +545,9 @@ export function SharedLinearPileupDisplayMixin(
               return
             }
 
-            const { colorBy } = self
+            const { colorBy, tagsReady } = self
             const { staticBlocks } = view
-            if (colorBy?.tag) {
+            if (colorBy?.tag && !tagsReady) {
               const vals = await getUniqueTagValues(self, colorBy, staticBlocks)
               self.updateColorTagMap(vals)
             }
