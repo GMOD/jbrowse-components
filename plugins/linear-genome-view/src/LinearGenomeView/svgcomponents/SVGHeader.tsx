@@ -2,7 +2,6 @@ import React from 'react'
 import { getSession, stripAlpha } from '@jbrowse/core/util'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import { useTheme } from '@mui/material'
-import { colord as Color } from '@jbrowse/core/util/colord'
 
 // locals
 import { LinearGenomeViewModel, HEADER_OVERVIEW_HEIGHT } from '..'

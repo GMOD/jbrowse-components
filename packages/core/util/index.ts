@@ -1373,5 +1373,5 @@ export {
 
 export function stripAlpha(str: string) {
   const c = colord(str)
-  return c.toHex()
+  return c.alpha(1).toHex()
 }

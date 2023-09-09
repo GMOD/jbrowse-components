@@ -36,7 +36,7 @@ export function renderModifications({
   canvasWidth: number
 }) {
   const { feature, topPx, heightPx } = feat
-  const { Color, modificationTagMap = {} } = renderArgs
+  const { modificationTagMap = {} } = renderArgs
 
   const seq = feature.get('seq') as string | undefined
 
