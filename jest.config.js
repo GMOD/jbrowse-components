@@ -30,7 +30,6 @@ module.exports = {
     'makeWorkerInstance.ts',
     'react-colorful.js',
     'QuickLRU.js',
-    'colord',
   ],
   setupFiles: [
     '<rootDir>/config/jest/textEncoder.js',

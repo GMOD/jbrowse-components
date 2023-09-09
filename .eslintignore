@@ -17,7 +17,6 @@ products/jbrowse-desktop/public/generateFastaIndex.js
 /embedded_demos/
 webpack.config.js
 craco.config.js
-packages/core/util/colordVendor/**
 packages/core/util/QuickLRU.js
 packages/core/util/QuickLRU.d.ts
 packages/core/util/nanoid.js

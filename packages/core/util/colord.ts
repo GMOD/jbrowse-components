@@ -1,5 +1,5 @@
-import { extend } from './colordVendor'
-import mix from './colordVendor/plugins/mix'
-import names from './colordVendor/plugins/names'
+import { extend } from 'colord'
+import mix from 'colord/plugins/mix'
+import names from 'colord/plugins/names'
 extend([mix, names])
-export { Colord, colord } from './colordVendor'
+export { Colord, colord } from 'colord'
