@@ -30,7 +30,7 @@ const NewHydrate = observer(function RpcRenderedSvgGroup(props: Props) {
   const hydrateRoot = root.hydrateFn
 
   useEffect(() => {
-    const renderTimeout = setTimeout(() => {
+    const renderTimeout = rIC(() => {
       if (!ref.current) {
         return
       }

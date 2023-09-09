@@ -26,18 +26,24 @@ const NewHydrate = observer(function ServerSideRenderedContent({
   const rootRef = useRef<any>()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const root = getRoot<any>(rest.displayModel)
-  const hydrateRoot = root.hydrateFn
+  const { hydrateFn } = getRoot<any>(rest.displayModel)
 
   useEffect(() => {
-    const renderTimeout = setTimeout(() => {
+    // requestIdleCallback here helps to avoid hydration mismatch
+    // because it provides time for dangerouslySetInnerHTML to set the innerHTML
+    // contents of the node, otherwise ref.current.innerHTML can be empty
+    const renderTimeout = rIC(() => {
       if (!ref.current) {
         return
       }
       const jbrowseTheme = createJBrowseTheme(theme)
+      // if there is a hydration mismatch, investigate value of
+      // - value of ref.current.innerHTML
+      // - value of `html` variable
+      // - renderToString of the below React element
       rootRef.current =
         rootRef.current ??
-        hydrateRoot(
+        hydrateFn(
           ref.current,
           <ThemeProvider theme={jbrowseTheme}>
             <RenderingComponent {...rest} />
@@ -53,7 +59,7 @@ const NewHydrate = observer(function ServerSideRenderedContent({
         root?.unmount()
       })
     }
-  }, [html, theme, rest, hydrateRoot, RenderingComponent])
+  }, [html, theme, rest, hydrateFn, RenderingComponent])
 
   // eslint-disable-next-line react/no-danger
   return <div ref={ref} dangerouslySetInnerHTML={{ __html: html }} />
@@ -77,24 +83,14 @@ const OldHydrate = observer(function ({
         }
         domNode.innerHTML = html
 
-        // defer main-thread rendering and hydration for when
-        // we have some free time. helps keep the framerate up.
-        //
-        // note: the timeout param to rIC below helps when you are doing
-        // a long continuous scroll, it forces it to evaluate because
-        // otherwise the continuous scroll would never give it time to do
-        // so
-        rIC(
-          () => {
-            hydrate(
-              <ThemeProvider theme={jbrowseTheme}>
-                <RenderingComponent {...rest} />
-              </ThemeProvider>,
-              domNode,
-            )
-          },
-          { timeout: 300 },
-        )
+        rIC(() => {
+          hydrate(
+            <ThemeProvider theme={jbrowseTheme}>
+              <RenderingComponent {...rest} />
+            </ThemeProvider>,
+            domNode,
+          )
+        })
       }
     }
 
