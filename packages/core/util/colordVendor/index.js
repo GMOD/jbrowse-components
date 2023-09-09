@@ -383,4 +383,5 @@ var r = { grad: 0.9, turn: 360, rad: 360 / (2 * Math.PI) },
       b: 255 * Math.random(),
     })
   }
+
 export { j as Colord, w as colord, k as extend, I as getFormat, E as random }

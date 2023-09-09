@@ -2,11 +2,20 @@ import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import { colord, extend } from '@jbrowse/core/util/colord'
-import mixPlugin from '@jbrowse/core/util/colord/plugins/mix'
+import { colord, Colord } from '@jbrowse/core/util/colord'
 import { clamp, featureSpanPx, Feature, Region } from '@jbrowse/core/util'
 
-extend([mixPlugin])
+function lighten(color: Colord, amount: number) {
+  const hslColor = color.toHsl()
+  const l = hslColor.l * (1 + amount)
+  return colord({ ...hslColor, l: clamp(l, 0, 100) })
+}
+
+function darken(color: Colord, amount: number) {
+  const hslColor = color.toHsl()
+  const l = hslColor.l * (1 - amount)
+  return colord({ ...hslColor, l: clamp(l, 0, 100) })
+}
 
 // locals
 import { getOrigin, getScale, ScaleOpts } from './util'
@@ -35,7 +44,7 @@ function fillRectCtx(
   ctx.fillRect(x, y, width, height)
 }
 
-const fudgeFactor = 0.4
+const fudgeFactor = 0.3
 const clipHeight = 2
 
 export function drawXY(
@@ -108,7 +117,7 @@ export function drawXY(
           ? c
           : c === lastCol
           ? lastMix
-          : (lastMix = colord(c).lighten(0.4).toString())
+          : (lastMix = lighten(colord(c), 0.4).toHex())
         fillRectCtx(leftPx, toY(max), w, getHeight(max), ctx, effectiveC)
         lastCol = c
       }
@@ -153,7 +162,7 @@ export function drawXY(
           ? c
           : c === lastCol
           ? lastMix
-          : (lastMix = colord(c).darken(0.4).toString())
+          : (lastMix = darken(colord(c), 0.4).toHex())
 
         fillRectCtx(leftPx, toY(min), w, getHeight(min), ctx, effectiveC)
         lastCol = c
