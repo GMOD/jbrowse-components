@@ -112,7 +112,7 @@
     "dependency-graph": "^0.11.0",
     "dotenv": "^16.3.1",
     "dotenv-expand": "^10.0.0",
-    "electron": "25.5.0",
+    "electron": "26.2.0",
     "electron-builder": "^24.4.0",
     "electron-mock-ipc": "^0.3.8",
     "eslint": "^8.0.0",
@@ -126,7 +126,7 @@
     "express-basic-auth": "^1.2.1",
     "file-loader": "^6.2.0",
     "find-yarn-workspace-root": "^2.0.0",
-    "fs-extra": "^10.0.0",
+    "fs-extra": "^11.1.1",
     "html-webpack-plugin": "^5.5.0",
     "husky": "^8.0.0",
     "identity-obj-proxy": "^3.0.0",
@@ -176,7 +176,7 @@
     "webpack": "^5.64.4",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^4.6.0",
-    "webpack-manifest-plugin": "^4.0.2"
+    "webpack-manifest-plugin": "^5.0.0"
   },
   "version": "0.0.0",
   "dependencies": {}
