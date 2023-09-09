@@ -2,7 +2,11 @@ import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
+import { colord, extend } from '@jbrowse/core/util/colord'
+import mixPlugin from '@jbrowse/core/util/colord/plugins/mix'
 import { clamp, featureSpanPx, Feature, Region } from '@jbrowse/core/util'
+
+extend([mixPlugin])
 
 // locals
 import { getOrigin, getScale, ScaleOpts } from './util'
@@ -47,7 +51,6 @@ export function drawXY(
     displayCrossHatches: boolean
     offset?: number
     colorCallback: (f: Feature, score: number) => string
-    Color: typeof import('color')
   },
 ) {
   const {
@@ -61,7 +64,6 @@ export function drawXY(
     displayCrossHatches,
     offset = 0,
     colorCallback,
-    Color,
   } = props
   const [region] = regions
   const width = (region.end - region.start) / bpPerPx
@@ -106,7 +108,7 @@ export function drawXY(
           ? c
           : c === lastCol
           ? lastMix
-          : (lastMix = Color(c).lighten(0.4).toString())
+          : (lastMix = colord(c).lighten(0.4).toString())
         fillRectCtx(leftPx, toY(max), w, getHeight(max), ctx, effectiveC)
         lastCol = c
       }
@@ -124,8 +126,8 @@ export function drawXY(
         crossingOrigin && summary
           ? c === lastCol
             ? lastMix
-            : (lastMix = Color(colorCallback(feature, max))
-                .mix(Color(colorCallback(feature, min)))
+            : (lastMix = colord(colorCallback(feature, max))
+                .mix(colord(colorCallback(feature, min)))
                 .toString())
           : c
       const w = Math.max(rightPx - leftPx + fudgeFactor, minSize)
@@ -151,7 +153,7 @@ export function drawXY(
           ? c
           : c === lastCol
           ? lastMix
-          : (lastMix = Color(c).darken(0.4).toString())
+          : (lastMix = colord(c).darken(0.4).toString())
 
         fillRectCtx(leftPx, toY(min), w, getHeight(min), ctx, effectiveC)
         lastCol = c

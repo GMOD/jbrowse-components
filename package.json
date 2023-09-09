@@ -59,7 +59,6 @@
     "@types/base64-js": "^1.2.5",
     "@types/buffer-crc32": "^0.2.2",
     "@types/cli-progress": "^3.9.2",
-    "@types/color": "^3.0.1",
     "@types/cors": "^2.8.13",
     "@types/cross-spawn": "^6.0.2",
     "@types/crypto-js": "^4.0.1",

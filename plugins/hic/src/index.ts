@@ -1,7 +1,7 @@
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { FileLocation } from '@jbrowse/core/util/types'
-import Color from 'color'
+import { colord } from '@jbrowse/core/util/colord'
 import HicRendererF from './HicRenderer'
 import HicTrackF from './HicTrack'
 import LinearHicDisplayF from './LinearHicDisplay'
@@ -11,6 +11,8 @@ import {
   getFileName,
   TrackTypeGuesser,
 } from '@jbrowse/core/util/tracks'
+
+type ColorType = ReturnType<typeof colord>
 
 export default class HicPlugin extends Plugin {
   name = 'HicPlugin'
@@ -60,12 +62,9 @@ export default class HicPlugin extends Plugin {
   }
 
   configure(pluginManager: PluginManager) {
-    pluginManager.jexl.addFunction('alpha', (color: Color, value: number) =>
-      color.alpha(value),
-    )
-    pluginManager.jexl.addFunction('hsl', (color: Color) => color.hsl())
-    pluginManager.jexl.addFunction('colorString', (color: Color) =>
-      color.string(),
-    )
+    const { jexl } = pluginManager
+    jexl.addFunction('alpha', (color: ColorType, n: number) => color.alpha(n))
+    jexl.addFunction('hsl', (color: ColorType) => color.toHsl())
+    jexl.addFunction('colorString', (color: ColorType) => color.toHex())
   }
 }

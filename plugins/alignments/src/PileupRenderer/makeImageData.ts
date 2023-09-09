@@ -13,10 +13,7 @@ import { renderAlignment } from './renderAlignment'
 import { renderMismatches } from './renderMismatches'
 import { renderSoftClipping } from './renderSoftClipping'
 
-export interface RenderArgsWithColor
-  extends RenderArgsDeserializedWithFeaturesAndLayout {
-  Color: Awaited<typeof import('color')>
-}
+export type RenderArgsWithColor = RenderArgsDeserializedWithFeaturesAndLayout
 
 interface LayoutFeature {
   heightPx: number

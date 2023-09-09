@@ -29,8 +29,9 @@ import { Region as MUIRegion } from './types/mst'
 import { isAbortException, checkAbortSignal } from './aborting'
 import { BaseBlock } from './blockTypes'
 import { isUriLocation } from './types'
+// has to be the full path and not the relative path to get the jest mock
 import useMeasure from '@jbrowse/core/util/useMeasure'
-import Color from 'color'
+import { colord } from './colord'
 
 export * from './types'
 export * from './aborting'
@@ -1371,6 +1372,6 @@ export {
 } from './simpleFeature'
 
 export function stripAlpha(str: string) {
-  const c = Color(str)
-  return c.hex()
+  const c = colord(str)
+  return c.toHex()
 }

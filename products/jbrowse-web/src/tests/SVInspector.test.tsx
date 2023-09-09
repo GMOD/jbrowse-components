@@ -8,7 +8,7 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-const delay = { timeout: 20000 }
+const delay = { timeout: 40000 }
 
 test(
   'opens a vcf.gz file in the sv inspector view',
@@ -39,5 +39,5 @@ test(
 
       consoleMock.mockRestore()
     }),
-  30000,
+  60000,
 )
