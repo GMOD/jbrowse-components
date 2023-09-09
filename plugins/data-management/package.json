@@ -39,15 +39,15 @@
     "@gmod/ucsc-hub": "^0.1.6",
     "@mui/icons-material": "^5.0.1",
     "@mui/x-data-grid": "^6.0.1",
-    "clsx": "^1.1.0",
+    "clsx": "^2.0.0",
     "react-virtualized-auto-sizer": "^1.0.2",
     "react-vtree": "^3.0.0-beta.1",
     "react-window": "^1.8.6"
   },
   "peerDependencies": {
     "@jbrowse/core": "^2.0.0",
-    "@jbrowse/product-core": "^2.0.0",
     "@jbrowse/plugin-config": "^2.0.0",
+    "@jbrowse/product-core": "^2.0.0",
     "@mui/material": "^5.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",

@@ -2,6 +2,7 @@ import { bpSpanPx, Region } from '@jbrowse/core/util'
 import { getMethBins } from '../MismatchParser'
 import { fillRect, LayoutFeature } from './util'
 import { RenderArgsWithColor } from './makeImageData'
+import { colord } from '@jbrowse/core/util/colord'
 
 // Color by methylation is slightly modified version of color by
 // modifications that focuses on CpG sites, with non-methylated CpG colored
@@ -20,7 +21,7 @@ export function renderMethylation({
   renderArgs: RenderArgsWithColor
   canvasWidth: number
 }) {
-  const { regionSequence, Color } = renderArgs
+  const { regionSequence } = renderArgs
   const { feature, topPx, heightPx } = feat
   if (!regionSequence) {
     throw new Error('region sequence required for methylation')
@@ -37,15 +38,11 @@ export function renderMethylation({
   function getCol(k: number) {
     if (methBins[k]) {
       const p = methProbs[k] || 0
-      return p > 0.5
-        ? Color('red')
-            .alpha((p - 0.5) * 2)
-            .hsl()
-            .string()
-        : Color('blue')
-            .alpha(1 - p * 2)
-            .hsl()
-            .string()
+      return (
+        p > 0.5
+          ? colord('red').alpha((p - 0.5) * 2)
+          : colord('blue').alpha(1 - p * 2)
+      ).toHslString()
     }
     return undefined
   }

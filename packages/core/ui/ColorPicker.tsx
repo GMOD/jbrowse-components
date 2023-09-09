@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import Color from 'color'
+import { colord } from '@jbrowse/core/util/colord'
 import { Popover, Select, MenuItem, TextField } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
@@ -90,13 +90,13 @@ export function ColorPicker({
   const presetColors = paletteColors[val as keyof typeof paletteColors]
   const palettes = Object.keys(paletteColors)
   const [text, setText] = useState(color)
-  const rgb = Color(color).rgb().toString()
+  const rgb = colord(color).toRgbString()
   const rgbDebounced = useDebounce(rgb, 1000)
 
   const handleChange = (val: string) => {
     setText(val)
     try {
-      onChange(Color(val).rgb().toString())
+      onChange(colord(val).toRgbString())
     } catch (e) {}
   }
   return (

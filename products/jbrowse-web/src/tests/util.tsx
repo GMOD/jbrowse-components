@@ -1,26 +1,24 @@
 import React from 'react'
-import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
-import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 import { render, waitFor } from '@testing-library/react'
-
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
-
 import { LocalFile, GenericFilehandle } from 'generic-filehandle'
-
 import rangeParser from 'range-parser'
-import PluginManager from '@jbrowse/core/PluginManager'
 import { QueryParamProvider } from 'use-query-params'
+import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
+import { Image, createCanvas } from 'canvas'
 
+// jbrowse
+import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
+import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+// locals
 import JBrowseWithoutQueryParamProvider from '../components/JBrowse'
 import JBrowseRootModelFactory from '../rootModel/rootModel'
 import configSnapshot from '../../test_data/volvox/config.json'
 import corePlugins from '../corePlugins'
-
-import { Image, createCanvas } from 'canvas'
-
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
 import sessionModelFactory from '../sessionModel'
 
 type LGV = LinearGenomeViewModel
@@ -137,11 +135,8 @@ export async function createView(args?: any, adminMode?: boolean) {
 export function createViewNoWait(args?: any, adminMode?: boolean) {
   const pluginManager = getPluginManager(args, adminMode)
   const rest = render(<JBrowse pluginManager={pluginManager} />)
-
   const rootModel = pluginManager.rootModel!
-
   const session = rootModel.session!
-
   const view = session.views[0] as LGV
   return { view, rootModel, session, ...rest }
 }

@@ -79,7 +79,6 @@
     "@mui/icons-material": "^5.0.0",
     "@mui/material": "^5.10.17",
     "@mui/x-data-grid": "^6.0.1",
-    "camelcase": "^6.2.1",
     "clone": "^2.1.2",
     "deepmerge": "^4.2.2",
     "electron-debug": "^3.0.1",
@@ -105,13 +104,13 @@
     "use-query-params": "^2.0.0"
   },
   "devDependencies": {
-    "electron": "25.5.0"
+    "electron": "26.2.0"
   },
   "browserslist": [
     "last 1 chrome version"
   ],
   "build": {
-    "electronVersion": "25.5.0",
+    "electronVersion": "26.2.0",
     "extraMetadata": {
       "main": "build/electron.js"
     },

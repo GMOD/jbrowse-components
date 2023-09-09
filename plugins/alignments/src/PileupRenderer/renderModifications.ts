@@ -8,6 +8,7 @@ import {
 import { getTagAlt } from '../util'
 import { fillRect, LayoutFeature } from './util'
 import { RenderArgsWithColor } from './makeImageData'
+import { colord } from '@jbrowse/core/util/colord'
 
 // render modifications stored in MM tag in BAM
 //
@@ -35,7 +36,7 @@ export function renderModifications({
   canvasWidth: number
 }) {
   const { feature, topPx, heightPx } = feat
-  const { Color, modificationTagMap = {} } = renderArgs
+  const { modificationTagMap = {} } = renderArgs
 
   const seq = feature.get('seq') as string | undefined
 
@@ -54,18 +55,12 @@ export function renderModifications({
   let probIndex = 0
   for (const { type, positions } of modifications) {
     const col = modificationTagMap[type] || 'black'
-    const base = Color(col)
+    const base = colord(col)
     for (const readPos of getNextRefPos(cigarOps, positions)) {
       const r = start + readPos
       const [leftPx, rightPx] = bpSpanPx(r, r + 1, region, bpPerPx)
       const prob = probabilities?.[probIndex] || 0
-      const c =
-        prob !== 1
-          ? base
-              .alpha(prob + 0.1)
-              .hsl()
-              .string()
-          : col
+      const c = prob !== 1 ? base.alpha(prob + 0.1).toHslString() : col
       const w = rightPx - leftPx + 0.5
       fillRect(ctx, leftPx, topPx, w, heightPx, canvasWidth, c)
       probIndex++

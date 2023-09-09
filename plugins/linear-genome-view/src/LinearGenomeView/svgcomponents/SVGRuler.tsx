@@ -1,5 +1,5 @@
 import React from 'react'
-import { getTickDisplayStr } from '@jbrowse/core/util'
+import { getTickDisplayStr, stripAlpha } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
 // locals
@@ -7,7 +7,6 @@ import { makeTicks } from '../util'
 
 import { LinearGenomeViewModel } from '..'
 import SVGRegionSeparators from './SVGRegionSeparators'
-import Color from 'color'
 
 type LGV = LinearGenomeViewModel
 
@@ -30,7 +29,7 @@ function Ruler({
 }) {
   const ticks = makeTicks(start, end, bpPerPx, major, minor)
   const theme = useTheme()
-  const c = Color(theme.palette.text.secondary).hex()
+  const c = stripAlpha(theme.palette.text.secondary)
   return (
     <>
       {ticks.map(tick => {
@@ -84,7 +83,7 @@ export default function SVGRuler({
   } = model
   const renderRuler = contentBlocks.length < 5
   const theme = useTheme()
-  const c = Color(theme.palette.text.primary).hex()
+  const c = stripAlpha(theme.palette.text.primary)
   return (
     <>
       <SVGRegionSeparators model={model} height={30} />
