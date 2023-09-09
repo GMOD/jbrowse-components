@@ -9,7 +9,7 @@ import SvgRendererConfigSchema from '../configSchema'
 import Rendering from './SvgFeatureRendering'
 import SvgOverlay from './SvgOverlay'
 
-import '@testing-library/jest-dom/extend-expect'
+import '@testing-library/jest-dom'
 
 test('no features', () => {
   const { container } = render(
