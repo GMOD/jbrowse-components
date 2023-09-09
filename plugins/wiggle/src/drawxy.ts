@@ -3,6 +3,10 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { colord, Colord } from '@jbrowse/core/util/colord'
+// required to import this for typescript purposes
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import mix from 'colord/plugins/mix'
+
 import { clamp, featureSpanPx, Feature, Region } from '@jbrowse/core/util'
 
 function lighten(color: Colord, amount: number) {
