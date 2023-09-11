@@ -13,10 +13,12 @@ const UCSCTrackHubConnection = ConfigurationSchema(
     hubTxtLocation: {
       type: 'fileLocation',
       defaultValue: {
-        uri: 'http://mysite.com/path/to/hub.txt',
+        // uri: 'http://mysite.com/path/to/hub.txt',
+        uri: 'https://hgdownload.soe.ucsc.edu/hubs/GCF/000/002/985/GCF_000002985.6/hub.txt',
         locationType: 'UriLocation',
       },
-      description: 'location of the hub file (usually called hub.txt)',
+      description:
+        'location of the hub file (usually called hub.txt or trackDb.txt)',
     },
     /**
      * #slot
@@ -25,7 +27,7 @@ const UCSCTrackHubConnection = ConfigurationSchema(
       type: 'stringArray',
       defaultValue: [],
       description:
-        'optional list of genomes to import from this track hub, if empty all genomes will be imported',
+        'list of assemblies (genomes) to import from this UCSC hub. optional for assembly hubs, but required for track hubs',
     },
   },
   {

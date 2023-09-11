@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
+import React, { FC, useMemo } from 'react'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 import { AbstractSessionModel } from '@jbrowse/core/util'
@@ -12,22 +12,6 @@ import ConfiguratorState from './model'
 const useStyles = makeStyles()(theme => ({
   root: {
     margin: theme.spacing(1),
-  },
-  expandIcon: {
-    color: theme.palette.tertiary.contrastText,
-  },
-  adminBadge: {
-    margin: '0.5em',
-    borderRadius: 3,
-    backgroundColor: theme.palette.quaternary.main,
-    padding: '1em',
-    display: 'flex',
-    alignContent: 'center',
-  },
-  customPluginButton: {
-    margin: '0.5em',
-    display: 'flex',
-    justifyContent: 'center',
   },
 }))
 
@@ -55,11 +39,14 @@ const ConnectionConfigurator: FC<{
         setLocation={newLocation => {
           model.configuration.hubTxtLocation.set(newLocation)
         }}
+        error={model.state === 'invalid'}
         name="Hub.txt File"
-        description="Choose the location of the hub.txt file"
+        description={
+          model.state === 'invalid'
+            ? model.message
+            : 'Enter the location of the hub.txt file'
+        }
       />
-      <div>{model.state}</div>
-      <div>{model.message}</div>
     </div>
   )
 }

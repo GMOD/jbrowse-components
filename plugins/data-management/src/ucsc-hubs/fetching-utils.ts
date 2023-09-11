@@ -34,17 +34,20 @@ export async function fetchAll(
   hubFileLocation: FileLocation,
   signal: AbortSignal,
 ) {
+  if (!isUriLocation(hubFileLocation)) {
+    throw new Error('only uri locations are supported for hub files')
+  }
   const hubFile = await fetchHubFile(hubFileLocation, signal)
+  hubFile.uri = hubFileLocation.uri
   if (hubFile instanceof SingleFileHub) {
+    hubFile.genome.uri = hubFile.uri
+    hubFile.trackDbs.forEach(db => (db.uri = hubFile.uri))
     return new UnifiedHubData(hubFile, hubFile.genome, hubFile.trackDbs)
   } else {
     // get the genomes file
     const genomeFileLocation = hubFile.get('genomesFile')
     if (!genomeFileLocation) {
       throw new Error('genomesFile not found on hub')
-    }
-    if (!isUriLocation(hubFileLocation)) {
-      throw new Error('only uri locations are supported for hub files')
     }
     const genomesFileLocation = {
       uri: new URL(
@@ -54,6 +57,7 @@ export async function fetchAll(
       locationType: 'UriLocation' as const,
     }
     const genomesFile = await fetchGenomesFile(genomesFileLocation, signal)
+    genomesFile.uri = genomesFileLocation.uri
 
     // get the trackDb files for each genome
     const trackDbData = await Promise.all(
@@ -68,7 +72,9 @@ export async function fetchAll(
           uri: new URL(db, base).href,
           locationType: 'UriLocation' as const,
         }
-        return fetchTrackDbFile(trackDbLoc, signal)
+        const trackdb = await fetchTrackDbFile(trackDbLoc, signal)
+        trackdb.uri = trackDbLoc.uri
+        return trackdb
       }),
     )
     return new UnifiedHubData(hubFile, genomesFile, trackDbData)
@@ -78,7 +84,7 @@ export async function fetchAll(
 export async function fetchHubFile(
   hubLocation: FileLocation,
   signal: AbortSignal,
-) {
+): Promise<HubFile> {
   try {
     const hubFileText = await openLocation(hubLocation).readFile({
       encoding: 'utf8',
@@ -408,4 +414,4 @@ function makeTrackConfig(
   }
 }
 
-export { default as ucscAssemblies } from '../ucscAssemblies'
+export { default as ucscAssemblies } from './ucscAssemblies'

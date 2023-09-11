@@ -2,7 +2,7 @@ import { getConf } from '@jbrowse/core/configuration'
 import { addDisposer, types } from 'mobx-state-tree'
 
 // locals
-import { UnifiedHubData, fetchAll } from '../ucscTrackHub'
+import { UnifiedHubData, fetchAll } from '../fetching-utils'
 import { autorun } from 'mobx'
 import { FileLocation } from '@jbrowse/core/util'
 import configSchema from '../configSchema'
@@ -61,6 +61,7 @@ const ConfiguratorState = types
   })
   .actions(self => ({
     afterCreate() {
+      // watch the hubTxtLocation and validate it when it changes
       addDisposer(
         self,
         autorun(
