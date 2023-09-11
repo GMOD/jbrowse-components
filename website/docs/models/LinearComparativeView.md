@@ -94,7 +94,7 @@ currently this is limited to an array of two
 
 ```js
 // type signature
-IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 14 more ... & { ...; }, _NotCustomized, _NotCustomized>>
+IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 15 more ... & { ...; }, _NotCustomized, _NotCustomized>>
 // code
 views: types.array(
           pluginManager.getViewType('LinearGenomeView')

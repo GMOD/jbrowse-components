@@ -142,5 +142,5 @@ setChainData: (args: ChainData) => void
 
 ```js
 // type signature
-setFilterBy: (filter: Filter) => void
+setFilterBy: (filter: IFilter) => void
 ```

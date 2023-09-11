@@ -26,6 +26,7 @@ composed of
 - TemporaryAssembliesMixin
 - DesktopSessionTrackMenuMixin
 - SnackbarModel
+- AppFocusMixin
 
 ### JBrowseDesktopSessionModel - Getters
 
@@ -40,7 +41,7 @@ ConfigurationSchemaType<{ aliases: { type: string; defaultValue: any[]; descript
 
 ```js
 // type
-{ jbrowse: any; session: any; sessionPath: string; assemblyManager: { assemblies: IMSTArray<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { ...; } & ... 4 more ... & { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>; } & ... 5 more ... & IStateTreeNode<...>; internetAccounts: IMSTAr...
+{ jbrowse: any; session: any; sessionPath: string; assemblyManager: { assemblies: IMSTArray<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { ...; } & ... 5 more ... & { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>; } & ... 5 more ... & IStateTreeNode<...>; internetAccounts: IMSTAr...
 ```
 
 #### getter: assemblyNames
@@ -75,7 +76,7 @@ Menu[]
 
 ```js
 // type
-{ assemblies: IMSTArray<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loaded: boolean; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; lowerCaseRefNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 4 more ... & { ...; }, _NotCustom...
+{ assemblies: IMSTArray<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loaded: boolean; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; lowerCaseRefNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 5 more ... & { ...; }, _NotCustom...
 ```
 
 #### getter: savedSessionNames
