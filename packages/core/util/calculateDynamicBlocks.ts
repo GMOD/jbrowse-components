@@ -49,7 +49,12 @@ export default function calculateDynamicBlocks(
   let displayedRegionLeftPx = 0
   const windowLeftPx = offsetPx
   const windowRightPx = windowLeftPx + width
-  displayedRegions.forEach((region, regionNumber) => {
+  for (
+    let regionNumber = 0;
+    regionNumber < displayedRegions.length;
+    regionNumber++
+  ) {
+    const region = displayedRegions[regionNumber]
     const {
       assemblyName,
       refName,
@@ -168,6 +173,6 @@ export default function calculateDynamicBlocks(
       }
     }
     displayedRegionLeftPx += (regionEnd - regionStart) / bpPerPx
-  })
+  }
   return blocks
 }
