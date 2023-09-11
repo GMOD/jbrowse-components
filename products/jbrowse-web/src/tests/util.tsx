@@ -207,4 +207,3 @@ export function mockFile404(
     return readBuffer(request)
   })
 }
-
