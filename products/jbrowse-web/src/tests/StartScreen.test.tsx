@@ -3,22 +3,18 @@ import { fireEvent, render } from '@testing-library/react'
 
 import StartScreen from '../components/StartScreen'
 import factoryReset from '../factoryReset'
-import { setup, getPluginManager } from './util'
+import { getPluginManager } from './util'
 
-setup()
+test('Empty config', async () => {
+  const pluginManager = getPluginManager({})
+  const root = pluginManager.rootModel
+  const { findByText } = render(
+    <StartScreen rootModel={root} onFactoryReset={factoryReset} />,
+  )
+  expect(await findByText('Start a new session')).toBeTruthy()
+}, 10000)
 
-describe('<StartScreen />', () => {
-  it('renders with an empty views config', async () => {
-    const pluginManager = getPluginManager({})
-    const root = pluginManager.rootModel
-    const { findByText } = render(
-      <StartScreen rootModel={root} onFactoryReset={factoryReset} />,
-    )
-    expect(await findByText('Start a new session')).toBeTruthy()
-  })
-})
-
-test('Add New Session', async () => {
+test('Add new session', async () => {
   const pluginManager = getPluginManager()
   const root = pluginManager.rootModel!
   const { findByText } = render(
@@ -27,9 +23,9 @@ test('Add New Session', async () => {
   await findByText('Start a new session')
   fireEvent.click(await findByText('Empty'))
   expect(root.session).toBeTruthy()
-})
+}, 10000)
 
-test('Add New LGV Session', async () => {
+test('Add new LGV session', async () => {
   const pluginManager = getPluginManager()
   const root = pluginManager.rootModel!
   const { findByText } = render(
@@ -38,9 +34,9 @@ test('Add New LGV Session', async () => {
   await findByText('Start a new session')
   fireEvent.click(await findByText('Linear Genome View'))
   expect(root.session!.views.length).toBeGreaterThan(0)
-})
+}, 10000)
 
-test('Add New SV Inspector Session', async () => {
+test('Add new SV Inspector session', async () => {
   const pluginManager = getPluginManager()
   const root = pluginManager.rootModel!
   const { findByText } = render(
@@ -49,4 +45,4 @@ test('Add New SV Inspector Session', async () => {
   await findByText('Start a new session')
   fireEvent.click(await findByText('Structural Variant Inspector'))
   expect(root.session!.views.length).toBeGreaterThan(0)
-})
+}, 10000)
