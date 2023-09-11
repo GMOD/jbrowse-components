@@ -1,7 +1,6 @@
 import React from 'react'
 import { render, waitFor } from '@testing-library/react'
 
-import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import { LocalFile } from 'generic-filehandle'
 import rangeParser from 'range-parser'
 
@@ -23,8 +22,6 @@ const getFile = (url: string) =>
   )
 
 jest.mock('../makeWorkerInstance', () => () => {})
-
-expect.extend({ toMatchImageSnapshot })
 
 const delay = { timeout: 20000 }
 

@@ -1,13 +1,13 @@
 import React from 'react'
 import { render } from '@testing-library/react'
 
-import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import { LocalFile } from 'generic-filehandle'
 import rangeParser from 'range-parser'
 
 // local
 import { App } from './loaderUtil'
-import { expectCanvasMatch } from './util'
+import { setup, expectCanvasMatch } from './util'
+setup()
 
 const getFile = (url: string) =>
   new LocalFile(
@@ -15,8 +15,6 @@ const getFile = (url: string) =>
   )
 
 jest.mock('../makeWorkerInstance', () => () => {})
-
-expect.extend({ toMatchImageSnapshot })
 
 const delay = { timeout: 20000 }
 

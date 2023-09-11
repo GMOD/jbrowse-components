@@ -1,10 +1,8 @@
 import { fireEvent, waitFor } from '@testing-library/react'
-import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
 // locals
 import { hts, doBeforeEach, createView, setup, expectCanvasMatch } from './util'
 
-expect.extend({ toMatchImageSnapshot })
 setup()
 
 beforeEach(() => {

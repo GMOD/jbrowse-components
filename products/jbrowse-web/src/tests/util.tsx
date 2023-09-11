@@ -83,11 +83,6 @@ export function generateReadBuffer(getFile: (s: string) => GenericFilehandle) {
 }
 
 export function setup() {
-  Storage.prototype.getItem = jest.fn(() => null)
-  Storage.prototype.setItem = jest.fn()
-  Storage.prototype.removeItem = jest.fn()
-  Storage.prototype.clear = jest.fn()
-
   expect.extend({ toMatchImageSnapshot })
 }
 
@@ -212,3 +207,4 @@ export function mockFile404(
     return readBuffer(request)
   })
 }
+
