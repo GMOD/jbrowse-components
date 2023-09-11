@@ -3517,7 +3517,7 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "http://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/mastermind.bb",
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/mastermind.bb",
           "locationType": "UriLocation"
         }
       }
@@ -3531,7 +3531,7 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "http://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/mastermind.bb",
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/mastermind.bb",
           "locationType": "UriLocation"
         }
       }
