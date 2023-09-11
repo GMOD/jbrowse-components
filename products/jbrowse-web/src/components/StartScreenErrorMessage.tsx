@@ -29,7 +29,7 @@ export default function StartScreenErrorMessage({ error }: { error: unknown }) {
         </div>
       ) : (
         <div>
-          <h1>Error</h1>
+          <h1>JBrowse Error</h1>
           <ErrorMessage error={error} />
         </div>
       )}
