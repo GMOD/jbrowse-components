@@ -3,6 +3,7 @@ import { IconButton, Paper, useTheme } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getSession, useWidthSetter } from '@jbrowse/core/util'
+import clsx from 'clsx'
 import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util'
 
@@ -18,7 +19,6 @@ import ViewContainerTitle from './ViewContainerTitle'
 const useStyles = makeStyles()(theme => ({
   viewContainer: {
     overflow: 'hidden',
-    background: theme.palette.secondary.dark,
     margin: theme.spacing(0.5),
     padding: `0 ${theme.spacing(1)} ${theme.spacing(1)}`,
   },
@@ -29,7 +29,10 @@ const useStyles = makeStyles()(theme => ({
     flexGrow: 1,
   },
   focusedView: {
-    background: theme.palette.secondary.light,
+    background: theme.palette.secondary.main,
+  },
+  unfocusedView: {
+    background: theme.palette.secondary.dark,
   },
 }))
 
@@ -77,11 +80,12 @@ export default observer(function ({
     <Paper
       ref={ref}
       elevation={12}
-      className={
+      className={clsx(
+        classes.viewContainer,
         session.focusedViewId === view.id
-          ? `${classes.viewContainer} ${classes.focusedView}`
-          : classes.viewContainer
-      }
+          ? classes.focusedView
+          : classes.unfocusedView,
+      )}
     >
       <div ref={scrollRef} style={{ display: 'flex' }}>
         <ViewMenu model={view} IconProps={{ className: classes.icon }} />
