@@ -59,11 +59,18 @@ class LazyWorker {
 
   constructor(public driver: BaseRpcDriver) {}
 
-  async getWorker() {
+  async getWorker(pluginManager?: PluginManager) {
     if (!this.workerP) {
+      if (!pluginManager) {
+        throw new Error("Can't make new worker without plugin manager")
+      }
       this.workerP = this.driver
         .makeWorker()
-        .then(worker => {
+        .then(unextendedWorker => {
+          const worker = pluginManager.evaluateExtensionPoint(
+            'Core-extendWorker',
+            unextendedWorker,
+          ) as typeof unextendedWorker
           watchWorker(worker, this.driver.maxPingTime, this.driver.name).catch(
             error => {
               if (worker) {
@@ -177,7 +184,10 @@ export default abstract class BaseRpcDriver {
     return this.workerPool
   }
 
-  async getWorker(sessionId: string): Promise<WorkerHandle> {
+  async getWorker(
+    sessionId: string,
+    pluginManager?: PluginManager,
+  ): Promise<WorkerHandle> {
     const workers = this.getWorkerPool()
     let workerNumber = this.workerAssignments.get(sessionId)
     if (workerNumber === undefined) {
@@ -187,7 +197,7 @@ export default abstract class BaseRpcDriver {
       workerNumber = workerAssignment
     }
 
-    return workers[workerNumber].getWorker()
+    return workers[workerNumber].getWorker(pluginManager)
   }
 
   async call(
@@ -201,7 +211,7 @@ export default abstract class BaseRpcDriver {
       throw new TypeError('sessionId is required')
     }
     let done = false
-    const worker = await this.getWorker(sessionId)
+    const worker = await this.getWorker(sessionId, pluginManager)
     const rpcMethod = pluginManager.getRpcMethodType(functionName)
     const serializedArgs = await rpcMethod.serializeArguments(args, this.name)
     const filteredAndSerializedArgs = this.filterArgs(serializedArgs, sessionId)
