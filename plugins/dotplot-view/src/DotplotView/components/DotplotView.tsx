@@ -10,7 +10,8 @@ import { DotplotViewModel } from '../model'
 import ImportForm from './ImportForm'
 import Header from './Header'
 import Grid from './Grid'
-import { HorizontalAxis, VerticalAxis } from './Axes'
+import { VerticalAxis } from './VerticalAxis'
+import { HorizontalAxis } from './HorizontalAxis'
 import { TooltipWhereClicked, TooltipWhereMouseovered } from './DotplotTooltip'
 
 const blank = { left: 0, top: 0, width: 0, height: 0 }

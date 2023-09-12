@@ -8,7 +8,8 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 // locals
 import { DotplotViewModel, ExportSvgOptions } from '../model'
 import { GridRaw } from '../components/Grid'
-import { HorizontalAxisRaw, VerticalAxisRaw } from '../components/Axes'
+import { HorizontalAxisRaw } from '../components/HorizontalAxis'
+import { VerticalAxisRaw } from '../components/VerticalAxis'
 import SVGBackground from './SVGBackground'
 
 // render LGV to SVG
