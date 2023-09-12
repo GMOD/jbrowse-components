@@ -24,20 +24,6 @@ const useStyles = makeStyles()({
 
 function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
   const { classes } = useStyles()
-  const { bookmarkedRegions } = model
-
-  const [localBookmarks, setLocalBookmarks] = useLocalStorage(
-    `bookmarks-${[window.location.host + window.location.pathname].join('-')}`,
-    bookmarkedRegions,
-  )
-
-  if (localBookmarks.length > 0) {
-    model.setBookmarkedRegions(localBookmarks)
-  }
-
-  useEffect(() => {
-    setLocalBookmarks(bookmarkedRegions)
-  }, [bookmarkedRegions, setLocalBookmarks])
 
   if (!model) {
     return null
@@ -48,17 +34,13 @@ function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
       <div>
         <ExportBookmarks model={model} />
         <ImportBookmarks model={model} />
-        <DeleteBookmarks model={model} setLocalBookmarks={setLocalBookmarks} />
+        <DeleteBookmarks model={model} />
       </div>
       <Alert severity="info">
         Click or double click the <strong>label</strong> field to notate your
         bookmark.
       </Alert>
-      <BookmarkGrid
-        model={model}
-        localBookmarks={localBookmarks}
-        setLocalBookmarks={setLocalBookmarks}
-      />
+      <BookmarkGrid model={model} />
     </Card>
   )
 }

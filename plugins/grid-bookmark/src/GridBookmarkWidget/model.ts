@@ -1,9 +1,17 @@
-import { types, cast, Instance, SnapshotIn, IMSTArray } from 'mobx-state-tree'
+import {
+  types,
+  cast,
+  Instance,
+  SnapshotIn,
+  IMSTArray,
+  addDisposer,
+} from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { Region } from '@jbrowse/core/util/types'
 import { Region as RegionModel, ElementId } from '@jbrowse/core/util/types/mst'
 
-import { localStorageSetItem } from '@jbrowse/core/util'
+import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
+import { autorun } from 'mobx'
 
 const LabeledRegionModel = types
   .compose(
@@ -44,7 +52,17 @@ export default function f(_pluginManager: PluginManager) {
     .model('GridBookmarkModel', {
       id: ElementId,
       type: types.literal('GridBookmarkWidget'),
-      bookmarkedRegions: types.array(LabeledRegionModel),
+      bookmarkedRegions: types.array(
+        types.optional(LabeledRegionModel, () =>
+          JSON.parse(
+            localStorageGetItem(
+              `bookmarks-${[
+                window.location.host + window.location.pathname,
+              ].join('-')}`,
+            ) || '[]',
+          ),
+        ),
+      ),
     })
     .volatile(() => ({
       selectedBookmarks: [] as IExtendedLabeledRegionModel[],
@@ -61,11 +79,7 @@ export default function f(_pluginManager: PluginManager) {
         self.bookmarkedRegions = cast([...self.bookmarkedRegions, ...regions])
       },
       addBookmark(region: Region) {
-        const target = `bookmarks-${[
-          window.location.host + window.location.pathname,
-        ].join('-')}`
         self.bookmarkedRegions.push(region)
-        localStorageSetItem(target, JSON.stringify(self.bookmarkedRegions))
       },
       removeBookmark(index: number) {
         self.bookmarkedRegions.splice(index, 1)
@@ -106,6 +120,28 @@ export default function f(_pluginManager: PluginManager) {
         return [
           ...new Set(self.bookmarkedRegions.map(region => region.assemblyName)),
         ]
+      },
+    }))
+    .actions(self => ({
+      afterAttach() {
+        addDisposer(
+          self,
+          autorun(() => {
+            const target = `bookmarks-${[
+              window.location.host + window.location.pathname,
+            ].join('-')}`
+            if (self.bookmarkedRegions.length > 0) {
+              localStorageSetItem(
+                target,
+                JSON.stringify(self.bookmarkedRegions),
+              )
+            } else {
+              self.setBookmarkedRegions(
+                JSON.parse(localStorageGetItem(target) || '[]'),
+              )
+            }
+          }),
+        )
       },
     }))
 }

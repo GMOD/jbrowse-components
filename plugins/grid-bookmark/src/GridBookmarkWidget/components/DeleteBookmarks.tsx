@@ -18,13 +18,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 // locals
 import { GridBookmarkModel, IExtendedLabeledRegionModel } from '../model'
 
-function DeleteBookmarks({
-  model,
-  setLocalBookmarks,
-}: {
-  model: GridBookmarkModel
-  setLocalBookmarks: Function
-}) {
+function DeleteBookmarks({ model }: { model: GridBookmarkModel }) {
   const [dialogOpen, setDialogOpen] = useState(false)
 
   return (
@@ -69,7 +63,6 @@ function DeleteBookmarks({
             color="primary"
             onClick={() => {
               model.clearSelectedBookmarks()
-              setLocalBookmarks(model.bookmarkedRegions)
               setDialogOpen(false)
             }}
           >

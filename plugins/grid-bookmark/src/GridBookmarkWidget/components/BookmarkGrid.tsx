@@ -32,15 +32,7 @@ const useStyles = makeStyles()(() => ({
   },
 }))
 
-const BookmarkGrid = ({
-  model,
-  localBookmarks,
-  setLocalBookmarks,
-}: {
-  model: GridBookmarkModel
-  localBookmarks: ILabeledRegionModel[]
-  setLocalBookmarks: Function
-}) => {
+const BookmarkGrid = ({ model }: { model: GridBookmarkModel }) => {
   const { classes } = useStyles()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [dialogRow, setDialogRow] = useState<IExtendedLabeledRegionModel>()
@@ -51,7 +43,7 @@ const BookmarkGrid = ({
   const session = getSession(model)
   const { assemblyNames, views } = session
 
-  const bookmarkRows = localBookmarks
+  const bookmarkRows = bookmarkedRegions
     .filter((r: ILabeledRegionModel) => assemblyNames.includes(r.assemblyName))
     .map((region, index) => {
       const { assemblyName, ...rest } = region
@@ -126,7 +118,6 @@ const BookmarkGrid = ({
         processRowUpdate={row => {
           const target = bookmarkRows[row.id]
           model.updateBookmarkLabel(target, row.label)
-          setLocalBookmarks(bookmarkedRegions)
           return row
         }}
         onProcessRowUpdateError={e => {
@@ -180,7 +171,6 @@ const BookmarkGrid = ({
                 const target = bookmarkRows[dialogRow!.id]
                 model.updateBookmarkLabel(target, newLabel)
               }
-              setLocalBookmarks(bookmarkedRegions)
               setNewLabel('')
               setDialogRow(undefined)
               setDialogOpen(false)
