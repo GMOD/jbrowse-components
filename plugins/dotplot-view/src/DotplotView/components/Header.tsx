@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { IconButton, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
@@ -18,9 +18,6 @@ import DotplotWarnings from './DotplotWarnings'
 import PanButtons from './PanButtons'
 
 const useStyles = makeStyles()({
-  iconButton: {
-    margin: 5,
-  },
   bp: {
     display: 'flex',
     alignItems: 'center',
@@ -36,20 +33,18 @@ const useStyles = makeStyles()({
 })
 
 const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
-  const { classes } = useStyles()
   return (
     <div>
-      <IconButton onClick={model.zoomOutButton} className={classes.iconButton}>
+      <IconButton onClick={model.zoomOutButton}>
         <ZoomOut />
       </IconButton>
 
-      <IconButton onClick={model.zoomInButton} className={classes.iconButton}>
+      <IconButton onClick={model.zoomInButton}>
         <ZoomIn />
       </IconButton>
 
       <IconButton
         onClick={() => model.activateTrackSelector()}
-        className={classes.iconButton}
         title="Open track selector"
       >
         <TrackSelectorIcon />
