@@ -181,7 +181,7 @@ export default class DotplotRenderer extends ComparativeRenderer {
       width: vview.width,
     }
     const t = createJBrowseTheme(theme)
-    hview.features?.forEach(feature => {
+    for (const feature of hview.features || []) {
       const strand = feature.get('strand') || 1
       const start = strand === 1 ? feature.get('start') : feature.get('end')
       const end = strand === 1 ? feature.get('end') : feature.get('start')
@@ -240,6 +240,8 @@ export default class DotplotRenderer extends ComparativeRenderer {
             ctx.beginPath()
             ctx.moveTo(currX, height - currY)
 
+            let lastDrawnX = currX
+            let lastDrawnY = currX
             for (let i = 0; i < cigarOps.length; i += 2) {
               const val = +cigarOps[i]
               const op = cigarOps[i + 1]
@@ -253,7 +255,16 @@ export default class DotplotRenderer extends ComparativeRenderer {
               }
               currX = clampWithWarnX(currX, b1, b2, feature)
               currY = clampWithWarnY(currY, e1, e2, feature)
-              ctx.lineTo(currX, height - currY)
+
+              // only draw a line segment if it is bigger than 0.5px
+              if (
+                Math.abs(currX - lastDrawnX) > 0.5 ||
+                Math.abs(currY - lastDrawnY) > 0.5
+              ) {
+                ctx.lineTo(currX, height - currY)
+                lastDrawnX = currX
+                lastDrawnY = currY
+              }
             }
 
             ctx.stroke()
@@ -279,7 +290,7 @@ export default class DotplotRenderer extends ComparativeRenderer {
           }
         }
       }
-    })
+    }
 
     return { warnings }
   }
