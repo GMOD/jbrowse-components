@@ -49,9 +49,17 @@ function ExportBookmarks({ model }: { model: GridBookmarkModel }) {
           style={{ display: 'flex', flexFlow: 'column', gap: '5px' }}
         >
           <Alert severity="info">
-            {exportAll
-              ? 'All bookmarks will be exported'
-              : 'Only selected bookmarks will be exported.'}
+            {exportAll ? (
+              <>
+                <span>All bookmarks will be exported.</span>
+                <br />
+                <span>
+                  Use the checkboxes to select individual bookmarks to export.
+                </span>
+              </>
+            ) : (
+              'Only selected bookmarks will be exported.'
+            )}
           </Alert>
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <Typography>Format to download:</Typography>

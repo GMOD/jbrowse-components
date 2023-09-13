@@ -10,7 +10,7 @@ import {
   ListItem,
 } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
-import { assembleLocString } from '@jbrowse/core/util'
+import { assembleLocString, getSession } from '@jbrowse/core/util'
 
 // icons
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -39,7 +39,17 @@ function DeleteBookmarks({ model }: { model: GridBookmarkModel }) {
       >
         <DialogContent>
           <Alert severity="warning">
-            {deleteAll ? 'Delete all bookmarks?' : 'Delete selected bookmarks?'}
+            {deleteAll ? (
+              <>
+                <span>All bookmarks will be deleted.</span>
+                <br />
+                <span>
+                  Use the checkboxes to select individual bookmarks to delete.
+                </span>
+              </>
+            ) : (
+              'Only selected bookmarks will be deleted.'
+            )}
           </Alert>
           <List dense>
             {selectedBookmarks.map(
@@ -70,6 +80,10 @@ function DeleteBookmarks({ model }: { model: GridBookmarkModel }) {
               }
               model.clearSelectedBookmarks()
               setDialogOpen(false)
+              getSession(model).notify(
+                'Bookmarks have been successfully deleted',
+                'success',
+              )
             }}
           >
             Confirm

@@ -2,11 +2,20 @@ import React, { useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 
-import { Button } from '@mui/material'
+import {
+  Alert,
+  Button,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  TextField,
+  Typography,
+} from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import copy from 'copy-to-clipboard'
 
 import { getSession } from '@jbrowse/core/util'
+import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import { shareSessionToDynamo } from '@jbrowse/web/src/sessionSharing'
 
@@ -20,10 +29,14 @@ const useStyles = makeStyles()(() => ({
 }))
 
 function ShareBookmarks({ model }: { model: GridBookmarkModel }) {
+  const { classes } = useStyles()
+  const [dialogOpen, setDialogOpen] = useState(false)
   const [url, setUrl] = useState('')
+  const [error, setError] = useState<unknown>()
   const [loading, setLoading] = useState(true)
   const session = getSession(model)
   const { selectedBookmarks } = model
+  const shareAll = selectedBookmarks.length === 0
   const bookmarksToShare =
     selectedBookmarks.length === 0
       ? model.allBookmarksModel
@@ -68,13 +81,69 @@ function ShareBookmarks({ model }: { model: GridBookmarkModel }) {
       <Button
         disabled={loading}
         startIcon={<ContentCopyIcon />}
-        onClick={async () => {
-          copy(url)
-          session.notify('Copied to clipboard', 'success')
-        }}
+        onClick={() => setDialogOpen(true)}
       >
         Share
       </Button>
+      <Dialog
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        title="Share bookmarks"
+      >
+        <DialogContent
+          style={{ display: 'flex', flexFlow: 'column', gap: '5px' }}
+        >
+          <Alert severity="info">
+            {shareAll ? (
+              <>
+                <span>All bookmarks will be shared.</span>
+                <br />
+                <span>
+                  Use the checkboxes to select individual bookmarks to share.
+                </span>
+              </>
+            ) : (
+              'Only selected bookmarks will be shared.'
+            )}
+          </Alert>
+          <DialogContentText>
+            Copy the URL below to share your bookmarks.
+          </DialogContentText>
+          {error ? (
+            <ErrorMessage error={error} />
+          ) : loading ? (
+            <Typography>Generating short URL...</Typography>
+          ) : (
+            <TextField
+              label="URL"
+              value={url}
+              InputProps={{ readOnly: true }}
+              variant="filled"
+              fullWidth
+              onClick={event => {
+                const target = event.target as HTMLTextAreaElement
+                target.select()
+              }}
+            />
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button
+            className={classes.flexItem}
+            data-testid="dialogShare"
+            variant="contained"
+            color="primary"
+            startIcon={<ContentCopyIcon />}
+            onClick={async () => {
+              copy(url)
+              session.notify('Copied to clipboard', 'success')
+              setDialogOpen(false)
+            }}
+          >
+            Copy share link to clipboard
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   )
 }

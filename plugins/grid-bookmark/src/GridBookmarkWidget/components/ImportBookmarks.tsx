@@ -191,6 +191,10 @@ function ImportBookmarks({ model }: { model: GridBookmarkModel }) {
                   model.importBookmarks(regions)
                   setDialogOpen(false)
                 }
+                session.notify(
+                  'Bookmarks have successfully been imported',
+                  'success',
+                )
               } catch (e) {
                 console.error(e)
                 setError(e)
