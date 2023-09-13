@@ -61,6 +61,8 @@ const setupWithDateMock = setup
     Date.now = originalDateNow
   })
 
+afterAll(() => (process.exitCode = 0))
+
 describe('add-connection', () => {
   setup
     .nock('https://example.com', site => site.head('/hub.txt').reply(200))

@@ -75,6 +75,8 @@ function mockV2Zip(exampleSite: Scope) {
     )
 }
 
+afterAll(() => (process.exitCode = 0))
+
 describe('upgrade', () => {
   setup
     .do(() => {

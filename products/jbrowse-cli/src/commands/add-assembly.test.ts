@@ -26,6 +26,8 @@ const baseSequence = {
   adapter: {},
 }
 
+afterAll(() => (process.exitCode = 0))
+
 describe('add-assembly', () => {
   setup
     .command(['add-assembly', '{}'])

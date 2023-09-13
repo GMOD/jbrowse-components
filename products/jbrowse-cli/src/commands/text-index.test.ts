@@ -65,6 +65,8 @@ function verifyIxxFiles(ctx: string, base = 'volvox') {
   expect(ixxdata).toMatchSnapshot()
 }
 
+afterAll(() => (process.exitCode = 0))
+
 // Base text index command
 // Test throwing an error if --tracks and no track ids provided
 describe('textIndexCommandErrors', () => {

@@ -75,6 +75,8 @@ const setupWithAddTrack = setup
   })
   .command(['add-track', simpleBam, '--load', 'copy'])
 
+afterAll(() => (process.exitCode = 0))
+
 describe('set-default-session', () => {
   setup
     .do(async ctx => {

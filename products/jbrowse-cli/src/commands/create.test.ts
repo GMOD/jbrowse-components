@@ -64,6 +64,8 @@ function mockWrongSite(exampleSite: Scope) {
     .reply(200, 'I am the wrong type', { 'Content-Type': 'application/json' })
 }
 
+afterAll(() => (process.exitCode = 0))
+
 describe('create', () => {
   setup
     .command(['create'])

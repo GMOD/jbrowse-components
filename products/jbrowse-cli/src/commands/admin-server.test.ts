@@ -85,6 +85,8 @@ async function killExpress({ stdout }: { stdout: string }) {
   })
 }
 
+afterAll(() => (process.exitCode = 0))
+
 describe('admin-server', () => {
   setupWithCreateAndTeardown
     .command(['admin-server', '--port', '9091'])

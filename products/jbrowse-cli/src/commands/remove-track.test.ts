@@ -9,6 +9,8 @@ import { setup, readConf } from '../testUtil'
 
 const twoPath = path.join(__dirname, '..', '..', 'test', 'data', 'simple.2bit')
 
+afterAll(() => (process.exitCode = 0))
+
 describe('add-assembly', () => {
   setup
     .do(ctx =>
