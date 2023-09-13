@@ -9,6 +9,7 @@ import BookmarkGrid from './BookmarkGrid'
 import DeleteBookmarks from './DeleteBookmarks'
 import ExportBookmarks from './ExportBookmarks'
 import ImportBookmarks from './ImportBookmarks'
+import AssemblySelector from './AssemblySelector'
 
 import { GridBookmarkModel } from '../model'
 
@@ -30,7 +31,7 @@ function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
   }
 
   return (
-    <Card className={classes.card}>
+    <div className={classes.card}>
       <div>
         <ExportBookmarks model={model} />
         <ImportBookmarks model={model} />
@@ -40,8 +41,9 @@ function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
         Click or double click the <strong>label</strong> field to notate your
         bookmark.
       </Alert>
+      <AssemblySelector model={model} />
       <BookmarkGrid model={model} />
-    </Card>
+    </div>
   )
 }
 

@@ -10,7 +10,11 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { Region } from '@jbrowse/core/util/types'
 import { Region as RegionModel, ElementId } from '@jbrowse/core/util/types/mst'
 
-import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
+import {
+  getSession,
+  localStorageGetItem,
+  localStorageSetItem,
+} from '@jbrowse/core/util'
 import { autorun } from 'mobx'
 
 const LabeledRegionModel = types
@@ -122,7 +126,15 @@ export default function f(_pluginManager: PluginManager) {
         ]
       },
     }))
+    .volatile(self => ({
+      selectedAssemblies: self.assemblies.filter((assembly: string) =>
+        getSession(self).assemblyNames.includes(assembly),
+      ),
+    }))
     .actions(self => ({
+      setSelectedAssemblies(assemblies: string[]) {
+        self.selectedAssemblies = assemblies
+      },
       afterAttach() {
         addDisposer(
           self,

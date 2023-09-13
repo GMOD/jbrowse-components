@@ -9,7 +9,12 @@ import {
   TextField,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { DataGrid, GridRowId, GridRowSelectionModel } from '@mui/x-data-grid'
+import {
+  DataGrid,
+  GRID_CHECKBOX_SELECTION_COL_DEF,
+  GridRowId,
+  GridRowSelectionModel,
+} from '@mui/x-data-grid'
 import {
   getSession,
   assembleLocString,
@@ -37,14 +42,16 @@ const BookmarkGrid = ({ model }: { model: GridBookmarkModel }) => {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [dialogRow, setDialogRow] = useState<IExtendedLabeledRegionModel>()
   const [newLabel, setNewLabel] = useState<string>()
-  const { bookmarkedRegions } = model
+  const { bookmarkedRegions, selectedAssemblies } = model
   const [rowSelectionModel, setRowSelectionModel] =
     useState<GridRowSelectionModel>([])
   const session = getSession(model)
   const { assemblyNames, views } = session
 
   const bookmarkRows = bookmarkedRegions
-    .filter((r: ILabeledRegionModel) => assemblyNames.includes(r.assemblyName))
+    .filter((r: ILabeledRegionModel) =>
+      selectedAssemblies.includes(r.assemblyName),
+    )
     .map((region, index) => {
       const { assemblyName, ...rest } = region
       return {
@@ -67,6 +74,11 @@ const BookmarkGrid = ({ model }: { model: GridBookmarkModel }) => {
         density="compact"
         rows={bookmarkRows}
         columns={[
+          {
+            ...GRID_CHECKBOX_SELECTION_COL_DEF,
+            minWidth: 40,
+            width: 40,
+          },
           {
             field: 'locString',
             headerName: 'Bookmark link',
