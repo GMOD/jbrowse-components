@@ -6,7 +6,11 @@ import { makeStyles } from 'tss-react/mui'
 import { DotplotViewModel } from '../model'
 import { locstr } from './util'
 import { Portal, alpha } from '@mui/material'
-import { usePopper } from 'react-popper'
+import {
+  useFloating,
+  useClientPoint,
+  useInteractions,
+} from '@floating-ui/react'
 
 function round(value: number) {
   return Math.round(value * 1e5) / 1e5
@@ -47,53 +51,23 @@ export const TooltipWhereMouseovered = observer(function ({
 }) {
   const { classes } = useStyles()
   const { hview, vview, viewHeight } = model
-  const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null)
-  const ref = useRef<HTMLDivElement>(null)
-  const rect = ref.current?.getBoundingClientRect() || blank
-  const offset = 6
-  const w = rect.height + offset * 2
 
-  // must be memoized a la https://github.com/popperjs/react-popper/issues/391
-  const virtElement = useMemo(
-    () => ({
-      getBoundingClientRect: () => {
-        const x = offset + (mouserectClient?.[0] || 0) - (xdistance < 0 ? w : 0)
-        const y = offset + (mouserectClient?.[1] || 0) - (ydistance < 0 ? w : 0)
-        return {
-          top: y,
-          left: x,
-          bottom: y,
-          right: x,
-          width: 0,
-          height: 0,
-          x,
-          y,
-          toJSON() {},
-        }
-      },
-    }),
-    [mouserectClient, xdistance, ydistance, w],
-  )
-  const { styles, attributes } = usePopper(virtElement, anchorEl, {
-    placement: xdistance < 0 ? 'left' : 'right',
-  })
+  const { refs, context } = useFloating()
+  const clientPoint = useClientPoint(context)
+  const { getReferenceProps, getFloatingProps } = useInteractions([clientPoint])
   return (
     <>
       {mouserect ? (
-        <Portal>
-          <div
-            ref={setAnchorEl}
-            className={classes.tooltip}
-            // zIndex needed to go over widget drawer
-            style={{ ...styles.popper, zIndex: 100000 }}
-            {...attributes.popper}
-          >
-            {`x - ${locstr(mouserect[0], hview)}`}
-            <br />
-            {`y - ${locstr(viewHeight - mouserect[1], vview)}`}
-            <br />
-          </div>
-        </Portal>
+        <div
+          ref={refs.setFloating}
+          className={classes.tooltip}
+          {...getFloatingProps()}
+        >
+          {`x - ${locstr(mouserect[0], hview)}`}
+          <br />
+          {`y - ${locstr(viewHeight - mouserect[1], vview)}`}
+          <br />
+        </div>
       ) : null}
     </>
   )
@@ -116,7 +90,7 @@ export const TooltipWhereClicked = observer(function ({
   const { hview, vview, viewHeight } = model
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null)
 
-  // must be memoized a la https://github.com/popperjs/react-popper/issues/391
+  // must be memoized a la https://github.com/popperjs/@floating-ui/react/issues/391
   const virtElement = useMemo(
     () => ({
       getBoundingClientRect: () => {
@@ -137,7 +111,7 @@ export const TooltipWhereClicked = observer(function ({
     }),
     [mousedownClient, xdistance, ydistance],
   )
-  const { styles, attributes } = usePopper(virtElement, anchorEl, {
+  const { styles, attributes } = useFloating(virtElement, anchorEl, {
     placement: xdistance < 0 ? 'right' : 'left',
   })
   return (

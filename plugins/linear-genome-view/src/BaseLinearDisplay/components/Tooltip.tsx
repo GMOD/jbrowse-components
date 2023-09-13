@@ -4,7 +4,7 @@ import { SanitizedHTML } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 import { Portal, alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { usePopper } from 'react-popper'
+import { useFloating } from '@floating-ui/react'
 
 // locals
 import { BaseLinearDisplayModel } from '../models/BaseLinearDisplayModel'
@@ -60,7 +60,7 @@ const Tooltip = observer(
     const [width, setWidth] = useState(0)
     const [popperElt, setPopperElt] = useState<HTMLDivElement | null>(null)
 
-    // must be memoized a la https://github.com/popperjs/react-popper/issues/391
+    // must be memoized a la https://github.com/popperjs/@floating-ui/react/issues/391
     const virtElement = useMemo(
       () => ({
         getBoundingClientRect: () => {
@@ -81,7 +81,7 @@ const Tooltip = observer(
       }),
       [clientMouseCoord, width],
     )
-    const { styles, attributes } = usePopper(virtElement, popperElt)
+    const { styles, attributes } = useFloating(virtElement, popperElt)
 
     const contents = featureUnderMouse
       ? getConf(model, 'mouseover', { feature: featureUnderMouse })

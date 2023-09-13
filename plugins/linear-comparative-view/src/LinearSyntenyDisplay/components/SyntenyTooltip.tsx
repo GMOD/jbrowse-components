@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react'
 import { observer } from 'mobx-react'
 import { Portal, alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { usePopper } from 'react-popper'
+import { useFloating } from '@floating-ui/react'
 import { SanitizedHTML } from '@jbrowse/core/ui'
 
 function round(value: number) {
@@ -40,7 +40,7 @@ const SyntenyTooltip = observer(function ({
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null)
   const { classes } = useStyles()
 
-  // must be memoized a la https://github.com/popperjs/react-popper/issues/391
+  // must be memoized a la https://github.com/popperjs/@floating-ui/react/issues/391
   const virtElement = useMemo(
     () => ({
       getBoundingClientRect: () => {
@@ -59,7 +59,7 @@ const SyntenyTooltip = observer(function ({
     }),
     [x, y, width],
   )
-  const { styles, attributes } = usePopper(virtElement, anchorEl)
+  const { styles, attributes } = useFloating(virtElement, anchorEl)
 
   return title ? (
     <Portal>
