@@ -20,6 +20,8 @@ import { GridBookmarkModel, IExtendedLabeledRegionModel } from '../model'
 
 function DeleteBookmarks({ model }: { model: GridBookmarkModel }) {
   const [dialogOpen, setDialogOpen] = useState(false)
+  const { selectedBookmarks } = model
+  const deleteAll = selectedBookmarks.length === 0
 
   return (
     <>
@@ -27,19 +29,20 @@ function DeleteBookmarks({ model }: { model: GridBookmarkModel }) {
         startIcon={<DeleteIcon />}
         aria-label="clear bookmarks"
         onClick={() => setDialogOpen(true)}
-        disabled={model.selectedBookmarks.length === 0}
       >
-        Delete selected bookmarks
+        Delete
       </Button>
       <Dialog
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
-        title="Delete selected bookmarks"
+        title="Delete bookmarks"
       >
         <DialogContent>
-          <Alert severity="warning">Delete selected bookmarks?</Alert>
+          <Alert severity="warning">
+            {deleteAll ? 'Delete all bookmarks?' : 'Delete selected bookmarks?'}
+          </Alert>
           <List dense>
-            {model.selectedBookmarks.map(
+            {selectedBookmarks.map(
               (bookmark: IExtendedLabeledRegionModel, index: number) => (
                 <ListItem key={`${index}-${assembleLocString(bookmark)}`}>
                   <ListItemText primary={assembleLocString(bookmark)} />
@@ -62,6 +65,9 @@ function DeleteBookmarks({ model }: { model: GridBookmarkModel }) {
             variant="contained"
             color="primary"
             onClick={() => {
+              if (deleteAll) {
+                model.clearAllBookmarks()
+              }
               model.clearSelectedBookmarks()
               setDialogOpen(false)
             }}

@@ -12,7 +12,6 @@ import {
   ListItemIcon,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { getSession } from '@jbrowse/core/util'
 
 // locals
 import { GridBookmarkModel } from '../model'
@@ -25,11 +24,7 @@ const useStyles = makeStyles()(() => ({
 
 function AssemblySelector({ model }: { model: GridBookmarkModel }) {
   const { classes } = useStyles()
-  const { assemblyNames } = getSession(model)
-  const validAssemblies = model.assemblies.filter((assembly: string) =>
-    assemblyNames.includes(assembly),
-  )
-  const { selectedAssemblies, setSelectedAssemblies } = model
+  const { validAssemblies, selectedAssemblies, setSelectedAssemblies } = model
   const noAssemblies = validAssemblies.length === 0 ? true : false
   const label = 'Select assemblies'
   const isAllSelected =

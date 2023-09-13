@@ -46,7 +46,7 @@ const BookmarkGrid = ({ model }: { model: GridBookmarkModel }) => {
   const [rowSelectionModel, setRowSelectionModel] =
     useState<GridRowSelectionModel>([])
   const session = getSession(model)
-  const { assemblyNames, views } = session
+  const { views } = session
 
   const bookmarkRows = bookmarkedRegions
     .filter((r: ILabeledRegionModel) =>

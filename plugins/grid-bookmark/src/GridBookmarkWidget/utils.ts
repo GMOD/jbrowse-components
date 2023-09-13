@@ -59,13 +59,17 @@ export function downloadBookmarkFile(
   fileFormat: string,
   model: GridBookmarkModel,
 ) {
-  const { selectedBookmarks } = model
+  const { selectedBookmarks, bookmarksWithValidAssemblies } = model
+  const bookmarksToDownload =
+    selectedBookmarks.length === 0
+      ? bookmarksWithValidAssemblies
+      : selectedBookmarks
 
   if (fileFormat === 'BED') {
     const fileHeader = ''
     const fileContents: Record<string, string[]> = {}
-
-    selectedBookmarks.forEach(bookmark => {
+    console.log(bookmarksWithValidAssemblies)
+    bookmarksToDownload.forEach(bookmark => {
       const { label } = bookmark
       const labelVal = label === '' ? '.' : label
       const line = `${bookmark.refName}\t${bookmark.start}\t${bookmark.end}\t${labelVal}\n`
@@ -90,7 +94,7 @@ export function downloadBookmarkFile(
     // TSV
     const fileHeader = 'chrom\tstart\tend\tlabel\tassembly_name\tcoord_range\n'
 
-    const fileContents = selectedBookmarks
+    const fileContents = bookmarksToDownload
       .map(bookmark => {
         const { label } = bookmark
         const labelVal = label === '' ? '.' : label

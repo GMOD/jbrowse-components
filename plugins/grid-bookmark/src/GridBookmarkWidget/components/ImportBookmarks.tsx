@@ -56,7 +56,7 @@ function ImportBookmarks({ model }: { model: GridBookmarkModel }) {
   const handleShareLink = async () => {
     const defaultURL = 'https://share.jbrowse.org/api/v1/'
     const urlParams = new URL(shareLink)
-    const sessionQueryParam = urlParams.searchParams.get('session')
+    const sessionQueryParam = urlParams.searchParams.get('bookmarks')
     const password = urlParams.searchParams.get('password')
     const decryptedSession = await readSessionFromDynamo(
       `${session.shareURL ?? defaultURL}load`,

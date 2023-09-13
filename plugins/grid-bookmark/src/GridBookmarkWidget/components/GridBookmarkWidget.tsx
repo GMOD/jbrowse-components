@@ -1,7 +1,6 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { observer } from 'mobx-react'
-import { Alert, Card } from '@mui/material'
-import { useLocalStorage } from '@jbrowse/core/util'
+import { Alert } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
 // locals
@@ -10,6 +9,7 @@ import DeleteBookmarks from './DeleteBookmarks'
 import ExportBookmarks from './ExportBookmarks'
 import ImportBookmarks from './ImportBookmarks'
 import AssemblySelector from './AssemblySelector'
+import ShareBookmarks from './ShareBookmarks'
 
 import { GridBookmarkModel } from '../model'
 
@@ -35,6 +35,7 @@ function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
       <div>
         <ExportBookmarks model={model} />
         <ImportBookmarks model={model} />
+        <ShareBookmarks model={model} />
         <DeleteBookmarks model={model} />
       </div>
       <Alert severity="info">

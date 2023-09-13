@@ -88,17 +88,6 @@ export default function f(_pluginManager: PluginManager) {
       removeBookmark(index: number) {
         self.bookmarkedRegions.splice(index, 1)
       },
-      clearAllBookmarks() {
-        self.bookmarkedRegions.clear()
-      },
-      clearSelectedBookmarks() {
-        self.selectedBookmarks.forEach(
-          (selectedBookmark: IExtendedLabeledRegionModel) => {
-            self.bookmarkedRegions.remove(selectedBookmark.correspondingObj)
-          },
-        )
-        self.selectedBookmarks = []
-      },
       updateBookmarkLabel(
         bookmark: IExtendedLabeledRegionModel,
         label: string,
@@ -125,6 +114,27 @@ export default function f(_pluginManager: PluginManager) {
           ...new Set(self.bookmarkedRegions.map(region => region.assemblyName)),
         ]
       },
+      get validAssemblies() {
+        return [
+          ...new Set(
+            this.assemblies.filter((assembly: string) =>
+              getSession(self).assemblyNames.includes(assembly),
+            ),
+          ),
+        ]
+      },
+      get bookmarksWithValidAssemblies() {
+        return (
+          JSON.parse(
+            JSON.stringify(self.bookmarkedRegions),
+          ) as unknown as ILabeledRegionModel[]
+        ).filter(ele => this.validAssemblies.includes(ele.assemblyName))
+      },
+      get allBookmarksModel() {
+        return SharedBookmarksModel.create({
+          sharedBookmarks: this.bookmarksWithValidAssemblies,
+        })
+      },
     }))
     .volatile(self => ({
       selectedAssemblies: self.assemblies.filter((assembly: string) =>
@@ -134,6 +144,21 @@ export default function f(_pluginManager: PluginManager) {
     .actions(self => ({
       setSelectedAssemblies(assemblies: string[]) {
         self.selectedAssemblies = assemblies
+      },
+      clearAllBookmarks() {
+        self.bookmarkedRegions.forEach(bookmark => {
+          if (self.validAssemblies.includes(bookmark.assemblyName)) {
+            self.bookmarkedRegions.remove(bookmark)
+          }
+        })
+      },
+      clearSelectedBookmarks() {
+        self.selectedBookmarks.forEach(
+          (selectedBookmark: IExtendedLabeledRegionModel) => {
+            self.bookmarkedRegions.remove(selectedBookmark.correspondingObj)
+          },
+        )
+        self.selectedBookmarks = []
       },
       afterAttach() {
         addDisposer(
