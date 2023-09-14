@@ -27,13 +27,6 @@ const ModificationsDlg = lazy(() => import('./components/ColorByModifications'))
 
 type LGV = LinearGenomeViewModel
 
-export interface Filter {
-  flagInclude: number
-  flagExclude: number
-  readName?: string
-  tagFilter?: { tag: string; value: string }
-}
-
 /**
  * #stateModel LinearPileupDisplay
  * #category display
@@ -360,10 +353,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               return
             }
 
-            const { sortedBy, adapterConfig, rendererType } = self
+            const { sortedBy, adapterConfig, rendererType, sortReady } = self
             const { bpPerPx } = view
 
-            if (sortedBy) {
+            if (
+              sortedBy &&
+              (!sortReady || self.currSortBpPerPx === view.bpPerPx)
+            ) {
               const { pos, refName, assemblyName } = sortedBy
               // render just the sorted region first
               // @ts-expect-error

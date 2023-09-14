@@ -2,6 +2,7 @@ import { bpSpanPx, measureText } from '@jbrowse/core/util'
 import { Mismatch } from '../MismatchParser'
 import { fillRect, LayoutFeature } from './util'
 import { RenderArgsWithColor } from './makeImageData'
+import { colord } from '@jbrowse/core/util/colord'
 
 export function renderMismatches({
   ctx,
@@ -32,7 +33,7 @@ export function renderMismatches({
   charHeight: number
   canvasWidth: number
 }) {
-  const { Color, bpPerPx, regions } = renderArgs
+  const { bpPerPx, regions } = renderArgs
   const { heightPx, topPx, feature } = feat
   const [region] = regions
   const start = feature.get('start')
@@ -63,10 +64,9 @@ export function renderMismatches({
         const c = mismatchAlpha
           ? mismatch.qual === undefined
             ? baseColor
-            : Color(baseColor)
+            : colord(baseColor)
                 .alpha(Math.min(1, mismatch.qual / 50))
-                .hsl()
-                .string()
+                .toHslString()
           : baseColor
 
         fillRect(
@@ -88,10 +88,9 @@ export function renderMismatches({
         ctx.fillStyle = mismatchAlpha
           ? mismatch.qual === undefined
             ? contrastColor
-            : Color(contrastColor)
+            : colord(contrastColor)
                 .alpha(Math.min(1, mismatch.qual / 50))
-                .hsl()
-                .string()
+                .toHslString()
           : contrastColor
         ctx.fillText(
           mbase,

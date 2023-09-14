@@ -23,7 +23,7 @@ here, everything will use it.
 // type signature
 IOptionalIType<ISimpleType<string>, [undefined]>
 // code
-id: types.optional(types.identifier, shortid())
+id: types.optional(types.identifier, nanoid())
 ```
 
 #### property: name

@@ -15,6 +15,7 @@ const base = path.join(__dirname, '..', '..', 'test', 'data')
 const simpleBam = path.join(base, 'simple.bam')
 const simpleBai = path.join(base, 'simple.bai')
 const simpleGff = path.join(base, 'volvox.sort.gff3')
+const simpleBed = path.join(base, 'volvox.bed')
 const simplePaf = path.join(base, 'volvox_inv_indels.paf')
 const simplePafGz = path.join(base, 'volvox_inv_indels.paf.gz')
 const simpleDelta = path.join(base, 'volvox_inv_indels.delta')
@@ -891,6 +892,28 @@ describe('add-track', () => {
                 locationType: 'UriLocation',
               },
               indexType: 'TBI',
+            },
+          },
+        },
+      ])
+    })
+
+  setup
+    .do(initctx)
+    .command(['add-track', simpleBed, '--load', 'copy'])
+    .it('adds a bed track', async ctx => {
+      expect(exists(ctxDir(ctx, 'volvox.bed'))).toBeTruthy()
+      expect(readConf(ctx).tracks).toEqual([
+        {
+          type: 'FeatureTrack',
+          trackId: 'volvox',
+          name: 'volvox',
+          assemblyNames: ['testAssembly'],
+          adapter: {
+            type: 'BedAdapter',
+            bedLocation: {
+              uri: 'volvox.bed',
+              locationType: 'UriLocation',
             },
           },
         },

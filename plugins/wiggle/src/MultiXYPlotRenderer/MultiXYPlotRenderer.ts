@@ -11,7 +11,6 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
   async draw(ctx: CanvasRenderingContext2D, props: MultiArgs) {
     const { sources, features } = props
     const groups = groupBy([...features.values()], f => f.get('source'))
-    const Color = await import('color').then(f => f.default)
     let feats = [] as Feature[]
     for (const source of sources) {
       const features = groups[source.name]
@@ -23,7 +22,6 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
         features,
         offset: YSCALEBAR_LABEL_OFFSET,
         colorCallback: () => source.color || 'blue',
-        Color,
       })
       feats = [...feats, ...reducedFeatures]
     }

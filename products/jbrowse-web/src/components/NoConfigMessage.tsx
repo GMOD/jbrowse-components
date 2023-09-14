@@ -1,5 +1,4 @@
 import React from 'react'
-import { inDevelopment } from '@jbrowse/core/util'
 
 export default function NoConfigMessage() {
   const links = [
@@ -21,8 +20,8 @@ export default function NoConfigMessage() {
     ['test_data/wgbs/config.json', 'WGBS methylation'],
     ['test_data/methylation_test/config.json', 'Nanopore methylation'],
     ['test_data/volvox/config_main_thread.json', 'Volvox (mainthreadrpc)'],
-    ['test_data/volvox/config_auth.json', 'Volvox (auth)'],
     ['test_data/volvox/config_auth_main.json', 'Volvox (auth, mainthreadrpc)'],
+    ['test_data/volvox/config_auth.json', 'Volvox (auth)'],
     ['test_data/volvoxhub/config.json', 'Volvox (with ucsc-hub)'],
   ]
   const { href, search } = window.location
@@ -30,41 +29,22 @@ export default function NoConfigMessage() {
   const root = href.split('?')[0]
   return (
     <div>
-      <h4>
-        Configuration not found. You may have arrived here if you requested a
-        config that does not exist or you have not set up your JBrowse yet.
-      </h4>
-      {inDevelopment ? (
-        <>
-          <div>Sample JBrowse configs:</div>
-          <ul>
-            {links.map(([link, name]) => {
-              const params = new URLSearchParams(
-                Object.entries({
-                  ...rest,
-                  config: link,
-                }),
-              )
-              return (
-                <li key={name}>
-                  <a href={`${root}?${params}`}>{name}</a>
-                </li>
-              )
-            })}
-          </ul>
-        </>
-      ) : (
-        <>
-          <div>Sample JBrowse config:</div>
-          <ul>
-            <li>
-              <a href="?config=test_data/volvox/config.json">
-                Volvox sample data
-              </a>
+      <div>Sample JBrowse configs:</div>
+      <ul>
+        {links.map(([link, name]) => {
+          const params = new URLSearchParams(
+            Object.entries({
+              ...rest,
+              config: link,
+            }),
+          )
+          return (
+            <li key={name}>
+              <a href={`${root}?${params}`}>{name}</a>
             </li>
-          </ul>
-        </>
-      )}
+          )
+        })}
+      </ul>
     </div>
   )
 }

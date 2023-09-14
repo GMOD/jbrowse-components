@@ -1274,6 +1274,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "type": "ChordVariantDisplay",
         },
       ],
+      "formatAbout": {
+        "hideUris": true,
+      },
       "name": "volvox 1000genomes vcf",
       "trackId": "volvox_test_vcf",
       "type": "VariantTrack",

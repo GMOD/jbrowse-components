@@ -1,8 +1,7 @@
 import React from 'react'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, stripAlpha } from '@jbrowse/core/util'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import { useTheme } from '@mui/material'
-import Color from 'color'
 
 // locals
 import { LinearGenomeViewModel, HEADER_OVERVIEW_HEIGHT } from '..'
@@ -27,7 +26,7 @@ export default function SVGHeader({
   const assemblyName = assemblyNames.length > 1 ? '' : assemblyNames[0]
   const assembly = assemblyManager.get(assemblyName)
   const theme = useTheme()
-  const c = Color(theme.palette.text.primary).hex()
+  const c = stripAlpha(theme.palette.text.primary)
   const overview = Base1DView.create({
     displayedRegions: JSON.parse(JSON.stringify(displayedRegions)),
     interRegionPaddingWidth: 0,

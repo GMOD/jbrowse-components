@@ -79,22 +79,21 @@
     "@mui/icons-material": "^5.0.0",
     "@mui/material": "^5.10.17",
     "@mui/x-data-grid": "^6.0.1",
-    "camelcase": "^6.2.1",
     "clone": "^2.1.2",
     "deepmerge": "^4.2.2",
     "electron-debug": "^3.0.1",
     "electron-is-dev": "^2.0.0",
     "electron-updater": "^6.1.1",
     "electron-window-state": "^5.0.3",
-    "mobx": "^6.6.0",
-    "mobx-react": "^7.5.0",
+    "mobx": "^6.0.0",
+    "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",
     "node-fetch": "^2.6.0",
     "prompts": "^2.4.2",
     "prop-types": "^15.7.2",
-    "react": "^17.0.0",
+    "react": "^18.0.0",
     "react-dev-utils": "^12.0.1",
-    "react-dom": "^17.0.0",
+    "react-dom": "^18.0.0",
     "react-error-boundary": "^4.0.3",
     "resolve": "^1.20.0",
     "rxjs": "^7.0.0",
@@ -105,13 +104,13 @@
     "use-query-params": "^2.0.0"
   },
   "devDependencies": {
-    "electron": "25.5.0"
+    "electron": "26.2.0"
   },
   "browserslist": [
     "last 1 chrome version"
   ],
   "build": {
-    "electronVersion": "25.5.0",
+    "electronVersion": "26.2.0",
     "extraMetadata": {
       "main": "build/electron.js"
     },

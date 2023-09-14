@@ -14,7 +14,7 @@ export function colorByInsertSize(feature: Feature) {
 }
 
 export function colorByMappingQuality(feature: Feature) {
-  return `hsl(${feature.get('mq')},50%,50%)`
+  return `hsl(${feature.get('score')},50%,50%)`
 }
 
 function getOrientation(feature: Feature, config: AnyConfigurationModel) {

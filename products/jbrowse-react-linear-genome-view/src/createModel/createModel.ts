@@ -1,3 +1,4 @@
+import React from 'react'
 import assemblyManagerFactory, {
   assemblyConfigSchemaFactory,
 } from '@jbrowse/core/assemblyManager'
@@ -20,6 +21,12 @@ export default function createModel(
   makeWorkerInstance: () => Worker = () => {
     throw new Error('no makeWorkerInstance supplied')
   },
+
+  hydrateFn?: (
+    container: Element | Document,
+    initialChildren: React.ReactNode,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ) => any,
 ) {
   const pluginManager = new PluginManager(
     [...corePlugins, ...runtimePlugins].map(P => new P()),
@@ -61,6 +68,7 @@ export default function createModel(
         },
         MainThreadRpcDriver: {},
       }),
+      hydrateFn,
       textSearchManager: new TextSearchManager(pluginManager),
       adminMode: false,
       version,

@@ -215,7 +215,7 @@ setDrawLongRange: (f: boolean) => void
 
 ```js
 // type signature
-setFilterBy: (filter: Filter) => void
+setFilterBy: (filter: IFilter) => void
 ```
 
 #### action: setLineWidth

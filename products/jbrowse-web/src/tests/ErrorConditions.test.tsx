@@ -11,9 +11,13 @@ beforeEach(() => {
 test('404 sequence file', async () => {
   await mockConsole(async () => {
     const { findAllByText } = createViewNoWait(chromeSizesConfig)
-    await findAllByText(/HTTP 404 fetching grape.chrom.sizes.nonexist/)
+    await findAllByText(
+      /HTTP 404 fetching grape.chrom.sizes.nonexist/,
+      {},
+      delay,
+    )
   })
-})
+}, 15000)
 
 test('wrong assembly', async () => {
   await mockConsole(async () => {

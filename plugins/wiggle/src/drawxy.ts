@@ -2,7 +2,24 @@ import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
+import { colord, Colord } from '@jbrowse/core/util/colord'
+// required to import this for typescript purposes
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import mix from 'colord/plugins/mix'
+
 import { clamp, featureSpanPx, Feature, Region } from '@jbrowse/core/util'
+
+function lighten(color: Colord, amount: number) {
+  const hslColor = color.toHsl()
+  const l = hslColor.l * (1 + amount)
+  return colord({ ...hslColor, l: clamp(l, 0, 100) })
+}
+
+function darken(color: Colord, amount: number) {
+  const hslColor = color.toHsl()
+  const l = hslColor.l * (1 - amount)
+  return colord({ ...hslColor, l: clamp(l, 0, 100) })
+}
 
 // locals
 import { getOrigin, getScale, ScaleOpts } from './util'
@@ -31,7 +48,7 @@ function fillRectCtx(
   ctx.fillRect(x, y, width, height)
 }
 
-const fudgeFactor = 0.4
+const fudgeFactor = 0.3
 const clipHeight = 2
 
 export function drawXY(
@@ -47,7 +64,6 @@ export function drawXY(
     displayCrossHatches: boolean
     offset?: number
     colorCallback: (f: Feature, score: number) => string
-    Color: typeof import('color')
   },
 ) {
   const {
@@ -61,7 +77,6 @@ export function drawXY(
     displayCrossHatches,
     offset = 0,
     colorCallback,
-    Color,
   } = props
   const [region] = regions
   const width = (region.end - region.start) / bpPerPx
@@ -106,7 +121,7 @@ export function drawXY(
           ? c
           : c === lastCol
           ? lastMix
-          : (lastMix = Color(c).lighten(0.4).toString())
+          : (lastMix = lighten(colord(c), 0.4).toHex())
         fillRectCtx(leftPx, toY(max), w, getHeight(max), ctx, effectiveC)
         lastCol = c
       }
@@ -124,8 +139,8 @@ export function drawXY(
         crossingOrigin && summary
           ? c === lastCol
             ? lastMix
-            : (lastMix = Color(colorCallback(feature, max))
-                .mix(Color(colorCallback(feature, min)))
+            : (lastMix = colord(colorCallback(feature, max))
+                .mix(colord(colorCallback(feature, min)))
                 .toString())
           : c
       const w = Math.max(rightPx - leftPx + fudgeFactor, minSize)
@@ -151,7 +166,7 @@ export function drawXY(
           ? c
           : c === lastCol
           ? lastMix
-          : (lastMix = Color(c).darken(0.4).toString())
+          : (lastMix = darken(colord(c), 0.4).toHex())
 
         fillRectCtx(leftPx, toY(min), w, getHeight(min), ctx, effectiveC)
         lastCol = c

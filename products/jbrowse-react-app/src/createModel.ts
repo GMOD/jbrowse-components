@@ -1,3 +1,4 @@
+import React from 'react'
 import { PluginConstructor } from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { Instance } from 'mobx-state-tree'
@@ -12,6 +13,11 @@ export default function createModel(
   makeWorkerInstance: () => Worker = () => {
     throw new Error('no makeWorkerInstance supplied')
   },
+  hydrateFn?: (
+    container: Element | Document,
+    initialChildren: React.ReactNode,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ) => any,
 ) {
   const pluginManager = new PluginManager([
     ...corePlugins.map(P => ({ plugin: new P(), metadata: { isCore: true } })),
@@ -23,6 +29,7 @@ export default function createModel(
       pluginManager,
       sessionModelFactory,
       makeWorkerInstance,
+      hydrateFn,
     }),
     pluginManager,
   }

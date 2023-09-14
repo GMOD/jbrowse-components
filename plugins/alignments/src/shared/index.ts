@@ -73,3 +73,10 @@ export const FilterModel = types.model({
     }),
   ),
 })
+
+export interface IFilter {
+  flagExclude: number
+  flagInclude: number
+  readName?: string
+  tagFilter?: { tag: string; value: string }
+}

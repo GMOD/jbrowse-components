@@ -1,4 +1,4 @@
-import '@testing-library/jest-dom/extend-expect'
+import '@testing-library/jest-dom'
 import { fireEvent, waitFor } from '@testing-library/react'
 import { doBeforeEach, createView, setup, mockConsoleWarn } from './util'
 
@@ -8,7 +8,7 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-const delay = { timeout: 20000 }
+const delay = { timeout: 40000 }
 
 test(
   'opens a vcf.gz file in the sv inspector view',
@@ -39,5 +39,5 @@ test(
 
       consoleMock.mockRestore()
     }),
-  30000,
+  60000,
 )

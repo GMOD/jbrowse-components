@@ -17,6 +17,7 @@ export {
   WithShowTrack,
   WithWebWorker,
   WithTwoLinearGenomeViews,
+  WithReact18,
 } from './examples'
 
 export default { title: 'Source code for examples' }

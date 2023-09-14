@@ -79,6 +79,15 @@ IOptionalIType<IModelType<{ flagInclude: IOptionalIType<ISimpleType<number>, [un
 filterBy: types.optional(FilterModel, {})
 ```
 
+#### property: jexlFilters
+
+```js
+// type signature
+IOptionalIType<IArrayType<ISimpleType<string>>, [undefined]>
+// code
+jexlFilters: types.optional(types.array(types.string), [])
+```
+
 ### SharedLinearPileupDisplayMixin - Getters
 
 #### getter: rendererConfig
@@ -114,6 +123,13 @@ Feature
 ```js
 // type
 ;() => boolean
+```
+
+#### getter: filters
+
+```js
+// type
+SerializableFilterChain
 ```
 
 #### getter: rendererTypeName
@@ -238,5 +254,12 @@ setConfig: (conf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotNa
 
 ```js
 // type signature
-setFilterBy: (filter: Filter) => void
+setFilterBy: (filter: IFilter) => void
+```
+
+#### action: setJexlFilters
+
+```js
+// type signature
+setJexlFilters: (filters: string[]) => void
 ```

@@ -13,7 +13,7 @@ react component
 
 - [@jbrowse/react-app](https://www.npmjs.com/package/@jbrowse/react-app) jbrowse
   app component on NPM
-- [Storybook](https://jbrowse.org/storybook/lgv/main/) - docs for the app
+- [Storybook](https://jbrowse.org/storybook/app/main/) - docs for the app
   component
 
 Here is a table of different usages of the `@jbrowse/react-app` using different

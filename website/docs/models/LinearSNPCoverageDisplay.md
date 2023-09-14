@@ -75,6 +75,15 @@ colorBy: types.maybe(
         )
 ```
 
+#### property: jexlFilters
+
+```js
+// type signature
+IOptionalIType<IArrayType<ISimpleType<string>>, [undefined]>
+// code
+jexlFilters: types.optional(types.array(types.string), [])
+```
+
 ### LinearSNPCoverageDisplay - Getters
 
 #### getter: rendererConfig
@@ -143,6 +152,13 @@ string
 boolean
 ```
 
+#### getter: filters
+
+```js
+// type
+SerializableFilterChain
+```
+
 ### LinearSNPCoverageDisplay - Methods
 
 #### method: renderProps
@@ -179,7 +195,7 @@ setConfig: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubsche
 
 ```js
 // type signature
-setFilterBy: (filter: { flagInclude: number; flagExclude: number; readName?: string; tagFilter?: { tag: string; value: string; }; }) => void
+setFilterBy: (filter: IFilter) => void
 ```
 
 #### action: setColorBy
@@ -187,6 +203,13 @@ setFilterBy: (filter: { flagInclude: number; flagExclude: number; readName?: str
 ```js
 // type signature
 setColorBy: (colorBy?: { type: string; tag?: string; }) => void
+```
+
+#### action: setJexlFilters
+
+```js
+// type signature
+setJexlFilters: (filters: string[]) => void
 ```
 
 #### action: updateModificationColorMap
