@@ -1,4 +1,4 @@
-import { flags } from '@oclif/command'
+import { Args, Flags } from '@oclif/core'
 import fs from 'fs'
 import path from 'path'
 import parseJSON from 'json-parse-better-errors'
@@ -37,60 +37,59 @@ export default class AddConnection extends JBrowseCommand {
     '$ jbrowse add-connection https://mysite.com/path/to/hub.txt --connectionId newId --name newName --target /path/to/jb2/installation/config.json',
   ]
 
-  static args = [
-    {
-      name: 'connectionUrlOrPath',
+  static args = {
+    connectionUrlOrPath: Args.string({
       required: true,
       description: `URL of data directory\nFor hub file, usually called hub.txt\nFor JBrowse 1, location of JB1 data directory similar to http://mysite.com/jbrowse/data/ `,
-    },
-  ]
+    }),
+  }
 
   static flags = {
-    type: flags.string({
+    type: Flags.string({
       char: 't',
       description:
         'type of connection, ex. JBrowse1Connection, UCSCTrackHubConnection, custom',
     }),
-    assemblyNames: flags.string({
+    assemblyNames: Flags.string({
       char: 'a',
       description:
         'For UCSC, optional: Comma separated list of assembly name(s) to filter from this connection. For JBrowse: a single assembly name',
     }),
-    config: flags.string({
+    config: Flags.string({
       char: 'c',
       description: `Any extra config settings to add to connection in JSON object format, such as '{"uri":"url":"https://sample.com"}, "locationType": "UriLocation"}'`,
     }),
-    connectionId: flags.string({
+    connectionId: Flags.string({
       description: `Id for the connection that must be unique to JBrowse.  Defaults to 'connectionType-assemblyName-currentTime'`,
     }),
-    name: flags.string({
+    name: Flags.string({
       char: 'n',
       description:
         'Name of the connection. Defaults to connectionId if not provided',
     }),
-    target: flags.string({
+    target: Flags.string({
       description:
         'path to config file in JB2 installation directory to write out to.',
     }),
-    out: flags.string({
+    out: Flags.string({
       description: 'synonym for target',
     }),
-    help: flags.help({ char: 'h' }),
-    skipCheck: flags.boolean({
+    help: Flags.help({ char: 'h' }),
+    skipCheck: Flags.boolean({
       description:
         "Don't check whether or not the data directory URL exists or if you are in a JBrowse directory",
     }),
-    overwrite: flags.boolean({
+    overwrite: Flags.boolean({
       description: 'Overwrites any existing connections if same connection id',
     }),
-    force: flags.boolean({
+    force: Flags.boolean({
       char: 'f',
       description: 'Equivalent to `--skipCheck --overwrite`',
     }),
   }
 
   async run() {
-    const { args: runArgs, flags: runFlags } = this.parse(AddConnection)
+    const { args: runArgs, flags: runFlags } = await this.parse(AddConnection)
 
     const output = runFlags.target || runFlags.out || '.'
     const isDir = fs.lstatSync(output).isDirectory()

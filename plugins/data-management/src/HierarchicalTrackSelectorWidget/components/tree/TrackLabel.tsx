@@ -3,6 +3,7 @@ import { Checkbox, FormControlLabel, IconButton, Tooltip } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import JBrowseMenu from '@jbrowse/core/ui/Menu'
 import { getSession } from '@jbrowse/core/util'
+import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import {
   AnyConfigurationModel,
   readConfObject,
@@ -13,7 +14,6 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 
 // locals
 import { isUnsupported, NodeData } from '../util'
-import { SanitizedHTML } from '@jbrowse/core/ui'
 
 const useStyles = makeStyles()(theme => ({
   compactCheckbox: {

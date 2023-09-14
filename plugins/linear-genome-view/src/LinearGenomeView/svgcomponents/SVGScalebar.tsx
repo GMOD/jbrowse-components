@@ -1,7 +1,6 @@
 import React from 'react'
-import { getBpDisplayStr } from '@jbrowse/core/util'
+import { getBpDisplayStr, stripAlpha } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
-import Color from 'color'
 import { LinearGenomeViewModel } from '..'
 
 type LGV = LinearGenomeViewModel
@@ -21,7 +20,7 @@ export default function SVGScalebar({
   const displayBp = getBpDisplayStr(totalBp)
   const x0 = Math.max(-offsetPx, 0)
   const x1 = x0 + totalWidthPx
-  const c = Color(theme.palette.text.secondary).hex()
+  const c = stripAlpha(theme.palette.text.secondary)
   const x = x0 + (x1 - x0) / 2
   const y = fontSize
   return (

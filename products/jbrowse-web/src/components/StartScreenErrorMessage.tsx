@@ -1,29 +1,37 @@
 import React from 'react'
 import { ErrorMessage } from '@jbrowse/core/ui'
 import NoConfigMessage from './NoConfigMessage'
+import { inDevelopment } from '@jbrowse/core/util'
 
 export default function StartScreenErrorMessage({ error }: { error: unknown }) {
   return (
     <>
-      <NoConfigMessage />
       {`${error}`.match(/HTTP 404 fetching config.json/) ? (
-        <div
-          style={{
-            margin: 8,
-            padding: 8,
-            border: '1px solid black',
-            background: '#9f9',
-          }}
-        >
-          No config.json found. If you want to learn how to complete your setup,
-          visit our{' '}
-          <a href="https://jbrowse.org/jb2/docs/quickstart_web/">
-            quick start guide
-          </a>
-          .
+        <div>
+          <h1>It worked!</h1>
+          <p
+            style={{
+              margin: 8,
+              padding: 8,
+              background: '#9f9',
+              border: '1px solid green',
+            }}
+          >
+            JBrowse 2 is installed. Your next step is to add and configure an
+            assembly. Follow our{' '}
+            <a href="https://jbrowse.org/jb2/docs/quickstart_web/">
+              quick start guide
+            </a>{' '}
+            to continue or browse the sample data{' '}
+            <a href="?config=test_data/volvox/config.json">here</a>.
+          </p>
+          {inDevelopment ? <NoConfigMessage /> : null}
         </div>
       ) : (
-        <ErrorMessage error={error} />
+        <div>
+          <h1>JBrowse Error</h1>
+          <ErrorMessage error={error} />
+        </div>
       )}
     </>
   )

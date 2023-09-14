@@ -86,7 +86,7 @@
     "crypto-js": "^3.0.0",
     "file-saver": "^2.0.0",
     "mobx": "^6.6.0",
-    "mobx-react": "^7.5.0",
+    "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",
     "node-polyfill-webpack-plugin": "^2.0.1",
     "pako": "^2.1.0",

@@ -1,4 +1,4 @@
-import '@testing-library/jest-dom/extend-expect'
+import '@testing-library/jest-dom'
 import userEvent from '@testing-library/user-event'
 
 import { waitFor } from '@testing-library/react'
@@ -24,7 +24,7 @@ test('change color on track', async () => {
     await findByTestId('htsTrackEntryMenu-volvox_filtered_vcf', {}, delay),
   )
   await user.click(await findByText('Settings'))
-  const elt = await findByDisplayValue('goldenrod')
+  const elt = await findByDisplayValue('goldenrod', {}, delay)
   await user.clear(elt)
   await user.type(elt, 'green')
 

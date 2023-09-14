@@ -1,3 +1,4 @@
+import React from 'react'
 import { PluginConstructor } from '@jbrowse/core/Plugin'
 import { onPatch, IJsonPatch, SnapshotIn } from 'mobx-state-tree'
 import { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
@@ -35,10 +36,19 @@ export default function createViewState(opts: {
   plugins?: PluginConstructor[]
   onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
   makeWorkerInstance?: () => Worker
+  hydrateFn?: (
+    container: Element | Document,
+    initialChildren: React.ReactNode,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ) => any
 }) {
-  const { config, plugins = [], onChange, makeWorkerInstance } = opts
+  const { config, plugins = [], onChange, makeWorkerInstance, hydrateFn } = opts
   const { defaultSession = { name: 'NewSession' } } = config
-  const { model, pluginManager } = createModel(plugins, makeWorkerInstance)
+  const { model, pluginManager } = createModel(
+    plugins,
+    makeWorkerInstance,
+    hydrateFn,
+  )
   const stateTree = model.create(
     {
       jbrowse: config,

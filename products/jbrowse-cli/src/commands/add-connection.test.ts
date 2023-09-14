@@ -61,6 +61,9 @@ const setupWithDateMock = setup
     Date.now = originalDateNow
   })
 
+// Cleaning up exitCode in Node.js 20, xref https://github.com/jestjs/jest/issues/14501
+afterAll(() => (process.exitCode = 0))
+
 describe('add-connection', () => {
   setup
     .nock('https://example.com', site => site.head('/hub.txt').reply(200))

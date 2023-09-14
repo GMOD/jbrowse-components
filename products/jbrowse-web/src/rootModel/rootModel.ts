@@ -47,11 +47,8 @@ import {
   InternetAccountsRootModelMixin,
   BaseRootModelFactory,
 } from '@jbrowse/product-core'
-import {
-  AppFocusMixin,
-  HistoryManagementMixin,
-  RootAppMenuMixin,
-} from '@jbrowse/app-core'
+import { HistoryManagementMixin, RootAppMenuMixin } from '@jbrowse/app-core'
+import { hydrateRoot } from 'react-dom/client'
 
 const PreferencesDialog = lazy(() => import('../components/PreferencesDialog'))
 
@@ -108,7 +105,6 @@ export default function RootModel({
       }),
       InternetAccountsRootModelMixin(pluginManager),
       HistoryManagementMixin(),
-      AppFocusMixin(),
       RootAppMenuMixin(),
     )
     .props({
@@ -121,6 +117,7 @@ export default function RootModel({
       version: packageJSON.version,
       isAssemblyEditing: false,
       isDefaultSessionEditing: false,
+      hydrateFn: hydrateRoot,
       pluginsUpdated: false,
       rpcManager: new RpcManager(
         pluginManager,
@@ -466,11 +463,12 @@ export default function RootModel({
               label: 'Open connection...',
               icon: Cable,
               onClick: (session: SessionWithWidgets) => {
-                const widget = session.addWidget(
-                  'AddConnectionWidget',
-                  'addConnectionWidget',
+                session.showWidget(
+                  session.addWidget(
+                    'AddConnectionWidget',
+                    'addConnectionWidget',
+                  ),
                 )
-                session.showWidget(widget)
               },
             },
             { type: 'divider' },
@@ -529,11 +527,12 @@ export default function RootModel({
               icon: ExtensionIcon,
               onClick: () => {
                 if (self.session) {
-                  const widget = self.session.addWidget(
-                    'PluginStoreWidget',
-                    'pluginStoreWidget',
+                  self.session.showWidget(
+                    self.session.addWidget(
+                      'PluginStoreWidget',
+                      'pluginStoreWidget',
+                    ),
                   )
-                  self.session.showWidget(widget)
                 }
               },
             },

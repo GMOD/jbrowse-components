@@ -28,26 +28,23 @@
     "/oclif.manifest.json"
   ],
   "engines": {
-    "node": ">=10.4.0"
+    "node": ">=16"
   },
   "scripts": {
-    "build": "oclif-dev pack",
-    "build:typescript": "tsc --build",
+    "build": "tsc --build",
     "postpack": "rimraf oclif.manifest.json",
     "clean": "rimraf lib",
-    "prepack": "npm run clean  && npm run build:typescript && npm run manifest && npm run docs",
-    "manifest": "oclif-dev manifest",
+    "prepack": "npm run clean  && npm run build && npm run manifest && npm run docs",
+    "manifest": "oclif manifest",
     "version": "npm run docs && npm run docs:version:add",
     "docs": "npm run docs:create && npm run docs:format",
-    "docs:create": "oclif-dev readme",
+    "docs:create": "oclif readme",
     "docs:format": "prettier --write README.md",
     "docs:version:add": "git add README.md"
   },
   "dependencies": {
-    "@oclif/command": "^1.8.11",
-    "@oclif/config": "^1.18.2",
-    "@oclif/errors": "^1",
-    "@oclif/plugin-help": "3.2.14",
+    "@oclif/core": "^2.12.0",
+    "@oclif/plugin-help": "^5.2.18",
     "boxen": "^4.2.0",
     "chalk": "^4.1.0",
     "cli-progress": "^3.9.0",

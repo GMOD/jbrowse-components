@@ -2,7 +2,7 @@
  * By convention, exit codes in this base class are below 100
  */
 
-import Command from '@oclif/command'
+import { Command } from '@oclif/core'
 import { promises as fsPromises } from 'fs'
 import path from 'path'
 import parseJSON from 'json-parse-better-errors'

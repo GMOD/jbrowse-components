@@ -12,6 +12,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import { colord } from '@jbrowse/core/util/colord'
 
 interface HicFeature {
   bin1: number
@@ -73,9 +74,8 @@ export default class HicRenderer extends ServerSideRendererType {
       bpPerPx / resolution,
     )
 
-    const Color = await import('color').then(f => f.default)
     const w = res / (bpPerPx * Math.sqrt(2))
-    const baseColor = Color(readConfObject(config, 'baseColor'))
+    const baseColor = colord(readConfObject(config, 'baseColor'))
     if (features.length) {
       const offset = features[0].bin1
       let maxScore = 0

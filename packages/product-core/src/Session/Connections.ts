@@ -114,7 +114,7 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
       /**
        * #action
        */
-      addConnectionConf(connectionConf: BaseConnectionConfigModel) {
+      addConnectionConf(connectionConf: AnyConfigurationModel) {
         const { jbrowse } = self as typeof self & Instance<BaseRootModelType>
         return jbrowse.addConnectionConf(connectionConf)
       },

@@ -35,8 +35,8 @@ exports[`renders nothing with no assembly 1`] = `
         <label
           class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard css-1s1jvl0-MuiFormLabel-root-MuiInputLabel-root"
           data-shrink="false"
-          for="mui-1"
-          id="mui-1-label"
+          for=":r0:"
+          id=":r0:-label"
         >
           Filter tracks
         </label>
@@ -46,7 +46,7 @@ exports[`renders nothing with no assembly 1`] = `
           <input
             aria-invalid="false"
             class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd css-nz481w-MuiInputBase-input-MuiInput-input"
-            id="mui-1"
+            id=":r0:"
             type="text"
             value=""
           />
@@ -208,8 +208,8 @@ exports[`renders with a couple of categorized tracks 1`] = `
         <label
           class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard css-1s1jvl0-MuiFormLabel-root-MuiInputLabel-root"
           data-shrink="false"
-          for="mui-6"
-          id="mui-6-label"
+          for=":r5:"
+          id=":r5:-label"
         >
           Filter tracks
         </label>
@@ -219,7 +219,7 @@ exports[`renders with a couple of categorized tracks 1`] = `
           <input
             aria-invalid="false"
             class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd css-nz481w-MuiInputBase-input-MuiInput-input"
-            id="mui-6"
+            id=":r5:"
             type="text"
             value=""
           />
@@ -367,9 +367,7 @@ exports[`renders with a couple of categorized tracks 1`] = `
                 <div
                   data-testid="htsTrackLabel-sequenceConfigId"
                 >
-                  <span>
-                    Reference sequence (volMyt1)
-                  </span>
+                  Reference sequence (volMyt1)
                 </div>
               </span>
             </label>
@@ -507,9 +505,7 @@ exports[`renders with a couple of categorized tracks 1`] = `
                 <div
                   data-testid="htsTrackLabel-fooC"
                 >
-                  <span>
-                    Track
-                  </span>
+                  Track
                 </div>
               </span>
             </label>
@@ -655,9 +651,7 @@ exports[`renders with a couple of categorized tracks 1`] = `
                 <div
                   data-testid="htsTrackLabel-barC"
                 >
-                  <span>
-                    Track
-                  </span>
+                  Track
                 </div>
               </span>
             </label>
@@ -746,8 +740,8 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
         <label
           class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard css-1s1jvl0-MuiFormLabel-root-MuiInputLabel-root"
           data-shrink="false"
-          for="mui-2"
-          id="mui-2-label"
+          for=":r1:"
+          id=":r1:-label"
         >
           Filter tracks
         </label>
@@ -757,7 +751,7 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
           <input
             aria-invalid="false"
             class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd css-nz481w-MuiInputBase-input-MuiInput-input"
-            id="mui-2"
+            id=":r1:"
             type="text"
             value=""
           />
@@ -905,9 +899,7 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
                 <div
                   data-testid="htsTrackLabel-sequenceConfigId"
                 >
-                  <span>
-                    Reference sequence (volMyt1)
-                  </span>
+                  Reference sequence (volMyt1)
                 </div>
               </span>
             </label>
@@ -983,9 +975,7 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
                 <div
                   data-testid="htsTrackLabel-fooC"
                 >
-                  <span>
-                    Track
-                  </span>
+                  Track
                 </div>
               </span>
             </label>
@@ -1061,9 +1051,7 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
                 <div
                   data-testid="htsTrackLabel-barC"
                 >
-                  <span>
-                    Track
-                  </span>
+                  Track
                 </div>
               </span>
             </label>

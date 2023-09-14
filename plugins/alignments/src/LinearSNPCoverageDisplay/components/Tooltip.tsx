@@ -81,24 +81,23 @@ const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
               <td />
             </tr>
 
-            {Object.entries(info as unknown as Record<string, Count>).map(
-              ([key, entry]) =>
-                Object.entries(entry).map(([base, score]) => (
-                  <tr key={base}>
-                    <td>{base.toUpperCase()}</td>
-                    <td>{score.total}</td>
-                    <td>
-                      {base === 'total' || base === 'skip'
-                        ? '---'
-                        : pct(score.total, all)}
-                    </td>
-                    <td>
-                      {score['-1'] ? `${score['-1']}(-)` : ''}
-                      {score['1'] ? `${score['1']}(+)` : ''}
-                    </td>
-                    <td>{key}</td>
-                  </tr>
-                )),
+            {Object.entries(info).map(([key, entry]) =>
+              Object.entries(entry).map(([base, score]) => (
+                <tr key={base}>
+                  <td>{base.toUpperCase()}</td>
+                  <td>{score.total}</td>
+                  <td>
+                    {base === 'total' || base === 'skip'
+                      ? '---'
+                      : pct(score.total, all)}
+                  </td>
+                  <td>
+                    {score['-1'] ? `${score['-1']}(-)` : ''}
+                    {score['1'] ? `${score['1']}(+)` : ''}
+                  </td>
+                  <td>{key}</td>
+                </tr>
+              )),
             )}
           </tbody>
         </table>

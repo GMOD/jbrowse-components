@@ -1,3 +1,5 @@
+import { sum } from '@jbrowse/core/util'
+
 type Func<T> = (value: BaseBlock, index: number, array: BaseBlock[]) => T
 
 export class BlockSet {
@@ -35,7 +37,7 @@ export class BlockSet {
 
   get totalWidthPx() {
     return this.blocks.length
-      ? this.blocks.map(blocks => blocks.widthPx).reduce((a, b) => a + b)
+      ? sum(this.blocks.map(blocks => blocks.widthPx))
       : 0
   }
 
@@ -69,28 +71,13 @@ export class BaseBlock {
    * a block that should be shown as filled with data
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  constructor(data: any) {
+  constructor(data: Record<string, any>) {
     Object.assign(this, data)
     this.assemblyName = data.assemblyName
     this.refName = data.refName
     this.start = data.start
     this.end = data.end
     this.key = data.key
-  }
-
-  /**
-   * rename the reference sequence of this block and return a new one
-   *
-   * @param refName -
-   * @returns either a new block with a renamed reference sequence,
-   * or the same block, if the ref name is not actually different
-   */
-  renameReference(refName: string) {
-    if (this.refName && refName !== this.refName) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return new (this.constructor as any)({ ...this, refName })
-    }
-    return this
   }
 
   toRegion() {
