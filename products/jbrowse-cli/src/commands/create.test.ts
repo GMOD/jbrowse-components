@@ -64,6 +64,7 @@ function mockWrongSite(exampleSite: Scope) {
     .reply(200, 'I am the wrong type', { 'Content-Type': 'application/json' })
 }
 
+// Cleaning up exitCode in Node.js 20, xref https://github.com/jestjs/jest/issues/14501
 afterAll(() => (process.exitCode = 0))
 
 describe('create', () => {

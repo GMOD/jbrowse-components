@@ -85,6 +85,7 @@ async function killExpress({ stdout }: { stdout: string }) {
   })
 }
 
+// Cleaning up exitCode in Node.js 20, xref https://github.com/jestjs/jest/issues/14501
 afterAll(() => (process.exitCode = 0))
 
 describe('admin-server', () => {
