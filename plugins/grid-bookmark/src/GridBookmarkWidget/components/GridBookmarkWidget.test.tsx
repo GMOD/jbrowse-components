@@ -213,8 +213,9 @@ describe('<GridBookmarkWidget />', () => {
 
     model.addBookmark(bookmark)
 
-    const { findByText, findByTestId, getByRole, findAllByRole, getByTestId } =
-      render(<GridBookmarkWidget model={model} />)
+    const { findByText, findByTestId, getByRole, findAllByRole } = render(
+      <GridBookmarkWidget model={model} />,
+    )
 
     fireEvent.click((await findAllByRole('checkbox'))[1])
     fireEvent.click(await findByText('Export'))
