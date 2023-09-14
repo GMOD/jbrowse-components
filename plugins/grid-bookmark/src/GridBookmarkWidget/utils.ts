@@ -111,3 +111,20 @@ export function downloadBookmarkFile(
     saveAs(blob, fileName)
   }
 }
+
+/**
+ * Compress and encode a string as url-safe base64
+ * See {@link https://en.wikipedia.org/wiki/Base64#URL_applications}
+ * @param str-  a string to compress and encode
+ */
+export async function toUrlSafeB64(str: string) {
+  const bytes = new TextEncoder().encode(str)
+  const { deflate } = await import('pako')
+  const { fromByteArray } = await import('base64-js')
+  const deflated = deflate(bytes)
+  const encoded = fromByteArray(deflated)
+  const pos = encoded.indexOf('=')
+  return pos > 0
+    ? encoded.slice(0, pos).replaceAll('+', '-').replaceAll('/', '_')
+    : encoded.replaceAll('+', '-').replaceAll('/', '_')
+}

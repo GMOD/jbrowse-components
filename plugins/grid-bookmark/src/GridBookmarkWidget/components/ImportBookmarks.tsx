@@ -17,7 +17,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { Dialog } from '@jbrowse/core/ui'
 import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
 import { fromUrlSafeB64 } from '@jbrowse/web/src/util'
-import { readSessionFromDynamo } from '@jbrowse/web/src/sessionSharing'
+import { readSessionFromDynamo } from '../sessionSharing'
 import { makeStyles } from 'tss-react/mui'
 
 // icons

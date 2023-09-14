@@ -17,7 +17,7 @@ import copy from 'copy-to-clipboard'
 import { getSession } from '@jbrowse/core/util'
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
-import { shareSessionToDynamo } from '@jbrowse/web/src/sessionSharing'
+import { shareSessionToDynamo } from '../sessionSharing'
 
 // locals
 import { GridBookmarkModel } from '../model'
