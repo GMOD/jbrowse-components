@@ -68,7 +68,6 @@ export function downloadBookmarkFile(
   if (fileFormat === 'BED') {
     const fileHeader = ''
     const fileContents: Record<string, string[]> = {}
-    console.log(bookmarksWithValidAssemblies)
     bookmarksToDownload.forEach(bookmark => {
       const { label } = bookmark
       const labelVal = label === '' ? '.' : label

@@ -10,6 +10,7 @@ import {
   ListItemText,
   OutlinedInput,
   ListItemIcon,
+  SelectChangeEvent,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
@@ -31,9 +32,9 @@ function AssemblySelector({ model }: { model: GridBookmarkModel }) {
     validAssemblies.length > 0 &&
     selectedAssemblies.length === validAssemblies.length
 
-  const handleChange = (event: any) => {
+  const handleChange = (event: SelectChangeEvent<string[]>) => {
     const value = event.target.value
-    if (value[value.length - 1] === 'all') {
+    if (value.at(-1) === 'all') {
       setSelectedAssemblies(
         selectedAssemblies.length === validAssemblies.length
           ? []
@@ -41,7 +42,7 @@ function AssemblySelector({ model }: { model: GridBookmarkModel }) {
       )
       return
     }
-    setSelectedAssemblies(value)
+    setSelectedAssemblies([...value])
   }
 
   useEffect(() => {
@@ -57,12 +58,16 @@ function AssemblySelector({ model }: { model: GridBookmarkModel }) {
         asm => !validAssemblies.includes(asm),
       )
       rmAsm.forEach(asm => {
-        const index = selectedAssemblies.indexOf(asm)
-        selectedAssemblies.splice(index, 1)
+        selectedAssemblies.splice(selectedAssemblies.indexOf(asm), 1)
       })
       setSelectedAssemblies([...selectedAssemblies])
     }
-  }, [validAssemblies.length])
+  }, [
+    validAssemblies.length,
+    selectedAssemblies,
+    setSelectedAssemblies,
+    validAssemblies,
+  ])
 
   return (
     <FormControl disabled={noAssemblies}>
@@ -93,7 +98,7 @@ function AssemblySelector({ model }: { model: GridBookmarkModel }) {
         </MenuItem>
         {validAssemblies.map(name => (
           <MenuItem key={name} value={name}>
-            <Checkbox checked={selectedAssemblies.indexOf(name) > -1} />
+            <Checkbox checked={selectedAssemblies.includes(name)} />
             <ListItemText primary={name} />
           </MenuItem>
         ))}

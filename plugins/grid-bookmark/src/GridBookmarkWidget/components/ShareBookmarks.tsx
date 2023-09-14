@@ -65,6 +65,7 @@ function ShareBookmarks({ model }: { model: GridBookmarkModel }) {
           setLoading(false)
         }
       } catch (e) {
+        setError(e)
         session.notify(`${e}`, 'error')
       } finally {
         setLoading(false)
