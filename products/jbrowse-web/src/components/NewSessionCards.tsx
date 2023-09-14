@@ -2,9 +2,7 @@ import React, { useState } from 'react'
 import { Card, CardMedia, Container, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
-import emptyIcon from './img/emptyIcon.png'
-import linearGenomeViewIcon from './img/linearGenomeViewIcon.png'
-import svInspectorIcon from './img/svInspectorIcon.png'
+import { emptyIcon, linearGenomeViewIcon, svInspectorIcon } from './img'
 
 const useStyles = makeStyles()({
   card: {

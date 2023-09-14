@@ -40,6 +40,9 @@ function init2bit(ctx: { dir: string }) {
   )
 }
 
+// Cleaning up exitCode in Node.js 20, xref https://github.com/jestjs/jest/issues/14501
+afterAll(() => (process.exitCode = 0))
+
 describe('add-track', () => {
   setup.command(['add-track']).exit(2).it('fails if no track is specified')
   setup
