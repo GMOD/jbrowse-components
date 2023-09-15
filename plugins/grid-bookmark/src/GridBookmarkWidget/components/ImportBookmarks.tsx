@@ -16,8 +16,6 @@ import {
 import { openLocation } from '@jbrowse/core/util/io'
 import { Dialog } from '@jbrowse/core/ui'
 import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
-import { fromUrlSafeB64 } from '@jbrowse/web/src/util'
-import { readSessionFromDynamo } from '../sessionSharing'
 import { makeStyles } from 'tss-react/mui'
 
 // icons
@@ -26,6 +24,8 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 
 // locals
 import { GridBookmarkModel } from '../model'
+import { fromUrlSafeB64 } from '../utils'
+import { readSessionFromDynamo } from '../sessionSharing'
 
 const useStyles = makeStyles()(theme => ({
   dialogContainer: {
