@@ -3,16 +3,18 @@ import { deserializeError } from 'serialize-error'
 
 // locals
 import { nanoid } from '../util/nanoid'
-import BaseRpcDriver, { RpcDriverConstructorArgs } from './BaseRpcDriver'
+import BaseRpcDriver, {
+  CallOptions,
+  RpcDriverConstructorArgs,
+} from './BaseRpcDriver'
 import { PluginDefinition } from '../PluginLoader'
 
 interface WebWorkerRpcDriverConstructorArgs extends RpcDriverConstructorArgs {
   makeWorkerInstance: () => Worker
 }
 
-interface Options {
-  statusCallback?: (arg0: string) => void
-  rpcDriverClassName: string
+interface Options extends CallOptions {
+  statusCallback?: (message: string) => void
 }
 
 class WebWorkerHandle extends Rpc.Client {

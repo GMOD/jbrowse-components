@@ -4,6 +4,17 @@ import { serializeAbortSignal } from './remoteAbortSignals'
 import PluginManager from '../PluginManager'
 import { readConfObject, AnyConfigurationModel } from '../configuration'
 
+export interface CallArgs extends Record<string, unknown> {
+  statusCallback?: (message: string) => void
+  rpcDriverName?: string
+}
+
+export interface CallOptions extends Record<string, unknown> {
+  rpcDriverClassName: string
+  timeout?: number
+  pluginManager?: PluginManager
+}
+
 export interface WorkerHandle {
   status?: string
   error?: Error
@@ -12,12 +23,8 @@ export interface WorkerHandle {
   destroy(): void
   call(
     functionName: string,
-    args?: unknown,
-    options?: {
-      statusCallback?(message: string): void
-      timeout?: number
-      rpcDriverClassName: string
-    },
+    args?: CallArgs,
+    options?: CallOptions,
   ): Promise<unknown>
 }
 
@@ -38,10 +45,7 @@ export async function watchWorker(
 ) {
   // after first ping succeeds, apply wait for timeout
   while (true) {
-    await worker.call('ping', [], {
-      timeout: pingTime * 2,
-      rpcDriverClassName,
-    })
+    await worker.call('ping', {}, { timeout: pingTime * 2, rpcDriverClassName })
     await new Promise(resolve => setTimeout(resolve, pingTime))
   }
 }
@@ -194,8 +198,8 @@ export default abstract class BaseRpcDriver {
     pluginManager: PluginManager,
     sessionId: string,
     functionName: string,
-    args: { statusCallback?: (message: string) => void },
-    options = {},
+    args: CallArgs,
+    options: CallOptions,
   ) {
     if (!sessionId) {
       throw new TypeError('sessionId is required')
@@ -215,7 +219,6 @@ export default abstract class BaseRpcDriver {
       .call(functionName, filteredAndSerializedArgs, {
         timeout: 5 * 60 * 1000, // 5 minutes
         statusCallback: args.statusCallback,
-        rpcDriverClassName: this.name,
         ...options,
       })
       .finally(() => {

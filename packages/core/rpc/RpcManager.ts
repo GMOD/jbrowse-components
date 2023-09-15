@@ -1,6 +1,7 @@
 import PluginManager from '../PluginManager'
 import { readConfObject, AnyConfigurationModel } from '../configuration'
 import rpcConfigSchema from './configSchema'
+import { CallArgs, CallOptions } from './BaseRpcDriver'
 import WebWorkerRpcDriver from './WebWorkerRpcDriver'
 import MainThreadRpcDriver from './MainThreadRpcDriver'
 
@@ -77,7 +78,7 @@ export default class RpcManager {
   async getDriverForCall(
     _sessionId: string,
     _functionName: string,
-    args: { rpcDriverName?: string },
+    args: CallArgs,
   ) {
     const backendName =
       args.rpcDriverName ||
@@ -86,7 +87,12 @@ export default class RpcManager {
     return this.getDriver(backendName)
   }
 
-  async call(sessionId: string, functionName: string, args: {}, opts = {}) {
+  async call(
+    sessionId: string,
+    functionName: string,
+    args: CallArgs,
+    opts?: Omit<CallOptions, 'rpcDriverClassName'>,
+  ) {
     if (!sessionId) {
       throw new Error('sessionId is required')
     }
@@ -100,7 +106,7 @@ export default class RpcManager {
       sessionId,
       functionName,
       args,
-      opts,
+      { rpcDriverClassName: driverForCall.name, ...opts },
     )
   }
 }
