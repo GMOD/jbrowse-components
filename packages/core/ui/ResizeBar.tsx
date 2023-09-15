@@ -47,17 +47,22 @@ function Tick({
   scrollLeft,
   idx,
   onDrag,
+  onMouseDown,
 }: {
   idx: number
   left: number
   scrollLeft: number
-  onDrag: (arg: number, idx: number) => void
+  onMouseDown: (event: React.MouseEvent) => void
+  onDrag: (
+    lastFrameDistance: number,
+    totalDistance: number,
+    idx: number,
+  ) => void
 }) {
   const { classes } = useStyles()
-  const cb = useCallback(
-    (d: number) => {
-      onDrag(d, idx)
-    },
+  const onDragCallback = useCallback(
+    (lastFrameDistance: number, totalDistance: number) =>
+      onDrag(lastFrameDistance, totalDistance, idx),
     [idx, onDrag],
   )
 
@@ -65,7 +70,8 @@ function Tick({
   return (
     <>
       <ResizeHandle
-        onDrag={cb}
+        onDrag={onDragCallback}
+        onMouseDown={onMouseDown}
         vertical
         className={classes.hiddenTick}
         style={{ left: left - scrollLeft - 2.5 }}
@@ -88,6 +94,7 @@ export default function ResizeBar({
 }) {
   const { classes } = useStyles()
   const offsets = [] as number[]
+  const [initial, setInitial] = useState<number[]>()
   let init = checkbox ? 52 : 0
   for (let i = 0; i < widths.length; i++) {
     const width = widths[i]
@@ -95,22 +102,21 @@ export default function ResizeBar({
     init += width
   }
 
-  const onDrag = useCallback(
-    (distance: number, idx: number) => {
-      const newWidths = [...widths]
-      // mui doesn't allow columns smaller than 50
-      newWidths[idx] = Math.max(newWidths[idx] + distance, 50)
-      setWidths(newWidths)
-    },
-    [widths, setWidths],
-  )
   return (
     <div className={classes.resizeBar}>
       {offsets.map((left, i) => (
         <Tick
           key={i}
+          onMouseDown={() => {
+            setInitial([...widths])
+          }}
           left={i === offsets.length - 1 ? left - 3 : left}
-          onDrag={onDrag}
+          onDrag={(_: number, totalDistance: number, idx: number) => {
+            const newWidths = [...widths]
+            // mui doesn't allow columns smaller than 50
+            newWidths[idx] = Math.max(initial![idx] - totalDistance, 50)
+            setWidths(newWidths)
+          }}
           idx={i}
           scrollLeft={scrollLeft}
         />
