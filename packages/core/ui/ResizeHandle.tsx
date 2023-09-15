@@ -25,15 +25,18 @@ function ResizeHandle({
   vertical = false,
   flexbox = false,
   className: originalClassName,
+  onMouseDown,
   ...props
 }: {
-  onDrag: (arg: number) => number | void
+  onDrag: (lastFrameDistance: number, totalDistance: number) => number | void
+  onMouseDown?: (event: React.MouseEvent) => void
   vertical?: boolean
   flexbox?: boolean
   className?: string
   [props: string]: unknown
 }) {
   const [mouseDragging, setMouseDragging] = useState(false)
+  const initialPosition = useRef(0)
   const prevPos = useRef(0)
   const { classes, cx } = useStyles()
 
@@ -41,11 +44,10 @@ function ResizeHandle({
     function mouseMove(event: MouseEvent) {
       event.preventDefault()
       const pos = vertical ? event.clientX : event.clientY
-      const distance = pos - prevPos.current
-      if (distance) {
-        onDrag(distance)
-        prevPos.current = pos
-      }
+      const totalDistance = initialPosition.current - pos
+      const lastFrameDistance = pos - prevPos.current
+      prevPos.current = pos
+      onDrag(lastFrameDistance, totalDistance)
     }
 
     function mouseUp() {
@@ -78,8 +80,11 @@ function ResizeHandle({
       data-resizer="true"
       onMouseDown={event => {
         event.preventDefault()
-        prevPos.current = vertical ? event.clientX : event.clientY
+        const pos = vertical ? event.clientX : event.clientY
+        initialPosition.current = pos
+        prevPos.current = pos
         setMouseDragging(true)
+        onMouseDown?.(event)
       }}
       className={cx(className, originalClassName)}
       {...props}
