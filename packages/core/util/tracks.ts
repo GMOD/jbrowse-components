@@ -170,16 +170,17 @@ export function guessAdapter(
 ) {
   if (model) {
     const { pluginManager } = getEnv(model)
+    const defaultAdapterGuesser: AdapterGuesser = (
+      _file: FileLocation,
+      _index?: FileLocation,
+      _adapterHint?: string,
+    ): AdapterConfig | undefined => {
+      return undefined
+    }
     const adapterGuesser = pluginManager.evaluateExtensionPoint(
       'Core-guessAdapterForLocation',
-      (
-        _file: FileLocation,
-        _index?: FileLocation,
-        _adapterHint?: string,
-      ): AdapterConfig | undefined => {
-        return undefined
-      },
-    ) as AdapterGuesser
+      defaultAdapterGuesser,
+    )
 
     const adapter = adapterGuesser(file, index, adapterHint)
 
@@ -200,14 +201,17 @@ export function guessTrackType(
   if (model) {
     const session = getSession(model)
 
+    const defaultTrackTypeGuesser: TrackTypeGuesser = (
+      _adapterName: string,
+    ): string | undefined => {
+      return undefined
+    }
     const trackTypeGuesser = getEnv(
       session,
     ).pluginManager.evaluateExtensionPoint(
       'Core-guessTrackTypeForLocation',
-      (_adapterName: string): AdapterConfig | undefined => {
-        return undefined
-      },
-    ) as TrackTypeGuesser
+      defaultTrackTypeGuesser,
+    )
 
     const trackType = trackTypeGuesser(adapterType)
 

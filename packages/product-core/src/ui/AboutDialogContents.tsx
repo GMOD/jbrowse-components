@@ -46,14 +46,17 @@ export default function AboutContents({
       },
     },
     { session, config },
-  ) as Record<string, unknown>
+  )
 
+  const defaultExtraAboutPanel: {
+    name: string
+    Component?: typeof FileInfoPanel
+  } = { name: 'default' }
   const ExtraPanel = pluginManager.evaluateExtensionPoint(
     'Core-extraAboutPanel',
-    null,
+    defaultExtraAboutPanel,
     { session, config },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ) as { name: string; Component: React.FC<any> }
+  )
 
   return (
     <div className={classes.content}>
@@ -77,7 +80,7 @@ export default function AboutContents({
           hideUris={hideUris}
         />
       </BaseCard>
-      {ExtraPanel ? (
+      {ExtraPanel.Component ? (
         <BaseCard title={ExtraPanel.name}>
           <ExtraPanel.Component config={config} />
         </BaseCard>

@@ -28,15 +28,11 @@ export default observer(function ({
     pluginManager.getWidgetType(visibleWidget.type)
 
   const Component = visibleWidget
-    ? (pluginManager.evaluateExtensionPoint(
+    ? pluginManager.evaluateExtensionPoint(
         'Core-replaceWidget',
         ReactComponent,
-        {
-          session,
-          model: visibleWidget,
-        },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ) as React.FC<any>)
+        { session, model: visibleWidget },
+      )
     : null
   return (
     <Dialog

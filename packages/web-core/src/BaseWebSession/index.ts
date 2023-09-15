@@ -402,7 +402,7 @@ export function BaseWebSession({
   const extendedSessionModel = pluginManager.evaluateExtensionPoint(
     'Core-extendSession',
     sessionModel,
-  ) as typeof sessionModel
+  )
 
   return types.snapshotProcessor(addSnackbarToModel(extendedSessionModel), {
     // @ts-expect-error

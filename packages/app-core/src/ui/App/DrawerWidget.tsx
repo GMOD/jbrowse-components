@@ -20,15 +20,14 @@ const DrawerWidget = observer(function ({
   const { pluginManager } = getEnv(session)
 
   const DrawerComponent = visibleWidget
-    ? (pluginManager.evaluateExtensionPoint(
+    ? pluginManager.evaluateExtensionPoint(
         'Core-replaceWidget',
         pluginManager.getWidgetType(visibleWidget.type).ReactComponent,
         {
           session,
           model: visibleWidget,
         },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ) as React.FC<any>)
+      )
     : null
 
   // we track the toolbar height because components that use virtualized

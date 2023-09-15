@@ -162,11 +162,6 @@ export interface BaseInputProps extends BaseCardProps {
   formatter?: (val: unknown, key: string) => React.ReactNode
 }
 
-interface PanelDescriptor {
-  name: string
-  Component: React.FC<any>
-}
-
 export function FeatureDetails(props: {
   model: IAnyStateTreeNode
   feature: SimpleFeatureSerialized
@@ -180,11 +175,15 @@ export function FeatureDetails(props: {
   const pm = getEnv(model).pluginManager
   const session = getSession(model)
 
-  const ExtraPanel = pm.evaluateExtensionPoint('Core-extraFeaturePanel', null, {
-    session,
-    feature,
-    model,
-  }) as PanelDescriptor | undefined
+  const defaultExtraAboutPanel: {
+    name: string
+    Component?: typeof SequenceFeatureDetails
+  } = { name: 'default' }
+  const ExtraPanel = pm.evaluateExtensionPoint(
+    'Core-extraFeaturePanel',
+    defaultExtraAboutPanel,
+    { session, feature, model },
+  )
   return (
     <BaseCard title={generateTitle(name, id, type)}>
       <Typography>Core details</Typography>
@@ -213,7 +212,7 @@ export function FeatureDetails(props: {
         <SequenceFeatureDetails {...props} />
       </ErrorBoundary>
 
-      {ExtraPanel ? (
+      {ExtraPanel.Component ? (
         <>
           <Divider />
           <BaseCard title={ExtraPanel.name}>

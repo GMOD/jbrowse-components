@@ -55,9 +55,9 @@ export default observer(function TracksContainer({
 
   const additional = pluginManager.evaluateExtensionPoint(
     'LinearGenomeView-TracksContainerComponent',
-    undefined,
+    undefined as React.ReactNode,
     { model },
-  ) as React.ReactNode
+  )
 
   return (
     <div

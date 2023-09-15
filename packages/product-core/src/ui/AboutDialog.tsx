@@ -20,8 +20,7 @@ export function AboutDialog({
     'Core-replaceAbout',
     AboutContents,
     { session, config },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ) as React.FC<any>
+  )
 
   return (
     <Dialog open onClose={handleClose} title={trackName} maxWidth="xl">

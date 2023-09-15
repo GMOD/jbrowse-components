@@ -33,9 +33,9 @@ export default observer(function ShoppingCart({
   const [selectionEl, setSelectionEl] = useState<HTMLButtonElement>()
   const items = pluginManager.evaluateExtensionPoint(
     'TrackSelector-multiTrackMenuItems',
-    [],
+    [] as MenuItem[],
     { session },
-  ) as MenuItem[]
+  )
 
   return (
     <>

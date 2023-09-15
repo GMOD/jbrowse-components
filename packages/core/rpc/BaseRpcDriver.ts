@@ -209,7 +209,7 @@ export default abstract class BaseRpcDriver {
     const worker = pluginManager.evaluateExtensionPoint(
       'Core-extendWorker',
       unextendedWorker,
-    ) as WorkerHandle
+    )
     const rpcMethod = pluginManager.getRpcMethodType(functionName)
     const serializedArgs = await rpcMethod.serializeArguments(args, this.name)
     const filteredAndSerializedArgs = this.filterArgs(serializedArgs, sessionId)

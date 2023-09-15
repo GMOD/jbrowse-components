@@ -329,10 +329,7 @@ export default class PluginManager {
 
       typeRecord.add(
         newElement.name,
-        this.evaluateExtensionPoint(
-          'Core-extendPluggableElement',
-          newElement,
-        ) as PluggableElementType,
+        this.evaluateExtensionPoint('Core-extendPluggableElement', newElement),
       )
     })
 
@@ -593,11 +590,11 @@ export default class PluginManager {
     callbacks.push(callback)
   }
 
-  evaluateExtensionPoint(
+  evaluateExtensionPoint<T>(
     extensionPointName: string,
-    extendee: unknown,
+    extendee: T,
     props?: Record<string, unknown>,
-  ) {
+  ): T {
     const callbacks = this.extensionPoints.get(extensionPointName)
     let accumulator = extendee
     if (callbacks) {
