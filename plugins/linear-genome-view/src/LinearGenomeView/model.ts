@@ -1530,12 +1530,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
               // pan right
               self.slide(0.9)
             }
-            if (e.code === 'ArrowUp') {
+            if (e.code === 'ArrowUp' && self.scaleFactor === 1) {
               e.preventDefault()
               // zoom in
               self.zoom(self.bpPerPx / 2)
             }
-            if (e.code === 'ArrowDown') {
+            if (e.code === 'ArrowDown' && self.scaleFactor === 1) {
               e.preventDefault()
               // zoom out
               self.zoom(self.bpPerPx * 2)
