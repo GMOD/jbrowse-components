@@ -201,7 +201,11 @@ export default abstract class BaseRpcDriver {
       throw new TypeError('sessionId is required')
     }
     let done = false
-    const worker = await this.getWorker(sessionId)
+    const unextendedWorker = await this.getWorker(sessionId)
+    const worker = pluginManager.evaluateExtensionPoint(
+      'Core-extendWorker',
+      unextendedWorker,
+    ) as WorkerHandle
     const rpcMethod = pluginManager.getRpcMethodType(functionName)
     const serializedArgs = await rpcMethod.serializeArguments(args, this.name)
     const filteredAndSerializedArgs = this.filterArgs(serializedArgs, sessionId)
