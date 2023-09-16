@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import Loading from './components/Loading'
 
 const Main = lazy(() => import('./components/Loader'))
+
 const initialTimeStamp = Date.now()
 
 if (window?.name.startsWith('JBrowseAuthWindow')) {
