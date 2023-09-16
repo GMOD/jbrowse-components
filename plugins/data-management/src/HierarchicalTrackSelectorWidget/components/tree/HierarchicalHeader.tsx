@@ -51,7 +51,7 @@ const SearchTracksTextField = observer(function ({
   )
 })
 
-function HierarchicalTrackSelectorHeader({
+const HierarchicalTrackSelectorHeader = observer(function ({
   model,
   setHeaderHeight,
 }: {
@@ -88,6 +88,6 @@ function HierarchicalTrackSelectorHeader({
       </Suspense>
     </div>
   )
-}
+})
 
-export default observer(HierarchicalTrackSelectorHeader)
+export default HierarchicalTrackSelectorHeader

@@ -44,7 +44,7 @@ function LinkField({ url }: { url: string }) {
   )
 }
 
-export default observer(function ({
+const ShareDialog = observer(function ({
   handleClose,
   session,
 }: {
@@ -175,3 +175,5 @@ export default observer(function ({
     </>
   )
 })
+
+export default ShareDialog

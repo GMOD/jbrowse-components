@@ -79,7 +79,7 @@ async function fetchSequence(
   }) as Promise<Feature[]>
 }
 
-function SequenceDialog({
+const GetSequenceDialog = observer(function ({
   model,
   handleClose,
 }: {
@@ -264,6 +264,6 @@ function SequenceDialog({
       </DialogActions>
     </Dialog>
   )
-}
+})
 
-export default observer(SequenceDialog)
+export default GetSequenceDialog

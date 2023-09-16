@@ -7,7 +7,11 @@ import {
   SetDefaultSession,
 } from '@jbrowse/plugin-data-management'
 
-function AdminComponent({ pluginManager }: { pluginManager: PluginManager }) {
+const AdminComponent = observer(function ({
+  pluginManager,
+}: {
+  pluginManager: PluginManager
+}) {
   const { rootModel } = pluginManager
 
   const {
@@ -33,6 +37,6 @@ function AdminComponent({ pluginManager }: { pluginManager: PluginManager }) {
       ) : null}
     </>
   )
-}
+})
 
-export default observer(AdminComponent)
+export default AdminComponent

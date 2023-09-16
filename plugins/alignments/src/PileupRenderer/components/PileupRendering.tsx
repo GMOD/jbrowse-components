@@ -8,7 +8,8 @@ import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
 // used so that user can click-away-from-feature below the laid out features
 // (issue #1248)
 const canvasPadding = 100
-function PileupRendering(props: {
+
+const PileupRendering = observer(function (props: {
   blockKey: string
   displayModel: BaseLinearDisplayModel
   width: number
@@ -153,10 +154,8 @@ function PileupRendering(props: {
 
   function callMouseHandler(handlerName: string, event: React.MouseEvent) {
     // @ts-expect-error
-    // eslint-disable-next-line react/destructuring-assignment
     const featureHandler = props[`onFeature${handlerName}`]
     // @ts-expect-error
-    // eslint-disable-next-line react/destructuring-assignment
     const canvasHandler = props[`on${handlerName}`]
     if (featureHandler && featureIdUnderMouse) {
       featureHandler(event, featureIdUnderMouse)
@@ -204,6 +203,6 @@ function PileupRendering(props: {
       />
     </div>
   )
-}
+})
 
-export default observer(PileupRendering)
+export default PileupRendering

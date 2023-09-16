@@ -33,7 +33,7 @@ const useStyles = makeStyles()({
 
 type LGV = LinearGenomeViewModel
 
-export default observer(function TrackRenderingContainer({
+const TrackRenderingContainer = observer(function ({
   model,
   track,
   onDragEnter,
@@ -97,3 +97,5 @@ export default observer(function TrackRenderingContainer({
     </div>
   )
 })
+
+export default TrackRenderingContainer

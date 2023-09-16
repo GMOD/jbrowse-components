@@ -11,7 +11,7 @@ import { useTheme } from '@mui/material'
 // locals
 import Arrow from './Arrow'
 
-function Segments(props: {
+const Segments = observer(function (props: {
   region: Region
   feature: Feature
   featureLayout: SceneGraph
@@ -70,6 +70,6 @@ function Segments(props: {
       <Arrow {...props} />
     </>
   )
-}
+})
 
-export default observer(Segments)
+export default Segments

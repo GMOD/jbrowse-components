@@ -23,7 +23,11 @@ const useStyles = makeStyles()(() => ({
   },
 }))
 
-function AssemblySelector({ model }: { model: GridBookmarkModel }) {
+const GridBookmarkAssemblySelector = observer(function AssemblySelector({
+  model,
+}: {
+  model: GridBookmarkModel
+}) {
   const { classes } = useStyles()
   const { validAssemblies, selectedAssemblies, setSelectedAssemblies } = model
   const noAssemblies = validAssemblies.length === 0 ? true : false
@@ -105,6 +109,6 @@ function AssemblySelector({ model }: { model: GridBookmarkModel }) {
       </Select>
     </FormControl>
   )
-}
+})
 
-export default observer(AssemblySelector)
+export default GridBookmarkAssemblySelector

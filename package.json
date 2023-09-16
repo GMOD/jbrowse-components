@@ -113,6 +113,7 @@
     "eslint-plugin-prettier": "^5.0.0",
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.3.0",
+    "eslint-plugin-react-refresh": "^0.4.3",
     "eslint-plugin-tsdoc": "^0.2.4",
     "eslint-plugin-unicorn": "^48.0.0",
     "express": "^4.18.2",

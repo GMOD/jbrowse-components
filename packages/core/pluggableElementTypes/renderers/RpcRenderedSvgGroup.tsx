@@ -93,8 +93,10 @@ const OldHydrate = observer(function OldHydrate(props: Props) {
   return <g ref={ref} />
 })
 
-export default observer(function RpcRenderedSvgGroup(props: Props) {
+const RpcRenderedSvgGroup = observer(function (props: Props) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const root = getRoot<any>(props.displayModel)
   return root.hydrateFn ? <NewHydrate {...props} /> : <OldHydrate {...props} />
 })
+
+export default RpcRenderedSvgGroup

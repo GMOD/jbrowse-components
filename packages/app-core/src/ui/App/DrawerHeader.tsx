@@ -44,7 +44,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default observer(function ({
+const DrawerHeader = observer(function ({
   session,
   setToolbarHeight,
 }: {
@@ -209,3 +209,5 @@ const DrawerControls = observer(function ({
     </>
   )
 })
+
+export default DrawerHeader

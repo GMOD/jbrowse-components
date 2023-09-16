@@ -21,7 +21,47 @@ const basicDescriptions = {
     'filter status: PASS if this position has passed all filters, otherwise a semicolon-separated list of codes for filters that fail',
 }
 
-function VariantFeatureDetails(props: {
+function AnnPanel({
+  descriptions,
+  feature,
+}: {
+  descriptions: { INFO?: { ANN?: { Description?: string } } }
+  feature: { INFO?: { ANN?: string[] } }
+}) {
+  const annDesc = descriptions?.INFO?.ANN?.Description
+  const annFields =
+    annDesc?.match(/.*Functional annotations:'(.*)'$/)?.[1].split('|') || []
+  const ann = feature.INFO?.ANN || []
+  return (
+    <VariantAnnotationTable
+      fields={annFields}
+      data={ann}
+      title="Variant ANN field"
+    />
+  )
+}
+
+function CsqPanel({
+  descriptions,
+  feature,
+}: {
+  descriptions: { INFO?: { CSQ?: { Description?: string } } }
+  feature: { INFO?: { CSQ?: string[] } }
+}) {
+  const csqDescription = descriptions?.INFO?.CSQ?.Description
+  const csqFields =
+    csqDescription?.match(/.*Format: (.*)/)?.[1].split('|') || []
+  const csq = feature.INFO?.CSQ || []
+  return (
+    <VariantAnnotationTable
+      fields={csqFields}
+      data={csq}
+      title="Variant CSQ field"
+    />
+  )
+}
+
+const VariantFeatureWidget = observer(function (props: {
   model: {
     featureData: SimpleFeatureSerialized
     descriptions: Record<string, string>
@@ -67,46 +107,6 @@ function VariantFeatureDetails(props: {
       />
     </Paper>
   )
-}
+})
 
-function AnnPanel({
-  descriptions,
-  feature,
-}: {
-  descriptions: { INFO?: { ANN?: { Description?: string } } }
-  feature: { INFO?: { ANN?: string[] } }
-}) {
-  const annDesc = descriptions?.INFO?.ANN?.Description
-  const annFields =
-    annDesc?.match(/.*Functional annotations:'(.*)'$/)?.[1].split('|') || []
-  const ann = feature.INFO?.ANN || []
-  return (
-    <VariantAnnotationTable
-      fields={annFields}
-      data={ann}
-      title="Variant ANN field"
-    />
-  )
-}
-
-function CsqPanel({
-  descriptions,
-  feature,
-}: {
-  descriptions: { INFO?: { CSQ?: { Description?: string } } }
-  feature: { INFO?: { CSQ?: string[] } }
-}) {
-  const csqDescription = descriptions?.INFO?.CSQ?.Description
-  const csqFields =
-    csqDescription?.match(/.*Format: (.*)/)?.[1].split('|') || []
-  const csq = feature.INFO?.CSQ || []
-  return (
-    <VariantAnnotationTable
-      fields={csqFields}
-      data={csq}
-      title="Variant CSQ field"
-    />
-  )
-}
-
-export default observer(VariantFeatureDetails)
+export default VariantFeatureWidget

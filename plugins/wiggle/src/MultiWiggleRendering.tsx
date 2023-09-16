@@ -6,7 +6,7 @@ import { SimpleFeature, Feature } from '@jbrowse/core/util'
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
 import { Source } from './util'
 
-function WiggleRendering(props: {
+const MultiWiggleRendering = observer(function (props: {
   regions: Region[]
   features: Map<string, Feature>
   bpPerPx: number
@@ -97,17 +97,13 @@ function WiggleRendering(props: {
     <div
       ref={ref}
       onMouseMove={event => {
-        const featureUnderMouse = getFeatureUnderMouse(
-          event.clientX,
-          event.clientY,
-        )
+        const { clientX, clientY } = event
+        const featureUnderMouse = getFeatureUnderMouse(clientX, clientY)
         onMouseMove(event, featureUnderMouse)
       }}
       onClick={event => {
-        const featureUnderMouse = getFeatureUnderMouse(
-          event.clientX,
-          event.clientY,
-        )
+        const { clientX, clientY } = event
+        const featureUnderMouse = getFeatureUnderMouse(clientX, clientY)
         onFeatureClick(event, featureUnderMouse)
       }}
       onMouseLeave={event => onMouseLeave(event)}
@@ -120,6 +116,6 @@ function WiggleRendering(props: {
       <PrerenderedCanvas {...props} />
     </div>
   )
-}
+})
 
-export default observer(WiggleRendering)
+export default MultiWiggleRendering

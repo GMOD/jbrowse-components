@@ -60,7 +60,7 @@ function BlockError({ error }: { error: unknown }) {
   )
 }
 
-export default observer(function ({
+const ServerSideRenderedDotplotContent = observer(function ({
   model,
   style,
 }: {
@@ -84,3 +84,5 @@ export default observer(function ({
   }
   return null
 })
+
+export default ServerSideRenderedDotplotContent

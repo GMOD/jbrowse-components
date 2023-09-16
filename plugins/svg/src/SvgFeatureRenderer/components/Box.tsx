@@ -12,7 +12,8 @@ import { isUTR } from './util'
 import Arrow from './Arrow'
 
 const utrHeightFraction = 0.65
-function Box(props: {
+
+const Box = observer(function Box(props: {
   feature: Feature
   region: Region
   config: AnyConfigurationModel
@@ -62,6 +63,6 @@ function Box(props: {
       />
     </>
   )
-}
+})
 
-export default observer(Box)
+export default Box

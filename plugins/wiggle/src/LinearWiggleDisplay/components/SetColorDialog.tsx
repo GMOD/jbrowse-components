@@ -11,7 +11,7 @@ import {
 import { Dialog } from '@jbrowse/core/ui'
 import { ColorPicker } from '@jbrowse/core/ui/ColorPicker'
 
-function SetColorDialog({
+const SetColorDialog = observer(function SetColorDialog({
   model,
   handleClose,
 }: {
@@ -102,6 +102,6 @@ function SetColorDialog({
       </DialogActions>
     </Dialog>
   )
-}
+})
 
-export default observer(SetColorDialog)
+export default SetColorDialog

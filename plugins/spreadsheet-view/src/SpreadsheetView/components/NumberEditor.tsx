@@ -13,7 +13,7 @@ const useStyles = makeStyles()({
   },
 })
 
-export default observer(function ({
+const NumberEditor = observer(function ({
   model,
   disabled,
   modelPropName,
@@ -48,3 +48,5 @@ export default observer(function ({
     />
   )
 })
+
+export default NumberEditor

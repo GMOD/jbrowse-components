@@ -9,7 +9,7 @@ import { SceneGraph } from '@jbrowse/core/util/layouts'
 import { Region, Feature, stripAlpha } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
-const Arrow = ({
+const Arrow = observer(function ({
   feature,
   featureLayout,
   config,
@@ -19,7 +19,7 @@ const Arrow = ({
   feature: Feature
   featureLayout: SceneGraph
   config: AnyConfigurationModel
-}) => {
+}) {
   const strand = feature.get('strand')
   const size = 5
   const reverseFlip = region.reversed ? -1 : 1
@@ -51,6 +51,6 @@ const Arrow = ({
       />
     </>
   ) : null
-}
+})
 
-export default observer(Arrow)
+export default Arrow

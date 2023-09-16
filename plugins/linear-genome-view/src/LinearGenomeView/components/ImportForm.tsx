@@ -34,7 +34,11 @@ const useStyles = makeStyles()(theme => ({
 
 type LGV = LinearGenomeViewModel
 
-export default observer(function ({ model }: { model: LGV }) {
+const LinearGenomeViewImportForm = observer(function ({
+  model,
+}: {
+  model: LGV
+}) {
   const { classes } = useStyles()
   const session = getSession(model)
   const { assemblyNames, assemblyManager, textSearchManager } = session
@@ -215,3 +219,5 @@ export default observer(function ({ model }: { model: LGV }) {
     </div>
   )
 })
+
+export default LinearGenomeViewImportForm

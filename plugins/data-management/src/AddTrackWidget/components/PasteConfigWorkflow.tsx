@@ -19,7 +19,11 @@ const useStyles = makeStyles()({
   },
 })
 
-function AddTrackWorkflow({ model }: { model: AddTrackModel }) {
+const PasteConfigAddTrackWorkflow = observer(function ({
+  model,
+}: {
+  model: AddTrackModel
+}) {
   const { classes } = useStyles()
   const [val, setVal] = useState('')
   const [error, setError] = useState<unknown>()
@@ -61,5 +65,5 @@ function AddTrackWorkflow({ model }: { model: AddTrackModel }) {
       </Button>
     </div>
   )
-}
-export default observer(AddTrackWorkflow)
+})
+export default PasteConfigAddTrackWorkflow

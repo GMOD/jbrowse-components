@@ -10,7 +10,7 @@ import { getTrackName } from '@jbrowse/core/util/tracks'
 import { ResizeHandle } from '@jbrowse/core/ui'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import JBrowseMenu from '@jbrowse/core/ui/Menu'
-import ResizeBar, { useResizeBar } from '@jbrowse/core/ui/ResizeBar'
+import ResizeBar from '@jbrowse/core/ui/ResizeBar'
 import {
   getEnv,
   getSession,
@@ -31,6 +31,7 @@ import { matches } from '../../util'
 import FacetedHeader from './FacetedHeader'
 import FacetFilters from './FacetFilters'
 import { getRootKeys } from './util'
+import { useResizeBar } from '@jbrowse/core/ui/useResizeBar'
 
 const nonMetadataKeys = ['category', 'adapter', 'description'] as const
 
@@ -42,7 +43,7 @@ export interface InfoArgs {
 
 const frac = 0.75
 
-export default observer(function FacetedSelector({
+const FacetedSelector = observer(function FacetedSelector({
   model,
 }: {
   model: HierarchicalTrackSelectorModel
@@ -341,3 +342,5 @@ export default observer(function FacetedSelector({
     </>
   )
 })
+
+export default FacetedSelector

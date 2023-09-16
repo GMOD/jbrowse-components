@@ -10,22 +10,6 @@ import { ExtraGlyphValidator, layOutFeature, layOutSubfeatures } from './util'
 import { SceneGraph } from '@jbrowse/core/util/layouts'
 import { Region, Feature, SimpleFeature } from '@jbrowse/core/util'
 
-function ProcessedTranscript(props: {
-  feature: Feature
-  region: Region
-  config: AnyConfigurationModel
-  featureLayout: SceneGraph
-  selected?: boolean
-  reversed?: boolean
-  [key: string]: unknown
-}) {
-  const { feature, config } = props
-  const subfeatures = getSubparts(feature, config)
-
-  // we manually compute some subfeatures, so pass these separately
-  return <Segments {...props} subfeatures={subfeatures} />
-}
-
 // returns a callback that will filter features features according to the
 // subParts conf var
 function makeSubpartsFilter(
@@ -156,6 +140,23 @@ function getSubparts(f: Feature, config: AnyConfigurationModel) {
   return c.filter(element => filterSubpart(element, config))
 }
 
+const ProcessedTranscript = observer(function ProcessedTranscript(props: {
+  feature: Feature
+  region: Region
+  config: AnyConfigurationModel
+  featureLayout: SceneGraph
+  selected?: boolean
+  reversed?: boolean
+  [key: string]: unknown
+}) {
+  const { feature, config } = props
+  const subfeatures = getSubparts(feature, config)
+
+  // we manually compute some subfeatures, so pass these separately
+  return <Segments {...props} subfeatures={subfeatures} />
+})
+
+// @ts-expect-error
 ProcessedTranscript.layOut = ({
   layout,
   feature,
@@ -191,4 +192,4 @@ ProcessedTranscript.layOut = ({
   return subLayout
 }
 
-export default observer(ProcessedTranscript)
+export default ProcessedTranscript

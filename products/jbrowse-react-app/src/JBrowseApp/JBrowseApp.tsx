@@ -18,7 +18,7 @@ const useStyles = makeStyles()({
   },
 })
 
-export default observer(function ({ viewState }: { viewState: ViewModel }) {
+const JBrowseApp = observer(function ({ viewState }: { viewState: ViewModel }) {
   const { classes } = useStyles()
   const session = viewState?.session
   const theme = createJBrowseTheme(getConf(viewState.jbrowse, 'theme'))
@@ -35,3 +35,5 @@ export default observer(function ({ viewState }: { viewState: ViewModel }) {
     </ThemeProvider>
   )
 })
+
+export default JBrowseApp

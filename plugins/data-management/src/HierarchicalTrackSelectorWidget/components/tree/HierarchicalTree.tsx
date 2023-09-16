@@ -35,7 +35,7 @@ type NodeData = ReturnType<typeof getNodeData>
 // this is the main tree component for the hierarchical track selector in note:
 // in jbrowse-web the toolbar is position="sticky" which means the autosizer
 // includes the height of the toolbar, so we subtract the given offsets
-export default observer(function HierarchicalTree({
+const HierarchicalTree = observer(function HierarchicalTree({
   height,
   tree,
   model,
@@ -98,3 +98,5 @@ export default observer(function HierarchicalTree({
     </>
   )
 })
+
+export default HierarchicalTree

@@ -5,7 +5,7 @@ import { Region } from '@jbrowse/core/util/types'
 import { Feature } from '@jbrowse/core/util'
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
 
-function WiggleRendering(props: {
+const WiggleRendering = observer(function (props: {
   regions: Region[]
   features: Map<string, Feature>
   bpPerPx: number
@@ -71,6 +71,6 @@ function WiggleRendering(props: {
       <PrerenderedCanvas {...props} />
     </div>
   )
-}
+})
 
-export default observer(WiggleRendering)
+export default WiggleRendering

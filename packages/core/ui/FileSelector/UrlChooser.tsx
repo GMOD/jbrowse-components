@@ -3,13 +3,15 @@ import { TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 import { FileLocation, isUriLocation } from '../../util/types'
 
-export default observer(function UrlChooser(props: {
+const UrlChooser = observer(function ({
+  location,
+  setLocation,
+  label,
+}: {
   location?: FileLocation
-  setLocation: Function
+  setLocation: (arg: FileLocation) => void
   label?: string
 }) {
-  const { location, setLocation, label } = props
-
   return (
     <TextField
       fullWidth
@@ -26,3 +28,5 @@ export default observer(function UrlChooser(props: {
     />
   )
 })
+
+export default UrlChooser

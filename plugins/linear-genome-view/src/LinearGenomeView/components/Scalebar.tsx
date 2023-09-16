@@ -161,8 +161,11 @@ interface ScalebarProps {
   className?: string
 }
 
-const Scalebar = React.forwardRef<HTMLDivElement, ScalebarProps>(
-  function Scalebar2({ model, style, className, ...other }, ref) {
+const Scalebar = observer(
+  React.forwardRef<HTMLDivElement, ScalebarProps>(function Scalebar2(
+    { model, style, className, ...other },
+    ref,
+  ) {
     const { classes, cx } = useStyles()
 
     const offsetLeft = model.staticBlocks.offsetPx - model.offsetPx
@@ -198,7 +201,7 @@ const Scalebar = React.forwardRef<HTMLDivElement, ScalebarProps>(
         <RenderedRefNameLabels model={model} />
       </Paper>
     )
-  },
+  }),
 )
 
-export default observer(Scalebar)
+export default Scalebar

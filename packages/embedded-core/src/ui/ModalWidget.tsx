@@ -12,7 +12,7 @@ const useStyles = makeStyles()({
   },
 })
 
-export default observer(function ({
+const ModalWidget = observer(function ({
   session,
 }: {
   session: SessionWithWidgets
@@ -72,3 +72,5 @@ export default observer(function ({
     </Dialog>
   )
 })
+
+export default ModalWidget

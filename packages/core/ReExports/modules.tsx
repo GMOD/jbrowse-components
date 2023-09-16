@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 // this is all the stuff that the pluginManager re-exports for plugins to use
 import React, { lazy, LazyExoticComponent, Suspense } from 'react'
 import * as ReactJSXRuntime from 'react/jsx-runtime'

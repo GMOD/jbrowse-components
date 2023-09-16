@@ -23,25 +23,9 @@ const useStyles = makeStyles()(theme => ({
   expandIcon: {
     color: theme.palette.tertiary.contrastText,
   },
-  button: {
-    marginTop: theme.spacing(1),
-    marginRight: theme.spacing(1),
-  },
-  adminBadge: {
-    margin: '0.5em',
-    borderRadius: 3,
-    backgroundColor: theme.palette.quaternary.main,
-    padding: '1em',
-    display: 'flex',
-    alignContent: 'center',
-  },
 }))
 
-export default observer(function JobsListWidget({
-  model,
-}: {
-  model: JobsListModel
-}) {
+const JobsListWidget = observer(function ({ model }: { model: JobsListModel }) {
   const { classes } = useStyles()
   const { jobs, finished, queued } = model
   return (
@@ -103,3 +87,5 @@ export default observer(function JobsListWidget({
     </div>
   )
 })
+
+export default JobsListWidget

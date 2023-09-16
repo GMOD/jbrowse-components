@@ -8,7 +8,11 @@ import { AddTrackModel } from '../model'
 import DefaultAddTrackWorkflow from './DefaultAddTrackWorkflow'
 import PasteConfigWorkflow from './PasteConfigWorkflow'
 
-function AddTrackSelector({ model }: { model: AddTrackModel }) {
+const AddTrackSelector = observer(function ({
+  model,
+}: {
+  model: AddTrackModel
+}) {
   const [val, setVal] = useState('Default add track workflow')
   const { pluginManager } = getEnv(model)
   const widgets = pluginManager.getAddTrackWorkflowElements()
@@ -38,6 +42,6 @@ function AddTrackSelector({ model }: { model: AddTrackModel }) {
       <Component model={model} />
     </>
   )
-}
+})
 
-export default observer(AddTrackSelector)
+export default AddTrackSelector

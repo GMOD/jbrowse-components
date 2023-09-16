@@ -45,7 +45,7 @@ interface DialogDetails {
   connectionConf: AnyConfigurationModel
 }
 
-export default observer(function HamburgerMenu({
+const HamburgerMenu = observer(function ({
   model,
 }: {
   model: HierarchicalTrackSelectorModel
@@ -195,3 +195,5 @@ export default observer(function HamburgerMenu({
     </>
   )
 })
+
+export default HamburgerMenu

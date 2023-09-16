@@ -3,11 +3,11 @@ import { observer } from 'mobx-react'
 import { Button, DialogActions, DialogContent, Typography } from '@mui/material'
 import Dialog from './Dialog'
 
-function ReturnToImportFormDialog({
+const ReturnToImportFormDialog = observer(function ({
   model,
   handleClose,
 }: {
-  model: { clearView: Function }
+  model: { clearView: () => void }
   handleClose: () => void
 }) {
   return (
@@ -40,6 +40,6 @@ function ReturnToImportFormDialog({
       </DialogActions>
     </Dialog>
   )
-}
+})
 
-export default observer(ReturnToImportFormDialog)
+export default ReturnToImportFormDialog

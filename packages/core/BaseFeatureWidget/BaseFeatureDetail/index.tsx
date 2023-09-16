@@ -41,7 +41,7 @@ const coreDetails = [
   'type',
 ]
 
-export const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()(theme => ({
   expansionPanelDetails: {
     display: 'block',
     padding: theme.spacing(1),
@@ -238,7 +238,7 @@ export function FeatureDetails(props: {
   )
 }
 
-export default observer(function ({ model }: BaseInputProps) {
+const BaseFeatureDetail = observer(function ({ model }: BaseInputProps) {
   const { error, featureData } = model
 
   if (error) {
@@ -257,5 +257,7 @@ export default observer(function ({ model }: BaseInputProps) {
   )
   return isEmpty(g) ? null : <FeatureDetails model={model} feature={g} />
 })
+
+export default BaseFeatureDetail
 
 export { default as Attributes } from './Attributes'

@@ -10,7 +10,7 @@ import {
 import { Dialog } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 
-export default observer(function CloseConnectionDialog({
+const CloseConnectionDialog = observer(function CloseConnectionDialog({
   modalInfo = {},
   onClose,
 }: {
@@ -63,3 +63,5 @@ export default observer(function CloseConnectionDialog({
     </Dialog>
   )
 })
+
+export default CloseConnectionDialog

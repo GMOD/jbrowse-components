@@ -24,7 +24,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function CenterLine({ model }: { model: LGV }) {
+const CenterLine = observer(function ({ model }: { model: LGV }) {
   const { bpPerPx, centerLineInfo, trackHeights, tracks, width } = model
   const ref = useRef<HTMLDivElement>(null)
   const { classes } = useStyles()
@@ -60,6 +60,6 @@ function CenterLine({ model }: { model: LGV }) {
       )}
     </div>
   ) : null
-}
+})
 
-export default observer(CenterLine)
+export default CenterLine

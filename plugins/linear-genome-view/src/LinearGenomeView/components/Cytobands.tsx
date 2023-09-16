@@ -61,7 +61,7 @@ const colorMap: Record<string, string | undefined> = {
   acen: '#800',
 }
 
-export default observer(function Cytobands({
+const Cytobands = observer(function ({
   overview,
   block,
   assembly,
@@ -103,3 +103,5 @@ export default observer(function Cytobands({
     </g>
   )
 })
+
+export default Cytobands

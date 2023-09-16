@@ -13,7 +13,7 @@ import ShareButton from './ShareButton'
 import AdminComponent from './AdminComponent'
 import { WebSessionModel } from '../sessionModel'
 
-export default observer(function ({
+const JBrowse = observer(function ({
   pluginManager,
 }: {
   pluginManager: PluginManager
@@ -81,3 +81,5 @@ export default observer(function ({
     </ThemeProvider>
   )
 })
+
+export default JBrowse

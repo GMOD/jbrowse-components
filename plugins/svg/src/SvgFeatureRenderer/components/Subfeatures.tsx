@@ -13,7 +13,7 @@ import {
   layOutFeature,
 } from './util'
 
-function Subfeatures(props: {
+const Subfeatures = observer(function (props: {
   feature: Feature
   featureLayout: SceneGraph
   selected?: boolean
@@ -41,8 +41,9 @@ function Subfeatures(props: {
       })}
     </>
   )
-}
+})
 
+// @ts-expect-error
 Subfeatures.layOut = ({
   layout,
   feature,
@@ -98,4 +99,4 @@ Subfeatures.layOut = ({
   return subLayout
 }
 
-export default observer(Subfeatures)
+export default Subfeatures

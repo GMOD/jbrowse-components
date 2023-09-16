@@ -5,11 +5,12 @@ import { Checkbox, FormControlLabel, Typography } from '@mui/material'
 
 // locals
 import { measureGridWidth, getStr, isUriLocation } from '../../util'
-import ResizeBar, { useResizeBar } from '../../ui/ResizeBar'
+import ResizeBar from '../../ui/ResizeBar'
 import FieldName from './FieldName'
 import UriLink from './UriLink'
+import { useResizeBar } from '../../ui/useResizeBar'
 
-export const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()(theme => ({
   margin: {
     margin: theme.spacing(1),
     width: '100%',

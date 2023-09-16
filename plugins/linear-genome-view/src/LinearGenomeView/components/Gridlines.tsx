@@ -99,7 +99,7 @@ const RenderedVerticalGuides = observer(({ model }: { model: LGV }) => {
     </>
   )
 })
-function VerticalGuides({ model }: { model: LGV }) {
+const Gridlines = observer(function ({ model }: { model: LGV }) {
   const { classes } = useStyles()
   // find the block that needs pinning to the left side for context
   const offsetLeft = model.staticBlocks.offsetPx - model.offsetPx
@@ -122,6 +122,6 @@ function VerticalGuides({ model }: { model: LGV }) {
       </div>
     </div>
   )
-}
+})
 
-export default observer(VerticalGuides)
+export default Gridlines

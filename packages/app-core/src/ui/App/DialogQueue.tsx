@@ -4,7 +4,7 @@ import { observer } from 'mobx-react'
 // locals
 import { SessionWithDrawerWidgets } from '@jbrowse/core/util'
 
-export default observer(function ({
+const DialogQueue = observer(function ({
   session,
 }: {
   session: SessionWithDrawerWidgets
@@ -20,3 +20,5 @@ export default observer(function ({
     </>
   )
 })
+
+export default DialogQueue
