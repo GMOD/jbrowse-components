@@ -32,7 +32,7 @@ categories: {
       }
 ```
 
-#### slot: configuration.hierarchical.defaultCollapse.categoryNames
+#### slot: configuration.hierarchical.defaultCollapsed.categoryNames
 
 ```js
 categoryNames: {
@@ -41,7 +41,7 @@ categoryNames: {
       }
 ```
 
-#### slot: configuration.hierarchical.defaultCollapse.topLevelCategories
+#### slot: configuration.hierarchical.defaultCollapsed.topLevelCategories
 
 ```js
 topLevelCategories: {
@@ -50,7 +50,7 @@ topLevelCategories: {
       }
 ```
 
-#### slot: configuration.hierarchical.defaultCollapse.subCategories
+#### slot: configuration.hierarchical.defaultCollapsed.subCategories
 
 ```js
 subCategories: {

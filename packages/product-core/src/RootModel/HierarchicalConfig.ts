@@ -24,21 +24,21 @@ export function HierarchicalConfigSchemaFactory() {
     }),
     defaultCollapsed: ConfigurationSchema('defaultCollapsed', {
       /**
-       * #slot configuration.hierarchical.defaultCollapse.categoryNames
+       * #slot configuration.hierarchical.defaultCollapsed.categoryNames
        */
       categoryNames: {
         type: 'stringArray',
         defaultValue: [],
       },
       /**
-       * #slot configuration.hierarchical.defaultCollapse.topLevelCategories
+       * #slot configuration.hierarchical.defaultCollapsed.topLevelCategories
        */
       topLevelCategories: {
         type: 'boolean',
         defaultValue: false,
       },
       /**
-       * #slot configuration.hierarchical.defaultCollapse.subCategories
+       * #slot configuration.hierarchical.defaultCollapsed.subCategories
        */
       subCategories: {
         type: 'boolean',

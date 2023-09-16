@@ -18,15 +18,15 @@ order of the tracks in the config.json.
   this is separate from the track names sorting since conceptually you can sort
   the categories and track names separately. default: false
 
-- `hierarchical.defaultCollapse.categoryNames` - string array - array of
+- `hierarchical.defaultCollapsed.categoryNames` - string array - array of
   category names to collapse at startup (comma-joined list of subcategory names
   if subcategories are used)
 
-- `defaultCollapse.topLevelCategories` - boolean - all the "top level
-  categories" can be collapsed by default if true. default: false
+- `hierarchical.defaultCollapsed.topLevelCategories` - boolean - all the "top
+  level categories" can be collapsed by default if true. default: false
 
-- `defaultCollapse.subCategories` - boolean - collapse all sub-categories by
-  default. default: false
+- `hierarchical.defaultCollapsed.subCategories` - boolean - collapse all
+  sub-categories by default. default: false
 
 <Figure caption="Example showing all the top-level categories collapsed" src="/img/hierarchical/collapse_toplevelcategories-fs8.png"/>
 
@@ -44,7 +44,7 @@ Example config.json with examples of these hierarchical settings:
         "trackNames": true,
         "categories": true
       },
-      "defaultCollapse": {
+      "defaultCollapsed": {
         "categoryNames": ["VCF"], // only collapse some categories on initial startup
         "topLevelCategories": true, // collapse all top level categories on initial startup
         "subCategories": true // collapse all subcategories on initial startup
@@ -54,7 +54,7 @@ Example config.json with examples of these hierarchical settings:
 }
 ```
 
-Note: The `defaultCollapse` options only apply to the "initial startup",
+Note: The `defaultCollapsed` options only apply to the "initial startup",
 afterwards, the "users preference" (their settings in their session) apply
 
 See https://jbrowse.org/jb2/docs/config/hierarchicalconfigschema/ for more
