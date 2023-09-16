@@ -133,12 +133,17 @@ export default function f(_pluginManager: PluginManager) {
         })
       },
     }))
-    .volatile(self => ({
-      selectedAssembly: self.assemblies[0],
+    .volatile(() => ({
+      selectedAssemblyVolatile: undefined as string | undefined,
+    }))
+    .views(self => ({
+      get selectedAssembly() {
+        return self.selectedAssemblyVolatile ?? self.assemblies[0]
+      },
     }))
     .actions(self => ({
       setSelectedAssembly(assembly: string) {
-        self.selectedAssembly = assembly
+        self.selectedAssemblyVolatile = assembly
       },
       clearAllBookmarks() {
         self.bookmarkedRegions.forEach(bookmark => {
@@ -148,11 +153,9 @@ export default function f(_pluginManager: PluginManager) {
         })
       },
       clearSelectedBookmarks() {
-        self.selectedBookmarks.forEach(
-          (selectedBookmark: IExtendedLabeledRegionModel) => {
-            self.bookmarkedRegions.remove(selectedBookmark.correspondingObj)
-          },
-        )
+        self.selectedBookmarks.forEach(selectedBookmark => {
+          self.bookmarkedRegions.remove(selectedBookmark.correspondingObj)
+        })
         self.selectedBookmarks = []
       },
       afterAttach() {
