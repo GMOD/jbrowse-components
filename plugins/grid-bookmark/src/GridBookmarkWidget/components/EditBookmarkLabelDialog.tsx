@@ -7,7 +7,7 @@ import {
   TextField,
 } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
-import { GridBookmarkModel } from '../model'
+import { GridBookmarkModel, IExtendedLabeledRegionModel } from '../model'
 import { observer } from 'mobx-react'
 
 const EditBookmarkLabelDialog = observer(function ({
@@ -18,11 +18,11 @@ const EditBookmarkLabelDialog = observer(function ({
   bookmarkRows,
   setNewLabel,
 }: {
-  bookmarkRows: any[]
+  bookmarkRows: IExtendedLabeledRegionModel[]
   model: GridBookmarkModel
   newLabel?: string
   setNewLabel: (arg: string) => void
-  dialogRow: any
+  dialogRow?: IExtendedLabeledRegionModel
   onClose: () => void
 }) {
   return (
@@ -47,8 +47,8 @@ const EditBookmarkLabelDialog = observer(function ({
           variant="contained"
           color="primary"
           onClick={() => {
-            if (newLabel) {
-              const target = bookmarkRows[dialogRow!.id]
+            if (newLabel && dialogRow) {
+              const target = bookmarkRows[dialogRow.id]
               model.updateBookmarkLabel(target, newLabel)
             }
             setNewLabel('')
