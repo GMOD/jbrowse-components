@@ -23,7 +23,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const GridBookmarkWidget = observer(function GridBookmarkWidget({
+const GridBookmarkWidget = observer(function ({
   model,
 }: {
   model: GridBookmarkModel

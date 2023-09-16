@@ -23,7 +23,7 @@ const useStyles = makeStyles()(() => ({
   },
 }))
 
-const GridBookmarkAssemblySelector = observer(function AssemblySelector({
+const AssemblySelector = observer(function ({
   model,
 }: {
   model: GridBookmarkModel
@@ -111,4 +111,4 @@ const GridBookmarkAssemblySelector = observer(function AssemblySelector({
   )
 })
 
-export default GridBookmarkAssemblySelector
+export default AssemblySelector
