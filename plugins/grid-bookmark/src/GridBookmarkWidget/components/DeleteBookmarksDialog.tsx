@@ -1,16 +1,7 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import {
-  Button,
-  DialogContent,
-  DialogActions,
-  Alert,
-  List,
-  ListItemText,
-  ListItem,
-} from '@mui/material'
+import { Button, DialogContent, DialogActions, Alert } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
-import { assembleLocString } from '@jbrowse/core/util'
 
 // locals
 import { GridBookmarkModel } from '../model'

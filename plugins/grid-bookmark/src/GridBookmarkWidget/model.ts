@@ -132,16 +132,12 @@ export default function f(_pluginManager: PluginManager) {
       },
     }))
     .volatile(() => ({
-      selectedAssemblyVolatile: undefined as string | undefined,
+      selectedAssembly: undefined as string | undefined,
     }))
-    .views(self => ({
-      get selectedAssembly() {
-        return self.selectedAssemblyVolatile
-      },
-    }))
+
     .actions(self => ({
       setSelectedAssembly(assembly: string) {
-        self.selectedAssemblyVolatile =
+        self.selectedAssembly =
           assembly === 'SPECIAL_ALL_ASSEMBLIES_VALUE' ? undefined : assembly
       },
       clearAllBookmarks() {

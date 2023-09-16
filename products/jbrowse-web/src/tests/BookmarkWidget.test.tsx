@@ -65,9 +65,11 @@ test('navigates to bookmarked region from widget', async () => {
   })
 
   fireEvent.click(await findByText('ctgA:201..240', {}, delay))
-  await waitFor(() =>
-    expect(
-      view.getSelectedRegions(view.leftOffset, view.rightOffset)[0].key,
-    ).toEqual('{volvox}ctgA:201..240-0'),
+  await waitFor(
+    () =>
+      expect(
+        view.getSelectedRegions(view.leftOffset, view.rightOffset)[0].key,
+      ).toEqual('{volvox}ctgA:201..240-0'),
+    delay,
   )
 }, 40000)
