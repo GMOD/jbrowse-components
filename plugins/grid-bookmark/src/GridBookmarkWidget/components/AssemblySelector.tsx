@@ -1,59 +1,109 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { observer } from 'mobx-react'
 
-import { Typography, Select, MenuItem, FormControl } from '@mui/material'
+import {
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Checkbox,
+  ListItemText,
+  OutlinedInput,
+  ListItemIcon,
+  SelectChangeEvent,
+} from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
+// locals
 import { GridBookmarkModel } from '../model'
 
 const useStyles = makeStyles()(() => ({
-  container: {
-    display: 'flex',
-    flexDirection: 'row',
-    margin: 5,
-  },
-  selectText: {
-    marginRight: 8,
-    marginTop: 10,
-  },
-  flexItem: {
-    marginRight: 8,
+  bold: {
+    fontWeight: 700,
   },
 }))
 
 function AssemblySelector({ model }: { model: GridBookmarkModel }) {
   const { classes } = useStyles()
-  const { assemblies, selectedAssembly, setSelectedAssembly } = model
-  const noAssemblies = assemblies.length === 0 ? true : false
+  const { validAssemblies, selectedAssemblies, setSelectedAssemblies } = model
+  const noAssemblies = validAssemblies.length === 0 ? true : false
+  const label = 'Select assemblies'
+  const isAllSelected =
+    validAssemblies.length > 0 &&
+    selectedAssemblies.length === validAssemblies.length
 
-  const determineCurrentValue = (selectedAssembly: string) => {
-    if (selectedAssembly === 'all') {
-      return 'all'
-    } else if (assemblies.includes(selectedAssembly)) {
-      return selectedAssembly
+  const handleChange = (event: SelectChangeEvent<string[]>) => {
+    const value = event.target.value
+    if (value.at(-1) === 'all') {
+      setSelectedAssemblies(
+        selectedAssemblies.length === validAssemblies.length
+          ? []
+          : validAssemblies,
+      )
+      return
     }
-
-    return 'none'
+    setSelectedAssemblies([...value])
   }
 
+  useEffect(() => {
+    // sets the selected assemblies when a valid assembly has been added or removed
+    if (validAssemblies.length > selectedAssemblies.length) {
+      const newAsm = validAssemblies.filter(
+        asm => !selectedAssemblies.includes(asm),
+      )
+      setSelectedAssemblies([...selectedAssemblies, ...newAsm])
+    }
+    if (validAssemblies.length < selectedAssemblies.length) {
+      const rmAsm = selectedAssemblies.filter(
+        asm => !validAssemblies.includes(asm),
+      )
+      rmAsm.forEach(asm => {
+        selectedAssemblies.splice(selectedAssemblies.indexOf(asm), 1)
+      })
+      setSelectedAssemblies([...selectedAssemblies])
+    }
+  }, [
+    validAssemblies.length,
+    selectedAssemblies,
+    setSelectedAssemblies,
+    validAssemblies,
+  ])
+
   return (
-    <div className={classes.container}>
-      <Typography className={classes.selectText}>Select assembly:</Typography>
-      <FormControl className={classes.flexItem} disabled={noAssemblies}>
-        <Select
-          value={determineCurrentValue(selectedAssembly)}
-          onChange={event => setSelectedAssembly(event.target.value)}
-        >
-          <MenuItem value="none">none</MenuItem>
-          <MenuItem value="all">all</MenuItem>
-          {assemblies.map(assembly => (
-            <MenuItem value={assembly} key={assembly}>
-              {assembly}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-    </div>
+    <FormControl disabled={noAssemblies}>
+      <InputLabel id="select-assemblies-label">{label}</InputLabel>
+      <Select
+        labelId="select-assemblies-label"
+        id="select-assemblies"
+        multiple
+        value={selectedAssemblies}
+        onChange={handleChange}
+        input={<OutlinedInput label={label} />}
+        renderValue={selected => selected.join(', ')}
+      >
+        <MenuItem value="all">
+          <ListItemIcon>
+            <Checkbox
+              checked={isAllSelected}
+              indeterminate={
+                selectedAssemblies.length > 0 &&
+                selectedAssemblies.length < validAssemblies.length
+              }
+            />
+          </ListItemIcon>
+          <ListItemText
+            classes={{ primary: classes.bold }}
+            primary="Select All"
+          />
+        </MenuItem>
+        {validAssemblies.map(name => (
+          <MenuItem key={name} value={name}>
+            <Checkbox checked={selectedAssemblies.includes(name)} />
+            <ListItemText primary={name} />
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
   )
 }
 

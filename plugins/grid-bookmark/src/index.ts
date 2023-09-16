@@ -1,7 +1,12 @@
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
+import {
+  SessionWithWidgets,
+  getSession,
+  isAbstractMenuManager,
+  isSessionModelWithWidgets,
+} from '@jbrowse/core/util'
 import {
   PluggableElementType,
   ViewType,
@@ -30,6 +35,53 @@ export default class extends Plugin {
               const superRubberBandMenuItems = self.rubberBandMenuItems
               return {
                 actions: {
+                  afterCreate() {
+                    document.addEventListener('keydown', e => {
+                      // ctrl+shift+d or cmd+shift+d
+                      if (
+                        (e.ctrlKey || e.metaKey) &&
+                        e.shiftKey &&
+                        e.code === 'KeyD'
+                      ) {
+                        e.preventDefault()
+                        // @ts-ignore
+                        self.activateBookmarkWidget()
+                        // @ts-ignore
+                        self.bookmarkCurrentRegion()
+                        getSession(self).notify('Bookmark created.', 'success')
+                      }
+                      // ctrl+shift+m or cmd+shift+m
+                      if (
+                        (e.ctrlKey || e.metaKey) &&
+                        e.shiftKey &&
+                        e.code === 'KeyM'
+                      ) {
+                        e.preventDefault()
+                        // @ts-ignore
+                        self.navigateNewestBookmark()
+                      }
+                    })
+                  },
+
+                  navigateNewestBookmark() {
+                    const session = getSession(self)
+                    // @ts-expect-error
+                    const bookmarkWidget = self.activateBookmarkWidget()
+                    const regions = bookmarkWidget.bookmarkedRegions
+                    if (regions.length !== 0) {
+                      self.navTo(regions.at(-1))
+                      session.notify(
+                        'Navigated to the most recently created bookmark.',
+                        'success',
+                      )
+                    } else {
+                      session.notify(
+                        'There are no recent bookmarks to navigate to.',
+                        'info',
+                      )
+                    }
+                  },
+
                   activateBookmarkWidget() {
                     const session = getSession(self)
                     if (isSessionModelWithWidgets(session)) {
@@ -38,11 +90,11 @@ export default class extends Plugin {
                         bookmarkWidget = session.addWidget(
                           'GridBookmarkWidget',
                           'GridBookmark',
-                          { view: self },
                         )
                       }
 
                       session.showWidget(bookmarkWidget)
+                      bookmarkWidget = session.widgets.get('GridBookmark')
                       return bookmarkWidget
                     }
 
@@ -50,19 +102,14 @@ export default class extends Plugin {
                   },
 
                   bookmarkCurrentRegion() {
-                    const selectedRegions = self.getSelectedRegions(
-                      self.leftOffset,
-                      self.rightOffset,
-                    )
-                    const firstRegion = selectedRegions[0]
-                    const session = getSession(self)
-                    if (isSessionModelWithWidgets(session)) {
-                      const { widgets } = session
-                      let bookmarkWidget = widgets.get('GridBookmark')
-                      if (!bookmarkWidget) {
-                        this.activateBookmarkWidget()
-                        bookmarkWidget = widgets.get('GridBookmark')
-                      }
+                    // @ts-ignore
+                    if (self.id === getSession(self).focusedViewId) {
+                      const selectedRegions = self.getSelectedRegions(
+                        undefined,
+                        undefined,
+                      )
+                      const firstRegion = selectedRegions[0]
+                      const bookmarkWidget = this.activateBookmarkWidget()
                       // @ts-expect-error
                       bookmarkWidget.addBookmark(firstRegion)
                     }
@@ -101,18 +148,9 @@ export default class extends Plugin {
                             rightOffset,
                           )
                           const firstRegion = selectedRegions[0]
-                          const session = getSession(self)
-                          if (isSessionModelWithWidgets(session)) {
-                            const { widgets } = session
-                            let bookmarkWidget = widgets.get('GridBookmark')
-                            if (!bookmarkWidget) {
-                              // @ts-expect-error
-                              self.activateBookmarkWidget()
-                              bookmarkWidget = widgets.get('GridBookmark')
-                            }
-                            // @ts-expect-error
-                            bookmarkWidget.addBookmark(firstRegion)
-                          }
+                          // @ts-expect-error
+                          const bookmarkWidget = self.activateBookmarkWidget()
+                          bookmarkWidget.addBookmark(firstRegion)
                         },
                       },
                     ]
@@ -129,5 +167,22 @@ export default class extends Plugin {
     )
   }
 
-  configure(_pluginManager: PluginManager) {}
+  configure(pluginManager: PluginManager) {
+    if (isAbstractMenuManager(pluginManager.rootModel)) {
+      pluginManager.rootModel.appendToMenu('Tools', {
+        label: 'Bookmarks',
+        icon: BookmarksIcon,
+        onClick: (session: SessionWithWidgets) => {
+          let bookmarkWidget = session.widgets.get('GridBookmark')
+          if (!bookmarkWidget) {
+            bookmarkWidget = session.addWidget(
+              'GridBookmarkWidget',
+              'GridBookmark',
+            )
+          }
+          session.showWidget(bookmarkWidget)
+        },
+      })
+    }
+  }
 }
