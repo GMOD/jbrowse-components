@@ -7,7 +7,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { PluginStoreModel } from '../model'
 import InstalledPlugin from './InstalledPlugin'
 
-export default observer(function InstalledPluginsList({
+const InstalledPluginsList = observer(function InstalledPluginsList({
   pluginManager,
   model,
 }: {
@@ -33,3 +33,5 @@ export default observer(function InstalledPluginsList({
     </List>
   )
 })
+
+export default InstalledPluginsList
