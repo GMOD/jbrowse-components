@@ -15,11 +15,7 @@ import { GridBookmarkModel } from '../model'
 
 const useStyles = makeStyles()({
   card: {
-    display: 'flex',
-    flexFlow: 'column',
-    margin: '5px',
-    padding: '5px',
-    gap: '5px',
+    marginTop: 5,
   },
 })
 
@@ -43,8 +39,7 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
         <DeleteBookmarks model={model} />
       </div>
       <Alert severity="info">
-        Click or double click the <strong>label</strong> field to notate your
-        bookmark.
+        Double click the <strong>label</strong> field to annotate your bookmark.
       </Alert>
       <AssemblySelector model={model} />
       <BookmarkGrid model={model} />

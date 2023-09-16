@@ -2,11 +2,7 @@ import React, { Suspense, lazy, useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
 import { Link } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import {
-  DataGrid,
-  GRID_CHECKBOX_SELECTION_COL_DEF,
-  GridRowSelectionModel,
-} from '@mui/x-data-grid'
+import { DataGrid, GridRowSelectionModel } from '@mui/x-data-grid'
 import {
   getSession,
   assembleLocString,
@@ -42,7 +38,11 @@ const BookmarkGrid = observer(function ({
   const { views } = session
 
   const bookmarkRows = bookmarkedRegions
-    .filter(r => selectedAssembly === r.assemblyName)
+    .filter(r =>
+      selectedAssembly !== undefined
+        ? selectedAssembly === r.assemblyName
+        : true,
+    )
     .map((region, index) => {
       const { assemblyName, ...rest } = region
       return {
@@ -54,6 +54,9 @@ const BookmarkGrid = observer(function ({
       }
     })
 
+  // reset selections if bookmarked regions change
+  // needed especially if bookmarked regions are deleted, then
+  // clear selection model
   useEffect(() => {
     setRowSelectionModel([])
   }, [bookmarkedRegions.length])
@@ -65,11 +68,6 @@ const BookmarkGrid = observer(function ({
         density="compact"
         rows={bookmarkRows}
         columns={[
-          {
-            ...GRID_CHECKBOX_SELECTION_COL_DEF,
-            minWidth: 40,
-            width: 40,
-          },
           {
             field: 'locString',
             headerName: 'Bookmark link',
@@ -99,14 +97,20 @@ const BookmarkGrid = observer(function ({
                 : measureText('label'),
             editable: true,
           },
-          {
-            field: 'assemblyName',
-            headerName: 'Assembly',
-            width:
-              bookmarkRows.length > 0
-                ? measureGridWidth(bookmarkRows.map(row => row.assemblyName))
-                : measureText('assembly'),
-          },
+          ...(selectedAssembly === undefined
+            ? [
+                {
+                  field: 'assemblyName',
+                  headerName: 'Assembly',
+                  width:
+                    bookmarkRows.length > 0
+                      ? measureGridWidth(
+                          bookmarkRows.map(row => row.assemblyName),
+                        )
+                      : measureText('assembly'),
+                },
+              ]
+            : []),
         ]}
         onCellDoubleClick={({ row }) => {
           setDialogOpen(true)

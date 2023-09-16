@@ -10,7 +10,7 @@ import {
   ListItem,
 } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
-import { assembleLocString, getSession } from '@jbrowse/core/util'
+import { assembleLocString } from '@jbrowse/core/util'
 
 // locals
 import { GridBookmarkModel } from '../model'
@@ -19,7 +19,7 @@ const DeleteBookmarksDialog = observer(function ({
   onClose,
   model,
 }: {
-  onClose: (arg: boolean) => void
+  onClose: () => void
   model: GridBookmarkModel
 }) {
   const { selectedBookmarks } = model
@@ -41,20 +41,9 @@ const DeleteBookmarksDialog = observer(function ({
             'Only selected bookmarks will be deleted.'
           )}
         </Alert>
-        <List dense>
-          {selectedBookmarks.map((bookmark, index) => (
-            <ListItem key={`${index}-${assembleLocString(bookmark)}`}>
-              <ListItemText primary={assembleLocString(bookmark)} />
-            </ListItem>
-          ))}
-        </List>
       </DialogContent>
       <DialogActions>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={() => onClose(false)}
-        >
+        <Button variant="contained" color="secondary" onClick={() => onClose()}>
           Cancel
         </Button>
         <Button
@@ -64,12 +53,9 @@ const DeleteBookmarksDialog = observer(function ({
             if (deleteAll) {
               model.clearAllBookmarks()
             }
+
             model.clearSelectedBookmarks()
-            onClose(false)
-            getSession(model).notify(
-              'Bookmarks have been successfully deleted',
-              'success',
-            )
+            onClose()
           }}
         >
           Confirm

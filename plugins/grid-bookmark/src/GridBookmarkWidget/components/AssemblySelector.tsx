@@ -5,25 +5,39 @@ import { MenuItem, TextField } from '@mui/material'
 
 // locals
 import { GridBookmarkModel } from '../model'
+import { makeStyles } from 'tss-react/mui'
+import { getSession } from '@jbrowse/core/util'
+
+const useStyles = makeStyles()({
+  textfield: {
+    padding: 5,
+  },
+})
 
 const GridBookmarkAssemblySelector = observer(function AssemblySelector({
   model,
 }: {
   model: GridBookmarkModel
 }) {
-  const { validAssemblies, selectedAssembly } = model
+  const { assemblyManager } = getSession(model)
+  const { classes } = useStyles()
+  const { validAssemblies, selectedAssembly = 'SPECIAL_ALL_ASSEMBLIES_VALUE' } =
+    model
 
   return (
     <TextField
-      variant="outlined"
       select
+      variant="outlined"
+      fullWidth
+      className={classes.textfield}
       value={selectedAssembly}
       onChange={event => model.setSelectedAssembly(event.target.value)}
       label="Select assembly"
     >
-      {validAssemblies.map(name => (
+      <MenuItem value="SPECIAL_ALL_ASSEMBLIES_VALUE">All</MenuItem>
+      {[...validAssemblies].map(name => (
         <MenuItem key={name} value={name}>
-          {name}
+          {assemblyManager.get(name)?.displayName || name}
         </MenuItem>
       ))}
     </TextField>

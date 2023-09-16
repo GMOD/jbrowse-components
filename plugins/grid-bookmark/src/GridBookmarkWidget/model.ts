@@ -112,20 +112,18 @@ export default function f(_pluginManager: PluginManager) {
         ]
       },
       get validAssemblies() {
-        return [
-          ...new Set(
-            this.assemblies.filter((assembly: string) =>
-              getSession(self).assemblyNames.includes(assembly),
-            ),
+        return new Set(
+          this.assemblies.filter((assembly: string) =>
+            getSession(self).assemblyNames.includes(assembly),
           ),
-        ]
+        )
       },
       get bookmarksWithValidAssemblies() {
         return (
           JSON.parse(
             JSON.stringify(self.bookmarkedRegions),
           ) as unknown as ILabeledRegionModel[]
-        ).filter(ele => this.validAssemblies.includes(ele.assemblyName))
+        ).filter(ele => this.validAssemblies.has(ele.assemblyName))
       },
       get allBookmarksModel() {
         return SharedBookmarksModel.create({
@@ -138,16 +136,17 @@ export default function f(_pluginManager: PluginManager) {
     }))
     .views(self => ({
       get selectedAssembly() {
-        return self.selectedAssemblyVolatile ?? self.assemblies[0]
+        return self.selectedAssemblyVolatile
       },
     }))
     .actions(self => ({
       setSelectedAssembly(assembly: string) {
-        self.selectedAssemblyVolatile = assembly
+        self.selectedAssemblyVolatile =
+          assembly === 'SPECIAL_ALL_ASSEMBLIES_VALUE' ? undefined : assembly
       },
       clearAllBookmarks() {
         self.bookmarkedRegions.forEach(bookmark => {
-          if (self.validAssemblies.includes(bookmark.assemblyName)) {
+          if (self.validAssemblies.has(bookmark.assemblyName)) {
             self.bookmarkedRegions.remove(bookmark)
           }
         })
