@@ -133,7 +133,7 @@ const OverlayComparativeView = observer(({ model }: { model: LCV }) => {
   )
 })
 
-export default observer(function (props: {
+const LinearComparativeView = observer(function (props: {
   ExtraButtons?: React.ReactNode
   model: LCV
 }) {
@@ -150,3 +150,5 @@ export default observer(function (props: {
     <OverlayComparativeView {...props} />
   )
 })
+
+export default LinearComparativeView

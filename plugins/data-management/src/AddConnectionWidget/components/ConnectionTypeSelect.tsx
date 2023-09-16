@@ -6,7 +6,7 @@ import { observer } from 'mobx-react'
 // icons
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 
-export default observer(function ConnectionTypeSelect({
+const ConnectionTypeSelect = observer(function ConnectionTypeSelect({
   connectionTypeChoices,
   connectionType,
   setConnectionType,
@@ -63,3 +63,5 @@ export default observer(function ConnectionTypeSelect({
     </form>
   )
 })
+
+export default ConnectionTypeSelect

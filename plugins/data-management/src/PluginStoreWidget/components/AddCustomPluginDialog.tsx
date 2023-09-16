@@ -36,7 +36,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default observer(function ({
+const AddCustomPluginDialog = observer(function ({
   onClose,
   model,
 }: {
@@ -138,3 +138,5 @@ export default observer(function ({
     </Dialog>
   )
 })
+
+export default AddCustomPluginDialog

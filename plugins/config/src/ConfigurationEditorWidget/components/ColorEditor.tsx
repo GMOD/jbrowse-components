@@ -34,7 +34,7 @@ export const ColorSlot = (props: {
   )
 }
 
-function ColorEditorSlot(props: {
+const ColorEditor = observer(function (props: {
   slot: {
     name: string
     value: string
@@ -54,6 +54,6 @@ function ColorEditorSlot(props: {
       }}
     />
   )
-}
+})
 
-export default observer(ColorEditorSlot)
+export default ColorEditor

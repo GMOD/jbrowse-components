@@ -45,7 +45,11 @@ const useStyles = makeStyles()(theme => ({
 
 const steps = ['Enter track data', 'Confirm track type']
 
-function AddTrackWorkflow({ model }: { model: AddTrackModel }) {
+const DefaultAddTrackWorkflow = observer(function ({
+  model,
+}: {
+  model: AddTrackModel
+}) {
   const [activeStep, setActiveStep] = useState(0)
   const { classes } = useStyles()
 
@@ -197,5 +201,5 @@ function AddTrackWorkflow({ model }: { model: AddTrackModel }) {
       </Stepper>
     </div>
   )
-}
-export default observer(AddTrackWorkflow)
+})
+export default DefaultAddTrackWorkflow

@@ -7,7 +7,7 @@ import Attributes from './Attributes'
 import FieldName from './FieldName'
 import BasicValue from './BasicValue'
 
-export const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()(theme => ({
   field: {
     display: 'flex',
     flexWrap: 'wrap',

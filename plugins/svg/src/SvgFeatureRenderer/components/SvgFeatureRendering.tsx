@@ -189,7 +189,7 @@ const RenderedFeatures = observer(
   },
 )
 
-function SvgFeatureRendering(props: {
+const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
   layout: BaseLayout<unknown>
   blockKey: string
   regions: Region[]
@@ -350,6 +350,6 @@ function SvgFeatureRendering(props: {
       />
     </svg>
   )
-}
+})
 
-export default observer(SvgFeatureRendering)
+export default SvgFeatureRendering

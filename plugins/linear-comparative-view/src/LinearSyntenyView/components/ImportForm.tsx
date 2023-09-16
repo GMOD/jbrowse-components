@@ -103,7 +103,7 @@ function TrackSelector({
   )
 }
 
-export default observer(function ({
+const LinearSyntenyViewImportForm = observer(function ({
   model,
 }: {
   model: LinearSyntenyViewModel
@@ -219,3 +219,5 @@ export default observer(function ({
     </Container>
   )
 })
+
+export default LinearSyntenyViewImportForm

@@ -31,7 +31,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default observer(function SvInspectorView({
+const SvInspectorView = observer(function ({
   model,
 }: {
   model: SvInspectorViewModel
@@ -79,3 +79,5 @@ export default observer(function SvInspectorView({
     </div>
   )
 })
+
+export default SvInspectorView

@@ -39,7 +39,7 @@ function layoutFeat(args: {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default observer(function LollipopRendering(props: Record<string, any>) {
+const LollipopRendering = observer(function (props: Record<string, any>) {
   const onMouseDown = (event: React.MouseEvent) => {
     const { onMouseDown: handler } = props
     return handler?.(event)
@@ -138,3 +138,5 @@ export default observer(function LollipopRendering(props: Record<string, any>) {
     </svg>
   )
 })
+
+export default LollipopRendering

@@ -24,7 +24,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default observer(function ({
+const NumberMapEditor = observer(function ({
   slot,
 }: {
   slot: {
@@ -92,3 +92,5 @@ export default observer(function ({
     </>
   )
 })
+
+export default NumberMapEditor

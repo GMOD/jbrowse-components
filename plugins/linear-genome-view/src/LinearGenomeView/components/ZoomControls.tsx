@@ -18,7 +18,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function ZoomControls({ model }: { model: LinearGenomeViewModel }) {
+const ZoomControls = observer(function ({
+  model,
+}: {
+  model: LinearGenomeViewModel
+}) {
   const { classes } = useStyles()
   const { maxBpPerPx, minBpPerPx, bpPerPx, scaleFactor } = model
   const [value, setValue] = useState(-Math.log2(bpPerPx) * 100)
@@ -57,6 +61,6 @@ function ZoomControls({ model }: { model: LinearGenomeViewModel }) {
       </IconButton>
     </div>
   )
-}
+})
 
-export default observer(ZoomControls)
+export default ZoomControls

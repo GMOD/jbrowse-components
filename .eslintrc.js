@@ -23,13 +23,15 @@ module.exports = {
     tsconfigRootDir: __dirname,
     project: './tsconfig.json',
   },
-  plugins: ['eslint-plugin-tsdoc'],
+  plugins: ['eslint-plugin-tsdoc', 'react-refresh'],
   settings: {
     react: {
       version: 'detect',
     },
   },
   rules: {
+    'react-refresh/only-export-components': 'warn',
+
     '@typescript-eslint/ban-ts-ignore': 'off',
     '@typescript-eslint/ban-ts-comment': 'off',
     '@typescript-eslint/ban-types': 'off',

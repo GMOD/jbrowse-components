@@ -24,7 +24,11 @@ const useStyles = makeStyles()(() => ({
   },
 }))
 
-function ExportBookmarks({ model }: { model: GridBookmarkModel }) {
+const ExportBookmarks = observer(function ({
+  model,
+}: {
+  model: GridBookmarkModel
+}) {
   const { classes } = useStyles()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [fileType, setFileType] = useState('BED')
@@ -93,6 +97,6 @@ function ExportBookmarks({ model }: { model: GridBookmarkModel }) {
       </Dialog>
     </>
   )
-}
+})
 
-export default observer(ExportBookmarks)
+export default ExportBookmarks

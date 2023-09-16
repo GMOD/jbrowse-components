@@ -9,7 +9,6 @@ import {
   ILiteralType,
 } from '@jbrowse/core/util/mst-reflection'
 import { IconButton, MenuItem, Paper, SvgIcon, TextField } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 
 // icons
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked'
@@ -28,38 +27,39 @@ import {
   AnyConfigurationSlot,
   AnyConfigurationSlotType,
 } from '@jbrowse/core/configuration'
+import { useSlotEditorStyles } from './useSlotEditorStyles'
 
-const StringEditor = observer(
-  ({
-    slot,
-  }: {
-    slot: {
-      name: string
-      description: string
-      value: string
-      set: (arg: string) => void
-    }
-  }) => (
+const StringEditor = observer(function ({
+  slot,
+}: {
+  slot: {
+    name: string
+    description: string
+    value: string
+    set: (arg: string) => void
+  }
+}) {
+  return (
     <ConfigurationTextField
       label={slot.name}
       helperText={slot.description}
       value={slot.value}
       onChange={evt => slot.set(evt.target.value)}
     />
-  ),
-)
+  )
+})
 
-const TextEditor = observer(
-  ({
-    slot,
-  }: {
-    slot: {
-      name: string
-      description: string
-      value: string
-      set: (arg: string) => void
-    }
-  }) => (
+const TextEditor = observer(function ({
+  slot,
+}: {
+  slot: {
+    name: string
+    description: string
+    value: string
+    set: (arg: string) => void
+  }
+}) {
+  return (
     <TextField
       label={slot.name}
       helperText={slot.description}
@@ -67,8 +67,8 @@ const TextEditor = observer(
       value={slot.value}
       onChange={evt => slot.set(evt.target.value)}
     />
-  ),
-)
+  )
+})
 
 // checked checkbox, looks like a styled (x)
 const SvgCheckbox = () => (
@@ -77,35 +77,33 @@ const SvgCheckbox = () => (
   </SvgIcon>
 )
 
-const IntegerEditor = observer(
-  ({
-    slot,
-  }: {
-    slot: {
-      name: string
-      value: string
-      description: string
-      set: (num: number) => void
+const IntegerEditor = observer(function ({
+  slot,
+}: {
+  slot: {
+    name: string
+    value: string
+    description: string
+    set: (num: number) => void
+  }
+}) {
+  const [val, setVal] = useState(slot.value)
+  useEffect(() => {
+    const num = Number.parseInt(val, 10)
+    if (!Number.isNaN(num)) {
+      slot.set(num)
     }
-  }) => {
-    const [val, setVal] = useState(slot.value)
-    useEffect(() => {
-      const num = Number.parseInt(val, 10)
-      if (!Number.isNaN(num)) {
-        slot.set(num)
-      }
-    }, [slot, val])
-    return (
-      <ConfigurationTextField
-        label={slot.name}
-        helperText={slot.description}
-        value={val}
-        type="number"
-        onChange={evt => setVal(evt.target.value)}
-      />
-    )
-  },
-)
+  }, [slot, val])
+  return (
+    <ConfigurationTextField
+      label={slot.name}
+      helperText={slot.description}
+      value={val}
+      type="number"
+      onChange={evt => setVal(evt.target.value)}
+    />
+  )
+})
 
 const StringEnumEditor = observer(function ({
   slot,
@@ -173,64 +171,48 @@ const valueComponents = {
   configRelationships: JsonEditor,
 }
 
-export const useSlotEditorStyles = makeStyles()(theme => ({
-  paper: {
-    display: 'flex',
-    marginBottom: theme.spacing(2),
-    position: 'relative',
-  },
-  paperContent: {
-    width: '100%',
-  },
-  slotModeSwitch: {
-    width: 24,
-    background: theme.palette.secondary.light,
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-}))
-
-const SlotEditor = observer(
+const SlotEditor = observer(function ({
+  slot,
+  slotSchema,
+}: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ({ slot, slotSchema }: { slot: any; slotSchema: IAnyType }) => {
-    const { classes } = useSlotEditorStyles()
-    const { type } = slot
-    let ValueComponent = slot.isCallback
-      ? CallbackEditor
-      : // @ts-expect-error
-        valueComponents[type]
-    if (!ValueComponent) {
-      console.warn(`no slot editor defined for ${type}, editing as string`)
-      ValueComponent = StringEditor
-    }
-    if (!(type in valueComponents)) {
-      console.warn(`SlotEditor needs to implement ${type}`)
-    }
-    return (
-      <Paper className={classes.paper}>
-        <div className={classes.paperContent}>
-          <ValueComponent slot={slot} slotSchema={slotSchema} />
-        </div>
-        <div className={classes.slotModeSwitch}>
-          {slot.contextVariable.length ? (
-            <IconButton
-              onClick={() =>
-                slot.isCallback
-                  ? slot.convertToValue()
-                  : slot.convertToCallback()
-              }
-              title={`convert to ${
-                slot.isCallback ? 'regular value' : 'callback'
-              }`}
-            >
-              {slot.isCallback ? <SvgCheckbox /> : <RadioButtonUncheckedIcon />}
-            </IconButton>
-          ) : null}
-        </div>
-      </Paper>
-    )
-  },
-)
+  slot: any
+  slotSchema: IAnyType
+}) {
+  const { classes } = useSlotEditorStyles()
+  const { type } = slot
+  let ValueComponent = slot.isCallback
+    ? CallbackEditor
+    : // @ts-expect-error
+      valueComponents[type]
+  if (!ValueComponent) {
+    console.warn(`no slot editor defined for ${type}, editing as string`)
+    ValueComponent = StringEditor
+  }
+  if (!(type in valueComponents)) {
+    console.warn(`SlotEditor needs to implement ${type}`)
+  }
+  return (
+    <Paper className={classes.paper}>
+      <div className={classes.paperContent}>
+        <ValueComponent slot={slot} slotSchema={slotSchema} />
+      </div>
+      <div className={classes.slotModeSwitch}>
+        {slot.contextVariable.length ? (
+          <IconButton
+            onClick={() =>
+              slot.isCallback ? slot.convertToValue() : slot.convertToCallback()
+            }
+            title={`convert to ${
+              slot.isCallback ? 'regular value' : 'callback'
+            }`}
+          >
+            {slot.isCallback ? <SvgCheckbox /> : <RadioButtonUncheckedIcon />}
+          </IconButton>
+        ) : null}
+      </div>
+    </Paper>
+  )
+})
 
 export default SlotEditor

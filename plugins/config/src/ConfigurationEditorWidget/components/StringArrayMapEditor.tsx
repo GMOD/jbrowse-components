@@ -26,7 +26,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default observer(function ({
+const StringArrayMapEditor = observer(function ({
   slot,
 }: {
   slot: {
@@ -102,3 +102,5 @@ export default observer(function ({
     </>
   )
 })
+
+export default StringArrayMapEditor

@@ -28,7 +28,11 @@ const useStyles = makeStyles()(() => ({
   },
 }))
 
-function ShareBookmarks({ model }: { model: GridBookmarkModel }) {
+const ShareBookmarks = observer(function ShareBookmarks({
+  model,
+}: {
+  model: GridBookmarkModel
+}) {
   const { classes } = useStyles()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [url, setUrl] = useState('')
@@ -147,6 +151,6 @@ function ShareBookmarks({ model }: { model: GridBookmarkModel }) {
       </Dialog>
     </>
   )
-}
+})
 
-export default observer(ShareBookmarks)
+export default ShareBookmarks

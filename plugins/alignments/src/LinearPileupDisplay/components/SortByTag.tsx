@@ -9,7 +9,7 @@ import {
 } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
 
-function SortByTagDlg(props: {
+const SortByTagDialog = observer(function (props: {
   model: { setSortedBy: Function }
   handleClose: () => void
 }) {
@@ -60,5 +60,6 @@ function SortByTagDlg(props: {
       </DialogContent>
     </Dialog>
   )
-}
-export default observer(SortByTagDlg)
+})
+
+export default SortByTagDialog

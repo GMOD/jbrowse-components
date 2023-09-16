@@ -6,15 +6,17 @@ import { observer } from 'mobx-react'
 import { WiggleDisplayModel } from '../models/model'
 import YScaleBars from './YScaleBars'
 
-export default observer((props: { model: WiggleDisplayModel }) => {
-  const { model } = props
+const MultiLinearWiggleDisplayComponent = observer(
+  (props: { model: WiggleDisplayModel }) => {
+    const { model } = props
 
-  return (
-    <div>
-      <BaseLinearDisplayComponent {...props} />
-      <YScaleBars model={model} />
-    </div>
-  )
-})
+    return (
+      <div>
+        <BaseLinearDisplayComponent {...props} />
+        <YScaleBars model={model} />
+      </div>
+    )
+  },
+)
 
-export { default as YScaleBar } from '../../shared/YScaleBar'
+export default MultiLinearWiggleDisplayComponent

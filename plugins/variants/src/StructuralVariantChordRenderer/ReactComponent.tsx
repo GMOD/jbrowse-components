@@ -6,7 +6,7 @@ import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 // locals
 import Chord, { Block, AnyRegion } from './Chord'
 
-export default observer(function StructuralVariantChords({
+const StructuralVariantChordsReactComponent = observer(function ({
   features,
   config,
   displayModel,
@@ -76,3 +76,5 @@ export default observer(function StructuralVariantChords({
     </g>
   )
 })
+
+export default StructuralVariantChordsReactComponent

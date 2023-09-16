@@ -11,7 +11,10 @@ import {
 import { Dialog } from '@jbrowse/core/ui'
 import ModificationTable from './ModificationsTable'
 
-function ColorByTagDlg(props: {
+const ColorByModificationsDialog = observer(function ({
+  model,
+  handleClose,
+}: {
   model: {
     setColorScheme: (arg: { type: string }) => void
     modificationTagMap: ObservableMap<string, string>
@@ -19,7 +22,6 @@ function ColorByTagDlg(props: {
   }
   handleClose: () => void
 }) {
-  const { model, handleClose } = props
   const { colorBy, modificationTagMap } = model
 
   const modifications = [...modificationTagMap.entries()]
@@ -97,6 +99,6 @@ function ColorByTagDlg(props: {
       </DialogContent>
     </Dialog>
   )
-}
+})
 
-export default observer(ColorByTagDlg)
+export default ColorByModificationsDialog

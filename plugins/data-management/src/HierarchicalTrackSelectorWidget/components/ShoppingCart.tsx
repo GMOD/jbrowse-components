@@ -21,7 +21,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default observer(function ShoppingCart({
+const ShoppingCart = observer(function ({
   model,
 }: {
   model: HierarchicalTrackSelectorModel
@@ -71,3 +71,5 @@ export default observer(function ShoppingCart({
     </>
   )
 })
+
+export default ShoppingCart

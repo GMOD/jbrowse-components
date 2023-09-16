@@ -82,7 +82,7 @@ function UnknownAdapterPrompt({ model }: { model: AddTrackModel }) {
   )
 }
 
-export default observer(function ConfirmTrack({
+const ConfirmTrack = observer(function ConfirmTrack({
   model,
 }: {
   model: AddTrackModel
@@ -187,3 +187,5 @@ export default observer(function ConfirmTrack({
     </div>
   )
 })
+
+export default ConfirmTrack

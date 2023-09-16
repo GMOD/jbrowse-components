@@ -18,7 +18,11 @@ import DeleteIcon from '@mui/icons-material/Delete'
 // locals
 import { GridBookmarkModel, IExtendedLabeledRegionModel } from '../model'
 
-function DeleteBookmarks({ model }: { model: GridBookmarkModel }) {
+const DeleteBookmarks = observer(function ({
+  model,
+}: {
+  model: GridBookmarkModel
+}) {
   const [dialogOpen, setDialogOpen] = useState(false)
   const { selectedBookmarks } = model
   const deleteAll = selectedBookmarks.length === 0
@@ -92,6 +96,6 @@ function DeleteBookmarks({ model }: { model: GridBookmarkModel }) {
       </Dialog>
     </>
   )
-}
+})
 
-export default observer(DeleteBookmarks)
+export default DeleteBookmarks

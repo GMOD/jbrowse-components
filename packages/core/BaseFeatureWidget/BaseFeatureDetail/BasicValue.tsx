@@ -6,7 +6,7 @@ import { Link } from '@mui/material'
 // locals
 import { SanitizedHTML } from '../../ui'
 
-export const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()(theme => ({
   fieldValue: {
     wordBreak: 'break-word',
     maxHeight: 300,

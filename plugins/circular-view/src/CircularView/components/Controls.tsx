@@ -30,7 +30,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default observer(function ({ model }: { model: CircularViewModel }) {
+const Controls = observer(function ({ model }: { model: CircularViewModel }) {
   const { classes } = useStyles()
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   return (
@@ -117,3 +117,5 @@ export default observer(function ({ model }: { model: CircularViewModel }) {
     </div>
   )
 })
+
+export default Controls

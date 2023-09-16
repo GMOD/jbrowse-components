@@ -1,5 +1,10 @@
 import React from 'react'
-import { Alert, Button, IconButton, Snackbar } from '@mui/material'
+import {
+  Alert,
+  Button,
+  IconButton,
+  Snackbar as MUISnackbar,
+} from '@mui/material'
 import { observer } from 'mobx-react'
 
 // icons
@@ -14,11 +19,7 @@ interface SnackbarSession extends AbstractSessionModel {
   popSnackbarMessage: () => void
 }
 
-export default observer(function MessageSnackbar({
-  session,
-}: {
-  session: SnackbarSession
-}) {
+const Snackbar = observer(function ({ session }: { session: SnackbarSession }) {
   const { snackbarMessages } = session
   const latestMessage = snackbarMessages.at(-1)
 
@@ -28,7 +29,7 @@ export default observer(function MessageSnackbar({
     }
   }
   return !!latestMessage ? (
-    <Snackbar
+    <MUISnackbar
       open
       onClose={handleClose}
       anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
@@ -57,6 +58,8 @@ export default observer(function MessageSnackbar({
       >
         {latestMessage.message}
       </Alert>
-    </Snackbar>
+    </MUISnackbar>
   ) : null
 })
+
+export default Snackbar

@@ -35,7 +35,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default observer(({ view }: { view: IBaseViewModel }) => {
+const ViewTitle = observer(({ view }: { view: IBaseViewModel }) => {
   const { classes } = useStyles()
   const { displayName } = view
   const [dlgOpen, setDlgOpen] = useState(false)
@@ -74,3 +74,5 @@ export default observer(({ view }: { view: IBaseViewModel }) => {
     </div>
   )
 })
+
+export default ViewTitle

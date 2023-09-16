@@ -54,70 +54,72 @@ interface Props {
   className?: string
 }
 
-const TrackLabel = React.forwardRef<HTMLDivElement, Props>(function TrackLabel2(
-  { track, className },
-  ref,
-) {
-  const { classes, cx } = useStyles()
-  const view = getContainingView(track) as LGV
-  const session = getSession(track)
-  const trackConf = track.configuration
-  const minimized = track.minimized
-  const trackId = getConf(track, 'trackId')
-  const trackName = getTrackName(trackConf, session)
-  const items = [
-    {
-      label: minimized ? 'Restore track' : 'Minimize track',
-      icon: minimized ? AddIcon : MinimizeIcon,
-      onClick: () => track.setMinimized(!minimized),
-    },
-    ...(session.getTrackActionMenuItems?.(trackConf) || []),
-    ...track.trackMenuItems(),
-  ].sort((a, b) => (b?.priority || 0) - (a?.priority || 0))
+const TrackLabel = observer(
+  React.forwardRef<HTMLDivElement, Props>(function TrackLabel2(
+    { track, className },
+    ref,
+  ) {
+    const { classes, cx } = useStyles()
+    const view = getContainingView(track) as LGV
+    const session = getSession(track)
+    const trackConf = track.configuration
+    const minimized = track.minimized
+    const trackId = getConf(track, 'trackId')
+    const trackName = getTrackName(trackConf, session)
+    const items = [
+      {
+        label: minimized ? 'Restore track' : 'Minimize track',
+        icon: minimized ? AddIcon : MinimizeIcon,
+        onClick: () => track.setMinimized(!minimized),
+      },
+      ...(session.getTrackActionMenuItems?.(trackConf) || []),
+      ...track.trackMenuItems(),
+    ].sort((a, b) => (b?.priority || 0) - (a?.priority || 0))
 
-  return (
-    <Paper ref={ref} className={cx(className, classes.root)}>
-      <span
-        draggable
-        className={classes.dragHandle}
-        onDragStart={event => {
-          const target = event.currentTarget
-          if (target.parentNode) {
-            const parent = target.parentNode as HTMLElement
-            event.dataTransfer.setDragImage(parent, 20, 20)
-            view.setDraggingTrackId(track.id)
-          }
-        }}
-        onDragEnd={() => view.setDraggingTrackId(undefined)}
-        data-testid={`dragHandle-${view.id}-${trackId}`}
-      >
-        <DragIcon className={classes.dragHandleIcon} fontSize="small" />
-      </span>
-      <IconButton
-        onClick={() => view.hideTrack(trackId)}
-        className={classes.iconButton}
-        title="close this track"
-      >
-        <CloseIcon fontSize="small" />
-      </IconButton>
+    return (
+      <Paper ref={ref} className={cx(className, classes.root)}>
+        <span
+          draggable
+          className={classes.dragHandle}
+          onDragStart={event => {
+            const target = event.currentTarget
+            if (target.parentNode) {
+              const parent = target.parentNode as HTMLElement
+              event.dataTransfer.setDragImage(parent, 20, 20)
+              view.setDraggingTrackId(track.id)
+            }
+          }}
+          onDragEnd={() => view.setDraggingTrackId(undefined)}
+          data-testid={`dragHandle-${view.id}-${trackId}`}
+        >
+          <DragIcon className={classes.dragHandleIcon} fontSize="small" />
+        </span>
+        <IconButton
+          onClick={() => view.hideTrack(trackId)}
+          className={classes.iconButton}
+          title="close this track"
+        >
+          <CloseIcon fontSize="small" />
+        </IconButton>
 
-      <Typography
-        variant="body1"
-        component="span"
-        className={classes.trackName}
-      >
-        <SanitizedHTML
-          html={[trackName, minimized ? '(minimized)' : '']
-            .filter(f => !!f)
-            .join(' ')}
-        />
-      </Typography>
+        <Typography
+          variant="body1"
+          component="span"
+          className={classes.trackName}
+        >
+          <SanitizedHTML
+            html={[trackName, minimized ? '(minimized)' : '']
+              .filter(f => !!f)
+              .join(' ')}
+          />
+        </Typography>
 
-      <CascadingMenuButton menuItems={items} data-testid="track_menu_icon">
-        <MoreVertIcon fontSize="small" />
-      </CascadingMenuButton>
-    </Paper>
-  )
-})
+        <CascadingMenuButton menuItems={items} data-testid="track_menu_icon">
+          <MoreVertIcon fontSize="small" />
+        </CascadingMenuButton>
+      </Paper>
+    )
+  }),
+)
 
-export default observer(TrackLabel)
+export default TrackLabel

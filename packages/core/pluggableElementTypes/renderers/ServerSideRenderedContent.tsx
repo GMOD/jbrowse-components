@@ -106,8 +106,10 @@ const OldHydrate = observer(function ({
   return <div ref={ref} />
 })
 
-export default observer(function RpcRenderedSvgGroup(props: Props) {
+const ServerSideRenderedContent = observer(function (props: Props) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const root = getRoot<any>(props.displayModel)
   return root.hydrateFn ? <NewHydrate {...props} /> : <OldHydrate {...props} />
 })
+
+export default ServerSideRenderedContent

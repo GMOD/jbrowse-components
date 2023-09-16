@@ -8,7 +8,7 @@ import { locstr } from './util'
 import { Portal, alpha } from '@mui/material'
 import { usePopper } from 'react-popper'
 
-export function round(value: number) {
+function round(value: number) {
   return Math.round(value * 1e5) / 1e5
 }
 const useStyles = makeStyles()(theme => ({

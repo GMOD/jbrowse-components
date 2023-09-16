@@ -36,7 +36,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default observer(function ({
+const ViewContainer = observer(function ({
   view,
   onClose,
   onMinimize,
@@ -108,3 +108,5 @@ export default observer(function ({
     </Paper>
   )
 })
+
+export default ViewContainer

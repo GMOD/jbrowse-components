@@ -36,7 +36,7 @@ function LockedPlugin() {
   )
 }
 
-export default observer(function ({
+const InstalledPlugin = observer(function ({
   plugin,
   model,
 }: {
@@ -90,3 +90,5 @@ export default observer(function ({
     </>
   )
 })
+
+export default InstalledPlugin

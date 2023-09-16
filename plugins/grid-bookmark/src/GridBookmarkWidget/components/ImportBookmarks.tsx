@@ -39,7 +39,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function ImportBookmarks({ model }: { model: GridBookmarkModel }) {
+const ImportBookmarks = observer(function ({
+  model,
+}: {
+  model: GridBookmarkModel
+}) {
   const { classes } = useStyles()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [location, setLocation] = useState<FileLocation>()
@@ -207,6 +211,6 @@ function ImportBookmarks({ model }: { model: GridBookmarkModel }) {
       </Dialog>
     </>
   )
-}
+})
 
-export default observer(ImportBookmarks)
+export default ImportBookmarks

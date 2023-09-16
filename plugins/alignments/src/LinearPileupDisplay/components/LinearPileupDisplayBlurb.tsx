@@ -2,7 +2,9 @@ import React from 'react'
 import { observer } from 'mobx-react'
 import { Typography } from '@mui/material'
 
-export interface LinearPileupDisplayBlurbProps {
+const LinearPileupDisplayBlurb = observer(function ({
+  model,
+}: {
   model: {
     sortedBy?: {
       pos: number
@@ -11,12 +13,7 @@ export interface LinearPileupDisplayBlurbProps {
       tag?: string
     }
   }
-}
-
-export default observer(function LinearPileupDisplayBlurb(
-  props: LinearPileupDisplayBlurbProps,
-) {
-  const { model } = props
+}) {
   const { sortedBy } = model
   return sortedBy ? (
     <div data-testid={`blurb-${sortedBy}`}>
@@ -30,3 +27,5 @@ export default observer(function LinearPileupDisplayBlurb(
     </div>
   ) : null
 })
+
+export default LinearPileupDisplayBlurb

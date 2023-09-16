@@ -42,7 +42,7 @@ function shorten(str: string, len: number) {
   return str
 }
 
-export default observer(function (props: {
+const FileSelector = observer(function (props: {
   location?: FileLocation
   setLocation: (param: FileLocation) => void
   setName?: (str: string) => void
@@ -197,3 +197,5 @@ export default observer(function (props: {
     </>
   )
 })
+
+export default FileSelector

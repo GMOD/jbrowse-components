@@ -37,7 +37,9 @@ function PaperComponent(props: PaperProps) {
   )
 }
 
-function DraggableDialog(props: DialogProps & { title: string }) {
+const DraggableDialog = observer(function DraggableDialog(
+  props: DialogProps & { title: string },
+) {
   const { classes } = useStyles()
   const { title, children, onClose } = props
 
@@ -67,5 +69,6 @@ function DraggableDialog(props: DialogProps & { title: string }) {
       </ScopedCssBaseline>
     </Dialog>
   )
-}
-export default observer(DraggableDialog)
+})
+
+export default DraggableDialog

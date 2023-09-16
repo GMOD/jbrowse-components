@@ -12,7 +12,7 @@ import SyntenyTooltip from './SyntenyTooltip'
 import { LinearSyntenyDisplayModel } from '../model'
 import { getId, MAX_COLOR_RANGE } from '../drawSynteny'
 
-export default observer(function LinearSyntenyRendering({
+const LinearSyntenyRendering = observer(function ({
   model,
 }: {
   model: LinearSyntenyDisplayModel
@@ -198,3 +198,5 @@ export default observer(function LinearSyntenyRendering({
     </div>
   )
 })
+
+export default LinearSyntenyRendering

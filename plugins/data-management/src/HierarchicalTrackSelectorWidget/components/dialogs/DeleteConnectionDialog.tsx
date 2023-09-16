@@ -1,17 +1,16 @@
 import React from 'react'
 import {
-  Dialog,
-  DialogTitle,
   DialogContent,
   DialogContentText,
   DialogActions,
   Button,
 } from '@mui/material'
+import { Dialog } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { AbstractSessionModel } from '@jbrowse/core/util'
 
-function DeleteConnectionDialog({
+const DeleteConnectionDialog = observer(function DeleteConnectionDialog({
   deleteDialogDetails,
   session,
   handleClose,
@@ -22,8 +21,7 @@ function DeleteConnectionDialog({
 }) {
   const { connectionConf, name } = deleteDialogDetails
   return (
-    <Dialog open>
-      <DialogTitle>Delete connection &quot;{name}&quot;</DialogTitle>
+    <Dialog open title={`Delete connection "${name}"`}>
       <DialogContent>
         <DialogContentText>
           Are you sure you want to delete this connection?
@@ -48,6 +46,6 @@ function DeleteConnectionDialog({
       </DialogActions>
     </Dialog>
   )
-}
+})
 
-export default observer(DeleteConnectionDialog)
+export default DeleteConnectionDialog

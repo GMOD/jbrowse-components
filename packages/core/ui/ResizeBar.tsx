@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react'
+import React, { useState, useCallback } from 'react'
 import { makeStyles } from 'tss-react/mui'
 
 // locals
@@ -24,23 +24,6 @@ const useStyles = makeStyles()(theme => ({
     width: 5,
   },
 }))
-
-export function useResizeBar() {
-  const ref = useRef<HTMLDivElement>(null)
-  const [scrollLeft, setScrollLeft] = useState(0)
-  useEffect(() => {
-    const timer = setInterval(() => {
-      const elt = ref.current?.querySelector('.MuiDataGrid-virtualScroller')
-      if (elt) {
-        setScrollLeft(elt.scrollLeft)
-      }
-    }, 100)
-    return () => {
-      clearInterval(timer)
-    }
-  }, [])
-  return { ref, scrollLeft }
-}
 
 function Tick({
   left,

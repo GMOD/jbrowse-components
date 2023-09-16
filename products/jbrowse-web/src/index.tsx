@@ -2,7 +2,9 @@ import React, { lazy, Suspense } from 'react'
 import { createRoot } from 'react-dom/client'
 import Loading from './components/Loading'
 
+// eslint-disable-next-line react-refresh/only-export-components
 const Main = lazy(() => import('./components/Loader'))
+
 const initialTimeStamp = Date.now()
 
 if (window?.name.startsWith('JBrowseAuthWindow')) {

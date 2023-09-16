@@ -44,7 +44,7 @@ function OverlayRect({
   )
 }
 
-export default observer(function SvgOverlay({
+const SvgOverlay = observer(function ({
   displayModel = {},
   blockKey,
   region,
@@ -244,3 +244,5 @@ export default observer(function SvgOverlay({
     </>
   ) : null
 })
+
+export default SvgOverlay

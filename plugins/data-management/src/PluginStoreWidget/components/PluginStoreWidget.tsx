@@ -45,7 +45,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
+const PluginStoreWidget = observer(function ({
+  model,
+}: {
+  model: PluginStoreModel
+}) {
   const { classes } = useStyles()
   const { plugins, error } = useFetchPlugins()
   const [open, setOpen] = useState(false)
@@ -141,6 +145,6 @@ function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
       </Accordion>
     </div>
   )
-}
+})
 
-export default observer(PluginStoreWidget)
+export default PluginStoreWidget

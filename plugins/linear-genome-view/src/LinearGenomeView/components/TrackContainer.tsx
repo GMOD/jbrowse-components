@@ -37,7 +37,7 @@ const useStyles = makeStyles()({
 
 type LGV = LinearGenomeViewModel
 
-export default observer(function TrackContainer({
+const TrackContainer = observer(function ({
   model,
   track,
 }: {
@@ -90,3 +90,5 @@ export default observer(function TrackContainer({
     </Paper>
   )
 })
+
+export default TrackContainer

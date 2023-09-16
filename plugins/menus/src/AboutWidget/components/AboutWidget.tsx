@@ -20,7 +20,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function About({ model }: { model: IAnyStateTreeNode }) {
+const AboutWidget = observer(function ({
+  model,
+}: {
+  model: IAnyStateTreeNode
+}) {
   const { classes } = useStyles()
   const { version } = getSession(model)
   const { pluginManager } = getEnv(model)
@@ -86,6 +90,6 @@ function About({ model }: { model: IAnyStateTreeNode }) {
       </div>
     </div>
   )
-}
+})
 
-export default observer(About)
+export default AboutWidget

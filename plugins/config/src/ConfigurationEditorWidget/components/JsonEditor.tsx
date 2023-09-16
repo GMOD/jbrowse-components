@@ -31,7 +31,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function JsonEditor({
+const JsonEditor = observer(function JsonEditor({
   slot,
 }: {
   slot: {
@@ -79,6 +79,6 @@ function JsonEditor({
       </div>
     </>
   )
-}
+})
 
-export default observer(JsonEditor)
+export default JsonEditor

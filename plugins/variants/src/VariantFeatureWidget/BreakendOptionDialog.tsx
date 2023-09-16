@@ -20,7 +20,7 @@ const useStyles = makeStyles()({
   },
 })
 
-export default observer(function BreakendOptionDialog({
+const BreakendOptionDialog = observer(function ({
   model,
   handleClose,
   feature,
@@ -115,3 +115,5 @@ export default observer(function BreakendOptionDialog({
     </Dialog>
   )
 })
+
+export default BreakendOptionDialog

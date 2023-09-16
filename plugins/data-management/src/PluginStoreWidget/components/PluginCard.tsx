@@ -41,7 +41,7 @@ const useStyles = makeStyles()({
   },
 })
 
-export default observer(function PluginCard({
+const PluginCard = observer(function PluginCard({
   plugin,
   model,
   adminMode,
@@ -101,3 +101,5 @@ export default observer(function PluginCard({
     </Card>
   )
 })
+
+export default PluginCard

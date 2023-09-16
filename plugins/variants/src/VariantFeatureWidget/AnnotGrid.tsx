@@ -6,8 +6,9 @@ import {
   GridValidRowModel,
 } from '@mui/x-data-grid'
 import { Checkbox, FormControlLabel, Typography } from '@mui/material'
-import ResizeBar, { useResizeBar } from '@jbrowse/core/ui/ResizeBar'
+import ResizeBar from '@jbrowse/core/ui/ResizeBar'
 import { measureGridWidth } from '@jbrowse/core/util'
+import { useResizeBar } from '@jbrowse/core/ui/useResizeBar'
 
 export default function VariantAnnotPanel({
   rows,

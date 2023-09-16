@@ -21,7 +21,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function Drawer({
+const Drawer = observer(function ({
   children,
   session,
 }: {
@@ -73,6 +73,6 @@ function Drawer({
       ) : null}
     </Paper>
   )
-}
+})
 
-export default observer(Drawer)
+export default Drawer

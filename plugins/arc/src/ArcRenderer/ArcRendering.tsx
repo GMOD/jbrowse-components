@@ -5,7 +5,7 @@ import { observer } from 'mobx-react'
 import { Tooltip } from 'react-svg-tooltip'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function ArcRendering(props: any) {
+const ArcRendering = observer(function (props: any) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onClick = (event: any, id: any) => {
     const { onFeatureClick: handler } = props
@@ -126,6 +126,6 @@ function ArcRendering(props: any) {
       {arcsRendered}
     </svg>
   )
-}
+})
 
-export default observer(ArcRendering)
+export default ArcRendering

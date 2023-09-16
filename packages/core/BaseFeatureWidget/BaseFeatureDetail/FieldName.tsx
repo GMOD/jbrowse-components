@@ -2,7 +2,7 @@ import React from 'react'
 import { Tooltip } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
-export const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()(theme => ({
   fieldDescription: {
     '&:hover': {
       background: theme.palette.mode === 'dark' ? '#e65100' : 'yellow',

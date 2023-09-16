@@ -18,7 +18,7 @@ interface ViewParams {
   offsetPx1: number
 }
 
-export default observer(function ({
+const FeatureLabel = observer(function ({
   text,
   x,
   y,
@@ -114,3 +114,5 @@ export default observer(function ({
     </text>
   ) : null
 })
+
+export default FeatureLabel

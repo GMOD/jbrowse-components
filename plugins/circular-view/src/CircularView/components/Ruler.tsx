@@ -237,7 +237,7 @@ const RegionRulerArc = observer(function ({
   )
 })
 
-export default observer(function ({
+const Ruler = observer(function ({
   model,
   slice,
 }: {
@@ -263,3 +263,5 @@ export default observer(function ({
     />
   )
 })
+
+export default Ruler
