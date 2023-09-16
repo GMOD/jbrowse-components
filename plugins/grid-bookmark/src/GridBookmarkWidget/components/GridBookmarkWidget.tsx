@@ -23,7 +23,11 @@ const useStyles = makeStyles()({
   },
 })
 
-function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
+const GridBookmarkWidget = observer(function GridBookmarkWidget({
+  model,
+}: {
+  model: GridBookmarkModel
+}) {
   const { classes } = useStyles()
 
   if (!model) {
@@ -46,6 +50,6 @@ function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
       <BookmarkGrid model={model} />
     </div>
   )
-}
+})
 
-export default observer(GridBookmarkWidget)
+export default GridBookmarkWidget
