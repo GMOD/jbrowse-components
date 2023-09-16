@@ -35,14 +35,14 @@ const BookmarkGrid = observer(function ({
   const [dialogOpen, setDialogOpen] = useState(false)
   const [dialogRow, setDialogRow] = useState<IExtendedLabeledRegionModel>()
   const [newLabel, setNewLabel] = useState<string>()
-  const { bookmarkedRegions, selectedAssemblies } = model
+  const { bookmarkedRegions, selectedAssembly } = model
   const [rowSelectionModel, setRowSelectionModel] =
     useState<GridRowSelectionModel>([])
   const session = getSession(model)
   const { views } = session
 
   const bookmarkRows = bookmarkedRegions
-    .filter(r => selectedAssemblies.includes(r.assemblyName))
+    .filter(r => selectedAssembly === r.assemblyName)
     .map((region, index) => {
       const { assemblyName, ...rest } = region
       return {
@@ -65,7 +65,11 @@ const BookmarkGrid = observer(function ({
         density="compact"
         rows={bookmarkRows}
         columns={[
-          GRID_CHECKBOX_SELECTION_COL_DEF,
+          {
+            ...GRID_CHECKBOX_SELECTION_COL_DEF,
+            minWidth: 40,
+            width: 40,
+          },
           {
             field: 'locString',
             headerName: 'Bookmark link',

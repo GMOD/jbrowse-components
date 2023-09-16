@@ -92,12 +92,9 @@ export default function f(_pluginManager: PluginManager) {
         bookmark: IExtendedLabeledRegionModel,
         label: string,
       ) {
-        const target = self.bookmarkedRegions.find(
-          (element: ILabeledRegionModel) => {
-            return element === bookmark.correspondingObj
-          },
-        )
-        target?.setLabel(label)
+        self.bookmarkedRegions
+          .find(elt => elt === bookmark.correspondingObj)
+          ?.setLabel(label)
       },
       setSelectedBookmarks(bookmarks: IExtendedLabeledRegionModel[]) {
         self.selectedBookmarks = bookmarks
@@ -137,13 +134,11 @@ export default function f(_pluginManager: PluginManager) {
       },
     }))
     .volatile(self => ({
-      selectedAssemblies: self.assemblies.filter((assembly: string) =>
-        getSession(self).assemblyNames.includes(assembly),
-      ),
+      selectedAssembly: self.assemblies[0],
     }))
     .actions(self => ({
-      setSelectedAssemblies(assemblies: string[]) {
-        self.selectedAssemblies = assemblies
+      setSelectedAssembly(assembly: string) {
+        self.selectedAssembly = assembly
       },
       clearAllBookmarks() {
         self.bookmarkedRegions.forEach(bookmark => {
