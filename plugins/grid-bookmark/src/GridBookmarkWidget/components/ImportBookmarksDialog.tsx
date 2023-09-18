@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
 import { FileLocation } from '@jbrowse/core/util/types'
@@ -28,9 +28,6 @@ import { fromUrlSafeB64 } from '../utils'
 import { readSessionFromDynamo } from '../sessionSharing'
 
 const useStyles = makeStyles()(theme => ({
-  dialogContainer: {
-    margin: 15,
-  },
   flexItem: {
     margin: 5,
   },
@@ -38,6 +35,48 @@ const useStyles = makeStyles()(theme => ({
     color: theme.palette.tertiary?.contrastText || '#fff',
   },
 }))
+
+async function getBookmarksFromShareLink(shareLink: string, shareURL: string) {
+  const defaultURL = 'https://share.jbrowse.org/api/v1/'
+  const urlParams = new URL(shareLink)
+  const sessionQueryParam = urlParams.searchParams.get('bookmarks')
+  const password = urlParams.searchParams.get('password')
+  const decryptedSession = await readSessionFromDynamo(
+    `${shareURL ?? defaultURL}load`,
+    sessionQueryParam || '',
+    password || '',
+  )
+
+  const sharedSession = JSON.parse(await fromUrlSafeB64(decryptedSession))
+
+  return sharedSession.sharedBookmarks
+}
+
+async function getBookmarksFromFile(
+  location: FileLocation,
+  selectedAsm: string,
+) {
+  const data = await openLocation(location).readFile('utf8')
+  return data
+    .split(/\n|\r\n|\r/)
+    .filter(f => !!f.trim())
+    .filter(
+      f =>
+        !f.startsWith('#') &&
+        !f.startsWith('track') &&
+        !f.startsWith('browser'),
+    )
+    .map(line => {
+      const [refName, start, end, label, assembly] = line.split('\t')
+      return {
+        assemblyName: assembly ?? selectedAsm,
+        refName,
+        start: +start,
+        end: +end,
+        label: label === '.' ? undefined : label,
+      }
+    })
+}
 
 const ImportBookmarksDialog = observer(function ({
   onClose,
@@ -47,49 +86,20 @@ const ImportBookmarksDialog = observer(function ({
   model: GridBookmarkModel
 }) {
   const { classes } = useStyles()
-  const [dialogOpen, setDialogOpen] = useState(false)
   const [location, setLocation] = useState<FileLocation>()
   const [error, setError] = useState<unknown>()
   const [shareLink, setShareLink] = useState('')
   const session = getSession(model)
-  const { assemblyNames } = session
+  const { assemblyNames, shareURL } = getSession(model)
   const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0])
+  const [expanded, setExpanded] = useState('shareLinkAccordion')
 
-  const [expanded, setExpanded] = React.useState<string | false>(
-    'shareLinkAccordion',
-  )
-
-  const handleShareLink = async () => {
-    const defaultURL = 'https://share.jbrowse.org/api/v1/'
-    const urlParams = new URL(shareLink)
-    const sessionQueryParam = urlParams.searchParams.get('bookmarks')
-    const password = urlParams.searchParams.get('password')
-    const decryptedSession = await readSessionFromDynamo(
-      `${session.shareURL ?? defaultURL}load`,
-      sessionQueryParam || '',
-      password || '',
-    )
-
-    const sharedSession = JSON.parse(await fromUrlSafeB64(decryptedSession))
-
-    return sharedSession.sharedBookmarks
-  }
-
-  const handleChange =
-    (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
-      setExpanded(isExpanded ? panel : false)
-    }
-
-  useEffect(() => {
-    setShareLink('')
-    setError(undefined)
-  }, [dialogOpen])
   return (
     <Dialog open onClose={onClose} maxWidth="xl" title="Import bookmarks">
       <DialogContent>
         <Accordion
           expanded={expanded === 'shareLinkAccordion'}
-          onChange={handleChange('shareLinkAccordion')}
+          onChange={() => setExpanded('shareLinkAccordion')}
         >
           <AccordionSummary
             expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
@@ -102,15 +112,13 @@ const ImportBookmarksDialog = observer(function ({
               variant="outlined"
               style={{ width: '100%' }}
               value={shareLink}
-              onChange={e => {
-                setShareLink(e.target.value)
-              }}
+              onChange={e => setShareLink(e.target.value)}
             />
           </AccordionDetails>
         </Accordion>
         <Accordion
           expanded={expanded === 'fileAccordion'}
-          onChange={handleChange('fileAccordion')}
+          onChange={() => setExpanded('fileAccordion')}
         >
           <AccordionSummary
             expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
@@ -137,11 +145,7 @@ const ImportBookmarksDialog = observer(function ({
         ) : null}
       </DialogContent>
       <DialogActions>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={() => setDialogOpen(false)}
-        >
+        <Button variant="contained" color="secondary" onClick={onClose}>
           Cancel
         </Button>
         <Button
@@ -153,44 +157,16 @@ const ImportBookmarksDialog = observer(function ({
           startIcon={<ImportIcon />}
           onClick={async () => {
             try {
-              let regions = undefined
-              if (!location && !shareLink) {
-                return
-              }
               if (location) {
-                const data = await openLocation(location).readFile('utf8')
-                regions = data
-                  .split(/\n|\r\n|\r/)
-                  .filter(f => !!f.trim())
-                  .filter(
-                    f =>
-                      !f.startsWith('#') &&
-                      !f.startsWith('track') &&
-                      !f.startsWith('browser'),
-                  )
-                  .map(line => {
-                    const [refName, start, end, label, assembly] =
-                      line.split('\t')
-                    return {
-                      assemblyName: assembly ?? selectedAsm,
-                      refName,
-                      start: +start,
-                      end: +end,
-                      label: label === '.' ? undefined : label,
-                    }
-                  })
+                model.importBookmarks(
+                  await getBookmarksFromFile(location, selectedAsm),
+                )
+              } else if (shareLink) {
+                model.importBookmarks(
+                  await getBookmarksFromShareLink(shareURL, shareLink),
+                )
               }
-              if (shareLink) {
-                regions = await handleShareLink()
-              }
-              if (regions) {
-                model.importBookmarks(regions)
-                setDialogOpen(false)
-              }
-              session.notify(
-                'Bookmarks have successfully been imported',
-                'success',
-              )
+              onClose()
             } catch (e) {
               console.error(e)
               setError(e)
