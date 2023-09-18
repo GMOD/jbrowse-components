@@ -19,7 +19,7 @@ class MockWorkerHandle implements WorkerHandle {
 
   async call(
     name: string,
-    _args = [],
+    _args = {},
     opts: {
       timeout?: number
       signal?: AbortSignal
@@ -164,11 +164,23 @@ test('test RPC driver operation timeout and worker replace', async () => {
   pluginManager.addRpcMethod(() => new MockRendererShort(pluginManager))
   pluginManager.createPluggableElements()
   try {
-    await driver.call(pluginManager, 'sessionId', 'MockRenderTimeout', {}, {})
+    await driver.call(
+      pluginManager,
+      'sessionId',
+      'MockRenderTimeout',
+      {},
+      { rpcDriverClassName: 'MainThreadRpcDriver' },
+    )
   } catch (e) {
     expect(`${e}`).toMatch(/operation timed out/)
   }
-  await driver.call(pluginManager, 'sessionId', 'MockRenderShort', {}, {})
+  await driver.call(
+    pluginManager,
+    'sessionId',
+    'MockRenderShort',
+    {},
+    { rpcDriverClassName: 'MainThreadRpcDriver' },
+  )
   consoleMock.mockRestore()
 })
 
@@ -188,7 +200,7 @@ test('remote abort', async () => {
       'sessionId',
       'MockRenderShort',
       {},
-      { signal: controller.signal },
+      { rpcDriverClassName: 'MainThreadRpcDriver' },
     )
     controller.abort()
     await resP
