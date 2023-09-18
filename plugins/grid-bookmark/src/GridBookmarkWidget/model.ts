@@ -107,9 +107,7 @@ export default function f(_pluginManager: PluginManager) {
     }))
     .views(self => ({
       get assemblies() {
-        return [
-          ...new Set(self.bookmarkedRegions.map(region => region.assemblyName)),
-        ]
+        return [...new Set(self.bookmarkedRegions.map(r => r.assemblyName))]
       },
       get validAssemblies() {
         return new Set(
@@ -118,16 +116,18 @@ export default function f(_pluginManager: PluginManager) {
           ),
         )
       },
+    }))
+    .views(self => ({
       get bookmarksWithValidAssemblies() {
-        return (
-          JSON.parse(
-            JSON.stringify(self.bookmarkedRegions),
-          ) as unknown as ILabeledRegionModel[]
-        ).filter(ele => this.validAssemblies.has(ele.assemblyName))
+        return self.bookmarkedRegions.filter(ele =>
+          self.validAssemblies.has(ele.assemblyName),
+        )
       },
+    }))
+    .views(self => ({
       get allBookmarksModel() {
         return SharedBookmarksModel.create({
-          sharedBookmarks: this.bookmarksWithValidAssemblies,
+          sharedBookmarks: self.bookmarksWithValidAssemblies,
         })
       },
     }))
