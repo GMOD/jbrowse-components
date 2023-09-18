@@ -18,8 +18,10 @@ export interface CallOptions extends Record<string, unknown> {
 export interface WorkerHandle {
   status?: string
   error?: Error
-  on?: (channel: string, callback: (message: string) => void) => void
-  off?: (channel: string, callback: (message: string) => void) => void
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  on?: (channel: string, callback: (message: any) => void) => void
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  off?: (channel: string, callback: (message: any) => void) => void
   destroy(): void
   call(
     functionName: string,

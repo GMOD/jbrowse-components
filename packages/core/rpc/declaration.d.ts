@@ -1,18 +1,11 @@
-declare module 'librpc-web-mod' {
-  interface ConstructorArgs {
-    workers: Worker[]
-  }
+declare module '@librpc/ee' {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  export type Listener = (event: any) => void
 
-  export class Client {
-    constructor(args: ConstructorArgs)
-
-    workers: Worker[]
-
-    on(channel: string, listener: (message: string) => void)
-
-    off(channel: string, listener: (message: string) => void)
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    call(functionName: string, args?: any, options?: Record<string, any>): any
+  export default class Emitter {
+    events: Record<'string', Listener[]>
+    on(event: string, listener: Listener): this
+    off(event: string, listener: Listener): this
+    emit(event: string, data: unknown): this
   }
 }
