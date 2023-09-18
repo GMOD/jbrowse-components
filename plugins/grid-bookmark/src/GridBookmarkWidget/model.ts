@@ -137,7 +137,7 @@ export default function f(_pluginManager: PluginManager) {
       },
     }))
     .volatile(self => ({
-      selectedAssemblies: self.assemblies.filter((assembly: string) =>
+      selectedAssemblies: self.validAssemblies.filter((assembly: string) =>
         getSession(self).assemblyNames.includes(assembly),
       ),
     }))
@@ -179,6 +179,30 @@ export default function f(_pluginManager: PluginManager) {
             }
           }),
         )
+      },
+    }))
+    .actions(self => ({
+      updateSelectedAssembliesAfterClear() {
+        if (self.validAssemblies.length < self.selectedAssemblies.length) {
+          const rmAsm = self.selectedAssemblies.filter(
+            asm => !self.validAssemblies.includes(asm),
+          )
+          rmAsm.forEach(asm => {
+            self.selectedAssemblies.splice(
+              self.selectedAssemblies.indexOf(asm),
+              1,
+            )
+          })
+          self.setSelectedAssemblies([...self.selectedAssemblies])
+        }
+      },
+      updateSelectedAssembliesAfterAdd() {
+        if (self.validAssemblies.length > self.selectedAssemblies.length) {
+          const newAsm = self.validAssemblies.filter(
+            asm => !self.selectedAssemblies.includes(asm),
+          )
+          self.setSelectedAssemblies([...self.selectedAssemblies, ...newAsm])
+        }
       },
     }))
 }
