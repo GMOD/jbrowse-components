@@ -52,7 +52,7 @@ describe('Create a new bookmark', () => {
     const container = await findByTestId('trackContainer')
     fireEvent.mouseDown(container)
 
-    let event = new KeyboardEvent('keydown', {
+    const event = new KeyboardEvent('keydown', {
       code: 'KeyD',
       shiftKey: true,
       ctrlKey: true,
@@ -137,7 +137,7 @@ describe('Navigate to a bookmark', () => {
       assemblyName: 'volvox',
     })
 
-    let event = new KeyboardEvent('keydown', {
+    const event = new KeyboardEvent('keydown', {
       code: 'KeyM',
       shiftKey: true,
       ctrlKey: true,
