@@ -175,6 +175,7 @@ const BookmarkGrid = observer(function ({
             :
           </Typography>
           <TextField
+            inputProps={{ 'data-testid': 'edit-bookmark-label-field' }}
             fullWidth
             variant="outlined"
             value={newLabel ?? dialogRow?.label}
