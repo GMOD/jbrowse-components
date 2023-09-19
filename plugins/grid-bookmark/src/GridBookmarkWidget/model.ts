@@ -167,7 +167,7 @@ export default function f(_pluginManager: PluginManager) {
             const target = `bookmarks-${[
               window.location.host + window.location.pathname,
             ].join('-')}`
-            if (self.bookmarkedRegions.length > 0) {
+            if (self.bookmarkedRegions.length >= 0) {
               localStorageSetItem(
                 target,
                 JSON.stringify(self.bookmarkedRegions),

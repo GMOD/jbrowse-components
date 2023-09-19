@@ -76,12 +76,12 @@ const AssemblySelector = observer(function ({
             primary="Select All"
           />
         </MenuItem>
-        {/* {validAssemblies.map(name => (
+        {validAssemblies.map(name => (
           <MenuItem key={name} value={name}>
             <Checkbox checked={selectedAssemblies.includes(name)} />
             <ListItemText primary={name} />
           </MenuItem>
-        ))} */}
+        ))}
       </Select>
     </FormControl>
   )
