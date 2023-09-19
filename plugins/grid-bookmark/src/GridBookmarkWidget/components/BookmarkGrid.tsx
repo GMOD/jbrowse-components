@@ -46,7 +46,11 @@ const BookmarkGrid = observer(function ({
   const [dialogOpen, setDialogOpen] = useState(false)
   const [dialogRow, setDialogRow] = useState<IExtendedLabeledRegionModel>()
   const [newLabel, setNewLabel] = useState<string>()
-  const { bookmarkedRegions, selectedAssemblies } = model
+  const {
+    bookmarkedRegions,
+    selectedAssemblies,
+    bookmarksWithValidAssemblies,
+  } = model
   const [rowSelectionModel, setRowSelectionModel] =
     useState<GridRowSelectionModel>([])
   const session = getSession(model)
@@ -141,7 +145,7 @@ const BookmarkGrid = observer(function ({
         }}
         checkboxSelection
         onRowSelectionModelChange={newRowSelectionModel => {
-          if (bookmarkedRegions.length > 0) {
+          if (bookmarksWithValidAssemblies.length > 0) {
             const selectedBookmarks = [] as IExtendedLabeledRegionModel[]
             newRowSelectionModel.forEach((value: GridRowId) => {
               selectedBookmarks.push({ ...bookmarkRows[value as number] })

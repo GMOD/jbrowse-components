@@ -70,6 +70,9 @@ export default function f(_pluginManager: PluginManager) {
     })
     .volatile(() => ({
       selectedBookmarks: [] as IExtendedLabeledRegionModel[],
+      localStorageKey: `bookmarks-${[
+        window.location.host + window.location.pathname,
+      ].join('-')}`,
     }))
     .views(self => ({
       get sharedBookmarksModel() {
@@ -137,11 +140,17 @@ export default function f(_pluginManager: PluginManager) {
       },
     }))
     .volatile(self => ({
-      selectedAssemblies: self.validAssemblies.filter((assembly: string) =>
+      selectedAssemblies: self.assemblies.filter((assembly: string) =>
         getSession(self).assemblyNames.includes(assembly),
       ),
     }))
     .actions(self => ({
+      updateLocalStorage() {
+        localStorageSetItem(
+          self.localStorageKey,
+          JSON.stringify(self.bookmarkedRegions),
+        )
+      },
       setSelectedAssemblies(assemblies: string[]) {
         self.selectedAssemblies = assemblies
       },
@@ -151,6 +160,7 @@ export default function f(_pluginManager: PluginManager) {
             self.bookmarkedRegions.remove(bookmark)
           }
         })
+        this.updateLocalStorage()
       },
       clearSelectedBookmarks() {
         self.selectedBookmarks.forEach(
@@ -159,22 +169,20 @@ export default function f(_pluginManager: PluginManager) {
           },
         )
         self.selectedBookmarks = []
+        this.updateLocalStorage()
       },
       afterAttach() {
         addDisposer(
           self,
           autorun(() => {
-            const target = `bookmarks-${[
-              window.location.host + window.location.pathname,
-            ].join('-')}`
-            if (self.bookmarkedRegions.length >= 0) {
+            if (self.bookmarkedRegions.length > 0) {
               localStorageSetItem(
-                target,
+                self.localStorageKey,
                 JSON.stringify(self.bookmarkedRegions),
               )
             } else {
               self.setBookmarkedRegions(
-                JSON.parse(localStorageGetItem(target) || '[]'),
+                JSON.parse(localStorageGetItem(self.localStorageKey) || '[]'),
               )
             }
           }),
