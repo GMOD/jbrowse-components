@@ -81,36 +81,6 @@ export default function f(_pluginManager: PluginManager) {
         })
       },
     }))
-    .actions(self => ({
-      importBookmarks(regions: Region[]) {
-        self.bookmarkedRegions = cast([...self.bookmarkedRegions, ...regions])
-      },
-      addBookmark(region: Region) {
-        self.bookmarkedRegions.push(region)
-      },
-      removeBookmark(index: number) {
-        self.bookmarkedRegions.splice(index, 1)
-      },
-      updateBookmarkLabel(
-        bookmark: IExtendedLabeledRegionModel,
-        label: string,
-      ) {
-        const target = self.bookmarkedRegions.find(
-          (element: ILabeledRegionModel) => {
-            return element === bookmark.correspondingObj
-          },
-        )
-        target?.setLabel(label)
-      },
-      setSelectedBookmarks(bookmarks: IExtendedLabeledRegionModel[]) {
-        self.selectedBookmarks = bookmarks
-      },
-      setBookmarkedRegions(
-        bookmarkedRegions: IMSTArray<typeof LabeledRegionModel>,
-      ) {
-        self.bookmarkedRegions = bookmarkedRegions
-      },
-    }))
     .views(self => ({
       get assemblies() {
         return [
@@ -145,48 +115,8 @@ export default function f(_pluginManager: PluginManager) {
       ),
     }))
     .actions(self => ({
-      updateLocalStorage() {
-        localStorageSetItem(
-          self.localStorageKey,
-          JSON.stringify(self.bookmarkedRegions),
-        )
-      },
       setSelectedAssemblies(assemblies: string[]) {
         self.selectedAssemblies = assemblies
-      },
-      clearAllBookmarks() {
-        self.bookmarkedRegions.forEach(bookmark => {
-          if (self.validAssemblies.includes(bookmark.assemblyName)) {
-            self.bookmarkedRegions.remove(bookmark)
-          }
-        })
-        this.updateLocalStorage()
-      },
-      clearSelectedBookmarks() {
-        self.selectedBookmarks.forEach(
-          (selectedBookmark: IExtendedLabeledRegionModel) => {
-            self.bookmarkedRegions.remove(selectedBookmark.correspondingObj)
-          },
-        )
-        self.selectedBookmarks = []
-        this.updateLocalStorage()
-      },
-      afterAttach() {
-        addDisposer(
-          self,
-          autorun(() => {
-            if (self.bookmarkedRegions.length > 0) {
-              localStorageSetItem(
-                self.localStorageKey,
-                JSON.stringify(self.bookmarkedRegions),
-              )
-            } else {
-              self.setBookmarkedRegions(
-                JSON.parse(localStorageGetItem(self.localStorageKey) || '[]'),
-              )
-            }
-          }),
-        )
       },
     }))
     .actions(self => ({
@@ -211,6 +141,82 @@ export default function f(_pluginManager: PluginManager) {
           )
           self.setSelectedAssemblies([...self.selectedAssemblies, ...newAsm])
         }
+      },
+    }))
+    .actions(self => ({
+      importBookmarks(regions: Region[]) {
+        self.bookmarkedRegions = cast([...self.bookmarkedRegions, ...regions])
+        self.updateSelectedAssembliesAfterAdd()
+      },
+      addBookmark(region: Region) {
+        self.bookmarkedRegions.push(region)
+        self.updateSelectedAssembliesAfterAdd()
+      },
+      removeBookmark(index: number) {
+        self.bookmarkedRegions.splice(index, 1)
+      },
+      updateBookmarkLabel(
+        bookmark: IExtendedLabeledRegionModel,
+        label: string,
+      ) {
+        const target = self.bookmarkedRegions.find(
+          (element: ILabeledRegionModel) => {
+            return element === bookmark.correspondingObj
+          },
+        )
+        target?.setLabel(label)
+      },
+      setSelectedBookmarks(bookmarks: IExtendedLabeledRegionModel[]) {
+        self.selectedBookmarks = bookmarks
+      },
+      setBookmarkedRegions(
+        bookmarkedRegions: IMSTArray<typeof LabeledRegionModel>,
+      ) {
+        self.bookmarkedRegions = bookmarkedRegions
+      },
+    }))
+    .actions(self => ({
+      updateLocalStorage() {
+        localStorageSetItem(
+          self.localStorageKey,
+          JSON.stringify(self.bookmarkedRegions),
+        )
+      },
+      clearAllBookmarks() {
+        self.bookmarkedRegions.forEach(bookmark => {
+          if (self.validAssemblies.includes(bookmark.assemblyName)) {
+            self.bookmarkedRegions.remove(bookmark)
+          }
+        })
+        this.updateLocalStorage()
+        self.updateSelectedAssembliesAfterClear()
+      },
+      clearSelectedBookmarks() {
+        self.selectedBookmarks.forEach(
+          (selectedBookmark: IExtendedLabeledRegionModel) => {
+            self.bookmarkedRegions.remove(selectedBookmark.correspondingObj)
+          },
+        )
+        self.selectedBookmarks = []
+        this.updateLocalStorage()
+        self.updateSelectedAssembliesAfterClear()
+      },
+      afterAttach() {
+        addDisposer(
+          self,
+          autorun(() => {
+            if (self.bookmarkedRegions.length > 0) {
+              localStorageSetItem(
+                self.localStorageKey,
+                JSON.stringify(self.bookmarkedRegions),
+              )
+            } else {
+              self.setBookmarkedRegions(
+                JSON.parse(localStorageGetItem(self.localStorageKey) || '[]'),
+              )
+            }
+          }),
+        )
       },
     }))
 }

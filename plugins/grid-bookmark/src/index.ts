@@ -112,8 +112,6 @@ export default class extends Plugin {
                       const bookmarkWidget = this.activateBookmarkWidget()
                       // @ts-expect-error
                       bookmarkWidget.addBookmark(firstRegion)
-                      // @ts-expect-error
-                      bookmarkWidget.updateSelectedAssembliesAfterAdd()
                     }
                   },
                 },
@@ -153,7 +151,6 @@ export default class extends Plugin {
                           // @ts-expect-error
                           const bookmarkWidget = self.activateBookmarkWidget()
                           bookmarkWidget.addBookmark(firstRegion)
-                          bookmarkWidget.updateSelectedAssembliesAfterAdd()
                         },
                       },
                     ]
