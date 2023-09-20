@@ -163,7 +163,7 @@ const ImportBookmarksDialog = observer(function ({
                 )
               } else if (shareLink) {
                 model.importBookmarks(
-                  await getBookmarksFromShareLink(shareURL, shareLink),
+                  await getBookmarksFromShareLink(shareLink, shareURL),
                 )
               }
               onClose()
