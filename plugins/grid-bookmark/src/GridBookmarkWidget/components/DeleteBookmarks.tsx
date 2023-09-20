@@ -81,8 +81,10 @@ const DeleteBookmarks = observer(function ({
             onClick={() => {
               if (deleteAll) {
                 model.clearAllBookmarks()
+              } else {
+                model.clearSelectedBookmarks()
               }
-              model.clearSelectedBookmarks()
+              model.updateSelectedAssembliesAfterClear()
               setDialogOpen(false)
               getSession(model).notify(
                 'Bookmarks have been successfully deleted',

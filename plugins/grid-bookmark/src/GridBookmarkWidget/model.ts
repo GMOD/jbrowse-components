@@ -70,42 +70,15 @@ export default function f(_pluginManager: PluginManager) {
     })
     .volatile(() => ({
       selectedBookmarks: [] as IExtendedLabeledRegionModel[],
+      localStorageKey: `bookmarks-${[
+        window.location.host + window.location.pathname,
+      ].join('-')}`,
     }))
     .views(self => ({
       get sharedBookmarksModel() {
         return SharedBookmarksModel.create({
           sharedBookmarks: self.selectedBookmarks,
         })
-      },
-    }))
-    .actions(self => ({
-      importBookmarks(regions: Region[]) {
-        self.bookmarkedRegions = cast([...self.bookmarkedRegions, ...regions])
-      },
-      addBookmark(region: Region) {
-        self.bookmarkedRegions.push(region)
-      },
-      removeBookmark(index: number) {
-        self.bookmarkedRegions.splice(index, 1)
-      },
-      updateBookmarkLabel(
-        bookmark: IExtendedLabeledRegionModel,
-        label: string,
-      ) {
-        const target = self.bookmarkedRegions.find(
-          (element: ILabeledRegionModel) => {
-            return element === bookmark.correspondingObj
-          },
-        )
-        target?.setLabel(label)
-      },
-      setSelectedBookmarks(bookmarks: IExtendedLabeledRegionModel[]) {
-        self.selectedBookmarks = bookmarks
-      },
-      setBookmarkedRegions(
-        bookmarkedRegions: IMSTArray<typeof LabeledRegionModel>,
-      ) {
-        self.bookmarkedRegions = bookmarkedRegions
       },
     }))
     .views(self => ({
@@ -145,12 +118,78 @@ export default function f(_pluginManager: PluginManager) {
       setSelectedAssemblies(assemblies: string[]) {
         self.selectedAssemblies = assemblies
       },
+    }))
+    .actions(self => ({
+      updateSelectedAssembliesAfterClear() {
+        if (self.validAssemblies.length < self.selectedAssemblies.length) {
+          const rmAsm = self.selectedAssemblies.filter(
+            asm => !self.validAssemblies.includes(asm),
+          )
+          rmAsm.forEach(asm => {
+            self.selectedAssemblies.splice(
+              self.selectedAssemblies.indexOf(asm),
+              1,
+            )
+          })
+          self.setSelectedAssemblies([...self.selectedAssemblies])
+        }
+      },
+      updateSelectedAssembliesAfterAdd() {
+        if (self.validAssemblies.length > self.selectedAssemblies.length) {
+          const newAsm = self.validAssemblies.filter(
+            asm => !self.selectedAssemblies.includes(asm),
+          )
+          self.setSelectedAssemblies([...self.selectedAssemblies, ...newAsm])
+        }
+      },
+    }))
+    .actions(self => ({
+      importBookmarks(regions: Region[]) {
+        self.bookmarkedRegions = cast([...self.bookmarkedRegions, ...regions])
+        self.updateSelectedAssembliesAfterAdd()
+      },
+      addBookmark(region: Region) {
+        self.bookmarkedRegions.push(region)
+        self.updateSelectedAssembliesAfterAdd()
+      },
+      removeBookmark(index: number) {
+        self.bookmarkedRegions.splice(index, 1)
+      },
+      updateBookmarkLabel(
+        bookmark: IExtendedLabeledRegionModel,
+        label: string,
+      ) {
+        const target = self.bookmarkedRegions.find(
+          (element: ILabeledRegionModel) => {
+            return element === bookmark.correspondingObj
+          },
+        )
+        target?.setLabel(label)
+      },
+      setSelectedBookmarks(bookmarks: IExtendedLabeledRegionModel[]) {
+        self.selectedBookmarks = bookmarks
+      },
+      setBookmarkedRegions(
+        bookmarkedRegions: IMSTArray<typeof LabeledRegionModel>,
+      ) {
+        self.bookmarkedRegions = bookmarkedRegions
+      },
+    }))
+    .actions(self => ({
+      updateLocalStorage() {
+        localStorageSetItem(
+          self.localStorageKey,
+          JSON.stringify(self.bookmarkedRegions),
+        )
+      },
       clearAllBookmarks() {
         self.bookmarkedRegions.forEach(bookmark => {
           if (self.validAssemblies.includes(bookmark.assemblyName)) {
             self.bookmarkedRegions.remove(bookmark)
           }
         })
+        this.updateLocalStorage()
+        self.updateSelectedAssembliesAfterClear()
       },
       clearSelectedBookmarks() {
         self.selectedBookmarks.forEach(
@@ -159,22 +198,21 @@ export default function f(_pluginManager: PluginManager) {
           },
         )
         self.selectedBookmarks = []
+        this.updateLocalStorage()
+        self.updateSelectedAssembliesAfterClear()
       },
       afterAttach() {
         addDisposer(
           self,
           autorun(() => {
-            const target = `bookmarks-${[
-              window.location.host + window.location.pathname,
-            ].join('-')}`
             if (self.bookmarkedRegions.length > 0) {
               localStorageSetItem(
-                target,
+                self.localStorageKey,
                 JSON.stringify(self.bookmarkedRegions),
               )
             } else {
               self.setBookmarkedRegions(
-                JSON.parse(localStorageGetItem(target) || '[]'),
+                JSON.parse(localStorageGetItem(self.localStorageKey) || '[]'),
               )
             }
           }),

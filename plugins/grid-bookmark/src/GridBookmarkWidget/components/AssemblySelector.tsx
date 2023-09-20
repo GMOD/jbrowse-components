@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { observer } from 'mobx-react'
 
 import {
@@ -48,30 +48,6 @@ const AssemblySelector = observer(function ({
     }
     setSelectedAssemblies([...value])
   }
-
-  useEffect(() => {
-    // sets the selected assemblies when a valid assembly has been added or removed
-    if (validAssemblies.length > selectedAssemblies.length) {
-      const newAsm = validAssemblies.filter(
-        asm => !selectedAssemblies.includes(asm),
-      )
-      setSelectedAssemblies([...selectedAssemblies, ...newAsm])
-    }
-    if (validAssemblies.length < selectedAssemblies.length) {
-      const rmAsm = selectedAssemblies.filter(
-        asm => !validAssemblies.includes(asm),
-      )
-      rmAsm.forEach(asm => {
-        selectedAssemblies.splice(selectedAssemblies.indexOf(asm), 1)
-      })
-      setSelectedAssemblies([...selectedAssemblies])
-    }
-  }, [
-    validAssemblies.length,
-    selectedAssemblies,
-    setSelectedAssemblies,
-    validAssemblies,
-  ])
 
   return (
     <FormControl disabled={noAssemblies}>

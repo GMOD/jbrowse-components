@@ -46,7 +46,11 @@ const BookmarkGrid = observer(function ({
   const [dialogOpen, setDialogOpen] = useState(false)
   const [dialogRow, setDialogRow] = useState<IExtendedLabeledRegionModel>()
   const [newLabel, setNewLabel] = useState<string>()
-  const { bookmarkedRegions, selectedAssemblies } = model
+  const {
+    bookmarkedRegions,
+    selectedAssemblies,
+    bookmarksWithValidAssemblies,
+  } = model
   const [rowSelectionModel, setRowSelectionModel] =
     useState<GridRowSelectionModel>([])
   const session = getSession(model)
@@ -141,12 +145,14 @@ const BookmarkGrid = observer(function ({
         }}
         checkboxSelection
         onRowSelectionModelChange={newRowSelectionModel => {
-          const selectedBookmarks = [] as IExtendedLabeledRegionModel[]
-          newRowSelectionModel.forEach((value: GridRowId) => {
-            selectedBookmarks.push({ ...bookmarkRows[value as number] })
-          })
-          model.setSelectedBookmarks(selectedBookmarks)
-          setRowSelectionModel(newRowSelectionModel)
+          if (bookmarksWithValidAssemblies.length > 0) {
+            const selectedBookmarks = [] as IExtendedLabeledRegionModel[]
+            newRowSelectionModel.forEach((value: GridRowId) => {
+              selectedBookmarks.push({ ...bookmarkRows[value as number] })
+            })
+            model.setSelectedBookmarks(selectedBookmarks)
+            setRowSelectionModel(newRowSelectionModel)
+          }
         }}
         rowSelectionModel={rowSelectionModel}
         /* @ts-ignore */
@@ -156,7 +162,6 @@ const BookmarkGrid = observer(function ({
       <Dialog
         open={dialogOpen}
         onClose={() => {
-          setDialogRow(undefined)
           setDialogOpen(false)
         }}
         title="Edit bookmark label"
@@ -170,6 +175,7 @@ const BookmarkGrid = observer(function ({
             :
           </Typography>
           <TextField
+            inputProps={{ 'data-testid': 'edit-bookmark-label-field' }}
             fullWidth
             variant="outlined"
             value={newLabel ?? dialogRow?.label}
@@ -188,7 +194,6 @@ const BookmarkGrid = observer(function ({
                 model.updateBookmarkLabel(target, newLabel)
               }
               setNewLabel('')
-              setDialogRow(undefined)
               setDialogOpen(false)
             }}
           >
