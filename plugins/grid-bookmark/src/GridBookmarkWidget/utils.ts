@@ -22,25 +22,16 @@ export async function navToBookmark(
     let view = views.find(view => view === session.focusedView) as MaybeLGV
 
     // check if the focused view is the appropriate assembly, if not proceed
-    if (!view || view?.assemblyNames[0] !== assembly) {
-      // find number of instances open with the selectedAssembly
-      const viewsOfSelectedAssembly: AbstractViewModel[] = []
-      views.forEach(element => {
-        if (
-          element.type === 'LinearGenomeView' &&
+    if (view?.assemblyNames[0] !== assembly) {
+      view = views.find(
+        elt =>
           // @ts-expect-error
-          element.assemblyNames[0] === assembly
-        ) {
-          viewsOfSelectedAssembly.push(element)
-        }
-      })
-      // if 1+ instances open, that is the view to nav to
-      if (viewsOfSelectedAssembly.length >= 1) {
-        view = viewsOfSelectedAssembly[0] as LGV
-      }
+          elt.type === 'LinearGenomeView' && elt.assemblyNames[0] === assembly,
+      ) as MaybeLGV
     }
 
-    // if no view is opened of the selectedAssembly, open a new view with that assembly
+    // if no view is opened of the selectedAssembly, open a new
+    // view with that assembly
     if (!view) {
       const newViewId = `${model.id}_${assembly}`
       view = session.addView('LinearGenomeView', {
@@ -48,7 +39,6 @@ export async function navToBookmark(
       }) as LGV
     }
     await view.navToLocString(locString, assembly)
-    session.notify('Navigated to the selected bookmark.', 'success')
   } catch (e) {
     console.error(e)
     session.notify(`${e}`, 'error')

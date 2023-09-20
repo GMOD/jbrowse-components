@@ -83,29 +83,29 @@ export default function f(_pluginManager: PluginManager) {
     }))
     .views(self => ({
       get assemblies() {
-        return [
-          ...new Set(self.bookmarkedRegions.map(region => region.assemblyName)),
-        ]
+        return [...new Set(self.bookmarkedRegions.map(r => r.assemblyName))]
       },
       get validAssemblies() {
-        return [
-          ...new Set(
-            this.assemblies.filter((assembly: string) =>
-              getSession(self).assemblyNames.includes(assembly),
-            ),
+        return new Set(
+          this.assemblies.filter((assembly: string) =>
+            getSession(self).assemblyNames.includes(assembly),
           ),
-        ]
+        )
       },
+    }))
+    .views(self => ({
       get bookmarksWithValidAssemblies() {
         return (
           JSON.parse(
             JSON.stringify(self.bookmarkedRegions),
           ) as unknown as ILabeledRegionModel[]
-        ).filter(ele => this.validAssemblies.includes(ele.assemblyName))
+        ).filter(ele => self.validAssemblies.has(ele.assemblyName))
       },
+    }))
+    .views(self => ({
       get allBookmarksModel() {
         return SharedBookmarksModel.create({
-          sharedBookmarks: this.bookmarksWithValidAssemblies,
+          sharedBookmarks: self.bookmarksWithValidAssemblies,
         })
       },
     }))
@@ -121,9 +121,9 @@ export default function f(_pluginManager: PluginManager) {
     }))
     .actions(self => ({
       updateSelectedAssembliesAfterClear() {
-        if (self.validAssemblies.length < self.selectedAssemblies.length) {
+        if (self.validAssemblies.size < self.selectedAssemblies.length) {
           const rmAsm = self.selectedAssemblies.filter(
-            asm => !self.validAssemblies.includes(asm),
+            asm => !self.validAssemblies.has(asm),
           )
           rmAsm.forEach(asm => {
             self.selectedAssemblies.splice(
@@ -135,8 +135,8 @@ export default function f(_pluginManager: PluginManager) {
         }
       },
       updateSelectedAssembliesAfterAdd() {
-        if (self.validAssemblies.length > self.selectedAssemblies.length) {
-          const newAsm = self.validAssemblies.filter(
+        if (self.validAssemblies.size > self.selectedAssemblies.length) {
+          const newAsm = [...self.validAssemblies].filter(
             asm => !self.selectedAssemblies.includes(asm),
           )
           self.setSelectedAssemblies([...self.selectedAssemblies, ...newAsm])
@@ -184,7 +184,7 @@ export default function f(_pluginManager: PluginManager) {
       },
       clearAllBookmarks() {
         self.bookmarkedRegions.forEach(bookmark => {
-          if (self.validAssemblies.includes(bookmark.assemblyName)) {
+          if (self.validAssemblies.has(bookmark.assemblyName)) {
             self.bookmarkedRegions.remove(bookmark)
           }
         })
@@ -192,11 +192,9 @@ export default function f(_pluginManager: PluginManager) {
         self.updateSelectedAssembliesAfterClear()
       },
       clearSelectedBookmarks() {
-        self.selectedBookmarks.forEach(
-          (selectedBookmark: IExtendedLabeledRegionModel) => {
-            self.bookmarkedRegions.remove(selectedBookmark.correspondingObj)
-          },
-        )
+        self.selectedBookmarks.forEach(selectedBookmark => {
+          self.bookmarkedRegions.remove(selectedBookmark.correspondingObj)
+        })
         self.selectedBookmarks = []
         this.updateLocalStorage()
         self.updateSelectedAssembliesAfterClear()
