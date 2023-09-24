@@ -1,19 +1,11 @@
-import React, { useEffect, useState } from 'react'
+import React, { Suspense, lazy, useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
-import {
-  Link,
-  Typography,
-  DialogContent,
-  DialogActions,
-  Button,
-  TextField,
-} from '@mui/material'
+import { Link } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import {
   DataGrid,
-  GRID_CHECKBOX_SELECTION_COL_DEF,
-  GridRowId,
   GridRowSelectionModel,
+  GRID_CHECKBOX_SELECTION_COL_DEF,
 } from '@mui/x-data-grid'
 import {
   getSession,
@@ -21,15 +13,12 @@ import {
   measureGridWidth,
   measureText,
 } from '@jbrowse/core/util'
-import { Dialog } from '@jbrowse/core/ui'
 
 // locals
 import { navToBookmark } from '../utils'
-import {
-  GridBookmarkModel,
-  IExtendedLabeledRegionModel,
-  ILabeledRegionModel,
-} from '../model'
+import { GridBookmarkModel, IExtendedLabeledRegionModel } from '../model'
+
+const EditBookmarkLabelDialog = lazy(() => import('./EditBookmarkLabelDialog'))
 
 const useStyles = makeStyles()(() => ({
   link: {
@@ -50,6 +39,7 @@ const BookmarkGrid = observer(function ({
     bookmarkedRegions,
     selectedAssemblies,
     bookmarksWithValidAssemblies,
+    validAssemblies,
   } = model
   const [rowSelectionModel, setRowSelectionModel] =
     useState<GridRowSelectionModel>([])
@@ -57,9 +47,7 @@ const BookmarkGrid = observer(function ({
   const { views } = session
 
   const bookmarkRows = bookmarkedRegions
-    .filter((r: ILabeledRegionModel) =>
-      selectedAssemblies.includes(r.assemblyName),
-    )
+    .filter(r => selectedAssemblies.includes(r.assemblyName))
     .map((region, index) => {
       const { assemblyName, ...rest } = region
       return {
@@ -71,6 +59,9 @@ const BookmarkGrid = observer(function ({
       }
     })
 
+  // reset selections if bookmarked regions change
+  // needed especially if bookmarked regions are deleted, then
+  // clear selection model
   useEffect(() => {
     setRowSelectionModel([])
   }, [bookmarkedRegions.length])
@@ -94,21 +85,16 @@ const BookmarkGrid = observer(function ({
               bookmarkRows.length > 0
                 ? measureGridWidth(bookmarkRows.map(row => row.locString))
                 : measureText('Bookmark link'),
-            renderCell: params => (
+            renderCell: ({ value, row }) => (
               <Link
                 className={classes.link}
                 href="#"
                 onClick={async event => {
                   event.preventDefault()
-                  await navToBookmark(
-                    params.value,
-                    params.row.assemblyName,
-                    views,
-                    model,
-                  )
+                  await navToBookmark(value, row.assemblyName, views, model)
                 }}
               >
-                {params.value}
+                {value}
               </Link>
             ),
           },
@@ -121,86 +107,60 @@ const BookmarkGrid = observer(function ({
                 : measureText('label'),
             editable: true,
           },
-          {
-            field: 'assemblyName',
-            headerName: 'Assembly',
-            width:
-              bookmarkRows.length > 0
-                ? measureGridWidth(bookmarkRows.map(row => row.assemblyName))
-                : measureText('assembly'),
-          },
+          ...(selectedAssemblies.length === validAssemblies.size
+            ? [
+                {
+                  field: 'assemblyName',
+                  headerName: 'Assembly',
+                  width:
+                    bookmarkRows.length > 0
+                      ? measureGridWidth(
+                          bookmarkRows.map(row => row.assemblyName),
+                        )
+                      : measureText('assembly'),
+                },
+              ]
+            : []),
         ]}
         onCellDoubleClick={({ row }) => {
           setDialogOpen(true)
           setDialogRow(row)
         }}
-        /* @ts-ignore */
         processRowUpdate={row => {
           const target = bookmarkRows[row.id]
           model.updateBookmarkLabel(target, row.label)
           return row
         }}
-        onProcessRowUpdateError={e => {
-          session.notify(e.message, 'error')
-        }}
+        onProcessRowUpdateError={e => session.notify(e.message, 'error')}
         checkboxSelection
         onRowSelectionModelChange={newRowSelectionModel => {
           if (bookmarksWithValidAssemblies.length > 0) {
-            const selectedBookmarks = [] as IExtendedLabeledRegionModel[]
-            newRowSelectionModel.forEach((value: GridRowId) => {
-              selectedBookmarks.push({ ...bookmarkRows[value as number] })
-            })
-            model.setSelectedBookmarks(selectedBookmarks)
+            model.setSelectedBookmarks(
+              newRowSelectionModel.map(value => ({
+                ...bookmarkRows[value as number],
+              })),
+            )
             setRowSelectionModel(newRowSelectionModel)
           }
         }}
         rowSelectionModel={rowSelectionModel}
-        /* @ts-ignore */
         disableRowSelectionOnClick
       />
-
-      <Dialog
-        open={dialogOpen}
-        onClose={() => {
-          setDialogOpen(false)
-        }}
-        title="Edit bookmark label"
-      >
-        <DialogContent>
-          <Typography>
-            Editing label for bookmark{' '}
-            <strong>
-              {dialogRow?.refName}:{dialogRow?.start}..{dialogRow?.end}
-            </strong>
-            :
-          </Typography>
-          <TextField
-            inputProps={{ 'data-testid': 'edit-bookmark-label-field' }}
-            fullWidth
-            variant="outlined"
-            value={newLabel ?? dialogRow?.label}
-            onChange={e => {
-              setNewLabel(e.target.value)
-            }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => {
-              if (newLabel) {
-                const target = bookmarkRows[dialogRow!.id]
-                model.updateBookmarkLabel(target, newLabel)
-              }
-              setNewLabel('')
+      {dialogOpen ? (
+        <Suspense fallback={<React.Fragment />}>
+          <EditBookmarkLabelDialog
+            onClose={() => {
+              setDialogRow(undefined)
               setDialogOpen(false)
             }}
-          >
-            Confirm
-          </Button>
-        </DialogActions>
-      </Dialog>
+            bookmarkRows={bookmarkRows}
+            model={model}
+            dialogRow={dialogRow}
+            newLabel={newLabel}
+            setNewLabel={setNewLabel}
+          />
+        </Suspense>
+      ) : null}
     </>
   )
 })

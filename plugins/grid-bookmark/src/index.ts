@@ -70,10 +70,6 @@ export default class extends Plugin {
                     const regions = bookmarkWidget.bookmarkedRegions
                     if (regions.length !== 0) {
                       self.navTo(regions.at(-1))
-                      session.notify(
-                        'Navigated to the most recently created bookmark.',
-                        'success',
-                      )
                     } else {
                       session.notify(
                         'There are no recent bookmarks to navigate to.',
@@ -94,15 +90,13 @@ export default class extends Plugin {
                       }
 
                       session.showWidget(bookmarkWidget)
-                      bookmarkWidget = session.widgets.get('GridBookmark')
-                      return bookmarkWidget
+                      return session.widgets.get('GridBookmark')
                     }
 
                     throw new Error('Could not open bookmark widget')
                   },
 
                   bookmarkCurrentRegion() {
-                    // @ts-ignore
                     if (self.id === getSession(self).focusedViewId) {
                       const selectedRegions = self.getSelectedRegions(
                         undefined,
