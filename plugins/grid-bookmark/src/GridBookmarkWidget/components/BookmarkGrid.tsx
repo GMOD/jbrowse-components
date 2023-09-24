@@ -35,17 +35,15 @@ const BookmarkGrid = observer(function ({
   const [dialogOpen, setDialogOpen] = useState(false)
   const [dialogRow, setDialogRow] = useState<IExtendedLabeledRegionModel>()
   const [newLabel, setNewLabel] = useState<string>()
+  const [rowSelectionModel, setRowSelectionModel] =
+    useState<GridRowSelectionModel>([])
   const {
     bookmarkedRegions,
     selectedAssemblies,
     bookmarksWithValidAssemblies,
-    validAssemblies,
   } = model
-  const [rowSelectionModel, setRowSelectionModel] =
-    useState<GridRowSelectionModel>([])
-  const session = getSession(model)
-  const { views } = session
 
+  const session = getSession(model)
   const bookmarkRows = bookmarkedRegions
     .filter(r => selectedAssemblies.includes(r.assemblyName))
     .map((region, index) => {
@@ -81,16 +79,17 @@ const BookmarkGrid = observer(function ({
           {
             field: 'locString',
             headerName: 'Bookmark link',
-            width:
-              bookmarkRows.length > 0
-                ? measureGridWidth(bookmarkRows.map(row => row.locString))
-                : measureText('Bookmark link'),
+            width: Math.max(
+              measureGridWidth(bookmarkRows.map(row => row.locString)),
+              measureText('Bookmark link'),
+            ),
             renderCell: ({ value, row }) => (
               <Link
                 className={classes.link}
                 href="#"
                 onClick={async event => {
                   event.preventDefault()
+                  const { views } = session
                   await navToBookmark(value, row.assemblyName, views, model)
                 }}
               >
@@ -101,23 +100,21 @@ const BookmarkGrid = observer(function ({
           {
             field: 'label',
             headerName: 'Label',
-            width:
-              bookmarkRows.length > 0
-                ? measureGridWidth(bookmarkRows.map(row => row.label))
-                : measureText('label'),
+            width: Math.max(
+              measureGridWidth(bookmarkRows.map(row => row.label)),
+              measureText('label'),
+            ),
             editable: true,
           },
-          ...(selectedAssemblies.length === validAssemblies.size
+          ...(selectedAssemblies.length > 1
             ? [
                 {
                   field: 'assemblyName',
                   headerName: 'Assembly',
-                  width:
-                    bookmarkRows.length > 0
-                      ? measureGridWidth(
-                          bookmarkRows.map(row => row.assemblyName),
-                        )
-                      : measureText('assembly'),
+                  width: Math.max(
+                    measureGridWidth(bookmarkRows.map(r => r.assemblyName)),
+                    measureText('assembly'),
+                  ),
                 },
               ]
             : []),

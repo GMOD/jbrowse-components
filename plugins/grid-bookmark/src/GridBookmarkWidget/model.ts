@@ -51,28 +51,54 @@ export interface IExtendedLabeledRegionModel extends ILabeledRegionModel {
   correspondingObj: ILabeledRegionModel
 }
 
+const localStorageKeyF = () =>
+  typeof window !== undefined
+    ? `bookmarks-${[window.location.host + window.location.pathname].join('-')}`
+    : 'empty'
+
 export default function f(_pluginManager: PluginManager) {
   return types
     .model('GridBookmarkModel', {
+      /**
+       * #property
+       */
       id: ElementId,
+      /**
+       * #property
+       */
       type: types.literal('GridBookmarkWidget'),
-      bookmarkedRegions: types.array(
-        types.optional(LabeledRegionModel, () =>
-          JSON.parse(
-            localStorageGetItem(
-              `bookmarks-${[
-                window.location.host + window.location.pathname,
-              ].join('-')}`,
-            ) || '[]',
-          ),
-        ),
-      ),
+      /**
+       * #property
+       * removed by postProcessSnapshot, only loaded from localStorage
+       */
+      bookmarks: types.maybe(types.array(LabeledRegionModel)),
     })
     .volatile(() => ({
       selectedBookmarks: [] as IExtendedLabeledRegionModel[],
-      localStorageKey: `bookmarks-${[
-        window.location.host + window.location.pathname,
-      ].join('-')}`,
+      selectedAssembliesPre: undefined as string[] | undefined,
+    }))
+    .views(self => ({
+      get bookmarkedRegions() {
+        return self.bookmarks ?? []
+      },
+    }))
+    .views(self => ({
+      get bookmarkAssemblies() {
+        return [...new Set(self.bookmarkedRegions.map(r => r.assemblyName))]
+      },
+      get validAssemblies() {
+        const { assemblyManager } = getSession(self)
+        return new Set(
+          this.bookmarkAssemblies.filter(a => assemblyManager.get(a)),
+        )
+      },
+    }))
+    .views(self => ({
+      get bookmarksWithValidAssemblies() {
+        return self.bookmarkedRegions.filter(e =>
+          self.validAssemblies.has(e.assemblyName),
+        )
+      },
     }))
     .views(self => ({
       get sharedBookmarksModel() {
@@ -80,77 +106,38 @@ export default function f(_pluginManager: PluginManager) {
           sharedBookmarks: self.selectedBookmarks,
         })
       },
-    }))
-    .views(self => ({
-      get assemblies() {
-        return [...new Set(self.bookmarkedRegions.map(r => r.assemblyName))]
-      },
-      get validAssemblies() {
-        return new Set(
-          this.assemblies.filter((assembly: string) =>
-            getSession(self).assemblyNames.includes(assembly),
-          ),
-        )
-      },
-    }))
-    .views(self => ({
-      get bookmarksWithValidAssemblies() {
-        return (
-          JSON.parse(
-            JSON.stringify(self.bookmarkedRegions),
-          ) as unknown as ILabeledRegionModel[]
-        ).filter(ele => self.validAssemblies.has(ele.assemblyName))
-      },
-    }))
-    .views(self => ({
       get allBookmarksModel() {
+        // requires cloning bookmarks with JSON.stringify/parse to avoid duplicate reference to same object
+        // in the same state tree, will otherwise error when performing share
         return SharedBookmarksModel.create({
-          sharedBookmarks: self.bookmarksWithValidAssemblies,
+          sharedBookmarks: JSON.parse(
+            JSON.stringify(self.bookmarksWithValidAssemblies),
+          ),
         })
       },
     }))
-    .volatile(self => ({
-      selectedAssemblies: self.assemblies.filter((assembly: string) =>
-        getSession(self).assemblyNames.includes(assembly),
-      ),
-    }))
+
     .actions(self => ({
-      setSelectedAssemblies(assemblies: string[]) {
-        self.selectedAssemblies = assemblies
+      setSelectedAssemblies(assemblies?: string[]) {
+        self.selectedAssembliesPre = assemblies
       },
     }))
-    .actions(self => ({
-      updateSelectedAssembliesAfterClear() {
-        if (self.validAssemblies.size < self.selectedAssemblies.length) {
-          const rmAsm = self.selectedAssemblies.filter(
-            asm => !self.validAssemblies.has(asm),
-          )
-          rmAsm.forEach(asm => {
-            self.selectedAssemblies.splice(
-              self.selectedAssemblies.indexOf(asm),
-              1,
-            )
-          })
-          self.setSelectedAssemblies([...self.selectedAssemblies])
-        }
-      },
-      updateSelectedAssembliesAfterAdd() {
-        if (self.validAssemblies.size > self.selectedAssemblies.length) {
-          const newAsm = [...self.validAssemblies].filter(
-            asm => !self.selectedAssemblies.includes(asm),
-          )
-          self.setSelectedAssemblies([...self.selectedAssemblies, ...newAsm])
-        }
+
+    .views(self => ({
+      get selectedAssemblies() {
+        return (
+          self.selectedAssembliesPre?.filter(f =>
+            self.validAssemblies.has(f),
+          ) ?? [...self.validAssemblies]
+        )
       },
     }))
     .actions(self => ({
       importBookmarks(regions: Region[]) {
-        self.bookmarkedRegions = cast([...self.bookmarkedRegions, ...regions])
-        self.updateSelectedAssembliesAfterAdd()
+        self.bookmarks = cast([...self.bookmarkedRegions, ...regions])
       },
       addBookmark(region: Region) {
-        self.bookmarkedRegions.push(region)
-        self.updateSelectedAssembliesAfterAdd()
+        self.bookmarks?.push(region)
       },
       removeBookmark(index: number) {
         self.bookmarkedRegions.splice(index, 1)
@@ -159,12 +146,7 @@ export default function f(_pluginManager: PluginManager) {
         bookmark: IExtendedLabeledRegionModel,
         label: string,
       ) {
-        const target = self.bookmarkedRegions.find(
-          (element: ILabeledRegionModel) => {
-            return element === bookmark.correspondingObj
-          },
-        )
-        target?.setLabel(label)
+        bookmark.correspondingObj.setLabel(label)
       },
       setSelectedBookmarks(bookmarks: IExtendedLabeledRegionModel[]) {
         self.selectedBookmarks = bookmarks
@@ -172,51 +154,51 @@ export default function f(_pluginManager: PluginManager) {
       setBookmarkedRegions(
         bookmarkedRegions: IMSTArray<typeof LabeledRegionModel>,
       ) {
-        self.bookmarkedRegions = bookmarkedRegions
+        self.bookmarks = cast(bookmarkedRegions)
       },
     }))
     .actions(self => ({
-      updateLocalStorage() {
-        localStorageSetItem(
-          self.localStorageKey,
-          JSON.stringify(self.bookmarkedRegions),
-        )
-      },
       clearAllBookmarks() {
         self.bookmarkedRegions.forEach(bookmark => {
           if (self.validAssemblies.has(bookmark.assemblyName)) {
-            self.bookmarkedRegions.remove(bookmark)
+            self.bookmarks?.remove(bookmark)
           }
         })
-        this.updateLocalStorage()
-        self.updateSelectedAssembliesAfterClear()
       },
       clearSelectedBookmarks() {
         self.selectedBookmarks.forEach(selectedBookmark => {
-          self.bookmarkedRegions.remove(selectedBookmark.correspondingObj)
+          self.bookmarks?.remove(selectedBookmark.correspondingObj)
         })
         self.selectedBookmarks = []
-        this.updateLocalStorage()
-        self.updateSelectedAssembliesAfterClear()
       },
+    }))
+    .actions(self => ({
       afterAttach() {
+        const key = localStorageKeyF()
         addDisposer(
           self,
           autorun(() => {
-            if (self.bookmarkedRegions.length > 0) {
-              localStorageSetItem(
-                self.localStorageKey,
-                JSON.stringify(self.bookmarkedRegions),
-              )
-            } else {
+            if (self.bookmarks === undefined) {
+              // load bookmarks from localstorage, note that this is the primary route for
+              // loading bookmarks, as they are removed from session snapshots
               self.setBookmarkedRegions(
-                JSON.parse(localStorageGetItem(self.localStorageKey) || '[]'),
+                JSON.parse(localStorageGetItem(key) || '[]'),
               )
             }
           }),
         )
+        addDisposer(
+          self,
+          autorun(() => {
+            localStorageSetItem(key, JSON.stringify(self.bookmarkedRegions))
+          }),
+        )
       },
     }))
+    .postProcessSnapshot(snap => {
+      const { bookmarks: _, ...rest } = snap as Omit<typeof snap, symbol>
+      return rest
+    })
 }
 
 export type GridBookmarkStateModel = ReturnType<typeof f>
