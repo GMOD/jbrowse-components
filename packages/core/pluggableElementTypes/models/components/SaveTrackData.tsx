@@ -15,7 +15,7 @@ import { IAnyStateTreeNode } from 'mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 import { saveAs } from 'file-saver'
 import { observer } from 'mobx-react'
-import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
+import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import {
   getSession,
   getContainingView,
@@ -96,9 +96,11 @@ const SaveTrackDataDialog = observer(function ({
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
-        const view = getContainingView(model)
+        const { visibleRegions } = getContainingView(model) as {
+          visibleRegions?: Region[]
+        }
         const session = getSession(model)
-        if (!features) {
+        if (!features || !visibleRegions) {
           return
         }
         const generator = options[type] || {
@@ -108,7 +110,7 @@ const SaveTrackDataDialog = observer(function ({
           await generator.callback({
             features,
             session,
-            assemblyName: view.visibleRegions[0].assemblyName,
+            assemblyName: visibleRegions[0].assemblyName,
           }),
         )
       } catch (e) {
