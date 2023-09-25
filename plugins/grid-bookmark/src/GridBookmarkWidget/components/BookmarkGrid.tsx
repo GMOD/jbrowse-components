@@ -35,13 +35,12 @@ const BookmarkGrid = observer(function ({
 }) {
   const { classes } = useStyles()
   const [dialogRow, setDialogRow] = useState<IExtendedLabeledRegionModel>()
-  const [rowSelectionModel, setRowSelectionModel] =
-    useState<GridRowSelectionModel>([])
   const { ref, scrollLeft } = useResizeBar()
   const {
     bookmarkedRegions,
-    selectedAssemblies,
     bookmarksWithValidAssemblies,
+    selectedAssemblies,
+    selectedBookmarks,
   } = model
 
   const session = getSession(model)
@@ -61,11 +60,6 @@ const BookmarkGrid = observer(function ({
 
   // reset selections if bookmarked regions change
   // needed especially if bookmarked regions are deleted, then
-  // clear selection model
-  useEffect(() => {
-    setRowSelectionModel([])
-  }, [bookmarkedRegions.length])
-
   const [widths, setWidths] = useState([
     40,
     Math.max(
@@ -144,10 +138,9 @@ const BookmarkGrid = observer(function ({
                   ...rows[value as number],
                 })),
               )
-              setRowSelectionModel(newRowSelectionModel)
             }
           }}
-          rowSelectionModel={rowSelectionModel}
+          rowSelectionModel={selectedBookmarks.map(r => r.id)}
           disableRowSelectionOnClick
         />
       </div>
