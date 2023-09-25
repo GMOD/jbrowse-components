@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
-  Typography,
+  Alert,
   DialogContent,
   DialogActions,
   Button,
@@ -9,38 +9,32 @@ import {
 import { Dialog } from '@jbrowse/core/ui'
 import { GridBookmarkModel, IExtendedLabeledRegionModel } from '../model'
 import { observer } from 'mobx-react'
+import { assembleLocString } from '@jbrowse/core/util'
 
 const EditBookmarkLabelDialog = observer(function ({
   model,
   onClose,
   dialogRow,
-  newLabel,
-  bookmarkRows,
-  setNewLabel,
 }: {
-  bookmarkRows: IExtendedLabeledRegionModel[]
   model: GridBookmarkModel
-  newLabel?: string
-  setNewLabel: (arg: string) => void
-  dialogRow?: IExtendedLabeledRegionModel
+  dialogRow: IExtendedLabeledRegionModel
   onClose: () => void
 }) {
+  const [newLabel, setNewLabel] = useState(dialogRow.label || '')
   return (
     <Dialog open onClose={onClose} title="Edit bookmark label">
       <DialogContent>
-        <Typography>
+        <Alert>
           Editing label for bookmark{' '}
-          <strong>
-            {dialogRow?.refName}:{dialogRow?.start}..{dialogRow?.end}
-          </strong>
-          :
-        </Typography>
+          <strong>{assembleLocString(dialogRow.correspondingObj)}</strong>:
+        </Alert>
         <TextField
           fullWidth
           inputProps={{ 'data-testid': 'edit-bookmark-label-field' }}
           variant="outlined"
-          value={newLabel ?? dialogRow?.label}
+          value={newLabel}
           onChange={e => setNewLabel(e.target.value)}
+          autoFocus
         />
       </DialogContent>
       <DialogActions>
@@ -49,8 +43,7 @@ const EditBookmarkLabelDialog = observer(function ({
           color="primary"
           onClick={() => {
             if (newLabel && dialogRow) {
-              const target = bookmarkRows[dialogRow.id]
-              model.updateBookmarkLabel(target, newLabel)
+              model.updateBookmarkLabel(dialogRow, newLabel)
             }
             setNewLabel('')
             onClose()

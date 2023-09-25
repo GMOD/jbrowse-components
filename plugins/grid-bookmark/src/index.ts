@@ -1,6 +1,6 @@
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
 import {
   SessionWithWidgets,
   getSession,
@@ -17,6 +17,7 @@ import BookmarkIcon from '@mui/icons-material/Bookmark'
 import BookmarksIcon from '@mui/icons-material/Bookmarks'
 
 import GridBookmarkWidgetF from './GridBookmarkWidget'
+import { GridBookmarkModel } from './GridBookmarkWidget/model'
 
 export default class extends Plugin {
   name = 'GridBookmarkPlugin'
@@ -29,130 +30,116 @@ export default class extends Plugin {
       (pluggableElement: PluggableElementType) => {
         if (pluggableElement.name === 'LinearGenomeView') {
           const { stateModel } = pluggableElement as ViewType
-          const newStateModel = stateModel.extend(
-            (self: LinearGenomeViewModel) => {
+          const lgv = stateModel as LinearGenomeViewStateModel
+          const newStateModel = lgv
+            .actions(self => ({
+              activateBookmarkWidget() {
+                const session = getSession(self)
+                if (isSessionModelWithWidgets(session)) {
+                  let bookmarkWidget = session.widgets.get('GridBookmark')
+                  if (!bookmarkWidget) {
+                    bookmarkWidget = session.addWidget(
+                      'GridBookmarkWidget',
+                      'GridBookmark',
+                    )
+                  }
+
+                  session.showWidget(bookmarkWidget)
+                  return session.widgets.get(
+                    'GridBookmark',
+                  ) as GridBookmarkModel
+                }
+
+                throw new Error('Could not open bookmark widget')
+              },
+            }))
+            .actions(self => ({
+              navigateNewestBookmark() {
+                const session = getSession(self)
+                const bookmarkWidget = self.activateBookmarkWidget()
+                const regions = bookmarkWidget.bookmarkedRegions
+                if (regions?.length) {
+                  self.navTo(regions.at(-1)!)
+                } else {
+                  session.notify(
+                    'There are no recent bookmarks to navigate to.',
+                    'info',
+                  )
+                }
+              },
+
+              bookmarkCurrentRegion() {
+                if (self.id === getSession(self).focusedViewId) {
+                  const selectedRegions = self.getSelectedRegions(
+                    undefined,
+                    undefined,
+                  )
+                  const bookmarkWidget = self.activateBookmarkWidget()
+                  bookmarkWidget.addBookmark(selectedRegions[0])
+                }
+              },
+            }))
+            .views(self => {
               const superMenuItems = self.menuItems
               const superRubberBandMenuItems = self.rubberBandMenuItems
               return {
-                actions: {
-                  afterCreate() {
-                    document.addEventListener('keydown', e => {
-                      // ctrl+shift+d or cmd+shift+d
-                      if (
-                        (e.ctrlKey || e.metaKey) &&
-                        e.shiftKey &&
-                        e.code === 'KeyD'
-                      ) {
-                        e.preventDefault()
-                        // @ts-ignore
-                        self.activateBookmarkWidget()
-                        // @ts-ignore
-                        self.bookmarkCurrentRegion()
-                        getSession(self).notify('Bookmark created.', 'success')
-                      }
-                      // ctrl+shift+m or cmd+shift+m
-                      if (
-                        (e.ctrlKey || e.metaKey) &&
-                        e.shiftKey &&
-                        e.code === 'KeyM'
-                      ) {
-                        e.preventDefault()
-                        // @ts-ignore
-                        self.navigateNewestBookmark()
-                      }
-                    })
-                  },
-
-                  navigateNewestBookmark() {
-                    const session = getSession(self)
-                    // @ts-expect-error
-                    const bookmarkWidget = self.activateBookmarkWidget()
-                    const regions = bookmarkWidget.bookmarkedRegions
-                    if (regions.length !== 0) {
-                      self.navTo(regions.at(-1))
-                    } else {
-                      session.notify(
-                        'There are no recent bookmarks to navigate to.',
-                        'info',
-                      )
-                    }
-                  },
-
-                  activateBookmarkWidget() {
-                    const session = getSession(self)
-                    if (isSessionModelWithWidgets(session)) {
-                      let bookmarkWidget = session.widgets.get('GridBookmark')
-                      if (!bookmarkWidget) {
-                        bookmarkWidget = session.addWidget(
-                          'GridBookmarkWidget',
-                          'GridBookmark',
-                        )
-                      }
-
-                      session.showWidget(bookmarkWidget)
-                      return session.widgets.get('GridBookmark')
-                    }
-
-                    throw new Error('Could not open bookmark widget')
-                  },
-
-                  bookmarkCurrentRegion() {
-                    if (self.id === getSession(self).focusedViewId) {
-                      const selectedRegions = self.getSelectedRegions(
-                        undefined,
-                        undefined,
-                      )
-                      const firstRegion = selectedRegions[0]
-                      const bookmarkWidget = this.activateBookmarkWidget()
-                      // @ts-expect-error
-                      bookmarkWidget.addBookmark(firstRegion)
-                    }
-                  },
+                menuItems() {
+                  return [
+                    ...superMenuItems(),
+                    { type: 'divider' },
+                    {
+                      label: 'Open bookmark widget',
+                      icon: BookmarksIcon,
+                      onClick: () => self.activateBookmarkWidget(),
+                    },
+                    {
+                      label: 'Bookmark current region',
+                      icon: BookmarkIcon,
+                      onClick: () => self.bookmarkCurrentRegion(),
+                    },
+                  ]
                 },
-                views: {
-                  menuItems() {
-                    return [
-                      ...superMenuItems(),
-                      { type: 'divider' },
-                      {
-                        label: 'Open bookmark widget',
-                        icon: BookmarksIcon,
-                        // @ts-expect-error
-                        onClick: self.activateBookmarkWidget,
-                      },
-                      {
-                        label: 'Bookmark current region',
-                        icon: BookmarkIcon,
-                        // @ts-expect-error
-                        onClick: self.bookmarkCurrentRegion,
-                      },
-                    ]
-                  },
 
-                  rubberBandMenuItems() {
-                    return [
-                      ...superRubberBandMenuItems(),
-                      {
-                        label: 'Bookmark region',
-                        icon: BookmarkIcon,
-                        onClick: () => {
-                          const { leftOffset, rightOffset } = self
-                          const selectedRegions = self.getSelectedRegions(
-                            leftOffset,
-                            rightOffset,
-                          )
-                          const firstRegion = selectedRegions[0]
-                          // @ts-expect-error
-                          const bookmarkWidget = self.activateBookmarkWidget()
-                          bookmarkWidget.addBookmark(firstRegion)
-                        },
+                rubberBandMenuItems() {
+                  return [
+                    ...superRubberBandMenuItems(),
+                    {
+                      label: 'Bookmark region',
+                      icon: BookmarkIcon,
+                      onClick: () => {
+                        const { leftOffset, rightOffset } = self
+                        const selectedRegions = self.getSelectedRegions(
+                          leftOffset,
+                          rightOffset,
+                        )
+                        const bookmarkWidget = self.activateBookmarkWidget()
+                        bookmarkWidget.addBookmark(selectedRegions[0])
                       },
-                    ]
-                  },
+                    },
+                  ]
                 },
               }
-            },
-          )
+            })
+            .actions(self => ({
+              afterCreate() {
+                document.addEventListener('keydown', e => {
+                  const activationSequence =
+                    (e.ctrlKey || e.metaKey) && e.shiftKey
+                  // ctrl+shift+d or cmd+shift+d
+                  if (activationSequence && e.code === 'KeyD') {
+                    e.preventDefault()
+                    self.activateBookmarkWidget()
+                    self.bookmarkCurrentRegion()
+                    getSession(self).notify('Bookmark created.', 'success')
+                  }
+                  // ctrl+shift+m or cmd+shift+m
+                  if (activationSequence && e.code === 'KeyM') {
+                    e.preventDefault()
+                    self.navigateNewestBookmark()
+                  }
+                })
+              },
+            }))
 
           ;(pluggableElement as ViewType).stateModel = newStateModel
         }

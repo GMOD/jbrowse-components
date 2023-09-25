@@ -1,72 +1,62 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 
-import { Checkbox, MenuItem, SelectChangeEvent, TextField } from '@mui/material'
+import {
+  Checkbox,
+  FormControl,
+  InputLabel,
+  ListItemText,
+  MenuItem,
+  OutlinedInput,
+  Select,
+} from '@mui/material'
 
 // locals
 import { GridBookmarkModel } from '../model'
-import { makeStyles } from 'tss-react/mui'
-import { getSession } from '@jbrowse/core/util'
 
-const useStyles = makeStyles()({
-  textfield: {
-    padding: 5,
-  },
-})
-
-const GridBookmarkAssemblySelector = observer(function AssemblySelector({
+const AssemblySelector = observer(function ({
   model,
 }: {
   model: GridBookmarkModel
 }) {
-  const { assemblyManager } = getSession(model)
-  const { classes } = useStyles()
-  const { validAssemblies, selectedAssemblies, setSelectedAssemblies } = model
-  const allSelected =
-    validAssemblies.size > 0 &&
-    selectedAssemblies.length === validAssemblies.size
-
-  const handleChange = (event: SelectChangeEvent<string[]>) => {
-    const value = event.target.value
-    if (value.at(-1) === 'All') {
-      setSelectedAssemblies(
-        selectedAssemblies.length === validAssemblies.size
-          ? []
-          : [...validAssemblies],
-      )
-      return
-    }
-    setSelectedAssemblies([...value])
-  }
+  const { validAssemblies, selectedAssemblies } = model
+  const noAssemblies = validAssemblies.size === 0 ? true : false
+  const label = 'Select assemblies'
+  const id = 'select-assemblies-label'
+  const selectedSet = new Set(selectedAssemblies)
+  const isAllSelected = [...validAssemblies].every(e => selectedSet.has(e))
 
   return (
-    <TextField
-      select
-      variant="outlined"
-      fullWidth
-      className={classes.textfield}
-      SelectProps={{
-        multiple: true,
-        value: selectedAssemblies,
-        // @ts-ignore
-        onChange: handleChange,
-        // @ts-ignore
-        renderValue: selected => selected.join(', '),
-      }}
-      label="Select assembly"
-    >
-      <MenuItem value="All">
-        <Checkbox checked={allSelected} />
-        All
-      </MenuItem>
-      {[...validAssemblies].map(name => (
-        <MenuItem key={name} value={name}>
-          <Checkbox checked={selectedAssemblies.includes(name)} />
-          {assemblyManager.get(name)?.displayName || name}
+    <FormControl disabled={noAssemblies} fullWidth>
+      <InputLabel id={id}>{label}</InputLabel>
+      <Select
+        labelId={id}
+        multiple
+        value={selectedAssemblies}
+        onChange={event => model.setSelectedAssemblies([...event.target.value])}
+        input={<OutlinedInput label={label} />}
+        renderValue={selected => selected.join(', ')}
+      >
+        <MenuItem value="all">
+          <Checkbox
+            checked={isAllSelected}
+            indeterminate={!isAllSelected && selectedAssemblies.length > 0}
+            onChange={event => {
+              model.setSelectedAssemblies(event.target.checked ? undefined : [])
+              event.stopPropagation()
+            }}
+          />
+          <ListItemText primary="Select all" />
         </MenuItem>
-      ))}
-    </TextField>
+        {[...validAssemblies].map(name => (
+          <MenuItem key={name} value={name}>
+            <Checkbox checked={selectedAssemblies.includes(name)} />
+            <ListItemText primary={name} />
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
   )
 })
 
-export default GridBookmarkAssemblySelector
+export default AssemblySelector
