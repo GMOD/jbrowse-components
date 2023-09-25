@@ -126,6 +126,7 @@ const ShareBookmarksDialog = observer(function ({
           data-testid="dialogShare"
           variant="contained"
           color="primary"
+          disabled={loading}
           startIcon={<ContentCopyIcon />}
           onClick={async () => {
             copy(url)

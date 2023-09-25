@@ -1,12 +1,8 @@
-import React, { Suspense, lazy, useEffect, useState } from 'react'
+import React, { Suspense, lazy, useState } from 'react'
 import { observer } from 'mobx-react'
 import { Link } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import {
-  DataGrid,
-  GridRowSelectionModel,
-  GRID_CHECKBOX_SELECTION_COL_DEF,
-} from '@mui/x-data-grid'
+import { DataGrid, GRID_CHECKBOX_SELECTION_COL_DEF } from '@mui/x-data-grid'
 import {
   getSession,
   assembleLocString,
