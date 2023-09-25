@@ -287,7 +287,8 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
             ])
           ) {
             self.collapseTopLevelCategories()
-          } else if (
+          }
+          if (
             getConf(session, [
               'hierarchical',
               'defaultCollapsed',
@@ -295,14 +296,13 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
             ])
           ) {
             self.collapseSubCategories()
-          } else {
-            for (const entry of getConf(session, [
-              'hierarchical',
-              'defaultCollapsed',
-              'categoryNames',
-            ])) {
-              self.collapsed.set(entry, true)
-            }
+          }
+          for (const entry of getConf(session, [
+            'hierarchical',
+            'defaultCollapsed',
+            'categoryNames',
+          ])) {
+            self.collapsed.set(entry, true)
           }
           self.initialized = true
         }
@@ -311,9 +311,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
     .views(self => ({
       get hasAnySubcategories() {
         return self.allTracks.some(group =>
-          group.tracks.some(
-            track => readConfObject(track, 'category')?.length > 1,
-          ),
+          group.tracks.some(t => readConfObject(t, 'category')?.length > 1),
         )
       },
     }))
