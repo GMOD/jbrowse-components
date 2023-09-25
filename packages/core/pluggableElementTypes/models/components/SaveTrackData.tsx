@@ -22,16 +22,12 @@ import {
   Feature,
   Region,
   AbstractTrackModel,
+  AbstractSessionModel,
 } from '@jbrowse/core/util'
 import { getConf } from '@jbrowse/core/configuration'
 
 // icons
 import GetAppIcon from '@mui/icons-material/GetApp'
-
-// locals
-import { stringifyGFF3 } from './gff3'
-import { stringifyGBK } from './genbank'
-import { stringifyBED } from './bed'
 
 const useStyles = makeStyles()({
   root: {
@@ -57,12 +53,22 @@ async function fetchFeatures(
     signal,
   }) as Promise<Feature[]>
 }
-
+interface FileTypeExporter {
+  name: string
+  extension: string
+  callback: (arg: {
+    features: Feature[]
+    session: AbstractSessionModel
+    assemblyName: string
+  }) => Promise<string> | string
+}
 const SaveTrackDataDialog = observer(function ({
   model,
   handleClose,
 }: {
-  model: AbstractTrackModel
+  model: AbstractTrackModel & {
+    saveTrackFileFormatOptions: () => Record<string, FileTypeExporter>
+  }
   handleClose: () => void
 }) {
   const { classes } = useStyles()
@@ -70,11 +76,6 @@ const SaveTrackDataDialog = observer(function ({
   const [features, setFeatures] = useState<Feature[]>()
   const [type, setType] = useState('gff3')
   const [str, setStr] = useState('')
-  const options = {
-    gff3: { name: 'GFF3', extension: 'gff3', callback: stringifyGFF3 },
-    genbank: { name: 'GenBank', extension: 'gbk', callback: stringifyGBK },
-    bed: { name: 'BED', extension: 'bed', callback: stringifyBED },
-  }
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -90,6 +91,8 @@ const SaveTrackDataDialog = observer(function ({
     })()
   }, [model])
 
+  const options = model.saveTrackFileFormatOptions()
+
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
@@ -99,7 +102,7 @@ const SaveTrackDataDialog = observer(function ({
         if (!features) {
           return
         }
-        const generator = options[type as keyof typeof options] || {
+        const generator = options[type] || {
           callback: () => 'Unknown',
         }
         setStr(
@@ -115,13 +118,12 @@ const SaveTrackDataDialog = observer(function ({
     })()
   }, [type, features, options, model])
 
+  const loading = !features
   return (
     <Dialog maxWidth="xl" open onClose={handleClose} title="Save track data">
       <DialogContent className={classes.root}>
         {error ? <ErrorMessage error={error} /> : null}
-        {!features ? (
-          <LoadingEllipses />
-        ) : !features.length ? (
+        {features && !features.length ? (
           <Typography>No features found</Typography>
         ) : null}
 
@@ -145,7 +147,9 @@ const SaveTrackDataDialog = observer(function ({
           maxRows={15}
           fullWidth
           value={
-            str.length > 100_000
+            loading
+              ? 'Loading...'
+              : str.length > 100_000
               ? 'Too large to view here, click "Download" to results to file'
               : str
           }
@@ -160,7 +164,7 @@ const SaveTrackDataDialog = observer(function ({
       <DialogActions>
         <Button
           onClick={() => {
-            const ext = options[type as keyof typeof options].extension
+            const ext = options[type].extension
             const blob = new Blob([str], { type: 'text/plain;charset=utf-8' })
             saveAs(blob, `jbrowse_track_data.${ext}`)
           }}
