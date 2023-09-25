@@ -72,7 +72,8 @@ const SaveTrackDataDialog = observer(function ({
   const [str, setStr] = useState('')
   const options = {
     gff3: { name: 'GFF3', extension: 'gff3' },
-    genbank: { name: 'GenBank', extension: 'genbank' },
+    genbank: { name: 'GenBank', extension: 'gbk' },
+    bed: { name: 'BED', extension: 'bed' },
   }
 
   useEffect(() => {
