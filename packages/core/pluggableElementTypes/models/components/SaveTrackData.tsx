@@ -31,6 +31,7 @@ import GetAppIcon from '@mui/icons-material/GetApp'
 // locals
 import { stringifyGFF3 } from './gff3'
 import { stringifyGenbank } from './genbank'
+import { stringifyBED } from './bed'
 
 const useStyles = makeStyles()({
   root: {
@@ -97,15 +98,22 @@ const SaveTrackDataDialog = observer(function ({
         if (!features) {
           return
         }
-        const str = await (type === 'gff3'
-          ? stringifyGFF3({ features })
-          : stringifyGenbank({
+
+        if (type === 'gff3') {
+          setStr(stringifyGFF3({ features }))
+        } else if (type === 'bed') {
+          setStr(stringifyBED({ features }))
+        } else if (type === 'gb') {
+          setStr(
+            await stringifyGenbank({
               features,
               session,
               assemblyName: view.visibleRegions[0].assemblyName,
-            }))
-
-        setStr(str)
+            }),
+          )
+        } else {
+          setStr('Unknown file type')
+        }
       } catch (e) {
         setError(e)
       }
@@ -141,7 +149,11 @@ const SaveTrackDataDialog = observer(function ({
           minRows={5}
           maxRows={15}
           fullWidth
-          value={str}
+          value={
+            str.length > 100_000
+              ? 'Too large to view here, click "Download" to results to file'
+              : str
+          }
           InputProps={{
             readOnly: true,
             classes: {
