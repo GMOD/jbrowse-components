@@ -71,17 +71,15 @@ export default function f(_pluginManager: PluginManager) {
        * #property
        * removed by postProcessSnapshot, only loaded from localStorage
        */
-      bookmarks: types.maybe(types.array(LabeledRegionModel)),
+      bookmarkedRegions: types.optional(types.array(LabeledRegionModel), () =>
+        JSON.parse(localStorageGetItem(localStorageKeyF()) || '[]'),
+      ),
     })
     .volatile(() => ({
       selectedBookmarks: [] as IExtendedLabeledRegionModel[],
       selectedAssembliesPre: undefined as string[] | undefined,
     }))
-    .views(self => ({
-      get bookmarkedRegions() {
-        return self.bookmarks ?? []
-      },
-    }))
+
     .views(self => ({
       get bookmarkAssemblies() {
         return [...new Set(self.bookmarkedRegions.map(r => r.assemblyName))]
@@ -102,13 +100,17 @@ export default function f(_pluginManager: PluginManager) {
     }))
     .views(self => ({
       get sharedBookmarksModel() {
+        // requires cloning bookmarks with JSON.stringify/parse to avoid duplicate
+        // reference to same object in the same state tree, will otherwise error
+        // when performing share
         return SharedBookmarksModel.create({
           sharedBookmarks: JSON.parse(JSON.stringify(self.selectedBookmarks)),
         })
       },
       get allBookmarksModel() {
-        // requires cloning bookmarks with JSON.stringify/parse to avoid duplicate reference to same object
-        // in the same state tree, will otherwise error when performing share
+        // requires cloning bookmarks with JSON.stringify/parse to avoid duplicate
+        // reference to same object in the same state tree, will otherwise error
+        // when performing share
         return SharedBookmarksModel.create({
           sharedBookmarks: JSON.parse(
             JSON.stringify(self.bookmarksWithValidAssemblies),
@@ -134,10 +136,10 @@ export default function f(_pluginManager: PluginManager) {
     }))
     .actions(self => ({
       importBookmarks(regions: Region[]) {
-        self.bookmarks = cast([...self.bookmarkedRegions, ...regions])
+        self.bookmarkedRegions = cast([...self.bookmarkedRegions, ...regions])
       },
       addBookmark(region: Region) {
-        self.bookmarks?.push(region)
+        self.bookmarkedRegions.push(region)
       },
       removeBookmark(index: number) {
         self.bookmarkedRegions.splice(index, 1)
@@ -151,24 +153,22 @@ export default function f(_pluginManager: PluginManager) {
       setSelectedBookmarks(bookmarks: IExtendedLabeledRegionModel[]) {
         self.selectedBookmarks = bookmarks
       },
-      setBookmarkedRegions(
-        bookmarkedRegions: IMSTArray<typeof LabeledRegionModel>,
-      ) {
-        self.bookmarks = cast(bookmarkedRegions)
+      setBookmarkedRegions(regions: IMSTArray<typeof LabeledRegionModel>) {
+        self.bookmarkedRegions = cast(regions)
       },
     }))
     .actions(self => ({
       clearAllBookmarks() {
-        self.bookmarkedRegions.forEach(bookmark => {
+        for (const bookmark of self.bookmarkedRegions) {
           if (self.validAssemblies.has(bookmark.assemblyName)) {
-            self.bookmarks?.remove(bookmark)
+            self.bookmarkedRegions.remove(bookmark)
           }
-        })
+        }
       },
       clearSelectedBookmarks() {
-        self.selectedBookmarks.forEach(selectedBookmark => {
-          self.bookmarks?.remove(selectedBookmark.correspondingObj)
-        })
+        for (const bookmark of self.selectedBookmarks) {
+          self.bookmarkedRegions.remove(bookmark.correspondingObj)
+        }
         self.selectedBookmarks = []
       },
     }))
@@ -178,25 +178,16 @@ export default function f(_pluginManager: PluginManager) {
         addDisposer(
           self,
           autorun(() => {
-            if (self.bookmarks === undefined) {
-              // load bookmarks from localstorage, note that this is the primary route for
-              // loading bookmarks, as they are removed from session snapshots
-              self.setBookmarkedRegions(
-                JSON.parse(localStorageGetItem(key) || '[]'),
-              )
-            }
-          }),
-        )
-        addDisposer(
-          self,
-          autorun(() => {
             localStorageSetItem(key, JSON.stringify(self.bookmarkedRegions))
           }),
         )
       },
     }))
     .postProcessSnapshot(snap => {
-      const { bookmarks: _, ...rest } = snap as Omit<typeof snap, symbol>
+      const { bookmarkedRegions: _, ...rest } = snap as Omit<
+        typeof snap,
+        symbol
+      >
       return rest
     })
 }

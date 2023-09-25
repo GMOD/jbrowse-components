@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import {
-  Typography,
+  Alert,
   DialogContent,
   DialogActions,
   Button,
@@ -24,16 +24,17 @@ const EditBookmarkLabelDialog = observer(function ({
   return (
     <Dialog open onClose={onClose} title="Edit bookmark label">
       <DialogContent>
-        <Typography>
+        <Alert>
           Editing label for bookmark{' '}
           <strong>{assembleLocString(dialogRow.correspondingObj)}</strong>:
-        </Typography>
+        </Alert>
         <TextField
           fullWidth
           inputProps={{ 'data-testid': 'edit-bookmark-label-field' }}
           variant="outlined"
           value={newLabel}
           onChange={e => setNewLabel(e.target.value)}
+          autoFocus
         />
       </DialogContent>
       <DialogActions>

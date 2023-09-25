@@ -123,15 +123,11 @@ const BookmarkGrid = observer(function ({
               width: widths[2],
               editable: true,
             },
-            ...(selectedAssemblies.length > 1
-              ? [
-                  {
-                    field: 'assemblyName',
-                    headerName: 'Assembly',
-                    width: widths[3],
-                  },
-                ]
-              : []),
+            {
+              field: 'assemblyName',
+              headerName: 'Assembly',
+              width: widths[3],
+            },
           ]}
           onCellDoubleClick={({ row }) => setDialogRow(row)}
           processRowUpdate={row => {

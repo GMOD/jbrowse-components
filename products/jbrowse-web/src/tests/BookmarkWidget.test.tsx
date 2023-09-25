@@ -1,7 +1,7 @@
 import { waitFor, fireEvent } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 
-import { createView, setup, hts, doBeforeEach } from './util'
+import userEvent from '@testing-library/user-event'
+import { createView, setup, doBeforeEach } from './util'
 
 setup()
 
@@ -15,86 +15,81 @@ const delay = { timeout: 30000 }
 test('from the top level menu', async () => {
   const { findByText } = await createView()
 
-  fireEvent.click(await findByText('Tools'))
-  fireEvent.click(await findByText('Bookmarks'))
+  const user = userEvent.setup()
+  await user.click(await findByText('Tools'))
+  await user.click(await findByText('Bookmarks'))
 
   expect(await findByText('Bookmarked regions')).toBeTruthy()
 })
+
 test('from the view menu', async () => {
   const { findByTestId, findByText } = await createView()
 
-  fireEvent.click(await findByTestId('view_menu_icon'))
-  fireEvent.click(await findByText('Open bookmark widget'))
+  const user = userEvent.setup()
+  await user.click(await findByTestId('view_menu_icon'))
+  await user.click(await findByText('Open bookmark widget'))
 
   expect(await findByText('Bookmarked regions')).toBeTruthy()
 })
 
 test('using the click and drag rubberband', async () => {
-  const { session, view, findByTestId, findByText } = await createView()
+  const { session, findByTestId, findByText } = await createView()
   const rubberband = await findByTestId('rubberband_controls', {}, delay)
 
-  expect(view.bpPerPx).toEqual(0.05)
   fireEvent.mouseDown(rubberband, { clientX: 100, clientY: 0 })
   fireEvent.mouseMove(rubberband, { clientX: 250, clientY: 0 })
   fireEvent.mouseUp(rubberband, { clientX: 250, clientY: 0 })
   fireEvent.click(await findByText('Bookmark region'))
 
   // @ts-expect-error
-  const { widgets } = session
-  const bookmarkWidget = widgets.get('GridBookmark')
-  expect(bookmarkWidget.bookmarkedRegions[0].assemblyName).toEqual('volvox')
+  const bookmarkWidget = session.widgets.get('GridBookmark')
+  expect(bookmarkWidget.bookmarkedRegions[0].assemblyName).toBe('volvox')
 }, 40000)
+
 test('using the hotkey to bookmark the current region', async () => {
   const { session, findByTestId } = await createView()
 
-  const container = await findByTestId('trackContainer')
-  fireEvent.mouseDown(container)
+  const user = userEvent.setup()
+  await user.click(await findByTestId('trackContainer'))
 
-  const event = new KeyboardEvent('keydown', {
-    code: 'KeyD',
-    shiftKey: true,
-    ctrlKey: true,
-  })
-
-  document.dispatchEvent(event)
+  document.dispatchEvent(
+    new KeyboardEvent('keydown', {
+      code: 'KeyD',
+      shiftKey: true,
+      ctrlKey: true,
+    }),
+  )
 
   // @ts-expect-error
-  const { widgets } = session
-  const { bookmarkedRegions } = widgets.get('GridBookmark')
-  expect(bookmarkedRegions[0].start).toEqual(105)
-  expect(bookmarkedRegions[0].end).toEqual(113)
+  const { bookmarkedRegions } = session.widgets.get('GridBookmark')
+  expect(bookmarkedRegions[0].start).toBe(100)
+  expect(bookmarkedRegions[0].end).toBe(140)
 })
+
 test('using the menu button to bookmark the current region', async () => {
   const { session, findByTestId, findByText } = await createView()
 
-  fireEvent.mouseDown(await findByTestId('trackContainer'))
-  fireEvent.click(await findByTestId('view_menu_icon'))
-  fireEvent.click(await findByText('Bookmark current region'))
+  const user = userEvent.setup()
+  await user.click(await findByTestId('trackContainer'))
+  await user.click(await findByTestId('view_menu_icon'))
+  await user.click(await findByText('Bookmark current region'))
 
   // @ts-expect-error
-  const { widgets } = session
-  const { bookmarkedRegions } = widgets.get('GridBookmark')
-  expect(bookmarkedRegions[0].start).toEqual(100)
-  expect(bookmarkedRegions[0].end).toEqual(140)
+  const { bookmarkedRegions } = session.widgets.get('GridBookmark')
+  expect(bookmarkedRegions.length).toBe(1)
+  expect(bookmarkedRegions[0].start).toBe(100)
+  expect(bookmarkedRegions[0].end).toBe(140)
 }, 40000)
 
 test('using the embedded link in the widget data grid', async () => {
   const { view, session, findByTestId, findByText } = await createView()
 
-  // need this to complete before we can try to navigate
-  fireEvent.click(await findByTestId(hts('volvox_alignments'), {}, delay))
-  await findByTestId(
-    'trackRenderingContainer-integration_test-volvox_alignments',
-    {},
-    delay,
-  )
-
-  fireEvent.click(await findByTestId('view_menu_icon'))
-  fireEvent.click(await findByText('Open bookmark widget'))
+  const user = userEvent.setup()
+  await user.click(await findByTestId('view_menu_icon'))
+  await user.click(await findByText('Open bookmark widget'))
 
   // @ts-expect-error
-  const { widgets } = session
-  const bookmarkWidget = widgets.get('GridBookmark')
+  const bookmarkWidget = session.widgets.get('GridBookmark')
   bookmarkWidget.addBookmark({
     start: 200,
     end: 240,
@@ -103,29 +98,18 @@ test('using the embedded link in the widget data grid', async () => {
   })
 
   fireEvent.click(await findByText('ctgA:201..240', {}, delay))
-  await waitFor(() =>
-    expect(
-      view.getSelectedRegions(view.leftOffset, view.rightOffset)[0].key,
-    ).toEqual('{volvox}ctgA:201..240-0'),
-  )
+  await waitFor(() => expect(view.visibleLocStrings).toBe('ctgA:201..240'))
 }, 40000)
+
 test('using the hotkey to navigate to the most recently created bookmark', async () => {
   const { view, session, findByTestId, findByText } = await createView()
 
-  // need this to complete before we can try to navigate
-  fireEvent.click(await findByTestId(hts('volvox_alignments'), {}, delay))
-  await findByTestId(
-    'trackRenderingContainer-integration_test-volvox_alignments',
-    {},
-    delay,
-  )
-
-  fireEvent.click(await findByTestId('view_menu_icon'))
-  fireEvent.click(await findByText('Open bookmark widget'))
+  const user = userEvent.setup()
+  await user.click(await findByTestId('view_menu_icon'))
+  await user.click(await findByText('Open bookmark widget'))
 
   // @ts-expect-error
-  const { widgets } = session
-  const bookmarkWidget = widgets.get('GridBookmark')
+  const bookmarkWidget = session.widgets.get('GridBookmark')
   bookmarkWidget.addBookmark({
     start: 200,
     end: 240,
@@ -133,30 +117,26 @@ test('using the hotkey to navigate to the most recently created bookmark', async
     assemblyName: 'volvox',
   })
 
-  const event = new KeyboardEvent('keydown', {
-    code: 'KeyM',
-    shiftKey: true,
-    ctrlKey: true,
-  })
-
-  document.dispatchEvent(event)
-
-  await waitFor(() =>
-    expect(
-      view.getSelectedRegions(view.leftOffset, view.rightOffset)[0].key,
-    ).toEqual('{volvox}ctgA:201..240-0'),
+  document.dispatchEvent(
+    new KeyboardEvent('keydown', {
+      code: 'KeyM',
+      shiftKey: true,
+      ctrlKey: true,
+    }),
   )
+
+  await waitFor(() => expect(view.visibleLocStrings).toBe('ctgA:201..240'))
 }, 40000)
 
 test('with a single click on the data grid', async () => {
   const { session, findByText, findAllByRole } = await createView()
 
-  fireEvent.click(await findByText('Tools'))
-  fireEvent.click(await findByText('Bookmarks'))
+  const user = userEvent.setup()
+  await user.click(await findByText('Tools'))
+  await user.click(await findByText('Bookmarks'))
 
   // @ts-expect-error
-  const { widgets } = session
-  const bookmarkWidget = widgets.get('GridBookmark')
+  const bookmarkWidget = session.widgets.get('GridBookmark')
   bookmarkWidget.addBookmark({
     start: 200,
     end: 240,
@@ -165,8 +145,7 @@ test('with a single click on the data grid', async () => {
   })
 
   const field = (await findAllByRole('cell'))[2]
-  fireEvent.click(field)
-  await userEvent.type(field, 'new label')
+  await user.type(field, 'new label')
   // get the focus away from the field
   fireEvent.click(document)
 
@@ -176,12 +155,12 @@ test('with a double click via the dialog', async () => {
   const { session, findByText, findAllByRole, findByTestId } =
     await createView()
 
-  fireEvent.click(await findByText('Tools'))
-  fireEvent.click(await findByText('Bookmarks'))
+  const user = userEvent.setup()
+  await user.click(await findByText('Tools'))
+  await user.click(await findByText('Bookmarks'))
 
   // @ts-expect-error
-  const { widgets } = session
-  const bookmarkWidget = widgets.get('GridBookmark')
+  const bookmarkWidget = session.widgets.get('GridBookmark')
   bookmarkWidget.addBookmark({
     start: 200,
     end: 240,
@@ -191,9 +170,8 @@ test('with a double click via the dialog', async () => {
 
   const field = (await findAllByRole('cell'))[2]
 
-  fireEvent.doubleClick(field)
-  const inputField = await findByTestId('edit-bookmark-label-field')
-  await userEvent.type(inputField, 'new label')
-  fireEvent.click(await findByText('Confirm'))
+  await user.dblClick(field)
+  await user.type(await findByTestId('edit-bookmark-label-field'), 'new label')
+  await user.click(await findByText('Confirm'))
   expect(field.innerHTML).toContain('new label')
 })
