@@ -17,6 +17,8 @@ import {
 // locals
 import { navToBookmark } from '../utils'
 import { GridBookmarkModel, IExtendedLabeledRegionModel } from '../model'
+import { useResizeBar } from '@jbrowse/core/ui/useResizeBar'
+import ResizeBar from '@jbrowse/core/ui/ResizeBar'
 
 const EditBookmarkLabelDialog = lazy(() => import('./EditBookmarkLabelDialog'))
 
@@ -32,11 +34,10 @@ const BookmarkGrid = observer(function ({
   model: GridBookmarkModel
 }) {
   const { classes } = useStyles()
-  const [dialogOpen, setDialogOpen] = useState(false)
   const [dialogRow, setDialogRow] = useState<IExtendedLabeledRegionModel>()
-  const [newLabel, setNewLabel] = useState<string>()
   const [rowSelectionModel, setRowSelectionModel] =
     useState<GridRowSelectionModel>([])
+  const { ref, scrollLeft } = useResizeBar()
   const {
     bookmarkedRegions,
     selectedAssemblies,
@@ -44,8 +45,9 @@ const BookmarkGrid = observer(function ({
   } = model
 
   const session = getSession(model)
-  const bookmarkRows = bookmarkedRegions
-    .filter(r => selectedAssemblies.includes(r.assemblyName))
+  const selectedSet = new Set(selectedAssemblies)
+  const rows = bookmarkedRegions
+    .filter(r => selectedSet.has(r.assemblyName))
     .map((region, index) => {
       const { assemblyName, ...rest } = region
       return {
@@ -64,97 +66,101 @@ const BookmarkGrid = observer(function ({
     setRowSelectionModel([])
   }, [bookmarkedRegions.length])
 
+  const [widths, setWidths] = useState([
+    40,
+    Math.max(
+      measureText('Bookmark link'),
+      measureGridWidth(rows.map(row => row.locString)),
+    ),
+    Math.max(
+      measureText('Label'),
+      measureGridWidth(rows.map(row => row.label)),
+    ),
+    Math.max(
+      measureText('Assembly'),
+      measureGridWidth(rows.map(row => row.assemblyName)),
+    ),
+  ])
+
   return (
     <>
-      <DataGrid
-        autoHeight
-        density="compact"
-        rows={bookmarkRows}
-        columns={[
-          {
-            ...GRID_CHECKBOX_SELECTION_COL_DEF,
-            minWidth: 40,
-            width: 40,
-          },
-          {
-            field: 'locString',
-            headerName: 'Bookmark link',
-            width: Math.max(
-              measureGridWidth(bookmarkRows.map(row => row.locString)),
-              measureText('Bookmark link'),
-            ),
-            renderCell: ({ value, row }) => (
-              <Link
-                className={classes.link}
-                href="#"
-                onClick={async event => {
-                  event.preventDefault()
-                  const { views } = session
-                  await navToBookmark(value, row.assemblyName, views, model)
-                }}
-              >
-                {value}
-              </Link>
-            ),
-          },
-          {
-            field: 'label',
-            headerName: 'Label',
-            width: Math.max(
-              measureGridWidth(bookmarkRows.map(row => row.label)),
-              measureText('label'),
-            ),
-            editable: true,
-          },
-          ...(selectedAssemblies.length > 1
-            ? [
-                {
-                  field: 'assemblyName',
-                  headerName: 'Assembly',
-                  width: Math.max(
-                    measureGridWidth(bookmarkRows.map(r => r.assemblyName)),
-                    measureText('assembly'),
-                  ),
-                },
-              ]
-            : []),
-        ]}
-        onCellDoubleClick={({ row }) => {
-          setDialogOpen(true)
-          setDialogRow(row)
-        }}
-        processRowUpdate={row => {
-          const target = bookmarkRows[row.id]
-          model.updateBookmarkLabel(target, row.label)
-          return row
-        }}
-        onProcessRowUpdateError={e => session.notify(e.message, 'error')}
-        checkboxSelection
-        onRowSelectionModelChange={newRowSelectionModel => {
-          if (bookmarksWithValidAssemblies.length > 0) {
-            model.setSelectedBookmarks(
-              newRowSelectionModel.map(value => ({
-                ...bookmarkRows[value as number],
-              })),
-            )
-            setRowSelectionModel(newRowSelectionModel)
-          }
-        }}
-        rowSelectionModel={rowSelectionModel}
-        disableRowSelectionOnClick
-      />
-      {dialogOpen ? (
+      <div ref={ref}>
+        <ResizeBar
+          widths={widths}
+          setWidths={setWidths}
+          scrollLeft={scrollLeft}
+        />
+        <DataGrid
+          autoHeight
+          density="compact"
+          rows={rows}
+          columns={[
+            {
+              ...GRID_CHECKBOX_SELECTION_COL_DEF,
+              width: widths[0],
+            },
+            {
+              field: 'locString',
+              headerName: 'Bookmark link',
+              width: widths[1],
+              renderCell: ({ value, row }) => (
+                <Link
+                  className={classes.link}
+                  href="#"
+                  onClick={async event => {
+                    event.preventDefault()
+                    const { views } = session
+                    await navToBookmark(value, row.assemblyName, views, model)
+                  }}
+                >
+                  {value}
+                </Link>
+              ),
+            },
+            {
+              field: 'label',
+              headerName: 'Label',
+              width: widths[2],
+              editable: true,
+            },
+            ...(selectedAssemblies.length > 1
+              ? [
+                  {
+                    field: 'assemblyName',
+                    headerName: 'Assembly',
+                    width: widths[3],
+                  },
+                ]
+              : []),
+          ]}
+          onCellDoubleClick={({ row }) => setDialogRow(row)}
+          processRowUpdate={row => {
+            const target = rows[row.id]
+            model.updateBookmarkLabel(target, row.label)
+            return row
+          }}
+          onProcessRowUpdateError={e => session.notify(e.message, 'error')}
+          checkboxSelection
+          onRowSelectionModelChange={newRowSelectionModel => {
+            if (bookmarksWithValidAssemblies.length > 0) {
+              model.setSelectedBookmarks(
+                newRowSelectionModel.map(value => ({
+                  ...rows[value as number],
+                })),
+              )
+              setRowSelectionModel(newRowSelectionModel)
+            }
+          }}
+          rowSelectionModel={rowSelectionModel}
+          disableRowSelectionOnClick
+        />
+      </div>
+      {dialogRow ? (
         <Suspense fallback={<React.Fragment />}>
           <EditBookmarkLabelDialog
-            onClose={() => {
-              setDialogRow(undefined)
-              setDialogOpen(false)
-            }}
-            bookmarkRows={bookmarkRows}
+            onClose={() => setDialogRow(undefined)}
             model={model}
             dialogRow={dialogRow}
-            newLabel={newLabel}
-            setNewLabel={setNewLabel}
           />
         </Suspense>
       ) : null}

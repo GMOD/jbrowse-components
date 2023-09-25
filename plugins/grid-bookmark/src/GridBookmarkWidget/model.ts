@@ -103,7 +103,7 @@ export default function f(_pluginManager: PluginManager) {
     .views(self => ({
       get sharedBookmarksModel() {
         return SharedBookmarksModel.create({
-          sharedBookmarks: self.selectedBookmarks,
+          sharedBookmarks: JSON.parse(JSON.stringify(self.selectedBookmarks)),
         })
       },
       get allBookmarksModel() {
