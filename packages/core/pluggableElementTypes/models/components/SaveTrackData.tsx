@@ -30,7 +30,7 @@ import GetAppIcon from '@mui/icons-material/GetApp'
 
 // locals
 import { stringifyGFF3 } from './gff3'
-import { stringifyGenbank } from './genbank'
+import { stringifyGBK } from './genbank'
 import { stringifyBED } from './bed'
 
 const useStyles = makeStyles()({
@@ -71,9 +71,9 @@ const SaveTrackDataDialog = observer(function ({
   const [type, setType] = useState('gff3')
   const [str, setStr] = useState('')
   const options = {
-    gff3: { name: 'GFF3', extension: 'gff3' },
-    genbank: { name: 'GenBank', extension: 'gbk' },
-    bed: { name: 'BED', extension: 'bed' },
+    gff3: { name: 'GFF3', extension: 'gff3', callback: stringifyGFF3 },
+    genbank: { name: 'GenBank', extension: 'gbk', callback: stringifyGBK },
+    bed: { name: 'BED', extension: 'bed', callback: stringifyBED },
   }
 
   useEffect(() => {
@@ -99,27 +99,21 @@ const SaveTrackDataDialog = observer(function ({
         if (!features) {
           return
         }
-
-        if (type === 'gff3') {
-          setStr(stringifyGFF3({ features }))
-        } else if (type === 'bed') {
-          setStr(stringifyBED({ features }))
-        } else if (type === 'gb') {
-          setStr(
-            await stringifyGenbank({
-              features,
-              session,
-              assemblyName: view.visibleRegions[0].assemblyName,
-            }),
-          )
-        } else {
-          setStr('Unknown file type')
+        const generator = options[type as keyof typeof options] || {
+          callback: () => 'Unknown',
         }
+        setStr(
+          await generator.callback({
+            features,
+            session,
+            assemblyName: view.visibleRegions[0].assemblyName,
+          }),
+        )
       } catch (e) {
         setError(e)
       }
     })()
-  }, [type, features, model])
+  }, [type, features, options, model])
 
   return (
     <Dialog maxWidth="xl" open onClose={handleClose} title="Save track data">

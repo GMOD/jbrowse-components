@@ -114,7 +114,7 @@ export function formatFeatWithSubfeatures(
   ].join('\n')
 }
 
-export async function stringifyGenbank({
+export async function stringifyGBK({
   features,
   assemblyName,
   session,
