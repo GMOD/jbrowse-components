@@ -71,10 +71,11 @@ const SaveTrackDataDialog = observer(function ({
   }
   handleClose: () => void
 }) {
+  const options = model.saveTrackFileFormatOptions()
   const { classes } = useStyles()
   const [error, setError] = useState<unknown>()
   const [features, setFeatures] = useState<Feature[]>()
-  const [type, setType] = useState('gff3')
+  const [type, setType] = useState(Object.keys(options)[0])
   const [str, setStr] = useState('')
 
   useEffect(() => {
@@ -90,8 +91,6 @@ const SaveTrackDataDialog = observer(function ({
       }
     })()
   }, [model])
-
-  const options = model.saveTrackFileFormatOptions()
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
