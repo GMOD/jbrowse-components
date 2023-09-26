@@ -31,14 +31,9 @@ like, you can follow along with the tutorial using the recording below.
   allow="autoplay; fullscreen"
   allowfullscreen
 ></iframe>
-<p>
-  <a href="https://vimeo.com/454059086"
-    >Embedding JBrowse 2 in your website, BCC2020 West Training
-  </a>
-  &nbsp;from&nbsp;
-  <a href="https://vimeo.com/user119241161">Jennifer Vessio</a> on&nbsp;
-  <a href="https://vimeo.com">Vimeo</a>.
-</p>
+
+[Embedding JBrowse 2 in your website, BCC2020 West Training](https://vimeo.com/454059086)
+on Vimeo
 
 ## What you need
 

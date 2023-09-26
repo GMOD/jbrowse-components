@@ -143,7 +143,7 @@ string
 
 ```js
 // type
-(props: LinearPileupDisplayBlurbProps) => Element
+({ model, }: { model: { sortedBy?: { pos: number; refName: number; type: string; tag?: string; }; }; }) => Element
 ```
 
 ### SharedLinearPileupDisplayMixin - Methods

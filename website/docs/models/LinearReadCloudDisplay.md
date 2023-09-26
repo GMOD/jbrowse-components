@@ -10,7 +10,7 @@ info
 
 ### Source file
 
-[plugins/alignments/src/LinearReadCloudDisplay/model.tsx](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearReadCloudDisplay/model.tsx)
+[plugins/alignments/src/LinearReadCloudDisplay/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearReadCloudDisplay/model.ts)
 
 extends `BaseDisplay`, it is not a block based track, hence not
 BaseLinearDisplay
