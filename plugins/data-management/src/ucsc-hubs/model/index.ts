@@ -7,7 +7,7 @@ import { Instance, types } from 'mobx-state-tree'
 // locals
 import configSchema from '../configSchema'
 import { fetchAll } from '../fetching-utils'
-import { configureAssemblies } from './configure-utils'
+import { getAssemblies } from './configure-utils'
 
 export default function UCSCTrackHubConnection(pluginManager: PluginManager) {
   return types
@@ -33,12 +33,9 @@ export default function UCSCTrackHubConnection(pluginManager: PluginManager) {
           )
 
           // create or alias any assemblies
-          const assemblies = await configureAssemblies(
-            hubData,
-            self as UCSCConnectionModel,
-          )
+          const assemblies = getAssemblies(hubData, self as UCSCConnectionModel)
 
-          // create tracks
+          // TODO: create tracks
         } catch (e) {
           console.error(e)
           session.notify(
