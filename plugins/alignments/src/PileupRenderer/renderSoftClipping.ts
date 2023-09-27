@@ -39,9 +39,10 @@ export function renderSoftClipping({
   if (!(seq && mismatches)) {
     return
   }
-  mismatches
-    .filter(mismatch => mismatch.type === 'softclip')
-    .forEach(mismatch => {
+
+  const heightLim = charHeight - 2
+  for (const mismatch of mismatches) {
+    if (mismatch.type === 'softclip') {
       const len = mismatch.cliplen || 0
       const s = feature.get('start')
       const start = mismatch.start === 0 ? s - len : s + mismatch.start
@@ -65,7 +66,7 @@ export function renderSoftClipping({
         ctx.fillStyle = baseColor
         fillRect(ctx, leftPx, topPx, widthPx, heightPx, canvasWidth)
 
-        if (widthPx >= charWidth && heightPx >= charHeight - 5) {
+        if (widthPx >= charWidth && heightPx >= heightLim) {
           ctx.fillStyle = theme.palette.getContrastText(baseColor)
           ctx.fillText(
             base,
@@ -74,5 +75,6 @@ export function renderSoftClipping({
           )
         }
       }
-    })
+    }
+  }
 }
