@@ -15,9 +15,9 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "react",
-    "inlineSourceMap": true,
     "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true
   },
   "exclude": [
     "**/build/",

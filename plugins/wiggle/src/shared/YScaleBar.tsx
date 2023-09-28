@@ -5,7 +5,7 @@ import { axisPropsFromTickScale, Axis, LEFT, RIGHT } from 'react-d3-axis-mod'
 
 type Ticks = ReturnType<typeof axisPropsFromTickScale>
 
-export default observer(function YScaleBar({
+const YScaleBar = observer(function ({
   model,
   orientation,
 }: {
@@ -25,3 +25,5 @@ export default observer(function YScaleBar({
     />
   ) : null
 })
+
+export default YScaleBar

@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { when } from 'mobx'

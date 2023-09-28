@@ -7,7 +7,7 @@ import { observer } from 'mobx-react'
 import { HierarchicalTrackSelectorModel } from '../../model'
 import FacetedSelector from './FacetedSelector'
 
-function FacetedDlg(props: {
+const FacetedTrackSelectorDialog = observer(function (props: {
   handleClose: () => void
   model: HierarchicalTrackSelectorModel
 }) {
@@ -24,6 +24,6 @@ function FacetedDlg(props: {
       </DialogContent>
     </Dialog>
   )
-}
+})
 
-export default observer(FacetedDlg)
+export default FacetedTrackSelectorDialog

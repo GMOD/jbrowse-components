@@ -1,5 +1,6 @@
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { HierarchicalTrackSelectorModel, TreeNode } from '../model'
+import { HierarchicalTrackSelectorModel } from '../model'
+import { TreeNode } from '../generateHierarchy'
 
 export interface NodeData {
   nestingLevel: number
@@ -20,7 +21,7 @@ export function getAllChildren(subtree?: TreeNode): AnyConfigurationModel[] {
   // @ts-expect-error
   return (
     subtree?.children.map(t =>
-      t.children.length ? getAllChildren(t) : (t.conf as AnyConfigurationModel),
+      t.children.length ? getAllChildren(t) : t.conf!,
     ) || []
   ).flat(Infinity)
 }
@@ -29,8 +30,7 @@ export function treeToMap(tree: TreeNode, map = new Map<string, TreeNode>()) {
   if (tree.id && tree.children.length) {
     map.set(tree.id, tree)
   }
-  for (let i = 0; i < tree.children.length; i++) {
-    const node = tree.children[i]
+  for (const node of tree.children) {
     treeToMap(node, map)
   }
   return map

@@ -33,9 +33,9 @@ export default class FromConfigAdapter extends BaseFeatureDataAdapter {
 
   static makeFeatures(fdata: SimpleFeatureSerialized[]) {
     const features = new Map<string, Feature[]>()
-    for (let i = 0; i < fdata.length; i += 1) {
-      if (fdata[i]) {
-        const f = this.makeFeature(fdata[i])
+    for (const entry of fdata) {
+      if (entry) {
+        const f = this.makeFeature(entry)
         const refName = f.get('refName') as string
         let bucket = features.get(refName)
         if (!bucket) {
@@ -75,9 +75,7 @@ export default class FromConfigAdapter extends BaseFeatureDataAdapter {
 
     return ObservableCreate<Feature>(async observer => {
       const features = this.features.get(refName) || []
-      for (let i = 0; i < features.length; i++) {
-        const f = features[i]
-
+      for (const f of features) {
         if (f.get('end') > start && f.get('start') < end) {
           observer.next(f)
         }

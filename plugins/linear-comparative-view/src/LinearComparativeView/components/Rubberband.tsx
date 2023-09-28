@@ -46,7 +46,7 @@ const useStyles = makeStyles()(theme => {
   }
 })
 
-function Rubberband({
+const LinearComparativeRubberband = observer(function Rubberband({
   model,
   ControlComponent = <div />,
 }: {
@@ -284,6 +284,6 @@ function Rubberband({
       ) : null}
     </>
   )
-}
+})
 
-export default observer(Rubberband)
+export default LinearComparativeRubberband

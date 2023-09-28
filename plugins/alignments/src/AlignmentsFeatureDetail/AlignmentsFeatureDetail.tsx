@@ -124,7 +124,7 @@ function PairLink({
   )
 }
 
-export default observer(function AlignmentFeatureDetails(props: {
+const AlignmentsFeatureDetails = observer(function (props: {
   model: IAnyStateTreeNode
 }) {
   const { model } = props
@@ -153,3 +153,5 @@ export default observer(function AlignmentFeatureDetails(props: {
     </Paper>
   )
 })
+
+export default AlignmentsFeatureDetails

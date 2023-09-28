@@ -46,7 +46,7 @@ export type TooltipContentsComponent = React.ForwardRefExoticComponent<
   { feature: Feature; model: any } & React.RefAttributes<HTMLDivElement>
 >
 
-function Tooltip({
+const Tooltip = observer(function Tooltip({
   model,
   height,
   clientMouseCoord,
@@ -118,6 +118,6 @@ function Tooltip({
       />
     </>
   ) : null
-}
+})
 
-export default observer(Tooltip)
+export default Tooltip

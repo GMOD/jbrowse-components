@@ -8,7 +8,7 @@ import {
   FormHelperText,
 } from '@mui/material'
 
-export default observer(function ({
+const BooleanEditor = observer(function ({
   slot,
 }: {
   slot: {
@@ -33,3 +33,5 @@ export default observer(function ({
     </FormControl>
   )
 })
+
+export default BooleanEditor

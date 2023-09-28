@@ -41,9 +41,12 @@ export default function calculateStaticBlocks(
   // for each displayed region
   let regionBpOffset = 0
   const blocks = new BlockSet()
-  displayedRegions.forEach((region, regionNumber) => {
-    // find the block numbers of the left and right window sides,
-    // clamp those to the region range, and then make blocks for that range
+  for (
+    let regionNumber = 0;
+    regionNumber < displayedRegions.length;
+    regionNumber++
+  ) {
+    const region = displayedRegions[regionNumber]
     const {
       assemblyName,
       refName,
@@ -51,6 +54,7 @@ export default function calculateStaticBlocks(
       end: regionEnd,
       reversed,
     } = region
+
     const regionBlockCount = Math.ceil((regionEnd - regionStart) / blockSizeBp)
     const parentRegion = isStateTreeNode(region) ? getSnapshot(region) : region
 
@@ -157,6 +161,6 @@ export default function calculateStaticBlocks(
       }
     }
     regionBpOffset += regionEnd - regionStart
-  })
+  }
   return blocks
 }

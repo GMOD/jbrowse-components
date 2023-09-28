@@ -38,7 +38,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default observer(function ({ model }: { model: SpreadsheetViewModel }) {
+const SpreadsheetView = observer(function ({
+  model,
+}: {
+  model: SpreadsheetViewModel
+}) {
   const { classes } = useStyles()
   const {
     spreadsheet,
@@ -117,3 +121,5 @@ export default observer(function ({ model }: { model: SpreadsheetViewModel }) {
     </div>
   )
 })
+
+export default SpreadsheetView

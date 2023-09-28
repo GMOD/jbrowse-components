@@ -1,10 +1,10 @@
 import Rpc from 'librpc-web-mod'
-import shortid from 'shortid'
+import { deserializeError } from 'serialize-error'
 
 // locals
+import { nanoid } from '../util/nanoid'
 import BaseRpcDriver, { RpcDriverConstructorArgs } from './BaseRpcDriver'
 import { PluginDefinition } from '../PluginLoader'
-import { deserializeError } from 'serialize-error'
 
 interface WebWorkerRpcDriverConstructorArgs extends RpcDriverConstructorArgs {
   makeWorkerInstance: () => Worker
@@ -22,7 +22,7 @@ class WebWorkerHandle extends Rpc.Client {
 
   async call(funcName: string, args: Record<string, unknown>, opts: Options) {
     const { statusCallback, rpcDriverClassName } = opts
-    const channel = `message-${shortid.generate()}`
+    const channel = `message-${nanoid()}`
     const listener = (message: string) => {
       statusCallback?.(message)
     }
@@ -59,6 +59,9 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
     // load balancing rather than using librpc's builtin round-robin
     const instance = this.makeWorkerInstance()
 
+    // @ts-ignore this is used to avoid warning in jbrowse-web startup
+    // (because this file is referred to via src, declare.d.ts file is in
+    // e.g. products/jbrowse-web)
     const worker = new WebWorkerHandle({ workers: [instance] })
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
     if (isSafari) {

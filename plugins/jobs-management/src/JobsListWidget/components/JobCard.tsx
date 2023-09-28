@@ -3,7 +3,7 @@ import { observer } from 'mobx-react'
 import { Card, CardContent, Typography } from '@mui/material'
 import { NewJob } from '../model'
 
-function JobCard({ job }: { job: NewJob }) {
+const JobCard = observer(function JobCard({ job }: { job: NewJob }) {
   return (
     <Card variant="outlined">
       <CardContent>
@@ -14,6 +14,6 @@ function JobCard({ job }: { job: NewJob }) {
       </CardContent>
     </Card>
   )
-}
+})
 
-export default observer(JobCard)
+export default JobCard

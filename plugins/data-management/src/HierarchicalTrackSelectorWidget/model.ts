@@ -1,149 +1,17 @@
-import { types, getSnapshot, Instance } from 'mobx-state-tree'
+import { types, Instance } from 'mobx-state-tree'
 import {
   getConf,
   readConfObject,
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
-import {
-  AbstractSessionModel,
-  dedupe,
-  getSession,
-  getEnv,
-  notEmpty,
-} from '@jbrowse/core/util'
-import { getTrackName } from '@jbrowse/core/util/tracks'
+import { dedupe, getSession, notEmpty } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import PluginManager from '@jbrowse/core/PluginManager'
 
-function hasAnyOverlap<T>(a1: T[] = [], a2: T[] = []) {
-  // shortcut case is that arrays are single entries, and are equal
-  // long case is that we use a set
-  if (a1[0] === a2[0]) {
-    return true
-  } else {
-    const s1 = new Set(a1)
-    return a2.some(a => s1.has(a))
-  }
-}
-
-export function matches(
-  query: string,
-  conf: AnyConfigurationModel,
-  session: AbstractSessionModel,
-) {
-  const categories = readConfObject(conf, 'category') as string[] | undefined
-  const queryLower = query.toLowerCase()
-  return (
-    getTrackName(conf, session).toLowerCase().includes(queryLower) ||
-    !!categories?.filter(c => c.toLowerCase().includes(queryLower)).length
-  )
-}
-
-export type TreeNode = {
-  name: string
-  id: string
-  conf?: AnyConfigurationModel
-  checked?: boolean
-  isOpenByDefault?: boolean
-  children: TreeNode[]
-}
-
-function filterTracks(
-  tracks: AnyConfigurationModel[],
-  self: {
-    view: { type: string; trackSelectorAnyOverlap?: boolean }
-    assemblyNames: string[]
-  },
-) {
-  const { assemblyManager } = getSession(self)
-  const { pluginManager } = getEnv(self)
-  const { view } = self
-  const { trackSelectorAnyOverlap } = view
-  const trackListAssemblies = self.assemblyNames
-    .map(a => assemblyManager.get(a))
-    .filter(notEmpty)
-
-  return tracks
-    .filter(c => {
-      const trackAssemblyNames = readConfObject(c, 'assemblyNames') as string[]
-      const trackAssemblies = new Set(
-        trackAssemblyNames
-          ?.map(name => assemblyManager.get(name))
-          .filter(notEmpty) || [],
-      )
-      return trackSelectorAnyOverlap
-        ? trackListAssemblies.some(a => trackAssemblies.has(a))
-        : trackListAssemblies.every(a => trackAssemblies.has(a))
-    })
-    .filter(c => {
-      const { displayTypes } = pluginManager.getViewType(view.type)
-      const compatDisplays = displayTypes.map(d => d.name)
-      const trackDisplays = c.displays.map((d: { type: string }) => d.type)
-      return hasAnyOverlap(compatDisplays, trackDisplays)
-    })
-}
-
-export function generateHierarchy(
-  model: HierarchicalTrackSelectorModel,
-  trackConfigurations: AnyConfigurationModel[],
-  collapsed: { get: (arg: string) => boolean | undefined },
-  extra?: string,
-) {
-  const hierarchy = { children: [] as TreeNode[] } as TreeNode
-  const { filterText, view } = model
-  const session = getSession(model)
-
-  trackConfigurations
-    .filter(conf => matches(filterText, conf, session))
-    .forEach(conf => {
-      // copy the categories since this array can be mutated downstream
-      const categories = [...(readConfObject(conf, 'category') || [])]
-
-      // silly thing where if trackId ends with sessionTrack, then push it to
-      // a category that starts with a space to force sort to the top...
-      // double whammy hackyness
-      if (conf.trackId.endsWith('sessionTrack')) {
-        categories.unshift(' Session tracks')
-      }
-
-      let currLevel = hierarchy
-
-      // find existing category to put track into or create it
-      for (let i = 0; i < categories.length; i++) {
-        const category = categories[i]
-        const ret = currLevel.children.find(c => c.name === category)
-        const id = extra + '-' + categories.slice(0, i + 1).join(',')
-        if (!ret) {
-          const n = {
-            children: [],
-            name: category,
-            id,
-            isOpenByDefault: !collapsed.get(id),
-          }
-          currLevel.children.push(n)
-          currLevel = n
-        } else {
-          currLevel = ret
-        }
-      }
-      const tracks = view.tracks as { configuration: AnyConfigurationModel }[]
-
-      // using splice here tries to group leaf nodes above hierarchical nodes
-      currLevel.children.splice(
-        currLevel.children.findIndex(elt => elt.children.length),
-        0,
-        {
-          id: conf.trackId,
-          name: getTrackName(conf, session),
-          conf,
-          checked: tracks.some(f => f.configuration === conf),
-          children: [],
-        },
-      )
-    })
-
-  return hierarchy.children
-}
+// locals
+import { filterTracks } from './filterTracks'
+import { TreeNode, generateHierarchy } from './generateHierarchy'
+import { findSubCategories, findTopLevelCategories } from './util'
 
 /**
  * #stateModel HierarchicalTrackSelectorWidget
@@ -162,7 +30,19 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #property
        */
+      initialized: types.maybe(types.boolean),
+      /**
+       * #property
+       */
       collapsed: types.map(types.boolean),
+      /**
+       * #property
+       */
+      sortTrackNames: types.maybe(types.boolean),
+      /**
+       * #property
+       */
+      sortCategories: types.maybe(types.boolean),
       /**
        * #property
        */
@@ -175,6 +55,18 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       filterText: '',
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      setSortTrackNames(val: boolean) {
+        self.sortTrackNames = val
+      },
+      /**
+       * #action
+       */
+      setSortCategories(val: boolean) {
+        self.sortCategories = val
+      },
       /**
        * #action
        */
@@ -211,6 +103,19 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       toggleCategory(pathName: string) {
         self.collapsed.set(pathName, !self.collapsed.get(pathName))
       },
+      /**
+       * #action
+       */
+      setCategoryCollapsed(pathName: string, status: boolean) {
+        self.collapsed.set(pathName, status)
+      },
+      /**
+       * #action
+       */
+      expandAllCategories() {
+        self.collapsed.clear()
+      },
+
       /**
        * #action
        */
@@ -256,26 +161,73 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
     }))
     .views(self => ({
       /**
+       * #getter
+       */
+      get activeSortTrackNames() {
+        return (
+          self.sortTrackNames ??
+          getConf(getSession(self), ['hierarchical', 'sort', 'trackNames'])
+        )
+      },
+      /**
+       * #getter
+       */
+      get activeSortCategories() {
+        return (
+          self.sortCategories ??
+          getConf(getSession(self), ['hierarchical', 'sort', 'categories'])
+        )
+      },
+      /**
        * #method
        * filter out tracks that don't match the current display types
        */
       connectionTrackConfigurations(connection: {
         tracks: AnyConfigurationModel[]
       }) {
-        return !self.view ? [] : filterTracks(connection.tracks, self)
+        return filterTracks(connection.tracks, self)
       },
 
       /**
        * #getter
        * filter out tracks that don't match the current assembly/display types
        */
-      get trackConfigurations(): AnyConfigurationModel[] {
-        return !self.view
-          ? ([] as AnyConfigurationModel[])
-          : [
-              ...self.assemblyNames.map(a => self.getRefSeqTrackConf(a)),
-              ...filterTracks(getSession(self).tracks, self),
-            ].filter(notEmpty)
+      get trackConfigurations() {
+        return [
+          ...self.assemblyNames.map(a => self.getRefSeqTrackConf(a)),
+          ...filterTracks(getSession(self).tracks, self),
+        ].filter(notEmpty)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       */
+      connectionHierarchy(connection: {
+        name: string
+        tracks: AnyConfigurationModel[]
+      }): TreeNode[] {
+        return generateHierarchy(
+          self as HierarchicalTrackSelectorModel,
+          self.connectionTrackConfigurations(connection),
+          self.collapsed,
+          connection.name,
+        )
+      },
+    }))
+    .views(self => ({
+      get allTracks() {
+        const { connectionInstances = [] } = getSession(self)
+        return [
+          {
+            group: 'Tracks',
+            tracks: self.trackConfigurations,
+          },
+          ...connectionInstances.flatMap(c => ({
+            group: getConf(c, 'name'),
+            tracks: c.tracks,
+          })),
+        ]
       },
     }))
     .views(self => ({
@@ -283,50 +235,83 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * #getter
        */
       get hierarchy() {
-        const hier = generateHierarchy(
-          self as HierarchicalTrackSelectorModel,
-          self.trackConfigurations,
-          self.collapsed,
-        )
-
-        const session = getSession(self)
-        const { connectionInstances } = session
-
-        const conns =
-          connectionInstances
-            ?.map(c => ({
-              // @ts-expect-error
-              id: getSnapshot(c).configuration,
-              name: getConf(c, 'name'),
-              children: this.connectionHierarchy(c),
-              state: {
-                expanded: true,
-              },
-            }))
-            .filter(f => f.children.length) || []
-
         return {
           name: 'Root',
           id: 'Root',
-          children: [
-            { name: 'Tracks', id: 'Tracks', children: hier },
-            ...conns,
-          ],
+          children: self.allTracks
+            .map(s => ({
+              name: s.group,
+              id: s.group,
+              children: generateHierarchy(self, s.tracks, self.collapsed),
+            }))
+            // always keep the Tracks entry at idx 0
+            .filter((f, idx) => idx === 0 || !!f.children.length),
         }
       },
-
+    }))
+    .actions(self => ({
       /**
-       * #method
+       * #action
        */
-      connectionHierarchy(connection: {
-        name: string
-        tracks: AnyConfigurationModel[]
-      }) {
-        return generateHierarchy(
-          self as HierarchicalTrackSelectorModel,
-          self.connectionTrackConfigurations(connection),
-          self.collapsed,
-          connection.name,
+      collapseSubCategories() {
+        const paths = [] as string[]
+        findSubCategories(self.hierarchy.children, paths)
+        for (const path of paths) {
+          self.setCategoryCollapsed(path, true)
+        }
+      },
+      /**
+       * #action
+       */
+      collapseTopLevelCategories() {
+        const paths = [] as string[]
+        for (const trackGroups of self.hierarchy.children) {
+          if (trackGroups.children.length) {
+            findTopLevelCategories(trackGroups.children, paths)
+          }
+        }
+        for (const path of paths) {
+          self.setCategoryCollapsed(path, true)
+        }
+      },
+    }))
+    .actions(self => ({
+      afterCreate() {
+        if (!self.initialized) {
+          const session = getSession(self)
+          if (
+            getConf(session, [
+              'hierarchical',
+              'defaultCollapsed',
+              'topLevelCategories',
+            ])
+          ) {
+            self.collapseTopLevelCategories()
+          }
+          if (
+            getConf(session, [
+              'hierarchical',
+              'defaultCollapsed',
+              'subCategories',
+            ])
+          ) {
+            self.collapseSubCategories()
+          }
+          for (const entry of getConf(session, [
+            'hierarchical',
+            'defaultCollapsed',
+            'categoryNames',
+          ])) {
+            self.collapsed.set(entry, true)
+          }
+          self.initialized = true
+        }
+      },
+    }))
+    .views(self => ({
+      get hasAnySubcategories() {
+        return self.allTracks.some(group =>
+          group.tracks.some(t => readConfObject(t, 'category')?.length > 1),
         )
       },
     }))

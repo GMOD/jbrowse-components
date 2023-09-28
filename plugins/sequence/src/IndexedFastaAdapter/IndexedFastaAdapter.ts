@@ -10,7 +10,12 @@ import { SimpleFeature, Feature } from '@jbrowse/core/util'
 import AbortablePromiseCache from 'abortable-promise-cache'
 import QuickLRU from '@jbrowse/core/util/QuickLRU'
 
-type T = { refName: string; start: number; end: number; fasta: IndexedFasta }
+interface T {
+  refName: string
+  start: number
+  end: number
+  fasta: IndexedFasta
+}
 
 export default class extends BaseSequenceAdapter {
   protected setupP?: Promise<{ fasta: IndexedFasta }>

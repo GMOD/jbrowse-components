@@ -6,7 +6,7 @@ import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 // locals
 import Chord, { Block, AnyRegion } from './Chord'
 
-export default observer(function StructuralVariantChords({
+const StructuralVariantChordsReactComponent = observer(function ({
   features,
   config,
   displayModel,
@@ -31,7 +31,7 @@ export default observer(function StructuralVariantChords({
 }) {
   // make a map of refName -> blockDefinition
   const blocksForRefsMemo = useMemo(() => {
-    const blocksForRefs = {} as { [key: string]: Block }
+    const blocksForRefs = {} as Record<string, Block>
     blockDefinitions.forEach(block => {
       ;(block.region.elided ? block.region.regions : [block.region]).forEach(
         r => (blocksForRefs[r.refName] = block),
@@ -76,3 +76,5 @@ export default observer(function StructuralVariantChords({
     </g>
   )
 })
+
+export default StructuralVariantChordsReactComponent

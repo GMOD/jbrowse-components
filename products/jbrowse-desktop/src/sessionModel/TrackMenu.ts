@@ -7,10 +7,10 @@ import CopyIcon from '@mui/icons-material/FileCopy'
 import DeleteIcon from '@mui/icons-material/Delete'
 import InfoIcon from '@mui/icons-material/Info'
 import { Indexing } from '@jbrowse/core/ui/Icons'
+import { isSupportedIndexingAdapter } from '@jbrowse/core/util'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
-import { supportedIndexingAdapters } from '@jbrowse/text-indexing'
 
 import type {
   SessionWithDialogs,
@@ -24,7 +24,7 @@ const AboutDialog = lazy(() => import('./AboutDialog'))
 /**
  * #stateModel DesktopSessionTrackMenuMixin
  */
-export function DesktopSessionTrackMenuMixin(pluginManager: PluginManager) {
+export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
   return types.model({}).views(self => ({
     /**
      * #method
@@ -71,7 +71,7 @@ export function DesktopSessionTrackMenuMixin(pluginManager: PluginManager) {
           },
           icon: CopyIcon,
         },
-        ...(supportedIndexingAdapters(trackSnapshot.adapter.type)
+        ...(isSupportedIndexingAdapter(trackSnapshot.adapter?.type)
           ? [
               {
                 label: trackSnapshot.textSearching

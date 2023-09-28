@@ -1,3 +1,4 @@
+import React from 'react'
 import {
   addDisposer,
   cast,
@@ -16,6 +17,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import { AbstractSessionModel, SessionWithWidgets } from '@jbrowse/core/util'
+import { version } from '../version'
 import { MenuItem } from '@jbrowse/core/ui'
 import {
   BaseRootModelFactory,
@@ -67,10 +69,16 @@ export default function RootModel({
   makeWorkerInstance = () => {
     throw new Error('no makeWorkerInstance supplied')
   },
+  hydrateFn,
 }: {
   pluginManager: PluginManager
   sessionModelFactory: SessionModelFactory
   makeWorkerInstance?: () => Worker
+  hydrateFn?: (
+    container: Element | Document,
+    initialChildren: React.ReactNode,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ) => any
 }) {
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
   return types
@@ -92,6 +100,7 @@ export default function RootModel({
     )
 
     .volatile(self => ({
+      version,
       isAssemblyEditing: false,
       isDefaultSessionEditing: false,
       pluginsUpdated: false,
@@ -105,7 +114,7 @@ export default function RootModel({
           MainThreadRpcDriver: {},
         },
       ),
-
+      hydrateFn,
       textSearchManager: new TextSearchManager(pluginManager),
       error: undefined as unknown,
     }))

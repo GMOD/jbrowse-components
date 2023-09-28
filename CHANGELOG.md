@@ -1,3 +1,122 @@
+yarn run v1.22.18 $ lerna-changelog 2.6.3
+
+## Unreleased (2023-08-12)
+
+#### :rocket: Enhancement
+
+- Other
+  - [#3830](https://github.com/GMOD/jbrowse-components/pull/3830) Refactors LGV
+    synteny and pileup with shared mixins
+    ([@carolinebridge-oicr](https://github.com/carolinebridge-oicr))
+  - [#3811](https://github.com/GMOD/jbrowse-components/pull/3811) Add ability to
+    show/hide all tracks in category ([@cmdcolin](https://github.com/cmdcolin))
+- `app-core`
+  - [#3810](https://github.com/GMOD/jbrowse-components/pull/3810) Add sorting
+    and collapsing options to the hierarchical track selector
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3827](https://github.com/GMOD/jbrowse-components/pull/3827) Add check for
+    document.activeElement == INPUT before undo/redo
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- [#3839](https://github.com/GMOD/jbrowse-components/pull/3839) Fix bug where
+  multi-quantitative tracks plotted incorrectly for some bigwigs with empty
+  regions ([@cmdcolin](https://github.com/cmdcolin))
+- [#3837](https://github.com/GMOD/jbrowse-components/pull/3837) Fix text layout
+  in dotplots with long coordinate strings
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#3825](https://github.com/GMOD/jbrowse-components/pull/3825) Fix SVG export
+  compatibility by removing rgba strings
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#3814](https://github.com/GMOD/jbrowse-components/pull/3814) Fix suspense
+  fallback to track container for lazy loaded display components
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#3808](https://github.com/GMOD/jbrowse-components/pull/3808) Fix track
+  ordering of hierarchical track selector to more closely match the config.json
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#3806](https://github.com/GMOD/jbrowse-components/pull/3806) Fix a bug on the
+  BookmarkWidget mui data grid where labels were not saving
+  ([@carolinebridge-oicr](https://github.com/carolinebridge-oicr))
+- [#3804](https://github.com/GMOD/jbrowse-components/pull/3804) Fix version
+  missing from about menu in @jbrowse/react-app
+  ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :house: Internal
+
+- [#3818](https://github.com/GMOD/jbrowse-components/pull/3818) Miscellaneous
+  plugin store code refactoring ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 3
+
+- Caroline Bridge
+  ([@carolinebridge-oicr](https://github.com/carolinebridge-oicr))
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- Robert Buels ([@rbuels](https://github.com/rbuels)) Done in 1.50s.
+
+yarn run v1.22.18 $ lerna-changelog 2.6.2
+
+## Unreleased (2023-07-12)
+
+#### :rocket: Enhancement
+
+- [#3796](https://github.com/GMOD/jbrowse-components/pull/3796) Allow workers to
+  load CJS plugins ([@garrettjstevens](https://github.com/garrettjstevens))
+- [#3783](https://github.com/GMOD/jbrowse-components/pull/3783) Add ability for
+  track selector button in synteny view to select individual views
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#3452](https://github.com/GMOD/jbrowse-components/pull/3452) Use notarytool
+  for macOS desktop signing ([@cmdcolin](https://github.com/cmdcolin))
+- [#3766](https://github.com/GMOD/jbrowse-components/pull/3766) Add nextjs
+  circular genome view demo ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- Other
+  - [#3798](https://github.com/GMOD/jbrowse-components/pull/3798) Fix VCF
+    feature starting at 1-based 1 ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3775](https://github.com/GMOD/jbrowse-components/pull/3775) Fix stranded
+    RNA-seq rendering and rename option Color by -> "First-of-pair strand"
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3758](https://github.com/GMOD/jbrowse-components/pull/3758) Adds safety
+    checks on AlignmentsDisplay properties to avoid undefined rendering
+    ([@carolinebridge-oicr](https://github.com/carolinebridge-oicr))
+  - [#3770](https://github.com/GMOD/jbrowse-components/pull/3770) Fix potential
+    issue with display searchFeatureByID being undefined
+    ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#3784](https://github.com/GMOD/jbrowse-components/pull/3784) Fix synteny
+    rubberband tooltips when views are exactly the same
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3782](https://github.com/GMOD/jbrowse-components/pull/3782) Fix crash on
+    color picker component using debounce on color property
+    ([@carolinebridge-oicr](https://github.com/carolinebridge-oicr))
+  - [#3767](https://github.com/GMOD/jbrowse-components/pull/3767) Check session
+    tracks for text search adapters
+    ([@garrettjstevens](https://github.com/garrettjstevens))
+- `app-core`, `core`, `embedded-core`, `product-core`, `text-indexing`,
+  `web-core`
+  - [#3771](https://github.com/GMOD/jbrowse-components/pull/3771) Use
+    inlineSourceMaps for tsc builds and other misc changes
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :house: Internal
+
+- Other
+  - [#3794](https://github.com/GMOD/jbrowse-components/pull/3794) Move embedded
+    demos to individual repos ([@cmdcolin](https://github.com/cmdcolin))
+- `core`, `product-core`
+  - [#3786](https://github.com/GMOD/jbrowse-components/pull/3786) Centralize
+    rpcWorker in product-core ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 3
+
+- Caroline Bridge
+  ([@carolinebridge-oicr](https://github.com/carolinebridge-oicr))
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens)) Done
+  in 1.55s.
+
 yarn run v1.22.18 $ lerna-changelog 2.6.1
 
 ## Unreleased (2023-06-08)

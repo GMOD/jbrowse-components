@@ -191,7 +191,7 @@ function findPreviousValidIdx(menuItems: MenuItem[], currentIdx: number) {
 }
 
 const MenuPage = React.forwardRef<HTMLDivElement, MenuPageProps>(
-  (props, ref) => {
+  function MenuPage2(props, ref) {
     const [subMenuAnchorEl, setSubMenuAnchorEl] = useState<HTMLElement>()
     const [openSubMenuIdx, setOpenSubMenuIdx] = useState<number>()
     const [isSubMenuOpen, setIsSubMenuOpen] = useState(false)

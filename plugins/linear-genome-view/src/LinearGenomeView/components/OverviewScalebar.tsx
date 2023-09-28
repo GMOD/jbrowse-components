@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { Typography, useTheme, alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
@@ -97,9 +97,7 @@ const Polygon = observer(function ({
   if (!contentBlocks.length) {
     return null
   }
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const first = contentBlocks.at(0)!
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const last = contentBlocks.at(-1)!
   const topLeft =
     (overview.bpToPx({
@@ -245,9 +243,9 @@ const Scalebar = observer(function ({
   if (!visibleRegions.length) {
     return null
   }
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
   const first = visibleRegions.at(0)!
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
   const last = visibleRegions.at(-1)!
 
   const firstOverviewPx =
@@ -304,7 +302,7 @@ const Scalebar = observer(function ({
   )
 })
 
-export default observer(function OverviewScalebar({
+const OverviewScalebar = observer(function ({
   model,
   children,
 }: {
@@ -314,15 +312,23 @@ export default observer(function OverviewScalebar({
   const { classes } = useStyles()
   const { totalBp, width, cytobandOffset, displayedRegions } = model
 
-  const overview = Base1DView.create({
-    displayedRegions: JSON.parse(JSON.stringify(displayedRegions)),
-    interRegionPaddingWidth: 0,
-    minimumBlockWidth: model.minimumBlockWidth,
-  })
-
   const modWidth = width - cytobandOffset
-  overview.setVolatileWidth(modWidth)
-  overview.showAllRegions()
+  const overview = useMemo(() => {
+    const overview = Base1DView.create({
+      displayedRegions: JSON.parse(JSON.stringify(displayedRegions)),
+      interRegionPaddingWidth: 0,
+      minimumBlockWidth: model.minimumBlockWidth,
+    })
+
+    overview.setVolatileWidth(modWidth)
+    overview.showAllRegions()
+    return overview
+  }, [
+    JSON.stringify(displayedRegions), // eslint-disable-line react-hooks/exhaustive-deps
+    model.minimumBlockWidth,
+    modWidth,
+    displayedRegions,
+  ])
 
   const scale =
     totalBp / (modWidth - (displayedRegions.length - 1) * wholeSeqSpacer)
@@ -349,3 +355,5 @@ export default observer(function OverviewScalebar({
 export { Polygon }
 
 export { default as Cytobands } from './Cytobands'
+
+export default OverviewScalebar

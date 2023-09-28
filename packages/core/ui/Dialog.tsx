@@ -1,6 +1,6 @@
 import React from 'react'
 import {
-  Dialog,
+  Dialog as MUIDialog,
   DialogTitle,
   DialogProps,
   Divider,
@@ -40,13 +40,13 @@ interface Props extends DialogProps {
   header?: React.ReactNode
 }
 
-export default observer(function JBrowseDialog(props: Props) {
+const Dialog = observer(function (props: Props) {
   const { classes } = useStyles()
   const { title, header, children, onClose } = props
   const theme = useTheme()
 
   return (
-    <Dialog {...props}>
+    <MUIDialog {...props}>
       <ScopedCssBaseline>
         {React.isValidElement(header) ? (
           <>{header}</>
@@ -87,6 +87,8 @@ export default observer(function JBrowseDialog(props: Props) {
           </ThemeProvider>
         </ErrorBoundary>
       </ScopedCssBaseline>
-    </Dialog>
+    </MUIDialog>
   )
 })
+
+export default Dialog

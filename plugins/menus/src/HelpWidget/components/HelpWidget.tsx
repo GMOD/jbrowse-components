@@ -14,7 +14,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function Help({ model }: { model?: IAnyStateTreeNode }) {
+const HelpWidget = observer(function Help({
+  model,
+}: {
+  model?: IAnyStateTreeNode
+}) {
   const { classes } = useStyles()
   const root = model ? getSession(model) : { version: '' }
   return (
@@ -70,6 +74,6 @@ function Help({ model }: { model?: IAnyStateTreeNode }) {
       </ul>
     </div>
   )
-}
+})
 
-export default observer(Help)
+export default HelpWidget

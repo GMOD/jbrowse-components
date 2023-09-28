@@ -34,7 +34,23 @@ function leftRoundedRect(x: number, y: number, width: number, height: number, ra
        + "z";
 }
 
-const colorMap: { [key: string]: string | undefined } = {
+function leftTriangle(x: number, y: number, width: number, height: number) {
+  return [
+    [x, 0],
+    [x + width, height / 2],
+    [x, height],
+  ].toString()
+}
+
+function rightTriangle(x: number, y: number, width: number, height: number) {
+  return [
+    [x, height / 2],
+    [x + width, 0],
+    [x + width, height],
+  ].toString()
+}
+
+const colorMap: Record<string, string | undefined> = {
   gneg: 'rgb(227,227,227)',
   gpos25: 'rgb(142,142,142)',
   gpos50: 'rgb(85,85,85)',
@@ -45,7 +61,7 @@ const colorMap: { [key: string]: string | undefined } = {
   acen: '#800',
 }
 
-export default observer(function Cytobands({
+const Cytobands = observer(function ({
   overview,
   block,
   assembly,
@@ -56,99 +72,36 @@ export default observer(function Cytobands({
 }) {
   const { offsetPx, reversed } = block
   const cytobands = getCytobands(assembly, block.refName)
-  const coords = cytobands.map(f => {
-    const { refName, start, end, type } = f
-    return [
-      overview.bpToPx({
-        refName,
-        coord: start,
-      }),
-      overview.bpToPx({
-        refName,
-        coord: end,
-      }),
-      type,
-    ]
-  })
+  const lcap = reversed ? cytobands.length - 1 : 0
+  const rcap = reversed ? 0 : cytobands.length - 1
 
-  const arr = cytobands || []
-  const lcap = reversed ? arr.length - 1 : 0
-  const rcap = reversed ? 0 : arr.length - 1
-
-  let firstCent = true
+  const h = HEADER_OVERVIEW_HEIGHT
+  let centromereSeen = false
   return (
     <g transform={`translate(-${offsetPx})`}>
-      {coords.map(([start, end, type], index) => {
-        const key = `${start}-${end}-${type}`
-        if (type === 'acen' && firstCent) {
-          firstCent = false
-          return (
-            <polygon
-              key={key}
-              points={[
-                [start, 0],
-                [end, HEADER_OVERVIEW_HEIGHT / 2],
-                [start, HEADER_OVERVIEW_HEIGHT],
-              ].toString()}
-              fill={colorMap[type]}
-            />
-          )
-        }
-        if (type === 'acen' && !firstCent) {
-          return (
-            <polygon
-              key={key}
-              points={[
-                [start, HEADER_OVERVIEW_HEIGHT / 2],
-                [end, 0],
-                [end, HEADER_OVERVIEW_HEIGHT],
-              ].toString()}
-              fill={colorMap[type]}
-            />
-          )
-        }
-
-        if (lcap === index) {
-          return (
-            <path
-              key={key}
-              d={leftRoundedRect(
-                Math.min(start, end),
-                0,
-                Math.abs(end - start),
-                HEADER_OVERVIEW_HEIGHT,
-                8,
-              )}
-              fill={colorMap[type]}
-            />
-          )
+      {cytobands.map((args, index) => {
+        const k = JSON.stringify(args)
+        const { refName, type, start, end } = args
+        const s = overview.bpToPx({ refName, coord: start }) || 0
+        const e = overview.bpToPx({ refName, coord: end }) || 0
+        const l = Math.min(s, e)
+        const w = Math.abs(e - s)
+        const c = colorMap[type]
+        if (type === 'acen' && !centromereSeen) {
+          centromereSeen = true // the next acen entry is drawn with different right triangle
+          return <polygon key={k} points={leftTriangle(s, 0, w, h)} fill={c} />
+        } else if (type === 'acen' && centromereSeen) {
+          return <polygon key={k} points={rightTriangle(s, 0, w, h)} fill={c} />
+        } else if (lcap === index) {
+          return <path key={k} d={leftRoundedRect(l, 0, w, h, 8)} fill={c} />
         } else if (rcap === index) {
-          return (
-            <path
-              key={key}
-              d={rightRoundedRect(
-                Math.min(start, end),
-                0,
-                Math.abs(end - start) - 2,
-                HEADER_OVERVIEW_HEIGHT,
-                8,
-              )}
-              fill={colorMap[type]}
-            />
-          )
+          return <path key={k} d={rightRoundedRect(l, 0, w, h, 8)} fill={c} />
         } else {
-          return (
-            <rect
-              key={key}
-              x={Math.min(start, end)}
-              y={0}
-              width={Math.abs(end - start)}
-              height={HEADER_OVERVIEW_HEIGHT}
-              fill={colorMap[type]}
-            />
-          )
+          return <rect key={k} x={l} y={0} width={w} height={h} fill={c} />
         }
       })}
     </g>
   )
 })
+
+export default Cytobands

@@ -2,6 +2,7 @@ import { bpSpanPx, measureText } from '@jbrowse/core/util'
 import { Mismatch } from '../MismatchParser'
 import { fillRect, LayoutFeature } from './util'
 import { RenderArgsWithColor } from './makeImageData'
+import { colord } from '@jbrowse/core/util/colord'
 
 export function renderMismatches({
   ctx,
@@ -21,8 +22,8 @@ export function renderMismatches({
   ctx: CanvasRenderingContext2D
   feat: LayoutFeature
   renderArgs: RenderArgsWithColor
-  colorForBase: { [key: string]: string }
-  contrastForBase: { [key: string]: string }
+  colorForBase: Record<string, string>
+  contrastForBase: Record<string, string>
   mismatchAlpha?: boolean
   drawIndels?: boolean
   drawSNPsMuted?: boolean
@@ -32,7 +33,7 @@ export function renderMismatches({
   charHeight: number
   canvasWidth: number
 }) {
-  const { Color, bpPerPx, regions } = renderArgs
+  const { bpPerPx, regions } = renderArgs
   const { heightPx, topPx, feature } = feat
   const [region] = regions
   const start = feature.get('start')
@@ -51,8 +52,7 @@ export function renderMismatches({
 
   // two pass rendering: first pass, draw all the mismatches except wide
   // insertion markers
-  for (let i = 0; i < mismatches.length; i += 1) {
-    const mismatch = mismatches[i]
+  for (const mismatch of mismatches) {
     const mstart = start + mismatch.start
     const mlen = mismatch.length
     const mbase = mismatch.base
@@ -64,10 +64,9 @@ export function renderMismatches({
         const c = mismatchAlpha
           ? mismatch.qual === undefined
             ? baseColor
-            : Color(baseColor)
+            : colord(baseColor)
                 .alpha(Math.min(1, mismatch.qual / 50))
-                .hsl()
-                .string()
+                .toHslString()
           : baseColor
 
         fillRect(
@@ -89,10 +88,9 @@ export function renderMismatches({
         ctx.fillStyle = mismatchAlpha
           ? mismatch.qual === undefined
             ? contrastColor
-            : Color(contrastColor)
+            : colord(contrastColor)
                 .alpha(Math.min(1, mismatch.qual / 50))
-                .hsl()
-                .string()
+                .toHslString()
           : contrastColor
         ctx.fillText(
           mbase,
@@ -164,8 +162,7 @@ export function renderMismatches({
 
   // second pass, draw wide insertion markers on top
   if (drawIndels) {
-    for (let i = 0; i < mismatches.length; i += 1) {
-      const mismatch = mismatches[i]
+    for (const mismatch of mismatches) {
       const mstart = start + mismatch.start
       const mlen = mismatch.length
       const [leftPx] = bpSpanPx(mstart, mstart + mlen, region, bpPerPx)

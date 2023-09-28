@@ -16,7 +16,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { AbstractSessionModel } from '@jbrowse/core/util'
 
-export function ellipses(slug: string) {
+function ellipses(slug: string) {
   return slug.length > 20 ? `${slug.slice(0, 20)}...` : slug
 }
 
@@ -93,7 +93,7 @@ const ConnectionList = observer(function ConnectionsList({
   )
 })
 
-export default observer(function ToggleConnectionDialog({
+const ToggleConnectionDialog = observer(function ({
   session,
   handleClose,
   breakConnection,
@@ -125,3 +125,5 @@ export default observer(function ToggleConnectionDialog({
     </Dialog>
   )
 })
+
+export default ToggleConnectionDialog

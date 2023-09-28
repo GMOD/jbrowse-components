@@ -16,6 +16,9 @@ composed of
 
 - BaseRootModel
 - InternetAccountsMixin
+- HistoryManagementMixin
+- AppFocusMixin
+- RootAppMenuMixin
 
 note: many properties of the root model are available through the session, and
 we generally prefer using the session model (via e.g. getSession) over the root

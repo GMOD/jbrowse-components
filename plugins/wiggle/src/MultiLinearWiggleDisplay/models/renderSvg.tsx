@@ -5,8 +5,10 @@ import {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
+
+// locals
 import { WiggleDisplayModel } from './model'
-import { StatBars } from '../components/WiggleDisplayComponent'
+import YScaleBars from '../components/YScaleBars'
 
 export async function renderSvg(
   self: WiggleDisplayModel,
@@ -19,7 +21,7 @@ export async function renderSvg(
     <>
       <g id="snpcov">{await superRenderSvg(opts)}</g>
       <g transform={`translate(${Math.max(-offsetPx, 0)})`}>
-        <StatBars model={self} orientation="left" exportSVG />
+        <YScaleBars model={self} orientation="left" exportSVG />
       </g>
     </>
   )

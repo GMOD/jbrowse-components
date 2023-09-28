@@ -19,12 +19,9 @@ Here is a video recording of the presentation that we made
   allow="autoplay; fullscreen"
   allowfullscreen
 ></iframe>
-<p>
-  <a href="https://vimeo.com/454450171"
-    >How to write a JBrowse 2 plugin. BCC2020 West Training </a
-  > from <a href="https://vimeo.com/user119241161">Jennifer Vessio</a> on
-  <a href="https://vimeo.com">Vimeo</a>.
-</p>
+
+[How to write a JBrowse 2 plugin. BCC2020 West Training](https://vimeo.com/454450171)
+on Vimeo
 
 You can also follow along with the text presented below
 

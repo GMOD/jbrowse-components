@@ -2,7 +2,7 @@
  * By convention, exit codes in this base class are below 100
  */
 
-import Command from '@oclif/command'
+import { Command } from '@oclif/core'
 import { promises as fsPromises } from 'fs'
 import path from 'path'
 import parseJSON from 'json-parse-better-errors'
@@ -292,9 +292,8 @@ export default abstract class JBrowseCommand extends Command {
     )
     if (response.ok) {
       const result = (await response.json()) as GithubRelease
-      const file = result?.assets?.find(f =>
-        f.name.includes('jbrowse-web'),
-      )?.browser_download_url
+      const file = result?.assets?.find(f => f.name.includes('jbrowse-web'))
+        ?.browser_download_url
 
       if (!file) {
         this.error(

@@ -37,7 +37,7 @@ const Arcs = observer(function ({
   )
 })
 
-export default observer(function ({
+const LinearReadArcsReactComponent = observer(function ({
   model,
 }: {
   model: LinearReadArcsDisplayModel
@@ -48,3 +48,5 @@ export default observer(function ({
     </BaseDisplayComponent>
   )
 })
+
+export default LinearReadArcsReactComponent

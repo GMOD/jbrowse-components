@@ -10,7 +10,7 @@ import { DotplotViewModel } from '../model'
 import ImportForm from './ImportForm'
 import Header from './Header'
 import Grid from './Grid'
-import { HorizontalAxis, VerticalAxis } from './Axes'
+import { VerticalAxis, HorizontalAxis } from './Axes'
 import { TooltipWhereClicked, TooltipWhereMouseovered } from './DotplotTooltip'
 
 const blank = { left: 0, top: 0, width: 0, height: 0 }
@@ -60,7 +60,10 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 type Coord = [number, number] | undefined
-type Rect = { left: number; top: number }
+interface Rect {
+  left: number
+  top: number
+}
 
 // produces offsetX/offsetY coordinates from a clientX and an element's
 // getBoundingClientRect

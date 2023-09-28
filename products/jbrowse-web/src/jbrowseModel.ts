@@ -29,7 +29,7 @@ export default function JBrowseWeb({
     JBrowseModelF({ pluginManager, assemblyConfigSchema }),
     {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      postProcessor(snapshot: { [key: string]: any }) {
+      postProcessor(snapshot: Record<string, any>) {
         return removeAttr(clone(snapshot), 'baseUri')
       },
     },

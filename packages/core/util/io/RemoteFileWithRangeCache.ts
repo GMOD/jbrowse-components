@@ -34,7 +34,7 @@ function binaryRangeFetch(
 const globalRangeCache = new HttpRangeFetcher({
   fetch: binaryRangeFetch,
   size: 500 * 1024 ** 2, // 500MiB
-  chunkSize: 128 * 124, // 128KiB
+  chunkSize: 128 * 1024, // 128KiB
   maxFetchSize: 100 * 1024 ** 2, // 100MiB
   minimumTTL: 24 * 60 * 60 * 1000, // 1 day
 })
@@ -52,7 +52,7 @@ export class RemoteFileWithRangeCache extends RemoteFile {
       fetchers[String(url)] = this.fetchBinaryRange.bind(this)
     }
     // if it is a range request, route it through the range cache
-    const requestHeaders = init && init.headers
+    const requestHeaders = init?.headers
     let range
     if (requestHeaders) {
       if (requestHeaders instanceof Headers) {
@@ -73,7 +73,7 @@ export class RemoteFileWithRangeCache extends RemoteFile {
         const s = Number.parseInt(start, 10)
         const e = Number.parseInt(end, 10)
         const response = (await globalRangeCache.getRange(url, s, e - s + 1, {
-          signal: init && init.signal,
+          signal: init?.signal,
         })) as BinaryRangeResponse
         const { headers } = response
         return new Response(response.buffer, { status: 206, headers })

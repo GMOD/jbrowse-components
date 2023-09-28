@@ -93,8 +93,8 @@ export function paf_delta2paf(buffer: Buffer) {
             throw new Error(`inconsistent alignment on line ${i}`)
           }
           cigar.push((re - rs - x) << 4)
-          for (let i = 0; i < cigar.length; ++i) {
-            const rlen = cigar[i] >> 4
+          for (const entry of cigar) {
+            const rlen = entry >> 4
             blen += rlen
             cigar_str.push(rlen + 'MID'.charAt(cigar[i] & 0xf))
           }

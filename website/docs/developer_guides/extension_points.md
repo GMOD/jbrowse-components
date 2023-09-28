@@ -111,12 +111,184 @@ used to extend the session model itself with new features
 - `args` - `AbstractSessionModel` - instance of the session model to customize
   the about dialog
 
+### Core-replaceAbout
+
+type: synchronous
+
+adds option to provide a different component for the "About this track" dialog
+
+- `args` - a `ReactComponent`, by default the AboutTrack dialog
+- `props` - an argument of the format below
+
+```typescript
+interface props {
+  session: AbstractSessionModel
+  config: AnyConfigurationModel
+}
+```
+
+Example: returns a new about track dialog for a particular track
+
+```typescript
+pluginManager.addToExtensionPoint(
+  'Core-replaceAbout',
+  (DefaultAboutComponent, { session, config }) => {
+    return config.trackId === 'volvox.inv.vcf'
+      ? NewAboutComponent
+      : DefaultAboutComponent
+  },
+)
+```
+
+### Core-extraAboutPanel
+
+type: synchronous
+
+adds option to provide a different component for the "About this track" dialog
+
+```typescript
+interface props {
+  session: AbstractSessionModel
+  config: AnyConfigurationModel
+}
+```
+
+Return value: An object with the name of the panel and the React component to
+use for the panel
+
+Example: adds an extra about dialog panel for a particular track ID
+
+```typescript
+pluginManager.addToExtensionPoint(
+  'Core-extraAboutPanel',
+  (DefaultAboutExtra, { session, config }) => {
+    return config.trackId === 'volvox_sv_test'
+      ? { name: 'More info', Component: ExtraAboutPanel }
+      : DefaultAboutExtra
+  },
+)
+```
+
 ### Core-customizeAbout
 
 type: synchronous
 
-- `args` - `Record<string,unknown>` - a snapshot of a configuration object that
-  is displayed in the about dialog
+- `args` - a config snapshot `Record<string, unknown>` for the track, with
+  `formatAbout` already applied to it
+
+Return value: New config snapshot object
+
+### Core-replaceWidget
+
+type: synchronous
+
+adds option to provide a different component for a given widget, drawer or modal
+
+- `args` - a `ReactComponent`
+- `props` - an object of the type below
+
+```typescript
+interface props {
+  session: AbstractSessionModel
+  model: WidgetModel
+}
+```
+
+See also: `Core-extraFeaturePanel`
+
+Return value: The new React component you want to use
+
+Note: Core-replaceWidget is called any time any widget opens, so if you are
+trying to only customize e.g. the feature details widget, you can filter on
+widget.trackId because only feature detail widgets has a 'trackId' field. You
+can filter on widget.type also but this is stringly typed, and may vary
+depending on track type.
+
+Example of Core-replaceWidget - add widget above the default widget
+
+```tsx
+pluginManager.addToExtensionPoint(
+  'Core-replaceWidget',
+  (DefaultWidget, { model }) => {
+    // replace widget for this particular track ID
+    return model.trackId !== 'volvox.inv.vcf'
+      ? DefaultWidget
+      : function NewWidget(props) {
+          // this new widget adds a custom panel above the old DefaultWidget,
+          // but you can replace it with any contents that you want
+          return (
+            <div>
+              <div>Custom content here above the default details widget</div>
+              <DefaultWidget {...props} />
+            </div>
+          )
+        }
+  },
+)
+```
+
+Note 1: it is not always possible to retrieve the configuration associated with
+a track that produced the feature details. Therefore, we check model.trackId
+that produced the popup instead.
+
+Note 2: If you want e.g. a "User copy" of your track to get same treatment,
+might use a regex to loose match the trackId (the copy of a track will have a
+timestamp and -sessionTrack added to it).
+
+### Core-extraFeaturePanel
+
+type: synchronous
+
+- `args` - a `ReactComponent`, the default AboutTrack dialog
+- `props` - an object of the type below
+
+```typescript
+interface props {
+  model: BaseFeatureWidget // a widget model, has model.trackId defined if you want to check track
+  feature: Record<string, unknown> // snapshot of feature object
+  session: AbstractSessionModel
+}
+```
+
+Note: the model has properties `model.trackId`, `model.trackType`, and
+`model.track`, though `model.track` may be undefined if the user closed the
+track, while trackId and trackType will be defined even if user closed the track
+
+Return value: An object with the name of the panel and the React component to
+use for the panel
+
+Example:
+
+```typescript
+pluginManager.addToExtensionPoint(
+  'Core-extraFeaturePanel',
+  (DefaultFeatureExtra, { model }) => {
+    return model.trackId === 'volvox_filtered_vcf'
+      ? { name: 'Extra info', Component: ExtraFeaturePanel }
+      : DefaultFeatureExtra
+  },
+)
+```
+
+### Core-preProcessTrackConfig
+
+type: synchronous
+
+- `args` - `SnapshotIn<AnyConfigurationModel>` - Copy of the current track
+  config
+
+Return value: A new track config
+
+Example:
+
+```typescript
+pluginManager.addToExtensionPoint('Core-preProcessTrackConfig', snap => {
+  return {
+    ...snap.metadata,
+    extraMetadata: 'extra metadata',
+  }
+})
+```
 
 ### TrackSelector-multiTrackMenuItems
 
@@ -262,169 +434,6 @@ interface args {
 ```
 
 https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/linear-comparative-view/src/LaunchLinearSyntenyView.ts#L9-L68
-
-### Core-replaceAbout
-
-type: synchronous
-
-adds option to provide a different component for the "About this track" dialog
-
-- `args` - a `ReactComponent`, by default the AboutTrack dialog
-- `props` - an argument of the format below
-
-```typescript
-interface props {
-  session: AbstractSessionModel
-  config: AnyConfigurationModel
-}
-```
-
-Example: returns a new about track dialog for a particular track
-
-```typescript
-pluginManager.addToExtensionPoint(
-  'Core-replaceAbout',
-  (DefaultAboutComponent, { session, config }) => {
-    return config.trackId === 'volvox.inv.vcf'
-      ? NewAboutComponent
-      : DefaultAboutComponent
-  },
-)
-```
-
-### Core-extraAboutPanel
-
-type: synchronous
-
-adds option to provide a different component for the "About this track" dialog
-
-```typescript
-interface props {
-  session: AbstractSessionModel
-  config: AnyConfigurationModel
-}
-```
-
-Return value: An object with the name of the panel and the React component to
-use for the panel
-
-Example: adds an extra about dialog panel for a particular track ID
-
-```typescript
-pluginManager.addToExtensionPoint(
-  'Core-extraAboutPanel',
-  (DefaultAboutExtra, { session, config }) => {
-    return config.trackId === 'volvox_sv_test'
-      ? { name: 'More info', Component: ExtraAboutPanel }
-      : DefaultAboutExtra
-  },
-)
-```
-
-### Core-customizeAbout
-
-type: synchronous
-
-- `args` - a config snapshot `Record<string, unknown>` for the track, with
-  `formatAbout` already applied to it
-
-Return value: New config snapshot object
-
-### Core-replaceWidget
-
-type: synchronous
-
-adds option to provide a different component for the "About this track" dialog
-
-- `args` - a `ReactComponent`, the default AboutTrack dialog
-- `props` - an object of the type below
-
-```typescript
-interface props {
-  session: AbstractSessionModel
-  model: WidgetModel
-}
-```
-
-note: this is called for every widget type, including configuration, feature
-details, about panel, and more. The feature details may be a common one. See
-`Core-extraFeaturePanel` also, matches the model attribute from there
-
-Return value: The new React component you want to use
-
-Example: replaces about feature details widget for a particular track ID
-
-```typescript
-pluginManager.addToExtensionPoint(
-  'Core-replaceAbout',
-  (DefaultAboutComponent, { model }) => {
-    return model.trackId === 'volvox.inv.vcf'
-      ? NewAboutComponent
-      : DefaultAboutComponent
-  },
-)
-```
-
-Note: it is not always possible to retrieve the configuration associated with a
-track that produced the feature details. Therefore, we check model.trackId that
-produced the popup instead. note that if you want copies of your track to get
-same treatment, might use a regex to loose match the trackId (the copy of a
-track will have a timestamp and -sessionTrack added to it).
-
-### Core-extraFeaturePanel
-
-type: synchronous
-
-- `args` - a `ReactComponent`, the default AboutTrack dialog
-- `props` - an object of the type below
-
-```typescript
-interface props {
-  model: BaseFeatureWidget // a widget model, has model.trackId defined if you want to check track
-  feature: Record<string, unknown> // snapshot of feature object
-  session: AbstractSessionModel
-}
-```
-
-Note: the model has properties `model.trackId`, `model.trackType`, and
-`model.track`, though `model.track` may be undefined if the user closed the
-track, while trackId and trackType will be defined even if user closed the track
-
-Return value: An object with the name of the panel and the React component to
-use for the panel
-
-Example:
-
-```typescript
-pluginManager.addToExtensionPoint(
-  'Core-extraFeaturePanel',
-  (DefaultFeatureExtra, { model }) => {
-    return model.trackId === 'volvox_filtered_vcf'
-      ? { name: 'Extra info', Component: ExtraFeaturePanel }
-      : DefaultFeatureExtra
-  },
-)
-```
-
-### Core-preProcessTrackConfig
-
-type: synchronous
-
-- `args` - `SnapshotIn<AnyConfigurationModel>` - Copy of the current track
-  config
-
-Return value: A new track config
-
-Example:
-
-```typescript
-pluginManager.addToExtensionPoint('Core-preProcessTrackConfig', snap => {
-  return {
-    ...snap.metadata,
-    extraMetadata: 'extra metadata',
-  }
-})
-```
 
 ### LinearGenomeView-TracksContainer
 

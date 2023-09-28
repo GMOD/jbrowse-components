@@ -1,13 +1,12 @@
 import React from 'react'
-import ReactDOM from 'react-dom'
-import { FatalErrorDialog } from '@jbrowse/core/ui'
+import { createRoot } from 'react-dom/client'
 import { ErrorBoundary } from 'react-error-boundary'
 import { QueryParamProvider } from 'use-query-params'
 import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
 import '@fontsource/roboto'
 
-import factoryReset from './factoryReset'
 import Loader from './components/Loader'
+import PlatformSpecificErrorDialog from './components/PlatformSpecificErrorDialog'
 
 if (window?.name.startsWith('JBrowseAuthWindow')) {
   window.opener?.postMessage({
@@ -17,15 +16,12 @@ if (window?.name.startsWith('JBrowseAuthWindow')) {
   window.close()
 }
 
-const PlatformSpecificFatalErrorDialog = (props: { error?: unknown }) => {
-  return <FatalErrorDialog {...props} onFactoryReset={factoryReset} />
-}
+const root = createRoot(document.getElementById('root')!)
 
-ReactDOM.render(
-  <ErrorBoundary FallbackComponent={PlatformSpecificFatalErrorDialog}>
+root.render(
+  <ErrorBoundary FallbackComponent={PlatformSpecificErrorDialog}>
     <QueryParamProvider adapter={WindowHistoryAdapter}>
       <Loader />
     </QueryParamProvider>
   </ErrorBoundary>,
-  document.getElementById('root'),
 )

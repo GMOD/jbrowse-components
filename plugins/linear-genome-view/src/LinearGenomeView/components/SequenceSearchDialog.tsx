@@ -21,7 +21,7 @@ const useStyles = makeStyles()({
   },
 })
 
-function SequenceDialog({
+const SequenceSearchDialog = observer(function ({
   model,
   handleClose,
 }: {
@@ -131,6 +131,6 @@ function SequenceDialog({
       </DialogActions>
     </Dialog>
   )
-}
+})
 
-export default observer(SequenceDialog)
+export default SequenceSearchDialog

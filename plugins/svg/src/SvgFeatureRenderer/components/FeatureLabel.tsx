@@ -2,7 +2,13 @@ import React, { useEffect, useState } from 'react'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 import { isAlive, isStateTreeNode } from 'mobx-state-tree'
-import { measureText, getViewParams, Feature, Region } from '@jbrowse/core/util'
+import {
+  measureText,
+  getViewParams,
+  Feature,
+  Region,
+  stripAlpha,
+} from '@jbrowse/core/util'
 import { DisplayModel } from './util'
 
 interface ViewParams {
@@ -12,7 +18,7 @@ interface ViewParams {
   offsetPx1: number
 }
 
-export default observer(function ({
+const FeatureLabel = observer(function ({
   text,
   x,
   y,
@@ -46,7 +52,7 @@ export default observer(function ({
   const totalWidth = featureWidth + allowedWidthExpansion
   const measuredTextWidth = measureText(text, fontHeight)
   const params =
-    isStateTreeNode(displayModel) && isAlive(displayModel)
+    isStateTreeNode(displayModel) && isAlive(displayModel) && !exportSVG
       ? getViewParams(displayModel)
       : viewParams
 
@@ -58,7 +64,7 @@ export default observer(function ({
   // we use an effect to set the label visible because there can be a
   // mismatch between the server and the client after hydration due to the
   // floating labels. if we are exporting an SVG we allow it as is though and
-  // do not use the effetct
+  // do not use the effect
   useEffect(() => {
     setLabelVisible(true)
   }, [])
@@ -99,7 +105,7 @@ export default observer(function ({
     <text
       x={x}
       y={y + fontHeight}
-      fill={color === '#f0f' ? theme.palette.text.primary : color}
+      fill={color === '#f0f' ? stripAlpha(theme.palette.text.primary) : color}
       fontSize={fontHeight}
     >
       {measuredTextWidth > totalWidth
@@ -108,3 +114,5 @@ export default observer(function ({
     </text>
   ) : null
 })
+
+export default FeatureLabel

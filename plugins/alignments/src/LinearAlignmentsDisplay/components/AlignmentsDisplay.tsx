@@ -15,7 +15,11 @@ const useStyles = makeStyles()({
   },
 })
 
-function AlignmentsDisplay({ model }: { model: AlignmentsDisplayModel }) {
+const AlignmentsDisplay = observer(function AlignmentsDisplay({
+  model,
+}: {
+  model: AlignmentsDisplayModel
+}) {
   const { PileupDisplay, SNPCoverageDisplay } = model
   const { classes } = useStyles()
   if (!SNPCoverageDisplay) {
@@ -50,6 +54,6 @@ function AlignmentsDisplay({ model }: { model: AlignmentsDisplayModel }) {
       </div>
     </div>
   )
-}
+})
 
-export default observer(AlignmentsDisplay)
+export default AlignmentsDisplay

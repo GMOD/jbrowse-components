@@ -347,7 +347,21 @@
             "locationType": "UriLocation"
           }
         }
-      }
+      },
+      "displays": [
+        {
+          "type": "LinearVariantDisplay",
+          "displayId": "clinvar_ncbi-LinearVariantDisplay",
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "color1": "jexl:get(feature,'INFO').CLNSIG=='Benign'?'blue':get(feature,'INFO').CLNSIG=='Likely_benign'?'deepskyblue':get(feature,'INFO').CLNSIG=='Uncertain_significance'?'gray':get(feature,'INFO').CLNSIG=='Pathogenic'?'red':get(feature,'INFO').CLNSIG=='Likely_pathogenic'?'orange':get(feature,'INFO').CLNSIG=='Conflicting_interpretations_of_pathogenicity'?'brown':'purple'"
+          }
+        },
+        {
+          "type": "ChordVariantDisplay",
+          "displayId": "clinvar_ncbi-ChordVariantDisplay"
+        }
+      ]
     },
     {
       "type": "VariantTrack",
@@ -367,7 +381,21 @@
             "locationType": "UriLocation"
           }
         }
-      }
+      },
+      "displays": [
+        {
+          "type": "LinearVariantDisplay",
+          "displayId": "clinvar_ncbi_hg38-LinearVariantDisplay",
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "color1": "jexl:get(feature,'INFO').CLNSIG=='Benign'?'blue':get(feature,'INFO').CLNSIG=='Likely_benign'?'deepskyblue':get(feature,'INFO').CLNSIG=='Uncertain_significance'?'gray':get(feature,'INFO').CLNSIG=='Pathogenic'?'red':get(feature,'INFO').CLNSIG=='Likely_pathogenic'?'orange':get(feature,'INFO').CLNSIG=='Conflicting_interpretations_of_pathogenicity'?'brown':'purple'"
+          }
+        },
+        {
+          "type": "ChordVariantDisplay",
+          "displayId": "clinvar_ncbi_hg38-ChordVariantDisplay"
+        }
+      ]
     },
     {
       "type": "FeatureTrack",
@@ -3489,7 +3517,7 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "http://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/mastermind.bb",
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/mastermind.bb",
           "locationType": "UriLocation"
         }
       }
@@ -3503,7 +3531,7 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "http://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/mastermind.bb",
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/mastermind.bb",
           "locationType": "UriLocation"
         }
       }

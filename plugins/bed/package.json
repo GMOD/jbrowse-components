@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-bed",
-  "version": "2.6.1",
+  "version": "2.6.3",
   "description": "JBrowse 2 bed adapters, tracks, etc.",
   "keywords": [
     "jbrowse",
@@ -45,7 +45,7 @@
   "peerDependencies": {
     "@jbrowse/core": "^2.0.0",
     "mobx": "^6.0.0",
-    "mobx-react": "^7.0.0",
+    "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",
     "rxjs": "^7.0.0"
   },

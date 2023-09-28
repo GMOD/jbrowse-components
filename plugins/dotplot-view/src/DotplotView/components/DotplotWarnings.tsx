@@ -8,7 +8,11 @@ import { DotplotViewModel } from '../model'
 // lazy components
 const WarningDialog = lazy(() => import('./WarningDialog'))
 
-export default observer(function ({ model }: { model: DotplotViewModel }) {
+const DotplotWarnings = observer(function ({
+  model,
+}: {
+  model: DotplotViewModel
+}) {
   const trackWarnings = model.tracks.filter(t => t.displays[0].warnings?.length)
   const [shown, setShown] = useState(false)
   return trackWarnings.length ? (
@@ -24,3 +28,5 @@ export default observer(function ({ model }: { model: DotplotViewModel }) {
     </Alert>
   ) : null
 })
+
+export default DotplotWarnings

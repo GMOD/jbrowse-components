@@ -1,0 +1,490 @@
+{
+  "assemblies": [
+    {
+      "name": "volvox",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "volvox-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": { "uri": "volvox.2bit" }
+        }
+      }
+    }
+  ],
+  "configuration": {},
+  "connections": [],
+  "defaultSession": { "name": "New Session" },
+  "tracks": [
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "f cat1",
+      "name": "f cat1",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "category": ["cat1"],
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "d cat3 cat4",
+      "name": "d cat3 cat4",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "category": ["cat3", "cat4"],
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "a cat1",
+      "name": "a cat1",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "category": ["cat1"],
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "i cat1",
+      "name": "i cat1",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "category": ["cat1"],
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "d cat3",
+      "name": "d cat3",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "category": ["cat3"],
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "h cat1 cat2",
+      "name": "h cat1 cat2",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "category": ["cat1", "cat2"],
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "f cat1 cat2",
+      "name": "f cat1 cat2",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "category": ["cat1", "cat2"],
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "b cat1 cat2",
+      "name": "b cat1 cat2",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "category": ["cat1", "cat2"],
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "g cat1",
+      "name": "g cat1",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "category": ["cat1"],
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "b cat3",
+      "name": "b cat3",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "category": ["cat3"],
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "i cat1 cat2",
+      "name": "i cat1 cat2",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "category": ["cat1", "cat2"],
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "e cat1 cat2",
+      "name": "e cat1 cat2",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "category": ["cat1", "cat2"],
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "a cat1 cat2",
+      "name": "a cat1 cat2",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "category": ["cat1", "cat2"],
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "e toplevel",
+      "name": "e toplevel",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "b cat1",
+      "name": "b cat1",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "category": ["cat1"],
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "d cat1 cat2",
+      "name": "d cat1 cat2",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "category": ["cat1", "cat2"],
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "c cat3 cat4",
+      "name": "c cat3 cat4",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "category": ["cat3", "cat4"],
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "d cat1",
+      "name": "d cat1",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "category": ["cat1"],
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "j toplevel",
+      "name": "j toplevel",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "f toplevel",
+      "name": "f toplevel",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "h toplevel",
+      "name": "h toplevel",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "e cat3 cat4",
+      "name": "e cat3 cat4",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "category": ["cat3", "cat4"],
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "h cat1",
+      "name": "h cat1",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "category": ["cat1"],
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "a cat3",
+      "name": "a cat3",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "category": ["cat3"],
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "c cat3",
+      "name": "c cat3",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "category": ["cat3"],
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "c toplevel",
+      "name": "c toplevel",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "c cat1",
+      "name": "c cat1",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "category": ["cat1"],
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "j cat1 cat2",
+      "name": "j cat1 cat2",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "category": ["cat1", "cat2"],
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "b cat3 cat4",
+      "name": "b cat3 cat4",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "category": ["cat3", "cat4"],
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "a cat3 cat4",
+      "name": "a cat3 cat4",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "category": ["cat3", "cat4"],
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "c cat1 cat2",
+      "name": "c cat1 cat2",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "category": ["cat1", "cat2"],
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "g cat1 cat2",
+      "name": "g cat1 cat2",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "category": ["cat1", "cat2"],
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "e cat1",
+      "name": "e cat1",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "category": ["cat1"],
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "j cat1",
+      "name": "j cat1",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "category": ["cat1"],
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "i toplevel",
+      "name": "i toplevel",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "d toplevel",
+      "name": "d toplevel",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "e cat3",
+      "name": "e cat3",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "category": ["cat3"],
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "b toplevel",
+      "name": "b toplevel",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "a toplevel",
+      "name": "a toplevel",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "g toplevel",
+      "name": "g toplevel",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "a.bam" },
+        "index": { "location": { "uri": "a.bam.bai" } }
+      },
+      "assemblyNames": ["volvox"]
+    }
+  ]
+}

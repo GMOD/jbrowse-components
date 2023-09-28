@@ -22,7 +22,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default observer(function AppFab({
+const AppFab = observer(function ({
   session,
 }: {
   session: SessionWithDrawerWidgets
@@ -43,3 +43,5 @@ export default observer(function AppFab({
     </Tooltip>
   ) : null
 })
+
+export default AppFab

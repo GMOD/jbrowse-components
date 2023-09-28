@@ -17,6 +17,8 @@ import { BaseWebSession } from '@jbrowse/web-core'
  * - SessionAssembliesMixin
  * - TemporaryAssembliesMixin
  * - WebSessionConnectionsMixin
+ * - AppFocusMixin
+ *
  */
 export default function sessionModelFactory({
   pluginManager,

@@ -176,6 +176,11 @@
     }
   ],
   "configuration": {
+    "hierarchical": {
+      "defaultCollapsed": {
+        "categoryNames": ["Methylation"]
+      }
+    },
     "extraThemes": {
       "darkForest": {
         "name": "Dark (forest, from config file)",
@@ -236,6 +241,7 @@
       "name": "volvox structural variant test (<i>HTML italic</i>)",
       "category": ["VCF"],
       "assemblyNames": ["volvox"],
+
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -614,6 +620,9 @@
     {
       "type": "VariantTrack",
       "trackId": "volvox_test_vcf",
+      "formatAbout": {
+        "hideUris": true
+      },
       "name": "volvox 1000genomes vcf",
       "assemblyNames": ["volvox"],
       "category": ["VCF"],
@@ -1395,7 +1404,7 @@
       "trackId": "pOOtg9wxcUC",
       "name": "Volvox - BAM coverage",
       "assemblyNames": ["volvox"],
-      "category": ["BigWig"],
+      "category": ["BigWig", "XYPlot"],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {

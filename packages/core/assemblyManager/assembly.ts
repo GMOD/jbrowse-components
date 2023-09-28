@@ -182,11 +182,8 @@ export default function assemblyFactory(
       cytobands: undefined as Feature[] | undefined,
     }))
     .views(self => ({
-      getConf(key: string | string[]) {
-        if (!self.configuration) {
-          throw new Error('no configuration')
-        }
-        return readConfObject(self.configuration, key)
+      getConf(arg: string | string[]) {
+        return self.configuration ? getConf(self, arg) : undefined
       },
     }))
     .views(self => ({
@@ -202,7 +199,7 @@ export default function assemblyFactory(
        * #getter
        */
       get name(): string {
-        return self.getConf('name')
+        return self.getConf('name') || ''
       },
       /**
        * #getter
@@ -216,7 +213,7 @@ export default function assemblyFactory(
        * #getter
        */
       get aliases(): string[] {
-        return self.getConf('aliases')
+        return self.getConf('aliases') || []
       },
       /**
        * #getter
@@ -275,7 +272,7 @@ export default function assemblyFactory(
        * #getter
        */
       get refNameColors() {
-        const colors: string[] = self.getConf('refNameColors')
+        const colors: string[] = self.getConf('refNameColors') || []
         return colors.length === 0 ? refNameColors : colors
       },
     }))

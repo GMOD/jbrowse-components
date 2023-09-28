@@ -73,9 +73,7 @@ export function convertTrackConfig(
     jb2TrackConfig.description = description
   }
 
-  const category =
-    jb1TrackConfig.category ||
-    (jb1TrackConfig.metadata && jb1TrackConfig.metadata.category)
+  const category = jb1TrackConfig.category || jb1TrackConfig.metadata?.category
   jb2TrackConfig.category = category ? category.split(/\s*\/\s*/) : []
 
   const { storeClass } = jb1TrackConfig

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
@@ -109,7 +108,7 @@ function Translation(props: {
 
 function DNA(props: {
   seq: string
-  theme: any
+  theme: Theme
   bpPerPx: number
   height: number
   region: Region
@@ -132,6 +131,7 @@ function DNA(props: {
   return (
     <>
       {seq.split('').map((letter, index) => {
+        // @ts-expect-error
         const color = theme.palette.bases[letter.toUpperCase()]
         const x = reverse ? rightPx - (index + 1) * w : leftPx + index * w
         return (
@@ -164,7 +164,7 @@ function DNA(props: {
   )
 }
 
-const SequenceSVG = ({
+function SequenceSVG({
   regions,
   theme: configTheme,
   features = new Map(),
@@ -172,7 +172,15 @@ const SequenceSVG = ({
   showForward = true,
   showTranslation = true,
   bpPerPx,
-}: any) => {
+}: {
+  regions: Region[]
+  theme?: Theme
+  features: Map<string, Feature>
+  showReverse?: boolean
+  showForward?: boolean
+  showTranslation?: boolean
+  bpPerPx: number
+}) {
   const [region] = regions
   const theme = createJBrowseTheme(configTheme)
   const codonTable = generateCodonTable(defaultCodonTable)
@@ -257,7 +265,7 @@ const SequenceSVG = ({
   )
 }
 
-const Wrapper = ({
+function Wrapper({
   exportSVG,
   width,
   totalHeight,
@@ -267,7 +275,7 @@ const Wrapper = ({
   width: number
   totalHeight: number
   children: React.ReactNode
-}) => {
+}) {
   return exportSVG ? (
     <>{children}</>
   ) : (
@@ -282,13 +290,13 @@ const Wrapper = ({
   )
 }
 
-function Sequence(props: {
+const DivSequenceRendering = observer(function (props: {
   exportSVG?: { rasterizeLayers: boolean }
   features: Map<string, Feature>
   regions: Region[]
   bpPerPx: number
   config: AnyConfigurationModel
-  theme?: any
+  theme?: Theme
   showForward?: boolean
   showReverse?: boolean
   showTranslation?: boolean
@@ -303,6 +311,6 @@ function Sequence(props: {
       <SequenceSVG {...props} />
     </Wrapper>
   )
-}
+})
 
-export default observer(Sequence)
+export default DivSequenceRendering

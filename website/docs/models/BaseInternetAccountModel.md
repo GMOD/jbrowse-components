@@ -143,7 +143,7 @@ token to `resolve`.
 
 ```js
 // type signature
-getTokenFromUser: (resolve: (token: string) => void, reject: (error: Error) => void) => void
+getTokenFromUser: (_resolve: (token: string) => void, _reject: (error: Error) => void) => void
 ```
 
 #### action: storeToken
@@ -178,7 +178,7 @@ invalid. Should throw an error if a token is invalid.
 
 ```js
 // type signature
-validateToken: (token: string, loc: UriLocation) => Promise<string>
+validateToken: (token: string, _loc: UriLocation) => Promise<string>
 ```
 
 #### action: getToken

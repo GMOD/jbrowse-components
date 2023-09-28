@@ -47,7 +47,7 @@ const JBrowseNonNullRoot = observer(function ({
   )
 })
 
-export default observer(function ({
+const JBrowse = observer(function ({
   pluginManager,
 }: {
   pluginManager: PluginManager
@@ -57,3 +57,5 @@ export default observer(function ({
     <JBrowseNonNullRoot rootModel={rootModel as DesktopRootModel} />
   ) : null
 })
+
+export default JBrowse

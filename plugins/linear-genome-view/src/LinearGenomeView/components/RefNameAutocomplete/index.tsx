@@ -11,7 +11,7 @@ import { LinearGenomeViewModel } from '../../model'
 import { getDeduplicatedResult, getFiltered, Option } from './util'
 import AutocompleteTextField from './AutocompleteTextField'
 
-export default observer(function RefNameAutocomplete({
+const RefNameAutocomplete = observer(function ({
   model,
   onSelect,
   assemblyName,
@@ -158,3 +158,5 @@ export default observer(function RefNameAutocomplete({
     </>
   )
 })
+
+export default RefNameAutocomplete

@@ -10,7 +10,7 @@ import { readConfObject, AnyConfigurationModel } from '../configuration'
 export interface SearchScope {
   includeAggregateIndexes: boolean
   assemblyName: string
-  tracks?: Array<string>
+  tracks?: string[]
 }
 
 export default class TextSearchManager {
@@ -60,8 +60,8 @@ export default class TextSearchManager {
     assemblyName: string,
     confs: AnyConfigurationModel[],
   ): AnyConfigurationModel[] {
-    return confs.filter(c =>
-      readConfObject(c, 'assemblyNames')?.includes(assemblyName),
+    return confs.filter(
+      c => readConfObject(c, 'assemblyNames')?.includes(assemblyName),
     )
   }
 
@@ -70,12 +70,13 @@ export default class TextSearchManager {
     confs: AnyConfigurationModel[],
   ) {
     return confs
-      .filter(conf =>
-        readConfObject(conf, [
-          'textSearching',
-          'textSearchAdapter',
-          'assemblyNames',
-        ])?.includes(assemblyName),
+      .filter(
+        conf =>
+          readConfObject(conf, [
+            'textSearching',
+            'textSearchAdapter',
+            'assemblyNames',
+          ])?.includes(assemblyName),
       )
       .map(
         conf => conf.textSearching.textSearchAdapter as AnyConfigurationModel,

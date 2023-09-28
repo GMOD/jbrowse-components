@@ -46,7 +46,7 @@ let added = false
 // adapted from is-html
 // https://github.com/sindresorhus/is-html/blob/master/index.js
 const full = new RegExp(htmlTags.map(tag => `<${tag}\\b[^>]*>`).join('|'), 'i')
-export function isHTML(str: string) {
+function isHTML(str: string) {
   return full.test(str)
 }
 

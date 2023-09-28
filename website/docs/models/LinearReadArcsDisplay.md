@@ -10,7 +10,7 @@ info
 
 ### Source file
 
-[plugins/alignments/src/LinearReadArcsDisplay/model.tsx](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearReadArcsDisplay/model.tsx)
+[plugins/alignments/src/LinearReadArcsDisplay/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearReadArcsDisplay/model.ts)
 
 extends `BaseDisplay`, it is not a block based track, hence not
 BaseLinearDisplay
@@ -215,7 +215,7 @@ setDrawLongRange: (f: boolean) => void
 
 ```js
 // type signature
-setFilterBy: (filter: Filter) => void
+setFilterBy: (filter: IFilter) => void
 ```
 
 #### action: setLineWidth

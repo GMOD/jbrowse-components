@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { IAnyStateTreeNode } from 'mobx-state-tree'
 import { Button, Paper, Typography, alpha } from '@mui/material'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from 'tss-react/mui'
@@ -10,12 +11,11 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 
 // locals
 import ImportError from './ImportError'
-import { IAnyStateTreeNode } from 'mobx-state-tree'
 
 const MAX_FILE_SIZE = 512 * 1024 ** 2 // 512 MiB
 
-function styledBy(property: string, mapping: { [key: string]: string }) {
-  return (props: { [key: string]: string }) => mapping[props[property]]
+function styledBy(property: string, mapping: Record<string, string>) {
+  return (props: Record<string, string>) => mapping[props[property]]
 }
 
 // @ts-expect-error
@@ -56,7 +56,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function ImportSession({ model }: { model: IAnyStateTreeNode }) {
+const ImportSessionWidget = observer(function ({
+  model,
+}: {
+  model: IAnyStateTreeNode
+}) {
   const [error, setError] = useState<unknown>()
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     // @ts-expect-error
@@ -104,6 +108,6 @@ function ImportSession({ model }: { model: IAnyStateTreeNode }) {
       {error ? <ImportError error={error} /> : null}
     </div>
   )
-}
+})
 
-export default observer(ImportSession)
+export default ImportSessionWidget

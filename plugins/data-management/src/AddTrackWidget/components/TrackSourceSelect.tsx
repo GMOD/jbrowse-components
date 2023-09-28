@@ -18,7 +18,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function TrackSourceSelect({ model }: { model: AddTrackModel }) {
+const TrackSourceSelect = observer(function ({
+  model,
+}: {
+  model: AddTrackModel
+}) {
   const { classes } = useStyles()
   const rootModel = getRoot<AbstractRootModel>(model)
 
@@ -43,6 +47,6 @@ function TrackSourceSelect({ model }: { model: AddTrackModel }) {
       />
     </Paper>
   )
-}
+})
 
-export default observer(TrackSourceSelect)
+export default TrackSourceSelect

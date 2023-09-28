@@ -1,5 +1,4 @@
 import { fireEvent } from '@testing-library/react'
-import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
 import {
   setup,
@@ -15,7 +14,6 @@ beforeEach(() => {
   doBeforeEach(url => require.resolve(`../../../../extra_test_data/${url}`))
 })
 
-expect.extend({ toMatchImageSnapshot })
 setup()
 
 const delay = { timeout: 20000 }

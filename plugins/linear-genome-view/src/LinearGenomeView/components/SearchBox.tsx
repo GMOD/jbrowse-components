@@ -16,7 +16,7 @@ const useStyles = makeStyles()(() => ({
   },
 }))
 
-function SearchBox({
+const SearchBox = observer(function ({
   model,
   showHelp,
 }: {
@@ -118,6 +118,6 @@ function SearchBox({
       }}
     />
   )
-}
+})
 
-export default observer(SearchBox)
+export default SearchBox

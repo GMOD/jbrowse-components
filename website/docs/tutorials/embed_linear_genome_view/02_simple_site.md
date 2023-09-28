@@ -3,6 +3,8 @@ id: 02_simple_site
 title: Beginnings of a simple site
 ---
 
+import Figure from '../../figure'
+
 ## Create a simple web page
 
 Let's get started! The first thing we're going to do is create a simple web page

@@ -54,7 +54,6 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import MiniControls from './components/MiniControls'
 import Header from './components/Header'
 import { generateLocations, parseLocStrings } from './util'
-
 // lazies
 const ReturnToImportFormDialog = lazy(
   () => import('@jbrowse/core/ui/ReturnToImportFormDialog'),
@@ -249,7 +248,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       // which is basically like an onLoad
       afterDisplayedRegionsSetCallbacks: [] as Function[],
       scaleFactor: 1,
-      trackRefs: {} as { [key: string]: HTMLDivElement },
+      trackRefs: {} as Record<string, HTMLDivElement>,
       coarseDynamicBlocks: [] as BaseBlock[],
       coarseTotalBp: 0,
       leftOffset: undefined as undefined | BpOffset,
@@ -507,7 +506,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get trackTypeActions() {
-        const allActions: Map<string, MenuItem[]> = new Map()
+        const allActions = new Map<string, MenuItem[]>()
         self.tracks.forEach(track => {
           const trackInMap = allActions.get(track.type)
           if (!trackInMap) {
@@ -1182,7 +1181,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             currentlyCalculatedStaticBlocks = ret
             stringifiedCurrentlyCalculatedStaticBlocks = sret
           }
-          return currentlyCalculatedStaticBlocks as BlockSet
+          return currentlyCalculatedStaticBlocks!
         },
         /**
          * #getter
@@ -1205,7 +1204,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 ...block,
                 start: Math.floor(block.start),
                 end: Math.ceil(block.end),
-              } as BaseBlock),
+              }) as BaseBlock,
           )
         },
 
@@ -1514,6 +1513,39 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return self.displayedRegions.length > 0
           ? this.pxToBp(self.width / 2)
           : undefined
+      },
+    }))
+    .actions(self => ({
+      afterCreate() {
+        function handler(e: KeyboardEvent) {
+          const session = getSession(self)
+          if (session.focusedView === self && (e.ctrlKey || e.metaKey)) {
+            if (e.code === 'ArrowLeft') {
+              e.preventDefault()
+              // pan left
+              self.slide(-0.9)
+            }
+            if (e.code === 'ArrowRight') {
+              e.preventDefault()
+              // pan right
+              self.slide(0.9)
+            }
+            if (e.code === 'ArrowUp' && self.scaleFactor === 1) {
+              e.preventDefault()
+              // zoom in
+              self.zoom(self.bpPerPx / 2)
+            }
+            if (e.code === 'ArrowDown' && self.scaleFactor === 1) {
+              e.preventDefault()
+              // zoom out
+              self.zoom(self.bpPerPx * 2)
+            }
+          }
+        }
+        document.addEventListener('keydown', handler)
+        addDisposer(self, () => {
+          document.removeEventListener('keydown', handler)
+        })
       },
     }))
 }

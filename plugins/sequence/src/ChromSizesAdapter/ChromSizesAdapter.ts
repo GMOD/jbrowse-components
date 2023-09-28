@@ -6,7 +6,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 
 export default class extends BaseAdapter implements RegionsAdapter {
   // the map of refSeq to length
-  protected setupP?: Promise<{ [key: string]: number }>
+  protected setupP?: Promise<Record<string, number>>
 
   async setupPre() {
     const pm = this.pluginManager

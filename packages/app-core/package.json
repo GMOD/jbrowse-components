@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/app-core",
-  "version": "2.6.1",
+  "version": "2.6.3",
   "description": "JBrowse 2 code shared between the 'full featured' apps e.g. jbrowse-web and jbrowse-desktop",
   "keywords": [
     "jbrowse",
@@ -42,19 +42,19 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.16.3",
-    "@jbrowse/product-core": "^2.6.1",
+    "@jbrowse/product-core": "^2.6.3",
     "@mui/icons-material": "^5.0.0",
     "@mui/material": "^5.10.17",
+    "clsx": "^2.0.0",
     "copy-to-clipboard": "^3.3.1",
-    "react-error-boundary": "^4.0.3",
-    "shortid": "^2.2.15"
+    "react-error-boundary": "^4.0.3"
   },
   "peerDependencies": {
     "mobx": "^6.0.0",
-    "mobx-react": "^7.0.0",
+    "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",
-    "react": "^17.0.0",
-    "react-dom": "^17.0.0",
+    "react": ">=17.0.0",
+    "react-dom": ">=17.0.0",
     "rxjs": "^7.0.0",
     "tss-react": "^4.0.0"
   },

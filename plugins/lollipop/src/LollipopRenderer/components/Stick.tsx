@@ -6,7 +6,7 @@ import {
 import { observer } from 'mobx-react'
 import { Feature } from '@jbrowse/core/util'
 
-export default observer(function Stick({
+const Stick = observer(function Stick({
   feature,
   config,
   layoutRecord: {
@@ -34,3 +34,5 @@ export default observer(function Stick({
     />
   )
 })
+
+export default Stick

@@ -1,8 +1,5 @@
 import React, { Suspense, lazy, useState } from 'react'
-import { IconButton } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import JBrowseMenu from '@jbrowse/core/ui/Menu'
 import {
   getSession,
   isSessionModelWithConnectionEditing,
@@ -14,6 +11,7 @@ import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 
 // icons
 import MenuIcon from '@mui/icons-material/Menu'
@@ -35,17 +33,10 @@ const ToggleConnectionsDlg = lazy(
   () => import('../dialogs/ToggleConnectionsDialog'),
 )
 
-const useStyles = makeStyles()(theme => ({
-  menuIcon: {
-    marginRight: theme.spacing(1),
-    marginBottom: 0,
-  },
-}))
-
 interface ModalArgs {
   connectionConf: AnyConfigurationModel
   safelyBreakConnection: () => void
-  dereferenceTypeCount: { [key: string]: number }
+  dereferenceTypeCount: Record<string, number>
   name: string
 }
 
@@ -54,18 +45,16 @@ interface DialogDetails {
   connectionConf: AnyConfigurationModel
 }
 
-export default observer(function HamburgerMenu({
+const HamburgerMenu = observer(function ({
   model,
 }: {
   model: HierarchicalTrackSelectorModel
 }) {
   const session = getSession(model)
-  const [menuEl, setMenuEl] = useState<HTMLButtonElement>()
   const [modalInfo, setModalInfo] = useState<ModalArgs>()
   const [deleteDlgDetails, setDeleteDlgDetails] = useState<DialogDetails>()
   const [connectionToggleOpen, setConnectionToggleOpen] = useState(false)
   const [connectionManagerOpen, setConnectionManagerOpen] = useState(false)
-  const { classes } = useStyles()
 
   function breakConnection(
     connectionConf: AnyConfigurationModel,
@@ -93,21 +82,7 @@ export default observer(function HamburgerMenu({
 
   return (
     <>
-      <IconButton
-        className={classes.menuIcon}
-        onClick={event => setMenuEl(event.currentTarget)}
-      >
-        <MenuIcon />
-      </IconButton>
-
-      <JBrowseMenu
-        anchorEl={menuEl}
-        open={Boolean(menuEl)}
-        onMenuItemClick={(_, callback) => {
-          callback()
-          setMenuEl(undefined)
-        }}
-        onClose={() => setMenuEl(undefined)}
+      <CascadingMenuButton
         menuItems={[
           ...(isSessionWithAddTracks(session)
             ? [
@@ -154,8 +129,40 @@ export default observer(function HamburgerMenu({
                 },
               ]
             : []),
+          { type: 'divider' },
+          {
+            label: 'Sort tracks by name',
+            type: 'checkbox',
+            checked: model.activeSortTrackNames,
+            onClick: () => model.setSortTrackNames(!model.activeSortTrackNames),
+          },
+          {
+            label: 'Sort categories by name',
+            type: 'checkbox',
+            checked: model.activeSortCategories,
+            onClick: () => model.setSortCategories(!model.activeSortCategories),
+          },
+          { type: 'divider' },
+          ...(model.hasAnySubcategories
+            ? [
+                {
+                  label: 'Collapse subcategories',
+                  onClick: () => model.collapseSubCategories(),
+                },
+              ]
+            : []),
+          {
+            label: 'Collapse top-level categories',
+            onClick: () => model.collapseTopLevelCategories(),
+          },
+          {
+            label: 'Expand all categories',
+            onClick: () => model.expandAllCategories(),
+          },
         ]}
-      />
+      >
+        <MenuIcon />
+      </CascadingMenuButton>
       <Suspense fallback={<React.Fragment />}>
         {modalInfo ? (
           <CloseConnectionDlg
@@ -188,3 +195,5 @@ export default observer(function HamburgerMenu({
     </>
   )
 })
+
+export default HamburgerMenu

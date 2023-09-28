@@ -33,7 +33,7 @@ const useStyles = makeStyles()(theme => ({
     pointerEvents: 'none',
   },
   majorTickLabel: {
-    fontSize: '11px',
+    fontSize: 11,
     zIndex: 1,
     background: theme.palette.background.paper,
     lineHeight: 'normal',
@@ -47,10 +47,10 @@ const useStyles = makeStyles()(theme => ({
     pointerEvents: 'none',
   },
   refLabel: {
-    fontSize: '11px',
+    fontSize: 11,
     position: 'absolute',
-    left: '2px',
-    top: '-1px',
+    left: 2,
+    top: -1,
     fontWeight: 'bold',
     lineHeight: 'normal',
     zIndex: 1,
@@ -94,50 +94,55 @@ const RenderedRefNameLabels = observer(({ model }: { model: LGV }) => {
   )
 })
 
-const RenderedScalebarLabels = observer(({ model }: { model: LGV }) => {
+const RenderedBlockTicks = function ({
+  block,
+  bpPerPx,
+}: {
+  block: ContentBlock
+  bpPerPx: number
+}) {
   const { classes } = useStyles()
-  const { bpPerPx, staticBlocks } = model
+  const { reversed, start, end } = block
+  const ticks = makeTicks(start, end, bpPerPx, true, false)
+
+  return (
+    <ContentBlockComponent block={block}>
+      {ticks.map(({ type, base }) => {
+        if (type === 'major') {
+          const x = (reversed ? end - base : base - start) / bpPerPx
+          const baseNumber = base + 1
+          return (
+            <div key={base} className={classes.tick} style={{ left: x }}>
+              {baseNumber ? (
+                <Typography className={classes.majorTickLabel}>
+                  {getTickDisplayStr(baseNumber, bpPerPx)}
+                </Typography>
+              ) : null}
+            </div>
+          )
+        }
+        return null
+      })}
+    </ContentBlockComponent>
+  )
+}
+
+const RenderedScalebarLabels = observer(({ model }: { model: LGV }) => {
+  const { staticBlocks, bpPerPx } = model
 
   return (
     <>
-      {staticBlocks.map((block, index) => {
-        const { reversed, start, end, key, widthPx } = block
+      {staticBlocks.map((block, idx) => {
+        const { key, widthPx } = block
+        const k = `${key}-${idx}`
         if (block instanceof ContentBlock) {
-          const ticks = makeTicks(start, end, bpPerPx, true, false)
-
-          return (
-            <ContentBlockComponent key={`${key}-${index}`} block={block}>
-              {ticks.map(tick => {
-                if (tick.type === 'major') {
-                  const x =
-                    (reversed ? end - tick.base : tick.base - start) / bpPerPx
-                  const baseNumber = tick.base + 1
-                  return (
-                    <div
-                      key={tick.base}
-                      className={classes.tick}
-                      style={{ left: x }}
-                    >
-                      {baseNumber ? (
-                        <Typography className={classes.majorTickLabel}>
-                          {getTickDisplayStr(baseNumber, bpPerPx)}
-                        </Typography>
-                      ) : null}
-                    </div>
-                  )
-                }
-                return null
-              })}
-            </ContentBlockComponent>
-          )
-        }
-        if (block instanceof ElidedBlock) {
-          return <ElidedBlockComponent key={key} width={widthPx} />
-        }
-        if (block instanceof InterRegionPaddingBlock) {
+          return <RenderedBlockTicks key={k} block={block} bpPerPx={bpPerPx} />
+        } else if (block instanceof ElidedBlock) {
+          return <ElidedBlockComponent key={k} width={widthPx} />
+        } else if (block instanceof InterRegionPaddingBlock) {
           return (
             <InterRegionPaddingBlockComponent
-              key={key}
+              key={k}
               width={widthPx}
               style={{ background: 'none' }}
               boundary={block.variant === 'boundary'}
@@ -156,8 +161,11 @@ interface ScalebarProps {
   className?: string
 }
 
-const Scalebar = React.forwardRef<HTMLDivElement, ScalebarProps>(
-  ({ model, style, className, ...other }, ref) => {
+const Scalebar = observer(
+  React.forwardRef<HTMLDivElement, ScalebarProps>(function Scalebar2(
+    { model, style, className, ...other },
+    ref,
+  ) {
     const { classes, cx } = useStyles()
 
     const offsetLeft = model.staticBlocks.offsetPx - model.offsetPx
@@ -193,7 +201,7 @@ const Scalebar = React.forwardRef<HTMLDivElement, ScalebarProps>(
         <RenderedRefNameLabels model={model} />
       </Paper>
     )
-  },
+  }),
 )
 
-export default observer(Scalebar)
+export default Scalebar

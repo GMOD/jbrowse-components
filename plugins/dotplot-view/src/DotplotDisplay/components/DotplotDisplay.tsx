@@ -6,7 +6,7 @@ import { getContainingView } from '@jbrowse/core/util'
 import { DotplotDisplayModel } from '../stateModelFactory'
 import { DotplotViewModel } from '../../DotplotView/model'
 
-function DotplotDisplay(props: {
+const DotplotDisplay = observer(function DotplotDisplay(props: {
   model: DotplotDisplayModel
   children?: React.ReactNode
 }) {
@@ -29,6 +29,6 @@ function DotplotDisplay(props: {
       {children}
     </div>
   )
-}
+})
 
-export default observer(DotplotDisplay)
+export default DotplotDisplay

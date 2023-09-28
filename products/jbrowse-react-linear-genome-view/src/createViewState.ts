@@ -1,3 +1,4 @@
+import React from 'react'
 import { PluginConstructor } from '@jbrowse/core/Plugin'
 import { assembleLocString } from '@jbrowse/core/util'
 import { SnapshotIn, onPatch, IJsonPatch } from 'mobx-state-tree'
@@ -32,6 +33,11 @@ interface ViewStateOptions {
   disableAddTracks?: boolean
   onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
   makeWorkerInstance?: () => Worker
+  hydrateFn?: (
+    container: Element | Document,
+    initialChildren: React.ReactNode,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ) => any
 }
 
 export default function createViewState(opts: ViewStateOptions) {
@@ -46,10 +52,12 @@ export default function createViewState(opts: ViewStateOptions) {
     onChange,
     disableAddTracks = false,
     makeWorkerInstance,
+    hydrateFn,
   } = opts
   const { model, pluginManager } = createModel(
     plugins || [],
     makeWorkerInstance,
+    hydrateFn,
   )
   let { defaultSession } = opts
   if (!defaultSession) {

@@ -14,7 +14,7 @@ import { getRoot } from 'mobx-state-tree'
 import {
   getSession,
   isElectron,
-  supportedIndexingAdapters,
+  isSupportedIndexingAdapter,
 } from '@jbrowse/core/util'
 import { getConf } from '@jbrowse/core/configuration'
 import { observer } from 'mobx-react'
@@ -45,7 +45,11 @@ const useStyles = makeStyles()(theme => ({
 
 const steps = ['Enter track data', 'Confirm track type']
 
-function AddTrackWorkflow({ model }: { model: AddTrackModel }) {
+const DefaultAddTrackWorkflow = observer(function ({
+  model,
+}: {
+  model: AddTrackModel
+}) {
   const [activeStep, setActiveStep] = useState(0)
   const { classes } = useStyles()
 
@@ -103,7 +107,7 @@ function AddTrackWorkflow({ model }: { model: AddTrackModel }) {
         if (
           isElectron &&
           textIndexTrack &&
-          supportedIndexingAdapters(trackAdapter.type)
+          isSupportedIndexingAdapter(trackAdapter.type)
         ) {
           const attr = textIndexingConf || {
             attributes: ['Name', 'ID'],
@@ -197,5 +201,5 @@ function AddTrackWorkflow({ model }: { model: AddTrackModel }) {
       </Stepper>
     </div>
   )
-}
-export default observer(AddTrackWorkflow)
+})
+export default DefaultAddTrackWorkflow

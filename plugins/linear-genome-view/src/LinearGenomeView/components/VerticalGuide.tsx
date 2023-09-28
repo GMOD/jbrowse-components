@@ -19,7 +19,13 @@ const useStyles = makeStyles()({
   },
 })
 
-function VerticalGuide({ model, coordX }: { model: LGV; coordX: number }) {
+const VerticalGuide = observer(function VerticalGuide({
+  model,
+  coordX,
+}: {
+  model: LGV
+  coordX: number
+}) {
   const { classes } = useStyles()
   return (
     <Tooltip open placement="top" title={stringify(model.pxToBp(coordX))} arrow>
@@ -32,6 +38,6 @@ function VerticalGuide({ model, coordX }: { model: LGV; coordX: number }) {
       />
     </Tooltip>
   )
-}
+})
 
-export default observer(VerticalGuide)
+export default VerticalGuide

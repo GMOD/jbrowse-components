@@ -7,7 +7,7 @@ import { ConnectionType } from '@jbrowse/core/pluggableElementTypes'
 import { AbstractSessionModel } from '@jbrowse/core/util'
 import { LoadingEllipses } from '@jbrowse/core/ui'
 
-export default observer(function ({
+const ConfigureConnection = observer(function ({
   connectionType,
   model,
   session,
@@ -29,3 +29,5 @@ export default observer(function ({
     </Suspense>
   )
 })
+
+export default ConfigureConnection

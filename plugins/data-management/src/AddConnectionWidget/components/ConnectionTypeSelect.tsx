@@ -6,7 +6,7 @@ import { observer } from 'mobx-react'
 // icons
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 
-export default observer(function ConnectionTypeSelect({
+const ConnectionTypeSelect = observer(function ConnectionTypeSelect({
   connectionTypeChoices,
   connectionType,
   setConnectionType,
@@ -15,11 +15,12 @@ export default observer(function ConnectionTypeSelect({
   connectionType?: ConnectionType
   setConnectionType: (c?: ConnectionType) => void
 }) {
+  const firstChoice = connectionTypeChoices[0]
   useEffect(() => {
     if (!connectionType) {
-      setConnectionType(connectionTypeChoices[0])
+      setConnectionType(firstChoice)
     }
-  })
+  }, [connectionType, firstChoice, setConnectionType])
 
   return (
     <form autoComplete="off">
@@ -62,3 +63,5 @@ export default observer(function ConnectionTypeSelect({
     </form>
   )
 })
+
+export default ConnectionTypeSelect

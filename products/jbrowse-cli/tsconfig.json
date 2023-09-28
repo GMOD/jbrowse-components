@@ -7,8 +7,8 @@
     "outDir": "lib",
     "rootDir": "src",
     "strict": true,
-
-    "target": "es2017",
+    "lib": ["es2021"],
+    "target": "es2021",
     "esModuleInterop": true,
     "skipLibCheck": true
   },

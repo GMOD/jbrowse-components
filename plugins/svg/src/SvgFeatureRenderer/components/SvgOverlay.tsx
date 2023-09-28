@@ -1,10 +1,57 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { bpSpanPx, Feature, Region } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 type LayoutRecord = [number, number, number, number]
 
-interface SvgOverlayProps {
+interface OverlayRectProps extends React.SVGProps<SVGRectElement> {
+  rect?: LayoutRecord
+  region: Region
+  bpPerPx: number
+}
+
+function OverlayRect({
+  rect,
+  region,
+  bpPerPx,
+  ...rectProps
+}: OverlayRectProps) {
+  if (!rect) {
+    return null
+  }
+  const [leftBp, topPx, rightBp, bottomPx] = rect
+  const [leftPx, rightPx] = bpSpanPx(leftBp, rightBp, region, bpPerPx)
+  const rectTop = Math.round(topPx)
+  const screenWidth = (region.end - region.start) / bpPerPx
+  const rectHeight = Math.round(bottomPx - topPx)
+  const width = rightPx - leftPx
+
+  if (leftPx + width < 0) {
+    return null
+  }
+  const leftWithinBlock = Math.max(leftPx, 0)
+  const diff = leftWithinBlock - leftPx
+  const widthWithinBlock = Math.max(1, Math.min(width - diff, screenWidth))
+
+  return (
+    <rect
+      x={leftWithinBlock - 2}
+      y={rectTop - 2}
+      width={widthWithinBlock + 4}
+      height={rectHeight + 4}
+      {...rectProps}
+    />
+  )
+}
+
+const SvgOverlay = observer(function ({
+  displayModel = {},
+  blockKey,
+  region,
+  bpPerPx,
+  movedDuringLastMouseDown,
+  ...handlers
+}: {
   region: Region
   displayModel?: {
     getFeatureByID?: (arg0: string, arg1: string) => LayoutRecord
@@ -56,60 +103,15 @@ interface SvgOverlayProps {
     event: React.MouseEvent<SVGRectElement, MouseEvent>,
     featureId: string,
   ): {}
-}
-
-interface OverlayRectProps extends React.SVGProps<SVGRectElement> {
-  rect?: LayoutRecord
-  region: Region
-  bpPerPx: number
-}
-
-function OverlayRect({
-  rect,
-  region,
-  bpPerPx,
-  ...rectProps
-}: OverlayRectProps) {
-  if (!rect) {
-    return null
-  }
-  const [leftBp, topPx, rightBp, bottomPx] = rect
-  const [leftPx, rightPx] = bpSpanPx(leftBp, rightBp, region, bpPerPx)
-  const rectTop = Math.round(topPx)
-  const screenWidth = (region.end - region.start) / bpPerPx
-  const rectHeight = Math.round(bottomPx - topPx)
-  const width = rightPx - leftPx
-
-  if (leftPx + width < 0) {
-    return null
-  }
-  const leftWithinBlock = Math.max(leftPx, 0)
-  const diff = leftWithinBlock - leftPx
-  const widthWithinBlock = Math.max(1, Math.min(width - diff, screenWidth))
-
-  return (
-    <rect
-      x={leftWithinBlock - 2}
-      y={rectTop - 2}
-      width={widthWithinBlock + 4}
-      height={rectHeight + 4}
-      {...rectProps}
-    />
-  )
-}
-
-function SvgOverlay({
-  displayModel = {},
-  blockKey,
-  region,
-  bpPerPx,
-  movedDuringLastMouseDown,
-  ...handlers
-}: SvgOverlayProps) {
+}) {
   const { selectedFeatureId, featureIdUnderMouse, contextMenuFeature } =
     displayModel
 
   const mouseoverFeatureId = featureIdUnderMouse || contextMenuFeature?.id()
+  const [renderOverlay, setRenderOverlay] = useState(false)
+  useEffect(() => {
+    setRenderOverlay(true)
+  }, [])
 
   function onFeatureMouseDown(
     event: React.MouseEvent<SVGRectElement, MouseEvent>,
@@ -207,7 +209,7 @@ function SvgOverlay({
     return handler(event, mouseoverFeatureId)
   }
 
-  return (
+  return renderOverlay ? (
     <>
       {mouseoverFeatureId ? (
         <OverlayRect
@@ -240,7 +242,7 @@ function SvgOverlay({
         />
       ) : null}
     </>
-  )
-}
+  ) : null
+})
 
-export default observer(SvgOverlay)
+export default SvgOverlay

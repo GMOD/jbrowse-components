@@ -23,7 +23,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default observer(function HierarchicalFab({
+const HierarchicalFab = observer(function ({
   model,
 }: {
   model: HierarchicalTrackSelectorModel
@@ -92,3 +92,5 @@ export default observer(function HierarchicalFab({
     </>
   )
 })
+
+export default HierarchicalFab

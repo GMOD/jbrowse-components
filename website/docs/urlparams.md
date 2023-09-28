@@ -13,7 +13,7 @@ Note that the embedded components like @jbrowse/react-linear-genome-view make no
 assumptions on how URL params are used, so would have to be implemented by the
 consumer of the library
 
-## Simple API for linear genome view
+## Linear genome view (simple)
 
 We provide a simplified URL format specifically designed for launching a single
 linear genome view
@@ -76,8 +76,6 @@ This is a comma separated list of trackIds. You can see your trackId's in the
 config.json. Note, you can also refer to a trackId added by &sessionTracks=
 here. This is only used for launching a single linear genome view.
 
-## More URL parameters
-
 ### &sessionTracks=
 
 If you want to dynamically add a track to the session, you can do so with
@@ -122,37 +120,11 @@ above URL, looks like this when pretty-printed
 ]
 ```
 
-### &session=
+## Session spec
 
-The session parameter, e.g. &session= has a number of different "input formats"
+### Linear genome view
 
-#### Local sessions
-
-The local sessions look like this
-
-https://host/jbrowse2/?session=local-Fjphq8kjY
-
-By default, after a session is loaded, it is stored into localStorage, and then
-the URL bar uses the ?session=local- format to reflect the key of the
-localStorage entry.
-
-#### Shared sessions
-
-If you click the "Share button" in the header bar, it will generate a "shareable
-link" that you can give to other users
-
-https://host/jbrowse2/?session=share-HShsEcnq3i&password=nYzTU
-
-See
-[this FAQ entry for more info about how shared sessions work](/docs/faq/#how-does-the-session-sharing-work-with-shortened-urls-work-in-jbrowse-web)
-
-#### Session spec
-
-Another useful session URL is called a "session spec" or "session
-specification". This provides a way to launch multiple views at once, including
-view types other than the linear genome view
-
-##### Linear Genome View
+We can specify a "session spec" (short for specification) using JSON
 
 ```
 https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-5100","type": "LinearGenomeView","tracks":["gff3tabix_genes","volvox_filtered_vcf","volvox_microarray","volvox_cram"]}]}
@@ -160,7 +132,7 @@ https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=s
 
 [Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-5100","type":"LinearGenomeView","tracks":["gff3tabix_genes","volvox_filtered_vcf","volvox_microarray","volvox_cram"]}]})
 
-Expanded
+Expanded JSON of the contents of the URL
 
 ```json
 {
@@ -185,9 +157,9 @@ at once) and can specify the loc, tracks, assembly, and view type, or other view
 specific parameters (different view types may accept different params, e.g.
 dotplot has two assemblies)
 
-##### Circular view
+### Circular view
 
-Here is a session spec for a Circular View
+Here is an example of a JSON session spec for a Circular View
 
 ```
 https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-5100","type": "CircularView","tracks":["volvox_sv_test"]}]}
@@ -210,7 +182,9 @@ Expanded
 }
 ```
 
-##### Dotplot view
+### Dotplot view
+
+Here is an example of a JSON session spec for a Dotplot View
 
 ```
 https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config_main_thread.json&session=spec-%7B"views":%5B%7B"type":"DotplotView","views":%5B%7B"assembly":"volvox"%7D,%7B"assembly":"volvox"%7D%5D,"tracks":%5B"volvox_fake_synteny"%5D%7D%5D%7D
@@ -236,7 +210,9 @@ Note that this dotplot session spec doesn't have the ability to navigate to
 specific regions on the assembly yet, it just navigates to a whole genome
 overview
 
-##### Spreadsheet view
+### Spreadsheet view
+
+Here is an example of a JSON session spec for a Spreadsheet View
 
 ```
 https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-%7B%22views%22:%5B%7B%22type%22:%22SpreadsheetView%22,%20%22uri%22:%22test_data/volvox/volvox.filtered.vcf.gz%22,%22assembly%22:%22volvox%22%7D%5D%7D
@@ -258,7 +234,9 @@ Expanded
 }
 ```
 
-##### SV inspector
+### SV inspector
+
+Here is an example of a JSON session spec for a SV Inspector View
 
 ```
 https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-%7B"views":%5B%7B"type":"SvInspectorView","uri":"test_data/volvox/volvox.dup.vcf.gz","assembly":"volvox"%7D%5D%7D
@@ -280,13 +258,15 @@ Expanded
 };
 ```
 
-##### Linear synteny view
+### Linear synteny view
+
+Here is an example of a JSON session spec for a Linear Synteny View
 
 ```
-https://jbrowse.org/code/jb2/main/?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"type":"LinearSyntenyView","tracks":["volvox_fake_synteny"],"views":[{"loc":"ctgA:1-100","assembly":"volvox"},{"loc":"ctgA:300-400","assembly":"volvox"}]}]}
+https://jbrowse.org/code/jb2/main/?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"type":"LinearSyntenyView","tracks":["volvox_fake_synteny"],"views":[{"loc":"ctgA:1-30000","assembly":"volvox"},{"loc":"ctgA:1000-31000","assembly":"volvox"}]}]}
 ```
 
-[Live link](https://jbrowse.org/code/jb2/main/?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"type":"LinearSyntenyView","tracks":["volvox_fake_synteny"],"views":[{"loc":"ctgA:1-100","assembly":"volvox"},{"loc":"ctgA:300-400","assembly":"volvox"}]}]})
+[Live link](https://jbrowse.org/code/jb2/main/?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"type":"LinearSyntenyView","tracks":["volvox_fake_synteny"],"views":[{"loc":"ctgA:1-30000","assembly":"volvox"},{"loc":"ctgA:1000-31000","assembly":"volvox"}]}]})
 
 Expanded
 
@@ -297,21 +277,27 @@ Expanded
       "type": "LinearSyntenyView",
       "tracks": ["volvox_fake_synteny"],
       "views": [
-        { "loc": "ctgA:1-100", "assembly": "volvox" },
-        { "loc": "ctgA:300-400", "assembly": "volvox" }
+        { "loc": "ctgA:1-30000", "assembly": "volvox" },
+        { "loc": "ctgA:1000-31000", "assembly": "volvox" }
       ]
     }
   ]
 }
 ```
 
-#### JSON sessions
+## Other session options
 
-Similar to encoded sessions, but more readable, JSON session let you specify the
-input a JSON snapshot of a session session. This is slightly different from a
-session spec, which has extra logic that loads the session. JSON sessions are
-literal session snapshots, like those that might come from the "Export
-session..." process
+Another useful session URL is called a "session spec" or "session
+specification". This provides a way to launch multiple views at once, including
+view types other than the linear genome view
+
+### &session=json-
+
+Similar to encoded sessions, but more readable, `&session=json-` type sessions
+let you specify the input a JSON snapshot of a session session. This is slightly
+different from a session spec, which has extra logic that loads the session.
+JSON sessions are literal session snapshots, like those that might come from the
+"Export session..." process
 
 Example
 
@@ -321,7 +307,7 @@ Example
 
 This loads a session with an extra plugin loaded
 
-#### Encoded sessions
+### &session=encoded-
 
 This is similar to JSON sessions but uses a URL encoding (base64+gzip)
 
@@ -335,3 +321,23 @@ Note that the "Share" button has a gear icon that let's you select "Long URL"
 that produces these URLs. The encoded share links can be used without the
 central session sharing system in place, as the entire session is encoded in the
 URL.
+
+### &session=local-
+
+The local sessions look like this
+
+https://host/jbrowse2/?session=local-Fjphq8kjY
+
+By default, after a session is loaded, it is stored into localStorage, and then
+the URL bar uses the ?session=local- format to reflect the key of the
+localStorage entry.
+
+### &session=share-
+
+If you click the "Share button" in the header bar, it will generate a "shareable
+link" that you can give to other users
+
+https://host/jbrowse2/?session=share-HShsEcnq3i&password=nYzTU
+
+See
+[this FAQ entry for more info about how shared sessions work](/docs/faq/#how-does-the-session-sharing-work-with-shortened-urls-work-in-jbrowse-web)

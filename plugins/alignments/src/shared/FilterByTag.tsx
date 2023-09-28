@@ -11,6 +11,7 @@ import {
 } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
 import { makeStyles } from 'tss-react/mui'
+import { IFilter } from '.'
 
 const useStyles = makeStyles()(theme => ({
   paper: {
@@ -37,7 +38,7 @@ const flagNames = [
   'supplementary alignment',
 ]
 
-function Bitmask(props: { flag?: number; setFlag: Function }) {
+function Bitmask(props: { flag?: number; setFlag: (arg: number) => void }) {
   const { flag = 0, setFlag } = props
   return (
     <>
@@ -69,16 +70,11 @@ function Bitmask(props: { flag?: number; setFlag: Function }) {
     </>
   )
 }
-interface FilterBy {
-  flagExclude: number
-  flagInclude: number
-  readName?: string
-  tagFilter?: { tag: string; value: string }
-}
-function FilterByTagDlg(props: {
+
+const FilterByTagDialog = observer(function (props: {
   model: {
-    filterBy: FilterBy
-    setFilterBy: (arg: FilterBy) => void
+    filterBy: IFilter
+    setFilterBy: (arg: IFilter) => void
   }
   handleClose: () => void
 }) {
@@ -125,9 +121,7 @@ function FilterByTagDlg(props: {
             value={tag}
             onChange={event => setTag(event.target.value)}
             placeholder="Enter tag name"
-            inputProps={{
-              maxLength: 2,
-            }}
+            inputProps={{ maxLength: 2 }}
             error={tag.length === 2 && !validTag}
             helperText={tag.length === 2 && !validTag ? 'Not a valid tag' : ''}
           />
@@ -182,6 +176,6 @@ function FilterByTagDlg(props: {
       </DialogContent>
     </Dialog>
   )
-}
+})
 
-export default observer(FilterByTagDlg)
+export default FilterByTagDialog

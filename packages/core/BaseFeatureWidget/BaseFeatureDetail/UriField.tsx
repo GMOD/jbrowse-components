@@ -3,7 +3,7 @@ import FieldName from './FieldName'
 import { makeStyles } from 'tss-react/mui'
 import BasicValue from './BasicValue'
 
-export const useStyles = makeStyles()({
+const useStyles = makeStyles()({
   field: {
     display: 'flex',
     flexWrap: 'wrap',

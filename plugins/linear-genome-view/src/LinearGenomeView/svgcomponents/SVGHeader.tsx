@@ -1,5 +1,5 @@
 import React from 'react'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, stripAlpha } from '@jbrowse/core/util'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import { useTheme } from '@mui/material'
 
@@ -26,7 +26,7 @@ export default function SVGHeader({
   const assemblyName = assemblyNames.length > 1 ? '' : assemblyNames[0]
   const assembly = assemblyManager.get(assemblyName)
   const theme = useTheme()
-
+  const c = stripAlpha(theme.palette.text.primary)
   const overview = Base1DView.create({
     displayedRegions: JSON.parse(JSON.stringify(displayedRegions)),
     interRegionPaddingWidth: 0,
@@ -40,9 +40,7 @@ export default function SVGHeader({
   overview.setVolatileWidth(width)
   overview.showAllRegions()
   const block = overview.dynamicBlocks.contentBlocks[0]
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const first = visibleRegions.at(0)!
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const last = visibleRegions.at(-1)!
   const firstOverviewPx =
     overview.bpToPx({
@@ -55,15 +53,10 @@ export default function SVGHeader({
       ...last,
       coord: last.reversed ? last.start : last.end,
     }) || 0
-  const c = +showCytobands * cytobandHeight
+  const y = +showCytobands * cytobandHeight
   return (
     <g id="header">
-      <text
-        x={0}
-        y={fontSize}
-        fontSize={fontSize}
-        fill={theme.palette.text.primary}
-      >
+      <text x={0} y={0} dominantBaseline="hanging" fontSize={fontSize} fill={c}>
         {assemblyName}
       </text>
 
@@ -84,10 +77,10 @@ export default function SVGHeader({
         </g>
       ) : null}
 
-      <g transform={`translate(0 ${fontSize + c})`}>
+      <g transform={`translate(0 ${fontSize + y})`}>
         <SVGScalebar model={model} fontSize={fontSize} />
       </g>
-      <g transform={`translate(0 ${rulerHeight + c})`}>
+      <g transform={`translate(0 ${rulerHeight + y})`}>
         <SVGRuler model={model} fontSize={fontSize} />
       </g>
     </g>

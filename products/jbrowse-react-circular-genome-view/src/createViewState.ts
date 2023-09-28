@@ -1,3 +1,4 @@
+import React from 'react'
 import { PluginConstructor } from '@jbrowse/core/Plugin'
 import { autorun } from 'mobx'
 import { SnapshotIn, onPatch, IJsonPatch } from 'mobx-state-tree'
@@ -20,6 +21,12 @@ interface ViewStateOptions {
   aggregateTextSearchAdapters?: AggregateTextSearchAdapters
   configuration?: Record<string, unknown>
   plugins?: PluginConstructor[]
+  makeWorkerInstance?: () => Worker
+  hydrateFn?: (
+    container: Element | Document,
+    initialChildren: React.ReactNode,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ) => any
   defaultSession?: SessionSnapshot
   onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
 }
@@ -32,9 +39,15 @@ export default function createViewState(opts: ViewStateOptions) {
     configuration,
     aggregateTextSearchAdapters,
     plugins,
+    hydrateFn,
+    makeWorkerInstance,
     onChange,
   } = opts
-  const { model, pluginManager } = createModel(plugins || [])
+  const { model, pluginManager } = createModel(
+    plugins || [],
+    makeWorkerInstance,
+    hydrateFn,
+  )
   let { defaultSession } = opts
   if (!defaultSession) {
     defaultSession = {

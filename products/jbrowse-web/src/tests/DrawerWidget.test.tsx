@@ -1,4 +1,4 @@
-import '@testing-library/jest-dom/extend-expect'
+import '@testing-library/jest-dom'
 
 import { fireEvent, getByRole } from '@testing-library/react'
 import { createView, doBeforeEach, hts } from './util'

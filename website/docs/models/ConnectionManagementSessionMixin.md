@@ -64,18 +64,14 @@ breakConnection: (configuration: { [x: string]: any; } & NonEmptyObject & { setS
 
 ```js
 // type signature
-deleteConnection: (
-  configuration: { [x: string]: any } & NonEmptyObject & {
-      setSubschema(slotName: string, data: unknown): any,
-    } & IStateTreeNode<AnyConfigurationSchemaType>,
-) => any
+deleteConnection: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => any
 ```
 
 #### action: addConnectionConf
 
 ```js
 // type signature
-addConnectionConf: (connectionConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<ConfigurationSchemaType<{ name: { type: string; defaultValue: string; description: string; }; assemblyNames: { ...; }; }, ConfigurationSchemaOptions<...>>>) => any
+addConnectionConf: (connectionConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => any
 ```
 
 #### action: clearConnections

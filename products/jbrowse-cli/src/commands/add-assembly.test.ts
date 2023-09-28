@@ -26,6 +26,9 @@ const baseSequence = {
   adapter: {},
 }
 
+// Cleaning up exitCode in Node.js 20, xref https://github.com/jestjs/jest/issues/14501
+afterAll(() => (process.exitCode = 0))
+
 describe('add-assembly', () => {
   setup
     .command(['add-assembly', '{}'])
@@ -443,6 +446,7 @@ describe('add-assembly', () => {
     })
 
   setup
+    .only()
     .command([
       'add-assembly',
       '{"type":"CustomAdapter"}',
@@ -454,7 +458,7 @@ describe('add-assembly', () => {
       'copy',
     ])
     .it('can specify a custom name and alias', async ctx => {
-      expect(ctx.stdoutWrite).toHaveBeenCalledWith(
+      expect(ctx.stdout).toContain(
         'Added assembly "customName" to config.json\n',
       )
       expect(readConf(ctx)).toEqual({

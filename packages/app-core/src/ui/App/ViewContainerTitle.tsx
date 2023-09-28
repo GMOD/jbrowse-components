@@ -25,7 +25,7 @@ const useStyles = makeStyles()(theme => ({
     backgroundColor: theme.palette.secondary.light,
   },
 }))
-export default observer(function ViewContainerTitle({
+const ViewContainerTitle = observer(function ({
   view,
 }: {
   view: IBaseViewModel
@@ -53,3 +53,5 @@ export default observer(function ViewContainerTitle({
     </Tooltip>
   )
 })
+
+export default ViewContainerTitle

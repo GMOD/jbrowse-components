@@ -48,6 +48,7 @@ import {
   BaseRootModelFactory,
 } from '@jbrowse/product-core'
 import { HistoryManagementMixin, RootAppMenuMixin } from '@jbrowse/app-core'
+import { hydrateRoot } from 'react-dom/client'
 
 const PreferencesDialog = lazy(() => import('../components/PreferencesDialog'))
 
@@ -68,6 +69,9 @@ type SessionModelFactory = (args: {
  * composed of
  * - BaseRootModel
  * - InternetAccountsMixin
+ * - HistoryManagementMixin
+ * - AppFocusMixin
+ * - RootAppMenuMixin
  *
  * note: many properties of the root model are available through the session,
  * and we generally prefer using the session model (via e.g. getSession) over
@@ -113,6 +117,7 @@ export default function RootModel({
       version: packageJSON.version,
       isAssemblyEditing: false,
       isDefaultSessionEditing: false,
+      hydrateFn: hydrateRoot,
       pluginsUpdated: false,
       rpcManager: new RpcManager(
         pluginManager,
@@ -458,11 +463,12 @@ export default function RootModel({
               label: 'Open connection...',
               icon: Cable,
               onClick: (session: SessionWithWidgets) => {
-                const widget = session.addWidget(
-                  'AddConnectionWidget',
-                  'addConnectionWidget',
+                session.showWidget(
+                  session.addWidget(
+                    'AddConnectionWidget',
+                    'addConnectionWidget',
+                  ),
                 )
-                session.showWidget(widget)
               },
             },
             { type: 'divider' },
@@ -521,11 +527,12 @@ export default function RootModel({
               icon: ExtensionIcon,
               onClick: () => {
                 if (self.session) {
-                  const widget = self.session.addWidget(
-                    'PluginStoreWidget',
-                    'pluginStoreWidget',
+                  self.session.showWidget(
+                    self.session.addWidget(
+                      'PluginStoreWidget',
+                      'pluginStoreWidget',
+                    ),
                   )
-                  self.session.showWidget(widget)
                 }
               },
             },

@@ -11,7 +11,7 @@ import {
 } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
 
-function SetFeatureHeightDlg(props: {
+const SetFeatureHeightDialog = observer(function (props: {
   model: {
     setFeatureHeight: (arg?: number) => void
     setNoSpacing: (arg?: boolean) => void
@@ -77,6 +77,6 @@ function SetFeatureHeightDlg(props: {
       </DialogContent>
     </Dialog>
   )
-}
+})
 
-export default observer(SetFeatureHeightDlg)
+export default SetFeatureHeightDialog

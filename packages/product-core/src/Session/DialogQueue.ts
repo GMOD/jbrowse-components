@@ -8,7 +8,7 @@ import { isBaseSession } from './BaseSession'
 /**
  * #stateModel DialogQueueSessionMixin
  */
-export function DialogQueueSessionMixin(pluginManager: PluginManager) {
+export function DialogQueueSessionMixin(_pluginManager: PluginManager) {
   return types
     .model('DialogQueueSessionMixin', {})
     .volatile(() => ({

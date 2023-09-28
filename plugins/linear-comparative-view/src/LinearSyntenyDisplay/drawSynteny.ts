@@ -55,8 +55,7 @@ export function drawRef(
   // call, a separate loop below draws larger boxes
   ctx1.fillStyle = colorMap.M
   ctx1.strokeStyle = colorMap.M
-  for (let i = 0; i < featPos.length; i++) {
-    const { p11, p12, p21, p22 } = featPos[i]
+  for (const { p11, p12, p21, p22 } of featPos) {
     const x11 = p11.offsetPx - offsets[0]
     const x12 = p12.offsetPx - offsets[0]
     const x21 = p21.offsetPx - offsets[1]
@@ -89,8 +88,7 @@ export function drawRef(
   // ctx.stroke once is much more efficient than calling stroke() many times
   ctx1.fillStyle = colorMap.M
   ctx1.strokeStyle = colorMap.M
-  for (let i = 0; i < featPos.length; i++) {
-    const { p11, p12, p21, p22, f, cigar } = featPos[i]
+  for (const { p11, p12, p21, p22, f, cigar } of featPos) {
     const x11 = p11.offsetPx - offsets[0]
     const x12 = p12.offsetPx - offsets[0]
     const x21 = p21.offsetPx - offsets[1]

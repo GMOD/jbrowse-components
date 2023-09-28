@@ -10,7 +10,8 @@ import {
 import { DataGrid, GridToolbar } from '@mui/x-data-grid'
 import { BaseCard } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import { measureGridWidth, SimpleFeatureSerialized } from '@jbrowse/core/util'
-import ResizeBar, { useResizeBar } from '@jbrowse/core/ui/ResizeBar'
+import ResizeBar from '@jbrowse/core/ui/ResizeBar'
+import { useResizeBar } from '@jbrowse/core/ui/useResizeBar'
 
 interface Entry {
   sample: string
@@ -54,7 +55,7 @@ function SampleFilters({
 
 export default function VariantSamples(props: {
   feature: SimpleFeatureSerialized
-  descriptions: { FORMAT?: { [key: string]: { Description?: string } } }
+  descriptions: { FORMAT?: Record<string, { Description?: string }> }
 }) {
   const { feature, descriptions = {} } = props
   const { ref, scrollLeft } = useResizeBar()

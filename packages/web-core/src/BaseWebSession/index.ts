@@ -41,6 +41,7 @@ import {
   ThemeManagerSessionMixin,
 } from '@jbrowse/product-core'
 import {
+  AppFocusMixin,
   SessionAssembliesMixin,
   TemporaryAssembliesMixin,
 } from '@jbrowse/app-core'
@@ -61,15 +62,22 @@ export function BaseWebSession({
   const sessionModel = types
     .compose(
       'WebCoreSessionModel',
-      ReferenceManagementSessionMixin(pluginManager),
-      DrawerWidgetSessionMixin(pluginManager),
-      DialogQueueSessionMixin(pluginManager),
-      ThemeManagerSessionMixin(pluginManager),
-      MultipleViewsSessionMixin(pluginManager),
-      SessionTracksManagerSessionMixin(pluginManager),
-      SessionAssembliesMixin(pluginManager, assemblyConfigSchema),
-      TemporaryAssembliesMixin(pluginManager, assemblyConfigSchema),
-      WebSessionConnectionsMixin(pluginManager),
+      types.compose(
+        'WebCoreSessionModelGroupA',
+        ReferenceManagementSessionMixin(pluginManager),
+        DrawerWidgetSessionMixin(pluginManager),
+        DialogQueueSessionMixin(pluginManager),
+        ThemeManagerSessionMixin(pluginManager),
+        MultipleViewsSessionMixin(pluginManager),
+      ),
+      types.compose(
+        'WebCoreSessionModelGroupB',
+        SessionTracksManagerSessionMixin(pluginManager),
+        SessionAssembliesMixin(pluginManager, assemblyConfigSchema),
+        TemporaryAssembliesMixin(pluginManager, assemblyConfigSchema),
+        WebSessionConnectionsMixin(pluginManager),
+        AppFocusMixin(),
+      ),
     )
     .props({
       /**
@@ -352,7 +360,9 @@ export function BaseWebSession({
             label: 'Copy track',
             disabled: isRefSeq,
             onClick: () => {
-              type Display = { displayId: string }
+              interface Display {
+                displayId: string
+              }
               const snap = clone(getSnapshot(config)) as {
                 [key: string]: unknown
                 displays: Display[]

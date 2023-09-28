@@ -1,4 +1,4 @@
-import '@testing-library/jest-dom/extend-expect'
+import '@testing-library/jest-dom'
 import { waitFor } from '@testing-library/react'
 
 import breakpointConfig from '../../test_data/breakpoint/config.json'
@@ -16,9 +16,8 @@ test(
   'breakpoint split view',
   () =>
     mockConsoleWarn(async () => {
-      const { findByTestId, queryAllByTestId } = await createView(
-        breakpointConfig,
-      )
+      const { findByTestId, queryAllByTestId } =
+        await createView(breakpointConfig)
 
       // the breakpoint could be partially loaded so explicitly wait for two items
       await waitFor(() => expect(queryAllByTestId('r1').length).toBe(2), delay)

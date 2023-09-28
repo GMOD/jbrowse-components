@@ -12,10 +12,11 @@ import {
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import { getContainingView } from '@jbrowse/core/util'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 
 // locals
 import Tooltip from '../components/Tooltip'
-import { FilterModel, getUniqueModificationValues } from '../../shared'
+import { FilterModel, IFilter, getUniqueModificationValues } from '../../shared'
 import { createAutorun, modificationColors } from '../../util'
 import { randomColor } from '../../util'
 
@@ -66,6 +67,10 @@ function stateModelFactory(
             tag: types.maybe(types.string),
           }),
         ),
+        /**
+         * #property
+         */
+        jexlFilters: types.optional(types.array(types.string), []),
       }),
     )
     .volatile(() => ({
@@ -82,12 +87,7 @@ function stateModelFactory(
       /**
        * #action
        */
-      setFilterBy(filter: {
-        flagInclude: number
-        flagExclude: number
-        readName?: string
-        tagFilter?: { tag: string; value: string }
-      }) {
+      setFilterBy(filter: IFilter) {
         self.filterBy = cast(filter)
       },
       /**
@@ -95,6 +95,12 @@ function stateModelFactory(
        */
       setColorBy(colorBy?: { type: string; tag?: string }) {
         self.colorBy = cast(colorBy)
+      },
+      /**
+       * #action
+       */
+      setJexlFilters(filters: string[]) {
+        self.jexlFilters = cast(filters)
       },
 
       /**
@@ -190,6 +196,7 @@ function stateModelFactory(
           return {
             ...superProps,
             notReady: !this.ready,
+            filters: self.filters,
             modificationTagMap: Object.fromEntries(modificationTagMap.toJSON()),
 
             // must use getSnapshot because otherwise changes to e.g. just the
@@ -326,6 +333,13 @@ function stateModelFactory(
               onClick: () => self.toggleDrawArcs(),
             },
           ]
+        },
+
+        /**
+         * #getter
+         */
+        get filters() {
+          return new SerializableFilterChain({ filters: self.jexlFilters })
         },
       }
     })

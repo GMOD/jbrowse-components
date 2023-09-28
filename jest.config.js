@@ -3,11 +3,10 @@
 module.exports = {
   roots: ['.', 'packages/', 'products/', 'plugins/'],
   moduleFileExtensions: ['js', 'ts', 'tsx', 'jsx', 'json', 'node'],
+
   transform: {
     '^.+\\.(ts|tsx|js|jsx)$': '<rootDir>/config/jest/babelTransform.js',
     '^.+\\.css$': '<rootDir>/config/jest/cssTransform.js',
-    '^(?!.*\\.(ts|js|tsx|jsx|css|json)$)':
-      '<rootDir>/config/jest/fileTransform.js',
   },
   transformIgnorePatterns: [
     '[/\\\\]node_modules[/\\\\].+\\.(js|jsx)$',
@@ -38,5 +37,6 @@ module.exports = {
     'jest-localstorage-mock',
   ],
   testEnvironmentOptions: { url: 'http://localhost' },
+  testTimeout: 15000,
   testEnvironment: 'jsdom',
 }

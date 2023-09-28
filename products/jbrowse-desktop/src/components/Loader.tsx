@@ -14,7 +14,7 @@ import { loadPluginManager } from './StartScreen/util'
 import JBrowse from './JBrowse'
 import StartScreen from './StartScreen'
 
-export default observer(() => {
+const Loader = observer(() => {
   const [pluginManager, setPluginManager] = useState<PluginManager>()
   const [config, setConfig] = useQueryParam('config', StringParam)
   const [error, setError] = useState<unknown>()
@@ -67,3 +67,5 @@ export default observer(() => {
     </ThemeProvider>
   )
 })
+
+export default Loader

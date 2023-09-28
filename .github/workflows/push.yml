@@ -11,7 +11,7 @@ jobs:
       - name: Use Node.js 20.x
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: '20.5.1'
       - name: Install deps (with cache)
         uses: bahmutov/npm-install@v1
       - name: Test codebase
@@ -29,7 +29,7 @@ jobs:
       - name: Use Node.js 20
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: '20.5.1'
       - name: Install website deps (with cache)
         uses: bahmutov/npm-install@v1
         with:
@@ -138,9 +138,9 @@ jobs:
     name: Build and deploy static react app Storybook site to AWS S3
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Use Node.js 20
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: '20'
       - name: Install deps (with cache)

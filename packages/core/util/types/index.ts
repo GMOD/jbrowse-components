@@ -238,6 +238,13 @@ export function isSelectionContainer(
   )
 }
 
+/** abstract interface for a session allows applying focus to views and widgets */
+export interface SessionWithFocusedViewAndDrawerWidgets
+  extends SessionWithDrawerWidgets {
+  focusedViewId: string | undefined
+  setFocusedViewId(id: string): void
+}
+
 /** minimum interface that all view state models must implement */
 export interface AbstractViewModel {
   id: string
@@ -403,8 +410,30 @@ export function isUriLocation(location: unknown): location is UriLocation {
     !!location.uri
   )
 }
+export function isLocalPathLocation(
+  location: unknown,
+): location is LocalPathLocation {
+  return (
+    typeof location === 'object' &&
+    location !== null &&
+    'localPath' in location &&
+    !!location.localPath
+  )
+}
+
+export function isBlobLocation(location: unknown): location is BlobLocation {
+  return (
+    typeof location === 'object' &&
+    location !== null &&
+    'blobId' in location &&
+    !!location.blobId
+  )
+}
 export class AuthNeededError extends Error {
-  constructor(public message: string, public url: string) {
+  constructor(
+    public message: string,
+    public url: string,
+  ) {
     super(message)
     this.name = 'AuthNeededError'
 
@@ -413,7 +442,10 @@ export class AuthNeededError extends Error {
 }
 
 export class RetryError extends Error {
-  constructor(public message: string, public internetAccountId: string) {
+  constructor(
+    public message: string,
+    public internetAccountId: string,
+  ) {
     super(message)
     this.name = 'RetryError'
   }
@@ -445,9 +477,15 @@ export type FileLocation = LocalPathLocation | UriLocation | BlobLocation
 // These types are slightly different than the MST models representing a
 // location because a blob cannot be stored in a MST, so this is the
 // pre-processed file location
-export type PreUriLocation = { uri: string }
-export type PreLocalPathLocation = { localPath: string }
-export type PreBlobLocation = { blob: File }
+export interface PreUriLocation {
+  uri: string
+}
+export interface PreLocalPathLocation {
+  localPath: string
+}
+export interface PreBlobLocation {
+  blob: File
+}
 export type PreFileLocation =
   | PreUriLocation
   | PreLocalPathLocation

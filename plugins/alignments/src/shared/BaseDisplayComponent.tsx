@@ -26,7 +26,7 @@ const useStyles = makeStyles()(theme => {
   }
 })
 
-export default observer(function ({
+const BaseDisplayComponent = observer(function ({
   model,
   children,
 }: {
@@ -81,3 +81,5 @@ const LoadingBar = observer(function ({
     </div>
   )
 })
+
+export default BaseDisplayComponent

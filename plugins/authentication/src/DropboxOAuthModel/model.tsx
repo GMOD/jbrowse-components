@@ -1,7 +1,6 @@
 import React from 'react'
 import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { UriLocation } from '@jbrowse/core/util/types'
-import { SvgIconProps, SvgIcon } from '@mui/material'
 import { Instance, types } from 'mobx-state-tree'
 
 // locals
@@ -9,14 +8,7 @@ import { DropboxOAuthInternetAccountConfigModel } from './configSchema'
 import baseModel from '../OAuthModel/model'
 import { configSchema as OAuthConfigSchema } from '../OAuthModel'
 import { getDescriptiveErrorMessage } from './util'
-
-export function DropboxIcon(props: SvgIconProps) {
-  return (
-    <SvgIcon {...props}>
-      <path d="M3 6.2L8 9.39L13 6.2L8 3L3 6.2M13 6.2L18 9.39L23 6.2L18 3L13 6.2M3 12.55L8 15.74L13 12.55L8 9.35L3 12.55M18 9.35L13 12.55L18 15.74L23 12.55L18 9.35M8.03 16.8L13.04 20L18.04 16.8L13.04 13.61L8.03 16.8Z" />
-    </SvgIcon>
-  )
-}
+import DropboxIcon from './DropboxIcon'
 
 /**
  * #stateModel DropboxOAuthInternetAccount
@@ -100,9 +92,8 @@ const stateModelFactory = (
           const refreshToken = self.retrieveRefreshToken()
           if (refreshToken) {
             self.removeRefreshToken()
-            const newToken = await self.exchangeRefreshForAccessToken(
-              refreshToken,
-            )
+            const newToken =
+              await self.exchangeRefreshForAccessToken(refreshToken)
             return this.validateToken(newToken, location)
           }
           throw new Error(

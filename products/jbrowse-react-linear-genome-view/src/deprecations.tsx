@@ -2,6 +2,7 @@ import React, { ReactNode } from 'react'
 import { createJBrowseTheme as coreCreateJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeOptions } from '@mui/material/styles'
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function createJBrowseTheme(theme?: ThemeOptions) {
   console.warn(
     'Deprecation warning: `createJBrowseTheme` will be removed in a future ' +

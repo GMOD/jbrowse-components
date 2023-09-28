@@ -22,3 +22,4 @@ export default function register(pluginManager: PluginManager) {
 
 export { default as linearPileupDisplayStateModelFactory } from './model'
 export { default as linearPileupDisplayConfigSchemaFactory } from './configSchema'
+export { SharedLinearPileupDisplayMixin } from './SharedLinearPileupDisplayMixin'
