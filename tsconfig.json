@@ -16,8 +16,7 @@
     "isolatedModules": true,
     "jsx": "react",
     "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true
+    "noFallthroughCasesInSwitch": true
   },
   "exclude": [
     "**/build/",

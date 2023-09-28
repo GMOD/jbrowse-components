@@ -23,17 +23,14 @@ export default function UCSCTrackHubConnection(pluginManager: PluginManager) {
       async connect() {
         const session = getSession(self)
         try {
-          const connectionName = getConf(self, 'name') // NOTE: name comes from the base configuration
+          // NOTE: name comes from the base configuration
+          const connectionName = getConf(self, 'name')
           const hubFileLocation = getConf(self, 'hubTxtLocation')
 
-          const abortHubDownload = new AbortController()
-          const hubData = await fetchAll(
-            hubFileLocation,
-            abortHubDownload.signal,
-          )
+          const hubData = await fetchAll(hubFileLocation)
 
           // create or alias any assemblies
-          const assemblies = getAssemblies(hubData, self as UCSCConnectionModel)
+          const assemblies = getAssemblies(hubData, session)
 
           // TODO: create tracks
         } catch (e) {

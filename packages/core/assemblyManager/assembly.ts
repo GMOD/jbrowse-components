@@ -183,7 +183,7 @@ export default function assemblyFactory(
     }))
     .views(self => ({
       getConf(arg: string | string[]) {
-        return self.configuration ? getConf(self, arg) : undefined
+        return self.configuration ? readConfObject(self.configuration, arg) : undefined
       },
     }))
     .views(self => ({

@@ -28,7 +28,7 @@ export class UnifiedHubData {
 
 export async function fetchAll(
   hubFileLocation: FileLocation,
-  signal: AbortSignal,
+  signal?: AbortSignal,
 ) {
   if (!isUriLocation(hubFileLocation)) {
     throw new Error('only uri locations are supported for hub files')
@@ -89,8 +89,8 @@ export async function fetchAll(
 
 export async function fetchHubFile(
   hubLocation: FileLocation,
-  signal: AbortSignal,
-): Promise<HubFile> {
+  signal?: AbortSignal,
+) {
   try {
     const hubFileText = await openLocation(hubLocation).readFile({
       encoding: 'utf8',
@@ -107,7 +107,7 @@ export async function fetchHubFile(
 
 export async function fetchGenomesFile(
   genomesLoc: FileLocation,
-  signal: AbortSignal,
+  signal?: AbortSignal,
 ) {
   const genomesFileText = await openLocation(genomesLoc).readFile({
     encoding: 'utf8',
@@ -118,7 +118,7 @@ export async function fetchGenomesFile(
 
 export async function fetchTrackDbFile(
   trackDbLoc: FileLocation,
-  signal: AbortSignal,
+  signal?: AbortSignal,
 ) {
   const text = await openLocation(trackDbLoc).readFile({
     encoding: 'utf8',
