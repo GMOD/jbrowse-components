@@ -11,6 +11,12 @@ const JobCard = observer(function JobCard({ job }: { job: NewJob }) {
           <strong>{'Name: '}</strong>
           {job.name}
         </Typography>
+        {job.statusMessage ? (
+          <Typography variant="body1">
+            <strong>{'Message: '}</strong>
+            {job.statusMessage}
+          </Typography>
+        ) : null}
       </CardContent>
     </Card>
   )
