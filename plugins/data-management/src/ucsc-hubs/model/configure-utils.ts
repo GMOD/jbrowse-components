@@ -1,10 +1,5 @@
-import { AbstractSessionModel, getSession } from '@jbrowse/core/util'
-import { UCSCConnectionModel } from '.'
-import { UnifiedHubData } from '../fetching-utils'
-import { AnyConfigurationModel, getConf } from '@jbrowse/core/configuration'
-import assemblyConfigSchema, {
-  AssemblyConfigModel,
-} from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
+import { AbstractSessionModel, notEmpty } from '@jbrowse/core/util'
+import { AssemblyConfigModel } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import {
   generateUnsupportedTrackConf,
   generateUnknownTrackConf,
@@ -14,57 +9,79 @@ import { RaStanza, TrackDbFile } from '@gmod/ucsc-hub'
 import { FileLocation, isUriLocation, objectHash } from '@jbrowse/core/util'
 import { SnapshotIn } from 'mobx-state-tree'
 
+import { UnifiedHubData } from '../fetching-utils'
+import { getConf } from '@jbrowse/core/configuration'
+
+type Conf = AssemblyConfigModel | SnapshotIn<AssemblyConfigModel>
+
 /** find matching or to-be-created assemblies in our hub data */
 export function getAssemblies(
   hubData: UnifiedHubData,
   session: AbstractSessionModel,
 ) {
+  const { assemblyManager } = session
   const genomesFile = hubData.genomes
-
   const assemblies = new Map<
     string,
     {
-      conf: AssemblyConfigModel | SnapshotIn<AssemblyConfigModel>
+      conf: Conf
       isNew?: boolean
     }
   >()
   for (const [genomeName, genome] of genomesFile) {
-    const assemblyConf = session.assemblyManager.get(genomeName)?.configuration
+    const assemblyConf = assemblyManager.get(genomeName)?.configuration
     if (assemblyConf) {
       assemblies.set(genomeName, { conf: assemblyConf })
-      continue
-    }
-
-    // TODO: try harder to match assemblies, maybe configuring refname aliases on the fly
-
-    // we can't find a matching assembly, make a new configuration for it
-    const twoBitPath = genome.get('twoBitPath')
-    const twoBitLocation = twoBitPath
-      ? {
-          uri: new URL(twoBitPath, hubData.genomesBaseUri).href,
-          type: 'UriLocation',
-        }
-      : undefined
-    const chromSizes = genome.get('chromSizes')
-    const chromSizesLocation = chromSizes
-      ? {
-          uri: new URL(chromSizes, hubData.genomesBaseUri).href,
-          type: 'UriLocation',
-        }
-      : undefined
-    assemblies.set(genomeName, {
-      isNew: true,
-      conf: {
-        name: genomeName,
-        sequence: {
-          adapter: {
-            type: 'TwoBitAdapter',
-            twoBitLocation,
-            chromSizesLocation,
+    } else {
+      // TODO: try harder to match assemblies, maybe configuring refname aliases on the fly
+      // we can't find a matching assembly, make a new configuration for it
+      const twoBitPath = genome.get('twoBitPath')
+      const twoBitLocation = twoBitPath
+        ? {
+            uri: new URL(twoBitPath, hubData.genomesBaseUri).href,
+            type: 'UriLocation',
+          }
+        : undefined
+      const chromSizes = genome.get('chromSizes')
+      const chromSizesLocation = chromSizes
+        ? {
+            uri: new URL(chromSizes, hubData.genomesBaseUri).href,
+            type: 'UriLocation',
+          }
+        : undefined
+      assemblies.set(genomeName, {
+        isNew: true,
+        conf: {
+          name: genomeName,
+          sequence: {
+            adapter: {
+              type: 'TwoBitAdapter',
+              twoBitLocation,
+              chromSizesLocation,
+            },
           },
         },
-      },
-    })
+      })
+    }
+    const db = genome.get('trackDb')
+    if (!db) {
+      throw new Error('genomesFile not found on hub')
+    }
+    const base = new URL(genomeFile, hubUri)
+    const loc = hubUri
+      ? {
+          uri: new URL(db, base).href,
+          locationType: 'UriLocation' as const,
+        }
+      : {
+          localPath: db,
+          locationType: 'LocalPathLocation' as const,
+        }
+    const trackDb = await fetchTrackDbFile(loc)
+    const seqAdapter = readConfObject(conf, ['sequence', 'adapter'])
+    const tracks = generateTracks(trackDb, loc, genomeName, seqAdapter)
+    self.addTrackConfs(tracks)
+    map[genomeName] = tracks.length
   }
   return assemblies
 }
@@ -73,58 +90,60 @@ export function generateTracks(
   trackDb: TrackDbFile,
   trackDbLoc: FileLocation,
   assemblyName: string,
-  sequenceAdapter: any,
+  sequenceAdapter: unknown,
 ) {
-  const tracks: any = []
-
-  for (const [trackName, track] of trackDb.entries()) {
-    const trackKeys = [...track.keys()]
-    const parentTrackKeys = new Set([
-      'superTrack',
-      'compositeTrack',
-      'container',
-      'view',
-    ])
-    if (trackKeys.some(key => parentTrackKeys.has(key))) {
-      continue
-    }
-    const parentTracks = []
-    let currentTrackName = trackName
-    do {
-      currentTrackName = trackDb.get(currentTrackName)?.get('parent') || ''
-      if (currentTrackName) {
-        ;[currentTrackName] = currentTrackName.split(' ')
-        parentTracks.push(trackDb.get(currentTrackName))
-      }
-    } while (currentTrackName)
-    parentTracks.reverse()
-    const categories = parentTracks
-      .map(p => p?.get('shortLabel'))
-      .filter((f): f is string => !!f)
-    const res = makeTrackConfig(
-      track,
-      categories,
-      trackDbLoc,
-      trackDb,
-      sequenceAdapter,
+  const parentTrackKeys = new Set([
+    'superTrack',
+    'compositeTrack',
+    'container',
+    'view',
+  ])
+  return [...trackDb.entries()]
+    .filter(([_trackName, track]) =>
+      [...track.keys()].some(key => parentTrackKeys.has(key)),
     )
-    tracks.push({
-      ...res,
-      trackId: `ucsc-trackhub-${objectHash(res)}`,
-      assemblyNames: [assemblyName],
+    .map(([trackName, track]) => {
+      const parentTracks = []
+      let currentTrackName = trackName
+      do {
+        currentTrackName = trackDb.get(currentTrackName)?.get('parent') || ''
+        if (currentTrackName) {
+          ;[currentTrackName] = currentTrackName.split(' ')
+          parentTracks.push(trackDb.get(currentTrackName))
+        }
+      } while (currentTrackName)
+      const categories = parentTracks
+        .reverse()
+        .map(p => p?.get('shortLabel'))
+        .filter(notEmpty)
+      const res = makeTrackConfig({
+        track,
+        categories,
+        trackDbLoc,
+        trackDb,
+        sequenceAdapter,
+      })
+      return {
+        ...res,
+        trackId: `ucsc-trackhub-${objectHash(res)}`,
+        assemblyNames: [assemblyName],
+      }
     })
-  }
-
-  return tracks
 }
 
-function makeTrackConfig(
-  track: RaStanza,
-  categories: string[],
-  trackDbLoc: FileLocation,
-  trackDb: TrackDbFile,
-  sequenceAdapter: any,
-) {
+function makeTrackConfig({
+  track,
+  categories,
+  trackDbLoc,
+  trackDb,
+  sequenceAdapter,
+}: {
+  track: RaStanza
+  categories: string[]
+  trackDbLoc: FileLocation
+  trackDb: TrackDbFile
+  sequenceAdapter: unknown
+}) {
   function makeLoc(relative: string, base: { uri: string }) {
     return {
       uri: new URL(relative, base.uri).href,

@@ -16,10 +16,13 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const ConnectionConfigurator: FC<{
+const ConnectionConfigurator = observer(function ({
+  connectionConfiguration,
+  session,
+}: {
   connectionConfiguration: Instance<typeof configSchema>
   session: AbstractSessionModel
-}> = ({ connectionConfiguration, session }) => {
+}) {
   // we use our own little internal MST tree for state management
   const model = useMemo(
     () =>
@@ -54,11 +57,11 @@ const ConnectionConfigurator: FC<{
 
       {assemblies
         ? [...assemblies.entries()].map(([name, { isNew, conf }]) => {
-            return <div>{name}</div>
+            return <div key={name}>{name}</div>
           })
         : null}
     </div>
   )
-}
+})
 
-export default observer(ConnectionConfigurator)
+export default ConnectionConfigurator
