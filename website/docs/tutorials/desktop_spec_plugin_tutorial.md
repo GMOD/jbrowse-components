@@ -391,7 +391,7 @@ function LocalFileChooser(props: {
                 if (file) {
                   if (isElectron) {
                     // here we are setting the location information for the file selected
-                    // these features are necessary for the vcftabixadapter
+                    // these features are necessary for the VcfTabixAdapter
                     setLocation({
                       localPath: (file as File & { path: string }).path,
                       locationType: 'LocalPathLocation',
@@ -486,7 +486,7 @@ onClick={() => {
 ```
 
 You can see how easy the execute function is to use now. Where we currently have
-"echo ${localPath}" is where we're going to write our CLI commands.
+`"echo ${localPath}"` is where we're going to write our CLI commands.
 
 If relevant when writing your own plugin, you can put any string of valid CLI
 commands here and your child process will execute them to the best of its
@@ -501,9 +501,9 @@ For this plugin, the script we will run against the plain .vcf files provided
 through the JBrowse desktop UI will look like the following:
 
 ```bash
-bcftools sort "myfile.vcf" > "myfile.vcf.sorted.vcf"
-bgzip "myfile.vcf.sorted.vcf"
-tabix "myfile.vcf.sorted.vcf.gz
+bcftools sort myfile.vcf > myfile.vcf.sorted.vcf
+bgzip myfile.vcf.sorted.vcf
+tabix myfile.vcf.sorted.vcf.gz
 ```
 
 Remember to install these libraries (detailed in the

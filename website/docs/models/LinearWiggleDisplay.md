@@ -10,7 +10,7 @@ info
 
 ### Source file
 
-[plugins/wiggle/src/LinearWiggleDisplay/models/model.tsx](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/LinearWiggleDisplay/models/model.tsx)
+[plugins/wiggle/src/LinearWiggleDisplay/models/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/LinearWiggleDisplay/models/model.ts)
 
 extends `SharedWiggleMixin`
 
