@@ -16,6 +16,7 @@ import {
   getSession,
   measureGridWidth,
   useDebounce,
+  useLocalStorage,
 } from '@jbrowse/core/util'
 import {
   AnyConfigurationModel,
@@ -63,11 +64,18 @@ const FacetedSelector = observer(function FacetedSelector({
   const { ref, scrollLeft } = useResizeBar()
 
   const [filterText, setFilterText] = useState('')
-  const [showOptions, setShowOptions] = useState(false)
+  const [showOptions, setShowOptions] = useLocalStorage(
+    'facet-showTableOptions',
+    false,
+  )
   const [info, setInfo] = useState<InfoArgs>()
   const [useShoppingCart, setUseShoppingCart] = useState(false)
-  const [hideSparse, setHideSparse] = useState(true)
-  const [panelWidth, setPanelWidth] = useState(400)
+  const [showSparse, setShowSparse] = useLocalStorage('facet-showSparse', false)
+  const [showFilters, setShowFilters] = useLocalStorage(
+    'facet-showFilters',
+    true,
+  )
+  const [panelWidth, setPanelWidth] = useLocalStorage('facet-panelWidth', 400)
   const session = getSession(model)
   const filterDebounced = useDebounce(filterText, 400)
   const tracks = view.tracks as AnyConfigurationModel[]
@@ -75,9 +83,7 @@ const FacetedSelector = observer(function FacetedSelector({
     (
       state: Record<string, string[]>,
       update: { key: string; val: string[] },
-    ) => {
-      return { ...state, [update.key]: update.val }
-    },
+    ) => ({ ...state, [update.key]: update.val }),
     {},
   )
 
@@ -104,19 +110,19 @@ const FacetedSelector = observer(function FacetedSelector({
   const filteredNonMetadataKeys = useMemo(
     () =>
       nonMetadataKeys.filter(f =>
-        !hideSparse ? true : rows.map(r => r[f]).filter(f => !!f).length > 5,
+        showSparse ? true : rows.map(r => r[f]).filter(f => !!f).length > 5,
       ),
-    [hideSparse, rows],
+    [showSparse, rows],
   )
 
   const filteredMetadataKeys = useMemo(
     () =>
       [...new Set(rows.flatMap(row => getRootKeys(row.metadata)))].filter(f =>
-        !hideSparse
+        showSparse
           ? true
           : rows.map(r => r.metadata[f]).filter(f => !!f).length > 5,
       ),
-    [hideSparse, rows],
+    [showSparse, rows],
   )
 
   const fields = useMemo(
@@ -186,7 +192,7 @@ const FacetedSelector = observer(function FacetedSelector({
           ]),
       ),
     }))
-  }, [filteredMetadataKeys, visible, filteredNonMetadataKeys, hideSparse, rows])
+  }, [filteredMetadataKeys, visible, filteredNonMetadataKeys, showSparse, rows])
 
   const widthsDebounced = useDebounce(widths, 200)
 
@@ -266,11 +272,13 @@ const FacetedSelector = observer(function FacetedSelector({
         />
       ) : null}
       <FacetedHeader
-        setHideSparse={setHideSparse}
+        setShowSparse={setShowSparse}
+        setShowFilters={setShowFilters}
         setShowOptions={setShowOptions}
         setFilterText={setFilterText}
         setUseShoppingCart={setUseShoppingCart}
-        hideSparse={hideSparse}
+        showFilters={showFilters}
+        showSparse={showSparse}
         showOptions={showOptions}
         filterText={filterText}
         useShoppingCart={useShoppingCart}
@@ -289,7 +297,7 @@ const FacetedSelector = observer(function FacetedSelector({
         <div
           style={{
             height: window.innerHeight * frac,
-            width: window.innerWidth * frac - panelWidth,
+            width: window.innerWidth * frac - (showFilters ? panelWidth : 0),
           }}
         >
           <ResizeBar
@@ -347,22 +355,31 @@ const FacetedSelector = observer(function FacetedSelector({
             rowHeight={25}
           />
         </div>
-        <ResizeHandle
-          vertical
-          onDrag={dist => setPanelWidth(panelWidth - dist)}
-          style={{ background: 'grey', width: 5 }}
-        />
-        <div
-          style={{ width: panelWidth, overflowY: 'auto', overflowX: 'hidden' }}
-        >
-          <FacetFilters
-            width={panelWidth - 10}
-            rows={rows}
-            columns={columns}
-            dispatch={dispatch}
-            filters={filters}
-          />
-        </div>
+
+        {showFilters ? (
+          <>
+            <ResizeHandle
+              vertical
+              onDrag={dist => setPanelWidth(panelWidth - dist)}
+              style={{ marginLeft: 5, background: 'grey', width: 5 }}
+            />
+            <div
+              style={{
+                width: panelWidth,
+                overflowY: 'auto',
+                overflowX: 'hidden',
+              }}
+            >
+              <FacetFilters
+                width={panelWidth - 10}
+                rows={rows}
+                columns={columns}
+                dispatch={dispatch}
+                filters={filters}
+              />
+            </div>
+          </>
+        ) : null}
       </div>
     </>
   )
