@@ -245,9 +245,11 @@ const FacetedSelector = observer(function FacetedSelector({
     tracks.map(t => t.configuration.trackId as string),
   )
 
-  const arrFilters = Object.entries(filters).filter(f => f[1].length > 0)
+  const arrFilters = Object.entries(filters)
+    .filter(f => f[1].length > 0)
+    .map(([key, val]) => [key, new Set<string>(val)] as const)
   const filteredRows = rows.filter(row =>
-    arrFilters.every(([key, val]) => val.includes(row[key])),
+    arrFilters.every(([key, val]) => val.has(row[key] as string)),
   )
   return (
     <>
