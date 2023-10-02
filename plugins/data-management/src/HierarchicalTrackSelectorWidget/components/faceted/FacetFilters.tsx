@@ -18,10 +18,21 @@ export default function FacetFilters({
   const uniqs = new Map(
     facets.map(f => [f.field, new Map<string, number>()] as const),
   )
-  for (const facet of facets) {
-    const elt = uniqs.get(facet.field)!
-    for (const row of rows) {
-      const key = `${row[facet.field] || ''}`
+  const filterKeys = Object.keys(filters)
+  const facetKeys = facets.map(f => f.field)
+  const ret = new Set<string>()
+  for (const entry of filterKeys) {
+    ret.add(entry)
+  }
+  for (const entry of facetKeys) {
+    ret.add(entry)
+  }
+
+  let currentRows = rows
+  for (const facet of ret) {
+    const elt = uniqs.get(facet)!
+    for (const row of currentRows) {
+      const key = `${row[facet] || ''}`
       const val = elt.get(key)
       // we don't allow filtering on empty yet
       if (key) {
@@ -32,6 +43,10 @@ export default function FacetFilters({
         }
       }
     }
+    const filter = filters[facet]?.length ? new Set(filters[facet]) : undefined
+    currentRows = currentRows.filter(row => {
+      return filter !== undefined ? filter.has(row[facet] as string) : true
+    })
   }
 
   return (
