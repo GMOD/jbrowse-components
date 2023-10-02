@@ -9,6 +9,9 @@ import fetch from 'node-fetch'
 import { getFileStream } from './generateFastaIndex'
 import { generateFastaIndex } from '@gmod/faidx'
 
+// @ts-ignore
+import parseJson from 'json-parse-even-better-errors'
+
 import { autoUpdater } from 'electron-updater'
 
 const { unlink, readFile, copyFile, readdir, writeFile } = fs.promises
@@ -26,46 +29,30 @@ function stringify(obj: unknown) {
 }
 
 async function readRecentSessions(): Promise<RecentSession[]> {
-  let data = ''
   try {
-    data = await readFile(recentSessionsPath, 'utf8')
-    return JSON.parse(data)
+    return parseJson(await readFile(recentSessionsPath, 'utf8'))
   } catch (e) {
-    console.error(
-      `Failed to parse existing recentSessionsPath, data was ${data}`,
-      e,
+    throw new Error(
+      `Failed to load recent sessions file ${recentSessionsPath}: ${e}`,
     )
-    return []
   }
 }
 
 async function readSession(
   sessionPath: string,
 ): Promise<{ assemblies?: unknown[] }> {
-  let data = ''
   try {
-    data = await readFile(sessionPath, 'utf8')
-    return JSON.parse(data)
+    return parseJson(await readFile(sessionPath, 'utf8'))
   } catch (e) {
-    console.error(
-      `Failed to parse session at "${sessionPath}", data was ${data}`,
-      e,
-    )
-    return {}
+    throw new Error(`Failed to read session ${sessionPath}: ${e}`)
   }
 }
 
 async function readQuickstart(quickstartPath: string): Promise<unknown> {
-  let data = ''
   try {
-    data = await readFile(quickstartPath, 'utf8')
-    return JSON.parse(data)
+    return parseJson(await readFile(quickstartPath, 'utf8'))
   } catch (e) {
-    console.error(
-      `Failed to parse quickstart at "${quickstartPath}", data was ${data}`,
-      e,
-    )
-    return {}
+    throw new Error(`Failed to read quickstart file ${quickstartPath}: ${e}`)
   }
 }
 
@@ -586,7 +573,7 @@ ipcMain.handle(
   'renameSession',
   async (_event: unknown, path: string, newName: string) => {
     const sessions = await readRecentSessions()
-    const session = JSON.parse(await readFile(path, 'utf8'))
+    const session = parseJson(await readFile(path, 'utf8'))
     const idx = sessions.findIndex(row => row.path === path)
     if (idx !== -1) {
       sessions[idx].name = newName
