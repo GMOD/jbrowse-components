@@ -18,6 +18,7 @@ export {
   WithWebWorker,
   WithTwoLinearGenomeViews,
   WithReact18,
+  WithErrorHandler,
 } from './examples'
 
 export default { title: 'Source code for examples' }
