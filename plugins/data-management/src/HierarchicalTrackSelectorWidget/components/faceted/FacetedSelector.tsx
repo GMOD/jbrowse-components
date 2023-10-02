@@ -32,6 +32,7 @@ import FacetedHeader from './FacetedHeader'
 import FacetFilters from './FacetFilters'
 import { getRootKeys } from './util'
 import { useResizeBar } from '@jbrowse/core/ui/useResizeBar'
+import { makeStyles } from 'tss-react/mui'
 
 const nonMetadataKeys = ['category', 'adapter', 'description'] as const
 
@@ -41,6 +42,14 @@ export interface InfoArgs {
   conf: AnyConfigurationModel
 }
 
+const useStyles = makeStyles()({
+  cell: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+})
+
 const frac = 0.75
 
 const FacetedSelector = observer(function FacetedSelector({
@@ -48,6 +57,7 @@ const FacetedSelector = observer(function FacetedSelector({
 }: {
   model: HierarchicalTrackSelectorModel
 }) {
+  const { classes } = useStyles()
   const { view, selection } = model
   const { pluginManager } = getEnv(model)
   const { ref, scrollLeft } = useResizeBar()
@@ -178,7 +188,7 @@ const FacetedSelector = observer(function FacetedSelector({
     }))
   }, [filteredMetadataKeys, visible, filteredNonMetadataKeys, hideSparse, rows])
 
-  const widthsDebounced = useDebounce(widths, 400)
+  const widthsDebounced = useDebounce(widths, 200)
 
   const columns = [
     {
@@ -187,7 +197,7 @@ const FacetedSelector = observer(function FacetedSelector({
       renderCell: (params: GridCellParams) => {
         const { value, id, row } = params
         return (
-          <>
+          <div className={classes.cell}>
             <SanitizedHTML html={value as string} />
             <IconButton
               onClick={e =>
@@ -200,7 +210,7 @@ const FacetedSelector = observer(function FacetedSelector({
             >
               <MoreHoriz />
             </IconButton>
-          </>
+          </div>
         )
       },
       width: widthsDebounced.name ?? 100,
@@ -210,7 +220,11 @@ const FacetedSelector = observer(function FacetedSelector({
       width: widthsDebounced[e] ?? 100,
       renderCell: (params: GridCellParams) => {
         const { value } = params
-        return value ? <SanitizedHTML html={value as string} /> : ''
+        return (
+          <div className={classes.cell}>
+            {value ? <SanitizedHTML html={value as string} /> : ''}
+          </div>
+        )
       },
     })),
     ...filteredMetadataKeys.map(e => ({
@@ -218,7 +232,11 @@ const FacetedSelector = observer(function FacetedSelector({
       width: widthsDebounced[e] ?? 100,
       renderCell: (params: GridCellParams) => {
         const { value } = params
-        return value ? <SanitizedHTML html={value as string} /> : ''
+        return (
+          <div className={classes.cell}>
+            {value ? <SanitizedHTML html={value as string} /> : ''}
+          </div>
+        )
       },
     })),
   ]
