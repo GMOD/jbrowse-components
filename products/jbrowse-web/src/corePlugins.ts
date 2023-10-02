@@ -9,6 +9,7 @@ import DataManagement from '@jbrowse/plugin-data-management'
 import DotplotView from '@jbrowse/plugin-dotplot-view'
 import GtfPlugin from '@jbrowse/plugin-gtf'
 import Gff3 from '@jbrowse/plugin-gff3'
+import JobsManagementPlugin from '@jbrowse/plugin-jobs-management'
 import LegacyJBrowse from '@jbrowse/plugin-legacy-jbrowse'
 import LinearGenomeView from '@jbrowse/plugin-linear-genome-view'
 import LinearComparativeView from '@jbrowse/plugin-linear-comparative-view'
@@ -39,6 +40,7 @@ const corePlugins = [
   DotplotView,
   GtfPlugin,
   Gff3,
+  JobsManagementPlugin,
   LegacyJBrowse,
   LinearComparativeView,
   Lollipop,

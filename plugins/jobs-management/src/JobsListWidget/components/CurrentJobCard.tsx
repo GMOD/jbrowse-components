@@ -62,6 +62,7 @@ const CurrentJobCard = observer(function CurrentJobCard({
             color="inherit"
             disabled={clicked || job.progressPct === 0}
             onClick={() => {
+              job.setStatusMessage('Aborted via cancel button')
               job.cancelCallback && job.cancelCallback()
               setClicked(true)
             }}
