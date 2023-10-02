@@ -18,11 +18,18 @@ export default function FacetFilters({
   const uniqs = new Map(
     facets.map(f => [f.field, new Map<string, number>()] as const),
   )
+
+  // this code "stages the facet filters" in order that the user has selected
+  // them, which relies on the js behavior that the order of the returned keys is
+  // related to the insertion order.
   const filterKeys = Object.keys(filters)
   const facetKeys = facets.map(f => f.field)
   const ret = new Set<string>()
   for (const entry of filterKeys) {
-    ret.add(entry)
+    // give non-empty filters priority
+    if (filters[entry]?.length) {
+      ret.add(entry)
+    }
   }
   for (const entry of facetKeys) {
     ret.add(entry)
