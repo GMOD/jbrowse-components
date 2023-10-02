@@ -21,6 +21,8 @@ import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
+import { useResizeBar } from '@jbrowse/core/ui/useResizeBar'
+import { makeStyles } from 'tss-react/mui'
 
 // icons
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
@@ -31,8 +33,6 @@ import { matches } from '../../util'
 import FacetedHeader from './FacetedHeader'
 import FacetFilters from './FacetFilters'
 import { getRootKeys } from './util'
-import { useResizeBar } from '@jbrowse/core/ui/useResizeBar'
-import { makeStyles } from 'tss-react/mui'
 
 const nonMetadataKeys = ['category', 'adapter', 'description'] as const
 
@@ -241,9 +241,14 @@ const FacetedSelector = observer(function FacetedSelector({
     })),
   ]
 
-  const shownTrackIds = tracks.map(t => t.configuration.trackId as string)
+  const shownTrackIds = new Set(
+    tracks.map(t => t.configuration.trackId as string),
+  )
 
   const arrFilters = Object.entries(filters).filter(f => f[1].length > 0)
+  const filteredRows = rows.filter(row =>
+    arrFilters.every(([key, val]) => val.includes(row[key])),
+  )
   return (
     <>
       {info ? (
@@ -301,9 +306,7 @@ const FacetedSelector = observer(function FacetedSelector({
             scrollLeft={scrollLeft}
           />
           <DataGrid
-            rows={rows.filter(row =>
-              arrFilters.every(([key, val]) => val.includes(row[key])),
-            )}
+            rows={filteredRows}
             columnVisibilityModel={visible}
             onColumnVisibilityModelChange={newModel => setVisible(newModel)}
             columnHeaderHeight={35}
@@ -313,12 +316,12 @@ const FacetedSelector = observer(function FacetedSelector({
             onRowSelectionModelChange={userSelectedIds => {
               if (!useShoppingCart) {
                 const a1 = shownTrackIds
-                const a2 = userSelectedIds as string[]
+                const a2 = new Set(userSelectedIds as string[])
                 // synchronize the user selection with the view
                 // see share https://stackoverflow.com/a/33034768/2129219
                 transaction(() => {
-                  a1.filter(x => !a2.includes(x)).map(t => view.hideTrack(t))
-                  a2.filter(x => !a1.includes(x)).map(t => view.showTrack(t))
+                  ;[...a1].filter(x => !a2.has(x)).map(t => view.hideTrack(t))
+                  ;[...a2].filter(x => !a1.has(x)).map(t => view.showTrack(t))
                 })
               } else {
                 const root = getRoot(model)
@@ -330,7 +333,9 @@ const FacetedSelector = observer(function FacetedSelector({
               }
             }}
             rowSelectionModel={
-              useShoppingCart ? selection.map(s => s.trackId) : shownTrackIds
+              useShoppingCart
+                ? selection.map(s => s.trackId)
+                : [...shownTrackIds]
             }
             slots={{ toolbar: showOptions ? GridToolbar : null }}
             slotProps={{
