@@ -19,6 +19,11 @@ const useStyles = makeStyles()({
   pointer: {
     cursor: 'pointer',
   },
+  cell: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
 })
 
 function DateSinceLastUsed({
@@ -28,12 +33,13 @@ function DateSinceLastUsed({
 }) {
   const { updated = 0, lastModified } = row
   const date = new Date(updated)
+  const { classes } = useStyles()
   return row.showDateTooltip ? (
     <Tooltip title={date.toLocaleString('en-US')}>
-      <div>{lastModified}</div>
+      <div className={classes.cell}>{lastModified}</div>
     </Tooltip>
   ) : (
-    <div>{lastModified}</div>
+    <div className={classes.cell}>{lastModified}</div>
   )
 }
 
@@ -50,7 +56,7 @@ export default function RecentSessionsList({
   setSelectedSessions: (arg: RecentSessionData[]) => void
   sessions: RecentSessionData[]
 }) {
-  const { classes } = useStyles()
+  const { classes, cx } = useStyles()
   const { ref, scrollLeft } = useResizeBar()
 
   const now = Date.now()
@@ -80,8 +86,8 @@ export default function RecentSessionsList({
         e,
         measureGridWidth(
           rows.map(r => r[e as keyof (typeof rows)[0]]),
-          { maxWidth: 600, stripHTML: true },
-        ),
+          { stripHTML: true },
+        ) + 20,
       ]),
     ),
   } as Record<string, number | undefined>)
@@ -145,7 +151,7 @@ export default function RecentSessionsList({
               const { value } = params
               return (
                 <Link
-                  className={classes.pointer}
+                  className={cx(classes.pointer, classes.cell)}
                   onClick={async () => {
                     try {
                       setPluginManager(await loadPluginManager(params.row.path))
@@ -168,7 +174,7 @@ export default function RecentSessionsList({
               const { value } = params
               return (
                 <Tooltip title={String(value)}>
-                  <div>{value as string}</div>
+                  <div className={classes.cell}>{value as string}</div>
                 </Tooltip>
               )
             },
