@@ -15,6 +15,12 @@ const useStyles = makeStyles()(theme => ({
     margin: theme.spacing(1),
     width: '100%',
   },
+
+  cell: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
 }))
 
 interface Entry {
@@ -101,10 +107,14 @@ export default function DataGridDetails({
               field: val,
               renderCell: params => {
                 const value = params.value as string
-                return isUriLocation(value) ? (
-                  <UriLink value={value} />
-                ) : (
-                  <>{getStr(value)}</>
+                return (
+                  <div className={classes.cell}>
+                    {isUriLocation(value) ? (
+                      <UriLink value={value} />
+                    ) : (
+                      <>{getStr(value)}</>
+                    )}
+                  </div>
                 )
               },
               width: widths[index],

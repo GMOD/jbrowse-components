@@ -27,6 +27,12 @@ const useStyles = makeStyles()({
   content: {
     minWidth: 800,
   },
+
+  cell: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
 })
 
 export default function SetColorDialog({
@@ -143,6 +149,7 @@ function SourcesGrid({
   onChange: (arg: Source[]) => void
   showTips: boolean
 }) {
+  const { classes } = useStyles()
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const [selected, setSelected] = useState([] as string[])
 
@@ -246,10 +253,14 @@ function SourcesGrid({
               sortingOrder: [null],
               renderCell: (params: GridCellParams) => {
                 const { value } = params
-                return isUriLocation(value) ? (
-                  <UriLink value={value} />
-                ) : (
-                  getStr(value)
+                return (
+                  <div className={classes.cell}>
+                    {isUriLocation(value) ? (
+                      <UriLink value={value} />
+                    ) : (
+                      <>{getStr(value)}</>
+                    )}
+                  </div>
                 )
               },
               // @ts-ignore

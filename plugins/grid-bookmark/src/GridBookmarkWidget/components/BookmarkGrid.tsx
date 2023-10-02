@@ -22,6 +22,11 @@ const useStyles = makeStyles()(() => ({
   link: {
     cursor: 'pointer',
   },
+  cell: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
 }))
 
 const BookmarkGrid = observer(function ({
@@ -29,7 +34,7 @@ const BookmarkGrid = observer(function ({
 }: {
   model: GridBookmarkModel
 }) {
-  const { classes } = useStyles()
+  const { classes, cx } = useStyles()
   const [dialogRow, setDialogRow] = useState<IExtendedLabeledRegionModel>()
   const { ref, scrollLeft } = useResizeBar()
   const {
@@ -95,7 +100,7 @@ const BookmarkGrid = observer(function ({
               width: widths[1],
               renderCell: ({ value, row }) => (
                 <Link
-                  className={classes.link}
+                  className={cx(classes.link, classes.cell)}
                   href="#"
                   onClick={async event => {
                     event.preventDefault()
