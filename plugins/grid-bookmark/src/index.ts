@@ -57,7 +57,7 @@ export default class extends Plugin {
               navigateNewestBookmark() {
                 const session = getSession(self)
                 const bookmarkWidget = self.activateBookmarkWidget()
-                const regions = bookmarkWidget.bookmarkedRegions
+                const regions = bookmarkWidget.bookmarks
                 if (regions?.length) {
                   self.navTo(regions.at(-1)!)
                 } else {

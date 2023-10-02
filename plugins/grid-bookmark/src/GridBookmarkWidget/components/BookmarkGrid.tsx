@@ -33,7 +33,7 @@ const BookmarkGrid = observer(function ({
   const [dialogRow, setDialogRow] = useState<IExtendedLabeledRegionModel>()
   const { ref, scrollLeft } = useResizeBar()
   const {
-    bookmarkedRegions,
+    bookmarks,
     bookmarksWithValidAssemblies,
     selectedAssemblies,
     selectedBookmarks,
@@ -41,7 +41,7 @@ const BookmarkGrid = observer(function ({
 
   const session = getSession(model)
   const selectedSet = new Set(selectedAssemblies)
-  const rows = bookmarkedRegions
+  const rows = bookmarks
     .filter(r => selectedSet.has(r.assemblyName))
     .map((region, index) => {
       const { assemblyName, ...rest } = region
