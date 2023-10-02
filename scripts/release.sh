@@ -45,7 +45,7 @@ mv tmp.json website/docusaurus.config.json
 
 # Generates a changelog with a section added listing the packages that were
 # included in this release
-CHANGELOG=$(GITHUB_AUTH="$GITHUB_AUTH" yarn changelog "$VERSION")
+CHANGELOG=$(GITHUB_AUTH="$GITHUB_AUTH" yarn changelog --next-version "$VERSION")
 # Add the changelog to the top of CHANGELOG.md
 echo "$CHANGELOG" >tmp.md
 echo "" >>tmp.md
