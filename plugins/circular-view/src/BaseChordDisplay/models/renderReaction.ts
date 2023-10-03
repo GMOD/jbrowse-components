@@ -1,10 +1,11 @@
 import clone from 'clone'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { getSession, getContainingView } from '@jbrowse/core/util'
+import { CircularViewModel } from '../../CircularView/models/CircularView'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function renderReactionData(self: any) {
-  const view = getContainingView(self)
+  const view = getContainingView(self) as CircularViewModel
   const { rendererType } = self
   const { rpcManager } = getSession(view)
 

@@ -157,7 +157,9 @@ function stateModelFactory(pluginManager: PluginManager) {
       // e.g. read vs ref
       beforeDestroy() {
         const session = getSession(self)
-        self.assemblyNames.forEach(asm => session.removeTemporaryAssembly(asm))
+        for (const name of self.assemblyNames) {
+          session.removeTemporaryAssembly?.(name)
+        }
       },
 
       onSubviewAction(actionName: string, path: string, args?: unknown[]) {

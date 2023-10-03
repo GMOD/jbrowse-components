@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
-import { FileLocation } from '@jbrowse/core/util/types'
+import { FileLocation, isSessionWithShareURL } from '@jbrowse/core/util/types'
 import { FileSelector } from '@jbrowse/core/ui'
 import {
   Button,
@@ -90,7 +90,7 @@ const ImportBookmarksDialog = observer(function ({
   const [error, setError] = useState<unknown>()
   const [shareLink, setShareLink] = useState('')
   const session = getSession(model)
-  const { assemblyNames, shareURL } = getSession(model)
+  const { assemblyNames } = session
   const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0])
   const [expanded, setExpanded] = useState('shareLinkAccordion')
 
@@ -161,9 +161,9 @@ const ImportBookmarksDialog = observer(function ({
                 model.importBookmarks(
                   await getBookmarksFromFile(location, selectedAsm),
                 )
-              } else if (shareLink) {
+              } else if (shareLink && isSessionWithShareURL(session)) {
                 model.importBookmarks(
-                  await getBookmarksFromShareLink(shareLink, shareURL),
+                  await getBookmarksFromShareLink(shareLink, session.shareURL),
                 )
               }
               onClose()

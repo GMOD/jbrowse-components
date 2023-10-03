@@ -104,7 +104,7 @@ export default function UCSCTrackHubConnection(pluginManager: PluginManager) {
             `There was a problem connecting to the UCSC Track Hub "${self.configuration.name}". Please make sure you have entered a valid hub.txt file. The error that was thrown is: "${e}"`,
             'error',
           )
-          session.breakConnection(self.configuration)
+          session.breakConnection?.(self.configuration)
         }
       },
     }))

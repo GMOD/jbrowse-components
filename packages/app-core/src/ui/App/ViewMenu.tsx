@@ -4,7 +4,7 @@ import {
   IconButtonProps as IconButtonPropsType,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { getSession } from '@jbrowse/core/util'
+import { AbstractSessionModel, getSession } from '@jbrowse/core/util'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 
@@ -22,7 +22,10 @@ const ViewMenu = observer(function ({
   IconProps: SvgIconProps
 }) {
   const { menuItems } = model
-  const session = getSession(model)
+  const session = getSession(model) as AbstractSessionModel & {
+    moveViewDown: (arg: string) => void
+    moveViewUp: (arg: string) => void
+  }
 
   const items = [
     ...(session.views.length > 1

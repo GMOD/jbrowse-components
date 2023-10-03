@@ -75,7 +75,7 @@ const ImportSessionWidget = observer(function ({
           )
         } else {
           const sessionText = await acceptedFiles[0].text()
-          getSession(model).setSession(JSON.parse(sessionText).session)
+          getSession(model).setSession?.(JSON.parse(sessionText).session)
         }
       } catch (e) {
         console.error(e)

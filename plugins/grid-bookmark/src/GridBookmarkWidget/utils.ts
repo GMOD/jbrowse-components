@@ -19,7 +19,7 @@ export async function navToBookmark(
   const session = getSession(model)
   try {
     // get the focused view
-    let view = views.find(view => view === session.focusedView) as MaybeLGV
+    let view = views.find(view => view.id === session.focusedViewId) as MaybeLGV
 
     // check if the focused view is the appropriate assembly, if not proceed
     if (view?.assemblyNames[0] !== assembly) {

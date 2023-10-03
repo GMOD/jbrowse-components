@@ -38,7 +38,10 @@ const Selector = observer(
   }) => {
     const session = getSession(model)
     const { tracks, sessionTracks } = session
-    const allTracks = [...tracks, ...sessionTracks] as AnyConfigurationModel[]
+    const allTracks = [
+      ...tracks,
+      ...(sessionTracks || []),
+    ] as AnyConfigurationModel[]
     const filteredTracks = allTracks.filter(t => f(t, assembly2, assembly1))
     const resetTrack = filteredTracks[0]?.trackId || ''
     const [value, setValue] = useState(resetTrack)

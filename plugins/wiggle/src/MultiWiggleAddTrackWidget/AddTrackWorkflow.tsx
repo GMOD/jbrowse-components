@@ -1,7 +1,12 @@
 import React, { useState } from 'react'
 import { Button, Paper, TextField } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { getSession, isElectron } from '@jbrowse/core/util'
+import {
+  getSession,
+  isElectron,
+  isSessionModelWithWidgets,
+  isSessionWithAddTracks,
+} from '@jbrowse/core/util'
 import { storeBlobLocation } from '@jbrowse/core/util/tracks'
 import { AddTrackModel } from '@jbrowse/plugin-data-management'
 
@@ -93,20 +98,24 @@ export default function MultiWiggleWidget({ model }: { model: AddTrackModel }) {
               ? { bigWigs }
               : { subadapters: bigWigs }
 
-          session.addTrackConf({
-            trackId,
-            type: 'MultiQuantitativeTrack',
-            name: trackName,
-            assemblyNames: [model.assembly],
-            adapter: {
-              type: 'MultiWiggleAdapter',
-              ...obj,
-            },
-          })
-          model.view?.showTrack(trackId)
+          if (isSessionWithAddTracks(session)) {
+            session.addTrackConf({
+              trackId,
+              type: 'MultiQuantitativeTrack',
+              name: trackName,
+              assemblyNames: [model.assembly],
+              adapter: {
+                type: 'MultiWiggleAdapter',
+                ...obj,
+              },
+            })
 
+            model.view?.showTrack(trackId)
+          }
           model.clearData()
-          session.hideWidget(model)
+          if (isSessionModelWithWidgets(session)) {
+            session.hideWidget(model)
+          }
         }}
       >
         Submit

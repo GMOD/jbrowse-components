@@ -34,10 +34,8 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
   useEffect(() => {
     // sets the focused view id based on a click within the LGV; necessary for subviews to be focused properly
     function handleSelectView(e: Event) {
-      if (e.target instanceof Element) {
-        if (ref?.current && ref.current.contains(e.target)) {
-          session.setFocusedViewId(model.id)
-        }
+      if (e.target instanceof Element && ref?.current?.contains(e.target)) {
+        session.setFocusedViewId?.(model.id)
       }
     }
 
@@ -47,7 +45,7 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
       document.removeEventListener('mousedown', handleSelectView)
       document.removeEventListener('keydown', handleSelectView)
     }
-  }, [ref, session, model])
+  }, [session, model])
 
   if (!initialized && !error) {
     return <LoadingEllipses variant="h6" />

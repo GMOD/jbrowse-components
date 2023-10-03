@@ -32,17 +32,20 @@ export default function (pm: PluginManager) {
                     const now = +Date.now()
                     const trackId = `multitrack-${now}-sessionTrack`
 
-                    getSession(model).addTrackConf({
-                      type: 'MultiQuantitativeTrack',
-                      trackId,
-                      name: arg.name,
-                      assemblyNames,
-                      adapter: {
-                        type: 'MultiWiggleAdapter',
-                        subadapters,
-                      },
-                    })
-                    model.view.showTrack(trackId)
+                    const session = getSession(model)
+                    if (isSessionWithAddTracks(session)) {
+                      session.addTrackConf({
+                        type: 'MultiQuantitativeTrack',
+                        trackId,
+                        name: arg.name,
+                        assemblyNames,
+                        adapter: {
+                          type: 'MultiWiggleAdapter',
+                          subadapters,
+                        },
+                      })
+                      model.view.showTrack(trackId)
+                    }
                   }
                   getSession(model).queueDialog(handleClose => [
                     ConfirmDialog,
