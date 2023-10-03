@@ -37,14 +37,20 @@ const AssemblySelector = observer(function ({
         input={<OutlinedInput label={label} />}
         renderValue={selected => selected.join(', ')}
       >
-        <MenuItem value="all">
+        <MenuItem
+          onClickCapture={event => {
+            // onClickCapture allows us to avoid the parent Select onChange from triggering
+            if (isAllSelected) {
+              model.setSelectedAssemblies([])
+            } else {
+              model.setSelectedAssemblies(undefined)
+            }
+            event.preventDefault()
+          }}
+        >
           <Checkbox
             checked={isAllSelected}
             indeterminate={!isAllSelected && selectedAssemblies.length > 0}
-            onChange={event => {
-              model.setSelectedAssemblies(event.target.checked ? undefined : [])
-              event.stopPropagation()
-            }}
           />
           <ListItemText primary="Select all" />
         </MenuItem>
