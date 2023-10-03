@@ -120,6 +120,10 @@ const ShareBookmarksDialog = observer(function ({
             }}
           />
         )}
+        <DialogContentText>
+          The URL should be pasted into the "Import from share link" field in
+          the "Import" form found in the "Bookmarked regions" drawer.
+        </DialogContentText>
       </DialogContent>
       <DialogActions>
         <Button
