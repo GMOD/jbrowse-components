@@ -1,6 +1,10 @@
 import React, { useMemo, useState } from 'react'
 import { Button, Step, StepContent, StepLabel, Stepper } from '@mui/material'
-import { getSession, getEnv } from '@jbrowse/core/util'
+import {
+  getSession,
+  getEnv,
+  isSessionModelWithWidgets,
+} from '@jbrowse/core/util'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { ConnectionType } from '@jbrowse/core/pluggableElementTypes'
@@ -98,7 +102,9 @@ const AddConnectionWidget = observer(function ({ model }: { model: unknown }) {
                         session.notify('No config model to add')
                       }
 
-                      session.hideWidget(model)
+                      if (isSessionModelWithWidgets(session)) {
+                        session.hideWidget(model)
+                      }
                     } else {
                       setActiveStep(activeStep + 1)
                     }

@@ -14,7 +14,7 @@ import {
 import { makeStyles } from 'tss-react/mui'
 import copy from 'copy-to-clipboard'
 
-import { getSession } from '@jbrowse/core/util'
+import { getSession, isSessionWithShareURL } from '@jbrowse/core/util'
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 
@@ -52,10 +52,14 @@ const ShareBookmarksDialog = observer(function ({
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
+        if (!isSessionWithShareURL(session)) {
+          throw new Error('No shareURL configured')
+        }
         setLoading(true)
         const snap = getSnapshot(bookmarksToShare)
 
         const locationUrl = new URL(window.location.href)
+
         const result = await shareSessionToDynamo(
           snap,
           session.shareURL,
@@ -83,9 +87,7 @@ const ShareBookmarksDialog = observer(function ({
   }, [bookmarksToShare, session])
   return (
     <Dialog open onClose={onClose} title="Share bookmarks">
-      <DialogContent
-        style={{ display: 'flex', flexFlow: 'column', gap: '5px' }}
-      >
+      <DialogContent>
         <Alert severity="info">
           {shareAll ? (
             <>

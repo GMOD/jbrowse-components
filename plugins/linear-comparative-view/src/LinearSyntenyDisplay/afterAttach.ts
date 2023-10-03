@@ -29,7 +29,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
   addDisposer(
     self,
     autorun(() => {
-      const view = getContainingView(self)
+      const view = getContainingView(self) as LinearSyntenyViewModel
       if (!view.initialized) {
         return
       }
@@ -50,7 +50,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
   addDisposer(
     self,
     autorun(() => {
-      const view = getContainingView(self)
+      const view = getContainingView(self) as LinearSyntenyViewModel
       if (!view.initialized) {
         return
       }

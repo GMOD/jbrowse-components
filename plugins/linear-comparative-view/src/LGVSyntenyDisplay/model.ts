@@ -17,6 +17,7 @@ import { when } from 'mobx'
 
 // locals
 import { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LSV = LinearSyntenyViewModel
 
@@ -47,7 +48,7 @@ function findPosInCigar(cigar: string[], startX: number) {
 async function navToSynteny(feature: Feature, self: IAnyStateTreeNode) {
   const session = getSession(self)
   const track = getContainingTrack(self)
-  const view = getContainingView(self)
+  const view = getContainingView(self) as LinearGenomeViewModel
   const reg = view.dynamicBlocks.contentBlocks[0]
   const cigar = feature.get('CIGAR')
   const strand = feature.get('strand')

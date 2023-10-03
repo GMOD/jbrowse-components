@@ -1519,7 +1519,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       afterCreate() {
         function handler(e: KeyboardEvent) {
           const session = getSession(self)
-          if (session.focusedView === self && (e.ctrlKey || e.metaKey)) {
+          if (session.focusedViewId === self.id && (e.ctrlKey || e.metaKey)) {
             if (e.code === 'ArrowLeft') {
               e.preventDefault()
               // pan left

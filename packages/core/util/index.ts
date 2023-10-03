@@ -208,7 +208,7 @@ export function springAnimate(
 export function findParentThatIs<T extends (a: IAnyStateTreeNode) => boolean>(
   node: IAnyStateTreeNode,
   predicate: T,
-): TypeTestedByPredicate<T> & IAnyStateTreeNode {
+): TypeTestedByPredicate<T> {
   return findParentThat(node, predicate)
 }
 
@@ -1141,6 +1141,7 @@ export function getTickDisplayStr(totalBp: number, bpPerPx: number) {
 }
 
 export function getViewParams(model: IAnyStateTreeNode, exportSVG?: boolean) {
+  // @ts-expect-error
   const { dynamicBlocks, staticBlocks, offsetPx } = getContainingView(model)
   const b = dynamicBlocks?.contentBlocks[0] || {}
   const staticblock = staticBlocks?.contentBlocks[0] || {}

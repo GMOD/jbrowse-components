@@ -13,7 +13,7 @@ import { Dialog } from '@jbrowse/core/ui'
 import { getSnapshot } from 'mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
   dialogContent: {
@@ -25,7 +25,10 @@ const SequenceSearchDialog = observer(function ({
   model,
   handleClose,
 }: {
-  model: { assemblyNames: string[]; toggleTrack(trackId: string): void }
+  model: {
+    assemblyNames: string[]
+    showTrack: (trackId: string) => void
+  }
   handleClose: () => void
 }) {
   const { classes } = useStyles()
@@ -94,24 +97,26 @@ const SequenceSearchDialog = observer(function ({
               const session = getSession(model)
               const { assemblyManager } = session
               const assemblyName = model.assemblyNames[0]
-              session.addTrackConf({
-                trackId,
-                name: `Sequence search ${value}`,
-                assemblyNames: [assemblyName],
-                type: 'FeatureTrack',
-                adapter: {
-                  type: 'SequenceSearchAdapter',
-                  search: value,
-                  searchForward,
-                  searchReverse,
-                  caseInsensitive,
-                  sequenceAdapter: getSnapshot(
-                    assemblyManager.get(assemblyName)?.configuration.sequence
-                      .adapter,
-                  ),
-                },
-              })
-              model.toggleTrack(trackId)
+              if (isSessionWithAddTracks(session)) {
+                session.addTrackConf({
+                  trackId,
+                  name: `Sequence search ${value}`,
+                  assemblyNames: [assemblyName],
+                  type: 'FeatureTrack',
+                  adapter: {
+                    type: 'SequenceSearchAdapter',
+                    search: value,
+                    searchForward,
+                    searchReverse,
+                    caseInsensitive,
+                    sequenceAdapter: getSnapshot(
+                      assemblyManager.get(assemblyName)?.configuration.sequence
+                        .adapter,
+                    ),
+                  },
+                })
+                model.showTrack(trackId)
+              }
             }
             handleClose()
           }}
