@@ -61,7 +61,7 @@ export default function createModel(
       ),
     })
     .volatile(self => ({
-      error: undefined as Error | undefined,
+      error: undefined as unknown,
       rpcManager: new RpcManager(pluginManager, self.config.configuration.rpc, {
         WebWorkerRpcDriver: {
           makeWorkerInstance,
@@ -93,8 +93,8 @@ export default function createModel(
       /**
        * #action
        */
-      setError(errorMessage: Error | undefined) {
-        self.error = errorMessage
+      setError(error: unknown) {
+        self.error = error
       },
       /**
        * #action

@@ -116,9 +116,8 @@ export function createBaseTrackModel(
         return (
           isSessionModelWithConfigEditing(session) &&
           (adminMode ||
-            sessionTracks.find(
-              (track: { trackId: string }) =>
-                track.trackId === self.configuration?.trackId,
+            sessionTracks?.find(
+              track => track.trackId === self.configuration?.trackId,
             ))
         )
       },
@@ -129,21 +128,6 @@ export function createBaseTrackModel(
        */
       setMinimized(flag: boolean) {
         self.minimized = flag
-      },
-      /**
-       * #action
-       */
-      activateConfigurationUI() {
-        const session = getSession(self)
-        const view = getContainingView(self)
-        if (isSessionModelWithConfigEditing(session)) {
-          // @ts-expect-error
-          const trackConf = session.editTrackConfiguration(self.configuration)
-          if (trackConf && trackConf !== self.configuration) {
-            view.hideTrack(self.configuration)
-            view.showTrack(trackConf)
-          }
-        }
       },
 
       /**

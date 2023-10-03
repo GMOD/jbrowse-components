@@ -1,7 +1,5 @@
 yarn run v1.22.18 $ lerna-changelog 2.6.3
 
-## Unreleased (2023-08-12)
-
 #### :rocket: Enhancement
 
 - Other
@@ -55,8 +53,6 @@ yarn run v1.22.18 $ lerna-changelog 2.6.3
 - Robert Buels ([@rbuels](https://github.com/rbuels)) Done in 1.50s.
 
 yarn run v1.22.18 $ lerna-changelog 2.6.2
-
-## Unreleased (2023-07-12)
 
 #### :rocket: Enhancement
 
@@ -118,8 +114,6 @@ yarn run v1.22.18 $ lerna-changelog 2.6.2
   in 1.55s.
 
 yarn run v1.22.18 $ lerna-changelog 2.6.1
-
-## Unreleased (2023-06-08)
 
 #### :rocket: Enhancement
 

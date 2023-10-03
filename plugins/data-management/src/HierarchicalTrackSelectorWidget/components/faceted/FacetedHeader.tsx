@@ -13,22 +13,26 @@ import { HierarchicalTrackSelectorModel } from '../../model'
 export default function FacetedHeader({
   setFilterText,
   setUseShoppingCart,
-  setHideSparse,
+  setShowSparse,
+  setShowFilters,
   setShowOptions,
   showOptions,
-  hideSparse,
+  showSparse,
+  showFilters,
   useShoppingCart,
   filterText,
   model,
 }: {
   setFilterText: (arg: string) => void
   setUseShoppingCart: (arg: boolean) => void
-  setHideSparse: (arg: boolean) => void
+  setShowSparse: (arg: boolean) => void
+  setShowFilters: (arg: boolean) => void
   setShowOptions: (arg: boolean) => void
   filterText: string
   showOptions: boolean
   useShoppingCart: boolean
-  hideSparse: boolean
+  showSparse: boolean
+  showFilters: boolean
   model: HierarchicalTrackSelectorModel
 }) {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
@@ -78,9 +82,15 @@ export default function FacetedHeader({
             checked: useShoppingCart,
           },
           {
-            label: 'Hide sparse metadata columns',
-            onClick: () => setHideSparse(!hideSparse),
-            checked: hideSparse,
+            label: 'Show sparse metadata columns',
+            onClick: () => setShowSparse(!showSparse),
+            checked: showSparse,
+            type: 'checkbox',
+          },
+          {
+            label: 'Show facet filters',
+            onClick: () => setShowFilters(!showFilters),
+            checked: showFilters,
             type: 'checkbox',
           },
           {

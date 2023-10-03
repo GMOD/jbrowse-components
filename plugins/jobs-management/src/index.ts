@@ -17,7 +17,7 @@ export default class extends Plugin {
     pluginManager.addWidgetType(() => {
       return new WidgetType({
         name: 'JobsListWidget',
-        heading: 'Running jobs',
+        heading: 'Jobs list',
         configSchema: JobsListConfigSchema,
         stateModel: JobsListStateModelFactory(pluginManager),
         ReactComponent: lazy(
@@ -40,6 +40,7 @@ export default class extends Plugin {
             let jobStatusWidget = widgets.get('JobsList')
             if (!jobStatusWidget) {
               jobStatusWidget = session.addWidget('JobsListWidget', 'JobsList')
+              session.showWidget(jobStatusWidget)
             } else {
               session.showWidget(jobStatusWidget)
             }

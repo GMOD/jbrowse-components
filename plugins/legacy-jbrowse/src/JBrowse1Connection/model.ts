@@ -34,16 +34,13 @@ export default function (pluginManager: PluginManager) {
           if (!assemblyName) {
             throw new Error('assembly name required for JBrowse 1 connection')
           }
-          const assemblyConf = session.assemblies.find(
+          const conf = session.assemblies.find(
             a => readConfObject(a, 'name') === assemblyName,
           )
-          if (!assemblyConf) {
+          if (!conf) {
             throw new Error(`Assembly "${assemblyName}" not found`)
           }
-          const sequenceAdapter = readConfObject(assemblyConf, [
-            'sequence',
-            'adapter',
-          ])
+          const sequenceAdapter = readConfObject(conf, ['sequence', 'adapter'])
 
           // @ts-expect-error
           const jb2Tracks = config.tracks?.map(jb1Track => ({
@@ -62,7 +59,7 @@ export default function (pluginManager: PluginManager) {
             `There was a problem connecting to the JBrowse 1 data directory "${self.name}". Please make sure you have entered a valid location. The error that was thrown is: "${error}"`,
             'error',
           )
-          session.breakConnection(self.configuration)
+          session.breakConnection?.(self.configuration)
         }
       },
     }))

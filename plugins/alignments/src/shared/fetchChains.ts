@@ -41,6 +41,7 @@ export interface ChainData {
 export async function fetchChains(
   self: LinearReadArcsDisplayModel | LinearReadCloudDisplayModel,
 ) {
+  // @ts-expect-error
   const { rpcSessionId: sessionId } = getContainingTrack(self)
   const { rpcManager } = getSession(self)
   const view = getContainingView(self) as LGV

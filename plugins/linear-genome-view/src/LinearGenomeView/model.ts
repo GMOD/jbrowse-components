@@ -242,7 +242,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       volatileWidth: undefined as number | undefined,
       minimumBlockWidth: 3,
       draggingTrackId: undefined as undefined | string,
-      volatileError: undefined as undefined | Error,
+      volatileError: undefined as unknown,
 
       // array of callbacks to run after the next set of the displayedRegions,
       // which is basically like an onLoad
@@ -535,7 +535,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setError(error: Error | undefined) {
+      setError(error: unknown) {
         self.volatileError = error
       },
       /**
@@ -1519,7 +1519,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       afterCreate() {
         function handler(e: KeyboardEvent) {
           const session = getSession(self)
-          if (session.focusedView === self && (e.ctrlKey || e.metaKey)) {
+          if (session.focusedViewId === self.id && (e.ctrlKey || e.metaKey)) {
             if (e.code === 'ArrowLeft') {
               e.preventDefault()
               // pan left

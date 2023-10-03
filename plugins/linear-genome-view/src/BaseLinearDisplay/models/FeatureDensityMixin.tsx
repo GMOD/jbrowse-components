@@ -66,7 +66,7 @@ export default function FeatureDensityMixin() {
        * #getter
        */
       get featureDensityStatsReady() {
-        const view = getContainingView(self)
+        const view = getContainingView(self) as LGV
         return (
           self.currStatsBpPerPx === view.bpPerPx &&
           (!!self.featureDensityStats || !!self.userBpPerPxLimit)

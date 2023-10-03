@@ -23,7 +23,7 @@ const useStyles = makeStyles()(theme => ({
   focusedBackground: {
     background: theme.palette.secondary.light,
     svg: {
-      fill: 'white',
+      fill: theme.palette.secondary.contrastText,
     },
   },
 }))
@@ -33,16 +33,15 @@ const MiniControls = observer(function ({
 }: {
   model: LinearGenomeViewModel
 }) {
-  const { classes } = useStyles()
-  const { bpPerPx, maxBpPerPx, minBpPerPx, scaleFactor, hideHeader } = model
-  const session = getSession(model)
+  const { classes, cx } = useStyles()
+  const { id, bpPerPx, maxBpPerPx, minBpPerPx, scaleFactor, hideHeader } = model
+  const { focusedViewId } = getSession(model)
   return hideHeader ? (
     <Paper
-      className={
-        session.focusedViewId === model.id
-          ? `${classes.background} ${classes.focusedBackground}`
-          : classes.background
-      }
+      className={cx(
+        classes.background,
+        focusedViewId === id ? classes.focusedBackground : undefined,
+      )}
     >
       <CascadingMenuButton menuItems={model.menuItems()}>
         <ArrowDown fontSize="small" />
@@ -56,7 +55,7 @@ const MiniControls = observer(function ({
       </IconButton>
       <IconButton
         data-testid="zoom_in"
-        onClick={() => model.zoom(model.bpPerPx / 2)}
+        onClick={() => model.zoom(bpPerPx / 2)}
         disabled={bpPerPx <= minBpPerPx + 0.0001 || scaleFactor !== 1}
       >
         <ZoomIn fontSize="small" />

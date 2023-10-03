@@ -25,6 +25,7 @@ export const Job = types
 
 export interface NewJob extends SnapshotIn<typeof Job> {
   cancelCallback(): void
+  setStatusMessage(msg?: string): void
 }
 
 export default function f(_pluginManager: PluginManager) {
@@ -35,6 +36,7 @@ export default function f(_pluginManager: PluginManager) {
       jobs: types.array(Job),
       finished: types.array(Job),
       queued: types.array(Job),
+      aborted: types.array(Job),
     })
     .actions(self => ({
       addJob(job: NewJob) {
@@ -57,6 +59,10 @@ export default function f(_pluginManager: PluginManager) {
       addQueuedJob(job: NewJob) {
         self.queued.push(job)
         return self.finished
+      },
+      addAbortedJob(job: NewJob) {
+        self.aborted.push(job)
+        return self.aborted
       },
       removeQueuedJob(jobName: string) {
         const indx = self.queued.findIndex(job => job.name === jobName)

@@ -59,7 +59,7 @@ export default function createModel(
       ),
     })
     .volatile(() => ({
-      error: undefined as Error | undefined,
+      error: undefined as unknown,
       adminMode: false,
       version,
     }))
@@ -83,8 +83,8 @@ export default function createModel(
       /**
        * #action
        */
-      setError(errorMessage: Error | undefined) {
-        self.error = errorMessage
+      setError(error: unknown) {
+        self.error = error
       },
       /**
        * #action

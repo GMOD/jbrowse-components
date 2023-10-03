@@ -16,11 +16,14 @@ import {
   getSession,
   measureGridWidth,
   useDebounce,
+  useLocalStorage,
 } from '@jbrowse/core/util'
 import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
+import { useResizeBar } from '@jbrowse/core/ui/useResizeBar'
+import { makeStyles } from 'tss-react/mui'
 
 // icons
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
@@ -31,7 +34,6 @@ import { matches } from '../../util'
 import FacetedHeader from './FacetedHeader'
 import FacetFilters from './FacetFilters'
 import { getRootKeys } from './util'
-import { useResizeBar } from '@jbrowse/core/ui/useResizeBar'
 
 const nonMetadataKeys = ['category', 'adapter', 'description'] as const
 
@@ -41,6 +43,14 @@ export interface InfoArgs {
   conf: AnyConfigurationModel
 }
 
+const useStyles = makeStyles()({
+  cell: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+})
+
 const frac = 0.75
 
 const FacetedSelector = observer(function FacetedSelector({
@@ -48,16 +58,24 @@ const FacetedSelector = observer(function FacetedSelector({
 }: {
   model: HierarchicalTrackSelectorModel
 }) {
+  const { classes } = useStyles()
   const { view, selection } = model
   const { pluginManager } = getEnv(model)
   const { ref, scrollLeft } = useResizeBar()
 
   const [filterText, setFilterText] = useState('')
-  const [showOptions, setShowOptions] = useState(false)
+  const [showOptions, setShowOptions] = useLocalStorage(
+    'facet-showTableOptions',
+    false,
+  )
   const [info, setInfo] = useState<InfoArgs>()
   const [useShoppingCart, setUseShoppingCart] = useState(false)
-  const [hideSparse, setHideSparse] = useState(true)
-  const [panelWidth, setPanelWidth] = useState(400)
+  const [showSparse, setShowSparse] = useLocalStorage('facet-showSparse', false)
+  const [showFilters, setShowFilters] = useLocalStorage(
+    'facet-showFilters',
+    true,
+  )
+  const [panelWidth, setPanelWidth] = useLocalStorage('facet-panelWidth', 400)
   const session = getSession(model)
   const filterDebounced = useDebounce(filterText, 400)
   const tracks = view.tracks as AnyConfigurationModel[]
@@ -65,9 +83,7 @@ const FacetedSelector = observer(function FacetedSelector({
     (
       state: Record<string, string[]>,
       update: { key: string; val: string[] },
-    ) => {
-      return { ...state, [update.key]: update.val }
-    },
+    ) => ({ ...state, [update.key]: update.val }),
     {},
   )
 
@@ -94,19 +110,19 @@ const FacetedSelector = observer(function FacetedSelector({
   const filteredNonMetadataKeys = useMemo(
     () =>
       nonMetadataKeys.filter(f =>
-        !hideSparse ? true : rows.map(r => r[f]).filter(f => !!f).length > 5,
+        showSparse ? true : rows.map(r => r[f]).filter(f => !!f).length > 5,
       ),
-    [hideSparse, rows],
+    [showSparse, rows],
   )
 
   const filteredMetadataKeys = useMemo(
     () =>
       [...new Set(rows.flatMap(row => getRootKeys(row.metadata)))].filter(f =>
-        !hideSparse
+        showSparse
           ? true
           : rows.map(r => r.metadata[f]).filter(f => !!f).length > 5,
       ),
-    [hideSparse, rows],
+    [showSparse, rows],
   )
 
   const fields = useMemo(
@@ -176,9 +192,9 @@ const FacetedSelector = observer(function FacetedSelector({
           ]),
       ),
     }))
-  }, [filteredMetadataKeys, visible, filteredNonMetadataKeys, hideSparse, rows])
+  }, [filteredMetadataKeys, visible, filteredNonMetadataKeys, showSparse, rows])
 
-  const widthsDebounced = useDebounce(widths, 400)
+  const widthsDebounced = useDebounce(widths, 200)
 
   const columns = [
     {
@@ -187,7 +203,7 @@ const FacetedSelector = observer(function FacetedSelector({
       renderCell: (params: GridCellParams) => {
         const { value, id, row } = params
         return (
-          <>
+          <div className={classes.cell}>
             <SanitizedHTML html={value as string} />
             <IconButton
               onClick={e =>
@@ -200,7 +216,7 @@ const FacetedSelector = observer(function FacetedSelector({
             >
               <MoreHoriz />
             </IconButton>
-          </>
+          </div>
         )
       },
       width: widthsDebounced.name ?? 100,
@@ -210,7 +226,11 @@ const FacetedSelector = observer(function FacetedSelector({
       width: widthsDebounced[e] ?? 100,
       renderCell: (params: GridCellParams) => {
         const { value } = params
-        return value ? <SanitizedHTML html={value as string} /> : ''
+        return (
+          <div className={classes.cell}>
+            {value ? <SanitizedHTML html={value as string} /> : ''}
+          </div>
+        )
       },
     })),
     ...filteredMetadataKeys.map(e => ({
@@ -218,14 +238,25 @@ const FacetedSelector = observer(function FacetedSelector({
       width: widthsDebounced[e] ?? 100,
       renderCell: (params: GridCellParams) => {
         const { value } = params
-        return value ? <SanitizedHTML html={value as string} /> : ''
+        return (
+          <div className={classes.cell}>
+            {value ? <SanitizedHTML html={value as string} /> : ''}
+          </div>
+        )
       },
     })),
   ]
 
-  const shownTrackIds = tracks.map(t => t.configuration.trackId as string)
+  const shownTrackIds = new Set(
+    tracks.map(t => t.configuration.trackId as string),
+  )
 
-  const arrFilters = Object.entries(filters).filter(f => f[1].length > 0)
+  const arrFilters = Object.entries(filters)
+    .filter(f => f[1].length > 0)
+    .map(([key, val]) => [key, new Set<string>(val)] as const)
+  const filteredRows = rows.filter(row =>
+    arrFilters.every(([key, val]) => val.has(row[key] as string)),
+  )
   return (
     <>
       {info ? (
@@ -241,11 +272,13 @@ const FacetedSelector = observer(function FacetedSelector({
         />
       ) : null}
       <FacetedHeader
-        setHideSparse={setHideSparse}
+        setShowSparse={setShowSparse}
+        setShowFilters={setShowFilters}
         setShowOptions={setShowOptions}
         setFilterText={setFilterText}
         setUseShoppingCart={setUseShoppingCart}
-        hideSparse={hideSparse}
+        showFilters={showFilters}
+        showSparse={showSparse}
         showOptions={showOptions}
         filterText={filterText}
         useShoppingCart={useShoppingCart}
@@ -264,7 +297,7 @@ const FacetedSelector = observer(function FacetedSelector({
         <div
           style={{
             height: window.innerHeight * frac,
-            width: window.innerWidth * frac - panelWidth,
+            width: window.innerWidth * frac - (showFilters ? panelWidth : 0),
           }}
         >
           <ResizeBar
@@ -283,9 +316,7 @@ const FacetedSelector = observer(function FacetedSelector({
             scrollLeft={scrollLeft}
           />
           <DataGrid
-            rows={rows.filter(row =>
-              arrFilters.every(([key, val]) => val.includes(row[key])),
-            )}
+            rows={filteredRows}
             columnVisibilityModel={visible}
             onColumnVisibilityModelChange={newModel => setVisible(newModel)}
             columnHeaderHeight={35}
@@ -295,12 +326,12 @@ const FacetedSelector = observer(function FacetedSelector({
             onRowSelectionModelChange={userSelectedIds => {
               if (!useShoppingCart) {
                 const a1 = shownTrackIds
-                const a2 = userSelectedIds as string[]
+                const a2 = new Set(userSelectedIds as string[])
                 // synchronize the user selection with the view
                 // see share https://stackoverflow.com/a/33034768/2129219
                 transaction(() => {
-                  a1.filter(x => !a2.includes(x)).map(t => view.hideTrack(t))
-                  a2.filter(x => !a1.includes(x)).map(t => view.showTrack(t))
+                  ;[...a1].filter(x => !a2.has(x)).map(t => view.hideTrack(t))
+                  ;[...a2].filter(x => !a1.has(x)).map(t => view.showTrack(t))
                 })
               } else {
                 const root = getRoot(model)
@@ -312,7 +343,9 @@ const FacetedSelector = observer(function FacetedSelector({
               }
             }}
             rowSelectionModel={
-              useShoppingCart ? selection.map(s => s.trackId) : shownTrackIds
+              useShoppingCart
+                ? selection.map(s => s.trackId)
+                : [...shownTrackIds]
             }
             slots={{ toolbar: showOptions ? GridToolbar : null }}
             slotProps={{
@@ -322,22 +355,31 @@ const FacetedSelector = observer(function FacetedSelector({
             rowHeight={25}
           />
         </div>
-        <ResizeHandle
-          vertical
-          onDrag={dist => setPanelWidth(panelWidth - dist)}
-          style={{ background: 'grey', width: 5 }}
-        />
-        <div
-          style={{ width: panelWidth, overflowY: 'auto', overflowX: 'hidden' }}
-        >
-          <FacetFilters
-            width={panelWidth - 10}
-            rows={rows}
-            columns={columns}
-            dispatch={dispatch}
-            filters={filters}
-          />
-        </div>
+
+        {showFilters ? (
+          <>
+            <ResizeHandle
+              vertical
+              onDrag={dist => setPanelWidth(panelWidth - dist)}
+              style={{ marginLeft: 5, background: 'grey', width: 5 }}
+            />
+            <div
+              style={{
+                width: panelWidth,
+                overflowY: 'auto',
+                overflowX: 'hidden',
+              }}
+            >
+              <FacetFilters
+                width={panelWidth - 10}
+                rows={rows}
+                columns={columns}
+                dispatch={dispatch}
+                filters={filters}
+              />
+            </div>
+          </>
+        ) : null}
       </div>
     </>
   )

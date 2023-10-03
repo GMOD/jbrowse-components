@@ -191,7 +191,7 @@ export default function ReadVsRefDialog({
         })),
       )
 
-      session.addTemporaryAssembly({
+      session.addTemporaryAssembly?.({
         name: `${readAssembly}`,
         sequence: {
           type: 'ReferenceSequenceTrack',

@@ -27,14 +27,14 @@ const useStyles = makeStyles()(theme => ({
 
 const JobsListWidget = observer(function ({ model }: { model: JobsListModel }) {
   const { classes } = useStyles()
-  const { jobs, finished, queued } = model
+  const { jobs, finished, queued, aborted } = model
   return (
     <div className={classes.root}>
       <Accordion defaultExpanded>
         <AccordionSummary
           expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
         >
-          <Typography variant="h5">Jobs</Typography>
+          <Typography variant="h5">Running jobs</Typography>
         </AccordionSummary>
         {jobs.length ? (
           jobs.map((job: NewJob, index: number) => (
@@ -43,7 +43,7 @@ const JobsListWidget = observer(function ({ model }: { model: JobsListModel }) {
         ) : (
           <Card variant="outlined">
             <CardContent>
-              <Typography variant="body1">No jobs</Typography>
+              <Typography variant="body1">No running jobs</Typography>
             </CardContent>
           </Card>
         )}
@@ -70,7 +70,7 @@ const JobsListWidget = observer(function ({ model }: { model: JobsListModel }) {
         <AccordionSummary
           expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
         >
-          <Typography variant="h5">Jobs completed</Typography>
+          <Typography variant="h5">Completed jobs</Typography>
         </AccordionSummary>
         {finished.length ? (
           finished.map((job: NewJob, index: number) => (
@@ -79,7 +79,25 @@ const JobsListWidget = observer(function ({ model }: { model: JobsListModel }) {
         ) : (
           <Card variant="outlined">
             <CardContent>
-              <Typography variant="body1">No jobs completed</Typography>
+              <Typography variant="body1">No completed jobs</Typography>
+            </CardContent>
+          </Card>
+        )}
+      </Accordion>
+      <Accordion defaultExpanded>
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
+        >
+          <Typography variant="h5">Aborted jobs</Typography>
+        </AccordionSummary>
+        {aborted.length ? (
+          aborted.map((job: NewJob, index: number) => (
+            <JobCard key={`${JSON.stringify(job)}-${index}`} job={job} />
+          ))
+        ) : (
+          <Card variant="outlined">
+            <CardContent>
+              <Typography variant="body1">No aborted jobs</Typography>
             </CardContent>
           </Card>
         )}

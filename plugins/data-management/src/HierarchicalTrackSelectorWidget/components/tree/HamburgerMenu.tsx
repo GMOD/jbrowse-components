@@ -61,7 +61,7 @@ const HamburgerMenu = observer(function ({
     deletingConnection?: boolean,
   ) {
     const name = readConfObject(connectionConf, 'name')
-    const result = session.prepareToBreakConnection(connectionConf)
+    const result = session.prepareToBreakConnection?.(connectionConf)
     if (result) {
       const [safelyBreakConnection, dereferenceTypeCount] = result
       if (Object.keys(dereferenceTypeCount).length > 0) {

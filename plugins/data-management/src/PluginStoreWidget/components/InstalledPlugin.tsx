@@ -46,11 +46,12 @@ const InstalledPlugin = observer(function ({
   const [dialogPlugin, setDialogPlugin] = useState<string>()
   const { pluginManager } = getEnv(model)
   const session = getSession(model)
-  const { jbrowse, adminMode, sessionPlugins } = session
-  const isSessionPlugin = sessionPlugins?.some(
-    (p: { url: string }) =>
-      pluginManager.pluginMetadata[plugin.name].url === p.url,
-  )
+  const { jbrowse, adminMode } = session
+  const isSessionPlugin = isSessionWithSessionPlugins(session)
+    ? session.sessionPlugins?.some(
+        p => pluginManager.pluginMetadata[plugin.name].url === p.url,
+      )
+    : false
 
   return (
     <>
@@ -76,7 +77,6 @@ const InstalledPlugin = observer(function ({
       <ListItem key={plugin.name}>
         {adminMode || isSessionPlugin ? (
           <IconButton
-            aria-label="removePlugin"
             data-testid={`removePlugin-${plugin.name}`}
             onClick={() => setDialogPlugin(plugin.name)}
           >
