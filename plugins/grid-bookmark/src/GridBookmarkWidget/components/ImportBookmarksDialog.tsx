@@ -13,7 +13,6 @@ import {
   AccordionSummary,
   AccordionDetails,
   Tooltip,
-  IconButton,
 } from '@mui/material'
 import { openLocation } from '@jbrowse/core/util/io'
 import { Dialog } from '@jbrowse/core/ui'
