@@ -57,9 +57,7 @@ const ShareBookmarksDialog = observer(function ({
         }
         setLoading(true)
         const snap = getSnapshot(bookmarksToShare)
-
         const locationUrl = new URL(window.location.href)
-
         const result = await shareSessionToDynamo(
           snap,
           session.shareURL,
@@ -75,7 +73,6 @@ const ShareBookmarksDialog = observer(function ({
         }
       } catch (e) {
         setError(e)
-        session.notify(`${e}`, 'error')
       } finally {
         setLoading(false)
       }
@@ -87,7 +84,9 @@ const ShareBookmarksDialog = observer(function ({
   }, [bookmarksToShare, session])
   return (
     <Dialog open onClose={onClose} title="Share bookmarks">
-      <DialogContent>
+      <DialogContent
+        style={{ display: 'flex', flexFlow: 'column', gap: '5px' }}
+      >
         <Alert severity="info">
           {shareAll ? (
             <>

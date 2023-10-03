@@ -93,8 +93,8 @@ export default function createModel(
       /**
        * #action
        */
-      setError(errorMessage: Error | undefined) {
-        self.error = errorMessage
+      setError(error: unknown) {
+        self.error = error
       },
       /**
        * #action
