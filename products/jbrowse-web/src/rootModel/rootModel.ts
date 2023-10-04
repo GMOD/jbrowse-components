@@ -49,7 +49,10 @@ import {
 } from '@jbrowse/product-core'
 import { HistoryManagementMixin, RootAppMenuMixin } from '@jbrowse/app-core'
 import { hydrateRoot } from 'react-dom/client'
+import { AssemblyManager } from '@jbrowse/plugin-data-management'
 
+// locals
+const SetDefaultSession = lazy(() => import('../components/SetDefaultSession'))
 const PreferencesDialog = lazy(() => import('../components/PreferencesDialog'))
 
 export interface Menu {
@@ -115,8 +118,6 @@ export default function RootModel({
     })
     .volatile(self => ({
       version: packageJSON.version,
-      isAssemblyEditing: false,
-      isDefaultSessionEditing: false,
       hydrateFn: hydrateRoot,
       pluginsUpdated: false,
       rpcManager: new RpcManager(
@@ -258,18 +259,7 @@ export default function RootModel({
           }
         }
       },
-      /**
-       * #action
-       */
-      setAssemblyEditing(flag: boolean) {
-        self.isAssemblyEditing = flag
-      },
-      /**
-       * #action
-       */
-      setDefaultSessionEditing(flag: boolean) {
-        self.isDefaultSessionEditing = flag
-      },
+
       /**
        * #action
        */
@@ -486,11 +476,19 @@ export default function RootModel({
                 menuItems: [
                   {
                     label: 'Open assembly manager',
-                    onClick: () => self.setAssemblyEditing(true),
+                    onClick: () =>
+                      self.session.queueDialog((onClose: () => void) => [
+                        AssemblyManager,
+                        { onClose, rootModel: self },
+                      ]),
                   },
                   {
                     label: 'Set default session',
-                    onClick: () => self.setDefaultSessionEditing(true),
+                    onClick: () =>
+                      self.session.queueDialog((onClose: () => void) => [
+                        SetDefaultSession,
+                        { rootModel: self, onClose },
+                      ]),
                   },
                 ],
               },

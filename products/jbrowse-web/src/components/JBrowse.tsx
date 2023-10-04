@@ -10,7 +10,6 @@ import PluginManager from '@jbrowse/core/PluginManager'
 
 // locals
 import ShareButton from './ShareButton'
-import AdminComponent from './AdminComponent'
 import { WebSessionModel } from '../sessionModel'
 
 const JBrowse = observer(function ({
@@ -77,7 +76,6 @@ const JBrowse = observer(function ({
         session={session}
         HeaderButtons={<ShareButton session={session} />}
       />
-      {adminKey ? <AdminComponent pluginManager={pluginManager} /> : null}
     </ThemeProvider>
   )
 })

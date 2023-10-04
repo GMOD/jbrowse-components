@@ -101,8 +101,6 @@ export default function RootModel({
 
     .volatile(self => ({
       version,
-      isAssemblyEditing: false,
-      isDefaultSessionEditing: false,
       pluginsUpdated: false,
       rpcManager: new RpcManager(
         pluginManager,
@@ -149,18 +147,7 @@ export default function RootModel({
             }
           }
         },
-        /**
-         * #action
-         */
-        setAssemblyEditing(flag: boolean) {
-          self.isAssemblyEditing = flag
-        },
-        /**
-         * #action
-         */
-        setDefaultSessionEditing(flag: boolean) {
-          self.isDefaultSessionEditing = flag
-        },
+
         /**
          * #action
          */

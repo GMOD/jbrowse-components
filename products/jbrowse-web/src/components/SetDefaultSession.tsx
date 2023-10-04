@@ -11,7 +11,7 @@ const SetDefaultSession = observer(function ({
     jbrowse: {
       setDefaultSessionConf: (arg: unknown) => void
     }
-    session: unknown
+    session?: unknown
   }
   onClose: () => void
 }) {
