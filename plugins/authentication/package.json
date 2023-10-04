@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-authentication",
-  "version": "2.6.3",
+  "version": "2.7.0",
   "description": "JBrowse 2 Authentication",
   "keywords": [
     "jbrowse",
