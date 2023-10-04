@@ -474,7 +474,7 @@ DESCRIPTION
 ```
 
 _See code:
-[@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.2.18/src/commands/help.ts)_
+[@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.2.20/src/commands/help.ts)_
 
 ## `jbrowse remove-track TRACK`
 
