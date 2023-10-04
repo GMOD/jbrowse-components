@@ -543,7 +543,7 @@ setWidth: (newWidth: number) => void
 
 ```js
 // type signature
-setError: (error: Error) => void
+setError: (error: unknown) => void
 ```
 
 #### action: toggleHeader

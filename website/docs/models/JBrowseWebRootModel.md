@@ -90,20 +90,6 @@ localStorageId: (name: string) => string
 setSession: (sessionSnapshot?: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number, number, number>; }>>) => void
 ```
 
-#### action: setAssemblyEditing
-
-```js
-// type signature
-setAssemblyEditing: (flag: boolean) => void
-```
-
-#### action: setDefaultSessionEditing
-
-```js
-// type signature
-setDefaultSessionEditing: (flag: boolean) => void
-```
-
 #### action: setPluginsUpdated
 
 ```js

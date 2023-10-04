@@ -90,7 +90,7 @@ renameCurrentSession: (sessionName: string) => void
 
 ```js
 // type signature
-setError: (errorMessage: Error) => void
+setError: (error: unknown) => void
 ```
 
 #### action: addInternetAccount
