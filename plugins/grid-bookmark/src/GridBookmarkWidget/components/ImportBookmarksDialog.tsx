@@ -12,6 +12,7 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Tooltip,
 } from '@mui/material'
 import { openLocation } from '@jbrowse/core/util/io'
 import { Dialog } from '@jbrowse/core/ui'
@@ -21,6 +22,7 @@ import { makeStyles } from 'tss-react/mui'
 // icons
 import ImportIcon from '@mui/icons-material/Publish'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import HelpIcon from '@mui/icons-material/Help'
 
 // locals
 import { GridBookmarkModel } from '../model'
@@ -104,7 +106,14 @@ const ImportBookmarksDialog = observer(function ({
           <AccordionSummary
             expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
           >
-            <Typography>Import from share link</Typography>
+            <Typography
+              style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
+            >
+              Import from share link{' '}
+              <Tooltip title="The appropriate share link for sharing bookmarks is one generated via the 'Share' button in the 'Bookmarked regions' drawer. Paste it below to import shared bookmarks.">
+                <HelpIcon />
+              </Tooltip>
+            </Typography>
           </AccordionSummary>
           <AccordionDetails>
             <TextField
