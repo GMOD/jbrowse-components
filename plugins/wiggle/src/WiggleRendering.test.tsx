@@ -9,10 +9,12 @@ test('one', async () => {
       width={500}
       height={500}
       features={new Map()}
-      highResolutionScaling={1}
-      regions={[{ refName: 'chr1', start: 1, end: 3 }]}
+      regions={[{ refName: 'chr1', start: 1, end: 3, assemblyName: 'volvox' }]}
       bpPerPx={3}
-      config={{ type: 'DummyRenderer' }}
+      blockKey="test"
+      onMouseMove={() => {}}
+      onMouseLeave={() => {}}
+      onFeatureClick={() => {}}
     />,
   )
   const test = getByTestId('wiggle-rendering-test')

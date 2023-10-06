@@ -9,6 +9,9 @@ import mix from 'colord/plugins/mix'
 
 import { clamp, featureSpanPx, Feature, Region } from '@jbrowse/core/util'
 
+// locals
+import { fillRectCtx, getOrigin, getScale, ScaleOpts } from './util'
+
 function lighten(color: Colord, amount: number) {
   const hslColor = color.toHsl()
   const l = hslColor.l * (1 + amount)
@@ -19,33 +22,6 @@ function darken(color: Colord, amount: number) {
   const hslColor = color.toHsl()
   const l = hslColor.l * (1 - amount)
   return colord({ ...hslColor, l: clamp(l, 0, 100) })
-}
-
-// locals
-import { getOrigin, getScale, ScaleOpts } from './util'
-
-// avoid drawing negative width features for SVG exports
-function fillRectCtx(
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  ctx: CanvasRenderingContext2D,
-  color?: string,
-) {
-  if (width < 0) {
-    x += width
-    width = -width
-  }
-  if (height < 0) {
-    y += height
-    height = -height
-  }
-
-  if (color) {
-    ctx.fillStyle = color
-  }
-  ctx.fillRect(x, y, width, height)
 }
 
 const fudgeFactor = 0.3
@@ -228,176 +204,6 @@ export function drawXY(
       ctx.stroke()
     })
   }
-
-  return { reducedFeatures }
-}
-
-export function drawLine(
-  ctx: CanvasRenderingContext2D,
-  props: {
-    features: Map<string, Feature> | Feature[]
-    regions: Region[]
-    bpPerPx: number
-    scaleOpts: ScaleOpts
-    height: number
-    ticks: { values: number[] }
-    displayCrossHatches: boolean
-    colorCallback: (f: Feature, score: number) => string
-    config: AnyConfigurationModel
-    offset?: number
-  },
-) {
-  const {
-    features,
-    regions,
-    bpPerPx,
-    scaleOpts,
-    height: unadjustedHeight,
-    ticks: { values },
-    displayCrossHatches,
-    colorCallback,
-    config,
-    offset = 0,
-  } = props
-  const [region] = regions
-  const width = (region.end - region.start) / bpPerPx
-
-  // the adjusted height takes into account YSCALEBAR_LABEL_OFFSET from the
-  // wiggle display, and makes the height of the actual drawn area add
-  // "padding" to the top and bottom of the display
-  const height = unadjustedHeight - offset * 2
-  const clipColor = readConfObject(config, 'clipColor')
-  const scale = getScale({ ...scaleOpts, range: [0, height] })
-  const [niceMin, niceMax] = scale.domain()
-  const toY = (n: number) => clamp(height - (scale(n) || 0), 0, height) + offset
-
-  let lastVal
-
-  let prevLeftPx = -Infinity
-  const reducedFeatures = []
-  for (const feature of features.values()) {
-    const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
-
-    // create reduced features, avoiding multiple features per px
-    if (Math.floor(leftPx) !== Math.floor(prevLeftPx)) {
-      reducedFeatures.push(feature)
-      prevLeftPx = leftPx
-    }
-    const score = feature.get('score')
-    const lowClipping = score < niceMin
-    const highClipping = score > niceMax
-    const w = rightPx - leftPx + fudgeFactor
-
-    const c = colorCallback(feature, score)
-
-    ctx.beginPath()
-    ctx.strokeStyle = c
-    const startPos = lastVal !== undefined ? lastVal : score
-    if (!region.reversed) {
-      ctx.moveTo(leftPx, toY(startPos))
-      ctx.lineTo(leftPx, toY(score))
-      ctx.lineTo(rightPx, toY(score))
-    } else {
-      ctx.moveTo(rightPx, toY(startPos))
-      ctx.lineTo(rightPx, toY(score))
-      ctx.lineTo(leftPx, toY(score))
-    }
-    ctx.stroke()
-    lastVal = score
-
-    if (highClipping) {
-      ctx.fillStyle = clipColor
-      ctx.fillRect(leftPx, offset, w, clipHeight)
-    } else if (lowClipping && scaleOpts.scaleType !== 'log') {
-      ctx.fillStyle = clipColor
-      ctx.fillRect(leftPx, height - clipHeight, w, height)
-    }
-  }
-
-  if (displayCrossHatches) {
-    ctx.lineWidth = 1
-    ctx.strokeStyle = 'rgba(200,200,200,0.5)'
-    values.forEach(tick => {
-      ctx.beginPath()
-      ctx.moveTo(0, Math.round(toY(tick)))
-      ctx.lineTo(width, Math.round(toY(tick)))
-      ctx.stroke()
-    })
-  }
-  return { reducedFeatures }
-}
-
-export function drawDensity(
-  ctx: CanvasRenderingContext2D,
-  props: {
-    features: Map<string, Feature> | Feature[]
-    regions: Region[]
-    bpPerPx: number
-    scaleOpts: ScaleOpts
-    height: number
-    ticks: { values: number[] }
-    displayCrossHatches: boolean
-    config: AnyConfigurationModel
-  },
-) {
-  const { features, regions, bpPerPx, scaleOpts, height, config } = props
-  const [region] = regions
-  const pivot = readConfObject(config, 'bicolorPivot')
-  const pivotValue = readConfObject(config, 'bicolorPivotValue')
-  const negColor = readConfObject(config, 'negColor')
-  const posColor = readConfObject(config, 'posColor')
-  const color = readConfObject(config, 'color')
-  const clipColor = readConfObject(config, 'clipColor')
-  const crossing = pivot !== 'none' && scaleOpts.scaleType !== 'log'
-  const scale = getScale({
-    ...scaleOpts,
-    pivotValue: crossing ? pivotValue : undefined,
-    range: crossing ? [negColor, 'white', posColor] : ['white', posColor],
-  })
-
-  const scale2 = getScale({ ...scaleOpts, range: [0, height] })
-  const cb =
-    color === '#f0f'
-      ? (_: Feature, score: number) => scale(score)
-      : (feature: Feature, score: number) =>
-          readConfObject(config, 'color', { feature, score })
-  const [niceMin, niceMax] = scale2.domain()
-
-  let prevLeftPx = -Infinity
-  let hasClipping = false
-  const reducedFeatures = []
-  for (const feature of features.values()) {
-    const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
-
-    // create reduced features, avoiding multiple features per px
-    if (Math.floor(leftPx) !== Math.floor(prevLeftPx)) {
-      reducedFeatures.push(feature)
-      prevLeftPx = leftPx
-    }
-    const score = feature.get('score')
-    hasClipping = hasClipping || score > niceMax || score < niceMin
-    const w = rightPx - leftPx + fudgeFactor
-    ctx.fillStyle = cb(feature, score)
-    ctx.fillRect(leftPx, 0, w, height)
-  }
-
-  // second pass: draw clipping
-  // avoid persisting the red fillstyle with save/restore
-  ctx.save()
-  if (hasClipping) {
-    ctx.fillStyle = clipColor
-    for (const feature of features.values()) {
-      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
-      const w = rightPx - leftPx + fudgeFactor
-      const score = feature.get('score')
-      if (score > niceMax) {
-        fillRectCtx(leftPx, 0, w, clipHeight, ctx)
-      } else if (score < niceMin && scaleOpts.scaleType !== 'log') {
-        fillRectCtx(leftPx, 0, w, clipHeight, ctx)
-      }
-    }
-  }
-  ctx.restore()
 
   return { reducedFeatures }
 }
