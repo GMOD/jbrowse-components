@@ -2,7 +2,7 @@ import { groupBy, Feature } from '@jbrowse/core/util'
 import WiggleBaseRenderer, {
   MultiRenderArgsDeserialized as MultiArgs,
 } from '../WiggleBaseRenderer'
-import { drawDensity } from '../drawxy'
+import { drawDensity } from '../drawDensity'
 
 export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
   // @ts-expect-error

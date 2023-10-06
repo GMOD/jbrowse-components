@@ -1,5 +1,5 @@
 import { groupBy, Feature } from '@jbrowse/core/util'
-import { drawXY } from '../drawxy'
+import { drawXY } from '../drawXY'
 
 import WiggleBaseRenderer, {
   MultiRenderArgsDeserialized as MultiArgs,

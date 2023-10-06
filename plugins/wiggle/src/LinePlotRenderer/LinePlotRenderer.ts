@@ -3,7 +3,7 @@ import WiggleBaseRenderer, {
 } from '../WiggleBaseRenderer'
 
 import { YSCALEBAR_LABEL_OFFSET } from '../util'
-import { drawLine } from '../drawxy'
+import { drawLine } from '../drawLine'
 
 export default class LinePlotRenderer extends WiggleBaseRenderer {
   async draw(
