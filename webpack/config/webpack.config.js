@@ -13,7 +13,6 @@ const CssMinimizerPlugin = require('css-minimizer-webpack-plugin')
 const { WebpackManifestPlugin } = require('webpack-manifest-plugin')
 const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin')
 const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin')
-const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
 const getCSSModuleLocalIdent = require('react-dev-utils/getCSSModuleLocalIdent')
 const paths = require('./paths')
 const modules = require('./modules')
@@ -58,23 +57,12 @@ function getWorkspaces(fromDir) {
 // makes for a smoother build process.
 const shouldInlineRuntimeChunk = process.env.INLINE_RUNTIME_CHUNK !== 'false'
 
-const emitErrorsAsWarnings = process.env.ESLINT_NO_DEV_ERRORS === 'true'
-const disableESLintPlugin = process.env.DISABLE_ESLINT_PLUGIN === 'true'
-
 const imageInlineSizeLimit = parseInt(
   process.env.IMAGE_INLINE_SIZE_LIMIT || '10000',
 )
 
 // Check if TypeScript is setup
 const useTypeScript = fs.existsSync(paths.appTsConfig)
-
-// Check if Tailwind config exists
-const useTailwind = fs.existsSync(
-  path.join(paths.appPath, 'tailwind.config.js'),
-)
-
-// Get the path to the uncompiled service worker (if it exists).
-const swSrc = paths.swSrc
 
 // style files regexes
 const cssRegex = /\.css$/
@@ -314,18 +302,6 @@ module.exports = function (webpackEnv) {
           // match the requirements. When no loader matches it will fall
           // back to the "file" loader at the end of the loader list.
           oneOf: [
-            // TODO: Merge this config once `image/avif` is in the mime-db
-            // https://github.com/jshttp/mime-db
-            {
-              test: [/\.avif$/],
-              type: 'asset',
-              mimetype: 'image/avif',
-              parser: {
-                dataUrlCondition: {
-                  maxSize: imageInlineSizeLimit,
-                },
-              },
-            },
             // "url" loader works like "file" loader except that it embeds assets
             // smaller than specified limit in bytes as data URLs to avoid requests.
             // A missing `test` is equivalent to a match.
