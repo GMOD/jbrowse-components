@@ -117,13 +117,15 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
         if (!typeDefinition) {
           throw new Error(`unknown widget type ${typeName}`)
         }
-        const data = {
-          ...initialState,
-          id,
-          type: typeName,
-          configuration: conf || { type: typeName },
+        if (!self.widgets.has(id)) {
+          const data = {
+            ...initialState,
+            id,
+            type: typeName,
+            configuration: conf || { type: typeName },
+          }
+          self.widgets.set(id, data)
         }
-        self.widgets.set(id, data)
         return self.widgets.get(id)
       },
 
