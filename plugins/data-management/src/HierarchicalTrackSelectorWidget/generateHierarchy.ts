@@ -51,21 +51,32 @@ export interface TreeNode {
   children: TreeNode[]
 }
 
-export function generateHierarchy(
+export function generateHierarchy({
+  model,
+  trackConfs,
+  extra,
+}: {
   model: {
     filterText: string
     activeSortTrackNames: boolean
     activeSortCategories: boolean
+    collapsed: Map<string, boolean>
     view?: {
       tracks: { configuration: AnyConfigurationModel }[]
     }
-  },
-  trackConfs: AnyConfigurationModel[],
-  collapsed: { get: (arg: string) => boolean | undefined },
-  extra?: string,
-): TreeNode[] {
+  }
+  trackConfs: AnyConfigurationModel[]
+  extra?: string
+}): TreeNode[] {
   const hierarchy = { children: [] as TreeNode[] } as TreeNode
-  const { filterText, activeSortTrackNames, activeSortCategories, view } = model
+  const {
+    collapsed,
+    filterText,
+    activeSortTrackNames,
+    activeSortCategories,
+    view,
+  } = model
+  console.log({ collapsed: getSnapshot(collapsed) })
   if (!view) {
     return []
   }
