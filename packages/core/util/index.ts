@@ -1213,7 +1213,7 @@ export function getStr(obj: unknown) {
 }
 
 // tries to measure grid width without HTML tags included
-function coarseStripHTML(s: string) {
+export function coarseStripHTML(s: string) {
   return s.replaceAll(/(<([^>]+)>)/gi, '')
 }
 

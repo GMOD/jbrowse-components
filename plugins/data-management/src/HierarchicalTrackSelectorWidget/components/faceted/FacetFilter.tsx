@@ -12,6 +12,7 @@ import { makeStyles } from 'tss-react/mui'
 import ClearIcon from '@mui/icons-material/Clear'
 import MinimizeIcon from '@mui/icons-material/Minimize'
 import AddIcon from '@mui/icons-material/Add'
+import { coarseStripHTML } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
   facet: {
@@ -22,6 +23,32 @@ const useStyles = makeStyles()(theme => ({
     marginBottom: theme.spacing(2),
   },
 }))
+
+function ClearButton({ onClick }: { onClick: () => void }) {
+  return (
+    <Tooltip title="Clear selection on this facet filter">
+      <IconButton onClick={() => onClick()} size="small">
+        <ClearIcon />
+      </IconButton>
+    </Tooltip>
+  )
+}
+
+function ExpandButton({
+  visible,
+  onClick,
+}: {
+  visible: boolean
+  onClick: () => void
+}) {
+  return (
+    <Tooltip title="Minimize/expand this facet filter">
+      <IconButton onClick={() => onClick()} size="small">
+        {visible ? <MinimizeIcon /> : <AddIcon />}
+      </IconButton>
+    </Tooltip>
+  )
+}
 
 export default function FacetFilter({
   column,
@@ -42,19 +69,8 @@ export default function FacetFilter({
     <FormControl key={column.field} className={classes.facet} style={{ width }}>
       <div style={{ display: 'flex' }}>
         <Typography>{column.field}</Typography>
-        <Tooltip title="Clear selection on this facet filter">
-          <IconButton
-            onClick={() => dispatch({ key: column.field, val: [] })}
-            size="small"
-          >
-            <ClearIcon />
-          </IconButton>
-        </Tooltip>
-        <Tooltip title="Minimize/expand this facet filter">
-          <IconButton onClick={() => setVisible(!visible)} size="small">
-            {visible ? <MinimizeIcon /> : <AddIcon />}
-          </IconButton>
-        </Tooltip>
+        <ClearButton onClick={() => dispatch({ key: column.field, val: [] })} />
+        <ExpandButton visible={visible} onClick={() => setVisible(!visible)} />
       </div>
       {visible ? (
         <Select
@@ -76,7 +92,7 @@ export default function FacetFilter({
             .sort((a, b) => a[0].localeCompare(b[0]))
             .map(([name, count]) => (
               <option key={name} value={name}>
-                {name} ({count})
+                {coarseStripHTML(name)} ({count})
               </option>
             ))}
         </Select>
