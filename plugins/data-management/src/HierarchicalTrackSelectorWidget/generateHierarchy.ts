@@ -76,7 +76,6 @@ export function generateHierarchy({
     activeSortCategories,
     view,
   } = model
-  console.log({ collapsed: getSnapshot(collapsed) })
   if (!view) {
     return []
   }
