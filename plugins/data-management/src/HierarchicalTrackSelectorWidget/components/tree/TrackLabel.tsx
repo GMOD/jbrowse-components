@@ -14,6 +14,7 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 
 // locals
 import { isUnsupported, NodeData } from '../util'
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 
 const useStyles = makeStyles()(theme => ({
   compactCheckbox: {
@@ -38,7 +39,6 @@ export default function TrackLabel({ data }: { data: NodeData }) {
   const { classes } = useStyles()
   const { checked, conf, model, drawerPosition, id, name, onChange, selected } =
     data
-  const [info, setInfo] = useState<InfoArgs>()
   const description = (conf && readConfObject(conf, ['description'])) || ''
   return (
     <>
@@ -70,40 +70,27 @@ export default function TrackLabel({ data }: { data: NodeData }) {
           }
         />
       </Tooltip>
-      <IconButton
-        onClick={e => setInfo({ target: e.currentTarget, id, conf })}
+      <CascadingMenuButton
         style={{ padding: 0 }}
         data-testid={`htsTrackEntryMenu-${id}`}
+        menuItems={[
+          ...(getSession(model).getTrackActionMenuItems?.(conf) || []),
+          {
+            label: 'Add to selection',
+            onClick: () => model.addToSelection([conf]),
+          },
+          ...(selected
+            ? [
+                {
+                  label: 'Remove from selection',
+                  onClick: () => model.removeFromSelection([conf]),
+                },
+              ]
+            : []),
+        ]}
       >
         <MoreHorizIcon />
-      </IconButton>
-
-      {info ? (
-        <JBrowseMenu
-          anchorEl={info?.target}
-          menuItems={[
-            ...(getSession(model).getTrackActionMenuItems?.(info.conf) || []),
-            {
-              label: 'Add to selection',
-              onClick: () => model.addToSelection([info.conf]),
-            },
-            ...(selected
-              ? [
-                  {
-                    label: 'Remove from selection',
-                    onClick: () => model.removeFromSelection([info.conf]),
-                  },
-                ]
-              : []),
-          ]}
-          onMenuItemClick={(_event, callback) => {
-            callback()
-            setInfo(undefined)
-          }}
-          open={Boolean(info)}
-          onClose={() => setInfo(undefined)}
-        />
-      ) : null}
+      </CascadingMenuButton>
     </>
   )
 }
