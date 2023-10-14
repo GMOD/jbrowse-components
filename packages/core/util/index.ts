@@ -32,7 +32,6 @@ import { isUriLocation } from './types'
 // has to be the full path and not the relative path to get the jest mock
 import useMeasure from '@jbrowse/core/util/useMeasure'
 import { colord } from './colord'
-
 export * from './types'
 export * from './aborting'
 export * from './when'
@@ -1215,6 +1214,13 @@ export function getStr(obj: unknown) {
 // tries to measure grid width without HTML tags included
 export function coarseStripHTML(s: string) {
   return s.replaceAll(/(<([^>]+)>)/gi, '')
+}
+
+// based on autolink-js, license MIT
+export function linkify(s: string) {
+  const pattern =
+    /(^|[\s\n]|<[A-Za-z]*\/?>)((?:https?|ftp):\/\/[\-A-Z0-9+\u0026\u2019@#\/%?=()~_|!:,.;]*[\-A-Z0-9+\u0026@#\/%=~()_|])/gi
+  return s.replaceAll(pattern, '$1<a href=\'$2\' target="_blank">$2</a>')
 }
 
 // heuristic measurement for a column of a @mui/x-data-grid, pass in values from a column
