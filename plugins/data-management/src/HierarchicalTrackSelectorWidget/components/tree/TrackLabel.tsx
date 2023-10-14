@@ -1,7 +1,6 @@
-import React, { useState } from 'react'
-import { Checkbox, FormControlLabel, IconButton, Tooltip } from '@mui/material'
+import React from 'react'
+import { Checkbox, FormControlLabel, Tooltip } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import JBrowseMenu from '@jbrowse/core/ui/Menu'
 import { getSession } from '@jbrowse/core/util'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import {
@@ -15,6 +14,7 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 // locals
 import { isUnsupported, NodeData } from '../util'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import { HierarchicalTrackSelectorModel } from '../../model'
 
 const useStyles = makeStyles()(theme => ({
   compactCheckbox: {
@@ -70,27 +70,43 @@ export default function TrackLabel({ data }: { data: NodeData }) {
           }
         />
       </Tooltip>
-      <CascadingMenuButton
-        style={{ padding: 0 }}
-        data-testid={`htsTrackEntryMenu-${id}`}
-        menuItems={[
-          ...(getSession(model).getTrackActionMenuItems?.(conf) || []),
-          {
-            label: 'Add to selection',
-            onClick: () => model.addToSelection([conf]),
-          },
-          ...(selected
-            ? [
-                {
-                  label: 'Remove from selection',
-                  onClick: () => model.removeFromSelection([conf]),
-                },
-              ]
-            : []),
-        ]}
-      >
-        <MoreHorizIcon />
-      </CascadingMenuButton>
+      <TrackMenuButton model={model} selected={selected} id={id} conf={conf} />
     </>
+  )
+}
+
+function TrackMenuButton({
+  id,
+  model,
+  selected,
+  conf,
+}: {
+  id: string
+  selected: boolean
+  conf: AnyConfigurationModel
+  model: HierarchicalTrackSelectorModel
+}) {
+  return (
+    <CascadingMenuButton
+      style={{ padding: 0 }}
+      data-testid={`htsTrackEntryMenu-${id}`}
+      menuItems={[
+        ...(getSession(model).getTrackActionMenuItems?.(conf) || []),
+        {
+          label: 'Add to selection',
+          onClick: () => model.addToSelection([conf]),
+        },
+        ...(selected
+          ? [
+              {
+                label: 'Remove from selection',
+                onClick: () => model.removeFromSelection([conf]),
+              },
+            ]
+          : []),
+      ]}
+    >
+      <MoreHorizIcon />
+    </CascadingMenuButton>
   )
 }

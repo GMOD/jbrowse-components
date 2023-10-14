@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Button } from '@mui/material'
-import { getStr, isUriLocation, measureGridWidth } from '@jbrowse/core/util'
+import { getStr, measureGridWidth } from '@jbrowse/core/util'
 import { DataGrid, GridCellParams } from '@mui/x-data-grid'
 import { makeStyles } from 'tss-react/mui'
 
