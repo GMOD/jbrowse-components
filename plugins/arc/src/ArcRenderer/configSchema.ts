@@ -54,6 +54,14 @@ const ArcRenderer = ConfigurationSchema(
       defaultValue: `jexl:get(feature,'name')`,
       contextVariable: ['feature'],
     },
+    /**
+     * #slot
+     */
+    semicircles: {
+      type: 'boolean',
+      defaultValue: false,
+      description: 'render semi-circles instead of arcs',
+    },
   },
   { explicitlyTyped: true },
 )
