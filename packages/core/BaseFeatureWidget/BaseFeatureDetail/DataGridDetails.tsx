@@ -4,11 +4,11 @@ import { DataGrid, GridToolbar } from '@mui/x-data-grid'
 import { Checkbox, FormControlLabel, Typography } from '@mui/material'
 
 // locals
-import { measureGridWidth, getStr, isUriLocation } from '../../util'
+import { measureGridWidth, getStr } from '../../util'
 import ResizeBar from '../../ui/ResizeBar'
 import FieldName from './FieldName'
-import UriLink from './UriLink'
 import { useResizeBar } from '../../ui/useResizeBar'
+import { SanitizedHTML } from '../../ui'
 
 const useStyles = makeStyles()(theme => ({
   margin: {
@@ -101,7 +101,11 @@ export default function DataGridDetails({
             hideFooter={rows.length < 25}
             slots={{ toolbar: checked ? GridToolbar : null }}
             slotProps={{
-              toolbar: { printOptions: { disableToolbarButton: true } },
+              toolbar: {
+                printOptions: {
+                  disableToolbarButton: true,
+                },
+              },
             }}
             columns={colNames.map((val, index) => ({
               field: val,
@@ -109,11 +113,7 @@ export default function DataGridDetails({
                 const value = params.value as string
                 return (
                   <div className={classes.cell}>
-                    {isUriLocation(value) ? (
-                      <UriLink value={value} />
-                    ) : (
-                      <>{getStr(value)}</>
-                    )}
+                    <SanitizedHTML html={getStr(value)} />
                   </div>
                 )
               },
