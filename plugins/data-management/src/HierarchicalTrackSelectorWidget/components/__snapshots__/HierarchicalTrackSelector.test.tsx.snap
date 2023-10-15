@@ -9,7 +9,6 @@ exports[`renders nothing with no assembly 1`] = `
       style="display: flex;"
     >
       <button
-        aria-haspopup="true"
         class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
         tabindex="0"
         type="button"
@@ -182,7 +181,6 @@ exports[`renders with a couple of categorized tracks 1`] = `
       style="display: flex;"
     >
       <button
-        aria-haspopup="true"
         class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
         tabindex="0"
         type="button"
@@ -714,7 +712,6 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
       style="display: flex;"
     >
       <button
-        aria-haspopup="true"
         class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
         tabindex="0"
         type="button"
