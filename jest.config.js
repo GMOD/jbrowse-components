@@ -31,6 +31,7 @@ module.exports = {
     'QuickLRU.js',
   ],
   setupFiles: [
+    '<rootDir>/config/jest/timeout.js',
     '<rootDir>/config/jest/textEncoder.js',
     '<rootDir>/config/jest/fetchMock.js',
     '<rootDir>/config/jest/console.js',
