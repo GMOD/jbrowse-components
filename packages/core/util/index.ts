@@ -892,20 +892,6 @@ export const complement = (() => {
   }
 })()
 
-export function blobToDataURL(blob: Blob): Promise<string> {
-  const a = new FileReader()
-  return new Promise((resolve, reject) => {
-    a.onload = e => {
-      if (e.target) {
-        resolve(e.target.result as string)
-      } else {
-        reject(new Error('unknown result reading blob from canvas'))
-      }
-    }
-    a.readAsDataURL(blob)
-  })
-}
-
 // requires immediate execution in jest environment, because (hypothesis) it
 // otherwise listens for prerendered_canvas but reads empty pixels, and doesn't
 // get the contents of the canvas
@@ -1382,3 +1368,5 @@ export function stripAlpha(str: string) {
   const c = colord(str)
   return c.alpha(1).toHex()
 }
+
+export { blobToDataURL } from './blobToDataURL'
