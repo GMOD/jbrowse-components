@@ -13,7 +13,7 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 
 // locals
 import { isUnsupported, NodeData } from '../util'
-import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import CascadingMenuButton from '@jbrowse/core/ui/MenuButton'
 import { HierarchicalTrackSelectorModel } from '../../model'
 
 const useStyles = makeStyles()(theme => ({
