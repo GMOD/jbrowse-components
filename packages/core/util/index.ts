@@ -32,7 +32,6 @@ import { isUriLocation } from './types'
 // has to be the full path and not the relative path to get the jest mock
 import useMeasure from '@jbrowse/core/util/useMeasure'
 import { colord } from './colord'
-
 export * from './types'
 export * from './aborting'
 export * from './when'
@@ -893,20 +892,6 @@ export const complement = (() => {
   }
 })()
 
-export function blobToDataURL(blob: Blob): Promise<string> {
-  const a = new FileReader()
-  return new Promise((resolve, reject) => {
-    a.onload = e => {
-      if (e.target) {
-        resolve(e.target.result as string)
-      } else {
-        reject(new Error('unknown result reading blob from canvas'))
-      }
-    }
-    a.readAsDataURL(blob)
-  })
-}
-
 // requires immediate execution in jest environment, because (hypothesis) it
 // otherwise listens for prerendered_canvas but reads empty pixels, and doesn't
 // get the contents of the canvas
@@ -1213,8 +1198,15 @@ export function getStr(obj: unknown) {
 }
 
 // tries to measure grid width without HTML tags included
-function coarseStripHTML(s: string) {
+export function coarseStripHTML(s: string) {
   return s.replaceAll(/(<([^>]+)>)/gi, '')
+}
+
+// based on autolink-js, license MIT
+export function linkify(s: string) {
+  const pattern =
+    /(^|[\s\n]|<[A-Za-z]*\/?>)((?:https?|ftp):\/\/[\-A-Z0-9+\u0026\u2019@#\/%?=()~_|!:,.;]*[\-A-Z0-9+\u0026@#\/%=~()_|])/gi
+  return s.replaceAll(pattern, '$1<a href=\'$2\' target="_blank">$2</a>')
 }
 
 // heuristic measurement for a column of a @mui/x-data-grid, pass in values from a column
@@ -1376,3 +1368,5 @@ export function stripAlpha(str: string) {
   const c = colord(str)
   return c.alpha(1).toHex()
 }
+
+export { blobToDataURL } from './blobToDataURL'

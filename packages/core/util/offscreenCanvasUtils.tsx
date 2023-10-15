@@ -4,7 +4,7 @@ import { CanvasSequence } from 'canvas-sequencer'
 
 // locals
 import { createCanvas, createImageBitmap } from './offscreenCanvasPonyfill'
-import { blobToDataURL } from './index'
+import { blobToDataURL } from './blobToDataURL'
 
 export type RenderReturn = Record<string, unknown> | void
 

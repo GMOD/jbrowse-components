@@ -1,6 +1,7 @@
 import React from 'react'
 import escapeHTML from 'escape-html'
 import dompurify from 'dompurify'
+import { linkify } from '../util'
 
 // source https://github.com/sindresorhus/html-tags/blob/master/html-tags.json
 // with some random uncommon ones removed. note: we just use this to run the content
@@ -56,7 +57,9 @@ function isHTML(str: string) {
 // products/jbrowse-web/src/tests/Connection.test.tsx test (can delete mock to
 // see)
 //
-export default function SanitizedHTML({ html }: { html: string }) {
+export default function SanitizedHTML({ html: pre }: { html: string }) {
+  // try to add links to the text first
+  const html = linkify(pre)
   const value = isHTML(html) ? html : escapeHTML(html)
   if (!added) {
     added = true

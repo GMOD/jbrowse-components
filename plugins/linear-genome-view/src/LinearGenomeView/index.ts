@@ -3,7 +3,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { ViewType } from '@jbrowse/core/pluggableElementTypes'
 import { stateModelFactory } from './model'
 
-export default (pluginManager: PluginManager) => {
+export default function LinearGenomeViewF(pluginManager: PluginManager) {
   pluginManager.addViewType(() => {
     return new ViewType({
       name: 'LinearGenomeView',

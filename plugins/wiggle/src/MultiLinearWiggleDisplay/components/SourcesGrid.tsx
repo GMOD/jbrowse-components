@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Button } from '@mui/material'
-import { getStr, isUriLocation, measureGridWidth } from '@jbrowse/core/util'
+import { getStr, measureGridWidth } from '@jbrowse/core/util'
 import { DataGrid, GridCellParams } from '@mui/x-data-grid'
 import { makeStyles } from 'tss-react/mui'
 
@@ -14,7 +14,7 @@ import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp
 import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
-import UriLink from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/UriLink'
+import { SanitizedHTML } from '@jbrowse/core/ui'
 
 const useStyles = makeStyles()({
   cell: {
@@ -143,11 +143,7 @@ function SourcesGrid({
                 const { value } = params
                 return (
                   <div className={classes.cell}>
-                    {isUriLocation(value) ? (
-                      <UriLink value={value} />
-                    ) : (
-                      <>{getStr(value)}</>
-                    )}
+                    <SanitizedHTML html={getStr(value)} />
                   </div>
                 )
               },
