@@ -20,7 +20,6 @@ exports[`one feature 1`] = `
     <path
       d="M 0.3 0 C 0.3 100, 1 100, 1 0"
       fill="transparent"
-      id="1-one"
       pointer-events="stroke"
       stroke-width="1"
     />
