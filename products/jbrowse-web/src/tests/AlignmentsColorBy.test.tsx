@@ -28,7 +28,10 @@ test('color by tag', async () => {
   await user.click(await screen.findByTestId('track_menu_icon', ...opts))
   await user.click(await screen.findByText('Color scheme'))
   await user.click(await screen.findByText('Color by tag...'))
-  await user.type(await screen.findByPlaceholderText('Enter tag name'), 'HP')
+  await user.type(
+    await screen.findByPlaceholderText('Enter tag name', ...opts),
+    'HP',
+  )
   await user.click(await screen.findByText('Submit'))
   await screen.findAllByTestId('pileup-tag-HP', ...opts)
   const f1 = within(await screen.findByTestId('Blockset-pileup'))
