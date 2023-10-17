@@ -4,6 +4,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 /**
  * #config LinearGCContentDisplay
  * #category display
+ * extends LinearWiggleDisplay
  */
 export default function WiggleConfigFactory(pluginManager: PluginManager) {
   return ConfigurationSchema(
