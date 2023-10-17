@@ -14,14 +14,14 @@ const EditGCContentParamsDialog = observer(function ({
   handleClose,
 }: {
   model: {
-    windowSize: number
-    windowDelta: number
+    windowSizeSetting: number
+    windowDeltaSetting: number
     setGCContentParams: (a: { windowSize: number; windowDelta: number }) => void
   }
   handleClose: () => void
 }) {
-  const [windowSize, setWindowSize] = useState(`${model.windowSize}`)
-  const [windowDelta, setWindowDelta] = useState(`${model.windowDelta}`)
+  const [windowSize, setWindowSize] = useState(`${model.windowSizeSetting}`)
+  const [windowDelta, setWindowDelta] = useState(`${model.windowDeltaSetting}`)
 
   return (
     <Dialog open onClose={handleClose} title="Edit GC content params">

@@ -33,11 +33,11 @@ export default function stateModelFactory(
         /**
          * #property
          */
-        windowSize: 100,
+        windowSize: types.maybe(types.number),
         /**
          * #property
          */
-        windowDelta: 100,
+        windowDelta: types.maybe(types.number),
       }),
     )
     .actions(self => ({
@@ -50,6 +50,14 @@ export default function stateModelFactory(
       }) {
         self.windowSize = windowSize
         self.windowDelta = windowDelta
+      },
+    }))
+    .views(self => ({
+      get windowSizeSetting() {
+        return self.windowSize ?? getConf(self, 'windowSize')
+      },
+      get windowDeltaSetting() {
+        return self.windowDelta ?? getConf(self, 'windowDelta')
       },
     }))
     .views(self => {
@@ -78,15 +86,14 @@ export default function stateModelFactory(
          * subadapter on a GCContentAdapter
          */
         renderProps() {
-          const { parentTrack, windowSize, windowDelta } = self
-          const sequenceAdapter = getConf(parentTrack, 'adapter')
+          const sequenceAdapter = getConf(self.parentTrack, 'adapter')
           return {
             ...superRenderProps(),
             adapterConfig: {
               type: 'GCContentAdapter',
               sequenceAdapter,
-              windowSize,
-              windowDelta,
+              windowSize: self.windowSizeSetting,
+              windowDelta: self.windowDeltaSetting,
             },
           }
         },
