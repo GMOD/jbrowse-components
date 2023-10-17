@@ -250,7 +250,7 @@ const ArcRendering = observer(function ({
 }) {
   const [region] = regions
   const width = (region.end - region.start) / bpPerPx
-  const semicircles = readConfObject(config, 'semicircles')
+  const semicircles = readConfObject(config, 'displayMode') === 'semicircles'
 
   return (
     <Wrapper exportSVG={exportSVG} width={width} height={height}>

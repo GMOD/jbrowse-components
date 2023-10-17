@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { types } from 'mobx-state-tree'
 
 /**
  * #config ArcRenderer
@@ -57,9 +58,10 @@ const ArcRenderer = ConfigurationSchema(
     /**
      * #slot
      */
-    semicircles: {
-      type: 'boolean',
-      defaultValue: false,
+    displayMode: {
+      type: 'enum',
+      defaultValue: 'arcs',
+      model: types.enumeration('DisplayMode', ['arcs', 'semicircles']),
       description: 'render semi-circles instead of arcs',
     },
   },

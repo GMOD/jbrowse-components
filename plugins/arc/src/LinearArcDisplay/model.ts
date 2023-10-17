@@ -7,43 +7,70 @@ import { types } from 'mobx-state-tree'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import { getEnv } from '@jbrowse/core/util'
 
+/**
+ * #stateModel LinearArcDisplay
+ * extends BaseLinearDisplay
+ */
 export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
     .compose(
       'LinearArcDisplay',
       BaseLinearDisplay,
       types.model({
+        /**
+         * #property
+         */
         type: types.literal('LinearArcDisplay'),
+        /**
+         * #property
+         */
         configuration: ConfigurationReference(configSchema),
-        semicircles: types.maybe(types.boolean),
+        /**
+         * #property
+         */
+        displayMode: types.maybe(types.string),
       }),
     )
 
     .views(self => ({
+      /**
+       * #getter
+       */
       get blockType() {
         return 'staticBlocks'
       },
+      /**
+       * #getter
+       */
       get renderDelay() {
         return 500
       },
-
+      /**
+       * #getter
+       */
       get rendererTypeName() {
         return self.configuration.renderer.type
       },
     }))
     .views(self => ({
-      get semicirclesSetting() {
-        return self.semicircles ?? getConf(self, ['renderer', 'semicircles'])
+      /**
+       * #getter
+       */
+      get displayModeSetting() {
+        return self.displayMode ?? getConf(self, ['renderer', 'displayMode'])
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
       get rendererConfig() {
         const configBlob = getConf(self, ['renderer']) || {}
         const config = configBlob as Omit<typeof configBlob, symbol>
         return self.rendererType.configSchema.create(
           {
             ...config,
-            semicircles: self.semicirclesSetting,
+            displayMode: self.displayModeSetting,
           },
           getEnv(self),
         )
@@ -52,6 +79,9 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     .views(self => {
       const { renderProps: superRenderProps } = self
       return {
+        /**
+         * #method
+         */
         renderProps() {
           return {
             ...superRenderProps(),
@@ -63,21 +93,38 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       }
     })
     .actions(self => ({
-      setSemiCircles(flag: boolean) {
-        self.semicircles = flag
+      /**
+       * #action
+       */
+      setDisplayMode(flag: string) {
+        self.displayMode = flag
       },
     }))
     .views(self => {
       const superMenuItems = self.trackMenuItems
       return {
+        /**
+         * #method
+         */
         trackMenuItems() {
           return [
             ...superMenuItems(),
             {
-              label: 'Render semi-circles',
-              type: 'checkbox',
-              checked: self.semicirclesSetting,
-              onClick: () => self.setSemiCircles(!self.semicirclesSetting),
+              label: 'Display mode',
+              subMenu: [
+                {
+                  type: 'radio',
+                  label: 'Arcs',
+                  onClick: () => self.setDisplayMode('arcs'),
+                  checked: self.displayMode === 'arcs',
+                },
+                {
+                  type: 'radio',
+                  label: 'Semi-circles',
+                  onClick: () => self.setDisplayMode('semicircles'),
+                  checked: self.displayMode === 'semicircles',
+                },
+              ],
             },
           ]
         },
