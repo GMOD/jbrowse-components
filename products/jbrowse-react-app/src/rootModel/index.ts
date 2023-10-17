@@ -16,7 +16,7 @@ import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyC
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
-import { AbstractSessionModel, SessionWithWidgets } from '@jbrowse/core/util'
+import { SessionWithWidgets } from '@jbrowse/core/util'
 import { version } from '../version'
 import { MenuItem } from '@jbrowse/core/ui'
 import {
