@@ -241,7 +241,6 @@
       "name": "volvox structural variant test (<i>HTML italic</i>)",
       "category": ["VCF"],
       "assemblyNames": ["volvox"],
-
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -2115,6 +2114,20 @@
             "uri": "volvox.2bit",
             "locationType": "UriLocation"
           }
+        }
+      },
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "arc_test",
+      "name": "Arc test track",
+      "category": ["Miscellaneous"],
+      "adapter": {
+        "type": "BedAdapter",
+        "bedLocation": {
+          "uri": "arc_test.bed",
+          "locationType": "UriLocation"
         }
       },
       "assemblyNames": ["volvox"]

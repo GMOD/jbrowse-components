@@ -4127,6 +4127,36 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "trackId": "paired_end_stranded_rnaseq",
       "type": "AlignmentsTrack",
     },
+    {
+      "adapter": {
+        "bedLocation": {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "arc_test.bed",
+        },
+        "type": "BedAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Miscellaneous",
+      ],
+      "displays": [
+        {
+          "displayId": "arc_test-LinearBasicDisplay",
+          "type": "LinearBasicDisplay",
+        },
+        {
+          "displayId": "arc_test-LinearArcDisplay",
+          "type": "LinearArcDisplay",
+        },
+      ],
+      "name": "Arc test track",
+      "trackId": "arc_test",
+      "type": "FeatureTrack",
+    },
   ],
 }
 `;

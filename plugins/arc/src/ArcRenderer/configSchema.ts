@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { types } from 'mobx-state-tree'
 
 /**
  * #config ArcRenderer
@@ -53,6 +54,15 @@ const ArcRenderer = ConfigurationSchema(
         'the caption to appear when hovering over any point on the arcs',
       defaultValue: `jexl:get(feature,'name')`,
       contextVariable: ['feature'],
+    },
+    /**
+     * #slot
+     */
+    displayMode: {
+      type: 'enum',
+      defaultValue: 'arcs',
+      model: types.enumeration('DisplayMode', ['arcs', 'semicircles']),
+      description: 'render semi-circles instead of arcs',
     },
   },
   { explicitlyTyped: true },
