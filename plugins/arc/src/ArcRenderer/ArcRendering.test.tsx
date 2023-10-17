@@ -8,6 +8,7 @@ test('no features', () => {
   const r = ConfigurationSchema('Test', {}).create()
   const { container } = render(
     <Rendering
+      height={400}
       displayModel={{ selectedFeatureId: 'none' }}
       config={r}
       regions={[
@@ -25,6 +26,7 @@ test('one feature', () => {
   const r = ConfigurationSchema('Test', {}).create()
   const { container } = render(
     <Rendering
+      height={400}
       config={r}
       displayModel={{ selectedFeatureId: 'none' }}
       regions={[

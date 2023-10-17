@@ -57,6 +57,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             ...superRenderProps(),
             rpcDriverName: self.rpcDriverName,
             config: self.rendererConfig,
+            height: self.height,
           }
         },
       }
