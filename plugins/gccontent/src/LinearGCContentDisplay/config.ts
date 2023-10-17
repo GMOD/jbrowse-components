@@ -9,7 +9,16 @@ import PluginManager from '@jbrowse/core/PluginManager'
 export default function WiggleConfigFactory(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'LinearGCContentDisplay',
-    {},
+    {
+      windowSize: {
+        type: 'number',
+        defaultValue: 100,
+      },
+      windowDelta: {
+        type: 'number',
+        defaultValue: 100,
+      },
+    },
     {
       /**
        * #baseConfiguration
