@@ -39,7 +39,6 @@ function Arc({
   const caption = readConfObject(config, 'caption', { feature })
   const strokeWidth = readConfObject(config, 'thickness', { feature }) || 1
   const height = readConfObject(config, 'height', { feature }) || 100
-  console.log({ height })
   const ref = React.createRef<SVGPathElement>()
   const tooltipWidth = 20 + measureText(caption?.toString())
 
@@ -238,6 +237,7 @@ const ArcRendering = observer(function ({
   regions,
   bpPerPx,
   height,
+  exportSVG,
   displayModel: { selectedFeatureId },
 }: {
   features: Map<string, Feature>
@@ -246,13 +246,14 @@ const ArcRendering = observer(function ({
   bpPerPx: number
   height: number
   displayModel: { selectedFeatureId: string }
+  exportSVG: boolean
 }) {
   const [region] = regions
   const width = (region.end - region.start) / bpPerPx
   const semicircles = readConfObject(config, 'semicircles')
 
   return (
-    <svg width={width} height={height}>
+    <Wrapper exportSVG={exportSVG} width={width} height={height}>
       {[...features.values()].map(f =>
         semicircles ? (
           <SemiCircles
@@ -274,8 +275,28 @@ const ArcRendering = observer(function ({
           />
         ),
       )}
-    </svg>
+    </Wrapper>
   )
 })
+
+function Wrapper({
+  exportSVG,
+  width,
+  height,
+  children,
+}: {
+  exportSVG: boolean
+  width: number
+  height: number
+  children: React.ReactNode
+}) {
+  return exportSVG ? (
+    <>{children}</>
+  ) : (
+    <svg width={width} height={height}>
+      {children}
+    </svg>
+  )
+}
 
 export default ArcRendering
