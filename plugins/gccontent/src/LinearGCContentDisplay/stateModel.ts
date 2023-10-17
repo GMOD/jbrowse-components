@@ -33,11 +33,11 @@ export default function stateModelFactory(
         /**
          * #property
          */
-        windowSize: types.optional(types.number, 100),
+        windowSize: 100,
         /**
          * #property
          */
-        windowDelta: types.optional(types.number, 100),
+        windowDelta: 100,
       }),
     )
     .actions(self => ({
@@ -78,14 +78,15 @@ export default function stateModelFactory(
          * subadapter on a GCContentAdapter
          */
         renderProps() {
-          const sequenceAdapter = getConf(self.parentTrack, 'adapter')
+          const { parentTrack, windowSize, windowDelta } = self
+          const sequenceAdapter = getConf(parentTrack, 'adapter')
           return {
             ...superRenderProps(),
             adapterConfig: {
               type: 'GCContentAdapter',
               sequenceAdapter,
-              windowSize: self.windowSize,
-              windowDelta: self.windowDelta,
+              windowSize,
+              windowDelta,
             },
           }
         },
