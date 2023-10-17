@@ -10,7 +10,6 @@
           "date": "2020-08-20"
         },
         "formatAbout": {
-          "hideUris": true,
           "config": "jexl:{extraField:'important data'}"
         },
         "adapter": {
@@ -19,7 +18,19 @@
             "uri": "volvox.2bit",
             "locationType": "UriLocation"
           }
-        }
+        },
+        "displays": [
+          {
+            "type": "LinearReferenceSequenceDisplay",
+            "displayId": "volvox_refseq-LinearReferenceSequenceDisplay"
+          },
+          {
+            "type": "LinearGCContentDisplay",
+            "displayId": "volvox_refseq-LinearGCContentDisplay",
+            "windowSize": 10,
+            "windowDelta": 10
+          }
+        ]
       },
       "refNameAliases": {
         "adapter": {

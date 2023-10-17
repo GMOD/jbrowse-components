@@ -123,11 +123,12 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           {
             "displayId": "volvox_refseq-LinearGCContentDisplay",
             "type": "LinearGCContentDisplay",
+            "windowDelta": 10,
+            "windowSize": 10,
           },
         ],
         "formatAbout": {
           "config": "jexl:{extraField:'important data'}",
-          "hideUris": true,
         },
         "metadata": {
           "date": "2020-08-20",
