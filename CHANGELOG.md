@@ -1,3 +1,40 @@
+yarn run v1.22.19 $ lerna-changelog --silent --next-version 2.7.1
+
+## 2.7.1 (2023-10-18)
+
+#### :rocket: Enhancement
+
+- Other
+  - [#3986](https://github.com/GMOD/jbrowse-components/pull/3986) Allow editing
+    step size and window size of GC content adapter
+    ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#3982](https://github.com/GMOD/jbrowse-components/pull/3982) Allow
+    rendering semi-circles in the arc renderer + SVG rendering of arcs
+    ([@cmdcolin](https://github.com/cmdcolin))
+- `__mocks__`, `core`
+  - [#3981](https://github.com/GMOD/jbrowse-components/pull/3981) Auto-create
+    HTML links for URLs, and strip HTML tags where they can't be rendered
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- Other
+  - [#3991](https://github.com/GMOD/jbrowse-components/pull/3991) Remove some
+    non-functioning options from top level menu in @jbrowse/react-app
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3980](https://github.com/GMOD/jbrowse-components/pull/3980) Downgrade
+    electron 26->25 to fix screen blanking
+    ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#3971](https://github.com/GMOD/jbrowse-components/pull/3971) Fix rendering
+    multi-quantitative tracks when blank data is present
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 1
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin)) Done in 1.65s.
+
 yarn run v1.22.18 $ lerna-changelog --next-version 2.7.0
 
 ## 2.7.0 (2023-10-04)
