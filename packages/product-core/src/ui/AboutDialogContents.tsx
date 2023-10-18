@@ -14,10 +14,14 @@ import {
   Attributes,
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import FileInfoPanel from './FileInfoPanel'
+import RefNamePanel from './RefNameInfoPanel'
 
 const useStyles = makeStyles()({
   content: {
     minWidth: 800,
+  },
+  button: {
+    float: 'right',
   },
 })
 
@@ -73,7 +77,7 @@ export default function AboutContents({
         {!hideUris ? (
           <Button
             variant="contained"
-            style={{ float: 'right' }}
+            className={classes.button}
             onClick={() => {
               const snap = removeAttr(clone(conf), 'baseUri')
               copy(JSON.stringify(snap, null, 2))
@@ -96,6 +100,7 @@ export default function AboutContents({
         </BaseCard>
       ) : null}
       <FileInfoPanel config={config} />
+      <RefNamePanel config={config} />
     </div>
   )
 }
