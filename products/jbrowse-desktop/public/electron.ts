@@ -199,8 +199,9 @@ async function createWindow() {
   // this ready-to-show handler must be attached before the loadURL
   mainWindow.once('ready-to-show', () => {
     // unsure how to error handle
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    autoUpdater.checkForUpdatesAndNotify()
+    autoUpdater.checkForUpdatesAndNotify().catch(e => {
+      console.error(e)
+    })
   })
 
   await mainWindow.loadURL(
