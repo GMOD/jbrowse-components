@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/embedded-core",
-  "version": "2.7.0",
+  "version": "2.7.1",
   "description": "JBrowse 2 code shared between embedded products",
   "keywords": [
     "jbrowse",
@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.16.3",
-    "@jbrowse/product-core": "^2.7.0",
+    "@jbrowse/product-core": "^2.7.1",
     "@mui/icons-material": "^5.0.0",
     "@mui/material": "^5.10.17",
     "copy-to-clipboard": "^3.3.1",
