@@ -55,7 +55,6 @@ test('using the hotkey to bookmark the current region', async () => {
   // see https://testing-library.com/docs/user-event/keyboard for keyboard usage
   await user.keyboard('{Shift>}{Control>}D{/Shift}{/Control}')
 
-
   // @ts-expect-error
   const { bookmarks } = session.widgets.get('GridBookmark')
   expect(bookmarks).toMatchSnapshot()
