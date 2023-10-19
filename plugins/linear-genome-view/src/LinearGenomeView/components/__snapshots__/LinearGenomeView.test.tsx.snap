@@ -2,9 +2,7 @@
 
 exports[`renders one track, one region 1`] = `
 <div>
-  <div
-    style="position: relative;"
-  >
+  <div>
     <div>
       <div
         style="position: relative;"
@@ -559,9 +557,7 @@ exports[`renders one track, one region 1`] = `
 
 exports[`renders two tracks, two regions 1`] = `
 <div>
-  <div
-    style="position: relative;"
-  >
+  <div>
     <div>
       <div
         style="position: relative;"
