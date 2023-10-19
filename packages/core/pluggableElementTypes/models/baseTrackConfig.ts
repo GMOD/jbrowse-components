@@ -148,19 +148,20 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
           type: string
           displays: { type: string; displayId: string }[]
         }
-        const displayTypes = new Set()
         const { displays = [] } = snap
         if (snap.trackId !== 'placeholderId') {
           // Gets the displays on the track snapshot and the possible displays
           // from the track type and adds any missing possible displays to the
           // snapshot
-          displays.forEach(d => d && displayTypes.add(d.type))
+          const displayTypes = new Set(
+            displays.filter(d => !!d).map(d => d.type),
+          )
           const trackType = pluginManager.getTrackType(snap.type)
-          trackType.displayTypes.forEach(displayType => {
-            if (!displayTypes.has(displayType.name)) {
+          trackType.displayTypes.forEach(d => {
+            if (!displayTypes.has(d.name)) {
               displays.push({
-                displayId: `${snap.trackId}-${displayType.name}`,
-                type: displayType.name,
+                displayId: `${snap.trackId}-${d.name}`,
+                type: d.name,
               })
             }
           })
