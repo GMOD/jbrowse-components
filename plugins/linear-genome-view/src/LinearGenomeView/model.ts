@@ -1522,22 +1522,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
           if (session.focusedViewId === self.id && (e.ctrlKey || e.metaKey)) {
             if (e.code === 'ArrowLeft') {
               e.preventDefault()
-              // pan left
               self.slide(-0.9)
-            }
-            if (e.code === 'ArrowRight') {
+            } else if (e.code === 'ArrowRight') {
               e.preventDefault()
-              // pan right
               self.slide(0.9)
-            }
-            if (e.code === 'ArrowUp' && self.scaleFactor === 1) {
+            } else if (e.code === 'ArrowUp' && self.scaleFactor === 1) {
               e.preventDefault()
-              // zoom in
               self.zoom(self.bpPerPx / 2)
-            }
-            if (e.code === 'ArrowDown' && self.scaleFactor === 1) {
+            } else if (e.code === 'ArrowDown' && self.scaleFactor === 1) {
               e.preventDefault()
-              // zoom out
               self.zoom(self.bpPerPx * 2)
             }
           }

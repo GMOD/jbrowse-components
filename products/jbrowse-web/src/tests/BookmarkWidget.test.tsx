@@ -42,8 +42,8 @@ test('using the click and drag rubberband', async () => {
   fireEvent.click(await findByText('Bookmark region'))
 
   // @ts-expect-error
-  const bookmarkWidget = session.widgets.get('GridBookmark')
-  expect(bookmarkWidget.bookmarks[0].assemblyName).toBe('volvox')
+  const { bookmarks } = session.widgets.get('GridBookmark')
+  expect(bookmarks).toMatchSnapshot()
 }, 40000)
 
 test('using the hotkey to bookmark the current region', async () => {
@@ -52,18 +52,13 @@ test('using the hotkey to bookmark the current region', async () => {
   const user = userEvent.setup()
   await user.click(await findByTestId('trackContainer'))
 
-  document.dispatchEvent(
-    new KeyboardEvent('keydown', {
-      code: 'KeyD',
-      shiftKey: true,
-      ctrlKey: true,
-    }),
-  )
+  // see https://testing-library.com/docs/user-event/keyboard for keyboard usage
+  await user.keyboard('{Shift>}{Control>}D{/Shift}{/Control}')
+
 
   // @ts-expect-error
   const { bookmarks } = session.widgets.get('GridBookmark')
-  expect(bookmarks[0].start).toBe(100)
-  expect(bookmarks[0].end).toBe(140)
+  expect(bookmarks).toMatchSnapshot()
 })
 
 test('using the menu button to bookmark the current region', async () => {
@@ -76,9 +71,7 @@ test('using the menu button to bookmark the current region', async () => {
 
   // @ts-expect-error
   const { bookmarks } = session.widgets.get('GridBookmark')
-  expect(bookmarks.length).toBe(1)
-  expect(bookmarks[0].start).toBe(100)
-  expect(bookmarks[0].end).toBe(140)
+  expect(bookmarks).toMatchSnapshot()
 }, 40000)
 
 test('using the embedded link in the widget data grid', async () => {
@@ -117,14 +110,7 @@ test('using the hotkey to navigate to the most recently created bookmark', async
     assemblyName: 'volvox',
   })
 
-  document.dispatchEvent(
-    new KeyboardEvent('keydown', {
-      code: 'KeyM',
-      shiftKey: true,
-      ctrlKey: true,
-    }),
-  )
-
+  await user.keyboard('{Shift>}{Control>}M{/Shift}{/Control}')
   await waitFor(() => expect(view.visibleLocStrings).toBe('ctgA:201..240'))
 }, 40000)
 

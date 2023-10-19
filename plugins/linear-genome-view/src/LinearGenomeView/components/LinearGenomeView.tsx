@@ -23,6 +23,9 @@ const useStyles = makeStyles()(theme => ({
     paddingTop: theme.spacing(1),
     paddingBottom: theme.spacing(1),
   },
+  rel: {
+    position: 'relative',
+  },
 }))
 
 function NoTracksActive({ model }: { model: LinearGenomeViewModel }) {
@@ -54,6 +57,7 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
   const { tracks, error, initialized, hasDisplayedRegions } = model
   const ref = useRef<HTMLDivElement>(null)
   const session = getSession(model)
+  const { classes } = useStyles()
 
   useEffect(() => {
     // sets the focused view id based on a click within the LGV;
@@ -83,7 +87,7 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
   const HeaderComponent = model.HeaderComponent()
 
   return (
-    <div ref={ref}>
+    <div className={classes.rel} ref={ref}>
       <HeaderComponent model={model} />
       <MiniControlsComponent model={model} />
       <TracksContainer model={model}>
