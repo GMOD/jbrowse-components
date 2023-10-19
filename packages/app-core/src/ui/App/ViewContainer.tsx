@@ -3,9 +3,10 @@ import { Paper, useTheme } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getSession, useWidthSetter } from '@jbrowse/core/util'
-import clsx from 'clsx'
 import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util'
+
+// locals
 import ViewHeader from './ViewHeader'
 
 const useStyles = makeStyles()(theme => ({
@@ -35,7 +36,7 @@ const ViewContainer = observer(function ({
 }) {
   const theme = useTheme()
   const ref = useWidthSetter(view, theme.spacing(1))
-  const { classes } = useStyles()
+  const { classes, cx } = useStyles()
   const session = getSession(view) as SessionWithFocusedViewAndDrawerWidgets
 
   useEffect(() => {
@@ -60,7 +61,7 @@ const ViewContainer = observer(function ({
       ref={ref}
       onClick={() => session.setFocusedViewId(view.id)}
       elevation={12}
-      className={clsx(
+      className={cx(
         classes.viewContainer,
         session.focusedViewId === view.id
           ? classes.focusedView
