@@ -18,6 +18,7 @@ import SessionLoader, { SessionLoaderModel } from '../SessionLoader'
 import StartScreenErrorMessage from './StartScreenErrorMessage'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { createPluginManager } from '../createPluginManager'
+import { destroy } from 'mobx-state-tree'
 
 const ConfigTriaged = lazy(() => import('./ConfigWarningDialog'))
 const SessionTriaged = lazy(() => import('./SessionWarningDialog'))
@@ -77,15 +78,21 @@ const Renderer = observer(function ({
   const [error, setError] = useState<unknown>()
 
   useEffect(() => {
+    let pm: PluginManager | undefined
     try {
       if (!ready || shareWarningOpen) {
         return
       }
-      const pm = createPluginManager(loader)
+      createPluginManager(loader)
       setPluginManager(pm)
     } catch (e) {
       console.error(e)
       setError(e)
+    }
+    return () => {
+      if (pm) {
+        destroy(pm.rootModel)
+      }
     }
   }, [loader, ready, shareWarningOpen])
   if (configError || error) {
