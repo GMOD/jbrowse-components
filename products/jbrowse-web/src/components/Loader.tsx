@@ -20,8 +20,8 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { createPluginManager } from '../createPluginManager'
 import { destroy } from 'mobx-state-tree'
 
-const ConfigTriaged = lazy(() => import('./ConfigWarningDialog'))
-const SessionTriaged = lazy(() => import('./SessionWarningDialog'))
+const ConfigWarningDialog = lazy(() => import('./ConfigWarningDialog'))
+const SessionWarningDialog = lazy(() => import('./SessionWarningDialog'))
 const StartScreen = lazy(() => import('./StartScreen'))
 
 export function Loader({
@@ -68,6 +68,44 @@ export function Loader({
   return <Renderer loader={loader} />
 }
 
+const SessionTriaged = observer(function ({
+  loader,
+}: {
+  loader: SessionLoaderModel
+}) {
+  const { sessionTriaged } = loader
+  return (
+    <Suspense fallback={<React.Fragment />}>
+      {sessionTriaged.origin === 'session' ? (
+        <SessionWarningDialog
+          loader={loader}
+          handleClose={() => loader.setSessionTriaged(undefined)}
+        />
+      ) : (
+        <ConfigWarningDialog
+          loader={loader}
+          handleClose={() => loader.setSessionTriaged(undefined)}
+        />
+      )}
+    </Suspense>
+  )
+})
+
+const PluginManagerLoaded = observer(function ({
+  pluginManager,
+}: {
+  pluginManager: PluginManager
+}) {
+  const { rootModel } = pluginManager
+  return !rootModel?.session ? (
+    <Suspense fallback={<LoadingEllipses />}>
+      <StartScreen rootModel={rootModel} onFactoryReset={factoryReset} />
+    </Suspense>
+  ) : (
+    <JBrowse pluginManager={pluginManager} />
+  )
+})
+
 const Renderer = observer(function ({
   loader,
 }: {
@@ -95,40 +133,17 @@ const Renderer = observer(function ({
       }
     }
   }, [loader, ready, shareWarningOpen])
-  if (configError || error) {
-    return <StartScreenErrorMessage error={configError || error} />
-  }
 
-  if (loader.sessionTriaged) {
-    return (
-      <Suspense fallback={<React.Fragment />}>
-        {loader.sessionTriaged.origin === 'session' ? (
-          <SessionTriaged
-            loader={loader}
-            handleClose={() => loader.setSessionTriaged(undefined)}
-          />
-        ) : (
-          <ConfigTriaged
-            loader={loader}
-            handleClose={() => loader.setSessionTriaged(undefined)}
-          />
-        )}
-      </Suspense>
-    )
+  const err = configError || error
+  if (err) {
+    return <StartScreenErrorMessage error={err} />
+  } else if (loader.sessionTriaged) {
+    return <SessionTriaged loader={loader} />
+  } else if (pluginManager) {
+    return <PluginManagerLoaded pluginManager={pluginManager} />
+  } else {
+    return <Loading />
   }
-  if (pluginManager) {
-    return !pluginManager.rootModel?.session ? (
-      <Suspense fallback={<LoadingEllipses />}>
-        <StartScreen
-          rootModel={pluginManager.rootModel}
-          onFactoryReset={factoryReset}
-        />
-      </Suspense>
-    ) : (
-      <JBrowse pluginManager={pluginManager} />
-    )
-  }
-  return <Loading />
 })
 
 const LoaderWrapper = ({ initialTimestamp }: { initialTimestamp: number }) => {
