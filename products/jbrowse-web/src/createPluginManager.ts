@@ -45,6 +45,7 @@ export function createPluginManager(self: SessionLoaderModel) {
     { pluginManager },
   )
 
+  // @ts-expect-error
   if (!self.configSnapshot?.configuration?.rpc?.defaultDriver) {
     const { rpc } = rootModel.jbrowse.configuration
     rpc.defaultDriver.set('WebWorkerRpcDriver')
@@ -67,6 +68,7 @@ export function createPluginManager(self: SessionLoaderModel) {
     } else if (self.sessionSnapshot) {
       rootModel.setSession(self.sessionSnapshot)
     } else if (self.sessionSpec) {
+      // @ts-expect-error
       afterInitializedCb = loadSessionSpec(self.sessionSpec, pluginManager)
     } else if (rootModel.jbrowse.defaultSession?.views?.length) {
       rootModel.setDefaultSession()

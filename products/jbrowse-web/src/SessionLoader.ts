@@ -12,6 +12,12 @@ import { nanoid } from '@jbrowse/core/util/nanoid'
 import { readSessionFromDynamo } from './sessionSharing'
 import { addRelativeUris, checkPlugins, fromUrlSafeB64, readConf } from './util'
 
+export interface SessionTriagedInfo {
+  snap: unknown
+  origin: string
+  reason: PluginDefinition[]
+}
+
 const SessionLoader = types
   .model({
     configPath: types.maybe(types.string),
@@ -25,18 +31,11 @@ const SessionLoader = types
     initialTimestamp: types.number,
   })
   .volatile(() => ({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any,
-    blankSession: false as any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any,
-    sessionTriaged: undefined as any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any,
-    shareWarningOpen: false as any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any,
-    configSnapshot: undefined as any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any,
-    sessionSnapshot: undefined as any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any,
-    sessionSpec: undefined as any,
+    sessionTriaged: undefined as SessionTriagedInfo | undefined,
+    configSnapshot: undefined as Record<string, unknown> | undefined,
+    sessionSnapshot: undefined as Record<string, unknown> | undefined,
+    sessionSpec: undefined as Record<string, unknown> | undefined,
+    blankSession: false,
     runtimePlugins: [] as PluginRecord[],
     sessionPlugins: [] as PluginRecord[],
     sessionError: undefined as unknown,
@@ -114,21 +113,17 @@ const SessionLoader = types
     setSessionPlugins(plugins: PluginRecord[]) {
       self.sessionPlugins = plugins
     },
-    setConfigSnapshot(snap: unknown) {
+    setConfigSnapshot(snap: Record<string, unknown>) {
       self.configSnapshot = snap
     },
 
     setBlankSession(flag: boolean) {
       self.blankSession = flag
     },
-    setSessionTriaged(args?: {
-      snap: unknown
-      origin: string
-      reason: { url?: string }[]
-    }) {
+    setSessionTriaged(args?: SessionTriagedInfo) {
       self.sessionTriaged = args
     },
-    setSessionSnapshotSuccess(snap: unknown) {
+    setSessionSnapshotSuccess(snap: Record<string, unknown>) {
       self.sessionSnapshot = snap
     },
   }))
@@ -254,6 +249,7 @@ const SessionLoader = types
     async fetchSharedSession() {
       const defaultURL = 'https://share.jbrowse.org/api/v1/'
       const decryptedSession = await readSessionFromDynamo(
+        // @ts-expect-error
         `${readConf(self.configSnapshot, 'shareURL', defaultURL)}load`,
         self.sessionQuery || '',
         self.password || '',
