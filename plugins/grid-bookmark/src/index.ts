@@ -18,7 +18,6 @@ import BookmarksIcon from '@mui/icons-material/Bookmarks'
 
 import GridBookmarkWidgetF from './GridBookmarkWidget'
 import { GridBookmarkModel } from './GridBookmarkWidget/model'
-import { addDisposer } from 'mobx-state-tree'
 
 export default class extends Plugin {
   name = 'GridBookmarkPlugin'
@@ -122,28 +121,22 @@ export default class extends Plugin {
               }
             })
             .actions(self => ({
-              afterAttach() {
-                function handler(e: KeyboardEvent) {
+              afterCreate() {
+                document.addEventListener('keydown', e => {
                   const activationSequence =
                     (e.ctrlKey || e.metaKey) && e.shiftKey
                   // ctrl+shift+d or cmd+shift+d
-                  if (activationSequence) {
-                    if (e.code === 'KeyD') {
-                      e.preventDefault()
-                      self.activateBookmarkWidget()
-                      self.bookmarkCurrentRegion()
-                      getSession(self).notify('Bookmark created.', 'success')
-                    }
-                    // ctrl+shift+m or cmd+shift+m
-                    if (e.code === 'KeyM') {
-                      e.preventDefault()
-                      self.navigateNewestBookmark()
-                    }
+                  if (activationSequence && e.code === 'KeyD') {
+                    e.preventDefault()
+                    self.activateBookmarkWidget()
+                    self.bookmarkCurrentRegion()
+                    getSession(self).notify('Bookmark created.', 'success')
                   }
-                }
-                document.addEventListener('keydown', handler)
-                addDisposer(self, () => {
-                  document.removeEventListener('keydown', handler)
+                  // ctrl+shift+m or cmd+shift+m
+                  if (activationSequence && e.code === 'KeyM') {
+                    e.preventDefault()
+                    self.navigateNewestBookmark()
+                  }
                 })
               },
             }))

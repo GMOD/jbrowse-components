@@ -59,7 +59,6 @@ const ViewContainer = observer(function ({
   return (
     <Paper
       ref={ref}
-      onClick={() => session.setFocusedViewId(view.id)}
       elevation={12}
       className={cx(
         classes.viewContainer,
