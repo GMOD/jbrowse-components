@@ -12,6 +12,12 @@ import { nanoid } from '@jbrowse/core/util/nanoid'
 import { readSessionFromDynamo } from './sessionSharing'
 import { addRelativeUris, checkPlugins, fromUrlSafeB64, readConf } from './util'
 
+interface SessionTriagedInfo {
+  snap: unknown
+  origin: string
+  reason: { url?: string }[]
+}
+
 const SessionLoader = types
   .model({
     configPath: types.maybe(types.string),
@@ -28,7 +34,7 @@ const SessionLoader = types
     // eslint-disable-next-line @typescript-eslint/no-explicit-any,
     blankSession: false as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any,
-    sessionTriaged: undefined as any,
+    sessionTriaged: undefined as SessionTriagedInfo | undefined,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any,
     shareWarningOpen: false as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any,

@@ -111,14 +111,14 @@ const Renderer = observer(function ({
 }: {
   loader: SessionLoaderModel
 }) {
-  const { configError, ready, shareWarningOpen } = loader
+  const { configError, ready } = loader
   const [pluginManager, setPluginManager] = useState<PluginManager>()
   const [error, setError] = useState<unknown>()
 
   useEffect(() => {
     let pm: PluginManager | undefined
     try {
-      if (!ready || shareWarningOpen) {
+      if (!ready) {
         return
       }
       pm = createPluginManager(loader)
@@ -132,7 +132,7 @@ const Renderer = observer(function ({
         destroy(pm.rootModel)
       }
     }
-  }, [loader, ready, shareWarningOpen])
+  }, [loader, ready])
 
   const err = configError || error
   if (err) {
