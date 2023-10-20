@@ -45,9 +45,11 @@ const ShadowComponent = () => {
                         },
                         components: {
                             MuiPopover: {
-                                container: () => {
-                                        return nodeForPin.current
+                                defaultProps: {
+                                    container: () => {
+                                            return nodeForPin.current
                                     },
+                                }
 
                             },
                             MuiPopper: {
@@ -77,6 +79,11 @@ const ShadowComponent = () => {
                                     container: () => {
                                         return nodeForPin.current
                                     },
+                                },
+                            },
+                            MuiPaper: {
+                                defaultProps: {
+                                    component: nodeForPin.current    
                                 },
                             },
                         },
