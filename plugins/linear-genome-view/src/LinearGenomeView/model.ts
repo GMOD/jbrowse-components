@@ -236,6 +236,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * show the "gridlines" in the track area
          */
         showGridlines: true,
+
+        /**
+         * #property
+         * show the bookmark highlights on this track
+         */
+        showBookmarkHighlights: true,
       }),
     )
     .volatile(() => ({
@@ -561,6 +567,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       toggleShowGridlines() {
         self.showGridlines = !self.showGridlines
+      },
+
+      /**
+       * #action
+       */
+      toggleShowBookmarkHighlights() {
+        self.showBookmarkHighlights = !self.showBookmarkHighlights
       },
       /**
        * #action

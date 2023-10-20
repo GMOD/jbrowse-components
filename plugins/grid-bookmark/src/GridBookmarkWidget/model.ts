@@ -22,11 +22,20 @@ const LabeledRegionModel = types
     RegionModel,
     types.model('Label', {
       label: types.optional(types.string, ''),
+      highlight: types.optional(
+        types.string,
+        `rgba(${Math.round(Math.random() * 255)}, ${Math.round(
+          Math.random() * 255,
+        )}, ${Math.round(Math.random() * 255)}, 0.3)`,
+      ),
     }),
   )
   .actions(self => ({
     setLabel(label: string) {
       self.label = label
+    },
+    setHighlight(color: string) {
+      self.highlight = color
     },
   }))
 
@@ -40,10 +49,12 @@ export interface ILabeledRegionModel
   start: number
   end: number
   reversed: boolean
+  highlight: string
   assemblyName: string
   label: string
   setRefName: (newRefName: string) => void
   setLabel: (label: string) => void
+  setHighlight: (color: string) => void
 }
 
 export interface IExtendedLabeledRegionModel extends ILabeledRegionModel {
@@ -149,6 +160,12 @@ export default function f(_pluginManager: PluginManager) {
         label: string,
       ) {
         bookmark.correspondingObj.setLabel(label)
+      },
+      updateBookmarkHighlight(
+        bookmark: IExtendedLabeledRegionModel,
+        color: string,
+      ) {
+        bookmark.correspondingObj.setHighlight(color)
       },
       setSelectedBookmarks(bookmarks: IExtendedLabeledRegionModel[]) {
         self.selectedBookmarks = bookmarks

@@ -97,6 +97,10 @@ export default class extends Plugin {
                       icon: BookmarkIcon,
                       onClick: () => self.bookmarkCurrentRegion(),
                     },
+                    {
+                      label: 'Toggle bookmark highlights',
+                      onClick: () => self.toggleShowBookmarkHighlights(),
+                    },
                   ]
                 },
 

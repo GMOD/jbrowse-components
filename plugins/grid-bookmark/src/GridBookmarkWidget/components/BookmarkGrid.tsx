@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useState } from 'react'
+import React, { Suspense, lazy, useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
 import { Link } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
@@ -15,6 +15,7 @@ import { navToBookmark } from '../utils'
 import { GridBookmarkModel, IExtendedLabeledRegionModel } from '../model'
 import { useResizeBar } from '@jbrowse/core/ui/useResizeBar'
 import ResizeBar from '@jbrowse/core/ui/ResizeBar'
+import { PopoverPicker } from '@jbrowse/core/ui/ColorPicker'
 
 const EditBookmarkLabelDialog = lazy(() => import('./EditBookmarkLabelDialog'))
 
@@ -59,9 +60,7 @@ const BookmarkGrid = observer(function ({
       }
     })
 
-  // reset selections if bookmarked regions change
-  // needed especially if bookmarked regions are deleted, then
-  const [widths, setWidths] = useState([
+  const rowWidths = [
     40,
     Math.max(
       measureText('Bookmark link'),
@@ -75,7 +74,16 @@ const BookmarkGrid = observer(function ({
       measureText('Assembly'),
       measureGridWidth(rows.map(row => row.assemblyName)),
     ),
-  ])
+    100,
+  ]
+
+  const [widths, setWidths] = useState(rowWidths)
+
+  useEffect(() => {
+    if (rows.length > 0) {
+      setWidths(rowWidths)
+    }
+  }, [rows.length, setWidths])
 
   return (
     <>
@@ -122,6 +130,19 @@ const BookmarkGrid = observer(function ({
               field: 'assemblyName',
               headerName: 'Assembly',
               width: widths[3],
+            },
+            {
+              field: 'highlight',
+              headerName: 'Highlight',
+              width: widths[4],
+              renderCell: ({ value, row }) => (
+                <PopoverPicker
+                  color={value || 'black'}
+                  onChange={event => {
+                    return model.updateBookmarkHighlight(row, event)
+                  }}
+                />
+              ),
             },
           ]}
           onCellDoubleClick={({ row }) => setDialogRow(row)}

@@ -2,6 +2,7 @@ import React, { useRef } from 'react'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { Menu } from '@jbrowse/core/ui'
+import { getEnv } from '@jbrowse/core/util'
 
 // local utils
 import { LinearGenomeViewModel, SCALE_BAR_HEIGHT } from '..'
@@ -14,7 +15,7 @@ import Gridlines from './Gridlines'
 import CenterLine from './CenterLine'
 import VerticalGuide from './VerticalGuide'
 import RubberbandSpan from './RubberbandSpan'
-import { getEnv } from '@jbrowse/core/util'
+import Highlight from './Highlight'
 
 const useStyles = makeStyles()({
   tracksContainer: {
@@ -108,6 +109,7 @@ const TracksContainer = observer(function TracksContainer({
         }
       />
       {additional}
+      <Highlight model={model} />
       {children}
     </div>
   )
