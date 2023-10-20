@@ -11,6 +11,10 @@ import factoryReset from '../factoryReset'
 import { SessionLoaderModel } from '../SessionLoader'
 
 import WarningIcon from '@mui/icons-material/Warning'
+import {
+  PluginDefinition,
+  pluginDescriptionString,
+} from '@jbrowse/core/PluginLoader'
 
 function ConfigWarningDialog({
   onConfirm,
@@ -19,16 +23,10 @@ function ConfigWarningDialog({
 }: {
   onConfirm: () => void
   onCancel: () => void
-  reason: { url: string }[]
+  reason: PluginDefinition[]
 }) {
   return (
-    <Dialog
-      open
-      maxWidth="xl"
-      data-testid="session-warning-modal"
-      title="Warning"
-      aria-labelledby="alert-dialog-title"
-    >
+    <Dialog open maxWidth="xl" title="Warning">
       <DialogContent>
         <WarningIcon fontSize="large" />
         <DialogContentText>
@@ -36,7 +34,7 @@ function ConfigWarningDialog({
           unknown plugins:
           <ul>
             {reason.map(r => (
-              <li key={JSON.stringify(r)}>URL: {r.url}</li>
+              <li key={JSON.stringify(r)}>{pluginDescriptionString(r)}</li>
             ))}
           </ul>
           Please ensure you trust the source of this link.
@@ -65,10 +63,11 @@ export default function ConfigTriaged({
   loader: SessionLoaderModel
   handleClose: () => void
 }) {
-  return (
+  const { sessionTriaged } = loader
+  return sessionTriaged ? (
     <ConfigWarningDialog
       onConfirm={async () => {
-        const session = JSON.parse(JSON.stringify(loader.sessionTriaged.snap))
+        const session = JSON.parse(JSON.stringify(sessionTriaged.snap))
         await loader.fetchPlugins(session)
         loader.setConfigSnapshot({ ...session, id: nanoid() })
         handleClose()
@@ -77,7 +76,7 @@ export default function ConfigTriaged({
         await factoryReset()
         handleClose()
       }}
-      reason={loader.sessionTriaged.reason}
+      reason={sessionTriaged.reason}
     />
-  )
+  ) : null
 }

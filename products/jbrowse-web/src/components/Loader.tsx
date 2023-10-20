@@ -14,11 +14,13 @@ import '@fontsource/roboto'
 import Loading from './Loading'
 import JBrowse from './JBrowse'
 import factoryReset from '../factoryReset'
-import SessionLoader, { SessionLoaderModel } from '../SessionLoader'
+import SessionLoader, {
+  SessionLoaderModel,
+  SessionTriagedInfo,
+} from '../SessionLoader'
 import StartScreenErrorMessage from './StartScreenErrorMessage'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { createPluginManager } from '../createPluginManager'
-import { destroy } from 'mobx-state-tree'
 
 const ConfigWarningDialog = lazy(() => import('./ConfigWarningDialog'))
 const SessionWarningDialog = lazy(() => import('./SessionWarningDialog'))
@@ -69,14 +71,15 @@ export function Loader({
 }
 
 const SessionTriaged = observer(function ({
+  sessionTriaged,
   loader,
 }: {
   loader: SessionLoaderModel
+  sessionTriaged: SessionTriagedInfo
 }) {
-  const { sessionTriaged } = loader
   return (
     <Suspense fallback={<React.Fragment />}>
-      {sessionTriaged.origin === 'session' ? (
+      {sessionTriaged?.origin === 'session' ? (
         <SessionWarningDialog
           loader={loader}
           handleClose={() => loader.setSessionTriaged(undefined)}
@@ -111,7 +114,7 @@ const Renderer = observer(function ({
 }: {
   loader: SessionLoaderModel
 }) {
-  const { configError, ready } = loader
+  const { configError, ready, sessionTriaged } = loader
   const [pluginManager, setPluginManager] = useState<PluginManager>()
   const [error, setError] = useState<unknown>()
 
@@ -127,18 +130,13 @@ const Renderer = observer(function ({
       console.error(e)
       setError(e)
     }
-    return () => {
-      if (pm) {
-        destroy(pm.rootModel)
-      }
-    }
   }, [loader, ready])
 
   const err = configError || error
   if (err) {
     return <StartScreenErrorMessage error={err} />
-  } else if (loader.sessionTriaged) {
-    return <SessionTriaged loader={loader} />
+  } else if (sessionTriaged) {
+    return <SessionTriaged loader={loader} sessionTriaged={sessionTriaged} />
   } else if (pluginManager) {
     return <PluginManagerLoaded pluginManager={pluginManager} />
   } else {
