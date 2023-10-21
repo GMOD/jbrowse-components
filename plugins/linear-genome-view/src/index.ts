@@ -11,6 +11,10 @@ import {
   BaseLinearDisplayComponent,
   baseLinearDisplayConfigSchema,
 } from './BaseLinearDisplay'
+import {
+  configSchema as linearBasicDisplayConfigSchemaFactory,
+  modelFactory as linearBasicDisplayModelFactory,
+} from './LinearBasicDisplay'
 import LinearBareDisplayF from './LinearBareDisplay'
 import LinearGenomeViewF, {
   SearchBox,
@@ -33,6 +37,8 @@ export default class LinearGenomeViewPlugin extends Plugin {
     SearchBox,
     ZoomControls,
     LinearGenomeView,
+    linearBasicDisplayModelFactory,
+    linearBasicDisplayConfigSchemaFactory,
   }
 
   install(pluginManager: PluginManager) {
