@@ -5521,10 +5521,10 @@ app-builder-bin@4.0.0:
   resolved "https://registry.yarnpkg.com/app-builder-bin/-/app-builder-bin-4.0.0.tgz#1df8e654bd1395e4a319d82545c98667d7eed2f0"
   integrity sha512-xwdG0FJPQMe0M0UA4Tz0zEB8rBJTRA5a476ZawAqiBkMv16GRK5xpXThOjMaEOFnZ6zabejjG4J3da0SXG63KA==
 
-app-builder-lib@24.6.4:
-  version "24.6.4"
-  resolved "https://registry.yarnpkg.com/app-builder-lib/-/app-builder-lib-24.6.4.tgz#5bf77dd89d3ee557bc615b9ddfaf383f3e51577b"
-  integrity sha512-m9931WXb83teb32N0rKg+ulbn6+Hl8NV5SUpVDOVz9MWOXfhV6AQtTdftf51zJJvCQnQugGtSqoLvgw6mdF/Rg==
+app-builder-lib@24.8.0:
+  version "24.8.0"
+  resolved "https://registry.yarnpkg.com/app-builder-lib/-/app-builder-lib-24.8.0.tgz#b62b58729035865a04d4089d3cc7bc12c05c4e71"
+  integrity sha512-C+IQn8V3D+PJ+c9hkYfcJOchvsWwF8PvrKvLz9D7riPK3mV3gMK2d7Y1/sklf8YcjiqUKhs9ZpKSuVafohyxlA==
   dependencies:
     "7zip-bin" "~5.1.1"
     "@develar/schema-utils" "~2.6.5"
@@ -5535,12 +5535,12 @@ app-builder-lib@24.6.4:
     "@types/fs-extra" "9.0.13"
     async-exit-hook "^2.0.1"
     bluebird-lst "^1.0.9"
-    builder-util "24.5.0"
-    builder-util-runtime "9.2.1"
+    builder-util "24.8.0"
+    builder-util-runtime "9.2.2"
     chromium-pickle-js "^0.2.0"
     debug "^4.3.4"
     ejs "^3.1.8"
-    electron-publish "24.5.0"
+    electron-publish "24.8.0"
     form-data "^4.0.0"
     fs-extra "^10.1.0"
     hosted-git-info "^4.1.0"
@@ -6397,16 +6397,24 @@ builder-util-runtime@9.2.1:
     debug "^4.3.4"
     sax "^1.2.4"
 
-builder-util@24.5.0:
-  version "24.5.0"
-  resolved "https://registry.yarnpkg.com/builder-util/-/builder-util-24.5.0.tgz#8683c9a7a1c5c9f9a4c4d2789ecca0e47dddd3f9"
-  integrity sha512-STnBmZN/M5vGcv01u/K8l+H+kplTaq4PAIn3yeuufUKSpcdro0DhJWxPI81k5XcNfC//bjM3+n9nr8F9uV4uAQ==
+builder-util-runtime@9.2.2:
+  version "9.2.2"
+  resolved "https://registry.yarnpkg.com/builder-util-runtime/-/builder-util-runtime-9.2.2.tgz#8ba9db2d2f2aa85c280d39edd9a68ee7bde9af92"
+  integrity sha512-Or2/ycVYRGQ876hKMfiz2Ghgzh3WllgPW75jqt1Ta2a5wprpnziFrHpQ9eUq6/ScsVXMnG4PmQqlMsE9NFg8DQ==
+  dependencies:
+    debug "^4.3.4"
+    sax "^1.2.4"
+
+builder-util@24.8.0:
+  version "24.8.0"
+  resolved "https://registry.yarnpkg.com/builder-util/-/builder-util-24.8.0.tgz#e9773c65abca10d284858007ab0b6658ee41fa08"
+  integrity sha512-QSDHklYjzsvKybxLTZOvHzXQq8iI167C/ccSKgMxhML53ExCiGOwR+QUM+8VPi0KFR3RBAsiNC/w1KFeOght1A==
   dependencies:
     "7zip-bin" "~5.1.1"
     "@types/debug" "^4.1.6"
     app-builder-bin "4.0.0"
     bluebird-lst "^1.0.9"
-    builder-util-runtime "9.2.1"
+    builder-util-runtime "9.2.2"
     chalk "^4.1.2"
     cross-spawn "^7.0.3"
     debug "^4.3.4"
@@ -8195,14 +8203,14 @@ dir-glob@^3.0.1:
   dependencies:
     path-type "^4.0.0"
 
-dmg-builder@24.6.4:
-  version "24.6.4"
-  resolved "https://registry.yarnpkg.com/dmg-builder/-/dmg-builder-24.6.4.tgz#e19b8305f7e1ea0b4faaa30382c81b9d6de39863"
-  integrity sha512-BNcHRc9CWEuI9qt0E655bUBU/j/3wUCYBVKGu1kVpbN5lcUdEJJJeiO0NHK3dgKmra6LUUZlo+mWqc+OCbi0zw==
+dmg-builder@24.8.0:
+  version "24.8.0"
+  resolved "https://registry.yarnpkg.com/dmg-builder/-/dmg-builder-24.8.0.tgz#7fcb887de08c7a96036497f8099f5223ab235454"
+  integrity sha512-RVJCdLwog4xM0SVB/54YevwIJjOKVuo5tSVTJplDbKPCsbRRh6CXQ2QIw3i4J+o0upkactzqiNZ5iJtj4TOFHw==
   dependencies:
-    app-builder-lib "24.6.4"
-    builder-util "24.5.0"
-    builder-util-runtime "9.2.1"
+    app-builder-lib "24.8.0"
+    builder-util "24.8.0"
+    builder-util-runtime "9.2.2"
     fs-extra "^10.1.0"
     iconv-lite "^0.6.2"
     js-yaml "^4.1.0"
@@ -8408,16 +8416,16 @@ ejs@^3.1.7, ejs@^3.1.8, ejs@^3.1.9:
   dependencies:
     jake "^10.8.5"
 
-electron-builder@^24.4.0:
-  version "24.6.4"
-  resolved "https://registry.yarnpkg.com/electron-builder/-/electron-builder-24.6.4.tgz#c51271e49b9a02c9a3ec444f866b6008c4d98a1d"
-  integrity sha512-uNWQoU7pE7qOaIQ6CJHpBi44RJFVG8OHRBIadUxrsDJVwLLo8Nma3K/EEtx5/UyWAQYdcK4nVPYKoRqBb20hbA==
+electron-builder@^24.8.0:
+  version "24.8.0"
+  resolved "https://registry.yarnpkg.com/electron-builder/-/electron-builder-24.8.0.tgz#008f52a4ceb39f95df09b7b73b782e8d161a94c0"
+  integrity sha512-UbG+yXDKQFx8nQS7mowDsOkrfAhNjVrSfd5U/ze22dlCa+yfZLhbYlZH5NIH1dOKkrVrNXyvKxsPEIr+85W1XQ==
   dependencies:
-    app-builder-lib "24.6.4"
-    builder-util "24.5.0"
-    builder-util-runtime "9.2.1"
+    app-builder-lib "24.8.0"
+    builder-util "24.8.0"
+    builder-util-runtime "9.2.2"
     chalk "^4.1.2"
-    dmg-builder "24.6.4"
+    dmg-builder "24.8.0"
     fs-extra "^10.1.0"
     is-ci "^3.0.0"
     lazy-val "^1.0.5"
@@ -8463,14 +8471,14 @@ electron-mock-ipc@^0.3.8:
   resolved "https://registry.yarnpkg.com/electron-mock-ipc/-/electron-mock-ipc-0.3.12.tgz#f9a7dca9a23a95dbe5a62f27cca12768d4cb88c0"
   integrity sha512-/uwZRpbX+k4E+GesmREg6XcQiTLNhi35M/cw8Czr+ij9k+EYTYY3UPkILnsTr5KTEeAx5/uypf/KwjZDQFDyjA==
 
-electron-publish@24.5.0:
-  version "24.5.0"
-  resolved "https://registry.yarnpkg.com/electron-publish/-/electron-publish-24.5.0.tgz#492a4d7caa232e88ee3c18f5c3b4dc637e5e1b3a"
-  integrity sha512-zwo70suH15L15B4ZWNDoEg27HIYoPsGJUF7xevLJLSI7JUPC8l2yLBdLGwqueJ5XkDL7ucYyRZzxJVR8ElV9BA==
+electron-publish@24.8.0:
+  version "24.8.0"
+  resolved "https://registry.yarnpkg.com/electron-publish/-/electron-publish-24.8.0.tgz#8fcf282a05b63958470c1ca53a8807555089d475"
+  integrity sha512-/qrlJFDs+2xQ6NvHIze2uaRJoQm6nks21dah2QWLRVKlxsfTBnDIYXU9HeGdaPqMJB4rmnYgLky8tEFx049xuA==
   dependencies:
     "@types/fs-extra" "^9.0.11"
-    builder-util "24.5.0"
-    builder-util-runtime "9.2.1"
+    builder-util "24.8.0"
+    builder-util-runtime "9.2.2"
     chalk "^4.1.2"
     fs-extra "^10.1.0"
     lazy-val "^1.0.5"
