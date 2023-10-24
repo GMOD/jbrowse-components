@@ -142,6 +142,7 @@
       "artifactName": "jbrowse-desktop-v${version}-linux.${ext}"
     },
     "mac": {
+      "mergeASARs": false,
       "target": [
         {
           "target": "dmg",
