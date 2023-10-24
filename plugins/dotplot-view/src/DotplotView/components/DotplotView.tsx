@@ -313,6 +313,8 @@ const DotplotViewInternal = observer(function ({
                   if (mousedown && mouseup) {
                     model.zoomIn(mousedown, mouseup)
                   }
+                  // below line is needed to prevent tooltip from sticking
+                  setMouseOvered(false)
                 },
               },
               {
@@ -321,6 +323,8 @@ const DotplotViewInternal = observer(function ({
                   if (mousedown && mouseup) {
                     model.onDotplotView(mousedown, mouseup)
                   }
+                  // below line is needed to prevent tooltip from sticking
+                  setMouseOvered(false)
                 },
               },
             ]}
