@@ -31,9 +31,9 @@ the model explicitly
 
 ```js
 // type signature
-string
+ISimpleType<"LinearGenomeView">
 // code
-type: types.literal('LinearGenomeView') as unknown as string
+type: types.literal('LinearGenomeView')
 ```
 
 #### property: offsetPx

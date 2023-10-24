@@ -133,8 +133,9 @@ export const WIDGET_HEIGHT = 32
 export function stateModelFactory(pluginManager: PluginManager) {
   return types
     .compose(
+      'LinearGenomeView',
       BaseViewModel,
-      types.model('LinearGenomeView', {
+      types.model({
         /**
          * #property
          */
@@ -146,7 +147,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * reduce some typescripting strictness, but you should pass the string
          * 'LinearGenomeView' to the model explicitly
          */
-        type: types.literal('LinearGenomeView') as unknown as string,
+        type: types.literal('LinearGenomeView'),
 
         /**
          * #property
