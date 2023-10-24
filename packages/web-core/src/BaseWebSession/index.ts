@@ -235,14 +235,14 @@ export function BaseWebSession({
       /**
        * #action
        */
-      removeSessionPlugin(pluginDefinition: PluginDefinition) {
+      removeSessionPlugin(d: PluginDefinition) {
         self.sessionPlugins = cast(
           self.sessionPlugins.filter(
-            plugin =>
-              plugin.url !== pluginDefinition.url ||
-              plugin.umdUrl !== pluginDefinition.umdUrl ||
-              plugin.cjsUrl !== pluginDefinition.cjsUrl ||
-              plugin.esmUrl !== pluginDefinition.esmUrl,
+            p =>
+              p.url !== d.url ||
+              p.umdUrl !== d.umdUrl ||
+              p.cjsUrl !== d.cjsUrl ||
+              p.esmUrl !== d.esmUrl,
           ),
         )
         getParent<any>(self).setPluginsUpdated(true)

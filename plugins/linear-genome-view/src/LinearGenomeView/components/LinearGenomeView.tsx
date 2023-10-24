@@ -90,7 +90,23 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
   const HeaderComponent = model.HeaderComponent()
 
   return (
-    <div className={classes.rel} ref={ref}>
+    <div
+      className={classes.rel}
+      ref={ref}
+      onMouseMove={event => {
+        const c = ref.current
+        if (!c) {
+          return
+        }
+        const hoverPosition = model.pxToBp(
+          event.clientX - c.getBoundingClientRect().left,
+        )
+        const hoverFeature = model.tracks.find(
+          t => t.displays[0].featureUnderMouse,
+        )
+        session.setHovered({ hoverPosition, hoverFeature })
+      }}
+    >
       <HeaderComponent model={model} />
       <MiniControlsComponent model={model} />
       <TracksContainer model={model}>
