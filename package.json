@@ -106,7 +106,7 @@
     "dotenv": "^16.3.1",
     "dotenv-expand": "^10.0.0",
     "electron": "27.0.1",
-    "electron-builder": "^24.4.0",
+    "electron-builder": "^24.8.0",
     "electron-mock-ipc": "^0.3.8",
     "eslint": "^8.0.0",
     "eslint-config-prettier": "^9.0.0",
