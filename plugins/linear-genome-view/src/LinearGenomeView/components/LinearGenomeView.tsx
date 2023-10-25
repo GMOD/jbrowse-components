@@ -26,6 +26,9 @@ const useStyles = makeStyles()(theme => ({
   rel: {
     position: 'relative',
   },
+  top: {
+    zIndex: 1000,
+  },
 }))
 
 function NoTracksActive({ model }: { model: LinearGenomeViewModel }) {
@@ -40,7 +43,7 @@ function NoTracksActive({ model }: { model: LinearGenomeViewModel }) {
             variant="contained"
             color="primary"
             onClick={() => model.activateTrackSelector()}
-            style={{ zIndex: 1000 }}
+            className={classes.top}
             startIcon={<TrackSelectorIcon />}
           >
             Open track selector
