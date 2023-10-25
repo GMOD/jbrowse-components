@@ -14,7 +14,7 @@ Docs http://jbrowse.org/jb2/docs/
 ## Pre-requisites
 
 - [git](https://git-scm.com/downloads)
-- [nodejs](https://nodejs.org/en/download/) (node 14 or greater)
+- [nodejs](https://nodejs.org/en/download/) (node 18 or greater)
 - [yarn](https://yarnpkg.com/en/docs/install)
 
 You may need additional pre-requisites on certain versions of nodejs.
