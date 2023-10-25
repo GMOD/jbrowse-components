@@ -99,7 +99,7 @@
     "cors": "^2.8.5",
     "cross-env": "^7.0.2",
     "cross-spawn": "^7.0.1",
-    "crypto-js": "^3.0.0",
+    "crypto-js": "^4.2.0",
     "css-loader": "^6.5.1",
     "css-minimizer-webpack-plugin": "^5.0.1",
     "dependency-graph": "^0.11.0",
