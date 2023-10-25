@@ -49,6 +49,14 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       view: types.safeReference(
         pluginManager.pluggableMstType('view', 'stateModel'),
       ),
+      /**
+       * #property
+       */
+      favorites: types.array(types.string),
+      /**
+       * #property
+       */
+      recentlyUsed: types.array(types.string),
     })
     .volatile(() => ({
       selection: [] as AnyConfigurationModel[],
@@ -90,6 +98,65 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       clearSelection() {
         self.selection = []
+      },
+      /**
+       * #action
+       */
+      isFavorite(config: AnyConfigurationModel) {
+        return self.favorites.includes(config.trackId)
+      },
+      /**
+       * #action
+       */
+      addToFavorites(config: AnyConfigurationModel) {
+        self.favorites.push(readConfObject(config, 'trackId'))
+      },
+      /**
+       * #action
+       */
+      removeFromFavorites(config: AnyConfigurationModel) {
+        const ele = self.favorites.find((id: string) => id === config.trackId)
+        if (ele) {
+          self.favorites.remove(ele)
+        }
+      },
+      /**
+       * #action
+       */
+      clearFavorites() {
+        self.favorites.clear()
+      },
+      /**
+       * #action
+       */
+      isRecentlyUsed(config: AnyConfigurationModel) {
+        return self.recentlyUsed.includes(config.trackId)
+      },
+      /**
+       * #action
+       */
+      addToRecentlyUsed(id: string) {
+        if (self.recentlyUsed.length >= 10) {
+          self.recentlyUsed.shift()
+        }
+        self.recentlyUsed.push(id)
+      },
+      /**
+       * #action
+       */
+      removeFromRecentlyUsed(config: AnyConfigurationModel) {
+        const ele = self.recentlyUsed.find(
+          (id: string) => id === config.trackId,
+        )
+        if (ele) {
+          self.recentlyUsed.remove(ele)
+        }
+      },
+      /**
+       * #action
+       */
+      clearRecentlyUsed() {
+        self.recentlyUsed.clear()
       },
       /**
        * #action
@@ -198,6 +265,18 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           ...filterTracks(getSession(self).tracks, self),
         ].filter(notEmpty)
       },
+
+      get favoriteTracks() {
+        return this.trackConfigurations.filter(track =>
+          self.favorites.includes(readConfObject(track, 'trackId')),
+        )
+      },
+
+      get recentlyUsedTracks() {
+        return this.trackConfigurations.filter(track =>
+          self.recentlyUsed.includes(readConfObject(track, 'trackId')),
+        )
+      },
     }))
     .views(self => ({
       /**
@@ -218,6 +297,15 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       get allTracks() {
         const { connectionInstances = [] } = getSession(self)
         return [
+          {
+            group: 'Favorites',
+            tracks: self.favoriteTracks,
+          },
+          {
+            group: 'Recently used',
+            tracks: self.recentlyUsedTracks,
+            isOpenByDefault: false,
+          },
           {
             group: 'Tracks',
             tracks: self.trackConfigurations,
@@ -313,7 +401,9 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
     .views(self => ({
       get hasAnySubcategories() {
         return self.allTracks.some(group =>
-          group.tracks.some(t => readConfObject(t, 'category')?.length > 1),
+          group.tracks.some(
+            (t: any) => readConfObject(t, 'category')?.length > 1,
+          ),
         )
       },
     }))

@@ -10,6 +10,8 @@ import {
 
 // icons
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
+import StarIcon from '@mui/icons-material/StarBorderOutlined'
+import FilledStarIcon from '@mui/icons-material/Star'
 
 // locals
 import { isUnsupported, NodeData } from '../util'
@@ -52,7 +54,10 @@ export default function TrackLabel({ data }: { data: NodeData }) {
             <Checkbox
               className={classes.compactCheckbox}
               checked={checked}
-              onChange={() => onChange(id)}
+              onChange={() => {
+                onChange(id)
+                model.addToRecentlyUsed(id)
+              }}
               disabled={isUnsupported(name)}
               inputProps={{
                 // @ts-expect-error
@@ -92,6 +97,16 @@ function TrackMenuButton({
       data-testid={`htsTrackEntryMenu-${id}`}
       menuItems={[
         ...(getSession(model).getTrackActionMenuItems?.(conf) || []),
+        {
+          label: model.isFavorite(conf)
+            ? 'Remove from favorites'
+            : 'Add to favorites',
+          onClick: () =>
+            model.isFavorite(conf)
+              ? model.removeFromFavorites(conf)
+              : model.addToFavorites(conf),
+          icon: model.isFavorite(conf) ? FilledStarIcon : StarIcon,
+        },
         {
           label: 'Add to selection',
           onClick: () => model.addToSelection([conf]),
