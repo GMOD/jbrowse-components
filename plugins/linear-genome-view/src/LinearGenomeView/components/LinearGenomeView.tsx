@@ -93,17 +93,16 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
     <div
       className={classes.rel}
       ref={ref}
+      onMouseLeave={() => session.setHovered(undefined)}
       onMouseMove={event => {
         const c = ref.current
         if (!c) {
           return
         }
-        const hoverPosition = model.pxToBp(
-          event.clientX - c.getBoundingClientRect().left,
-        )
-        const hoverFeature = model.tracks.find(
-          t => t.displays[0].featureUnderMouse,
-        )
+        const { tracks } = model
+        const leftPx = event.clientX - c.getBoundingClientRect().left
+        const hoverPosition = model.pxToBp(leftPx)
+        const hoverFeature = tracks.find(t => t.displays[0].featureUnderMouse)
         session.setHovered({ hoverPosition, hoverFeature })
       }}
     >
