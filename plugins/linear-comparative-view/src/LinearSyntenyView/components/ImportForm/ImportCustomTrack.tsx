@@ -74,7 +74,9 @@ function getAdapter({
       assemblyNames: [assembly1, assembly2],
     }
   } else {
-    throw new Error('Unknown type')
+    throw new Error(
+      `Unknown to detect type ${radioOption} from filename (select radio button to clarify)`,
+    )
   }
 }
 
@@ -103,7 +105,6 @@ const OpenTrack = observer(
     useEffect(() => {
       try {
         if (fileLocation) {
-          console.log({ fileName })
           const fn = fileName ? basename(fileName) : 'MyTrack'
           const trackId = `${fn}-${Date.now()}`
           setError(undefined)

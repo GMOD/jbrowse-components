@@ -42,12 +42,6 @@ export * from './dedupe'
 export * from './offscreenCanvasPonyfill'
 export * from './offscreenCanvasUtils'
 
-export const inDevelopment =
-  typeof process === 'object' &&
-  process.env &&
-  process.env.NODE_ENV === 'development'
-export const inProduction = !inDevelopment
-
 export function useDebounce<T>(value: T, delay: number) {
   const [debouncedValue, setDebouncedValue] = useState(value)
 

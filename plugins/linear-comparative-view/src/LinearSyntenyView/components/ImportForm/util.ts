@@ -18,6 +18,8 @@ export function stripGz(fileName: string) {
 export function basename(str: string) {
   return str.split('#')[0].split('?')[0].split('/').pop()
 }
+
 export function extName(str: string) {
-  return str.split('.').slice(0, -1).join('.')
+  const r = str.split('.').pop()
+  return r ? `.${r}` : ''
 }
