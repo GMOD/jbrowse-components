@@ -18,7 +18,7 @@ import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
 import { ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
 
 // locals
-import { LinearSyntenyViewModel } from '../model'
+import { LinearSyntenyViewModel } from '../../model'
 import ImportCustomTrack from './ImportCustomTrack'
 import ImportSyntenyTrackSelector from './ImportSyntenyTrackSelector'
 

@@ -1,7 +1,6 @@
 import React from 'react'
 import { ErrorMessage } from '@jbrowse/core/ui'
 import NoConfigMessage from './NoConfigMessage'
-import { inDevelopment } from '@jbrowse/core/util'
 
 export default function StartScreenErrorMessage({ error }: { error: unknown }) {
   return (
@@ -25,7 +24,7 @@ export default function StartScreenErrorMessage({ error }: { error: unknown }) {
             to continue or browse the sample data{' '}
             <a href="?config=test_data/volvox/config.json">here</a>.
           </p>
-          {inDevelopment ? <NoConfigMessage /> : null}
+          {process.env.NODE_ENV === 'development' ? <NoConfigMessage /> : null}
         </div>
       ) : (
         <div>

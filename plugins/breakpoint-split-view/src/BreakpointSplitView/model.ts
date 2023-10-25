@@ -198,7 +198,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #method
-       * Get a composite map of featureId->feature map for a track across
+       * Get a composite map of featureId-\>feature map for a track across
        * multiple views
        */
       getTrackFeatures(trackConfigId: string) {
