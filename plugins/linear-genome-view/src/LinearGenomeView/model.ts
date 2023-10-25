@@ -147,7 +147,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * reduce some typescripting strictness, but you should pass the string
          * 'LinearGenomeView' to the model explicitly
          */
-        type: types.literal('LinearGenomeView'),
+        type: types.literal('LinearGenomeView') as unknown as string,
 
         /**
          * #property
