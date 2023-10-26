@@ -27,7 +27,6 @@ import {
 
 // icons
 import AddIcon from '@mui/icons-material/Add'
-import AppsIcon from '@mui/icons-material/Apps'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import PublishIcon from '@mui/icons-material/Publish'
 import StorageIcon from '@mui/icons-material/Storage'
@@ -184,7 +183,7 @@ export default function RootModel({
         },
       }
     })
-    .volatile(self => ({
+    .volatile(() => ({
       menus: [
         {
           label: 'File',
