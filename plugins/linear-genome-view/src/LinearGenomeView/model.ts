@@ -223,13 +223,17 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
+         */
+        trackLabels: types.maybe(types.string),
+
+        /**
+         * #property
          * show the "gridlines" in the track area
          */
         showGridlines: true,
       }),
     )
     .volatile(() => ({
-      trackLabelsVolatile: localStorageGetItem('lgv-trackLabels'),
       volatileWidth: undefined as number | undefined,
       minimumBlockWidth: 3,
       draggingTrackId: undefined as undefined | string,
@@ -246,12 +250,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
       rightOffset: undefined as undefined | BpOffset,
     }))
     .views(self => ({
-      get trackLabels() {
+      get trackLabelsSetting() {
         const sessionSetting = getConf(getSession(self), [
           'LinearGenomeViewPlugin',
           'trackLabels',
         ])
-        return self.trackLabelsVolatile ?? sessionSetting
+        return self.trackLabels ?? sessionSetting
       },
       /**
        * #getter
@@ -757,7 +761,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       setTrackLabels(setting: 'overlapping' | 'offset' | 'hidden') {
-        self.trackLabelsVolatile = setting
+        localStorage.setItem('lgv-trackLabels', setting)
+        self.trackLabels = setting
       },
 
       /**
@@ -1250,15 +1255,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
           self,
           autorun(() => {
             const s = (s: unknown) => JSON.stringify(s)
-            const {
-              trackLabelsVolatile,
-              showCytobandsSetting,
-              showCenterLine,
-            } = self
+            const { showCytobandsSetting, showCenterLine } = self
             if (typeof localStorage !== 'undefined') {
-              if (trackLabelsVolatile) {
-                localStorage.setItem('lgv-trackLabels', trackLabelsVolatile)
-              }
               localStorage.setItem('lgv-showCytobands', s(showCytobandsSetting))
               localStorage.setItem('lgv-showCenterLine', s(showCenterLine))
             }
