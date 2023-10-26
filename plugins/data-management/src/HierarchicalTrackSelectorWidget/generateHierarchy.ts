@@ -45,6 +45,7 @@ function sortConfs(
 export interface TreeNode {
   name: string
   id: string
+  trackId?: string
   conf?: AnyConfigurationModel
   checked?: boolean
   isOpenByDefault?: boolean
@@ -127,7 +128,8 @@ export function generateHierarchy({
     const r = currLevel.children.findIndex(elt => elt.children.length)
     const idx = r === -1 ? currLevel.children.length : r
     currLevel.children.splice(idx, 0, {
-      id: conf.trackId,
+      id: [extra, conf.trackId].filter(f => !!f).join(','),
+      trackId: conf.trackId,
       name: getTrackName(conf, session),
       conf,
       checked: viewTracks.some(f => f.configuration === conf),

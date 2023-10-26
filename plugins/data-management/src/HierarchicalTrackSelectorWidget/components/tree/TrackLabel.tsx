@@ -39,8 +39,17 @@ export interface InfoArgs {
 
 export default function TrackLabel({ data }: { data: NodeData }) {
   const { classes } = useStyles()
-  const { checked, conf, model, drawerPosition, id, name, onChange, selected } =
-    data
+  const {
+    checked,
+    conf,
+    model,
+    drawerPosition,
+    id,
+    trackId,
+    name,
+    onChange,
+    selected,
+  } = data
   const description = (conf && readConfObject(conf, ['description'])) || ''
   return (
     <>
@@ -55,8 +64,8 @@ export default function TrackLabel({ data }: { data: NodeData }) {
               className={classes.compactCheckbox}
               checked={checked}
               onChange={() => {
-                onChange(id)
-                model.addToRecentlyUsed(id)
+                onChange(trackId)
+                model.addToRecentlyUsed(trackId)
               }}
               disabled={isUnsupported(name)}
               inputProps={{

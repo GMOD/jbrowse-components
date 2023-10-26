@@ -8,6 +8,7 @@ export interface NodeData {
   conf: AnyConfigurationModel
   drawerPosition: unknown
   id: string
+  trackId: string
   isLeaf: boolean
   name: string
   onChange: Function

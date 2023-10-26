@@ -278,21 +278,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         )
       },
     }))
-    .views(self => ({
-      /**
-       * #method
-       */
-      connectionHierarchy(connection: {
-        name: string
-        tracks: AnyConfigurationModel[]
-      }): TreeNode[] {
-        return generateHierarchy({
-          model: self,
-          trackConfs: self.connectionTrackConfigurations(connection),
-          extra: connection.name,
-        })
-      },
-    }))
+
     .views(self => ({
       get allTracks() {
         const { connectionInstances = [] } = getSession(self)
@@ -332,6 +318,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
               children: generateHierarchy({
                 model: self,
                 trackConfs: s.tracks,
+                extra: s.group,
               }),
             }))
             // always keep the Tracks entry at idx 0
@@ -401,9 +388,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
     .views(self => ({
       get hasAnySubcategories() {
         return self.allTracks.some(group =>
-          group.tracks.some(
-            (t: any) => readConfObject(t, 'category')?.length > 1,
-          ),
+          group.tracks.some(t => readConfObject(t, 'category')?.length > 1),
         )
       },
     }))
