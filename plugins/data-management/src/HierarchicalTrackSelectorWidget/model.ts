@@ -284,21 +284,25 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         const { connectionInstances = [] } = getSession(self)
         return [
           {
-            group: 'Favorites',
+            group: '✨Favorites',
             tracks: self.favoriteTracks,
+            noCategories: true,
           },
           {
-            group: 'Recently used',
+            group: '⌚Recently used',
             tracks: self.recentlyUsedTracks,
             isOpenByDefault: false,
+            noCategories: true,
           },
           {
             group: 'Tracks',
             tracks: self.trackConfigurations,
+            noCategories: false,
           },
           ...connectionInstances.flatMap(c => ({
             group: getConf(c, 'name'),
             tracks: c.tracks,
+            noCategories: false,
           })),
         ]
       },
@@ -319,6 +323,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
                 model: self,
                 trackConfs: s.tracks,
                 extra: s.group,
+                noCategories: s.noCategories,
               }),
             }))
             // always keep the Tracks entry at idx 0

@@ -56,6 +56,7 @@ export function generateHierarchy({
   model,
   trackConfs,
   extra,
+  noCategories,
 }: {
   model: {
     filterText: string
@@ -66,6 +67,7 @@ export function generateHierarchy({
       tracks: { configuration: AnyConfigurationModel }[]
     }
   }
+  noCategories?: boolean
   trackConfs: AnyConfigurationModel[]
   extra?: string
 }): TreeNode[] {
@@ -101,24 +103,26 @@ export function generateHierarchy({
 
     let currLevel = hierarchy
 
-    // find existing category to put track into or create it
-    for (let i = 0; i < categories.length; i++) {
-      const category = categories[i]
-      const ret = currLevel.children.find(c => c.name === category)
-      const id = [extra, categories.slice(0, i + 1).join(',')]
-        .filter(f => !!f)
-        .join('-')
-      if (!ret) {
-        const n = {
-          children: [],
-          name: category,
-          id,
-          isOpenByDefault: !collapsed.get(id),
+    if (!noCategories) {
+      // find existing category to put track into or create it
+      for (let i = 0; i < categories.length; i++) {
+        const category = categories[i]
+        const ret = currLevel.children.find(c => c.name === category)
+        const id = [extra, categories.slice(0, i + 1).join(',')]
+          .filter(f => !!f)
+          .join('-')
+        if (!ret) {
+          const n = {
+            children: [],
+            name: category,
+            id,
+            isOpenByDefault: !collapsed.get(id),
+          }
+          currLevel.children.push(n)
+          currLevel = n
+        } else {
+          currLevel = ret
         }
-        currLevel.children.push(n)
-        currLevel = n
-      } else {
-        currLevel = ret
       }
     }
 
