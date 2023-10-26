@@ -253,12 +253,6 @@ export default function RootModel({
                 session.showWidget(widget)
               },
             },
-            { type: 'divider' },
-            {
-              label: 'Return to splash screen',
-              icon: AppsIcon,
-              onClick: () => self.setSession(undefined),
-            },
           ],
         },
         {
