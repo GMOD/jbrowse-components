@@ -29,6 +29,7 @@ import { Region as MUIRegion } from './types/mst'
 import { isAbortException, checkAbortSignal } from './aborting'
 import { BaseBlock } from './blockTypes'
 import { isUriLocation } from './types'
+
 // has to be the full path and not the relative path to get the jest mock
 import useMeasure from '@jbrowse/core/util/useMeasure'
 import { colord } from './colord'
@@ -40,12 +41,6 @@ export * from './dedupe'
 
 export * from './offscreenCanvasPonyfill'
 export * from './offscreenCanvasUtils'
-
-export const inDevelopment =
-  typeof process === 'object' &&
-  process.env &&
-  process.env.NODE_ENV === 'development'
-export const inProduction = !inDevelopment
 
 export function useDebounce<T>(value: T, delay: number) {
   const [debouncedValue, setDebouncedValue] = useState(value)
@@ -96,7 +91,8 @@ export function useDebouncedCallback<T>(
     }
   }
 
-  // make sure our timeout gets cleared if our consuming component gets unmounted
+  // make sure our timeout gets cleared if our consuming component gets
+  // unmounted
   useEffect(() => cleanup, [])
 
   return function debouncedCallback(...args: T[]) {
@@ -115,7 +111,9 @@ export function useDebouncedCallback<T>(
   }
 }
 
-/** find the first node in the hierarchy that matches the given predicate */
+/**
+ * find the first node in the hierarchy that matches the given predicate
+ */
 export function findParentThat(
   node: IAnyStateTreeNode,
   predicate: (thing: IAnyStateTreeNode) => boolean,
@@ -203,7 +201,10 @@ export function springAnimate(
   ]
 }
 
-// find the first node in the hierarchy that matches the given 'is' typescript type guard predicate
+/**
+ * find the first node in the hierarchy that matches the given 'is' typescript
+ * type guard predicate
+ */
 export function findParentThatIs<T extends (a: IAnyStateTreeNode) => boolean>(
   node: IAnyStateTreeNode,
   predicate: T,
@@ -211,7 +212,10 @@ export function findParentThatIs<T extends (a: IAnyStateTreeNode) => boolean>(
   return findParentThat(node, predicate)
 }
 
-/** get the current JBrowse session model, starting at any node in the state tree */
+/**
+ * get the current JBrowse session model, starting at any node in the state
+ * tree
+ */
 export function getSession(node: IAnyStateTreeNode) {
   try {
     return findParentThatIs(node, isSessionModel)
@@ -220,7 +224,10 @@ export function getSession(node: IAnyStateTreeNode) {
   }
 }
 
-/** get the state model of the view in the state tree that contains the given node */
+/**
+ * get the state model of the view in the state tree that contains the given
+ * node
+ */
 export function getContainingView(node: IAnyStateTreeNode) {
   try {
     return findParentThatIs(node, isViewModel)
@@ -229,7 +236,10 @@ export function getContainingView(node: IAnyStateTreeNode) {
   }
 }
 
-/** get the state model of the view in the state tree that contains the given node */
+/**
+ * get the state model of the view in the state tree that contains the given
+ * node
+ */
 export function getContainingTrack(node: IAnyStateTreeNode) {
   try {
     return findParentThatIs(node, isTrackModel)
@@ -238,6 +248,10 @@ export function getContainingTrack(node: IAnyStateTreeNode) {
   }
 }
 
+/**
+ * get the state model of the display in the state tree that contains the given
+ * node
+ */
 export function getContainingDisplay(node: IAnyStateTreeNode) {
   try {
     return findParentThatIs(node, isDisplayModel)
@@ -601,14 +615,17 @@ export function iterMap<T, U>(
   return results
 }
 
-// https://stackoverflow.com/a/53187807
 /**
  * Returns the index of the last element in the array where predicate is true,
  * and -1 otherwise.
+ * Based on https://stackoverflow.com/a/53187807
+ *
  * @param array - The source array to search in
+ *
  * @param predicate - find calls predicate once for each element of the array, in
- * descending order, until it finds one where predicate returns true. If such an
- * element is found, findLastIndex immediately returns that element index.
+ * descending order, until it finds one where predicate returns true.
+ *
+ * @returns findLastIndex returns element index where predicate is true.
  * Otherwise, findLastIndex returns -1.
  */
 export function findLastIndex<T>(

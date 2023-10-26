@@ -10,7 +10,7 @@ import {
 import { observer } from 'mobx-react'
 
 // locals
-import { LinearSyntenyViewModel } from '../model'
+import { LinearSyntenyViewModel } from '../../model'
 
 function f(track: AnyConfigurationModel, assembly1: string, assembly2: string) {
   const assemblyNames = readConfObject(track, 'assemblyNames')

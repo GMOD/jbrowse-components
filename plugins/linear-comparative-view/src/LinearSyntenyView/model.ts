@@ -41,8 +41,9 @@ export interface ExportSvgOptions {
 export default function stateModelFactory(pluginManager: PluginManager) {
   return types
     .compose(
+      'LinearSyntenyView',
       baseModel(pluginManager),
-      types.model('LinearSyntenyView', {
+      types.model({
         /**
          * #property
          */

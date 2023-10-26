@@ -142,7 +142,7 @@ export function addRelativeUris(config: Config, base: URL) {
   }
 }
 
-interface Root {
+export interface Root {
   configuration?: Config
 }
 

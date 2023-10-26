@@ -131,6 +131,69 @@ number
 scrollY: 0
 ```
 
+#### property: minimumRadiusPx
+
+```js
+// type signature
+number
+// code
+minimumRadiusPx: 25
+```
+
+#### property: spacingPx
+
+```js
+// type signature
+number
+// code
+spacingPx: 10
+```
+
+#### property: paddingPx
+
+```js
+// type signature
+number
+// code
+paddingPx: 80
+```
+
+#### property: lockedPaddingPx
+
+```js
+// type signature
+number
+// code
+lockedPaddingPx: 100
+```
+
+#### property: minVisibleWidth
+
+```js
+// type signature
+number
+// code
+minVisibleWidth: 6
+```
+
+#### property: minimumBlockWidth
+
+```js
+// type signature
+number
+// code
+minimumBlockWidth: 20
+```
+
+#### property: trackSelectorType
+
+```js
+// type signature
+string
+// code
+trackSelectorType: 'hierarchical'
+```
+
 ### CircularView - Getters
 
 #### getter: width

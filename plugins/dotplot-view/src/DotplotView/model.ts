@@ -72,8 +72,9 @@ const pxWidthForBlocks = (blocks: BaseBlock[], hide: Set<string>) => {
 export default function stateModelFactory(pm: PluginManager) {
   return types
     .compose(
+      'DotplotView',
       BaseViewModel,
-      types.model('DotplotView', {
+      types.model({
         /**
          * #property
          */

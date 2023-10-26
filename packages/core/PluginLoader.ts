@@ -111,7 +111,7 @@ export interface LoadedPlugin {
   default: PluginConstructor
 }
 
-function pluginDescriptionString(pluginDefinition: PluginDefinition) {
+export function pluginDescriptionString(pluginDefinition: PluginDefinition) {
   if (isUMDPluginDefinition(pluginDefinition)) {
     return `UMD plugin ${pluginDefinition.name}`
   }

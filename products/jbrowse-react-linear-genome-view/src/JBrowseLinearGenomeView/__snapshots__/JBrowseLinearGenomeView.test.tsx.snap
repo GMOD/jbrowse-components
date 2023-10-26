@@ -12,7 +12,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
         class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation12 css-tgvt3g-MuiPaper-root-viewContainer"
       >
         <div
-          style="display: flex;"
+          class="css-10rokvf-container"
         >
           <button
             class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
@@ -83,11 +83,11 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
           class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1ps6pg7-MuiPaper-root"
         >
           <div
-            style="position: relative;"
+            class="css-1v4ghfe-rel"
           >
             <div>
               <div
-                style="position: relative;"
+                class="css-1v4ghfe-rel"
               >
                 <div
                   class="css-dznme2-rubberbandControl"

@@ -40,8 +40,9 @@ function SvInspectorViewF(pluginManager: PluginManager) {
   const circularViewOptionsBarHeight = 52
   return types
     .compose(
+      'SvInspectorView',
       BaseViewModel,
-      types.model('SvInspectorView', {
+      types.model({
         /**
          * #property
          */

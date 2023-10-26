@@ -1,4 +1,3 @@
-import { nanoid } from '@jbrowse/core/util/nanoid'
 import PluginManager from '@jbrowse/core/PluginManager'
 import {
   IAnyStateTreeNode,
@@ -12,6 +11,7 @@ import { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 
 // locals
 import type { BaseRootModelType } from '../RootModel/BaseRootModel'
+import { ElementId } from '@jbrowse/core/util/types/mst'
 
 /**
  * #stateModel BaseSessionModel
@@ -27,7 +27,7 @@ export function BaseSessionModel<
       /**
        * #property
        */
-      id: types.optional(types.identifier, nanoid()),
+      id: ElementId,
       /**
        * #property
        */

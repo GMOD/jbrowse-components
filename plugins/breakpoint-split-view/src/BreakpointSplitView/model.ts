@@ -93,29 +93,57 @@ async function getBlockFeatures(
   )
 }
 
+/**
+ * #stateModel BreakpointSplitView
+ */
 export default function stateModelFactory(pluginManager: PluginManager) {
   const minHeight = 40
   const defaultHeight = 400
-  const model = types
-    .model('BreakpointSplitView', {
-      type: types.literal('BreakpointSplitView'),
-      height: types.optional(
-        types.refinement(
-          'viewHeight',
-          types.number,
-          (n: number) => n >= minHeight,
+  return types
+    .compose(
+      'BreakpointSplitView',
+      BaseViewModel,
+      types.model({
+        /**
+         * #property
+         */
+        type: types.literal('BreakpointSplitView'),
+        /**
+         * #property
+         */
+        height: types.optional(
+          types.refinement(
+            'viewHeight',
+            types.number,
+            (n: number) => n >= minHeight,
+          ),
+          defaultHeight,
         ),
-        defaultHeight,
-      ),
-      trackSelectorType: 'hierarchical',
-      showIntraviewLinks: true,
-      linkViews: false,
-      interactToggled: false,
-      views: types.array(
-        pluginManager.getViewType('LinearGenomeView')
-          .stateModel as LinearGenomeViewStateModel,
-      ),
-    })
+        /**
+         * #property
+         */
+        trackSelectorType: 'hierarchical',
+        /**
+         * #property
+         */
+        showIntraviewLinks: true,
+        /**
+         * #property
+         */
+        linkViews: false,
+        /**
+         * #property
+         */
+        interactToggled: false,
+        /**
+         * #property
+         */
+        views: types.array(
+          pluginManager.getViewType('LinearGenomeView')
+            .stateModel as LinearGenomeViewStateModel,
+        ),
+      }),
+    )
     .volatile(() => ({
       width: 800,
       matchedTrackFeatures: {} as Record<string, Feature[][]>,
@@ -135,7 +163,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .views(self => ({
-      // Find all track ids that match across multiple views
+      /**
+       * #getter
+       * Find all track ids that match across multiple views
+       */
       get matchedTracks() {
         return intersect(
           elt => elt.configuration.trackId as string,
@@ -143,23 +174,33 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         )
       },
 
-      // Get tracks with a given trackId across multiple views
+      /**
+       * #method
+       * Get tracks with a given trackId across multiple views
+       */
       getMatchedTracks(trackConfigId: string) {
         return self.views
           .map(view => view.getTrack(trackConfigId))
           .filter(f => !!f)
       },
 
-      // Translocation features are handled differently
-      // since they do not have a mate e.g. they are one sided
+      /**
+       * #method
+       *
+       * Translocation features are handled differently
+       * since they do not have a mate e.g. they are one sided
+       */
       hasTranslocations(trackConfigId: string) {
         return [...this.getTrackFeatures(trackConfigId).values()].find(
           f => f.get('type') === 'translocation',
         )
       },
 
-      // Get a composite map of featureId->feature map for a track across
-      // multiple views
+      /**
+       * #method
+       * Get a composite map of featureId-\>feature map for a track across
+       * multiple views
+       */
       getTrackFeatures(trackConfigId: string) {
         return new Map(
           self.matchedTrackFeatures[trackConfigId]
@@ -168,6 +209,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         )
       },
 
+      /**
+       * #method
+       */
       getMatchedFeaturesInLayout(trackConfigId: string, features: Feature[][]) {
         // use reverse to search the second track first
         const tracks = this.getMatchedTracks(trackConfigId)
@@ -233,29 +277,53 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         })
       },
 
+      /**
+       * #action
+       */
       setWidth(newWidth: number) {
         self.width = newWidth
         self.views.forEach(v => v.setWidth(newWidth))
       },
 
+      /**
+       * #action
+       */
       removeView(view: LGV) {
         self.views.remove(view)
       },
 
+      /**
+       * #action
+       */
       closeView() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         getParent<any>(self, 2).removeView(self)
       },
 
+      /**
+       * #action
+       */
       toggleInteract() {
         self.interactToggled = !self.interactToggled
       },
+
+      /**
+       * #action
+       */
       toggleIntraviewLinks() {
         self.showIntraviewLinks = !self.showIntraviewLinks
       },
+
+      /**
+       * #action
+       */
       toggleLinkViews() {
         self.linkViews = !self.linkViews
       },
+
+      /**
+       * #action
+       */
       setMatchedTrackFeatures(obj: Record<string, Feature[][]>) {
         self.matchedTrackFeatures = obj
       },
@@ -288,6 +356,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         )
       },
 
+      /**
+       * #method
+       */
       menuItems() {
         return [
           ...self.views
@@ -330,8 +401,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         ]
       },
     }))
-
-  return types.compose(BaseViewModel, model)
 }
 
 export type BreakpointViewStateModel = ReturnType<typeof stateModelFactory>
