@@ -255,7 +255,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
           'LinearGenomeViewPlugin',
           'trackLabels',
         ])
-        return self.trackLabels ?? sessionSetting
+        const localStorageTrackLabels = localStorageGetItem('lgv-trackLabels')
+        return self.trackLabels ?? localStorageTrackLabels ?? sessionSetting
       },
       /**
        * #getter
