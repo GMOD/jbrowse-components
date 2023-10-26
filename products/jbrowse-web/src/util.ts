@@ -152,13 +152,11 @@ export function readConf({ configuration }: Root, attr: string, def: string) {
 }
 
 export async function fetchPlugins() {
-  const response = await fetch('https://jbrowse.org/plugin-store/plugins.json')
-  if (!response.ok) {
-    throw new Error(
-      `HTTP ${response.status} ${response.statusText} fetching plugins`,
-    )
+  const res = await fetch('https://jbrowse.org/plugin-store/plugins.json')
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status} ${await res.text()} fetching plugins`)
   }
-  return response.json() as Promise<{ plugins: PluginDefinition[] }>
+  return res.json() as Promise<{ plugins: PluginDefinition[] }>
 }
 
 export async function checkPlugins(pluginsToCheck: PluginDefinition[]) {
