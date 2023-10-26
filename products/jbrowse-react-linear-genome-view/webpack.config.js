@@ -1,3 +1,4 @@
+const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
 const path = require('path')
 const webpack = require('webpack')
 
@@ -28,6 +29,9 @@ module.exports = {
     },
   },
   plugins: [
+    new NodePolyfillPlugin({
+      excludeAliases: ['console'],
+    }),
     new webpack.optimize.LimitChunkCountPlugin({
       maxChunks: 1,
     }),
