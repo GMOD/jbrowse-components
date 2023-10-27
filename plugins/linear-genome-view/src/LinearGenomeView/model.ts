@@ -223,8 +223,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
+         * how to display the track labels, can be "overlapping", "offset", or
+         * "hidden", or empty string "" (which results in conf being used). see
+         * LinearGenomeViewPlugin
+         * https://jbrowse.org/jb2/docs/config/lineargenomeviewplugin/ docs for
+         * how conf is used
          */
-        trackLabels: types.maybe(types.string),
+        trackLabels: types.optional(
+          types.string,
+          () => localStorageGetItem('lgv-trackLabels') || '',
+        ),
 
         /**
          * #property
@@ -250,13 +258,17 @@ export function stateModelFactory(pluginManager: PluginManager) {
       rightOffset: undefined as undefined | BpOffset,
     }))
     .views(self => ({
+      /**
+       * #getter
+       * this is the effective value of the track labels setting, incorporating
+       * both the config and view state. use this instead of view.trackLabels
+       */
       get trackLabelsSetting() {
         const sessionSetting = getConf(getSession(self), [
           'LinearGenomeViewPlugin',
           'trackLabels',
         ])
-        const localStorageTrackLabels = localStorageGetItem('lgv-trackLabels')
-        return self.trackLabels ?? localStorageTrackLabels ?? sessionSetting
+        return self.trackLabels || sessionSetting
       },
       /**
        * #getter
@@ -1131,21 +1143,21 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 label: 'Overlapping',
                 icon: VisibilityIcon,
                 type: 'radio',
-                checked: self.trackLabels === 'overlapping',
+                checked: self.trackLabelsSetting === 'overlapping',
                 onClick: () => self.setTrackLabels('overlapping'),
               },
               {
                 label: 'Offset',
                 icon: VisibilityIcon,
                 type: 'radio',
-                checked: self.trackLabels === 'offset',
+                checked: self.trackLabelsSetting === 'offset',
                 onClick: () => self.setTrackLabels('offset'),
               },
               {
                 label: 'Hidden',
                 icon: VisibilityIcon,
                 type: 'radio',
-                checked: self.trackLabels === 'hidden',
+                checked: self.trackLabelsSetting === 'hidden',
                 onClick: () => self.setTrackLabels('hidden'),
               },
             ],

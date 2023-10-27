@@ -108,3 +108,10 @@ clears the global selection
 // type signature
 clearSelection: () => void
 ```
+
+#### action: setHovered
+
+```js
+// type signature
+setHovered: (thing: unknown) => void
+```

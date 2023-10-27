@@ -130,7 +130,7 @@ hasTranslocations: (trackConfigId: string) => any
 
 #### method: getTrackFeatures
 
-Get a composite map of featureId->feature map for a track across multiple views
+Get a composite map of featureId-\>feature map for a track across multiple views
 
 ```js
 // type signature
