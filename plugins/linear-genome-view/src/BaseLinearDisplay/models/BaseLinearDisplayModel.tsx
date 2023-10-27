@@ -376,7 +376,7 @@ function stateModelFactory() {
             })
             self.blockState.forEach((_, key) => {
               if (!blocksPresent[key]) {
-                self.deleteBlock(key)
+                self.deleteBlock(key as string)
               }
             })
           }),
