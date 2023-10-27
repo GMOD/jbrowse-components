@@ -56,6 +56,18 @@ const ViewContainer = observer(function ({
     }
   }, [ref, session, view])
 
+  useEffect(() => {
+    // ensures there is always one view in focus, if there is a view open
+    if (
+      session.focusedViewId &&
+      session.views.some(view => view.id === session.focusedViewId)
+    ) {
+      session.setFocusedViewId(session.focusedViewId)
+    } else {
+      session.setFocusedViewId(view.id)
+    }
+  }, [session.views.length, session, view.id])
+
   return (
     <Paper
       ref={ref}

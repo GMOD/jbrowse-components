@@ -6,6 +6,7 @@ import { observer } from 'mobx-react'
 // locals
 import EditableTypography from '@jbrowse/core/ui/EditableTypography'
 import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes'
+import { getSession } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
   input: {
@@ -31,6 +32,7 @@ const ViewContainerTitle = observer(function ({
   view: IBaseViewModel
 }) {
   const { classes } = useStyles()
+  const session = getSession(view)
   return (
     <Tooltip title="Rename view" arrow>
       <EditableTypography
@@ -43,6 +45,7 @@ const ViewContainerTitle = observer(function ({
         }
         setValue={val => view.setDisplayName(val)}
         variant="body2"
+        fontWeight={session.focusedViewId === view.id ? 'bold' : ''}
         classes={{
           input: classes.input,
           inputBase: classes.inputBase,
