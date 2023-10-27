@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
 // @ts-nocheck
 import React, { Fragment, useRef, useState, useEffect } from 'react'
-import { Buffer } from 'buffer'
 import { createPortal } from 'react-dom'
 import { CacheProvider } from '@emotion/react'
 import createCache from '@emotion/cache'
