@@ -45,6 +45,13 @@ export function BaseSessionModel<
        * is.
        */
       selection: undefined as unknown,
+      /**
+       * #volatile
+       * this is the globally "hovered" object. can be anything. code that
+       * wants to deal with this should examine it to see what kind of thing it
+       * is.
+       */
+      hovered: undefined as unknown,
     }))
     .views(self => ({
       get root() {
@@ -108,6 +115,12 @@ export function BaseSessionModel<
        */
       clearSelection() {
         self.selection = undefined
+      },
+      /**
+       * #action
+       */
+      setHovered(thing: unknown) {
+        self.hovered = thing
       },
     }))
 }

@@ -155,7 +155,7 @@ const SvgFeatureRenderer = ConfigurationSchema(
     maxHeight: {
       type: 'integer',
       description: 'the maximum height to be used in a svg rendering',
-      defaultValue: 600,
+      defaultValue: 1200,
     },
 
     /**
