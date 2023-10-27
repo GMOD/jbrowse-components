@@ -431,6 +431,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     },
   ],
   "configuration": {
+    "LinearGenomeViewPlugin": {
+      "trackLabels": "offset",
+    },
     "extraThemes": {
       "darkForest": {
         "name": "Dark (forest, from config file)",

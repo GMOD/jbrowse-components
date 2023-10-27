@@ -201,17 +201,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
           types.enumeration(['hierarchical']),
           'hierarchical',
         ),
-
-        /**
-         * #property
-         * how to display the track labels, can be "overlapping", "offset", or
-         * "hidden"
-         */
-        trackLabels: types.optional(
-          types.string,
-          () => localStorageGetItem('lgv-trackLabels') || 'overlapping',
-        ),
-
         /**
          * #property
          * show the "center line"
@@ -231,6 +220,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
             JSON.parse(localStorageGetItem('lgv-showCytobands') || 'true'),
           ),
         ),
+
+        /**
+         * #property
+         */
+        trackLabels: types.maybe(types.string),
 
         /**
          * #property
@@ -256,6 +250,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
       rightOffset: undefined as undefined | BpOffset,
     }))
     .views(self => ({
+      get trackLabelsSetting() {
+        const sessionSetting = getConf(getSession(self), [
+          'LinearGenomeViewPlugin',
+          'trackLabels',
+        ])
+        const localStorageTrackLabels = localStorageGetItem('lgv-trackLabels')
+        return self.trackLabels ?? localStorageTrackLabels ?? sessionSetting
+      },
       /**
        * #getter
        */
@@ -760,6 +762,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       setTrackLabels(setting: 'overlapping' | 'offset' | 'hidden') {
+        localStorage.setItem('lgv-trackLabels', setting)
         self.trackLabels = setting
       },
 
@@ -1253,9 +1256,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
           self,
           autorun(() => {
             const s = (s: unknown) => JSON.stringify(s)
-            const { trackLabels, showCytobandsSetting, showCenterLine } = self
+            const { showCytobandsSetting, showCenterLine } = self
             if (typeof localStorage !== 'undefined') {
-              localStorage.setItem('lgv-trackLabels', trackLabels)
               localStorage.setItem('lgv-showCytobands', s(showCytobandsSetting))
               localStorage.setItem('lgv-showCenterLine', s(showCenterLine))
             }

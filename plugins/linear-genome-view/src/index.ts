@@ -22,6 +22,8 @@ import LinearBasicDisplayF from './LinearBasicDisplay'
 import FeatureTrackF from './FeatureTrack'
 import BasicTrackF from './BasicTrack'
 import LaunchLinearGenomeViewF from './LaunchLinearGenomeView'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { types } from 'mobx-state-tree'
 
 export default class LinearGenomeViewPlugin extends Plugin {
   name = 'LinearGenomeViewPlugin'
@@ -34,6 +36,24 @@ export default class LinearGenomeViewPlugin extends Plugin {
     ZoomControls,
     LinearGenomeView,
   }
+
+  /**
+   * #config LinearGenomeViewConfigSchema
+   */
+  configurationSchema = ConfigurationSchema('LinearGenomeViewConfigSchema', {
+    /**
+     * #slot configuration.LinearGenomeViewPlugin.trackLabels
+     */
+    trackLabels: {
+      type: 'string',
+      defaultValue: 'overlapping',
+      model: types.enumeration('trackLabelOptions', [
+        'offset',
+        'overlapping',
+        'hidden',
+      ]),
+    },
+  })
 
   install(pluginManager: PluginManager) {
     FeatureTrackF(pluginManager)
