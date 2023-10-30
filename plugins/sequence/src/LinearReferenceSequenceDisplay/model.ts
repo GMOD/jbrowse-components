@@ -7,7 +7,7 @@ import {
   AnyConfigurationSchemaType,
   ConfigurationReference,
 } from '@jbrowse/core/configuration'
-import { getContainingView } from '@jbrowse/core/util'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
 
 type LGV = LinearGenomeViewModel
@@ -141,6 +141,14 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
             type: 'checkbox',
             checked: self.showTranslation,
             onClick: () => self.toggleShowTranslation(),
+          },
+          {
+            label: 'Set height',
+            onClick: () =>
+              getSession(self).queueDialog(handleClose => [
+                SetHeightDialog,
+                { model: self, handleClose },
+              ]),
           },
         ]
       },

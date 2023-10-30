@@ -29,6 +29,7 @@ function RenderedFeatureGlyph(props: {
   feature: Feature
   bpPerPx: number
   region: Region
+  parentRegion: Region
   config: AnyConfigurationModel
   layout: BaseLayout<unknown>
   extraGlyphs?: ExtraGlyphValidator[]
@@ -150,49 +151,49 @@ function RenderedFeatureGlyph(props: {
   )
 }
 
-const RenderedFeatures = observer(
-  (props: {
-    features?: Map<string, Feature>
-    isFeatureDisplayed?: (f: Feature) => boolean
-    bpPerPx: number
-    config: AnyConfigurationModel
-    displayMode: string
-    displayModel?: DisplayModel
-    region: Region
-    exportSVG?: unknown
-    extraGlyphs?: ExtraGlyphValidator[]
-    layout: BaseLayout<unknown>
-    viewParams: {
-      start: number
-      end: number
-      offsetPx: number
-      offsetPx1: number
-    }
-    [key: string]: unknown
-  }) => {
-    const { features = new Map(), isFeatureDisplayed } = props
-    return (
-      <>
-        {[...features.values()]
-          .filter(feature =>
-            isFeatureDisplayed ? isFeatureDisplayed(feature) : true,
-          )
-          .map(feature => (
-            <RenderedFeatureGlyph
-              key={feature.id()}
-              feature={feature}
-              {...props}
-            />
-          ))}
-      </>
-    )
-  },
-)
+const RenderedFeatures = observer(function (props: {
+  features?: Map<string, Feature>
+  isFeatureDisplayed?: (f: Feature) => boolean
+  bpPerPx: number
+  config: AnyConfigurationModel
+  displayMode: string
+  displayModel?: DisplayModel
+  region: Region
+  parentRegion: Region
+  exportSVG?: unknown
+  extraGlyphs?: ExtraGlyphValidator[]
+  layout: BaseLayout<unknown>
+  viewParams: {
+    start: number
+    end: number
+    offsetPx: number
+    offsetPx1: number
+  }
+  [key: string]: unknown
+}) {
+  const { features = new Map(), isFeatureDisplayed } = props
+  return (
+    <>
+      {[...features.values()]
+        .filter(feature =>
+          isFeatureDisplayed ? isFeatureDisplayed(feature) : true,
+        )
+        .map(feature => (
+          <RenderedFeatureGlyph
+            key={feature.id()}
+            feature={feature}
+            {...props}
+          />
+        ))}
+    </>
+  )
+})
 
-const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
+const SvgFeatureRendering = observer(function (props: {
   layout: BaseLayout<unknown>
   blockKey: string
   regions: Region[]
+  parentRegions?: Region[]
   bpPerPx: number
   detectRerender?: () => void
   config: AnyConfigurationModel
@@ -220,6 +221,7 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
     layout,
     blockKey,
     regions = [],
+    parentRegions = [],
     bpPerPx,
     config,
     displayModel = {},
@@ -236,6 +238,7 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
   } = props
 
   const [region] = regions
+  const [parentRegion] = parentRegions
   const width = (region.end - region.start) / bpPerPx
   const displayMode = readConfObject(config, 'displayMode') as string
 
@@ -317,6 +320,7 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
     <RenderedFeatures
       displayMode={displayMode}
       isFeatureDisplayed={featureDisplayHandler}
+      parentRegion={parentRegion}
       region={region}
       {...props}
     />
@@ -338,6 +342,7 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
       <RenderedFeatures
         displayMode={displayMode}
         region={region}
+        parentRegion={parentRegion}
         movedDuringLastMouseDown={movedDuringLastMouseDown}
         isFeatureDisplayed={featureDisplayHandler}
         {...props}

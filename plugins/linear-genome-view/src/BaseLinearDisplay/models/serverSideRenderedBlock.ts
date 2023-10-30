@@ -242,6 +242,12 @@ export function renderBlockData(
     const layoutId = getContainingView(display).id
     const cannotBeRenderedReason = display.regionCannotBeRendered(self.region)
 
+    const asm = assemblyManager.get(regionAsm)!
+    const regions = [getSnapshot(self.region)]
+    const parentRegions = regions.map(region => {
+      const r = asm?.getCanonicalRefName(region.refName)
+      return asm.regions?.find(b => b.refName === r)
+    })
     return {
       rendererType,
       rpcManager,
@@ -255,7 +261,8 @@ export function renderBlockData(
           }
         },
         assemblyName: self.region.assemblyName,
-        regions: [getSnapshot(self.region)],
+        regions,
+        parentRegions,
         adapterConfig,
         rendererType: rendererType.name,
         sessionId,

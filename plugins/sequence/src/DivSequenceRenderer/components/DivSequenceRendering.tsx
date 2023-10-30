@@ -15,9 +15,21 @@ import {
 } from '@jbrowse/core/util'
 import { Theme } from '@mui/material'
 
-function Translation(props: {
+function Translation({
+  codonTable,
+  seq,
+  frame,
+  color,
+  bpPerPx,
+  region,
+  height,
+  y,
+  reverse = false,
+  theme,
+}: {
   codonTable: Record<string, string>
   seq: string
+  color?: string
   frame: number
   bpPerPx: number
   region: Region
@@ -26,19 +38,6 @@ function Translation(props: {
   y: number
   theme?: Theme
 }) {
-  const {
-    codonTable,
-    seq,
-    frame,
-    bpPerPx,
-    region,
-    height,
-    y,
-    reverse = false,
-    theme,
-  } = props
-  const scale = bpPerPx
-
   // the tilt variable normalizes the frame to where we are starting from,
   // which increases consistency across blocks
   const tilt = 3 - (region.start % 3)
@@ -58,7 +57,7 @@ function Translation(props: {
     translated.push({ letter: aminoAcid, codon: normalizedCodon.toUpperCase() })
   }
 
-  const w = (1 / scale) * 3
+  const w = (1 / bpPerPx) * 3
   const drop = region.start === 0 ? 0 : w
   const render = 1 / bpPerPx >= 12
   const width = (region.end - region.start) / bpPerPx
@@ -68,8 +67,8 @@ function Translation(props: {
     <>
       {translated.map((element, index) => {
         const x = region.reversed
-          ? width - (w * (index + 1) + effectiveFrame / scale - drop)
-          : w * index + effectiveFrame / scale - drop
+          ? width - (w * (index + 1) + effectiveFrame / bpPerPx - drop)
+          : w * index + effectiveFrame / bpPerPx - drop
         const { letter, codon } = element
         return (
           <React.Fragment key={`${index}-${letter}`}>
@@ -85,14 +84,15 @@ function Translation(props: {
                 defaultStarts.includes(codon)
                   ? theme?.palette.startCodon
                   : defaultStops.includes(codon)
-                    ? theme?.palette.stopCodon
-                    : map[Math.abs(frame)]
+                  ? theme?.palette.stopCodon
+                  : color ?? map[Math.abs(frame)]
               }
             />
             {render ? (
               <text
                 x={x + w / 2}
                 y={y + height / 2}
+                fontSize={height - 2}
                 dominantBaseline="middle"
                 textAnchor="middle"
               >
@@ -148,6 +148,7 @@ function DNA(props: {
               <text
                 x={x + w / 2}
                 y={y + height / 2}
+                fontSize={height - 2}
                 dominantBaseline="middle"
                 textAnchor="middle"
                 fill={
@@ -184,7 +185,7 @@ function SequenceSVG({
   const [region] = regions
   const theme = createJBrowseTheme(configTheme)
   const codonTable = generateCodonTable(defaultCodonTable)
-  const height = 20
+  const height = 13
   const [feature] = [...features.values()]
   if (!feature) {
     return null
@@ -193,10 +194,11 @@ function SequenceSVG({
   if (!seq) {
     return null
   }
+  const colors = ['#FF8080', '#80FF80', '#8080FF']
 
   // incrementer for the y-position of the current sequence being rendered
   // (applies to both translation rows and dna rows)
-  let currY = -20
+  let currY = -height
 
   return (
     <>
@@ -206,8 +208,9 @@ function SequenceSVG({
         ? [2, 1, 0].map(index => (
             <Translation
               key={`translation-${index}`}
+              color={colors[index]}
               seq={seq}
-              y={(currY += 20)}
+              y={(currY += height)}
               codonTable={codonTable}
               frame={index}
               bpPerPx={bpPerPx}
@@ -222,7 +225,7 @@ function SequenceSVG({
       {showForward ? (
         <DNA
           height={height}
-          y={(currY += 20)}
+          y={(currY += height)}
           feature={feature}
           region={region}
           seq={region.reversed ? complement(seq) : seq}
@@ -234,7 +237,7 @@ function SequenceSVG({
       {showReverse ? (
         <DNA
           height={height}
-          y={(currY += 20)}
+          y={(currY += height)}
           feature={feature}
           region={region}
           seq={region.reversed ? seq : complement(seq)}
@@ -244,14 +247,15 @@ function SequenceSVG({
       ) : null}
 
       {/* the lower translation row. if the view is reversed, the forward
-        translation is on the bottom */}
+      translation is on the bottom */}
       {showTranslation && (region.reversed ? showForward : showReverse)
         ? [0, -1, -2].map(index => (
             <Translation
               key={`rev-translation-${index}`}
               seq={seq}
-              y={(currY += 20)}
+              y={(currY += height)}
               codonTable={codonTable}
+              color={colors[-index]}
               frame={index}
               bpPerPx={bpPerPx}
               region={region}
