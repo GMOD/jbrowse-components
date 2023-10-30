@@ -13,13 +13,16 @@ const DeleteSessionDialog = ({
   rootModel,
 }: {
   sessionToDelete?: string
-  onClose: (_arg0: boolean) => void
-  rootModel: { removeSavedSession: (arg: { name?: string }) => void }
+  onClose: (arg: boolean) => void
+  rootModel: {
+    removeSavedSession: (arg: { name?: string }) => void
+  }
 }) => {
   const [error, setError] = useState<unknown>()
   return (
     <Dialog
       open
+      maxWidth="xl"
       onClose={() => onClose(false)}
       title={`Delete session "${sessionToDelete}"?`}
     >

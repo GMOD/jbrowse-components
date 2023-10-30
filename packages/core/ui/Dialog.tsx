@@ -21,10 +21,12 @@ import ErrorMessage from './ErrorMessage'
 
 const useStyles = makeStyles()(theme => ({
   closeButton: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
     color: theme.palette.grey[500],
+  },
+  title: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
 }))
 
@@ -36,11 +38,11 @@ function DialogError({ error }: { error: unknown }) {
   )
 }
 
-interface Props extends DialogProps {
-  header?: React.ReactNode
-}
-
-const Dialog = observer(function (props: Props) {
+const Dialog = observer(function (
+  props: DialogProps & {
+    header?: React.ReactNode
+  },
+) {
   const { classes } = useStyles()
   const { title, header, children, onClose } = props
   const theme = useTheme()
@@ -51,15 +53,12 @@ const Dialog = observer(function (props: Props) {
         {React.isValidElement(header) ? (
           <>{header}</>
         ) : (
-          <DialogTitle>
+          <DialogTitle className={classes.title}>
             {title}
             {onClose ? (
               <IconButton
                 className={classes.closeButton}
-                onClick={() => {
-                  // @ts-expect-error
-                  onClose()
-                }}
+                onClick={event => onClose(event, 'backdropClick')}
               >
                 <CloseIcon />
               </IconButton>

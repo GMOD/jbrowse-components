@@ -213,10 +213,10 @@ function SequenceSVG({
       {/* the upper translation row. if the view is reversed, the reverse
         translation is on the top */}
       {showTranslation && (region.reversed ? showReverse : showForward)
-        ? [2, 1, 0].map(index => (
+        ? (region.reversed ? [0, -1, -2] : [2, 1, 0]).map(index => (
             <Translation
               key={`translation-${index}`}
-              color={colors[index]}
+              color={colors[region.reversed ? -index : index]}
               seq={seq}
               y={(currY += rowHeight)}
               rowHeight={rowHeight}
@@ -257,13 +257,13 @@ function SequenceSVG({
       {/* the lower translation row. if the view is reversed, the forward
       translation is on the bottom */}
       {showTranslation && (region.reversed ? showForward : showReverse)
-        ? [0, -1, -2].map(index => (
+        ? (region.reversed ? [2, 1, 0] : [0, -1, -2]).map(index => (
             <Translation
               key={`rev-translation-${index}`}
               seq={seq}
               y={(currY += rowHeight)}
               codonTable={codonTable}
-              color={colors[-index]}
+              color={colors[region.reversed ? index : -index]}
               frame={index}
               bpPerPx={bpPerPx}
               region={region}
