@@ -45,8 +45,8 @@ function GoogleCalendarScheduleFunction() {
       <div>
         <Typography variant="h6">New: JBrowse 2 office hours!</Typography>
         <Typography>
-          Starting Fall 2023, we are offering you can use our Google Calendar
-          link here to schedule an appointment with members of our team
+          Starting Fall 2023, we are offering appointments with members of our
+          team via Google Calendar, click the button here to schedule!
         </Typography>
       </div>
       <div style={{ margin: 20 }}>
