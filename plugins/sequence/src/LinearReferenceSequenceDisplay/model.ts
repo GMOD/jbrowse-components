@@ -1,3 +1,4 @@
+import { lazy } from 'react'
 import { addDisposer, types } from 'mobx-state-tree'
 import {
   BaseLinearDisplay,
@@ -11,6 +12,8 @@ import { getContainingView, getSession } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
 
 type LGV = LinearGenomeViewModel
+
+const SetHeightDialog = lazy(() => import('./components/SetHeightDialog'))
 
 /**
  * #stateModel LinearReferenceSequenceDisplay
@@ -42,6 +45,10 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         showTranslation: true,
+        /**
+         * #property
+         */
+        rowHeight: 13,
       }),
     )
     .views(self => {
@@ -51,8 +58,13 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
          * #method
          */
         renderProps() {
-          const { showForward, rpcDriverName, showReverse, showTranslation } =
-            self
+          const {
+            rowHeight,
+            showForward,
+            rpcDriverName,
+            showReverse,
+            showTranslation,
+          } = self
           return {
             ...superRenderProps(),
             config: self.configuration.renderer,
@@ -60,6 +72,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
             showForward,
             showReverse,
             showTranslation,
+            rowHeight,
           }
         },
       }
@@ -98,6 +111,12 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       toggleShowTranslation() {
         self.showTranslation = !self.showTranslation
       },
+      /**
+       * #action
+       */
+      setRowHeight(arg: number) {
+        self.rowHeight = arg
+      },
       afterAttach() {
         addDisposer(
           self,
@@ -107,11 +126,11 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
               self.setHeight(50)
             } else {
               const { showTranslation, showReverse, showForward } = self
-              const r1 = showReverse && showTranslation ? 60 : 0
-              const r2 = showForward && showTranslation ? 60 : 0
+              const r1 = showReverse && showTranslation ? self.rowHeight * 3 : 0
+              const r2 = showForward && showTranslation ? self.rowHeight * 3 : 0
               const t = r1 + r2
-              const r = showReverse ? 20 : 0
-              const s = showForward ? 20 : 0
+              const r = showReverse ? self.rowHeight : 0
+              const s = showForward ? self.rowHeight : 0
               self.setHeight(t + r + s)
             }
           }),
