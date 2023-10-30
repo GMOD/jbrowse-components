@@ -22,19 +22,19 @@ function Translation({
   color,
   bpPerPx,
   region,
-  height,
+  rowHeight,
   y,
   reverse = false,
   theme,
 }: {
   codonTable: Record<string, string>
+  rowHeight: number
   seq: string
   color?: string
   frame: number
   bpPerPx: number
   region: Region
   reverse?: boolean
-  height: number
   y: number
   theme?: Theme
 }) {
@@ -78,7 +78,7 @@ function Translation({
               width={
                 render ? w : w + 0.7 /* small fudge factor when zoomed out*/
               }
-              height={height}
+              height={rowHeight}
               stroke={render ? '#555' : 'none'}
               fill={
                 defaultStarts.includes(codon)
@@ -91,8 +91,8 @@ function Translation({
             {render ? (
               <text
                 x={x + w / 2}
-                y={y + height / 2}
-                fontSize={height - 2}
+                y={y + rowHeight / 2}
+                fontSize={rowHeight - 2}
                 dominantBaseline="middle"
                 textAnchor="middle"
               >
@@ -106,16 +106,23 @@ function Translation({
   )
 }
 
-function DNA(props: {
+function DNA({
+  bpPerPx,
+  region,
+  feature,
+  theme,
+  rowHeight,
+  seq,
+  y,
+}: {
   seq: string
   theme: Theme
   bpPerPx: number
-  height: number
+  rowHeight: number
   region: Region
   feature: Feature
   y: number
 }) {
-  const { bpPerPx, region, feature, theme, height, seq, y } = props
   const render = 1 / bpPerPx >= 12
 
   const [leftPx, rightPx] = bpSpanPx(
@@ -140,15 +147,15 @@ function DNA(props: {
               x={x}
               y={y}
               width={w}
-              height={height}
+              height={rowHeight}
               fill={color ? color.main : '#aaa'}
               stroke={render ? '#555' : 'none'}
             />
             {render ? (
               <text
                 x={x + w / 2}
-                y={y + height / 2}
-                fontSize={height - 2}
+                y={y + rowHeight / 2}
+                fontSize={rowHeight - 2}
                 dominantBaseline="middle"
                 textAnchor="middle"
                 fill={
@@ -172,11 +179,13 @@ function SequenceSVG({
   showReverse = true,
   showForward = true,
   showTranslation = true,
+  rowHeight,
   bpPerPx,
 }: {
   regions: Region[]
   theme?: Theme
   features: Map<string, Feature>
+  rowHeight: number
   showReverse?: boolean
   showForward?: boolean
   showTranslation?: boolean
@@ -185,7 +194,6 @@ function SequenceSVG({
   const [region] = regions
   const theme = createJBrowseTheme(configTheme)
   const codonTable = generateCodonTable(defaultCodonTable)
-  const height = 13
   const [feature] = [...features.values()]
   if (!feature) {
     return null
@@ -198,7 +206,7 @@ function SequenceSVG({
 
   // incrementer for the y-position of the current sequence being rendered
   // (applies to both translation rows and dna rows)
-  let currY = -height
+  let currY = -rowHeight
 
   return (
     <>
@@ -210,13 +218,13 @@ function SequenceSVG({
               key={`translation-${index}`}
               color={colors[index]}
               seq={seq}
-              y={(currY += height)}
+              y={(currY += rowHeight)}
+              rowHeight={rowHeight}
               codonTable={codonTable}
               frame={index}
               bpPerPx={bpPerPx}
               region={region}
               theme={theme}
-              height={height}
               reverse={region.reversed}
             />
           ))
@@ -224,8 +232,8 @@ function SequenceSVG({
 
       {showForward ? (
         <DNA
-          height={height}
-          y={(currY += height)}
+          rowHeight={rowHeight}
+          y={(currY += rowHeight)}
           feature={feature}
           region={region}
           seq={region.reversed ? complement(seq) : seq}
@@ -236,8 +244,8 @@ function SequenceSVG({
 
       {showReverse ? (
         <DNA
-          height={height}
-          y={(currY += height)}
+          rowHeight={rowHeight}
+          y={(currY += rowHeight)}
           feature={feature}
           region={region}
           seq={region.reversed ? seq : complement(seq)}
@@ -253,14 +261,14 @@ function SequenceSVG({
             <Translation
               key={`rev-translation-${index}`}
               seq={seq}
-              y={(currY += height)}
+              y={(currY += rowHeight)}
               codonTable={codonTable}
               color={colors[-index]}
               frame={index}
               bpPerPx={bpPerPx}
               region={region}
               theme={theme}
-              height={height}
+              rowHeight={rowHeight}
               reverse={!region.reversed}
             />
           ))
@@ -300,6 +308,7 @@ const DivSequenceRendering = observer(function (props: {
   regions: Region[]
   bpPerPx: number
   config: AnyConfigurationModel
+  rowHeight: number
   theme?: Theme
   showForward?: boolean
   showReverse?: boolean

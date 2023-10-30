@@ -9,8 +9,8 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
     width="20000"
   >
     <rect
-      fill="#d8d8d8"
-      height="20"
+      fill="#8080FF"
+      height="13"
       stroke="#555"
       width="60"
       x="19900"
@@ -18,13 +18,14 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="19930"
-      y="10"
+      y="6.5"
     />
     <rect
-      fill="#d8d8d8"
-      height="20"
+      fill="#8080FF"
+      height="13"
       stroke="#555"
       width="60"
       x="19840"
@@ -32,13 +33,14 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="19870"
-      y="10"
+      y="6.5"
     />
     <rect
-      fill="#d8d8d8"
-      height="20"
+      fill="#8080FF"
+      height="13"
       stroke="#555"
       width="60"
       x="19780"
@@ -46,525 +48,559 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="19810"
-      y="10"
+      y="6.5"
     />
     <rect
-      fill="#adadad"
-      height="20"
+      fill="#80FF80"
+      height="13"
       stroke="#555"
       width="60"
       x="19920"
-      y="20"
+      y="13"
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="19950"
-      y="30"
+      y="19.5"
     />
     <rect
-      fill="#adadad"
-      height="20"
+      fill="#80FF80"
+      height="13"
       stroke="#555"
       width="60"
       x="19860"
-      y="20"
+      y="13"
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="19890"
-      y="30"
+      y="19.5"
     />
     <rect
-      fill="#adadad"
-      height="20"
+      fill="#80FF80"
+      height="13"
       stroke="#555"
       width="60"
       x="19800"
-      y="20"
+      y="13"
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="19830"
-      y="30"
+      y="19.5"
     />
     <rect
-      fill="#8f8f8f"
-      height="20"
+      fill="#FF8080"
+      height="13"
       stroke="#555"
       width="60"
       x="19940"
-      y="40"
+      y="26"
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="19970"
-      y="50"
+      y="32.5"
     />
     <rect
-      fill="#8f8f8f"
-      height="20"
+      fill="#FF8080"
+      height="13"
       stroke="#555"
       width="60"
       x="19880"
-      y="40"
+      y="26"
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="19910"
-      y="50"
+      y="32.5"
     />
     <rect
-      fill="#8f8f8f"
-      height="20"
+      fill="#FF8080"
+      height="13"
       stroke="#555"
       width="60"
       x="19820"
-      y="40"
+      y="26"
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="19850"
-      y="50"
+      y="32.5"
     />
     <rect
       fill="#f44336"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="19960"
-      y="60"
+      y="39"
     />
     <text
       dominant-baseline="middle"
       fill="#fff"
+      font-size="11"
       text-anchor="middle"
       x="19970"
-      y="70"
+      y="45.5"
     >
       T
     </text>
     <rect
       fill="#aaa"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="19940"
-      y="60"
+      y="39"
     />
     <text
       dominant-baseline="middle"
       fill="black"
+      font-size="11"
       text-anchor="middle"
       x="19950"
-      y="70"
+      y="45.5"
     >
       B
     </text>
     <rect
       fill="#ff9800"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="19920"
-      y="60"
+      y="39"
     />
     <text
       dominant-baseline="middle"
       fill="rgba(0, 0, 0, 0.87)"
+      font-size="11"
       text-anchor="middle"
       x="19930"
-      y="70"
+      y="45.5"
     >
       G
     </text>
     <rect
       fill="#aaa"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="19900"
-      y="60"
+      y="39"
     />
     <text
       dominant-baseline="middle"
       fill="black"
+      font-size="11"
       text-anchor="middle"
       x="19910"
-      y="70"
+      y="45.5"
     >
       D
     </text>
     <rect
       fill="#aaa"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="19880"
-      y="60"
+      y="39"
     />
     <text
       dominant-baseline="middle"
       fill="black"
+      font-size="11"
       text-anchor="middle"
       x="19890"
-      y="70"
+      y="45.5"
     >
       E
     </text>
     <rect
       fill="#aaa"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="19860"
-      y="60"
+      y="39"
     />
     <text
       dominant-baseline="middle"
       fill="black"
+      font-size="11"
       text-anchor="middle"
       x="19870"
-      y="70"
+      y="45.5"
     >
       F
     </text>
     <rect
       fill="#2196f3"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="19840"
-      y="60"
+      y="39"
     />
     <text
       dominant-baseline="middle"
       fill="#fff"
+      font-size="11"
       text-anchor="middle"
       x="19850"
-      y="70"
+      y="45.5"
     >
       C
     </text>
     <rect
       fill="#aaa"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="19820"
-      y="60"
+      y="39"
     />
     <text
       dominant-baseline="middle"
       fill="black"
+      font-size="11"
       text-anchor="middle"
       x="19830"
-      y="70"
+      y="45.5"
     >
       H
     </text>
     <rect
       fill="#aaa"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="19800"
-      y="60"
+      y="39"
     />
     <text
       dominant-baseline="middle"
       fill="black"
+      font-size="11"
       text-anchor="middle"
       x="19810"
-      y="70"
+      y="45.5"
     >
       I
     </text>
     <rect
       fill="#4caf50"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="19960"
-      y="80"
+      y="52"
     />
     <text
       dominant-baseline="middle"
       fill="rgba(0, 0, 0, 0.87)"
+      font-size="11"
       text-anchor="middle"
       x="19970"
-      y="90"
+      y="58.5"
     >
       A
     </text>
     <rect
       fill="#aaa"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="19940"
-      y="80"
+      y="52"
     />
     <text
       dominant-baseline="middle"
       fill="black"
+      font-size="11"
       text-anchor="middle"
       x="19950"
-      y="90"
+      y="58.5"
     >
       B
     </text>
     <rect
       fill="#2196f3"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="19920"
-      y="80"
+      y="52"
     />
     <text
       dominant-baseline="middle"
       fill="#fff"
+      font-size="11"
       text-anchor="middle"
       x="19930"
-      y="90"
+      y="58.5"
     >
       C
     </text>
     <rect
       fill="#aaa"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="19900"
-      y="80"
+      y="52"
     />
     <text
       dominant-baseline="middle"
       fill="black"
+      font-size="11"
       text-anchor="middle"
       x="19910"
-      y="90"
+      y="58.5"
     >
       D
     </text>
     <rect
       fill="#aaa"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="19880"
-      y="80"
+      y="52"
     />
     <text
       dominant-baseline="middle"
       fill="black"
+      font-size="11"
       text-anchor="middle"
       x="19890"
-      y="90"
+      y="58.5"
     >
       E
     </text>
     <rect
       fill="#aaa"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="19860"
-      y="80"
+      y="52"
     />
     <text
       dominant-baseline="middle"
       fill="black"
+      font-size="11"
       text-anchor="middle"
       x="19870"
-      y="90"
+      y="58.5"
     >
       F
     </text>
     <rect
       fill="#ff9800"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="19840"
-      y="80"
+      y="52"
     />
     <text
       dominant-baseline="middle"
       fill="rgba(0, 0, 0, 0.87)"
+      font-size="11"
       text-anchor="middle"
       x="19850"
-      y="90"
+      y="58.5"
     >
       G
     </text>
     <rect
       fill="#aaa"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="19820"
-      y="80"
+      y="52"
     />
     <text
       dominant-baseline="middle"
       fill="black"
+      font-size="11"
       text-anchor="middle"
       x="19830"
-      y="90"
+      y="58.5"
     >
       H
     </text>
     <rect
       fill="#aaa"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="19800"
-      y="80"
+      y="52"
     />
     <text
       dominant-baseline="middle"
       fill="black"
+      font-size="11"
       text-anchor="middle"
       x="19810"
-      y="90"
+      y="58.5"
     >
       I
     </text>
     <rect
-      fill="#8f8f8f"
-      height="20"
+      fill="#FF8080"
+      height="13"
       stroke="#555"
       width="60"
       x="19940"
-      y="100"
+      y="65"
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="19970"
-      y="110"
+      y="71.5"
     />
     <rect
-      fill="#8f8f8f"
-      height="20"
+      fill="#FF8080"
+      height="13"
       stroke="#555"
       width="60"
       x="19880"
-      y="100"
+      y="65"
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="19910"
-      y="110"
+      y="71.5"
     />
     <rect
-      fill="#8f8f8f"
-      height="20"
+      fill="#FF8080"
+      height="13"
       stroke="#555"
       width="60"
       x="19820"
-      y="100"
+      y="65"
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="19850"
-      y="110"
+      y="71.5"
     />
     <rect
-      fill="#adadad"
-      height="20"
+      fill="#80FF80"
+      height="13"
       stroke="#555"
       width="60"
       x="19900"
-      y="120"
+      y="78"
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="19930"
-      y="130"
+      y="84.5"
     />
     <rect
-      fill="#adadad"
-      height="20"
+      fill="#80FF80"
+      height="13"
       stroke="#555"
       width="60"
       x="19840"
-      y="120"
+      y="78"
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="19870"
-      y="130"
+      y="84.5"
     />
     <rect
-      fill="#adadad"
-      height="20"
+      fill="#80FF80"
+      height="13"
       stroke="#555"
       width="60"
       x="19780"
-      y="120"
+      y="78"
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="19810"
-      y="130"
+      y="84.5"
     />
     <rect
-      fill="#d8d8d8"
-      height="20"
+      fill="#8080FF"
+      height="13"
       stroke="#555"
       width="60"
       x="19920"
-      y="140"
+      y="91"
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="19950"
-      y="150"
+      y="97.5"
     />
     <rect
-      fill="#d8d8d8"
-      height="20"
+      fill="#8080FF"
+      height="13"
       stroke="#555"
       width="60"
       x="19860"
-      y="140"
+      y="91"
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="19890"
-      y="150"
+      y="97.5"
     />
     <rect
-      fill="#d8d8d8"
-      height="20"
+      fill="#8080FF"
+      height="13"
       stroke="#555"
       width="60"
       x="19800"
-      y="140"
+      y="91"
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="19830"
-      y="150"
+      y="97.5"
     />
   </svg>
 </div>
@@ -579,8 +615,8 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
     width="20000"
   >
     <rect
-      fill="#d8d8d8"
-      height="20"
+      fill="#8080FF"
+      height="13"
       stroke="#555"
       width="60"
       x="40"
@@ -588,13 +624,14 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="70"
-      y="10"
+      y="6.5"
     />
     <rect
-      fill="#d8d8d8"
-      height="20"
+      fill="#8080FF"
+      height="13"
       stroke="#555"
       width="60"
       x="100"
@@ -602,13 +639,14 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="130"
-      y="10"
+      y="6.5"
     />
     <rect
-      fill="#d8d8d8"
-      height="20"
+      fill="#8080FF"
+      height="13"
       stroke="#555"
       width="60"
       x="160"
@@ -616,525 +654,559 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="190"
-      y="10"
+      y="6.5"
     />
     <rect
-      fill="#adadad"
-      height="20"
+      fill="#80FF80"
+      height="13"
       stroke="#555"
       width="60"
       x="20"
-      y="20"
+      y="13"
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="50"
-      y="30"
+      y="19.5"
     />
     <rect
-      fill="#adadad"
-      height="20"
+      fill="#80FF80"
+      height="13"
       stroke="#555"
       width="60"
       x="80"
-      y="20"
+      y="13"
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="110"
-      y="30"
+      y="19.5"
     />
     <rect
-      fill="#adadad"
-      height="20"
+      fill="#80FF80"
+      height="13"
       stroke="#555"
       width="60"
       x="140"
-      y="20"
+      y="13"
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="170"
-      y="30"
+      y="19.5"
     />
     <rect
-      fill="#8f8f8f"
-      height="20"
+      fill="#FF8080"
+      height="13"
       stroke="#555"
       width="60"
       x="0"
-      y="40"
+      y="26"
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="30"
-      y="50"
+      y="32.5"
     />
     <rect
-      fill="#8f8f8f"
-      height="20"
+      fill="#FF8080"
+      height="13"
       stroke="#555"
       width="60"
       x="60"
-      y="40"
+      y="26"
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="90"
-      y="50"
+      y="32.5"
     />
     <rect
-      fill="#8f8f8f"
-      height="20"
+      fill="#FF8080"
+      height="13"
       stroke="#555"
       width="60"
       x="120"
-      y="40"
+      y="26"
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="150"
-      y="50"
+      y="32.5"
     />
     <rect
       fill="#4caf50"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="20"
-      y="60"
+      y="39"
     />
     <text
       dominant-baseline="middle"
       fill="rgba(0, 0, 0, 0.87)"
+      font-size="11"
       text-anchor="middle"
       x="30"
-      y="70"
+      y="45.5"
     >
       A
     </text>
     <rect
       fill="#aaa"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="40"
-      y="60"
+      y="39"
     />
     <text
       dominant-baseline="middle"
       fill="black"
+      font-size="11"
       text-anchor="middle"
       x="50"
-      y="70"
+      y="45.5"
     >
       B
     </text>
     <rect
       fill="#2196f3"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="60"
-      y="60"
+      y="39"
     />
     <text
       dominant-baseline="middle"
       fill="#fff"
+      font-size="11"
       text-anchor="middle"
       x="70"
-      y="70"
+      y="45.5"
     >
       C
     </text>
     <rect
       fill="#aaa"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="80"
-      y="60"
+      y="39"
     />
     <text
       dominant-baseline="middle"
       fill="black"
+      font-size="11"
       text-anchor="middle"
       x="90"
-      y="70"
+      y="45.5"
     >
       D
     </text>
     <rect
       fill="#aaa"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="100"
-      y="60"
+      y="39"
     />
     <text
       dominant-baseline="middle"
       fill="black"
+      font-size="11"
       text-anchor="middle"
       x="110"
-      y="70"
+      y="45.5"
     >
       E
     </text>
     <rect
       fill="#aaa"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="120"
-      y="60"
+      y="39"
     />
     <text
       dominant-baseline="middle"
       fill="black"
+      font-size="11"
       text-anchor="middle"
       x="130"
-      y="70"
+      y="45.5"
     >
       F
     </text>
     <rect
       fill="#ff9800"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="140"
-      y="60"
+      y="39"
     />
     <text
       dominant-baseline="middle"
       fill="rgba(0, 0, 0, 0.87)"
+      font-size="11"
       text-anchor="middle"
       x="150"
-      y="70"
+      y="45.5"
     >
       G
     </text>
     <rect
       fill="#aaa"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="160"
-      y="60"
+      y="39"
     />
     <text
       dominant-baseline="middle"
       fill="black"
+      font-size="11"
       text-anchor="middle"
       x="170"
-      y="70"
+      y="45.5"
     >
       H
     </text>
     <rect
       fill="#aaa"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="180"
-      y="60"
+      y="39"
     />
     <text
       dominant-baseline="middle"
       fill="black"
+      font-size="11"
       text-anchor="middle"
       x="190"
-      y="70"
+      y="45.5"
     >
       I
     </text>
     <rect
       fill="#f44336"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="20"
-      y="80"
+      y="52"
     />
     <text
       dominant-baseline="middle"
       fill="#fff"
+      font-size="11"
       text-anchor="middle"
       x="30"
-      y="90"
+      y="58.5"
     >
       T
     </text>
     <rect
       fill="#aaa"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="40"
-      y="80"
+      y="52"
     />
     <text
       dominant-baseline="middle"
       fill="black"
+      font-size="11"
       text-anchor="middle"
       x="50"
-      y="90"
+      y="58.5"
     >
       B
     </text>
     <rect
       fill="#ff9800"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="60"
-      y="80"
+      y="52"
     />
     <text
       dominant-baseline="middle"
       fill="rgba(0, 0, 0, 0.87)"
+      font-size="11"
       text-anchor="middle"
       x="70"
-      y="90"
+      y="58.5"
     >
       G
     </text>
     <rect
       fill="#aaa"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="80"
-      y="80"
+      y="52"
     />
     <text
       dominant-baseline="middle"
       fill="black"
+      font-size="11"
       text-anchor="middle"
       x="90"
-      y="90"
+      y="58.5"
     >
       D
     </text>
     <rect
       fill="#aaa"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="100"
-      y="80"
+      y="52"
     />
     <text
       dominant-baseline="middle"
       fill="black"
+      font-size="11"
       text-anchor="middle"
       x="110"
-      y="90"
+      y="58.5"
     >
       E
     </text>
     <rect
       fill="#aaa"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="120"
-      y="80"
+      y="52"
     />
     <text
       dominant-baseline="middle"
       fill="black"
+      font-size="11"
       text-anchor="middle"
       x="130"
-      y="90"
+      y="58.5"
     >
       F
     </text>
     <rect
       fill="#2196f3"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="140"
-      y="80"
+      y="52"
     />
     <text
       dominant-baseline="middle"
       fill="#fff"
+      font-size="11"
       text-anchor="middle"
       x="150"
-      y="90"
+      y="58.5"
     >
       C
     </text>
     <rect
       fill="#aaa"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="160"
-      y="80"
+      y="52"
     />
     <text
       dominant-baseline="middle"
       fill="black"
+      font-size="11"
       text-anchor="middle"
       x="170"
-      y="90"
+      y="58.5"
     >
       H
     </text>
     <rect
       fill="#aaa"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="180"
-      y="80"
+      y="52"
     />
     <text
       dominant-baseline="middle"
       fill="black"
+      font-size="11"
       text-anchor="middle"
       x="190"
-      y="90"
+      y="58.5"
     >
       I
     </text>
     <rect
-      fill="#8f8f8f"
-      height="20"
+      fill="#FF8080"
+      height="13"
       stroke="#555"
       width="60"
       x="0"
-      y="100"
+      y="65"
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="30"
-      y="110"
+      y="71.5"
     />
     <rect
-      fill="#8f8f8f"
-      height="20"
+      fill="#FF8080"
+      height="13"
       stroke="#555"
       width="60"
       x="60"
-      y="100"
+      y="65"
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="90"
-      y="110"
+      y="71.5"
     />
     <rect
-      fill="#8f8f8f"
-      height="20"
+      fill="#FF8080"
+      height="13"
       stroke="#555"
       width="60"
       x="120"
-      y="100"
+      y="65"
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="150"
-      y="110"
+      y="71.5"
     />
     <rect
-      fill="#adadad"
-      height="20"
+      fill="#80FF80"
+      height="13"
       stroke="#555"
       width="60"
       x="40"
-      y="120"
+      y="78"
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="70"
-      y="130"
+      y="84.5"
     />
     <rect
-      fill="#adadad"
-      height="20"
+      fill="#80FF80"
+      height="13"
       stroke="#555"
       width="60"
       x="100"
-      y="120"
+      y="78"
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="130"
-      y="130"
+      y="84.5"
     />
     <rect
-      fill="#adadad"
-      height="20"
+      fill="#80FF80"
+      height="13"
       stroke="#555"
       width="60"
       x="160"
-      y="120"
+      y="78"
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="190"
-      y="130"
+      y="84.5"
     />
     <rect
-      fill="#d8d8d8"
-      height="20"
+      fill="#8080FF"
+      height="13"
       stroke="#555"
       width="60"
       x="20"
-      y="140"
+      y="91"
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="50"
-      y="150"
+      y="97.5"
     />
     <rect
-      fill="#d8d8d8"
-      height="20"
+      fill="#8080FF"
+      height="13"
       stroke="#555"
       width="60"
       x="80"
-      y="140"
+      y="91"
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="110"
-      y="150"
+      y="97.5"
     />
     <rect
-      fill="#d8d8d8"
-      height="20"
+      fill="#8080FF"
+      height="13"
       stroke="#555"
       width="60"
       x="140"
-      y="140"
+      y="91"
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="170"
-      y="150"
+      y="97.5"
     />
   </svg>
 </div>
@@ -1149,8 +1221,8 @@ exports[`renders with one feature with an incorrect seq, zoomed in, should throw
     width="20000"
   >
     <rect
-      fill="#d8d8d8"
-      height="20"
+      fill="#8080FF"
+      height="13"
       stroke="#555"
       width="60"
       x="40"
@@ -1158,181 +1230,193 @@ exports[`renders with one feature with an incorrect seq, zoomed in, should throw
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="70"
-      y="10"
+      y="6.5"
     />
     <rect
-      fill="#adadad"
-      height="20"
+      fill="#80FF80"
+      height="13"
       stroke="#555"
       width="60"
       x="20"
-      y="20"
+      y="13"
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="50"
-      y="30"
+      y="19.5"
     />
     <rect
-      fill="#8f8f8f"
-      height="20"
+      fill="#FF8080"
+      height="13"
       stroke="#555"
       width="60"
       x="0"
-      y="40"
+      y="26"
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="30"
-      y="50"
+      y="32.5"
     />
     <rect
       fill="#4caf50"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="20"
-      y="60"
+      y="39"
     />
     <text
       dominant-baseline="middle"
       fill="rgba(0, 0, 0, 0.87)"
+      font-size="11"
       text-anchor="middle"
       x="30"
-      y="70"
+      y="45.5"
     >
       A
     </text>
     <rect
       fill="#aaa"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="40"
-      y="60"
+      y="39"
     />
     <text
       dominant-baseline="middle"
       fill="black"
+      font-size="11"
       text-anchor="middle"
       x="50"
-      y="70"
+      y="45.5"
     >
       B
     </text>
     <rect
       fill="#2196f3"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="60"
-      y="60"
+      y="39"
     />
     <text
       dominant-baseline="middle"
       fill="#fff"
+      font-size="11"
       text-anchor="middle"
       x="70"
-      y="70"
+      y="45.5"
     >
       C
     </text>
     <rect
       fill="#f44336"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="20"
-      y="80"
+      y="52"
     />
     <text
       dominant-baseline="middle"
       fill="#fff"
+      font-size="11"
       text-anchor="middle"
       x="30"
-      y="90"
+      y="58.5"
     >
       T
     </text>
     <rect
       fill="#aaa"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="40"
-      y="80"
+      y="52"
     />
     <text
       dominant-baseline="middle"
       fill="black"
+      font-size="11"
       text-anchor="middle"
       x="50"
-      y="90"
+      y="58.5"
     >
       B
     </text>
     <rect
       fill="#ff9800"
-      height="20"
+      height="13"
       stroke="#555"
       width="20"
       x="60"
-      y="80"
+      y="52"
     />
     <text
       dominant-baseline="middle"
       fill="rgba(0, 0, 0, 0.87)"
+      font-size="11"
       text-anchor="middle"
       x="70"
-      y="90"
+      y="58.5"
     >
       G
     </text>
     <rect
-      fill="#8f8f8f"
-      height="20"
+      fill="#FF8080"
+      height="13"
       stroke="#555"
       width="60"
       x="0"
-      y="100"
+      y="65"
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="30"
-      y="110"
+      y="71.5"
     />
     <rect
-      fill="#adadad"
-      height="20"
+      fill="#80FF80"
+      height="13"
       stroke="#555"
       width="60"
       x="40"
-      y="120"
+      y="78"
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="70"
-      y="130"
+      y="84.5"
     />
     <rect
-      fill="#d8d8d8"
-      height="20"
+      fill="#8080FF"
+      height="13"
       stroke="#555"
       width="60"
       x="20"
-      y="140"
+      y="91"
     />
     <text
       dominant-baseline="middle"
+      font-size="11"
       text-anchor="middle"
       x="50"
-      y="150"
+      y="97.5"
     />
   </svg>
 </div>
@@ -1358,68 +1442,68 @@ exports[`renders with one, zoomed way out 1`] = `
     width="333.3333333333333"
   >
     <rect
-      fill="#adadad"
-      height="20"
+      fill="#80FF80"
+      height="13"
       stroke="none"
       width="1.7"
       x="0.3333333333333333"
-      y="20"
+      y="13"
     />
     <rect
-      fill="#8f8f8f"
-      height="20"
+      fill="#FF8080"
+      height="13"
       stroke="none"
       width="1.7"
       x="0"
-      y="40"
+      y="26"
     />
     <rect
       fill="#4caf50"
-      height="20"
+      height="13"
       stroke="none"
       width="0.8"
       x="0.3"
-      y="60"
+      y="39"
     />
     <rect
       fill="#aaa"
-      height="20"
+      height="13"
       stroke="none"
       width="0.8"
       x="1.1"
-      y="60"
+      y="39"
     />
     <rect
       fill="#f44336"
-      height="20"
+      height="13"
       stroke="none"
       width="0.8"
       x="0.3"
-      y="80"
+      y="52"
     />
     <rect
       fill="#aaa"
-      height="20"
+      height="13"
       stroke="none"
       width="0.8"
       x="1.1"
-      y="80"
+      y="52"
     />
     <rect
-      fill="#8f8f8f"
-      height="20"
+      fill="#FF8080"
+      height="13"
       stroke="none"
       width="1.7"
       x="0"
-      y="100"
+      y="65"
     />
     <rect
-      fill="#d8d8d8"
-      height="20"
+      fill="#8080FF"
+      height="13"
       stroke="none"
       width="1.7"
       x="0.3333333333333333"
-      y="140"
+      y="91"
     />
   </svg>
 </div>
