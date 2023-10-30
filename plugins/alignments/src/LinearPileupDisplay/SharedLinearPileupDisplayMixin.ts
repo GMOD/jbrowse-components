@@ -125,7 +125,7 @@ export function SharedLinearPileupDisplayMixin(
       /**
        * #action
        */
-      setMaxHeight(n: number) {
+      setMaxHeight(n?: number) {
         self.trackMaxHeight = n
       },
 

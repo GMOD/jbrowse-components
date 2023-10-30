@@ -16,30 +16,28 @@ const useStyles = makeStyles()({
   },
 })
 
-const SetMaxHeightDialog = observer(function (props: {
+const SetHeightDialog = observer(function (props: {
   model: {
-    maxHeight?: number
-    setMaxHeight: (arg: number | undefined) => void
+    rowHeight?: number
+    setRowHeight: (arg: number) => void
   }
   handleClose: () => void
 }) {
   const { model, handleClose } = props
   const { classes } = useStyles()
-  const { maxHeight = '' } = model
-  const [max, setMax] = useState(`${maxHeight}`)
+  const [height, setHeight] = useState(`${model.rowHeight}`)
 
   return (
-    <Dialog open onClose={handleClose} title="Set max height">
+    <Dialog open onClose={handleClose} title="Set height of dialog">
       <DialogContent className={classes.root}>
         <Typography>
-          Set max height for the track. For example, you can increase this if
-          the layout says &quot;Max height reached&quot;
+          Set height of characters in the linear reference sequence
         </Typography>
         <TextField
-          value={max}
+          value={height}
           autoFocus
-          onChange={event => setMax(event.target.value)}
-          placeholder="Enter max height for layout"
+          onChange={event => setHeight(event.target.value)}
+          placeholder="Enter height for sequence track layout"
         />
         <DialogActions>
           <Button
@@ -47,9 +45,9 @@ const SetMaxHeightDialog = observer(function (props: {
             color="primary"
             type="submit"
             onClick={() => {
-              model.setMaxHeight(
-                max !== '' && !Number.isNaN(+max) ? +max : undefined,
-              )
+              if (height !== '' && !Number.isNaN(+height)) {
+                model.setRowHeight(+height)
+              }
               handleClose()
             }}
           >
@@ -67,4 +65,4 @@ const SetMaxHeightDialog = observer(function (props: {
     </Dialog>
   )
 })
-export default SetMaxHeightDialog
+export default SetHeightDialog
