@@ -9,56 +9,53 @@ import {
   Button,
   Box,
   Alert,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  IconButton,
   createTheme,
 } from '@mui/material'
-import CloseIcon from '@mui/icons-material/Close'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import OpenInBrowserIcon from '@mui/icons-material/OpenInBrowser'
 
-function GoogleDialog({ onClose }: { onClose: () => void }) {
-  return (
-    <Dialog open onClose={() => onClose()} fullWidth maxWidth="xl">
-      <DialogTitle>
-        Schedule appointment
-        <IconButton style={{ position: 'absolute' }} onClick={() => onClose()}>
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
-      <DialogContent>
-        <iframe
-          width="1600"
-          height="1000"
-          src="https://calendar.google.com/calendar/appointments/schedules/AcZssZ2WIB6bwPtShkYDn49c-ADXvpxfa6iyaEP453Uvy-e-RDZPZF5rsbTRbRlXrWelVpSicZJQsdn5?gv=true"
-        ></iframe>
-      </DialogContent>
-    </Dialog>
-  )
-}
 function GoogleCalendarScheduleFunction() {
-  const [open, setOpen] = useState(false)
   return (
-    <div style={{ display: 'flex' }}>
+    <div>
       <div>
-        <Typography variant="h6">New: JBrowse 2 office hours!</Typography>
+        <Typography variant="h6">
+          New: JBrowse 2 office hours and community meetings!
+        </Typography>
         <Typography>
-          Starting Fall 2023, we are offering appointments with members of our
-          team via Google Calendar, click the button here to schedule!
+          Starting Fall 2023, we are offering 1-on-1 appointments with members
+          of our team via Google Calendar
+          <Button
+            variant="contained"
+            style={{ margin: 10 }}
+            size="small"
+            href="https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ2WIB6bwPtShkYDn49c-ADXvpxfa6iyaEP453Uvy-e-RDZPZF5rsbTRbRlXrWelVpSicZJQsdn5"
+          >
+            Schedule appointment
+          </Button>
+          <Typography>
+            We will also have community meetings where anyone can join a public
+            Google Meet
+          </Typography>
         </Typography>
       </div>
-      <div style={{ margin: 20 }}>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => setOpen(true)}
-        >
-          Schedule appointment
-        </Button>
-      </div>
-      {open ? <GoogleDialog onClose={() => setOpen(false)} /> : null}
+      <ul>
+        <li>
+          <a href="https://meet.google.com/uti-xsjf-xbu">
+            Monthly on the last Tuesday, 8pm EST (Asia Pacific friendly)
+          </a>
+        </li>
+        <li>
+          <a href="https://meet.google.com/rnq-exdt-tuz">
+            Monthly on the third Thursday, 10am EST (North America, Europe
+            friendly)
+          </a>
+        </li>
+        <li>
+          <a href="https://calendar.google.com/calendar/u/2?cid=ZDgxZmE0Yjk3YjdiZTAxYThjMDAzYzNkOThkMjUyOGQ1ZWM4YzNkMzRjNjgwMmQ3YjZhOWEwYmU4NDYxZDBiM0Bncm91cC5jYWxlbmRhci5nb29nbGUuY29t">
+            Add both events to your Google calendar
+          </a>
+        </li>
+      </ul>
     </div>
   )
 }

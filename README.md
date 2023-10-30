@@ -11,6 +11,10 @@ Homepage https://jbrowse.org/jb2
 
 Docs http://jbrowse.org/jb2/docs/
 
+Fall 2023: We have created an "office hours" Google Calendar for anyone to
+schedule 1-on-1 meetings with the development team. Please schedule an
+appointment here https://calendar.app.google/E9i5fyZN4UcZawuNA
+
 ## Pre-requisites
 
 - [git](https://git-scm.com/downloads)
