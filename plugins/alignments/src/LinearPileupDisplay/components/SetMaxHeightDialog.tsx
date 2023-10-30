@@ -29,7 +29,7 @@ const SetMaxHeightDialog = observer(function (props: {
   const [max, setMax] = useState(`${maxHeight}`)
 
   return (
-    <Dialog open onClose={handleClose} title="Filter options">
+    <Dialog open onClose={handleClose} title="Set max height">
       <DialogContent className={classes.root}>
         <Typography>
           Set max height for the track. For example, you can increase this if
@@ -37,6 +37,7 @@ const SetMaxHeightDialog = observer(function (props: {
         </Typography>
         <TextField
           value={max}
+          autoFocus
           onChange={event => {
             setMax(event.target.value)
           }}
