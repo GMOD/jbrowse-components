@@ -16,7 +16,7 @@ import {
 import { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import { autorun } from 'mobx'
+import { autorun, when } from 'mobx'
 import {
   addDisposer,
   isAlive,
@@ -311,7 +311,7 @@ function stateModelFactory() {
                 },
                 {
                   label: 'Collapse introns',
-                  onClick: () => {
+                  onClick: async () => {
                     const { contextMenuFeature } = self
                     if (contextMenuFeature) {
                       const refName = contextMenuFeature.get('refName')
@@ -329,11 +329,24 @@ function stateModelFactory() {
                             assemblyName: view.assemblyNames[0],
                           })) || []
                       res.sort((a, b) => a.start - b.start)
-                      getSession(self).addView('LinearGenomeView', {
-                        ...getSnapshot(view),
-                        id: nanoid(),
-                        displayedRegions: res,
-                      })
+
+                      // need to strip ID before copying view snap
+                      const { id, ...rest } = getSnapshot(view)
+                      const newView = getSession(self).addView(
+                        'LinearGenomeView',
+                        {
+                          ...rest,
+                          id: nanoid(),
+                          tracks: rest.tracks.map(track => {
+                            const { id, ...rest } = track
+                            return { ...rest, id: nanoid() }
+                          }),
+                          displayedRegions: res,
+                        },
+                      ) as LGV
+                      await when(() => newView.initialized)
+
+                      newView.showAllRegions()
                     }
                   },
                 },
