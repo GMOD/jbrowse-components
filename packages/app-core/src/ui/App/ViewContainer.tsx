@@ -41,9 +41,11 @@ const ViewContainer = observer(function ({
 
   useEffect(() => {
     function handleSelectView(e: Event) {
-      if (e.target instanceof Element) {
+      if (e.target instanceof HTMLElement) {
+        const { testid } = e.target.dataset
         if (
-          e.target.getAttribute('data-testid') !== 'CloseIcon' &&
+          testid !== 'CloseIcon' &&
+          testid !== 'close_view' &&
           ref?.current &&
           ref.current.contains(e.target)
         ) {

@@ -34,14 +34,13 @@ interface Props {
   value: string
   setValue: (value: string) => void
   variant: Variant
-  fontWeight?: string | number
   classes?: Partial<Record<EditableTypographyClassKey, string>>
 }
 
 // using forwardRef so that MUI Tooltip can wrap this component
 const EditableTypography = React.forwardRef<HTMLDivElement, Props>(
   function EditableTypography2(props, ref) {
-    const { value, setValue, variant, fontWeight, ...other } = props
+    const { value, setValue, variant, ...other } = props
     const [ref2, { width }] = useMeasure()
     const [editedValue, setEditedValue] = useState<string>()
     const [inputNode, setInputNode] = useState<HTMLInputElement | null>(null)
@@ -83,7 +82,6 @@ const EditableTypography = React.forwardRef<HTMLDivElement, Props>(
               ...(variant && variant !== 'inherit'
                 ? theme.typography[variant]
                 : {}),
-              fontWeight: fontWeight,
             },
           }}
           classes={{
