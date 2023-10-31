@@ -62,12 +62,6 @@ const ViewContainer = observer(function ({
     }
   }, [ref, session, view])
 
-  useEffect(() => {
-    if (!session.views.some(view => view.id === session.focusedViewId)) {
-      session.setFocusedViewId(view.id)
-    }
-  }, [session.views.length, session, view.id])
-
   return (
     <Paper
       ref={ref}

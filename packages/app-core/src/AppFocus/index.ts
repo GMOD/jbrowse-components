@@ -1,4 +1,6 @@
-import { types } from 'mobx-state-tree'
+import { autorun } from 'mobx'
+import { addDisposer, types } from 'mobx-state-tree'
+import { AbstractSessionModel, AbstractViewModel } from '@jbrowse/core/util'
 
 /**
  * #stateModel AppFocusMixin
@@ -16,6 +18,26 @@ export function AppFocusMixin() {
     .actions(self => ({
       setFocusedViewId(viewId: string) {
         self.focusedViewId = viewId
+      },
+      afterCreate() {
+        addDisposer(
+          self,
+          autorun(() => {
+            const session = self as AbstractSessionModel
+            if (session) {
+              const view = session.views.at(-1)
+              if (
+                view &&
+                !session.views.some(
+                  (view: AbstractViewModel) =>
+                    view.id === session.focusedViewId,
+                )
+              ) {
+                this.setFocusedViewId(view.id)
+              }
+            }
+          }),
+        )
       },
     }))
 }
