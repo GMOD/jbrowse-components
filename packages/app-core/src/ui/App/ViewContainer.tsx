@@ -42,7 +42,11 @@ const ViewContainer = observer(function ({
   useEffect(() => {
     function handleSelectView(e: Event) {
       if (e.target instanceof Element) {
-        if (ref?.current && ref.current.contains(e.target)) {
+        if (
+          e.target.getAttribute('data-testid') !== 'CloseIcon' &&
+          ref?.current &&
+          ref.current.contains(e.target)
+        ) {
           session.setFocusedViewId(view.id)
         }
       }
@@ -57,13 +61,7 @@ const ViewContainer = observer(function ({
   }, [ref, session, view])
 
   useEffect(() => {
-    // ensures there is always one view in focus, if there is a view open
-    if (
-      session.focusedViewId &&
-      session.views.some(view => view.id === session.focusedViewId)
-    ) {
-      session.setFocusedViewId(session.focusedViewId)
-    } else {
+    if (!session.views.some(view => view.id === session.focusedViewId)) {
       session.setFocusedViewId(view.id)
     }
   }, [session.views.length, session, view.id])
