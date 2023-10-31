@@ -17,7 +17,13 @@ import { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { autorun } from 'mobx'
-import { addDisposer, isAlive, types, Instance } from 'mobx-state-tree'
+import {
+  addDisposer,
+  isAlive,
+  types,
+  getSnapshot,
+  Instance,
+} from 'mobx-state-tree'
 
 // icons
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
@@ -29,6 +35,7 @@ import BlockState from './serverSideRenderedBlock'
 import configSchema from './configSchema'
 import TrackHeightMixin from './TrackHeightMixin'
 import FeatureDensityMixin from './FeatureDensityMixin'
+import { nanoid } from '@jbrowse/core/util/nanoid'
 
 type LGV = LinearGenomeViewModel
 
@@ -299,6 +306,34 @@ function stateModelFactory() {
                   onClick: () => {
                     if (self.contextMenuFeature) {
                       self.selectFeature(self.contextMenuFeature)
+                    }
+                  },
+                },
+                {
+                  label: 'Collapse introns',
+                  onClick: () => {
+                    const { contextMenuFeature } = self
+                    if (contextMenuFeature) {
+                      const refName = contextMenuFeature.get('refName')
+                      const view = getContainingView(self) as LGV
+                      const singleTranscript =
+                        contextMenuFeature.get('subfeatures')?.[0]
+                      const res =
+                        singleTranscript
+                          ?.get('subfeatures')
+                          ?.filter(f => f.get('type') === 'exon')
+                          .map(f => ({
+                            refName,
+                            start: f.get('start') - 100,
+                            end: f.get('end') + 100,
+                            assemblyName: view.assemblyNames[0],
+                          })) || []
+                      res.sort((a, b) => a.start - b.start)
+                      getSession(self).addView('LinearGenomeView', {
+                        ...getSnapshot(view),
+                        id: nanoid(),
+                        displayedRegions: res,
+                      })
                     }
                   },
                 },
