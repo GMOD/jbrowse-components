@@ -46,12 +46,20 @@ const configSchema = ConfigurationSchema(
      * generally refers to the reference genome assembly's sequence adapter
      * currently needs to be manually added
      */
-    sequenceAdapter: {
+    sequenceAdapters: {
       type: 'frozen',
       description: 'sequence data adapter',
       defaultValue: null,
     },
   },
-  { explicitlyTyped: true },
+  {
+    explicitlyTyped: true,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    actions: (self: any) => ({
+      setSequenceAdapter(s: Record<string, unknown>) {
+        self.sequenceAdapter = s
+      },
+    }),
+  },
 )
 export default configSchema
