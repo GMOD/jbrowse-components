@@ -1,6 +1,7 @@
 import { types } from 'mobx-state-tree'
 
 import { ConfigurationSchema } from '../../configuration'
+import { getSession, notEmpty } from '../../util'
 
 import type PluginManager from '../../PluginManager'
 import type { Instance } from 'mobx-state-tree'
@@ -194,6 +195,30 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
           }
           const length = self.displays.push(conf)
           return self.displays[length - 1]
+        },
+        setSequenceAdapters(a: Record<string, unknown>) {
+          self.sequenceAdapters = a
+        },
+        afterAttach() {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const { assemblyManager } = getRoot<any>(self)
+          const assemblyNames = readConfObject(
+            self,
+            'assemblyNames',
+          ) as string[]
+          self.setSequenceAdapters(
+            assemblyNames
+              .map(a => {
+                const conf = assemblyManager.get(a)?.configuration
+                return conf ? ([a, getSnapshot(conf)] as const) : undefined
+              })
+              .filter(notEmpty),
+          )
+
+          const c = assemblyManager.get(assemblyNames[0])?.configuration
+          if (c) {
+            self.adapter.setSequenceAdapter?.(readConfObject(c))
+          }
         },
       }),
     },
