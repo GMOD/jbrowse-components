@@ -43,7 +43,6 @@ export function AppFocusMixin() {
                     ),
                 )
               ) {
-                // @ts-ignore
                 this.setFocusedViewId(view.id)
               }
             }
