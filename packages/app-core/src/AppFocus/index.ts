@@ -31,8 +31,19 @@ export function AppFocusMixin() {
                 !session.views.some(
                   (view: AbstractViewModel) =>
                     view.id === session.focusedViewId,
+                ) &&
+                !session.views.some(
+                  view =>
+                    // @ts-ignore
+                    !!view.views &&
+                    // @ts-ignore
+                    view.views.some(
+                      (subView: AbstractViewModel) =>
+                        subView.id === session.focusedViewId,
+                    ),
                 )
               ) {
+                // @ts-ignore
                 this.setFocusedViewId(view.id)
               }
             }
