@@ -189,9 +189,9 @@ test('export svg of synteny', async () => {
       },
     })
 
-    fireEvent.click(await findByTestId('view_menu_icon'))
-    fireEvent.click((await findAllByText('Export SVG'))[0])
-    fireEvent.click(await findByText('Submit'))
+    fireEvent.click(await findByTestId('view_menu_icon', ...opts))
+    fireEvent.click((await findAllByText('Export SVG', ...opts))[0])
+    fireEvent.click(await findByText('Submit', ...opts))
 
     await waitFor(() => expect(FileSaver.saveAs).toHaveBeenCalled(), delay)
 
