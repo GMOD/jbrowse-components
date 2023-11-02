@@ -62,8 +62,8 @@ test('using the hotkey to bookmark the current region', async () => {
 
   // @ts-expect-error
   const { bookmarks } = session.widgets.get('GridBookmark')
-  expect(bookmarks[0].start).toBe(105)
-  expect(bookmarks[0].end).toBe(113)
+  expect(bookmarks[0].start).toBe(100)
+  expect(bookmarks[0].end).toBe(140)
 })
 
 test('using the menu button to bookmark the current region', async () => {
