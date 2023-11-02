@@ -5,7 +5,8 @@ import { spawn } from 'child_process'
 import JBrowseCommand from '../base'
 
 export default class SortGff extends JBrowseCommand {
-  static description = 'Helper utility to sort GFF files for tabix'
+  static description =
+    'Helper utility to sort GFF files for tabix. Moves all lines starting with # to the top of the file, and sort by refname and start position using unix utilities sort and grep'
 
   static examples = [
     '# sort gff and pipe to bgzip',
@@ -25,7 +26,12 @@ export default class SortGff extends JBrowseCommand {
       args: { file },
     } = await this.parse(SortGff)
 
-    if (commandExistsSync('sort') && commandExistsSync('grep')) {
+    if (
+      commandExistsSync('sh') &&
+      commandExistsSync('sort') &&
+      commandExistsSync('grep')
+    ) {
+      // this command comes from the tabix docs http://www.htslib.org/doc/tabix.html
       spawn(
         'sh',
         [

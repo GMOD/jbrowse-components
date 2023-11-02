@@ -546,7 +546,9 @@ _See code:
 
 ## `jbrowse sort-gff FILE`
 
-Helper utility to sort GFF files for tabix
+Helper utility to sort GFF files for tabix. Moves all lines starting with # to
+the top of the file, and sort by refname and start position using unix utilities
+sort and grep
 
 ```
 USAGE
@@ -556,7 +558,8 @@ ARGUMENTS
   FILE  GFF file
 
 DESCRIPTION
-  Helper utility to sort GFF files for tabix
+  Helper utility to sort GFF files for tabix. Moves all lines starting with # to the top of the file, and sort by
+  refname and start position using unix utilities sort and grep
 
 EXAMPLES
   # sort gff and pipe to bgzip
