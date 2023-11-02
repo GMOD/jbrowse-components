@@ -112,11 +112,14 @@ const Controls = ({ model }: { model: LGV }) => {
 }
 
 const LinearGenomeViewHeader = observer(({ model }: { model: LGV }) => {
-  const Wrapper = model.hideHeaderOverview ? React.Fragment : OverviewScalebar
   return !model.hideHeader ? (
-    <Wrapper model={model}>
+    model.hideHeaderOverview ? (
       <Controls model={model} />
-    </Wrapper>
+    ) : (
+      <OverviewScalebar model={model}>
+        <Controls model={model} />
+      </OverviewScalebar>
+    )
   ) : null
 })
 

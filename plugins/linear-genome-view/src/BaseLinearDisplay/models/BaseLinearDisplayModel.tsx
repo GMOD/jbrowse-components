@@ -35,7 +35,6 @@ import BlockState from './serverSideRenderedBlock'
 import configSchema from './configSchema'
 import TrackHeightMixin from './TrackHeightMixin'
 import FeatureDensityMixin from './FeatureDensityMixin'
-import { nanoid } from '@jbrowse/core/util/nanoid'
 
 type LGV = LinearGenomeViewModel
 
@@ -336,10 +335,9 @@ function stateModelFactory() {
                         'LinearGenomeView',
                         {
                           ...rest,
-                          id: nanoid(),
                           tracks: rest.tracks.map(track => {
                             const { id, ...rest } = track
-                            return { ...rest, id: nanoid() }
+                            return { ...rest }
                           }),
                           displayedRegions: res,
                         },

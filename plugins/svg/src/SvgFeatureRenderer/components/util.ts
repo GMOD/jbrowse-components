@@ -20,7 +20,6 @@ export interface Glyph
     selected?: boolean
     config: AnyConfigurationModel
     region: Region
-    parentRegion: Region
     bpPerPx: number
     topLevel?: boolean
     [key: string]: unknown
