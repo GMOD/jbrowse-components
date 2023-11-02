@@ -22,7 +22,7 @@ import config from '../docusaurus.config.json'
   indexes for BED/VCF/GFF files
 - (optional) [`genometools`](http://genometools.org/) installed e.g.
   `sudo apt install genometools` or `brew install brewsci/bio/genometools` used
-  for sorting GFF3. can use awk instead of `genometools` instead
+  for sorting GFF3. can use grep and sort instead of `genometools` also
 
 ## Installing the JBrowse CLI
 
@@ -241,15 +241,12 @@ jbrowse add-track yourfile.sorted.gff.gz --load copy
 As an alternative to `gt gff3 -sortlines`, use `awk` and GNU `sort`, as follows:
 
 ```bash
-awk '$1 ~ /^#/ {print $0;next} {print $0 | "sort -t\"\t\" -k1,1 -k4,4n"}' file.gff > file.sorted.gff
-bgzip file.sorted.gff
+(grep "^#" in.gff; grep -v "^#" in.gff | sort -t"`printf '\t'`" -k1,1 -k4,4n) | bgzip > file.sorted.gff.gz;
 tabix file.sorted.gff.gz
 ```
 
-The `awk` command is inspired by the method in the
-[tabix documentation](http://www.htslib.org/doc/tabix.html), but avoids
-subshells and properly sets the tab delimiter for GNU sort in case there are
-spaces in the GFF.
+This command comes from the
+[tabix documentation](http://www.htslib.org/doc/tabix.html)
 
 ### Adding a synteny track from a PAF file
 
