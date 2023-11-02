@@ -10,7 +10,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 
 // locals
 import { filterTracks } from './filterTracks'
-import { TreeNode, generateHierarchy } from './generateHierarchy'
+import { generateHierarchy } from './generateHierarchy'
 import { findSubCategories, findTopLevelCategories } from './util'
 
 /**
@@ -57,6 +57,14 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * #property
        */
       recentlyUsed: types.array(types.string),
+      /**
+       * #property
+       */
+      showRecentlyUsedCategory: true,
+      /**
+       * #property
+       */
+      showFavoritesCategory: true,
     })
     .volatile(() => ({
       selection: [] as AnyConfigurationModel[],
@@ -304,7 +312,14 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
             tracks: c.tracks,
             noCategories: false,
           })),
-        ]
+        ].filter(
+          category =>
+            (category.group !== '✨Favorites' &&
+              category.group !== '⌚Recently used') ||
+            (self.showFavoritesCategory && category.group === '✨Favorites') ||
+            (self.showRecentlyUsedCategory &&
+              category.group === '⌚Recently used'),
+        )
       },
     }))
     .views(self => ({
@@ -315,19 +330,16 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         return {
           name: 'Root',
           id: 'Root',
-          children: self.allTracks
-            .map(s => ({
-              name: s.group,
-              id: s.group,
-              children: generateHierarchy({
-                model: self,
-                trackConfs: s.tracks,
-                extra: s.group,
-                noCategories: s.noCategories,
-              }),
-            }))
-            // always keep the Tracks entry at idx 0
-            .filter((f, idx) => idx === 0 || !!f.children.length),
+          children: self.allTracks.map(s => ({
+            name: s.group,
+            id: s.group,
+            children: generateHierarchy({
+              model: self,
+              trackConfs: s.tracks,
+              extra: s.group,
+              noCategories: s.noCategories,
+            }),
+          })),
         }
       },
     }))
@@ -355,6 +367,18 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         for (const path of paths) {
           self.setCategoryCollapsed(path, true)
         }
+      },
+      /**
+       * #action
+       */
+      toggleRecentlyUsedCategory() {
+        self.showRecentlyUsedCategory = !self.showRecentlyUsedCategory
+      },
+      /**
+       * #action
+       */
+      toggleFavoritesCategory() {
+        self.showFavoritesCategory = !self.showFavoritesCategory
       },
     }))
     .actions(self => ({
