@@ -56,6 +56,7 @@ It is likely preferable in most cases to install the tools globally with
 - [`jbrowse help [COMMANDS]`](#jbrowse-help-commands)
 - [`jbrowse remove-track TRACK`](#jbrowse-remove-track-track)
 - [`jbrowse set-default-session`](#jbrowse-set-default-session)
+- [`jbrowse sort-gff FILE`](#jbrowse-sort-gff-file)
 - [`jbrowse text-index`](#jbrowse-text-index)
 - [`jbrowse upgrade [LOCALPATH]`](#jbrowse-upgrade-localpath)
 
@@ -542,6 +543,31 @@ EXAMPLES
 
 _See code:
 [src/commands/set-default-session.ts](https://github.com/GMOD/jbrowse-components/blob/v2.7.2/products/jbrowse-cli/src/commands/set-default-session.ts)_
+
+## `jbrowse sort-gff FILE`
+
+Helper utility to sort GFF files for tabix
+
+```
+USAGE
+  $ jbrowse sort-gff FILE
+
+ARGUMENTS
+  FILE  GFF file
+
+DESCRIPTION
+  Helper utility to sort GFF files for tabix
+
+EXAMPLES
+  # sort gff and pipe to bgzip
+
+  $ jbrowse sort-gff input.gff | bgzip > sorted.gff.gz
+
+  $ tabix sorted.gff.gz
+```
+
+_See code:
+[src/commands/sort-gff.ts](https://github.com/GMOD/jbrowse-components/blob/v2.7.2/products/jbrowse-cli/src/commands/sort-gff.ts)_
 
 ## `jbrowse text-index`
 
