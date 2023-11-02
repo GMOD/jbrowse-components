@@ -11,6 +11,7 @@ beforeEach(() => {
 })
 
 const delay = { timeout: 30000 }
+const opts = [{}, delay]
 
 test('from the top level menu', async () => {
   const { findByText } = await createView()
@@ -50,7 +51,7 @@ test('using the hotkey to bookmark the current region', async () => {
   const { session, findByTestId } = await createView()
 
   const user = userEvent.setup()
-  await user.click(await findByTestId('trackContainer'))
+  await user.click(await findByTestId('trackContainer', ...opts))
 
   document.dispatchEvent(
     new KeyboardEvent('keydown', {

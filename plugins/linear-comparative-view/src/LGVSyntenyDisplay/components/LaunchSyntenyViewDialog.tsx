@@ -45,8 +45,8 @@ export default function LaunchSyntenyViewDialog({
               />
             }
             label="Note: The feature is inverted in orientation on the target
-              sequence. Apply horizontal flip? This will result in the lower
-              panel having genomic coordinates decreasing left to right. Horizontally flip?"
+            sequence. This will result in the lower panel having genomic
+            coordinates decreasing left to right. Horizontally flip?"
           />
         ) : null}
         <TextField
