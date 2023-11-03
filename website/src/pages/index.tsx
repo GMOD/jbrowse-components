@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import Layout from '@theme/Layout'
 
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
@@ -13,50 +13,7 @@ import {
 } from '@mui/material'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import OpenInBrowserIcon from '@mui/icons-material/OpenInBrowser'
-
-function GoogleCalendarScheduleFunction() {
-  return (
-    <div>
-      <Typography variant="h6">
-        New: JBrowse 2 office hours and community meetings!
-      </Typography>
-      <Typography>
-        Starting Fall 2023, we are offering 1-on-1 appointments with members of
-        our team via Google Calendar
-        <Button
-          variant="contained"
-          style={{ margin: 10 }}
-          size="small"
-          href="https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ2WIB6bwPtShkYDn49c-ADXvpxfa6iyaEP453Uvy-e-RDZPZF5rsbTRbRlXrWelVpSicZJQsdn5"
-        >
-          Schedule appointment
-        </Button>
-      </Typography>
-      <Typography>
-        We will also have community meetings where anyone can join a public
-        Google Meet
-      </Typography>
-      <ul>
-        <li>
-          <a href="https://meet.google.com/uti-xsjf-xbu">
-            Monthly on the last Tuesday, 8pm EST (Asia Pacific friendly)
-          </a>
-        </li>
-        <li>
-          <a href="https://meet.google.com/rnq-exdt-tuz">
-            Monthly on the third Thursday, 10am EST (North America, Europe
-            friendly)
-          </a>
-        </li>
-        <li>
-          <a href="https://calendar.google.com/calendar/u/2?cid=ZDgxZmE0Yjk3YjdiZTAxYThjMDAzYzNkOThkMjUyOGQ1ZWM4YzNkMzRjNjgwMmQ3YjZhOWEwYmU4NDYxZDBiM0Bncm91cC5jYWxlbmRhci5nb29nbGUuY29t">
-            Add both events to your Google calendar
-          </a>
-        </li>
-      </ul>
-    </div>
-  )
-}
+import GoogleCalendarScheduleFunction from './util'
 
 function Home() {
   const context = useDocusaurusContext()
@@ -68,9 +25,7 @@ function Home() {
     <>
       {/*@ts-expect-error*/}
       <Layout title={`${siteConfig.title}`}>
-        <Alert severity="info" style={{ margin: 10 }}>
-          <GoogleCalendarScheduleFunction />
-        </Alert>
+        <GoogleCalendarScheduleFunction />
         <Box sx={{ margin: { xs: '0.5em', sm: '0.5em', md: '3em' } }}>
           <Box
             sx={{
