@@ -12,8 +12,9 @@ Homepage https://jbrowse.org/jb2
 Docs http://jbrowse.org/jb2/docs/
 
 Fall 2023: New outreach! We created an "office hours" Google Calendar for anyone
-to schedule 1-on-1 meetings with the development team. We are also community
-meetings where anyone can join a public Google Meet link
+to schedule 1-on-1 meetings with the development team. We also are starting a
+new community meeting that anyone can join via a public Google Meet link.
+Details below:
 
 - [Schedule 1-on-1 appointment](https://calendar.app.google/E9i5fyZN4UcZawuNA)
 - [Community call - Monthly on the third Thursday, 10am EST (North America, Europe friendly)](https://meet.google.com/rnq-exdt-tuz)
