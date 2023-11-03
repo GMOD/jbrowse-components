@@ -1,0 +1,40 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`using the click and drag rubberband 1`] = `
+[
+  {
+    "assemblyName": "volvox",
+    "end": 113,
+    "label": "",
+    "refName": "ctgA",
+    "reversed": false,
+    "start": 105,
+  },
+]
+`;
+
+exports[`using the hotkey to bookmark the current region 1`] = `
+[
+  {
+    "assemblyName": "volvox",
+    "end": 140,
+    "label": "",
+    "refName": "ctgA",
+    "reversed": false,
+    "start": 100,
+  },
+]
+`;
+
+exports[`using the menu button to bookmark the current region 1`] = `
+[
+  {
+    "assemblyName": "volvox",
+    "end": 140,
+    "label": "",
+    "refName": "ctgA",
+    "reversed": false,
+    "start": 100,
+  },
+]
+`;

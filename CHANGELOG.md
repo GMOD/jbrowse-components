@@ -1,3 +1,52 @@
+yarn run v1.22.19 $ lerna-changelog --silent --next-version 2.7.2
+
+## 2.7.2 (2023-10-27)
+
+#### :rocket: Enhancement
+
+- `core`
+  - [#3923](https://github.com/GMOD/jbrowse-components/pull/3923) Proposal: Add
+    "extendWorker" extension point
+    ([@garrettjstevens](https://github.com/garrettjstevens))
+- Other
+  - [#4020](https://github.com/GMOD/jbrowse-components/pull/4020) Allow
+    configuring LGV trackLabels setting via config
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3999](https://github.com/GMOD/jbrowse-components/pull/3999) Example of
+    using customElement + ShadowDOM for @jbrowse/react-linear-genome-view
+    ([@AcaDemIQ](https://github.com/AcaDemIQ))
+  - [#4015](https://github.com/GMOD/jbrowse-components/pull/4015) Create MacOS
+    universal build of jbrowse-desktop to help M1 macs
+    ([@cmdcolin](https://github.com/cmdcolin))
+- `core`, `product-core`
+  - [#4013](https://github.com/GMOD/jbrowse-components/pull/4013) Create concept
+    of global hovered state ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- [#4016](https://github.com/GMOD/jbrowse-components/pull/4016) Fix mouseover
+  tooltip getting stuck after region select popup in dotplot
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#4007](https://github.com/GMOD/jbrowse-components/pull/4007) Update cram-js
+  for bzip2 fix ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :house: Internal
+
+- `core`
+  - [#4005](https://github.com/GMOD/jbrowse-components/pull/4005) Refactors and
+    typescript improvements for jbrowse-web loader
+    ([@cmdcolin](https://github.com/cmdcolin))
+- `app-core`, `core`
+  - [#3994](https://github.com/GMOD/jbrowse-components/pull/3994) Refactors for
+    app-core view container ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 3
+
+- Alexey Mukhin ([@AcaDemIQ](https://github.com/AcaDemIQ))
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens)) Done
+  in 1.56s.
+
 yarn run v1.22.19 $ lerna-changelog --silent --next-version 2.7.1
 
 ## 2.7.1 (2023-10-18)

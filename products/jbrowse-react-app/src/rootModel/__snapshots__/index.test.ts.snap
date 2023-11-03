@@ -61,21 +61,6 @@ exports[`Root MST model adds menus 1`] = `
         "label": "Open connection...",
         "onClick": [Function],
       },
-      {
-        "type": "divider",
-      },
-      {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
-        "label": "Return to splash screen",
-        "onClick": [Function],
-      },
     ],
   },
   {
@@ -148,21 +133,6 @@ exports[`Root MST model adds menus 2`] = `
       {
         "icon": [Function],
         "label": "Open connection...",
-        "onClick": [Function],
-      },
-      {
-        "type": "divider",
-      },
-      {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
-        "label": "Return to splash screen",
         "onClick": [Function],
       },
     ],
