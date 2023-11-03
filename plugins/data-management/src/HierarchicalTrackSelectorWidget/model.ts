@@ -274,19 +274,26 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         ].filter(notEmpty)
       },
 
+      /**
+       * #getter
+       * filters out tracks that are not in the favorites group
+       */
       get favoriteTracks() {
         return this.trackConfigurations.filter(track =>
           self.favorites.includes(readConfObject(track, 'trackId')),
         )
       },
 
+      /**
+       * #getter
+       * filters out tracks that are not in the recently used group
+       */
       get recentlyUsedTracks() {
         return this.trackConfigurations.filter(track =>
           self.recentlyUsed.includes(readConfObject(track, 'trackId')),
         )
       },
     }))
-
     .views(self => ({
       get allTracks() {
         const { connectionInstances = [] } = getSession(self)
@@ -313,6 +320,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
             noCategories: false,
           })),
         ].filter(
+          // filters out categories favorites and recently used if the user toggles them off
           category =>
             (category.group !== '✨Favorites' &&
               category.group !== '⌚Recently used') ||
