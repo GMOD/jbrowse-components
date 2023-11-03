@@ -68,17 +68,14 @@ function Home() {
     <>
       {/*@ts-expect-error*/}
       <Layout title={`${siteConfig.title}`}>
-        <div style={{ margin: 30 }}>
-          <Alert severity="info">
-            <GoogleCalendarScheduleFunction />
-          </Alert>
-        </div>
+        <Alert severity="info" style={{ margin: 10 }}>
+          <GoogleCalendarScheduleFunction />
+        </Alert>
         <Box sx={{ margin: { xs: '0.5em', sm: '0.5em', md: '3em' } }}>
           <Box
             sx={{
               display: 'flex',
               flexDirection: { xs: 'column', sm: 'column', md: 'row' },
-              alignItems: 'center',
               marginBottom: 6,
             }}
           >
@@ -91,10 +88,8 @@ function Home() {
                   The next-generation genome browser
                 </Typography>
                 <Typography variant="body1">
-                  <p>
-                    JBrowse is a new kind of genome browser that runs on the
-                    web, on your desktop, or embedded in your app.
-                  </p>
+                  JBrowse is a new kind of genome browser that runs on the web,
+                  on your desktop, or embedded in your app.
                 </Typography>
               </Box>
               <Box
@@ -125,7 +120,7 @@ function Home() {
                 </Button>
               </Box>
               <Box sx={{ textAlign: 'center' }}>
-                <Typography variant="caption">
+                <Typography>
                   Also check out our{' '}
                   <Link href="/jb2/blog">latest release blogpost</Link>, our{' '}
                   <Link href="/jb2/docs/embedded_components/">
@@ -216,26 +211,24 @@ function Home() {
           <Box sx={{ marginBottom: 6 }}>
             <Typography variant="h4">Citation</Typography>
             <hr />
-            <Typography variant="body1">
-              <p>
-                We at the JBrowse Consortium are working to make JBrowse a
-                pluggable, open-source computational platform for integrating
-                many kinds of biological data from many different places.
-              </p>
-              <p>
-                Research citations are one of the main metrics the consortium
-                uses to demonstrate our relevance and utility when applying for
-                funding to continue our work. If you use JBrowse in research
-                that you publish, please cite the most recent JBrowse paper:
-              </p>
-              <cite>
-                JBrowse 2: a modular genome browser with views of synteny and
-                structural variation. Genome Biology (2023).{' '}
-                <a href="https://doi.org/10.1186/s13059-023-02914-z">
-                  https://doi.org/10.1186/s13059-023-02914-z
-                </a>
-              </cite>
-            </Typography>
+            <p>
+              We at the JBrowse Consortium are working to make JBrowse a
+              pluggable, open-source computational platform for integrating many
+              kinds of biological data from many different places.
+            </p>
+            <p>
+              Research citations are one of the main metrics the consortium uses
+              to demonstrate our relevance and utility when applying for funding
+              to continue our work. If you use JBrowse in research that you
+              publish, please cite the most recent JBrowse paper:
+            </p>
+            <cite>
+              JBrowse 2: a modular genome browser with views of synteny and
+              structural variation. Genome Biology (2023).{' '}
+              <a href="https://doi.org/10.1186/s13059-023-02914-z">
+                https://doi.org/10.1186/s13059-023-02914-z
+              </a>
+            </cite>
           </Box>
           <Box sx={{ marginBottom: 6 }}>
             <Typography variant="h4">License</Typography>
