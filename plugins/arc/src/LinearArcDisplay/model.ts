@@ -4,7 +4,7 @@ import {
   getConf,
 } from '@jbrowse/core/configuration'
 import { Instance, types } from 'mobx-state-tree'
-import { getEnv } from '@jbrowse/core/util'
+import { getEnv, Feature } from '@jbrowse/core/util'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import {
   FeatureDensityMixin,
@@ -39,6 +39,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     )
     .volatile(() => ({
       lastDrawnOffsetPx: 0,
+      features: undefined as Feature[] | undefined,
       loading: false,
       drawn: true,
     }))
@@ -79,6 +80,18 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
+      setLoading(flag: boolean) {
+        self.loading = flag
+      },
+      /**
+       * #action
+       */
+      setFeatures(f: Feature[]) {
+        self.features = f
+      },
+      /**
+       * #action
+       */
       setDisplayMode(flag: string) {
         self.displayMode = flag
       },
@@ -114,6 +127,20 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         },
       }
     })
+    .actions(self => ({
+      afterAttach() {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        ;(async () => {
+          try {
+            const { doAfterAttach } = await import('./afterAttach')
+            doAfterAttach(self)
+          } catch (e) {
+            console.error(e)
+            self.setError(e)
+          }
+        })()
+      },
+    }))
 }
 
 export type LinearArcDisplayStateModel = ReturnType<typeof stateModelFactory>
