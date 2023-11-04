@@ -3,19 +3,25 @@ import {
   ConfigurationReference,
   getConf,
 } from '@jbrowse/core/configuration'
-import { types } from 'mobx-state-tree'
-import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
+import { Instance, types } from 'mobx-state-tree'
 import { getEnv } from '@jbrowse/core/util'
+import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
+import {
+  FeatureDensityMixin,
+  TrackHeightMixin,
+} from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * #stateModel LinearArcDisplay
- * extends BaseLinearDisplay
+ * extends BaseDisplay
  */
 export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
     .compose(
       'LinearArcDisplay',
-      BaseLinearDisplay,
+      BaseDisplay,
+      TrackHeightMixin(),
+      FeatureDensityMixin(),
       types.model({
         /**
          * #property
@@ -31,20 +37,12 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         displayMode: types.maybe(types.string),
       }),
     )
-
+    .volatile(() => ({
+      lastDrawnOffsetPx: 0,
+      loading: false,
+      drawn: true,
+    }))
     .views(self => ({
-      /**
-       * #getter
-       */
-      get blockType() {
-        return 'staticBlocks'
-      },
-      /**
-       * #getter
-       */
-      get renderDelay() {
-        return 500
-      },
       /**
        * #getter
        */
@@ -76,22 +74,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         )
       },
     }))
-    .views(self => {
-      const { renderProps: superRenderProps } = self
-      return {
-        /**
-         * #method
-         */
-        renderProps() {
-          return {
-            ...superRenderProps(),
-            rpcDriverName: self.rpcDriverName,
-            config: self.rendererConfig,
-            height: self.height,
-          }
-        },
-      }
-    })
+
     .actions(self => ({
       /**
        * #action
@@ -107,6 +90,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #method
          */
         trackMenuItems() {
+          const { displayMode } = self
           return [
             ...superMenuItems(),
             {
@@ -116,13 +100,13 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   type: 'radio',
                   label: 'Arcs',
                   onClick: () => self.setDisplayMode('arcs'),
-                  checked: self.displayMode === 'arcs',
+                  checked: displayMode === 'arcs',
                 },
                 {
                   type: 'radio',
                   label: 'Semi-circles',
                   onClick: () => self.setDisplayMode('semicircles'),
-                  checked: self.displayMode === 'semicircles',
+                  checked: displayMode === 'semicircles',
                 },
               ],
             },
@@ -131,3 +115,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       }
     })
 }
+
+export type LinearArcDisplayStateModel = ReturnType<typeof stateModelFactory>
+export type LinearArcDisplayModel = Instance<LinearArcDisplayStateModel>

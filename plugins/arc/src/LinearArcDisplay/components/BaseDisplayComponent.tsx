@@ -8,9 +8,8 @@ import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 
 // local
-import { LinearReadCloudDisplayModel } from '../LinearReadCloudDisplay/model'
-import { LinearReadArcsDisplayModel } from '../LinearReadArcsDisplay/model'
 import { getContainingView } from '@jbrowse/core/util'
+import { LinearArcDisplayModel } from '../model'
 
 const useStyles = makeStyles()(theme => ({
   loading: {
@@ -30,7 +29,7 @@ const BaseDisplayComponent = observer(function ({
   model,
   children,
 }: {
-  model: LinearReadArcsDisplayModel | LinearReadCloudDisplayModel
+  model: LinearArcDisplayModel
   children?: React.ReactNode
 }) {
   const { error, regionTooLarge } = model
@@ -52,7 +51,7 @@ const DataDisplay = observer(function ({
   model,
   children,
 }: {
-  model: LinearReadArcsDisplayModel | LinearReadCloudDisplayModel
+  model: LinearArcDisplayModel
   children?: React.ReactNode
 }) {
   const { drawn, loading } = model
@@ -71,7 +70,7 @@ const DataDisplay = observer(function ({
 const LoadingBar = observer(function ({
   model,
 }: {
-  model: LinearReadArcsDisplayModel | LinearReadCloudDisplayModel
+  model: LinearArcDisplayModel
 }) {
   const { classes } = useStyles()
   const { message } = model
