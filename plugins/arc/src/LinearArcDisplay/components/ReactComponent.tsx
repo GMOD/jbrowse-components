@@ -52,7 +52,7 @@ const Arc = observer(function ({
       <path
         d={`M ${left} 0 C ${left} ${height}, ${right} ${height}, ${right} 0`}
         stroke={'red'}
-        strokeWidth={5}
+        strokeWidth={2}
         fill="transparent"
         pointerEvents="stroke"
       />
