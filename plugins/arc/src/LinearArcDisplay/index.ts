@@ -1,9 +1,9 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
-import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 
 import { configSchemaFactory } from './configSchema'
 import { stateModelFactory } from './model'
+import { lazy } from 'react'
 
 export default (pluginManager: PluginManager) => {
   pluginManager.addDisplayType(() => {
@@ -15,7 +15,7 @@ export default (pluginManager: PluginManager) => {
       stateModel: stateModelFactory(configSchema),
       trackType: 'FeatureTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: BaseLinearDisplayComponent,
+      ReactComponent: lazy(() => import('./components/ReactComponent')),
     })
   })
 }
