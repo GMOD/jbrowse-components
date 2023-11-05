@@ -3,7 +3,6 @@ import { observer } from 'mobx-react'
 import {
   AbstractSessionModel,
   Feature,
-  Region,
   getContainingView,
   getSession,
 } from '@jbrowse/core/util'
@@ -14,30 +13,34 @@ import { parseBreakend } from '@gmod/vcf'
 
 // local
 import { LinearArcDisplayModel } from '../model'
-import { IStateTreeNode } from 'mobx-state-tree'
 
 type LGV = LinearGenomeViewModel
 
-function f(feature: Feature) {
-  const alt = feature.get('ALT')?.[0]
+function f(feature: Feature, alt?: string) {
   const bnd = alt ? parseBreakend(alt) : undefined
-  const start = feature.get('start')
-  const end = feature.get('end')
+  let start = feature.get('start')
+  let end = feature.get('end')
   const strand = feature.get('strand')
   const mate = feature.get('mate')
-
   const refName = feature.get('refName')
 
   let mateRefName: string | undefined
   let mateEnd = 0
   let mateStart = 0
 
-  // a VCF breakend feature
-  if (alt === '<TRA>') {
-    const INFO = feature.get('INFO')
-    mateEnd = INFO.END[0]
-    mateStart = INFO.END[0] - 1
-    mateRefName = INFO.CHR2[0]
+  // one sided bracket used, because there could be <INS:ME> and we just check
+  // startswith below
+  const symbolicAlleles = ['<TRA', '<DEL', '<INV', '<INS', '<DUP', '<CNV']
+  if (symbolicAlleles.some(a => alt?.startsWith(a))) {
+    // END is defined to be a single value, not an array. CHR2 not defined in
+    // VCF spec, but should be similar
+    const e = feature.get('INFO')?.END || feature.get('end')
+    mateEnd = e
+    mateStart = e - 1
+    mateRefName = feature.get('INFO')?.CHR2 ?? refName
+    // re-adjust the arc to be from start to end of feature
+    start = feature.get('start')
+    end = feature.get('start') + 1
   } else if (bnd?.MatePosition) {
     const matePosition = bnd.MatePosition.split(':')
     mateEnd = +matePosition[1]
@@ -54,11 +57,15 @@ function f(feature: Feature) {
 const Arc = observer(function ({
   model,
   feature,
+  alt,
   assembly,
   session,
   view,
 }: {
   feature: Feature
+  alt?: string
+  end?: number
+  chr2?: string
   model: LinearArcDisplayModel
   assembly: Assembly
   session: AbstractSessionModel
@@ -67,7 +74,7 @@ const Arc = observer(function ({
   const [mouseOvered, setMouseOvered] = useState(false)
   const { selection } = session
   const { height, rendererConfig } = model
-  const { k1, k2 } = f(feature)
+  const { k1, k2 } = f(feature, alt)
   const c =
     // @ts-expect-error
     selection?.id?.() === feature.id()
@@ -145,16 +152,34 @@ const Arcs = observer(function ({
 
   return assembly ? (
     <Wrapper model={model} exportSVG={exportSVG}>
-      {features?.map(f => (
-        <Arc
-          key={f.id()}
-          session={session}
-          feature={f}
-          view={view}
-          model={model}
-          assembly={assembly}
-        />
-      ))}
+      {features?.map(f => {
+        const alts = f.get('ALT') as string[] | undefined
+        const ends = f.get('INFO')?.END as number[] | undefined
+        const chr2s = f.get('INFO')?.CHR2 as string[] | undefined
+        return (
+          alts?.map((a, i) => (
+            <Arc
+              key={f.id() + '-' + a}
+              session={session}
+              feature={f}
+              alt={a}
+              end={ends?.[i]}
+              chr2={chr2s?.[i]}
+              view={view}
+              model={model}
+              assembly={assembly}
+            />
+          )) ?? (
+            <Arc
+              session={session}
+              feature={f}
+              view={view}
+              model={model}
+              assembly={assembly}
+            />
+          )
+        )
+      })}
     </Wrapper>
   ) : null
 })
