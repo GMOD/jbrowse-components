@@ -1,12 +1,13 @@
-import { getSession, Feature } from '@jbrowse/core/util'
+import { getSession, Feature, Region } from '@jbrowse/core/util'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import { parseBreakend } from '@gmod/vcf'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-type LGV = LinearGenomeViewModel
+import { IStateTreeNode } from 'mobx-state-tree'
 
 export default class BreakpointSplitViewType extends ViewType {
-  snapshotFromBreakendFeature(feature: Feature, view: LGV) {
+  snapshotFromBreakendFeature(
+    feature: Feature,
+    view: { displayedRegions: Region[] } & IStateTreeNode,
+  ) {
     const alt = feature.get('ALT')?.[0]
     const bnd = alt ? parseBreakend(alt) : undefined
     const startPos = feature.get('start')
@@ -24,8 +25,7 @@ export default class BreakpointSplitViewType extends ViewType {
     if (!assembly.regions) {
       throw new Error(`assembly ${assemblyName} regions not loaded`)
     }
-    const { getCanonicalRefName } = assembly
-    const featureRefName = getCanonicalRefName(feature.get('refName'))
+    const featureRefName = assembly.getCanonicalRefName(feature.get('refName'))
     const topRegion = assembly.regions.find(f => f.refName === featureRefName)
 
     let mateRefName: string | undefined
@@ -36,11 +36,11 @@ export default class BreakpointSplitViewType extends ViewType {
     if (alt === '<TRA>') {
       const INFO = feature.get('INFO')
       endPos = INFO.END[0] - 1
-      mateRefName = getCanonicalRefName(INFO.CHR2[0])
+      mateRefName = assembly.getCanonicalRefName(INFO.CHR2[0])
     } else if (bnd?.MatePosition) {
       const matePosition = bnd.MatePosition.split(':')
       endPos = +matePosition[1] - 1
-      mateRefName = getCanonicalRefName(matePosition[0])
+      mateRefName = assembly.getCanonicalRefName(matePosition[0])
       if (bnd.Join === 'left') {
         startMod = -1
       }
@@ -50,7 +50,7 @@ export default class BreakpointSplitViewType extends ViewType {
     } else if (feature.get('mate')) {
       // a generic 'mate' feature
       const mate = feature.get('mate')
-      mateRefName = getCanonicalRefName(mate.refName)
+      mateRefName = assembly.getCanonicalRefName(mate.refName)
       endPos = mate.start
     }
 
@@ -95,6 +95,7 @@ export default class BreakpointSplitViewType extends ViewType {
       displayName: `${
         feature.get('name') || feature.get('id') || 'breakend'
       } split detail`,
+      featureData: undefined as unknown,
     }
   }
 }

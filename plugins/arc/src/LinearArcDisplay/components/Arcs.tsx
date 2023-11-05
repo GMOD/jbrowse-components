@@ -3,18 +3,53 @@ import { observer } from 'mobx-react'
 import {
   AbstractSessionModel,
   Feature,
+  Region,
   getContainingView,
   getSession,
 } from '@jbrowse/core/util'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import { readConfObject } from '@jbrowse/core/configuration'
+import { parseBreakend } from '@gmod/vcf'
 
 // local
 import { LinearArcDisplayModel } from '../model'
-import BaseDisplayComponent from './BaseDisplayComponent'
+import { IStateTreeNode } from 'mobx-state-tree'
 
 type LGV = LinearGenomeViewModel
+
+function f(feature: Feature) {
+  const alt = feature.get('ALT')?.[0]
+  const bnd = alt ? parseBreakend(alt) : undefined
+  const start = feature.get('start')
+  const end = feature.get('end')
+  const strand = feature.get('strand')
+  const mate = feature.get('mate')
+
+  const refName = feature.get('refName')
+
+  let mateRefName: string | undefined
+  let mateEnd = 0
+  let mateStart = 0
+
+  // a VCF breakend feature
+  if (alt === '<TRA>') {
+    const INFO = feature.get('INFO')
+    mateEnd = INFO.END[0]
+    mateStart = INFO.END[0] - 1
+    mateRefName = INFO.CHR2[0]
+  } else if (bnd?.MatePosition) {
+    const matePosition = bnd.MatePosition.split(':')
+    mateEnd = +matePosition[1]
+    mateStart = +matePosition[1] - 1
+    mateRefName = matePosition[0]
+  }
+
+  return {
+    k1: { refName, start, end, strand },
+    k2: mate ?? { refName: mateRefName, end: mateEnd, start: mateStart },
+  }
+}
 
 const Arc = observer(function ({
   model,
@@ -32,18 +67,12 @@ const Arc = observer(function ({
   const [mouseOvered, setMouseOvered] = useState(false)
   const { selection } = session
   const { height, rendererConfig } = model
-  const k1 = {
-    refName: feature.get('refName'),
-    start: feature.get('start'),
-    end: feature.get('end'),
-    strand: feature.get('strand'),
-  }
+  const { k1, k2 } = f(feature)
   const c =
     // @ts-expect-error
     selection?.id?.() === feature.id()
       ? 'red'
       : readConfObject(rendererConfig, 'color', { feature })
-  const k2 = feature.get('mate')
   const ra1 = assembly.getCanonicalRefName(k1.refName) || k1.refName
   const ra2 = assembly.getCanonicalRefName(k2.refName) || k2.refName
   const p1 = k1.start
