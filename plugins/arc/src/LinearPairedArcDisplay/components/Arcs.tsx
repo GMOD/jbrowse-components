@@ -8,7 +8,7 @@ import {
 } from '@jbrowse/core/util'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
-import { readConfObject } from '@jbrowse/core/configuration'
+import { getConf } from '@jbrowse/core/configuration'
 import { parseBreakend } from '@gmod/vcf'
 
 // local
@@ -73,13 +73,13 @@ const Arc = observer(function ({
 }) {
   const [mouseOvered, setMouseOvered] = useState(false)
   const { selection } = session
-  const { height, rendererConfig } = model
+  const { height } = model
   const { k1, k2 } = f(feature, alt)
   const c =
     // @ts-expect-error
     selection?.id?.() === feature.id()
       ? 'red'
-      : readConfObject(rendererConfig, 'color', { feature })
+      : getConf(model, 'color', { feature })
   const ra1 = assembly.getCanonicalRefName(k1.refName) || k1.refName
   const ra2 = assembly.getCanonicalRefName(k2.refName) || k2.refName
   const p1 = k1.start

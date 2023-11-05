@@ -1,25 +1,22 @@
-import PluginManager from '@jbrowse/core/PluginManager'
-import { types } from 'mobx-state-tree'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * #config LinearArcDisplay
  */
-export function configSchemaFactory(
-  pluginManager: PluginManager,
-  name: string,
-) {
+export function configSchemaFactory(name: string) {
   return ConfigurationSchema(
     name,
     {
       /**
        * #slot
        */
-      renderer: types.optional(
-        pluginManager.pluggableConfigSchemaType('renderer'),
-        { type: 'ArcRenderer' },
-      ),
+      color: {
+        type: 'color',
+        description: 'the color of the arcs',
+        defaultValue: 'darkblue',
+        contextVariable: ['feature'],
+      },
     },
     {
       /**

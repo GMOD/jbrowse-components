@@ -55,36 +55,13 @@ export function stateModelFactory(
       loading: false,
       drawn: true,
     }))
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get rendererTypeName() {
-        return self.configuration.renderer.type
-      },
-    }))
+
     .views(self => ({
       /**
        * #getter
        */
       get displayModeSetting() {
         return self.displayMode ?? getConf(self, ['renderer', 'displayMode'])
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get rendererConfig() {
-        const configBlob = getConf(self, ['renderer']) || {}
-        const config = configBlob as Omit<typeof configBlob, symbol>
-        return self.rendererType.configSchema.create(
-          {
-            ...config,
-            displayMode: self.displayModeSetting,
-          },
-          getEnv(self),
-        )
       },
     }))
 
@@ -130,37 +107,7 @@ export function stateModelFactory(
         self.displayMode = flag
       },
     }))
-    .views(self => {
-      const superMenuItems = self.trackMenuItems
-      return {
-        /**
-         * #method
-         */
-        trackMenuItems() {
-          const { displayMode } = self
-          return [
-            ...superMenuItems(),
-            {
-              label: 'Display mode',
-              subMenu: [
-                {
-                  type: 'radio',
-                  label: 'Arcs',
-                  onClick: () => self.setDisplayMode('arcs'),
-                  checked: displayMode === 'arcs',
-                },
-                {
-                  type: 'radio',
-                  label: 'Semi-circles',
-                  onClick: () => self.setDisplayMode('semicircles'),
-                  checked: displayMode === 'semicircles',
-                },
-              ],
-            },
-          ]
-        },
-      }
-    })
+
     .actions(self => ({
       afterAttach() {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises

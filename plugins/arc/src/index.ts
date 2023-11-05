@@ -1,6 +1,7 @@
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import LinearArcDisplayF from './LinearArcDisplay'
+import LinearPairedArcDisplayF from './LinearPairedArcDisplay'
 import ArcRendererF from './ArcRenderer'
 import { Feature } from '@jbrowse/core/util'
 
@@ -9,6 +10,7 @@ export default class ArcPlugin extends Plugin {
   install(pluginManager: PluginManager) {
     ArcRendererF(pluginManager)
     LinearArcDisplayF(pluginManager)
+    LinearPairedArcDisplayF(pluginManager)
 
     pluginManager.jexl.addFunction(
       'logThickness',
