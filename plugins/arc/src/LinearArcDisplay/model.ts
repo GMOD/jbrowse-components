@@ -96,8 +96,8 @@ export function stateModelFactory(
         const session = getSession(self)
         if (isSessionModelWithWidgets(session)) {
           const featureWidget = session.addWidget(
-            'BaseFeatureWidget',
-            'baseFeature',
+            'VariantFeatureWidget',
+            'variantFeature',
             {
               view: getContainingView(self),
               track: getContainingTrack(self),
