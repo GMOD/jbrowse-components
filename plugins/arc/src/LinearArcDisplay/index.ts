@@ -1,35 +1,21 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
+import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 
 import { configSchemaFactory } from './configSchema'
 import { stateModelFactory } from './model'
-import { lazy } from 'react'
 
 export default (pluginManager: PluginManager) => {
   pluginManager.addDisplayType(() => {
-    const name = 'LinearArcDisplay'
-    const configSchema = configSchemaFactory(pluginManager, name)
+    const configSchema = configSchemaFactory(pluginManager)
     return new DisplayType({
-      name,
+      name: 'LinearArcDisplay',
       displayName: 'Arc display',
       configSchema,
-      stateModel: stateModelFactory(configSchema, name),
+      stateModel: stateModelFactory(configSchema),
       trackType: 'FeatureTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: lazy(() => import('./components/ReactComponent')),
-    })
-  })
-  pluginManager.addDisplayType(() => {
-    const name = 'LinearVariantArcDisplay'
-    const configSchema = configSchemaFactory(pluginManager, name)
-    return new DisplayType({
-      name,
-      displayName: 'Arc display (variants)',
-      configSchema,
-      stateModel: stateModelFactory(configSchema, name),
-      trackType: 'VariantTrack',
-      viewType: 'LinearGenomeView',
-      ReactComponent: lazy(() => import('./components/ReactComponent')),
+      ReactComponent: BaseLinearDisplayComponent,
     })
   })
 }

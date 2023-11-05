@@ -1,44 +1,26 @@
-import React from 'react'
 import {
   AnyConfigurationSchemaType,
   ConfigurationReference,
   getConf,
 } from '@jbrowse/core/configuration'
-import { Instance, types } from 'mobx-state-tree'
-import {
-  getEnv,
-  Feature,
-  getSession,
-  isSessionModelWithWidgets,
-  getContainingView,
-  getContainingTrack,
-  isSelectionContainer,
-} from '@jbrowse/core/util'
-import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import {
-  FeatureDensityMixin,
-  TrackHeightMixin,
-} from '@jbrowse/plugin-linear-genome-view'
+import { types } from 'mobx-state-tree'
+import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
+import { getEnv } from '@jbrowse/core/util'
 
 /**
  * #stateModel LinearArcDisplay
- * extends BaseDisplay
+ * extends BaseLinearDisplay
  */
-export function stateModelFactory(
-  configSchema: AnyConfigurationSchemaType,
-  name: string,
-) {
+export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
     .compose(
-      name,
-      BaseDisplay,
-      TrackHeightMixin(),
-      FeatureDensityMixin(),
+      'LinearArcDisplay',
+      BaseLinearDisplay,
       types.model({
         /**
          * #property
          */
-        type: types.literal(name),
+        type: types.literal('LinearArcDisplay'),
         /**
          * #property
          */
@@ -49,13 +31,20 @@ export function stateModelFactory(
         displayMode: types.maybe(types.string),
       }),
     )
-    .volatile(() => ({
-      lastDrawnOffsetPx: 0,
-      features: undefined as Feature[] | undefined,
-      loading: false,
-      drawn: true,
-    }))
+
     .views(self => ({
+      /**
+       * #getter
+       */
+      get blockType() {
+        return 'staticBlocks'
+      },
+      /**
+       * #getter
+       */
+      get renderDelay() {
+        return 500
+      },
       /**
        * #getter
        */
@@ -87,42 +76,23 @@ export function stateModelFactory(
         )
       },
     }))
-
+    .views(self => {
+      const { renderProps: superRenderProps } = self
+      return {
+        /**
+         * #method
+         */
+        renderProps() {
+          return {
+            ...superRenderProps(),
+            rpcDriverName: self.rpcDriverName,
+            config: self.rendererConfig,
+            height: self.height,
+          }
+        },
+      }
+    })
     .actions(self => ({
-      /**
-       * #action
-       */
-      selectFeature(feature: Feature) {
-        const session = getSession(self)
-        if (isSessionModelWithWidgets(session)) {
-          const featureWidget = session.addWidget(
-            'VariantFeatureWidget',
-            'variantFeature',
-            {
-              view: getContainingView(self),
-              track: getContainingTrack(self),
-              featureData: feature.toJSON(),
-            },
-          )
-
-          session.showWidget(featureWidget)
-        }
-        if (isSelectionContainer(session)) {
-          session.setSelection(feature)
-        }
-      },
-      /**
-       * #action
-       */
-      setLoading(flag: boolean) {
-        self.loading = flag
-      },
-      /**
-       * #action
-       */
-      setFeatures(f: Feature[]) {
-        self.features = f
-      },
       /**
        * #action
        */
@@ -137,7 +107,6 @@ export function stateModelFactory(
          * #method
          */
         trackMenuItems() {
-          const { displayMode } = self
           return [
             ...superMenuItems(),
             {
@@ -147,13 +116,13 @@ export function stateModelFactory(
                   type: 'radio',
                   label: 'Arcs',
                   onClick: () => self.setDisplayMode('arcs'),
-                  checked: displayMode === 'arcs',
+                  checked: self.displayMode === 'arcs',
                 },
                 {
                   type: 'radio',
                   label: 'Semi-circles',
                   onClick: () => self.setDisplayMode('semicircles'),
-                  checked: displayMode === 'semicircles',
+                  checked: self.displayMode === 'semicircles',
                 },
               ],
             },
@@ -161,28 +130,4 @@ export function stateModelFactory(
         },
       }
     })
-    .actions(self => ({
-      afterAttach() {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        ;(async () => {
-          try {
-            const { doAfterAttach } = await import('./afterAttach')
-            doAfterAttach(self)
-          } catch (e) {
-            console.error(e)
-            self.setError(e)
-          }
-        })()
-      },
-      async renderSvg(opts: {
-        rasterizeLayers?: boolean
-      }): Promise<React.ReactNode> {
-        const { renderArcSvg } = await import('./renderSvg')
-        // @ts-expect-error
-        return renderArcSvg(self, opts)
-      },
-    }))
 }
-
-export type LinearArcDisplayStateModel = ReturnType<typeof stateModelFactory>
-export type LinearArcDisplayModel = Instance<LinearArcDisplayStateModel>

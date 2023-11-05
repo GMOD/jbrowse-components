@@ -6,9 +6,12 @@ import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-vie
 /**
  * #config LinearArcDisplay
  */
-export function configSchemaFactory(pluginManager: PluginManager) {
+export function configSchemaFactory(
+  pluginManager: PluginManager,
+  name: string,
+) {
   return ConfigurationSchema(
-    'LinearArcDisplay',
+    name,
     {
       /**
        * #slot
