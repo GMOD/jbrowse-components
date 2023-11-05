@@ -1,3 +1,4 @@
+import React from 'react'
 import {
   AnyConfigurationSchemaType,
   ConfigurationReference,
@@ -169,6 +170,13 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             self.setError(e)
           }
         })()
+      },
+      async renderSvg(opts: {
+        rasterizeLayers?: boolean
+      }): Promise<React.ReactNode> {
+        const { renderArcSvg } = await import('./renderSvg')
+        // @ts-expect-error
+        return renderArcSvg(self, opts)
       },
     }))
 }
