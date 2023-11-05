@@ -24,10 +24,13 @@ import {
  * #stateModel LinearArcDisplay
  * extends BaseDisplay
  */
-export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
+export function stateModelFactory(
+  configSchema: AnyConfigurationSchemaType,
+  name: string,
+) {
   return types
     .compose(
-      'LinearArcDisplay',
+      name,
       BaseDisplay,
       TrackHeightMixin(),
       FeatureDensityMixin(),
@@ -35,7 +38,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        type: types.literal('LinearArcDisplay'),
+        type: types.literal(name),
         /**
          * #property
          */

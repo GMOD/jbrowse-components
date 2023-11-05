@@ -12,9 +12,7 @@ export default class ArcPlugin extends Plugin {
 
     pluginManager.jexl.addFunction(
       'logThickness',
-      (feature: Feature, attributeName: string) => {
-        return Math.log(feature.get(attributeName) + 1)
-      },
+      (f: Feature, attributeName: string) => Math.log(f.get(attributeName) + 1),
     )
   }
 }

@@ -7,13 +7,27 @@ import { lazy } from 'react'
 
 export default (pluginManager: PluginManager) => {
   pluginManager.addDisplayType(() => {
-    const configSchema = configSchemaFactory(pluginManager)
+    const name = 'LinearArcDisplay'
+    const configSchema = configSchemaFactory(pluginManager, name)
     return new DisplayType({
-      name: 'LinearArcDisplay',
+      name,
       displayName: 'Arc display',
       configSchema,
-      stateModel: stateModelFactory(configSchema),
+      stateModel: stateModelFactory(configSchema, name),
       trackType: 'FeatureTrack',
+      viewType: 'LinearGenomeView',
+      ReactComponent: lazy(() => import('./components/ReactComponent')),
+    })
+  })
+  pluginManager.addDisplayType(() => {
+    const name = 'LinearVariantArcDisplay'
+    const configSchema = configSchemaFactory(pluginManager, name)
+    return new DisplayType({
+      name,
+      displayName: 'Arc display (variants)',
+      configSchema,
+      stateModel: stateModelFactory(configSchema, name),
+      trackType: 'VariantTrack',
       viewType: 'LinearGenomeView',
       ReactComponent: lazy(() => import('./components/ReactComponent')),
     })
