@@ -1,14 +1,10 @@
 import React from 'react'
 import { LoadingEllipses } from '@jbrowse/core/ui'
-import {
-  BlockMsg,
-  LinearGenomeViewModel,
-} from '@jbrowse/plugin-linear-genome-view'
+import { BlockMsg } from '@jbrowse/plugin-linear-genome-view'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 
 // local
-import { getContainingView } from '@jbrowse/core/util'
 import { LinearArcDisplayModel } from '../model'
 
 const useStyles = makeStyles()(theme => ({

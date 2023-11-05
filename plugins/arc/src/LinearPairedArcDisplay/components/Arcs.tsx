@@ -1,10 +1,11 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { observer } from 'mobx-react'
 import {
   AbstractSessionModel,
   Feature,
   getContainingView,
   getSession,
+  measureText,
 } from '@jbrowse/core/util'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
@@ -13,6 +14,7 @@ import { parseBreakend } from '@gmod/vcf'
 
 // local
 import { LinearArcDisplayModel } from '../model'
+import { Tooltip } from 'react-svg-tooltip'
 
 type LGV = LinearGenomeViewModel
 
@@ -38,7 +40,8 @@ function f(feature: Feature, alt?: string) {
     mateEnd = e
     mateStart = e - 1
     mateRefName = feature.get('INFO')?.CHR2 ?? refName
-    // re-adjust the arc to be from start to end of feature
+    // re-adjust the arc to be from start to end of feature by re-assigning end
+    // to the 'mate'
     start = feature.get('start')
     end = feature.get('start') + 1
   } else if (bnd?.MatePosition) {
@@ -54,12 +57,22 @@ function f(feature: Feature, alt?: string) {
   }
 }
 
+function makeSummary(feature: Feature, alt?: string) {
+  return [
+    feature.get('name'),
+    feature.get('id'),
+    feature.get('INFO')?.SVTYPE,
+    alt,
+  ]
+    .filter(f => !!f)
+    .join(' - ')
+}
+
 const Arc = observer(function ({
   model,
   feature,
   alt,
   assembly,
-  session,
   view,
 }: {
   feature: Feature
@@ -70,20 +83,18 @@ const Arc = observer(function ({
   view: LinearGenomeViewModel
 }) {
   const [mouseOvered, setMouseOvered] = useState(false)
-  const { selection } = session
   const { height } = model
   const { k1, k2 } = f(feature, alt)
-  const c =
-    // @ts-expect-error
-    selection?.id?.() === feature.id()
-      ? 'red'
-      : getConf(model, 'color', { feature })
+  const ref = useRef<SVGPathElement>(null)
+  const c = getConf(model, 'color', { feature, alt })
   const ra1 = assembly.getCanonicalRefName(k1.refName) || k1.refName
   const ra2 = assembly.getCanonicalRefName(k2.refName) || k2.refName
   const p1 = k1.start
   const p2 = k2.start
   const r1 = view.bpToPx({ refName: ra1, coord: p1 })?.offsetPx
   const r2 = view.bpToPx({ refName: ra2, coord: p2 })?.offsetPx
+  const caption = makeSummary(feature, alt)
+  const tooltipWidth = 20 + measureText(caption)
 
   if (r1 !== undefined && r2 !== undefined) {
     const radius = (r2 - r1) / 2
@@ -95,16 +106,40 @@ const Arc = observer(function ({
     const right = p2
 
     return (
-      <path
-        d={`M ${left} 0 C ${left} ${destY}, ${right} ${destY}, ${right} 0`}
-        stroke={mouseOvered ? 'green' : c}
-        strokeWidth={2}
-        onMouseOut={() => setMouseOvered(false)}
-        onMouseOver={() => setMouseOvered(true)}
-        onClick={() => model.selectFeature(feature)}
-        fill="transparent"
-        pointerEvents="stroke"
-      />
+      <>
+        <path
+          d={`M ${left} 0 C ${left} ${destY}, ${right} ${destY}, ${right} 0`}
+          ref={ref}
+          stroke={mouseOvered ? 'red' : c}
+          strokeWidth={3}
+          onMouseOut={() => setMouseOvered(false)}
+          onMouseOver={() => setMouseOvered(true)}
+          onClick={() => model.selectFeature(feature)}
+          fill="none"
+          pointerEvents="stroke"
+        />
+        <Tooltip triggerRef={ref}>
+          <rect
+            x={12}
+            y={0}
+            width={tooltipWidth}
+            height={20}
+            rx={5}
+            ry={5}
+            fill="black"
+            fillOpacity="50%"
+          />
+          <text
+            x={22}
+            y={14}
+            fontSize={10}
+            fill="white"
+            textLength={tooltipWidth - 20}
+          >
+            {caption}
+          </text>
+        </Tooltip>
+      </>
     )
   }
   return null

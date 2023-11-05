@@ -14,8 +14,8 @@ export function configSchemaFactory(name: string) {
       color: {
         type: 'color',
         description: 'the color of the arcs',
-        defaultValue: 'darkblue',
-        contextVariable: ['feature'],
+        defaultValue: 'jexl:defaultPairedArcColor(feature,alt)',
+        contextVariable: ['feature', 'alt'],
       },
     },
     {

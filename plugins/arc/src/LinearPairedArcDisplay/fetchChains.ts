@@ -53,7 +53,6 @@ export async function fetchChains(self: LinearArcDisplayModel) {
     regions: view.staticBlocks.contentBlocks,
     adapterConfig: self.adapterConfig,
   })) as Feature[]
-  console.log({ ret })
 
   self.setFeatures(ret)
   self.setLoading(false)

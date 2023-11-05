@@ -6,7 +6,6 @@ import {
 } from '@jbrowse/core/configuration'
 import { Instance, types } from 'mobx-state-tree'
 import {
-  getEnv,
   Feature,
   getSession,
   isSessionModelWithWidgets,
