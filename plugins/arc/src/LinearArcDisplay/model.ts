@@ -4,7 +4,15 @@ import {
   getConf,
 } from '@jbrowse/core/configuration'
 import { Instance, types } from 'mobx-state-tree'
-import { getEnv, Feature } from '@jbrowse/core/util'
+import {
+  getEnv,
+  Feature,
+  getSession,
+  isSessionModelWithWidgets,
+  getContainingView,
+  getContainingTrack,
+  isSelectionContainer,
+} from '@jbrowse/core/util'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import {
   FeatureDensityMixin,
@@ -77,6 +85,28 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     }))
 
     .actions(self => ({
+      /**
+       * #action
+       */
+      selectFeature(feature: Feature) {
+        const session = getSession(self)
+        if (isSessionModelWithWidgets(session)) {
+          const featureWidget = session.addWidget(
+            'BaseFeatureWidget',
+            'baseFeature',
+            {
+              view: getContainingView(self),
+              track: getContainingTrack(self),
+              featureData: feature.toJSON(),
+            },
+          )
+
+          session.showWidget(featureWidget)
+        }
+        if (isSelectionContainer(session)) {
+          session.setSelection(feature)
+        }
+      },
       /**
        * #action
        */

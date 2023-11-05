@@ -27,7 +27,6 @@ import { LinearGenomeViewModel, ExportSvgOptions } from '../../LinearGenomeView'
 import { Tooltip } from '../components/BaseLinearDisplay'
 import BlockState from './serverSideRenderedBlock'
 import configSchema from './configSchema'
-import renderBaseLinearDisplaySvg from './renderSvg'
 import TrackHeightMixin from './TrackHeightMixin'
 import FeatureDensityMixin from './FeatureDensityMixin'
 
@@ -354,6 +353,7 @@ function stateModelFactory() {
        * #method
        */
       async renderSvg(opts: ExportSvgDisplayOptions) {
+        const { renderBaseLinearDisplaySvg } = await import('./renderSvg')
         return renderBaseLinearDisplaySvg(self as BaseLinearDisplayModel, opts)
       },
       afterAttach() {

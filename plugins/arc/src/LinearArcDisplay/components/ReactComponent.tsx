@@ -1,6 +1,11 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import { Feature, getContainingView, getSession } from '@jbrowse/core/util'
+import {
+  AbstractSessionModel,
+  Feature,
+  getContainingView,
+  getSession,
+} from '@jbrowse/core/util'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import { readConfObject } from '@jbrowse/core/configuration'
@@ -15,13 +20,17 @@ const Arc = observer(function ({
   model,
   feature,
   assembly,
+  session,
   view,
 }: {
   feature: Feature
   model: LinearArcDisplayModel
   assembly: Assembly
+  session: AbstractSessionModel
   view: LinearGenomeViewModel
 }) {
+  const [mouseOvered, setMouseOvered] = useState(false)
+  const { selection } = session
   const { height, rendererConfig } = model
   const k1 = {
     refName: feature.get('refName'),
@@ -29,7 +38,11 @@ const Arc = observer(function ({
     end: feature.get('end'),
     strand: feature.get('strand'),
   }
-  const c = readConfObject(rendererConfig, 'color', { feature })
+  const c =
+    // @ts-expect-error
+    selection?.id?.() === feature.id()
+      ? 'red'
+      : readConfObject(rendererConfig, 'color', { feature })
   const k2 = feature.get('mate')
   const ra1 = assembly.getCanonicalRefName(k1.refName) || k1.refName
   const ra2 = assembly.getCanonicalRefName(k2.refName) || k2.refName
@@ -50,8 +63,11 @@ const Arc = observer(function ({
     return (
       <path
         d={`M ${left} 0 C ${left} ${destY}, ${right} ${destY}, ${right} 0`}
-        stroke={c}
+        stroke={mouseOvered ? 'green' : c}
         strokeWidth={2}
+        onMouseOut={() => setMouseOvered(false)}
+        onMouseOver={() => setMouseOvered(true)}
+        onClick={() => model.selectFeature(feature)}
         fill="transparent"
         pointerEvents="stroke"
       />
@@ -61,8 +77,9 @@ const Arc = observer(function ({
 })
 const Arcs = observer(function ({ model }: { model: LinearArcDisplayModel }) {
   const view = getContainingView(model) as LGV
-  const { assemblyManager } = getSession(model)
+  const session = getSession(model)
   const width = Math.round(view.dynamicBlocks.totalWidthPx)
+  const { assemblyManager } = session
   const { height, features } = model
   const assembly = assemblyManager.get(view.assemblyNames[0])
 
@@ -76,6 +93,7 @@ const Arcs = observer(function ({ model }: { model: LinearArcDisplayModel }) {
       {features?.map(f => (
         <Arc
           key={f.id()}
+          session={session}
           feature={f}
           view={view}
           model={model}
