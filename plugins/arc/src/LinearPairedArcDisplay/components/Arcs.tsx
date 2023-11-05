@@ -64,8 +64,6 @@ const Arc = observer(function ({
 }: {
   feature: Feature
   alt?: string
-  end?: number
-  chr2?: string
   model: LinearArcDisplayModel
   assembly: Assembly
   session: AbstractSessionModel
@@ -112,7 +110,7 @@ const Arc = observer(function ({
   return null
 })
 
-function Wrapper({
+const Wrapper = observer(function ({
   model,
   exportSVG,
   children,
@@ -127,16 +125,12 @@ function Wrapper({
   return exportSVG ? (
     <>{children}</>
   ) : (
-    <svg
-      data-testid="arc-svg-canvas"
-      style={{ width, height, position: 'absolute' }}
-      width={width * 2}
-      height={height * 2}
-    >
+    <svg width={width} height={height}>
       {children}
     </svg>
   )
-}
+})
+
 const Arcs = observer(function ({
   model,
   exportSVG,
@@ -154,17 +148,13 @@ const Arcs = observer(function ({
     <Wrapper model={model} exportSVG={exportSVG}>
       {features?.map(f => {
         const alts = f.get('ALT') as string[] | undefined
-        const ends = f.get('INFO')?.END as number[] | undefined
-        const chr2s = f.get('INFO')?.CHR2 as string[] | undefined
         return (
-          alts?.map((a, i) => (
+          alts?.map(a => (
             <Arc
               key={f.id() + '-' + a}
               session={session}
               feature={f}
               alt={a}
-              end={ends?.[i]}
-              chr2={chr2s?.[i]}
               view={view}
               model={model}
               assembly={assembly}

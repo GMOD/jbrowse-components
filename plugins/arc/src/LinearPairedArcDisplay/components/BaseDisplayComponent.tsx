@@ -54,12 +54,9 @@ const DataDisplay = observer(function ({
   model: LinearArcDisplayModel
   children?: React.ReactNode
 }) {
-  const { drawn, loading } = model
-  const view = getContainingView(model) as LinearGenomeViewModel
+  const { loading } = model
   return (
-    // this data-testid is located here because changing props on the canvas
-    // itself is very sensitive to triggering ref invalidation
-    <div data-testid={`drawn-${drawn}`}>
+    <div>
       {children}
       {loading ? <LoadingBar model={model} /> : null}
     </div>
