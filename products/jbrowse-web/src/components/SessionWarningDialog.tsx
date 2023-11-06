@@ -7,13 +7,14 @@ import {
   DialogActions,
 } from '@mui/material'
 import { nanoid } from '@jbrowse/core/util/nanoid'
-import { SessionLoaderModel } from '../SessionLoader'
 
 import WarningIcon from '@mui/icons-material/Warning'
 import {
   PluginDefinition,
   pluginDescriptionString,
 } from '@jbrowse/core/PluginLoader'
+
+import { SessionLoaderModel } from '../SessionLoader'
 
 function SessionWarningDialog({
   onConfirm,
