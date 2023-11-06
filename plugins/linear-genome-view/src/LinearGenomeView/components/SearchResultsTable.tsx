@@ -64,7 +64,7 @@ export default function SearchResultsTable({
       }
     } catch (e) {
       console.warn(e)
-      session.notify(`${e}`, 'warning')
+      session.notifyError(`${e}`, e)
     }
   }
   return (

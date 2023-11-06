@@ -446,7 +446,7 @@ export function loadSessionSpec(
       )
     } catch (e) {
       console.error(e)
-      rootModel.session?.notify(`${e}`)
+      rootModel.session?.notifyError(`${e}`, e)
     }
   }
 }

@@ -4,7 +4,7 @@ import { Button, DialogActions, DialogContent } from '@mui/material'
 import { getSnapshot } from 'mobx-state-tree'
 import { Dialog } from '@jbrowse/core/ui'
 import { when } from 'mobx'
-import { getSession, Feature } from '@jbrowse/core/util'
+import { Feature, AbstractSessionModel } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 
@@ -29,17 +29,17 @@ function stripIds(arr: Track[]) {
 }
 
 const BreakendMultiLevelOptionDialog = observer(function ({
-  model,
+  session,
   handleClose,
   feature,
   assemblyName,
   viewType,
   view,
 }: {
-  model: unknown
+  session: AbstractSessionModel
   handleClose: () => void
   feature: Feature
-  view: LinearGenomeViewModel
+  view?: LinearGenomeViewModel
   assemblyName: string
   viewType: {
     getBreakendCoveringRegions: (arg: {
@@ -63,23 +63,28 @@ const BreakendMultiLevelOptionDialog = observer(function ({
       title="Multi-level breakpoint split view options"
     >
       <DialogContent>
-        <Checkbox2
-          checked={copyTracks}
-          label="Copy tracks into the new view"
-          onChange={event => {
-            setCopyTracks(event.target.checked)
-          }}
-        />
+        <div>Launch multi-level breakpoint split view</div>
+        {view ? (
+          <>
+            <Checkbox2
+              checked={copyTracks}
+              label="Copy tracks into the new view"
+              onChange={event => {
+                setCopyTracks(event.target.checked)
+              }}
+            />
 
-        {copyTracks ? (
-          <Checkbox2
-            checked={mirror}
-            disabled={!copyTracks}
-            label="Mirror the copied tracks (only available if copying tracks and using two level)"
-            onChange={event => {
-              setMirror(event.target.checked)
-            }}
-          />
+            {copyTracks ? (
+              <Checkbox2
+                checked={mirror}
+                disabled={!copyTracks}
+                label="Mirror the copied tracks (only available if copying tracks and using two level)"
+                onChange={event => {
+                  setMirror(event.target.checked)
+                }}
+              />
+            ) : null}
+          </>
         ) : null}
       </DialogContent>
       <DialogActions>
@@ -87,21 +92,23 @@ const BreakendMultiLevelOptionDialog = observer(function ({
           onClick={() => {
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
             ;(async () => {
-              const session = getSession(model)
               try {
-                const asm =
-                  await session.assemblyManager.waitForAssembly(assemblyName)
-                if (!asm) {
+                const { assemblyManager } = session
+                const assembly =
+                  await assemblyManager.waitForAssembly(assemblyName)
+                if (!assembly) {
                   throw new Error(`assembly ${assemblyName} not found`)
                 }
 
                 const { refName, pos, mateRefName, matePos } =
                   viewType.getBreakendCoveringRegions({
                     feature,
-                    assembly: asm,
+                    assembly: assembly,
                   })
 
-                const viewTracks = getSnapshot(view.tracks) as Track[]
+                const viewTracks = view
+                  ? (getSnapshot(view.tracks) as Track[])
+                  : []
                 const breakpointSplitView = session.addView(
                   'BreakpointSplitView',
                   {
@@ -114,7 +121,7 @@ const BreakendMultiLevelOptionDialog = observer(function ({
                       {
                         type: 'LinearGenomeView',
                         hideHeader: true,
-                        tracks: stripIds(getSnapshot(view.tracks)),
+                        tracks: stripIds(viewTracks),
                       },
                       {
                         type: 'LinearGenomeView',
@@ -126,8 +133,10 @@ const BreakendMultiLevelOptionDialog = observer(function ({
                     ],
                   },
                 ) as unknown as { views: LinearGenomeViewModel[] }
-                const r1 = asm.regions!.find(r => r.refName === refName)
-                const r2 = asm.regions!.find(r => r.refName === mateRefName)
+                const r1 = assembly.regions!.find(r => r.refName === refName)
+                const r2 = assembly.regions!.find(
+                  r => r.refName === mateRefName,
+                )
                 if (!r1 || !r2) {
                   throw new Error("can't find regions")
                 }
@@ -172,7 +181,7 @@ const BreakendMultiLevelOptionDialog = observer(function ({
                 breakpointSplitView.views[0]!.centerAt(pos, refName)
               } catch (e) {
                 console.error(e)
-                session.notify(`${e}`)
+                session.notifyError(`${e}`, e)
               }
             })()
             handleClose()

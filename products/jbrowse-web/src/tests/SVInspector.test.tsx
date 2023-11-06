@@ -14,7 +14,6 @@ test(
   'opens a vcf.gz file in the sv inspector view',
   () =>
     mockConsoleWarn(async () => {
-      const consoleMock = jest.spyOn(console, 'warn').mockImplementation()
       const { session, findByTestId, getByTestId, findByText } =
         await createView()
 
@@ -36,8 +35,6 @@ test(
       // confirm breakpoint split view opened
       expect(session.views.length).toBe(3)
       expect(session.views[2]!.displayName).toBe('bnd_A split detail')
-
-      consoleMock.mockRestore()
     }),
   60000,
 )

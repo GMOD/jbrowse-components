@@ -421,7 +421,7 @@ export function SharedLinearPileupDisplayMixin(
                 }
               } catch (e) {
                 console.error(e)
-                session.notify(`${e}`)
+                session.notifyError(`${e}`, e)
               }
             },
 
@@ -455,7 +455,7 @@ export function SharedLinearPileupDisplayMixin(
                 }
               } catch (e) {
                 console.error(e)
-                session.notify(`${e}`)
+                session.notifyError(`${e}`, e)
               }
             },
           }

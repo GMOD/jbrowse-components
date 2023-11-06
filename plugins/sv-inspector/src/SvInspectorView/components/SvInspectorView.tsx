@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Suspense, useState } from 'react'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 import { ResizeHandle } from '@jbrowse/core/ui'
@@ -41,36 +41,42 @@ const SvInspectorView = observer(function ({
   const {
     SpreadsheetViewReactComponent,
     CircularViewReactComponent,
-    showCircularView,
+    spreadsheetView,
+    circularView,
   } = model
+  const [initialCircWidth, setInitialCircWidth] = useState(0)
+  const [initialSpreadsheetWidth, setInitialSpreadsheetWidth] = useState(0)
 
   return (
     <div className={classes.container}>
       <div className={classes.viewsContainer}>
         <div
-          style={{ width: model.spreadsheetView.width }}
+          style={{ width: spreadsheetView.width }}
           className={classes.container}
         >
-          <SpreadsheetViewReactComponent model={model.spreadsheetView} />
+          <SpreadsheetViewReactComponent model={spreadsheetView} />
         </div>
 
-        {showCircularView ? (
-          <>
-            <ResizeHandle
-              onDrag={distance => {
-                const ret1 = model.circularView.resizeWidth(-distance)
-                return model.spreadsheetView.resizeWidth(-ret1)
-              }}
-              vertical
-              flexbox
-              className={classes.resizeHandleVert}
-            />
-            <div style={{ width: model.circularView.width }}>
-              <CircularViewOptions svInspector={model} />
-              <CircularViewReactComponent model={model.circularView} />
-            </div>
-          </>
-        ) : null}
+        <ResizeHandle
+          onDrag={(_, total) => {
+            circularView.setWidth(initialCircWidth + total)
+            spreadsheetView.setWidth(initialSpreadsheetWidth - total)
+            return undefined
+          }}
+          onMouseDown={() => {
+            setInitialSpreadsheetWidth(spreadsheetView.width)
+            setInitialCircWidth(circularView.width)
+          }}
+          vertical
+          flexbox
+          className={classes.resizeHandleVert}
+        />
+        <div style={{ width: circularView.width }}>
+          <CircularViewOptions svInspector={model} />
+          <Suspense fallback={null}>
+            <CircularViewReactComponent model={circularView} />
+          </Suspense>
+        </div>
       </div>
       <ResizeHandle
         onDrag={model.resizeHeight}
@@ -80,4 +86,18 @@ const SvInspectorView = observer(function ({
   )
 })
 
-export default SvInspectorView
+const SvInspectorViewContainer = observer(function ({
+  model,
+}: {
+  model: SvInspectorViewModel
+}) {
+  const { SpreadsheetViewReactComponent, initialized, spreadsheetView } = model
+
+  return !initialized ? (
+    <SpreadsheetViewReactComponent model={spreadsheetView} />
+  ) : (
+    <SvInspectorView model={model} />
+  )
+})
+
+export default SvInspectorViewContainer

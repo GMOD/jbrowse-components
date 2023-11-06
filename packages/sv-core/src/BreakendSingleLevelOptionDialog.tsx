@@ -4,10 +4,10 @@ import { Button, DialogActions, DialogContent, TextField } from '@mui/material'
 import { getSnapshot } from 'mobx-state-tree'
 import { Dialog } from '@jbrowse/core/ui'
 import {
-  getSession,
   Feature,
   gatherOverlaps,
   useLocalStorage,
+  AbstractSessionModel,
 } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
@@ -33,17 +33,17 @@ function stripIds(arr: Track[]) {
 }
 
 const BreakendSingleLevelOptionDialog = observer(function ({
-  model,
+  session,
   handleClose,
   feature,
   assemblyName,
   viewType,
   view,
 }: {
-  model: unknown
+  session: AbstractSessionModel
   handleClose: () => void
   feature: Feature
-  view: LinearGenomeViewModel
+  view?: LinearGenomeViewModel
   assemblyName: string
   viewType: {
     getBreakendCoveringRegions: (arg: {
@@ -70,13 +70,15 @@ const BreakendSingleLevelOptionDialog = observer(function ({
       title="Single-level breakpoint split view options"
     >
       <DialogContent>
-        <Checkbox2
-          checked={copyTracks}
-          label="Copy tracks into the new view"
-          onChange={event => {
-            setCopyTracks(event.target.checked)
-          }}
-        />
+        {view ? (
+          <Checkbox2
+            checked={copyTracks}
+            label="Copy tracks into the new view"
+            onChange={event => {
+              setCopyTracks(event.target.checked)
+            }}
+          />
+        ) : null}
 
         <TextField
           label="Window size (bp)"
@@ -89,17 +91,20 @@ const BreakendSingleLevelOptionDialog = observer(function ({
       <DialogActions>
         <Button
           onClick={() => {
-            const session = getSession(model)
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
             ;(async () => {
               try {
-                const assembly = session.assemblyManager.get(assemblyName)
+                const { assemblyManager } = session
+                const assembly =
+                  await assemblyManager.waitForAssembly(assemblyName)
+                if (!assembly) {
+                  throw new Error(`assembly ${assemblyName} not found`)
+                }
                 const w = +windowSize
                 if (Number.isNaN(w)) {
                   throw new Error('windowSize not a number')
                 }
                 const { refName, pos, mateRefName, matePos } =
-                  // @ts-expect-error
                   viewType.getBreakendCoveringRegions({ feature, assembly })
 
                 const breakpointSplitView = session.addView(
@@ -112,7 +117,9 @@ const BreakendSingleLevelOptionDialog = observer(function ({
                     views: [
                       {
                         type: 'LinearGenomeView',
-                        tracks: stripIds(getSnapshot(view.tracks)),
+                        tracks: view?.tracks
+                          ? stripIds(getSnapshot(view.tracks))
+                          : [],
                       },
                     ],
                   },
@@ -139,7 +146,7 @@ const BreakendSingleLevelOptionDialog = observer(function ({
                 )
               } catch (e) {
                 console.error(e)
-                session.notify(`${e}`)
+                session.notifyError(`${e}`, e)
               }
             })()
             handleClose()

@@ -23,7 +23,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const Slices = observer(({ model }: { model: CircularViewModel }) => {
+const Slices = observer(function ({ model }: { model: CircularViewModel }) {
   return (
     <>
       {model.staticSlices.map(slice => (
@@ -49,7 +49,11 @@ const Slices = observer(({ model }: { model: CircularViewModel }) => {
   )
 })
 
-const CircularView = observer(({ model }: { model: CircularViewModel }) => {
+const CircularView = observer(function ({
+  model,
+}: {
+  model: CircularViewModel
+}) {
   const initialized =
     !!model.displayedRegions.length &&
     !!model.figureWidth &&

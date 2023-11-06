@@ -22,6 +22,6 @@ export async function navToLoc(locString: string, model: IAnyStateTreeNode) {
     }
   } catch (e) {
     console.error(e)
-    session.notify(`${e}`)
+    session.notifyError(`${e}`, e)
   }
 }

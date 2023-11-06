@@ -1,39 +1,25 @@
-import React, { useState } from 'react'
-import { Grid } from '@mui/material'
+import React, { Suspense, lazy, useState } from 'react'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { ResizeHandle } from '@jbrowse/core/ui'
 
 // locals
-import ImportWizard from './ImportWizard'
-import Spreadsheet from './Spreadsheet'
-import GlobalFilterControls from './GlobalFilterControls'
-import ColumnFilterControls from './ColumnFilterControls'
 import { SpreadsheetViewModel } from '../models/SpreadsheetView'
-import StatusBar from './StatusBar'
+import SpreadsheetDataGrid from './SpreadsheetDataGrid'
 
-const headerHeight = 52
-const colFilterHeight = 46
-const statusBarHeight = 40
+const ImportWizard = lazy(() => import('./ImportWizard'))
 
 const useStyles = makeStyles()(theme => ({
-  header: {
-    overflow: 'hidden',
-    whiteSpace: 'nowrap',
-    boxSizing: 'border-box',
-    height: headerHeight,
-    paddingLeft: theme.spacing(1),
-  },
   contentArea: {
     overflow: 'auto',
+    position: 'relative',
+    marginBottom: theme.spacing(1),
+    background: theme.palette.background.paper,
   },
   resizeHandle: {
-    height: 3,
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    background: theme.palette.action.disabled,
+    height: 5,
     boxSizing: 'border-box',
+    background: theme.palette.action.disabled,
     borderTop: '1px solid #fafafa',
   },
 }))
@@ -43,83 +29,41 @@ const SpreadsheetView = observer(function ({
 }: {
   model: SpreadsheetViewModel
 }) {
+  const [initialHeight, setInitialHeight] = useState<number>(0)
   const { classes } = useStyles()
-  const {
-    spreadsheet,
-    filterControls,
-    hideFilterControls,
-    hideVerticalResizeHandle,
-    mode,
-    height,
-  } = model
-  const [page, setPage] = useState(0)
-  const [rowsPerPage, setRowsPerPage] = useState(100)
-
-  return (
-    <div>
-      {mode !== 'display' || hideFilterControls ? null : (
-        <>
-          <Grid container direction="row" className={classes.header}>
-            <Grid item>
-              <GlobalFilterControls model={model} />
-            </Grid>
-          </Grid>
-          {filterControls.columnFilters.map((f, i) => (
-            <ColumnFilterControls
-              key={`${f.columnNumber}-${i}`}
-              viewModel={model}
-              filterModel={f}
-              columnNumber={f.columnNumber}
-              height={colFilterHeight}
-            />
-          ))}
-        </>
-      )}
-
-      {mode === 'import' ? (
-        <ImportWizard model={model.importWizard} />
-      ) : (
-        <div className={classes.contentArea}>
-          <div
-            style={{
-              position: 'relative',
-              display: mode === 'display' ? undefined : 'none',
-            }}
-          >
-            {spreadsheet ? (
-              <Spreadsheet
-                page={page}
-                rowsPerPage={rowsPerPage}
-                model={spreadsheet}
-                height={
-                  height -
-                  headerHeight -
-                  filterControls.columnFilters.length * colFilterHeight -
-                  statusBarHeight
-                }
-              />
-            ) : null}
-          </div>
-        </div>
-      )}
-      {spreadsheet ? (
-        <StatusBar
-          page={page}
-          setPage={setPage}
-          rowsPerPage={rowsPerPage}
-          setRowsPerPage={setRowsPerPage}
-          mode={mode}
-          spreadsheet={spreadsheet}
-        />
-      ) : null}
+  const { spreadsheet, hideVerticalResizeHandle, height } = model
+  return spreadsheet ? (
+    <>
+      <div style={{ height }} className={classes.contentArea}>
+        <SpreadsheetDataGrid model={spreadsheet} />
+      </div>
       {hideVerticalResizeHandle ? null : (
         <ResizeHandle
-          onDrag={model.resizeHeight}
+          onMouseDown={() => {
+            setInitialHeight(height)
+          }}
+          onDrag={(_, dist) => model.setHeight(initialHeight - dist)}
           className={classes.resizeHandle}
         />
       )}
-    </div>
+    </>
+  ) : (
+    <div>Unknown</div>
   )
 })
 
-export default SpreadsheetView
+const SpreadsheetContainer = observer(function ({
+  model,
+}: {
+  model: SpreadsheetViewModel
+}) {
+  return !model.initialized ? (
+    <Suspense fallback={null}>
+      <ImportWizard model={model.importWizard} />
+    </Suspense>
+  ) : (
+    <SpreadsheetView model={model} />
+  )
+})
+
+export default SpreadsheetContainer

@@ -1,8 +1,9 @@
-import React, { useState } from 'react'
+import React, { lazy } from 'react'
 import { observer } from 'mobx-react'
 import { IconButton } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import JBrowseMenu from '@jbrowse/core/ui/Menu'
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import { getSession } from '@jbrowse/core/util'
 
 // icons
 import ZoomOutIcon from '@mui/icons-material/ZoomOut'
@@ -17,8 +18,9 @@ import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 
 // locals
 import { CircularViewModel } from '../models/model'
-import { getSession } from '@jbrowse/core/util'
-import ExportSvgDialog from './ExportSvgDialog'
+
+// lazies
+const ExportSvgDialog = lazy(() => import('./ExportSvgDialog'))
 
 const useStyles = makeStyles()(theme => ({
   controls: {
@@ -32,7 +34,6 @@ const useStyles = makeStyles()(theme => ({
 
 const Controls = observer(function ({ model }: { model: CircularViewModel }) {
   const { classes } = useStyles()
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   return (
     <div className={classes.controls}>
       <IconButton
@@ -77,13 +78,22 @@ const Controls = observer(function ({ model }: { model: CircularViewModel }) {
         {model.lockedFitToWindow ? <LockIcon /> : <LockOpenIcon />}
       </IconButton>
 
-      <IconButton
-        onClick={event => {
-          setAnchorEl(event.currentTarget)
-        }}
+      <CascadingMenuButton
+        menuItems={[
+          {
+            label: 'Export SVG',
+            icon: PhotoCamera,
+            onClick: () => {
+              getSession(model).queueDialog(handleClose => [
+                ExportSvgDialog,
+                { model, handleClose },
+              ])
+            },
+          },
+        ]}
       >
         <MoreVert />
-      </IconButton>
+      </CascadingMenuButton>
 
       {model.hideTrackSelectorButton ? null : (
         <IconButton
@@ -94,32 +104,6 @@ const Controls = observer(function ({ model }: { model: CircularViewModel }) {
           <TrackSelectorIcon />
         </IconButton>
       )}
-
-      {anchorEl ? (
-        <JBrowseMenu
-          anchorEl={anchorEl}
-          menuItems={[
-            {
-              label: 'Export SVG',
-              icon: PhotoCamera,
-              onClick: () => {
-                getSession(model).queueDialog(handleClose => [
-                  ExportSvgDialog,
-                  { model, handleClose },
-                ])
-              },
-            },
-          ]}
-          onMenuItemClick={(_event, callback) => {
-            callback()
-            setAnchorEl(null)
-          }}
-          open={Boolean(anchorEl)}
-          onClose={() => {
-            setAnchorEl(null)
-          }}
-        />
-      ) : null}
     </div>
   )
 })

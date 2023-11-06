@@ -51,7 +51,7 @@ function LocStringList({
                   }
                 } catch (e) {
                   console.error(e)
-                  session.notify(`${e}`)
+                  session.notifyError(`${e}`, e)
                 }
               }}
             >
@@ -92,7 +92,7 @@ function LaunchBreakpointSplitViewPanel({
                   BreakendMultiLevelOptionDialog,
                   {
                     handleClose,
-                    model,
+                    session,
                     feature: simpleFeature,
                     // @ts-expect-error
                     viewType,
@@ -112,7 +112,7 @@ function LaunchBreakpointSplitViewPanel({
                   BreakendSingleLevelOptionDialog,
                   {
                     handleClose,
-                    model,
+                    session,
                     feature: simpleFeature,
                     // @ts-expect-error
                     viewType,

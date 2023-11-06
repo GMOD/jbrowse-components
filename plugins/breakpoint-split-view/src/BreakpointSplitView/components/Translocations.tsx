@@ -49,11 +49,9 @@ const Translocations = observer(function ({
   const snap = getSnapshot(model)
   useNextFrame(snap)
 
-  const assembly = assemblyManager.get(views[0]!.assemblyNames[0]!)
-  if (!assembly) {
-    return null
-  }
-
+  const assembly = views[0]
+    ? assemblyManager.get(views[0].assemblyNames[0]!)
+    : undefined
   let yOffset = 0
   if (ref.current) {
     const rect = ref.current.getBoundingClientRect()
@@ -64,10 +62,7 @@ const Translocations = observer(function ({
   // just return null here note: would need to do processing of the INFO
   // CHR2/END and see which view could contain those coordinates to really do
   // it properly
-  if (views.length < 2) {
-    return null
-  }
-  return (
+  return !assembly || views.length < 2 ? null : (
     <g
       fill="none"
       stroke="green"
@@ -86,19 +81,18 @@ const Translocations = observer(function ({
           }
 
           const info = f1.get('INFO')
+          const chr1 = f1.get('refName')
           const chr2 = info.CHR2[0]
+          const f1ref = assembly.getCanonicalRefNameOrDefault(chr1)
+          const f2ref = assembly.getCanonicalRefNameOrDefault(chr2)
           const end2 = info.END[0]
           const res = info.STRANDS?.[0]?.split('') // not all files have STRANDS
           const [myDirection, mateDirection] = res ?? ['.', '.']
 
-          const r = getPxFromCoordinate(views[level2]!, chr2, end2)
+          const r = getPxFromCoordinate(views[level2]!, f2ref, end2)
           if (r) {
             const c2: LayoutRecord = [r, 0, r + 1, 0]
-            const x1 = getPxFromCoordinate(
-              views[level1]!,
-              f1.get('refName'),
-              c1[LEFT],
-            )
+            const x1 = getPxFromCoordinate(views[level1]!, f1ref, c1[LEFT])
             const x2 = r
             const reversed1 = views[level1]!.pxToBp(x1).reversed
             const reversed2 = views[level2]!.pxToBp(x2).reversed
@@ -118,7 +112,7 @@ const Translocations = observer(function ({
               'L', // line to
               x1,
               y1,
-              'L', // line to as const
+              'L', // line to
               x2,
               y2,
               'L', // line to
