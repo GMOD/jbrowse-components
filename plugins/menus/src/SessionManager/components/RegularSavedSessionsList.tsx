@@ -2,10 +2,6 @@ import React, { useState } from 'react'
 import {
   IconButton,
   List,
-  ListItem,
-  ListItemIcon,
-  ListItemSecondaryAction,
-  ListItemText,
   ListSubheader,
   Paper,
   Typography,
@@ -13,15 +9,14 @@ import {
 import { makeStyles } from 'tss-react/mui'
 
 import { observer } from 'mobx-react'
-import pluralize from 'pluralize'
 
 // icons
 import DeleteIcon from '@mui/icons-material/Delete'
-import ViewListIcon from '@mui/icons-material/ViewList'
 
 // locals
 import { SessionModel } from './util'
 import DeleteSavedSessionDialog from './DeleteSavedSessionDialog'
+import SessionListItem from './SessionListItem'
 
 const useStyles = makeStyles()(theme => ({
   root: {
@@ -55,46 +50,23 @@ const RegularSavedSessionsList = observer(function ({
     <Paper className={classes.root}>
       <List subheader={<ListSubheader>Saved sessions</ListSubheader>}>
         {session.savedSessions.length ? (
-          session.savedSessions.map((sessionSnapshot, idx) => {
-            const { views = [] } = sessionSnapshot
-            const totalTracks = views
-              .map(view => view.tracks?.length ?? 0)
-              .reduce((a, b) => a + b, 0)
-            return (
-              <ListItem
-                button
-                disabled={session.name === sessionSnapshot.name}
-                onClick={() => session.activateSession(sessionSnapshot.name)}
-                key={sessionSnapshot.name}
-              >
-                <ListItemIcon>
-                  <ViewListIcon />
-                </ListItemIcon>
-                <ListItemText
-                  primary={sessionSnapshot.name}
-                  secondary={
-                    session.name === sessionSnapshot.name
-                      ? 'Currently open'
-                      : `${views.length} ${pluralize(
-                          'view',
-                          views.length,
-                        )}; ${totalTracks}
-                           open ${pluralize('track', totalTracks)}`
-                  }
-                />
-                <ListItemSecondaryAction>
-                  <IconButton
-                    edge="end"
-                    disabled={session.name === sessionSnapshot.name}
-                    aria-label="Delete"
-                    onClick={() => setSessionIndexToDelete(idx)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </ListItemSecondaryAction>
-              </ListItem>
-            )
-          })
+          session.savedSessions.map((sessionSnapshot, idx) => (
+            <SessionListItem
+              onClick={() => session.activateSession(sessionSnapshot.name)}
+              sessionSnapshot={sessionSnapshot}
+              session={session}
+              key={sessionSnapshot.name}
+              secondaryAction={
+                <IconButton
+                  edge="end"
+                  disabled={session.name === sessionSnapshot.name}
+                  onClick={() => setSessionIndexToDelete(idx)}
+                >
+                  <DeleteIcon />
+                </IconButton>
+              }
+            />
+          ))
         ) : (
           <Typography className={classes.message}>
             No saved sessions found
