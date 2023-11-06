@@ -245,6 +245,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * show the bookmark highlights on this track
          */
         showBookmarkHighlights: true,
+
+        /**
+         * #property
+         * show the bookmark labels on this track
+         */
+        showBookmarkLabels: true,
       }),
     )
     .volatile(() => ({
@@ -583,12 +589,25 @@ export function stateModelFactory(pluginManager: PluginManager) {
       toggleShowGridlines() {
         self.showGridlines = !self.showGridlines
       },
-
       /**
        * #action
        */
-      toggleShowBookmarkHighlights() {
-        self.showBookmarkHighlights = !self.showBookmarkHighlights
+      toggleShowBookmarkHighlights(toggle?: boolean) {
+        if (toggle !== undefined) {
+          self.showBookmarkHighlights = toggle
+        } else {
+          self.showBookmarkHighlights = !self.showBookmarkHighlights
+        }
+      },
+      /**
+       * #action
+       */
+      toggleShowBookmarkLabels(toggle?: boolean) {
+        if (toggle !== undefined) {
+          self.showBookmarkLabels = toggle
+        } else {
+          self.showBookmarkLabels = !self.showBookmarkLabels
+        }
       },
       /**
        * #action

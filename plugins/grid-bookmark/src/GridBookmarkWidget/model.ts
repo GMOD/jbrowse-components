@@ -9,6 +9,7 @@ import {
 import PluginManager from '@jbrowse/core/PluginManager'
 import { Region } from '@jbrowse/core/util/types'
 import { Region as RegionModel, ElementId } from '@jbrowse/core/util/types/mst'
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 import {
   getSession,
@@ -90,7 +91,6 @@ export default function f(_pluginManager: PluginManager) {
       selectedBookmarks: [] as IExtendedLabeledRegionModel[],
       selectedAssembliesPre: undefined as string[] | undefined,
     }))
-
     .views(self => ({
       get bookmarkAssemblies() {
         return [...new Set(self.bookmarks.map(r => r.assemblyName))]
@@ -100,6 +100,24 @@ export default function f(_pluginManager: PluginManager) {
         return new Set(
           this.bookmarkAssemblies.filter(a => assemblyManager.get(a)),
         )
+      },
+      get highlightToggle() {
+        const { views } = getSession(self)
+        const lgvs = views.filter(v =>
+          Object.hasOwn(v, 'showBookmarkHighlights'),
+        )
+        const res = (lgvs as LinearGenomeViewModel[]).map(
+          v => v.showBookmarkHighlights,
+        )
+        return new Set(res).size === 1 && res[0]
+      },
+      get labelToggle() {
+        const { views } = getSession(self)
+        const lgvs = views.filter(v => Object.hasOwn(v, 'showBookmarkLabels'))
+        const res = (lgvs as LinearGenomeViewModel[]).map(
+          v => v.showBookmarkLabels,
+        )
+        return new Set(res).size === 1 && res[0]
       },
     }))
     .views(self => ({
@@ -129,13 +147,11 @@ export default function f(_pluginManager: PluginManager) {
         })
       },
     }))
-
     .actions(self => ({
       setSelectedAssemblies(assemblies?: string[]) {
         self.selectedAssembliesPre = assemblies
       },
     }))
-
     .views(self => ({
       get selectedAssemblies() {
         return (
@@ -167,11 +183,38 @@ export default function f(_pluginManager: PluginManager) {
       ) {
         bookmark.correspondingObj.setHighlight(color)
       },
+      updateBulkBookmarkHighlights(color: string) {
+        if (self.selectedBookmarks.length === 0) {
+          self.bookmarks.forEach(bookmark => bookmark.setHighlight(color))
+        } else {
+          self.selectedBookmarks.forEach(bookmark =>
+            this.updateBookmarkHighlight(bookmark, color),
+          )
+        }
+      },
       setSelectedBookmarks(bookmarks: IExtendedLabeledRegionModel[]) {
         self.selectedBookmarks = bookmarks
       },
       setBookmarkedRegions(regions: IMSTArray<typeof LabeledRegionModel>) {
         self.bookmarks = cast(regions)
+      },
+      setHighlightToggle(toggle: boolean) {
+        const { views } = getSession(self)
+        const lgvs = views.filter(v =>
+          Object.hasOwn(v, 'showBookmarkHighlights'),
+        )
+
+        ;(lgvs as LinearGenomeViewModel[]).forEach(view => {
+          view.toggleShowBookmarkHighlights(toggle)
+        })
+      },
+      setLabelToggle(toggle: boolean) {
+        const { views } = getSession(self)
+        const lgvs = views.filter(v => Object.hasOwn(v, 'showBookmarkLabels'))
+
+        ;(lgvs as LinearGenomeViewModel[]).forEach(view => {
+          view.toggleShowBookmarkLabels(toggle)
+        })
       },
     }))
     .actions(self => ({

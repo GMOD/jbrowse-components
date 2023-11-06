@@ -15,6 +15,8 @@ import {
 // icons
 import BookmarkIcon from '@mui/icons-material/Bookmark'
 import BookmarksIcon from '@mui/icons-material/Bookmarks'
+import HighlightIcon from '@mui/icons-material/Highlight'
+import LabelIcon from '@mui/icons-material/Label'
 
 import GridBookmarkWidgetF from './GridBookmarkWidget'
 import { GridBookmarkModel } from './GridBookmarkWidget/model'
@@ -99,7 +101,13 @@ export default class extends Plugin {
                     },
                     {
                       label: 'Toggle bookmark highlights',
+                      icon: HighlightIcon,
                       onClick: () => self.toggleShowBookmarkHighlights(),
+                    },
+                    {
+                      label: 'Toggle bookmark labels',
+                      icon: LabelIcon,
+                      onClick: () => self.toggleShowBookmarkLabels(),
                     },
                   ]
                 },

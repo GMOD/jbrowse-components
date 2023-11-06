@@ -7,6 +7,7 @@ import { makeStyles } from 'tss-react/mui'
 import BookmarkGrid from './BookmarkGrid'
 import DeleteBookmarks from './DeleteBookmarks'
 import ExportBookmarks from './ExportBookmarks'
+import EditBookmarks from './EditBookmarks'
 import ImportBookmarks from './ImportBookmarks'
 import AssemblySelector from './AssemblySelector'
 import ShareBookmarks from './ShareBookmarks'
@@ -37,6 +38,7 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
         <ImportBookmarks model={model} />
         <ShareBookmarks model={model} />
         <DeleteBookmarks model={model} />
+        <EditBookmarks model={model} />
       </div>
       <Alert severity="info">
         Click and type within the <strong>label</strong> field to annotate your

@@ -9,13 +9,14 @@ import {
   measureGridWidth,
   measureText,
 } from '@jbrowse/core/util'
+import { useResizeBar } from '@jbrowse/core/ui/useResizeBar'
+import ResizeBar from '@jbrowse/core/ui/ResizeBar'
+
+const ColorPicker = lazy(() => import('@jbrowse/core/ui/ColorPicker'))
 
 // locals
 import { navToBookmark } from '../utils'
 import { GridBookmarkModel, IExtendedLabeledRegionModel } from '../model'
-import { useResizeBar } from '@jbrowse/core/ui/useResizeBar'
-import ResizeBar from '@jbrowse/core/ui/ResizeBar'
-import { PopoverPicker } from '@jbrowse/core/ui/ColorPicker'
 
 const EditBookmarkLabelDialog = lazy(() => import('./EditBookmarkLabelDialog'))
 
@@ -136,7 +137,7 @@ const BookmarkGrid = observer(function ({
               headerName: 'Highlight',
               width: widths[4],
               renderCell: ({ value, row }) => (
-                <PopoverPicker
+                <ColorPicker
                   color={value || 'black'}
                   onChange={event => {
                     return model.updateBookmarkHighlight(row, event)

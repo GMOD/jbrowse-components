@@ -3,9 +3,11 @@ import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 import { getSession, localStorageGetItem } from '@jbrowse/core/util'
 
+import BookmarkIcon from '@mui/icons-material/Bookmark'
+
 // locals
 import { LinearGenomeViewModel } from '../model'
-import { number } from 'prop-types'
+import { Tooltip } from '@mui/material'
 
 type LGV = LinearGenomeViewModel
 
@@ -15,13 +17,25 @@ const useStyles = makeStyles()({
     position: 'absolute',
     textAlign: 'center',
     overflow: 'hidden',
+    display: 'flex',
+    alignItems: 'start',
   },
 })
+
+const intensify = (rgba: string, opacity: number) => {
+  const values = rgba.replace(/[^\d,.]/g, '').split(',')
+  const originalOpacity = values.pop()
+  // originalOpacity !== '0' assumes if the user has set the opacity of this highlight to 0, they probably don't want to see the label either
+  const n = `rgba(${values.join(', ')}, ${
+    originalOpacity !== '0' ? opacity : 0
+  })`
+  return n
+}
 
 export default observer(function Highlight({ model }: { model: LGV }) {
   const { classes } = useStyles()
 
-  const { showBookmarkHighlights } = model
+  const { showBookmarkHighlights, showBookmarkLabels } = model
   const session = getSession(model)
   const assemblyNames = new Set(session.assemblyNames)
 
@@ -74,6 +88,7 @@ export default observer(function Highlight({ model }: { model: LGV }) {
                     width: Math.max(Math.abs(e.offsetPx - s.offsetPx), 3),
                     left: Math.min(s.offsetPx, e.offsetPx) - model.offsetPx,
                     highlight: r.highlight,
+                    label: r.label,
                   }
                 : undefined
             })
@@ -82,12 +97,21 @@ export default observer(function Highlight({ model }: { model: LGV }) {
                 f: any,
               ): f is { width: number; left: number; highlight: string } => !!f,
             )
-            .map(({ left, width, highlight }: any, idx: number) => (
+            .map(({ left, width, highlight, label }: any, idx: number) => (
               <div
                 key={`${left}_${width}_${idx}`}
                 className={classes.highlight}
                 style={{ left, width, background: highlight }}
-              />
+              >
+                {showBookmarkLabels ? (
+                  <Tooltip title={label} arrow>
+                    <BookmarkIcon
+                      fontSize="small"
+                      sx={{ color: `${intensify(highlight, 0.8)}` }}
+                    />
+                  </Tooltip>
+                ) : null}
+              </div>
             ))
         : null}
     </>
