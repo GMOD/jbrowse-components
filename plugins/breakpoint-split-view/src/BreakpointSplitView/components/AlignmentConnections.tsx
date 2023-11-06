@@ -81,20 +81,15 @@ const AlignmentConnections = observer(function ({
           if (!showIntraviewLinks && level1 === level2) {
             return null
           }
-          const f1ref = assembly.getCanonicalRefName(f1.get('refName'))
-          const f2ref = assembly.getCanonicalRefName(f2.get('refName'))
-
-          if (!f1ref || !f2ref) {
-            throw new Error(`unable to find ref for ${f1ref || f2ref}`)
-          }
-
+          const f1ref = f1.get('refName')
+          const f2ref = f2.get('refName')
           const s1 = f1.get('strand')
           const s2 = f2.get('strand')
           const p1 = c1[s1 === -1 ? LEFT : RIGHT]
           const sn1 = s2 === -1
           const p2 = hasPaired ? c2[sn1 ? LEFT : RIGHT] : c2[sn1 ? RIGHT : LEFT]
-          const x1 = getPxFromCoordinate(views[level1], f1ref, p1)
-          const x2 = getPxFromCoordinate(views[level2], f2ref, p2)
+          const x1 = getPxFromCoordinate(views[level1], f1ref, p1, assembly)
+          const x2 = getPxFromCoordinate(views[level2], f2ref, p2, assembly)
           const reversed1 = views[level1].pxToBp(x1).reversed
           const reversed2 = views[level2].pxToBp(x2).reversed
           const tracks = views.map(v => v.getTrack(trackId))

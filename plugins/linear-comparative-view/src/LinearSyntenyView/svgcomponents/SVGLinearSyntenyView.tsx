@@ -97,12 +97,13 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
     }),
   )
 
+  const padding = 40
   const trackLabelMaxLen =
     max(
       views.flatMap(view =>
-        view.tracks.map(t =>
-          measureText(getTrackName(t.configuration, session), fontSize),
-        ),
+        view.tracks
+          .map(track => getTrackName(track.configuration, session))
+          .map(label => measureText(label, fontSize)),
       ),
       0,
     ) + 40

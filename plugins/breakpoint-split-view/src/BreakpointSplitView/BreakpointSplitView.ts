@@ -1,23 +1,20 @@
-import { getSession, Feature, Region } from '@jbrowse/core/util'
+import { Feature, AbstractSessionModel } from '@jbrowse/core/util'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import { parseBreakend } from '@gmod/vcf'
-import { IStateTreeNode } from 'mobx-state-tree'
 
 export default class BreakpointSplitViewType extends ViewType {
-  snapshotFromBreakendFeature(
+  async snapshotFromBreakendFeature(
     feature: Feature,
-    view: { displayedRegions: Region[] } & IStateTreeNode,
+    assemblyName: string,
+    session: AbstractSessionModel,
   ) {
     const alt = feature.get('ALT')?.[0]
     const bnd = alt ? parseBreakend(alt) : undefined
     const startPos = feature.get('start')
     let endPos
     const bpPerPx = 10
-
-    // TODO: Figure this out for multiple assembly names
-    const { assemblyName } = view.displayedRegions[0]
-    const { assemblyManager } = getSession(view)
-    const assembly = assemblyManager.get(assemblyName)
+    const { assemblyManager } = session
+    const assembly = await assemblyManager.waitForAssembly(assemblyName)
 
     if (!assembly) {
       throw new Error(`assembly ${assemblyName} not found`)
