@@ -415,19 +415,19 @@ export default class AddTrack extends JBrowseCommand {
       }
     } else if (
       /\.2bit$/i.test(location) ||
-      /\.bedpe(.gz)?$/i.test(location) ||
+      /\.bedpe(\.gz)?$/i.test(location) ||
       /\/trackData.jsonz?$/i.test(location) ||
       /\/sparql$/i.test(location) ||
-      /\.out(.gz)?$/i.test(location) ||
-      /\.paf(.gz)?$/i.test(location) ||
-      /\.delta(.gz)?$/i.test(location) ||
+      /\.out(\.gz)?$/i.test(location) ||
+      /\.paf(\.gz)?$/i.test(location) ||
+      /\.delta(\.gz)?$/i.test(location) ||
       /\.bed?$/i.test(location) ||
       /\.(bw|bigwig)$/i.test(location) ||
       /\.(bb|bigbed)$/i.test(location) ||
       /\.vcf$/i.test(location) ||
       /\.gtf?$/i.test(location) ||
       /\.gff3?$/i.test(location) ||
-      /\.chain(.gz)?$/i.test(location)
+      /\.chain(\.gz)?$/i.test(location)
     ) {
       return {
         file: location,
