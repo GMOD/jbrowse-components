@@ -1,4 +1,9 @@
-import { getSession, Feature, Region } from '@jbrowse/core/util'
+import {
+  getSession,
+  Feature,
+  Region,
+  AbstractSessionModel,
+} from '@jbrowse/core/util'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import { parseBreakend } from '@gmod/vcf'
 import { IStateTreeNode } from 'mobx-state-tree'
@@ -103,15 +108,12 @@ export default class BreakpointSplitViewType extends ViewType {
       featureData: undefined as unknown,
     }
   }
-
-  snapshotFromBreakendFeature(
+  async snapshotFromBreakendFeature(
     feature: Feature,
-    view: { displayedRegions: Region[] } & IStateTreeNode,
+    assemblyName: string,
+    session: AbstractSessionModel,
   ) {
-    const session = getSession(view)
     const bpPerPx = 10
-    const { assemblyName } = view.displayedRegions[0]!
-
     const { assemblyManager } = session
     const assembly = assemblyManager.get(assemblyName)
     if (!assembly) {

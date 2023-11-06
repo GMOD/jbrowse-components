@@ -534,7 +534,10 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      addTrackConf(configuration: AnyConfigurationModel, initialSnapshot = {}) {
+      addTrackConf(
+        configuration: AnyConfigurationModel | Record<string, unknown>,
+        initialSnapshot = {},
+      ) {
         const { type } = configuration
         const name = readConfObject(configuration, 'name')
         const trackType = pluginManager.getTrackType(type)

@@ -297,6 +297,12 @@ export default function assemblyFactory(
       /**
        * #method
        */
+      getCanonicalRefNameOrDefault(refName: string) {
+        return this.getCanonicalRefName(refName) || refName
+      },
+      /**
+       * #method
+       */
       getRefNameColor(refName: string) {
         if (!self.refNames) {
           return undefined

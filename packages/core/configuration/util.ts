@@ -35,7 +35,7 @@ import {
  *  will be sent to each of the slotNames
  */
 export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
-  confObject: CONFMODEL,
+  confObject: CONFMODEL | Record<string, unknown>,
   slotPath?:
     | ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>
     | string[],

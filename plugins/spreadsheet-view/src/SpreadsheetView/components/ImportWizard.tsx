@@ -1,7 +1,6 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   Button,
-  Checkbox,
   FormControl,
   FormGroup,
   FormLabel,
@@ -11,13 +10,18 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 import { getRoot } from 'mobx-state-tree'
-import { AbstractRootModel, getSession } from '@jbrowse/core/util'
-import { FileSelector, ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
+import { makeStyles } from 'tss-react/mui'
+import { AbstractRootModel, FileLocation, getSession } from '@jbrowse/core/util'
+import {
+  FileSelector,
+  ErrorMessage,
+  AssemblySelector,
+  LoadingEllipses,
+} from '@jbrowse/core/ui'
 
 // locals
 import { ImportWizardModel } from '../models/ImportWizard'
-import NumberEditor from './NumberEditor'
-import { makeStyles } from 'tss-react/mui'
+import { getFileType } from './util'
 
 const useStyles = makeStyles()({
   container: {
@@ -27,121 +31,91 @@ const useStyles = makeStyles()({
   },
 })
 
-const ImportWizard = observer(({ model }: { model: ImportWizardModel }) => {
+function FormControl2({ children }: { children: React.ReactNode }) {
+  return (
+    <div>
+      <FormControl>{children}</FormControl>
+    </div>
+  )
+}
+
+const ImportWizard = observer(function ({
+  model,
+}: {
+  model: ImportWizardModel
+}) {
   const session = getSession(model)
   const { classes } = useStyles()
   const { assemblyNames, assemblyManager } = session
-  const {
-    fileType,
-    canCancel,
-    fileSource,
-    isReadyToOpen,
-    fileTypes,
-    hasColumnNameLine,
-    error,
-  } = model
-  const [selected, setSelected] = useState(assemblyNames[0])
-  const err = assemblyManager.get(selected!)?.error || error
-  const showRowControls = fileType === 'CSV' || fileType === 'TSV'
-  const rootModel = getRoot(model)
+  const { fileTypes, error, loading } = model
+  const a0 = assemblyNames[0] || ''
+  const [selectedAssemblyName, setSelectedAssemblyName] = useState(a0)
+  const err = assemblyManager.get(selectedAssemblyName || '')?.error || error
+  const rootModel = getRoot<AbstractRootModel>(model)
+  const [tmp, setTmp] = useState<FileLocation>()
+  const [fileType, setFileType] = useState(getFileType(tmp))
+  useEffect(() => {
+    setFileType(getFileType(tmp))
+  }, [tmp])
+
+  useEffect(() => {
+    setSelectedAssemblyName(a0)
+  }, [a0])
 
   return (
     <div className={classes.container}>
       {err ? <ErrorMessage error={err} /> : null}
-      <div>
-        <FormControl component="fieldset">
-          <FormLabel component="legend">Tabular file</FormLabel>
-          <FormGroup>
-            <FileSelector
-              location={fileSource}
-              setLocation={arg => {
-                model.setFileSource(arg)
-              }}
-              rootModel={rootModel as AbstractRootModel}
-            />
-          </FormGroup>
-        </FormControl>
-      </div>
-      <div>
-        <FormControl component="fieldset">
-          <FormLabel component="legend">File Type</FormLabel>
-          <RadioGroup row aria-label="file type" name="type" value={fileType}>
-            {fileTypes.map(fileTypeName => (
-              <FormControlLabel
-                key={fileTypeName}
-                checked={fileType === fileTypeName}
-                value={fileTypeName}
-                onClick={() => {
-                  model.setFileType(fileTypeName)
-                }}
-                control={<Radio />}
-                label={fileTypeName}
-              />
-            ))}
-          </RadioGroup>
-        </FormControl>
-      </div>
-      {showRowControls ? (
-        <div>
-          <FormControl component="fieldset">
-            <FormLabel component="legend">Column Names</FormLabel>
+      {loading ? <LoadingEllipses /> : null}
+      <FormControl2>
+        <FormLabel>File</FormLabel>
+        <FormGroup>
+          <FileSelector
+            location={tmp}
+            setLocation={arg => {
+              setTmp(arg)
+            }}
+            rootModel={rootModel}
+          />
+        </FormGroup>
+      </FormControl2>
+      <FormControl2>
+        <FormLabel>File type</FormLabel>
+        <RadioGroup row value={fileType}>
+          {fileTypes.map(fileTypeName => (
             <FormControlLabel
-              disabled={!showRowControls}
-              label="has column names on line"
-              labelPlacement="end"
-              control={
-                <Checkbox
-                  checked={hasColumnNameLine}
-                  onClick={() => {
-                    model.toggleHasColumnNameLine()
-                  }}
-                />
-              }
+              key={fileTypeName}
+              checked={fileType === fileTypeName}
+              value={fileTypeName}
+              onClick={() => {
+                setFileType(fileTypeName)
+              }}
+              control={<Radio />}
+              label={fileTypeName}
             />
-            <NumberEditor
-              model={model}
-              disabled={!hasColumnNameLine}
-              modelPropName="columnNameLineNumber"
-              modelSetterName="setColumnNameLineNumber"
-            />
-          </FormControl>
-        </div>
-      ) : null}
+          ))}
+        </RadioGroup>
+      </FormControl2>
       <div>
         <AssemblySelector
           session={session}
-          selected={selected}
+          selected={selectedAssemblyName}
           onChange={val => {
-            setSelected(val)
+            setSelectedAssemblyName(val)
           }}
         />
       </div>
-      <div>
-        {canCancel ? (
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => {
-              model.cancelButton()
-            }}
-            disabled={!canCancel}
-          >
-            Cancel
-          </Button>
-        ) : null}{' '}
-        <Button
-          disabled={!isReadyToOpen || !!err}
-          variant="contained"
-          data-testid="open_spreadsheet"
-          color="primary"
-          onClick={() => {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            model.import(selected!)
-          }}
-        >
-          Open
-        </Button>
-      </div>
+      <Button
+        variant="contained"
+        data-testid="open_spreadsheet"
+        color="primary"
+        onClick={() => {
+          model.setFileType(fileType)
+          model.setSpreadsheetFilehandle(tmp)
+          model.setSelectedAssemblyName(selectedAssemblyName)
+        }}
+      >
+        Open
+      </Button>
     </div>
   )
 })
