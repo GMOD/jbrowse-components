@@ -13,7 +13,7 @@ import { getId } from './util'
 
 import { BaseLinearDisplayModel } from './BaseLinearDisplayModel'
 
-export default async function renderBaseLinearDisplaySvg(
+export async function renderBaseLinearDisplaySvg(
   self: BaseLinearDisplayModel,
   opts: ExportSvgOptions & {
     overrideHeight: number

@@ -2,21 +2,17 @@ import React, { useState } from 'react'
 import {
   IconButton,
   ListItem,
+  ListItemButton,
   ListItemIcon,
   Menu,
   MenuItem,
   Tooltip,
   Typography,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
+
+// icons
 import DeleteIcon from '@mui/icons-material/Delete'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
-
-const useStyles = makeStyles()({
-  menu: {
-    left: '65%',
-  },
-})
 
 function RecentSessionCard({
   sessionName,
@@ -25,45 +21,44 @@ function RecentSessionCard({
 }: {
   sessionName: string
   onClick: (arg: string) => void
-  onDelete: (arg: string) => void
+  onDelete?: (arg: string) => void
 }) {
-  const { classes } = useStyles()
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null)
-
-  const handleMenuClose = (action: string) => {
-    setMenuAnchorEl(null)
-    if (action === 'delete') {
-      return onDelete(sessionName)
-    }
-    return undefined
-  }
 
   return (
     <>
-      <ListItem onClick={() => onClick(sessionName)} button>
-        <Tooltip title={sessionName} enterDelay={300}>
-          <Typography variant="body2" noWrap style={{ width: 250 }}>
-            {sessionName}
-          </Typography>
-        </Tooltip>
-        <IconButton
-          className={classes.menu}
-          onClick={event => {
-            event.stopPropagation()
-            setMenuAnchorEl(event.currentTarget)
-          }}
-        >
-          <MoreVertIcon />
-        </IconButton>
+      <ListItem
+        secondaryAction={
+          <IconButton
+            onClick={event => {
+              event.stopPropagation()
+              setMenuAnchorEl(event.currentTarget)
+            }}
+          >
+            <MoreVertIcon />
+          </IconButton>
+        }
+      >
+        <ListItemButton onClick={() => onClick(sessionName)}>
+          <Tooltip title={sessionName} enterDelay={300}>
+            <Typography variant="body2" noWrap>
+              {sessionName}
+            </Typography>
+          </Tooltip>
+        </ListItemButton>
       </ListItem>
       <Menu
-        id="simple-menu"
         anchorEl={menuAnchorEl}
-        keepMounted
         open={Boolean(menuAnchorEl)}
-        onClose={handleMenuClose}
+        onClose={() => setMenuAnchorEl(null)}
       >
-        <MenuItem onClick={() => handleMenuClose('delete')}>
+        <MenuItem
+          onClick={() => {
+            setMenuAnchorEl(null)
+            onDelete?.(sessionName)
+          }}
+          disabled={!onDelete}
+        >
           <ListItemIcon>
             <DeleteIcon />
           </ListItemIcon>

@@ -6,6 +6,7 @@ import {
 import PluginManager from '../../PluginManager'
 
 import configSchema from './baseConnectionConfig'
+
 /**
  * #stateModel BaseConnectionModel
  */
@@ -26,10 +27,15 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       configuration: ConfigurationReference(configSchema),
     })
+    .actions(() => ({
+      /**
+       * #action
+       */
+      connect(_arg: AnyConfigurationModel) {},
+    }))
     .actions(self => ({
       afterAttach() {
         if (self.tracks.length === 0) {
-          // @ts-expect-error
           self.connect(self.configuration)
         }
       },

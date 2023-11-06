@@ -13,7 +13,7 @@ import { observer } from 'mobx-react'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 
 // locals
-import { DotplotViewModel } from '../model'
+import { DotplotViewModel } from '../../model'
 
 function f(track: AnyConfigurationModel, assembly1: string, assembly2: string) {
   const assemblyNames = readConfObject(track, 'assemblyNames')

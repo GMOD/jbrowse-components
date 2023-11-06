@@ -415,6 +415,7 @@ export default class AddTrack extends JBrowseCommand {
       }
     } else if (
       /\.2bit$/i.test(location) ||
+      /\.bedpe(.gz)?$/i.test(location) ||
       /\/trackData.jsonz?$/i.test(location) ||
       /\/sparql$/i.test(location) ||
       /\.out(.gz)?$/i.test(location) ||
@@ -502,6 +503,11 @@ export default class AddTrack extends JBrowseCommand {
     } else if (/\.vcf\.idx$/i.test(location)) {
       return {
         type: 'UNSUPPORTED',
+      }
+    } else if (/\.bedpe(.gz)?$/i.test(location)) {
+      return {
+        type: 'BedpeAdapter',
+        bedpeLocation: makeLocation(location),
       }
     } else if (/\.bed$/i.test(location)) {
       return {
@@ -615,6 +621,7 @@ export default class AddTrack extends JBrowseCommand {
       TwoBitAdapter: 'ReferenceSequenceTrack',
       VcfTabixAdapter: 'VariantTrack',
       VcfAdapter: 'VariantTrack',
+      BedpeAdapter: 'VariantTrack',
       BedAdapter: 'FeatureTrack',
       HicAdapter: 'HicTrack',
       PAFAdapter: 'SyntenyTrack',

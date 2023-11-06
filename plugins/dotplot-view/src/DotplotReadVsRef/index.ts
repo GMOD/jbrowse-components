@@ -1,7 +1,7 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import {
+  DisplayType,
   PluggableElementType,
-  ViewType,
 } from '@jbrowse/core/pluggableElementTypes'
 import { LinearPileupDisplayModel } from '@jbrowse/plugin-alignments'
 
@@ -16,7 +16,7 @@ export default function DotplotReadVsRefMenuItem(pluginManager: PluginManager) {
     'Core-extendPluggableElement',
     (pluggableElement: PluggableElementType) => {
       if (pluggableElement.name === 'LinearPileupDisplay') {
-        const { stateModel } = pluggableElement as ViewType
+        const { stateModel } = pluggableElement as DisplayType
         const newStateModel = stateModel.extend(
           (self: LinearPileupDisplayModel) => {
             const superContextMenuItems = self.contextMenuItems
@@ -42,7 +42,7 @@ export default function DotplotReadVsRefMenuItem(pluginManager: PluginManager) {
           },
         )
 
-        ;(pluggableElement as ViewType).stateModel = newStateModel
+        ;(pluggableElement as DisplayType).stateModel = newStateModel
       }
       return pluggableElement
     },

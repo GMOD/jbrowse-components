@@ -67,3 +67,14 @@ caption: {
       contextVariable: ['feature'],
     }
 ```
+
+#### slot: displayMode
+
+```js
+displayMode: {
+      type: 'enum',
+      defaultValue: 'arcs',
+      model: types.enumeration('DisplayMode', ['arcs', 'semicircles']),
+      description: 'render semi-circles instead of arcs',
+    }
+```

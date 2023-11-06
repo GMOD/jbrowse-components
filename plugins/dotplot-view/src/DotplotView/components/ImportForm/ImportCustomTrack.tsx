@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import { SnapshotIn } from 'mobx-state-tree'
-import path from 'path'
 import {
   FormControlLabel,
   Grid,
@@ -13,23 +12,7 @@ import { ErrorMessage, FileSelector } from '@jbrowse/core/ui'
 import { FileLocation } from '@jbrowse/core/util/types'
 import { observer } from 'mobx-react'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-
-function getName(
-  sessionTrackData?: { uri: string } | { localPath: string } | { name: string },
-) {
-  return sessionTrackData
-    ? // @ts-expect-error
-      sessionTrackData.uri ||
-        // @ts-expect-error
-        sessionTrackData.localPath ||
-        // @ts-expect-error
-        sessionTrackData.name
-    : undefined
-}
-
-function stripGz(fileName: string) {
-  return fileName.endsWith('.gz') ? fileName.slice(0, -3) : fileName
-}
+import { basename, extName, getName, stripGz } from './util'
 
 function getAdapter({
   radioOption,
@@ -91,7 +74,9 @@ function getAdapter({
       assemblyNames: [assembly1, assembly2],
     }
   } else {
-    throw new Error('Unknown type')
+    throw new Error(
+      `Unknown to detect type ${radioOption} from filename (select radio button to clarify)`,
+    )
   }
 }
 
@@ -115,13 +100,12 @@ const OpenTrack = observer(
     const [error, setError] = useState<unknown>()
     const fileName = getName(fileLocation)
 
-    const radioOption =
-      value || (fileName ? path.extname(stripGz(fileName)) : '')
+    const radioOption = value || (fileName ? extName(stripGz(fileName)) : '')
 
     useEffect(() => {
       try {
         if (fileLocation) {
-          const fn = fileName ? path.basename(fileName) : 'MyTrack'
+          const fn = fileName ? basename(fileName) : 'MyTrack'
           const trackId = `${fn}-${Date.now()}`
           setError(undefined)
 

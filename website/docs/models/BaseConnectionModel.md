@@ -43,6 +43,13 @@ configuration: ConfigurationReference(configSchema)
 
 ### BaseConnectionModel - Actions
 
+#### action: connect
+
+```js
+// type signature
+connect: (_arg: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
+```
+
 #### action: addTrackConf
 
 ```js

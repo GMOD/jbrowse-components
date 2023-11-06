@@ -5,6 +5,7 @@ export {
   NextstrainExample,
   OneLinearGenomeView,
   UsingLocObject,
+  ShadowDOMOneLinearGenomeView,
   WithAggregateTextSearching,
   WithCustomTheme,
   WithExternalPlugin,

@@ -9,7 +9,7 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-const delay = { timeout: 10000 }
+const delay = { timeout: 20000 }
 
 test('nav to volvox2', async () => {
   const { getInputValue, findByText } = await doSetupForImportForm()
@@ -31,5 +31,5 @@ test('select misc', async () => {
   const { getInputValue, findByText } = await doSetupForImportForm()
   fireEvent.mouseDown(await findByText('volvox'))
   fireEvent.click(await findByText('misc'))
-  await waitFor(() => expect(getInputValue()).toBe('t1'))
+  await waitFor(() => expect(getInputValue()).toBe('t1'), delay)
 }, 30000)

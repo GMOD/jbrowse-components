@@ -139,8 +139,9 @@ function CoreDetails(props: BaseProps) {
 }
 
 export const BaseCoreDetails = (props: BaseProps) => {
+  const { title = 'Primary data' } = props
   return (
-    <BaseCard {...props} title="Primary data">
+    <BaseCard {...props} title={title}>
       <CoreDetails {...props} />
     </BaseCard>
   )

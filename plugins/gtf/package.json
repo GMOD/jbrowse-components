@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-gtf",
-  "version": "2.7.1",
+  "version": "2.7.2",
   "description": "JBrowse 2 gtf feature adapter",
   "keywords": [
     "jbrowse",
@@ -38,7 +38,7 @@
   "dependencies": {
     "@flatten-js/interval-tree": "^1.0.15",
     "@gmod/bgzf-filehandle": "^1.4.3",
-    "@gmod/gtf": "^0.0.8"
+    "@gmod/gtf": "^0.0.9"
   },
   "peerDependencies": {
     "@jbrowse/core": "^2.0.0",

@@ -20,3 +20,21 @@ sequenceAdapter: {
         defaultValue: null,
       }
 ```
+
+#### slot: windowSize
+
+```js
+windowSize: {
+        type: 'number',
+        defaultValue: 100,
+      }
+```
+
+#### slot: windowDelta
+
+```js
+windowDelta: {
+        type: 'number',
+        defaultValue: 100,
+      }
+```

@@ -10,6 +10,8 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 [plugins/gccontent/src/LinearGCContentDisplay/config.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gccontent/src/LinearGCContentDisplay/config.ts)
 
+extends LinearWiggleDisplay
+
 ### LinearGCContentDisplay - Derives from
 
 ```js

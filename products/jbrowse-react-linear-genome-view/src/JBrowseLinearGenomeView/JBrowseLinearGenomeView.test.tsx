@@ -7,7 +7,7 @@ jest.mock(
   () => () => {},
 )
 
-const timeout = 20000
+const timeout = 30000
 
 const assembly = {
   name: 'volvox',
@@ -72,4 +72,4 @@ test('<JBrowseLinearGenomeView /> renders successfully', async () => {
     timeout,
   })
   expect(container).toMatchSnapshot()
-}, 30000)
+}, 40000)

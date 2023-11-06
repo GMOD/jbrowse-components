@@ -431,6 +431,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     },
   ],
   "configuration": {
+    "LinearGenomeViewPlugin": {
+      "trackLabels": "offset",
+    },
     "extraThemes": {
       "darkForest": {
         "name": "Dark (forest, from config file)",
@@ -544,6 +547,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "volvox_sv_test-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
         },
+        {
+          "displayId": "volvox_sv_test-LinearPairedArcDisplay",
+          "type": "LinearPairedArcDisplay",
+        },
       ],
       "name": "volvox structural variant test (<i>HTML italic</i>)",
       "trackId": "volvox_sv_test",
@@ -581,6 +588,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_sv_test_renamed-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
+        },
+        {
+          "displayId": "volvox_sv_test_renamed-LinearPairedArcDisplay",
+          "type": "LinearPairedArcDisplay",
         },
       ],
       "name": "volvox structural variant test w/renamed refs",
@@ -1273,6 +1284,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_test_vcf-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
+        },
+        {
+          "displayId": "volvox_test_vcf-LinearPairedArcDisplay",
+          "type": "LinearPairedArcDisplay",
         },
       ],
       "formatAbout": {
@@ -2269,6 +2284,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "volvox_filtered_vcf-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
         },
+        {
+          "displayId": "volvox_filtered_vcf-LinearPairedArcDisplay",
+          "type": "LinearPairedArcDisplay",
+        },
       ],
       "name": "volvox filtered vcf",
       "trackId": "volvox_filtered_vcf",
@@ -2306,6 +2325,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_filtered_vcf_assembly_alias-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
+        },
+        {
+          "displayId": "volvox_filtered_vcf_assembly_alias-LinearPairedArcDisplay",
+          "type": "LinearPairedArcDisplay",
         },
       ],
       "name": "volvox filtered vcf (with assembly alias)",
@@ -2978,6 +3001,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           },
           "type": "LinearVariantDisplay",
         },
+        {
+          "displayId": "variant_colors-LinearPairedArcDisplay",
+          "type": "LinearPairedArcDisplay",
+        },
       ],
       "name": "volvox filtered vcf (green snp, purple indel)",
       "trackId": "variant_colors",
@@ -3317,6 +3344,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "volvox.inv.vcf-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
         },
+        {
+          "displayId": "volvox.inv.vcf-LinearPairedArcDisplay",
+          "type": "LinearPairedArcDisplay",
+        },
       ],
       "name": "volvox inversions",
       "trackId": "volvox.inv.vcf",
@@ -3644,6 +3675,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "variant_effect_demo_data-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
         },
+        {
+          "displayId": "variant_effect_demo_data-LinearPairedArcDisplay",
+          "type": "LinearPairedArcDisplay",
+        },
       ],
       "name": "Ensembl VEP example",
       "trackId": "variant_effect_demo_data",
@@ -3673,6 +3708,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "variant_effect_demo_jannovar-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
+        },
+        {
+          "displayId": "variant_effect_demo_jannovar-LinearPairedArcDisplay",
+          "type": "LinearPairedArcDisplay",
         },
       ],
       "name": "Jannovar example",

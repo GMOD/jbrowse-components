@@ -3,11 +3,11 @@
 exports[`renders one track, one region 1`] = `
 <div>
   <div
-    style="position: relative;"
+    class="css-1v4ghfe-rel"
   >
     <div>
       <div
-        style="position: relative;"
+        class="css-1v4ghfe-rel"
       >
         <div
           class="css-dznme2-rubberbandControl"
@@ -560,11 +560,11 @@ exports[`renders one track, one region 1`] = `
 exports[`renders two tracks, two regions 1`] = `
 <div>
   <div
-    style="position: relative;"
+    class="css-1v4ghfe-rel"
   >
     <div>
       <div
-        style="position: relative;"
+        class="css-1v4ghfe-rel"
       >
         <div
           class="css-dznme2-rubberbandControl"

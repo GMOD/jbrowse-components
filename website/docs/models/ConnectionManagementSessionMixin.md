@@ -18,7 +18,7 @@ info
 
 ```js
 // type signature
-IArrayType<IModelType<{ name: ISimpleType<string>; tracks: IArrayType<IAnyModelType>; configuration: ConfigurationSchemaType<{ name: { type: string; defaultValue: string; description: string; }; assemblyNames: { ...; }; }, ConfigurationSchemaOptions<...>>; }, { ...; }, _NotCustomized, _NotCustomized>>
+IArrayType<IModelType<{ name: ISimpleType<string>; tracks: IArrayType<IAnyModelType>; configuration: ConfigurationSchemaType<{ name: { type: string; defaultValue: string; description: string; }; assemblyNames: { ...; }; }, ConfigurationSchemaOptions<...>>; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>>
 // code
 connectionInstances: types.array(
         pluginManager.pluggableMstType(
@@ -43,7 +43,7 @@ connectionInstances: types.array(
 
 ```js
 // type signature
-makeConnection: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>, initialSnapshot?: {}) => { ...; } & ... 2 more ... & IStateTreeNode<...>
+makeConnection: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>, initialSnapshot?: {}) => { ...; } & ... 3 more ... & IStateTreeNode<...>
 ```
 
 #### action: prepareToBreakConnection

@@ -92,6 +92,8 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   selection?: unknown
   focusedViewId?: string
   themeName?: string
+  hovered: unknown
+  setHovered: (arg: unknown) => void
   setFocusedViewId?: (id: string) => void
   allThemes?: () => Record<string, ThemeOptions | undefined>
   setSelection: (feature: Feature) => void
@@ -192,9 +194,9 @@ export interface Widget {
 export interface SessionWithWidgets extends AbstractSessionModel {
   minimized: boolean
   visibleWidget?: Widget
-  widgets: Map<string, Widget>
+  widgets: Map<string | number, Widget>
   hideAllWidgets: () => void
-  activeWidgets: Map<string, Widget>
+  activeWidgets: Map<string | number, Widget>
   addWidget(
     typeName: string,
     id: string,

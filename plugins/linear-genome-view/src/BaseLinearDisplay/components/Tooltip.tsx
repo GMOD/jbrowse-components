@@ -55,7 +55,7 @@ const Tooltip = observer(
     model: BaseLinearDisplayModel
     clientMouseCoord: Coord
   }) => {
-    const { classes } = useStyles()
+    const { theme, classes } = useStyles()
     const { featureUnderMouse } = model
     const [width, setWidth] = useState(0)
     const [popperElt, setPopperElt] = useState<HTMLDivElement | null>(null)
@@ -87,8 +87,9 @@ const Tooltip = observer(
       ? getConf(model, 'mouseover', { feature: featureUnderMouse })
       : undefined
 
+    const popperTheme = theme?.components?.MuiPopper
     return featureUnderMouse && contents ? (
-      <Portal>
+      <Portal container={popperTheme?.defaultProps?.container}>
         <div
           ref={setPopperElt}
           className={classes.tooltip}

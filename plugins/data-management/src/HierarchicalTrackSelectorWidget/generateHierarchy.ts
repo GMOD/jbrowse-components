@@ -60,7 +60,7 @@ export function generateHierarchy({
     filterText: string
     activeSortTrackNames: boolean
     activeSortCategories: boolean
-    collapsed: Map<string, boolean>
+    collapsed: Map<string | number, boolean>
     view?: {
       tracks: { configuration: AnyConfigurationModel }[]
     }

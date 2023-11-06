@@ -1,4 +1,3 @@
-import { nanoid } from '@jbrowse/core/util/nanoid'
 import PluginManager from '@jbrowse/core/PluginManager'
 import {
   IAnyStateTreeNode,
@@ -12,6 +11,7 @@ import { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 
 // locals
 import type { BaseRootModelType } from '../RootModel/BaseRootModel'
+import { ElementId } from '@jbrowse/core/util/types/mst'
 
 /**
  * #stateModel BaseSessionModel
@@ -27,7 +27,7 @@ export function BaseSessionModel<
       /**
        * #property
        */
-      id: types.optional(types.identifier, nanoid()),
+      id: ElementId,
       /**
        * #property
        */
@@ -45,6 +45,13 @@ export function BaseSessionModel<
        * is.
        */
       selection: undefined as unknown,
+      /**
+       * #volatile
+       * this is the globally "hovered" object. can be anything. code that
+       * wants to deal with this should examine it to see what kind of thing it
+       * is.
+       */
+      hovered: undefined as unknown,
     }))
     .views(self => ({
       get root() {
@@ -108,6 +115,12 @@ export function BaseSessionModel<
        */
       clearSelection() {
         self.selection = undefined
+      },
+      /**
+       * #action
+       */
+      setHovered(thing: unknown) {
+        self.hovered = thing
       },
     }))
 }

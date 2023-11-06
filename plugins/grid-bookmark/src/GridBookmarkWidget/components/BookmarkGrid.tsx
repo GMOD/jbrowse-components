@@ -63,15 +63,15 @@ const BookmarkGrid = observer(function ({
   const rowWidths = [
     40,
     Math.max(
-      measureText('Bookmark link'),
+      measureText('Bookmark link', 12) + 30,
       measureGridWidth(rows.map(row => row.locString)),
     ),
     Math.max(
-      measureText('Label'),
+      measureText('Label', 12) + 30,
       measureGridWidth(rows.map(row => row.label)),
     ),
     Math.max(
-      measureText('Assembly'),
+      measureText('Assembly', 12) + 30,
       measureGridWidth(rows.map(row => row.assemblyName)),
     ),
     100,
