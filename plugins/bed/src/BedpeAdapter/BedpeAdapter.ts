@@ -157,30 +157,19 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
 
   private async loadFeatureTreeP(refName: string) {
     const { feats1, feats2 } = await this.loadData()
-    const lines1 = feats1[refName]
-    const lines2 = feats2[refName]
     const names = await this.getNames()
-
     const intervalTree = new IntervalTree()
-    const ret1 = lines1?.map((f, i) => {
-      const uniqueId = `${this.id}-${refName}-${i}`
-      return featureData(f, uniqueId, false, names)
-    })
-    const ret2 = lines2?.map((f, i) => {
-      const uniqueId = `${this.id}-${refName}-${i}`
-      return featureData(f, uniqueId, true, names)
-    })
+    const ret1 =
+      feats1[refName]?.map((f, i) =>
+        featureData(f, `${this.id}-${refName}-${i}-r1`, false, names),
+      ) ?? []
+    const ret2 =
+      feats2[refName]?.map((f, i) =>
+        featureData(f, `${this.id}-${refName}-${i}-r2`, true, names),
+      ) ?? []
 
-    if (ret1) {
-      for (const obj of ret1) {
-        intervalTree.insert([obj.get('start'), obj.get('end')], obj)
-      }
-    }
-
-    if (ret2) {
-      for (const obj of ret2) {
-        intervalTree.insert([obj.get('start'), obj.get('end')], obj)
-      }
+    for (const obj of [...ret1, ...ret2]) {
+      intervalTree.insert([obj.get('start'), obj.get('end')], obj)
     }
 
     return intervalTree

@@ -44,7 +44,6 @@ const corePlugins = [
   LegacyJBrowse,
   LinearComparativeView,
   Lollipop,
-  Arc,
   Menus,
   RDF,
   Sequence,
@@ -58,6 +57,7 @@ const corePlugins = [
   TrixPlugin,
   GridBookmarkPlugin,
   ComparativeAdapters,
+  Arc,
 ]
 
 export default corePlugins
