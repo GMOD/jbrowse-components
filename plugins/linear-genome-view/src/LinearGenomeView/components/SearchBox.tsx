@@ -16,6 +16,14 @@ const useStyles = makeStyles()(() => ({
   },
 }))
 
+function checkRef(str: string, allRefs: string[]) {
+  const [ref, rest] = splitLast(str, ':')
+  return (
+    allRefs.includes(str) ||
+    (allRefs.includes(ref) && !Number.isNaN(Number.parseInt(rest, 10)))
+  )
+}
+
 const SearchBox = observer(function ({
   model,
   showHelp,
@@ -51,36 +59,30 @@ const SearchBox = observer(function ({
   // 3) else assume it's a locstring and navigate to it
   async function handleSelectedRegion(option: BaseResult) {
     try {
+      const input = option.getLabel()
+      const allRefs = assembly?.allRefNamesWithLowerCase || []
       if (option.hasLocation()) {
         await navToOption(option)
       } else if (option.results?.length) {
         model.setSearchResults(option.results, option.getLabel())
+      } else if (input.split(' ').every(entry => checkRef(entry, allRefs))) {
+        await model.navToLocString(input, assemblyName)
       } else {
-        const input = option.getLabel()
-        const [ref, rest] = splitLast(input, ':')
-        const allRefs = assembly?.allRefNamesWithLowerCase || []
-        if (
-          allRefs.includes(input) ||
-          (allRefs.includes(ref) && !Number.isNaN(Number.parseInt(rest, 10)))
-        ) {
-          await model.navToLocString(input, assemblyName)
-        } else {
-          const results = await fetchResults({
-            queryString: input,
-            searchType: 'exact',
-            searchScope,
-            rankSearchResults,
-            textSearchManager,
-            assembly,
-          })
+        const results = await fetchResults({
+          queryString: input,
+          searchType: 'exact',
+          searchScope,
+          rankSearchResults,
+          textSearchManager,
+          assembly,
+        })
 
-          if (results.length > 1) {
-            model.setSearchResults(results, input.toLowerCase())
-          } else if (results.length === 1) {
-            await navToOption(results[0])
-          } else {
-            await model.navToLocString(input, assemblyName)
-          }
+        if (results.length > 1) {
+          model.setSearchResults(results, input.toLowerCase())
+        } else if (results.length === 1) {
+          await navToOption(results[0])
+        } else {
+          await model.navToLocString(input, assemblyName)
         }
       }
     } catch (e) {
