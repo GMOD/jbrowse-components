@@ -143,7 +143,11 @@ export default function VariantSamples(props: {
           disableColumnMenu
           slots={{ toolbar: checked ? GridToolbar : null }}
           slotProps={{
-            toolbar: { printOptions: { disableToolbarButton: true } },
+            toolbar: {
+              printOptions: {
+                disableToolbarButton: true,
+              },
+            },
           }}
         />
       </div>

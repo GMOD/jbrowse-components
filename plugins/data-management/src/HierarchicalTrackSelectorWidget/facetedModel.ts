@@ -199,18 +199,20 @@ export function facetedStateTreeF() {
       setWidths(args: Record<string, number | undefined>) {
         self.widths = args
       },
+    }))
+    .actions(self => ({
       afterAttach() {
         addDisposer(
           self,
           autorun(() => {
-            this.setVisible(Object.fromEntries(self.fields.map(c => [c, true])))
+            self.setVisible(Object.fromEntries(self.fields.map(c => [c, true])))
           }),
         )
 
         addDisposer(
           self,
           autorun(() => {
-            this.setWidths({
+            self.setWidths({
               name:
                 measureGridWidth(
                   self.rows.map(r => r.name),

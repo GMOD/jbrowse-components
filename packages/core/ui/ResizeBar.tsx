@@ -89,10 +89,8 @@ export default function ResizeBar({
     <div className={classes.resizeBar}>
       {offsets.map((left, i) => (
         <Tick
-          key={i}
-          onMouseDown={() => {
-            setInitial([...widths])
-          }}
+          key={`${left}-${i}`}
+          onMouseDown={() => setInitial([...widths])}
           left={i === offsets.length - 1 ? left - 3 : left}
           onDrag={(_: number, totalDistance: number, idx: number) => {
             const newWidths = [...widths]

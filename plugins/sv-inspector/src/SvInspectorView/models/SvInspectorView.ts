@@ -4,22 +4,22 @@ import { types, getParent, addDisposer, Instance } from 'mobx-state-tree'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSession, Region } from '@jbrowse/core/util'
-import { readConfObject } from '@jbrowse/core/configuration'
+import { getConf } from '@jbrowse/core/configuration'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { SpreadsheetViewStateModel } from '@jbrowse/plugin-spreadsheet-view'
 import { CircularViewStateModel } from '@jbrowse/plugin-circular-view'
 
 // icons
-import OpenInNewIcon from '@mui/icons-material/OpenInNew'
+// import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 
 // locals
-import {
-  canOpenBreakpointSplitViewFromTableRow,
-  openBreakpointSplitViewFromTableRow,
-  getFeatureForRow,
-} from './breakpointSplitViewFromTableRow'
+// import {
+//   canOpenBreakpointSplitViewFromTableRow,
+//   openBreakpointSplitViewFromTableRow,
+//   getFeatureForRow,
+// } from './breakpointSplitViewFromTableRow'
 
 /**
  * #stateModel SvInspectorView
@@ -41,7 +41,6 @@ function SvInspectorViewF(pluginManager: PluginManager) {
 
   const minHeight = 400
   const defaultHeight = 550
-  const headerHeight = 52
   const circularViewOptionsBarHeight = 52
   return types
     .compose(
@@ -60,53 +59,40 @@ function SvInspectorViewF(pluginManager: PluginManager) {
         /**
          * #property
          */
-        height: types.optional(
-          types.refinement(
-            'SvInspectorViewHeight',
-            types.number,
-            n => n >= minHeight,
-          ),
-          defaultHeight,
-        ),
+        height: types.optional(types.number, defaultHeight),
         /**
          * #property
          */
         onlyDisplayRelevantRegionsInCircularView: false,
-        /**
-         * #property
-         * switch specifying whether we are showing the import wizard or the
-         * spreadsheet in our viewing area
-         */
-        mode: types.optional(
-          types.enumeration('SvInspectorViewMode', ['import', 'display']),
-          'import',
-        ),
+
         /**
          * #property
          */
-        spreadsheetView: types.optional(SpreadsheetModel, () =>
-          SpreadsheetModel.create({
-            type: 'SpreadsheetView',
-            hideVerticalResizeHandle: true,
-          }),
-        ),
+        spreadsheetView: types.optional(SpreadsheetModel, {
+          hideVerticalResizeHandle: true,
+          type: 'SpreadsheetView',
+        }),
         /**
          * #property
          */
-        circularView: types.optional(CircularModel, () =>
-          CircularModel.create({
-            type: 'CircularView',
-            hideVerticalResizeHandle: true,
-            hideTrackSelectorButton: true,
-            disableImportForm: true,
-          }),
-        ),
+        circularView: types.optional(CircularModel, {
+          type: 'CircularView',
+          hideVerticalResizeHandle: true,
+          hideTrackSelectorButton: true,
+          disableImportForm: true,
+        }),
       }),
     )
     .volatile(() => ({
       width: 800,
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
+      get initialized() {
+        return self.spreadsheetView.initialized
+      },
       /**
        * #getter
        */
@@ -118,26 +104,21 @@ function SvInspectorViewF(pluginManager: PluginManager) {
        * #getter
        */
       get assemblyName() {
-        const { assembly } = self.spreadsheetView
-        return assembly ? readConfObject(assembly, 'name') : undefined
+        return self.spreadsheetView.assemblyName
       },
       /**
        * #getter
        */
       get showCircularView() {
-        return self.spreadsheetView.mode === 'display'
+        return self.spreadsheetView.initialized
       },
 
       /**
        * #getter
        */
       get features() {
-        const session = getSession(self)
-        const { spreadsheetView } = self
-        const { outputRows = [] } = spreadsheetView
-        return outputRows
-          .map((r, i) => getFeatureForRow(session, spreadsheetView, r, i))
-          .filter(f => !!f)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return [] as any[]
       },
       /**
        * #getter
@@ -199,18 +180,6 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setImportMode() {
-        self.spreadsheetView.setImportMode()
-      },
-      /**
-       * #action
-       */
-      setDisplayMode() {
-        self.spreadsheetView.setDisplayMode()
-      },
-      /**
-       * #action
-       */
       closeView() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         getParent<any>(self, 2).removeView(self)
@@ -225,7 +194,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
        * #action
        */
       setOnlyDisplayRelevantRegionsInCircularView(val: boolean) {
-        self.onlyDisplayRelevantRegionsInCircularView = Boolean(val)
+        self.onlyDisplayRelevantRegionsInCircularView = val
       },
     }))
     .views(self => ({
@@ -236,7 +205,9 @@ function SvInspectorViewF(pluginManager: PluginManager) {
         return [
           {
             label: 'Return to import form',
-            onClick: () => self.setImportMode(),
+            onClick: () => {
+              self.spreadsheetView.speadsheet.setData(undefined)
+            },
             icon: FolderOpenIcon,
           },
         ]
@@ -255,151 +226,122 @@ function SvInspectorViewF(pluginManager: PluginManager) {
         // synchronize subview widths
         addDisposer(
           self,
-          autorun(
-            () => {
-              const borderWidth = 1
-              if (self.showCircularView) {
-                const spreadsheetWidth = Math.round(self.width * 0.66)
-                const circularViewWidth = self.width - spreadsheetWidth
-                self.spreadsheetView.setWidth(spreadsheetWidth - borderWidth)
-                self.circularView.setWidth(circularViewWidth)
-              } else {
-                self.spreadsheetView.setWidth(self.width)
-              }
-            },
-            { name: 'SvInspectorView width binding' },
-          ),
+          autorun(() => {
+            const borderWidth = 1
+            if (self.showCircularView) {
+              const spreadsheetWidth = Math.round(self.width * 0.66)
+              const circularViewWidth = self.width - spreadsheetWidth
+              self.spreadsheetView.setWidth(spreadsheetWidth - borderWidth)
+              self.circularView.setWidth(circularViewWidth)
+            } else {
+              self.spreadsheetView.setWidth(self.width)
+            }
+          }),
         )
         // synchronize subview heights
         addDisposer(
           self,
-          autorun(
-            () => {
-              self.spreadsheetView.setHeight(self.height - headerHeight)
-              self.circularView.setHeight(
-                self.height - headerHeight - circularViewOptionsBarHeight,
-              )
-            },
-            { name: 'SvInspectorView height binding' },
-          ),
+          autorun(() => {
+            const { height } = self
+            self.spreadsheetView.setHeight(height)
+            self.circularView.setHeight(height - circularViewOptionsBarHeight)
+          }),
         )
-
         // bind circularview displayedRegions to spreadsheet assembly, mediated
         // by the onlyRelevantRegions toggle
         addDisposer(
           self,
-          autorun(
-            async () => {
-              const {
-                assemblyName,
-                onlyDisplayRelevantRegionsInCircularView,
-                circularView,
-                featureRefNames,
-              } = self
+          autorun(async () => {
+            const {
+              assemblyName,
+              onlyDisplayRelevantRegionsInCircularView,
+              circularView,
+              featureRefNames,
+            } = self
+            try {
+              if (!circularView.initialized) {
+                return
+              }
               const { tracks } = circularView
               const { assemblyManager } = getSession(self)
               if (!assemblyName) {
                 return
               }
-              const asm = await assemblyManager.waitForAssembly(assemblyName)
+              const asm = assemblyManager.get(assemblyName)
               if (!asm) {
                 return
               }
-
-              const { getCanonicalRefName, regions = [] } = asm
+              const { regions = [] } = asm
               if (onlyDisplayRelevantRegionsInCircularView) {
                 if (tracks.length === 1) {
-                  try {
-                    // canonicalize the store's ref names if necessary
-                    const refSet = new Set(
-                      featureRefNames.map(r => getCanonicalRefName(r) || r),
-                    )
-
-                    circularView.setDisplayedRegions(
-                      clone(regions.filter(r => refSet.has(r.refName))),
-                    )
-                  } catch (e) {
-                    circularView.setError(e)
-                  }
+                  // canonicalize the store's ref names if necessary
+                  const refSet = new Set(
+                    featureRefNames.map(r => asm.getCanonicalRefName(r) || r),
+                  )
+                  circularView.setDisplayedRegions(
+                    clone(regions.filter(r => refSet.has(r.refName))),
+                  )
                 }
               } else {
                 circularView.setDisplayedRegions(regions)
               }
-            },
-            { name: 'SvInspectorView displayed regions bind' },
-          ),
+            } catch (e) {
+              console.error(e)
+              circularView.setError(e)
+            }
+          }),
         )
-
         // bind circularview tracks to our track snapshot view
         addDisposer(
           self,
-          reaction(
-            () => ({
-              generatedTrackConf: self?.featuresCircularTrackConfiguration,
-              assemblyName: self?.assemblyName,
-            }),
-            data => {
-              if (!data) {
-                return
-              }
-              const { assemblyName, generatedTrackConf } = data
-              const { circularView } = self
-              // hide any visible tracks
-              circularView.tracks.forEach(t =>
-                circularView.hideTrack(t.configuration.trackId),
-              )
-
-              // put our track in as the only track
-              if (assemblyName && generatedTrackConf) {
-                // @ts-expect-error
-                circularView.addTrackConf(generatedTrackConf, {
-                  assemblyName,
-                })
-              }
-            },
-            {
-              name: 'SvInspectorView track configuration binding',
-              fireImmediately: true,
-            },
-          ),
+          autorun(() => {
+            const { assemblyName, featuresCircularTrackConfiguration } = self
+            const { circularView } = self
+            // hide any visible tracks
+            circularView.tracks.forEach(t =>
+              circularView.hideTrack(t.configuration.trackId),
+            )
+            // put our track in as the only track
+            if (assemblyName && featuresCircularTrackConfiguration) {
+              circularView.addTrackConf(featuresCircularTrackConfiguration)
+            }
+          }),
         )
-
-        // bind spreadsheetView row menu actions to us
+        // // bind spreadsheetView row menu actions to us
         addDisposer(
           self,
           autorun(() => {
-            self.spreadsheetView.setRowMenuItems(
-              // these are the MenuItem entries for the row menu actions in the
-              // spreadsheet view.  these are installed into the child
-              // SpreadsheetView using an autorun below
-              [
-                {
-                  label: 'Open split detail view',
-                  icon: OpenInNewIcon,
-                  // @ts-expect-error
-                  disabled(spreadsheetView, spreadsheet, rowNumber, row) {
-                    return !canOpenBreakpointSplitViewFromTableRow(
-                      self,
-                      spreadsheetView,
-                      spreadsheet,
-                      row,
-                      rowNumber,
-                    )
-                  },
-
-                  // @ts-expect-error
-                  onClick(spreadsheetView, spreadsheet, rowNumber, row) {
-                    openBreakpointSplitViewFromTableRow(
-                      self,
-                      spreadsheetView,
-                      spreadsheet,
-                      row,
-                      rowNumber,
-                    )
-                  },
-                },
-              ],
-            )
+            // self.spreadsheetView.setRowMenuItems(
+            //   // these are the MenuItem entries for the row menu actions in the
+            //   // spreadsheet view.  these are installed into the child
+            //   // SpreadsheetView using an autorun below
+            //   [
+            //     {
+            //       label: 'Open split detail view',
+            //       icon: OpenInNewIcon,
+            //       // @ts-expect-error
+            //       disabled(spreadsheetView, spreadsheet, rowNumber, row) {
+            //         return !canOpenBreakpointSplitViewFromTableRow(
+            //           self,
+            //           spreadsheetView,
+            //           spreadsheet,
+            //           row,
+            //           rowNumber,
+            //         )
+            //       },
+            //       // @ts-expect-error
+            //       onClick(spreadsheetView, spreadsheet, rowNumber, row) {
+            //         openBreakpointSplitViewFromTableRow(
+            //           self,
+            //           spreadsheetView,
+            //           spreadsheet,
+            //           row,
+            //           rowNumber,
+            //         )
+            //       },
+            //     },
+            //   ],
+            // )
           }),
         )
       },

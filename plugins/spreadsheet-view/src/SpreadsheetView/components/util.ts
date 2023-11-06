@@ -1,16 +1,25 @@
-function letterFor(n: number) {
-  return String.fromCharCode(n + 65)
-}
+import { getSession } from '@jbrowse/core/util'
+import { getParent } from 'mobx-state-tree'
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-export function numToColName(num: number) {
-  if (num >= 0) {
-    if (num < 26) {
-      return letterFor(num)
-    }
-    if (num < 27 * 26) {
-      return letterFor(Math.floor(num / 26 - 1)) + letterFor(num % 26)
-    }
+type LGV = LinearGenomeViewModel
+type MaybeLGV = LinearGenomeViewModel | undefined
+
+// locals
+import { SpreadsheetModel } from '../models/Spreadsheet'
+
+export function locationLinkClick(
+  spreadsheet: SpreadsheetModel,
+  locString: string,
+) {
+  const session = getSession(spreadsheet)
+  const { assemblyName } = spreadsheet
+  const { id } = getParent<{ id: string }>(spreadsheet)
+
+  const newViewId = `${id}_${assemblyName}`
+  let view = session.views.find(v => v.id === newViewId) as MaybeLGV
+  if (!view) {
+    view = session.addView('LinearGenomeView', { id: newViewId }) as LGV
   }
-
-  throw new RangeError('column number out of range')
+  return view.navToLocString(locString, assemblyName)
 }
