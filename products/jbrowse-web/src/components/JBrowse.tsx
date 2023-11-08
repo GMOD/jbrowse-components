@@ -27,7 +27,7 @@ const JBrowse = observer(function ({
   const currentSessionId = session.id
 
   useEffect(() => {
-    setSessionId(`local-${currentSessionId}`)
+    setSessionId(`local-${currentSessionId}`, 'replaceIn')
     // @ts-expect-error
     window.JBrowseRootModel = rootModel
     // @ts-expect-error

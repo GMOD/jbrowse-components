@@ -60,11 +60,11 @@ export function Loader({
   })
 
   useEffect(() => {
-    setLoc(undefined)
-    setTracks(undefined)
-    setAssembly(undefined)
-    setPassword(undefined)
-    setSessionTracks(undefined)
+    setLoc(undefined, 'replaceIn')
+    setTracks(undefined, 'replaceIn')
+    setAssembly(undefined, 'replaceIn')
+    setPassword(undefined, 'replaceIn')
+    setSessionTracks(undefined, 'replaceIn')
   }, [setAssembly, setLoc, setTracks, setPassword, setSessionTracks])
 
   return <Renderer loader={loader} />
@@ -144,7 +144,7 @@ const Renderer = observer(function ({
   }
 })
 
-const LoaderWrapper = ({ initialTimestamp }: { initialTimestamp: number }) => {
+function LoaderWrapper({ initialTimestamp }: { initialTimestamp: number }) {
   return (
     <ErrorBoundary
       FallbackComponent={props => (
