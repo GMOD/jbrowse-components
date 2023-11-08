@@ -304,7 +304,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
             noCategories: true,
           },
           {
-            group: '⌚Recently used',
+            group: '🕒 Recently used',
             tracks: self.recentlyUsedTracks,
             isOpenByDefault: false,
             noCategories: true,
@@ -323,10 +323,10 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           // filters out categories favorites and recently used if the user toggles them off
           category =>
             (category.group !== '✨Favorites' &&
-              category.group !== '⌚Recently used') ||
+              category.group !== '🕒 Recently used') ||
             (self.showFavoritesCategory && category.group === '✨Favorites') ||
             (self.showRecentlyUsedCategory &&
-              category.group === '⌚Recently used'),
+              category.group === '🕒 Recently used'),
         )
       },
     }))
