@@ -535,7 +535,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "volvox",
       ],
       "category": [
-        "VCF",
+        "Variants",
       ],
       "description": "A uniquely interesting track",
       "displays": [
@@ -578,7 +578,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "volvox",
       ],
       "category": [
-        "VCF",
+        "Variants",
       ],
       "displays": [
         {
@@ -1274,7 +1274,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "volvox",
       ],
       "category": [
-        "VCF",
+        "Variants",
       ],
       "displays": [
         {
@@ -2273,7 +2273,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "volvox",
       ],
       "category": [
-        "VCF",
+        "Variants",
       ],
       "displays": [
         {
@@ -2315,7 +2315,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "vvx",
       ],
       "category": [
-        "VCF",
+        "Variants",
       ],
       "displays": [
         {
@@ -2985,7 +2985,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "volvox",
       ],
       "category": [
-        "VCF",
+        "Variants",
       ],
       "displays": [
         {
@@ -3333,7 +3333,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "volvox",
       ],
       "category": [
-        "VCF",
+        "Variants",
       ],
       "displays": [
         {
@@ -3664,7 +3664,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "volvox",
       ],
       "category": [
-        "VCF",
+        "Variants",
       ],
       "displays": [
         {
@@ -3698,7 +3698,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "volvox",
       ],
       "category": [
-        "VCF",
+        "Variants",
       ],
       "displays": [
         {
@@ -4196,6 +4196,40 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "name": "Arc test track",
       "trackId": "arc_test",
       "type": "FeatureTrack",
+    },
+    {
+      "adapter": {
+        "bedpeLocation": {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "volvox.bedpe",
+        },
+        "type": "BedpeAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Variants",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox_bedpe-LinearPairedArcDisplay",
+          "type": "LinearPairedArcDisplay",
+        },
+        {
+          "displayId": "volvox_bedpe-LinearVariantDisplay",
+          "type": "LinearVariantDisplay",
+        },
+        {
+          "displayId": "volvox_bedpe-ChordVariantDisplay",
+          "type": "ChordVariantDisplay",
+        },
+      ],
+      "name": "BEDPE arcs",
+      "trackId": "volvox_bedpe",
+      "type": "VariantTrack",
     },
   ],
 }
