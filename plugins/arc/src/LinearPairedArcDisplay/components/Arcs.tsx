@@ -196,6 +196,7 @@ const Arcs = observer(function ({
             />
           )) ?? (
             <Arc
+              key={f.id()}
               session={session}
               feature={f}
               view={view}

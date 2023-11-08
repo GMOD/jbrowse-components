@@ -1403,7 +1403,7 @@
       }
     },
     {
-      "type": "FeatureTrack",
+      "type": "VariantTrack",
       "trackId": "skbr3_bedpe",
       "name": "SKBR3 BEDPE",
       "assemblyNames": ["hg19"],
@@ -4225,7 +4225,7 @@
       "assemblyNames": ["hg19"]
     },
     {
-      "type": "FeatureTrack",
+      "type": "VariantTrack",
       "name": "BEDPE",
       "trackId": "BEDPE",
       "assemblyNames": ["hg19"],
@@ -4237,8 +4237,8 @@
       },
       "displays": [
         {
-          "type": "LinearArcDisplay",
-          "displayId": "BEDPE-LinearArcDisplay"
+          "type": "LinearPairedArcDisplay",
+          "displayId": "BEDPE-LinearPairedArcDisplay"
         }
       ]
     }
