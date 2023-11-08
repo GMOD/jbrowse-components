@@ -20,14 +20,14 @@ export default class ArcPlugin extends Plugin {
     pluginManager.jexl.addFunction(
       'defaultPairedArcColor',
       (_feature: Feature, alt: string) => {
-        if (alt.startsWith('<DEL')) {
+        if (alt?.startsWith('<DEL')) {
           return 'darkblue'
-        } else if (alt.startsWith('<DUP')) {
+        } else if (alt?.startsWith('<DUP')) {
           return 'darkgreen'
-        } else if (alt.startsWith('<CNV')) {
+        } else if (alt?.startsWith('<CNV')) {
           return 'darkblue'
-        } else if (alt.startsWith('<INV')) {
-          return 'green'
+        } else if (alt?.startsWith('<INV')) {
+          return 'darkred'
         } else {
           return 'green'
         }

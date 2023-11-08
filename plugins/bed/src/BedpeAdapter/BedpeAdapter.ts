@@ -22,7 +22,7 @@ export function featureData(
   const ref1 = l[flip ? 3 : 0]
   const start1 = +l[flip ? 4 : 1]
   const end1 = +l[flip ? 5 : 2]
-  const ref2 = +l[!flip ? 3 : 0]
+  const ref2 = l[!flip ? 3 : 0]
   const start2 = +l[!flip ? 4 : 1]
   const end2 = +l[!flip ? 5 : 2]
   const name = l[6]
@@ -104,9 +104,7 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
       if (!feats2[r2]) {
         feats2[r2] = []
       }
-
       feats1[r1]!.push(line)
-
       feats2[r2]!.push(line)
     }
     const columnNames = this.getConf('columnNames')
