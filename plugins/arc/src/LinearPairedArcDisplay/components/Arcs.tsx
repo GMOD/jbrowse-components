@@ -3,6 +3,7 @@ import { observer } from 'mobx-react'
 import {
   AbstractSessionModel,
   Feature,
+  assembleLocString,
   getContainingView,
   getSession,
   measureText,
@@ -58,9 +59,12 @@ function f(feature: Feature, alt?: string) {
 }
 
 function makeSummary(feature: Feature, alt?: string) {
+  const { k1, k2 } = f(feature, alt)
   return [
     feature.get('name'),
     feature.get('id'),
+    assembleLocString(k1),
+    assembleLocString(k2),
     feature.get('INFO')?.SVTYPE,
     alt,
   ]
