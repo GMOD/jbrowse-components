@@ -74,7 +74,8 @@ const Box = observer(function Box(props: {
     //   const absFrame = subStart % 3
     //   const cdsFrame = (absFrame + relFrame) % 3
     // }
-    const frame = (strand === -1 ? parentRegion.end - e + phase : s + phase) % 3
+    const frame =
+      (strand === -1 ? parentRegion.end - e + 1 + phase : s + phase) % 3
     c = colors[frame]
   }
 

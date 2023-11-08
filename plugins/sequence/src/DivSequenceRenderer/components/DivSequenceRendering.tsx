@@ -84,8 +84,8 @@ function Translation({
                 defaultStarts.includes(codon)
                   ? theme?.palette.startCodon
                   : defaultStops.includes(codon)
-                  ? theme?.palette.stopCodon
-                  : color ?? map[Math.abs(frame)]
+                    ? theme?.palette.stopCodon
+                    : color ?? map[Math.abs(frame)]
               }
             />
             {render ? (

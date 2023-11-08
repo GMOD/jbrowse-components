@@ -33,7 +33,7 @@ test('no features', () => {
     />,
   )
 
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
 })
 
 test('one feature', () => {
@@ -55,7 +55,7 @@ test('one feature', () => {
     />,
   )
 
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
 })
 
 test('click on one feature, and do not re-render', () => {
@@ -82,8 +82,7 @@ test('click on one feature, and do not re-render', () => {
   )
   fireEvent.click(getByTestId('box-one'))
   expect(counter).toBe(3)
-
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
 })
 
 test('one feature (compact mode)', () => {
@@ -245,7 +244,7 @@ test('one feature (compact mode)', () => {
   )
 
   // reducedRepresentation of the transcript is just a box
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
 })
 
 test('processed transcript (reducedRepresentation mode)', () => {
@@ -270,7 +269,7 @@ test('processed transcript (reducedRepresentation mode)', () => {
     />,
   )
 
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
 })
 
 test('processed transcript', () => {
@@ -429,7 +428,7 @@ test('processed transcript', () => {
     />,
   )
 
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
 })
 
 test('processed transcript (exons + impliedUTR)', () => {
@@ -1061,8 +1060,7 @@ test('processed transcript (exons + impliedUTR)', () => {
 
   // finds that the color3 is outputted for impliedUTRs
   expect(container).toContainHTML('#357089')
-
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
 })
 
 // hacks existence of getFeatureByID
@@ -1078,9 +1076,7 @@ test('svg selected', () => {
           assemblyName: 'volvox',
         }}
         displayModel={{
-          getFeatureByID: () => {
-            return [0, 0, 10, 10]
-          },
+          getFeatureByID: () => [0, 0, 10, 10],
           featureIdUnderMouse: 'one',
           selectedFeatureId: 'one',
         }}
@@ -1089,5 +1085,5 @@ test('svg selected', () => {
     </svg>,
   )
 
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
 })
