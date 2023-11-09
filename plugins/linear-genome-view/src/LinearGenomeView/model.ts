@@ -593,21 +593,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       toggleShowBookmarkHighlights(toggle?: boolean) {
-        if (toggle !== undefined) {
-          self.showBookmarkHighlights = toggle
-        } else {
-          self.showBookmarkHighlights = !self.showBookmarkHighlights
-        }
+        self.showBookmarkHighlights =
+          toggle !== undefined ? toggle : !self.showBookmarkHighlights
       },
       /**
        * #action
        */
       toggleShowBookmarkLabels(toggle?: boolean) {
-        if (toggle !== undefined) {
-          self.showBookmarkLabels = toggle
-        } else {
-          self.showBookmarkLabels = !self.showBookmarkLabels
-        }
+        self.showBookmarkLabels =
+          toggle !== undefined ? toggle : !self.showBookmarkLabels
       },
       /**
        * #action

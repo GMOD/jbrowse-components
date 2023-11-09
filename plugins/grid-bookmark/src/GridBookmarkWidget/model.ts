@@ -184,9 +184,7 @@ export default function f(_pluginManager: PluginManager) {
         bookmark.correspondingObj.setHighlight(color)
       },
       updateBulkBookmarkHighlights(color: string) {
-        if (self.selectedBookmarks.length === 0) {
-          self.bookmarks.forEach(bookmark => bookmark.setHighlight(color))
-        } else {
+        if (self.selectedBookmarks.length !== 0) {
           self.selectedBookmarks.forEach(bookmark =>
             this.updateBookmarkHighlight(bookmark, color),
           )

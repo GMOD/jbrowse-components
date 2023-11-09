@@ -37,8 +37,8 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
         <ExportBookmarks model={model} />
         <ImportBookmarks model={model} />
         <ShareBookmarks model={model} />
-        <DeleteBookmarks model={model} />
         <EditBookmarks model={model} />
+        <DeleteBookmarks model={model} />
       </div>
       <Alert severity="info">
         Click and type within the <strong>label</strong> field to annotate your

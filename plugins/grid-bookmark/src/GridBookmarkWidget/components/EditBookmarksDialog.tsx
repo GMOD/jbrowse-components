@@ -1,4 +1,4 @@
-import React, { lazy, useState } from 'react'
+import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import {
   Button,
@@ -23,17 +23,18 @@ const EditBookmarksDialog = observer(function ({
   model: GridBookmarkModel
 }) {
   const { selectedBookmarks } = model
-  const editAll = selectedBookmarks.length === 0
-  const [color, setColor] = useState('rgba(247, 129, 192, 0.35)')
+  const editNone = selectedBookmarks.length === 0
+  const [color, setColor] = useState(
+    selectedBookmarks[0].highlight ?? 'rgba(247, 129, 192, 0.35)',
+  )
 
   return (
     <Dialog open onClose={onClose} title="Edit bookmarks">
       <DialogContent>
+        <Typography variant="h6">Bulk highlight selector</Typography>
         <Alert severity="info">
-          {editAll ? (
+          {editNone ? (
             <>
-              <span>All bookmarks will be edited.</span>
-              <br />
               <span>
                 Use the checkboxes to select individual bookmarks to edit.
               </span>
@@ -42,13 +43,14 @@ const EditBookmarksDialog = observer(function ({
             'Only selected bookmarks will be edited.'
           )}
         </Alert>
-        <Typography variant="h6">Bulk highlight selector</Typography>
-        <ColorPicker
-          color="rgba(247, 129, 192, 0.35)"
-          onChange={event => {
-            setColor(event)
-          }}
-        />
+        {!editNone ? (
+          <ColorPicker
+            color={color}
+            onChange={event => {
+              setColor(event)
+            }}
+          />
+        ) : null}
         <Typography variant="h6">Highlight toggles</Typography>
         <Stack direction="row" alignItems="center">
           <Switch

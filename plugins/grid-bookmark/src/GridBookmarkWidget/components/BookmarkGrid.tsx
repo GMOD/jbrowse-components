@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useEffect, useState } from 'react'
+import React, { Suspense, lazy, useState } from 'react'
 import { observer } from 'mobx-react'
 import { Link } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
@@ -61,7 +61,7 @@ const BookmarkGrid = observer(function ({
       }
     })
 
-  const rowWidths = [
+  const [widths, setWidths] = useState([
     40,
     Math.max(
       measureText('Bookmark link', 12) + 30,
@@ -76,15 +76,7 @@ const BookmarkGrid = observer(function ({
       measureGridWidth(rows.map(row => row.assemblyName)),
     ),
     100,
-  ]
-
-  const [widths, setWidths] = useState(rowWidths)
-
-  useEffect(() => {
-    if (rows.length > 0) {
-      setWidths(rowWidths)
-    }
-  }, [rows.length, setWidths])
+  ])
 
   return (
     <>
