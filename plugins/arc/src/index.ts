@@ -4,6 +4,7 @@ import LinearArcDisplayF from './LinearArcDisplay'
 import LinearPairedArcDisplayF from './LinearPairedArcDisplay'
 import ArcRendererF from './ArcRenderer'
 import { Feature } from '@jbrowse/core/util'
+import { set1 } from '@jbrowse/core/ui/colors'
 
 export default class ArcPlugin extends Plugin {
   name = 'ArcRenderer'
@@ -21,15 +22,17 @@ export default class ArcPlugin extends Plugin {
       'defaultPairedArcColor',
       (_feature: Feature, alt: string) => {
         if (alt?.startsWith('<DEL')) {
-          return 'darkblue'
+          return set1[0]
         } else if (alt?.startsWith('<DUP')) {
-          return 'darkgreen'
-        } else if (alt?.startsWith('<CNV')) {
-          return 'darkblue'
+          return set1[1]
         } else if (alt?.startsWith('<INV')) {
-          return 'darkred'
+          return set1[2]
+        } else if (alt?.startsWith('<TRA')) {
+          return set1[3]
+        } else if (alt?.startsWith('<CNV')) {
+          return set1[4]
         } else {
-          return 'green'
+          return set1[5]
         }
       },
     )
