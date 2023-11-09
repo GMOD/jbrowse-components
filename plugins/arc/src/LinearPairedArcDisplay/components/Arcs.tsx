@@ -109,12 +109,12 @@ const Arc = observer(function ({
     const left = p1
     const right = p2
 
-    return (
+    return absrad > 1 ? (
       <>
         <path
           d={`M ${left} 0 C ${left} ${destY}, ${right} ${destY}, ${right} 0`}
           ref={ref}
-          stroke={mouseOvered ? 'red' : c}
+          stroke={mouseOvered ? 'black' : c}
           strokeWidth={3}
           onMouseOut={() => setMouseOvered(false)}
           onMouseOver={() => setMouseOvered(true)}
@@ -144,7 +144,7 @@ const Arc = observer(function ({
           </text>
         </Tooltip>
       </>
-    )
+    ) : null
   }
   return null
 })
