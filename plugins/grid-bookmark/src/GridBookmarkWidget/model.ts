@@ -233,6 +233,16 @@ export default function f(_pluginManager: PluginManager) {
     .actions(self => ({
       afterAttach() {
         const key = localStorageKeyF()
+        function handler(e: StorageEvent) {
+          if (e.key === key) {
+            const localStorage = JSON.parse(localStorageGetItem(key) || '[]')
+            self.setBookmarkedRegions(localStorage)
+          }
+        }
+        window.addEventListener('storage', handler)
+        addDisposer(self, () => {
+          window.removeEventListener('storage', handler)
+        })
         addDisposer(
           self,
           autorun(() => {
