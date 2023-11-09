@@ -123,11 +123,12 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           {
             "displayId": "volvox_refseq-LinearGCContentDisplay",
             "type": "LinearGCContentDisplay",
+            "windowDelta": 10,
+            "windowSize": 10,
           },
         ],
         "formatAbout": {
           "config": "jexl:{extraField:'important data'}",
-          "hideUris": true,
         },
         "metadata": {
           "date": "2020-08-20",
@@ -430,6 +431,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     },
   ],
   "configuration": {
+    "LinearGenomeViewPlugin": {
+      "trackLabels": "offset",
+    },
     "extraThemes": {
       "darkForest": {
         "name": "Dark (forest, from config file)",
@@ -531,7 +535,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "volvox",
       ],
       "category": [
-        "VCF",
+        "Variants",
       ],
       "description": "A uniquely interesting track",
       "displays": [
@@ -542,6 +546,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_sv_test-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
+        },
+        {
+          "displayId": "volvox_sv_test-LinearPairedArcDisplay",
+          "type": "LinearPairedArcDisplay",
         },
       ],
       "name": "volvox structural variant test (<i>HTML italic</i>)",
@@ -570,7 +578,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "volvox",
       ],
       "category": [
-        "VCF",
+        "Variants",
       ],
       "displays": [
         {
@@ -580,6 +588,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_sv_test_renamed-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
+        },
+        {
+          "displayId": "volvox_sv_test_renamed-LinearPairedArcDisplay",
+          "type": "LinearPairedArcDisplay",
         },
       ],
       "name": "volvox structural variant test w/renamed refs",
@@ -1262,7 +1274,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "volvox",
       ],
       "category": [
-        "VCF",
+        "Variants",
       ],
       "displays": [
         {
@@ -1272,6 +1284,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_test_vcf-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
+        },
+        {
+          "displayId": "volvox_test_vcf-LinearPairedArcDisplay",
+          "type": "LinearPairedArcDisplay",
         },
       ],
       "formatAbout": {
@@ -2257,7 +2273,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "volvox",
       ],
       "category": [
-        "VCF",
+        "Variants",
       ],
       "displays": [
         {
@@ -2267,6 +2283,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_filtered_vcf-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
+        },
+        {
+          "displayId": "volvox_filtered_vcf-LinearPairedArcDisplay",
+          "type": "LinearPairedArcDisplay",
         },
       ],
       "name": "volvox filtered vcf",
@@ -2295,7 +2315,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "vvx",
       ],
       "category": [
-        "VCF",
+        "Variants",
       ],
       "displays": [
         {
@@ -2305,6 +2325,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_filtered_vcf_assembly_alias-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
+        },
+        {
+          "displayId": "volvox_filtered_vcf_assembly_alias-LinearPairedArcDisplay",
+          "type": "LinearPairedArcDisplay",
         },
       ],
       "name": "volvox filtered vcf (with assembly alias)",
@@ -2961,7 +2985,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "volvox",
       ],
       "category": [
-        "VCF",
+        "Variants",
       ],
       "displays": [
         {
@@ -2976,6 +3000,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "type": "SvgFeatureRenderer",
           },
           "type": "LinearVariantDisplay",
+        },
+        {
+          "displayId": "variant_colors-LinearPairedArcDisplay",
+          "type": "LinearPairedArcDisplay",
         },
       ],
       "name": "volvox filtered vcf (green snp, purple indel)",
@@ -3305,7 +3333,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "volvox",
       ],
       "category": [
-        "VCF",
+        "Variants",
       ],
       "displays": [
         {
@@ -3315,6 +3343,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox.inv.vcf-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
+        },
+        {
+          "displayId": "volvox.inv.vcf-LinearPairedArcDisplay",
+          "type": "LinearPairedArcDisplay",
         },
       ],
       "name": "volvox inversions",
@@ -3632,7 +3664,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "volvox",
       ],
       "category": [
-        "VCF",
+        "Variants",
       ],
       "displays": [
         {
@@ -3642,6 +3674,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "variant_effect_demo_data-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
+        },
+        {
+          "displayId": "variant_effect_demo_data-LinearPairedArcDisplay",
+          "type": "LinearPairedArcDisplay",
         },
       ],
       "name": "Ensembl VEP example",
@@ -3662,7 +3698,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "volvox",
       ],
       "category": [
-        "VCF",
+        "Variants",
       ],
       "displays": [
         {
@@ -3672,6 +3708,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "variant_effect_demo_jannovar-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
+        },
+        {
+          "displayId": "variant_effect_demo_jannovar-LinearPairedArcDisplay",
+          "type": "LinearPairedArcDisplay",
         },
       ],
       "name": "Jannovar example",
@@ -4126,6 +4166,70 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "name": "volvox-stranded-rnaseq",
       "trackId": "paired_end_stranded_rnaseq",
       "type": "AlignmentsTrack",
+    },
+    {
+      "adapter": {
+        "bedLocation": {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "arc_test.bed",
+        },
+        "type": "BedAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Miscellaneous",
+      ],
+      "displays": [
+        {
+          "displayId": "arc_test-LinearBasicDisplay",
+          "type": "LinearBasicDisplay",
+        },
+        {
+          "displayId": "arc_test-LinearArcDisplay",
+          "type": "LinearArcDisplay",
+        },
+      ],
+      "name": "Arc test track",
+      "trackId": "arc_test",
+      "type": "FeatureTrack",
+    },
+    {
+      "adapter": {
+        "bedpeLocation": {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "volvox.bedpe",
+        },
+        "type": "BedpeAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Variants",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox_bedpe-LinearPairedArcDisplay",
+          "type": "LinearPairedArcDisplay",
+        },
+        {
+          "displayId": "volvox_bedpe-LinearVariantDisplay",
+          "type": "LinearVariantDisplay",
+        },
+        {
+          "displayId": "volvox_bedpe-ChordVariantDisplay",
+          "type": "ChordVariantDisplay",
+        },
+      ],
+      "name": "BEDPE arcs",
+      "trackId": "volvox_bedpe",
+      "type": "VariantTrack",
     },
   ],
 }

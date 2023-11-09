@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/core",
-  "version": "2.6.3",
+  "version": "2.8.0",
   "description": "JBrowse 2 core libraries used by plugins",
   "keywords": [
     "jbrowse",

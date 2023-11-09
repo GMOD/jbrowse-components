@@ -1,12 +1,13 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
-import { cast, getParent } from 'mobx-state-tree'
+import { cast, getParent, getSnapshot } from 'mobx-state-tree'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { PluginDefinition } from '@jbrowse/core/PluginLoader'
+import { toJS } from 'mobx'
 
 // locals
 import { JBrowseConfigF } from '../JBrowseConfig'
@@ -127,6 +128,23 @@ export function JBrowseModelF({
         )
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         getParent<any>(self).setPluginsUpdated(true)
+      },
+
+      /**
+       * #action
+       */
+      setDefaultSessionConf(sessionConf: AnyConfigurationModel) {
+        const newDefault =
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          getParent<any>(self).session.name === sessionConf.name
+            ? getSnapshot(sessionConf)
+            : toJS(sessionConf)
+
+        if (!newDefault.name) {
+          throw new Error(`unable to set default session to ${newDefault.name}`)
+        }
+
+        self.defaultSession = cast(newDefault)
       },
       /**
        * #action

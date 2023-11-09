@@ -586,7 +586,7 @@ export function SharedLinearPileupDisplayMixin(
                   // feature.id that was returned e.g. that the user hasn't
                   // moused over to a new position during the async operation
                   // above
-                  if (self.featureIdUnderMouse === feature.uniqueId) {
+                  if (self.featureIdUnderMouse === feature?.uniqueId) {
                     self.setFeatureUnderMouse(new SimpleFeature(feature))
                   }
                 }

@@ -142,12 +142,12 @@ const ShareDialog = observer(function ({
             disabled={currentSetting === 'short' && loading}
             onClick={event => {
               event.preventDefault()
-              setPassword(passwordParam)
-              setSession(sessionParam)
+              setPassword(passwordParam, 'replaceIn')
+              setSession(sessionParam, 'replaceIn')
               alert('Now press Ctrl+D (PC) or Cmd+D (Mac)')
             }}
           >
-            Bookmark
+            Create browser Bookmark
           </Button>
 
           <Button

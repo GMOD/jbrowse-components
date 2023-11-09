@@ -1403,7 +1403,7 @@
       }
     },
     {
-      "type": "FeatureTrack",
+      "type": "VariantTrack",
       "trackId": "skbr3_bedpe",
       "name": "SKBR3 BEDPE",
       "assemblyNames": ["hg19"],
@@ -1414,6 +1414,25 @@
           "uri": "reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.bedpe"
         }
       }
+    },
+    {
+      "type": "VariantTrack",
+      "name": "SKBR3 BEDPE arcs",
+      "trackId": "skbr3_bedpe_arcs",
+      "assemblyNames": ["hg19"],
+      "category": ["SKBR3"],
+      "adapter": {
+        "type": "BedpeAdapter",
+        "bedpeLocation": {
+          "uri": "reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.bedpe"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearPairedArcDisplay",
+          "displayId": "skbr3_bedpe_arcs-LinearPairedArcDisplay"
+        }
+      ]
     },
     {
       "type": "FeatureTrack",

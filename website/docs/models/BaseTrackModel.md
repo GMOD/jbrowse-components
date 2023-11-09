@@ -106,7 +106,7 @@ MenuItem[]
 
 ```js
 // type
-any
+boolean | ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>)
 ```
 
 ### BaseTrackModel - Methods
@@ -125,13 +125,6 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 ```js
 // type signature
 setMinimized: (flag: boolean) => void
-```
-
-#### action: activateConfigurationUI
-
-```js
-// type signature
-activateConfigurationUI: () => void
 ```
 
 #### action: showDisplay

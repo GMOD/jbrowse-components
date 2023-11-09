@@ -1,6 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { Feature } from '@jbrowse/core/util'
-import { drawXY } from '../drawxy'
+import { drawXY } from '../drawXY'
 import WiggleBaseRenderer, {
   RenderArgsDeserializedWithFeatures,
 } from '../WiggleBaseRenderer'

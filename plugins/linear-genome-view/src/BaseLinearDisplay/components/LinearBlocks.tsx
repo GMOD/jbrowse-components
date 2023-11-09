@@ -94,7 +94,7 @@ const RenderedBlocks = observer(function ({
             />
           )
         }
-        throw new Error(`invalid block type ${typeof block}`)
+        throw new Error(`invalid block type ${JSON.stringify(block)}`)
       })}
     </>
   )

@@ -62,17 +62,17 @@ const BookmarkGrid = observer(function ({
   // reset selections if bookmarked regions change
   // needed especially if bookmarked regions are deleted, then
   const [widths, setWidths] = useState([
-    40,
+    50,
     Math.max(
-      measureText('Bookmark link'),
+      measureText('Bookmark link', 12) + 30,
       measureGridWidth(rows.map(row => row.locString)),
     ),
     Math.max(
-      measureText('Label'),
+      measureText('Label', 12) + 30,
       measureGridWidth(rows.map(row => row.label)),
     ),
     Math.max(
-      measureText('Assembly'),
+      measureText('Assembly', 12) + 30,
       measureGridWidth(rows.map(row => row.assemblyName)),
     ),
   ])

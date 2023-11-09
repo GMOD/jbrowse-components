@@ -48,7 +48,7 @@ test('widget drawer navigation', async () => {
   await findByTestId('configEditor', {}, delay)
   // shows up when there active widgets
   fireEvent.mouseDown(
-    getByRole(await findByTestId('widget-drawer-selects'), 'button'),
+    getByRole(await findByTestId('widget-drawer-selects'), 'combobox'),
   )
   fireEvent.click(
     await findByTestId(
@@ -74,7 +74,7 @@ test('widget drawer navigation', async () => {
   // @ts-expect-error
   expect(session.activeWidgets.size).toEqual(2)
   fireEvent.mouseDown(
-    getByRole(await findByTestId('widget-drawer-selects'), 'button'),
+    getByRole(await findByTestId('widget-drawer-selects'), 'combobox'),
   )
   fireEvent.click(await findByTestId('ConfigurationEditorWidget-drawer-delete'))
   // @ts-expect-error

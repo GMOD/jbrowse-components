@@ -207,12 +207,11 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         name: string
         tracks: AnyConfigurationModel[]
       }): TreeNode[] {
-        return generateHierarchy(
-          self as HierarchicalTrackSelectorModel,
-          self.connectionTrackConfigurations(connection),
-          self.collapsed,
-          connection.name,
-        )
+        return generateHierarchy({
+          model: self,
+          trackConfs: self.connectionTrackConfigurations(connection),
+          extra: connection.name,
+        })
       },
     }))
     .views(self => ({
@@ -242,7 +241,10 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
             .map(s => ({
               name: s.group,
               id: s.group,
-              children: generateHierarchy(self, s.tracks, self.collapsed),
+              children: generateHierarchy({
+                model: self,
+                trackConfs: s.tracks,
+              }),
             }))
             // always keep the Tracks entry at idx 0
             .filter((f, idx) => idx === 0 || !!f.children.length),

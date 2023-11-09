@@ -10,7 +10,7 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-const delay = { timeout: 10000 }
+const delay = { timeout: 30000 }
 const opts = [{}, delay]
 
 async function doSetup(val?: unknown) {

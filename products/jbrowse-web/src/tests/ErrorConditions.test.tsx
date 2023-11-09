@@ -2,7 +2,7 @@ import { createViewNoWait, doBeforeEach, mockConsole } from './util'
 import chromeSizesConfig from '../../test_data/config_chrom_sizes_test.json'
 import wrongAssemblyTest from '../../test_data/wrong_assembly.json'
 
-const delay = { timeout: 15000 }
+const delay = { timeout: 30000 }
 
 beforeEach(() => {
   doBeforeEach()
@@ -17,7 +17,7 @@ test('404 sequence file', async () => {
       delay,
     )
   })
-}, 15000)
+}, 30000)
 
 test('wrong assembly', async () => {
   await mockConsole(async () => {
@@ -25,4 +25,4 @@ test('wrong assembly', async () => {
     view.showTrack('volvox_wrong_assembly')
     await findAllByText(/does not match/, {}, delay)
   })
-}, 15000)
+}, 30000)

@@ -11,12 +11,12 @@ import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 
 // icons
 import MoreVertIcon from '@mui/icons-material/MoreVert'
-import DragIcon from '@mui/icons-material/DragIndicator'
 import CloseIcon from '@mui/icons-material/Close'
 import MinimizeIcon from '@mui/icons-material/Minimize'
 import AddIcon from '@mui/icons-material/Add'
 
 import { LinearGenomeViewModel } from '..'
+import TrackLabelDragHandle from './TrackLabelDragHandle'
 
 const useStyles = makeStyles()(theme => ({
   root: {
@@ -34,14 +34,7 @@ const useStyles = makeStyles()(theme => ({
     fontSize: '0.8rem',
     pointerEvents: 'none',
   },
-  dragHandle: {
-    cursor: 'grab',
-  },
-  dragHandleIcon: {
-    display: 'inline-block',
-    verticalAlign: 'middle',
-    pointerEvents: 'none',
-  },
+
   iconButton: {
     padding: theme.spacing(1),
   },
@@ -78,22 +71,7 @@ const TrackLabel = observer(
 
     return (
       <Paper ref={ref} className={cx(className, classes.root)}>
-        <span
-          draggable
-          className={classes.dragHandle}
-          onDragStart={event => {
-            const target = event.currentTarget
-            if (target.parentNode) {
-              const parent = target.parentNode as HTMLElement
-              event.dataTransfer.setDragImage(parent, 20, 20)
-              view.setDraggingTrackId(track.id)
-            }
-          }}
-          onDragEnd={() => view.setDraggingTrackId(undefined)}
-          data-testid={`dragHandle-${view.id}-${trackId}`}
-        >
-          <DragIcon className={classes.dragHandleIcon} fontSize="small" />
-        </span>
+        <TrackLabelDragHandle track={track} trackId={trackId} view={view} />
         <IconButton
           onClick={() => view.hideTrack(trackId)}
           className={classes.iconButton}

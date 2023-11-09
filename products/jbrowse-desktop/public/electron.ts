@@ -199,8 +199,9 @@ async function createWindow() {
   // this ready-to-show handler must be attached before the loadURL
   mainWindow.once('ready-to-show', () => {
     // unsure how to error handle
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    autoUpdater.checkForUpdatesAndNotify()
+    autoUpdater.checkForUpdatesAndNotify().catch(e => {
+      console.error(e)
+    })
   })
 
   await mainWindow.loadURL(
@@ -220,89 +221,88 @@ async function createWindow() {
 
   const mainMenu = Menu.buildFromTemplate([
     // { role: 'appMenu' }
-    // @ts-expect-error
     ...(isMac
       ? [
           {
             label: app.name,
             submenu: [
-              { role: 'about' },
-              { type: 'separator' },
-              { role: 'services' },
-              { type: 'separator' },
-              { role: 'hide' },
-              { role: 'hideothers' },
-              { role: 'unhide' },
-              { type: 'separator' },
-              { role: 'quit' },
+              { role: 'about' as const },
+              { type: 'separator' as const },
+              { role: 'services' as const },
+              { type: 'separator' as const },
+              { role: 'hide' as const },
+              { role: 'hideOthers' as const },
+              { role: 'unhide' as const },
+              { type: 'separator' as const },
+              { role: 'quit' as const },
             ],
           },
         ]
       : []),
     {
       label: 'File',
-      // @ts-expect-error
-      submenu: [isMac ? { role: 'close' } : { role: 'quit' }],
+      submenu: [isMac ? { role: 'close' as const } : { role: 'quit' as const }],
     },
     {
       label: 'Edit',
       submenu: [
-        { role: 'undo' },
-        { role: 'redo' },
-        { type: 'separator' },
-        { role: 'cut' },
-        { role: 'copy' },
-        { role: 'paste' },
-        // @ts-expect-error
+        { role: 'undo' as const },
+        { role: 'redo' as const },
+        { type: 'separator' as const },
+        { role: 'cut' as const },
+        { role: 'copy' as const },
+        { role: 'paste' as const },
         ...(isMac
           ? [
-              { role: 'pasteAndMatchStyle' },
-              { role: 'delete' },
-              { role: 'selectAll' },
-              { type: 'separator' },
+              { role: 'pasteAndMatchStyle' as const },
+              { role: 'delete' as const },
+              { role: 'selectAll' as const },
+              { type: 'separator' as const },
               {
-                label: 'Speech',
-                submenu: [{ role: 'startspeaking' }, { role: 'stopspeaking' }],
+                label: 'Speech' as const,
+                submenu: [
+                  { role: 'startSpeaking' as const },
+                  { role: 'stopSpeaking' as const },
+                ],
               },
             ]
-          : [{ role: 'delete' }, { type: 'separator' }, { role: 'selectAll' }]),
+          : [
+              { role: 'delete' as const },
+              { type: 'separator' as const },
+              { role: 'selectAll' as const },
+            ]),
       ],
     },
     {
       label: 'View',
       submenu: [
-        { role: 'reload' },
-        // @ts-expect-error
-        { role: 'toggledevtools' },
-        { type: 'separator' },
-        // @ts-expect-error
-        { role: 'zoomin' },
-        // @ts-expect-error
-        { role: 'zoomout' },
-        { type: 'separator' },
-        { role: 'togglefullscreen' },
+        { role: 'reload' as const },
+        { role: 'toggleDevTools' as const },
+        { type: 'separator' as const },
+        { role: 'zoomIn' as const },
+        { role: 'zoomOut' as const },
+        { type: 'separator' as const },
+        { role: 'togglefullscreen' as const },
       ],
     },
     {
       label: 'Window',
       submenu: [
-        { role: 'minimize' },
-        { role: 'zoom' },
-        // @ts-expect-error
+        { role: 'minimize' as const },
+        { role: 'zoom' as const },
         ...(isMac
           ? [
-              { type: 'separator' },
-              { role: 'front' },
-              { type: 'separator' },
-              { role: 'window' },
+              { type: 'separator' as const },
+              { role: 'front' as const },
+              { type: 'separator' as const },
+              { role: 'window' as const },
             ]
-          : [{ role: 'close' }]),
+          : [{ role: 'close' as const }]),
       ],
     },
     {
       label: 'Help',
       role: 'help',
-      // @ts-expect-error
       submenu: [
         {
           label: 'Learn More',

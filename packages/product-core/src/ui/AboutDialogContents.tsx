@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import clone from 'clone'
 import copy from 'copy-to-clipboard'
 import { Button } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
@@ -19,6 +20,17 @@ const useStyles = makeStyles()({
     minWidth: 800,
   },
 })
+
+function removeAttr(obj: Record<string, unknown>, attr: string) {
+  for (const prop in obj) {
+    if (prop === attr) {
+      delete obj[prop]
+    } else if (typeof obj[prop] === 'object') {
+      removeAttr(obj[prop] as Record<string, unknown>, attr)
+    }
+  }
+  return obj
+}
 
 export default function AboutContents({
   config,
@@ -63,7 +75,8 @@ export default function AboutContents({
             variant="contained"
             style={{ float: 'right' }}
             onClick={() => {
-              copy(JSON.stringify(conf, null, 2))
+              const snap = removeAttr(clone(conf), 'baseUri')
+              copy(JSON.stringify(snap, null, 2))
               setCopied(true)
               setTimeout(() => setCopied(false), 1000)
             }}

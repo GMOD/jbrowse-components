@@ -16,7 +16,7 @@ import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyC
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
-import { AbstractSessionModel, SessionWithWidgets } from '@jbrowse/core/util'
+import { SessionWithWidgets } from '@jbrowse/core/util'
 import { version } from '../version'
 import { MenuItem } from '@jbrowse/core/ui'
 import {
@@ -27,13 +27,9 @@ import {
 
 // icons
 import AddIcon from '@mui/icons-material/Add'
-import AppsIcon from '@mui/icons-material/Apps'
-import FileCopyIcon from '@mui/icons-material/FileCopy'
-import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import PublishIcon from '@mui/icons-material/Publish'
 import StorageIcon from '@mui/icons-material/Storage'
-import SaveIcon from '@mui/icons-material/Save'
 import { Cable } from '@jbrowse/core/ui/Icons'
 
 // other
@@ -101,8 +97,6 @@ export default function RootModel({
 
     .volatile(self => ({
       version,
-      isAssemblyEditing: false,
-      isDefaultSessionEditing: false,
       pluginsUpdated: false,
       rpcManager: new RpcManager(
         pluginManager,
@@ -149,18 +143,7 @@ export default function RootModel({
             }
           }
         },
-        /**
-         * #action
-         */
-        setAssemblyEditing(flag: boolean) {
-          self.isAssemblyEditing = flag
-        },
-        /**
-         * #action
-         */
-        setDefaultSessionEditing(flag: boolean) {
-          self.isDefaultSessionEditing = flag
-        },
+
         /**
          * #action
          */
@@ -200,7 +183,7 @@ export default function RootModel({
         },
       }
     })
-    .volatile(self => ({
+    .volatile(() => ({
       menus: [
         {
           label: 'File',
@@ -235,33 +218,7 @@ export default function RootModel({
                 saveAs(sessionBlob, 'session.json')
               },
             },
-            {
-              label: 'Open session…',
-              icon: FolderOpenIcon,
-              onClick: (session: SessionWithWidgets) => {
-                const widget = session.addWidget(
-                  'SessionManager',
-                  'sessionManager',
-                )
-                session.showWidget(widget)
-              },
-            },
-            {
-              label: 'Save session',
-              icon: SaveIcon,
-              onClick: (session: SessionWithWidgets) => {
-                session.notify(`Saved session "${session.name}"`, 'success')
-              },
-            },
-            {
-              label: 'Duplicate session',
-              icon: FileCopyIcon,
-              onClick: (session: AbstractSessionModel) => {
-                if (session.duplicateCurrentSession) {
-                  session.duplicateCurrentSession()
-                }
-              },
-            },
+
             { type: 'divider' },
             {
               label: 'Open track...',
@@ -295,16 +252,14 @@ export default function RootModel({
                 session.showWidget(widget)
               },
             },
-            { type: 'divider' },
-            {
-              label: 'Return to splash screen',
-              icon: AppsIcon,
-              onClick: () => self.setSession(undefined),
-            },
           ],
         },
         {
           label: 'Add',
+          menuItems: [],
+        },
+        {
+          label: 'Tools',
           menuItems: [],
         },
       ] as Menu[],

@@ -1,5 +1,5 @@
 import { groupBy, Feature } from '@jbrowse/core/util'
-import { drawLine } from '../drawxy'
+import { drawLine } from '../drawLine'
 
 import WiggleBaseRenderer, {
   MultiRenderArgsDeserialized as MultiArgs,
@@ -9,19 +9,15 @@ export default class MultiLineRenderer extends WiggleBaseRenderer {
   // @ts-expect-error
   async draw(ctx: CanvasRenderingContext2D, props: MultiArgs) {
     const { sources, features } = props
-    const groups = groupBy([...features.values()], f => f.get('source'))
+    const groups = groupBy(features.values(), f => f.get('source'))
     let feats = [] as Feature[]
     sources.forEach(source => {
-      const features = groups[source.name]
-      if (!features) {
-        return
-      }
       const { reducedFeatures } = drawLine(ctx, {
         ...props,
-        features,
+        features: groups[source.name] || [],
         colorCallback: () => source.color || 'blue',
       })
-      feats = [...feats, ...reducedFeatures]
+      feats = feats.concat(reducedFeatures)
     })
     return { reducedFeatures: feats }
   }

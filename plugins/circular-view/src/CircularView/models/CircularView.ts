@@ -54,8 +54,9 @@ function stateModelFactory(pluginManager: PluginManager) {
   const defaultHeight = 400
   return types
     .compose(
+      'CircularView',
       BaseViewModel,
-      types.model('CircularView', {
+      types.model({
         /**
          * #property
          */
@@ -113,13 +114,33 @@ function stateModelFactory(pluginManager: PluginManager) {
          */
         scrollY: 0,
 
+        /**
+         * #property
+         */
         minimumRadiusPx: 25,
+        /**
+         * #property
+         */
         spacingPx: 10,
+        /**
+         * #property
+         */
         paddingPx: 80,
+        /**
+         * #property
+         */
         lockedPaddingPx: 100,
+        /**
+         * #property
+         */
         minVisibleWidth: 6,
+        /**
+         * #property
+         */
         minimumBlockWidth: 20,
-
+        /**
+         * #property
+         */
         trackSelectorType: 'hierarchical',
       }),
     )
@@ -144,13 +165,9 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get visibleSection() {
+        const { scrollX, scrollY, width, height } = self
         return viewportVisibleSection(
-          [
-            self.scrollX,
-            self.scrollX + self.width,
-            self.scrollY,
-            self.scrollY + self.height,
-          ],
+          [scrollX, scrollX + width, scrollY, scrollY + height],
           this.centerXY,
           this.radiusPx,
         )

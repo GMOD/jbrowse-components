@@ -9,7 +9,7 @@
   "organizationName": "GMOD",
   "projectName": "jbrowse-components",
   "customFields": {
-    "currentVersion": "v2.6.3"
+    "currentVersion": "v2.8.0"
   },
   "themeConfig": {
     "colorMode": {

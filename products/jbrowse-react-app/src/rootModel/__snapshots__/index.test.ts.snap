@@ -42,42 +42,6 @@ exports[`Root MST model adds menus 1`] = `
         "onClick": [Function],
       },
       {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
-        "label": "Open session…",
-        "onClick": [Function],
-      },
-      {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
-        "label": "Save session",
-        "onClick": [Function],
-      },
-      {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
-        "label": "Duplicate session",
-        "onClick": [Function],
-      },
-      {
         "type": "divider",
       },
       {
@@ -97,25 +61,14 @@ exports[`Root MST model adds menus 1`] = `
         "label": "Open connection...",
         "onClick": [Function],
       },
-      {
-        "type": "divider",
-      },
-      {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
-        "label": "Return to splash screen",
-        "onClick": [Function],
-      },
     ],
   },
   {
     "label": "Add",
+    "menuItems": [],
+  },
+  {
+    "label": "Tools",
     "menuItems": [],
   },
 ]
@@ -163,42 +116,6 @@ exports[`Root MST model adds menus 2`] = `
         "onClick": [Function],
       },
       {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
-        "label": "Open session…",
-        "onClick": [Function],
-      },
-      {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
-        "label": "Save session",
-        "onClick": [Function],
-      },
-      {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
-        "label": "Duplicate session",
-        "onClick": [Function],
-      },
-      {
         "type": "divider",
       },
       {
@@ -218,25 +135,14 @@ exports[`Root MST model adds menus 2`] = `
         "label": "Open connection...",
         "onClick": [Function],
       },
-      {
-        "type": "divider",
-      },
-      {
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
-        "label": "Return to splash screen",
-        "onClick": [Function],
-      },
     ],
   },
   {
     "label": "Add",
+    "menuItems": [],
+  },
+  {
+    "label": "Tools",
     "menuItems": [],
   },
   {

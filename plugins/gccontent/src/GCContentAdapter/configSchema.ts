@@ -18,6 +18,20 @@ const GCContentAdapterF = (_pluginManager: PluginManager) => {
         type: 'frozen',
         defaultValue: null,
       },
+      /**
+       * #slot
+       */
+      windowSize: {
+        type: 'number',
+        defaultValue: 100,
+      },
+      /**
+       * #slot
+       */
+      windowDelta: {
+        type: 'number',
+        defaultValue: 100,
+      },
     },
     { explicitlyTyped: true },
   )

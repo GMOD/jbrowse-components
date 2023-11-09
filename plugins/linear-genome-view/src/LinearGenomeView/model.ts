@@ -133,8 +133,9 @@ export const WIDGET_HEIGHT = 32
 export function stateModelFactory(pluginManager: PluginManager) {
   return types
     .compose(
+      'LinearGenomeView',
       BaseViewModel,
-      types.model('LinearGenomeView', {
+      types.model({
         /**
          * #property
          */
@@ -200,17 +201,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
           types.enumeration(['hierarchical']),
           'hierarchical',
         ),
-
-        /**
-         * #property
-         * how to display the track labels, can be "overlapping", "offset", or
-         * "hidden"
-         */
-        trackLabels: types.optional(
-          types.string,
-          () => localStorageGetItem('lgv-trackLabels') || 'overlapping',
-        ),
-
         /**
          * #property
          * show the "center line"
@@ -229,6 +219,19 @@ export function stateModelFactory(pluginManager: PluginManager) {
           Boolean(
             JSON.parse(localStorageGetItem('lgv-showCytobands') || 'true'),
           ),
+        ),
+
+        /**
+         * #property
+         * how to display the track labels, can be "overlapping", "offset", or
+         * "hidden", or empty string "" (which results in conf being used). see
+         * LinearGenomeViewPlugin
+         * https://jbrowse.org/jb2/docs/config/lineargenomeviewplugin/ docs for
+         * how conf is used
+         */
+        trackLabels: types.optional(
+          types.string,
+          () => localStorageGetItem('lgv-trackLabels') || '',
         ),
 
         /**
@@ -255,6 +258,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
       rightOffset: undefined as undefined | BpOffset,
     }))
     .views(self => ({
+      /**
+       * #getter
+       * this is the effective value of the track labels setting, incorporating
+       * both the config and view state. use this instead of view.trackLabels
+       */
+      get trackLabelsSetting() {
+        const sessionSetting = getConf(getSession(self), [
+          'LinearGenomeViewPlugin',
+          'trackLabels',
+        ])
+        return self.trackLabels || sessionSetting
+      },
       /**
        * #getter
        */
@@ -759,6 +774,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       setTrackLabels(setting: 'overlapping' | 'offset' | 'hidden') {
+        localStorage.setItem('lgv-trackLabels', setting)
         self.trackLabels = setting
       },
 
@@ -1127,21 +1143,21 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 label: 'Overlapping',
                 icon: VisibilityIcon,
                 type: 'radio',
-                checked: self.trackLabels === 'overlapping',
+                checked: self.trackLabelsSetting === 'overlapping',
                 onClick: () => self.setTrackLabels('overlapping'),
               },
               {
                 label: 'Offset',
                 icon: VisibilityIcon,
                 type: 'radio',
-                checked: self.trackLabels === 'offset',
+                checked: self.trackLabelsSetting === 'offset',
                 onClick: () => self.setTrackLabels('offset'),
               },
               {
                 label: 'Hidden',
                 icon: VisibilityIcon,
                 type: 'radio',
-                checked: self.trackLabels === 'hidden',
+                checked: self.trackLabelsSetting === 'hidden',
                 onClick: () => self.setTrackLabels('hidden'),
               },
             ],
@@ -1252,9 +1268,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
           self,
           autorun(() => {
             const s = (s: unknown) => JSON.stringify(s)
-            const { trackLabels, showCytobandsSetting, showCenterLine } = self
+            const { showCytobandsSetting, showCenterLine } = self
             if (typeof localStorage !== 'undefined') {
-              localStorage.setItem('lgv-trackLabels', trackLabels)
               localStorage.setItem('lgv-showCytobands', s(showCytobandsSetting))
               localStorage.setItem('lgv-showCenterLine', s(showCenterLine))
             }
@@ -1522,22 +1537,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
           if (session.focusedViewId === self.id && (e.ctrlKey || e.metaKey)) {
             if (e.code === 'ArrowLeft') {
               e.preventDefault()
-              // pan left
               self.slide(-0.9)
-            }
-            if (e.code === 'ArrowRight') {
+            } else if (e.code === 'ArrowRight') {
               e.preventDefault()
-              // pan right
               self.slide(0.9)
-            }
-            if (e.code === 'ArrowUp' && self.scaleFactor === 1) {
+            } else if (e.code === 'ArrowUp' && self.scaleFactor === 1) {
               e.preventDefault()
-              // zoom in
               self.zoom(self.bpPerPx / 2)
-            }
-            if (e.code === 'ArrowDown' && self.scaleFactor === 1) {
+            } else if (e.code === 'ArrowDown' && self.scaleFactor === 1) {
               e.preventDefault()
-              // zoom out
               self.zoom(self.bpPerPx * 2)
             }
           }

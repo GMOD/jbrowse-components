@@ -11,6 +11,7 @@ beforeEach(() => {
 })
 
 const delay = { timeout: 30000 }
+const opts = [{}, delay]
 
 test('from the top level menu', async () => {
   const { findByText } = await createView()
@@ -42,15 +43,15 @@ test('using the click and drag rubberband', async () => {
   fireEvent.click(await findByText('Bookmark region'))
 
   // @ts-expect-error
-  const bookmarkWidget = session.widgets.get('GridBookmark')
-  expect(bookmarkWidget.bookmarks[0].assemblyName).toBe('volvox')
+  const { bookmarks } = session.widgets.get('GridBookmark')
+  expect(bookmarks).toMatchSnapshot()
 }, 40000)
 
 test('using the hotkey to bookmark the current region', async () => {
   const { session, findByTestId } = await createView()
 
   const user = userEvent.setup()
-  await user.click(await findByTestId('trackContainer'))
+  await user.click(await findByTestId('trackContainer', ...opts))
 
   document.dispatchEvent(
     new KeyboardEvent('keydown', {
@@ -62,8 +63,7 @@ test('using the hotkey to bookmark the current region', async () => {
 
   // @ts-expect-error
   const { bookmarks } = session.widgets.get('GridBookmark')
-  expect(bookmarks[0].start).toBe(100)
-  expect(bookmarks[0].end).toBe(140)
+  expect(bookmarks).toMatchSnapshot()
 })
 
 test('using the menu button to bookmark the current region', async () => {
@@ -76,9 +76,7 @@ test('using the menu button to bookmark the current region', async () => {
 
   // @ts-expect-error
   const { bookmarks } = session.widgets.get('GridBookmark')
-  expect(bookmarks.length).toBe(1)
-  expect(bookmarks[0].start).toBe(100)
-  expect(bookmarks[0].end).toBe(140)
+  expect(bookmarks).toMatchSnapshot()
 }, 40000)
 
 test('using the embedded link in the widget data grid', async () => {

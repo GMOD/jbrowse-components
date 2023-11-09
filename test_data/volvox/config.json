@@ -10,7 +10,6 @@
           "date": "2020-08-20"
         },
         "formatAbout": {
-          "hideUris": true,
           "config": "jexl:{extraField:'important data'}"
         },
         "adapter": {
@@ -19,7 +18,19 @@
             "uri": "volvox.2bit",
             "locationType": "UriLocation"
           }
-        }
+        },
+        "displays": [
+          {
+            "type": "LinearReferenceSequenceDisplay",
+            "displayId": "volvox_refseq-LinearReferenceSequenceDisplay"
+          },
+          {
+            "type": "LinearGCContentDisplay",
+            "displayId": "volvox_refseq-LinearGCContentDisplay",
+            "windowSize": 10,
+            "windowDelta": 10
+          }
+        ]
       },
       "refNameAliases": {
         "adapter": {
@@ -176,6 +187,9 @@
     }
   ],
   "configuration": {
+    "LinearGenomeViewPlugin": {
+      "trackLabels": "offset"
+    },
     "hierarchical": {
       "defaultCollapsed": {
         "categoryNames": ["Methylation"]
@@ -239,9 +253,8 @@
       "trackId": "volvox_sv_test",
       "description": "A uniquely interesting track",
       "name": "volvox structural variant test (<i>HTML italic</i>)",
-      "category": ["VCF"],
+      "category": ["Variants"],
       "assemblyNames": ["volvox"],
-
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -260,7 +273,7 @@
       "type": "VariantTrack",
       "trackId": "volvox_sv_test_renamed",
       "name": "volvox structural variant test w/renamed refs",
-      "category": ["VCF"],
+      "category": ["Variants"],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "VcfTabixAdapter",
@@ -625,7 +638,7 @@
       },
       "name": "volvox 1000genomes vcf",
       "assemblyNames": ["volvox"],
-      "category": ["VCF"],
+      "category": ["Variants"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -1135,7 +1148,7 @@
       "trackId": "volvox_filtered_vcf",
       "name": "volvox filtered vcf",
       "assemblyNames": ["volvox"],
-      "category": ["VCF"],
+      "category": ["Variants"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -1155,7 +1168,7 @@
       "trackId": "volvox_filtered_vcf_assembly_alias",
       "name": "volvox filtered vcf (with assembly alias)",
       "assemblyNames": ["vvx"],
-      "category": ["VCF"],
+      "category": ["Variants"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -1514,7 +1527,7 @@
       "type": "VariantTrack",
       "trackId": "variant_colors",
       "name": "volvox filtered vcf (green snp, purple indel)",
-      "category": ["VCF"],
+      "category": ["Variants"],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "VcfTabixAdapter",
@@ -1701,7 +1714,7 @@
       "type": "VariantTrack",
       "trackId": "volvox.inv.vcf",
       "name": "volvox inversions",
-      "category": ["VCF"],
+      "category": ["Variants"],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "VcfTabixAdapter",
@@ -1900,7 +1913,7 @@
           "locationType": "UriLocation"
         }
       },
-      "category": ["VCF"],
+      "category": ["Variants"],
       "assemblyNames": ["volvox"]
     },
     {
@@ -1914,7 +1927,7 @@
           "locationType": "UriLocation"
         }
       },
-      "category": ["VCF"],
+      "category": ["Variants"],
       "assemblyNames": ["volvox"]
     },
     {
@@ -2118,6 +2131,40 @@
         }
       },
       "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "arc_test",
+      "name": "Arc test track",
+      "category": ["Miscellaneous"],
+      "adapter": {
+        "type": "BedAdapter",
+        "bedLocation": {
+          "uri": "arc_test.bed",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "volvox_bedpe",
+      "name": "BEDPE arcs",
+      "category": ["Variants"],
+      "adapter": {
+        "type": "BedpeAdapter",
+        "bedpeLocation": {
+          "uri": "volvox.bedpe",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["volvox"],
+      "displays": [
+        {
+          "type": "LinearPairedArcDisplay",
+          "displayId": "volvox_bedpe-LinearPairedArcDisplay"
+        }
+      ]
     }
   ],
   "plugins": [

@@ -2,25 +2,20 @@
 
 exports[`no features 1`] = `
 <svg
-  class="ArcRendering"
-  height="500"
-  style="outline: none; position: relative;"
+  height="400"
   width="100"
 />
 `;
 
 exports[`one feature 1`] = `
 <svg
-  class="ArcRendering"
-  height="500"
-  style="outline: none; position: relative;"
+  height="400"
   width="333.3333333333333"
 >
   <g>
     <path
       d="M 0.3 0 C 0.3 100, 1 100, 1 0"
       fill="transparent"
-      id="1-one"
       pointer-events="stroke"
       stroke-width="1"
     />

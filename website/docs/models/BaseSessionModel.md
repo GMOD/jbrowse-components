@@ -23,7 +23,7 @@ here, everything will use it.
 // type signature
 IOptionalIType<ISimpleType<string>, [undefined]>
 // code
-id: types.optional(types.identifier, nanoid())
+id: ElementId
 ```
 
 #### property: name
@@ -107,4 +107,11 @@ clears the global selection
 ```js
 // type signature
 clearSelection: () => void
+```
+
+#### action: setHovered
+
+```js
+// type signature
+setHovered: (thing: unknown) => void
 ```
