@@ -72,6 +72,39 @@ function makeSummary(feature: Feature, alt?: string) {
     .join(' - ')
 }
 
+// conditionally rendered tooltip only on mouseover, speeds up
+const SvgTooltip = React.forwardRef<
+  SVGPathElement,
+  { feature: Feature; alt?: string }
+>(function SvgTooltip2({ feature, alt }, ref) {
+  const caption = makeSummary(feature, alt)
+  const tooltipWidth = 20 + measureText(caption)
+  return ref !== null ? (
+    // @ts-expect-error
+    <Tooltip triggerRef={ref}>
+      <rect
+        x={12}
+        y={0}
+        width={tooltipWidth}
+        height={20}
+        rx={5}
+        ry={5}
+        fill="black"
+        fillOpacity="50%"
+      />
+      <text
+        x={22}
+        y={14}
+        fontSize={10}
+        fill="white"
+        textLength={tooltipWidth - 20}
+      >
+        {caption}
+      </text>
+    </Tooltip>
+  ) : null
+})
+
 const Arc = observer(function ({
   model,
   feature,
@@ -97,8 +130,6 @@ const Arc = observer(function ({
   const p2 = k2.start
   const r1 = view.bpToPx({ refName: ra1, coord: p1 })?.offsetPx
   const r2 = view.bpToPx({ refName: ra2, coord: p2 })?.offsetPx
-  const caption = makeSummary(feature, alt)
-  const tooltipWidth = 20 + measureText(caption)
 
   if (r1 !== undefined && r2 !== undefined) {
     const radius = (r2 - r1) / 2
@@ -122,27 +153,9 @@ const Arc = observer(function ({
           fill="none"
           pointerEvents="stroke"
         />
-        <Tooltip triggerRef={ref}>
-          <rect
-            x={12}
-            y={0}
-            width={tooltipWidth}
-            height={20}
-            rx={5}
-            ry={5}
-            fill="black"
-            fillOpacity="50%"
-          />
-          <text
-            x={22}
-            y={14}
-            fontSize={10}
-            fill="white"
-            textLength={tooltipWidth - 20}
-          >
-            {caption}
-          </text>
-        </Tooltip>
+        {mouseOvered ? (
+          <SvgTooltip feature={feature} alt={alt} ref={ref} />
+        ) : null}
       </>
     ) : null
   }
