@@ -33,11 +33,16 @@ export function featureData(
   const rest = names
     ? Object.fromEntries(names.slice(10).map((n, idx) => [n, extra[idx]]))
     : extra
+  let ALT
+  if (['DUP', 'TRA', 'INV', 'CNV', 'DEL'].includes(extra[0])) {
+    ALT = `<${extra[0]}>`
+  }
 
   return new SimpleFeature({
     start: start1,
     end: end1,
     refName: ref1,
+    ALT: [ALT], // it's an array in VCF
     strand: strand1,
     name,
     ...rest,

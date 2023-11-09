@@ -32,7 +32,7 @@ export default class ArcPlugin extends Plugin {
         } else if (alt?.startsWith('<CNV')) {
           return set1[4]
         } else {
-          return set1[5]
+          return set1[6] // skip 5, yellow
         }
       },
     )
