@@ -37,10 +37,10 @@ function f(feature: Feature, alt?: string) {
   if (symbolicAlleles.some(a => alt?.startsWith(a))) {
     // END is defined to be a single value, not an array. CHR2 not defined in
     // VCF spec, but should be similar
-    const e = feature.get('INFO')?.END || feature.get('end')
+    const e = feature.get('INFO')?.END?.[0] || feature.get('end')
     mateEnd = e
     mateStart = e - 1
-    mateRefName = feature.get('INFO')?.CHR2 ?? refName
+    mateRefName = feature.get('INFO')?.CHR2?.[0] ?? refName
     // re-adjust the arc to be from start to end of feature by re-assigning end
     // to the 'mate'
     start = feature.get('start')
