@@ -25,7 +25,7 @@ const EditBookmarksDialog = observer(function ({
   const { selectedBookmarks } = model
   const editNone = selectedBookmarks.length === 0
   const [color, setColor] = useState(
-    selectedBookmarks[0].highlight ?? 'rgba(247, 129, 192, 0.35)',
+    selectedBookmarks[0]?.highlight ?? 'rgba(247, 129, 192, 0.35)',
   )
 
   return (

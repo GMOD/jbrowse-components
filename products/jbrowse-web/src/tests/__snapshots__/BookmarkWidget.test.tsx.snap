@@ -5,6 +5,7 @@ exports[`using the click and drag rubberband 1`] = `
   {
     "assemblyName": "volvox",
     "end": 113,
+    "highlight": "rgba(0, 75, 58, 0.3)",
     "label": "",
     "refName": "ctgA",
     "reversed": false,
@@ -18,6 +19,7 @@ exports[`using the hotkey to bookmark the current region 1`] = `
   {
     "assemblyName": "volvox",
     "end": 140,
+    "highlight": "rgba(0, 75, 58, 0.3)",
     "label": "",
     "refName": "ctgA",
     "reversed": false,
@@ -31,6 +33,7 @@ exports[`using the menu button to bookmark the current region 1`] = `
   {
     "assemblyName": "volvox",
     "end": 140,
+    "highlight": "rgba(0, 75, 58, 0.3)",
     "label": "",
     "refName": "ctgA",
     "reversed": false,

@@ -72,6 +72,7 @@ test('using the menu button to bookmark the current region', async () => {
   const user = userEvent.setup()
   await user.click(await findByTestId('trackContainer'))
   await user.click(await findByTestId('view_menu_icon'))
+  await user.click(await findByText('Bookmarks'))
   await user.click(await findByText('Bookmark current region'))
 
   // @ts-expect-error
@@ -104,6 +105,7 @@ test('using the hotkey to navigate to the most recently created bookmark', async
 
   const user = userEvent.setup()
   await user.click(await findByTestId('view_menu_icon'))
+  await user.click(await findByText('Bookmarks'))
   await user.click(await findByText('Open bookmark widget'))
 
   // @ts-expect-error

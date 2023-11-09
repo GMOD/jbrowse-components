@@ -90,24 +90,34 @@ export default class extends Plugin {
                     ...superMenuItems(),
                     { type: 'divider' },
                     {
-                      label: 'Open bookmark widget',
+                      label: 'Bookmarks',
                       icon: BookmarksIcon,
-                      onClick: () => self.activateBookmarkWidget(),
-                    },
-                    {
-                      label: 'Bookmark current region',
-                      icon: BookmarkIcon,
-                      onClick: () => self.bookmarkCurrentRegion(),
-                    },
-                    {
-                      label: 'Toggle bookmark highlights',
-                      icon: HighlightIcon,
-                      onClick: () => self.toggleShowBookmarkHighlights(),
-                    },
-                    {
-                      label: 'Toggle bookmark labels',
-                      icon: LabelIcon,
-                      onClick: () => self.toggleShowBookmarkLabels(),
+                      subMenu: [
+                        {
+                          label: 'Open bookmark widget',
+                          icon: BookmarksIcon,
+                          onClick: () => self.activateBookmarkWidget(),
+                        },
+                        {
+                          label: 'Bookmark current region',
+                          icon: BookmarkIcon,
+                          onClick: () => self.bookmarkCurrentRegion(),
+                        },
+                        {
+                          label: 'Toggle bookmark highlights',
+                          icon: HighlightIcon,
+                          type: 'checkbox',
+                          checked: self.showBookmarkHighlights,
+                          onClick: () => self.toggleShowBookmarkHighlights(),
+                        },
+                        {
+                          label: 'Toggle bookmark labels',
+                          icon: LabelIcon,
+                          type: 'checkbox',
+                          checked: self.showBookmarkLabels,
+                          onClick: () => self.toggleShowBookmarkLabels(),
+                        },
+                      ],
                     },
                   ]
                 },
