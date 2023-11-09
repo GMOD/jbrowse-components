@@ -29,9 +29,9 @@ export function featureData(
   const score = +l[7]
   const strand1 = parseStrand(l[8])
   const strand2 = parseStrand(l[9])
-  const extra = l.slice(9)
+  const extra = l.slice(10)
   const rest = names
-    ? Object.fromEntries(names.slice(9).map((n, idx) => [n, extra[idx]]))
+    ? Object.fromEntries(names.slice(10).map((n, idx) => [n, extra[idx]]))
     : extra
 
   return new SimpleFeature({
