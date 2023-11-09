@@ -42,7 +42,7 @@ export function featureData(
     start: start1,
     end: end1,
     refName: ref1,
-    ALT: [ALT], // it's an array in VCF
+    ...(ALT ? { ALT: [ALT] } : {}), // it's an array in VCF
     strand: strand1,
     name,
     ...rest,
