@@ -13,7 +13,7 @@ beforeEach(() => {
 const delay = { timeout: 30000 }
 const opts = [{}, delay]
 
-test('from the top level menu', async () => {
+test('Open the bookmarks widget from the top level menu', async () => {
   const { findByText } = await createView()
 
   const user = userEvent.setup()
@@ -23,7 +23,7 @@ test('from the top level menu', async () => {
   expect(await findByText('Bookmarked regions')).toBeTruthy()
 })
 
-test('from the view menu', async () => {
+test('Open the bookmarks widget from the view menu', async () => {
   const { findByTestId, findByText } = await createView()
 
   const user = userEvent.setup()
@@ -33,7 +33,7 @@ test('from the view menu', async () => {
   expect(await findByText('Bookmarked regions')).toBeTruthy()
 })
 
-test('using the click and drag rubberband', async () => {
+test('Create a bookmark using the click and drag rubberband', async () => {
   const { session, findByTestId, findByText } = await createView()
   const rubberband = await findByTestId('rubberband_controls', {}, delay)
 
@@ -47,7 +47,7 @@ test('using the click and drag rubberband', async () => {
   expect(bookmarks).toMatchSnapshot()
 }, 40000)
 
-test('using the hotkey to bookmark the current region', async () => {
+test('Create a bookmark using the hotkey to bookmark the current region', async () => {
   const { session, findByTestId } = await createView()
 
   const user = userEvent.setup()
@@ -66,7 +66,7 @@ test('using the hotkey to bookmark the current region', async () => {
   expect(bookmarks).toMatchSnapshot()
 })
 
-test('using the menu button to bookmark the current region', async () => {
+test('Create a bookmark using the menu button to bookmark the current region', async () => {
   const { session, findByTestId, findByText } = await createView()
 
   const user = userEvent.setup()
@@ -80,7 +80,7 @@ test('using the menu button to bookmark the current region', async () => {
   expect(bookmarks).toMatchSnapshot()
 }, 40000)
 
-test('using the embedded link in the widget data grid', async () => {
+test('Navigate to a bookmark using the embedded link in the widget data grid', async () => {
   const { view, session, findByTestId, findByText } = await createView()
 
   const user = userEvent.setup()
@@ -100,7 +100,7 @@ test('using the embedded link in the widget data grid', async () => {
   await waitFor(() => expect(view.visibleLocStrings).toBe('ctgA:201..240'))
 }, 40000)
 
-test('using the hotkey to navigate to the most recently created bookmark', async () => {
+test('Navigate to a bookmark using the hotkey to navigate to the most recently created bookmark', async () => {
   const { view, session, findByTestId, findByText } = await createView()
 
   const user = userEvent.setup()
@@ -128,7 +128,7 @@ test('using the hotkey to navigate to the most recently created bookmark', async
   await waitFor(() => expect(view.visibleLocStrings).toBe('ctgA:201..240'))
 }, 40000)
 
-test('with a single click on the data grid', async () => {
+test('Edit a bookmark label with a single click on the data grid', async () => {
   const { session, findByText, findAllByRole } = await createView()
 
   const user = userEvent.setup()
@@ -151,7 +151,7 @@ test('with a single click on the data grid', async () => {
 
   expect(field.innerHTML).toContain('new label')
 })
-test('with a double click via the dialog', async () => {
+test('Edit a bookmark label with a double click via the dialog', async () => {
   const { session, findByText, findAllByRole, findByTestId } =
     await createView()
 
@@ -174,4 +174,77 @@ test('with a double click via the dialog', async () => {
   await user.type(await findByTestId('edit-bookmark-label-field'), 'new label')
   await user.click(await findByText('Confirm'))
   expect(field.innerHTML).toContain('new label')
+})
+test('Toggle highlight visibility across all views', async () => {
+  const { session, findByText, findByTestId, findAllByTestId } =
+    await createView()
+
+  session.addView('LinearGenomeView', {
+    displayedRegions: [
+      {
+        assemblyName: 'volMyt1',
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+      },
+    ],
+  })
+
+  const user = userEvent.setup()
+
+  await user.click(await findByText('Tools'))
+  await user.click(await findByText('Bookmarks'))
+
+  // @ts-expect-error
+  const bookmarkWidget = session.widgets.get('GridBookmark')
+  bookmarkWidget.addBookmark({
+    start: 200,
+    end: 240,
+    refName: 'ctgA',
+    assemblyName: 'volvox',
+  })
+
+  const highlight = (await findAllByTestId('BookmarkIcon'))[0]
+  const highlight2 = (await findAllByTestId('BookmarkIcon'))[1]
+
+  expect(highlight).toBeDefined
+  expect(highlight2).toBeDefined
+
+  await user.click(await findByText('Highlight'))
+  await user.click(await findByTestId('toggle_highlight_all_switch'))
+  await user.click(await findByText('Confirm'))
+
+  expect(highlight).toBeUndefined
+  expect(highlight2).toBeUndefined
+})
+test('Toggle highlight label visibility across all views', async () => {
+  const { session, findByText, findByTestId, findAllByTestId } =
+    await createView()
+
+  const user = userEvent.setup()
+
+  await user.click(await findByText('Tools'))
+  await user.click(await findByText('Bookmarks'))
+
+  // @ts-expect-error
+  const bookmarkWidget = session.widgets.get('GridBookmark')
+  bookmarkWidget.addBookmark({
+    start: 200,
+    end: 240,
+    refName: 'ctgA',
+    assemblyName: 'volvox',
+  })
+
+  const highlight = (await findAllByTestId('BookmarkIcon'))[0]
+  const highlight2 = (await findAllByTestId('BookmarkIcon'))[1]
+
+  expect(highlight).toBeDefined
+  expect(highlight2).toBeDefined
+
+  await user.click(await findByText('Highlight'))
+  await user.click(await findByTestId('toggle_highlight_label_all_switch'))
+  await user.click(await findByText('Confirm'))
+
+  expect(highlight).toBeUndefined
+  expect(highlight2).toBeUndefined
 })

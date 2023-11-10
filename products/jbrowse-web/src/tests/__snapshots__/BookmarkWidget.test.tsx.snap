@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`using the click and drag rubberband 1`] = `
+exports[`Create a bookmark using the click and drag rubberband 1`] = `
 [
   {
     "assemblyName": "volvox",
@@ -14,7 +14,7 @@ exports[`using the click and drag rubberband 1`] = `
 ]
 `;
 
-exports[`using the hotkey to bookmark the current region 1`] = `
+exports[`Create a bookmark using the hotkey to bookmark the current region 1`] = `
 [
   {
     "assemblyName": "volvox",
@@ -28,7 +28,7 @@ exports[`using the hotkey to bookmark the current region 1`] = `
 ]
 `;
 
-exports[`using the menu button to bookmark the current region 1`] = `
+exports[`Create a bookmark using the menu button to bookmark the current region 1`] = `
 [
   {
     "assemblyName": "volvox",

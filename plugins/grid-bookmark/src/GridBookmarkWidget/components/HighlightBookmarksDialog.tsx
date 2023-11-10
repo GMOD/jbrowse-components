@@ -54,6 +54,7 @@ const HighlightBookmarksDialog = observer(function ({
         <Typography variant="h6">Highlight toggles</Typography>
         <Stack direction="row" alignItems="center">
           <Switch
+            data-testid="toggle_highlight_all_switch"
             checked={model.highlightToggle}
             onChange={() => {
               model.setHighlightToggle(!model.highlightToggle)
@@ -65,6 +66,7 @@ const HighlightBookmarksDialog = observer(function ({
         </Stack>
         <Stack direction="row" alignItems="center">
           <Switch
+            data-testid="toggle_highlight_label_all_switch"
             checked={model.labelToggle}
             onChange={() => {
               model.setLabelToggle(!model.labelToggle)
