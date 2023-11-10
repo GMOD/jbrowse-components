@@ -7,6 +7,7 @@ import { getTrackName } from '@jbrowse/core/util/tracks'
 
 // locals
 import { matches } from './util'
+import { MenuItem } from '@jbrowse/core/ui'
 
 function sortConfs(
   confs: AnyConfigurationModel[],
@@ -57,6 +58,7 @@ export function generateHierarchy({
   trackConfs,
   extra,
   noCategories,
+  menuItems,
 }: {
   model: {
     filterText: string
@@ -68,6 +70,7 @@ export function generateHierarchy({
     }
   }
   noCategories?: boolean
+  menuItems?: MenuItem[]
   trackConfs: AnyConfigurationModel[]
   extra?: string
 }): TreeNode[] {
@@ -117,6 +120,7 @@ export function generateHierarchy({
             name: category,
             id,
             isOpenByDefault: !collapsed.get(id),
+            menuItems,
           }
           currLevel.children.push(n)
           currLevel = n
