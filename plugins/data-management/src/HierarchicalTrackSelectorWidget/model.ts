@@ -1,4 +1,5 @@
 import { types, Instance, addDisposer } from 'mobx-state-tree'
+import { autorun } from 'mobx'
 import {
   getConf,
   readConfObject,
@@ -18,8 +19,6 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { filterTracks } from './filterTracks'
 import { generateHierarchy } from './generateHierarchy'
 import { findSubCategories, findTopLevelCategories } from './util'
-import { autorun } from 'mobx'
-import { MenuItem } from '@jbrowse/core/ui'
 
 const localStorageKeyF = () =>
   typeof window !== undefined
@@ -171,7 +170,9 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         if (self.recentlyUsed.length >= 10) {
           self.recentlyUsed.shift()
         }
-        if (self.recentlyUsed.indexOf(id) === -1) self.recentlyUsed.push(id)
+        if (!self.recentlyUsed.includes(id)) {
+          self.recentlyUsed.push(id)
+        }
       },
       /**
        * #action
