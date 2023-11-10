@@ -1,10 +1,16 @@
-import { types, Instance } from 'mobx-state-tree'
+import { types, Instance, addDisposer } from 'mobx-state-tree'
 import {
   getConf,
   readConfObject,
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
-import { dedupe, getSession, notEmpty } from '@jbrowse/core/util'
+import {
+  dedupe,
+  getSession,
+  localStorageGetItem,
+  localStorageSetItem,
+  notEmpty,
+} from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import PluginManager from '@jbrowse/core/PluginManager'
 
@@ -12,6 +18,15 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { filterTracks } from './filterTracks'
 import { generateHierarchy } from './generateHierarchy'
 import { findSubCategories, findTopLevelCategories } from './util'
+import { autorun } from 'mobx'
+import { MenuItem } from '@jbrowse/core/ui'
+
+const localStorageKeyF = () =>
+  typeof window !== undefined
+    ? `distinguished-tracks-${[
+        window.location.host + window.location.pathname,
+      ].join('-')}`
+    : 'empty'
 
 /**
  * #stateModel HierarchicalTrackSelectorWidget
@@ -52,11 +67,20 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #property
        */
-      favorites: types.array(types.string),
+      favorites: types.optional(
+        types.array(types.string),
+        () =>
+          JSON.parse(localStorageGetItem(localStorageKeyF()) || '[]').favorites,
+      ),
       /**
        * #property
        */
-      recentlyUsed: types.array(types.string),
+      recentlyUsed: types.optional(
+        types.array(types.string),
+        () =>
+          JSON.parse(localStorageGetItem(localStorageKeyF()) || '[]')
+            .recentlyUsed,
+      ),
       /**
        * #property
        */
@@ -147,7 +171,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         if (self.recentlyUsed.length >= 10) {
           self.recentlyUsed.shift()
         }
-        self.recentlyUsed.push(id)
+        if (self.recentlyUsed.indexOf(id) === -1) self.recentlyUsed.push(id)
       },
       /**
        * #action
@@ -302,22 +326,36 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
             group: '✨Favorites',
             tracks: self.favoriteTracks,
             noCategories: true,
+            menuItems: [
+              {
+                label: 'Clear all favorites',
+                onClick: () => self.clearFavorites(),
+              },
+            ],
           },
           {
             group: '🕒 Recently used',
             tracks: self.recentlyUsedTracks,
             isOpenByDefault: false,
             noCategories: true,
+            menuItems: [
+              {
+                label: 'Clear all recently used',
+                onClick: () => self.clearRecentlyUsed(),
+              },
+            ],
           },
           {
             group: 'Tracks',
             tracks: self.trackConfigurations,
             noCategories: false,
+            menuItems: [],
           },
           ...connectionInstances.flatMap(c => ({
             group: getConf(c, 'name'),
             tracks: c.tracks,
             noCategories: false,
+            menuItems: [],
           })),
         ].filter(
           // filters out categories favorites and recently used if the user toggles them off
@@ -346,6 +384,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
               trackConfs: s.tracks,
               extra: s.group,
               noCategories: s.noCategories,
+              menuItems: s.menuItems as MenuItem[],
             }),
           })),
         }
@@ -429,6 +468,31 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         )
       },
     }))
+    .actions(self => ({
+      afterAttach() {
+        const key = localStorageKeyF()
+        addDisposer(
+          self,
+          autorun(() => {
+            localStorageSetItem(
+              key,
+              JSON.stringify({
+                favorites: self.favorites,
+                recentlyUsed: self.recentlyUsed,
+              }),
+            )
+          }),
+        )
+      },
+    }))
+    .postProcessSnapshot(snap => {
+      const {
+        favorites: _,
+        recentlyUsed: __,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
+      return rest
+    })
 }
 
 export type HierarchicalTrackSelectorStateModel = ReturnType<
