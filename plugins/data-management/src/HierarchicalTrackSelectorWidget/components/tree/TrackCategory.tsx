@@ -37,6 +37,8 @@ export default function Category({
   const [menuEl, setMenuEl] = useState<HTMLElement | null>(null)
   const { menuItems, name, model, id, tree, toggleCollapse } = data
 
+  console.log(data.menuItems)
+
   return (
     <div
       className={classes.accordionText}
