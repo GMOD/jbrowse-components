@@ -23,12 +23,7 @@ const LabeledRegionModel = types
     RegionModel,
     types.model('Label', {
       label: types.optional(types.string, ''),
-      highlight: types.optional(
-        types.string,
-        `rgba(${Math.round(Math.random() * 255)}, ${Math.round(
-          Math.random() * 255,
-        )}, ${Math.round(Math.random() * 255)}, 0.3)`,
-      ),
+      highlight: types.optional(types.string, 'rgba(247, 129, 192, 0.35)'),
     }),
   )
   .actions(self => ({
