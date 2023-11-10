@@ -35,9 +35,7 @@ export default function Category({
 }) {
   const { classes } = useStyles()
   const [menuEl, setMenuEl] = useState<HTMLElement | null>(null)
-  const { name, model, id, tree, toggleCollapse } = data
-
-  console.log(data.menuItems)
+  const { menuItems, name, model, id, tree, toggleCollapse } = data
 
   return (
     <div
@@ -100,6 +98,7 @@ export default function Category({
                 }
               },
             },
+            ...menuItems,
           ]}
           onMenuItemClick={(_event, callback) => {
             callback()

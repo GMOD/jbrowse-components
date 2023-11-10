@@ -376,17 +376,19 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         return {
           name: 'Root',
           id: 'Root',
-          children: self.allTracks.map(s => ({
-            name: s.group,
-            id: s.group,
-            children: generateHierarchy({
-              model: self,
-              trackConfs: s.tracks,
-              extra: s.group,
-              noCategories: s.noCategories,
-              menuItems: s.menuItems as MenuItem[],
-            }),
-          })),
+          children: self.allTracks.map(s => {
+            return {
+              name: s.group,
+              id: s.group,
+              menuItems: s.menuItems,
+              children: generateHierarchy({
+                model: self,
+                trackConfs: s.tracks,
+                extra: s.group,
+                noCategories: s.noCategories,
+              }),
+            }
+          }),
         }
       },
     }))
