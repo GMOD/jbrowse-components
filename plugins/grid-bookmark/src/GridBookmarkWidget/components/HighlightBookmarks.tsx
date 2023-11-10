@@ -6,9 +6,11 @@ import EditIcon from '@mui/icons-material/Edit'
 
 // locals
 import { GridBookmarkModel } from '../model'
-const EditBookmarksDialog = lazy(() => import('./EditBookmarksDialog'))
+const HighlightBookmarksDialog = lazy(
+  () => import('./HighlightBookmarksDialog'),
+)
 
-function EditBookmarks({ model }: { model: GridBookmarkModel }) {
+function HighlightBookmarks({ model }: { model: GridBookmarkModel }) {
   const [open, setOpen] = useState(false)
   return (
     <>
@@ -21,11 +23,14 @@ function EditBookmarks({ model }: { model: GridBookmarkModel }) {
       </Button>
       {open ? (
         <Suspense fallback={<React.Fragment />}>
-          <EditBookmarksDialog model={model} onClose={() => setOpen(false)} />
+          <HighlightBookmarksDialog
+            model={model}
+            onClose={() => setOpen(false)}
+          />
         </Suspense>
       ) : null}
     </>
   )
 }
 
-export default EditBookmarks
+export default HighlightBookmarks

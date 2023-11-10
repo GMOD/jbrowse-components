@@ -15,7 +15,7 @@ import { ColorPicker } from '@jbrowse/core/ui/ColorPicker'
 // locals
 import { GridBookmarkModel } from '../model'
 
-const EditBookmarksDialog = observer(function ({
+const HighlightBookmarksDialog = observer(function ({
   onClose,
   model,
 }: {
@@ -94,4 +94,4 @@ const EditBookmarksDialog = observer(function ({
   )
 })
 
-export default EditBookmarksDialog
+export default HighlightBookmarksDialog

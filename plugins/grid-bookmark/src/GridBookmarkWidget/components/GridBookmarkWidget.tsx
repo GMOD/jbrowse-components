@@ -7,7 +7,7 @@ import { makeStyles } from 'tss-react/mui'
 import BookmarkGrid from './BookmarkGrid'
 import DeleteBookmarks from './DeleteBookmarks'
 import ExportBookmarks from './ExportBookmarks'
-import EditBookmarks from './EditBookmarks'
+import HighlightBookmarks from './HighlightBookmarks'
 import ImportBookmarks from './ImportBookmarks'
 import AssemblySelector from './AssemblySelector'
 import ShareBookmarks from './ShareBookmarks'
@@ -37,7 +37,7 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
         <ExportBookmarks model={model} />
         <ImportBookmarks model={model} />
         <ShareBookmarks model={model} />
-        <EditBookmarks model={model} />
+        <HighlightBookmarks model={model} />
         <DeleteBookmarks model={model} />
       </div>
       <Alert severity="info">
