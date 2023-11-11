@@ -2,7 +2,7 @@ import React from 'react'
 import { fireEvent, render, waitFor } from '@testing-library/react'
 import { getConf } from '@jbrowse/core/configuration'
 
-import masterConfig from '../../test_data/volvox/connection_test.json'
+import masterConfig from '../../../../test_data/volvox/connection_test.json'
 import {
   JBrowse,
   createView,

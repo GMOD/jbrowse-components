@@ -2,7 +2,7 @@ import { fireEvent, waitFor } from '@testing-library/react'
 import fs from 'fs'
 import path from 'path'
 import FileSaver from 'file-saver'
-import volvoxConfig from '../../test_data/volvox/config.json'
+import volvoxConfig from '../../../../test_data/volvox/config.json'
 
 // locals
 import { hts, createView, setup, doBeforeEach, mockConsoleWarn } from './util'

@@ -1,6 +1,6 @@
 import { createViewNoWait, doBeforeEach, mockConsole } from './util'
-import chromeSizesConfig from '../../test_data/config_chrom_sizes_test.json'
-import wrongAssemblyTest from '../../test_data/wrong_assembly.json'
+import chromeSizesConfig from '../../../../test_data/config_chrom_sizes_test.json'
+import wrongAssemblyTest from '../../../../test_data/wrong_assembly.json'
 
 const delay = { timeout: 30000 }
 

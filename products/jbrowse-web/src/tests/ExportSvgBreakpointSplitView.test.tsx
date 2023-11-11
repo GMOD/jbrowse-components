@@ -2,7 +2,7 @@ import { fireEvent, waitFor } from '@testing-library/react'
 import fs from 'fs'
 import path from 'path'
 import FileSaver from 'file-saver'
-import breakpointConfig from '../../test_data/breakpoint/config.json'
+import breakpointConfig from '../../../../test_data/breakpoint/config.json'
 
 // locals
 import { createView, setup, doBeforeEach } from './util'

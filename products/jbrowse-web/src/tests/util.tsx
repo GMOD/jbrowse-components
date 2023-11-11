@@ -18,7 +18,7 @@ import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // locals
 import JBrowseWithoutQueryParamProvider from '../components/JBrowse'
 import JBrowseRootModelFactory from '../rootModel/rootModel'
-import configSnapshot from '../../test_data/volvox/config.json'
+import configSnapshot from '../../../../test_data/volvox/config.json'
 import corePlugins from '../corePlugins'
 import sessionModelFactory from '../sessionModel'
 

@@ -1,5 +1,5 @@
 import { fireEvent } from '@testing-library/react'
-import config from '../../test_data/volvox/config_auth.json'
+import config from '../../../../test_data/volvox/config_auth.json'
 import {
   setup,
   pv,

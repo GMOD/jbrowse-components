@@ -2,7 +2,7 @@ import { fireEvent } from '@testing-library/react'
 import path from 'path'
 
 // locals
-import config from '../../test_data/config_dotplot.json'
+import config from '../../../../test_data/config_dotplot.json'
 import dotplotSession from './dotplot_inverted_test.json'
 import dotplotSessionFlipAxes from './dotplot_inverted_flipaxes.json'
 import { setup, doBeforeEach, expectCanvasMatch, createView } from './util'
