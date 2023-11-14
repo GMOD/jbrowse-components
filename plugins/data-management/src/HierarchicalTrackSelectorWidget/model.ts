@@ -244,6 +244,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
               children: generateHierarchy({
                 model: self,
                 trackConfs: s.tracks,
+                extra: s.group,
               }),
             }))
             // always keep the Tracks entry at idx 0
