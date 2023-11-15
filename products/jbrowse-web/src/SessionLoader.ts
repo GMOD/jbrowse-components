@@ -180,7 +180,9 @@ const SessionLoader = types
     },
 
     async fetchConfig() {
-      let { configPath = 'config.json' } = self
+      // @ts-expect-error
+      // eslint-disable-next-line no-underscore-dangle
+      let { configPath = window.__jbrowseConfigPath || 'config.json' } = self
 
       // @ts-expect-error
       // eslint-disable-next-line no-underscore-dangle

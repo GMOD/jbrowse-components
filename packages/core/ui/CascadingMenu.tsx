@@ -7,6 +7,7 @@ import {
   Menu,
   MenuItem,
   PopoverOrigin,
+  SvgIconProps,
 } from '@mui/material'
 import { MenuItem as JBMenuItem, MenuItemEndDecoration } from './Menu'
 import {
@@ -49,6 +50,7 @@ function CascadingMenuItem({
 
 function CascadingSubmenu({
   title,
+  Icon,
   inset,
   popupId,
   ...props
@@ -56,8 +58,10 @@ function CascadingSubmenu({
   children: React.ReactNode
   title: string
   onMenuItemClick: Function
-  menuItems: JBMenuItem[]
+  Icon: React.ComponentType<SvgIconProps> | undefined
+
   inset: boolean
+  menuItems: JBMenuItem[]
   popupId: string
 }) {
   const { parentPopupState } = React.useContext(CascadingContext)
@@ -69,6 +73,11 @@ function CascadingSubmenu({
   return (
     <>
       <MenuItem {...bindHover(popupState)} {...bindFocus(popupState)}>
+        {Icon ? (
+          <ListItemIcon>
+            <Icon />
+          </ListItemIcon>
+        ) : null}
         <ListItemText primary={title} inset={inset} />
         <ChevronRight />
       </MenuItem>
@@ -167,9 +176,7 @@ function CascadingMenuList({
     }
   }
 
-  const hasIcon = menuItems.some(
-    menuItem => 'icon' in menuItem && menuItem.icon,
-  )
+  const hasIcon = menuItems.some(m => 'icon' in m && m.icon)
   return (
     <>
       {menuItems.map((item, idx) => {
@@ -178,7 +185,8 @@ function CascadingMenuList({
             key={`subMenu-${item.label}-${idx}`}
             popupId={`subMenu-${item.label}`}
             title={item.label}
-            inset={hasIcon}
+            Icon={item.icon}
+            inset={hasIcon && !item.icon}
             onMenuItemClick={onMenuItemClick}
             menuItems={item.subMenu}
           >

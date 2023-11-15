@@ -7,7 +7,7 @@ import {
 } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
 
-export default function DeleteDialog({
+export default function DeleteSavedSessionDialog({
   open,
   sessionNameToDelete,
   handleClose,
@@ -17,16 +17,9 @@ export default function DeleteDialog({
   handleClose: (arg?: boolean) => void
 }) {
   return (
-    <Dialog
-      open={open}
-      aria-labelledby="alert-dialog-title"
-      aria-describedby="alert-dialog-description"
-      title={`Delete session "${sessionNameToDelete}"?`}
-    >
+    <Dialog open={open} title={`Delete session "${sessionNameToDelete}"?`}>
       <DialogContent>
-        <DialogContentText id="alert-dialog-description">
-          This action cannot be undone
-        </DialogContentText>
+        <DialogContentText>This action cannot be undone</DialogContentText>
       </DialogContent>
       <DialogActions>
         <Button onClick={() => handleClose()} color="primary">

@@ -12,22 +12,19 @@ import { LinearReadCloudDisplayModel } from '../LinearReadCloudDisplay/model'
 import { LinearReadArcsDisplayModel } from '../LinearReadArcsDisplay/model'
 import { getContainingView } from '@jbrowse/core/util'
 
-const useStyles = makeStyles()(theme => {
-  const bg = theme.palette.action.disabledBackground
-  return {
-    loading: {
-      backgroundColor: theme.palette.background.default,
-      backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 5px, ${bg} 5px, ${bg} 10px)`,
-      position: 'absolute',
-      bottom: 0,
-      height: 50,
-      width: 300,
-      right: 0,
-      pointerEvents: 'none',
-      textAlign: 'center',
-    },
-  }
-})
+const useStyles = makeStyles()(theme => ({
+  loading: {
+    backgroundColor: theme.palette.background.default,
+    backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 5px, ${theme.palette.action.disabledBackground} 5px, ${theme.palette.action.disabledBackground} 10px)`,
+    position: 'absolute',
+    bottom: 0,
+    height: 50,
+    width: 300,
+    right: 0,
+    pointerEvents: 'none',
+    textAlign: 'center',
+  },
+}))
 
 const BaseDisplayComponent = observer(function ({
   model,

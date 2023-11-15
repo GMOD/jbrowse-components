@@ -5,7 +5,6 @@ export const Link = ({ extra, children }) => {
     <a
       href={`https://jbrowse.org/code/jb2/${config.customFields.currentVersion}/${extra}`}
     >
-      {' '}
       {children}
     </a>
   )
@@ -24,36 +23,39 @@ desktop.
 **Demo instances**
 
 - <Link extra="?config=test_data/config_demo.json&session=share-oTyYRpz9fN&password=fYAbt">
-    Human instance with HG002 insertion shown (many other tracks available too)
+    {
+      'Human instance with HG002 insertion shown (many other tracks available too)'
+    }
   </Link>
 - <Link extra="?config=test_data%2Fconfig_demo.json&session=share-pjaAq1hNxB&password=Z9teR">
-    SKBR3 breast cancer cell line translocation
+    {'SKBR3 breast cancer cell line translocation'}
   </Link>
 - <Link extra="?config=test_data%2Fconfig_demo.json&session=share-XyL52LPDoO&password=861E4">
-    Human instance coloring methylation/modifications on nanopore reads
+    {'Human instance coloring methylation/modifications on nanopore reads'}
   </Link>
 - <Link extra="?config=test_data/breakpoint/config.json">
-    Breakpoint split view demo (showing chromosomal translocation)
+    {'Breakpoint split view demo (showing chromosomal translocation)'}
   </Link>
 - <Link extra="?config=test_data%2Fconfig_dotplot.json&session=share-zw51jIwuXb&password=i8WqY">
-    Grape vs Peach dotplot
+    {'Grape vs Peach dotplot'}
   </Link>
 - <Link extra="?config=test_data/yeast_synteny/config.json">Yeast dotplot</Link>
 - <Link extra="?config=%2Fgenomes%2FGRCh38%2F1000genomes%2Fconfig_1000genomes.json&session=share-SUK-mntGyB&password=eQF0F">
-    1000 genomes extended trio demo
+    {'1000 genomes extended trio demo'}
   </Link>
 - <Link extra="?config=test_data%2Fvolvox%2Fconfig.json&session=share-JCsm46ATdn&password=ilHg5">
-    Volvox sample data (small imaginary test datasets)
+    {'Volvox sample data (small imaginary test datasets)'}
   </Link>
 - <Link extra="?config=test_data%2Fconfig_demo.json&session=share-Pw7kOjagSF&password=e0SuE">
-    ENCODE Multi-bigwig example
+    {'ENCODE Multi-bigwig example'}
   </Link>
 - <Link extra="?config=test_data%2Fconfig_demo.json&session=share-7skGDzEmMi&password=NGzLX">
-    COLO829 melanoma cancer cell line tumor vs normal multi-bigwig example
+    {'COLO829 melanoma cancer cell line tumor vs normal multi-bigwig example'}
   </Link>
 
 **Conference and other guided demos**
 
+- [2023 BOSC lightning talk](https://docs.google.com/presentation/d/18vdbamIwaCQUVagMD65EILQ35v7p79sJBZr6D0WiX9c/edit?usp=sharing)
 - [2023 PAG workshop](http://gmod.org/wiki/JBrowse2_Tutorial_PAG_2023)
 - [2023 publication figures](https://jbrowse.org/demos/paper2022/) (see our
   [Genome Biology](https://doi.org/10.1186/s13059-023-02914-z) publication for
