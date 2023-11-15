@@ -91,11 +91,119 @@ exports[`renders nothing with no assembly 1`] = `
     style="position: relative; height: 9000px; overflow: auto; will-change: transform; direction: ltr;"
   >
     <div
-      style="height: 40px; width: 100%;"
+      style="height: 120px; width: 100%;"
     >
       <div
         class="css-11rl2vh-accordionBase"
         style="position: absolute; left: 0px; top: 0px; height: 40px; width: 100%;"
+      >
+        <div
+          class="css-1eoby3c-accordionCard"
+          style="margin-left: 0px; white-space: nowrap; width: 100%;"
+        >
+          <div
+            class="css-1dqsl7q-accordionColor"
+          >
+            <div
+              class="css-1c2x1yy-accordionText"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                  data-testid="ArrowDropDownIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="m7 10 5 5 5-5z"
+                  />
+                </svg>
+                ✨Favorites
+                <button
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9ivluk-MuiButtonBase-root-MuiIconButton-root-contrastColor"
+                  tabindex="0"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                    data-testid="MoreHorizIcon"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                    />
+                  </svg>
+                  <span
+                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                  />
+                </button>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="css-11rl2vh-accordionBase"
+        style="position: absolute; left: 0px; top: 40px; height: 40px; width: 100%;"
+      >
+        <div
+          class="css-1eoby3c-accordionCard"
+          style="margin-left: 0px; white-space: nowrap; width: 100%;"
+        >
+          <div
+            class="css-1dqsl7q-accordionColor"
+          >
+            <div
+              class="css-1c2x1yy-accordionText"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                  data-testid="ArrowDropDownIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="m7 10 5 5 5-5z"
+                  />
+                </svg>
+                🕒 Recently used
+                <button
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9ivluk-MuiButtonBase-root-MuiIconButton-root-contrastColor"
+                  tabindex="0"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                    data-testid="MoreHorizIcon"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                    />
+                  </svg>
+                  <span
+                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                  />
+                </button>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="css-11rl2vh-accordionBase"
+        style="position: absolute; left: 0px; top: 80px; height: 40px; width: 100%;"
       >
         <div
           class="css-1eoby3c-accordionCard"
@@ -263,11 +371,119 @@ exports[`renders with a couple of categorized tracks 1`] = `
     style="position: relative; height: 9000px; overflow: auto; will-change: transform; direction: ltr;"
   >
     <div
-      style="height: 186px; width: 100%;"
+      style="height: 266px; width: 100%;"
     >
       <div
         class="css-11rl2vh-accordionBase"
         style="position: absolute; left: 0px; top: 0px; height: 40px; width: 100%;"
+      >
+        <div
+          class="css-1eoby3c-accordionCard"
+          style="margin-left: 0px; white-space: nowrap; width: 100%;"
+        >
+          <div
+            class="css-1dqsl7q-accordionColor"
+          >
+            <div
+              class="css-1c2x1yy-accordionText"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                  data-testid="ArrowDropDownIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="m7 10 5 5 5-5z"
+                  />
+                </svg>
+                ✨Favorites
+                <button
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9ivluk-MuiButtonBase-root-MuiIconButton-root-contrastColor"
+                  tabindex="0"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                    data-testid="MoreHorizIcon"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                    />
+                  </svg>
+                  <span
+                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                  />
+                </button>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="css-11rl2vh-accordionBase"
+        style="position: absolute; left: 0px; top: 40px; height: 40px; width: 100%;"
+      >
+        <div
+          class="css-1eoby3c-accordionCard"
+          style="margin-left: 0px; white-space: nowrap; width: 100%;"
+        >
+          <div
+            class="css-1dqsl7q-accordionColor"
+          >
+            <div
+              class="css-1c2x1yy-accordionText"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                  data-testid="ArrowDropDownIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="m7 10 5 5 5-5z"
+                  />
+                </svg>
+                🕒 Recently used
+                <button
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9ivluk-MuiButtonBase-root-MuiIconButton-root-contrastColor"
+                  tabindex="0"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                    data-testid="MoreHorizIcon"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                    />
+                  </svg>
+                  <span
+                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                  />
+                </button>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="css-11rl2vh-accordionBase"
+        style="position: absolute; left: 0px; top: 80px; height: 40px; width: 100%;"
       >
         <div
           class="css-1eoby3c-accordionCard"
@@ -320,7 +536,7 @@ exports[`renders with a couple of categorized tracks 1`] = `
         </div>
       </div>
       <div
-        style="position: absolute; left: 0px; top: 40px; height: 22px; width: 100%;"
+        style="position: absolute; left: 0px; top: 120px; height: 22px; width: 100%;"
       >
         <div
           class="css-1a5q6y9-nestingLevelMarker"
@@ -341,7 +557,7 @@ exports[`renders with a couple of categorized tracks 1`] = `
                 <input
                   class="PrivateSwitchBase-input css-1m9pwf3"
                   data-indeterminate="false"
-                  data-testid="htsTrackEntry-sequenceConfigId"
+                  data-testid="htsTrackEntry-Tracks,sequenceConfigId"
                   type="checkbox"
                 />
                 <svg
@@ -363,7 +579,7 @@ exports[`renders with a couple of categorized tracks 1`] = `
                 class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label css-k0xfey-MuiTypography-root"
               >
                 <div
-                  data-testid="htsTrackLabel-sequenceConfigId"
+                  data-testid="htsTrackLabel-Tracks,sequenceConfigId"
                 >
                   Reference sequence (volMyt1)
                 </div>
@@ -371,7 +587,7 @@ exports[`renders with a couple of categorized tracks 1`] = `
             </label>
             <button
               class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
-              data-testid="htsTrackEntryMenu-sequenceConfigId"
+              data-testid="htsTrackEntryMenu-Tracks,sequenceConfigId"
               style="padding: 0px;"
               tabindex="0"
               type="button"
@@ -396,7 +612,7 @@ exports[`renders with a couple of categorized tracks 1`] = `
       </div>
       <div
         class="css-11rl2vh-accordionBase"
-        style="position: absolute; left: 0px; top: 62px; height: 40px; width: 100%;"
+        style="position: absolute; left: 0px; top: 142px; height: 40px; width: 100%;"
       >
         <div
           class="css-1a5q6y9-nestingLevelMarker"
@@ -453,7 +669,7 @@ exports[`renders with a couple of categorized tracks 1`] = `
         </div>
       </div>
       <div
-        style="position: absolute; left: 0px; top: 102px; height: 22px; width: 100%;"
+        style="position: absolute; left: 0px; top: 182px; height: 22px; width: 100%;"
       >
         <div
           class="css-1a5q6y9-nestingLevelMarker"
@@ -479,7 +695,7 @@ exports[`renders with a couple of categorized tracks 1`] = `
                   checked=""
                   class="PrivateSwitchBase-input css-1m9pwf3"
                   data-indeterminate="false"
-                  data-testid="htsTrackEntry-fooC"
+                  data-testid="htsTrackEntry-Tracks,fooC"
                   type="checkbox"
                 />
                 <svg
@@ -501,7 +717,7 @@ exports[`renders with a couple of categorized tracks 1`] = `
                 class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label css-k0xfey-MuiTypography-root"
               >
                 <div
-                  data-testid="htsTrackLabel-fooC"
+                  data-testid="htsTrackLabel-Tracks,fooC"
                 >
                   Track
                 </div>
@@ -509,7 +725,7 @@ exports[`renders with a couple of categorized tracks 1`] = `
             </label>
             <button
               class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
-              data-testid="htsTrackEntryMenu-fooC"
+              data-testid="htsTrackEntryMenu-Tracks,fooC"
               style="padding: 0px;"
               tabindex="0"
               type="button"
@@ -534,7 +750,7 @@ exports[`renders with a couple of categorized tracks 1`] = `
       </div>
       <div
         class="css-11rl2vh-accordionBase"
-        style="position: absolute; left: 0px; top: 124px; height: 40px; width: 100%;"
+        style="position: absolute; left: 0px; top: 204px; height: 40px; width: 100%;"
       >
         <div
           class="css-1a5q6y9-nestingLevelMarker"
@@ -595,7 +811,7 @@ exports[`renders with a couple of categorized tracks 1`] = `
         </div>
       </div>
       <div
-        style="position: absolute; left: 0px; top: 164px; height: 22px; width: 100%;"
+        style="position: absolute; left: 0px; top: 244px; height: 22px; width: 100%;"
       >
         <div
           class="css-1a5q6y9-nestingLevelMarker"
@@ -625,7 +841,7 @@ exports[`renders with a couple of categorized tracks 1`] = `
                   checked=""
                   class="PrivateSwitchBase-input css-1m9pwf3"
                   data-indeterminate="false"
-                  data-testid="htsTrackEntry-barC"
+                  data-testid="htsTrackEntry-Tracks,barC"
                   type="checkbox"
                 />
                 <svg
@@ -647,7 +863,7 @@ exports[`renders with a couple of categorized tracks 1`] = `
                 class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label css-k0xfey-MuiTypography-root"
               >
                 <div
-                  data-testid="htsTrackLabel-barC"
+                  data-testid="htsTrackLabel-Tracks,barC"
                 >
                   Track
                 </div>
@@ -655,7 +871,7 @@ exports[`renders with a couple of categorized tracks 1`] = `
             </label>
             <button
               class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
-              data-testid="htsTrackEntryMenu-barC"
+              data-testid="htsTrackEntryMenu-Tracks,barC"
               style="padding: 0px;"
               tabindex="0"
               type="button"
@@ -794,11 +1010,119 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
     style="position: relative; height: 9000px; overflow: auto; will-change: transform; direction: ltr;"
   >
     <div
-      style="height: 106px; width: 100%;"
+      style="height: 186px; width: 100%;"
     >
       <div
         class="css-11rl2vh-accordionBase"
         style="position: absolute; left: 0px; top: 0px; height: 40px; width: 100%;"
+      >
+        <div
+          class="css-1eoby3c-accordionCard"
+          style="margin-left: 0px; white-space: nowrap; width: 100%;"
+        >
+          <div
+            class="css-1dqsl7q-accordionColor"
+          >
+            <div
+              class="css-1c2x1yy-accordionText"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                  data-testid="ArrowDropDownIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="m7 10 5 5 5-5z"
+                  />
+                </svg>
+                ✨Favorites
+                <button
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9ivluk-MuiButtonBase-root-MuiIconButton-root-contrastColor"
+                  tabindex="0"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                    data-testid="MoreHorizIcon"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                    />
+                  </svg>
+                  <span
+                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                  />
+                </button>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="css-11rl2vh-accordionBase"
+        style="position: absolute; left: 0px; top: 40px; height: 40px; width: 100%;"
+      >
+        <div
+          class="css-1eoby3c-accordionCard"
+          style="margin-left: 0px; white-space: nowrap; width: 100%;"
+        >
+          <div
+            class="css-1dqsl7q-accordionColor"
+          >
+            <div
+              class="css-1c2x1yy-accordionText"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                  data-testid="ArrowDropDownIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="m7 10 5 5 5-5z"
+                  />
+                </svg>
+                🕒 Recently used
+                <button
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9ivluk-MuiButtonBase-root-MuiIconButton-root-contrastColor"
+                  tabindex="0"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                    data-testid="MoreHorizIcon"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                    />
+                  </svg>
+                  <span
+                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                  />
+                </button>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="css-11rl2vh-accordionBase"
+        style="position: absolute; left: 0px; top: 80px; height: 40px; width: 100%;"
       >
         <div
           class="css-1eoby3c-accordionCard"
@@ -851,7 +1175,7 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
         </div>
       </div>
       <div
-        style="position: absolute; left: 0px; top: 40px; height: 22px; width: 100%;"
+        style="position: absolute; left: 0px; top: 120px; height: 22px; width: 100%;"
       >
         <div
           class="css-1a5q6y9-nestingLevelMarker"
@@ -872,7 +1196,7 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
                 <input
                   class="PrivateSwitchBase-input css-1m9pwf3"
                   data-indeterminate="false"
-                  data-testid="htsTrackEntry-sequenceConfigId"
+                  data-testid="htsTrackEntry-Tracks,sequenceConfigId"
                   type="checkbox"
                 />
                 <svg
@@ -894,7 +1218,7 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
                 class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label css-k0xfey-MuiTypography-root"
               >
                 <div
-                  data-testid="htsTrackLabel-sequenceConfigId"
+                  data-testid="htsTrackLabel-Tracks,sequenceConfigId"
                 >
                   Reference sequence (volMyt1)
                 </div>
@@ -902,7 +1226,7 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
             </label>
             <button
               class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
-              data-testid="htsTrackEntryMenu-sequenceConfigId"
+              data-testid="htsTrackEntryMenu-Tracks,sequenceConfigId"
               style="padding: 0px;"
               tabindex="0"
               type="button"
@@ -926,7 +1250,7 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
         </div>
       </div>
       <div
-        style="position: absolute; left: 0px; top: 62px; height: 22px; width: 100%;"
+        style="position: absolute; left: 0px; top: 142px; height: 22px; width: 100%;"
       >
         <div
           class="css-1a5q6y9-nestingLevelMarker"
@@ -948,7 +1272,7 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
                   checked=""
                   class="PrivateSwitchBase-input css-1m9pwf3"
                   data-indeterminate="false"
-                  data-testid="htsTrackEntry-fooC"
+                  data-testid="htsTrackEntry-Tracks,fooC"
                   type="checkbox"
                 />
                 <svg
@@ -970,7 +1294,7 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
                 class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label css-k0xfey-MuiTypography-root"
               >
                 <div
-                  data-testid="htsTrackLabel-fooC"
+                  data-testid="htsTrackLabel-Tracks,fooC"
                 >
                   Track
                 </div>
@@ -978,7 +1302,7 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
             </label>
             <button
               class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
-              data-testid="htsTrackEntryMenu-fooC"
+              data-testid="htsTrackEntryMenu-Tracks,fooC"
               style="padding: 0px;"
               tabindex="0"
               type="button"
@@ -1002,7 +1326,7 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
         </div>
       </div>
       <div
-        style="position: absolute; left: 0px; top: 84px; height: 22px; width: 100%;"
+        style="position: absolute; left: 0px; top: 164px; height: 22px; width: 100%;"
       >
         <div
           class="css-1a5q6y9-nestingLevelMarker"
@@ -1024,7 +1348,7 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
                   checked=""
                   class="PrivateSwitchBase-input css-1m9pwf3"
                   data-indeterminate="false"
-                  data-testid="htsTrackEntry-barC"
+                  data-testid="htsTrackEntry-Tracks,barC"
                   type="checkbox"
                 />
                 <svg
@@ -1046,7 +1370,7 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
                 class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label css-k0xfey-MuiTypography-root"
               >
                 <div
-                  data-testid="htsTrackLabel-barC"
+                  data-testid="htsTrackLabel-Tracks,barC"
                 >
                   Track
                 </div>
@@ -1054,7 +1378,7 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
             </label>
             <button
               class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
-              data-testid="htsTrackEntryMenu-barC"
+              data-testid="htsTrackEntryMenu-Tracks,barC"
               style="padding: 0px;"
               tabindex="0"
               type="button"
