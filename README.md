@@ -17,8 +17,8 @@ new community meeting that anyone can join via a public Google Meet link.
 Details below:
 
 - [Schedule 1-on-1 appointment](https://calendar.app.google/E9i5fyZN4UcZawuNA)
-- [Community call - Monthly on the third Thursday, 10am EST (North America, Europe friendly)](https://meet.google.com/rnq-exdt-tuz)
-- [Community call - Monthly on the last Tuesday, 8pm EST (Asia Pacific friendly)](https://meet.google.com/uti-xsjf-xbu)
+- [Community call - Monthly on the third Thursday, 10am EST (North America, Europe friendly)](https://meet.google.com/uti-xsjf-xbu)
+- [Community call - Monthly on the last Tuesday, 8pm EST (Asia Pacific friendly)](https://meet.google.com/rnq-exdt-tuz)
 - [Add both events to your Google calendar](https://calendar.google.com/calendar/u/2?cid=ZDgxZmE0Yjk3YjdiZTAxYThjMDAzYzNkOThkMjUyOGQ1ZWM4YzNkMzRjNjgwMmQ3YjZhOWEwYmU4NDYxZDBiM0Bncm91cC5jYWxlbmRhci5nb29nbGUuY29t)
 
 ## Pre-requisites
