@@ -51,6 +51,7 @@
     "@jbrowse/core": "^2.8.0",
     "@jbrowse/embedded-core": "^2.8.0",
     "@jbrowse/plugin-alignments": "^2.8.0",
+    "@jbrowse/plugin-arc": "^2.8.0",
     "@jbrowse/plugin-authentication": "^2.8.0",
     "@jbrowse/plugin-bed": "^2.8.0",
     "@jbrowse/plugin-circular-view": "^2.8.0",
