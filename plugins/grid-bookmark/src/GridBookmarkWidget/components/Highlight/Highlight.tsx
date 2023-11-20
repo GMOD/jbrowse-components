@@ -1,7 +1,11 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
-import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
+import {
+  getSession,
+  isSessionModelWithWidgets,
+  notEmpty,
+} from '@jbrowse/core/util'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // icons
@@ -23,23 +27,6 @@ const useStyles = makeStyles()({
     alignItems: 'start',
   },
 })
-
-interface BookmarkInfo {
-  width: number
-  left: number
-  highlight: string
-  label: string
-}
-
-interface LocalStorageBookmark {
-  start: number
-  end: number
-  assemblyName: string
-  refName: string
-  reversed: boolean
-  label: string
-  highlight: string
-}
 
 const intensify = (rgba: string, opacity: number) => {
   if (rgba) {
@@ -78,10 +65,8 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
     <>
       {showBookmarkHighlights
         ? bookmarks
-            .filter((value: LocalStorageBookmark) =>
-              assemblyNames.has(value.assemblyName),
-            )
-            .map((r: LocalStorageBookmark) => {
+            .filter(value => assemblyNames.has(value.assemblyName))
+            .map(r => {
               const s = model.bpToPx({
                 refName: r.refName,
                 coord: r.start,
@@ -99,28 +84,23 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
                   }
                 : undefined
             })
-            .filter((f: BookmarkInfo | undefined): f is BookmarkInfo => !!f)
-            .map(
-              (
-                { left, width, highlight, label }: BookmarkInfo,
-                idx: number,
-              ) => (
-                <div
-                  key={`${left}_${width}_${idx}`}
-                  className={classes.highlight}
-                  style={{ left, width, background: highlight }}
-                >
-                  {showBookmarkLabels ? (
-                    <Tooltip title={label} arrow>
-                      <BookmarkIcon
-                        fontSize="small"
-                        sx={{ color: `${intensify(highlight, 0.8)}` }}
-                      />
-                    </Tooltip>
-                  ) : null}
-                </div>
-              ),
-            )
+            .filter(notEmpty)
+            .map(({ left, width, highlight, label }, idx) => (
+              <div
+                key={`${left}_${width}_${idx}`}
+                className={classes.highlight}
+                style={{ left, width, background: highlight }}
+              >
+                {showBookmarkLabels ? (
+                  <Tooltip title={label} arrow>
+                    <BookmarkIcon
+                      fontSize="small"
+                      sx={{ color: `${intensify(highlight, 0.8)}` }}
+                    />
+                  </Tooltip>
+                ) : null}
+              </div>
+            ))
         : null}
     </>
   )
