@@ -67,7 +67,7 @@ export function BaseCard({
       <AccordionSummary
         expandIcon={<ExpandMore className={classes.expandIcon} />}
       >
-        <Typography variant="button"> {title}</Typography>
+        <Typography variant="button">{title}</Typography>
       </AccordionSummary>
       <AccordionDetails className={classes.expansionPanelDetails}>
         {children}
