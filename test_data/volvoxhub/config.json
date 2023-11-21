@@ -68,6 +68,15 @@
     },
     {
       "type": "UCSCTrackHubConnection",
+      "connectionId": "UCSCTrackHubConnection-volvox-hub3",
+      "name": "UCSCTrackHubConnection-volvox-hub3",
+      "hubTxtLocation": {
+        "uri": "singlefile.hub.txt",
+        "locationType": "UriLocation"
+      }
+    },
+    {
+      "type": "UCSCTrackHubConnection",
       "connectionId": "UCSCTrackHubConnection-volvox-hub2",
       "name": "UCSCTrackHubConnection-volvox-hub2",
       "hubTxtLocation": {

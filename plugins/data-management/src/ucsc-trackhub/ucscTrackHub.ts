@@ -60,8 +60,8 @@ export function generateTracks(
 ) {
   const tracks: any = []
 
-  for (const [trackName, track] of trackDb.entries()) {
-    const trackKeys = [...track.keys()]
+  for (const [trackName, track] of Object.entries(trackDb.data)) {
+    const trackKeys = Object.keys(track!)
     const parentTrackKeys = new Set([
       'superTrack',
       'compositeTrack',
@@ -74,18 +74,18 @@ export function generateTracks(
     const parentTracks = []
     let currentTrackName = trackName
     do {
-      currentTrackName = trackDb.get(currentTrackName)?.get('parent') || ''
+      currentTrackName = trackDb.data[currentTrackName]?.data.parent || ''
       if (currentTrackName) {
         ;[currentTrackName] = currentTrackName.split(' ')
-        parentTracks.push(trackDb.get(currentTrackName))
+        parentTracks.push(trackDb.data[currentTrackName])
       }
     } while (currentTrackName)
     parentTracks.reverse()
     const categories = parentTracks
-      .map(p => p?.get('shortLabel'))
+      .map(p => p?.data.shortLabel)
       .filter((f): f is string => !!f)
     const res = makeTrackConfig(
-      track,
+      track!,
       categories,
       trackDbLoc,
       trackDb,
@@ -108,14 +108,12 @@ function makeTrackConfig(
   trackDb: TrackDbFile,
   sequenceAdapter: any,
 ) {
-  let trackType = track.get('type')
-  const name = track.get('shortLabel') || ''
-  const bigDataUrl = track.get('bigDataUrl') || ''
-  const bigDataIdx = track.get('bigDataIndex') || ''
+  const trackType =
+    track.data.type || trackDb.data[track.data.parent || '']?.data.type || ''
+  const name = track.data.shortLabel || ''
+  const bigDataUrl = track.data.bigDataUrl || ''
+  const bigDataIdx = track.data.bigDataIndex || ''
   const isUri = isUriLocation(trackDbLoc)
-  if (!trackType) {
-    trackType = trackDb.get(track.get('parent') || '')?.get('type')
-  }
   let baseTrackType = trackType?.split(' ')[0] || ''
   if (baseTrackType === 'bam' && bigDataUrl.toLowerCase().endsWith('cram')) {
     baseTrackType = 'cram'
@@ -128,8 +126,8 @@ function makeTrackConfig(
     case 'bam':
       return {
         type: 'AlignmentsTrack',
-        name: track.get('shortLabel'),
-        description: track.get('longLabel'),
+        name: track.data.longLabel,
+        description: track.data.longLabel,
         category: categories,
         adapter: {
           type: 'BamAdapter',
@@ -146,7 +144,7 @@ function makeTrackConfig(
       return {
         type: 'FeatureTrack',
         name,
-        description: track.get('longLabel'),
+        description: track.data.longLabel,
         category: categories,
         adapter: {
           type: 'BigBedAdapter',
@@ -160,7 +158,7 @@ function makeTrackConfig(
       return {
         type: 'FeatureTrack',
         name,
-        description: track.get('longLabel'),
+        description: track.data.longLabel,
         category: categories,
         adapter: {
           type: 'BigBedAdapter',
@@ -171,7 +169,7 @@ function makeTrackConfig(
       return {
         type: 'FeatureTrack',
         name,
-        description: track.get('longLabel'),
+        description: track.data.longLabel,
         category: categories,
         adapter: {
           type: 'BigBedAdapter',
@@ -182,7 +180,7 @@ function makeTrackConfig(
       return {
         type: 'FeatureTrack',
         name,
-        description: track.get('longLabel'),
+        description: track.data.longLabel,
         category: categories,
         adapter: {
           type: 'BigBedAdapter',
@@ -196,7 +194,7 @@ function makeTrackConfig(
       return {
         type: 'FeatureTrack',
         name,
-        description: track.get('longLabel'),
+        description: track.data.longLabel,
         category: categories,
         adapter: {
           type: 'BigBedAdapter',
@@ -210,7 +208,7 @@ function makeTrackConfig(
       return {
         type: 'FeatureTrack',
         name,
-        description: track.get('longLabel'),
+        description: track.data.longLabel,
         category: categories,
         adapter: {
           type: 'BigBedAdapter',
@@ -224,7 +222,7 @@ function makeTrackConfig(
       return {
         type: 'FeatureTrack',
         name,
-        description: track.get('longLabel'),
+        description: track.data.longLabel,
         category: categories,
         adapter: {
           type: 'BigBedAdapter',
@@ -238,7 +236,7 @@ function makeTrackConfig(
       return {
         type: 'QuantitativeTrack',
         name,
-        description: track.get('longLabel'),
+        description: track.data.longLabel,
         category: categories,
         adapter: {
           type: 'BigWigAdapter',
@@ -250,7 +248,7 @@ function makeTrackConfig(
       return {
         type: 'AlignmentsTrack',
         name,
-        description: track.get('longLabel'),
+        description: track.data.longLabel,
         category: categories,
         adapter: {
           type: 'CramAdapter',
@@ -266,7 +264,7 @@ function makeTrackConfig(
       return {
         type: 'FeatureTrack',
         name,
-        description: track.get('longLabel'),
+        description: track.data.longLabel,
         category: categories,
         adapter: {
           type: 'BigBedAdapter',
@@ -279,7 +277,7 @@ function makeTrackConfig(
       return {
         type: 'VariantTrack',
         name,
-        description: track.get('longLabel'),
+        description: track.data.longLabel,
         category: categories,
         adapter: {
           type: 'VcfTabixAdapter',
@@ -296,7 +294,7 @@ function makeTrackConfig(
       return {
         type: 'HicTrack',
         name,
-        description: track.get('longLabel'),
+        description: track.data.longLabel,
         category: categories,
         adapter: {
           type: 'HicAdapter',

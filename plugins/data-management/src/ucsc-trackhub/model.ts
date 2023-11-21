@@ -34,7 +34,7 @@ export default function UCSCTrackHubConnection(pluginManager: PluginManager) {
             fetchHubFile,
           } = await import('./ucscTrackHub')
           const hubFile = await fetchHubFile(hubFileLocation)
-          const genomeFile = hubFile.get('genomesFile')
+          const genomeFile = hubFile.data.genomesFile
           if (!genomeFile) {
             throw new Error('genomesFile not found on hub')
           }
@@ -51,7 +51,7 @@ export default function UCSCTrackHubConnection(pluginManager: PluginManager) {
               }
           const genomesFile = await fetchGenomesFile(genomesFileLocation)
           const map = {} as Record<string, number>
-          for (const [genomeName, genome] of genomesFile) {
+          for (const [genomeName, genome] of Object.entries(genomesFile)) {
             const assemblyNames = getConf(self, 'assemblyNames')
             if (
               assemblyNames.length > 0 &&
