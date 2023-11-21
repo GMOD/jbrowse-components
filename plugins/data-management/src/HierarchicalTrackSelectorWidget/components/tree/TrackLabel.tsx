@@ -106,16 +106,17 @@ function TrackMenuButton({
       data-testid={`htsTrackEntryMenu-${id}`}
       menuItems={[
         ...(getSession(model).getTrackActionMenuItems?.(conf) || []),
-        {
-          label: model.isFavorite(conf)
-            ? 'Remove from favorites'
-            : 'Add to favorites',
-          onClick: () =>
-            model.isFavorite(conf)
-              ? model.removeFromFavorites(conf)
-              : model.addToFavorites(conf),
-          icon: model.isFavorite(conf) ? FilledStarIcon : StarIcon,
-        },
+        model.isFavorite(conf)
+          ? {
+              label: 'Remove from favorites',
+              onClick: () => model.removeFromFavorites(conf),
+              icon: StarIcon,
+            }
+          : {
+              label: 'Add to favorites',
+              onClick: () => model.addToFavorites(conf),
+              icon: FilledStarIcon,
+            },
         {
           label: 'Add to selection',
           onClick: () => model.addToSelection([conf]),
