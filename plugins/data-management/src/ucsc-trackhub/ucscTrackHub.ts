@@ -1,37 +1,28 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { RaStanza, TrackDbFile } from '@gmod/ucsc-hub'
 import { FileLocation, isUriLocation, objectHash } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import {
   generateUnsupportedTrackConf,
   generateUnknownTrackConf,
 } from '@jbrowse/core/util/tracks'
-
-export async function fetchHubFile(hubLocation: FileLocation) {
-  try {
-    const hubFileText = await openLocation(hubLocation).readFile('utf8')
-    const { HubFile } = await import('@gmod/ucsc-hub')
-    return new HubFile(hubFileText)
-  } catch (error) {
-    throw new Error(`Not a valid hub.txt file, got error: '${error}'`)
-  }
-}
+import { RaStanza, GenomesFile, TrackDbFile } from '@gmod/ucsc-hub'
 
 export async function fetchGenomesFile(genomesLoc: FileLocation) {
   const genomesFileText = await openLocation(genomesLoc).readFile('utf8')
-  const { GenomesFile } = await import('@gmod/ucsc-hub')
   return new GenomesFile(genomesFileText)
 }
 
 export async function fetchTrackDbFile(trackDbLoc: FileLocation) {
   const text = await openLocation(trackDbLoc).readFile('utf8')
-  const { TrackDbFile } = await import('@gmod/ucsc-hub')
   return new TrackDbFile(text)
 }
 
-export function makeLoc(first: string, base: { uri: string }) {
+export function makeLoc(
+  first: string,
+  base: { uri: string; baseUri?: string },
+) {
   return {
-    uri: new URL(first, base.uri).href,
+    uri: new URL(first, new URL(base.uri, base.baseUri)).href,
     locationType: 'UriLocation',
   }
 }
@@ -52,12 +43,17 @@ export function makeLoc2(first: string, alt?: string) {
       }
 }
 
-export function generateTracks(
-  trackDb: TrackDbFile,
-  trackDbLoc: FileLocation,
-  assemblyName: string,
-  sequenceAdapter: any,
-) {
+export function generateTracks({
+  trackDb,
+  trackDbLoc,
+  assemblyName,
+  sequenceAdapter,
+}: {
+  trackDb: TrackDbFile
+  trackDbLoc: FileLocation
+  assemblyName: string
+  sequenceAdapter: any
+}) {
   const tracks: any = []
 
   for (const [trackName, track] of Object.entries(trackDb.data)) {
@@ -84,13 +80,13 @@ export function generateTracks(
     const categories = parentTracks
       .map(p => p?.data.shortLabel)
       .filter((f): f is string => !!f)
-    const res = makeTrackConfig(
-      track!,
+    const res = makeTrackConfig({
+      track: track!,
       categories,
       trackDbLoc,
       trackDb,
       sequenceAdapter,
-    )
+    })
     tracks.push({
       ...res,
       trackId: `ucsc-trackhub-${objectHash(res)}`,
@@ -101,13 +97,19 @@ export function generateTracks(
   return tracks
 }
 
-function makeTrackConfig(
-  track: RaStanza,
-  categories: string[],
-  trackDbLoc: FileLocation,
-  trackDb: TrackDbFile,
-  sequenceAdapter: any,
-) {
+function makeTrackConfig({
+  track,
+  categories,
+  trackDbLoc,
+  trackDb,
+  sequenceAdapter,
+}: {
+  track: RaStanza
+  categories: string[]
+  trackDbLoc: FileLocation
+  trackDb: TrackDbFile
+  sequenceAdapter: any
+}) {
   const trackType =
     track.data.type || trackDb.data[track.data.parent || '']?.data.type || ''
   const name = track.data.shortLabel || ''

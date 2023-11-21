@@ -1,0 +1,34 @@
+hub volvox genome assembly
+shortLabel volvox
+longLabel Volvox mythicus genome assembly
+useOneFile on
+email colin.diesh@gmail.com
+descriptionUrl html/volvox.description.html
+
+genome volvox
+taxId 1234
+groups groups.txt
+description roundworm
+twoBitPath volvox.2bit
+twoBitBptUrl volvox.2bit.bpt
+chromSizes volvox.chrom.sizes
+chromAliasBb volvox.chromAlias.bb
+chromAuthority ucsc
+organism Volvox mythicus Feb. 2013
+defaultPos ctgA:5000-10000
+scientificName Volvox mythicus
+htmlPath html/volvox.description.html
+
+track genes
+longLabel Genes
+shortLabel Genes
+bigDataUrl bbi/volvox.bb
+type bigBed 6
+html html/volvox.genes.html
+
+track coverage
+shortLabel Coverage
+longLabel Coverage for volvox-sorted.bam
+bigDataUrl bbi/volvox-sorted.bam.coverage.bw
+type bigWig 0 100
+html html/volvox.coverage.html
