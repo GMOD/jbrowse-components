@@ -3,26 +3,18 @@ import { observer } from 'mobx-react'
 import { useTheme, alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { getSession } from '@jbrowse/core/util'
-import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
 // locals
 import RefNameAutocomplete from './RefNameAutocomplete'
-import { fetchResults, splitLast } from './util'
+import { fetchResults } from './util'
 import { LinearGenomeViewModel, SPACING, WIDGET_HEIGHT } from '..'
+import { handleSelectedRegion, navToOption } from '../../searchUtils'
 
 const useStyles = makeStyles()(() => ({
   headerRefName: {
     minWidth: 100,
   },
 }))
-
-function checkRef(str: string, allRefs: string[]) {
-  const [ref, rest] = splitLast(str, ':')
-  return (
-    allRefs.includes(str) ||
-    (allRefs.includes(ref) && !Number.isNaN(Number.parseInt(rest, 10)))
-  )
-}
 
 const SearchBox = observer(function ({
   model,
@@ -41,59 +33,27 @@ const SearchBox = observer(function ({
   const assembly = assemblyManager.get(assemblyName)
   const searchScope = model.searchScope(assemblyName)
 
-  async function navToOption(option: BaseResult) {
-    const location = option.getLocation()
-    const trackId = option.getTrackId()
-    if (location) {
-      await model.navToLocString(location, assemblyName)
-      if (trackId) {
-        model.showTrack(trackId)
-      }
-    }
-  }
-
-  // gets a string as input, or use stored option results from previous query,
-  // then re-query and
-  // 1) if it has multiple results: pop a dialog
-  // 2) if it's a single result navigate to it
-  // 3) else assume it's a locstring and navigate to it
-  async function handleSelectedRegion(option: BaseResult) {
-    try {
-      const input = option.getLabel()
-      const allRefs = assembly?.allRefNamesWithLowerCase || []
-      if (option.hasLocation()) {
-        await navToOption(option)
-      } else if (option.results?.length) {
-        model.setSearchResults(option.results, option.getLabel())
-      } else if (input.split(' ').every(entry => checkRef(entry, allRefs))) {
-        await model.navToLocString(input, assemblyName)
-      } else {
-        const results = await fetchResults({
-          queryString: input,
-          searchType: 'exact',
-          searchScope,
-          rankSearchResults,
-          textSearchManager,
-          assembly,
-        })
-
-        if (results.length > 1) {
-          model.setSearchResults(results, input.toLowerCase())
-        } else if (results.length === 1) {
-          await navToOption(results[0])
-        } else {
-          await model.navToLocString(input, assemblyName)
-        }
-      }
-    } catch (e) {
-      console.error(e)
-      session.notify(`${e}`, 'warning')
-    }
-  }
   return (
     <RefNameAutocomplete
       showHelp={showHelp}
-      onSelect={handleSelectedRegion}
+      onSelect={async option => {
+        try {
+          if (option.hasLocation()) {
+            await navToOption({ option, model, assemblyName })
+          } else if (option.results?.length) {
+            model.setSearchResults(option.results, option.getLabel())
+          } else if (assembly) {
+            await handleSelectedRegion({
+              input: option.getLabel(),
+              assembly,
+              model,
+            })
+          }
+        } catch (e) {
+          console.error(e)
+          getSession(model).notify(`${e}`, 'warning')
+        }
+      }}
       assemblyName={assemblyName}
       fetchResults={queryString =>
         fetchResults({

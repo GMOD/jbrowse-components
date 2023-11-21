@@ -1,6 +1,7 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AbstractSessionModel, when } from '@jbrowse/core/util'
 import { LinearGenomeViewModel } from '../LinearGenomeView'
+import { handleSelectedRegion } from '..//searchUtils'
 
 type LGV = LinearGenomeViewModel
 
@@ -38,7 +39,7 @@ export default (pluginManager: PluginManager) => {
           )
         }
 
-        await view.navToLocString(loc, assembly)
+        await handleSelectedRegion({ input: loc, model: view, assembly: asm })
 
         const idsNotFound = [] as string[]
         tracks.forEach(track => {
