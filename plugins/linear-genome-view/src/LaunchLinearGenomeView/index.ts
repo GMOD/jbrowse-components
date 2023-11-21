@@ -42,17 +42,7 @@ export default (pluginManager: PluginManager) => {
         await handleSelectedRegion({ input: loc, model: view, assembly: asm })
 
         const idsNotFound = [] as string[]
-        tracks.forEach(track => {
-          try {
-            view.showTrack(track)
-          } catch (e) {
-            if (`${e}`.match('Could not resolve identifier')) {
-              idsNotFound.push(track)
-            } else {
-              throw e
-            }
-          }
-        })
+        tracks.forEach(track => tryTrack(view, track, idsNotFound))
         if (idsNotFound.length) {
           throw new Error(
             `Could not resolve identifiers: ${idsNotFound.join(',')}`,
@@ -64,4 +54,20 @@ export default (pluginManager: PluginManager) => {
       }
     },
   )
+}
+
+function tryTrack(
+  model: { showTrack: (arg: string) => void },
+  trackId: string,
+  idsNotFound: string[],
+) {
+  try {
+    model.showTrack(trackId)
+  } catch (e) {
+    if (`${e}`.match('Could not resolve identifier')) {
+      idsNotFound.push(trackId)
+    } else {
+      throw e
+    }
+  }
 }
