@@ -16,7 +16,7 @@ export interface NodeData {
   toggleCollapse: (arg: string) => void
   tree: TreeNode
   selected: boolean
-  menuItems: MenuItem[]
+  menuItems?: MenuItem[]
   model: HierarchicalTrackSelectorModel
 }
 

@@ -35,7 +35,7 @@ export default function Category({
 }) {
   const { classes } = useStyles()
   const [menuEl, setMenuEl] = useState<HTMLElement | null>(null)
-  const { menuItems, name, model, id, tree, toggleCollapse } = data
+  const { menuItems = [], name, model, id, tree } = data
 
   console.log(data.menuItems)
 
@@ -44,7 +44,7 @@ export default function Category({
       className={classes.accordionText}
       onClick={() => {
         if (!menuEl) {
-          toggleCollapse(id)
+          data.toggleCollapse(id)
           setOpen(!isOpen)
         }
       }}

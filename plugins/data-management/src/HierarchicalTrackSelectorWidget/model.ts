@@ -20,6 +20,8 @@ import { filterTracks } from './filterTracks'
 import { generateHierarchy } from './generateHierarchy'
 import { findSubCategories, findTopLevelCategories } from './util'
 
+type MaybeAnyConfigurationModel = AnyConfigurationModel | undefined
+
 function postfixF() {
   return typeof window !== undefined
     ? [
@@ -244,9 +246,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #method
        */
-      getRefSeqTrackConf(
-        assemblyName: string,
-      ): AnyConfigurationModel | undefined {
+      getRefSeqTrackConf(assemblyName: string): MaybeAnyConfigurationModel {
         const { assemblyManager } = getSession(self)
         const assembly = assemblyManager.get(assemblyName)
         const trackConf = assembly?.configuration.sequence
@@ -389,19 +389,17 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         return {
           name: 'Root',
           id: 'Root',
-          children: self.allTracks.map(s => {
-            return {
-              name: s.group,
-              id: s.group,
-              menuItems: s.menuItems,
-              children: generateHierarchy({
-                model: self,
-                trackConfs: s.tracks,
-                extra: s.group,
-                noCategories: s.noCategories,
-              }),
-            }
-          }),
+          children: self.allTracks.map(s => ({
+            name: s.group,
+            id: s.group,
+            menuItems: s.menuItems,
+            children: generateHierarchy({
+              model: self,
+              trackConfs: s.tracks,
+              extra: s.group,
+              noCategories: s.noCategories,
+            }),
+          })),
         }
       },
     }))
@@ -433,14 +431,14 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      toggleRecentlyUsedCategory() {
-        self.showRecentlyUsedCategory = !self.showRecentlyUsedCategory
+      setShowRecentlyUsedCategory(f: boolean) {
+        self.showRecentlyUsedCategory = f
       },
       /**
        * #action
        */
-      toggleFavoritesCategory() {
-        self.showFavoritesCategory = !self.showFavoritesCategory
+      setShowFavoritesCategory(f: boolean) {
+        self.showFavoritesCategory = f
       },
     }))
     .actions(self => ({
