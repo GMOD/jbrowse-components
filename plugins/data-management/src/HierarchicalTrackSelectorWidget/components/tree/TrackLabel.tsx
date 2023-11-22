@@ -100,6 +100,7 @@ function TrackMenuButton({
   conf: AnyConfigurationModel
   model: HierarchicalTrackSelectorModel
 }) {
+  console.log({ id })
   return (
     <CascadingMenuButton
       style={{ padding: 0 }}
