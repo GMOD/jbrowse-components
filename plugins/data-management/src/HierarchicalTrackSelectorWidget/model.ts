@@ -22,23 +22,26 @@ import { findSubCategories, findTopLevelCategories } from './util'
 
 type MaybeAnyConfigurationModel = AnyConfigurationModel | undefined
 
-function postfixF() {
+// for settings that are config dependent
+function postF() {
   return typeof window !== undefined
-    ? [
-        window.location.host,
-        window.location.pathname,
-        new URLSearchParams(window.location.search).get('config'),
-      ].join('-')
+    ? [window.location.host, window.location.pathname].join('-')
     : 'empty'
 }
 
-const lsKeyFavoritesF = () => `favoriteTracks-${postfixF()}}`
+// for settings that are not config dependent
+function postNoConfigF() {
+  return typeof window !== undefined
+    ? [postF(), new URLSearchParams(window.location.search).get('config')].join(
+        '-',
+      )
+    : 'empty'
+}
 
-const lsKeyRecentlyUsedF = () => `recentlyUsedTracks-${postfixF()}}`
-
-const lsKeyShowFavoritesF = () => `showFavorites-${postfixF()}`
-
-const lsKeyShowRecentlyUsedF = () => `showRecentlyUsed-${postfixF()}`
+const lsKeyFavoritesF = () => `favoriteTracks-${postF()}}`
+const lsKeyRecentlyUsedF = () => `recentlyUsedTracks-${postF()}}`
+const lsKeyShowFavoritesF = () => `showFavorites-${postNoConfigF()}`
+const lsKeyShowRecentlyUsedF = () => `showRecentlyUsed-${postNoConfigF()}`
 
 /**
  * #stateModel HierarchicalTrackSelectorWidget
@@ -192,12 +195,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           self.recentlyUsed.push(id)
         }
       },
-      /**
-       * #action
-       */
-      removeFromRecentlyUsed(trackId: string) {
-        self.recentlyUsed.remove(trackId)
-      },
+
       /**
        * #action
        */
@@ -340,7 +338,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
                   group: '✨Favorites',
                   tracks: self.favoriteTracks,
                   noCategories: true,
-                  isOpenByDefault: false,
                   menuItems: [
                     {
                       label: 'Clear all favorites',
@@ -355,7 +352,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
                 {
                   group: '🕒 Recently used',
                   tracks: self.recentlyUsedTracks,
-                  isOpenByDefault: false,
                   noCategories: true,
                   menuItems: [
                     {
@@ -389,9 +385,13 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         return {
           name: 'Root',
           id: 'Root',
+          isOpenByDefault: true,
+          type: 'category' as const,
           children: self.allTracks.map(s => ({
             name: s.group,
             id: s.group,
+            type: 'category' as const,
+            isOpenByDefault: !self.collapsed.get(s.group),
             menuItems: s.menuItems,
             children: generateHierarchy({
               model: self,

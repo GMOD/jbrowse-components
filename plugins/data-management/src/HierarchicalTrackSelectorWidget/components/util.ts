@@ -22,11 +22,11 @@ export interface NodeData {
 
 export function getAllChildren(subtree?: TreeNode): AnyConfigurationModel[] {
   // @ts-expect-error
-  return (
-    subtree?.children.map(t =>
-      t.children.length ? getAllChildren(t) : t.conf!,
-    ) || []
-  ).flat(Infinity)
+  return subtree?.type === 'category'
+    ? subtree.children
+        .map(t => (t.type === 'category' ? getAllChildren(t) : t.conf))
+        .flat(Infinity)
+    : []
 }
 
 export function treeToMap(tree: TreeNode, map = new Map<string, TreeNode>()) {
