@@ -49,13 +49,13 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
     return null
   }
 
-  const [bookmarkWidget, _] = useState(
-    (session.widgets.get('GridBookmark') as GridBookmarkModel) ??
-      (session.addWidget(
-        'GridBookmarkWidget',
-        'GridBookmark',
-      ) as GridBookmarkModel),
-  )
+  let bookmarkWidget = session.widgets.get('GridBookmark') as GridBookmarkModel
+  if (!bookmarkWidget) {
+    bookmarkWidget = session.addWidget(
+      'GridBookmarkWidget',
+      'GridBookmark',
+    ) as GridBookmarkModel
+  }
 
   const { showBookmarkHighlights, showBookmarkLabels } = model
   const assemblyNames = new Set(session.assemblyNames)
