@@ -1,22 +1,14 @@
 import React from 'react'
 import { Checkbox, FormControlLabel, Tooltip } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { getSession } from '@jbrowse/core/util'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
-
-// icons
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
-import StarIcon from '@mui/icons-material/StarBorderOutlined'
-import FilledStarIcon from '@mui/icons-material/Star'
-
 // locals
 import { isUnsupported, NodeData } from '../util'
-import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-import { HierarchicalTrackSelectorModel } from '../../model'
+import TrackLabelMenu from './TrackLabelMenu'
 
 const useStyles = makeStyles()(theme => ({
   compactCheckbox: {
@@ -28,6 +20,9 @@ const useStyles = makeStyles()(theme => ({
     '&:hover': {
       backgroundColor: theme.palette.action.selected,
     },
+  },
+  selected: {
+    background: '#cccc',
   },
 }))
 
@@ -50,7 +45,7 @@ export default function TrackLabel({ data }: { data: NodeData }) {
     onChange,
     selected,
   } = data
-  const description = (conf && readConfObject(conf, ['description'])) || ''
+  const description = (conf && readConfObject(conf, 'description')) || ''
   return (
     <>
       <Tooltip
@@ -84,54 +79,13 @@ export default function TrackLabel({ data }: { data: NodeData }) {
           }
         />
       </Tooltip>
-      <TrackMenuButton model={model} selected={selected} id={id} conf={conf} />
+      <TrackLabelMenu
+        model={model}
+        selected={selected}
+        trackId={trackId}
+        id={id}
+        conf={conf}
+      />
     </>
-  )
-}
-
-function TrackMenuButton({
-  id,
-  model,
-  selected,
-  conf,
-}: {
-  id: string
-  selected: boolean
-  conf: AnyConfigurationModel
-  model: HierarchicalTrackSelectorModel
-}) {
-  return (
-    <CascadingMenuButton
-      style={{ padding: 0 }}
-      data-testid={`htsTrackEntryMenu-${id}`}
-      menuItems={[
-        ...(getSession(model).getTrackActionMenuItems?.(conf) || []),
-        model.isFavorite(conf)
-          ? {
-              label: 'Remove from favorites',
-              onClick: () => model.removeFromFavorites(conf),
-              icon: StarIcon,
-            }
-          : {
-              label: 'Add to favorites',
-              onClick: () => model.addToFavorites(conf),
-              icon: FilledStarIcon,
-            },
-        {
-          label: 'Add to selection',
-          onClick: () => model.addToSelection([conf]),
-        },
-        ...(selected
-          ? [
-              {
-                label: 'Remove from selection',
-                onClick: () => model.removeFromSelection([conf]),
-              },
-            ]
-          : []),
-      ]}
-    >
-      <MoreHorizIcon />
-    </CascadingMenuButton>
   )
 }

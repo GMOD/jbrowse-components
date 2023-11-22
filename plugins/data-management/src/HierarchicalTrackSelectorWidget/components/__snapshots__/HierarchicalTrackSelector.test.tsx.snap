@@ -586,9 +586,8 @@ exports[`renders with a couple of categorized tracks 1`] = `
               </span>
             </label>
             <button
-              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1kmuk0e-MuiButtonBase-root-MuiIconButton-root-cascadingStyle"
               data-testid="htsTrackEntryMenu-Tracks,sequenceConfigId"
-              style="padding: 0px;"
               tabindex="0"
               type="button"
             >
@@ -724,9 +723,8 @@ exports[`renders with a couple of categorized tracks 1`] = `
               </span>
             </label>
             <button
-              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1kmuk0e-MuiButtonBase-root-MuiIconButton-root-cascadingStyle"
               data-testid="htsTrackEntryMenu-Tracks,fooC"
-              style="padding: 0px;"
               tabindex="0"
               type="button"
             >
@@ -870,9 +868,8 @@ exports[`renders with a couple of categorized tracks 1`] = `
               </span>
             </label>
             <button
-              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1kmuk0e-MuiButtonBase-root-MuiIconButton-root-cascadingStyle"
               data-testid="htsTrackEntryMenu-Tracks,barC"
-              style="padding: 0px;"
               tabindex="0"
               type="button"
             >
@@ -1225,9 +1222,8 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
               </span>
             </label>
             <button
-              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1kmuk0e-MuiButtonBase-root-MuiIconButton-root-cascadingStyle"
               data-testid="htsTrackEntryMenu-Tracks,sequenceConfigId"
-              style="padding: 0px;"
               tabindex="0"
               type="button"
             >
@@ -1301,9 +1297,8 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
               </span>
             </label>
             <button
-              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1kmuk0e-MuiButtonBase-root-MuiIconButton-root-cascadingStyle"
               data-testid="htsTrackEntryMenu-Tracks,fooC"
-              style="padding: 0px;"
               tabindex="0"
               type="button"
             >
@@ -1377,9 +1372,8 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
               </span>
             </label>
             <button
-              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1kmuk0e-MuiButtonBase-root-MuiIconButton-root-cascadingStyle"
               data-testid="htsTrackEntryMenu-Tracks,barC"
-              style="padding: 0px;"
               tabindex="0"
               type="button"
             >

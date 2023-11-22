@@ -20,35 +20,28 @@ import { filterTracks } from './filterTracks'
 import { generateHierarchy } from './generateHierarchy'
 import { findSubCategories, findTopLevelCategories } from './util'
 
-const config = new URLSearchParams(window.location.search).get('config')
+type MaybeAnyConfigurationModel = AnyConfigurationModel | undefined
 
-const localStorageKeyFavoritesF = () =>
-  typeof window !== undefined
-    ? `favorite-tracks-${[
-        window.location.host + window.location.pathname + config,
-      ].join('-')}`
+// for settings that are config dependent
+function postF() {
+  return typeof window !== undefined
+    ? [window.location.host, window.location.pathname].join('-')
     : 'empty'
+}
 
-const localStorageKeyRecentlyUsedF = () =>
-  typeof window !== undefined
-    ? `recentlyUsed-tracks-${[
-        window.location.host + window.location.pathname + config,
-      ].join('-')}`
+// for settings that are not config dependent
+function postNoConfigF() {
+  return typeof window !== undefined
+    ? [postF(), new URLSearchParams(window.location.search).get('config')].join(
+        '-',
+      )
     : 'empty'
+}
 
-const localStorageKeyTrackSettingsFavoritesF = () =>
-  typeof window !== undefined
-    ? `trackSettings-favorites-${[
-        window.location.host + window.location.pathname + config,
-      ].join('-')}`
-    : 'empty'
-
-const localStorageKeyTrackSettingsRecentlyUsedF = () =>
-  typeof window !== undefined
-    ? `trackSettings-recentlyUsed-${[
-        window.location.host + window.location.pathname + config,
-      ].join('-')}`
-    : 'empty'
+const lsKeyFavoritesF = () => `favoriteTracks-${postF()}}`
+const lsKeyRecentlyUsedF = () => `recentlyUsedTracks-${postF()}}`
+const lsKeyShowFavoritesF = () => `showFavorites-${postNoConfigF()}`
+const lsKeyShowRecentlyUsedF = () => `showRecentlyUsed-${postNoConfigF()}`
 
 /**
  * #stateModel HierarchicalTrackSelectorWidget
@@ -88,33 +81,35 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       ),
       /**
        * #property
+       * this is removed in postProcessSnapshot, so is generally only loaded
+       * from localstorage
        */
       favorites: types.optional(types.array(types.string), () =>
-        JSON.parse(localStorageGetItem(localStorageKeyFavoritesF()) || '[]'),
+        JSON.parse(localStorageGetItem(lsKeyFavoritesF()) || '[]'),
       ),
       /**
        * #property
+       * this is removed in postProcessSnapshot, so is generally only loaded
+       * from localstorage
        */
       recentlyUsed: types.optional(types.array(types.string), () =>
-        JSON.parse(localStorageGetItem(localStorageKeyRecentlyUsedF()) || '[]'),
+        JSON.parse(localStorageGetItem(lsKeyRecentlyUsedF()) || '[]'),
       ),
       /**
        * #property
+       * this is removed in postProcessSnapshot, so is generally only loaded
+       * from localstorage
        */
       showRecentlyUsedCategory: types.optional(types.boolean, () =>
-        JSON.parse(
-          localStorageGetItem(localStorageKeyTrackSettingsFavoritesF()) ||
-            'true',
-        ),
+        JSON.parse(localStorageGetItem(lsKeyShowFavoritesF()) || 'true'),
       ),
       /**
        * #property
+       * this is removed in postProcessSnapshot, so is generally only loaded
+       * from localstorage
        */
       showFavoritesCategory: types.optional(types.boolean, () =>
-        JSON.parse(
-          localStorageGetItem(localStorageKeyTrackSettingsRecentlyUsedF()) ||
-            'true',
-        ),
+        JSON.parse(localStorageGetItem(lsKeyShowRecentlyUsedF()) || 'true'),
       ),
     })
     .volatile(() => ({
@@ -150,7 +145,8 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * #action
        */
       removeFromSelection(elt: AnyConfigurationModel[]) {
-        self.selection = self.selection.filter(f => !elt.includes(f))
+        const s = new Set(elt)
+        self.selection = self.selection.filter(f => !s.has(f))
       },
       /**
        * #action
@@ -161,23 +157,20 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      isFavorite(config: AnyConfigurationModel) {
-        return self.favorites.includes(config.trackId)
+      isFavorite(trackId: string) {
+        return self.favorites.includes(trackId)
       },
       /**
        * #action
        */
-      addToFavorites(config: AnyConfigurationModel) {
-        self.favorites.push(readConfObject(config, 'trackId'))
+      addToFavorites(trackId: string) {
+        self.favorites.push(trackId)
       },
       /**
        * #action
        */
-      removeFromFavorites(config: AnyConfigurationModel) {
-        const ele = self.favorites.find((id: string) => id === config.trackId)
-        if (ele) {
-          self.favorites.remove(ele)
-        }
+      removeFromFavorites(trackId: string) {
+        self.favorites.remove(trackId)
       },
       /**
        * #action
@@ -188,31 +181,21 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      isRecentlyUsed(config: AnyConfigurationModel) {
-        return self.recentlyUsed.includes(config.trackId)
+      isRecentlyUsed(trackId: string) {
+        return self.recentlyUsed.includes(trackId)
       },
       /**
        * #action
        */
       addToRecentlyUsed(id: string) {
-        if (self.recentlyUsed.length >= 10) {
-          self.recentlyUsed.shift()
-        }
         if (!self.recentlyUsed.includes(id)) {
+          if (self.recentlyUsed.length >= 10) {
+            self.recentlyUsed.shift()
+          }
           self.recentlyUsed.push(id)
         }
       },
-      /**
-       * #action
-       */
-      removeFromRecentlyUsed(config: AnyConfigurationModel) {
-        const ele = self.recentlyUsed.find(
-          (id: string) => id === config.trackId,
-        )
-        if (ele) {
-          self.recentlyUsed.remove(ele)
-        }
-      },
+
       /**
        * #action
        */
@@ -261,9 +244,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #method
        */
-      getRefSeqTrackConf(
-        assemblyName: string,
-      ): AnyConfigurationModel | undefined {
+      getRefSeqTrackConf(assemblyName: string): MaybeAnyConfigurationModel {
         const { assemblyManager } = getSession(self)
         const assembly = assemblyManager.get(assemblyName)
         const trackConf = assembly?.configuration.sequence
@@ -310,10 +291,8 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * #method
        * filter out tracks that don't match the current display types
        */
-      connectionTrackConfigurations(connection: {
-        tracks: AnyConfigurationModel[]
-      }) {
-        return filterTracks(connection.tracks, self)
+      connectionTrackConfigurations(conn: { tracks: AnyConfigurationModel[] }) {
+        return filterTracks(conn.tracks, self)
       },
 
       /**
@@ -326,15 +305,15 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           ...filterTracks(getSession(self).tracks, self),
         ].filter(notEmpty)
       },
-
+    }))
+    .views(self => ({
       /**
        * #getter
        * filters out tracks that are not in the favorites group
        */
       get favoriteTracks() {
-        return this.trackConfigurations.filter(track =>
-          self.favorites.includes(readConfObject(track, 'trackId')),
-        )
+        const s = new Set(self.favorites)
+        return self.trackConfigurations.filter(t => s.has(t.trackId))
       },
 
       /**
@@ -342,12 +321,14 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * filters out tracks that are not in the recently used group
        */
       get recentlyUsedTracks() {
-        return this.trackConfigurations.filter(track =>
-          self.recentlyUsed.includes(readConfObject(track, 'trackId')),
-        )
+        const s = new Set(self.recentlyUsed)
+        return self.trackConfigurations.filter(t => s.has(t.trackId))
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
       get allTracks() {
         const { connectionInstances = [] } = getSession(self)
         return [
@@ -371,7 +352,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
                 {
                   group: '🕒 Recently used',
                   tracks: self.recentlyUsedTracks,
-                  isOpenByDefault: false,
                   noCategories: true,
                   menuItems: [
                     {
@@ -405,19 +385,21 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         return {
           name: 'Root',
           id: 'Root',
-          children: self.allTracks.map(s => {
-            return {
-              name: s.group,
-              id: s.group,
-              menuItems: s.menuItems,
-              children: generateHierarchy({
-                model: self,
-                trackConfs: s.tracks,
-                extra: s.group,
-                noCategories: s.noCategories,
-              }),
-            }
-          }),
+          isOpenByDefault: true,
+          type: 'category' as const,
+          children: self.allTracks.map(s => ({
+            name: s.group,
+            id: s.group,
+            type: 'category' as const,
+            isOpenByDefault: !self.collapsed.get(s.group),
+            menuItems: s.menuItems,
+            children: generateHierarchy({
+              model: self,
+              trackConfs: s.tracks,
+              extra: s.group,
+              noCategories: s.noCategories,
+            }),
+          })),
         }
       },
     }))
@@ -449,14 +431,14 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      toggleRecentlyUsedCategory() {
-        self.showRecentlyUsedCategory = !self.showRecentlyUsedCategory
+      setShowRecentlyUsedCategory(f: boolean) {
+        self.showRecentlyUsedCategory = f
       },
       /**
        * #action
        */
-      toggleFavoritesCategory() {
-        self.showFavoritesCategory = !self.showFavoritesCategory
+      setShowFavoritesCategory(f: boolean) {
+        self.showFavoritesCategory = f
       },
     }))
     .actions(self => ({
@@ -493,6 +475,9 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
       get hasAnySubcategories() {
         return self.allTracks.some(group =>
           group.tracks.some(t => readConfObject(t, 'category')?.length > 1),
@@ -505,19 +490,19 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           self,
           autorun(() => {
             localStorageSetItem(
-              localStorageKeyFavoritesF(),
+              lsKeyFavoritesF(),
               JSON.stringify(self.favorites),
             )
             localStorageSetItem(
-              localStorageKeyRecentlyUsedF(),
+              lsKeyRecentlyUsedF(),
               JSON.stringify(self.recentlyUsed),
             )
             localStorageSetItem(
-              localStorageKeyTrackSettingsFavoritesF(),
+              lsKeyShowFavoritesF(),
               JSON.stringify(self.showFavoritesCategory),
             )
             localStorageSetItem(
-              localStorageKeyTrackSettingsRecentlyUsedF(),
+              lsKeyShowRecentlyUsedF(),
               JSON.stringify(self.showRecentlyUsedCategory),
             )
           }),

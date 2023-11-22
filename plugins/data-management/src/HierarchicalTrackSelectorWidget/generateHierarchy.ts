@@ -43,15 +43,25 @@ function sortConfs(
   return ret.map(a => a[0])
 }
 
-export interface TreeNode {
+export interface TreeTrackNode {
   name: string
   id: string
-  trackId?: string
-  conf?: AnyConfigurationModel
-  checked?: boolean
-  isOpenByDefault?: boolean
-  children: TreeNode[]
+  trackId: string
+  conf: AnyConfigurationModel
+  checked: boolean
+  children: TreeNode[] // empty
+  type: 'track'
 }
+
+export interface TreeCategoryNode {
+  name: string
+  id: string
+  isOpenByDefault: boolean
+  children: TreeNode[]
+  type: 'category'
+}
+
+export type TreeNode = TreeTrackNode | TreeCategoryNode
 
 export function generateHierarchy({
   model,
@@ -121,6 +131,7 @@ export function generateHierarchy({
             id,
             isOpenByDefault: !collapsed.get(id),
             menuItems,
+            type: 'category' as const,
           }
           currLevel.children.push(n)
           currLevel = n
@@ -142,6 +153,7 @@ export function generateHierarchy({
       conf,
       checked: viewTracks.some(f => f.configuration === conf),
       children: [],
+      type: 'track' as const,
     })
   }
 
