@@ -29,6 +29,12 @@ const useStyles = makeStyles()(theme => ({
       backgroundColor: theme.palette.action.selected,
     },
   },
+  selected: {
+    background: '#cccc',
+  },
+  cascadingStyle: {
+    padding: 0,
+  },
 }))
 
 export interface InfoArgs {
@@ -77,45 +83,53 @@ export default function TrackLabel({ data }: { data: NodeData }) {
           label={
             <div
               data-testid={`htsTrackLabel-${id}`}
-              style={{ background: selected ? '#cccc' : undefined }}
+              className={selected ? classes.selected : undefined}
             >
               <SanitizedHTML html={name} />
             </div>
           }
         />
       </Tooltip>
-      <TrackMenuButton model={model} selected={selected} id={id} conf={conf} />
+      <TrackMenuButton
+        model={model}
+        selected={selected}
+        trackId={trackId}
+        id={id}
+        conf={conf}
+      />
     </>
   )
 }
 
 function TrackMenuButton({
   id,
+  trackId,
   model,
   selected,
   conf,
 }: {
   id: string
+  trackId: string
   selected: boolean
   conf: AnyConfigurationModel
   model: HierarchicalTrackSelectorModel
 }) {
-  console.log({ id })
+  const { classes } = useStyles()
   return (
     <CascadingMenuButton
-      style={{ padding: 0 }}
+      className={classes.cascadingStyle}
       data-testid={`htsTrackEntryMenu-${id}`}
       menuItems={[
         ...(getSession(model).getTrackActionMenuItems?.(conf) || []),
-        model.isFavorite(conf)
+        model.isFavorite(trackId)
           ? {
               label: 'Remove from favorites',
-              onClick: () => model.removeFromFavorites(conf),
+              onClick: () => model.removeFromFavorites(trackId),
               icon: StarIcon,
             }
           : {
               label: 'Add to favorites',
-              onClick: () => model.addToFavorites(conf),
+              onClick: () => model.addToFavorites(trackId),
               icon: FilledStarIcon,
             },
         {
