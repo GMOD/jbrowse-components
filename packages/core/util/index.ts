@@ -1264,11 +1264,9 @@ export function localStorageGetItem(item: string) {
 }
 
 export function localStorageSetItem(str: string, item: string) {
-  const returnVal =
-    typeof localStorage !== 'undefined'
-      ? localStorage.setItem(str, item)
-      : undefined
-  return returnVal
+  return typeof localStorage !== 'undefined'
+    ? localStorage.setItem(str, item)
+    : undefined
 }
 
 export function max(arr: number[], init = -Infinity) {
