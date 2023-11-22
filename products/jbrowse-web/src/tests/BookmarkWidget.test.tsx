@@ -70,7 +70,7 @@ test('using the menu button to bookmark the current region', async () => {
   const { session, findByTestId, findByText } = await createView()
 
   const user = userEvent.setup()
-  await user.click(await findByTestId('trackContainer'))
+  await user.click(await findByTestId('trackContainer', ...opts))
   await user.click(await findByTestId('view_menu_icon'))
   await user.click(await findByText('Bookmark current region'))
 

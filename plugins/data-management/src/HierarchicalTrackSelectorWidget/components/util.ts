@@ -1,6 +1,7 @@
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { HierarchicalTrackSelectorModel } from '../model'
 import { TreeNode } from '../generateHierarchy'
+import { MenuItem } from '@jbrowse/core/ui'
 
 export interface NodeData {
   nestingLevel: number
@@ -8,12 +9,14 @@ export interface NodeData {
   conf: AnyConfigurationModel
   drawerPosition: unknown
   id: string
+  trackId: string
   isLeaf: boolean
   name: string
   onChange: Function
   toggleCollapse: (arg: string) => void
   tree: TreeNode
   selected: boolean
+  menuItems: MenuItem[]
   model: HierarchicalTrackSelectorModel
 }
 

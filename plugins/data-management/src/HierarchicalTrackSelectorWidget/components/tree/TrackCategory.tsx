@@ -35,7 +35,7 @@ export default function Category({
 }) {
   const { classes } = useStyles()
   const [menuEl, setMenuEl] = useState<HTMLElement | null>(null)
-  const { name, model, id, tree, toggleCollapse } = data
+  const { menuItems, name, model, id, tree, toggleCollapse } = data
 
   return (
     <div
@@ -83,7 +83,7 @@ export default function Category({
               onClick: () => {
                 for (const entry of treeToMap(tree).get(id)?.children || []) {
                   if (!entry.children.length) {
-                    model.view.showTrack(entry.id)
+                    model.view.showTrack(entry.trackId)
                   }
                 }
               },
@@ -93,11 +93,12 @@ export default function Category({
               onClick: () => {
                 for (const entry of treeToMap(tree).get(id)?.children || []) {
                   if (!entry.children.length) {
-                    model.view.hideTrack(entry.id)
+                    model.view.hideTrack(entry.trackId)
                   }
                 }
               },
             },
+            ...menuItems,
           ]}
           onMenuItemClick={(_event, callback) => {
             callback()

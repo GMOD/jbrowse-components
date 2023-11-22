@@ -10,6 +10,8 @@ import {
 
 // icons
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
+import StarIcon from '@mui/icons-material/StarBorderOutlined'
+import FilledStarIcon from '@mui/icons-material/Star'
 
 // locals
 import { isUnsupported, NodeData } from '../util'
@@ -37,8 +39,17 @@ export interface InfoArgs {
 
 export default function TrackLabel({ data }: { data: NodeData }) {
   const { classes } = useStyles()
-  const { checked, conf, model, drawerPosition, id, name, onChange, selected } =
-    data
+  const {
+    checked,
+    conf,
+    model,
+    drawerPosition,
+    id,
+    trackId,
+    name,
+    onChange,
+    selected,
+  } = data
   const description = (conf && readConfObject(conf, ['description'])) || ''
   return (
     <>
@@ -52,7 +63,10 @@ export default function TrackLabel({ data }: { data: NodeData }) {
             <Checkbox
               className={classes.compactCheckbox}
               checked={checked}
-              onChange={() => onChange(id)}
+              onChange={() => {
+                onChange(trackId)
+                model.addToRecentlyUsed(trackId)
+              }}
               disabled={isUnsupported(name)}
               inputProps={{
                 // @ts-expect-error
@@ -92,6 +106,17 @@ function TrackMenuButton({
       data-testid={`htsTrackEntryMenu-${id}`}
       menuItems={[
         ...(getSession(model).getTrackActionMenuItems?.(conf) || []),
+        model.isFavorite(conf)
+          ? {
+              label: 'Remove from favorites',
+              onClick: () => model.removeFromFavorites(conf),
+              icon: StarIcon,
+            }
+          : {
+              label: 'Add to favorites',
+              onClick: () => model.addToFavorites(conf),
+              icon: FilledStarIcon,
+            },
         {
           label: 'Add to selection',
           onClick: () => model.addToSelection([conf]),

@@ -13,7 +13,7 @@ function getNodeData(
   extra: Record<string, unknown>,
   selection: Record<string, unknown>,
 ) {
-  const isLeaf = !!node.conf
+  const isLeaf = 'conf' in node && !!node.conf
   const selected = !!selection[node.id]
   return {
     data: {

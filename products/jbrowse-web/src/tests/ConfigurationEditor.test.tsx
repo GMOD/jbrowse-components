@@ -21,7 +21,11 @@ test('change color on track', async () => {
 
   await user.click(await findByTestId(hts('volvox_filtered_vcf'), {}, delay))
   await user.click(
-    await findByTestId('htsTrackEntryMenu-volvox_filtered_vcf', {}, delay),
+    await findByTestId(
+      'htsTrackEntryMenu-Tracks,volvox_filtered_vcf',
+      {},
+      delay,
+    ),
   )
   await user.click(await findByText('Settings'))
   const elt = await findByDisplayValue('goldenrod', {}, delay)
