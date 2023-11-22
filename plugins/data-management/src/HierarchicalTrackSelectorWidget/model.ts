@@ -23,18 +23,19 @@ import { findSubCategories, findTopLevelCategories } from './util'
 type MaybeAnyConfigurationModel = AnyConfigurationModel | undefined
 
 // for settings that are config dependent
-function postF() {
+function postNoConfigF() {
   return typeof window !== undefined
     ? [window.location.host, window.location.pathname].join('-')
     : 'empty'
 }
 
 // for settings that are not config dependent
-function postNoConfigF() {
+function postF() {
   return typeof window !== undefined
-    ? [postF(), new URLSearchParams(window.location.search).get('config')].join(
-        '-',
-      )
+    ? [
+        postNoConfigF(),
+        new URLSearchParams(window.location.search).get('config'),
+      ].join('-')
     : 'empty'
 }
 
