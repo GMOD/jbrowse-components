@@ -50,9 +50,29 @@ import type {
   Instance,
   SnapshotIn,
 } from 'mobx-state-tree'
+import { openDB, DBSchema } from 'idb'
 
+// lazies
 const SetDefaultSession = lazy(() => import('../components/SetDefaultSession'))
 const PreferencesDialog = lazy(() => import('../components/PreferencesDialog'))
+
+interface Session {
+  name: string
+  [key: string]: unknown
+}
+interface SavedSession {
+  session: Session
+}
+interface MyDB extends DBSchema {
+  savedSessions: {
+    key: string
+    value: SavedSession
+  }
+  autosavedSessions: {
+    key: string
+    value: SavedSession
+  }
+}
 
 export interface Menu {
   label: string
@@ -127,10 +147,7 @@ export default function RootModel({
           MainThreadRpcDriver: {},
         },
       ),
-      savedSessionsVolatile: observable.map<
-        string,
-        { name: string; [key: string]: unknown }
-      >({}),
+      savedSessionsVolatile: observable.map<string, Session>({}),
       textSearchManager: new TextSearchManager(pluginManager),
       error: undefined as unknown,
     }))
@@ -179,65 +196,77 @@ export default function RootModel({
 
     .actions(self => ({
       afterCreate() {
-        for (const [key, val] of Object.entries(localStorage)
-          .filter(([key, _val]) => key.startsWith('localSaved-'))
-          .filter(([key]) => key.includes(self.configPath || 'undefined'))) {
-          try {
-            const { session } = JSON.parse(val)
-            self.savedSessionsVolatile.set(key, session)
-          } catch (e) {
-            console.error('bad session encountered', key, val)
-          }
-        }
-        addDisposer(
-          self,
-          autorun(() => {
-            for (const [, val] of self.savedSessionsVolatile.entries()) {
-              try {
-                const key = self.localStorageId(val.name)
-                localStorage.setItem(key, JSON.stringify({ session: val }))
-              } catch (e) {
-                // @ts-expect-error
-                if (e.code === '22' || e.code === '1024') {
-                  alert(
-                    'Local storage is full! Please use the "Open sessions" panel to remove old sessions',
-                  )
-                }
-              }
-            }
-          }),
-        )
-
-        addDisposer(
-          self,
-          autorun(
-            () => {
-              if (!self.session) {
-                return
-              }
-              const snapshot = getSnapshot(self.session as BaseSession)
-              const s = JSON.stringify
-              sessionStorage.setItem('current', s({ session: snapshot }))
-              localStorage.setItem(
-                `autosave-${self.configPath}`,
-                s({
-                  session: {
-                    ...snapshot,
-                    name: `${snapshot.name}-autosaved`,
-                  },
-                }),
-              )
-
-              // this check is not able to be modularized into it's own autorun
-              // at current time because it depends on session storage snapshot
-              // being set above
-              if (self.pluginsUpdated) {
-                window.location.reload()
-              }
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        ;(async () => {
+          const db = await openDB<MyDB>('sessionsDB', 1, {
+            upgrade(db) {
+              db.createObjectStore('savedSessions')
+              db.createObjectStore('autosavedSessions')
             },
-            { delay: 400 },
-          ),
-        )
+          })
+
+          // load old sessions from localStorage
+          loadOldSessions(self.configPath, self.savedSessionsVolatile)
+
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          db.getAll('savedSessions').then(savedSessions => {
+            Object.entries(savedSessions).map(([key, val]) =>
+              self.savedSessionsVolatile.set(key, val.session),
+            )
+          })
+
+          addDisposer(
+            self,
+            autorun(() => {
+              Promise.all(
+                [...toJS(self.savedSessionsVolatile).values()].map(val => {
+                  const key = self.localStorageId(val.name)
+                  return db.put('savedSessions', { session: val }, key)
+                }),
+              ).catch(e => {
+                console.error(e)
+              })
+            }),
+          )
+
+          addDisposer(
+            self,
+            autorun(
+              () => {
+                if (!self.session) {
+                  return
+                }
+                const snapshot = getSnapshot(self.session as BaseSession) || {
+                  name: 'empty',
+                }
+                sessionStorage.setItem(
+                  'current',
+                  JSON.stringify({ session: snapshot }),
+                )
+
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                db.put(
+                  'autosavedSessions',
+                  {
+                    session: {
+                      ...snapshot,
+                      name: `${snapshot.name}-autosaved`,
+                    },
+                  },
+                  `autosave-${self.configPath}`,
+                )
+
+                // this check is not able to be modularized into it's own autorun
+                // at current time because it depends on session storage snapshot
+                // being set above
+                if (self.pluginsUpdated) {
+                  window.location.reload()
+                }
+              },
+              { delay: 400 },
+            ),
+          )
+        })()
       },
       /**
        * #action
@@ -555,6 +584,22 @@ export default function RootModel({
       ] as Menu[],
       adminMode,
     }))
+}
+
+function loadOldSessions(
+  configPath: string | undefined,
+  savedSessions: Map<string, unknown>,
+) {
+  for (const [key, val] of Object.entries(localStorage)
+    .filter(([key, _val]) => key.startsWith('localSaved-'))
+    .filter(([key]) => key.includes(configPath || 'undefined'))) {
+    try {
+      const { session } = JSON.parse(val)
+      savedSessions.set(key, session)
+    } catch (e) {
+      console.error('bad session encountered', key, val)
+    }
+  }
 }
 
 export type WebRootModelType = ReturnType<typeof RootModel>
