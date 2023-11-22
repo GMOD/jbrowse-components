@@ -55,9 +55,11 @@ const HighlightBookmarksDialog = observer(function ({
         <Stack direction="row" alignItems="center">
           <Switch
             data-testid="toggle_highlight_all_switch"
-            checked={model.highlightToggle}
+            checked={model.areBookmarksHighlightedOnAllOpenViews}
             onChange={() => {
-              model.setHighlightToggle(!model.highlightToggle)
+              model.setHighlightToggle(
+                !model.areBookmarksHighlightedOnAllOpenViews,
+              )
             }}
           />
           <Typography variant="overline">
@@ -67,9 +69,11 @@ const HighlightBookmarksDialog = observer(function ({
         <Stack direction="row" alignItems="center">
           <Switch
             data-testid="toggle_highlight_label_all_switch"
-            checked={model.labelToggle}
+            checked={model.areBookmarksHighlightLabelsOnAllOpenViews}
             onChange={() => {
-              model.setLabelToggle(!model.labelToggle)
+              model.setLabelToggle(
+                !model.areBookmarksHighlightLabelsOnAllOpenViews,
+              )
             }}
           />
           <Typography variant="overline">

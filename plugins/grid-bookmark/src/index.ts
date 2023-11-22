@@ -34,7 +34,33 @@ export default class extends Plugin {
           const { stateModel } = pluggableElement as ViewType
           const lgv = stateModel as LinearGenomeViewStateModel
           const newStateModel = lgv
+            .props({
+              /**
+               * #property
+               * show the bookmark highlights on this track
+               */
+              showBookmarkHighlights: true,
+              /**
+               * #property
+               * show the bookmark labels on this track
+               */
+              showBookmarkLabels: true,
+            })
             .actions(self => ({
+              /**
+               * #action
+               */
+              toggleShowBookmarkHighlights(toggle?: boolean) {
+                self.showBookmarkHighlights =
+                  toggle !== undefined ? toggle : !self.showBookmarkHighlights
+              },
+              /**
+               * #action
+               */
+              toggleShowBookmarkLabels(toggle?: boolean) {
+                self.showBookmarkLabels =
+                  toggle !== undefined ? toggle : !self.showBookmarkLabels
+              },
               activateBookmarkWidget() {
                 const session = getSession(self)
                 if (isSessionModelWithWidgets(session)) {

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 import {
@@ -6,7 +6,7 @@ import {
   isSessionModelWithWidgets,
   notEmpty,
 } from '@jbrowse/core/util'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { IExtendedLGV } from '../../model'
 
 // icons
 import BookmarkIcon from '@mui/icons-material/Bookmark'
@@ -15,7 +15,7 @@ import BookmarkIcon from '@mui/icons-material/Bookmark'
 import { Tooltip } from '@mui/material'
 import { GridBookmarkModel } from '../../model'
 
-type LGV = LinearGenomeViewModel
+type LGV = IExtendedLGV
 
 const useStyles = makeStyles()({
   highlight: {
@@ -49,13 +49,13 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
     return null
   }
 
-  let bookmarkWidget = session.widgets.get('GridBookmark') as GridBookmarkModel
-  if (!bookmarkWidget) {
-    bookmarkWidget = session.addWidget(
-      'GridBookmarkWidget',
-      'GridBookmark',
-    ) as GridBookmarkModel
-  }
+  const [bookmarkWidget, _] = useState(
+    (session.widgets.get('GridBookmark') as GridBookmarkModel) ??
+      (session.addWidget(
+        'GridBookmarkWidget',
+        'GridBookmark',
+      ) as GridBookmarkModel),
+  )
 
   const { showBookmarkHighlights, showBookmarkLabels } = model
   const assemblyNames = new Set(session.assemblyNames)

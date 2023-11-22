@@ -39,6 +39,13 @@ const SharedBookmarksModel = types.model('SharedBookmarksModel', {
   sharedBookmarks: types.maybe(types.array(LabeledRegionModel)),
 })
 
+export interface IExtendedLGV extends LinearGenomeViewModel {
+  showBookmarkHighlights: boolean
+  showBookmarkLabels: boolean
+  toggleShowBookmarkHighlights: (arg: boolean) => {}
+  toggleShowBookmarkLabels: (arg: boolean) => {}
+}
+
 export interface ILabeledRegionModel
   extends SnapshotIn<typeof LabeledRegionModel> {
   refName: string
@@ -96,22 +103,22 @@ export default function f(_pluginManager: PluginManager) {
           this.bookmarkAssemblies.filter(a => assemblyManager.get(a)),
         )
       },
-      get highlightToggle() {
+      get areBookmarksHighlightedOnAllOpenViews() {
         const { views } = getSession(self)
         const lgvs = views.filter(v =>
           Object.hasOwn(v, 'showBookmarkHighlights'),
         )
-        const res = (lgvs as LinearGenomeViewModel[]).map(
-          v => v.showBookmarkHighlights,
-        )
+        const res = (lgvs as IExtendedLGV[]).map(v => v.showBookmarkHighlights)
+        // if a Set(res) of the open lgv's is size 1, that means all the bookmarks have the same setting,
+        //  &&'d with the first res will show the toggle as on (i.e. all views have highlights toggled ON)
+        //  or off (i.e. all views have highlights toggled OFF, OR, even one view has highlights toggled OFF)
         return new Set(res).size === 1 && res[0]
       },
-      get labelToggle() {
+      get areBookmarksHighlightLabelsOnAllOpenViews() {
         const { views } = getSession(self)
         const lgvs = views.filter(v => Object.hasOwn(v, 'showBookmarkLabels'))
-        const res = (lgvs as LinearGenomeViewModel[]).map(
-          v => v.showBookmarkLabels,
-        )
+        const res = (lgvs as IExtendedLGV[]).map(v => v.showBookmarkLabels)
+        // same logic as areBookmarksHighlightedOnAllOpenViews
         return new Set(res).size === 1 && res[0]
       },
     }))
@@ -179,11 +186,9 @@ export default function f(_pluginManager: PluginManager) {
         bookmark.correspondingObj.setHighlight(color)
       },
       updateBulkBookmarkHighlights(color: string) {
-        if (self.selectedBookmarks.length !== 0) {
-          self.selectedBookmarks.forEach(bookmark =>
-            this.updateBookmarkHighlight(bookmark, color),
-          )
-        }
+        self.selectedBookmarks.forEach(bookmark =>
+          this.updateBookmarkHighlight(bookmark, color),
+        )
       },
       setSelectedBookmarks(bookmarks: IExtendedLabeledRegionModel[]) {
         self.selectedBookmarks = bookmarks
@@ -193,20 +198,14 @@ export default function f(_pluginManager: PluginManager) {
       },
       setHighlightToggle(toggle: boolean) {
         const { views } = getSession(self)
-        const lgvs = views.filter(v =>
-          Object.hasOwn(v, 'showBookmarkHighlights'),
-        )
-
-        ;(lgvs as LinearGenomeViewModel[]).forEach(view => {
-          view.toggleShowBookmarkHighlights(toggle)
+        ;(views as IExtendedLGV[]).forEach(view => {
+          view.toggleShowBookmarkHighlights?.(toggle)
         })
       },
       setLabelToggle(toggle: boolean) {
         const { views } = getSession(self)
-        const lgvs = views.filter(v => Object.hasOwn(v, 'showBookmarkLabels'))
-
-        ;(lgvs as LinearGenomeViewModel[]).forEach(view => {
-          view.toggleShowBookmarkLabels(toggle)
+        ;(views as IExtendedLGV[]).forEach(view => {
+          view.toggleShowBookmarkLabels?.(toggle)
         })
       },
     }))

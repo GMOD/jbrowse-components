@@ -1268,7 +1268,6 @@ export function localStorageSetItem(str: string, item: string) {
     typeof localStorage !== 'undefined'
       ? localStorage.setItem(str, item)
       : undefined
-  window.dispatchEvent(new Event('storage'))
   return returnVal
 }
 
