@@ -52,16 +52,7 @@ function TrackSelector({
   assembly1: string
   assembly2: string
 }) {
-  const session = getSession(model)
-  const { tracks, sessionTracks } = session
-  const allTracks = [
-    ...tracks,
-    ...(sessionTracks || []),
-  ] as AnyConfigurationModel[]
-  const filteredTracks = allTracks.filter(t => f(t, assembly2, assembly1))
-  const [choice, setChoice] = useState(
-    filteredTracks.length > 0 ? 'tracklist' : 'none',
-  )
+  const [choice, setChoice] = useState('tracklist')
 
   useEffect(() => {
     if (choice === 'none') {
