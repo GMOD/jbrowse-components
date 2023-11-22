@@ -1,22 +1,14 @@
 import React from 'react'
 import { Checkbox, FormControlLabel, Tooltip } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { getSession } from '@jbrowse/core/util'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
-
-// icons
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
-import StarIcon from '@mui/icons-material/StarBorderOutlined'
-import FilledStarIcon from '@mui/icons-material/Star'
-
 // locals
 import { isUnsupported, NodeData } from '../util'
-import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-import { HierarchicalTrackSelectorModel } from '../../model'
+import TrackLabelMenu from './TrackLabelMenu'
 
 const useStyles = makeStyles()(theme => ({
   compactCheckbox: {
@@ -31,9 +23,6 @@ const useStyles = makeStyles()(theme => ({
   },
   selected: {
     background: '#cccc',
-  },
-  cascadingStyle: {
-    padding: 0,
   },
 }))
 
@@ -83,14 +72,14 @@ export default function TrackLabel({ data }: { data: NodeData }) {
           label={
             <div
               data-testid={`htsTrackLabel-${id}`}
-              className={selected ? classes.selected : undefined}
+              style={{ background: selected ? '#cccc' : undefined }}
             >
               <SanitizedHTML html={name} />
             </div>
           }
         />
       </Tooltip>
-      <TrackMenuButton
+      <TrackLabelMenu
         model={model}
         selected={selected}
         trackId={trackId}
@@ -98,55 +87,5 @@ export default function TrackLabel({ data }: { data: NodeData }) {
         conf={conf}
       />
     </>
-  )
-}
-
-function TrackMenuButton({
-  id,
-  trackId,
-  model,
-  selected,
-  conf,
-}: {
-  id: string
-  trackId: string
-  selected: boolean
-  conf: AnyConfigurationModel
-  model: HierarchicalTrackSelectorModel
-}) {
-  const { classes } = useStyles()
-  return (
-    <CascadingMenuButton
-      className={classes.cascadingStyle}
-      data-testid={`htsTrackEntryMenu-${id}`}
-      menuItems={[
-        ...(getSession(model).getTrackActionMenuItems?.(conf) || []),
-        model.isFavorite(trackId)
-          ? {
-              label: 'Remove from favorites',
-              onClick: () => model.removeFromFavorites(trackId),
-              icon: StarIcon,
-            }
-          : {
-              label: 'Add to favorites',
-              onClick: () => model.addToFavorites(trackId),
-              icon: FilledStarIcon,
-            },
-        {
-          label: 'Add to selection',
-          onClick: () => model.addToSelection([conf]),
-        },
-        ...(selected
-          ? [
-              {
-                label: 'Remove from selection',
-                onClick: () => model.removeFromSelection([conf]),
-              },
-            ]
-          : []),
-      ]}
-    >
-      <MoreHorizIcon />
-    </CascadingMenuButton>
   )
 }

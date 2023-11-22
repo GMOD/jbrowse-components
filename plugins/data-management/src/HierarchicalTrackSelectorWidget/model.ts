@@ -183,10 +183,10 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * #action
        */
       addToRecentlyUsed(id: string) {
-        if (self.recentlyUsed.length >= 10) {
-          self.recentlyUsed.shift()
-        }
         if (!self.recentlyUsed.includes(id)) {
+          if (self.recentlyUsed.length >= 10) {
+            self.recentlyUsed.shift()
+          }
           self.recentlyUsed.push(id)
         }
       },
@@ -293,10 +293,8 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * #method
        * filter out tracks that don't match the current display types
        */
-      connectionTrackConfigurations(connection: {
-        tracks: AnyConfigurationModel[]
-      }) {
-        return filterTracks(connection.tracks, self)
+      connectionTrackConfigurations(conn: { tracks: AnyConfigurationModel[] }) {
+        return filterTracks(conn.tracks, self)
       },
 
       /**
@@ -309,15 +307,15 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           ...filterTracks(getSession(self).tracks, self),
         ].filter(notEmpty)
       },
-
+    }))
+    .views(self => ({
       /**
        * #getter
        * filters out tracks that are not in the favorites group
        */
       get favoriteTracks() {
-        return this.trackConfigurations.filter(track =>
-          self.favorites.includes(readConfObject(track, 'trackId')),
-        )
+        const s = new Set(self.favorites)
+        return self.trackConfigurations.filter(t => s.has(t.trackId))
       },
 
       /**
@@ -325,12 +323,14 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * filters out tracks that are not in the recently used group
        */
       get recentlyUsedTracks() {
-        return this.trackConfigurations.filter(track =>
-          self.recentlyUsed.includes(readConfObject(track, 'trackId')),
-        )
+        const s = new Set(self.recentlyUsed)
+        return self.trackConfigurations.filter(t => s.has(t.trackId))
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
       get allTracks() {
         const { connectionInstances = [] } = getSession(self)
         return [
@@ -340,6 +340,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
                   group: '✨Favorites',
                   tracks: self.favoriteTracks,
                   noCategories: true,
+                  isOpenByDefault: false,
                   menuItems: [
                     {
                       label: 'Clear all favorites',
@@ -476,6 +477,9 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
       get hasAnySubcategories() {
         return self.allTracks.some(group =>
           group.tracks.some(t => readConfObject(t, 'category')?.length > 1),
@@ -509,10 +513,10 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
     }))
     .postProcessSnapshot(snap => {
       const {
-        favorites: _a,
-        recentlyUsed: _b,
-        showFavoritesCategory: _c,
-        showRecentlyUsedCategory: _d,
+        favorites: _,
+        recentlyUsed: __,
+        showFavoritesCategory: ___,
+        showRecentlyUsedCategory: ____,
         ...rest
       } = snap as Omit<typeof snap, symbol>
       return rest
