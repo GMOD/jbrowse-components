@@ -33,24 +33,18 @@ const RegularSavedSessionsList = observer(function ({
   session: SessionModel
 }) {
   const { classes } = useStyles()
-  const [sessionIndexToDelete, setSessionIndexToDelete] = useState<number>()
-
-  function handleDialogClose(deleteSession = false) {
-    if (deleteSession && sessionIndexToDelete !== undefined) {
-      session.removeSavedSession(session.savedSessions[sessionIndexToDelete])
-    }
-    setSessionIndexToDelete(undefined)
-  }
+  const [sessionIdxToDelete, setSessionIdxToDelete] = useState<number>()
+  const { savedSessions } = session
 
   const sessionNameToDelete =
-    sessionIndexToDelete !== undefined
-      ? session.savedSessions[sessionIndexToDelete].name
+    sessionIdxToDelete !== undefined
+      ? savedSessions[sessionIdxToDelete].name
       : ''
   return (
     <Paper className={classes.root}>
       <List subheader={<ListSubheader>Saved sessions</ListSubheader>}>
-        {session.savedSessions.length ? (
-          session.savedSessions.map((sessionSnapshot, idx) => (
+        {savedSessions.length ? (
+          savedSessions.map((sessionSnapshot, idx) => (
             <SessionListItem
               onClick={() => session.activateSession(sessionSnapshot.name)}
               sessionSnapshot={sessionSnapshot}
@@ -60,7 +54,7 @@ const RegularSavedSessionsList = observer(function ({
                 <IconButton
                   edge="end"
                   disabled={session.name === sessionSnapshot.name}
-                  onClick={() => setSessionIndexToDelete(idx)}
+                  onClick={() => setSessionIdxToDelete(idx)}
                 >
                   <DeleteIcon />
                 </IconButton>
@@ -78,7 +72,12 @@ const RegularSavedSessionsList = observer(function ({
           <DeleteSavedSessionDialog
             open
             sessionNameToDelete={sessionNameToDelete}
-            handleClose={handleDialogClose}
+            handleClose={deleteSession => {
+              if (deleteSession && sessionIdxToDelete !== undefined) {
+                session.removeSavedSession(savedSessions[sessionIdxToDelete])
+              }
+              setSessionIdxToDelete(undefined)
+            }}
           />
         </React.Suspense>
       ) : null}

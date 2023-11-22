@@ -12,13 +12,24 @@ import {
 } from 'mobx-state-tree'
 
 import { saveAs } from 'file-saver'
-import { observable, autorun } from 'mobx'
+import { observable, autorun, toJS } from 'mobx'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import { AbstractSessionModel, SessionWithWidgets } from '@jbrowse/core/util'
 import { MenuItem } from '@jbrowse/core/ui'
+import {
+  BaseSession,
+  BaseSessionType,
+  SessionWithDialogs,
+  InternetAccountsRootModelMixin,
+  BaseRootModelFactory,
+} from '@jbrowse/product-core'
+import { HistoryManagementMixin, RootAppMenuMixin } from '@jbrowse/app-core'
+import { hydrateRoot } from 'react-dom/client'
+import { AssemblyManager } from '@jbrowse/plugin-data-management'
+import { openDB, DBSchema } from 'idb'
 
 // icons
 import AddIcon from '@mui/icons-material/Add'
@@ -40,16 +51,17 @@ import makeWorkerInstance from '../makeWorkerInstance'
 import jbrowseWebFactory from '../jbrowseModel'
 import { filterSessionInPlace } from '../util'
 import packageJSON from '../../package.json'
-import {
-  BaseSession,
-  BaseSessionType,
-  SessionWithDialogs,
-  InternetAccountsRootModelMixin,
-  BaseRootModelFactory,
-} from '@jbrowse/product-core'
-import { HistoryManagementMixin, RootAppMenuMixin } from '@jbrowse/app-core'
-import { hydrateRoot } from 'react-dom/client'
-import { AssemblyManager } from '@jbrowse/plugin-data-management'
+
+interface MyDB extends DBSchema {
+  savedSessions: {
+    key: string
+    value: { session: { name: string; [key: string]: unknown } }
+  }
+  autosavedSessions: {
+    key: string
+    value: { session: { name: string; [key: string]: unknown } }
+  }
+}
 
 // locals
 const SetDefaultSession = lazy(() => import('../components/SetDefaultSession'))
@@ -65,6 +77,8 @@ type SessionModelFactory = (args: {
   pluginManager: PluginManager
   assemblyConfigSchema: AssemblyConfig
 }) => IAnyType
+
+const autosaveDelay = { delay: 400 }
 
 /**
  * #stateModel JBrowseWebRootModel
@@ -166,69 +180,77 @@ export default function RootModel({
        * #getter
        */
       get savedSessionNames() {
-        return self.savedSessions.map(session => session.name)
+        return self.savedSessions.map(s => s.name)
       },
       /**
        * #getter
        */
       get currentSessionId() {
-        const locationUrl = new URL(window.location.href)
-        const params = new URLSearchParams(locationUrl.search)
-        return params?.get('session')?.split('local-')[1]
+        return new URLSearchParams(new URL(window.location.href).search)
+          .get('session')
+          ?.split('local-')[1]
       },
     }))
 
     .actions(self => ({
       afterCreate() {
-        for (const [key, val] of Object.entries(localStorage)
-          .filter(([key, _val]) => key.startsWith('localSaved-'))
-          .filter(([key]) => key.includes(self.configPath || 'undefined'))) {
-          try {
-            const { session } = JSON.parse(val)
-            self.savedSessionsVolatile.set(key, session)
-          } catch (e) {
-            console.error('bad session encountered', key, val)
-          }
-        }
-        addDisposer(
-          self,
-          autorun(() => {
-            for (const [, val] of self.savedSessionsVolatile.entries()) {
-              try {
-                const key = self.localStorageId(val.name)
-                localStorage.setItem(key, JSON.stringify({ session: val }))
-              } catch (e) {
-                // @ts-expect-error
-                if (e.code === '22' || e.code === '1024') {
-                  alert(
-                    'Local storage is full! Please use the "Open sessions" panel to remove old sessions',
-                  )
-                }
-              }
-            }
-          }),
-        )
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        ;(async () => {
+          const db = await openDB<MyDB>('sessionsDB', 1, {
+            upgrade(db) {
+              db.createObjectStore('savedSessions')
+              db.createObjectStore('autosavedSessions')
+            },
+          })
 
-        addDisposer(
-          self,
-          autorun(
-            () => {
+          // load old sessions from localStorage
+          loadOldSessions(self.configPath, self.savedSessionsVolatile)
+
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          db.getAll('savedSessions').then(savedSessions => {
+            Object.entries(savedSessions).map(([key, val]) =>
+              self.savedSessionsVolatile.set(key, val.session),
+            )
+          })
+
+          addDisposer(
+            self,
+            autorun(() => {
+              Promise.all(
+                [...toJS(self.savedSessionsVolatile).values()].map(val => {
+                  const key = self.localStorageId(val.name)
+                  return db.put('savedSessions', { session: val }, key)
+                }),
+              ).catch(e => {
+                console.error(e)
+              })
+            }),
+          )
+
+          addDisposer(
+            self,
+            autorun(() => {
               if (!self.session) {
                 return
               }
               const snapshot = getSnapshot(self.session as BaseSession) || {
                 name: 'empty',
               }
-              const s = JSON.stringify
-              sessionStorage.setItem('current', s({ session: snapshot }))
-              localStorage.setItem(
-                `autosave-${self.configPath}`,
-                s({
+              sessionStorage.setItem(
+                'current',
+                JSON.stringify({ session: snapshot }),
+              )
+
+              // eslint-disable-next-line @typescript-eslint/no-floating-promises
+              db.put(
+                'autosavedSessions',
+                {
                   session: {
                     ...snapshot,
                     name: `${snapshot.name}-autosaved`,
                   },
-                }),
+                },
+                `autosave-${self.configPath}`,
               )
 
               // this check is not able to be modularized into it's own autorun
@@ -237,10 +259,9 @@ export default function RootModel({
               if (self.pluginsUpdated) {
                 window.location.reload()
               }
-            },
-            { delay: 400 },
-          ),
-        )
+            }, autosaveDelay),
+          )
+        })()
       },
       /**
        * #action
@@ -556,6 +577,22 @@ export default function RootModel({
       ] as Menu[],
       adminMode,
     }))
+}
+
+function loadOldSessions(
+  configPath: string | undefined,
+  savedSessions: Map<string, unknown>,
+) {
+  for (const [key, val] of Object.entries(localStorage)
+    .filter(([key, _val]) => key.startsWith('localSaved-'))
+    .filter(([key]) => key.includes(configPath || 'undefined'))) {
+    try {
+      const { session } = JSON.parse(val)
+      savedSessions.set(key, session)
+    } catch (e) {
+      console.error('bad session encountered', key, val)
+    }
+  }
 }
 
 export type WebRootModelType = ReturnType<typeof RootModel>

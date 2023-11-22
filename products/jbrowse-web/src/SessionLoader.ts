@@ -7,10 +7,12 @@ import PluginLoader, {
 import PluginManager from '@jbrowse/core/PluginManager'
 import { openLocation } from '@jbrowse/core/util/io'
 import { nanoid } from '@jbrowse/core/util/nanoid'
+import { openDB } from 'idb'
 
 // locals
 import { readSessionFromDynamo } from './sessionSharing'
 import { addRelativeUris, checkPlugins, fromUrlSafeB64, readConf } from './util'
+import { SessionDB } from './sessionIndexedDB'
 
 export interface SessionTriagedInfo {
   snap: unknown
@@ -302,12 +304,25 @@ const SessionLoader = types
 
     async afterCreate() {
       try {
+        const db = await openDB<SessionDB>('sessionsDB', 1, {
+          upgrade(db) {
+            db.createObjectStore('savedSessions')
+            db.createObjectStore('autosavedSessions')
+          },
+        })
         // rename the current autosave from previously loaded jbrowse session
         // into previousAutosave on load
         const { configPath } = self
-        const lastAutosave = localStorage.getItem(`autosave-${configPath}`)
+        const lastAutosave = await db.get(
+          'autosavedSessions',
+          `autosave-${configPath}`,
+        )
         if (lastAutosave) {
-          localStorage.setItem(`previousAutosave-${configPath}`, lastAutosave)
+          await db.put(
+            'autosavedSessions',
+            lastAutosave,
+            `previousAutosave-${configPath}`,
+          )
         }
       } catch (e) {
         console.error('failed to create previousAutosave', e)
