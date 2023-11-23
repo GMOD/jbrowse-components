@@ -105,21 +105,15 @@ export default function f(_pluginManager: PluginManager) {
       },
       get areBookmarksHighlightedOnAllOpenViews() {
         const { views } = getSession(self)
-        const lgvs = views.filter(v =>
-          Object.hasOwn(v, 'showBookmarkHighlights'),
+        return views.every(v =>
+          'showBookmarkHighlights' in v ? v.showBookmarkHighlights : true,
         )
-        const res = (lgvs as IExtendedLGV[]).map(v => v.showBookmarkHighlights)
-        // if a Set(res) of the open lgv's is size 1, that means all the bookmarks have the same setting,
-        //  &&'d with the first res will show the toggle as on (i.e. all views have highlights toggled ON)
-        //  or off (i.e. all views have highlights toggled OFF, OR, even one view has highlights toggled OFF)
-        return new Set(res).size === 1 && res[0]
       },
       get areBookmarksHighlightLabelsOnAllOpenViews() {
         const { views } = getSession(self)
-        const lgvs = views.filter(v => Object.hasOwn(v, 'showBookmarkLabels'))
-        const res = (lgvs as IExtendedLGV[]).map(v => v.showBookmarkLabels)
-        // same logic as areBookmarksHighlightedOnAllOpenViews
-        return new Set(res).size === 1 && res[0]
+        return views.every(v =>
+          'showBookmarkLabels' in v ? v.showBookmarkLabels : true,
+        )
       },
     }))
     .views(self => ({
