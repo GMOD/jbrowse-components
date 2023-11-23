@@ -1,11 +1,7 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
-import {
-  getSession,
-  isSessionModelWithWidgets,
-  notEmpty,
-} from '@jbrowse/core/util'
+import { SessionWithWidgets, getSession, notEmpty } from '@jbrowse/core/util'
 import { IExtendedLGV } from '../../model'
 
 // icons
@@ -44,27 +40,30 @@ const intensify = (rgba: string, opacity: number) => {
 const Highlight = observer(function Highlight({ model }: { model: LGV }) {
   const { classes } = useStyles()
 
-  const session = getSession(model)
-  if (!isSessionModelWithWidgets(session)) {
-    return null
-  }
-
-  let bookmarkWidget = session.widgets.get('GridBookmark') as GridBookmarkModel
-  if (!bookmarkWidget) {
-    bookmarkWidget = session.addWidget(
-      'GridBookmarkWidget',
-      'GridBookmark',
-    ) as GridBookmarkModel
-  }
-
+  const session = getSession(model) as SessionWithWidgets
   const { showBookmarkHighlights, showBookmarkLabels } = model
   const assemblyNames = new Set(session.assemblyNames)
-  const { bookmarks } = bookmarkWidget
+
+  const bookmarkWidget = session.widgets.get(
+    'GridBookmark',
+  ) as GridBookmarkModel
+
+  const bookmarks = useRef(bookmarkWidget?.bookmarks ?? [])
+
+  useEffect(() => {
+    if (!bookmarkWidget) {
+      const newBookmarkWidget = session.addWidget(
+        'GridBookmarkWidget',
+        'GridBookmark',
+      ) as GridBookmarkModel
+      bookmarks.current = newBookmarkWidget.bookmarks
+    }
+  }, [session, bookmarkWidget])
 
   return (
     <>
-      {showBookmarkHighlights
-        ? bookmarks
+      {showBookmarkHighlights && bookmarks.current
+        ? bookmarks.current
             .filter(value => assemblyNames.has(value.assemblyName))
             .map(r => {
               const s = model.bpToPx({
