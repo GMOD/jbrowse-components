@@ -29,7 +29,7 @@ const HighlightBookmarksDialog = observer(function ({
   )
 
   return (
-    <Dialog open onClose={onClose} title="Edit bookmarks">
+    <Dialog open onClose={onClose} title="Highlight bookmarks">
       <DialogContent>
         <Typography variant="h6">Bulk highlight selector</Typography>
         <Alert severity="info">

@@ -205,11 +205,11 @@ export default function f(_pluginManager: PluginManager) {
     }))
     .actions(self => ({
       clearAllBookmarks() {
-        for (const bookmark of self.bookmarks) {
-          if (self.validAssemblies.has(bookmark.assemblyName)) {
-            self.bookmarks.remove(bookmark)
-          }
-        }
+        self.setBookmarkedRegions(
+          self.bookmarks.filter(
+            bookmark => !self.validAssemblies.has(bookmark.assemblyName),
+          ) as IMSTArray<typeof LabeledRegionModel>,
+        )
       },
       clearSelectedBookmarks() {
         for (const bookmark of self.selectedBookmarks) {
