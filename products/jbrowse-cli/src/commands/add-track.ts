@@ -342,17 +342,16 @@ export default class AddTrack extends JBrowseCommand {
       copy: (src: string, dest: string) => copyFile(src, dest, COPYFILE_EXCL),
       move: (src: string, dest: string) => rename(src, dest),
       symlink: (src: string, dest: string) => symlink(path.resolve(src), dest),
-      inPlace: () => {
-        /* do nothing */
-      },
     }
-    await Promise.all(
-      Object.values(this.guessFileNames({ location, index, bed1, bed2 }))
-        .filter(f => !!f)
-        .map(src =>
-          callbacks[loadType](src, destinationFn(configDirectory, src)),
-        ),
-    )
+    if (loadType !== 'inPlace') {
+      await Promise.all(
+        Object.values(this.guessFileNames({ location, index, bed1, bed2 }))
+          .filter(f => !!f)
+          .map(src =>
+            callbacks[loadType](src, destinationFn(configDirectory, src)),
+          ),
+      )
+    }
 
     this.debug(`Writing configuration to file ${this.target}`)
     await this.writeJsonFile(this.target, configContents)
