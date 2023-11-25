@@ -247,8 +247,8 @@ const i = (e, r = 0, t = 1) => (e > t ? t : e < r ? r : e),
         ? a === e
           ? (r - t) / l
           : a === r
-          ? 2 + (t - e) / l
-          : 4 + (e - r) / l
+            ? 2 + (t - e) / l
+            : 4 + (e - r) / l
         : 0
     return {
       h: b(60 * (n < 0 ? n + 6 : n)),

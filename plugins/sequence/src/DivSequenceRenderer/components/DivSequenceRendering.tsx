@@ -85,8 +85,8 @@ function Translation(props: {
                 defaultStarts.includes(codon)
                   ? theme?.palette.startCodon
                   : defaultStops.includes(codon)
-                  ? theme?.palette.stopCodon
-                  : map[Math.abs(frame)]
+                    ? theme?.palette.stopCodon
+                    : map[Math.abs(frame)]
               }
             />
             {render ? (

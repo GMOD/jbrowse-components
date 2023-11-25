@@ -25,6 +25,53 @@ function makeLocationProtocol(protocol: string) {
   }
 }
 
+function fileOperation({
+  srcFilename,
+  destFilename,
+  mode,
+}: {
+  srcFilename: string
+  destFilename: string
+  mode: string
+}) {
+  if (mode === 'copy') {
+    return copyFile(srcFilename, destFilename, COPYFILE_EXCL)
+  } else if (mode === 'move') {
+    return rename(srcFilename, destFilename)
+  } else if (mode === 'symlink') {
+    return symlink(path.resolve(srcFilename), destFilename)
+  }
+  return undefined
+}
+
+// get path of destination, and remove file at that path if it exists and force
+// is set
+function destinationFn({
+  destinationDir,
+  srcFilename,
+  subDir,
+  force,
+}: {
+  destinationDir: string
+  srcFilename: string
+  subDir: string
+  force: boolean
+}) {
+  const dest = path.resolve(
+    path.join(destinationDir, subDir, path.basename(srcFilename)),
+  )
+  if (force) {
+    try {
+      fs.unlinkSync(dest)
+    } catch (e) {
+      /* unconditionally unlinkSync, due to
+       * https://github.com/nodejs/node/issues/14025#issuecomment-754021370
+       * and https://github.com/GMOD/jbrowse-components/issues/2768 */
+    }
+  }
+  return dest
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Track = Record<string, any>
 
@@ -188,7 +235,7 @@ export default class AddTrack extends JBrowseCommand {
 
     let { trackType, trackId, name, assemblyNames } = runFlags
 
-    const configDirectory = path.dirname(this.target)
+    const configDir = path.dirname(this.target)
     if (!argsTrack) {
       this.error(
         'No track provided. Example usage: jbrowse add-track yourfile.bam',
@@ -197,7 +244,7 @@ export default class AddTrack extends JBrowseCommand {
     }
 
     if (subDir) {
-      const dir = path.join(configDirectory, subDir)
+      const dir = path.join(configDir, subDir)
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir)
       }
@@ -300,9 +347,7 @@ export default class AddTrack extends JBrowseCommand {
       configContents.tracks = []
     }
 
-    const idx = configContents.tracks.findIndex(
-      configTrack => configTrack.trackId === trackId,
-    )
+    const idx = configContents.tracks.findIndex(c => c.trackId === trackId)
 
     if (idx !== -1) {
       this.debug(`Found existing trackId ${trackId} in configuration`)
@@ -319,40 +364,24 @@ export default class AddTrack extends JBrowseCommand {
       configContents.tracks.push(trackConfig)
     }
 
-    // get path of destination, and remove file at that path if it exists and
-    // force is set
-    const destinationFn = (dir: string, file: string) => {
-      const dest = path.resolve(path.join(dir, subDir, path.basename(file)))
-      if (force) {
-        try {
-          fs.unlinkSync(dest)
-        } catch (e) {
-          /* unconditionally unlinkSync, due to
-           * https://github.com/nodejs/node/issues/14025#issuecomment-754021370
-           * and https://github.com/GMOD/jbrowse-components/issues/2768 */
-        }
-      }
-      return dest
+    if (load && load !== 'inPlace') {
+      await Promise.all(
+        Object.values(this.guessFileNames({ location, index, bed1, bed2 }))
+          .filter(f => !!f)
+          .map(srcFilename =>
+            fileOperation({
+              mode: load,
+              srcFilename,
+              destFilename: destinationFn({
+                destinationDir: configDir,
+                srcFilename,
+                force,
+                subDir,
+              }),
+            }),
+          ),
+      )
     }
-
-    const loadType =
-      (load as 'copy' | 'inPlace' | 'move' | 'symlink' | undefined) || 'inPlace'
-
-    const callbacks = {
-      copy: (src: string, dest: string) => copyFile(src, dest, COPYFILE_EXCL),
-      move: (src: string, dest: string) => rename(src, dest),
-      symlink: (src: string, dest: string) => symlink(path.resolve(src), dest),
-      inPlace: () => {
-        /* do nothing */
-      },
-    }
-    await Promise.all(
-      Object.values(this.guessFileNames({ location, index, bed1, bed2 }))
-        .filter(f => !!f)
-        .map(src =>
-          callbacks[loadType](src, destinationFn(configDirectory, src)),
-        ),
-    )
 
     this.debug(`Writing configuration to file ${this.target}`)
     await this.writeJsonFile(this.target, configContents)

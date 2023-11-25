@@ -156,8 +156,8 @@ export default class SimpleFeature implements Feature {
     return name === 'subfeatures'
       ? this.subfeatures
       : name === 'parent'
-      ? this.parent()
-      : this.data[name]
+        ? this.parent()
+        : this.data[name]
   }
 
   /**
