@@ -194,8 +194,8 @@ export default class PluginLoader {
       'url' in def
         ? new URL(def.url, baseUri)
         : 'umdUrl' in def
-        ? new URL(def.umdUrl, baseUri)
-        : new URL(def.umdLoc.uri, def.umdLoc.baseUri)
+          ? new URL(def.umdUrl, baseUri)
+          : new URL(def.umdLoc.uri, def.umdLoc.baseUri)
 
     if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
       throw new Error(

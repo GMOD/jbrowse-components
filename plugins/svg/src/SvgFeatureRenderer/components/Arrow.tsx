@@ -33,8 +33,8 @@ const Arrow = observer(function ({
     strand * reverseFlip === -1
       ? left
       : strand * reverseFlip === 1
-      ? left + width
-      : null
+        ? left + width
+        : null
   const y = top + height / 2
 
   return p ? (

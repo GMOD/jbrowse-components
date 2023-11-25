@@ -208,8 +208,8 @@ export default class DotplotRenderer extends ComparativeRenderer {
         r = isCallback
           ? readConfObject(config, 'color', { feature })
           : color === '#f0f'
-          ? t.palette.text.primary
-          : color
+            ? t.palette.text.primary
+            : color
       }
       ctx.fillStyle = r
       ctx.strokeStyle = r

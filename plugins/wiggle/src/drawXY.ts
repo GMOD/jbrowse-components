@@ -96,8 +96,8 @@ export function drawXY(
         const effectiveC = crossingOrigin
           ? c
           : c === lastCol
-          ? lastMix
-          : (lastMix = lighten(colord(c), 0.4).toHex())
+            ? lastMix
+            : (lastMix = lighten(colord(c), 0.4).toHex())
         fillRectCtx(leftPx, toY(max), w, getHeight(max), ctx, effectiveC)
         lastCol = c
       }
@@ -141,8 +141,8 @@ export function drawXY(
         const effectiveC = crossingOrigin
           ? c
           : c === lastCol
-          ? lastMix
-          : (lastMix = darken(colord(c), 0.4).toHex())
+            ? lastMix
+            : (lastMix = darken(colord(c), 0.4).toHex())
 
         fillRectCtx(leftPx, toY(min), w, getHeight(min), ctx, effectiveC)
         lastCol = c
