@@ -74,9 +74,7 @@
   },
   "browserslist": {
     "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
+      "last 1 chrome version"
     ],
     "license": "Apache-2.0",
     "development": [
