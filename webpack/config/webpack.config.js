@@ -268,7 +268,7 @@ module.exports = function (webpackEnv) {
 
               loader: require.resolve('babel-loader'),
               options: {
-                rootMode: 'upward',
+                presets: ['@babel/preset-react', '@babel/preset-typescript'],
               },
             },
             // "postcss" loader applies autoprefixer to our CSS. "css"

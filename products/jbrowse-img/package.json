@@ -32,7 +32,7 @@
     "@jbrowse/react-linear-genome-view": "^2.8.0",
     "abortcontroller-polyfill": "^1.7.3",
     "canvas": "^2.9.1",
-    "jsdom": "^22.1.0",
+    "jsdom": "^23.0.0",
     "mobx": "^6.6.0",
     "node-fetch": "^2.6.7",
     "react": "^18.0.0",
