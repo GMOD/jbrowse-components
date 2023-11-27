@@ -177,10 +177,8 @@ export function FeatureDetails(props: {
   formatter?: (val: unknown, key: string) => React.ReactNode
 }) {
   const { omit = [], model, feature, depth = 0 } = props
+  const { maxDepth } = model
   const { mate, name = '', id = '', type = '', subfeatures, uniqueId } = feature
-  // @ts-expect-error
-  // eslint-disable-next-line no-underscore-dangle
-  const { hideSubfeatures } = feature.__jbrowsefmt
   const pm = getEnv(model).pluginManager
   const session = getSession(model)
 
@@ -226,7 +224,7 @@ export function FeatureDetails(props: {
         </>
       ) : null}
 
-      {!hideSubfeatures && subfeatures?.length ? (
+      {depth < maxDepth && subfeatures?.length ? (
         <BaseCard title="Subfeatures" defaultExpanded={depth < 1}>
           {subfeatures.map((sub, idx) => (
             <FeatureDetails
