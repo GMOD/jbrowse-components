@@ -41,8 +41,6 @@ function postF() {
 
 const lsKeyFavoritesF = () => `favoriteTracks-${postF()}}`
 const lsKeyRecentlyUsedF = () => `recentlyUsedTracks-${postF()}}`
-const lsKeyShowFavoritesF = () => `showFavorites-${postNoConfigF()}`
-const lsKeyShowRecentlyUsedF = () => `showRecentlyUsed-${postNoConfigF()}`
 
 /**
  * #stateModel HierarchicalTrackSelectorWidget
@@ -95,22 +93,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       recentlyUsed: types.optional(types.array(types.string), () =>
         JSON.parse(localStorageGetItem(lsKeyRecentlyUsedF()) || '[]'),
-      ),
-      /**
-       * #property
-       * this is removed in postProcessSnapshot, so is generally only loaded
-       * from localstorage
-       */
-      showRecentlyUsedCategory: types.optional(types.boolean, () =>
-        JSON.parse(localStorageGetItem(lsKeyShowFavoritesF()) || 'true'),
-      ),
-      /**
-       * #property
-       * this is removed in postProcessSnapshot, so is generally only loaded
-       * from localstorage
-       */
-      showFavoritesCategory: types.optional(types.boolean, () =>
-        JSON.parse(localStorageGetItem(lsKeyShowRecentlyUsedF()) || 'true'),
       ),
     })
     .volatile(() => ({
@@ -333,36 +315,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       get allTracks() {
         const { connectionInstances = [] } = getSession(self)
         return [
-          ...(self.showFavoritesCategory
-            ? [
-                {
-                  group: '✨Favorites',
-                  tracks: self.favoriteTracks,
-                  noCategories: true,
-                  menuItems: [
-                    {
-                      label: 'Clear all favorites',
-                      onClick: () => self.clearFavorites(),
-                    },
-                  ],
-                },
-              ]
-            : []),
-          ...(self.showRecentlyUsedCategory
-            ? [
-                {
-                  group: '🕒 Recently used',
-                  tracks: self.recentlyUsedTracks,
-                  noCategories: true,
-                  menuItems: [
-                    {
-                      label: 'Clear all recently used',
-                      onClick: () => self.clearRecentlyUsed(),
-                    },
-                  ],
-                },
-              ]
-            : []),
           {
             group: 'Tracks',
             tracks: self.trackConfigurations,
@@ -429,18 +381,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           self.setCategoryCollapsed(path, true)
         }
       },
-      /**
-       * #action
-       */
-      setShowRecentlyUsedCategory(f: boolean) {
-        self.showRecentlyUsedCategory = f
-      },
-      /**
-       * #action
-       */
-      setShowFavoritesCategory(f: boolean) {
-        self.showFavoritesCategory = f
-      },
     }))
     .actions(self => ({
       afterCreate() {
@@ -498,14 +438,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
               lsKeyRecentlyUsedF(),
               JSON.stringify(self.recentlyUsed),
             )
-            localStorageSetItem(
-              lsKeyShowFavoritesF(),
-              JSON.stringify(self.showFavoritesCategory),
-            )
-            localStorageSetItem(
-              lsKeyShowRecentlyUsedF(),
-              JSON.stringify(self.showRecentlyUsedCategory),
-            )
           }),
         )
       },
@@ -514,8 +446,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       const {
         favorites: _,
         recentlyUsed: __,
-        showFavoritesCategory: ___,
-        showRecentlyUsedCategory: ____,
         ...rest
       } = snap as Omit<typeof snap, symbol>
       return rest

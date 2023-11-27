@@ -1,26 +1,26 @@
-import React, { Suspense, lazy, useState } from 'react'
-import { Button, IconButton, InputAdornment, TextField } from '@mui/material'
+import React from 'react'
+import { IconButton, InputAdornment, TextField } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 
 // icons
 import ClearIcon from '@mui/icons-material/Clear'
+import HistoryIcon from '@mui/icons-material/History'
+import GradeIcon from '@mui/icons-material/Grade'
 
 // locals
 import { HierarchicalTrackSelectorModel } from '../../model'
 import HamburgerMenu from './HamburgerMenu'
 import ShoppingCart from '../ShoppingCart'
-
-// lazies
-const FacetedDialog = lazy(() => import('../faceted/FacetedDialog'))
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import {
+  AnyConfigurationModel,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 
 const useStyles = makeStyles()(theme => ({
   searchBox: {
     margin: theme.spacing(2),
-  },
-  menuIcon: {
-    marginRight: theme.spacing(1),
-    marginBottom: 0,
   },
 }))
 
@@ -51,6 +51,58 @@ const SearchTracksTextField = observer(function ({
   )
 })
 
+const RecentlyUsed = observer(function ({
+  model,
+}: {
+  model: HierarchicalTrackSelectorModel
+}) {
+  const { view, recentlyUsedTracks } = model
+  const { tracks } = view
+  return (
+    <CascadingMenuButton
+      menuItems={recentlyUsedTracks.map(t => ({
+        type: 'checkbox',
+        label: readConfObject(t, 'name'),
+        checked: tracks.some(
+          (f: { configuration: AnyConfigurationModel }) =>
+            f.configuration === t,
+        ),
+        onClick: () => {
+          model.view.toggleTrack(t.trackId)
+        },
+      }))}
+    >
+      <HistoryIcon />
+    </CascadingMenuButton>
+  )
+})
+
+const Favorites = observer(function ({
+  model,
+}: {
+  model: HierarchicalTrackSelectorModel
+}) {
+  const { view, favoriteTracks } = model
+  const { tracks } = view
+  return favoriteTracks.length ? (
+    <CascadingMenuButton
+      menuItems={favoriteTracks.map(t => ({
+        type: 'checkbox',
+        label: readConfObject(t, 'name'),
+        checked: tracks.some(
+          (f: { configuration: AnyConfigurationModel }) =>
+            f.configuration === t,
+        ),
+        onClick: () => {
+          model.view.toggleTrack(t.trackId)
+        },
+      }))}
+    >
+      <GradeIcon />
+    </CascadingMenuButton>
+  ) : null
+})
+
 const HierarchicalTrackSelectorHeader = observer(function ({
   model,
   setHeaderHeight,
@@ -58,9 +110,6 @@ const HierarchicalTrackSelectorHeader = observer(function ({
   model: HierarchicalTrackSelectorModel
   setHeaderHeight: (n: number) => void
 }) {
-  const { classes } = useStyles()
-  const [facetedOpen, setFacetedOpen] = useState(false)
-
   return (
     <div
       ref={ref => setHeaderHeight(ref?.getBoundingClientRect().height || 0)}
@@ -70,22 +119,9 @@ const HierarchicalTrackSelectorHeader = observer(function ({
         <HamburgerMenu model={model} />
         <ShoppingCart model={model} />
         <SearchTracksTextField model={model} />
-        <Button
-          className={classes.menuIcon}
-          onClick={() => setFacetedOpen(true)}
-        >
-          Open faceted selector
-        </Button>
+        <RecentlyUsed model={model} />
+        <Favorites model={model} />
       </div>
-
-      <Suspense fallback={<div />}>
-        {facetedOpen ? (
-          <FacetedDialog
-            handleClose={() => setFacetedOpen(false)}
-            model={model}
-          />
-        ) : null}
-      </Suspense>
     </div>
   )
 })

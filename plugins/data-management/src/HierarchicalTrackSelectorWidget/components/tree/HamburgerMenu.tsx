@@ -19,6 +19,9 @@ import MenuIcon from '@mui/icons-material/Menu'
 // locals
 import { HierarchicalTrackSelectorModel } from '../../model'
 
+// lazies
+const FacetedDialog = lazy(() => import('../faceted/FacetedDialog'))
+
 // lazy components
 const CloseConnectionDlg = lazy(
   () => import('../dialogs/CloseConnectionDialog'),
@@ -55,6 +58,7 @@ const HamburgerMenu = observer(function ({
   const [deleteDlgDetails, setDeleteDlgDetails] = useState<DialogDetails>()
   const [connectionToggleOpen, setConnectionToggleOpen] = useState(false)
   const [connectionManagerOpen, setConnectionManagerOpen] = useState(false)
+  const [facetedOpen, setFacetedOpen] = useState(false)
 
   function breakConnection(
     connectionConf: AnyConfigurationModel,
@@ -84,6 +88,12 @@ const HamburgerMenu = observer(function ({
     <>
       <CascadingMenuButton
         menuItems={[
+          {
+            label: 'Open faceted track selector',
+            onClick: () => {
+              setFacetedOpen(true)
+            },
+          },
           ...(isSessionWithAddTracks(session)
             ? [
                 {
@@ -159,22 +169,6 @@ const HamburgerMenu = observer(function ({
             label: 'Expand all categories',
             onClick: () => model.expandAllCategories(),
           },
-          {
-            label: 'Show favorite tracks',
-            type: 'checkbox',
-            checked: model.showFavoritesCategory,
-            onClick: () =>
-              model.setShowFavoritesCategory(!model.showFavoritesCategory),
-          },
-          {
-            label: 'Show recently used tracks',
-            type: 'checkbox',
-            checked: model.showRecentlyUsedCategory,
-            onClick: () =>
-              model.setShowRecentlyUsedCategory(
-                !model.showRecentlyUsedCategory,
-              ),
-          },
         ]}
       >
         <MenuIcon />
@@ -205,6 +199,13 @@ const HamburgerMenu = observer(function ({
             handleClose={() => setConnectionToggleOpen(false)}
             session={session}
             breakConnection={breakConnection}
+          />
+        ) : null}
+
+        {facetedOpen ? (
+          <FacetedDialog
+            handleClose={() => setFacetedOpen(false)}
+            model={model}
           />
         ) : null}
       </Suspense>
