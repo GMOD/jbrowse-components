@@ -178,6 +178,9 @@ export function FeatureDetails(props: {
 }) {
   const { omit = [], model, feature, depth = 0 } = props
   const { mate, name = '', id = '', type = '', subfeatures, uniqueId } = feature
+  // @ts-expect-error
+  // eslint-disable-next-line no-underscore-dangle
+  const { hideSubfeatures } = feature.__jbrowsefmt
   const pm = getEnv(model).pluginManager
   const session = getSession(model)
 
@@ -223,7 +226,7 @@ export function FeatureDetails(props: {
         </>
       ) : null}
 
-      {subfeatures?.length ? (
+      {!hideSubfeatures && subfeatures?.length ? (
         <BaseCard title="Subfeatures" defaultExpanded={depth < 1}>
           {subfeatures.map((sub, idx) => (
             <FeatureDetails
