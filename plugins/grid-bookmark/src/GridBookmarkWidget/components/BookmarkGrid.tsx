@@ -132,7 +132,7 @@ const BookmarkGrid = observer(function ({
                 <ColorPicker
                   color={value || 'black'}
                   onChange={event => {
-                    return model.updateBookmarkHighlight(row, event)
+                    model.updateBookmarkHighlight(row, event)
                   }}
                 />
               ),
