@@ -110,64 +110,81 @@ const HamburgerMenu = observer(function ({
                 },
               ]
             : []),
-          ...(isSessionModelWithConnections(session)
-            ? [
-                {
-                  label: 'Turn on/off connections...',
-                  onClick: () => setConnectionToggleOpen(true),
-                },
-              ]
-            : []),
-          ...(isSessionModelWithConnectionEditing(session)
-            ? [
-                {
-                  label: 'Add connection...',
-                  onClick: () => {
-                    if (isSessionModelWithWidgets(session)) {
-                      session.showWidget(
-                        session.addWidget(
-                          'AddConnectionWidget',
-                          'addConnectionWidget',
-                        ),
-                      )
-                    }
-                  },
-                },
-                {
-                  label: 'Delete connections...',
-                  onClick: () => setConnectionManagerOpen(true),
-                },
-              ]
-            : []),
-          { type: 'divider' },
           {
-            label: 'Sort tracks by name',
-            type: 'checkbox',
-            checked: model.activeSortTrackNames,
-            onClick: () => model.setSortTrackNames(!model.activeSortTrackNames),
+            label: 'Connections...',
+            subMenu: [
+              ...(isSessionModelWithConnections(session)
+                ? [
+                    {
+                      label: 'Turn on/off connections...',
+                      onClick: () => setConnectionToggleOpen(true),
+                    },
+                  ]
+                : []),
+              ...(isSessionModelWithConnectionEditing(session)
+                ? [
+                    {
+                      label: 'Add connection...',
+                      onClick: () => {
+                        if (isSessionModelWithWidgets(session)) {
+                          session.showWidget(
+                            session.addWidget(
+                              'AddConnectionWidget',
+                              'addConnectionWidget',
+                            ),
+                          )
+                        }
+                      },
+                    },
+                    {
+                      label: 'Delete connections...',
+                      onClick: () => setConnectionManagerOpen(true),
+                    },
+                  ]
+                : []),
+            ],
           },
           {
-            label: 'Sort categories by name',
-            type: 'checkbox',
-            checked: model.activeSortCategories,
-            onClick: () => model.setSortCategories(!model.activeSortCategories),
+            label: 'Sort...',
+            type: 'subMenu',
+            subMenu: [
+              {
+                label: 'Sort tracks by name',
+                type: 'checkbox',
+                checked: model.activeSortTrackNames,
+                onClick: () =>
+                  model.setSortTrackNames(!model.activeSortTrackNames),
+              },
+              {
+                label: 'Sort categories by name',
+                type: 'checkbox',
+                checked: model.activeSortCategories,
+                onClick: () =>
+                  model.setSortCategories(!model.activeSortCategories),
+              },
+            ],
           },
-          { type: 'divider' },
-          ...(model.hasAnySubcategories
-            ? [
-                {
-                  label: 'Collapse subcategories',
-                  onClick: () => model.collapseSubCategories(),
-                },
-              ]
-            : []),
           {
-            label: 'Collapse top-level categories',
-            onClick: () => model.collapseTopLevelCategories(),
-          },
-          {
-            label: 'Expand all categories',
-            onClick: () => model.expandAllCategories(),
+            label: 'Collapse...',
+            type: 'subMenu',
+            subMenu: [
+              ...(model.hasAnySubcategories
+                ? [
+                    {
+                      label: 'Collapse subcategories',
+                      onClick: () => model.collapseSubCategories(),
+                    },
+                  ]
+                : []),
+              {
+                label: 'Collapse top-level categories',
+                onClick: () => model.collapseTopLevelCategories(),
+              },
+              {
+                label: 'Expand all categories',
+                onClick: () => model.expandAllCategories(),
+              },
+            ],
           },
         ]}
       >
