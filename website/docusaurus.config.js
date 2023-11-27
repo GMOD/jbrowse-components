@@ -18,15 +18,15 @@ module.exports = {
       {
         docs: {
           sidebarPath: require.resolve('./sidebars.json'),
-          // Please change this to your repo.
-          editUrl:
-            'https://github.com/GMOD/jbrowse-components/edit/main/website/',
+          editUrl: ({ docPath }) => {
+            return `https://holocron.so/github/pr/GMOD/jbrowse-components/main/editor/website/docs/${docPath}`
+          },
         },
         blog: {
           blogSidebarCount: 'ALL',
-          // Please change this to your repo.
-          editUrl:
-            'https://github.com/GMOD/jbrowse-components/edit/main/website/blog/',
+          editUrl: ({ docPath }) => {
+            return `https://holocron.so/github/pr/GMOD/jbrowse-components/main/editor/website/blog/${docPath}`
+          },
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
