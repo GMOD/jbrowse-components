@@ -42,7 +42,11 @@ test(
 
       view.setNewView(0.05, 5000)
       fireEvent.click(
-        await findByTestId('htsTrackEntryMenu-volvox_filtered_vcf', {}, delay),
+        await findByTestId(
+          'htsTrackEntryMenu-Tracks,volvox_filtered_vcf',
+          {},
+          delay,
+        ),
       )
       fireEvent.click(await findByText('Copy track'))
       fireEvent.click(await findByText('volvox filtered vcf (copy)'))
@@ -80,7 +84,7 @@ test(
 
       // copy ref seq track disabled
       fireEvent.click(
-        await findByTestId('htsTrackEntryMenu-volvox_refseq', {}, delay),
+        await findByTestId('htsTrackEntryMenu-Tracks,volvox_refseq', {}, delay),
       )
       fireEvent.click(await findByText('Copy track'))
       expect(queryByText(/Session tracks/)).toBeNull()
@@ -101,7 +105,11 @@ test(
 
       view.setNewView(0.05, 5000)
       fireEvent.click(
-        await findByTestId('htsTrackEntryMenu-volvox_filtered_vcf', {}, delay),
+        await findByTestId(
+          'htsTrackEntryMenu-Tracks,volvox_filtered_vcf',
+          {},
+          delay,
+        ),
       )
       fireEvent.click(await findByText('Copy track'))
       fireEvent.click(await findByText('volvox filtered vcf (copy)'))

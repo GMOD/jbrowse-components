@@ -2,11 +2,11 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 
 /**
- * #config LinearArcDisplay
+ * #config LinearPairedArcDisplay
  */
-export function configSchemaFactory(name: string) {
+export function configSchemaFactory() {
   return ConfigurationSchema(
-    name,
+    'LinearPairedArcDisplay',
     {
       /**
        * #slot

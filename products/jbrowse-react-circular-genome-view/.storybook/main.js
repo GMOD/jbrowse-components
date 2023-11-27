@@ -17,12 +17,16 @@ module.exports = {
         excludeAliases: ['console'],
       }),
     )
+
     config.module.rules.push({
       test: /\.(ts|tsx|js|jsx)$/,
       use: [
         {
-          loader: require.resolve('ts-loader'),
-          options: { transpileOnly: true },
+          loader: require.resolve('babel-loader'),
+          options: {
+            rootMode: 'upward',
+            presets: ['@babel/preset-react'],
+          },
         },
       ],
     })

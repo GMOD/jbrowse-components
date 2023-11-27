@@ -20,16 +20,13 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 
 /**
- * #stateModel LinearArcDisplay
- * extends BaseDisplay
+ * #stateModel LinearPairedArcDisplay
+ * extends BaseDisplay, TrackHeightMixin, FeatureDensityMixin
  */
-export function stateModelFactory(
-  configSchema: AnyConfigurationSchemaType,
-  name: string,
-) {
+export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
     .compose(
-      name,
+      'LinearPairedArcDisplay',
       BaseDisplay,
       TrackHeightMixin(),
       FeatureDensityMixin(),
@@ -37,7 +34,7 @@ export function stateModelFactory(
         /**
          * #property
          */
-        type: types.literal(name),
+        type: types.literal('LinearPairedArcDisplay'),
         /**
          * #property
          */
@@ -120,6 +117,9 @@ export function stateModelFactory(
           }
         })()
       },
+      /**
+       * #action
+       */
       async renderSvg(opts: {
         rasterizeLayers?: boolean
       }): Promise<React.ReactNode> {

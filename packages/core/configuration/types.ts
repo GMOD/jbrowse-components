@@ -23,13 +23,13 @@ export type GetOptions<SCHEMA> = SCHEMA extends ConfigurationSchemaType<
 export type GetBase<SCHEMA> = SCHEMA extends undefined
   ? never
   : GetOptions<SCHEMA> extends ConfigurationSchemaOptions<undefined, any>
-  ? undefined
-  : GetOptions<SCHEMA> extends ConfigurationSchemaOptions<
-      infer BASE extends AnyConfigurationSchemaType,
-      any
-    >
-  ? BASE
-  : never
+    ? undefined
+    : GetOptions<SCHEMA> extends ConfigurationSchemaOptions<
+          infer BASE extends AnyConfigurationSchemaType,
+          any
+        >
+      ? BASE
+      : never
 
 export type GetExplicitIdentifier<SCHEMA> =
   GetOptions<SCHEMA> extends ConfigurationSchemaOptions<
@@ -48,13 +48,13 @@ export type ConfigurationSchemaForModel<MODEL> = MODEL extends IStateTreeNode<
 export type ConfigurationSlotName<SCHEMA> = SCHEMA extends undefined
   ? never
   : SCHEMA extends ConfigurationSchemaType<infer D, any>
-  ?
-      | (keyof D & string)
-      | GetExplicitIdentifier<SCHEMA>
-      | (GetBase<SCHEMA> extends ConfigurationSchemaType<any, any>
-          ? ConfigurationSlotName<GetBase<SCHEMA>>
-          : never)
-  : never
+    ?
+        | (keyof D & string)
+        | GetExplicitIdentifier<SCHEMA>
+        | (GetBase<SCHEMA> extends ConfigurationSchemaType<any, any>
+            ? ConfigurationSlotName<GetBase<SCHEMA>>
+            : never)
+    : never
 
 export type AnyConfigurationSchemaType = ConfigurationSchemaType<any, any>
 export type AnyConfigurationModel = Instance<AnyConfigurationSchemaType>

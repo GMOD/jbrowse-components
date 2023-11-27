@@ -50,7 +50,7 @@ function TrackSelector({
   assembly1: string
   assembly2: string
 }) {
-  const [choice, setChoice] = useState('none')
+  const [choice, setChoice] = useState('tracklist')
 
   useEffect(() => {
     if (choice === 'none') {

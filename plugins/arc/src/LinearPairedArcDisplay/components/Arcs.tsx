@@ -3,6 +3,7 @@ import { observer } from 'mobx-react'
 import {
   AbstractSessionModel,
   Feature,
+  assembleLocString,
   getContainingView,
   getSession,
   measureText,
@@ -36,10 +37,10 @@ function f(feature: Feature, alt?: string) {
   if (symbolicAlleles.some(a => alt?.startsWith(a))) {
     // END is defined to be a single value, not an array. CHR2 not defined in
     // VCF spec, but should be similar
-    const e = feature.get('INFO')?.END || feature.get('end')
+    const e = feature.get('INFO')?.END?.[0] || feature.get('end')
     mateEnd = e
     mateStart = e - 1
-    mateRefName = feature.get('INFO')?.CHR2 ?? refName
+    mateRefName = feature.get('INFO')?.CHR2?.[0] ?? refName
     // re-adjust the arc to be from start to end of feature by re-assigning end
     // to the 'mate'
     start = feature.get('start')
@@ -58,15 +59,51 @@ function f(feature: Feature, alt?: string) {
 }
 
 function makeSummary(feature: Feature, alt?: string) {
+  const { k1, k2 } = f(feature, alt)
   return [
     feature.get('name'),
     feature.get('id'),
+    assembleLocString(k1),
+    assembleLocString(k2),
     feature.get('INFO')?.SVTYPE,
     alt,
   ]
     .filter(f => !!f)
     .join(' - ')
 }
+
+// conditionally rendered tooltip only on mouseover, speeds up
+const SvgTooltip = React.forwardRef<
+  SVGPathElement,
+  { feature: Feature; alt?: string }
+>(function SvgTooltip2({ feature, alt }, ref) {
+  const caption = makeSummary(feature, alt)
+  const tooltipWidth = 20 + measureText(caption)
+  return ref !== null ? (
+    // @ts-expect-error
+    <Tooltip triggerRef={ref}>
+      <rect
+        x={12}
+        y={0}
+        width={tooltipWidth}
+        height={20}
+        rx={5}
+        ry={5}
+        fill="black"
+        fillOpacity="50%"
+      />
+      <text
+        x={22}
+        y={14}
+        fontSize={10}
+        fill="white"
+        textLength={tooltipWidth - 20}
+      >
+        {caption}
+      </text>
+    </Tooltip>
+  ) : null
+})
 
 const Arc = observer(function ({
   model,
@@ -93,8 +130,6 @@ const Arc = observer(function ({
   const p2 = k2.start
   const r1 = view.bpToPx({ refName: ra1, coord: p1 })?.offsetPx
   const r2 = view.bpToPx({ refName: ra2, coord: p2 })?.offsetPx
-  const caption = makeSummary(feature, alt)
-  const tooltipWidth = 20 + measureText(caption)
 
   if (r1 !== undefined && r2 !== undefined) {
     const radius = (r2 - r1) / 2
@@ -105,12 +140,12 @@ const Arc = observer(function ({
     const left = p1
     const right = p2
 
-    return (
+    return absrad > 1 ? (
       <>
         <path
           d={`M ${left} 0 C ${left} ${destY}, ${right} ${destY}, ${right} 0`}
           ref={ref}
-          stroke={mouseOvered ? 'red' : c}
+          stroke={mouseOvered ? 'black' : c}
           strokeWidth={3}
           onMouseOut={() => setMouseOvered(false)}
           onMouseOver={() => setMouseOvered(true)}
@@ -118,29 +153,11 @@ const Arc = observer(function ({
           fill="none"
           pointerEvents="stroke"
         />
-        <Tooltip triggerRef={ref}>
-          <rect
-            x={12}
-            y={0}
-            width={tooltipWidth}
-            height={20}
-            rx={5}
-            ry={5}
-            fill="black"
-            fillOpacity="50%"
-          />
-          <text
-            x={22}
-            y={14}
-            fontSize={10}
-            fill="white"
-            textLength={tooltipWidth - 20}
-          >
-            {caption}
-          </text>
-        </Tooltip>
+        {mouseOvered ? (
+          <SvgTooltip feature={feature} alt={alt} ref={ref} />
+        ) : null}
       </>
-    )
+    ) : null
   }
   return null
 })
@@ -196,6 +213,7 @@ const Arcs = observer(function ({
             />
           )) ?? (
             <Arc
+              key={f.id()}
               session={session}
               feature={f}
               view={view}

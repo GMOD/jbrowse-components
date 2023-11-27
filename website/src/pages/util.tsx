@@ -26,13 +26,13 @@ export default function GoogleCalendarScheduleFunction() {
       </Typography>
       <ul>
         <li>
-          <a href="https://meet.google.com/rnq-exdt-tuz">
+          <a href="https://meet.google.com/uti-xsjf-xbu">
             Monthly on the third Thursday, 10am EST (North America, Europe
             friendly)
           </a>
         </li>
         <li>
-          <a href="https://meet.google.com/uti-xsjf-xbu">
+          <a href="https://meet.google.com/rnq-exdt-tuz">
             Monthly on the last Tuesday, 8pm EST (Asia Pacific friendly)
           </a>
         </li>

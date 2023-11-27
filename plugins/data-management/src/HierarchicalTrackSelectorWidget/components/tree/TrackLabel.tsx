@@ -1,20 +1,14 @@
 import React from 'react'
 import { Checkbox, FormControlLabel, Tooltip } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { getSession } from '@jbrowse/core/util'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
-
-// icons
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
-
 // locals
 import { isUnsupported, NodeData } from '../util'
-import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-import { HierarchicalTrackSelectorModel } from '../../model'
+import TrackLabelMenu from './TrackLabelMenu'
 
 const useStyles = makeStyles()(theme => ({
   compactCheckbox: {
@@ -27,6 +21,9 @@ const useStyles = makeStyles()(theme => ({
       backgroundColor: theme.palette.action.selected,
     },
   },
+  selected: {
+    background: '#cccc',
+  },
 }))
 
 export interface InfoArgs {
@@ -37,9 +34,18 @@ export interface InfoArgs {
 
 export default function TrackLabel({ data }: { data: NodeData }) {
   const { classes } = useStyles()
-  const { checked, conf, model, drawerPosition, id, name, onChange, selected } =
-    data
-  const description = (conf && readConfObject(conf, ['description'])) || ''
+  const {
+    checked,
+    conf,
+    model,
+    drawerPosition,
+    id,
+    trackId,
+    name,
+    onChange,
+    selected,
+  } = data
+  const description = (conf && readConfObject(conf, 'description')) || ''
   return (
     <>
       <Tooltip
@@ -52,7 +58,10 @@ export default function TrackLabel({ data }: { data: NodeData }) {
             <Checkbox
               className={classes.compactCheckbox}
               checked={checked}
-              onChange={() => onChange(id)}
+              onChange={() => {
+                onChange(trackId)
+                model.addToRecentlyUsed(trackId)
+              }}
               disabled={isUnsupported(name)}
               inputProps={{
                 // @ts-expect-error
@@ -70,43 +79,13 @@ export default function TrackLabel({ data }: { data: NodeData }) {
           }
         />
       </Tooltip>
-      <TrackMenuButton model={model} selected={selected} id={id} conf={conf} />
+      <TrackLabelMenu
+        model={model}
+        selected={selected}
+        trackId={trackId}
+        id={id}
+        conf={conf}
+      />
     </>
-  )
-}
-
-function TrackMenuButton({
-  id,
-  model,
-  selected,
-  conf,
-}: {
-  id: string
-  selected: boolean
-  conf: AnyConfigurationModel
-  model: HierarchicalTrackSelectorModel
-}) {
-  return (
-    <CascadingMenuButton
-      style={{ padding: 0 }}
-      data-testid={`htsTrackEntryMenu-${id}`}
-      menuItems={[
-        ...(getSession(model).getTrackActionMenuItems?.(conf) || []),
-        {
-          label: 'Add to selection',
-          onClick: () => model.addToSelection([conf]),
-        },
-        ...(selected
-          ? [
-              {
-                label: 'Remove from selection',
-                onClick: () => model.removeFromSelection([conf]),
-              },
-            ]
-          : []),
-      ]}
-    >
-      <MoreHorizIcon />
-    </CascadingMenuButton>
   )
 }

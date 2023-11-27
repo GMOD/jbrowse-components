@@ -13,8 +13,8 @@ function getNodeData(
   extra: Record<string, unknown>,
   selection: Record<string, unknown>,
 ) {
-  const isLeaf = !!node.conf
-  const selected = !!selection[node.id]
+  const isLeaf = node.type === 'track'
+  const selected = isLeaf ? selection[node.trackId] : false
   return {
     data: {
       defaultHeight: isLeaf ? 22 : 40,

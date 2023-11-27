@@ -42,7 +42,11 @@ test('widget drawer navigation', async () => {
   // opens a config editor widget
   fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), {}, delay))
   fireEvent.click(
-    await findByTestId('htsTrackEntryMenu-volvox_filtered_vcf', {}, delay),
+    await findByTestId(
+      'htsTrackEntryMenu-Tracks,volvox_filtered_vcf',
+      {},
+      delay,
+    ),
   )
   fireEvent.click(await findByText('Settings'))
   await findByTestId('configEditor', {}, delay)

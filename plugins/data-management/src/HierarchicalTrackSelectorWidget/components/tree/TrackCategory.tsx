@@ -35,14 +35,14 @@ export default function Category({
 }) {
   const { classes } = useStyles()
   const [menuEl, setMenuEl] = useState<HTMLElement | null>(null)
-  const { name, model, id, tree, toggleCollapse } = data
+  const { menuItems = [], name, model, id, tree } = data
 
   return (
     <div
       className={classes.accordionText}
       onClick={() => {
         if (!menuEl) {
-          toggleCollapse(id)
+          data.toggleCollapse(id)
           setOpen(!isOpen)
         }
       }}
@@ -82,8 +82,8 @@ export default function Category({
               label: 'Show all tracks',
               onClick: () => {
                 for (const entry of treeToMap(tree).get(id)?.children || []) {
-                  if (!entry.children.length) {
-                    model.view.showTrack(entry.id)
+                  if (entry.type === 'track') {
+                    model.view.showTrack(entry.trackId)
                   }
                 }
               },
@@ -92,12 +92,13 @@ export default function Category({
               label: 'Hide all tracks',
               onClick: () => {
                 for (const entry of treeToMap(tree).get(id)?.children || []) {
-                  if (!entry.children.length) {
-                    model.view.hideTrack(entry.id)
+                  if (entry.type === 'track') {
+                    model.view.hideTrack(entry.trackId)
                   }
                 }
               },
             },
+            ...menuItems,
           ]}
           onMenuItemClick={(_event, callback) => {
             callback()

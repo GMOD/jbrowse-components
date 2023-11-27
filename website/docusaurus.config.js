@@ -4,7 +4,14 @@ const data = JSON.parse(fs.readFileSync('./docusaurus.config.json'))
 
 module.exports = {
   ...data,
-  plugins: [require.resolve('@cmfcmf/docusaurus-search-local')],
+  plugins: [
+    [
+      require.resolve('@cmfcmf/docusaurus-search-local'),
+      {
+        maxSearchResults: 20,
+      },
+    ],
+  ],
   presets: [
     [
       '@docusaurus/preset-classic',

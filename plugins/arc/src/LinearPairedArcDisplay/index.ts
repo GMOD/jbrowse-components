@@ -7,13 +7,12 @@ import { lazy } from 'react'
 
 export default function LinearPairedArcDisplayF(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
-    const name = 'LinearPairedArcDisplay'
-    const configSchema = configSchemaFactory(name)
+    const configSchema = configSchemaFactory()
     return new DisplayType({
-      name,
+      name: 'LinearPairedArcDisplay',
       displayName: 'Arc display',
       configSchema,
-      stateModel: stateModelFactory(configSchema, name),
+      stateModel: stateModelFactory(configSchema),
       trackType: 'VariantTrack',
       viewType: 'LinearGenomeView',
       ReactComponent: lazy(() => import('./components/ReactComponent')),

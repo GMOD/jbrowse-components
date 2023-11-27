@@ -1,3 +1,55 @@
+yarn run v1.22.19 $ lerna-changelog --silent --next-version 2.8.0
+
+## 2.8.0 (2023-11-09)
+
+#### :rocket: Enhancement
+
+- Other
+  - [#4045](https://github.com/GMOD/jbrowse-components/pull/4045) Create
+    multi-region arc display type for variant tracks
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4050](https://github.com/GMOD/jbrowse-components/pull/4050) Allow
+    specifying alternative config.json path via global variable
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4046](https://github.com/GMOD/jbrowse-components/pull/4046) Show last
+    autosave on jbrowse-web start screen
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4044](https://github.com/GMOD/jbrowse-components/pull/4044) Speed up
+    "multi-region" navigation in search box
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4032](https://github.com/GMOD/jbrowse-components/pull/4032) Add
+    `jbrowse sort-gff` subcommand ([@cmdcolin](https://github.com/cmdcolin))
+- `product-core`
+  - [#4040](https://github.com/GMOD/jbrowse-components/pull/4040) Strip baseUri
+    in 'About track' copy config ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#4035](https://github.com/GMOD/jbrowse-components/pull/4035) Prompt to
+    horizontally flip view when launching linear synteny view on inverted
+    feature ([@cmdcolin](https://github.com/cmdcolin))
+- `app-core`
+  - [#4024](https://github.com/GMOD/jbrowse-components/pull/4024) Add
+    right-handed arrow to view title to emphasize the focused view
+    ([@carolinebridge-oicr](https://github.com/carolinebridge-oicr))
+
+#### :bug: Bug Fix
+
+- [#4052](https://github.com/GMOD/jbrowse-components/pull/4052) Fix browser back
+  button behavior in jbrowse-web ([@cmdcolin](https://github.com/cmdcolin))
+- [#4043](https://github.com/GMOD/jbrowse-components/pull/4043) Fix crash in
+  "Open session" widget for sessions that have 'track-less views'
+  ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :memo: Documentation
+
+- [#4027](https://github.com/GMOD/jbrowse-components/pull/4027) Add office hours
+  and community meetings ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 2
+
+- Caroline Bridge
+  ([@carolinebridge-oicr](https://github.com/carolinebridge-oicr))
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin)) Done in 2.23s.
+
 yarn run v1.22.19 $ lerna-changelog --silent --next-version 2.7.2
 
 ## 2.7.2 (2023-10-27)

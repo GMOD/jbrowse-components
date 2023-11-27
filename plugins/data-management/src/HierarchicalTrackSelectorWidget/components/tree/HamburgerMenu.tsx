@@ -159,6 +159,22 @@ const HamburgerMenu = observer(function ({
             label: 'Expand all categories',
             onClick: () => model.expandAllCategories(),
           },
+          {
+            label: 'Show favorite tracks',
+            type: 'checkbox',
+            checked: model.showFavoritesCategory,
+            onClick: () =>
+              model.setShowFavoritesCategory(!model.showFavoritesCategory),
+          },
+          {
+            label: 'Show recently used tracks',
+            type: 'checkbox',
+            checked: model.showRecentlyUsedCategory,
+            onClick: () =>
+              model.setShowRecentlyUsedCategory(
+                !model.showRecentlyUsedCategory,
+              ),
+          },
         ]}
       >
         <MenuIcon />

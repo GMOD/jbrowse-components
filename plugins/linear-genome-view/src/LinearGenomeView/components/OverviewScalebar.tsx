@@ -185,8 +185,8 @@ const OverviewBox = observer(function ({
           canDisplayCytobands
             ? undefined
             : reversed
-            ? classes.scalebarContigReverse
-            : classes.scalebarContigForward,
+              ? classes.scalebarContigReverse
+              : classes.scalebarContigForward,
           !canDisplayCytobands ? classes.scalebarBorder : undefined,
         )}
         style={{

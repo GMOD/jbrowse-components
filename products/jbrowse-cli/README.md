@@ -204,7 +204,7 @@ EXAMPLES
 ```
 
 _See code:
-[src/commands/add-assembly.ts](https://github.com/GMOD/jbrowse-components/blob/v2.7.2/products/jbrowse-cli/src/commands/add-assembly.ts)_
+[src/commands/add-assembly.ts](https://github.com/GMOD/jbrowse-components/blob/v2.8.0/products/jbrowse-cli/src/commands/add-assembly.ts)_
 
 ## `jbrowse add-connection CONNECTIONURLORPATH`
 
@@ -229,13 +229,13 @@ FLAGS
   -h, --help                   Show CLI help.
   -n, --name=<value>           Name of the connection. Defaults to connectionId if not provided
   -t, --type=<value>           type of connection, ex. JBrowse1Connection, UCSCTrackHubConnection, custom
-  --connectionId=<value>       Id for the connection that must be unique to JBrowse.  Defaults to
+      --connectionId=<value>   Id for the connection that must be unique to JBrowse.  Defaults to
                                'connectionType-assemblyName-currentTime'
-  --out=<value>                synonym for target
-  --overwrite                  Overwrites any existing connections if same connection id
-  --skipCheck                  Don't check whether or not the data directory URL exists or if you are in a JBrowse
+      --out=<value>            synonym for target
+      --overwrite              Overwrites any existing connections if same connection id
+      --skipCheck              Don't check whether or not the data directory URL exists or if you are in a JBrowse
                                directory
-  --target=<value>             path to config file in JB2 installation directory to write out to.
+      --target=<value>         path to config file in JB2 installation directory to write out to.
 
 DESCRIPTION
   Add a connection to a JBrowse 2 configuration
@@ -255,7 +255,7 @@ EXAMPLES
 ```
 
 _See code:
-[src/commands/add-connection.ts](https://github.com/GMOD/jbrowse-components/blob/v2.7.2/products/jbrowse-cli/src/commands/add-connection.ts)_
+[src/commands/add-connection.ts](https://github.com/GMOD/jbrowse-components/blob/v2.8.0/products/jbrowse-cli/src/commands/add-connection.ts)_
 
 ## `jbrowse add-track TRACK`
 
@@ -282,18 +282,18 @@ FLAGS
                                <options: copy|symlink|move|inPlace>
   -n, --name=<value>           Name of the track. Will be defaulted to the trackId if none specified
   -t, --trackType=<value>      Type of track, by default inferred from track file
-  --bed1=<value>               Used only for mcscan anchors/simpleAnchors types
-  --bed2=<value>               Used only for mcscan anchors/simpleAnchors types
-  --category=<value>           Optional Comma separated string of categories to group tracks
-  --config=<value>             Any extra config settings to add to a track. i.e '{"defaultRendering": "density"}'
-  --indexFile=<value>          Optional index file for the track
-  --out=<value>                synonym for target
-  --overwrite                  Overwrites existing track if it shares the same trackId
-  --protocol=<value>           [default: uri] Force protocol to a specific value
-  --skipCheck                  Skip check for whether or not the file or URL exists or if you are in a JBrowse directory
-  --subDir=<value>             when using --load a file, output to a subdirectory of the target dir
-  --target=<value>             path to config file in JB2 installation to write out to.
-  --trackId=<value>            trackId for the track, by default inferred from filename, must be unique throughout
+      --bed1=<value>           Used only for mcscan anchors/simpleAnchors types
+      --bed2=<value>           Used only for mcscan anchors/simpleAnchors types
+      --category=<value>       Optional Comma separated string of categories to group tracks
+      --config=<value>         Any extra config settings to add to a track. i.e '{"defaultRendering": "density"}'
+      --indexFile=<value>      Optional index file for the track
+      --out=<value>            synonym for target
+      --overwrite              Overwrites existing track if it shares the same trackId
+      --protocol=<value>       [default: uri] Force protocol to a specific value
+      --skipCheck              Skip check for whether or not the file or URL exists or if you are in a JBrowse directory
+      --subDir=<value>         when using --load a file, output to a subdirectory of the target dir
+      --target=<value>         path to config file in JB2 installation to write out to.
+      --trackId=<value>        trackId for the track, by default inferred from filename, must be unique throughout
                                config
 
 DESCRIPTION
@@ -336,7 +336,7 @@ EXAMPLES
 ```
 
 _See code:
-[src/commands/add-track.ts](https://github.com/GMOD/jbrowse-components/blob/v2.7.2/products/jbrowse-cli/src/commands/add-track.ts)_
+[src/commands/add-track.ts](https://github.com/GMOD/jbrowse-components/blob/v2.8.0/products/jbrowse-cli/src/commands/add-track.ts)_
 
 ## `jbrowse add-track-json TRACK`
 
@@ -351,10 +351,10 @@ ARGUMENTS
   TRACK  track JSON file or command line arg blob
 
 FLAGS
-  -u, --update      update the contents of an existing track, matched based on trackId
-  --out=<value>     synonym for target
-  --target=<value>  path to config file in JB2 installation directory to write out to.
-                    Creates ./config.json if nonexistent
+  -u, --update          update the contents of an existing track, matched based on trackId
+      --out=<value>     synonym for target
+      --target=<value>  path to config file in JB2 installation directory to write out to.
+                        Creates ./config.json if nonexistent
 
 DESCRIPTION
   Add a track configuration directly from a JSON hunk to the JBrowse 2 configuration
@@ -366,7 +366,7 @@ EXAMPLES
 ```
 
 _See code:
-[src/commands/add-track-json.ts](https://github.com/GMOD/jbrowse-components/blob/v2.7.2/products/jbrowse-cli/src/commands/add-track-json.ts)_
+[src/commands/add-track-json.ts](https://github.com/GMOD/jbrowse-components/blob/v2.8.0/products/jbrowse-cli/src/commands/add-track-json.ts)_
 
 ## `jbrowse admin-server`
 
@@ -377,15 +377,16 @@ USAGE
   $ jbrowse admin-server [-p <value>] [--root <value>] [--bodySizeLimit <value>] [-h]
 
 FLAGS
-  -h, --help               Show CLI help.
-  -p, --port=<value>       Specifified port to start the server on;
-                           Default is 9090.
-  --bodySizeLimit=<value>  [default: 25mb] Size limit of the update message; may need to increase if config is large.
-                           Argument is passed to bytes library for parsing: https://www.npmjs.com/package/bytes.
-  --root=<value>           path to the root of the JB2 installation.
-                           Creates ./config.json if nonexistent. note that you can navigate to
-                           ?config=path/to/subconfig.json in the web browser and it will write to
-                           rootDir/path/to/subconfig.json
+  -h, --help                   Show CLI help.
+  -p, --port=<value>           Specifified port to start the server on;
+                               Default is 9090.
+      --bodySizeLimit=<value>  [default: 25mb] Size limit of the update message; may need to increase if config is
+                               large.
+                               Argument is passed to bytes library for parsing: https://www.npmjs.com/package/bytes.
+      --root=<value>           path to the root of the JB2 installation.
+                               Creates ./config.json if nonexistent. note that you can navigate to
+                               ?config=path/to/subconfig.json in the web browser and it will write to
+                               rootDir/path/to/subconfig.json
 
 DESCRIPTION
   Start up a small admin server for JBrowse configuration
@@ -397,7 +398,7 @@ EXAMPLES
 ```
 
 _See code:
-[src/commands/admin-server.ts](https://github.com/GMOD/jbrowse-components/blob/v2.7.2/products/jbrowse-cli/src/commands/admin-server.ts)_
+[src/commands/admin-server.ts](https://github.com/GMOD/jbrowse-components/blob/v2.8.0/products/jbrowse-cli/src/commands/admin-server.ts)_
 
 ## `jbrowse create LOCALPATH`
 
@@ -411,14 +412,14 @@ ARGUMENTS
   LOCALPATH  Location where JBrowse 2 will be installed
 
 FLAGS
-  -f, --force         Overwrites existing JBrowse 2 installation if present in path
-  -h, --help          Show CLI help.
-  -l, --listVersions  Lists out all versions of JBrowse 2
-  -t, --tag=<value>   Version of JBrowse 2 to install. Format is v1.0.0.
-                      Defaults to latest
-  -u, --url=<value>   A direct URL to a JBrowse 2 release
-  --branch=<value>    Download a development build from a named git branch
-  --nightly           Download the latest development build from the main branch
+  -f, --force           Overwrites existing JBrowse 2 installation if present in path
+  -h, --help            Show CLI help.
+  -l, --listVersions    Lists out all versions of JBrowse 2
+  -t, --tag=<value>     Version of JBrowse 2 to install. Format is v1.0.0.
+                        Defaults to latest
+  -u, --url=<value>     A direct URL to a JBrowse 2 release
+      --branch=<value>  Download a development build from a named git branch
+      --nightly         Download the latest development build from the main branch
 
 DESCRIPTION
   Downloads and installs the latest JBrowse 2 release
@@ -454,7 +455,7 @@ EXAMPLES
 ```
 
 _See code:
-[src/commands/create.ts](https://github.com/GMOD/jbrowse-components/blob/v2.7.2/products/jbrowse-cli/src/commands/create.ts)_
+[src/commands/create.ts](https://github.com/GMOD/jbrowse-components/blob/v2.8.0/products/jbrowse-cli/src/commands/create.ts)_
 
 ## `jbrowse help [COMMANDS]`
 
@@ -503,7 +504,7 @@ EXAMPLES
 ```
 
 _See code:
-[src/commands/remove-track.ts](https://github.com/GMOD/jbrowse-components/blob/v2.7.2/products/jbrowse-cli/src/commands/remove-track.ts)_
+[src/commands/remove-track.ts](https://github.com/GMOD/jbrowse-components/blob/v2.8.0/products/jbrowse-cli/src/commands/remove-track.ts)_
 
 ## `jbrowse set-default-session`
 
@@ -523,10 +524,10 @@ FLAGS
   -v, --view=<value>     View type in config to be added as default session, i.e LinearGenomeView, CircularView,
                          DotplotView.
                          Must be provided if no default session file provided
-  --delete               Delete any existing default session.
-  --out=<value>          synonym for target
-  --target=<value>       path to config file in JB2 installation directory to write out to
-  --viewId=<value>       Identifier for the view. Will be generated on default
+      --delete           Delete any existing default session.
+      --out=<value>      synonym for target
+      --target=<value>   path to config file in JB2 installation directory to write out to
+      --viewId=<value>   Identifier for the view. Will be generated on default
 
 DESCRIPTION
   Set a default session with views and tracks
@@ -542,7 +543,7 @@ EXAMPLES
 ```
 
 _See code:
-[src/commands/set-default-session.ts](https://github.com/GMOD/jbrowse-components/blob/v2.7.2/products/jbrowse-cli/src/commands/set-default-session.ts)_
+[src/commands/set-default-session.ts](https://github.com/GMOD/jbrowse-components/blob/v2.8.0/products/jbrowse-cli/src/commands/set-default-session.ts)_
 
 ## `jbrowse sort-gff FILE`
 
@@ -570,7 +571,7 @@ EXAMPLES
 ```
 
 _See code:
-[src/commands/sort-gff.ts](https://github.com/GMOD/jbrowse-components/blob/v2.7.2/products/jbrowse-cli/src/commands/sort-gff.ts)_
+[src/commands/sort-gff.ts](https://github.com/GMOD/jbrowse-components/blob/v2.8.0/products/jbrowse-cli/src/commands/sort-gff.ts)_
 
 ## `jbrowse text-index`
 
@@ -587,20 +588,20 @@ FLAGS
                             assembly in the config
   -h, --help                Show CLI help.
   -q, --quiet               Hide the progress bars
-  --attributes=<value>      [default: Name,ID] Comma separated list of attributes to index
-  --dryrun                  Just print out tracks that will be indexed by the process, without doing any indexing
-  --exclude=<value>         [default: CDS,exon] Adds gene type to list of excluded types
-  --file=<value>...         File or files to index (can be used to create trix indexes for embedded component use cases
+      --attributes=<value>  [default: Name,ID] Comma separated list of attributes to index
+      --dryrun              Just print out tracks that will be indexed by the process, without doing any indexing
+      --exclude=<value>     [default: CDS,exon] Adds gene type to list of excluded types
+      --file=<value>...     File or files to index (can be used to create trix indexes for embedded component use cases
                             not using a config.json for example)
-  --fileId=<value>...       Set the trackId used for the indexes generated with the --file argument
-  --force                   Overwrite previously existing indexes
-  --out=<value>             Synonym for target
-  --perTrack                If set, creates an index per track
-  --prefixSize=<value>      Specify the prefix size for the ixx index. We attempt to automatically calculate this, but
+      --fileId=<value>...   Set the trackId used for the indexes generated with the --file argument
+      --force               Overwrite previously existing indexes
+      --out=<value>         Synonym for target
+      --perTrack            If set, creates an index per track
+      --prefixSize=<value>  Specify the prefix size for the ixx index. We attempt to automatically calculate this, but
                             you can manually specify this too. If many genes have similar gene IDs e.g. Z000000001,
                             Z000000002 the prefix size should be larger so that they get split into different bins
-  --target=<value>          Path to config file in JB2 installation directory to read from.
-  --tracks=<value>          Specific tracks to index, formatted as comma separated trackIds. If unspecified, indexes all
+      --target=<value>      Path to config file in JB2 installation directory to read from.
+      --tracks=<value>      Specific tracks to index, formatted as comma separated trackIds. If unspecified, indexes all
                             available tracks
 
 DESCRIPTION
@@ -637,7 +638,7 @@ EXAMPLES
 ```
 
 _See code:
-[src/commands/text-index.ts](https://github.com/GMOD/jbrowse-components/blob/v2.7.2/products/jbrowse-cli/src/commands/text-index.ts)_
+[src/commands/text-index.ts](https://github.com/GMOD/jbrowse-components/blob/v2.8.0/products/jbrowse-cli/src/commands/text-index.ts)_
 
 ## `jbrowse upgrade [LOCALPATH]`
 
@@ -651,14 +652,14 @@ ARGUMENTS
   LOCALPATH  [default: .] Location where JBrowse 2 is installed
 
 FLAGS
-  -h, --help          Show CLI help.
-  -l, --listVersions  Lists out all versions of JBrowse 2
-  -t, --tag=<value>   Version of JBrowse 2 to install. Format is v1.0.0.
-                      Defaults to latest
-  -u, --url=<value>   A direct URL to a JBrowse 2 release
-  --branch=<value>    Download a development build from a named git branch
-  --clean             Removes old js,map,and LICENSE files in the installation
-  --nightly           Download the latest development build from the main branch
+  -h, --help            Show CLI help.
+  -l, --listVersions    Lists out all versions of JBrowse 2
+  -t, --tag=<value>     Version of JBrowse 2 to install. Format is v1.0.0.
+                        Defaults to latest
+  -u, --url=<value>     A direct URL to a JBrowse 2 release
+      --branch=<value>  Download a development build from a named git branch
+      --clean           Removes old js,map,and LICENSE files in the installation
+      --nightly         Download the latest development build from the main branch
 
 DESCRIPTION
   Upgrades JBrowse 2 to latest version
@@ -700,7 +701,7 @@ EXAMPLES
 ```
 
 _See code:
-[src/commands/upgrade.ts](https://github.com/GMOD/jbrowse-components/blob/v2.7.2/products/jbrowse-cli/src/commands/upgrade.ts)_
+[src/commands/upgrade.ts](https://github.com/GMOD/jbrowse-components/blob/v2.8.0/products/jbrowse-cli/src/commands/upgrade.ts)_
 
 <!-- commandsstop -->
 

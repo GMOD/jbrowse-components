@@ -1,6 +1,7 @@
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { HierarchicalTrackSelectorModel } from '../model'
 import { TreeNode } from '../generateHierarchy'
+import { MenuItem } from '@jbrowse/core/ui'
 
 export interface NodeData {
   nestingLevel: number
@@ -8,22 +9,24 @@ export interface NodeData {
   conf: AnyConfigurationModel
   drawerPosition: unknown
   id: string
+  trackId: string
   isLeaf: boolean
   name: string
   onChange: Function
   toggleCollapse: (arg: string) => void
   tree: TreeNode
   selected: boolean
+  menuItems?: MenuItem[]
   model: HierarchicalTrackSelectorModel
 }
 
 export function getAllChildren(subtree?: TreeNode): AnyConfigurationModel[] {
   // @ts-expect-error
-  return (
-    subtree?.children.map(t =>
-      t.children.length ? getAllChildren(t) : t.conf!,
-    ) || []
-  ).flat(Infinity)
+  return subtree?.type === 'category'
+    ? subtree.children
+        .map(t => (t.type === 'category' ? getAllChildren(t) : t.conf))
+        .flat(Infinity)
+    : []
 }
 
 export function treeToMap(tree: TreeNode, map = new Map<string, TreeNode>()) {

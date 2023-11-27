@@ -20,9 +20,6 @@ import config from '../docusaurus.config.json'
 - [tabix](http://www.htslib.org/doc/tabix.html) installed e.g.
   `sudo apt install tabix` and `brew install htslib`, used for creating tabix
   indexes for BED/VCF/GFF files
-- (optional) [`genometools`](http://genometools.org/) installed e.g.
-  `sudo apt install genometools` or `brew install brewsci/bio/genometools` used
-  for sorting GFF3. can use grep and sort instead of `genometools` also
 
 ## Installing the JBrowse CLI
 
@@ -227,22 +224,16 @@ jbrowse add-track file.bw --load copy --out /var/www/html/jbrowse
 
 ### Adding a GFF3 file with GFF3Tabix
 
-To load a GFF3 file, we can sort and index it with tabix, make sure you have
-[GenomeTools](http://genometools.org/) (to install can use
-`sudo apt install genometools`).
-
 ```bash
-gt gff3 -sortlines -tidy -retainids yourfile.gff > yourfile.sorted.gff
-bgzip yourfile.sorted.gff
+jbrowse sort-gff yourfile.gff | bgzip > yourfile.sorted.gff.gz
 tabix yourfile.sorted.gff.gz
 jbrowse add-track yourfile.sorted.gff.gz --load copy
 ```
 
-As an alternative to `gt gff3 -sortlines`, use `awk` and GNU `sort`, as follows:
+Note: the `jbrowse sort-gff` command just automates the following shell command
 
 ```bash
-(grep "^#" in.gff; grep -v "^#" in.gff | sort -t"`printf '\t'`" -k1,1 -k4,4n) | bgzip > file.sorted.gff.gz;
-tabix file.sorted.gff.gz
+(grep "^#" in.gff; grep -v "^#" in.gff | sort -t"`printf '\t'`" -k1,1 -k4,4n)  > sorted.gff;
 ```
 
 This command comes from the
