@@ -12,10 +12,12 @@ import { MenuItem } from '@jbrowse/core/ui'
 const CascadingMenuButton = observer(function CascadingMenuButton({
   children,
   menuItems,
+  closeAfterItemClick = true,
   ...rest
 }: {
   children?: React.ReactElement
   menuItems: MenuItem[]
+  closeAfterItemClick?: boolean
   [key: string]: unknown
 }) {
   const popupState = usePopupState({
@@ -35,6 +37,7 @@ const CascadingMenuButton = observer(function CascadingMenuButton({
         {...bindPopover(popupState)}
         onMenuItemClick={(_: unknown, callback: () => void) => callback()}
         menuItems={menuItems}
+        closeAfterItemClick={closeAfterItemClick}
         popupState={popupState}
       />
     </>

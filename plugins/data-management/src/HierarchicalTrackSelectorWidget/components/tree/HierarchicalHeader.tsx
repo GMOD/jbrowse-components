@@ -17,6 +17,7 @@ import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
+import TrackLabelMenu from './TrackLabelMenu'
 
 const useStyles = makeStyles()(theme => ({
   searchBox: {
@@ -60,17 +61,43 @@ const RecentlyUsed = observer(function ({
   const { tracks } = view
   return (
     <CascadingMenuButton
-      menuItems={recentlyUsedTracks.map(t => ({
-        type: 'checkbox',
-        label: readConfObject(t, 'name'),
-        checked: tracks.some(
-          (f: { configuration: AnyConfigurationModel }) =>
-            f.configuration === t,
-        ),
-        onClick: () => {
-          model.view.toggleTrack(t.trackId)
-        },
-      }))}
+      closeAfterItemClick={false}
+      menuItems={[
+        ...recentlyUsedTracks.map(t => ({
+          type: 'checkbox' as const,
+          label: (
+            <div>
+              {readConfObject(t, 'name')}{' '}
+              <TrackLabelMenu
+                id={t.trackId}
+                trackId={t.trackId}
+                selected={false}
+                model={model}
+                conf={t}
+              />
+            </div>
+          ),
+          checked: tracks.some(
+            (f: { configuration: AnyConfigurationModel }) =>
+              f.configuration === t,
+          ),
+          onClick: () => model.view.toggleTrack(t.trackId),
+        })),
+        ...(recentlyUsedTracks.length
+          ? [
+              { type: 'divider' as const },
+              {
+                label: 'Clear recently used',
+                onClick: () => model.clearRecentlyUsed(),
+              },
+            ]
+          : [
+              {
+                label: 'No recently used',
+                onClick: () => {},
+              },
+            ]),
+      ]}
     >
       <HistoryIcon />
     </CascadingMenuButton>
@@ -84,23 +111,50 @@ const Favorites = observer(function ({
 }) {
   const { view, favoriteTracks } = model
   const { tracks } = view
-  return favoriteTracks.length ? (
+  return (
     <CascadingMenuButton
-      menuItems={favoriteTracks.map(t => ({
-        type: 'checkbox',
-        label: readConfObject(t, 'name'),
-        checked: tracks.some(
-          (f: { configuration: AnyConfigurationModel }) =>
-            f.configuration === t,
-        ),
-        onClick: () => {
-          model.view.toggleTrack(t.trackId)
-        },
-      }))}
+      closeAfterItemClick={false}
+      menuItems={[
+        ...favoriteTracks.map(t => ({
+          type: 'checkbox' as const,
+          id: t.trackId,
+          label: (
+            <div>
+              {readConfObject(t, 'name')}{' '}
+              <TrackLabelMenu
+                id={t.trackId}
+                trackId={t.trackId}
+                selected={false}
+                model={model}
+                conf={t}
+              />
+            </div>
+          ),
+          checked: tracks.some(
+            (f: { configuration: AnyConfigurationModel }) =>
+              f.configuration === t,
+          ),
+          onClick: () => model.view.toggleTrack(t.trackId),
+        })),
+        ...(favoriteTracks.length
+          ? [
+              { type: 'divider' as const },
+              {
+                label: 'Clear favorites',
+                onClick: () => model.clearFavorites(),
+              },
+            ]
+          : [
+              {
+                label: 'No favorite tracks yet',
+                onClick: () => {},
+              },
+            ]),
+      ]}
     >
       <GradeIcon />
     </CascadingMenuButton>
-  ) : null
+  )
 })
 
 const HierarchicalTrackSelectorHeader = observer(function ({

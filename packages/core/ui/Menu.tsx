@@ -110,7 +110,8 @@ export interface MenuSubHeader {
 }
 
 export interface BaseMenuItem {
-  label: string
+  id?: string // used as react key if provided
+  label: React.ReactNode
   priority?: number
   subLabel?: string
   icon?: React.ComponentType<SvgIconProps>
@@ -165,15 +166,11 @@ interface MenuPageProps {
 
 type MenuItemStyleProp = MenuItemProps['style']
 
+function checkIfValid(m: MenuItem) {
+  return m.type !== 'divider' && m.type !== 'subHeader' && !m.disabled
+}
 function findNextValidIdx(menuItems: MenuItem[], currentIdx: number) {
-  const idx = menuItems
-    .slice(currentIdx + 1)
-    .findIndex(
-      menuItem =>
-        menuItem.type !== 'divider' &&
-        menuItem.type !== 'subHeader' &&
-        !menuItem.disabled,
-    )
+  const idx = menuItems.slice(currentIdx + 1).findIndex(checkIfValid)
   if (idx === -1) {
     return idx
   }
@@ -181,13 +178,7 @@ function findNextValidIdx(menuItems: MenuItem[], currentIdx: number) {
 }
 
 function findPreviousValidIdx(menuItems: MenuItem[], currentIdx: number) {
-  return findLastIndex(
-    menuItems.slice(0, currentIdx),
-    menuItem =>
-      menuItem.type !== 'divider' &&
-      menuItem.type !== 'subHeader' &&
-      !menuItem.disabled,
-  )
+  return findLastIndex(menuItems.slice(0, currentIdx), checkIfValid)
 }
 
 const MenuPage = React.forwardRef<HTMLDivElement, MenuPageProps>(
@@ -311,7 +302,7 @@ const MenuPage = React.forwardRef<HTMLDivElement, MenuPageProps>(
                   : undefined
               return (
                 <MUIMenuItem
-                  key={menuItem.label}
+                  key={menuItem.id || String(menuItem.label)}
                   style={menuItemStyle}
                   selected={idx === selectedMenuItemIdx}
                   onClick={onClick}
@@ -381,7 +372,7 @@ const MenuPage = React.forwardRef<HTMLDivElement, MenuPageProps>(
           if ('subMenu' in menuItem) {
             subMenu = (
               <MenuPage
-                key={menuItem.label}
+                key={menuItem.id || String(menuItem.label)}
                 anchorEl={subMenuAnchorEl}
                 open={isSubMenuOpen && openSubMenuIdx === idx}
                 onClose={() => {
