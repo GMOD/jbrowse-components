@@ -7,8 +7,10 @@ import { MenuItem } from '@jbrowse/core/ui'
 const MenuButton = observer(function MenuButton({
   children,
   menuItems,
+  closeAfterItemClick = true,
   ...rest
 }: {
+  closeAfterItemClick?: boolean
   children?: React.ReactElement
   menuItems: MenuItem[]
   [key: string]: unknown
@@ -25,7 +27,9 @@ const MenuButton = observer(function MenuButton({
         onClose={() => setAnchorEl(undefined)}
         onMenuItemClick={(_: unknown, callback: Function) => {
           callback()
-          setAnchorEl(undefined)
+          if (closeAfterItemClick) {
+            setAnchorEl(undefined)
+          }
         }}
         menuItems={menuItems}
       />

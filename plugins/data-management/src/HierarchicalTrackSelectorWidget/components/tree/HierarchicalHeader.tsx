@@ -58,8 +58,7 @@ const RecentlyUsed = observer(function ({
   model: HierarchicalTrackSelectorModel
 }) {
   const { view, recentlyUsedTracks } = model
-  const { tracks } = view
-  return (
+  return view ? (
     <CascadingMenuButton
       closeAfterItemClick={false}
       menuItems={[
@@ -77,7 +76,7 @@ const RecentlyUsed = observer(function ({
               />
             </div>
           ),
-          checked: tracks.some(
+          checked: view.tracks.some(
             (f: { configuration: AnyConfigurationModel }) =>
               f.configuration === t,
           ),
@@ -101,7 +100,7 @@ const RecentlyUsed = observer(function ({
     >
       <HistoryIcon />
     </CascadingMenuButton>
-  )
+  ) : null
 })
 
 const Favorites = observer(function ({
@@ -110,8 +109,7 @@ const Favorites = observer(function ({
   model: HierarchicalTrackSelectorModel
 }) {
   const { view, favoriteTracks } = model
-  const { tracks } = view
-  return (
+  return view ? (
     <CascadingMenuButton
       closeAfterItemClick={false}
       menuItems={[
@@ -130,7 +128,7 @@ const Favorites = observer(function ({
               />
             </div>
           ),
-          checked: tracks.some(
+          checked: view.tracks.some(
             (f: { configuration: AnyConfigurationModel }) =>
               f.configuration === t,
           ),
@@ -154,7 +152,7 @@ const Favorites = observer(function ({
     >
       <GradeIcon />
     </CascadingMenuButton>
-  )
+  ) : null
 })
 
 const HierarchicalTrackSelectorHeader = observer(function ({
