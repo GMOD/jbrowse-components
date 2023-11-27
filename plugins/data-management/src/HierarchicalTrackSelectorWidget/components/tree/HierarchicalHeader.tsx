@@ -1,5 +1,5 @@
 import React from 'react'
-import { IconButton, InputAdornment, TextField } from '@mui/material'
+import { IconButton, InputAdornment, TextField, Tooltip } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 
@@ -98,7 +98,9 @@ const RecentlyUsed = observer(function ({
             ]),
       ]}
     >
-      <HistoryIcon />
+      <Tooltip title="Recently used tracks">
+        <HistoryIcon />
+      </Tooltip>
     </CascadingMenuButton>
   ) : null
 })
@@ -150,7 +152,9 @@ const Favorites = observer(function ({
             ]),
       ]}
     >
-      <GradeIcon />
+      <Tooltip title="Favorite tracks">
+        <GradeIcon />
+      </Tooltip>
     </CascadingMenuButton>
   ) : null
 })

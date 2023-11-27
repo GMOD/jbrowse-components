@@ -82,7 +82,9 @@ exports[`renders nothing with no assembly 1`] = `
       >
         <svg
           aria-hidden="true"
+          aria-label="Recently used tracks"
           class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+          data-mui-internal-clone-element="true"
           data-testid="HistoryIcon"
           focusable="false"
           viewBox="0 0 24 24"
@@ -102,7 +104,9 @@ exports[`renders nothing with no assembly 1`] = `
       >
         <svg
           aria-hidden="true"
+          aria-label="Favorite tracks"
           class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+          data-mui-internal-clone-element="true"
           data-testid="GradeIcon"
           focusable="false"
           viewBox="0 0 24 24"
@@ -236,8 +240,8 @@ exports[`renders with a couple of categorized tracks 1`] = `
         <label
           class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard css-1s1jvl0-MuiFormLabel-root-MuiInputLabel-root"
           data-shrink="false"
-          for=":r5:"
-          id=":r5:-label"
+          for=":r9:"
+          id=":r9:-label"
         >
           Filter tracks
         </label>
@@ -247,7 +251,7 @@ exports[`renders with a couple of categorized tracks 1`] = `
           <input
             aria-invalid="false"
             class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd css-nz481w-MuiInputBase-input-MuiInput-input"
-            id=":r5:"
+            id=":r9:"
             type="text"
             value=""
           />
@@ -284,7 +288,9 @@ exports[`renders with a couple of categorized tracks 1`] = `
       >
         <svg
           aria-hidden="true"
+          aria-label="Recently used tracks"
           class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+          data-mui-internal-clone-element="true"
           data-testid="HistoryIcon"
           focusable="false"
           viewBox="0 0 24 24"
@@ -304,7 +310,9 @@ exports[`renders with a couple of categorized tracks 1`] = `
       >
         <svg
           aria-hidden="true"
+          aria-label="Favorite tracks"
           class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+          data-mui-internal-clone-element="true"
           data-testid="GradeIcon"
           focusable="false"
           viewBox="0 0 24 24"
@@ -794,8 +802,8 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
         <label
           class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard css-1s1jvl0-MuiFormLabel-root-MuiInputLabel-root"
           data-shrink="false"
-          for=":r1:"
-          id=":r1:-label"
+          for=":r3:"
+          id=":r3:-label"
         >
           Filter tracks
         </label>
@@ -805,7 +813,7 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
           <input
             aria-invalid="false"
             class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd css-nz481w-MuiInputBase-input-MuiInput-input"
-            id=":r1:"
+            id=":r3:"
             type="text"
             value=""
           />
@@ -842,7 +850,9 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
       >
         <svg
           aria-hidden="true"
+          aria-label="Recently used tracks"
           class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+          data-mui-internal-clone-element="true"
           data-testid="HistoryIcon"
           focusable="false"
           viewBox="0 0 24 24"
@@ -862,7 +872,9 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
       >
         <svg
           aria-hidden="true"
+          aria-label="Favorite tracks"
           class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+          data-mui-internal-clone-element="true"
           data-testid="GradeIcon"
           focusable="false"
           viewBox="0 0 24 24"
