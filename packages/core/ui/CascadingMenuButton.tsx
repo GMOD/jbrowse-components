@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
 import { IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -13,21 +13,43 @@ const CascadingMenuButton = observer(function CascadingMenuButton({
   children,
   menuItems,
   closeAfterItemClick = true,
+  stopPropagation,
+  setOpen,
   ...rest
 }: {
   children?: React.ReactElement
   menuItems: MenuItem[]
   closeAfterItemClick?: boolean
+  stopPropagation?: boolean
+  setOpen?: (arg: boolean) => void
   [key: string]: unknown
 }) {
   const popupState = usePopupState({
     popupId: 'viewMenu',
     variant: 'popover',
   })
+  const { onClick, onTouchStart, ...rest2 } = bindTrigger(popupState)
+  const { isOpen } = popupState
+  useEffect(() => {
+    setOpen?.(isOpen)
+  }, [isOpen, setOpen])
+
   return (
     <>
       <IconButton
-        {...bindTrigger(popupState)}
+        onClick={event => {
+          if (stopPropagation) {
+            event.stopPropagation()
+          }
+          onClick(event)
+        }}
+        onTouchStart={event => {
+          if (stopPropagation) {
+            event.stopPropagation()
+          }
+          onTouchStart(event)
+        }}
+        {...rest2}
         {...rest}
         disabled={menuItems.length === 0}
       >
