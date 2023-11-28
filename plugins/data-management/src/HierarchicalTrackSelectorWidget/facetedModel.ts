@@ -220,14 +220,16 @@ export function facetedStateTreeF() {
               ),
               ...Object.fromEntries(
                 self.filteredMetadataKeys
-                  .filter(f => self.visible[f])
-                  .map(e => [
-                    e,
-                    measureGridWidth(
-                      self.rows.map(r => r.metadata[e]),
-                      { maxWidth: 400, stripHTML: true },
-                    ),
-                  ]),
+                  .filter(f => self.visible['m.' + f])
+                  .map(e => {
+                    return [
+                      'm.' + e,
+                      measureGridWidth(
+                        self.rows.map(r => r.metadata[e]),
+                        { maxWidth: 400, stripHTML: true },
+                      ),
+                    ]
+                  }),
               ),
             })
           }),

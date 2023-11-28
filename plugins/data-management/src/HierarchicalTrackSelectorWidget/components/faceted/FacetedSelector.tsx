@@ -101,7 +101,7 @@ const FacetedSelector = observer(function FacetedSelector({
     ...filteredMetadataKeys.map(e => ({
       field: `m.${e}`,
       label: e,
-      width: widthsDebounced[e] ?? 100,
+      width: widthsDebounced['m.' + e] ?? 100,
       valueGetter: (params: GridCellParams) => params.row.metadata[e],
       renderCell: (params: GridCellParams) => {
         const val = params.row.metadata[e] as string
