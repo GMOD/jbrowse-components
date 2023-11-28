@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { IconButton } from '@mui/material'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
@@ -10,12 +10,7 @@ import { ResizeHandle } from '@jbrowse/core/ui'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import JBrowseMenu from '@jbrowse/core/ui/Menu'
 import ResizeBar from '@jbrowse/core/ui/ResizeBar'
-import {
-  getEnv,
-  getSession,
-  measureGridWidth,
-  useDebounce,
-} from '@jbrowse/core/util'
+import { getEnv, getSession, useDebounce } from '@jbrowse/core/util'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { useResizeBar } from '@jbrowse/core/ui/useResizeBar'
 import { makeStyles } from 'tss-react/mui'
@@ -27,16 +22,6 @@ import MoreHoriz from '@mui/icons-material/MoreHoriz'
 import { HierarchicalTrackSelectorModel } from '../../model'
 import FacetedHeader from './FacetedHeader'
 import FacetFilters from './FacetFilters'
-import { getRootKeys } from './util'
-
-const nonMetadataKeys = ['category', 'adapter', 'description'] as const
-function filt(
-  keys: readonly string[],
-  rows: Record<string, unknown>[],
-  cb: (row: Record<string, unknown>, f: string) => unknown,
-) {
-  return keys.filter(f => rows.map(r => cb(r, f)).filter(f => !!f).length > 5)
-}
 
 export interface InfoArgs {
   target: HTMLElement
@@ -64,103 +49,20 @@ const FacetedSelector = observer(function FacetedSelector({
   const {
     rows,
     panelWidth,
-    showSparse,
     showFilters,
     useShoppingCart,
     showOptions,
     filteredRows,
+    filteredNonMetadataKeys,
+    filteredMetadataKeys,
+    visible,
+    widths,
   } = faceted
   const { pluginManager } = getEnv(model)
   const { ref, scrollLeft } = useResizeBar()
   const [info, setInfo] = useState<InfoArgs>()
   const session = getSession(model)
   const tracks = view.tracks as AnyConfigurationModel[]
-
-  const filteredNonMetadataKeys = showSparse
-    ? nonMetadataKeys
-    : filt(nonMetadataKeys, rows, (r, f) => r[f])
-
-  const metadataKeys = [
-    ...new Set(rows.flatMap(row => getRootKeys(row.metadata))),
-  ]
-  const filteredMetadataKeys = showSparse
-    ? metadataKeys
-    : // @ts-expect-error
-      filt(metadataKeys, rows, (r, f) => r.metadata[f])
-
-  const fields = useMemo(
-    () => [
-      'name',
-      ...filteredNonMetadataKeys,
-      ...filteredMetadataKeys.map(m => `m.${m}`),
-    ],
-    [filteredNonMetadataKeys, filteredMetadataKeys],
-  )
-
-  const [widths, setWidths] = useState({
-    name:
-      measureGridWidth(
-        rows.map(r => r.name),
-        { maxWidth: 500, stripHTML: true },
-      ) + 15,
-    ...Object.fromEntries(
-      filteredNonMetadataKeys.map(e => [
-        e,
-        measureGridWidth(
-          rows.map(r => r[e as keyof typeof r] as string),
-          { maxWidth: 400, stripHTML: true },
-        ),
-      ]),
-    ),
-    ...Object.fromEntries(
-      filteredMetadataKeys.map(e => [
-        e,
-        measureGridWidth(
-          rows.map(r => r.metadata[e]),
-          { maxWidth: 400, stripHTML: true },
-        ),
-      ]),
-    ),
-  } as Record<string, number | undefined>)
-
-  const [visible, setVisible] = useState(
-    Object.fromEntries(fields.map(c => [c, true])),
-  )
-  useEffect(() => {
-    setVisible(visible => ({
-      ...Object.fromEntries(fields.map(c => [c, true])),
-      ...visible,
-    }))
-  }, [fields])
-
-  useEffect(() => {
-    setWidths(widths => ({
-      name: widths.name,
-      ...Object.fromEntries(
-        filteredNonMetadataKeys
-          .filter(f => visible[f])
-          .map(e => [
-            e,
-            measureGridWidth(
-              rows.map(r => r[e as keyof typeof r]),
-              { stripHTML: true, maxWidth: 400 },
-            ),
-          ]),
-      ),
-      ...Object.fromEntries(
-        filteredMetadataKeys
-          .filter(f => visible[f])
-          .map(e => [
-            e,
-            measureGridWidth(
-              rows.map(r => r.metadata[e]),
-              { stripHTML: true, maxWidth: 400 },
-            ),
-          ]),
-      ),
-    }))
-  }, [filteredMetadataKeys, visible, filteredNonMetadataKeys, showSparse, rows])
-
   const widthsDebounced = useDebounce(widths, 200)
 
   const columns = [
@@ -247,7 +149,7 @@ const FacetedSelector = observer(function FacetedSelector({
             checkbox
             widths={Object.values(widths).map(f => f ?? 100)}
             setWidths={newWidths =>
-              setWidths(
+              faceted.setWidths(
                 Object.fromEntries(
                   Object.entries(widths).map((entry, idx) => [
                     entry[0],
@@ -261,7 +163,7 @@ const FacetedSelector = observer(function FacetedSelector({
           <DataGrid
             rows={filteredRows}
             columnVisibilityModel={visible}
-            onColumnVisibilityModelChange={newModel => setVisible(newModel)}
+            onColumnVisibilityModelChange={n => faceted.setVisible(n)}
             columnHeaderHeight={35}
             checkboxSelection
             disableRowSelectionOnClick

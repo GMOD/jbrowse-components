@@ -1,12 +1,28 @@
-import { Instance, getParent, types } from 'mobx-state-tree'
+import { Instance, addDisposer, getParent, types } from 'mobx-state-tree'
 import { matches } from './util'
 import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { getTrackName } from '@jbrowse/core/util/tracks'
-import { getSession, localStorageGetItem } from '@jbrowse/core/util'
-import { observable } from 'mobx'
+import {
+  getSession,
+  localStorageGetItem,
+  measureGridWidth,
+} from '@jbrowse/core/util'
+import { autorun, observable } from 'mobx'
+import { getRootKeys } from './components/faceted/util'
+
+const nonMetadataKeys = ['category', 'adapter', 'description'] as const
+
+function filt(
+  keys: readonly string[],
+  rows: Record<string, unknown>[],
+  cb: (row: Record<string, unknown>, f: string) => unknown,
+) {
+  return keys.filter(f => rows.map(r => cb(r, f)).filter(f => !!f).length > 5)
+}
+
 /**
  * #stateModel FacetedModel
  */
@@ -49,6 +65,8 @@ export function facetedStateTreeF() {
       ),
     })
     .volatile(() => ({
+      visible: {} as Record<string, boolean>,
+      widths: {} as Record<string, number | undefined>,
       useShoppingCart: false,
       filters: observable.map<string, string[]>(),
     }))
@@ -130,12 +148,31 @@ export function facetedStateTreeF() {
           })
       },
     }))
+
     .views(self => ({
-      get fields() {
-        return []
+      get filteredNonMetadataKeys() {
+        return self.showSparse
+          ? nonMetadataKeys
+          : filt(nonMetadataKeys, self.rows, (r, f) => r[f])
       },
-    }))
-    .views(self => ({
+
+      get metadataKeys() {
+        return [...new Set(self.rows.flatMap(row => getRootKeys(row.metadata)))]
+      },
+      get filteredMetadataKeys() {
+        return self.showSparse
+          ? this.metadataKeys
+          : // @ts-expect-error
+            filt(this.metadataKeys, self.rows, (r, f) => r.metadata[f])
+      },
+
+      get fields() {
+        return [
+          'name',
+          ...this.filteredNonMetadataKeys,
+          ...this.filteredMetadataKeys.map(m => `m.${m}`),
+        ]
+      },
       get filteredRows() {
         const arrFilters = [...self.filters.entries()]
           .filter(f => f[1].length > 0)
@@ -143,6 +180,57 @@ export function facetedStateTreeF() {
         return self.rows.filter(row =>
           // @ts-expect-error
           arrFilters.every(([key, val]) => val.has(row[key])),
+        )
+      },
+    }))
+    .actions(self => ({
+      setVisible(args: Record<string, boolean>) {
+        self.visible = args
+      },
+      setWidths(args: Record<string, number | undefined>) {
+        self.widths = args
+      },
+      afterAttach() {
+        addDisposer(
+          self,
+          autorun(() => {
+            this.setVisible(Object.fromEntries(self.fields.map(c => [c, true])))
+          }),
+        )
+
+        addDisposer(
+          self,
+          autorun(() => {
+            this.setWidths({
+              name:
+                measureGridWidth(
+                  self.rows.map(r => r.name),
+                  { maxWidth: 500, stripHTML: true },
+                ) + 15,
+              ...Object.fromEntries(
+                self.filteredNonMetadataKeys
+                  .filter(f => self.visible[f])
+                  .map(e => [
+                    e,
+                    measureGridWidth(
+                      self.rows.map(r => r[e as keyof typeof r] as string),
+                      { maxWidth: 400, stripHTML: true },
+                    ),
+                  ]),
+              ),
+              ...Object.fromEntries(
+                self.filteredMetadataKeys
+                  .filter(f => self.visible[f])
+                  .map(e => [
+                    e,
+                    measureGridWidth(
+                      self.rows.map(r => r.metadata[e]),
+                      { maxWidth: 400, stripHTML: true },
+                    ),
+                  ]),
+              ),
+            })
+          }),
         )
       },
     }))
