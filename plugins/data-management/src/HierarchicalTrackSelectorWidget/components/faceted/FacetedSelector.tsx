@@ -30,7 +30,6 @@ import FacetFilters from './FacetFilters'
 import { getRootKeys } from './util'
 
 const nonMetadataKeys = ['category', 'adapter', 'description'] as const
-let i = 0
 function filt(
   keys: readonly string[],
   rows: Record<string, unknown>[],

@@ -1,4 +1,4 @@
-import { types, Instance, addDisposer, getParent } from 'mobx-state-tree'
+import { types, addDisposer, Instance } from 'mobx-state-tree'
 import { autorun } from 'mobx'
 import {
   getConf,
