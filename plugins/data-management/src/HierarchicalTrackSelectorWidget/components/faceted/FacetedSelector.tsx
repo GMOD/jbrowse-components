@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useReducer } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import { IconButton } from '@mui/material'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
@@ -15,12 +15,8 @@ import {
   getSession,
   measureGridWidth,
   useDebounce,
-  useLocalStorage as useLS,
 } from '@jbrowse/core/util'
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { useResizeBar } from '@jbrowse/core/ui/useResizeBar'
 import { makeStyles } from 'tss-react/mui'
 
@@ -34,6 +30,14 @@ import FacetFilters from './FacetFilters'
 import { getRootKeys } from './util'
 
 const nonMetadataKeys = ['category', 'adapter', 'description'] as const
+let i = 0
+function filt(
+  keys: readonly string[],
+  rows: Record<string, unknown>[],
+  cb: (row: Record<string, unknown>, f: string) => unknown,
+) {
+  return keys.filter(f => rows.map(r => cb(r, f)).filter(f => !!f).length > 5)
+}
 
 export interface InfoArgs {
   target: HTMLElement
@@ -73,24 +77,24 @@ const FacetedSelector = observer(function FacetedSelector({
   const session = getSession(model)
   const tracks = view.tracks as AnyConfigurationModel[]
 
-  function filt(
-    keys: readonly string[],
-    cb: (row: Record<string, unknown>, f: string) => unknown,
-  ) {
-    return keys.filter(f =>
-      showSparse ? true : rows.map(r => cb(r, f)).filter(f => !!f).length > 5,
-    )
-  }
-  const filteredNonMetadataKeys = filt(nonMetadataKeys, (r, f) => r[f])
+  const filteredNonMetadataKeys = showSparse
+    ? nonMetadataKeys
+    : filt(nonMetadataKeys, rows, (r, f) => r[f])
 
   const metadataKeys = [
     ...new Set(rows.flatMap(row => getRootKeys(row.metadata))),
   ]
-  // @ts-expect-error
-  const filteredMetadataKeys = filt(metadataKeys, (r, f) => r.metadata[f])
+  const filteredMetadataKeys = showSparse
+    ? metadataKeys
+    : // @ts-expect-error
+      filt(metadataKeys, rows, (r, f) => r.metadata[f])
 
   const fields = useMemo(
-    () => ['name', ...filteredNonMetadataKeys, ...filteredMetadataKeys],
+    () => [
+      'name',
+      ...filteredNonMetadataKeys,
+      ...filteredMetadataKeys.map(m => `m.${m}`),
+    ],
     [filteredNonMetadataKeys, filteredMetadataKeys],
   )
 
@@ -194,10 +198,12 @@ const FacetedSelector = observer(function FacetedSelector({
       },
     })),
     ...filteredMetadataKeys.map(e => ({
-      field: e,
+      field: `m.${e}`,
+      label: e,
       width: widthsDebounced[e] ?? 100,
+      valueGetter: (params: GridCellParams) => params.row.metadata[e],
       renderCell: (params: GridCellParams) => {
-        const val = params.value as string
+        const val = params.row.metadata[e] as string
         return val ? <SanitizedHTML className={classes.cell} html={val} /> : ''
       },
     })),

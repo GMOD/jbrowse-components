@@ -119,7 +119,6 @@ export function facetedStateTreeF() {
           .map(track => {
             const metadata = readConfObject(track, 'metadata')
             return {
-              ...(metadata as Record<string, unknown>),
               id: track.trackId as string,
               conf: track,
               name: getTrackName(track, session),
@@ -129,6 +128,11 @@ export function facetedStateTreeF() {
               metadata,
             } as const
           })
+      },
+    }))
+    .views(self => ({
+      get fields() {
+        return []
       },
     }))
     .views(self => ({
