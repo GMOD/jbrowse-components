@@ -36,31 +36,27 @@ export function facetedStateTreeF() {
       /**
        * #property
        */
-      showSparse: types.optional(
-        types.boolean,
+      showSparse: types.optional(types.boolean, () =>
         JSON.parse(localStorageGetItem('facet-showSparse') || 'false'),
       ),
       /**
        * #property
        */
-      showFilters: types.optional(
-        types.boolean,
+      showFilters: types.optional(types.boolean, () =>
         JSON.parse(localStorageGetItem('facet-showFilters') || 'true'),
       ),
 
       /**
        * #property
        */
-      showOptions: types.optional(
-        types.boolean,
+      showOptions: types.optional(types.boolean, () =>
         JSON.parse(localStorageGetItem('facet-showTableOptions') || 'false'),
       ),
 
       /**
        * #property
        */
-      panelWidth: types.optional(
-        types.number,
+      panelWidth: types.optional(types.number, () =>
         JSON.parse(localStorageGetItem('facet-panelWidth') || '400'),
       ),
     })
@@ -170,7 +166,7 @@ export function facetedStateTreeF() {
         return [
           'name',
           ...this.filteredNonMetadataKeys,
-          ...this.filteredMetadataKeys.map(m => `m.${m}`),
+          ...this.filteredMetadataKeys.map(m => `metadata.${m}`),
         ]
       },
       get filteredRows() {
@@ -220,10 +216,10 @@ export function facetedStateTreeF() {
               ),
               ...Object.fromEntries(
                 self.filteredMetadataKeys
-                  .filter(f => self.visible['m.' + f])
+                  .filter(f => self.visible['metadata.' + f])
                   .map(e => {
                     return [
-                      'm.' + e,
+                      'metadata.' + e,
                       measureGridWidth(
                         self.rows.map(r => r.metadata[e]),
                         { maxWidth: 400, stripHTML: true },
