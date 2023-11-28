@@ -6,7 +6,6 @@ import { getRoot, resolveIdentifier } from 'mobx-state-tree'
 import { DataGrid, GridCellParams, GridToolbar } from '@mui/x-data-grid'
 
 // jbrowse
-import { getTrackName } from '@jbrowse/core/util/tracks'
 import { ResizeHandle } from '@jbrowse/core/ui'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import JBrowseMenu from '@jbrowse/core/ui/Menu'
@@ -16,7 +15,7 @@ import {
   getSession,
   measureGridWidth,
   useDebounce,
-  useLocalStorage,
+  useLocalStorage as useLS,
 } from '@jbrowse/core/util'
 import {
   AnyConfigurationModel,
@@ -30,7 +29,6 @@ import MoreHoriz from '@mui/icons-material/MoreHoriz'
 
 // locals
 import { HierarchicalTrackSelectorModel } from '../../model'
-import { matches } from '../../util'
 import FacetedHeader from './FacetedHeader'
 import FacetFilters from './FacetFilters'
 import { getRootKeys } from './util'
@@ -59,25 +57,19 @@ const FacetedSelector = observer(function FacetedSelector({
   model: HierarchicalTrackSelectorModel
 }) {
   const { classes } = useStyles()
-  const { view, selection } = model
+  const { view, selection, faceted } = model
+  const {
+    rows,
+    panelWidth,
+    showSparse,
+    showFilters,
+    useShoppingCart,
+    showOptions,
+  } = faceted
   const { pluginManager } = getEnv(model)
   const { ref, scrollLeft } = useResizeBar()
-
-  const [filterText, setFilterText] = useState('')
-  const [showOptions, setShowOptions] = useLocalStorage(
-    'facet-showTableOptions',
-    false,
-  )
   const [info, setInfo] = useState<InfoArgs>()
-  const [useShoppingCart, setUseShoppingCart] = useState(false)
-  const [showSparse, setShowSparse] = useLocalStorage('facet-showSparse', false)
-  const [showFilters, setShowFilters] = useLocalStorage(
-    'facet-showFilters',
-    true,
-  )
-  const [panelWidth, setPanelWidth] = useLocalStorage('facet-panelWidth', 400)
   const session = getSession(model)
-  const filterDebounced = useDebounce(filterText, 400)
   const tracks = view.tracks as AnyConfigurationModel[]
   const [filters, dispatch] = useReducer(
     (
@@ -87,49 +79,24 @@ const FacetedSelector = observer(function FacetedSelector({
     {},
   )
 
-  const rows = useMemo(() => {
-    // metadata is spread onto the object for easier access and sorting
-    // by the mui data grid (it's unable to sort by nested objects)
-    return model.trackConfigurations
-      .filter(conf => matches(filterDebounced, conf, session))
-      .map(track => {
-        const metadata = readConfObject(track, 'metadata')
-        return {
-          id: track.trackId,
-          conf: track,
-          name: getTrackName(track, session),
-          category: readConfObject(track, 'category')?.join(', '),
-          adapter: readConfObject(track, 'adapter')?.type,
-          description: readConfObject(track, 'description'),
-          metadata,
-        } as const
-      })
-  }, [model, filterDebounced, session])
+  function filt(
+    keys: readonly string[],
+    cb: (row: Record<string, unknown>, f: string) => unknown,
+  ) {
+    return keys.filter(f =>
+      showSparse ? true : rows.map(r => cb(r, f)).filter(f => !!f).length > 5,
+    )
+  }
+  const filteredNonMetadataKeys = filt(nonMetadataKeys, (r, f) => r[f])
 
-  const filteredNonMetadataKeys = useMemo(
-    () =>
-      nonMetadataKeys.filter(f =>
-        showSparse ? true : rows.map(r => r[f]).filter(f => !!f).length > 5,
-      ),
-    [showSparse, rows],
-  )
-
-  const filteredMetadataKeys = useMemo(
-    () =>
-      [...new Set(rows.flatMap(row => getRootKeys(row.metadata)))].filter(f =>
-        showSparse
-          ? true
-          : rows.map(r => r.metadata[f]).filter(f => !!f).length > 5,
-      ),
-    [showSparse, rows],
-  )
+  const metadataKeys = [
+    ...new Set(rows.flatMap(row => getRootKeys(row.metadata))),
+  ]
+  // @ts-expect-error
+  const filteredMetadataKeys = filt(metadataKeys, (r, f) => r.metadata[f])
 
   const fields = useMemo(
-    () => [
-      'name',
-      ...filteredNonMetadataKeys,
-      ...filteredMetadataKeys.map(e => `metadata.${e}`),
-    ],
+    () => ['name', ...filteredNonMetadataKeys, ...filteredMetadataKeys],
     [filteredNonMetadataKeys, filteredMetadataKeys],
   )
 
@@ -149,16 +116,13 @@ const FacetedSelector = observer(function FacetedSelector({
       ]),
     ),
     ...Object.fromEntries(
-      filteredMetadataKeys.map(e => {
-        const key = `metadata.${e}`
-        return [
-          key,
-          measureGridWidth(
-            rows.map(r => r.metadata[e]),
-            { maxWidth: 400, stripHTML: true },
-          ),
-        ]
-      }),
+      filteredMetadataKeys.map(e => [
+        e,
+        measureGridWidth(
+          rows.map(r => r.metadata[e]),
+          { maxWidth: 400, stripHTML: true },
+        ),
+      ]),
     ),
   } as Record<string, number | undefined>)
 
@@ -188,17 +152,14 @@ const FacetedSelector = observer(function FacetedSelector({
       ),
       ...Object.fromEntries(
         filteredMetadataKeys
-          .filter(f => visible[`metadata.${f}`])
-          .map(e => {
-            const key = `metadata.${e}`
-            return [
-              key,
-              measureGridWidth(
-                rows.map(r => r.metadata[e]),
-                { stripHTML: true, maxWidth: 400 },
-              ),
-            ]
-          }),
+          .filter(f => visible[f])
+          .map(e => [
+            e,
+            measureGridWidth(
+              rows.map(r => r.metadata[e]),
+              { stripHTML: true, maxWidth: 400 },
+            ),
+          ]),
       ),
     }))
   }, [filteredMetadataKeys, visible, filteredNonMetadataKeys, showSparse, rows])
@@ -234,33 +195,18 @@ const FacetedSelector = observer(function FacetedSelector({
       field: e,
       width: widthsDebounced[e] ?? 100,
       renderCell: (params: GridCellParams) => {
-        const { value } = params
-        return (
-          <div className={classes.cell}>
-            {value ? <SanitizedHTML html={value as string} /> : ''}
-          </div>
-        )
+        const val = params.value as string
+        return val ? <SanitizedHTML className={classes.cell} html={val} /> : ''
       },
     })),
-    ...filteredMetadataKeys.map(e => {
-      const key = `metadata.${e}`
-      return {
-        field: key,
-        headerName: ['name', ...filteredNonMetadataKeys].includes(e)
-          ? `${e} (from metadata)`
-          : e,
-        width: widthsDebounced[key] ?? 100,
-        valueGetter: (params: GridCellParams) => params.row.metadata[e],
-        renderCell: (params: GridCellParams) => {
-          const { value } = params
-          return (
-            <div className={classes.cell}>
-              {value ? <SanitizedHTML html={value as string} /> : ''}
-            </div>
-          )
-        },
-      }
-    }),
+    ...filteredMetadataKeys.map(e => ({
+      field: e,
+      width: widthsDebounced[e] ?? 100,
+      renderCell: (params: GridCellParams) => {
+        const val = params.value as string
+        return val ? <SanitizedHTML className={classes.cell} html={val} /> : ''
+      },
+    })),
   ]
 
   const shownTrackIds = new Set(
@@ -271,9 +217,7 @@ const FacetedSelector = observer(function FacetedSelector({
     .filter(f => f[1].length > 0)
     .map(([key, val]) => [key, new Set<string>(val)] as const)
   const filteredRows = rows.filter(row =>
-    arrFilters.every(([key, val]) =>
-      val.has(row[key as keyof typeof row] as string),
-    ),
+    arrFilters.every(([key, val]) => val.has(row[key] as string)),
   )
   return (
     <>
@@ -289,19 +233,7 @@ const FacetedSelector = observer(function FacetedSelector({
           onClose={() => setInfo(undefined)}
         />
       ) : null}
-      <FacetedHeader
-        setShowSparse={setShowSparse}
-        setShowFilters={setShowFilters}
-        setShowOptions={setShowOptions}
-        setFilterText={setFilterText}
-        setUseShoppingCart={setUseShoppingCart}
-        showFilters={showFilters}
-        showSparse={showSparse}
-        showOptions={showOptions}
-        filterText={filterText}
-        useShoppingCart={useShoppingCart}
-        model={model}
-      />
+      <FacetedHeader model={model} />
 
       <div
         ref={ref}
@@ -367,7 +299,11 @@ const FacetedSelector = observer(function FacetedSelector({
             }
             slots={{ toolbar: showOptions ? GridToolbar : null }}
             slotProps={{
-              toolbar: { printOptions: { disableToolbarButton: true } },
+              toolbar: {
+                printOptions: {
+                  disableToolbarButton: true,
+                },
+              },
             }}
             columns={columns}
             rowHeight={25}
@@ -378,7 +314,7 @@ const FacetedSelector = observer(function FacetedSelector({
           <>
             <ResizeHandle
               vertical
-              onDrag={dist => setPanelWidth(panelWidth - dist)}
+              onDrag={dist => faceted.setPanelWidth(panelWidth - dist)}
               style={{ marginLeft: 5, background: 'grey', width: 5 }}
             />
             <div

@@ -57,7 +57,13 @@ function isHTML(str: string) {
 // products/jbrowse-web/src/tests/Connection.test.tsx test (can delete mock to
 // see)
 //
-export default function SanitizedHTML({ html: pre }: { html: string }) {
+export default function SanitizedHTML({
+  html: pre,
+  className,
+}: {
+  className?: string
+  html: string
+}) {
   // try to add links to the text first
   const html = linkify(pre)
   const value = isHTML(html) ? html : escapeHTML(html)
@@ -82,6 +88,7 @@ export default function SanitizedHTML({ html: pre }: { html: string }) {
 
   return (
     <span
+      className={className}
       // eslint-disable-next-line react/no-danger
       dangerouslySetInnerHTML={{
         __html: dompurify.sanitize(value),
