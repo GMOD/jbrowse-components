@@ -65,19 +65,13 @@ const FacetedSelector = observer(function FacetedSelector({
     showFilters,
     useShoppingCart,
     showOptions,
+    filteredRows,
   } = faceted
   const { pluginManager } = getEnv(model)
   const { ref, scrollLeft } = useResizeBar()
   const [info, setInfo] = useState<InfoArgs>()
   const session = getSession(model)
   const tracks = view.tracks as AnyConfigurationModel[]
-  const [filters, dispatch] = useReducer(
-    (
-      state: Record<string, string[]>,
-      update: { key: string; val: string[] },
-    ) => ({ ...state, [update.key]: update.val }),
-    {},
-  )
 
   function filt(
     keys: readonly string[],
@@ -110,7 +104,7 @@ const FacetedSelector = observer(function FacetedSelector({
       filteredNonMetadataKeys.map(e => [
         e,
         measureGridWidth(
-          rows.map(r => r[e]),
+          rows.map(r => r[e as keyof typeof r] as string),
           { maxWidth: 400, stripHTML: true },
         ),
       ]),
@@ -145,7 +139,7 @@ const FacetedSelector = observer(function FacetedSelector({
           .map(e => [
             e,
             measureGridWidth(
-              rows.map(r => r[e]),
+              rows.map(r => r[e as keyof typeof r]),
               { stripHTML: true, maxWidth: 400 },
             ),
           ]),
@@ -213,12 +207,6 @@ const FacetedSelector = observer(function FacetedSelector({
     tracks.map(t => t.configuration.trackId as string),
   )
 
-  const arrFilters = Object.entries(filters)
-    .filter(f => f[1].length > 0)
-    .map(([key, val]) => [key, new Set<string>(val)] as const)
-  const filteredRows = rows.filter(row =>
-    arrFilters.every(([key, val]) => val.has(row[key] as string)),
-  )
   return (
     <>
       {info ? (
@@ -325,11 +313,10 @@ const FacetedSelector = observer(function FacetedSelector({
               }}
             >
               <FacetFilters
+                model={model}
                 width={panelWidth - 10}
                 rows={rows}
                 columns={columns}
-                dispatch={dispatch}
-                filters={filters}
               />
             </div>
           </>

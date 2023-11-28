@@ -6,6 +6,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { getSession, localStorageGetItem } from '@jbrowse/core/util'
+import { observable } from 'mobx'
 /**
  * #stateModel FacetedModel
  */
@@ -49,8 +50,15 @@ export function facetedStateTreeF() {
     })
     .volatile(() => ({
       useShoppingCart: false,
+      filters: observable.map<string, string[]>(),
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      setFilter(key: string, value: string[]) {
+        self.filters.set(key, value)
+      },
       /**
        * #action
        */
@@ -111,16 +119,27 @@ export function facetedStateTreeF() {
           .map(track => {
             const metadata = readConfObject(track, 'metadata')
             return {
-              id: track.trackId,
+              ...(metadata as Record<string, unknown>),
+              id: track.trackId as string,
               conf: track,
               name: getTrackName(track, session),
-              category: readConfObject(track, 'category')?.join(', '),
-              adapter: readConfObject(track, 'adapter')?.type,
-              description: readConfObject(track, 'description'),
+              category: readConfObject(track, 'category')?.join(', ') as string,
+              adapter: readConfObject(track, 'adapter')?.type as string,
+              description: readConfObject(track, 'description') as string,
               metadata,
-              ...metadata,
-            }
+            } as const
           })
+      },
+    }))
+    .views(self => ({
+      get filteredRows() {
+        const arrFilters = [...self.filters.entries()]
+          .filter(f => f[1].length > 0)
+          .map(([key, val]) => [key, new Set(val)] as const)
+        return self.rows.filter(row =>
+          // @ts-expect-error
+          arrFilters.every(([key, val]) => val.has(row[key])),
+        )
       },
     }))
 }

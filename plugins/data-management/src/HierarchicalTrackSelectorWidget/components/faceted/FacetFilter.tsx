@@ -13,6 +13,8 @@ import ClearIcon from '@mui/icons-material/Clear'
 import MinimizeIcon from '@mui/icons-material/Minimize'
 import AddIcon from '@mui/icons-material/Add'
 import { coarseStripHTML } from '@jbrowse/core/util'
+import { observer } from 'mobx-react'
+import { HierarchicalTrackSelectorModel } from '../../model'
 
 const useStyles = makeStyles()(theme => ({
   facet: {
@@ -50,26 +52,28 @@ function ExpandButton({
   )
 }
 
-export default function FacetFilter({
+const FacetFilter = observer(function ({
   column,
   vals,
   width,
-  dispatch,
-  filters,
+  model,
 }: {
   column: { field: string }
   vals: [string, number][]
   width: number
-  dispatch: (arg: { key: string; val: string[] }) => void
-  filters: Record<string, string[]>
+  model: HierarchicalTrackSelectorModel
 }) {
   const { classes } = useStyles()
   const [visible, setVisible] = useState(true)
+  const { faceted } = model
+  const { filters } = faceted
   return (
     <FormControl key={column.field} className={classes.facet} style={{ width }}>
       <div style={{ display: 'flex' }}>
         <Typography>{column.field}</Typography>
-        <ClearButton onClick={() => dispatch({ key: column.field, val: [] })} />
+        <ClearButton
+          onClick={() => model.faceted.setFilter(column.field, [])}
+        />
         <ExpandButton visible={visible} onClick={() => setVisible(!visible)} />
       </div>
       {visible ? (
@@ -77,15 +81,15 @@ export default function FacetFilter({
           multiple
           native
           className={classes.select}
-          value={filters[column.field]}
+          value={filters.get(column.field) || []}
           onChange={event => {
-            dispatch({
-              key: column.field,
+            faceted.setFilter(
+              column.field,
               // @ts-expect-error
-              val: [...event.target.options]
+              [...event.target.options]
                 .filter(opt => opt.selected)
                 .map(opt => opt.value),
-            })
+            )
           }}
         >
           {vals
@@ -99,4 +103,6 @@ export default function FacetFilter({
       ) : null}
     </FormControl>
   )
-}
+})
+
+export default FacetFilter
