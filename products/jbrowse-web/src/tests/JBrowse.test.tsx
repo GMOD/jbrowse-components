@@ -44,9 +44,12 @@ test('toplevel configuration', () => {
     pluginManager,
     sessionModelFactory,
     adminMode: true,
-  }).create({
-    jbrowse: volvoxConfigSnapshot,
-  })
+  }).create(
+    {
+      jbrowse: volvoxConfigSnapshot,
+    },
+    { pluginManager },
+  )
   rootModel.setDefaultSession()
   pluginManager.setRootModel(rootModel)
   pluginManager.configure()
