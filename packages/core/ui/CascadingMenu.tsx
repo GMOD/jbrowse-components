@@ -44,7 +44,9 @@ function CascadingMenuItem({
     <MenuItem
       {...props}
       onClick={event => {
-        rootPopupState.close()
+        if (closeAfterItemClick) {
+          rootPopupState.close()
+        }
         onClick?.(event)
       }}
     />

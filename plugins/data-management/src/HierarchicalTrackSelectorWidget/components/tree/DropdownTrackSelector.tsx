@@ -1,12 +1,11 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { MenuItem } from '@jbrowse/core/ui/Menu'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
+import { getTrackName } from '@jbrowse/core/util/tracks'
+import { getSession } from '@jbrowse/core/util'
 
 // locals
 import { HierarchicalTrackSelectorModel } from '../../model'
@@ -27,6 +26,7 @@ const DropdownTrackSelector = observer(function ({
 }) {
   const { view } = model
   const [open, setOpen] = useState(false)
+  const session = getSession(model)
   return view ? (
     <CascadingMenuButton
       closeAfterItemClick={false}
@@ -36,7 +36,7 @@ const DropdownTrackSelector = observer(function ({
           type: 'checkbox' as const,
           label: (
             <>
-              <SanitizedHTML html={readConfObject(t, 'name')} />{' '}
+              <SanitizedHTML html={getTrackName(t, session)} />{' '}
               <TrackLabelMenu
                 id={t.trackId}
                 trackId={t.trackId}

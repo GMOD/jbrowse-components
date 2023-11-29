@@ -57,7 +57,7 @@ const TrackLabelMenu = function ({
           label: 'Add to selection',
           onClick: () => model.addToSelection([conf]),
         },
-        ...(model.isSelected(trackId)
+        ...(model.isSelected(conf)
           ? [
               {
                 label: 'Remove from selection',
