@@ -41,38 +41,33 @@ export async function handleSelectedRegion({
   model: LinearGenomeViewModel
   assembly: Assembly
 }) {
-  try {
-    const allRefs = assembly?.allRefNamesWithLowerCase || []
-    const assemblyName = assembly.name
-    if (input.split(' ').every(entry => checkRef(entry, allRefs))) {
-      await model.navToLocString(input, assembly.name)
-    } else {
-      const searchScope = model.searchScope(assemblyName)
-      const { textSearchManager } = getSession(model)
-      const results = await fetchResults({
-        queryString: input,
-        searchType: 'exact',
-        searchScope,
-        rankSearchResults: model.rankSearchResults,
-        textSearchManager,
-        assembly,
-      })
+  const allRefs = assembly?.allRefNamesWithLowerCase || []
+  const assemblyName = assembly.name
+  if (input.split(' ').every(entry => checkRef(entry, allRefs))) {
+    await model.navToLocString(input, assembly.name)
+  } else {
+    const searchScope = model.searchScope(assemblyName)
+    const { textSearchManager } = getSession(model)
+    const results = await fetchResults({
+      queryString: input,
+      searchType: 'exact',
+      searchScope,
+      rankSearchResults: model.rankSearchResults,
+      textSearchManager,
+      assembly,
+    })
 
-      if (results.length > 1) {
-        model.setSearchResults(results, input.toLowerCase(), assemblyName)
-      } else if (results.length === 1) {
-        await navToOption({
-          option: results[0],
-          model,
-          assemblyName,
-        })
-      } else {
-        await model.navToLocString(input, assemblyName)
-      }
+    if (results.length > 1) {
+      model.setSearchResults(results, input.toLowerCase(), assemblyName)
+    } else if (results.length === 1) {
+      await navToOption({
+        option: results[0],
+        model,
+        assemblyName,
+      })
+    } else {
+      await model.navToLocString(input, assemblyName)
     }
-  } catch (e) {
-    console.error(e)
-    getSession(model).notify(`${e}`, 'warning')
   }
 }
 
