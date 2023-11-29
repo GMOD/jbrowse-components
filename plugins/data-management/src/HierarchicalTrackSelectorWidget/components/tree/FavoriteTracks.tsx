@@ -1,5 +1,5 @@
 import React from 'react'
-import { Tooltip } from '@mui/material'
+import { Badge, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
 // icons
@@ -8,12 +8,19 @@ import GradeIcon from '@mui/icons-material/Grade'
 // locals
 import { HierarchicalTrackSelectorModel } from '../../model'
 import DropdownTrackSelector from './DropdownTrackSelector'
+import { makeStyles } from 'tss-react/mui'
 
+const useStyles = makeStyles()({
+  smallBadge: {
+    height: 14,
+  },
+})
 const FavoriteTracks = observer(function ({
   model,
 }: {
   model: HierarchicalTrackSelectorModel
 }) {
+  const { classes } = useStyles()
   const { view, favoriteTracks } = model
   return view ? (
     <DropdownTrackSelector
@@ -37,7 +44,18 @@ const FavoriteTracks = observer(function ({
       }
     >
       <Tooltip title="Favorite tracks">
-        <GradeIcon />
+        <Badge
+          classes={{ badge: classes.smallBadge }}
+          color="secondary"
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right',
+          }}
+          style={{ marginRight: 10 }}
+          badgeContent={model.favoritesCounter}
+        >
+          <GradeIcon />
+        </Badge>
       </Tooltip>
     </DropdownTrackSelector>
   ) : null

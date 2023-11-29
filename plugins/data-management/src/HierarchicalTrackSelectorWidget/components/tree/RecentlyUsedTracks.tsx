@@ -1,5 +1,5 @@
 import React from 'react'
-import { Tooltip } from '@mui/material'
+import { Badge, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
 // icons
@@ -8,12 +8,20 @@ import HistoryIcon from '@mui/icons-material/History'
 // locals
 import { HierarchicalTrackSelectorModel } from '../../model'
 import DropdownTrackSelector from './DropdownTrackSelector'
+import { makeStyles } from 'tss-react/mui'
+
+const useStyles = makeStyles()({
+  smallBadge: {
+    height: 14,
+  },
+})
 
 const RecentlyUsedTracks = observer(function ({
   model,
 }: {
   model: HierarchicalTrackSelectorModel
 }) {
+  const { classes } = useStyles()
   const { view, recentlyUsedTracks } = model
   return view ? (
     <DropdownTrackSelector
@@ -37,7 +45,18 @@ const RecentlyUsedTracks = observer(function ({
       }
     >
       <Tooltip title="Recently used tracks">
-        <HistoryIcon />
+        <Badge
+          classes={{ badge: classes.smallBadge }}
+          onClick={() => model.setRecentlyUsedCounter(0)}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right',
+          }}
+          color="secondary"
+          badgeContent={model.recentlyUsedCounter}
+        >
+          <HistoryIcon />
+        </Badge>
       </Tooltip>
     </DropdownTrackSelector>
   ) : null

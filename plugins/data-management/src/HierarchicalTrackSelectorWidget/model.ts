@@ -98,6 +98,8 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
     .volatile(() => ({
       selection: [] as AnyConfigurationModel[],
       filterText: '',
+      recentlyUsedCounter: 0,
+      favoritesCounter: 0,
     }))
     .actions(self => ({
       /**
@@ -147,6 +149,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * #action
        */
       addToFavorites(trackId: string) {
+        self.favoritesCounter += 1
         self.favorites.push(trackId)
       },
       /**
@@ -170,7 +173,20 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
+      setRecentlyUsedCounter(val: number) {
+        self.recentlyUsedCounter = val
+      },
+      /**
+       * #action
+       */
+      setFavoritesCounter(val: number) {
+        self.favoritesCounter = val
+      },
+      /**
+       * #action
+       */
       addToRecentlyUsed(id: string) {
+        self.recentlyUsedCounter += 1
         if (!self.recentlyUsed.includes(id)) {
           if (self.recentlyUsed.length >= 10) {
             self.recentlyUsed.shift()
