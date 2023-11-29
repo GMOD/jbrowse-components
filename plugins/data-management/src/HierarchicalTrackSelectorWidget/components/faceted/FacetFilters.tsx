@@ -1,19 +1,21 @@
 import React from 'react'
 import FacetFilter from './FacetFilter'
+import { HierarchicalTrackSelectorModel } from '../../model'
+import { observer } from 'mobx-react'
 
-export default function FacetFilters({
+const FacetFilters = observer(function ({
   rows,
   columns,
-  dispatch,
-  filters,
   width,
+  model,
 }: {
   rows: Record<string, unknown>[]
-  filters: Record<string, string[]>
   columns: { field: string }[]
-  dispatch: (arg: { key: string; val: string[] }) => void
   width: number
+  model: HierarchicalTrackSelectorModel
 }) {
+  const { faceted } = model
+  const { filters } = faceted
   const facets = columns.slice(1)
   const uniqs = new Map(
     facets.map(f => [f.field, new Map<string, number>()] as const),
@@ -22,12 +24,12 @@ export default function FacetFilters({
   // this code "stages the facet filters" in order that the user has selected
   // them, which relies on the js behavior that the order of the returned keys is
   // related to the insertion order.
-  const filterKeys = Object.keys(filters)
+  const filterKeys = faceted.filters.keys()
   const facetKeys = facets.map(f => f.field)
   const ret = new Set<string>()
   for (const entry of filterKeys) {
     // give non-empty filters priority
-    if (filters[entry]?.length) {
+    if (filters.get(entry)?.length) {
       ret.add(entry)
     }
   }
@@ -50,7 +52,9 @@ export default function FacetFilters({
         }
       }
     }
-    const filter = filters[facet]?.length ? new Set(filters[facet]) : undefined
+    const filter = filters.get(facet)?.length
+      ? new Set(filters.get(facet))
+      : undefined
     currentRows = currentRows.filter(row => {
       return filter !== undefined ? filter.has(row[facet] as string) : true
     })
@@ -58,18 +62,16 @@ export default function FacetFilters({
 
   return (
     <div>
-      {facets.map(column => {
-        return (
-          <FacetFilter
-            key={column.field}
-            vals={[...uniqs.get(column.field)!]}
-            column={column}
-            width={width}
-            dispatch={dispatch}
-            filters={filters}
-          />
-        )
-      })}
+      {facets.map(column => (
+        <FacetFilter
+          key={column.field}
+          vals={[...uniqs.get(column.field)!]}
+          column={column}
+          width={width}
+          model={model}
+        />
+      ))}
     </div>
   )
-}
+})
+export default FacetFilters
