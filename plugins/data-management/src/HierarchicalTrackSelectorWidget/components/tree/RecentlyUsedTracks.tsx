@@ -22,9 +22,10 @@ const RecentlyUsedTracks = observer(function ({
   model: HierarchicalTrackSelectorModel
 }) {
   const { classes } = useStyles()
-  const { view, recentlyUsedTracks } = model
+  const { view, recentlyUsedCounter, recentlyUsedTracks } = model
   return view ? (
     <DropdownTrackSelector
+      onClick={() => model.setRecentlyUsedCounter(0)}
       model={model}
       tracks={recentlyUsedTracks}
       extraMenuItems={
@@ -47,13 +48,12 @@ const RecentlyUsedTracks = observer(function ({
       <Tooltip title="Recently used tracks">
         <Badge
           classes={{ badge: classes.smallBadge }}
-          onClick={() => model.setRecentlyUsedCounter(0)}
           anchorOrigin={{
             vertical: 'bottom',
             horizontal: 'right',
           }}
           color="secondary"
-          badgeContent={model.recentlyUsedCounter}
+          badgeContent={recentlyUsedCounter}
         >
           <HistoryIcon />
         </Badge>

@@ -96,7 +96,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         JSON.parse(localStorageGetItem(lsKeyRecentlyUsedF()) || '[]'),
       ),
 
-     /**
+      /**
        * #property
        */
       faceted: types.optional(facetedStateTreeF(), {}),
@@ -106,6 +106,26 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       filterText: '',
       recentlyUsedCounter: 0,
       favoritesCounter: 0,
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get selectionSet() {
+        return new Set(self.selection)
+      },
+      /**
+       * #getter
+       */
+      get favoritesSet() {
+        return new Set(self.favorites)
+      },
+      /**
+       * #getter
+       */
+      get recentlyUsedSet() {
+        return new Set(self.recentlyUsed)
+      },
     }))
     .actions(self => ({
       /**
@@ -145,12 +165,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       clearSelection() {
         self.selection = []
       },
-      /**
-       * #action
-       */
-      isFavorite(trackId: string) {
-        return self.favorites.includes(trackId)
-      },
+
       /**
        * #action
        */
@@ -170,12 +185,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       clearFavorites() {
         self.favorites.clear()
       },
-      /**
-       * #action
-       */
-      isRecentlyUsed(trackId: string) {
-        return self.recentlyUsed.includes(trackId)
-      },
+
       /**
        * #action
        */
@@ -249,6 +259,24 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #method
        */
+      isSelected(track: AnyConfigurationModel) {
+        return self.selectionSet.has(track)
+      },
+      /**
+       * #method
+       */
+      isFavorite(trackId: string) {
+        return self.favoritesSet.has(trackId)
+      },
+      /**
+       * #method
+       */
+      isRecentlyUsed(trackId: string) {
+        return self.recentlyUsedSet.has(trackId)
+      },
+      /**
+       * #method
+       */
       getRefSeqTrackConf(assemblyName: string): MaybeAnyConfigurationModel {
         const { assemblyManager } = getSession(self)
         const assembly = assemblyManager.get(assemblyName)
@@ -317,8 +345,9 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * filters out tracks that are not in the favorites group
        */
       get favoriteTracks() {
-        const s = new Set(self.favorites)
-        return self.trackConfigurations.filter(t => s.has(t.trackId))
+        return self.trackConfigurations.filter(t =>
+          self.favoritesSet.has(t.trackId),
+        )
       },
 
       /**
@@ -326,8 +355,9 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * filters out tracks that are not in the recently used group
        */
       get recentlyUsedTracks() {
-        const s = new Set(self.recentlyUsed)
-        return self.trackConfigurations.filter(t => s.has(t.trackId))
+        return self.trackConfigurations.filter(t =>
+          self.recentlyUsedSet.has(t.trackId),
+        )
       },
     }))
     .views(self => ({

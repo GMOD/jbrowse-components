@@ -24,6 +24,7 @@ const FavoriteTracks = observer(function ({
   const { view, favoriteTracks } = model
   return view ? (
     <DropdownTrackSelector
+      onClick={() => model.setFavoritesCounter(0)}
       tracks={favoriteTracks}
       model={model}
       extraMenuItems={

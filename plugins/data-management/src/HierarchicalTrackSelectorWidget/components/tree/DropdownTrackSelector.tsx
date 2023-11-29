@@ -1,24 +1,28 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-// locals
-import { HierarchicalTrackSelectorModel } from '../../model'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import TrackLabelMenu from './TrackLabelMenu'
 import { MenuItem } from '@jbrowse/core/ui/Menu'
+import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
+
+// locals
+import { HierarchicalTrackSelectorModel } from '../../model'
+import TrackLabelMenu from './TrackLabelMenu'
 
 const DropdownTrackSelector = observer(function ({
   model,
   tracks,
   extraMenuItems,
   children,
+  onClick,
 }: {
   model: HierarchicalTrackSelectorModel
   tracks: AnyConfigurationModel[]
   extraMenuItems: MenuItem[]
+  onClick?: () => void
   children: React.ReactElement
 }) {
   const { view } = model
@@ -26,12 +30,13 @@ const DropdownTrackSelector = observer(function ({
   return view ? (
     <CascadingMenuButton
       closeAfterItemClick={false}
+      onClick={onClick}
       menuItems={[
         ...tracks.map(t => ({
           type: 'checkbox' as const,
           label: (
-            <div>
-              {readConfObject(t, 'name')}{' '}
+            <>
+              <SanitizedHTML html={readConfObject(t, 'name')} />{' '}
               <TrackLabelMenu
                 id={t.trackId}
                 trackId={t.trackId}
@@ -40,7 +45,7 @@ const DropdownTrackSelector = observer(function ({
                 setOpen={setOpen}
                 stopPropagation
               />
-            </div>
+            </>
           ),
           checked: view.tracks.some(
             (f: { configuration: AnyConfigurationModel }) =>

@@ -15,12 +15,14 @@ const CascadingMenuButton = observer(function CascadingMenuButton({
   closeAfterItemClick = true,
   stopPropagation,
   setOpen,
+  onClick: onClickExtra,
   ...rest
 }: {
   children?: React.ReactElement
   menuItems: MenuItem[]
   closeAfterItemClick?: boolean
   stopPropagation?: boolean
+  onClick?: () => void
   setOpen?: (arg: boolean) => void
   [key: string]: unknown
 }) {
@@ -42,12 +44,14 @@ const CascadingMenuButton = observer(function CascadingMenuButton({
             event.stopPropagation()
           }
           onClick(event)
+          onClickExtra?.()
         }}
         onTouchStart={event => {
           if (stopPropagation) {
             event.stopPropagation()
           }
           onTouchStart(event)
+          onClickExtra?.()
         }}
         {...rest2}
         {...rest}

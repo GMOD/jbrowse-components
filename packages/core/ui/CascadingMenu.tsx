@@ -1,4 +1,4 @@
-import React, { useContext, useMemo, useCallback } from 'react'
+import React, { useContext, useMemo } from 'react'
 import {
   Divider,
   ListItemIcon,
