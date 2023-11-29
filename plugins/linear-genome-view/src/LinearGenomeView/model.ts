@@ -767,7 +767,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
         // if none had that configuration, turn one on
         if (!hiddenCount) {
           self.showTrack(trackId)
+          return true
         }
+        return false
       },
 
       /**

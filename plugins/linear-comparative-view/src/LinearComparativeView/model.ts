@@ -242,13 +242,12 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       toggleTrack(trackId: string) {
-        // if we have any tracks with that configuration, turn them off
         const hiddenCount = this.hideTrack(trackId)
-
-        // if none had that configuration, turn one on
         if (!hiddenCount) {
           this.showTrack(trackId)
+          return true
         }
+        return false
       },
 
       /**
