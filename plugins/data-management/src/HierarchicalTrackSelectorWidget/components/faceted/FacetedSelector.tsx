@@ -125,7 +125,11 @@ const FacetedSelector = observer(function FacetedSelector({
   )
 
   const fields = useMemo(
-    () => ['name', ...filteredNonMetadataKeys, ...filteredMetadataKeys],
+    () => [
+      'name',
+      ...filteredNonMetadataKeys,
+      ...filteredMetadataKeys.map(e => `metadata.${e}`),
+    ],
     [filteredNonMetadataKeys, filteredMetadataKeys],
   )
 
@@ -184,7 +188,7 @@ const FacetedSelector = observer(function FacetedSelector({
       ),
       ...Object.fromEntries(
         filteredMetadataKeys
-          .filter(f => visible[f])
+          .filter(f => visible[`metadata.${f}`])
           .map(e => {
             const key = `metadata.${e}`
             return [
