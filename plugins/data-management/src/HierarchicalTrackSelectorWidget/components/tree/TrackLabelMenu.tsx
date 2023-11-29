@@ -2,6 +2,7 @@ import React from 'react'
 import { makeStyles } from 'tss-react/mui'
 import { getSession } from '@jbrowse/core/util'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 
 // icons
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
@@ -9,7 +10,6 @@ import StarIcon from '@mui/icons-material/StarBorderOutlined'
 import FilledStarIcon from '@mui/icons-material/Star'
 
 // locals
-import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { HierarchicalTrackSelectorModel } from '../../model'
 
 const useStyles = makeStyles()({
@@ -23,13 +23,11 @@ const TrackLabelMenu = function ({
   trackId,
   stopPropagation,
   model,
-  selected,
   setOpen,
   conf,
 }: {
   id: string
   trackId: string
-  selected?: boolean
   stopPropagation?: boolean
   conf: AnyConfigurationModel
   setOpen?: (arg: boolean) => void
@@ -59,7 +57,7 @@ const TrackLabelMenu = function ({
           label: 'Add to selection',
           onClick: () => model.addToSelection([conf]),
         },
-        ...(selected
+        ...(model.isSelected(trackId)
           ? [
               {
                 label: 'Remove from selection',

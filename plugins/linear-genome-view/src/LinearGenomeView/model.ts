@@ -54,6 +54,8 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import MiniControls from './components/MiniControls'
 import Header from './components/Header'
 import { generateLocations, parseLocStrings } from './util'
+import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
+import { handleSelectedRegion } from '../searchUtils'
 // lazies
 const ReturnToImportFormDialog = lazy(
   () => import('@jbrowse/core/ui/ReturnToImportFormDialog'),
@@ -1315,6 +1317,26 @@ export function stateModelFactory(pluginManager: PluginManager) {
           parseLocStrings(input, assemblyName, isValidRefName),
           assemblyName,
         )
+      },
+
+      /**
+       * #action
+       * Performs a text index search, and navigates to it immediately if a
+       * single result is returned. Will pop up a search dialog if multiple
+       * results are returned
+       */
+      async navToSearchString({
+        input,
+        assembly,
+      }: {
+        input: string
+        assembly: Assembly
+      }) {
+        await handleSelectedRegion({
+          input,
+          assembly,
+          model: self as LinearGenomeViewModel,
+        })
       },
 
       /**

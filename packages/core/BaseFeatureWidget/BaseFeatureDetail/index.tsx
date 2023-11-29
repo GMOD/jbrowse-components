@@ -177,6 +177,7 @@ export function FeatureDetails(props: {
   formatter?: (val: unknown, key: string) => React.ReactNode
 }) {
   const { omit = [], model, feature, depth = 0 } = props
+  const { maxDepth } = model
   const { mate, name = '', id = '', type = '', subfeatures, uniqueId } = feature
   const pm = getEnv(model).pluginManager
   const session = getSession(model)
@@ -223,7 +224,7 @@ export function FeatureDetails(props: {
         </>
       ) : null}
 
-      {subfeatures?.length ? (
+      {depth < maxDepth && subfeatures?.length ? (
         <BaseCard title="Subfeatures" defaultExpanded={depth < 1}>
           {subfeatures.map((sub, idx) => (
             <FeatureDetails

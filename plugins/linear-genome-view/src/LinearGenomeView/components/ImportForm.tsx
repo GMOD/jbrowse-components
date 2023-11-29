@@ -16,9 +16,9 @@ import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import CloseIcon from '@mui/icons-material/Close'
 
 // locals
-import RefNameAutocomplete from './RefNameAutocomplete'
-import { fetchResults, splitLast } from './util'
 import { LinearGenomeViewModel } from '..'
+import { handleSelectedRegion, navToOption } from '../../searchUtils'
+import ImportFormRefNameAutocomplete from './ImportFormRefNameAutocomplete'
 
 const useStyles = makeStyles()(theme => ({
   importFormContainer: {
@@ -41,11 +41,10 @@ const LinearGenomeViewImportForm = observer(function ({
 }) {
   const { classes } = useStyles()
   const session = getSession(model)
-  const { assemblyNames, assemblyManager, textSearchManager } = session
-  const { rankSearchResults, error } = model
+  const { assemblyNames, assemblyManager } = session
+  const { error } = model
   const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0])
   const [option, setOption] = useState<BaseResult>()
-  const searchScope = model.searchScope(selectedAsm)
   const assembly = assemblyManager.get(selectedAsm)
   const assemblyError = assemblyNames.length
     ? assembly?.error
@@ -65,61 +64,6 @@ const LinearGenomeViewImportForm = observer(function ({
     setValue(r0)
   }, [r0, selectedAsm])
 
-  async function navToOption(option: BaseResult) {
-    const location = option.getLocation()
-    const trackId = option.getTrackId()
-    if (location) {
-      await model.navToLocString(location, selectedAsm)
-      if (trackId) {
-        model.showTrack(trackId)
-      }
-    }
-  }
-
-  // gets a string as input, or use stored option results from previous query,
-  // then re-query and
-  // 1) if it has multiple results: pop a dialog
-  // 2) if it's a single result navigate to it
-  // 3) else assume it's a locstring and navigate to it
-  async function handleSelectedRegion(input: string) {
-    try {
-      if (option?.getDisplayString() === input && option.hasLocation()) {
-        await navToOption(option)
-      } else if (option?.results?.length) {
-        model.setSearchResults(option.results, option.getLabel(), selectedAsm)
-      } else {
-        const [ref, rest] = splitLast(input, ':')
-        const allRefs = assembly?.allRefNamesWithLowerCase || []
-        if (
-          allRefs.includes(input) ||
-          (allRefs.includes(ref) && !Number.isNaN(Number.parseInt(rest, 10)))
-        ) {
-          await model.navToLocString(input, selectedAsm)
-        } else {
-          const results = await fetchResults({
-            queryString: input,
-            searchType: 'exact',
-            searchScope,
-            rankSearchResults,
-            textSearchManager,
-            assembly,
-          })
-
-          if (results.length > 1) {
-            model.setSearchResults(results, input.toLowerCase(), selectedAsm)
-          } else if (results.length === 1) {
-            await navToOption(results[0])
-          } else {
-            await model.navToLocString(input, selectedAsm)
-          }
-        }
-      }
-    } catch (e) {
-      console.error(e)
-      session.notify(`${e}`, 'warning')
-    }
-  }
-
   // implementation notes:
   // having this wrapped in a form allows intuitive use of enter key to submit
   return (
@@ -132,7 +76,29 @@ const LinearGenomeViewImportForm = observer(function ({
             model.setError(undefined)
             if (value) {
               // has it's own error handling
-              await handleSelectedRegion(value)
+              try {
+                if (
+                  option?.getDisplayString() === value &&
+                  option.hasLocation()
+                ) {
+                  await navToOption({
+                    option,
+                    model,
+                    assemblyName: selectedAsm,
+                  })
+                } else if (option?.results?.length) {
+                  model.setSearchResults(
+                    option.results,
+                    option.getLabel(),
+                    selectedAsm,
+                  )
+                } else if (assembly) {
+                  await handleSelectedRegion({ input: value, assembly, model })
+                }
+              } catch (e) {
+                console.error(e)
+                session.notify(`${e}`, 'warning')
+              }
             }
           }}
         >
@@ -158,27 +124,12 @@ const LinearGenomeViewImportForm = observer(function ({
                   <CloseIcon style={{ color: 'red' }} />
                 ) : assemblyLoaded ? (
                   <FormControl>
-                    <RefNameAutocomplete
-                      fetchResults={queryString =>
-                        fetchResults({
-                          queryString,
-                          assembly,
-                          textSearchManager,
-                          rankSearchResults,
-                          searchScope,
-                        })
-                      }
-                      model={model}
-                      assemblyName={selectedAsm}
+                    <ImportFormRefNameAutocomplete
                       value={value}
-                      minWidth={270}
-                      onChange={str => setValue(str)}
-                      onSelect={val => setOption(val)}
-                      TextFieldProps={{
-                        variant: 'outlined',
-                        helperText:
-                          'Enter sequence name, feature name, or location',
-                      }}
+                      setValue={setValue}
+                      selectedAsm={selectedAsm}
+                      setOption={setOption}
+                      model={model}
                     />
                   </FormControl>
                 ) : (

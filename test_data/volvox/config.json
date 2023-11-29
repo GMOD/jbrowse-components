@@ -320,6 +320,8 @@
       "name": "volvox-sorted.cram (contigA, LinearPileupDisplay, large height)",
       "category": ["Integration test"],
       "metadata": {
+        "description": "this is a metadata description",
+        "name": "this is a metadata name",
         "source": "We generated 150bp paired end reads from a <i>Volvox mythicus</i>, an imaginary species, for this jbrowse demo. See <a href=https://google.com>Google</a>",
         "sub": {
           "subkey": "wow"
@@ -1187,6 +1189,9 @@
       "type": "FeatureTrack",
       "trackId": "bigbed_genes",
       "name": "BigBed genes",
+      "formatDetails": {
+        "maxDepth": 0
+      },
       "assemblyNames": ["volvox"],
       "category": ["Miscellaneous"],
       "adapter": {

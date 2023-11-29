@@ -39,17 +39,16 @@ function CascadingMenuItem({
   if (!rootPopupState) {
     throw new Error('must be used inside a CascadingMenu')
   }
-  const handleClick = useCallback(
-    (event: React.MouseEvent) => {
-      if (closeAfterItemClick) {
-        rootPopupState.close()
-      }
-      onClick?.(event)
-    },
-    [rootPopupState, closeAfterItemClick, onClick],
-  )
 
-  return <MenuItem {...props} onClick={handleClick} />
+  return (
+    <MenuItem
+      {...props}
+      onClick={event => {
+        rootPopupState.close()
+        onClick?.(event)
+      }}
+    />
+  )
 }
 
 function CascadingSubmenu({
@@ -68,7 +67,7 @@ function CascadingSubmenu({
   menuItems: JBMenuItem[]
   popupId: string
 }) {
-  const { parentPopupState } = React.useContext(CascadingContext)
+  const { parentPopupState } = useContext(CascadingContext)
   const popupState = usePopupState({
     popupId,
     variant: 'popover',
@@ -135,8 +134,8 @@ function CascadingMenu({
   onMenuItemClick: Function
   menuItems: JBMenuItem[]
 }) {
-  const { rootPopupState } = React.useContext(CascadingContext)
-  const context = React.useMemo(
+  const { rootPopupState } = useContext(CascadingContext)
+  const context = useMemo(
     () => ({
       rootPopupState: rootPopupState || popupState,
       parentPopupState: popupState,

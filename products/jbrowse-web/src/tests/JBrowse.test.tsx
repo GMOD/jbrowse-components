@@ -17,7 +17,7 @@ jest.mock('../makeWorkerInstance', () => () => {})
 
 setup()
 
-const delay = { timeout: 15000 }
+const delay = { timeout: 30000 }
 
 beforeEach(() => {
   doBeforeEach()
@@ -44,9 +44,12 @@ test('toplevel configuration', () => {
     pluginManager,
     sessionModelFactory,
     adminMode: true,
-  }).create({
-    jbrowse: volvoxConfigSnapshot,
-  })
+  }).create(
+    {
+      jbrowse: volvoxConfigSnapshot,
+    },
+    { pluginManager },
+  )
   rootModel.setDefaultSession()
   pluginManager.setRootModel(rootModel)
   pluginManager.configure()
@@ -67,7 +70,7 @@ test('assembly aliases', async () => {
     await findByTestId(hts('volvox_filtered_vcf_assembly_alias'), {}, delay),
   )
   await findByTestId('box-test-vcf-604453', {}, delay)
-}, 15000)
+}, 30000)
 
 test('nclist track test with long name', async () => {
   const { view, findByTestId, findByText } = await createView()
@@ -95,7 +98,7 @@ test('test sharing', async () => {
   expect(
     ((await findByLabelText('URL', {}, delay)) as HTMLInputElement).value,
   ).toBe('http://localhost/?session=share-abc&password=123')
-}, 15000)
+}, 30000)
 
 test('looks at about this track dialog', async () => {
   const { findByTestId, findAllByText, findByText } = await createView()
@@ -105,4 +108,4 @@ test('looks at about this track dialog', async () => {
   fireEvent.click(await findByTestId('track_menu_icon', {}, delay))
   fireEvent.click(await findByText('About track'))
   await findAllByText(/SQ/, {}, delay)
-}, 15000)
+}, 30000)

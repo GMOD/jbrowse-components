@@ -707,6 +707,8 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         },
       ],
       "metadata": {
+        "description": "this is a metadata description",
+        "name": "this is a metadata name",
         "source": "We generated 150bp paired end reads from a <i>Volvox mythicus</i>, an imaginary species, for this jbrowse demo. See <a href=https://google.com>Google</a>",
         "sub": {
           "subkey": "wow",
@@ -2361,6 +2363,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "type": "LinearArcDisplay",
         },
       ],
+      "formatDetails": {
+        "maxDepth": 0,
+      },
       "name": "BigBed genes",
       "trackId": "bigbed_genes",
       "type": "FeatureTrack",

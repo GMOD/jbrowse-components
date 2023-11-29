@@ -1,4 +1,4 @@
-import { types, Instance, addDisposer } from 'mobx-state-tree'
+import { types, addDisposer, Instance } from 'mobx-state-tree'
 import { autorun } from 'mobx'
 import {
   getConf,
@@ -19,6 +19,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { filterTracks } from './filterTracks'
 import { generateHierarchy } from './generateHierarchy'
 import { findSubCategories, findTopLevelCategories } from './util'
+import { facetedStateTreeF } from './facetedModel'
 
 type MaybeAnyConfigurationModel = AnyConfigurationModel | undefined
 
@@ -94,6 +95,11 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       recentlyUsed: types.optional(types.array(types.string), () =>
         JSON.parse(localStorageGetItem(lsKeyRecentlyUsedF()) || '[]'),
       ),
+
+     /**
+       * #property
+       */
+      faceted: types.optional(facetedStateTreeF(), {}),
     })
     .volatile(() => ({
       selection: [] as AnyConfigurationModel[],

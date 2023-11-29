@@ -22,49 +22,103 @@ function formatSubfeatures(
   returnObj = {} as Record<string, unknown>,
 ) {
   if (depth <= currentDepth) {
-    return returnObj
+    return
   }
-  returnObj.subfeatures = obj.subfeatures?.map(sub => {
+  obj.subfeatures?.map(sub => {
     formatSubfeatures(sub, depth, parse, currentDepth + 1, returnObj)
-    return parse(sub)
+    parse(sub)
   })
-  return returnObj
 }
 
+/**
+ * #stateModel BaseFeatureWidget
+ * displays data about features, allowing configuration callbacks to modify the
+ * contents of what is displayed
+ *
+ * see: formatDetails-\>feature,formatDetails-\>subfeatures
+ */
 export default function stateModelFactory(pluginManager: PluginManager) {
   return types
     .model('BaseFeatureWidget', {
+      /**
+       * #property
+       */
       id: ElementId,
+      /**
+       * #property
+       */
       type: types.literal('BaseFeatureWidget'),
+      /**
+       * #property
+       */
       featureData: types.frozen(),
+      /**
+       * #property
+       */
       formattedFields: types.frozen(),
+      /**
+       * #property
+       */
       unformattedFeatureData: types.frozen(),
+      /**
+       * #property
+       */
       view: types.safeReference(
         pluginManager.pluggableMstType('view', 'stateModel'),
       ),
+      /**
+       * #property
+       */
       track: types.safeReference(
         pluginManager.pluggableMstType('track', 'stateModel'),
       ),
+      /**
+       * #property
+       */
       trackId: types.maybe(types.string),
+      /**
+       * #property
+       */
       trackType: types.maybe(types.string),
+      /**
+       * #property
+       */
+      maxDepth: types.maybe(types.number),
     })
     .volatile(() => ({
       error: undefined as unknown,
     }))
+
     .actions(self => ({
+      /**
+       * #action
+       */
       setFeatureData(featureData: Record<string, unknown>) {
         self.unformattedFeatureData = featureData
       },
+      /**
+       * #action
+       */
       clearFeatureData() {
         self.featureData = undefined
       },
+      /**
+       * #action
+       */
       setFormattedData(feat: Record<string, unknown>) {
         self.featureData = feat
       },
-      setExtra(type?: string, trackId?: string) {
+      /**
+       * #action
+       */
+      setExtra(type?: string, trackId?: string, maxDepth?: number) {
         self.trackId = trackId
         self.trackType = type
+        self.maxDepth = maxDepth
       },
+      /**
+       * #action
+       */
       setError(e: unknown) {
         self.error = e
       },
@@ -75,9 +129,15 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           self,
           autorun(() => {
             try {
-              self.setExtra(self.track?.type, self.track?.configuration.trackId)
               const { unformattedFeatureData, track } = self
               const session = getSession(self)
+              if (track) {
+                self.setExtra(
+                  track.type,
+                  track.configuration.trackId,
+                  getConf(track, ['formatDetails', 'maxDepth']),
+                )
+              }
               if (unformattedFeatureData) {
                 const feature = clone(unformattedFeatureData)
 
@@ -92,11 +152,15 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 if (track) {
                   // eslint-disable-next-line no-underscore-dangle
                   feature.__jbrowsefmt = combine('feature', feature)
-                  const depth = getConf(track, ['formatDetails', 'depth'])
-                  formatSubfeatures(feature, depth, sub => {
-                    // eslint-disable-next-line no-underscore-dangle
-                    sub.__jbrowsefmt = combine('subfeatures', sub)
-                  })
+
+                  formatSubfeatures(
+                    feature,
+                    getConf(track, ['formatDetails', 'depth']),
+                    sub => {
+                      // eslint-disable-next-line no-underscore-dangle
+                      sub.__jbrowsefmt = combine('subfeatures', sub)
+                    },
+                  )
                 }
 
                 self.setFormattedData(feature)
