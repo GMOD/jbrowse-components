@@ -102,8 +102,7 @@ const FacetedSelector = observer(function FacetedSelector({
           adapter: readConfObject(track, 'adapter')?.type,
           description: readConfObject(track, 'description'),
           metadata,
-          ...metadata,
-        }
+        } as const
       })
   }, [model, filterDebounced, session])
 
@@ -126,7 +125,11 @@ const FacetedSelector = observer(function FacetedSelector({
   )
 
   const fields = useMemo(
-    () => ['name', ...filteredNonMetadataKeys, ...filteredMetadataKeys],
+    () => [
+      'name',
+      ...filteredNonMetadataKeys,
+      ...filteredMetadataKeys.map(e => `metadata.${e}`),
+    ],
     [filteredNonMetadataKeys, filteredMetadataKeys],
   )
 
@@ -146,13 +149,16 @@ const FacetedSelector = observer(function FacetedSelector({
       ]),
     ),
     ...Object.fromEntries(
-      filteredMetadataKeys.map(e => [
-        e,
-        measureGridWidth(
-          rows.map(r => r.metadata[e]),
-          { maxWidth: 400, stripHTML: true },
-        ),
-      ]),
+      filteredMetadataKeys.map(e => {
+        const key = `metadata.${e}`
+        return [
+          key,
+          measureGridWidth(
+            rows.map(r => r.metadata[e]),
+            { maxWidth: 400, stripHTML: true },
+          ),
+        ]
+      }),
     ),
   } as Record<string, number | undefined>)
 
@@ -182,14 +188,17 @@ const FacetedSelector = observer(function FacetedSelector({
       ),
       ...Object.fromEntries(
         filteredMetadataKeys
-          .filter(f => visible[f])
-          .map(e => [
-            e,
-            measureGridWidth(
-              rows.map(r => r.metadata[e]),
-              { stripHTML: true, maxWidth: 400 },
-            ),
-          ]),
+          .filter(f => visible[`metadata.${f}`])
+          .map(e => {
+            const key = `metadata.${e}`
+            return [
+              key,
+              measureGridWidth(
+                rows.map(r => r.metadata[e]),
+                { stripHTML: true, maxWidth: 400 },
+              ),
+            ]
+          }),
       ),
     }))
   }, [filteredMetadataKeys, visible, filteredNonMetadataKeys, showSparse, rows])
@@ -233,18 +242,25 @@ const FacetedSelector = observer(function FacetedSelector({
         )
       },
     })),
-    ...filteredMetadataKeys.map(e => ({
-      field: e,
-      width: widthsDebounced[e] ?? 100,
-      renderCell: (params: GridCellParams) => {
-        const { value } = params
-        return (
-          <div className={classes.cell}>
-            {value ? <SanitizedHTML html={value as string} /> : ''}
-          </div>
-        )
-      },
-    })),
+    ...filteredMetadataKeys.map(e => {
+      const key = `metadata.${e}`
+      return {
+        field: key,
+        headerName: ['name', ...filteredNonMetadataKeys].includes(e)
+          ? `${e} (from metadata)`
+          : e,
+        width: widthsDebounced[key] ?? 100,
+        valueGetter: (params: GridCellParams) => params.row.metadata[e],
+        renderCell: (params: GridCellParams) => {
+          const { value } = params
+          return (
+            <div className={classes.cell}>
+              {value ? <SanitizedHTML html={value as string} /> : ''}
+            </div>
+          )
+        },
+      }
+    }),
   ]
 
   const shownTrackIds = new Set(
@@ -255,7 +271,9 @@ const FacetedSelector = observer(function FacetedSelector({
     .filter(f => f[1].length > 0)
     .map(([key, val]) => [key, new Set<string>(val)] as const)
   const filteredRows = rows.filter(row =>
-    arrFilters.every(([key, val]) => val.has(row[key] as string)),
+    arrFilters.every(([key, val]) =>
+      val.has(row[key as keyof typeof row] as string),
+    ),
   )
   return (
     <>
