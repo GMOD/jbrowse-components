@@ -55,7 +55,12 @@ const HierarchicalTree = observer(function HierarchicalTree({
 
   const extra = useMemo(
     () => ({
-      onChange: (trackId: string) => view.toggleTrack(trackId),
+      onChange: (trackId: string) => {
+        const trackTurnedOn = view.toggleTrack(trackId)
+        if (trackTurnedOn) {
+          model.addToRecentlyUsed(trackId)
+        }
+      },
       toggleCollapse: (pathName: string) => model.toggleCategory(pathName),
       tree,
       model,

@@ -21,18 +21,24 @@ const useStyles = makeStyles()({
 const TrackLabelMenu = function ({
   id,
   trackId,
+  stopPropagation,
   model,
+  setOpen,
   conf,
 }: {
   id: string
   trackId: string
+  stopPropagation?: boolean
   conf: AnyConfigurationModel
+  setOpen?: (arg: boolean) => void
   model: HierarchicalTrackSelectorModel
 }) {
   const { classes } = useStyles()
   return (
     <CascadingMenuButton
       className={classes.cascadingStyle}
+      stopPropagation={stopPropagation}
+      setOpen={setOpen}
       data-testid={`htsTrackEntryMenu-${id}`}
       menuItems={[
         ...(getSession(model).getTrackActionMenuItems?.(conf) || []),
@@ -51,7 +57,7 @@ const TrackLabelMenu = function ({
           label: 'Add to selection',
           onClick: () => model.addToSelection([conf]),
         },
-        ...(model.isSelected(trackId)
+        ...(model.isSelected(conf)
           ? [
               {
                 label: 'Remove from selection',

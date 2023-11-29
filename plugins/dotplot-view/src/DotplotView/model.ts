@@ -416,7 +416,9 @@ export default function stateModelFactory(pm: PluginManager) {
         const hiddenCount = this.hideTrack(trackId)
         if (!hiddenCount) {
           this.showTrack(trackId)
+          return true
         }
+        return false
       },
       /**
        * #action

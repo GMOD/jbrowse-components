@@ -155,15 +155,21 @@ const FacetedSelector = observer(function FacetedSelector({
                 // see share https://stackoverflow.com/a/33034768/2129219
                 transaction(() => {
                   ;[...a1].filter(x => !a2.has(x)).map(t => view.hideTrack(t))
-                  ;[...a2].filter(x => !a1.has(x)).map(t => view.showTrack(t))
+                  ;[...a2]
+                    .filter(x => !a1.has(x))
+                    .map(t => {
+                      view.showTrack(t)
+                      model.addToRecentlyUsed(t)
+                    })
                 })
               } else {
                 const root = getRoot(model)
                 const schema = pluginManager.pluggableConfigSchemaType('track')
-                const tracks = userSelectedIds.map(id =>
-                  resolveIdentifier(schema, root, id),
+                model.setSelection(
+                  userSelectedIds.map(id =>
+                    resolveIdentifier(schema, root, id),
+                  ),
                 )
-                model.setSelection(tracks)
               }
             }}
             rowSelectionModel={

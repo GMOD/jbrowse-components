@@ -1,5 +1,5 @@
-import React, { Suspense, lazy, useState } from 'react'
-import { Button, IconButton, InputAdornment, TextField } from '@mui/material'
+import React from 'react'
+import { IconButton, InputAdornment, TextField } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 
@@ -10,17 +10,12 @@ import ClearIcon from '@mui/icons-material/Clear'
 import { HierarchicalTrackSelectorModel } from '../../model'
 import HamburgerMenu from './HamburgerMenu'
 import ShoppingCart from '../ShoppingCart'
-
-// lazies
-const FacetedDialog = lazy(() => import('../faceted/FacetedDialog'))
+import FavoriteTracks from './FavoriteTracks'
+import RecentlyUsedTracks from './RecentlyUsedTracks'
 
 const useStyles = makeStyles()(theme => ({
   searchBox: {
     margin: theme.spacing(2),
-  },
-  menuIcon: {
-    marginRight: theme.spacing(1),
-    marginBottom: 0,
   },
 }))
 
@@ -58,9 +53,6 @@ const HierarchicalTrackSelectorHeader = observer(function ({
   model: HierarchicalTrackSelectorModel
   setHeaderHeight: (n: number) => void
 }) {
-  const { classes } = useStyles()
-  const [facetedOpen, setFacetedOpen] = useState(false)
-
   return (
     <div
       ref={ref => setHeaderHeight(ref?.getBoundingClientRect().height || 0)}
@@ -70,22 +62,9 @@ const HierarchicalTrackSelectorHeader = observer(function ({
         <HamburgerMenu model={model} />
         <ShoppingCart model={model} />
         <SearchTracksTextField model={model} />
-        <Button
-          className={classes.menuIcon}
-          onClick={() => setFacetedOpen(true)}
-        >
-          Open faceted selector
-        </Button>
+        <RecentlyUsedTracks model={model} />
+        <FavoriteTracks model={model} />
       </div>
-
-      <Suspense fallback={<div />}>
-        {facetedOpen ? (
-          <FacetedDialog
-            handleClose={() => setFacetedOpen(false)}
-            model={model}
-          />
-        ) : null}
-      </Suspense>
     </div>
   )
 })

@@ -27,8 +27,10 @@ const CascadingContext = React.createContext({
 
 function CascadingMenuItem({
   onClick,
+  closeAfterItemClick,
   ...props
 }: {
+  closeAfterItemClick: boolean
   onClick?: Function
   disabled?: boolean
   children: React.ReactNode
@@ -42,7 +44,9 @@ function CascadingMenuItem({
     <MenuItem
       {...props}
       onClick={event => {
-        rootPopupState.close()
+        if (closeAfterItemClick) {
+          rootPopupState.close()
+        }
         onClick?.(event)
       }}
     />
@@ -57,7 +61,7 @@ function CascadingSubmenu({
   ...props
 }: {
   children: React.ReactNode
-  title: string
+  title: React.ReactNode
   onMenuItemClick: Function
   Icon: React.ComponentType<SvgIconProps> | undefined
 
@@ -165,10 +169,12 @@ function EndDecoration({ item }: { item: JBMenuItem }) {
 
 function CascadingMenuList({
   onMenuItemClick,
+  closeAfterItemClick,
   menuItems,
   ...props
 }: {
   menuItems: JBMenuItem[]
+  closeAfterItemClick: boolean
   onMenuItemClick: Function
 }) {
   function handleClick(callback: Function) {
@@ -193,6 +199,7 @@ function CascadingMenuList({
           >
             <CascadingMenuList
               {...props}
+              closeAfterItemClick={closeAfterItemClick}
               onMenuItemClick={onMenuItemClick}
               menuItems={item.subMenu}
             />
@@ -206,6 +213,7 @@ function CascadingMenuList({
         ) : (
           <CascadingMenuItem
             key={`${item.label}-${idx}`}
+            closeAfterItemClick={closeAfterItemClick}
             onClick={'onClick' in item ? handleClick(item.onClick) : undefined}
             disabled={Boolean(item.disabled)}
           >
@@ -230,12 +238,14 @@ function CascadingMenuList({
 
 function CascadingMenuChildren(props: {
   onMenuItemClick: Function
+  closeAfterItemClick?: boolean
   menuItems: JBMenuItem[]
   popupState: PopupState
 }) {
+  const { closeAfterItemClick = true, ...rest } = props
   return (
-    <CascadingMenu {...props}>
-      <CascadingMenuList {...props} />
+    <CascadingMenu {...rest}>
+      <CascadingMenuList {...rest} closeAfterItemClick={closeAfterItemClick} />
     </CascadingMenu>
   )
 }
