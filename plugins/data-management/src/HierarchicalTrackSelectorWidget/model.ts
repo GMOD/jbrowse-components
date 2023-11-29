@@ -161,12 +161,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       clearSelection() {
         self.selection = []
       },
-      /**
-       * #action
-       */
-      isFavorite(trackId: string) {
-        return self.favorites.includes(trackId)
-      },
+
       /**
        * #action
        */
@@ -185,12 +180,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       clearFavorites() {
         self.favorites.clear()
       },
-      /**
-       * #action
-       */
-      isRecentlyUsed(trackId: string) {
-        return self.recentlyUsed.includes(trackId)
-      },
+
       /**
        * #action
        */
@@ -248,6 +238,24 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       },
     }))
     .views(self => ({
+      /**
+       * #method
+       */
+      isRecentlyUsed(trackId: string) {
+        return self.recentlyUsed.includes(trackId)
+      },
+      /**
+       * #method
+       */
+      isSelected(trackId: string) {
+        return self.selection.find(t => t.trackId === trackId)
+      },
+      /**
+       * #method
+       */
+      isFavorite(trackId: string) {
+        return self.favorites.includes(trackId)
+      },
       /**
        * #method
        */

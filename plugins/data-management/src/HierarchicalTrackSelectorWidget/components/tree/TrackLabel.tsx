@@ -79,13 +79,7 @@ export default function TrackLabel({ data }: { data: NodeData }) {
           }
         />
       </Tooltip>
-      <TrackLabelMenu
-        model={model}
-        selected={selected}
-        trackId={trackId}
-        id={id}
-        conf={conf}
-      />
+      <TrackLabelMenu model={model} trackId={trackId} id={id} conf={conf} />
     </>
   )
 }

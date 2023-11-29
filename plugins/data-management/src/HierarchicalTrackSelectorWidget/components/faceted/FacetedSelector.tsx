@@ -1,5 +1,4 @@
-import React, { useState } from 'react'
-import { IconButton } from '@mui/material'
+import React from 'react'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 import { getRoot, resolveIdentifier } from 'mobx-state-tree'
@@ -8,20 +7,17 @@ import { DataGrid, GridCellParams, GridToolbar } from '@mui/x-data-grid'
 // jbrowse
 import { ResizeHandle } from '@jbrowse/core/ui'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
-import JBrowseMenu from '@jbrowse/core/ui/Menu'
 import ResizeBar from '@jbrowse/core/ui/ResizeBar'
-import { getEnv, getSession, useDebounce } from '@jbrowse/core/util'
+import { getEnv, useDebounce } from '@jbrowse/core/util'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { useResizeBar } from '@jbrowse/core/ui/useResizeBar'
 import { makeStyles } from 'tss-react/mui'
-
-// icons
-import MoreHoriz from '@mui/icons-material/MoreHoriz'
 
 // locals
 import { HierarchicalTrackSelectorModel } from '../../model'
 import FacetedHeader from './FacetedHeader'
 import FacetFilters from './FacetFilters'
+import TrackLabelMenu from '../tree/TrackLabelMenu'
 
 export interface InfoArgs {
   target: HTMLElement
@@ -34,6 +30,11 @@ const useStyles = makeStyles()({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+  },
+  resizeHandle: {
+    marginLeft: 5,
+    background: 'grey',
+    width: 5,
   },
 })
 
@@ -60,8 +61,6 @@ const FacetedSelector = observer(function FacetedSelector({
   } = faceted
   const { pluginManager } = getEnv(model)
   const { ref, scrollLeft } = useResizeBar()
-  const [info, setInfo] = useState<InfoArgs>()
-  const session = getSession(model)
   const tracks = view.tracks as AnyConfigurationModel[]
   const widthsDebounced = useDebounce(widths, 200)
 
@@ -70,21 +69,12 @@ const FacetedSelector = observer(function FacetedSelector({
       field: 'name',
       hideable: false,
       renderCell: (params: GridCellParams) => {
-        const { value, id, row } = params
+        const { value, row } = params
+        const { id, conf } = row
         return (
           <div className={classes.cell}>
             <SanitizedHTML html={value as string} />
-            <IconButton
-              onClick={e =>
-                setInfo({
-                  target: e.currentTarget,
-                  id: id as string,
-                  conf: row.conf,
-                })
-              }
-            >
-              <MoreHoriz />
-            </IconButton>
+            <TrackLabelMenu id={id} conf={conf} trackId={id} model={model} />
           </div>
         )
       },
@@ -100,7 +90,9 @@ const FacetedSelector = observer(function FacetedSelector({
     })),
     ...filteredMetadataKeys.map(e => ({
       field: `metadata.${e}`,
-      label: e,
+      headerName: ['name', ...filteredNonMetadataKeys].includes(e)
+        ? `${e} (from metadata)`
+        : e,
       width: widthsDebounced['metadata.' + e] ?? 100,
       valueGetter: (params: GridCellParams) => params.row.metadata[e],
       renderCell: (params: GridCellParams) => {
@@ -116,20 +108,7 @@ const FacetedSelector = observer(function FacetedSelector({
 
   return (
     <>
-      {info ? (
-        <JBrowseMenu
-          anchorEl={info?.target}
-          menuItems={session.getTrackActionMenuItems?.(info.conf) || []}
-          onMenuItemClick={(_event, callback) => {
-            callback()
-            setInfo(undefined)
-          }}
-          open={!!info}
-          onClose={() => setInfo(undefined)}
-        />
-      ) : null}
       <FacetedHeader model={model} />
-
       <div
         ref={ref}
         style={{
@@ -210,7 +189,7 @@ const FacetedSelector = observer(function FacetedSelector({
             <ResizeHandle
               vertical
               onDrag={dist => faceted.setPanelWidth(panelWidth - dist)}
-              style={{ marginLeft: 5, background: 'grey', width: 5 }}
+              className={classes.resizeHandle}
             />
             <div
               style={{

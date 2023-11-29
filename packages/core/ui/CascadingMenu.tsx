@@ -1,4 +1,4 @@
-import React, { useContext, useMemo, useCallback } from 'react'
+import React, { useContext, useMemo } from 'react'
 import {
   Divider,
   ListItemIcon,
@@ -37,15 +37,16 @@ function CascadingMenuItem({
   if (!rootPopupState) {
     throw new Error('must be used inside a CascadingMenu')
   }
-  const handleClick = useCallback(
-    (event: React.MouseEvent) => {
-      rootPopupState.close()
-      onClick?.(event)
-    },
-    [rootPopupState, onClick],
-  )
 
-  return <MenuItem {...props} onClick={handleClick} />
+  return (
+    <MenuItem
+      {...props}
+      onClick={event => {
+        rootPopupState.close()
+        onClick?.(event)
+      }}
+    />
+  )
 }
 
 function CascadingSubmenu({
@@ -64,7 +65,7 @@ function CascadingSubmenu({
   menuItems: JBMenuItem[]
   popupId: string
 }) {
-  const { parentPopupState } = React.useContext(CascadingContext)
+  const { parentPopupState } = useContext(CascadingContext)
   const popupState = usePopupState({
     popupId,
     variant: 'popover',
@@ -131,8 +132,8 @@ function CascadingMenu({
   onMenuItemClick: Function
   menuItems: JBMenuItem[]
 }) {
-  const { rootPopupState } = React.useContext(CascadingContext)
-  const context = React.useMemo(
+  const { rootPopupState } = useContext(CascadingContext)
+  const context = useMemo(
     () => ({
       rootPopupState: rootPopupState || popupState,
       parentPopupState: popupState,
