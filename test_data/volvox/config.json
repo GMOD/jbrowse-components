@@ -1189,6 +1189,9 @@
       "type": "FeatureTrack",
       "trackId": "bigbed_genes",
       "name": "BigBed genes",
+      "formatDetails": {
+        "maxDepth": 0
+      },
       "assemblyNames": ["volvox"],
       "category": ["Miscellaneous"],
       "adapter": {

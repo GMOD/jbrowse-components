@@ -96,7 +96,6 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
           defaultValue: {},
           contextVariable: ['feature'],
         },
-
         /**
          * #slot formatDetails.subfeatures
          */
@@ -106,7 +105,6 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
           defaultValue: {},
           contextVariable: ['feature'],
         },
-
         /**
          * #slot formatDetails.depth
          */
@@ -115,6 +113,14 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
           defaultValue: 2,
           description:
             'depth of subfeatures to iterate the formatter on formatDetails.subfeatures (e.g. you may not want to format the exon/cds subfeatures, so limited to 2',
+        },
+        /**
+         * #slot formatDetails.maxDepth
+         */
+        maxDepth: {
+          type: 'number',
+          defaultValue: 99999,
+          description: 'Maximum depth to render subfeatures',
         },
       }),
       formatAbout: ConfigurationSchema('FormatAbout', {
