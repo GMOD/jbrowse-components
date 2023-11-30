@@ -79,6 +79,11 @@
           "alt": "Twitter",
           "position": "right",
           "href": "https://twitter.com/usejbrowse"
+        },
+        {
+          "alt": "Mastodon",
+          "position": "right",
+          "href": "https://genomic.social/@usejbrowse"
         }
       ]
     },
@@ -102,12 +107,16 @@
           "title": "Community",
           "items": [
             {
-              "label": "Gitter",
+              "label": "Gitter chat",
               "href": "https://app.gitter.im/#/room/#GMOD_jbrowse2:gitter.im"
             },
             {
               "label": "Twitter",
               "href": "https://twitter.com/usejbrowse"
+            },
+            {
+              "label": "Mastodon",
+              "href": "https://genomic.social/@usejbrowse"
             }
           ]
         },
