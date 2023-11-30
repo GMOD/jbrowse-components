@@ -203,7 +203,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       addToRecentlyUsed(id: string) {
         self.recentlyUsedCounter += 1
-        console.log({ id })
         if (!self.recentlyUsed.includes(id)) {
           if (self.recentlyUsed.length >= 10) {
             self.recentlyUsed.shift()

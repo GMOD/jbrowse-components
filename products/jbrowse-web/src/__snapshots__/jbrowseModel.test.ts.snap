@@ -4236,60 +4236,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "trackId": "volvox_bedpe",
       "type": "VariantTrack",
     },
-    {
-      "adapter": {
-        "bamLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
-          "locationType": "UriLocation",
-          "uri": "volvox-sorted.bam",
-        },
-        "index": {
-          "location": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "volvox-sorted.bam.bai",
-          },
-        },
-        "sequenceAdapter": {
-          "twoBitLocation": {
-            "locationType": "UriLocation",
-            "uri": "volvox.2bit",
-          },
-          "type": "TwoBitAdapter",
-        },
-        "type": "BamAdapter",
-      },
-      "assemblyNames": [
-        "volvox",
-      ],
-      "displays": [
-        {
-          "displayId": "volvox-sorted-LinearAlignmentsDisplay",
-          "type": "LinearAlignmentsDisplay",
-        },
-        {
-          "displayId": "volvox-sorted-LinearPileupDisplay",
-          "type": "LinearPileupDisplay",
-        },
-        {
-          "displayId": "volvox-sorted-LinearSNPCoverageDisplay",
-          "type": "LinearSNPCoverageDisplay",
-        },
-        {
-          "displayId": "volvox-sorted-LinearReadArcsDisplay",
-          "type": "LinearReadArcsDisplay",
-        },
-        {
-          "displayId": "volvox-sorted-LinearReadCloudDisplay",
-          "type": "LinearReadCloudDisplay",
-        },
-      ],
-      "name": "volvox-sorted",
-      "trackId": "volvox-sorted",
-      "type": "AlignmentsTrack",
-    },
   ],
 }
 `;

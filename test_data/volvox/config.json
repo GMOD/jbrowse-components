@@ -2170,33 +2170,6 @@
           "displayId": "volvox_bedpe-LinearPairedArcDisplay"
         }
       ]
-    },
-    {
-      "type": "AlignmentsTrack",
-      "trackId": "volvox-sorted",
-      "name": "volvox-sorted",
-      "adapter": {
-        "type": "BamAdapter",
-        "bamLocation": {
-          "uri": "volvox-sorted.bam",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "volvox-sorted.bam.bai",
-            "locationType": "UriLocation"
-          },
-          "indexType": "BAI"
-        },
-        "sequenceAdapter": {
-          "type": "TwoBitAdapter",
-          "twoBitLocation": {
-            "uri": "volvox.2bit",
-            "locationType": "UriLocation"
-          }
-        }
-      },
-      "assemblyNames": ["volvox"]
     }
   ],
   "plugins": [

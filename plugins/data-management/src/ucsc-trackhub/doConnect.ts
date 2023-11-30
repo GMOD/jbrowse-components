@@ -32,7 +32,7 @@ export async function doConnect(self: any) {
       const asm = assemblyManager.get(genomeName)
       if (!asm) {
         // @ts-expect-error
-        session.addAssemblyConf({
+        session.addSessionAssembly({
           name: genomeName,
           sequence: {
             type: 'ReferenceSequenceTrack',

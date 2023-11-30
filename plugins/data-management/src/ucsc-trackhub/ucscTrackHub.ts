@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { FileLocation, isUriLocation, objectHash } from '@jbrowse/core/util'
-import { openLocation } from '@jbrowse/core/util/io'
 import {
-  generateUnsupportedTrackConf,
-  generateUnknownTrackConf,
-} from '@jbrowse/core/util/tracks'
+  FileLocation,
+  isUriLocation,
+  notEmpty,
+  objectHash,
+} from '@jbrowse/core/util'
+import { openLocation } from '@jbrowse/core/util/io'
+import { generateUnknownTrackConf } from '@jbrowse/core/util/tracks'
 import { RaStanza, GenomesFile, TrackDbFile } from '@gmod/ucsc-hub'
 
 export async function fetchGenomesFile(genomesLoc: FileLocation) {
@@ -54,47 +56,45 @@ export function generateTracks({
   assemblyName: string
   sequenceAdapter: any
 }) {
-  const tracks: any = []
-
-  for (const [trackName, track] of Object.entries(trackDb.data)) {
-    const trackKeys = Object.keys(track!)
-    const parentTrackKeys = new Set([
-      'superTrack',
-      'compositeTrack',
-      'container',
-      'view',
-    ])
-    if (trackKeys.some(key => parentTrackKeys.has(key))) {
-      continue
-    }
-    const parentTracks = []
-    let currentTrackName = trackName
-    do {
-      currentTrackName = trackDb.data[currentTrackName]?.data.parent || ''
-      if (currentTrackName) {
-        ;[currentTrackName] = currentTrackName.split(' ')
-        parentTracks.push(trackDb.data[currentTrackName])
+  return Object.entries(trackDb.data)
+    .map(([trackName, track]) => {
+      const trackKeys = Object.keys(track!)
+      const parentTrackKeys = new Set([
+        'superTrack',
+        'compositeTrack',
+        'container',
+        'view',
+      ])
+      if (trackKeys.some(key => parentTrackKeys.has(key))) {
+        return undefined
       }
-    } while (currentTrackName)
-    parentTracks.reverse()
-    const categories = parentTracks
-      .map(p => p?.data.shortLabel)
-      .filter((f): f is string => !!f)
-    const res = makeTrackConfig({
-      track: track!,
-      categories,
-      trackDbLoc,
-      trackDb,
-      sequenceAdapter,
+      const parentTracks = []
+      let currentTrackName = trackName
+      do {
+        currentTrackName = trackDb.data[currentTrackName]?.data.parent || ''
+        if (currentTrackName) {
+          ;[currentTrackName] = currentTrackName.split(' ')
+          parentTracks.push(trackDb.data[currentTrackName])
+        }
+      } while (currentTrackName)
+      parentTracks.reverse()
+      const categories = parentTracks
+        .map(p => p?.data.shortLabel)
+        .filter((f): f is string => !!f)
+      const res = makeTrackConfig({
+        track: track!,
+        categories,
+        trackDbLoc,
+        trackDb,
+        sequenceAdapter,
+      })
+      return {
+        ...res,
+        trackId: `ucsc-trackhub-${objectHash(res)}`,
+        assemblyNames: [assemblyName],
+      }
     })
-    tracks.push({
-      ...res,
-      trackId: `ucsc-trackhub-${objectHash(res)}`,
-      assemblyNames: [assemblyName],
-    })
-  }
-
-  return tracks
+    .filter(notEmpty)
 }
 
 function makeTrackConfig({
@@ -123,8 +123,6 @@ function makeTrackConfig({
   const bigDataLocation = isUri
     ? makeLoc(bigDataUrl, trackDbLoc)
     : makeLoc2(bigDataUrl)
-
-  console.log({ trackType }, track.data.parent)
 
   switch (baseTrackType) {
     case 'bam':
