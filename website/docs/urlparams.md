@@ -58,13 +58,18 @@ the syntax. This is only used for launching a single linear genome view.
 Example strings
 
 ```
-chr1:6000-7000 // using - notation for range
-chr1:6000..7000 // using .. notation for range
-chr1:7000 // centered on this position
+&loc=chr1:6000-7000 // using - notation for range
+&loc=chr1:6000..7000 // using .. notation for range
+&loc=chr1:7000 // centered on this position
+&loc=GENEID // if you have used `jbrowse text-index`
 ```
 
-Note: Navigating via a text search query e.g. supply &loc=gene_name is not yet
-supported
+Note 1: Navigating via &loc=GENEID using the text-index was added in v2.9.0
+
+Note 2: If you have a specialized use case for navigating, e.g. you need to
+combine URL navigation with defaultSession, then you might consider making a
+small plugin to do so. Here is a code listing example:
+https://gist.github.com/cmdcolin/eedfcb11f8f153ba1fb07e56dfddd3b3
 
 ### &tracks=
 

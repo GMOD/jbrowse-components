@@ -140,6 +140,16 @@ depth: {
         }
 ```
 
+#### slot: formatDetails.maxDepth
+
+```js
+maxDepth: {
+          type: 'number',
+          defaultValue: 99999,
+          description: 'Maximum depth to render subfeatures',
+        }
+```
+
 #### slot: formatAbout.config
 
 ```js

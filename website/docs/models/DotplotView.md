@@ -374,7 +374,7 @@ hideTrack: (trackId: string) => number
 
 ```js
 // type signature
-toggleTrack: (trackId: string) => void
+toggleTrack: (trackId: string) => boolean
 ```
 
 #### action: setAssemblyNames
