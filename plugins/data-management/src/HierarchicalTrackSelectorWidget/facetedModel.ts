@@ -11,17 +11,9 @@ import {
   measureGridWidth,
 } from '@jbrowse/core/util'
 import { autorun, observable } from 'mobx'
-import { getRootKeys } from './components/faceted/util'
+import { getRootKeys, findNonSparseKeys } from './facetedUtil'
 
 const nonMetadataKeys = ['category', 'adapter', 'description'] as const
-
-function filt(
-  keys: readonly string[],
-  rows: Record<string, unknown>[],
-  cb: (row: Record<string, unknown>, f: string) => unknown,
-) {
-  return keys.filter(f => rows.map(r => cb(r, f)).filter(f => !!f).length > 5)
-}
 
 /**
  * #stateModel FacetedModel
@@ -147,22 +139,33 @@ export function facetedStateTreeF() {
     }))
 
     .views(self => ({
+      /**
+       * #getter
+       */
       get filteredNonMetadataKeys() {
         return self.showSparse
           ? nonMetadataKeys
-          : filt(nonMetadataKeys, self.rows, (r, f) => r[f])
+          : findNonSparseKeys(nonMetadataKeys, self.rows, (r, f) => r[f])
       },
-
+      /**
+       * #getter
+       */
       get metadataKeys() {
         return [...new Set(self.rows.flatMap(row => getRootKeys(row.metadata)))]
       },
       get filteredMetadataKeys() {
         return self.showSparse
           ? this.metadataKeys
-          : // @ts-expect-error
-            filt(this.metadataKeys, self.rows, (r, f) => r.metadata[f])
+          : findNonSparseKeys(
+              this.metadataKeys,
+              self.rows,
+              // @ts-expect-error
+              (r, f) => r.metadata[f],
+            )
       },
-
+      /**
+       * #getter
+       */
       get fields() {
         return [
           'name',
@@ -170,6 +173,9 @@ export function facetedStateTreeF() {
           ...this.filteredMetadataKeys.map(m => `metadata.${m}`),
         ]
       },
+      /**
+       * #getter
+       */
       get filteredRows() {
         const arrFilters = [...self.filters.entries()]
           .filter(f => f[1].length > 0)
@@ -181,9 +187,15 @@ export function facetedStateTreeF() {
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
       setVisible(args: Record<string, boolean>) {
         self.visible = args
       },
+      /**
+       * #action
+       */
       setWidths(args: Record<string, number | undefined>) {
         self.widths = args
       },
