@@ -114,9 +114,10 @@ export function facetedStateTreeF() {
       /**
        * #getter
        */
-      get trackConfigurations() {
-        return getParent<{ trackConfigurations: AnyConfigurationModel[] }>(self)
-          .trackConfigurations
+      get allTrackConfigurations() {
+        return getParent<{ allTrackConfigurations: AnyConfigurationModel[] }>(
+          self,
+        ).allTrackConfigurations
       },
     }))
     .views(self => ({
@@ -125,10 +126,10 @@ export function facetedStateTreeF() {
        */
       get rows() {
         const session = getSession(self)
-        const { trackConfigurations, filterText } = self
+        const { allTrackConfigurations, filterText } = self
         // metadata is spread onto the object for easier access and sorting
         // by the mui data grid (it's unable to sort by nested objects)
-        return trackConfigurations
+        return allTrackConfigurations
           .filter(conf => matches(filterText, conf, session))
           .map(track => {
             const metadata = readConfObject(track, 'metadata')

@@ -36,7 +36,7 @@
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@gmod/ucsc-hub": "^0.1.6",
+    "@gmod/ucsc-hub": "^0.3.0",
     "@mui/icons-material": "^5.0.1",
     "@mui/x-data-grid": "^6.0.1",
     "clsx": "^2.0.0",

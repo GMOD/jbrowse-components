@@ -203,6 +203,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       addToRecentlyUsed(id: string) {
         self.recentlyUsedCounter += 1
+        console.log({ id })
         if (!self.recentlyUsed.includes(id)) {
           if (self.recentlyUsed.length >= 10) {
             self.recentlyUsed.shift()
@@ -320,23 +321,24 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           getConf(getSession(self), ['hierarchical', 'sort', 'categories'])
         )
       },
-      /**
-       * #method
-       * filter out tracks that don't match the current display types
-       */
-      connectionTrackConfigurations(conn: { tracks: AnyConfigurationModel[] }) {
-        return filterTracks(conn.tracks, self)
-      },
 
       /**
        * #getter
        * filter out tracks that don't match the current assembly/display types
        */
-      get trackConfigurations() {
+      get configAndSessionTrackConfigurations() {
         return [
           ...self.assemblyNames.map(a => self.getRefSeqTrackConf(a)),
           ...filterTracks(getSession(self).tracks, self),
         ].filter(notEmpty)
+      },
+
+      get allTrackConfigurations() {
+        const { connectionInstances = [] } = getSession(self)
+        return [
+          ...this.configAndSessionTrackConfigurations,
+          ...connectionInstances?.flatMap(c => c.tracks),
+        ]
       },
     }))
     .views(self => ({
@@ -345,7 +347,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * filters out tracks that are not in the favorites group
        */
       get favoriteTracks() {
-        return self.trackConfigurations.filter(t =>
+        return self.allTrackConfigurations.filter(t =>
           self.favoritesSet.has(t.trackId),
         )
       },
@@ -355,7 +357,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * filters out tracks that are not in the recently used group
        */
       get recentlyUsedTracks() {
-        return self.trackConfigurations.filter(t =>
+        return self.allTrackConfigurations.filter(t =>
           self.recentlyUsedSet.has(t.trackId),
         )
       },
@@ -369,7 +371,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         return [
           {
             group: 'Tracks',
-            tracks: self.trackConfigurations,
+            tracks: self.configAndSessionTrackConfigurations,
             noCategories: false,
             menuItems: [],
           },
