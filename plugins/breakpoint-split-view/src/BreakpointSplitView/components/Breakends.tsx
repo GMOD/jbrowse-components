@@ -114,6 +114,7 @@ const Breakends = observer(function ({
             ret.push(
               <path
                 d={path}
+                data-testid="r2"
                 key={JSON.stringify(path)}
                 strokeWidth={id === mouseoverElt ? 10 : 5}
                 onClick={() => {

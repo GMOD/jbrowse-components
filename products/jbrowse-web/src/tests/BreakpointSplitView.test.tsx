@@ -21,6 +21,8 @@ test(
 
       // the breakpoint could be partially loaded so explicitly wait for two items
       await waitFor(() => expect(queryAllByTestId('r1').length).toBe(2), delay)
+      await waitFor(() => expect(queryAllByTestId('r2').length).toBe(1), delay)
+
       await waitFor(
         () =>
           expect(

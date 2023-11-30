@@ -28,6 +28,7 @@ exports[`breakpoint split view 2`] = `
 >
   <path
     d="M 387.99312656000257 19.5 L 407.99312656000257 19.5 L 403.4186802152544 19.5 L 423.4186802152544 19.5"
+    data-testid="r2"
     stroke-width="5"
   />
 </g>
