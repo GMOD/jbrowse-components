@@ -42,6 +42,7 @@ import {
 } from '@jbrowse/product-core'
 import {
   AppFocusMixin,
+  ConnectionAssembliesMixin,
   SessionAssembliesMixin,
   TemporaryAssembliesMixin,
 } from '@jbrowse/app-core'
@@ -73,6 +74,7 @@ export function BaseWebSession({
       types.compose(
         'WebCoreSessionModelGroupB',
         SessionTracksManagerSessionMixin(pluginManager),
+        ConnectionAssembliesMixin(pluginManager, assemblyConfigSchema),
         SessionAssembliesMixin(pluginManager, assemblyConfigSchema),
         TemporaryAssembliesMixin(pluginManager, assemblyConfigSchema),
         WebSessionConnectionsMixin(pluginManager),
@@ -117,12 +119,20 @@ export function BaseWebSession({
       },
       /**
        * #getter
-       * list of sessionAssemblies and jbrowse config assemblies, does not
-       * include temporaryAssemblies. basically the list to be displayed in a
+       * list of
+       * - config assemblies
+       * - session assemblies
+       * - connection assemblies
+       * does not list temporaryAssemblies though, these are used for scenarios
+       * like dotplot vs ref. basically the list to be displayed in a
        * AssemblySelector dropdown
        */
       get assemblies(): Instance<BaseAssemblyConfigSchema[]> {
-        return [...self.jbrowse.assemblies, ...self.sessionAssemblies]
+        return [
+          ...self.jbrowse.assemblies,
+          ...self.sessionAssemblies,
+          ...self.connectionAssemblies,
+        ]
       },
       /**
        * #getter

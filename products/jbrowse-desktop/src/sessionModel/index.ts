@@ -19,6 +19,7 @@ import {
 import { DesktopSessionFactory } from './DesktopSession'
 import {
   AppFocusMixin,
+  ConnectionAssembliesMixin,
   SessionAssembliesMixin,
   TemporaryAssembliesMixin,
 } from '@jbrowse/app-core'
@@ -37,6 +38,7 @@ import { AbstractSessionModel } from '@jbrowse/core/util'
  * - MultipleViewsSessionMixin
  * - DesktopSessionMixin
  * - SessionAssembliesMixin
+ * - ConnectionAssembliesMixin
  * - TemporaryAssembliesMixin
  * - DesktopSessionTrackMenuMixin
  * - SnackbarModel
@@ -64,6 +66,7 @@ export default function sessionModelFactory({
         DesktopSessionFactory(pluginManager),
       ),
       SessionAssembliesMixin(pluginManager, assemblyConfigSchema),
+      ConnectionAssembliesMixin(pluginManager, assemblyConfigSchema),
       TemporaryAssembliesMixin(pluginManager, assemblyConfigSchema),
       DesktopSessionTrackMenuMixin(pluginManager),
       AppFocusMixin(),
@@ -138,7 +141,9 @@ export default function sessionModelFactory({
        * #method
        */
       renderProps() {
-        return { theme: readConfObject(self.configuration, 'theme') }
+        return {
+          theme: readConfObject(self.configuration, 'theme'),
+        }
       },
     }))
 
