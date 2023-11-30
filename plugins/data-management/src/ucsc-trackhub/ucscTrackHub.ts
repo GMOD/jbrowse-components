@@ -124,6 +124,8 @@ function makeTrackConfig({
     ? makeLoc(bigDataUrl, trackDbLoc)
     : makeLoc2(bigDataUrl)
 
+  console.log({ trackType }, track.data.parent)
+
   switch (baseTrackType) {
     case 'bam':
       return {
@@ -142,110 +144,6 @@ function makeTrackConfig({
         },
       }
 
-    case 'bigBarChart':
-      return {
-        type: 'FeatureTrack',
-        name,
-        description: track.data.longLabel,
-        category: categories,
-        adapter: {
-          type: 'BigBedAdapter',
-          bigBedLocation: bigDataLocation,
-        },
-        renderer: {
-          type: 'SvgFeatureRenderer',
-        },
-      }
-    case 'bigBed':
-      return {
-        type: 'FeatureTrack',
-        name,
-        description: track.data.longLabel,
-        category: categories,
-        adapter: {
-          type: 'BigBedAdapter',
-          bigBedLocation: bigDataLocation,
-        },
-      }
-    case 'bigGenePred':
-      return {
-        type: 'FeatureTrack',
-        name,
-        description: track.data.longLabel,
-        category: categories,
-        adapter: {
-          type: 'BigBedAdapter',
-          bigBedLocation: bigDataLocation,
-        },
-      }
-    case 'bigChain':
-      return {
-        type: 'FeatureTrack',
-        name,
-        description: track.data.longLabel,
-        category: categories,
-        adapter: {
-          type: 'BigBedAdapter',
-          bigBedLocation: bigDataLocation,
-        },
-        renderer: {
-          type: 'SvgFeatureRenderer',
-        },
-      }
-    case 'bigInteract':
-      return {
-        type: 'FeatureTrack',
-        name,
-        description: track.data.longLabel,
-        category: categories,
-        adapter: {
-          type: 'BigBedAdapter',
-          bigBedLocation: bigDataLocation,
-        },
-        renderer: {
-          type: 'SvgFeatureRenderer',
-        },
-      }
-    case 'bigMaf':
-      return {
-        type: 'FeatureTrack',
-        name,
-        description: track.data.longLabel,
-        category: categories,
-        adapter: {
-          type: 'BigBedAdapter',
-          bigBedLocation: bigDataLocation,
-        },
-        renderer: {
-          type: 'SvgFeatureRenderer',
-        },
-      }
-    case 'bigPsl':
-      return {
-        type: 'FeatureTrack',
-        name,
-        description: track.data.longLabel,
-        category: categories,
-        adapter: {
-          type: 'BigBedAdapter',
-          bigBedLocation: bigDataLocation,
-        },
-        renderer: {
-          type: 'SvgFeatureRenderer',
-        },
-      }
-    case 'bigWig':
-      return {
-        type: 'QuantitativeTrack',
-        name,
-        description: track.data.longLabel,
-        category: categories,
-        adapter: {
-          type: 'BigWigAdapter',
-          bigWigLocation: bigDataLocation,
-        },
-      }
-
     case 'cram':
       return {
         type: 'AlignmentsTrack',
@@ -261,8 +159,14 @@ function makeTrackConfig({
           sequenceAdapter,
         },
       }
-
+    case 'bigBarChart':
+    case 'bigBed':
+    case 'bigGenePred':
+    case 'bigChain':
+    case 'bigInteract':
+    case 'bigMaf':
     case 'bigNarrowPeak':
+    case 'bigPsl':
       return {
         type: 'FeatureTrack',
         name,
@@ -273,8 +177,18 @@ function makeTrackConfig({
           bigBedLocation: bigDataLocation,
         },
       }
-    case 'peptideMapping':
-      return generateUnsupportedTrackConf(name, baseTrackType, categories)
+    case 'bigWig':
+      return {
+        type: 'QuantitativeTrack',
+        name,
+        description: track.data.longLabel,
+        category: categories,
+        adapter: {
+          type: 'BigWigAdapter',
+          bigWigLocation: bigDataLocation,
+        },
+      }
+
     case 'vcfTabix':
       return {
         type: 'VariantTrack',
@@ -305,6 +219,7 @@ function makeTrackConfig({
       }
 
     // unsupported types
+    //     case 'peptideMapping':
     //     case 'gvf':
     //     case 'ld2':
     //     case 'narrowPeak':
