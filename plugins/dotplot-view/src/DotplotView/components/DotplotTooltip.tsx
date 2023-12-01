@@ -38,25 +38,17 @@ type Coord = [number, number] | undefined
 export const TooltipWhereMouseovered = observer(function ({
   model,
   mouserect,
-  mouserectClient,
   xdistance,
-  ydistance,
 }: {
   model: DotplotViewModel
   mouserect: Coord
-  mouserectClient: Coord
   xdistance: number
-  ydistance: number
 }) {
   const { classes } = useStyles()
   const { hview, vview, viewHeight } = model
   const theme = useTheme()
-  const x = (mouserectClient?.[0] || 0) - (xdistance < 0 ? 0 : 0)
-  const y = (mouserectClient?.[1] || 0) - (ydistance < 0 ? 0 : 0)
 
   const { refs, floatingStyles, context } = useFloating({
-    open: true,
-    onOpenChange: () => {},
     placement: xdistance < 0 ? 'left' : 'right',
   })
 
@@ -72,7 +64,6 @@ export const TooltipWhereMouseovered = observer(function ({
         ref={refs.setFloating}
         style={{
           ...floatingStyles,
-          transform: `translate(${Math.round(x)}px,${Math.round(y)}px)`,
           zIndex: 100000,
           pointerEvents: 'none',
         }}
@@ -107,12 +98,10 @@ export const TooltipWhereClicked = observer(function ({
   const y = (mousedownClient?.[1] || 0) - (ydistance < 0 ? 0 : 0)
 
   const { refs, floatingStyles, context } = useFloating({
-    open: true,
-    onOpenChange: () => {},
-    placement: xdistance < 0 ? 'left' : 'right',
+    placement: xdistance < 0 ? 'right' : 'left',
   })
 
-  const clientPoint = useClientPoint(context)
+  const clientPoint = useClientPoint(context, { x, y })
   const { getFloatingProps } = useInteractions([clientPoint])
 
   const popperTheme = theme?.components?.MuiPopper
@@ -123,7 +112,6 @@ export const TooltipWhereClicked = observer(function ({
         ref={refs.setFloating}
         style={{
           ...floatingStyles,
-          transform: `translate(${Math.round(x)}px,${Math.round(y)}px)`,
           zIndex: 100000,
           pointerEvents: 'none',
         }}

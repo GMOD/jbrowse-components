@@ -31,21 +31,12 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const SyntenyTooltip = observer(function ({
-  x,
-  y,
-  title,
-}: {
-  x: number
-  y: number
-  title: string
-}) {
+const SyntenyTooltip = observer(function ({ title }: { title: string }) {
   const theme = useTheme()
   const { classes } = useStyles()
 
   const { refs, floatingStyles, context } = useFloating({
-    open: true,
-    onOpenChange: () => {},
+    placement: 'right',
   })
 
   const clientPoint = useClientPoint(context)
@@ -60,7 +51,6 @@ const SyntenyTooltip = observer(function ({
         ref={refs.setFloating}
         style={{
           ...floatingStyles,
-          transform: `translate(${Math.round(x + 15)}px,${Math.round(y)}px)`,
           zIndex: 100000,
           pointerEvents: 'none',
         }}

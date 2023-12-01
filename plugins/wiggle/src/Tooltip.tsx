@@ -70,16 +70,16 @@ const Tooltip = observer(function Tooltip({
   const { featureUnderMouse } = model
   const { classes } = useStyles()
   const { refs, floatingStyles, context } = useFloating({
-    open: true,
-    onOpenChange: () => {},
+    placement: 'right',
   })
 
-  const clientPoint = useClientPoint(context)
+  const x = clientMouseCoord[0] + 5
+  const y = useClientY ? clientMouseCoord[1] : clientRect?.top || 0
+  const clientPoint = useClientPoint(context, { x, y })
   const { getFloatingProps } = useInteractions([clientPoint])
 
   const popperTheme = theme?.components?.MuiPopper
-  const x = clientMouseCoord[0] + 5
-  const y = useClientY ? clientMouseCoord[1] : clientRect?.top || 0
+
   return featureUnderMouse ? (
     <>
       <Portal container={popperTheme?.defaultProps?.container}>
@@ -88,7 +88,6 @@ const Tooltip = observer(function Tooltip({
           ref={refs.setFloating}
           style={{
             ...floatingStyles,
-            transform: `translate(${Math.round(x)}px,${Math.round(y)}px)`,
             zIndex: 100000,
             pointerEvents: 'none',
           }}

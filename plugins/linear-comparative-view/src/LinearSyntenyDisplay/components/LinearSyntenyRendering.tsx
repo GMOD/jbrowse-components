@@ -194,7 +194,7 @@ const LinearSyntenyRendering = observer(function ({
         height={height}
       />
       {model.mouseoverId && tooltip && currX && currY ? (
-        <SyntenyTooltip x={currX} y={currY} title={tooltip} />
+        <SyntenyTooltip title={tooltip} />
       ) : null}
     </div>
   )

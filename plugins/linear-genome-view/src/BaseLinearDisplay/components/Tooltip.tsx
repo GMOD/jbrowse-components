@@ -65,11 +65,10 @@ const Tooltip = observer(function ({
   const y = clientMouseCoord[1]
 
   const { refs, floatingStyles, context } = useFloating({
-    open: true,
-    onOpenChange: () => {},
+    placement: 'right',
   })
 
-  const clientPoint = useClientPoint(context)
+  const clientPoint = useClientPoint(context, { x, y })
   const { getFloatingProps } = useInteractions([clientPoint])
 
   const contents = featureUnderMouse
@@ -84,7 +83,6 @@ const Tooltip = observer(function ({
         ref={refs.setFloating}
         style={{
           ...floatingStyles,
-          transform: `translate(${Math.round(x)}px,${Math.round(y)}px)`,
           zIndex: 100000,
           pointerEvents: 'none',
         }}

@@ -110,7 +110,6 @@ const DotplotViewInternal = observer(function ({
   const mousedown = getOffset(mousedownClient, svg)
   const mousecurr = getOffset(mousecurrClient, svg)
   const mouseup = getOffset(mouseupClient, svg)
-  const mouserectClient = mouseupClient || mousecurrClient
   const mouserect = mouseup || mousecurr
   const xdistance = mousedown && mouserect ? mouserect[0] - mousedown[0] : 0
   const ydistance = mousedown && mouserect ? mouserect[1] - mousedown[1] : 0
@@ -245,9 +244,7 @@ const DotplotViewInternal = observer(function ({
               <TooltipWhereMouseovered
                 model={model}
                 mouserect={mouserect}
-                mouserectClient={mouserectClient}
                 xdistance={xdistance}
-                ydistance={ydistance}
               />
             ) : null}
             {validSelect ? (
