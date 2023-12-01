@@ -7,6 +7,8 @@ import sharedWiggleConfigFactory from '../../shared/configShared'
 
 /**
  * #config MultiLinearWiggleDisplay
+ * extends
+ * - [SharedWiggleDisplay](../sharedwiggledisplay)
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 

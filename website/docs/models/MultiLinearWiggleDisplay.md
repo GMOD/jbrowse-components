@@ -12,7 +12,9 @@ info
 
 [plugins/wiggle/src/MultiLinearWiggleDisplay/models/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/MultiLinearWiggleDisplay/models/model.ts)
 
-extends `SharedWiggleMixin`
+extends
+
+- [SharedWiggleMixin](../sharedwigglemixin)
 
 ### MultiLinearWiggleDisplay - Properties
 

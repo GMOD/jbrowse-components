@@ -12,8 +12,12 @@ info
 
 [plugins/alignments/src/LinearReadArcsDisplay/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearReadArcsDisplay/model.ts)
 
-extends `BaseDisplay`, it is not a block based track, hence not
-BaseLinearDisplay
+the arc display is a non-block-based track, so draws to a single canvas and can
+connect multiple regions extends
+
+- [BaseDisplay](../basedisplay)
+- [TrackHeightMixin](../trackheightmixin)
+- [FeatureDensityMixin](../featuredensitymixin)
 
 ### LinearReadArcsDisplay - Properties
 

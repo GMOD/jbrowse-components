@@ -30,7 +30,8 @@ type LGV = LinearGenomeViewModel
 /**
  * #stateModel LinearPileupDisplay
  * #category display
- * extends `BaseLinearDisplay`
+ * extends
+ *- [SharedLinearPileupDisplayMixin](../sharedlinearpileupdisplaymixin)
  */
 function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types

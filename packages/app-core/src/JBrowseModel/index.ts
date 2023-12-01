@@ -12,6 +12,17 @@ import { toJS } from 'mobx'
 // locals
 import { JBrowseConfigF } from '../JBrowseConfig'
 
+/**
+ * #stateModel AppCoreJBrowseModel
+ * note that JBrowseRootConfig is a config model, but config models are MST
+ * trees themselves, which is why this stateModel is allowed to extend it
+ *
+ * the AppCoreJBrowseModel is generally on a property named rootModel.jbrowse
+ *
+ * extends
+ * - [JBrowseRootConfig](/docs/config/jbrowserootconfig)
+
+ */
 export function JBrowseModelF({
   pluginManager,
   assemblyConfigSchema,

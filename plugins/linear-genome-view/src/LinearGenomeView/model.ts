@@ -131,6 +131,9 @@ export const WIDGET_HEIGHT = 32
 /**
  * #stateModel LinearGenomeView
  * #category view
+ *
+ * extends
+ * - [BaseViewModel](../baseviewmodel)
  */
 export function stateModelFactory(pluginManager: PluginManager) {
   return types

@@ -5,6 +5,9 @@ import PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * #config LinearSNPCoverageDisplay
+ *
+ * extends
+ * - [BaseLinearDisplay](../baselineardisplay)
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 

@@ -52,6 +52,21 @@ import { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/m
 
 const AboutDialog = lazy(() => import('./AboutDialog'))
 
+/**
+ * #stateModel BaseWebSession
+ * used for "web based" products, including jbrowse-web and react-app
+ * composed of
+ * - [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
+ * - [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)
+ * - [DialogQueueSessionMixin](../dialogqueuesessionmixin)
+ * - [ThemeManagerSessionMixin](../thememanagersessionmixin)
+ * - [MultipleViewsSessionMixin](../multipleviewssessionmixin)
+ * - [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin)
+ * - [SessionAssembliesMixin](../sessionassembliesmixin)
+ * - [TemporaryAssembliesMixin](../temporaryassembliesmixin)
+ * - [WebSessionConnectionsMixin](../websessionconnectionsmixin)
+ * - [AppFocusMixin](../appfocusmixin)
+ */
 export function BaseWebSession({
   pluginManager,
   assemblyConfigSchema,

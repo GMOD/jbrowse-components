@@ -29,12 +29,12 @@ type SessionModelFactory = (args: {
  * #stateModel JBrowseDesktopRootModel
  * #category root
  * composed of
- * - BaseRootModel
- * - InternetAccountsMixin
- * - DesktopMenuMixin
- * - DesktopSessionManagementMixin
- * - HistoryManagementMixin
- * - RootAppMenuMixin
+ * - [BaseRootModel](../baserootmodel)
+ * - [InternetAccountsMixin](../internetaccountsmixin)
+ * - [DesktopMenusMixin](../desktopmenusmixin)
+ * - [DesktopSessionManagementMixin](../desktopsessionmanagementmixin)
+ * - [HistoryManagementMixin](../historymanagementmixin)
+ * - [RootAppMenuMixin](../rootappmenumixin)
  *
  * note: many properties of the root model are available through the session,
  * and we generally prefer using the session model (via e.g. getSession) over

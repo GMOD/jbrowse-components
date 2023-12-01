@@ -24,7 +24,8 @@ interface FeatPos {
 
 /**
  * #stateModel LinearSyntenyDisplay
- * extends `LinearComparativeDisplay` model
+ * extends
+ * - [LinearComparativeDisplay](../linearcomparativedisplay)
  */
 function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types

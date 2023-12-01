@@ -2,17 +2,13 @@ import React from 'react'
 import Layout from '@theme/Layout'
 
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
-import {
-  Link,
-  ThemeProvider,
-  Typography,
-  Button,
-  Box,
-  Alert,
-  createTheme,
-} from '@mui/material'
+import Link from '@mui/material/Link'
+import Typography from '@mui/material/Typography'
+import Button from '@mui/material/Button'
+import Box from '@mui/material/Box'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import OpenInBrowserIcon from '@mui/icons-material/OpenInBrowser'
+import { createTheme, ThemeProvider } from '@mui/material/styles'
 import GoogleCalendarScheduleFunction from './util'
 
 function Home() {

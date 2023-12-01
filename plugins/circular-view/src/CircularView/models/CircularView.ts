@@ -46,7 +46,8 @@ export interface ExportSvgOptions {
 
 /**
  * #stateModel CircularView
- * extends `BaseViewModel`
+ * extends
+ * - [BaseViewModel](../baseviewmodel)
  */
 function stateModelFactory(pluginManager: PluginManager) {
   const minHeight = 40

@@ -9,7 +9,8 @@ import { getEnv } from '@jbrowse/core/util'
 
 /**
  * #stateModel LinearArcDisplay
- * extends BaseLinearDisplay
+ * extends
+ * - [BaseLinearDisplay](../baselineardisplay)
  */
 export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types

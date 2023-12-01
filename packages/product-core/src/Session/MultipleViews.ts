@@ -17,6 +17,9 @@ import { BaseSessionModel, isBaseSession } from './BaseSession'
 
 /**
  * #stateModel MultipleViewsSessionMixin
+ * composed of
+ * - [BaseSessionModel](../basesessionmodel)
+ * - [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)
  */
 export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
   return types

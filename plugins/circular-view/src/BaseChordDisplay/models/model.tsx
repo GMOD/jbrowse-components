@@ -34,7 +34,8 @@ import { baseChordDisplayConfig } from './configSchema'
 
 /**
  * #stateModel BaseChordDisplay
- * extends `BaseDisplay`
+ * extends
+ * - [BaseDisplay](../basedisplay)
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 

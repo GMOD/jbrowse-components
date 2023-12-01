@@ -15,7 +15,8 @@ import { ElementId } from '@jbrowse/core/util/types/mst'
 
 /**
  * #stateModel BaseSessionModel
- * base session shared by **all** JBrowse products. Be careful what you include
+ *
+ * base session shared by all JBrowse products. Be careful what you include
  * here, everything will use it.
  */
 export function BaseSessionModel<
@@ -54,6 +55,9 @@ export function BaseSessionModel<
       hovered: undefined as unknown,
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
       get root() {
         return getParent<ROOT_MODEL_TYPE>(self)
       },

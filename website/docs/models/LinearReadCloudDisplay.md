@@ -12,8 +12,11 @@ info
 
 [plugins/alignments/src/LinearReadCloudDisplay/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearReadCloudDisplay/model.ts)
 
-extends `BaseDisplay`, it is not a block based track, hence not
-BaseLinearDisplay
+it is not a block based track, hence not BaseLinearDisplay extends
+
+- [BaseDisplay](../basedisplay)
+- [TrackHeightMixin](../trackheightmixin)
+- [FeatureDensityMixin](../featuredensitymixin)
 
 ### LinearReadCloudDisplay - Properties
 

@@ -9,7 +9,8 @@ import { BaseLinearDisplay } from '../BaseLinearDisplay'
 /**
  * #stateModel LinearBareDisplay
  * #category display
- * extends `BaseLinearDisplay`
+ * extends
+ * - [BaseLinearDisplay](../baselineardisplay)
  */
 export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types

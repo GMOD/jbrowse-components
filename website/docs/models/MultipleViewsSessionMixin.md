@@ -12,6 +12,11 @@ info
 
 [packages/product-core/src/Session/MultipleViews.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/MultipleViews.ts)
 
+composed of
+
+- [BaseSessionModel](../basesessionmodel)
+- [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)
+
 ### MultipleViewsSessionMixin - Properties
 
 #### property: views

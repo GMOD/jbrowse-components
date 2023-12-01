@@ -5,6 +5,10 @@ export interface Menu {
   label: string
   menuItems: MenuItem[]
 }
+
+/**
+ * #stateModel RootAppMenuMixin
+ */
 export function RootAppMenuMixin() {
   return types.model({}).actions(s => {
     const self = s as { menus: Menu[] }
@@ -18,7 +22,9 @@ export function RootAppMenuMixin() {
       /**
        * #action
        * Add a top-level menu
+       *
        * @param menuName - Name of the menu to insert.
+       *
        * @returns The new length of the top-level menus array
        */
       appendMenu(menuName: string) {
@@ -27,10 +33,13 @@ export function RootAppMenuMixin() {
       /**
        * #action
        * Insert a top-level menu
+       *
        * @param menuName - Name of the menu to insert.
+       *
        * @param position - Position to insert menu. If negative, counts from th
        * end, e.g. `insertMenu('My Menu', -1)` will insert the menu as the
        * second-to-last one.
+       *
        * @returns The new length of the top-level menus array
        */
       insertMenu(menuName: string, position: number) {
@@ -47,8 +56,11 @@ export function RootAppMenuMixin() {
       /**
        * #action
        * Add a menu item to a top-level menu
+       *
        * @param menuName - Name of the top-level menu to append to.
+       *
        * @param menuItem - Menu item to append.
+       *
        * @returns The new length of the menu
        */
       appendToMenu(menuName: string, menuItem: MenuItem) {
@@ -62,11 +74,15 @@ export function RootAppMenuMixin() {
       /**
        * #action
        * Insert a menu item into a top-level menu
+       *
        * @param menuName - Name of the top-level menu to insert into
+       *
        * @param menuItem - Menu item to insert
+       *
        * @param position - Position to insert menu item. If negative, counts
        * from the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as
        * the second-to-last one.
+       *
        * @returns The new length of the menu
        */
       insertInMenu(menuName: string, menuItem: MenuItem, position: number) {
@@ -83,9 +99,12 @@ export function RootAppMenuMixin() {
       /**
        * #action
        * Add a menu item to a sub-menu
+       *
        * @param menuPath - Path to the sub-menu to add to, starting with the
        * top-level menu (e.g. `['File', 'Insert']`).
+       *
        * @param menuItem - Menu item to append.
+       *
        * @returns The new length of the sub-menu
        */
       appendToSubMenu(menuPath: string[], menuItem: MenuItem) {
@@ -115,12 +134,16 @@ export function RootAppMenuMixin() {
       /**
        * #action
        * Insert a menu item into a sub-menu
+       *
        * @param menuPath - Path to the sub-menu to add to, starting with the
        * top-level menu (e.g. `['File', 'Insert']`).
+       *
        * @param menuItem - Menu item to insert.
+       *
        * @param position - Position to insert menu item. If negative, counts
        * from the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as
        * the second-to-last one.
+       *
        * @returns The new length of the sub-menu
        */
       insertInSubMenu(

@@ -10,6 +10,10 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 [plugins/wiggle/src/MultiLinearWiggleDisplay/models/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/MultiLinearWiggleDisplay/models/configSchema.ts)
 
+extends
+
+- [SharedWiggleDisplay](../sharedwiggledisplay)
+
 ### MultiLinearWiggleDisplay - Slots
 
 #### slot: defaultRendering

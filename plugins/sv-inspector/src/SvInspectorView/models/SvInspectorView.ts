@@ -24,7 +24,12 @@ import {
 /**
  * #stateModel SvInspectorView
  * #category view
- * combination of a spreadsheetview and a circularview
+ * does not extend, but is a combination of a
+ * - [SpreadsheetView](../spreadsheetview)
+ * - [CircularView](../circularview)
+ *
+ * extends
+ * - [BaseViewModel](../baseviewmodel)
  */
 function SvInspectorViewF(pluginManager: PluginManager) {
   const SpreadsheetViewType = pluginManager.getViewType('SpreadsheetView')

@@ -24,3 +24,12 @@ IMaybe<ISimpleType<string>>
 // code
 focusedViewId: types.maybe(types.string)
 ```
+
+### AppFocusMixin - Actions
+
+#### action: setFocusedViewId
+
+```js
+// type signature
+setFocusedViewId: (viewId: string) => void
+```

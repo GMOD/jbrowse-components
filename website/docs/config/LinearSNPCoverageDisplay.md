@@ -10,6 +10,10 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 [plugins/alignments/src/LinearSNPCoverageDisplay/models/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearSNPCoverageDisplay/models/configSchema.ts)
 
+extends
+
+- [BaseLinearDisplay](../baselineardisplay)
+
 ### LinearSNPCoverageDisplay - Slots
 
 #### slot: autoscale

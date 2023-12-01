@@ -12,7 +12,14 @@ info
 
 [plugins/linear-genome-view/src/BaseLinearDisplay/models/BaseLinearDisplayModel.tsx](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/BaseLinearDisplay/models/BaseLinearDisplayModel.tsx)
 
-extends `BaseDisplay`
+BaseLinearDisplay is used as the basis for many linear genome view tracks. It is
+block based, and can use 'static blocks' or 'dynamic blocks'
+
+extends
+
+- [BaseDisplay](../basedisplay)
+- [TrackHeightMixin](../trackheightmixin)
+- [FeatureDensityMixin](../featuredensitymixin)
 
 ### BaseLinearDisplay - Properties
 

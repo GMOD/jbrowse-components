@@ -21,7 +21,13 @@ import {
 
 /**
  * #stateModel LinearPairedArcDisplay
- * extends BaseDisplay, TrackHeightMixin, FeatureDensityMixin
+ * this is a non-block-based track type, and can connect arcs across multiple
+ * displayedRegions
+ *
+ * extends
+ * - [BaseDisplay](../basedisplay)
+ * - [TrackHeightMixin](../trackheightmixin)
+ * - [FeatureDensityMixin](../featuredensitymixin)
  */
 export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types

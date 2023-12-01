@@ -12,7 +12,14 @@ info
 
 [plugins/arc/src/LinearPairedArcDisplay/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/arc/src/LinearPairedArcDisplay/model.ts)
 
-extends BaseDisplay, TrackHeightMixin, FeatureDensityMixin
+this is a non-block-based track type, and can connect arcs across multiple
+displayedRegions
+
+extends
+
+- [BaseDisplay](../basedisplay)
+- [TrackHeightMixin](../trackheightmixin)
+- [FeatureDensityMixin](../featuredensitymixin)
 
 ### LinearPairedArcDisplay - Properties
 

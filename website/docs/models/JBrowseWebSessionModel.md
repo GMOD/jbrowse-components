@@ -14,12 +14,4 @@ info
 
 composed of
 
-- SnackbarModel
-- JBrowseWebSessionConnectionsModel
-- JBrowseWebSessionAssembliesModel
-- ReferenceManagementSessionMixin
-- DrawerWidgetSessionMixin
-- DialogQueueSessionMixin
-- ThemeManagerSessionMixin
-- MultipleViewsSessionMixin
-- SessionTracksManagerSessionMixin
+- [BaseWebSession](../basewebsession)

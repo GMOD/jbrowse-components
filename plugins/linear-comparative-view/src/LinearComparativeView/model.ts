@@ -36,6 +36,8 @@ const ReturnToImportFormDialog = lazy(
 
 /**
  * #stateModel LinearComparativeView
+ * extends
+ * - [BaseViewModel](../baseviewmodel)
  */
 function stateModelFactory(pluginManager: PluginManager) {
   return types

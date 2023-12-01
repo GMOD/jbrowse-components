@@ -12,7 +12,9 @@ info
 
 [plugins/alignments/src/LinearSNPCoverageDisplay/models/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearSNPCoverageDisplay/models/model.ts)
 
-extends `LinearWiggleDisplay`
+extends
+
+- [LinearWiggleDisplay](../linearwiggledisplay)
 
 ### LinearSNPCoverageDisplay - Properties
 

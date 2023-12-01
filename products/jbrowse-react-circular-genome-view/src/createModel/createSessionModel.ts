@@ -20,13 +20,13 @@ const AboutDialog = lazy(() => import('./AboutDialog'))
 /**
  * #stateModel JBrowseReactCircularGenomeViewSessionModel
  * composed of
- * - BaseSessionModel
- * - DrawerWidgetSessionMixin
- * - ConnectionManagementSessionMixin
- * - DialogQueueSessionMixin
- * - TracksManagerSessionMixin
- * - ReferenceManagementSessionMixin
- * - SnackbarModel
+ * - [BaseSessionModel](../basesessionmodel)
+ * - [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)
+ * - [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin)
+ * - [DialogQueueSessionMixin](../dialogqueuesessionmixin)
+ * - [TracksManagerSessionMixin](../tracksmanagersessionmixin)
+ * - [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
+ * - [SnackbarModel](../snackbarmodel)
  */
 export default function sessionModelFactory(pluginManager: PluginManager) {
   const model = types

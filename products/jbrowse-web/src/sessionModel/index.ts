@@ -6,19 +6,7 @@ import { BaseWebSession } from '@jbrowse/web-core'
 
 /**
  * #stateModel JBrowseWebSessionModel
- * composed of
- * - SnackbarModel
- * - ReferenceManagementSessionMixin
- * - DrawerWidgetSessionMixin
- * - DialogQueueSessionMixin
- * - ThemeManagerSessionMixin
- * - MultipleViewsSessionMixin
- * - SessionTracksManagerSessionMixin
- * - SessionAssembliesMixin
- * - TemporaryAssembliesMixin
- * - WebSessionConnectionsMixin
- * - AppFocusMixin
- *
+ * extends [BaseWebSession](../basewebsession)
  */
 export default function sessionModelFactory({
   pluginManager,

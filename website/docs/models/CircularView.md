@@ -12,7 +12,9 @@ info
 
 [plugins/circular-view/src/CircularView/models/CircularView.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/CircularView/models/CircularView.ts)
 
-extends `BaseViewModel`
+extends
+
+- [BaseViewModel](../baseviewmodel)
 
 ### CircularView - Properties
 

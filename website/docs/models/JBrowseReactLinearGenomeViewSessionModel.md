@@ -14,14 +14,14 @@ info
 
 composed of
 
-- BaseSessionModel
-- DrawerWidgetsSessionMixin
-- ConnectionManagementSessionMixin
-- DialogQueueSessionMixin
-- TracksManagerSessionMixin
-- ReferenceManagementSessionMixin
-- SessionTracksManagerSessionMixin
-- SnackbarModel
+- [BaseSessionModel](../basesessionmodel)
+- [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)
+- [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin)
+- [DialogQueueSessionMixin](../dialogqueuesessionmixin)
+- [TracksManagerSessionMixin](../tracksmanagersessionmixin)
+- [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
+- [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin)
+- [SnackbarModel](../snackbarmodel)
 
 ### JBrowseReactLinearGenomeViewSessionModel - Properties
 
