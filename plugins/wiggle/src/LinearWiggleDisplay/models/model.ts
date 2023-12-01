@@ -10,11 +10,7 @@ import { axisPropsFromTickScale } from 'react-d3-axis-mod'
 import { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
-import {
-  getScale,
-  quantitativeStatsAutorun,
-  YSCALEBAR_LABEL_OFFSET,
-} from '../../util'
+import { getScale, YSCALEBAR_LABEL_OFFSET } from '../../util'
 
 import Tooltip from '../components/Tooltip'
 import SharedWiggleMixin from '../../shared/modelShared'
@@ -214,7 +210,11 @@ function stateModelFactory(
 
       return {
         afterAttach() {
-          quantitativeStatsAutorun(self)
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          ;(async () => {
+            const { quantitativeStatsAutorun } = await import('../../util')
+            quantitativeStatsAutorun(self)
+          })()
         },
         /**
          * #action
