@@ -3,14 +3,14 @@ import { AddTrackWorkflowType } from '@jbrowse/core/pluggableElementTypes'
 import { types } from 'mobx-state-tree'
 
 // locals
-import MultiWiggleWidget from './AddTrackWorkflow'
+import { lazy } from 'react'
 
 export default (pm: PluginManager) => {
   pm.addAddTrackWorkflowType(
     () =>
       new AddTrackWorkflowType({
         name: 'Multi-wiggle track',
-        ReactComponent: MultiWiggleWidget,
+        ReactComponent: lazy(() => import('./AddTrackWorkflow')),
         stateModel: types.model({}),
       }),
   )

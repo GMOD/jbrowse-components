@@ -16,11 +16,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
-import {
-  getScale,
-  quantitativeStatsAutorun,
-  YSCALEBAR_LABEL_OFFSET,
-} from '../../util'
+import { getScale, YSCALEBAR_LABEL_OFFSET } from '../../util'
 
 import Tooltip from '../components/Tooltip'
 import SharedWiggleMixin from '../../shared/modelShared'
@@ -431,26 +427,30 @@ export function stateModelFactory(
       const { renderSvg: superRenderSvg } = self
       return {
         afterAttach() {
-          quantitativeStatsAutorun(self)
-          addDisposer(
-            self,
-            autorun(async () => {
-              const { rpcManager } = getSession(self)
-              const { adapterConfig } = self
-              const sessionId = getRpcSessionId(self)
-              const sources = (await rpcManager.call(
-                sessionId,
-                'MultiWiggleGetSources',
-                {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          ;(async () => {
+            const { quantitativeStatsAutorun } = await import('../../util')
+            quantitativeStatsAutorun(self)
+            addDisposer(
+              self,
+              autorun(async () => {
+                const { rpcManager } = getSession(self)
+                const { adapterConfig } = self
+                const sessionId = getRpcSessionId(self)
+                const sources = (await rpcManager.call(
                   sessionId,
-                  adapterConfig,
-                },
-              )) as Source[]
-              if (isAlive(self)) {
-                self.setSources(sources)
-              }
-            }),
-          )
+                  'MultiWiggleGetSources',
+                  {
+                    sessionId,
+                    adapterConfig,
+                  },
+                )) as Source[]
+                if (isAlive(self)) {
+                  self.setSources(sources)
+                }
+              }),
+            )
+          })()
         },
 
         /**

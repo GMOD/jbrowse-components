@@ -7,6 +7,7 @@ import {
   notEmpty,
   renderToAbstractCanvas,
 } from '@jbrowse/core/util'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import {
@@ -18,8 +19,6 @@ import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 // locals
 import { fetchSequence, shouldFetchReferenceSequence } from '../util'
 import { layoutFeats } from './layoutFeatures'
-import { makeImageData } from './makeImageData'
-import { readConfObject } from '@jbrowse/core/configuration'
 
 export interface RenderArgsDeserialized extends BoxRenderArgsDeserialized {
   colorBy?: { type: string; tag?: string }
@@ -92,6 +91,8 @@ export default class PileupRenderer extends BoxRendererType {
         : undefined
     const width = (region.end - region.start) / bpPerPx
     const height = Math.max(layout.getTotalHeight(), 1)
+
+    const { makeImageData } = await import('./makeImageData')
     const res = await renderToAbstractCanvas(width, height, renderProps, ctx =>
       makeImageData({
         ctx,
