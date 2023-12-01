@@ -22,7 +22,7 @@ const AboutDialog = lazy(() => import('./AboutDialog'))
 /**
  * #stateModel JBrowseReactLinearGenomeViewSessionModel
  * composed of
- * - BaseSessionModel
+ * - [BaseSessionModel](../BaseSessionModel)
  * - DrawerWidgetsSessionMixin
  * - ConnectionManagementSessionMixin
  * - DialogQueueSessionMixin
@@ -31,6 +31,8 @@ const AboutDialog = lazy(() => import('./AboutDialog'))
  * - SessionTracksManagerSessionMixin
  * - SnackbarModel
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 export default function sessionModelFactory(pluginManager: PluginManager) {
   const model = types
     .compose(
