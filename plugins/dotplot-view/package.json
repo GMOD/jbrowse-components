@@ -38,13 +38,12 @@
   "dependencies": {
     "@mui/icons-material": "^5.0.1",
     "@mui/x-data-grid": "^6.0.1",
-    "@popperjs/core": "^2.11.0",
     "@types/file-saver": "^2.0.1",
     "@types/normalize-wheel": "^1.0.0",
     "clone": "^2.1.2",
     "file-saver": "^2.0.0",
     "normalize-wheel": "^1.0.1",
-    "react-popper": "^2.0.0"
+    "@floating-ui/react": "^0.25.4"
   },
   "peerDependencies": {
     "@jbrowse/core": "^2.0.0",

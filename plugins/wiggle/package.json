@@ -38,7 +38,6 @@
   "dependencies": {
     "@gmod/bbi": "^4.0.0",
     "@mui/icons-material": "^5.0.2",
-    "@popperjs/core": "^2.11.0",
     "clone": "^2.1.2",
     "d3-color": "^3.0.2",
     "d3-scale": "^3.0.2",
@@ -46,7 +45,7 @@
     "is-object": "^1.0.1",
     "react-d3-axis-mod": "^0.1.9",
     "react-draggable": "^4.4.5",
-    "react-popper": "^2.0.0"
+    "@floating-ui/react": "^0.25.4"
   },
   "peerDependencies": {
     "@jbrowse/core": "^2.0.0",
