@@ -6,7 +6,11 @@ import { Feature } from '@jbrowse/core/util'
 
 // locals
 import { YSCALEBAR_LABEL_OFFSET, round } from './util'
-import { useFloating } from '@floating-ui/react'
+import {
+  useClientPoint,
+  useFloating,
+  useInteractions,
+} from '@floating-ui/react'
 
 const useStyles = makeStyles()(theme => ({
   // these styles come from
@@ -65,51 +69,38 @@ const Tooltip = observer(function Tooltip({
 }) {
   const theme = useTheme()
   const { featureUnderMouse } = model
-  const [width, setWidth] = useState(0)
-  const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null)
   const { classes } = useStyles()
 
-  // must be memoized a la https://github.com/popperjs/@floating-ui/react/issues/391
-  const virtElement = useMemo(
-    () => ({
-      getBoundingClientRect: () => {
-        const x = clientMouseCoord[0] + width / 2 + 20
-        const y = useClientY ? clientMouseCoord[1] : clientRect?.top || 0
-        return {
-          top: y,
-          left: x,
-          bottom: y,
-          right: x,
-          width: 0,
-          height: 0,
-          x,
-          y,
-          toJSON() {},
-        }
-      },
-    }),
-    [clientRect?.top, clientMouseCoord, width, useClientY],
-  )
-  const { styles, attributes } = useFloating(virtElement, anchorEl)
+  const isOpen = true
+  const { refs, floatingStyles, context } = useFloating({
+    open: true,
+    onOpenChange: () => {},
+  })
+
+  const clientPoint = useClientPoint(context)
+  const { getFloatingProps } = useInteractions([clientPoint])
 
   const popperTheme = theme?.components?.MuiPopper
+  const x = clientMouseCoord[0] + 5
+  const y = useClientY ? clientMouseCoord[1] : clientRect?.top || 0
   return featureUnderMouse ? (
     <>
-      <Portal container={popperTheme?.defaultProps?.container}>
-        <div
-          ref={setAnchorEl}
-          className={classes.tooltip}
-          // zIndex needed to go over widget drawer
-          style={{ ...styles.popper, zIndex: 100000 }}
-          {...attributes.popper}
-        >
-          <TooltipContents
-            ref={elt => setWidth(elt?.getBoundingClientRect().width || 0)}
-            model={model}
-            feature={featureUnderMouse}
-          />
-        </div>
-      </Portal>
+      {isOpen && (
+        <Portal container={popperTheme?.defaultProps?.container}>
+          <div
+            className={classes.tooltip}
+            ref={refs.setFloating}
+            style={{
+              ...floatingStyles,
+              transform: `translate(${Math.round(x)}px,${Math.round(y)}px)`,
+              pointerEvents: 'none',
+            }}
+            {...getFloatingProps()}
+          >
+            <TooltipContents model={model} feature={featureUnderMouse} />
+          </div>
+        </Portal>
+      )}
 
       <div
         className={classes.hoverVertical}
