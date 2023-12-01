@@ -1,6 +1,8 @@
 import React from 'react'
 
-import { Typography, Button, Alert } from '@mui/material'
+import Typography from '@mui/material/Typography'
+import Button from '@mui/material/Button'
+import Alert from '@mui/material/Alert'
 
 export default function GoogleCalendarScheduleFunction() {
   return (

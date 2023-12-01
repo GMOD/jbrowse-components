@@ -14,7 +14,7 @@ info
 
 composed of
 
-- [BaseSessionModel](../basesessionmodel)
+- [BaseSessionModel](../BaseSessionModel)
 - DrawerWidgetsSessionMixin
 - ConnectionManagementSessionMixin
 - DialogQueueSessionMixin

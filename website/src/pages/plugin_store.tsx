@@ -4,32 +4,27 @@ import copy from 'copy-to-clipboard'
 import Layout from '@theme/Layout'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 
-import {
-  Link,
-  Typography,
-  Card,
-  CardActions,
-  CardContent,
-  CardMedia,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  IconButton,
-  ThemeProvider,
-  createTheme,
-} from '@mui/material'
+import Link from '@mui/material/Link'
+import Typography from '@mui/material/Typography'
+import Card from '@mui/material/Card'
+import CardActions from '@mui/material/CardActions'
+import CardContent from '@mui/material/CardContent'
+import CardMedia from '@mui/material/CardMedia'
+import Button from '@mui/material/Button'
+import Dialog from '@mui/material/Dialog'
+import DialogTitle from '@mui/material/DialogTitle'
+import DialogContent from '@mui/material/DialogContent'
+import IconButton from '@mui/material/IconButton'
+import { ThemeProvider, createTheme } from '@mui/material/styles'
 
-import {
-  Person,
-  AccountBalance,
-  GitHub,
-  Assignment,
-  AssignmentTurnedIn,
-  Help,
-  Code,
-  Close,
-} from '@mui/icons-material'
+import Person from '@mui/icons-material/Person'
+import AccountBalance from '@mui/icons-material/AccountBalance'
+import GitHub from '@mui/icons-material/GitHub'
+import Assignment from '@mui/icons-material/Assignment'
+import AssignmentTurnedIn from '@mui/icons-material/AssignmentTurnedIn'
+import Help from '@mui/icons-material/Help'
+import Code from '@mui/icons-material/Code'
+import Close from '@mui/icons-material/Close'
 
 import pluginJSON from '../../plugins.json'
 
