@@ -1,16 +1,15 @@
-import React, { useMemo, useState } from 'react'
+import React from 'react'
 import { observer } from 'mobx-react'
 import { alpha, Portal, useTheme } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { Feature } from '@jbrowse/core/util'
-
-// locals
-import { YSCALEBAR_LABEL_OFFSET, round } from './util'
 import {
   useClientPoint,
   useFloating,
   useInteractions,
 } from '@floating-ui/react'
+// locals
+import { YSCALEBAR_LABEL_OFFSET, round } from './util'
 
 const useStyles = makeStyles()(theme => ({
   // these styles come from
