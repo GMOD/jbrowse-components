@@ -4,7 +4,11 @@ import { SanitizedHTML } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 import { Portal, alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { useFloating } from '@floating-ui/react'
+import {
+  useClientPoint,
+  useFloating,
+  useInteractions,
+} from '@floating-ui/react'
 
 // locals
 import { BaseLinearDisplayModel } from '../models/BaseLinearDisplayModel'
@@ -47,64 +51,49 @@ const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
 )
 
 type Coord = [number, number]
-const Tooltip = observer(
-  ({
-    model,
-    clientMouseCoord,
-  }: {
-    model: BaseLinearDisplayModel
-    clientMouseCoord: Coord
-  }) => {
-    const { theme, classes } = useStyles()
-    const { featureUnderMouse } = model
-    const [width, setWidth] = useState(0)
-    const [popperElt, setPopperElt] = useState<HTMLDivElement | null>(null)
+const Tooltip = observer(function ({
+  model,
+  clientMouseCoord,
+}: {
+  model: BaseLinearDisplayModel
+  clientMouseCoord: Coord
+}) {
+  const { theme, classes } = useStyles()
+  const { featureUnderMouse } = model
 
-    // must be memoized a la https://github.com/popperjs/@floating-ui/react/issues/391
-    const virtElement = useMemo(
-      () => ({
-        getBoundingClientRect: () => {
-          const x = clientMouseCoord[0] + width / 2 + 20
-          const y = clientMouseCoord[1]
-          return {
-            top: y,
-            left: x,
-            bottom: y,
-            right: x,
-            width: 0,
-            height: 0,
-            x,
-            y,
-            toJSON() {},
-          }
-        },
-      }),
-      [clientMouseCoord, width],
-    )
-    const { styles, attributes } = useFloating(virtElement, popperElt)
+  const x = clientMouseCoord[0] + 15
+  const y = clientMouseCoord[1]
 
-    const contents = featureUnderMouse
-      ? getConf(model, 'mouseover', { feature: featureUnderMouse })
-      : undefined
+  const { refs, floatingStyles, context } = useFloating({
+    open: true,
+    onOpenChange: () => {},
+  })
 
-    const popperTheme = theme?.components?.MuiPopper
-    return featureUnderMouse && contents ? (
-      <Portal container={popperTheme?.defaultProps?.container}>
-        <div
-          ref={setPopperElt}
-          className={classes.tooltip}
-          // zIndex needed to go over widget drawer
-          style={{ ...styles.popper, zIndex: 100000 }}
-          {...attributes.popper}
-        >
-          <TooltipContents
-            ref={elt => setWidth(elt?.getBoundingClientRect().width || 0)}
-            message={contents}
-          />
-        </div>
-      </Portal>
-    ) : null
-  },
-)
+  const clientPoint = useClientPoint(context)
+  const { getFloatingProps } = useInteractions([clientPoint])
+
+  const contents = featureUnderMouse
+    ? getConf(model, 'mouseover', { feature: featureUnderMouse })
+    : undefined
+
+  const popperTheme = theme?.components?.MuiPopper
+  return featureUnderMouse && contents ? (
+    <Portal container={popperTheme?.defaultProps?.container}>
+      <div
+        className={classes.tooltip}
+        ref={refs.setFloating}
+        style={{
+          ...floatingStyles,
+          transform: `translate(${Math.round(x)}px,${Math.round(y)}px)`,
+          zIndex: 100000,
+          pointerEvents: 'none',
+        }}
+        {...getFloatingProps()}
+      >
+        <TooltipContents message={contents} />
+      </div>
+    </Portal>
+  ) : null
+})
 
 export default Tooltip

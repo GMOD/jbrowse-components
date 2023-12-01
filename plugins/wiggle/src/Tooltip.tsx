@@ -70,8 +70,6 @@ const Tooltip = observer(function Tooltip({
   const theme = useTheme()
   const { featureUnderMouse } = model
   const { classes } = useStyles()
-
-  const isOpen = true
   const { refs, floatingStyles, context } = useFloating({
     open: true,
     onOpenChange: () => {},
@@ -85,22 +83,21 @@ const Tooltip = observer(function Tooltip({
   const y = useClientY ? clientMouseCoord[1] : clientRect?.top || 0
   return featureUnderMouse ? (
     <>
-      {isOpen && (
-        <Portal container={popperTheme?.defaultProps?.container}>
-          <div
-            className={classes.tooltip}
-            ref={refs.setFloating}
-            style={{
-              ...floatingStyles,
-              transform: `translate(${Math.round(x)}px,${Math.round(y)}px)`,
-              pointerEvents: 'none',
-            }}
-            {...getFloatingProps()}
-          >
-            <TooltipContents model={model} feature={featureUnderMouse} />
-          </div>
-        </Portal>
-      )}
+      <Portal container={popperTheme?.defaultProps?.container}>
+        <div
+          className={classes.tooltip}
+          ref={refs.setFloating}
+          style={{
+            ...floatingStyles,
+            transform: `translate(${Math.round(x)}px,${Math.round(y)}px)`,
+            zIndex: 100000,
+            pointerEvents: 'none',
+          }}
+          {...getFloatingProps()}
+        >
+          <TooltipContents model={model} feature={featureUnderMouse} />
+        </div>
+      </Portal>
 
       <div
         className={classes.hoverVertical}
