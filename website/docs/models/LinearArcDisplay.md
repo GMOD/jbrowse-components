@@ -12,7 +12,9 @@ info
 
 [plugins/arc/src/LinearArcDisplay/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/arc/src/LinearArcDisplay/model.ts)
 
-extends BaseLinearDisplay
+extends
+
+- [BaseLinearDisplay](../baselineardisplay)
 
 ### LinearArcDisplay - Properties
 

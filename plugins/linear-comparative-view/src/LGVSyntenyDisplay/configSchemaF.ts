@@ -4,6 +4,8 @@ import { linearPileupDisplayConfigSchemaFactory } from '@jbrowse/plugin-alignmen
 
 /**
  * #config LGVSyntenyDisplay
+ * extends config
+ * - [LinearPileupDisplay](../linearpileupdisplay)
  */
 function configSchemaF(pluginManager: PluginManager) {
   return ConfigurationSchema(

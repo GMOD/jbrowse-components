@@ -36,7 +36,8 @@ export interface ExportSvgOptions {
 
 /**
  * #stateModel LinearSyntenyView
- * extends the `LinearComparativeView` base model
+ * extends
+ * - [LinearComparativeView](../linearcomparativeview)
  */
 export default function stateModelFactory(pluginManager: PluginManager) {
   return types
@@ -81,6 +82,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
       async exportSvg(opts: ExportSvgOptions) {
         const { renderToSvg } = await import(
           './svgcomponents/SVGLinearSyntenyView'
@@ -148,6 +152,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             },
           ]
         },
+        /**
+         * #method
+         */
         menuItems() {
           return [
             ...superMenuItems(),

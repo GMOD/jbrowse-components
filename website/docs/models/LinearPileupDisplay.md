@@ -12,7 +12,9 @@ info
 
 [plugins/alignments/src/LinearPileupDisplay/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearPileupDisplay/model.ts)
 
-extends `BaseLinearDisplay`
+extends
+
+- [SharedLinearPileupDisplayMixin](../sharedlinearpileupdisplaymixin)
 
 ### LinearPileupDisplay - Properties
 

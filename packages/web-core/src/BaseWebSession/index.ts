@@ -55,17 +55,17 @@ const AboutDialog = lazy(() => import('./AboutDialog'))
 /**
  * #stateModel BaseWebSession
  * used for "web based" products, including jbrowse-web and react-app
- * extends
- * - ReferenceManagementSessionMixin
- * - DrawerWidgetSessionMixin
- * - DialogQueueSessionMixin
- * - ThemeManagerSessionMixin
- * - MultipleViewsSessionMixin
- * - SessionTracksManagerSessionMixin
- * - SessionAssembliesMixin
- * - TemporaryAssembliesMixin
- * - WebSessionConnectionsMixin
- * - AppFocusMixin
+ * composed of
+ * - [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
+ * - [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)
+ * - [DialogQueueSessionMixin](../dialogqueuesessionmixin)
+ * - [ThemeManagerSessionMixin](../thememanagersessionmixin)
+ * - [MultipleViewsSessionMixin](../multipleviewssessionmixin)
+ * - [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin)
+ * - [SessionAssembliesMixin](../sessionassembliesmixin)
+ * - [TemporaryAssembliesMixin](../temporaryassembliesmixin)
+ * - [WebSessionConnectionsMixin](../websessionconnectionsmixin)
+ * - [AppFocusMixin](../appfocusmixin)
  */
 export function BaseWebSession({
   pluginManager,

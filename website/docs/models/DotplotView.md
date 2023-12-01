@@ -12,7 +12,9 @@ info
 
 [plugins/dotplot-view/src/DotplotView/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotView/model.ts)
 
-extends `BaseViewModel`
+extends
+
+- [BaseViewModel](../baseviewmodel)
 
 ### DotplotView - Properties
 

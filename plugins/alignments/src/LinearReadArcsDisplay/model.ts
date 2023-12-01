@@ -25,8 +25,12 @@ const FilterByTagDlg = lazy(() => import('../shared/FilterByTag'))
 
 /**
  * #stateModel LinearReadArcsDisplay
- * extends `BaseDisplay`, it is not a block based track, hence not
- * BaseLinearDisplay
+ * the arc display is a non-block-based track, so draws to a single canvas and
+ * can connect multiple regions
+ * extends
+ * - [BaseDisplay](../basedisplay)
+ * - [TrackHeightMixin](../trackheightmixin)
+ * - [FeatureDensityMixin](../featuredensitymixin)
  */
 function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types

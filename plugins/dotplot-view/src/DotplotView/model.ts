@@ -67,7 +67,8 @@ const pxWidthForBlocks = (blocks: BaseBlock[], hide: Set<string>) => {
 /**
  * #stateModel DotplotView
  * #category view
- * extends  `BaseViewModel`
+ * extends
+ * - [BaseViewModel](../baseviewmodel)
  */
 export default function stateModelFactory(pm: PluginManager) {
   return types

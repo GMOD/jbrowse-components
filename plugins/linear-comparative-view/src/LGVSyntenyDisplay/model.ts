@@ -13,8 +13,11 @@ const LaunchSyntenyViewDialog = lazy(
 
 /**
  * #stateModel LGVSyntenyDisplay
- * extends `LinearPileupDisplay`, displays location of "synteny" feature in a
- * plain LGV, allowing linking out to external synteny views
+ * displays location of "synteny" feature in a plain LGV, allowing linking out
+ * to external synteny views
+ *
+ * extends
+ * - [SharedLinearPileupDisplayMixin](../sharedlinearpileupdisplaymixin)
  */
 function stateModelFactory(schema: AnyConfigurationSchemaType) {
   return types
@@ -35,6 +38,9 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
     .views(self => {
       const superContextMenuItems = self.contextMenuItems
       return {
+        /**
+         * #method
+         */
         contextMenuItems() {
           const feature = self.contextMenuFeature
           return [
@@ -66,6 +72,9 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         colorSchemeSubMenuItems: superColorSchemeSubMenuItems,
       } = self
       return {
+        /**
+         * #method
+         */
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
@@ -79,7 +88,8 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
     })
     .actions(self => ({
       afterCreate() {
-        // use color by stand to help indicate inversions better on first load, otherwise use selected orientation
+        // use color by stand to help indicate inversions better on first load,
+        // otherwise use selected orientation
         if (self.colorBy) {
           self.setColorScheme({ ...self.colorBy })
         } else {

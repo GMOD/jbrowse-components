@@ -12,18 +12,18 @@ info
 
 [packages/web-core/src/BaseWebSession/index.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/web-core/src/BaseWebSession/index.ts)
 
-used for "web based" products, including jbrowse-web and react-app extends
+used for "web based" products, including jbrowse-web and react-app composed of
 
-- ReferenceManagementSessionMixin
-- DrawerWidgetSessionMixin
-- DialogQueueSessionMixin
-- ThemeManagerSessionMixin
-- MultipleViewsSessionMixin
-- SessionTracksManagerSessionMixin
-- SessionAssembliesMixin
-- TemporaryAssembliesMixin
-- WebSessionConnectionsMixin
-- AppFocusMixin
+- [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
+- [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)
+- [DialogQueueSessionMixin](../dialogqueuesessionmixin)
+- [ThemeManagerSessionMixin](../thememanagersessionmixin)
+- [MultipleViewsSessionMixin](../multipleviewssessionmixin)
+- [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin)
+- [SessionAssembliesMixin](../sessionassembliesmixin)
+- [TemporaryAssembliesMixin](../temporaryassembliesmixin)
+- [WebSessionConnectionsMixin](../websessionconnectionsmixin)
+- [AppFocusMixin](../appfocusmixin)
 
 ### BaseWebSession - Properties
 

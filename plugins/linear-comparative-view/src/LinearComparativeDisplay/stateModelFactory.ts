@@ -17,6 +17,8 @@ import { LinearComparativeViewModel } from '../LinearComparativeView/model'
 
 /**
  * #stateModel LinearComparativeDisplay
+ * extends
+ * - [BaseDisplay](../basedisplay)
  */
 function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types

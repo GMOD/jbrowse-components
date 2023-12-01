@@ -15,6 +15,10 @@ info
 used by `FeatureTrack`, has simple settings like "show/hide feature labels",
 etc.
 
+extends
+
+- [BaseLinearDisplay](../baselineardisplay)
+
 ### LinearBasicDisplay - Properties
 
 #### property: type

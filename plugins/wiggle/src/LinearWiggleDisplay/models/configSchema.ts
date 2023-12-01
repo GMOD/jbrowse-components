@@ -7,6 +7,8 @@ import sharedWiggleConfigFactory from '../../shared/configShared'
 
 /**
  * #config LinearWiggleDisplay
+ * extends
+ * - [SharedWiggleDisplay](../sharedwiggledisplay)
  */
 export default function WiggleConfigFactory(pluginManager: PluginManager) {
   const XYPlotRendererConfigSchema =

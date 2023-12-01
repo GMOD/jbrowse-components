@@ -4,10 +4,12 @@ import { types } from 'mobx-state-tree'
 
 /**
  * #config SharedWiggleDisplay
+ * extends
+ * - [BaseLinearDisplay](../baselineardisplay)
  */
 export default function sharedWiggleConfigFactory() {
   return ConfigurationSchema(
-    'MultiLinearWiggleDisplay',
+    'SharedWiggleDisplay',
     {
       /**
        * #slot

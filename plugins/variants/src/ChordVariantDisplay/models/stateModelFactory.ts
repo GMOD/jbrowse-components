@@ -12,7 +12,8 @@ import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 
 /**
  * #stateModel ChordVariantDisplay
- * extends `BaseChordDisplay`
+ * extends
+ * - [BaseChordDisplay](../basechorddisplay)
  */
 const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
   return types

@@ -95,6 +95,8 @@ async function getBlockFeatures(
 
 /**
  * #stateModel BreakpointSplitView
+ * extends
+ * - [BaseViewModel](../baseviewmodel)
  */
 export default function stateModelFactory(pluginManager: PluginManager) {
   const minHeight = 40

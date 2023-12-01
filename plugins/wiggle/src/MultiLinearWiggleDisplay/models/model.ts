@@ -48,7 +48,8 @@ interface Source {
 
 /**
  * #stateModel MultiLinearWiggleDisplay
- * extends `SharedWiggleMixin`
+ * extends
+ * - [SharedWiggleMixin](../sharedwigglemixin)
  */
 export function stateModelFactory(
   pluginManager: PluginManager,

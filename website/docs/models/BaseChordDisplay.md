@@ -12,7 +12,9 @@ info
 
 [plugins/circular-view/src/BaseChordDisplay/models/model.tsx](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/BaseChordDisplay/models/model.tsx)
 
-extends `BaseDisplay`
+extends
+
+- [BaseDisplay](../basedisplay)
 
 ### BaseChordDisplay - Properties
 

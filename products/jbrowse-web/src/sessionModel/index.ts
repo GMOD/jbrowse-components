@@ -6,7 +6,7 @@ import { BaseWebSession } from '@jbrowse/web-core'
 
 /**
  * #stateModel JBrowseWebSessionModel
- * extends BaseWebSession
+ * extends [BaseWebSession](../basewebsession)
  */
 export default function sessionModelFactory({
   pluginManager,

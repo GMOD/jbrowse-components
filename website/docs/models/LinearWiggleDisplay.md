@@ -12,7 +12,9 @@ info
 
 [plugins/wiggle/src/LinearWiggleDisplay/models/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/LinearWiggleDisplay/models/model.ts)
 
-extends `SharedWiggleMixin`
+extends
+
+- [SharedWiggleMixin](../sharedwigglemixin)
 
 ### LinearWiggleDisplay - Properties
 

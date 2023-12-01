@@ -31,7 +31,8 @@ const rendererTypes = new Map([
 
 /**
  * #stateModel LinearWiggleDisplay
- * extends `SharedWiggleMixin`
+ * extends
+ * - [SharedWiggleMixin](../sharedwigglemixin)
  */
 function stateModelFactory(
   pluginManager: PluginManager,

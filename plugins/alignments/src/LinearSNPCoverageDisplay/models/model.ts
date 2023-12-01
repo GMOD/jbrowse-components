@@ -27,7 +27,8 @@ type LGV = LinearGenomeViewModel
 
 /**
  * #stateModel LinearSNPCoverageDisplay
- * extends `LinearWiggleDisplay`
+ * extends
+ * - [LinearWiggleDisplay](../linearwiggledisplay)
  */
 function stateModelFactory(
   pluginManager: PluginManager,

@@ -12,6 +12,10 @@ info
 
 [plugins/breakpoint-split-view/src/BreakpointSplitView/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/breakpoint-split-view/src/BreakpointSplitView/model.ts)
 
+extends
+
+- [BaseViewModel](../baseviewmodel)
+
 ### BreakpointSplitView - Properties
 
 #### property: type

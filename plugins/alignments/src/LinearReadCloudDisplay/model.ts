@@ -24,7 +24,11 @@ const FilterByTagDlg = lazy(() => import('../shared/FilterByTag'))
 
 /**
  * #stateModel LinearReadCloudDisplay
- * extends `BaseDisplay`, it is not a block based track, hence not BaseLinearDisplay
+ * it is not a block based track, hence not BaseLinearDisplay
+ * extends
+ * - [BaseDisplay](../basedisplay)
+ * - [TrackHeightMixin](../trackheightmixin)
+ * - [FeatureDensityMixin](../featuredensitymixin)
  */
 function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types

@@ -12,8 +12,8 @@ info
 
 [packages/product-core/src/Session/BaseSession.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/BaseSession.ts)
 
-base session shared by **all** JBrowse products. Be careful what you include
-here, everything will use it.
+base session shared by all JBrowse products. Be careful what you include here,
+everything will use it.
 
 ### BaseSessionModel - Properties
 
@@ -45,6 +45,13 @@ margin: 0
 ```
 
 ### BaseSessionModel - Getters
+
+#### getter: root
+
+```js
+// type
+TypeOrStateTreeNodeToStateTreeNode<ROOT_MODEL_TYPE>
+```
 
 #### getter: jbrowse
 
