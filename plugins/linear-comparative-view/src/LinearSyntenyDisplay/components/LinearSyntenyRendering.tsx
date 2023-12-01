@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useRef } from 'react'
 import { observer } from 'mobx-react'
 import {
   assembleLocString,
@@ -12,6 +12,7 @@ import SyntenyTooltip from './SyntenyTooltip'
 import { LinearSyntenyDisplayModel } from '../model'
 import { getId, MAX_COLOR_RANGE } from '../drawSynteny'
 import { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
+import { transaction } from 'mobx'
 
 const LinearSyntenyRendering = observer(function ({
   model,
@@ -19,6 +20,8 @@ const LinearSyntenyRendering = observer(function ({
   model: LinearSyntenyDisplayModel
 }) {
   const highResolutionScaling = 1
+  const xOffset = useRef(0)
+  const currScrollFrame = useRef<number>()
   const view = getContainingView(model) as LinearSyntenyViewModel
   const height = view.middleComparativeHeight
   const width = view.width
@@ -59,6 +62,22 @@ const LinearSyntenyRendering = observer(function ({
       />
       <canvas
         ref={k2}
+        onWheel={event => {
+          if (Math.abs(event.deltaY) < Math.abs(event.deltaX)) {
+            xOffset.current += event.deltaX
+          }
+          if (currScrollFrame.current === undefined) {
+            currScrollFrame.current = requestAnimationFrame(() => {
+              transaction(() => {
+                for (const v of view.views) {
+                  v.horizontalScroll(xOffset.current)
+                }
+                xOffset.current = 0
+                currScrollFrame.current = undefined
+              })
+            })
+          }
+        }}
         onMouseMove={event => {
           const ref1 = model.clickMapCanvas
           const ref2 = model.cigarClickMapCanvas
