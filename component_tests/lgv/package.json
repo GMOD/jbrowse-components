@@ -27,6 +27,7 @@
   "resolutions": {
     "@jbrowse/core": "file:./packed/jbrowse-core.tgz",
     "@jbrowse/plugin-alignments": "file:./packed/jbrowse-plugin-alignments.tgz",
+    "@jbrowse/plugin-arc": "file:./packed/jbrowse-plugin-arc.tgz",
     "@jbrowse/plugin-authentication": "file:./packed/jbrowse-plugin-authentication.tgz",
     "@jbrowse/plugin-bed": "file:./packed/jbrowse-plugin-bed.tgz",
     "@jbrowse/plugin-circular-view": "file:./packed/jbrowse-plugin-circular-view.tgz",
