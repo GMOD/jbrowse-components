@@ -3,6 +3,7 @@ import JBrowseCommand from '../base'
 
 import readline from 'readline'
 import { createGunzip } from 'zlib'
+import { Args } from '@oclif/core'
 
 function getReadline(filename: string) {
   const stream = fs.createReadStream(filename)
@@ -47,27 +48,20 @@ export default class ProcessPAF extends JBrowseCommand {
     '$ jbrowse process-paf file.paf > output.ppaf',
   ]
 
-  static args = [
-    {
-      name: 'track',
+  static args = {
+    track: Args.string({
       required: true,
       description: `Track file or URL`,
-    },
-  ]
+    }),
+  }
 
   async run() {
-    const { args: runArgs } = this.parse(ProcessPAF)
-
+    const { args: runArgs } = await this.parse(ProcessPAF)
     const { track: filename } = runArgs
 
     const rl1 = getReadline(filename)
     for await (const line of rl1) {
-      this.log(`q${line}`)
-    }
-    rl1.close()
-
-    const rl2 = getReadline(filename)
-    for await (const line of rl2) {
+      process.stdout.write(`t${line}\n`)
       const [c1, l1, s1, e1, strand, c2, l2, s2, e2, ...rest] = line.split('\t')
       const cigarIdx = rest.findIndex(f => f.startsWith('cg:Z'))
 
@@ -80,10 +74,11 @@ export default class ProcessPAF extends JBrowseCommand {
         }`
       }
 
-      this.log(
-        [`t${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...rest].join('\t'),
+      process.stdout.write(
+        [`q${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...rest].join('\t') +
+          '\n',
       )
     }
-    rl2.close()
+    rl1.close()
   }
 }

@@ -22,7 +22,7 @@ interface PAFOptions extends BaseOptions {
 export default class PAFAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  protected paf: TabixIndexedFile
+  protected ppaf: TabixIndexedFile
 
   public constructor(
     config: AnyConfigurationModel,
@@ -30,20 +30,20 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     pluginManager?: PluginManager,
   ) {
     super(config, getSubAdapter, pluginManager)
-    const pafGzLoc = this.getConf('pafGzLocation') as FileLocation
+    const ppafGzLoc = this.getConf('ppafGzLocation') as FileLocation
     const type = this.getConf(['index', 'indexType'])
     const loc = this.getConf(['index', 'location'])
     const pm = this.pluginManager
 
-    this.paf = new TabixIndexedFile({
-      filehandle: openLocation(pafGzLoc, pm),
+    this.ppaf = new TabixIndexedFile({
+      filehandle: openLocation(ppafGzLoc, pm),
       csiFilehandle: type === 'CSI' ? openLocation(loc, pm) : undefined,
       tbiFilehandle: type !== 'CSI' ? openLocation(loc, pm) : undefined,
       chunkCacheSize: 50 * 2 ** 20,
     })
   }
   async getHeader() {
-    return this.paf.getHeader()
+    return this.ppaf.getHeader()
   }
 
   getAssemblyNames(): string[] {
@@ -68,7 +68,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     }
 
     const idx = this.getAssemblyNames().indexOf(r1)
-    const names = await this.paf.getReferenceSequenceNames(opts)
+    const names = await this.ppaf.getReferenceSequenceNames(opts)
     if (idx === 0) {
       return names.filter(n => n.startsWith('q')).map(n => n.slice(1))
     } else if (idx === 1) {
@@ -86,7 +86,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       const flip = index === 0
       const letter = flip ? 't' : 'q'
 
-      await this.paf.getLines(letter + query.refName, query.start, query.end, {
+      await this.ppaf.getLines(letter + query.refName, query.start, query.end, {
         lineCallback: (line, fileOffset) => {
           const r = parsePAFLine(line)
           const refName = r.qname.slice(1)

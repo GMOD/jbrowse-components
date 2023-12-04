@@ -76,10 +76,10 @@
         }
       }
     },
-
     {
       "type": "FeatureTrack",
       "trackId": "ncbiRefSeq",
+      "category": ["Annotation"],
       "name": "ncbiRefSeq",
       "adapter": {
         "type": "BigBedAdapter",
@@ -92,8 +92,8 @@
     },
     {
       "type": "SyntenyTrack",
-      "trackId": "liftover",
-      "name": "liftover",
+      "trackId": "hs1ToMm39.over.chain",
+      "name": "hs1ToMm39.over.chain",
       "adapter": {
         "type": "ChainAdapter",
         "chainLocation": {
@@ -107,23 +107,24 @@
     },
     {
       "type": "SyntenyTrack",
-      "trackId": "liftover_pairwise_paf",
-      "name": "liftover_pairwise_paf",
+      "trackId": "hs1ToMm39.over.chain.ppaf",
+      "name": "hs1ToMm39.over.chain.ppaf",
       "adapter": {
         "type": "PairwiseIndexedPAFAdapter",
-        "pafGzLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hs1_vs_mm39/hs1_vs_mm39.paf.gz"
+        "ppafGzLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hs1_vs_mm39/hs1ToMm39.over.chain.ppaf.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hs1_vs_mm39/hs1_vs_mm39.paf.gz.tbi"
-          }
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hs1_vs_mm39/hs1ToMm39.over.chain.ppaf.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
         },
-
-        "targetAssembly": "hs1",
-        "queryAssembly": "mm39"
+        "assemblyNames": ["mm39", "hs1"]
       },
-      "assemblyNames": ["hs1", "mm39"]
+      "assemblyNames": ["mm39", "hs1"]
     }
   ]
 }

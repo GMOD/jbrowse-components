@@ -54,6 +54,7 @@ It is likely preferable in most cases to install the tools globally with
 - [`jbrowse admin-server`](#jbrowse-admin-server)
 - [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
 - [`jbrowse help [COMMANDS]`](#jbrowse-help-commands)
+- [`jbrowse process-paf TRACK`](#jbrowse-process-paf-track)
 - [`jbrowse remove-track TRACK`](#jbrowse-remove-track-track)
 - [`jbrowse set-default-session`](#jbrowse-set-default-session)
 - [`jbrowse sort-gff FILE`](#jbrowse-sort-gff-file)
@@ -477,6 +478,29 @@ DESCRIPTION
 
 _See code:
 [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.2.20/src/commands/help.ts)_
+
+## `jbrowse process-paf TRACK`
+
+Pairwise index the PAF
+
+```
+USAGE
+  $ jbrowse process-paf TRACK
+
+ARGUMENTS
+  TRACK  Track file or URL
+
+DESCRIPTION
+  Pairwise index the PAF
+
+EXAMPLES
+  # processes a local PAF file into our custom format PPAF, which pairwise indexes the PAF
+
+  $ jbrowse process-paf file.paf > output.ppaf
+```
+
+_See code:
+[src/commands/process-paf.ts](https://github.com/GMOD/jbrowse-components/blob/v2.9.0/products/jbrowse-cli/src/commands/process-paf.ts)_
 
 ## `jbrowse remove-track TRACK`
 

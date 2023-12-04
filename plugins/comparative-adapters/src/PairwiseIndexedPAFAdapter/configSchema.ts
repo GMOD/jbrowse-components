@@ -37,10 +37,13 @@ const PairwiseIndexedPAFAdapter = ConfigurationSchema(
     /**
      * #slot
      */
-    pafGzLocation: {
+    ppafGzLocation: {
       type: 'fileLocation',
-      description: 'location of pairwise tabix indexed PAF',
-      defaultValue: { uri: '/path/to/data/file.paf.gz' },
+      description: 'location of pairwise tabix indexed PAF (ppaf)',
+      defaultValue: {
+        uri: '/path/to/data/file.ppaf.gz',
+        locationType: 'UriLocation',
+      },
     },
     /**
      * #slot
