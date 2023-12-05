@@ -61,8 +61,12 @@ export default class ProcessPAF extends JBrowseCommand {
 
     const rl1 = getReadline(filename)
     for await (const line of rl1) {
-      process.stdout.write(`t${line}\n`)
       const [c1, l1, s1, e1, strand, c2, l2, s2, e2, ...rest] = line.split('\t')
+
+      process.stdout.write(
+        [`t${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...rest].join('\t') +
+          '\n',
+      )
       const cigarIdx = rest.findIndex(f => f.startsWith('cg:Z'))
 
       const CIGAR = rest[cigarIdx]
@@ -75,7 +79,7 @@ export default class ProcessPAF extends JBrowseCommand {
       }
 
       process.stdout.write(
-        [`q${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...rest].join('\t') +
+        [`q${c1}`, l1, s1, e1, strand, c2, l2, s2, e2, ...rest].join('\t') +
           '\n',
       )
     }

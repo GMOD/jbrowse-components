@@ -84,7 +84,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       const assemblyNames = this.getAssemblyNames()
       const index = assemblyNames.indexOf(assemblyName)
       const flip = index === 0
-      const letter = flip ? 't' : 'q'
+      const letter = flip ? 'q' : 't'
 
       await this.ppaf.getLines(letter + query.refName, query.start, query.end, {
         lineCallback: (line, fileOffset) => {

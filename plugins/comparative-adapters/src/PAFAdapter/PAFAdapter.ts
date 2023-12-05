@@ -104,6 +104,9 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       // adapter in the subadapters list
       const { start: qstart, end: qend, refName: qref, assemblyName } = query
       const index = assemblyNames.indexOf(assemblyName)
+
+      // if the getFeatures::query is on the query assembly, flip orientation
+      // of data
       const flip = index === 0
       if (index === -1) {
         console.warn(`${assemblyName} not found in this adapter`)
@@ -118,7 +121,8 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
         let mateName = ''
         let mateStart = 0
         let mateEnd = 0
-        if (index === 0) {
+
+        if (flip) {
           start = r.qstart
           end = r.qend
           refName = r.qname
