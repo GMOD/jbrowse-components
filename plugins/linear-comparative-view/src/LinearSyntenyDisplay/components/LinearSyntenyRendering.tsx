@@ -14,7 +14,6 @@ import SyntenyTooltip from './SyntenyTooltip'
 import { LinearSyntenyDisplayModel } from '../model'
 import { getId, MAX_COLOR_RANGE } from '../drawSynteny'
 import { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
-import { transaction } from 'mobx'
 
 interface ClickCoord {
   clientX: number
