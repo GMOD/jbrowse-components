@@ -3,12 +3,18 @@ import JBrowseCommand from '../base'
 
 import readline from 'readline'
 import { createGunzip } from 'zlib'
-import { Args } from '@oclif/core'
+import { Args, Flags } from '@oclif/core'
 
 function getReadline(filename: string) {
   const stream = fs.createReadStream(filename)
   return readline.createInterface({
     input: filename.match(/.b?gz$/) ? stream.pipe(createGunzip()) : stream,
+  })
+}
+
+function getStdReadline() {
+  return readline.createInterface({
+    input: process.stdin,
   })
 }
 
@@ -38,28 +44,37 @@ export function swapIndelCigar(cigar: string) {
 }
 
 export default class ProcessPAF extends JBrowseCommand {
-  // @ts-expect-error
-  target: string
-
   static description = 'Pairwise index the PAF'
 
   static examples = [
     '# processes a local PAF file into our custom format PPAF, which pairwise indexes the PAF',
-    '$ jbrowse process-paf file.paf > output.ppaf',
+    '',
+    '# read from stdin. could also pipe directly from minimap2 here',
+    '$ cat file.paf | jbrowse process-paf | sort -k1,1 -k3,3n | bgzip > out.ppaf.gz',
+    '$ tabix out.ppaf.gz',
+    '$ jbrowse add-track out.ppaf.gz -a mm39,hg38',
+    '',
+    '# read from file instead of stdin',
+    '$ jbrowse process-paf file.paf | sort -k1,1 -k3,3n | bgzip >  out.ppaf.gz',
+    '$ tabix out.ppaf.gz',
+    '$ jbrowse add-track out.ppaf.gz -a mm39,hg38',
   ]
 
   static args = {
     track: Args.string({
-      required: true,
-      description: `Track file or URL`,
+      description: `Track file or URL (optional, stdin if not specified)`,
     }),
+  }
+
+  static flags = {
+    help: Flags.help({ char: 'h' }),
   }
 
   async run() {
     const { args: runArgs } = await this.parse(ProcessPAF)
     const { track: filename } = runArgs
 
-    const rl1 = getReadline(filename)
+    const rl1 = filename ? getReadline(filename) : getStdReadline()
     for await (const line of rl1) {
       const [c1, l1, s1, e1, strand, c2, l2, s2, e2, ...rest] = line.split('\t')
 
