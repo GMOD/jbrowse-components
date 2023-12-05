@@ -139,8 +139,7 @@ export interface RuntimePluginLoadRecord extends PluginLoadRecord {
 export default class PluginManager {
   plugins: Plugin[] = []
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  jexl: any = createJexlInstance()
+  jexl = createJexlInstance()
 
   pluginMetadata: Record<string, PluginMetadata> = {}
 
