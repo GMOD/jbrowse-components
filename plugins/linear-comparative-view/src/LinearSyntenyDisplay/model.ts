@@ -13,7 +13,7 @@ interface Pos {
   offsetPx: number
 }
 
-interface FeatPos {
+export interface FeatPos {
   p11: Pos
   p12: Pos
   p21: Pos
