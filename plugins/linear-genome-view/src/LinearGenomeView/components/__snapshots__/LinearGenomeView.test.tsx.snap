@@ -3,11 +3,11 @@
 exports[`renders one track, one region 1`] = `
 <div>
   <div
-    class="css-1v4ghfe-rel"
+    style="position: relative;"
   >
     <div>
       <div
-        class="css-1v4ghfe-rel"
+        style="position: relative;"
       >
         <div
           class="css-dznme2-rubberbandControl"
@@ -176,7 +176,7 @@ exports[`renders one track, one region 1`] = `
                     autocapitalize="none"
                     autocomplete="off"
                     class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-19qh8xo-MuiInputBase-input-MuiOutlinedInput-input"
-                    id=":r7:"
+                    id="mui-7"
                     placeholder="Search for location"
                     role="combobox"
                     spellcheck="false"
@@ -483,6 +483,7 @@ exports[`renders one track, one region 1`] = `
             </span>
           </span>
           <button
+            aria-haspopup="true"
             class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
             data-testid="track_menu_icon"
             tabindex="0"
@@ -560,11 +561,11 @@ exports[`renders one track, one region 1`] = `
 exports[`renders two tracks, two regions 1`] = `
 <div>
   <div
-    class="css-1v4ghfe-rel"
+    style="position: relative;"
   >
     <div>
       <div
-        class="css-1v4ghfe-rel"
+        style="position: relative;"
       >
         <div
           class="css-dznme2-rubberbandControl"
@@ -749,7 +750,7 @@ exports[`renders two tracks, two regions 1`] = `
                     autocapitalize="none"
                     autocomplete="off"
                     class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-19qh8xo-MuiInputBase-input-MuiOutlinedInput-input"
-                    id=":ra:"
+                    id="mui-9"
                     placeholder="Search for location"
                     role="combobox"
                     spellcheck="false"
@@ -1301,6 +1302,7 @@ exports[`renders two tracks, two regions 1`] = `
             </span>
           </span>
           <button
+            aria-haspopup="true"
             class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
             data-testid="track_menu_icon"
             tabindex="0"
@@ -1432,6 +1434,7 @@ exports[`renders two tracks, two regions 1`] = `
             </span>
           </span>
           <button
+            aria-haspopup="true"
             class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
             data-testid="track_menu_icon"
             tabindex="0"
