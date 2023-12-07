@@ -33,11 +33,6 @@ const ViewMenu = observer(function ({
     moveViewUp: (arg: string) => void
   }
 
-  const popupState = usePopupState({
-    popupId: 'viewMenu',
-    variant: 'popover',
-  })
-
   const items = [
     ...(session.views.length > 1
       ? [
@@ -58,7 +53,29 @@ const ViewMenu = observer(function ({
     ...((typeof menuItems === 'function' ? menuItems() : menuItems) || []),
   ]
 
-  console.log('wt')
+  return (
+    <ViewMenuButton
+      menuItems={items}
+      IconButtonProps={IconButtonProps}
+      IconProps={IconProps}
+    />
+  )
+})
+
+const ViewMenuButton = observer(function ({
+  menuItems,
+  IconProps,
+  IconButtonProps,
+}: {
+  menuItems: any[]
+  IconButtonProps?: IconButtonPropsType
+  IconProps: SvgIconProps
+}) {
+  const popupState = usePopupState({
+    popupId: 'viewMenu',
+    variant: 'popover',
+  })
+
   return (
     <>
       <IconButton
@@ -73,7 +90,7 @@ const ViewMenu = observer(function ({
         onMenuItemClick={(_event: unknown, callback: () => void) => {
           callback()
         }}
-        menuItems={items}
+        menuItems={menuItems}
         popupState={popupState}
       />
     </>
