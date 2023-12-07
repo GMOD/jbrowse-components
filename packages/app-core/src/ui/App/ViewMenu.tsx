@@ -1,18 +1,22 @@
-import React, { useState } from 'react'
+import React from 'react'
 import {
   SvgIconProps,
   IconButton,
   IconButtonProps as IconButtonPropsType,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import Menu from '@jbrowse/core/ui/Menu'
-import { getSession } from '@jbrowse/core/util'
+import { AbstractSessionModel, getSession } from '@jbrowse/core/util'
 import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
-
+import {
+  bindTrigger,
+  bindPopover,
+  usePopupState,
+} from 'material-ui-popup-state/hooks'
 // icons
 import MenuIcon from '@mui/icons-material/Menu'
 import ArrowDownward from '@mui/icons-material/ArrowDownward'
 import ArrowUpward from '@mui/icons-material/ArrowUpward'
+import { CascadingMenu } from '@jbrowse/core/ui'
 
 const ViewMenu = observer(function ({
   model,
@@ -23,12 +27,16 @@ const ViewMenu = observer(function ({
   IconButtonProps?: IconButtonPropsType
   IconProps: SvgIconProps
 }) {
-  const [anchorEl, setAnchorEl] = useState<HTMLElement>()
   const { menuItems } = model
   const session = getSession(model) as AbstractSessionModel & {
     moveViewDown: (arg: string) => void
     moveViewUp: (arg: string) => void
   }
+
+  const popupState = usePopupState({
+    popupId: 'viewMenu',
+    variant: 'popover',
+  })
 
   const items = [
     ...(session.views.length > 1
@@ -54,20 +62,18 @@ const ViewMenu = observer(function ({
     <>
       <IconButton
         {...IconButtonProps}
-        onClick={event => setAnchorEl(event.currentTarget)}
+        {...bindTrigger(popupState)}
         data-testid="view_menu_icon"
       >
         <MenuIcon {...IconProps} fontSize="small" />
       </IconButton>
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onMenuItemClick={(_event, callback) => {
+      <CascadingMenu
+        {...bindPopover(popupState)}
+        onMenuItemClick={(_event: unknown, callback: () => void) => {
           callback()
-          setAnchorEl(undefined)
         }}
-        onClose={() => setAnchorEl(undefined)}
         menuItems={items}
+        popupState={popupState}
       />
     </>
   )
