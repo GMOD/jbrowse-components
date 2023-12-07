@@ -41,6 +41,7 @@
     "@node-oauth/express-oauth-server": "^3.0.0",
     "@oclif/test": "^2.4.8",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.3",
+    "@r2wc/react-to-web-component": "^2.0.3",
     "@storybook/addon-essentials": "^7.0.0",
     "@storybook/node-logger": "^7.0.0",
     "@storybook/react": "^7.0.0",

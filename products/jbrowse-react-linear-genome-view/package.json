@@ -69,7 +69,6 @@
     "@jbrowse/product-core": "^2.9.0",
     "@mui/icons-material": "^5.0.0",
     "@mui/material": "^5.10.17",
-    "@r2wc/react-to-web-component": "^2.0.3",
     "buffer": "^6.0.3",
     "mobx": "^6.6.0",
     "mobx-react": "^9.0.0",
