@@ -12,11 +12,12 @@ import {
   bindPopover,
   usePopupState,
 } from 'material-ui-popup-state/hooks'
+import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
+
 // icons
 import MenuIcon from '@mui/icons-material/Menu'
 import ArrowDownward from '@mui/icons-material/ArrowDownward'
 import ArrowUpward from '@mui/icons-material/ArrowUpward'
-import { CascadingMenu } from '@jbrowse/core/ui'
 
 const ViewMenu = observer(function ({
   model,

@@ -6,7 +6,7 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-const delay = { timeout: 30000 }
+const delay = { timeout: 10000 }
 const opts = [{}, delay]
 
 test('access about menu', async () => {
@@ -123,8 +123,7 @@ test('opens reference sequence track and expects zoom in message', async () => {
 }, 30000)
 
 test('click to display center line with correct value', async () => {
-  const { view, findAllByText, findByTestId, findByText } = await createView()
-  await findAllByText('ctgA', ...opts)
+  const { view, findByTestId, findByText } = await createView()
   fireEvent.click(await findByTestId(hts('bigbed_genes'), ...opts))
 
   // opens the view menu and selects show center line
