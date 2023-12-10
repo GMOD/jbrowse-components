@@ -18,7 +18,7 @@ import { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
 interface ClickCoord {
   clientX: number
   clientY: number
-  feature: any
+  feature: any // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 const LinearSyntenyRendering = observer(function ({

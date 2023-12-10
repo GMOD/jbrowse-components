@@ -15,7 +15,10 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
           class="css-10rokvf-container"
         >
           <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
+            aria-controls="view-menu"
+            aria-haspopup="true"
+            aria-label="more"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-edgeStart MuiIconButton-sizeSmall css-15c2os-MuiButtonBase-root-MuiIconButton-root-iconRoot"
             data-testid="view_menu_icon"
             tabindex="0"
             type="button"
