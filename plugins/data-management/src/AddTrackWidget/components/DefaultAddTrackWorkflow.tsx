@@ -131,11 +131,6 @@ const DefaultAddTrackWorkflow = observer(function ({
           cancelCallback: () => jobsManager.abortJob(),
         }
         jobsManager.queueJob(newEntry)
-      } else {
-        session.notify(
-          'Open a new view, or use the track selector in an existing view, to view this track',
-          'info',
-        )
       }
       model.clearData()
       if (isSessionModelWithWidgets(session)) {
@@ -146,11 +141,6 @@ const DefaultAddTrackWorkflow = observer(function ({
         'Failed to add track.\nThe configuration of this file is not currently supported.',
       )
     }
-  }
-
-  function handleBack() {
-    setTrackErrorMessage(undefined)
-    setActiveStep(activeStep - 1)
   }
 
   function isNextDisabled() {
@@ -179,7 +169,10 @@ const DefaultAddTrackWorkflow = observer(function ({
               <div className={classes.actionsContainer}>
                 <Button
                   disabled={activeStep === 0}
-                  onClick={handleBack}
+                  onClick={() => {
+                    setTrackErrorMessage(undefined)
+                    setActiveStep(activeStep - 1)
+                  }}
                   className={classes.button}
                 >
                   Back
