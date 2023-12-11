@@ -60,7 +60,9 @@ const FileSelector = observer(function (props: {
       : fileOrUrl,
   )
   const accounts = isAppRootModel(rootModel)
-    ? [...rootModel.internetAccounts]
+    ? rootModel.internetAccounts.filter(
+        f => f.type !== 'HTTPBasicInternetAccount',
+      )
     : []
 
   const [recentlyUsedInternetAccounts, setRecentlyUsedInternetAccounts] =
