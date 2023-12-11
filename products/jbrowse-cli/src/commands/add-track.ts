@@ -428,7 +428,7 @@ export default class AddTrack extends JBrowseCommand {
       /\.gff3?\.b?gz$/i.test(location) ||
       /\.vcf\.b?gz$/i.test(location) ||
       /\.bed\.b?gz$/i.test(location) ||
-      /\.ppaf\.b?gz$/i.test(location)
+      /\.pif\.b?gz$/i.test(location)
     ) {
       return {
         file: location,
@@ -546,10 +546,10 @@ export default class AddTrack extends JBrowseCommand {
         type: 'BedAdapter',
         bedLocation: makeLocation(location),
       }
-    } else if (/\.ppaf\.b?gz$/i.test(location)) {
+    } else if (/\.pif\.b?gz$/i.test(location)) {
       return {
         type: 'PairwiseIndexedPAFAdapter',
-        ppafGzLocation: makeLocation(location),
+        pifGzLocation: makeLocation(location),
         index: {
           location: makeLocation(index || `${location}.tbi`),
           indexType: index?.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',

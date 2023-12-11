@@ -9,9 +9,9 @@ import { setup } from '../testUtil'
 const base = path.join(__dirname, '..', '..', 'test', 'data')
 const simplePaf = path.join(base, 'volvox_inv_indels.paf')
 
-describe('process-paf', () => {
+describe('create-pif', () => {
   setup
-    .command(['process-paf', simplePaf])
+    .command(['create-pif', simplePaf])
     .it('processes volvox paf', async ctx => {
       let res = ''
       for (const obj of ctx.stdout) {

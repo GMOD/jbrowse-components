@@ -53,8 +53,9 @@ It is likely preferable in most cases to install the tools globally with
 - [`jbrowse add-track-json TRACK`](#jbrowse-add-track-json-track)
 - [`jbrowse admin-server`](#jbrowse-admin-server)
 - [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
+- [`jbrowse create-pif [TRACK]`](#jbrowse-create-pif-track)
+- [`jbrowse create-pifgz FILE [OUTPUT]`](#jbrowse-create-pifgz-file-output)
 - [`jbrowse help [COMMANDS]`](#jbrowse-help-commands)
-- [`jbrowse process-paf [TRACK]`](#jbrowse-process-paf-track)
 - [`jbrowse remove-track TRACK`](#jbrowse-remove-track-track)
 - [`jbrowse set-default-session`](#jbrowse-set-default-session)
 - [`jbrowse sort-gff FILE`](#jbrowse-sort-gff-file)
@@ -458,6 +459,82 @@ EXAMPLES
 _See code:
 [src/commands/create.ts](https://github.com/GMOD/jbrowse-components/blob/v2.9.0/products/jbrowse-cli/src/commands/create.ts)_
 
+## `jbrowse create-pif [TRACK]`
+
+Create pairwise indexed PAF file (PIF)
+
+```
+USAGE
+  $ jbrowse create-pif [TRACK] [-h]
+
+ARGUMENTS
+  TRACK  Track file (optional, reads from stdin if not specified)
+
+FLAGS
+  -h, --help  Show CLI help.
+
+DESCRIPTION
+  Create pairwise indexed PAF file (PIF)
+
+EXAMPLES
+  # processes a local PAF file into our custom format, PIF (pairwise indexed PAF)
+
+
+
+  # read from stdin. could also pipe directly from minimap2 here
+
+  $ cat file.paf | jbrowse process-paf | sort -k1,1 -k3,3n | bgzip > out.pif.gz
+
+  $ tabix out.pif.gz
+
+  $ jbrowse add-track out.pif.gz -a mm39,hg38
+
+
+
+  # read from file instead of stdin
+
+  $ jbrowse process-paf file.paf | sort -k1,1 -k3,3n | bgzip >  out.pif.gz
+
+  $ tabix out.pif.gz
+
+  $ jbrowse add-track out.pif.gz -a mm39,hg38
+```
+
+_See code:
+[src/commands/create-pif.ts](https://github.com/GMOD/jbrowse-components/blob/v2.9.0/products/jbrowse-cli/src/commands/create-pif.ts)_
+
+## `jbrowse create-pifgz FILE [OUTPUT]`
+
+Helper utility to sort GFF files for tabix. Moves all lines starting with # to
+the top of the file, and sort by refname and start position using unix utilities
+sort and grep
+
+```
+USAGE
+  $ jbrowse create-pifgz FILE [OUTPUT] [-h]
+
+ARGUMENTS
+  FILE    GFF file
+  OUTPUT  Where to write the output file. If unspecified, will be ${file}.pif.gz
+
+FLAGS
+  -h, --help  Show CLI help.
+
+DESCRIPTION
+  Helper utility to sort GFF files for tabix. Moves all lines starting with # to the top of the file, and sort by
+  refname and start position using unix utilities sort and grep
+
+EXAMPLES
+  # sort gff and pipe to bgzip
+
+  $ jbrowse sort-gff input.gff | bgzip > sorted.gff.gz
+
+  $ tabix sorted.gff.gz
+```
+
+_See code:
+[src/commands/create-pifgz.ts](https://github.com/GMOD/jbrowse-components/blob/v2.9.0/products/jbrowse-cli/src/commands/create-pifgz.ts)_
+
 ## `jbrowse help [COMMANDS]`
 
 Display help for jbrowse.
@@ -478,50 +555,6 @@ DESCRIPTION
 
 _See code:
 [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.2.20/src/commands/help.ts)_
-
-## `jbrowse process-paf [TRACK]`
-
-Pairwise index the PAF
-
-```
-USAGE
-  $ jbrowse process-paf [TRACK] [-h]
-
-ARGUMENTS
-  TRACK  Track file or URL (optional, stdin if not specified)
-
-FLAGS
-  -h, --help  Show CLI help.
-
-DESCRIPTION
-  Pairwise index the PAF
-
-EXAMPLES
-  # processes a local PAF file into our custom format PPAF, which pairwise indexes the PAF
-
-
-
-  # read from stdin. could also pipe directly from minimap2 here
-
-  $ cat file.paf | jbrowse process-paf | sort -k1,1 -k3,3n | bgzip > out.ppaf.gz
-
-  $ tabix out.ppaf.gz
-
-  $ jbrowse add-track out.ppaf.gz -a mm39,hg38
-
-
-
-  # read from file instead of stdin
-
-  $ jbrowse process-paf file.paf | sort -k1,1 -k3,3n | bgzip >  out.ppaf.gz
-
-  $ tabix out.ppaf.gz
-
-  $ jbrowse add-track out.ppaf.gz -a mm39,hg38
-```
-
-_See code:
-[src/commands/process-paf.ts](https://github.com/GMOD/jbrowse-components/blob/v2.9.0/products/jbrowse-cli/src/commands/process-paf.ts)_
 
 ## `jbrowse remove-track TRACK`
 

@@ -43,26 +43,26 @@ export function swapIndelCigar(cigar: string) {
   return cigar.replaceAll('D', 'K').replaceAll('I', 'D').replaceAll('K', 'I')
 }
 
-export default class ProcessPAF extends JBrowseCommand {
-  static description = 'Pairwise index the PAF'
+export default class CreatePIF extends JBrowseCommand {
+  static description = 'Create pairwise indexed PAF file (PIF)'
 
   static examples = [
-    '# processes a local PAF file into our custom format PPAF, which pairwise indexes the PAF',
+    '# processes a local PAF file into our custom format, PIF (pairwise indexed PAF)',
     '',
     '# read from stdin. could also pipe directly from minimap2 here',
-    '$ cat file.paf | jbrowse process-paf | sort -k1,1 -k3,3n | bgzip > out.ppaf.gz',
-    '$ tabix out.ppaf.gz',
-    '$ jbrowse add-track out.ppaf.gz -a mm39,hg38',
+    '$ cat file.paf | jbrowse process-paf | sort -k1,1 -k3,3n | bgzip > out.pif.gz',
+    '$ tabix out.pif.gz',
+    '$ jbrowse add-track out.pif.gz -a mm39,hg38',
     '',
     '# read from file instead of stdin',
-    '$ jbrowse process-paf file.paf | sort -k1,1 -k3,3n | bgzip >  out.ppaf.gz',
-    '$ tabix out.ppaf.gz',
-    '$ jbrowse add-track out.ppaf.gz -a mm39,hg38',
+    '$ jbrowse process-paf file.paf | sort -k1,1 -k3,3n | bgzip >  out.pif.gz',
+    '$ tabix out.pif.gz',
+    '$ jbrowse add-track out.pif.gz -a mm39,hg38',
   ]
 
   static args = {
     track: Args.string({
-      description: `Track file or URL (optional, stdin if not specified)`,
+      description: `Track file (optional, reads from stdin if not specified)`,
     }),
   }
 
@@ -71,7 +71,7 @@ export default class ProcessPAF extends JBrowseCommand {
   }
 
   async run() {
-    const { args: runArgs } = await this.parse(ProcessPAF)
+    const { args: runArgs } = await this.parse(CreatePIF)
     const { track: filename } = runArgs
 
     const rl1 = filename ? getReadline(filename) : getStdReadline()

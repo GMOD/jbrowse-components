@@ -107,11 +107,11 @@
     },
     {
       "type": "SyntenyTrack",
-      "trackId": "hs1ToMm39.over.chain.ppaf",
-      "name": "hs1ToMm39.over.chain.ppaf",
+      "trackId": "hs1ToMm39.over.chain.pif",
+      "name": "hs1ToMm39.over.chain.pif",
       "adapter": {
         "type": "PairwiseIndexedPAFAdapter",
-        "ppafGzLocation": {
+        "pifGzLocation": {
           "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hs1_vs_mm39/hs1ToMm39.over.chain.ppaf.gz",
           "locationType": "UriLocation"
         },
