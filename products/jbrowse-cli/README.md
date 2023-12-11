@@ -54,7 +54,7 @@ It is likely preferable in most cases to install the tools globally with
 - [`jbrowse admin-server`](#jbrowse-admin-server)
 - [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
 - [`jbrowse create-pif [TRACK]`](#jbrowse-create-pif-track)
-- [`jbrowse create-pifgz FILE [OUTPUT]`](#jbrowse-create-pifgz-file-output)
+- [`jbrowse create-pifgz FILE [OUT]`](#jbrowse-create-pifgz-file-out)
 - [`jbrowse help [COMMANDS]`](#jbrowse-help-commands)
 - [`jbrowse remove-track TRACK`](#jbrowse-remove-track-track)
 - [`jbrowse set-default-session`](#jbrowse-set-default-session)
@@ -503,7 +503,7 @@ EXAMPLES
 _See code:
 [src/commands/create-pif.ts](https://github.com/GMOD/jbrowse-components/blob/v2.9.0/products/jbrowse-cli/src/commands/create-pif.ts)_
 
-## `jbrowse create-pifgz FILE [OUTPUT]`
+## `jbrowse create-pifgz FILE [OUT]`
 
 Helper utility to sort GFF files for tabix. Moves all lines starting with # to
 the top of the file, and sort by refname and start position using unix utilities
@@ -511,11 +511,11 @@ sort and grep
 
 ```
 USAGE
-  $ jbrowse create-pifgz FILE [OUTPUT] [-h]
+  $ jbrowse create-pifgz FILE [OUT] [-h]
 
 ARGUMENTS
-  FILE    GFF file
-  OUTPUT  Where to write the output file. If unspecified, will be ${file}.pif.gz
+  FILE  GFF file
+  OUT   Where to write the output file. If unspecified, will be ${file}.pif.gz
 
 FLAGS
   -h, --help  Show CLI help.
