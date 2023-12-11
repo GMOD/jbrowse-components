@@ -7,9 +7,9 @@ jobs:
     name: Test and typecheck on node 20.x and ubuntu-latest
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Use Node.js 20.x
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '20.5.1'
       - name: Install deps (with cache)
@@ -25,9 +25,9 @@ jobs:
     name: Build website on node 20 and ubuntu-latest
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Use Node.js 20
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '20.5.1'
       - name: Install website deps (with cache)
@@ -49,9 +49,9 @@ jobs:
     name: Build whole repo on node 20 and ubuntu-latest
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Use Node.js 20
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
       - name: Install deps (with cache)
@@ -83,9 +83,9 @@ jobs:
     name: Build only jbrowse-web and upload to s3 on node 20 and ubuntu-latest
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Use Node.js 20
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
       - name: Install deps (with cache)
@@ -111,9 +111,9 @@ jobs:
     name: Build and deploy static linear genome view Storybook site to AWS S3
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Use Node.js 20
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
       - name: Install deps (with cache)
@@ -138,9 +138,9 @@ jobs:
     name: Build and deploy static react app Storybook site to AWS S3
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Use Node.js 20
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
       - name: Install deps (with cache)
@@ -166,9 +166,9 @@ jobs:
     name: Build and deploy static circular genome view Storybook site to AWS S3
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Use Node.js 20
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
       - name: Install deps (with cache)
