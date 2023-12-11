@@ -19,4 +19,3 @@ lerna-debug.log
 .yarn
 .yarnrc
 *.tsbuildinfo
-products/jbrowse-cli/test/data/volvox_inv_indels.paf.pif.gz*

@@ -14,7 +14,7 @@ const exists = (p: string) => fs.existsSync(p)
 describe('create-pif', () => {
   const fn = path.basename(simplePaf, '.paf') + '.pif.gz'
   setup
-    .command(['create-pifgz', simplePaf, '--out', fn])
+    .command(['create-pif', simplePaf, '--out', fn])
     .it('processes volvox paf', () => {
       expect(exists(fn)).toBeTruthy()
     })

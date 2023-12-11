@@ -53,8 +53,7 @@ It is likely preferable in most cases to install the tools globally with
 - [`jbrowse add-track-json TRACK`](#jbrowse-add-track-json-track)
 - [`jbrowse admin-server`](#jbrowse-admin-server)
 - [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
-- [`jbrowse create-pif [TRACK]`](#jbrowse-create-pif-track)
-- [`jbrowse create-pifgz FILE [OUT]`](#jbrowse-create-pifgz-file-out)
+- [`jbrowse create-pif FILE`](#jbrowse-create-pif-file)
 - [`jbrowse help [COMMANDS]`](#jbrowse-help-commands)
 - [`jbrowse remove-track TRACK`](#jbrowse-remove-track-track)
 - [`jbrowse set-default-session`](#jbrowse-set-default-session)
@@ -459,81 +458,35 @@ EXAMPLES
 _See code:
 [src/commands/create.ts](https://github.com/GMOD/jbrowse-components/blob/v2.9.0/products/jbrowse-cli/src/commands/create.ts)_
 
-## `jbrowse create-pif [TRACK]`
+## `jbrowse create-pif FILE`
 
-Create pairwise indexed PAF file (PIF)
+creates pairwise indexed PAF (PIF), with bgzip and tabix
 
 ```
 USAGE
-  $ jbrowse create-pif [TRACK] [-h]
+  $ jbrowse create-pif FILE [--out <value>] [--csi <value>] [-h]
 
 ARGUMENTS
-  TRACK  Track file (optional, reads from stdin if not specified)
+  FILE  PAF file as input
 
 FLAGS
-  -h, --help  Show CLI help.
+  -h, --help         Show CLI help.
+      --csi=<value>  Create a CSI index for the PIF file instead of TBI
+      --out=<value>  Where to write the output file. If unspecified, will be ${file}.pif.gz
 
 DESCRIPTION
-  Create pairwise indexed PAF file (PIF)
+  creates pairwise indexed PAF (PIF), with bgzip and tabix
 
 EXAMPLES
-  # processes a local PAF file into our custom format, PIF (pairwise indexed PAF)
+  $ jbrowse create-pif input.paf # creates input.pif.gz in same directory
 
 
 
-  # read from stdin. could also pipe directly from minimap2 here
-
-  $ cat file.paf | jbrowse process-paf | sort -k1,1 -k3,3n | bgzip > out.pif.gz
-
-  $ tabix out.pif.gz
-
-  $ jbrowse add-track out.pif.gz -a mm39,hg38
-
-
-
-  # read from file instead of stdin
-
-  $ jbrowse process-paf file.paf | sort -k1,1 -k3,3n | bgzip >  out.pif.gz
-
-  $ tabix out.pif.gz
-
-  $ jbrowse add-track out.pif.gz -a mm39,hg38
+  $ jbrowse create-pif input.paf --out output.pif.gz # specify output file, creates output.pif.gz.tbi also
 ```
 
 _See code:
 [src/commands/create-pif.ts](https://github.com/GMOD/jbrowse-components/blob/v2.9.0/products/jbrowse-cli/src/commands/create-pif.ts)_
-
-## `jbrowse create-pifgz FILE [OUT]`
-
-Helper utility to sort GFF files for tabix. Moves all lines starting with # to
-the top of the file, and sort by refname and start position using unix utilities
-sort and grep
-
-```
-USAGE
-  $ jbrowse create-pifgz FILE [OUT] [-h]
-
-ARGUMENTS
-  FILE  GFF file
-  OUT   Where to write the output file. If unspecified, will be ${file}.pif.gz
-
-FLAGS
-  -h, --help  Show CLI help.
-
-DESCRIPTION
-  Helper utility to sort GFF files for tabix. Moves all lines starting with # to the top of the file, and sort by
-  refname and start position using unix utilities sort and grep
-
-EXAMPLES
-  # sort gff and pipe to bgzip
-
-  $ jbrowse sort-gff input.gff | bgzip > sorted.gff.gz
-
-  $ tabix sorted.gff.gz
-```
-
-_See code:
-[src/commands/create-pifgz.ts](https://github.com/GMOD/jbrowse-components/blob/v2.9.0/products/jbrowse-cli/src/commands/create-pifgz.ts)_
 
 ## `jbrowse help [COMMANDS]`
 
