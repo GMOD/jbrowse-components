@@ -53,8 +53,8 @@ It is likely preferable in most cases to install the tools globally with
 - [`jbrowse add-track-json TRACK`](#jbrowse-add-track-json-track)
 - [`jbrowse admin-server`](#jbrowse-admin-server)
 - [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
-- [`jbrowse create-pif FILE`](#jbrowse-create-pif-file)
 - [`jbrowse help [COMMANDS]`](#jbrowse-help-commands)
+- [`jbrowse make-pif FILE`](#jbrowse-make-pif-file)
 - [`jbrowse remove-track TRACK`](#jbrowse-remove-track-track)
 - [`jbrowse set-default-session`](#jbrowse-set-default-session)
 - [`jbrowse sort-gff FILE`](#jbrowse-sort-gff-file)
@@ -458,36 +458,6 @@ EXAMPLES
 _See code:
 [src/commands/create.ts](https://github.com/GMOD/jbrowse-components/blob/v2.9.0/products/jbrowse-cli/src/commands/create.ts)_
 
-## `jbrowse create-pif FILE`
-
-creates pairwise indexed PAF (PIF), with bgzip and tabix
-
-```
-USAGE
-  $ jbrowse create-pif FILE [--out <value>] [--csi <value>] [-h]
-
-ARGUMENTS
-  FILE  PAF file as input
-
-FLAGS
-  -h, --help         Show CLI help.
-      --csi=<value>  Create a CSI index for the PIF file instead of TBI
-      --out=<value>  Where to write the output file. If unspecified, will be ${file}.pif.gz
-
-DESCRIPTION
-  creates pairwise indexed PAF (PIF), with bgzip and tabix
-
-EXAMPLES
-  $ jbrowse create-pif input.paf # creates input.pif.gz in same directory
-
-
-
-  $ jbrowse create-pif input.paf --out output.pif.gz # specify output file, creates output.pif.gz.tbi also
-```
-
-_See code:
-[src/commands/create-pif.ts](https://github.com/GMOD/jbrowse-components/blob/v2.9.0/products/jbrowse-cli/src/commands/create-pif.ts)_
-
 ## `jbrowse help [COMMANDS]`
 
 Display help for jbrowse.
@@ -508,6 +478,36 @@ DESCRIPTION
 
 _See code:
 [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.2.20/src/commands/help.ts)_
+
+## `jbrowse make-pif FILE`
+
+creates pairwise indexed PAF (PIF), with bgzip and tabix
+
+```
+USAGE
+  $ jbrowse make-pif FILE [--out <value>] [--csi] [-h]
+
+ARGUMENTS
+  FILE  PAF file as input
+
+FLAGS
+  -h, --help         Show CLI help.
+      --csi          Create a CSI index for the PIF file instead of TBI
+      --out=<value>  Where to write the output file. will write ${file}.pif.gz and ${file}.pif.gz.tbi
+
+DESCRIPTION
+  creates pairwise indexed PAF (PIF), with bgzip and tabix
+
+EXAMPLES
+  $ jbrowse pif input.paf # creates input.pif.gz in same directory
+
+
+
+  $ jbrowse pif input.paf --out output.pif.gz # specify output file, creates output.pif.gz.tbi also
+```
+
+_See code:
+[src/commands/make-pif.ts](https://github.com/GMOD/jbrowse-components/blob/v2.9.0/products/jbrowse-cli/src/commands/make-pif.ts)_
 
 ## `jbrowse remove-track TRACK`
 

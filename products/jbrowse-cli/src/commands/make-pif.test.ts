@@ -12,12 +12,16 @@ const simplePaf = path.join(base, 'volvox_inv_indels.paf')
 
 const exists = (p: string) => fs.existsSync(p)
 
-describe('create-pif', () => {
+describe('make-pif', () => {
   const fn = path.basename(simplePaf, '.paf') + '.pif.gz'
   setup
-    .command(['create-pif', simplePaf, '--out', fn])
+    .command(['make-pif', simplePaf, '--out', fn])
     .it('processes volvox paf', () => {
       expect(exists(fn)).toBeTruthy()
       expect(gunzipSync(fs.readFileSync(fn)).toString()).toMatchSnapshot()
     })
+  setup.command(['make-pif', simplePaf, '--out', fn, '--csi']).it('csi', () => {
+    expect(exists(fn)).toBeTruthy()
+    expect(exists(fn + '.csi')).toBeTruthy()
+  })
 })

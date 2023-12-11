@@ -49,7 +49,7 @@ export function swapIndelCigar(cigar: string) {
 
 export async function createPIF(
   filename: string | undefined,
-  stream: { write: any },
+  stream: { write: (arg: string) => void },
 ) {
   const rl1 = filename ? getReadline(filename) : getStdReadline()
   for await (const line of rl1) {
@@ -76,22 +76,22 @@ export async function createPIF(
   rl1.close()
 }
 
-export default class CreatePIF extends JBrowseCommand {
+export default class MakePIF extends JBrowseCommand {
   static description =
     'creates pairwise indexed PAF (PIF), with bgzip and tabix'
 
   static examples = [
-    '$ jbrowse create-pif input.paf # creates input.pif.gz in same directory',
+    '$ jbrowse pif input.paf # creates input.pif.gz in same directory',
     '',
-    '$ jbrowse create-pif input.paf --out output.pif.gz # specify output file, creates output.pif.gz.tbi also',
+    '$ jbrowse pif input.paf --out output.pif.gz # specify output file, creates output.pif.gz.tbi also',
   ]
 
   static flags = {
     out: Flags.string({
       description:
-        'Where to write the output file. If unspecified, will be ${file}.pif.gz',
+        'Where to write the output file. will write ${file}.pif.gz and ${file}.pif.gz.tbi',
     }),
-    csi: Flags.string({
+    csi: Flags.boolean({
       description: 'Create a CSI index for the PIF file instead of TBI',
     }),
     help: Flags.help({ char: 'h' }),
@@ -107,8 +107,7 @@ export default class CreatePIF extends JBrowseCommand {
     const {
       args: { file },
       flags: { out, csi },
-    } = await this.parse(CreatePIF)
-    console.error('wtf')
+    } = await this.parse(MakePIF)
 
     if (
       commandExistsSync('sh') &&
@@ -117,13 +116,14 @@ export default class CreatePIF extends JBrowseCommand {
       commandExistsSync('tabix') &&
       commandExistsSync('bgzip')
     ) {
-      console.error('wtf')
-      const fn = out || `${path.basename(file, '.paf')}.pif.gz`
+      const fn = out || `${path.basename(file || 'output', '.paf')}.pif.gz`
       const child = spawn(
         'sh',
         [
           '-c',
-          `sort -t"\`printf '\t'\`" -k1,1 -k3,3n | bgzip > ${fn}; tabix -s1 -b3 -e4 ${fn}`,
+          `sort -t"\`printf '\t'\`" -k1,1 -k3,3n | bgzip > ${fn}; tabix ${
+            csi ? '-C ' : ''
+          }-s1 -b3 -e4 ${fn}`,
         ],
         {
           env: { ...process.env, LC_ALL: 'C' },
