@@ -7,11 +7,12 @@ jobs:
     name: Test and typecheck on node 20.x and ubuntu-latest
     runs-on: ubuntu-latest
     steps:
+      - run: sudo apt-get -y install tabix
       - uses: actions/checkout@v4
       - name: Use Node.js 20.x
         uses: actions/setup-node@v4
         with:
-          node-version: '20.5.1'
+          node-version: '20'
       - name: Install deps (with cache)
         uses: bahmutov/npm-install@v1
       - name: Test codebase
@@ -29,7 +30,7 @@ jobs:
       - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: '20.5.1'
+          node-version: '20'
       - name: Install website deps (with cache)
         uses: bahmutov/npm-install@v1
         with:

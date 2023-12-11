@@ -54,6 +54,7 @@ It is likely preferable in most cases to install the tools globally with
 - [`jbrowse admin-server`](#jbrowse-admin-server)
 - [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
 - [`jbrowse help [COMMANDS]`](#jbrowse-help-commands)
+- [`jbrowse make-pif FILE`](#jbrowse-make-pif-file)
 - [`jbrowse remove-track TRACK`](#jbrowse-remove-track-track)
 - [`jbrowse set-default-session`](#jbrowse-set-default-session)
 - [`jbrowse sort-gff FILE`](#jbrowse-sort-gff-file)
@@ -478,6 +479,36 @@ DESCRIPTION
 _See code:
 [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.2.20/src/commands/help.ts)_
 
+## `jbrowse make-pif FILE`
+
+creates pairwise indexed PAF (PIF), with bgzip and tabix
+
+```
+USAGE
+  $ jbrowse make-pif FILE [--out <value>] [--csi] [-h]
+
+ARGUMENTS
+  FILE  PAF file as input
+
+FLAGS
+  -h, --help         Show CLI help.
+      --csi          Create a CSI index for the PIF file instead of TBI
+      --out=<value>  Where to write the output file. will write ${file}.pif.gz and ${file}.pif.gz.tbi
+
+DESCRIPTION
+  creates pairwise indexed PAF (PIF), with bgzip and tabix
+
+EXAMPLES
+  $ jbrowse pif input.paf # creates input.pif.gz in same directory
+
+
+
+  $ jbrowse pif input.paf --out output.pif.gz # specify output file, creates output.pif.gz.tbi also
+```
+
+_See code:
+[src/commands/make-pif.ts](https://github.com/GMOD/jbrowse-components/blob/v2.9.0/products/jbrowse-cli/src/commands/make-pif.ts)_
+
 ## `jbrowse remove-track TRACK`
 
 Remove a track configuration from a JBrowse 2 configuration. Be aware that this
@@ -553,10 +584,13 @@ sort and grep
 
 ```
 USAGE
-  $ jbrowse sort-gff FILE
+  $ jbrowse sort-gff FILE [-h]
 
 ARGUMENTS
   FILE  GFF file
+
+FLAGS
+  -h, --help  Show CLI help.
 
 DESCRIPTION
   Helper utility to sort GFF files for tabix. Moves all lines starting with # to the top of the file, and sort by

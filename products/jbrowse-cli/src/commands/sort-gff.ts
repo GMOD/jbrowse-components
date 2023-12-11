@@ -1,4 +1,4 @@
-import { Args } from '@oclif/core'
+import { Args, Flags } from '@oclif/core'
 import { sync as commandExistsSync } from 'command-exists'
 
 import { spawn } from 'child_process'
@@ -19,6 +19,10 @@ export default class SortGff extends JBrowseCommand {
       required: true,
       description: `GFF file`,
     }),
+  }
+
+  static flags = {
+    help: Flags.help({ char: 'h' }),
   }
 
   async run() {

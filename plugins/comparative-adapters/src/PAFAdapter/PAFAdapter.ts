@@ -15,15 +15,15 @@ import { unzip } from '@gmod/bgzf-filehandle'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 
 // locals
-import SyntenyFeature from './SyntenyFeature'
-import { isGzip, parseLineByLine } from '../util'
+import SyntenyFeature from '../SyntenyFeature'
 import {
-  getWeightedMeans,
   flipCigar,
   swapIndelCigar,
   parsePAFLine,
-  PAFRecord,
-} from './util'
+  isGzip,
+  parseLineByLine,
+} from '../util'
+import { getWeightedMeans, PAFRecord } from './util'
 
 const { parseCigar } = MismatchParser
 
@@ -102,8 +102,12 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
 
       // The index of the assembly name in the query list corresponds to the
       // adapter in the subadapters list
-      const index = assemblyNames.indexOf(query.assemblyName)
       const { start: qstart, end: qend, refName: qref, assemblyName } = query
+      const index = assemblyNames.indexOf(assemblyName)
+
+      // if the getFeatures::query is on the query assembly, flip orientation
+      // of data
+      const flip = index === 0
       if (index === -1) {
         console.warn(`${assemblyName} not found in this adapter`)
         observer.complete()
@@ -117,9 +121,8 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
         let mateName = ''
         let mateStart = 0
         let mateEnd = 0
-        const flip = index === 0
-        const assemblyName = assemblyNames[+!flip]
-        if (index === 0) {
+
+        if (flip) {
           start = r.qstart
           end = r.qend
           refName = r.qname

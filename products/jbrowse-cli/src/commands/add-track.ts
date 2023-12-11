@@ -268,6 +268,7 @@ export default class AddTrack extends JBrowseCommand {
     if (
       [
         'PAFAdapter',
+        'PairwiseIndexedPAFAdapter',
         'DeltaAdapter',
         'ChainAdapter',
         'MashMapAdapter',
@@ -276,6 +277,7 @@ export default class AddTrack extends JBrowseCommand {
       ].includes(adapter.type)
     ) {
       // @ts-expect-error
+      // this is for the adapter's assembly names
       adapter.assemblyNames = assemblyNames.split(',').map(a => a.trim())
     }
 
@@ -425,7 +427,8 @@ export default class AddTrack extends JBrowseCommand {
     } else if (
       /\.gff3?\.b?gz$/i.test(location) ||
       /\.vcf\.b?gz$/i.test(location) ||
-      /\.bed\.b?gz$/i.test(location)
+      /\.bed\.b?gz$/i.test(location) ||
+      /\.pif\.b?gz$/i.test(location)
     ) {
       return {
         file: location,
@@ -543,6 +546,15 @@ export default class AddTrack extends JBrowseCommand {
         type: 'BedAdapter',
         bedLocation: makeLocation(location),
       }
+    } else if (/\.pif\.b?gz$/i.test(location)) {
+      return {
+        type: 'PairwiseIndexedPAFAdapter',
+        pifGzLocation: makeLocation(location),
+        index: {
+          location: makeLocation(index || `${location}.tbi`),
+          indexType: index?.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
+        },
+      }
     } else if (/\.bed\.b?gz$/i.test(location)) {
       return {
         type: 'BedTabixAdapter',
@@ -657,6 +669,7 @@ export default class AddTrack extends JBrowseCommand {
       DeltaAdapter: 'SyntenyTrack',
       ChainAdapter: 'SyntenyTrack',
       MashMapAdapter: 'SyntenyTrack',
+      PairwiseIndexedPAFAdapter: 'SyntenyTrack',
       MCScanAnchorsAdapter: 'SyntenyTrack',
       MCScanSimpleAnchorsAdapter: 'SyntenyTrack',
     }

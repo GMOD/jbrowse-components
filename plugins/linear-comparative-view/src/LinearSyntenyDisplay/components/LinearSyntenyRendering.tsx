@@ -136,6 +136,7 @@ const LinearSyntenyRendering = observer(function ({
             const f2 = f1.mate
             const unitMultiplier2 = Math.floor(MAX_COLOR_RANGE / cigar.length)
             const cigarIdx = getId(r2, g2, b2, unitMultiplier2)
+            const cigarOp = cigar[cigarIdx]
             const l1 = f1.end - f1.start
             const l2 = f2.end - f2.start
             const identity = f1.identity
@@ -145,22 +146,17 @@ const LinearSyntenyRendering = observer(function ({
               `Loc1: ${assembleLocString(f1)}`,
               `Loc2: ${assembleLocString(f2)}`,
               `Inverted: ${f1.strand === -1}`,
-              `Query len: ${l1}`,
-              `Target len: ${l2}`,
+              `Query len: ${l1.toLocaleString('en-US')}`,
+              `Target len: ${l2.toLocaleString('en-US')}`,
+              identity ? `Identity: ${identity.toPrecision(2)}` : '',
+              cigarOp ? `CIGAR operator: ${cigarOp}${cigar[cigarIdx + 1]}` : '',
+              n1 ? `Name 1: ${n1}` : '',
+              n2 ? `Name 1: ${n2}` : '',
             ]
-            if (identity) {
-              tooltip.push(`Identity: ${identity}`)
-            }
+              .filter(f => !!f)
+              .join('<br/>')
 
-            if (cigar[cigarIdx]) {
-              tooltip.push(
-                `CIGAR operator: ${cigar[cigarIdx]}${cigar[cigarIdx + 1]}`,
-              )
-            }
-            if (n1 && n2) {
-              tooltip.push(`Name 1: ${n1}`, `Name 2: ${n2}`)
-            }
-            setTooltip(tooltip.join('<br/>'))
+            setTooltip(tooltip)
           }
         }}
         onMouseLeave={() => model.setMouseoverId(undefined)}

@@ -37,6 +37,7 @@
   },
   "dependencies": {
     "@gmod/bgzf-filehandle": "^1.4.3",
+    "@gmod/tabix": "^1.5.6",
     "generic-filehandle": "^3.0.0"
   },
   "peerDependencies": {
