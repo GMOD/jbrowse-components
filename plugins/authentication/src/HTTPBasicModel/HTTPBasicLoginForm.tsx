@@ -2,13 +2,13 @@ import React, { useState } from 'react'
 import { Button, DialogContent, DialogActions, TextField } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
 
-export const HTTPBasicLoginForm = ({
+export function HTTPBasicLoginForm({
   internetAccountId,
   handleClose,
 }: {
   internetAccountId: string
   handleClose: (arg?: string) => void
-}) => {
+}) {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
 
@@ -17,7 +17,7 @@ export const HTTPBasicLoginForm = ({
       open
       maxWidth="xl"
       data-testid="login-httpbasic"
-      title={`Log In for ${internetAccountId}`}
+      title={`Log in for ${internetAccountId}`}
     >
       <form
         onSubmit={event => {
