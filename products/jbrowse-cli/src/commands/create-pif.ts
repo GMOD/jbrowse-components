@@ -47,12 +47,15 @@ export function swapIndelCigar(cigar: string) {
   return cigar.replaceAll('D', 'K').replaceAll('I', 'D').replaceAll('K', 'I')
 }
 
-export async function createPIF(filename?: string, child: { stdin: any }) {
+export async function createPIF(
+  filename: string | undefined,
+  stream: { write: any },
+) {
   const rl1 = filename ? getReadline(filename) : getStdReadline()
   for await (const line of rl1) {
     const [c1, l1, s1, e1, strand, c2, l2, s2, e2, ...rest] = line.split('\t')
 
-    child.stdin.write(
+    stream.write(
       [`t${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...rest].join('\t') + '\n',
     )
     const cigarIdx = rest.findIndex(f => f.startsWith('cg:Z'))
@@ -66,7 +69,7 @@ export async function createPIF(filename?: string, child: { stdin: any }) {
       }`
     }
 
-    child.stdin.write(
+    stream.write(
       [`q${c1}`, l1, s1, e1, strand, c2, l2, s2, e2, ...rest].join('\t') + '\n',
     )
   }
@@ -101,40 +104,41 @@ export default class CreatePIF extends JBrowseCommand {
   }
 
   async run() {
-    try {
-      const {
-        args: { file },
-        flags: { out, csi },
-      } = await this.parse(CreatePIF)
+    const {
+      args: { file },
+      flags: { out, csi },
+    } = await this.parse(CreatePIF)
+    console.error('wtf')
 
-      if (
-        commandExistsSync('sh') &&
-        commandExistsSync('sort') &&
-        commandExistsSync('grep') &&
-        commandExistsSync('tabix') &&
-        commandExistsSync('bgzip')
-      ) {
-        const fn = out || `${path.basename(file, '.paf')}.pif.gz`
-        console.error('start')
-        const child = spawn(
-          'sh',
-          [
-            '-c',
-            `sort -t"\`printf '\t'\`" -k1,1 -k3,3n ${fn} | bgzip > ${fn}; tabix -s1 -b3 -e4 ${fn}`,
-          ],
-          {
-            env: { ...process.env, LC_ALL: 'C' },
-            stdio: 'inherit',
-          },
-        )
-        await createPIF(fn, child)
-      } else {
-        throw new Error(
-          'Unable to sort, requires unix type environment with sort, grep, bgzip, tabix',
-        )
-      }
-    } catch (e) {
-      console.error(e)
+    if (
+      commandExistsSync('sh') &&
+      commandExistsSync('sort') &&
+      commandExistsSync('grep') &&
+      commandExistsSync('tabix') &&
+      commandExistsSync('bgzip')
+    ) {
+      console.error('wtf')
+      const fn = out || `${path.basename(file, '.paf')}.pif.gz`
+      const child = spawn(
+        'sh',
+        [
+          '-c',
+          `sort -t"\`printf '\t'\`" -k1,1 -k3,3n | bgzip > ${fn}; tabix -s1 -b3 -e4 ${fn}`,
+        ],
+        {
+          env: { ...process.env, LC_ALL: 'C' },
+          stdio: ['pipe', process.stdout, process.stderr],
+        },
+      )
+      await createPIF(file, child.stdin)
+      child.stdin.end()
+      await new Promise(resolve => {
+        child.on('close', resolve)
+      })
+    } else {
+      throw new Error(
+        'Unable to sort, requires unix type environment with sort, grep, bgzip, tabix',
+      )
     }
   }
 }
