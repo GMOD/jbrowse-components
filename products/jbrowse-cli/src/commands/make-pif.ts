@@ -123,7 +123,7 @@ export default class MakePIF extends JBrowseCommand {
           '-c',
           `sort -t"\`printf '\t'\`" -k1,1 -k3,3n | bgzip > ${fn}; tabix ${
             csi ? '-C ' : ''
-          }-s1 -b3 -e4 ${fn}`,
+          }-s1 -b3 -e4 -0 ${fn}`,
         ],
         {
           env: { ...process.env, LC_ALL: 'C' },
