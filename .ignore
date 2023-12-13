@@ -1,5 +1,5 @@
 *.ix
-test_data/large.chrom.sizes
+test_data/many_contigs/large.chrom.sizes
 packages/core/ui/react-colorful.js
 plugins/legacy-jbrowse/test_data
 plugins/data-management/src/ucsc-trackhub/ucscAssemblies.ts
@@ -8,8 +8,8 @@ plugins/circular-view/test_data/circos_example.svg
 products/jbrowse-web/src/tests/Loader.test.tsx
 test_data/yeast_synteny/
 test_data/hg38_aliases.txt
-test_data/config_honeybee.json
-test_data/amel_hav3.1.chrom.sizes
+test_data/honeybee/config.json
+test_data/honeybee/amel_hav3.1.chrom.sizes
 plugins/wiggle/src/util.ts
 plugins/protein/src/ProteinReferenceSequenceRenderer/aminoAcids.js
 plugins/spreadsheet-view/src/SpreadsheetView/test_data/starfusion_example.fusion_predictions.tsv

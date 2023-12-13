@@ -1,0 +1,24 @@
+{
+  "tracks": [
+    {
+      "type": "VariantTrack",
+      "trackId": "volvox_sv_test",
+      "name": "volvox structural variant test",
+      "category": ["VCF"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "Garbage",
+        "vcfGzLocation": {
+          "uri": "volvox.dup.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.dup.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ]
+}
