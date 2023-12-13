@@ -5,17 +5,15 @@ import {
   DialogContent,
   DialogActions,
   Alert,
-  Stack,
   Typography,
-  Switch,
 } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
 import { ColorPicker } from '@jbrowse/core/ui/ColorPicker'
 
 // locals
-import { GridBookmarkModel } from '../model'
+import { GridBookmarkModel } from '../../model'
 
-const HighlightBookmarksDialog = observer(function ({
+const EditHighlightColorDialog = observer(function ({
   onClose,
   model,
 }: {
@@ -51,35 +49,6 @@ const HighlightBookmarksDialog = observer(function ({
             }}
           />
         ) : null}
-        <Typography variant="h6">Highlight toggles</Typography>
-        <Stack direction="row" alignItems="center">
-          <Switch
-            data-testid="toggle_highlight_all_switch"
-            checked={model.areBookmarksHighlightedOnAllOpenViews}
-            onChange={() => {
-              model.setHighlightToggle(
-                !model.areBookmarksHighlightedOnAllOpenViews,
-              )
-            }}
-          />
-          <Typography variant="overline">
-            Toggle bookmark highlights on all open views
-          </Typography>
-        </Stack>
-        <Stack direction="row" alignItems="center">
-          <Switch
-            data-testid="toggle_highlight_label_all_switch"
-            checked={model.areBookmarksHighlightLabelsOnAllOpenViews}
-            onChange={() => {
-              model.setLabelToggle(
-                !model.areBookmarksHighlightLabelsOnAllOpenViews,
-              )
-            }}
-          />
-          <Typography variant="overline">
-            Toggle 'bookmark' icon on LGV tracks
-          </Typography>
-        </Stack>
       </DialogContent>
       <DialogActions>
         <Button variant="contained" color="secondary" onClick={() => onClose()}>
@@ -100,4 +69,4 @@ const HighlightBookmarksDialog = observer(function ({
   )
 })
 
-export default HighlightBookmarksDialog
+export default EditHighlightColorDialog

@@ -4,7 +4,7 @@ import { Button, DialogContent, DialogActions, Alert } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
 
 // locals
-import { GridBookmarkModel } from '../model'
+import { GridBookmarkModel } from '../../model'
 
 const DeleteBookmarksDialog = observer(function ({
   onClose,

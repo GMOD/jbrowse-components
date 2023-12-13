@@ -19,8 +19,8 @@ import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 
 // locals
-import { shareSessionToDynamo } from '../sessionSharing'
-import { GridBookmarkModel } from '../model'
+import { shareSessionToDynamo } from '../../sessionSharing'
+import { GridBookmarkModel } from '../../model'
 
 const useStyles = makeStyles()(() => ({
   flexItem: {

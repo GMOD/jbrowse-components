@@ -15,8 +15,8 @@ import { makeStyles } from 'tss-react/mui'
 import { Dialog } from '@jbrowse/core/ui'
 
 // locals
-import { GridBookmarkModel } from '../model'
-import { downloadBookmarkFile } from '../utils'
+import { GridBookmarkModel } from '../../model'
+import { downloadBookmarkFile } from '../../utils'
 
 const useStyles = makeStyles()(() => ({
   flexItem: {

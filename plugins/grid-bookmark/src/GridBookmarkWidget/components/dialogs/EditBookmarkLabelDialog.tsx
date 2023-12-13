@@ -7,9 +7,10 @@ import {
   TextField,
 } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
-import { GridBookmarkModel, IExtendedLabeledRegionModel } from '../model'
 import { observer } from 'mobx-react'
 import { assembleLocString } from '@jbrowse/core/util'
+
+import { GridBookmarkModel, IExtendedLabeledRegionModel } from '../../model'
 
 const EditBookmarkLabelDialog = observer(function ({
   model,
