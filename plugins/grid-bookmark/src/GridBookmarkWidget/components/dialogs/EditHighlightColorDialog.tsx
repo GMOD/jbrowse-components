@@ -32,22 +32,15 @@ const EditHighlightColorDialog = observer(function ({
         <Typography variant="h6">Bulk highlight selector</Typography>
         <Alert severity="info">
           {editNone ? (
-            <>
-              <span>
-                Use the checkboxes to select individual bookmarks to edit.
-              </span>
-            </>
+            <span>
+              Use the checkboxes to select individual bookmarks to edit.
+            </span>
           ) : (
             'Only selected bookmarks will be edited.'
           )}
         </Alert>
         {!editNone ? (
-          <ColorPicker
-            color={color}
-            onChange={event => {
-              setColor(event)
-            }}
-          />
+          <ColorPicker color={color} onChange={event => setColor(event)} />
         ) : null}
       </DialogContent>
       <DialogActions>

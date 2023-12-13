@@ -220,7 +220,7 @@ test('Toggle highlight visibility across all views', async () => {
   fireEvent.click(await findByTestId('grid_bookmark_menu', ...opts))
   await user.click(await findByText('Settings'))
   await user.click(await findByTestId('toggle_highlight_all_switch'))
-  await user.click(await findByText('Confirm'))
+  await user.click(await findByText('Close'))
 
   expect(highlight).toBeUndefined
   expect(highlight2).toBeUndefined
@@ -253,7 +253,7 @@ test('Toggle highlight label visibility across all views', async () => {
   fireEvent.click(await findByTestId('grid_bookmark_menu', ...opts))
   await user.click(await findByText('Settings'))
   await user.click(await findByTestId('toggle_highlight_label_all_switch'))
-  await user.click(await findByText('Confirm'))
+  await user.click(await findByText('Close'))
 
   expect(highlight).toBeUndefined
   expect(highlight2).toBeUndefined
