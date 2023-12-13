@@ -404,9 +404,10 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
       return {
         /**
          * #action
-         * Get a fetch method that will add any needed authentication headers to
-         * the request before sending it. If location is provided, it will be
-         * checked to see if it includes a token in it's pre-auth information.
+         * Get a fetch method that will add any needed authentication headers
+         * to the request before sending it. If location is provided, it will
+         * be checked to see if it includes a token in it's pre-auth
+         * information.
          *
          * @param loc - UriLocation of the resource
          * @returns A function that can be used to fetch
