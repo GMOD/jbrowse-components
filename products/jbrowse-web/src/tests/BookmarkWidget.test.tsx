@@ -17,7 +17,7 @@ beforeEach(() => {
   localStorage.clear()
 })
 
-const delay = { timeout: 30000 }
+const delay = { timeout: 5000 }
 const opts = [{}, delay]
 
 test('Open the bookmarks widget from the top level menu', async () => {
@@ -190,7 +190,7 @@ test('Toggle highlight visibility across all views', async () => {
   session.addView('LinearGenomeView', {
     displayedRegions: [
       {
-        assemblyName: 'volMyt1',
+        assemblyName: 'volvox',
         refName: 'ctgA',
         start: 0,
         end: 1000,
@@ -259,23 +259,23 @@ test('Toggle highlight label visibility across all views', async () => {
 })
 
 test('Downloads a BED file correctly', async () => {
-  const { session, findByText, findByTestId, findAllByRole } =
-    await createView()
+  const { session, findByText, findByTestId } = await createView()
 
   // @ts-expect-error
   const bookmarkWidget = session.addWidget(
     'GridBookmarkWidget',
     'gridBookmarkWidget',
   ) as GridBookmarkModel
+  // @ts-expect-error
+  session.showWidget('gridBookmarkWidget')
 
   bookmarkWidget.addBookmark({
     refName: 'ctgA',
     start: 0,
     end: 8,
-    assemblyName: 'volMyt1',
+    assemblyName: 'volvox',
   })
 
-  fireEvent.click((await findAllByRole('checkbox'))[1])
   fireEvent.click(await findByTestId('grid_bookmark_menu', ...opts))
   fireEvent.click(await findByText('Export bookmarks', ...opts))
   fireEvent.click(await findByText(/Download/, ...opts))
@@ -284,27 +284,26 @@ test('Downloads a BED file correctly', async () => {
     type: 'text/x-bed;charset=utf-8',
   })
 
-  expect(saveAs).toHaveBeenCalledWith(blob, 'jbrowse_bookmarks_volMyt1.bed')
+  expect(saveAs).toHaveBeenCalledWith(blob, 'jbrowse_bookmarks_volvox.bed')
 }, 20000)
 
 test('Downloads a TSV file correctly', async () => {
-  const { session, findAllByRole, findByText, findByTestId, getByRole } =
-    await createView()
+  const { session, findByText, findByTestId, getByRole } = await createView()
 
   // @ts-expect-error
   const bookmarkWidget = session.addWidget(
     'GridBookmarkWidget',
     'gridBookmarkWidget',
   ) as GridBookmarkModel
+  // @ts-expect-error
+  session.showWidget('gridBookmarkWidget')
 
   bookmarkWidget.addBookmark({
     refName: 'ctgA',
     start: 0,
     end: 8,
-    assemblyName: 'volMyt1',
+    assemblyName: 'volvox',
   })
-
-  fireEvent.click((await findAllByRole('checkbox'))[1])
   fireEvent.click(await findByTestId('grid_bookmark_menu'))
   fireEvent.click(await findByText('Export bookmarks'))
   fireEvent.mouseDown(await findByText('BED'))
