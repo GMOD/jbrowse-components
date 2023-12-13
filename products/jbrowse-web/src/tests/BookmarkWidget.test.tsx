@@ -1,8 +1,15 @@
-import { waitFor, fireEvent } from '@testing-library/react'
-
+import { waitFor, fireEvent, within } from '@testing-library/react'
+import { saveAs } from 'file-saver'
 import userEvent from '@testing-library/user-event'
 import { createView, setup, doBeforeEach } from './util'
+import { GridBookmarkModel } from '@jbrowse/plugin-grid-bookmark/src/GridBookmarkWidget/model'
 
+jest.mock('file-saver', () => {
+  return {
+    ...jest.requireActual('file-saver'),
+    saveAs: jest.fn(),
+  }
+})
 setup()
 
 beforeEach(() => {
@@ -175,6 +182,7 @@ test('Edit a bookmark label with a double click via the dialog', async () => {
   await user.click(await findByText('Confirm'))
   expect(field.innerHTML).toContain('new label')
 })
+
 test('Toggle highlight visibility across all views', async () => {
   const { session, findByText, findByTestId, findAllByTestId } =
     await createView()
@@ -217,6 +225,7 @@ test('Toggle highlight visibility across all views', async () => {
   expect(highlight).toBeUndefined
   expect(highlight2).toBeUndefined
 })
+
 test('Toggle highlight label visibility across all views', async () => {
   const { session, findByText, findByTestId, findAllByTestId } =
     await createView()
@@ -247,4 +256,65 @@ test('Toggle highlight label visibility across all views', async () => {
 
   expect(highlight).toBeUndefined
   expect(highlight2).toBeUndefined
+})
+
+test('Downloads a BED file correctly', async () => {
+  const { session, findByText, findByTestId, findAllByRole } =
+    await createView()
+
+  // @ts-expect-error
+  const bookmarkWidget = session.addWidget(
+    'GridBookmarkWidget',
+    'gridBookmarkWidget',
+  ) as GridBookmarkModel
+
+  bookmarkWidget.addBookmark({
+    refName: 'ctgA',
+    start: 0,
+    end: 8,
+    assemblyName: 'volMyt1',
+  })
+
+  fireEvent.click((await findAllByRole('checkbox'))[1])
+  fireEvent.click(await findByTestId('grid_bookmark_menu', ...opts))
+  fireEvent.click(await findByText('Export bookmarks', ...opts))
+  fireEvent.click(await findByText(/Download/, ...opts))
+
+  const blob = new Blob([''], {
+    type: 'text/x-bed;charset=utf-8',
+  })
+
+  expect(saveAs).toHaveBeenCalledWith(blob, 'jbrowse_bookmarks_volMyt1.bed')
+}, 20000)
+
+test('Downloads a TSV file correctly', async () => {
+  const { session, findAllByRole, findByText, findByTestId, getByRole } =
+    await createView()
+
+  // @ts-expect-error
+  const bookmarkWidget = session.addWidget(
+    'GridBookmarkWidget',
+    'gridBookmarkWidget',
+  ) as GridBookmarkModel
+
+  bookmarkWidget.addBookmark({
+    refName: 'ctgA',
+    start: 0,
+    end: 8,
+    assemblyName: 'volMyt1',
+  })
+
+  fireEvent.click((await findAllByRole('checkbox'))[1])
+  fireEvent.click(await findByTestId('grid_bookmark_menu'))
+  fireEvent.click(await findByText('Export bookmarks'))
+  fireEvent.mouseDown(await findByText('BED'))
+  const listbox = within(getByRole('listbox'))
+  fireEvent.click(listbox.getByText('TSV'))
+  fireEvent.click(await findByText(/Download/))
+
+  const blob = new Blob([''], {
+    type: 'text/tab-separated-values;charset=utf-8',
+  })
+
+  expect(saveAs).toHaveBeenCalledWith(blob, 'jbrowse_bookmarks.tsv')
 })
