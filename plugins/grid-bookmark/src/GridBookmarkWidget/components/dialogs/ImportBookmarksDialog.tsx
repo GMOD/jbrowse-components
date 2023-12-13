@@ -25,9 +25,9 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import HelpIcon from '@mui/icons-material/Help'
 
 // locals
-import { GridBookmarkModel } from '../model'
-import { fromUrlSafeB64 } from '../utils'
-import { readSessionFromDynamo } from '../sessionSharing'
+import { GridBookmarkModel } from '../../model'
+import { fromUrlSafeB64 } from '../../utils'
+import { readSessionFromDynamo } from '../../sessionSharing'
 
 const useStyles = makeStyles()(theme => ({
   flexItem: {

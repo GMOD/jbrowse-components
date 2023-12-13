@@ -9,6 +9,7 @@ import {
 import PluginManager from '@jbrowse/core/PluginManager'
 import { Region } from '@jbrowse/core/util/types'
 import { Region as RegionModel, ElementId } from '@jbrowse/core/util/types/mst'
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 import {
   getSession,
@@ -22,11 +23,15 @@ const LabeledRegionModel = types
     RegionModel,
     types.model('Label', {
       label: types.optional(types.string, ''),
+      highlight: types.optional(types.string, 'rgba(247, 129, 192, 0.35)'),
     }),
   )
   .actions(self => ({
     setLabel(label: string) {
       self.label = label
+    },
+    setHighlight(color: string) {
+      self.highlight = color
     },
   }))
 
@@ -34,16 +39,25 @@ const SharedBookmarksModel = types.model('SharedBookmarksModel', {
   sharedBookmarks: types.maybe(types.array(LabeledRegionModel)),
 })
 
+export interface IExtendedLGV extends LinearGenomeViewModel {
+  showBookmarkHighlights: boolean
+  showBookmarkLabels: boolean
+  toggleShowBookmarkHighlights: (arg: boolean) => {}
+  toggleShowBookmarkLabels: (arg: boolean) => {}
+}
+
 export interface ILabeledRegionModel
   extends SnapshotIn<typeof LabeledRegionModel> {
   refName: string
   start: number
   end: number
   reversed: boolean
+  highlight: string
   assemblyName: string
   label: string
   setRefName: (newRefName: string) => void
   setLabel: (label: string) => void
+  setHighlight: (color: string) => void
 }
 
 export interface IExtendedLabeledRegionModel extends ILabeledRegionModel {
@@ -79,7 +93,6 @@ export default function f(_pluginManager: PluginManager) {
       selectedBookmarks: [] as IExtendedLabeledRegionModel[],
       selectedAssembliesPre: undefined as string[] | undefined,
     }))
-
     .views(self => ({
       get bookmarkAssemblies() {
         return [...new Set(self.bookmarks.map(r => r.assemblyName))]
@@ -88,6 +101,18 @@ export default function f(_pluginManager: PluginManager) {
         const { assemblyManager } = getSession(self)
         return new Set(
           this.bookmarkAssemblies.filter(a => assemblyManager.get(a)),
+        )
+      },
+      get areBookmarksHighlightedOnAllOpenViews() {
+        const { views } = getSession(self)
+        return views.every(v =>
+          'showBookmarkHighlights' in v ? v.showBookmarkHighlights : true,
+        )
+      },
+      get areBookmarksHighlightLabelsOnAllOpenViews() {
+        const { views } = getSession(self)
+        return views.every(v =>
+          'showBookmarkLabels' in v ? v.showBookmarkLabels : true,
         )
       },
     }))
@@ -118,13 +143,11 @@ export default function f(_pluginManager: PluginManager) {
         })
       },
     }))
-
     .actions(self => ({
       setSelectedAssemblies(assemblies?: string[]) {
         self.selectedAssembliesPre = assemblies
       },
     }))
-
     .views(self => ({
       get selectedAssemblies() {
         return (
@@ -150,20 +173,43 @@ export default function f(_pluginManager: PluginManager) {
       ) {
         bookmark.correspondingObj.setLabel(label)
       },
+      updateBookmarkHighlight(
+        bookmark: IExtendedLabeledRegionModel,
+        color: string,
+      ) {
+        bookmark.correspondingObj.setHighlight(color)
+      },
+      updateBulkBookmarkHighlights(color: string) {
+        self.selectedBookmarks.forEach(bookmark =>
+          this.updateBookmarkHighlight(bookmark, color),
+        )
+      },
       setSelectedBookmarks(bookmarks: IExtendedLabeledRegionModel[]) {
         self.selectedBookmarks = bookmarks
       },
       setBookmarkedRegions(regions: IMSTArray<typeof LabeledRegionModel>) {
         self.bookmarks = cast(regions)
       },
+      setHighlightToggle(toggle: boolean) {
+        const { views } = getSession(self)
+        ;(views as IExtendedLGV[]).forEach(view => {
+          view.toggleShowBookmarkHighlights?.(toggle)
+        })
+      },
+      setLabelToggle(toggle: boolean) {
+        const { views } = getSession(self)
+        ;(views as IExtendedLGV[]).forEach(view => {
+          view.toggleShowBookmarkLabels?.(toggle)
+        })
+      },
     }))
     .actions(self => ({
       clearAllBookmarks() {
-        for (const bookmark of self.bookmarks) {
-          if (self.validAssemblies.has(bookmark.assemblyName)) {
-            self.bookmarks.remove(bookmark)
-          }
-        }
+        self.setBookmarkedRegions(
+          self.bookmarks.filter(
+            bookmark => !self.validAssemblies.has(bookmark.assemblyName),
+          ) as IMSTArray<typeof LabeledRegionModel>,
+        )
       },
       clearSelectedBookmarks() {
         for (const bookmark of self.selectedBookmarks) {
@@ -175,6 +221,16 @@ export default function f(_pluginManager: PluginManager) {
     .actions(self => ({
       afterAttach() {
         const key = localStorageKeyF()
+        function handler(e: StorageEvent) {
+          if (e.key === key) {
+            const localStorage = JSON.parse(localStorageGetItem(key) || '[]')
+            self.setBookmarkedRegions(localStorage)
+          }
+        }
+        window.addEventListener('storage', handler)
+        addDisposer(self, () => {
+          window.removeEventListener('storage', handler)
+        })
         addDisposer(
           self,
           autorun(() => {

@@ -15,6 +15,8 @@ import {
 // icons
 import BookmarkIcon from '@mui/icons-material/Bookmark'
 import BookmarksIcon from '@mui/icons-material/Bookmarks'
+import HighlightIcon from '@mui/icons-material/Highlight'
+import LabelIcon from '@mui/icons-material/Label'
 
 import GridBookmarkWidgetF from './GridBookmarkWidget'
 import { GridBookmarkModel } from './GridBookmarkWidget/model'
@@ -32,7 +34,33 @@ export default class extends Plugin {
           const { stateModel } = pluggableElement as ViewType
           const lgv = stateModel as LinearGenomeViewStateModel
           const newStateModel = lgv
+            .props({
+              /**
+               * #property
+               * show the bookmark highlights on this track
+               */
+              showBookmarkHighlights: true,
+              /**
+               * #property
+               * show the bookmark labels on this track
+               */
+              showBookmarkLabels: true,
+            })
             .actions(self => ({
+              /**
+               * #action
+               */
+              toggleShowBookmarkHighlights(toggle?: boolean) {
+                self.showBookmarkHighlights =
+                  toggle !== undefined ? toggle : !self.showBookmarkHighlights
+              },
+              /**
+               * #action
+               */
+              toggleShowBookmarkLabels(toggle?: boolean) {
+                self.showBookmarkLabels =
+                  toggle !== undefined ? toggle : !self.showBookmarkLabels
+              },
               activateBookmarkWidget() {
                 const session = getSession(self)
                 if (isSessionModelWithWidgets(session)) {
@@ -88,14 +116,34 @@ export default class extends Plugin {
                     ...superMenuItems(),
                     { type: 'divider' },
                     {
-                      label: 'Open bookmark widget',
+                      label: 'Bookmarks',
                       icon: BookmarksIcon,
-                      onClick: () => self.activateBookmarkWidget(),
-                    },
-                    {
-                      label: 'Bookmark current region',
-                      icon: BookmarkIcon,
-                      onClick: () => self.bookmarkCurrentRegion(),
+                      subMenu: [
+                        {
+                          label: 'Open bookmark widget',
+                          icon: BookmarksIcon,
+                          onClick: () => self.activateBookmarkWidget(),
+                        },
+                        {
+                          label: 'Bookmark current region',
+                          icon: BookmarkIcon,
+                          onClick: () => self.bookmarkCurrentRegion(),
+                        },
+                        {
+                          label: 'Toggle bookmark highlights',
+                          icon: HighlightIcon,
+                          type: 'checkbox',
+                          checked: self.showBookmarkHighlights,
+                          onClick: () => self.toggleShowBookmarkHighlights(),
+                        },
+                        {
+                          label: 'Toggle bookmark labels',
+                          icon: LabelIcon,
+                          type: 'checkbox',
+                          checked: self.showBookmarkLabels,
+                          onClick: () => self.toggleShowBookmarkLabels(),
+                        },
+                      ],
                     },
                   ]
                 },
