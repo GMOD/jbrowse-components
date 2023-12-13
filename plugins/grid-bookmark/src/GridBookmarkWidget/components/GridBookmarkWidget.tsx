@@ -17,6 +17,7 @@ import Publish from '@mui/icons-material/Publish'
 import Settings from '@mui/icons-material/Settings'
 import Palette from '@mui/icons-material/Palette'
 import Share from '@mui/icons-material/Share'
+import Delete from '@mui/icons-material/Delete'
 
 // lazies
 const ExportBookmarksDialog = lazy(
@@ -33,6 +34,9 @@ const HighlightSettingsDialog = lazy(
 )
 const EditHighlightColorDialog = lazy(
   () => import('./dialogs/EditHighlightColorDialog'),
+)
+const DeleteBookmarksDialog = lazy(
+  () => import('./dialogs/DeleteBookmarksDialog'),
 )
 
 const useStyles = makeStyles()({
@@ -79,6 +83,16 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
               onClick: () => {
                 getSession(model).queueDialog(onClose => [
                   ImportBookmarksDialog,
+                  { model, onClose },
+                ])
+              },
+            },
+            {
+              label: 'Delete',
+              icon: Delete,
+              onClick: () => {
+                getSession(model).queueDialog(onClose => [
+                  DeleteBookmarksDialog,
                   { model, onClose },
                 ])
               },
