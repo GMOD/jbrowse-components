@@ -61,11 +61,13 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
       </Alert>
       <div className={classes.flex}>
         <CascadingMenuButton
+          data-testid="grid_bookmark_menu"
           menuItems={[
             {
-              label: 'Export',
+              label: 'Export bookmarks',
               icon: GetApp,
               onClick: () => {
+                console.log('here2')
                 getSession(model).queueDialog(onClose => [
                   ExportBookmarksDialog,
                   { onClose, model },

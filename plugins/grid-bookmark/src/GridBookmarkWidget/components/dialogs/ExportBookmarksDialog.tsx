@@ -10,19 +10,26 @@ import {
   Typography,
   Alert,
 } from '@mui/material'
-import GetAppIcon from '@mui/icons-material/GetApp'
 import { makeStyles } from 'tss-react/mui'
 import { Dialog } from '@jbrowse/core/ui'
+
+// Icons
+import GetAppIcon from '@mui/icons-material/GetApp'
 
 // locals
 import { GridBookmarkModel } from '../../model'
 import { downloadBookmarkFile } from '../../utils'
 
-const useStyles = makeStyles()(() => ({
+const useStyles = makeStyles()({
   flexItem: {
     margin: 5,
   },
-}))
+  container: {
+    display: 'flex',
+    flexFlow: 'column',
+    gap: '5px',
+  },
+})
 
 const ExportBookmarksDialog = observer(function ExportBookmarksDialog({
   model,
@@ -35,11 +42,10 @@ const ExportBookmarksDialog = observer(function ExportBookmarksDialog({
   const [fileType, setFileType] = useState('BED')
   const { selectedBookmarks } = model
   const exportAll = selectedBookmarks.length === 0
+  console.log('t1')
   return (
     <Dialog open onClose={onClose} title="Export bookmarks">
-      <DialogContent
-        style={{ display: 'flex', flexFlow: 'column', gap: '5px' }}
-      >
+      <DialogContent className={classes.container}>
         <Alert severity="info">
           {exportAll ? (
             <>
@@ -69,8 +75,6 @@ const ExportBookmarksDialog = observer(function ExportBookmarksDialog({
       </DialogContent>
       <DialogActions>
         <Button
-          className={classes.flexItem}
-          data-testid="dialogDownload"
           variant="contained"
           color="primary"
           startIcon={<GetAppIcon />}
