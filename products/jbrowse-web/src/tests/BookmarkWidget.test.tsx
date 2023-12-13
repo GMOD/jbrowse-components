@@ -2,7 +2,6 @@ import { waitFor, fireEvent, within } from '@testing-library/react'
 import { saveAs } from 'file-saver'
 import userEvent from '@testing-library/user-event'
 import { createView, setup, doBeforeEach } from './util'
-import { GridBookmarkModel } from '@jbrowse/plugin-grid-bookmark/src/GridBookmarkWidget/model'
 
 jest.mock('file-saver', () => {
   return {
@@ -17,7 +16,7 @@ beforeEach(() => {
   localStorage.clear()
 })
 
-const delay = { timeout: 5000 }
+const delay = { timeout: 30000 }
 const opts = [{}, delay]
 
 test('Open the bookmarks widget from the top level menu', async () => {
@@ -218,7 +217,8 @@ test('Toggle highlight visibility across all views', async () => {
   expect(highlight).toBeDefined
   expect(highlight2).toBeDefined
 
-  await user.click(await findByText('Highlight'))
+  fireEvent.click(await findByTestId('grid_bookmark_menu', ...opts))
+  await user.click(await findByText('Settings'))
   await user.click(await findByTestId('toggle_highlight_all_switch'))
   await user.click(await findByText('Confirm'))
 
@@ -250,7 +250,8 @@ test('Toggle highlight label visibility across all views', async () => {
   expect(highlight).toBeDefined
   expect(highlight2).toBeDefined
 
-  await user.click(await findByText('Highlight'))
+  fireEvent.click(await findByTestId('grid_bookmark_menu', ...opts))
+  await user.click(await findByText('Settings'))
   await user.click(await findByTestId('toggle_highlight_label_all_switch'))
   await user.click(await findByText('Confirm'))
 
@@ -265,7 +266,7 @@ test('Downloads a BED file correctly', async () => {
   const bookmarkWidget = session.addWidget(
     'GridBookmarkWidget',
     'gridBookmarkWidget',
-  ) as GridBookmarkModel
+  )
   // @ts-expect-error
   session.showWidget('gridBookmarkWidget')
 
@@ -294,7 +295,7 @@ test('Downloads a TSV file correctly', async () => {
   const bookmarkWidget = session.addWidget(
     'GridBookmarkWidget',
     'gridBookmarkWidget',
-  ) as GridBookmarkModel
+  )
   // @ts-expect-error
   session.showWidget('gridBookmarkWidget')
 

@@ -67,7 +67,6 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
               label: 'Export bookmarks',
               icon: GetApp,
               onClick: () => {
-                console.log('here2')
                 getSession(model).queueDialog(onClose => [
                   ExportBookmarksDialog,
                   { onClose, model },

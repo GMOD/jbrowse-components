@@ -42,7 +42,6 @@ const ExportBookmarksDialog = observer(function ExportBookmarksDialog({
   const [fileType, setFileType] = useState('BED')
   const { selectedBookmarks } = model
   const exportAll = selectedBookmarks.length === 0
-  console.log('t1')
   return (
     <Dialog open onClose={onClose} title="Export bookmarks">
       <DialogContent className={classes.container}>
