@@ -93,8 +93,8 @@ export const HorizontalAxisRaw = observer(function ({
             </text>
           )
         })}
-      {ticks.map(([tick, x]) => {
-        return (
+      {ticks.map(([tick, x]) =>
+        x > 0 && x < width ? (
           <line
             key={`line-${JSON.stringify(tick)}`}
             x1={x}
@@ -104,17 +104,16 @@ export const HorizontalAxisRaw = observer(function ({
             strokeWidth={1}
             stroke={theme.palette.grey[400]}
           />
-        )
-      })}
+        ) : null,
+      )}
       {ticks
         .filter(t => t[0].type === 'major')
-        .map(([tick, x]) => {
-          const y = 0
-          return x > 10 ? (
+        .map(([tick, x]) =>
+          x > 10 && x < width ? (
             <text
               x={x - 7}
-              y={y}
-              transform={`rotate(${htextRotation},${x},${y})`}
+              y={0}
+              transform={`rotate(${htextRotation},${x},${0})`}
               key={`text-${JSON.stringify(tick)}`}
               fill={theme.palette.text.primary}
               fontSize={11}
@@ -123,8 +122,8 @@ export const HorizontalAxisRaw = observer(function ({
             >
               {getTickDisplayStr(tick.base + 1, bpPerPx)}
             </text>
-          ) : null
-        })}
+          ) : null,
+        )}
       <text
         y={borderY - 12}
         x={(viewWidth - borderX) / 2}
@@ -205,21 +204,23 @@ export const VerticalAxisRaw = observer(function ({
             </text>
           )
         })}
-      {ticks.map(([tick, y]) => (
-        <line
-          key={`line-${JSON.stringify(tick)}`}
-          y1={viewHeight - y}
-          y2={viewHeight - y}
-          x1={borderX}
-          x2={borderX - (tick.type === 'major' ? 6 : 4)}
-          strokeWidth={1}
-          stroke={theme.palette.grey[400]}
-        />
-      ))}
+      {ticks.map(([tick, y]) =>
+        y > 0 ? (
+          <line
+            key={`line-${JSON.stringify(tick)}`}
+            y1={viewHeight - y}
+            y2={viewHeight - y}
+            x1={borderX}
+            x2={borderX - (tick.type === 'major' ? 6 : 4)}
+            strokeWidth={1}
+            stroke={theme.palette.grey[400]}
+          />
+        ) : null,
+      )}
       {ticks
         .filter(t => t[0].type === 'major')
-        .map(([tick, y]) => {
-          return y > 10 ? (
+        .map(([tick, y]) =>
+          y > 10 && y < viewHeight ? (
             <text
               y={viewHeight - y - 3}
               x={borderX - 7}
@@ -231,8 +232,8 @@ export const VerticalAxisRaw = observer(function ({
             >
               {getTickDisplayStr(tick.base + 1, bpPerPx)}
             </text>
-          ) : null
-        })}
+          ) : null,
+        )}
       <text
         y={(viewHeight - borderY) / 2}
         x={12}
