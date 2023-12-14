@@ -26,6 +26,9 @@ export default function createModel(
     initialChildren: React.ReactNode,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ) => any,
+  createRootFn?: (elt: Element | DocumentFragment) => {
+    render: (node: React.ReactElement) => unknown
+  },
 ) {
   const pluginManager = new PluginManager(
     [...corePlugins, ...runtimePlugins].map(P => new P()),
@@ -143,6 +146,7 @@ export default function createModel(
         MainThreadRpcDriver: {},
       }),
       hydrateFn,
+      createRootFn,
       textSearchManager: new TextSearchManager(pluginManager),
     }))
   return { model: rootModel, pluginManager }

@@ -4,7 +4,7 @@ import React from 'react'
 import { createViewState, JBrowseLinearGenomeView } from '../../src'
 import makeWorkerInstance from '../../src/makeWorkerInstance'
 import { getVolvoxConfig } from './util'
-import { hydrateRoot } from 'react-dom/client'
+import { createRoot, hydrateRoot } from 'react-dom/client'
 
 export const WithReact18 = () => {
   const { assembly, tracks } = getVolvoxConfig()
@@ -18,12 +18,8 @@ export const WithReact18 = () => {
     },
     makeWorkerInstance,
 
-    // can just say hydrateRoot:hydrateFn in your code
-    hydrateFn: (...args) => {
-      // eslint-disable-next-line no-console
-      console.log('calling your custom hydrate fn')
-      hydrateRoot(...args)
-    },
+    hydrateFn: hydrateRoot,
+    createRootFn: createRoot,
   })
   return (
     <div>
