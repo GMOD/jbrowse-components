@@ -89,9 +89,15 @@ const Cytobands = observer(function ({
         const c = colorMap[type]
         if (type === 'acen' && !centromereSeen) {
           centromereSeen = true // the next acen entry is drawn with different right triangle
-          return <polygon key={k} points={leftTriangle(s, 0, w, h)} fill={c} />
+          const tri = reversed
+            ? rightTriangle(s - w, 0, w, h)
+            : leftTriangle(s, 0, w, h)
+          return <polygon key={k} points={tri} fill={c} />
         } else if (type === 'acen' && centromereSeen) {
-          return <polygon key={k} points={rightTriangle(s, 0, w, h)} fill={c} />
+          const tri = reversed
+            ? leftTriangle(s - w, 0, w, h)
+            : rightTriangle(s, 0, w, h)
+          return <polygon key={k} points={tri} fill={c} />
         } else if (lcap === index) {
           return <path key={k} d={leftRoundedRect(l, 0, w, h, 8)} fill={c} />
         } else if (rcap === index) {
