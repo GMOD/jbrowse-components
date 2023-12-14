@@ -38,10 +38,12 @@ type Coord = [number, number] | undefined
 export const TooltipWhereMouseovered = observer(function ({
   model,
   mouserect,
+  mouserectClient,
   xdistance,
 }: {
   model: DotplotViewModel
   mouserect: Coord
+  mouserectClient: Coord
   xdistance: number
 }) {
   const { classes } = useStyles()
@@ -52,7 +54,15 @@ export const TooltipWhereMouseovered = observer(function ({
     placement: xdistance < 0 ? 'left' : 'right',
   })
 
-  const clientPoint = useClientPoint(context)
+  const clientPoint = useClientPoint(
+    context,
+    mouserectClient
+      ? {
+          x: mouserectClient[0],
+          y: mouserectClient[1],
+        }
+      : undefined,
+  )
   const { getFloatingProps } = useInteractions([clientPoint])
 
   const popperTheme = theme?.components?.MuiPopper
