@@ -70,6 +70,9 @@ const localStorageKeyF = () =>
     ? `bookmarks-${[window.location.host + window.location.pathname].join('-')}`
     : 'empty'
 
+/**
+ * #stateModel GridBookmarkWidgetModel
+ */
 export default function f(_pluginManager: PluginManager) {
   return types
     .model('GridBookmarkModel', {
@@ -94,21 +97,33 @@ export default function f(_pluginManager: PluginManager) {
       selectedAssembliesPre: undefined as string[] | undefined,
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
       get bookmarkAssemblies() {
         return [...new Set(self.bookmarks.map(r => r.assemblyName))]
       },
+      /**
+       * #getter
+       */
       get validAssemblies() {
         const { assemblyManager } = getSession(self)
         return new Set(
           this.bookmarkAssemblies.filter(a => assemblyManager.get(a)),
         )
       },
+      /**
+       * #getter
+       */
       get areBookmarksHighlightedOnAllOpenViews() {
         const { views } = getSession(self)
         return views.every(v =>
           'showBookmarkHighlights' in v ? v.showBookmarkHighlights : true,
         )
       },
+      /**
+       * #getter
+       */
       get areBookmarksHighlightLabelsOnAllOpenViews() {
         const { views } = getSession(self)
         return views.every(v =>
@@ -117,6 +132,9 @@ export default function f(_pluginManager: PluginManager) {
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
       get bookmarksWithValidAssemblies() {
         return self.bookmarks.filter(e =>
           self.validAssemblies.has(e.assemblyName),
@@ -124,6 +142,9 @@ export default function f(_pluginManager: PluginManager) {
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
       get sharedBookmarksModel() {
         // requires cloning bookmarks with JSON.stringify/parse to avoid duplicate
         // reference to same object in the same state tree, will otherwise error
@@ -132,6 +153,9 @@ export default function f(_pluginManager: PluginManager) {
           sharedBookmarks: JSON.parse(JSON.stringify(self.selectedBookmarks)),
         })
       },
+      /**
+       * #getter
+       */
       get allBookmarksModel() {
         // requires cloning bookmarks with JSON.stringify/parse to avoid duplicate
         // reference to same object in the same state tree, will otherwise error
@@ -144,11 +168,17 @@ export default function f(_pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
       setSelectedAssemblies(assemblies?: string[]) {
         self.selectedAssembliesPre = assemblies
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
       get selectedAssemblies() {
         return (
           self.selectedAssembliesPre?.filter(f =>
@@ -158,44 +188,74 @@ export default function f(_pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
       importBookmarks(regions: Region[]) {
         self.bookmarks = cast([...self.bookmarks, ...regions])
       },
+      /**
+       * #action
+       */
       addBookmark(region: Region) {
         self.bookmarks.push(region)
       },
+      /**
+       * #action
+       */
       removeBookmark(index: number) {
         self.bookmarks.splice(index, 1)
       },
+      /**
+       * #action
+       */
       updateBookmarkLabel(
         bookmark: IExtendedLabeledRegionModel,
         label: string,
       ) {
         bookmark.correspondingObj.setLabel(label)
       },
+      /**
+       * #action
+       */
       updateBookmarkHighlight(
         bookmark: IExtendedLabeledRegionModel,
         color: string,
       ) {
         bookmark.correspondingObj.setHighlight(color)
       },
+      /**
+       * #action
+       */
       updateBulkBookmarkHighlights(color: string) {
         self.selectedBookmarks.forEach(bookmark =>
           this.updateBookmarkHighlight(bookmark, color),
         )
       },
+      /**
+       * #action
+       */
       setSelectedBookmarks(bookmarks: IExtendedLabeledRegionModel[]) {
         self.selectedBookmarks = bookmarks
       },
+      /**
+       * #action
+       */
       setBookmarkedRegions(regions: IMSTArray<typeof LabeledRegionModel>) {
         self.bookmarks = cast(regions)
       },
+      /**
+       * #action
+       */
       setHighlightToggle(toggle: boolean) {
         const { views } = getSession(self)
         ;(views as IExtendedLGV[]).forEach(view => {
           view.toggleShowBookmarkHighlights?.(toggle)
         })
       },
+      /**
+       * #action
+       */
       setLabelToggle(toggle: boolean) {
         const { views } = getSession(self)
         ;(views as IExtendedLGV[]).forEach(view => {
@@ -204,6 +264,9 @@ export default function f(_pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
       clearAllBookmarks() {
         self.setBookmarkedRegions(
           self.bookmarks.filter(
@@ -211,6 +274,9 @@ export default function f(_pluginManager: PluginManager) {
           ) as IMSTArray<typeof LabeledRegionModel>,
         )
       },
+      /**
+       * #action
+       */
       clearSelectedBookmarks() {
         for (const bookmark of self.selectedBookmarks) {
           self.bookmarks.remove(bookmark.correspondingObj)

@@ -79,34 +79,6 @@ view: types.safeReference(
       )
 ```
 
-#### property: favorites
-
-this is removed in postProcessSnapshot, so is generally only loaded from
-localstorage
-
-```js
-// type signature
-IOptionalIType<IArrayType<ISimpleType<string>>, [undefined]>
-// code
-favorites: types.optional(types.array(types.string), () =>
-        JSON.parse(localStorageGetItem(lsKeyFavoritesF()) || '[]'),
-      )
-```
-
-#### property: recentlyUsed
-
-this is removed in postProcessSnapshot, so is generally only loaded from
-localstorage
-
-```js
-// type signature
-IOptionalIType<IArrayType<ISimpleType<string>>, [undefined]>
-// code
-recentlyUsed: types.optional(types.array(types.string), () =>
-        JSON.parse(localStorageGetItem(lsKeyRecentlyUsedF()) || '[]'),
-      )
-```
-
 #### property: faceted
 
 ```js
@@ -146,6 +118,20 @@ Set<string>
 string[]
 ```
 
+#### getter: recentlyUsedLocalStorageKey
+
+```js
+// type
+string
+```
+
+#### getter: favoritesLocalStorageKey
+
+```js
+// type
+string
+```
+
 #### getter: activeSortTrackNames
 
 ```js
@@ -169,13 +155,27 @@ filter out tracks that don't match the current assembly/display types
 ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]
 ```
 
+#### getter: allTrackConfigurations
+
+```js
+// type
+any[]
+```
+
+#### getter: allTrackConfigurationTrackIdSet
+
+```js
+// type
+Map<unknown, unknown>
+```
+
 #### getter: favoriteTracks
 
 filters out tracks that are not in the favorites group
 
 ```js
 // type
-any[]
+unknown[]
 ```
 
 #### getter: recentlyUsedTracks
@@ -184,7 +184,7 @@ filters out tracks that are not in the recently used group
 
 ```js
 // type
-any[]
+unknown[]
 ```
 
 #### getter: allTracks
@@ -308,6 +308,20 @@ clearFavorites: () => void
 ```js
 // type signature
 setRecentlyUsedCounter: (val: number) => void
+```
+
+#### action: setRecentlyUsed
+
+```js
+// type signature
+setRecentlyUsed: (str: string[]) => void
+```
+
+#### action: setFavorites
+
+```js
+// type signature
+setFavorites: (str: string[]) => void
 ```
 
 #### action: setFavoritesCounter
