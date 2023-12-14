@@ -780,7 +780,7 @@ export async function renameRegionsIfNeeded<
     assemblyName?: string
     regions?: Region[]
     signal?: AbortSignal
-    adapterConfig: unknown
+    adapterConfig: Record<string, unknown>
     sessionId: string
     statusCallback?: (arg: string) => void
   },

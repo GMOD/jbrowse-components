@@ -47,7 +47,6 @@
     "http-range-fetcher": "^2.0.0",
     "is-object": "^1.0.1",
     "jexl": "^2.3.0",
-    "json-stable-stringify": "^1.0.1",
     "librpc-web-mod": "^1.1.5",
     "load-script": "^2.0.0",
     "material-ui-popup-state": "^5.0.0",
