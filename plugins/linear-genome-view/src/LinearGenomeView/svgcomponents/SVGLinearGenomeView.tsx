@@ -1,40 +1,30 @@
 /* eslint-disable react-refresh/only-export-components */
 import React from 'react'
-import { renderToStaticMarkup } from 'react-dom/server'
 import { when } from 'mobx'
-import { getSession, max, measureText, sum } from '@jbrowse/core/util'
+import { getSession, max, measureText } from '@jbrowse/core/util'
 import { ThemeProvider } from '@mui/material'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { getTrackName } from '@jbrowse/core/util/tracks'
+
+// eslint-disable-next-line react/no-deprecated
+import { flushSync, render } from 'react-dom'
 
 // locals
 import { LinearGenomeViewModel, ExportSvgOptions } from '..'
 import SVGBackground from './SVGBackground'
 import SVGTracks from './SVGTracks'
 import SVGHeader from './SVGHeader'
-
-import { getTrackName } from '@jbrowse/core/util/tracks'
+import { totalHeight } from './util'
 
 type LGV = LinearGenomeViewModel
 
-interface Display {
-  height: number
-}
-interface Track {
-  displays: Display[]
-}
-
-export function totalHeight(
-  tracks: Track[],
-  textHeight: number,
-  trackLabels: string,
-) {
-  return sum(
-    tracks.map(
-      t =>
-        t.displays[0].height +
-        (['none', 'left'].includes(trackLabels) ? 0 : textHeight),
-    ),
-  )
+// https://react.dev/reference/react-dom/server/renderToString#removing-rendertostring-from-the-client-code
+function renderToStaticMarkup(node: React.ReactElement) {
+  const div = document.createElement('div')
+  flushSync(() => {
+    render(node, div)
+  })
+  return div.innerHTML
 }
 
 // render LGV to SVG

@@ -1,15 +1,25 @@
 import React from 'react'
-import { renderToStaticMarkup } from 'react-dom/server'
 import { when } from 'mobx'
 import { getSession } from '@jbrowse/core/util'
 import { ThemeProvider } from '@mui/material'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 
+// eslint-disable-next-line react/no-deprecated
+import { flushSync, render } from 'react-dom'
 // locals
 import { DotplotViewModel, ExportSvgOptions } from '../model'
 import { GridRaw } from '../components/Grid'
 import { HorizontalAxisRaw, VerticalAxisRaw } from '../components/Axes'
 import SVGBackground from './SVGBackground'
+
+// https://react.dev/reference/react-dom/server/renderToString#removing-rendertostring-from-the-client-code
+function renderToStaticMarkup(node: React.ReactElement) {
+  const div = document.createElement('div')
+  flushSync(() => {
+    render(node, div)
+  })
+  return div.innerHTML
+}
 
 // render LGV to SVG
 export async function renderToSvg(

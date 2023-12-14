@@ -1,59 +1,32 @@
 import React from 'react'
-import { renderToStaticMarkup } from 'react-dom/server'
 import { when } from 'mobx'
-import {
-  AbstractSessionModel,
-  getSession,
-  max,
-  measureText,
-  sum,
-} from '@jbrowse/core/util'
+import { getSession, sum } from '@jbrowse/core/util'
 import { ThemeProvider } from '@mui/material'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 
-// locals
+// eslint-disable-next-line react/no-deprecated
+import { flushSync, render } from 'react-dom' // locals
 import {
   SVGTracks,
   SVGRuler,
   totalHeight,
-  LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
 import SVGBackground from './SVGBackground'
 import { ExportSvgOptions, BreakpointViewModel } from '../model'
-import { getTrackName } from '@jbrowse/core/util/tracks'
 import Overlay from '../components/Overlay'
+import { getTrackNameMaxLen, getTrackOffsets } from './util'
 
+// https://react.dev/reference/react-dom/server/renderToString#removing-rendertostring-from-the-client-code
+function renderToStaticMarkup(node: React.ReactElement) {
+  const div = document.createElement('div')
+  flushSync(() => {
+    render(node, div)
+  })
+  return div.innerHTML
+}
 type BSV = BreakpointViewModel
-
-function getTrackNameMaxLen(
-  views: LinearGenomeViewModel[],
-  fontSize: number,
-  session: AbstractSessionModel,
-) {
-  return max(
-    views.flatMap(view =>
-      view.tracks.map(t =>
-        measureText(getTrackName(t.configuration, session), fontSize),
-      ),
-    ),
-    0,
-  )
-}
-function getTrackOffsets(
-  view: LinearGenomeViewModel,
-  textOffset: number,
-  extra = 0,
-) {
-  const offsets = {} as Record<string, number>
-  let curr = textOffset
-  for (const track of view.tracks) {
-    offsets[track.configuration.trackId] = curr + extra
-    curr += track.displays[0].height + textOffset
-  }
-  return offsets
-}
 
 // render LGV to SVG
 export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
