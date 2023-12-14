@@ -12,6 +12,7 @@ import fs from 'fs'
 // local
 import { Entry } from './parseArgv'
 import { booleanize } from './util'
+import { createRoot } from 'react-dom/client'
 
 export interface Opts {
   noRasterize?: boolean
@@ -416,7 +417,10 @@ function process(
 }
 
 export async function renderRegion(opts: Opts) {
-  const model = createViewState(readData(opts))
+  const model = createViewState({
+    ...readData(opts),
+    createRootFn: createRoot,
+  })
   const {
     loc,
     width = 1500,

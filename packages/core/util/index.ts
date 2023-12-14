@@ -35,7 +35,6 @@ import useMeasure from '@jbrowse/core/util/useMeasure'
 import { colord } from './colord'
 // eslint-disable-next-line react/no-deprecated
 import { flushSync, render } from 'react-dom'
-import { createRoot } from 'react-dom/client'
 export * from './types'
 export * from './aborting'
 export * from './when'
