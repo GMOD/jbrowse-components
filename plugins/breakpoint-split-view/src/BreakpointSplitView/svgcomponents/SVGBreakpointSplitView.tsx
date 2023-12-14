@@ -1,11 +1,9 @@
 import React from 'react'
 import { when } from 'mobx'
-import { getSession, sum } from '@jbrowse/core/util'
+import { getSession, renderToStaticMarkup, sum } from '@jbrowse/core/util'
 import { ThemeProvider } from '@mui/material'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 
-// eslint-disable-next-line react/no-deprecated
-import { flushSync, render } from 'react-dom' // locals
 import {
   SVGTracks,
   SVGRuler,
@@ -18,14 +16,6 @@ import { ExportSvgOptions, BreakpointViewModel } from '../model'
 import Overlay from '../components/Overlay'
 import { getTrackNameMaxLen, getTrackOffsets } from './util'
 
-// https://react.dev/reference/react-dom/server/renderToString#removing-rendertostring-from-the-client-code
-function renderToStaticMarkup(node: React.ReactElement) {
-  const div = document.createElement('div')
-  flushSync(() => {
-    render(node, div)
-  })
-  return div.innerHTML
-}
 type BSV = BreakpointViewModel
 
 // render LGV to SVG

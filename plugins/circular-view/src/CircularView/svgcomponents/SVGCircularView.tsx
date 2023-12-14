@@ -1,26 +1,15 @@
 import React from 'react'
 import { ThemeProvider } from '@mui/material'
 import { when } from 'mobx'
-import { getSession, radToDeg } from '@jbrowse/core/util'
+import { getSession, radToDeg, renderToStaticMarkup } from '@jbrowse/core/util'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 
-// eslint-disable-next-line react/no-deprecated
-import { flushSync, render } from 'react-dom'
 // locals
 import { ExportSvgOptions, CircularViewModel } from '../models/CircularView'
 import SVGBackground from './SVGBackground'
 import Ruler from '../components/Ruler'
 
 type CGV = CircularViewModel
-
-// https://react.dev/reference/react-dom/server/renderToString#removing-rendertostring-from-the-client-code
-function renderToStaticMarkup(node: React.ReactElement) {
-  const div = document.createElement('div')
-  flushSync(() => {
-    render(node, div)
-  })
-  return div.innerHTML
-}
 
 export async function renderToSvg(model: CGV, opts: ExportSvgOptions) {
   await when(() => model.initialized)
