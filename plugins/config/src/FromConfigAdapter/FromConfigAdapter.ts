@@ -39,7 +39,6 @@ export function makeFeatures(fdata: SimpleFeatureSerialized[]) {
 export default class FromConfigAdapter extends BaseFeatureDataAdapter {
   protected features: Map<string, Feature[]>
 
-  protected refNameMap: string[] | undefined
   constructor(
     conf: AnyConfigurationModel,
     getSubAdapter?: getSubAdapterType,
@@ -51,10 +50,7 @@ export default class FromConfigAdapter extends BaseFeatureDataAdapter {
   }
 
   async getRefNames() {
-    if (!this.refNameMap) {
-      this.refNameMap = [...this.features.keys()]
-    }
-    return this.refNameMap
+    return [...this.features.keys()]
   }
 
   async getRefNameAliases() {

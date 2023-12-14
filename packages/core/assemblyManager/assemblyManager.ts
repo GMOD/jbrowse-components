@@ -13,6 +13,8 @@ import assemblyFactory, { Assembly } from './assembly'
 import PluginManager from '../PluginManager'
 import RpcManager from '../rpc/RpcManager'
 
+type AdapterConf = Record<string, unknown>
+
 /**
  * #stateModel AssemblyManager
  */
@@ -105,7 +107,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
         await assembly.load()
         await when(
           () =>
-            Boolean(assembly?.regions && assembly.refNameAliases) ||
+            !!(assembly?.regions && assembly.refNameAliases) ||
             !!assembly?.error,
         )
         if (assembly.error) {
@@ -118,7 +120,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
        * #method
        */
       async getRefNameMapForAdapter(
-        adapterConf: unknown,
+        adapterConf: AdapterConf,
         assemblyName: string | undefined,
         opts: { signal?: AbortSignal; sessionId: string },
       ) {
@@ -133,7 +135,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
        * #method
        */
       async getReverseRefNameMapForAdapter(
-        adapterConf: unknown,
+        adapterConf: AdapterConf,
         assemblyName: string | undefined,
         opts: { signal?: AbortSignal; sessionId: string },
       ) {

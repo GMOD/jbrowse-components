@@ -1,5 +1,4 @@
 import { getParent, types, Instance, IAnyType } from 'mobx-state-tree'
-import jsonStableStringify from 'json-stable-stringify'
 import AbortablePromiseCache from 'abortable-promise-cache'
 
 // locals
@@ -13,6 +12,9 @@ import PluginManager from '../PluginManager'
 import { when, Region, Feature } from '../util'
 import QuickLRU from '../util/QuickLRU'
 import RpcManager from '../rpc/RpcManager'
+import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache'
+
+type AdapterConf = Record<string, unknown>
 
 const refNameRegex = new RegExp(
   '[0-9A-Za-z!#$%&+./:;?@^_|~-][0-9A-Za-z!#$%&*+./:;=?@^_|~-]*',
@@ -105,10 +107,6 @@ function checkRefName(refName: string) {
   if (!refNameRegex.test(refName)) {
     throw new Error(`Encountered invalid refName: "${refName}"`)
   }
-}
-
-function getAdapterId(adapterConf: unknown) {
-  return jsonStableStringify(adapterConf)
 }
 
 type RefNameAliases = Record<string, string | undefined>
@@ -430,14 +428,13 @@ export default function assemblyFactory(
       /**
        * #method
        */
-      getAdapterMapEntry(adapterConf: unknown, options: BaseOptions) {
+      getAdapterMapEntry(adapterConf: AdapterConf, options: BaseOptions) {
         const { signal, statusCallback, ...rest } = options
         if (!options.sessionId) {
           throw new Error('sessionId is required')
         }
-        const adapterId = getAdapterId(adapterConf)
         return adapterLoads.get(
-          adapterId,
+          adapterConfigCacheKey(adapterConf),
           {
             adapterConf,
             self: self as Assembly,
@@ -455,7 +452,10 @@ export default function assemblyFactory(
        * #method
        * get Map of `canonical-name -> adapter-specific-name`
        */
-      async getRefNameMapForAdapter(adapterConf: unknown, opts: BaseOptions) {
+      async getRefNameMapForAdapter(
+        adapterConf: AdapterConf,
+        opts: BaseOptions,
+      ) {
         if (!opts?.sessionId) {
           throw new Error('sessionId is required')
         }
@@ -468,7 +468,7 @@ export default function assemblyFactory(
        * get Map of `adapter-specific-name -> canonical-name`
        */
       async getReverseRefNameMapForAdapter(
-        adapterConf: unknown,
+        adapterConf: AdapterConf,
         opts: BaseOptions,
       ) {
         const map = await this.getAdapterMapEntry(adapterConf, opts)

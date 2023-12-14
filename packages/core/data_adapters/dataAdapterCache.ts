@@ -6,8 +6,8 @@ import idMaker from '../util/idMaker'
 
 type ConfigSnap = SnapshotIn<AnyConfigurationSchemaType>
 
-function adapterConfigCacheKey(adapterConfig: ConfigSnap) {
-  return `${idMaker(adapterConfig)}`
+export function adapterConfigCacheKey(conf: Record<string, unknown> = {}) {
+  return `${idMaker(conf)}`
 }
 
 interface AdapterCacheEntry {
