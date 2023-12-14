@@ -102,9 +102,9 @@ export {
 export {
   renderToSvg,
   SVGTracks,
-  totalHeight,
   SVGRuler,
 } from './LinearGenomeView/svgcomponents/SVGLinearGenomeView'
+export { totalHeight } from './LinearGenomeView/svgcomponents/util'
 export {
   configSchema as linearBasicDisplayConfigSchemaFactory,
   modelFactory as linearBasicDisplayModelFactory,

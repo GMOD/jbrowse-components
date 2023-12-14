@@ -1,41 +1,25 @@
 /* eslint-disable react-refresh/only-export-components */
 import React from 'react'
-import { renderToStaticMarkup } from 'react-dom/server'
 import { when } from 'mobx'
-import { getSession, max, measureText, sum } from '@jbrowse/core/util'
+import {
+  getSession,
+  max,
+  measureText,
+  renderToStaticMarkup,
+} from '@jbrowse/core/util'
 import { ThemeProvider } from '@mui/material'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { getTrackName } from '@jbrowse/core/util/tracks'
+import { getRoot } from 'mobx-state-tree'
 
 // locals
 import { LinearGenomeViewModel, ExportSvgOptions } from '..'
 import SVGBackground from './SVGBackground'
 import SVGTracks from './SVGTracks'
 import SVGHeader from './SVGHeader'
-
-import { getTrackName } from '@jbrowse/core/util/tracks'
+import { totalHeight } from './util'
 
 type LGV = LinearGenomeViewModel
-
-interface Display {
-  height: number
-}
-interface Track {
-  displays: Display[]
-}
-
-export function totalHeight(
-  tracks: Track[],
-  textHeight: number,
-  trackLabels: string,
-) {
-  return sum(
-    tracks.map(
-      t =>
-        t.displays[0].height +
-        (['none', 'left'].includes(trackLabels) ? 0 : textHeight),
-    ),
-  )
-}
 
 // render LGV to SVG
 export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
@@ -51,7 +35,10 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
     Wrapper = ({ children }) => <>{children}</>,
   } = opts
   const session = getSession(model)
-  const theme = session.allThemes?.()[themeName]
+  const { allThemes } = session
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { createRootFn } = getRoot<any>(model)
+  const theme = allThemes?.()[themeName]
   const { width, tracks, showCytobands } = model
   const shift = 50
   const c = +showCytobands * cytobandHeight
@@ -108,6 +95,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
         </svg>
       </Wrapper>
     </ThemeProvider>,
+    createRootFn,
   )
 }
 

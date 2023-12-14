@@ -38,6 +38,9 @@ interface ViewStateOptions {
     initialChildren: React.ReactNode,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ) => any
+  createRootFn?: (elt: Element | DocumentFragment) => {
+    render: (node: React.ReactElement) => unknown
+  }
 }
 
 export default function createViewState(opts: ViewStateOptions) {
@@ -53,11 +56,13 @@ export default function createViewState(opts: ViewStateOptions) {
     disableAddTracks = false,
     makeWorkerInstance,
     hydrateFn,
+    createRootFn,
   } = opts
   const { model, pluginManager } = createModel(
     plugins || [],
     makeWorkerInstance,
     hydrateFn,
+    createRootFn,
   )
   let { defaultSession } = opts
   if (!defaultSession) {

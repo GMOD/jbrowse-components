@@ -1,12 +1,12 @@
 import React from 'react'
 import { ThemeProvider } from '@mui/material'
-import { renderToStaticMarkup } from 'react-dom/server'
 import { when } from 'mobx'
-import { getSession, radToDeg } from '@jbrowse/core/util'
+import { getSession, radToDeg, renderToStaticMarkup } from '@jbrowse/core/util'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { getRoot } from 'mobx-state-tree'
 
 // locals
-import { ExportSvgOptions, CircularViewModel } from '../models/CircularView'
+import { ExportSvgOptions, CircularViewModel } from '../models/model'
 import SVGBackground from './SVGBackground'
 import Ruler from '../components/Ruler'
 
@@ -18,6 +18,8 @@ export async function renderToSvg(model: CGV, opts: ExportSvgOptions) {
     opts
   const session = getSession(model)
   const theme = session.allThemes?.()[themeName]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { createRootFn } = getRoot<any>(model)
   const { width, tracks, height } = model
   const shift = 50
   const displayResults = await Promise.all(
@@ -54,5 +56,6 @@ export async function renderToSvg(model: CGV, opts: ExportSvgOptions) {
         </svg>
       </Wrapper>
     </ThemeProvider>,
+    createRootFn,
   )
 }

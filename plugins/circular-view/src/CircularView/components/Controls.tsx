@@ -16,7 +16,7 @@ import MoreVert from '@mui/icons-material/MoreVert'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 
 // locals
-import { CircularViewModel } from '../models/CircularView'
+import { CircularViewModel } from '../models/model'
 import { getSession } from '@jbrowse/core/util'
 import ExportSvgDlg from './ExportSvgDialog'
 

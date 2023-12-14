@@ -41,13 +41,24 @@ export default function createViewState(opts: {
     initialChildren: React.ReactNode,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ) => any
+  createRootFn?: (elt: Element | DocumentFragment) => {
+    render: (node: React.ReactElement) => unknown
+  }
 }) {
-  const { config, plugins = [], onChange, makeWorkerInstance, hydrateFn } = opts
+  const {
+    config,
+    plugins = [],
+    onChange,
+    makeWorkerInstance,
+    hydrateFn,
+    createRootFn,
+  } = opts
   const { defaultSession = { name: 'NewSession' } } = config
   const { model, pluginManager } = createModel(
     plugins,
     makeWorkerInstance,
     hydrateFn,
+    createRootFn,
   )
   const stateTree = model.create(
     {

@@ -1,7 +1,7 @@
 import clone from 'clone'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { getSession, getContainingView } from '@jbrowse/core/util'
-import { CircularViewModel } from '../../CircularView/models/CircularView'
+import { CircularViewModel } from '../../CircularView/models/model'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function renderReactionData(self: any) {

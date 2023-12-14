@@ -45,8 +45,7 @@ function calc(track: Track, f: Feature) {
 export interface ExportSvgOptions {
   rasterizeLayers?: boolean
   filename?: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Wrapper?: React.FC<any>
+  Wrapper?: React.FC<{ children: React.ReactNode }>
   fontSize?: number
   rulerHeight?: number
   textHeight?: number

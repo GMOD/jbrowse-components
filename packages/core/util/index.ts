@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import isObject from 'is-object'
 import PluginManager from '../PluginManager'
 import {
@@ -33,6 +33,8 @@ import { isUriLocation } from './types'
 // has to be the full path and not the relative path to get the jest mock
 import useMeasure from '@jbrowse/core/util/useMeasure'
 import { colord } from './colord'
+// eslint-disable-next-line react/no-deprecated
+import { flushSync, render } from 'react-dom'
 export * from './types'
 export * from './aborting'
 export * from './when'
@@ -1374,16 +1376,34 @@ export function gatherOverlaps(regions: BasicFeature[]) {
   )
 }
 
+export function stripAlpha(str: string) {
+  const c = colord(str)
+  return c.alpha(1).toHex()
+}
+
+// https://react.dev/reference/react-dom/server/renderToString#removing-rendertostring-from-the-client-code
+export function renderToStaticMarkup(
+  node: React.ReactElement,
+  createRootFn?: (elt: Element | DocumentFragment) => {
+    render: (node: React.ReactElement) => unknown
+  },
+) {
+  const div = document.createElement('div')
+  flushSync(() => {
+    if (createRootFn) {
+      createRootFn(div).render(node)
+    } else {
+      render(node, div)
+    }
+  })
+  return div.innerHTML.replace('&gt;', '>').replace('&lt;', '<')
+}
+
 export {
   default as SimpleFeature,
   type Feature,
   type SimpleFeatureSerialized,
   isFeature,
 } from './simpleFeature'
-
-export function stripAlpha(str: string) {
-  const c = colord(str)
-  return c.alpha(1).toHex()
-}
 
 export { blobToDataURL } from './blobToDataURL'

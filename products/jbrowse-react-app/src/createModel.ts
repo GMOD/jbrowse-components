@@ -18,6 +18,9 @@ export default function createModel(
     initialChildren: React.ReactNode,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ) => any,
+  createRootFn?: (elt: Element | DocumentFragment) => {
+    render: (node: React.ReactElement) => unknown
+  },
 ) {
   const pluginManager = new PluginManager([
     ...corePlugins.map(P => ({ plugin: new P(), metadata: { isCore: true } })),
@@ -30,6 +33,7 @@ export default function createModel(
       sessionModelFactory,
       makeWorkerInstance,
       hydrateFn,
+      createRootFn,
     }),
     pluginManager,
   }
