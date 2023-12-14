@@ -13,7 +13,7 @@ import {
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 
 // locals
-import { ExportSvgOptions } from '../models/CircularView'
+import { ExportSvgOptions } from '../models/model'
 import { getSession, useLocalStorage } from '@jbrowse/core/util'
 
 function LoadingMessage() {

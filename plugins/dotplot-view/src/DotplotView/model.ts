@@ -49,7 +49,7 @@ type Coord = [number, number]
 export interface ExportSvgOptions {
   rasterizeLayers?: boolean
   filename?: string
-  Wrapper?: React.FC<unknown>
+  Wrapper?: React.FC<{ children: React.ReactNode }>
   themeName?: string
 }
 

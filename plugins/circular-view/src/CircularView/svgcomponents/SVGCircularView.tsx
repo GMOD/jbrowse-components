@@ -6,7 +6,7 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getRoot } from 'mobx-state-tree'
 
 // locals
-import { ExportSvgOptions, CircularViewModel } from '../models/CircularView'
+import { ExportSvgOptions, CircularViewModel } from '../models/model'
 import SVGBackground from './SVGBackground'
 import Ruler from '../components/Ruler'
 

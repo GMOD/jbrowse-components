@@ -16,7 +16,7 @@ import {
   SliceElidedRegion,
   SliceNonElidedRegion,
 } from '../models/slices'
-import { CircularViewModel } from '../models/CircularView'
+import { CircularViewModel } from '../models/model'
 
 const useStyles = makeStyles()({
   rulerLabel: {
