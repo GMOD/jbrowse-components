@@ -48,7 +48,7 @@ import {
   BaseRootModelFactory,
 } from '@jbrowse/product-core'
 import { HistoryManagementMixin, RootAppMenuMixin } from '@jbrowse/app-core'
-import { hydrateRoot } from 'react-dom/client'
+import { hydrateRoot, createRoot } from 'react-dom/client'
 import { AssemblyManager } from '@jbrowse/plugin-data-management'
 
 // locals
@@ -118,6 +118,7 @@ export default function RootModel({
     .volatile(self => ({
       version: packageJSON.version,
       hydrateFn: hydrateRoot,
+      createRootFn: createRoot,
       pluginsUpdated: false,
       rpcManager: new RpcManager(
         pluginManager,

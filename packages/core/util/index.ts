@@ -35,6 +35,7 @@ import useMeasure from '@jbrowse/core/util/useMeasure'
 import { colord } from './colord'
 // eslint-disable-next-line react/no-deprecated
 import { flushSync, render } from 'react-dom'
+import { createRoot } from 'react-dom/client'
 export * from './types'
 export * from './aborting'
 export * from './when'
@@ -1382,10 +1383,19 @@ export function stripAlpha(str: string) {
 }
 
 // https://react.dev/reference/react-dom/server/renderToString#removing-rendertostring-from-the-client-code
-export function renderToStaticMarkup(node: React.ReactElement) {
+export function renderToStaticMarkup(
+  node: React.ReactElement,
+  createRootFn?: (elt: Element | DocumentFragment) => {
+    render: (node: React.ReactElement) => unknown
+  },
+) {
   const div = document.createElement('div')
   flushSync(() => {
-    render(node, div)
+    if (createRootFn) {
+      createRootFn(div).render(node)
+    } else {
+      render(node, div)
+    }
   })
   return div.innerHTML.replace('&gt;', '>').replace('&lt;', '<')
 }

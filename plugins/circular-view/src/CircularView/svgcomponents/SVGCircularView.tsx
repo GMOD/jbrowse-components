@@ -3,6 +3,7 @@ import { ThemeProvider } from '@mui/material'
 import { when } from 'mobx'
 import { getSession, radToDeg, renderToStaticMarkup } from '@jbrowse/core/util'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { getRoot } from 'mobx-state-tree'
 
 // locals
 import { ExportSvgOptions, CircularViewModel } from '../models/CircularView'
@@ -17,6 +18,8 @@ export async function renderToSvg(model: CGV, opts: ExportSvgOptions) {
     opts
   const session = getSession(model)
   const theme = session.allThemes?.()[themeName]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { createRootFn } = getRoot<any>(model)
   const { width, tracks, height } = model
   const shift = 50
   const displayResults = await Promise.all(
@@ -53,5 +56,6 @@ export async function renderToSvg(model: CGV, opts: ExportSvgOptions) {
         </svg>
       </Wrapper>
     </ThemeProvider>,
+    createRootFn,
   )
 }

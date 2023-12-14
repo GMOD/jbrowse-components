@@ -3,7 +3,7 @@ import { when } from 'mobx'
 import { getSession, renderToStaticMarkup, sum } from '@jbrowse/core/util'
 import { ThemeProvider } from '@mui/material'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-
+import { getRoot } from 'mobx-state-tree'
 import {
   SVGTracks,
   SVGRuler,
@@ -26,10 +26,11 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
     rulerHeight = 30,
     fontSize = 13,
     trackLabels = 'offset',
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    Wrapper = ({ children }: any) => <>{children}</>,
+    Wrapper = ({ children }) => <>{children}</>,
     themeName = 'default',
   } = opts
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { createRootFn } = getRoot<any>(model)
   const session = getSession(model)
   const theme = session.allThemes?.()[themeName]
   const { width, views } = model
@@ -137,5 +138,6 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
         </svg>
       </Wrapper>
     </ThemeProvider>,
+    createRootFn,
   )
 }

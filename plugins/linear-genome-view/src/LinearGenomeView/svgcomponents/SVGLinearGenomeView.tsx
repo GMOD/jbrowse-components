@@ -10,6 +10,7 @@ import {
 import { ThemeProvider } from '@mui/material'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getTrackName } from '@jbrowse/core/util/tracks'
+import { getRoot } from 'mobx-state-tree'
 
 // locals
 import { LinearGenomeViewModel, ExportSvgOptions } from '..'
@@ -34,7 +35,10 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
     Wrapper = ({ children }) => <>{children}</>,
   } = opts
   const session = getSession(model)
-  const theme = session.allThemes?.()[themeName]
+  const { allThemes } = session
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { createRootFn } = getRoot<any>(model)
+  const theme = allThemes?.()[themeName]
   const { width, tracks, showCytobands } = model
   const shift = 50
   const c = +showCytobands * cytobandHeight
@@ -91,6 +95,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
         </svg>
       </Wrapper>
     </ThemeProvider>,
+    createRootFn,
   )
 }
 
