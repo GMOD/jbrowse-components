@@ -22,7 +22,7 @@ export interface ExportSvgOptions {
   rasterizeLayers?: boolean
   scale?: number
   filename?: string
-  Wrapper?: React.FC<unknown>
+  Wrapper?: React.FC<{ children: React.ReactNode }>
   fontSize?: number
   rulerHeight?: number
   textHeight?: number

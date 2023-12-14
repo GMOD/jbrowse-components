@@ -1,6 +1,6 @@
 import React from 'react'
 import { ThemeProvider } from '@mui/material'
-import { renderToStaticMarkup } from 'react-dom/server'
+import { getRoot } from 'mobx-state-tree'
 import { when } from 'mobx'
 import {
   getSession,
@@ -9,6 +9,7 @@ import {
   measureText,
   ReactRendering,
   renderToAbstractCanvas,
+  renderToStaticMarkup,
   sum,
 } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
@@ -35,8 +36,7 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
     rulerHeight = 30,
     fontSize = 13,
     trackLabels = 'offset',
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    Wrapper = ({ children }: any) => <>{children}</>,
+    Wrapper = ({ children }) => <>{children}</>,
     themeName = 'default',
   } = opts
   const session = getSession(model)
@@ -44,7 +44,8 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
   const { width, views, middleComparativeHeight: synH, tracks } = model
   const shift = 50
   const offset = headerHeight + rulerHeight
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { createRootFn } = getRoot<any>(model)
   const heights = views.map(
     v => totalHeight(v.tracks, textHeight, trackLabels) + offset,
   )
@@ -172,5 +173,6 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
         </svg>
       </Wrapper>
     </ThemeProvider>,
+    createRootFn,
   )
 }
