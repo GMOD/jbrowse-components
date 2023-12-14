@@ -12,8 +12,7 @@ import {
 } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
-
-import FromConfigAdapter from '../FromConfigAdapter/FromConfigAdapter'
+import { makeFeatures } from '../FromConfigAdapter/FromConfigAdapter'
 
 /**
  * Adapter that just returns the features defined in its `features` configuration
@@ -32,11 +31,8 @@ export default class FromConfigRegionsAdapter
     pluginManager?: PluginManager,
   ) {
     super(config, getSubAdapter, pluginManager)
-    const features = readConfObject(
-      config,
-      'features',
-    ) as SimpleFeatureSerialized[]
-    this.features = FromConfigAdapter.makeFeatures(features || [])
+    const f = readConfObject(config, 'features') as SimpleFeatureSerialized[]
+    this.features = makeFeatures(f || [])
   }
 
   /**

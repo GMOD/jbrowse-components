@@ -12,15 +12,34 @@ import {
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
-/**
- * Adapter that just returns the features defined in its `features` configuration
- * key, like:
- *   `"features": [ { "refName": "ctgA", "start":1, "end":20 }, ... ]`
- */
+export function makeFeatures(fdata: SimpleFeatureSerialized[]) {
+  const features = new Map<string, Feature[]>()
+  for (const entry of fdata) {
+    if (entry) {
+      const f = new SimpleFeature(entry)
+      const refName = f.get('refName') as string
+      let bucket = features.get(refName)
+      if (!bucket) {
+        bucket = []
+        features.set(refName, bucket)
+      }
+
+      bucket.push(f)
+    }
+  }
+
+  // sort the features on each reference sequence by start coordinate
+  for (const refFeatures of features.values()) {
+    refFeatures.sort((a, b) => a.get('start') - b.get('start'))
+  }
+
+  return features
+}
 
 export default class FromConfigAdapter extends BaseFeatureDataAdapter {
   protected features: Map<string, Feature[]>
 
+  protected refNameMap: string[] | undefined
   constructor(
     conf: AnyConfigurationModel,
     getSubAdapter?: getSubAdapterType,
@@ -28,39 +47,14 @@ export default class FromConfigAdapter extends BaseFeatureDataAdapter {
   ) {
     super(conf, getSubAdapter, pluginManager)
     const feats = readConfObject(conf, 'features') as SimpleFeatureSerialized[]
-    this.features = FromConfigAdapter.makeFeatures(feats || [])
-  }
-
-  static makeFeatures(fdata: SimpleFeatureSerialized[]) {
-    const features = new Map<string, Feature[]>()
-    for (const entry of fdata) {
-      if (entry) {
-        const f = this.makeFeature(entry)
-        const refName = f.get('refName') as string
-        let bucket = features.get(refName)
-        if (!bucket) {
-          bucket = []
-          features.set(refName, bucket)
-        }
-
-        bucket.push(f)
-      }
-    }
-
-    // sort the features on each reference sequence by start coordinate
-    for (const refFeatures of features.values()) {
-      refFeatures.sort((a, b) => a.get('start') - b.get('start'))
-    }
-
-    return features
-  }
-
-  static makeFeature(data: SimpleFeatureSerialized) {
-    return new SimpleFeature(data)
+    this.features = makeFeatures(feats || [])
   }
 
   async getRefNames() {
-    return [...this.features.keys()]
+    if (!this.refNameMap) {
+      this.refNameMap = [...this.features.keys()]
+    }
+    return this.refNameMap
   }
 
   async getRefNameAliases() {
