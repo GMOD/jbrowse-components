@@ -37,7 +37,7 @@ test('renders setup wizard', async () => {
   model.setWidth(800)
   const { findByText } = render(<LinearGenomeView model={model} />)
   expect(model.displayedRegions.length).toEqual(0)
-  const elt = await findByText('Open')
+  const elt = await findByText('Open', {}, { timeout: 10000 })
   await waitFor(() => expect(elt.getAttribute('disabled')).toBe(null))
   fireEvent.click(elt)
   await waitFor(() => expect(model.displayedRegions.length).toEqual(1), {

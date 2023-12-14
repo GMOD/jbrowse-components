@@ -203,7 +203,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return readConfObject(self.rendererConfig, 'mismatchAlpha')
         },
         /**
-         * #getter
+         * #method
          */
         renderReady() {
           const view = getContainingView(self) as LGV

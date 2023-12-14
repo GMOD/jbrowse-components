@@ -1,6 +1,8 @@
-import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import React from 'react'
+import { SimpleFeature } from '@jbrowse/core/util'
 import { render } from '@testing-library/react'
+
+// locals
 import ConfigSchema from '../configSchema'
 import { FloatingLayout, PrecomputedFloatingLayout } from '../Layout'
 import Rendering from './LollipopRendering'

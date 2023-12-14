@@ -113,9 +113,8 @@ exports[`renders nothing with no assembly 1`] = `
       >
         <span
           aria-label="Favorite tracks"
-          class="MuiBadge-root css-1c32n2y-MuiBadge-root"
+          class="MuiBadge-root css-k9f182-MuiBadge-root-margin"
           data-mui-internal-clone-element="true"
-          style="margin-right: 10px;"
         >
           <svg
             aria-hidden="true"
@@ -338,9 +337,8 @@ exports[`renders with a couple of categorized tracks 1`] = `
       >
         <span
           aria-label="Favorite tracks"
-          class="MuiBadge-root css-1c32n2y-MuiBadge-root"
+          class="MuiBadge-root css-k9f182-MuiBadge-root-margin"
           data-mui-internal-clone-element="true"
-          style="margin-right: 10px;"
         >
           <svg
             aria-hidden="true"
@@ -919,9 +917,8 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
       >
         <span
           aria-label="Favorite tracks"
-          class="MuiBadge-root css-1c32n2y-MuiBadge-root"
+          class="MuiBadge-root css-k9f182-MuiBadge-root-margin"
           data-mui-internal-clone-element="true"
-          style="margin-right: 10px;"
         >
           <svg
             aria-hidden="true"
