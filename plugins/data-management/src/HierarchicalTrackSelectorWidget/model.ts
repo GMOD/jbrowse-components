@@ -155,7 +155,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       addToFavorites(trackId: string) {
         self.favoritesCounter += 1
-        self.favorites.push(trackId)
+        self.favorites = [...self.favorites, trackId]
       },
       /**
        * #action
@@ -526,12 +526,10 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
               self.favoritesLocalStorageKey,
               JSON.stringify(self.favorites),
             )
-            if (self.recentlyUsed) {
-              localStorageSetItem(
-                self.recentlyUsedLocalStorageKey,
-                JSON.stringify(self.recentlyUsed),
-              )
-            }
+            localStorageSetItem(
+              self.recentlyUsedLocalStorageKey,
+              JSON.stringify(self.recentlyUsed),
+            )
           }),
         )
       },
