@@ -53,7 +53,9 @@ const DropdownTrackSelector = observer(function ({
           ),
           onClick: () => {
             if (!open) {
-              model.view.toggleTrack(t.trackId)
+              if (model.view.toggleTrack(t.trackId)) {
+                model.addToRecentlyUsed(t.trackId)
+              }
             }
           },
         })),
