@@ -50,5 +50,10 @@ test('color by stranded rna-seq', async () => {
   await user.click(await screen.findByText('First-of-pair strand'))
   await screen.findAllByTestId('pileup-stranded', ...opts)
   const f1 = within(await screen.findByTestId('Blockset-pileup'))
-  expectCanvasMatch(await f1.findByTestId(pv('1..8000-0'), ...opts))
+
+  // note on test flakiness: this is the taller of two blocks, (the first
+  // having it 1-8000-0), but if the first block is rendered first, it has a
+  // shorter height, but if it is rendered second, it takes the height of the
+  // tallest black since it is layout.getTotalHeight as the canvas height
+  expectCanvasMatch(await f1.findByTestId(pv('8001..16000-0'), ...opts))
 }, 50000)
