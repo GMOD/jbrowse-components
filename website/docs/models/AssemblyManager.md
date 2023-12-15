@@ -68,14 +68,14 @@ waitForAssembly: (assemblyName: string) => Promise<{ configuration: any; } & Non
 
 ```js
 // type signature
-getRefNameMapForAdapter: (adapterConf: unknown, assemblyName: string, opts: { signal?: AbortSignal; sessionId: string; }) => Promise<any>
+getRefNameMapForAdapter: (adapterConf: AdapterConf, assemblyName: string, opts: { signal?: AbortSignal; sessionId: string; }) => Promise<any>
 ```
 
 #### method: getReverseRefNameMapForAdapter
 
 ```js
 // type signature
-getReverseRefNameMapForAdapter: (adapterConf: unknown, assemblyName: string, opts: { signal?: AbortSignal; sessionId: string; }) => Promise<any>
+getReverseRefNameMapForAdapter: (adapterConf: AdapterConf, assemblyName: string, opts: { signal?: AbortSignal; sessionId: string; }) => Promise<any>
 ```
 
 #### method: isValidRefName

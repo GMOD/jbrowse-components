@@ -99,8 +99,8 @@ jbrowse add-assembly https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/G
 --skipCheck
 ```
 
-This will create a file called "config.json". Go ahead and open that file up.
-In it, you will see an entry called "assemblies". The first (and only) entry in
+This will create a file called "config.json". Go ahead and open that file up. In
+it, you will see an entry called "assemblies". The first (and only) entry in
 that list is our assembly. You can see the name, alias, sequence, and reference
 name aliases we specified in our command. If for some reason the index files
 were unusually named, you could change them in the "faiLocation" and
@@ -141,7 +141,7 @@ export default {
     },
   },
 }
-````
+```
 
 Then add an import to your "index.html" adding this data:
 

@@ -87,14 +87,14 @@ sortedBy: types.maybe(
 any
 ```
 
-#### getter: renderReady
+### LinearPileupDisplay - Methods
+
+#### method: renderReady
 
 ```js
-// type
-;() => boolean
+// type signature
+renderReady: () => boolean
 ```
-
-### LinearPileupDisplay - Methods
 
 #### method: renderPropsPre
 

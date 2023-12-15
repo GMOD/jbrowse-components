@@ -147,7 +147,7 @@ isValidRefName: (refName: string) => boolean
 
 ```js
 // type signature
-getAdapterMapEntry: (adapterConf: unknown, options: BaseOptions) => Promise<RefNameMap>
+getAdapterMapEntry: (adapterConf: AdapterConf, options: BaseOptions) => Promise<RefNameMap>
 ```
 
 #### method: getRefNameMapForAdapter
@@ -156,7 +156,7 @@ get Map of `canonical-name -> adapter-specific-name`
 
 ```js
 // type signature
-getRefNameMapForAdapter: (adapterConf: unknown, opts: BaseOptions) => Promise<any>
+getRefNameMapForAdapter: (adapterConf: AdapterConf, opts: BaseOptions) => Promise<any>
 ```
 
 #### method: getReverseRefNameMapForAdapter
@@ -165,7 +165,7 @@ get Map of `adapter-specific-name -> canonical-name`
 
 ```js
 // type signature
-getReverseRefNameMapForAdapter: (adapterConf: unknown, opts: BaseOptions) => Promise<any>
+getReverseRefNameMapForAdapter: (adapterConf: AdapterConf, opts: BaseOptions) => Promise<any>
 ```
 
 ### Assembly - Actions
