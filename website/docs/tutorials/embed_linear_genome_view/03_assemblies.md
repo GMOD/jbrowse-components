@@ -91,11 +91,13 @@ There are a lot of options, and not all of them are things we need to worry
 about in this case. Now go ahead and run the below command, referring to the
 help to interpret the options as needed:
 
-````sh jbrowse add-assembly
-https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz --name
-GRCh38 --alias hg38 --refNameAliases
-http://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/GRCh38.aliases.txt
---skipCheck ```
+```sh
+jbrowse add-assembly https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz \
+--name GRCh38 \
+--alias hg38 \
+--refNameAliases http://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/GRCh38.aliases.txt \
+--skipCheck
+```
 
 This will create a file called "config.json". Go ahead and open that file up.
 In it, you will see an entry called "assemblies". The first (and only) entry in
