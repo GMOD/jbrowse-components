@@ -108,7 +108,7 @@ const Chord = observer(function Chord({
     return (
       <path
         data-testid={`chord-${feature.id()}`}
-        style={{ cursor: 'crosshair' }}
+        cursor="crosshair"
         fill="none"
         d={['M', ...startXY, 'Q', ...controlXY, ...endXY].join(' ')}
         stroke={hovered ? hoverStrokeColor : strokeColor}
