@@ -848,7 +848,7 @@ exports[`renders with the available plugins 1`] = `
                   </p>
                 </div>
                 <div
-                  class="MuiCardActions-root MuiCardActions-spacing css-1t6e9jv-MuiCardActions-root"
+                  class="MuiCardActions-root MuiCardActions-spacing css-dnrpxu-MuiCardActions-root"
                 >
                   <button
                     class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall css-1cpxz0y-MuiButtonBase-root-MuiButton-root"
