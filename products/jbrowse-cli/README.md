@@ -543,22 +543,16 @@ Set a default session with views and tracks
 
 ```
 USAGE
-  $ jbrowse set-default-session [-s <value>] [-n <value>] [-v <value>] [--viewId <value>] [-t <value>] [-c] [--target
-    <value>] [--out <value>] [--delete] [-h]
+  $ jbrowse set-default-session [-s <value>] [-n <value>] [-c] [--target <value>] [--out <value>] [--delete] [-h]
 
 FLAGS
   -c, --currentSession   List out the current default session
   -h, --help             Show CLI help.
   -n, --name=<value>     [default: New Default Session] Give a name for the default session
   -s, --session=<value>  set path to a file containing session in json format
-  -t, --tracks=<value>   Track id or track ids as comma separated string to put into default session
-  -v, --view=<value>     View type in config to be added as default session, i.e LinearGenomeView, CircularView,
-                         DotplotView.
-                         Must be provided if no default session file provided
       --delete           Delete any existing default session.
       --out=<value>      synonym for target
       --target=<value>   path to config file in JB2 installation directory to write out to
-      --viewId=<value>   Identifier for the view. Will be generated on default
 
 DESCRIPTION
   Set a default session with views and tracks
@@ -566,9 +560,9 @@ DESCRIPTION
 EXAMPLES
   $ jbrowse set-default-session --session /path/to/default/session.json
 
-  $ jbrowse set-default-session --target /path/to/jb2/installation/config.json --view LinearGenomeView --tracks track1, track2, track3
+  $ jbrowse set-default-session --target /path/to/jb2/installation/config.json
 
-  $ jbrowse set-default-session --view LinearGenomeView, --name newName --viewId view-no-tracks
+  $ jbrowse set-default-session --view LinearGenomeView, --name newName
 
   $ jbrowse set-default-session --currentSession # Prints out current default session
 ```
