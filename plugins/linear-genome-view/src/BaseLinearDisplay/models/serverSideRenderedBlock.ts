@@ -222,6 +222,7 @@ export function renderBlockData(
     const { adapterConfig, rendererType, error, parentTrack } = display
     const assemblyNames = getTrackAssemblyNames(parentTrack)
     const regionAsm = self.region.assemblyName
+
     if (
       !assemblyNames.includes(regionAsm) &&
       !assemblyNames.some(name => assemblyManager.get(name)?.hasName(regionAsm))
@@ -262,7 +263,7 @@ export function renderBlockData(
         layoutId,
         blockKey: self.key,
         reloadFlag: self.reloadFlag,
-        timeout: 1000000, // 10000,
+        timeout: 1000000,
       },
     }
   } catch (e) {
@@ -290,6 +291,10 @@ async function renderBlockEffect(
     return undefined
   }
 
+  console.log(renderArgs?.adapterConfig.sequenceAdapter)
+  if (!renderArgs?.adapterConfig.sequenceAdapter) {
+    return undefined
+  }
   if (displayError) {
     self.setError(displayError)
     return undefined

@@ -1,7 +1,14 @@
-import { types, Instance, getSnapshot, getRoot } from 'mobx-state-tree'
+import {
+  types,
+  Instance,
+  getSnapshot,
+  getRoot,
+  addDisposer,
+} from 'mobx-state-tree'
 import { ConfigurationSchema, readConfObject } from '../../configuration'
 import PluginManager from '../../PluginManager'
 import { AssemblyManager, notEmpty } from '../../util'
+import { autorun } from 'mobx'
 
 /**
  * #config BaseTrack
@@ -208,26 +215,31 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
           self.sequenceAdapters = a
         },
         afterAttach() {
-          const { assemblyManager } = getRoot<{
-            assemblyManager: AssemblyManager
-          }>(self)
-          const assemblyNames = readConfObject(
+          addDisposer(
             self,
-            'assemblyNames',
-          ) as string[]
-          self.setSequenceAdapters(
-            assemblyNames
-              .map(a => {
-                const conf = assemblyManager.get(a)?.configuration
-                return conf ? ([a, getSnapshot(conf)] as const) : undefined
-              })
-              .filter(notEmpty),
+            autorun(() => {
+              const { assemblyManager } = getRoot<{
+                assemblyManager: AssemblyManager
+              }>(self)
+              const assemblyNames = readConfObject(
+                self,
+                'assemblyNames',
+              ) as string[]
+              self.setSequenceAdapters(
+                assemblyNames
+                  .map(a => {
+                    const conf = assemblyManager.get(a)?.configuration
+                    return conf ? ([a, getSnapshot(conf)] as const) : undefined
+                  })
+                  .filter(notEmpty),
+              )
+              const c = assemblyManager.get(assemblyNames[0])?.configuration
+              console.log({ c })
+              if (c) {
+                self.adapter.setSequenceAdapter?.(readConfObject(c))
+              }
+            }),
           )
-
-          const c = assemblyManager.get(assemblyNames[0])?.configuration
-          if (c) {
-            self.adapter.setSequenceAdapter?.(readConfObject(c))
-          }
         },
       }),
     },
