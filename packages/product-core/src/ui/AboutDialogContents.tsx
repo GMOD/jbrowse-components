@@ -86,7 +86,13 @@ export default function AboutContents({
         ) : null}
         <Attributes
           attributes={confPostExt}
-          omit={['displays', 'baseUri', 'refNames', 'formatAbout']}
+          omit={[
+            'displays',
+            'baseUri',
+            'refNames',
+            'formatAbout',
+            'sequenceAdapters',
+          ]}
           hideUris={hideUris}
         />
       </BaseCard>

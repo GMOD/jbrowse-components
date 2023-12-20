@@ -61,7 +61,6 @@ async function loadRefNameMap(
 ) {
   const { sessionId } = options
 
-  console.log('wpw', adapterConfig)
   await when(
     () =>
       !!(

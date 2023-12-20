@@ -291,10 +291,6 @@ async function renderBlockEffect(
     return undefined
   }
 
-  console.log(renderArgs?.adapterConfig.sequenceAdapter)
-  if (!renderArgs?.adapterConfig.sequenceAdapter) {
-    return undefined
-  }
   if (displayError) {
     self.setError(displayError)
     return undefined
