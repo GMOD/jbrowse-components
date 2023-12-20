@@ -1,7 +1,7 @@
 import { types, Instance, getSnapshot, getRoot } from 'mobx-state-tree'
 import { ConfigurationSchema, readConfObject } from '../../configuration'
 import PluginManager from '../../PluginManager'
-import { getSession, notEmpty } from '../../util'
+import { AssemblyManager, notEmpty } from '../../util'
 
 /**
  * #config BaseTrack
@@ -189,27 +189,28 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
       explicitlyTyped: true,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       actions: (self: any) => ({
-        addDisplayConf(conf: { type: string; displayId: string }) {
-          const { type } = conf
+        forceAddDisplay(c: { type: string; displayId: string }) {
+          self.displays.push(c)
+          return self.displays.at(-1)
+        },
+        addDisplayConf(c: { type: string; displayId: string }) {
+          const { type } = c
           if (!type) {
             throw new Error(`unknown display type ${type}`)
           }
-          const display = self.displays.find(
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (d: any) => d?.displayId === conf.displayId,
+          return (
+            self.displays.find(
+              (d: { displayId: string }) => d?.displayId === c.displayId,
+            ) ?? self.forceAddDisplay(c)
           )
-          if (display) {
-            return display
-          }
-          const length = self.displays.push(conf)
-          return self.displays[length - 1]
         },
         setSequenceAdapters(a: Record<string, unknown>) {
           self.sequenceAdapters = a
         },
         afterAttach() {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const { assemblyManager } = getRoot<any>(self)
+          const { assemblyManager } = getRoot<{
+            assemblyManager: AssemblyManager
+          }>(self)
           const assemblyNames = readConfObject(
             self,
             'assemblyNames',
