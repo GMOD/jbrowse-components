@@ -1396,7 +1396,7 @@ export function renderToStaticMarkup(
       render(node, div)
     }
   })
-  return div.innerHTML.replace('&gt;', '>').replace('&lt;', '<')
+  return div.innerHTML
 }
 
 export {
