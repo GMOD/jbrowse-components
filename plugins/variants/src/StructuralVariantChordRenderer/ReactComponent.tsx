@@ -43,22 +43,11 @@ const StructuralVariantChordsReactComponent = observer(function ({
     return blocksForRefs
   }, [blockDefinitions])
 
-  const trackStyleId = `chords-${
-    typeof jest !== 'undefined' ? 'test' : displayModel.id
-  }`
   return (
-    <g id={trackStyleId} data-testid="structuralVariantChordRenderer">
-      <style
-        // eslint-disable-next-line react/no-danger
-        dangerouslySetInnerHTML={{
-          __html: `
-          #${trackStyleId} > path {
-            cursor: crosshair;
-            fill: none;
-          }
-`,
-        }}
-      />
+    <g
+      id={`chords-${typeof jest !== 'undefined' ? 'test' : displayModel.id}`}
+      data-testid="structuralVariantChordRenderer"
+    >
       {[...features.values()].map(feature => {
         const id = feature.id()
         const selected = String(selectedFeatureId) === String(id)

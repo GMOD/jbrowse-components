@@ -50,12 +50,7 @@ const Chord = observer(function Chord({
   config: AnyConfigurationModel
   bezierRadius: number
   selected: boolean
-  onClick: (
-    feature: Feature,
-    reg: AnyRegion,
-    endBlock: AnyRegion,
-    evt: unknown,
-  ) => void
+  onClick: (feat: Feature, reg: AnyRegion, end: AnyRegion, evt: unknown) => void
 }) {
   const [hovered, setHovered] = useState(false)
   // find the blocks that our start and end points belong to
@@ -113,6 +108,8 @@ const Chord = observer(function Chord({
     return (
       <path
         data-testid={`chord-${feature.id()}`}
+        cursor="crosshair"
+        fill="none"
         d={['M', ...startXY, 'Q', ...controlXY, ...endXY].join(' ')}
         stroke={hovered ? hoverStrokeColor : strokeColor}
         strokeWidth={hovered ? 3 : 1}
