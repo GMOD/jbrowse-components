@@ -200,8 +200,9 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
           self.sequenceAdapters = a
         },
         afterAttach() {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const { assemblyManager } = getRoot<any>(self)
+          const { assemblyManager } = getRoot<{
+            assemblyManager: AssemblyManager
+          }>(self)
           const assemblyNames = readConfObject(
             self,
             'assemblyNames',
