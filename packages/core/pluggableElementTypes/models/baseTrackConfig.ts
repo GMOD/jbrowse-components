@@ -234,9 +234,10 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
                   .filter(notEmpty),
               )
               const c = assemblyManager.get(assemblyNames[0])?.configuration
-              console.log({ c })
               if (c) {
-                self.adapter.setSequenceAdapter?.(readConfObject(c))
+                self.adapter.setSequenceAdapter?.(
+                  readConfObject(c.sequence.adapter),
+                )
               }
             }),
           )
