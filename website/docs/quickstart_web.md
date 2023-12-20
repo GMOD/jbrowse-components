@@ -10,7 +10,7 @@ import config from '../docusaurus.config.json'
 
 ## Prerequisites
 
-- Node.js 12+. Note: we recommend not using `apt` to install Node.js, it often
+- Node.js 16+. Note: we recommend not using `apt` to install Node.js, it often
   installs old versions. Good alternatives include
   [NodeSource](https://github.com/nodesource) or
   [NVM](https://github.com/nvm-sh/nvm).

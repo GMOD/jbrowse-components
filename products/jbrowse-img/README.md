@@ -8,7 +8,7 @@ You don't need to have JBrowse 2 installed to use this tool. The tool can
 generate images using files on your hard drive or from remote files. So, all you
 need to run this tool is
 
-- NodeJS v12+
+- NodeJS v16+
 
 ## Screenshot
 
