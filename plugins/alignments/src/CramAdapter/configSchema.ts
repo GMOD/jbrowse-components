@@ -6,60 +6,62 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
-const configSchema = ConfigurationSchema(
-  'CramAdapter',
-  {
-    /**
-     * #slot fetchSizeLimit
-     */
-    fetchSizeLimit: {
-      type: 'number',
-      description:
-        'size in bytes over which to display a warning to the user that too much data will be fetched',
-      defaultValue: 3_000_000,
-    },
+export default function configSchemaF() {
+  return ConfigurationSchema(
+    'CramAdapter',
+    {
+      /**
+       * #slot fetchSizeLimit
+       */
+      fetchSizeLimit: {
+        type: 'number',
+        description:
+          'size in bytes over which to display a warning to the user that too much data will be fetched',
+        defaultValue: 3_000_000,
+      },
 
-    /**
-     * #slot cramLocation
-     */
-    cramLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/my.cram',
-        locationType: 'UriLocation',
+      /**
+       * #slot cramLocation
+       */
+      cramLocation: {
+        type: 'fileLocation',
+        defaultValue: {
+          uri: '/path/to/my.cram',
+          locationType: 'UriLocation',
+        },
+      },
+
+      /**
+       * #slot craiLocation
+       */
+      craiLocation: {
+        type: 'fileLocation',
+        defaultValue: {
+          uri: '/path/to/my.cram.crai',
+          locationType: 'UriLocation',
+        },
+      },
+
+      /**
+       * #slot sequenceAdapter
+       * generally refers to the reference genome assembly's sequence adapter
+       * this can be manually added via the baseTrackConfig autorun, or manually
+       * specified
+       */
+      sequenceAdapter: {
+        type: 'frozen',
+        description: 'sequence data adapter',
+        defaultValue: null,
       },
     },
-
-    /**
-     * #slot craiLocation
-     */
-    craiLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/my.cram.crai',
-        locationType: 'UriLocation',
-      },
+    {
+      explicitlyTyped: true,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      actions: (self: any) => ({
+        setSequenceAdapter(s: Record<string, unknown>) {
+          self.sequenceAdapter = s
+        },
+      }),
     },
-
-    /**
-     * #slot sequenceAdapter
-     * generally refers to the reference genome assembly's sequence adapter
-     * currently needs to be manually added
-     */
-    sequenceAdapter: {
-      type: 'frozen',
-      description: 'sequence data adapter',
-      defaultValue: null,
-    },
-  },
-  {
-    explicitlyTyped: true,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    actions: (self: any) => ({
-      setSequenceAdapter(s: Record<string, unknown>) {
-        self.sequenceAdapter = s
-      },
-    }),
-  },
-)
-export default configSchema
+  )
+}
