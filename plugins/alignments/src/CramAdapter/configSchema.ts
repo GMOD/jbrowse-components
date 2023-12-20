@@ -46,7 +46,7 @@ const configSchema = ConfigurationSchema(
      * generally refers to the reference genome assembly's sequence adapter
      * currently needs to be manually added
      */
-    sequenceAdapters: {
+    sequenceAdapter: {
       type: 'frozen',
       description: 'sequence data adapter',
       defaultValue: null,
