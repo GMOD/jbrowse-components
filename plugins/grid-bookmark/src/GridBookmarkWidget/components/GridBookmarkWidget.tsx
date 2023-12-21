@@ -68,7 +68,7 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
           data-testid="grid_bookmark_menu"
           menuItems={[
             {
-              label: 'Export bookmarks',
+              label: 'Export',
               icon: GetApp,
               onClick: () => {
                 getSession(model).queueDialog(onClose => [

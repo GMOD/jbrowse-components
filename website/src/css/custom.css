@@ -83,3 +83,9 @@
     brightness(101%) contrast(87%);
   opacity: 0.8;
 }
+
+.navbar-social-mastodon:hover:after {
+  filter: invert(62%) sepia(57%) saturate(419%) hue-rotate(117deg)
+    brightness(101%) contrast(87%);
+  opacity: 0.8;
+}

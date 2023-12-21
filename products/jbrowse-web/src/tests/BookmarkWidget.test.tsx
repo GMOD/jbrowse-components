@@ -278,7 +278,7 @@ test('Downloads a BED file correctly', async () => {
   })
 
   fireEvent.click(await findByTestId('grid_bookmark_menu', ...opts))
-  fireEvent.click(await findByText('Export bookmarks', ...opts))
+  fireEvent.click(await findByText('Export', ...opts))
   fireEvent.click(await findByText(/Download/, ...opts))
 
   const blob = new Blob([''], {
@@ -306,7 +306,7 @@ test('Downloads a TSV file correctly', async () => {
     assemblyName: 'volvox',
   })
   fireEvent.click(await findByTestId('grid_bookmark_menu'))
-  fireEvent.click(await findByText('Export bookmarks'))
+  fireEvent.click(await findByText('Export'))
   fireEvent.mouseDown(await findByText('BED'))
   const listbox = within(getByRole('listbox'))
   fireEvent.click(listbox.getByText('TSV'))
