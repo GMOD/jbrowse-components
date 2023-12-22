@@ -67,13 +67,12 @@ const FacetFilter = observer(function ({
   const [visible, setVisible] = useState(true)
   const { faceted } = model
   const { filters } = faceted
+  const { field } = column
   return (
-    <FormControl key={column.field} className={classes.facet} style={{ width }}>
-      <div style={{ display: 'flex' }}>
-        <Typography>{column.field}</Typography>
-        <ClearButton
-          onClick={() => model.faceted.setFilter(column.field, [])}
-        />
+    <FormControl className={classes.facet} fullWidth>
+      <div>
+        <Typography component="span">{field}</Typography>
+        <ClearButton onClick={() => faceted.setFilter(field, [])} />
         <ExpandButton visible={visible} onClick={() => setVisible(!visible)} />
       </div>
       {visible ? (
