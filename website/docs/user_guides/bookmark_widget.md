@@ -109,12 +109,12 @@ Imported bookmarks are appended to your existing bookmarks.
 
 Bookmarks can be removed from your system by selecting them using the left
 checkboxes, then pressing the "Delete" button within the Bookmarks widget
-menu.bookmar
+menu.bookmark
 
 ### Bookmark persistence
 
 Bookmarks are saved and loaded from your localStorage, and reference the URL
-that JBrowse is being hosted on to determine which bookmarks to retrive.
+that JBrowse is being hosted on to determine which bookmarks to retrieve.
 
 Note that only bookmarks that are valid for the presently loaded assemblies will
 be displayed.
