@@ -95,6 +95,17 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
+      get shownTrackIds() {
+        return new Set<string>(
+          self.view?.tracks?.map(
+            (t: { configuration: { trackId: string } }) =>
+              t.configuration.trackId,
+          ),
+        )
+      },
+      /**
+       * #getter
+       */
       get selectionSet() {
         return new Set(self.selection)
       },

@@ -1,7 +1,8 @@
-export type Row = Record<
-  string,
-  { metadata?: Record<string, unknown>; [key: string]: unknown }
->
+export interface Row {
+  id: string
+  metadata?: Record<string, unknown>
+  [key: string]: unknown
+}
 
 export function getRowStr(facet: string, row: Row) {
   return `${
