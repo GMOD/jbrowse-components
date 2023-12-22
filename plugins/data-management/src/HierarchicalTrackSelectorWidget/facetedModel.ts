@@ -12,6 +12,7 @@ import {
 } from '@jbrowse/core/util'
 import { autorun, observable } from 'mobx'
 import { getRootKeys, findNonSparseKeys } from './facetedUtil'
+import { getRowStr } from './components/faceted/util'
 
 const nonMetadataKeys = ['category', 'adapter', 'description'] as const
 
@@ -181,8 +182,7 @@ export function facetedStateTreeF() {
           .filter(f => f[1].length > 0)
           .map(([key, val]) => [key, new Set(val)] as const)
         return self.rows.filter(row =>
-          // @ts-expect-error
-          arrFilters.every(([key, val]) => val.has(row[key])),
+          arrFilters.every(([key, val]) => val.has(getRowStr(key, row))),
         )
       },
     }))

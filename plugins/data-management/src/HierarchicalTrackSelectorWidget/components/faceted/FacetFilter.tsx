@@ -55,12 +55,10 @@ function ExpandButton({
 const FacetFilter = observer(function ({
   column,
   vals,
-  width,
   model,
 }: {
   column: { field: string }
   vals: [string, number][]
-  width: number
   model: HierarchicalTrackSelectorModel
 }) {
   const { classes } = useStyles()
