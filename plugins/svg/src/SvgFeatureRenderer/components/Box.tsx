@@ -10,6 +10,7 @@ import { SceneGraph } from '@jbrowse/core/util/layouts'
 // locals
 import { isUTR } from './util'
 import Arrow from './Arrow'
+import { argv0 } from 'process'
 
 const utrHeightFraction = 0.65
 
@@ -48,19 +49,37 @@ const Box = observer(function Box(props: {
   return feature.parent() && feature.get('type') === 'intron' ? null : (
     <>
       {topLevel ? <Arrow {...props} /> : null}
-      <rect
-        data-testid={`box-${feature.id()}`}
-        x={leftWithinBlock}
-        y={top}
-        width={widthWithinBlock}
-        height={height}
-        fill={
-          isUTR(feature)
-            ? readConfObject(config, 'color3', { feature })
-            : readConfObject(config, 'color1', { feature })
-        }
-        stroke={readConfObject(config, 'outline', { feature }) as string}
-      />
+
+      {feature.get('type') === 'star' ? (
+        <path
+          fill={feature.get('color')}
+          transform={`translate(${leftWithinBlock - 25} 0) scale(0.2 0.2)`}
+          d="m56,237 74-228 74,228L10,96h240"
+        />
+      ) : feature.get('type') === 'trunk' ? (
+        <rect
+          fill="#8B4513"
+          transform={`translate(${leftWithinBlock} 0) scale(0.2 0.2)`}
+          x={0}
+          y={0}
+          width={100}
+          height={500}
+        />
+      ) : (
+        <rect
+          data-testid={`box-${feature.id()}`}
+          x={leftWithinBlock}
+          y={top}
+          width={widthWithinBlock}
+          height={height}
+          fill={
+            isUTR(feature)
+              ? readConfObject(config, 'color3', { feature })
+              : readConfObject(config, 'color1', { feature })
+          }
+          stroke={readConfObject(config, 'outline', { feature }) as string}
+        />
+      )}
     </>
   )
 })

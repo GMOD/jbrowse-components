@@ -13,11 +13,11 @@ function makeColor(idx: number) {
 }
 
 const colorMap = {
-  I: '#ff03',
+  I: '#080',
   N: '#0a03',
   D: '#00f3',
   X: 'brown',
-  M: '#f003',
+  M: '#800',
   '=': '#f003',
 }
 

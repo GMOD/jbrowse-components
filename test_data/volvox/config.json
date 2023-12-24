@@ -200,18 +200,17 @@
         "name": "Dark (forest, from config file)",
         "palette": {
           "primary": {
-            "main": "#464"
+            "main": "#009"
           },
           "secondary": {
-            "main": "#376"
+            "main": "#449"
           },
           "tertiary": {
-            "main": "#253"
+            "main": "#000"
           },
           "quaternary": {
-            "main": "#6a4"
-          },
-          "mode": "dark"
+            "main": "#fff"
+          }
         }
       }
     }
@@ -2170,6 +2169,95 @@
           "displayId": "volvox_bedpe-LinearPairedArcDisplay"
         }
       ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "star",
+      "assemblyNames": ["volvox"],
+      "name": "star",
+      "displays": [
+        {
+          "displayId": "star-LinearBasicDisplay",
+          "type": "LinearBasicDisplay",
+          "renderer": { "type": "SvgFeatureRenderer", "color1": "green" }
+        }
+      ],
+      "adapter": {
+        "type": "FromConfigAdapter",
+        "features": [
+          {
+            "refName": "ctgA",
+            "start": 30000,
+            "color": "gold",
+            "end": 30300,
+            "name": "merry",
+            "description": "dopamine receptor",
+            "uniqueId": "hello3"
+          },
+          {
+            "refName": "ctgA",
+            "start": 32402,
+            "color": "gold",
+            "end": 32985,
+            "name": "xmas",
+            "description": "activated by DEC25",
+            "uniqueId": "hello2"
+          },
+          {
+            "refName": "ctgA",
+            "start": 31194,
+            "color": "gold",
+            "type": "star",
+            "end": 31195,
+            "uniqueId": "hello"
+          }
+        ]
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "trunk",
+      "assemblyNames": ["volvox_ins"],
+      "name": "trunk",
+      "displays": [
+        {
+          "displayId": "misc",
+          "type": "LinearBasicDisplay",
+          "renderer": { "type": "SvgFeatureRenderer", "color1": "brown" }
+        }
+      ],
+      "adapter": {
+        "type": "FromConfigAdapter",
+        "features": [
+          {
+            "refName": "ctgA",
+            "type": "trunk",
+            "start": 33517,
+            "color": "#A52A2A",
+            "end": 33518,
+            "uniqueId": "hello2"
+          },
+          {
+            "refName": "ctgA",
+            "start": 31000,
+            "color": "gold",
+            "name": "happy",
+            "description": "associated with positive mood",
+            "end": 32000,
+            "uniqueId": "n1"
+          },
+
+          {
+            "refName": "ctgA",
+            "start": 35023,
+            "color": "gold",
+            "name": "holidays",
+            "description": "seasonal master regulator",
+            "end": 36410,
+            "uniqueId": "n3"
+          }
+        ]
+      }
     }
   ],
   "plugins": [
