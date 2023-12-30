@@ -19,7 +19,12 @@ export function makeFeaturePair(feature: Feature, alt?: string) {
   let start = feature.get('start')
   let end = feature.get('end')
   const strand = feature.get('strand')
-  const mate = feature.get('mate')
+  const mate = feature.get('mate') as {
+    refName: string
+    start: number
+    end: number
+    mateDirection?: number
+  }
   const refName = feature.get('refName')
 
   let mateRefName: string | undefined
@@ -135,28 +140,32 @@ const Arc = observer(function ({
           fill="none"
           pointerEvents="stroke"
         />
-        <line
-          stroke={col}
-          strokeWidth={sw}
-          onMouseOut={() => setMouseOvered(false)}
-          onMouseOver={() => setMouseOvered(true)}
-          onClick={() => model.selectFeature(feature)}
-          x1={left}
-          x2={left + k1.mateDirection * 20}
-          y1={1.5}
-          y2={1.5}
-        />
-        <line
-          stroke={col}
-          strokeWidth={sw}
-          onMouseOut={() => setMouseOvered(false)}
-          onMouseOver={() => setMouseOvered(true)}
-          onClick={() => model.selectFeature(feature)}
-          x1={right}
-          x2={right + k2.mateDirection * 20}
-          y1={1.5}
-          y2={1.5}
-        />
+        {k1.mateDirection !== undefined ? (
+          <line
+            stroke={col}
+            strokeWidth={sw}
+            onMouseOut={() => setMouseOvered(false)}
+            onMouseOver={() => setMouseOvered(true)}
+            onClick={() => model.selectFeature(feature)}
+            x1={left}
+            x2={left + k1.mateDirection * 20}
+            y1={1.5}
+            y2={1.5}
+          />
+        ) : null}
+        {k2.mateDirection !== undefined ? (
+          <line
+            stroke={col}
+            strokeWidth={sw}
+            onMouseOut={() => setMouseOvered(false)}
+            onMouseOver={() => setMouseOvered(true)}
+            onClick={() => model.selectFeature(feature)}
+            x1={right}
+            x2={right + k2.mateDirection * 20}
+            y1={1.5}
+            y2={1.5}
+          />
+        ) : null}
         {mouseOvered ? (
           <ArcTooltip contents={makeSummary(feature, alt)} />
         ) : null}
