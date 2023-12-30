@@ -3,123 +3,19 @@ import { observer } from 'mobx-react'
 import {
   AbstractSessionModel,
   Feature,
-  assembleLocString,
   getContainingView,
   getSession,
-  measureText,
 } from '@jbrowse/core/util'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import { getConf } from '@jbrowse/core/configuration'
-import { parseBreakend } from '@gmod/vcf'
-import { Tooltip } from 'react-svg-tooltip'
 
 // local
 import { LinearArcDisplayModel } from '../model'
+import { makeFeaturePair, makeSummary } from './util'
+import ArcTooltip from '../../ArcTooltip'
 
 type LGV = LinearGenomeViewModel
-
-function f(feature: Feature, alt?: string) {
-  const bnd = alt ? parseBreakend(alt) : undefined
-  let start = feature.get('start')
-  let end = feature.get('end')
-  const strand = feature.get('strand')
-  const mate = feature.get('mate')
-  const refName = feature.get('refName')
-
-  let mateRefName: string | undefined
-  let mateEnd = 0
-  let mateStart = 0
-  let joinDirection = 0
-  let mateDirection = 0
-
-  // one sided bracket used, because there could be <INS:ME> and we just check
-  // startswith below
-  const symbolicAlleles = ['<TRA', '<DEL', '<INV', '<INS', '<DUP', '<CNV']
-  if (symbolicAlleles.some(a => alt?.startsWith(a))) {
-    // END is defined to be a single value, not an array. CHR2 not defined in
-    // VCF spec, but should be similar
-    const info = feature.get('INFO')
-    const e = info?.END?.[0] ?? end
-    mateRefName = info?.CHR2?.[0] ?? refName
-    mateEnd = e
-    mateStart = e - 1
-    // re-adjust the arc to be from start to end of feature by re-assigning end
-    // to the 'mate'
-    start = start
-    end = start + 1
-  } else if (bnd?.MatePosition) {
-    const matePosition = bnd.MatePosition.split(':')
-    mateDirection = bnd.MateDirection === 'left' ? 1 : -1
-    joinDirection = bnd.Join === 'left' ? -1 : 1
-    mateEnd = +matePosition[1]
-    mateStart = +matePosition[1] - 1
-    mateRefName = matePosition[0]
-  }
-
-  return {
-    k1: {
-      refName,
-      start,
-      end,
-      strand,
-      mateDirection,
-    },
-    k2: mate ?? {
-      refName: mateRefName,
-      end: mateEnd,
-      start: mateStart,
-      mateDirection: joinDirection,
-    },
-  }
-}
-
-function makeSummary(feature: Feature, alt?: string) {
-  const { k1, k2 } = f(feature, alt)
-  return [
-    feature.get('name'),
-    feature.get('id'),
-    assembleLocString(k1),
-    assembleLocString(k2),
-    feature.get('INFO')?.SVTYPE,
-    alt,
-  ]
-    .filter(f => !!f)
-    .join(' - ')
-}
-
-// conditionally rendered tooltip only on mouseover, speeds up
-const SvgTooltip = React.forwardRef<
-  SVGPathElement,
-  { feature: Feature; alt?: string }
->(function SvgTooltip2({ feature, alt }, ref) {
-  const caption = makeSummary(feature, alt)
-  const tooltipWidth = 20 + measureText(caption)
-  return ref !== null ? (
-    // @ts-expect-error
-    <Tooltip triggerRef={ref}>
-      <rect
-        x={12}
-        y={0}
-        width={tooltipWidth}
-        height={20}
-        rx={5}
-        ry={5}
-        fill="black"
-        fillOpacity="50%"
-      />
-      <text
-        x={22}
-        y={14}
-        fontSize={10}
-        fill="white"
-        textLength={tooltipWidth - 20}
-      >
-        {caption}
-      </text>
-    </Tooltip>
-  ) : null
-})
 
 const Arc = observer(function ({
   model,
@@ -137,7 +33,7 @@ const Arc = observer(function ({
 }) {
   const [mouseOvered, setMouseOvered] = useState(false)
   const { height } = model
-  const { k1, k2 } = f(feature, alt)
+  const { k1, k2 } = makeFeaturePair(feature, alt)
   const ref = useRef<SVGPathElement>(null)
   const c = getConf(model, 'color', { feature, alt })
   const ra1 = assembly.getCanonicalRefName(k1.refName) || k1.refName
@@ -169,30 +65,8 @@ const Arc = observer(function ({
           fill="none"
           pointerEvents="stroke"
         />
-        <line
-          stroke={mouseOvered ? 'black' : c}
-          strokeWidth={3}
-          onMouseOut={() => setMouseOvered(false)}
-          onMouseOver={() => setMouseOvered(true)}
-          onClick={() => model.selectFeature(feature)}
-          x1={left}
-          x2={left + k1.mateDirection * 20}
-          y1={1.5}
-          y2={1.5}
-        />
-        <line
-          stroke={mouseOvered ? 'black' : c}
-          strokeWidth={3}
-          onMouseOut={() => setMouseOvered(false)}
-          onMouseOver={() => setMouseOvered(true)}
-          onClick={() => model.selectFeature(feature)}
-          x1={right}
-          x2={right + k2.mateDirection * 20}
-          y1={1.5}
-          y2={1.5}
-        />
         {mouseOvered ? (
-          <SvgTooltip feature={feature} alt={alt} ref={ref} />
+          <ArcTooltip contents={makeSummary(feature, alt)} />
         ) : null}
       </>
     ) : null
