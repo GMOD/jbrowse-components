@@ -275,7 +275,7 @@ exports[`renders one track, one region 1`] = `
                 style="left: 0%; width: 0%;"
               />
               <span
-                class="MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary css-14gf62f-MuiSlider-thumb"
+                class="MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary css-cv58vo-MuiSlider-thumb"
                 data-index="0"
                 style="left: 0%;"
               >
@@ -850,7 +850,7 @@ exports[`renders two tracks, two regions 1`] = `
                 style="left: 0%; width: 9.774680693120512%;"
               />
               <span
-                class="MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary css-14gf62f-MuiSlider-thumb"
+                class="MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary css-cv58vo-MuiSlider-thumb"
                 data-index="0"
                 style="left: 9.774680693120512%;"
               >

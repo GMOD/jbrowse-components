@@ -40,7 +40,7 @@ exports[`renders nothing with no assembly 1`] = `
           Filter tracks
         </label>
         <div
-          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-1blad95-MuiInputBase-root-MuiInput-root"
+          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-q97sgx-MuiInputBase-root-MuiInput-root"
         >
           <input
             aria-invalid="false"
@@ -97,7 +97,7 @@ exports[`renders nothing with no assembly 1`] = `
             />
           </svg>
           <span
-            class="MuiBadge-badge MuiBadge-standard MuiBadge-invisible MuiBadge-anchorOriginBottomRight MuiBadge-anchorOriginBottomRightRectangular MuiBadge-overlapRectangular MuiBadge-colorSecondary css-1kxa1zt-MuiBadge-badge-smallBadge"
+            class="MuiBadge-badge MuiBadge-standard MuiBadge-invisible MuiBadge-anchorOriginBottomRight MuiBadge-anchorOriginBottomRightRectangular MuiBadge-overlapRectangular MuiBadge-colorSecondary css-l64p1-MuiBadge-badge-smallBadge"
           >
             0
           </span>
@@ -128,7 +128,7 @@ exports[`renders nothing with no assembly 1`] = `
             />
           </svg>
           <span
-            class="MuiBadge-badge MuiBadge-standard MuiBadge-invisible MuiBadge-anchorOriginBottomRight MuiBadge-anchorOriginBottomRightRectangular MuiBadge-overlapRectangular MuiBadge-colorSecondary css-1kxa1zt-MuiBadge-badge-smallBadge"
+            class="MuiBadge-badge MuiBadge-standard MuiBadge-invisible MuiBadge-anchorOriginBottomRight MuiBadge-anchorOriginBottomRightRectangular MuiBadge-overlapRectangular MuiBadge-colorSecondary css-l64p1-MuiBadge-badge-smallBadge"
           >
             0
           </span>
@@ -264,7 +264,7 @@ exports[`renders with a couple of categorized tracks 1`] = `
           Filter tracks
         </label>
         <div
-          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-1blad95-MuiInputBase-root-MuiInput-root"
+          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-q97sgx-MuiInputBase-root-MuiInput-root"
         >
           <input
             aria-invalid="false"
@@ -321,7 +321,7 @@ exports[`renders with a couple of categorized tracks 1`] = `
             />
           </svg>
           <span
-            class="MuiBadge-badge MuiBadge-standard MuiBadge-invisible MuiBadge-anchorOriginBottomRight MuiBadge-anchorOriginBottomRightRectangular MuiBadge-overlapRectangular MuiBadge-colorSecondary css-1kxa1zt-MuiBadge-badge-smallBadge"
+            class="MuiBadge-badge MuiBadge-standard MuiBadge-invisible MuiBadge-anchorOriginBottomRight MuiBadge-anchorOriginBottomRightRectangular MuiBadge-overlapRectangular MuiBadge-colorSecondary css-l64p1-MuiBadge-badge-smallBadge"
           >
             0
           </span>
@@ -352,7 +352,7 @@ exports[`renders with a couple of categorized tracks 1`] = `
             />
           </svg>
           <span
-            class="MuiBadge-badge MuiBadge-standard MuiBadge-invisible MuiBadge-anchorOriginBottomRight MuiBadge-anchorOriginBottomRightRectangular MuiBadge-overlapRectangular MuiBadge-colorSecondary css-1kxa1zt-MuiBadge-badge-smallBadge"
+            class="MuiBadge-badge MuiBadge-standard MuiBadge-invisible MuiBadge-anchorOriginBottomRight MuiBadge-anchorOriginBottomRightRectangular MuiBadge-overlapRectangular MuiBadge-colorSecondary css-l64p1-MuiBadge-badge-smallBadge"
           >
             0
           </span>
@@ -844,7 +844,7 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
           Filter tracks
         </label>
         <div
-          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-1blad95-MuiInputBase-root-MuiInput-root"
+          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-q97sgx-MuiInputBase-root-MuiInput-root"
         >
           <input
             aria-invalid="false"
@@ -901,7 +901,7 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
             />
           </svg>
           <span
-            class="MuiBadge-badge MuiBadge-standard MuiBadge-invisible MuiBadge-anchorOriginBottomRight MuiBadge-anchorOriginBottomRightRectangular MuiBadge-overlapRectangular MuiBadge-colorSecondary css-1kxa1zt-MuiBadge-badge-smallBadge"
+            class="MuiBadge-badge MuiBadge-standard MuiBadge-invisible MuiBadge-anchorOriginBottomRight MuiBadge-anchorOriginBottomRightRectangular MuiBadge-overlapRectangular MuiBadge-colorSecondary css-l64p1-MuiBadge-badge-smallBadge"
           >
             0
           </span>
@@ -932,7 +932,7 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
             />
           </svg>
           <span
-            class="MuiBadge-badge MuiBadge-standard MuiBadge-invisible MuiBadge-anchorOriginBottomRight MuiBadge-anchorOriginBottomRightRectangular MuiBadge-overlapRectangular MuiBadge-colorSecondary css-1kxa1zt-MuiBadge-badge-smallBadge"
+            class="MuiBadge-badge MuiBadge-standard MuiBadge-invisible MuiBadge-anchorOriginBottomRight MuiBadge-anchorOriginBottomRightRectangular MuiBadge-overlapRectangular MuiBadge-colorSecondary css-l64p1-MuiBadge-badge-smallBadge"
           >
             0
           </span>

@@ -15,7 +15,7 @@ exports[`renders with the available plugins 1`] = `
         Filter plugins
       </label>
       <div
-        class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-1blad95-MuiInputBase-root-MuiInput-root"
+        class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-q97sgx-MuiInputBase-root-MuiInput-root"
       >
         <input
           aria-invalid="false"
@@ -51,7 +51,7 @@ exports[`renders with the available plugins 1`] = `
       </div>
     </div>
     <div
-      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded css-1wc0u5o-MuiPaper-root-MuiAccordion-root"
+      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded css-tkqa92-MuiPaper-root-MuiAccordion-root"
     >
       <div
         aria-expanded="true"
@@ -750,7 +750,7 @@ exports[`renders with the available plugins 1`] = `
       </div>
     </div>
     <div
-      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded css-1wc0u5o-MuiPaper-root-MuiAccordion-root"
+      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded css-tkqa92-MuiPaper-root-MuiAccordion-root"
     >
       <div
         aria-expanded="true"
