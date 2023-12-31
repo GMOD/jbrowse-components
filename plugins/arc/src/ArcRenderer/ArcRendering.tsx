@@ -1,11 +1,13 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import { Feature, Region, bpSpanPx, measureText } from '@jbrowse/core/util'
+import { Feature, Region, bpSpanPx } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
-import { Tooltip } from 'react-svg-tooltip'
+
+// locals
+import ArcTooltip from '../ArcTooltip'
 
 function Arc({
   selectedFeatureId,
@@ -22,6 +24,7 @@ function Arc({
   bpPerPx: number
   feature: Feature
 }) {
+  const [isMouseOvered, setIsMouseOvered] = useState(false)
   const [left, right] = bpSpanPx(
     feature.get('start'),
     feature.get('end'),
@@ -40,7 +43,6 @@ function Arc({
   const strokeWidth = readConfObject(config, 'thickness', { feature }) || 1
   const height = readConfObject(config, 'height', { feature }) || 100
   const ref = React.createRef<SVGPathElement>()
-  const tooltipWidth = 20 + measureText(caption?.toString())
 
   const t = 0.5
   // formula: https://en.wikipedia.org/wiki/B%C3%A9zier_curve#Cubic_B%C3%A9zier_curves
@@ -58,30 +60,12 @@ function Arc({
         strokeWidth={strokeWidth}
         fill="transparent"
         onClick={e => onFeatureClick?.(e, featureId)}
+        onMouseOver={() => setIsMouseOvered(true)}
+        onMouseLeave={() => setIsMouseOvered(false)}
         ref={ref}
         pointerEvents="stroke"
       />
-      <Tooltip triggerRef={ref}>
-        <rect
-          x={12}
-          y={0}
-          width={tooltipWidth}
-          height={20}
-          rx={5}
-          ry={5}
-          fill="black"
-          fillOpacity="50%"
-        />
-        <text
-          x={22}
-          y={14}
-          fontSize={10}
-          fill="white"
-          textLength={tooltipWidth - 20}
-        >
-          {caption}
-        </text>
-      </Tooltip>
+      {isMouseOvered ? <ArcTooltip contents={caption} /> : null}
       <text
         x={left + (right - left) / 2}
         y={textYCoord + 3}
@@ -156,6 +140,7 @@ function SemiCircles({
   bpPerPx: number
   feature: Feature
 }) {
+  const [isMouseOvered, setIsMouseOvered] = useState(false)
   const [left, right] = bpSpanPx(
     feature.get('start'),
     feature.get('end'),
@@ -173,7 +158,6 @@ function SemiCircles({
   const caption = readConfObject(config, 'caption', { feature })
   const strokeWidth = readConfObject(config, 'thickness', { feature }) || 1
   const ref = React.createRef<SVGPathElement>()
-  const tooltipWidth = 20 + measureText(caption?.toString())
   const textYCoord = (right - left) / 2
 
   return (
@@ -190,30 +174,12 @@ function SemiCircles({
         strokeWidth={strokeWidth}
         fill="transparent"
         onClick={e => onFeatureClick?.(e, featureId)}
+        onMouseOver={() => setIsMouseOvered(true)}
+        onMouseLeave={() => setIsMouseOvered(false)}
         ref={ref}
         pointerEvents="stroke"
       />
-      <Tooltip triggerRef={ref}>
-        <rect
-          x={12}
-          y={0}
-          width={tooltipWidth}
-          height={20}
-          rx={5}
-          ry={5}
-          fill="black"
-          fillOpacity="50%"
-        />
-        <text
-          x={22}
-          y={14}
-          fontSize={10}
-          fill="white"
-          textLength={tooltipWidth - 20}
-        >
-          {caption}
-        </text>
-      </Tooltip>
+      {isMouseOvered ? <ArcTooltip contents={caption} /> : null}
       <text
         x={left + (right - left) / 2}
         y={textYCoord + 3}

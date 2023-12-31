@@ -19,7 +19,6 @@ exports[`one feature 1`] = `
       pointer-events="stroke"
       stroke-width="1"
     />
-    <g />
     <text
       style="stroke: white; stroke-width: 0.6em;"
       x="0.6499999999999999"

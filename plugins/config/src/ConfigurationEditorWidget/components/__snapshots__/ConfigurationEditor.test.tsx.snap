@@ -2,7 +2,7 @@
 
 exports[`ConfigurationEditor widget renders all the different types of built-in slots 1`] = `
 <div
-  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded MuiAccordion-gutters css-vuzfd9-MuiPaper-root-MuiAccordion-root-accordion"
+  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded MuiAccordion-gutters css-nanipl-MuiPaper-root-MuiAccordion-root-accordion"
 >
   <div
     aria-expanded="true"
@@ -864,7 +864,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
 
 exports[`ConfigurationEditor widget renders with defaults of the PileupTrack schema 1`] = `
 <div
-  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded MuiAccordion-gutters css-vuzfd9-MuiPaper-root-MuiAccordion-root-accordion"
+  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded MuiAccordion-gutters css-nanipl-MuiPaper-root-MuiAccordion-root-accordion"
 >
   <div
     aria-expanded="true"
@@ -1178,7 +1178,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
               </div>
             </div>
             <div
-              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded MuiAccordion-gutters css-vuzfd9-MuiPaper-root-MuiAccordion-root-accordion"
+              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded MuiAccordion-gutters css-nanipl-MuiPaper-root-MuiAccordion-root-accordion"
             >
               <div
                 aria-expanded="true"
@@ -1969,7 +1969,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
 
 exports[`ConfigurationEditor widget renders with just the required model elements 1`] = `
 <div
-  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded MuiAccordion-gutters css-vuzfd9-MuiPaper-root-MuiAccordion-root-accordion"
+  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded MuiAccordion-gutters css-nanipl-MuiPaper-root-MuiAccordion-root-accordion"
 >
   <div
     aria-expanded="true"
