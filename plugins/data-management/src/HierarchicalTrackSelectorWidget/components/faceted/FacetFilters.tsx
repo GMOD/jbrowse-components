@@ -1,17 +1,18 @@
 import React from 'react'
+import { observer } from 'mobx-react'
+
+// locals
 import FacetFilter from './FacetFilter'
 import { HierarchicalTrackSelectorModel } from '../../model'
-import { observer } from 'mobx-react'
+import { Row, getRowStr } from './util'
 
 const FacetFilters = observer(function ({
   rows,
   columns,
-  width,
   model,
 }: {
-  rows: Record<string, unknown>[]
+  rows: Row[]
   columns: { field: string }[]
-  width: number
   model: HierarchicalTrackSelectorModel
 }) {
   const { faceted } = model
@@ -41,7 +42,7 @@ const FacetFilters = observer(function ({
   for (const facet of ret) {
     const elt = uniqs.get(facet)!
     for (const row of currentRows) {
-      const key = `${row[facet] || ''}`
+      const key = getRowStr(facet, row)
       const val = elt.get(key)
       // we don't allow filtering on empty yet
       if (key) {
@@ -55,19 +56,19 @@ const FacetFilters = observer(function ({
     const filter = filters.get(facet)?.length
       ? new Set(filters.get(facet))
       : undefined
-    currentRows = currentRows.filter(row => {
-      return filter !== undefined ? filter.has(row[facet] as string) : true
-    })
+
+    currentRows = currentRows.filter(row =>
+      filter !== undefined ? filter.has(getRowStr(facet, row)) : true,
+    )
   }
 
   return (
     <div>
-      {facets.map(column => (
+      {facets.map(c => (
         <FacetFilter
-          key={column.field}
-          vals={[...uniqs.get(column.field)!]}
-          column={column}
-          width={width}
+          key={c.field}
+          vals={[...uniqs.get(c.field)!]}
+          column={c}
           model={model}
         />
       ))}

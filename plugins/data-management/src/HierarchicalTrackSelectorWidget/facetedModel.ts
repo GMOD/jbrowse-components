@@ -12,6 +12,7 @@ import {
 } from '@jbrowse/core/util'
 import { autorun, observable } from 'mobx'
 import { getRootKeys, findNonSparseKeys } from './facetedUtil'
+import { getRowStr } from './components/faceted/util'
 
 const nonMetadataKeys = ['category', 'adapter', 'description'] as const
 
@@ -119,12 +120,9 @@ export function facetedStateTreeF() {
       get rows() {
         const session = getSession(self)
         const { allTrackConfigurations, filterText } = self
-        // metadata is spread onto the object for easier access and sorting
-        // by the mui data grid (it's unable to sort by nested objects)
         return allTrackConfigurations
           .filter(conf => matches(filterText, conf, session))
           .map(track => {
-            const metadata = readConfObject(track, 'metadata')
             return {
               id: track.trackId as string,
               conf: track,
@@ -132,7 +130,10 @@ export function facetedStateTreeF() {
               category: readConfObject(track, 'category')?.join(', ') as string,
               adapter: readConfObject(track, 'adapter')?.type as string,
               description: readConfObject(track, 'description') as string,
-              metadata,
+              metadata: readConfObject(track, 'metadata') as Record<
+                string,
+                unknown
+              >,
             } as const
           })
       },
@@ -181,8 +182,7 @@ export function facetedStateTreeF() {
           .filter(f => f[1].length > 0)
           .map(([key, val]) => [key, new Set(val)] as const)
         return self.rows.filter(row =>
-          // @ts-expect-error
-          arrFilters.every(([key, val]) => val.has(row[key])),
+          arrFilters.every(([key, val]) => val.has(getRowStr(key, row))),
         )
       },
     }))

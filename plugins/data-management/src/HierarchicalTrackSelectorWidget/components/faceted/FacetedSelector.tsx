@@ -46,7 +46,7 @@ const FacetedSelector = observer(function FacetedSelector({
   model: HierarchicalTrackSelectorModel
 }) {
   const { classes } = useStyles()
-  const { view, selection, faceted } = model
+  const { view, selection, shownTrackIds, faceted } = model
   const {
     rows,
     panelWidth,
@@ -61,7 +61,6 @@ const FacetedSelector = observer(function FacetedSelector({
   } = faceted
   const { pluginManager } = getEnv(model)
   const { ref, scrollLeft } = useResizeBar()
-  const tracks = view.tracks as AnyConfigurationModel[]
   const widthsDebounced = useDebounce(widths, 200)
 
   const columns = [
@@ -101,10 +100,6 @@ const FacetedSelector = observer(function FacetedSelector({
       },
     })),
   ]
-
-  const shownTrackIds = new Set(
-    tracks.map(t => t.configuration.trackId as string),
-  )
 
   return (
     <>
@@ -197,19 +192,8 @@ const FacetedSelector = observer(function FacetedSelector({
               onDrag={dist => faceted.setPanelWidth(panelWidth - dist)}
               className={classes.resizeHandle}
             />
-            <div
-              style={{
-                width: panelWidth,
-                overflowY: 'auto',
-                overflowX: 'hidden',
-              }}
-            >
-              <FacetFilters
-                model={model}
-                width={panelWidth - 10}
-                rows={rows}
-                columns={columns}
-              />
+            <div style={{ width: panelWidth }}>
+              <FacetFilters model={model} rows={rows} columns={columns} />
             </div>
           </>
         ) : null}
