@@ -1,11 +1,19 @@
 import { SimpleFeature, Feature } from '@jbrowse/core/util'
 import BED from '@gmod/bed'
 
+interface MinimalFeature {
+  type: string
+  start: number
+  end: number
+  refName: string
+}
+
 export function ucscProcessedTranscript(feature: Feature) {
   const children = feature.children()
   // split the blocks into UTR, CDS, and exons
   const thickStart = feature.get('thickStart')
   const thickEnd = feature.get('thickEnd')
+  const refName = feature.get('refName')
 
   if (!thickStart && !thickEnd) {
     return feature
@@ -17,8 +25,7 @@ export function ucscProcessedTranscript(feature: Feature) {
         .sort((a, b) => a.get('start') - b.get('start'))
     : []
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const newChildren: Record<string, any> = []
+  const newChildren: MinimalFeature[] = []
   blocks.forEach(block => {
     const start = block.get('start')
     const end = block.get('end')
@@ -29,6 +36,7 @@ export function ucscProcessedTranscript(feature: Feature) {
         type: `${prime}_prime_UTR`,
         start,
         end,
+        refName,
       })
     } else if (thickStart > start && thickStart < end && thickEnd >= end) {
       // UTR | CDS
@@ -38,11 +46,13 @@ export function ucscProcessedTranscript(feature: Feature) {
           type: `${prime}_prime_UTR`,
           start,
           end: thickStart,
+          refName,
         },
         {
           type: 'CDS',
           start: thickStart,
           end,
+          refName,
         },
       )
     } else if (thickStart <= start && thickEnd >= end) {
@@ -51,6 +61,7 @@ export function ucscProcessedTranscript(feature: Feature) {
         type: 'CDS',
         start,
         end,
+        refName,
       })
     } else if (thickStart > start && thickStart < end && thickEnd < end) {
       // UTR | CDS | UTR
@@ -61,16 +72,19 @@ export function ucscProcessedTranscript(feature: Feature) {
           type: `${leftPrime}_prime_UTR`,
           start,
           end: thickStart,
+          refName,
         },
         {
           type: `CDS`,
           start: thickStart,
           end: thickEnd,
+          refName,
         },
         {
           type: `${rightPrime}_prime_UTR`,
           start: thickEnd,
           end,
+          refName,
         },
       )
     } else if (thickStart <= start && thickEnd > start && thickEnd < end) {
@@ -81,11 +95,13 @@ export function ucscProcessedTranscript(feature: Feature) {
           type: `CDS`,
           start,
           end: thickEnd,
+          refName,
         },
         {
           type: `${prime}_prime_UTR`,
           start: thickEnd,
           end,
+          refName,
         },
       )
     } else if (thickEnd <= start) {
@@ -95,6 +111,7 @@ export function ucscProcessedTranscript(feature: Feature) {
         type: `${prime}_prime_UTR`,
         start,
         end,
+        refName,
       })
     }
   })
@@ -158,6 +175,7 @@ export function featureData(
         uniqueId: `${uniqueId}-${b}`,
         start: bmin,
         end: bmax,
+        refName,
         type: 'block',
       })
     }
