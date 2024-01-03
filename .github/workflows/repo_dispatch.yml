@@ -1,0 +1,36 @@
+name: Repository dispatch (publish)
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  repo_dispatch:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        repo:
+          - 'GMOD/dash_jbrowse'
+          - 'GMOD/jbrowse-react-linear-genome-view-vanillajs-demo'
+          - 'GMOD/jbrowse-react-linear-genome-view-cra5-demo'
+          - 'GMOD/jbrowse-react-linear-genome-view-cra4-demo'
+          - 'GMOD/jbrowse-react-linear-genome-view-vite-demo'
+          - 'GMOD/jbrowse-react-linear-genome-view-nextjs-demo'
+          - 'GMOD/jbrowse-react-circular-genome-view-vanillajs-demo'
+          - 'GMOD/jbrowse-react-circular-genome-view-cra5-demo'
+          - 'GMOD/jbrowse-react-circular-genome-view-cra4-demo'
+          - 'GMOD/jbrowse-react-circular-genome-view-nextjs-demo'
+          - 'GMOD/jbrowse-react-app-nextjs-demo'
+          - 'GMOD/jbrowse-react-app-vite-demo'
+          - 'GMOD/jbrowse-react-app-cra5-demo'
+
+    steps:
+      - name:
+          Dispatch jbrowse-components release event to dependent GMOD
+          repositories
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.ACTIONS_KEY }}
+          repository: ${{ matrix.repo }}
+          event-type: auto_publish
+          client-payload: '{"version": "${{ github.event.release.tag_name }}"}'
