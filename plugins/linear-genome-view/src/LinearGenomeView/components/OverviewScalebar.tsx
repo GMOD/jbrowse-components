@@ -15,9 +15,10 @@ import {
   HEADER_OVERVIEW_HEIGHT,
 } from '..'
 import { chooseGridPitch } from '../util'
+import { getCytobands } from './util'
 import OverviewRubberband from './OverviewRubberband'
 import Cytobands from './Cytobands'
-import { getCytobands } from './util'
+import OverviewScalebarPolygon from './OverviewScalebarPolygon'
 
 const wholeSeqSpacer = 2
 
@@ -75,65 +76,6 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const Polygon = observer(function ({
-  model,
-  overview,
-  useOffset = true,
-}: {
-  model: LGV
-  overview: Base1DViewModel
-  useOffset?: boolean
-}) {
-  const theme = useTheme()
-  const multiplier = Number(useOffset)
-  const { interRegionPaddingWidth, offsetPx, dynamicBlocks, cytobandOffset } =
-    model
-  const { contentBlocks, totalWidthPxWithoutBorders } = dynamicBlocks
-
-  const { tertiary, primary } = theme.palette
-  const polygonColor = tertiary ? tertiary.light : primary.light
-
-  // catches possible null from at's below
-  if (!contentBlocks.length) {
-    return null
-  }
-  const first = contentBlocks.at(0)!
-  const last = contentBlocks.at(-1)!
-  const topLeft =
-    (overview.bpToPx({
-      ...first,
-      coord: first.reversed ? first.end : first.start,
-    }) || 0) +
-    cytobandOffset * multiplier
-  const topRight =
-    (overview.bpToPx({
-      ...last,
-      coord: last.reversed ? last.start : last.end,
-    }) || 0) +
-    cytobandOffset * multiplier
-
-  const startPx = Math.max(0, -offsetPx)
-  const endPx =
-    startPx +
-    totalWidthPxWithoutBorders +
-    (contentBlocks.length * interRegionPaddingWidth) / 2
-
-  const points = [
-    [startPx, HEADER_BAR_HEIGHT],
-    [endPx, HEADER_BAR_HEIGHT],
-    [topRight, 0],
-    [topLeft, 0],
-  ]
-
-  return (
-    <polygon
-      points={points.toString()}
-      fill={alpha(polygonColor, 0.3)}
-      stroke={alpha(polygonColor, 0.8)}
-    />
-  )
-})
-
 type LGV = LinearGenomeViewModel
 
 const OverviewBox = observer(function ({
@@ -150,17 +92,10 @@ const OverviewBox = observer(function ({
   const { classes, cx } = useStyles()
   const theme = useTheme()
   const { cytobandOffset, showCytobands } = model
-  const { start, end, reversed, refName, assemblyName } = block
-  const { majorPitch } = chooseGridPitch(scale, 120, 15)
+  const { reversed, refName, assemblyName } = block
   const { assemblyManager } = getSession(model)
   const assembly = assemblyManager.get(assemblyName)
   const refNameColor = assembly?.getRefNameColor(refName)
-
-  const tickLabels = []
-  for (let i = 0; i < Math.floor((end - start) / majorPitch); i++) {
-    const offsetLabel = (i + 1) * majorPitch
-    tickLabels.push(reversed ? end - offsetLabel : start + offsetLabel)
-  }
 
   const canDisplayCytobands =
     showCytobands && getCytobands(assembly, block.refName).length
@@ -195,22 +130,14 @@ const OverviewBox = observer(function ({
           borderColor: refNameColor,
         }}
       >
-        {!canDisplayCytobands
-          ? tickLabels.map((tickLabel, labelIdx) => (
-              <Typography
-                key={`${JSON.stringify(block)}-${tickLabel}-${labelIdx}`}
-                className={classes.scalebarLabel}
-                variant="body2"
-                style={{
-                  left: ((labelIdx + 1) * majorPitch) / scale,
-                  pointerEvents: 'none',
-                  color: refNameColor,
-                }}
-              >
-                {getTickDisplayStr(tickLabel, overview.bpPerPx)}
-              </Typography>
-            ))
-          : null}
+        {!canDisplayCytobands ? (
+          <TickLabels
+            model={model}
+            overview={overview}
+            scale={scale}
+            block={block}
+          />
+        ) : null}
 
         {canDisplayCytobands ? (
           <svg style={{ width: '100%' }}>
@@ -220,6 +147,45 @@ const OverviewBox = observer(function ({
       </div>
     </div>
   )
+})
+
+const TickLabels = observer(function ({
+  block,
+  scale,
+  overview,
+  model,
+}: {
+  model: LGV
+  scale: number
+  block: ContentBlock
+  overview: Base1DViewModel
+}) {
+  const { classes } = useStyles()
+  const { start, end, reversed, refName, assemblyName } = block
+  const { majorPitch } = chooseGridPitch(scale, 120, 15)
+  const { assemblyManager } = getSession(model)
+  const assembly = assemblyManager.get(assemblyName)
+  const refNameColor = assembly?.getRefNameColor(refName)
+
+  const tickLabels = []
+  for (let i = 0; i < Math.floor((end - start) / majorPitch); i++) {
+    const offsetLabel = (i + 1) * majorPitch
+    tickLabels.push(reversed ? end - offsetLabel : start + offsetLabel)
+  }
+  return tickLabels.map((tickLabel, labelIdx) => (
+    <Typography
+      key={`${JSON.stringify(block)}-${tickLabel}-${labelIdx}`}
+      className={classes.scalebarLabel}
+      variant="body2"
+      style={{
+        left: ((labelIdx + 1) * majorPitch) / scale,
+        pointerEvents: 'none',
+        color: refNameColor,
+      }}
+    >
+      {getTickDisplayStr(tickLabel, overview.bpPerPx)}
+    </Typography>
+  ))
 })
 
 const Scalebar = observer(function ({
@@ -245,7 +211,6 @@ const Scalebar = observer(function ({
   }
 
   const first = visibleRegions.at(0)!
-
   const last = visibleRegions.at(-1)!
 
   const firstOverviewPx =
@@ -344,16 +309,12 @@ const OverviewScalebar = observer(function ({
       />
       <div className={classes.overview}>
         <svg height={HEADER_BAR_HEIGHT} className={classes.overviewSvg}>
-          <Polygon model={model} overview={overview} />
+          <OverviewScalebarPolygon model={model} overview={overview} />
         </svg>
         {children}
       </div>
     </div>
   )
 })
-
-export { Polygon }
-
-export { default as Cytobands } from './Cytobands'
 
 export default OverviewScalebar

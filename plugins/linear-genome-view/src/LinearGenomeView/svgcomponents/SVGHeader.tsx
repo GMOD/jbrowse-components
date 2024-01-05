@@ -6,9 +6,9 @@ import { useTheme } from '@mui/material'
 // locals
 import { LinearGenomeViewModel, HEADER_OVERVIEW_HEIGHT } from '..'
 import Cytobands from '../components/Cytobands'
-import { Polygon } from '../components/OverviewScalebar'
 import SVGRuler from './SVGRuler'
 import SVGScalebar from './SVGScalebar'
+import OverviewScalebarPolygon from '../components/OverviewScalebarPolygon'
 
 export default function SVGHeader({
   model,
@@ -72,7 +72,11 @@ export default function SVGHeader({
             y={0.5}
           />
           <g transform={`translate(0,${HEADER_OVERVIEW_HEIGHT})`}>
-            <Polygon overview={overview} model={model} useOffset={false} />
+            <OverviewScalebarPolygon
+              overview={overview}
+              model={model}
+              useOffset={false}
+            />
           </g>
         </g>
       ) : null}
