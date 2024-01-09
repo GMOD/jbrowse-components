@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-arc",
-  "version": "2.10.0",
+  "version": "2.10.1",
   "description": "JBrowse 2 arc adapters, tracks, etc.",
   "keywords": [
     "jbrowse",
@@ -35,7 +35,6 @@
     "build:commonjs": "tsc --build tsconfig.build.commonjs.json",
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
-  "dependencies": {},
   "peerDependencies": {
     "@jbrowse/core": "^2.0.0",
     "@jbrowse/plugin-linear-genome-view": "^2.0.0",
