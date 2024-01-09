@@ -105,13 +105,13 @@
     "use-query-params": "^2.0.0"
   },
   "devDependencies": {
-    "electron": "28.0.0"
+    "electron": "28.1.2"
   },
   "browserslist": [
     "last 1 chrome version"
   ],
   "build": {
-    "electronVersion": "28.0.0",
+    "electronVersion": "28.1.2",
     "extraMetadata": {
       "main": "build/electron.js"
     },
