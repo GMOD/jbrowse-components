@@ -1,3 +1,42 @@
+yarn run v1.22.19 $ lerna-changelog --silent --silent --next-version 2.10.1
+
+## 2.10.1 (2024-01-09)
+
+#### :rocket: Enhancement
+
+- `core`
+  - [#4155](https://github.com/GMOD/jbrowse-components/pull/4155) Remove
+    react-svg-tooltip library ([@cmdcolin](https://github.com/cmdcolin))
+- Other
+  - [#4152](https://github.com/GMOD/jbrowse-components/pull/4152) Add
+    directional feet to breakends in linear arc display
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4143](https://github.com/GMOD/jbrowse-components/pull/4143) Add webpack
+    build for @jbrowse/react-app ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- Other
+  - [#4158](https://github.com/GMOD/jbrowse-components/pull/4158) Fix subfeature
+    refNames on BED and BEDTabix parsers
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4154](https://github.com/GMOD/jbrowse-components/pull/4154) Fix metadata
+    facet filters being blank ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#4147](https://github.com/GMOD/jbrowse-components/pull/4147) Fix bad svg
+    output in v2.10.0 in cases where feature names have angle brackets
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :memo: Documentation
+
+- [#4142](https://github.com/GMOD/jbrowse-components/pull/4142) Update
+  03_assemblies.md ([@dtdoering](https://github.com/dtdoering))
+
+#### Committers: 2
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- Drew T. Doering ([@dtdoering](https://github.com/dtdoering)) Done in 3.10s.
+
 yarn run v1.22.19 $ lerna-changelog --silent --silent --next-version 2.10.0
 
 ## 2.10.0 (2023-12-15)
