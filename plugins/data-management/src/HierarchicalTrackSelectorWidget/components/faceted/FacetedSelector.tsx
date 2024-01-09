@@ -192,7 +192,7 @@ const FacetedSelector = observer(function FacetedSelector({
               onDrag={dist => faceted.setPanelWidth(panelWidth - dist)}
               className={classes.resizeHandle}
             />
-            <div style={{ width: panelWidth }}>
+            <div style={{ width: panelWidth, overflow: 'auto' }}>
               <FacetFilters model={model} rows={rows} columns={columns} />
             </div>
           </>
