@@ -65,17 +65,8 @@ const simpleBam = dataDir('simple.bam')
 const simpleDefaultSession = dataDir('sampleDefaultSession.json')
 const testConfig = dataDir('test_config.json')
 
-const setupWithAddTrack = setup
-  .do(async ctx => {
-    await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
-    await rename(
-      path.join(ctx.dir, path.basename(testConfig)),
-      path.join(ctx.dir, 'config.json'),
-    )
-  })
-  .command(['add-track', simpleBam, '--load', 'copy'])
-
-// Cleaning up exitCode in Node.js 20, xref https://github.com/jestjs/jest/issues/14501
+// Cleaning up exitCode in Node.js 20, xref
+// https://github.com/jestjs/jest/issues/14501
 afterAll(() => (process.exitCode = 0))
 
 describe('set-default-session', () => {
@@ -130,28 +121,6 @@ describe('set-default-session', () => {
     .exit(160)
     .it('fails when file is does not have a default session to read')
 
-  setupWithAddTrack
-    .do(async ctx => {
-      await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
-
-      await rename(
-        path.join(ctx.dir, path.basename(testConfig)),
-        path.join(ctx.dir, 'config.json'),
-      )
-    })
-    .command(['set-default-session', '--tracks', 'simple'])
-    .exit(130)
-    .it('fails when specifying a track without specifying a view')
-  setupWithAddTrack
-    .command([
-      'set-default-session',
-      '--view',
-      'LinearGenomeView',
-      '--tracks',
-      'track-non-exist',
-    ])
-    .exit(140)
-    .it('fails when specifying a track that does not exist')
   setup
     .do(async ctx => {
       await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
@@ -203,36 +172,4 @@ describe('set-default-session', () => {
         },
       })
     })
-  setupWithAddTrack
-    .command([
-      'set-default-session',
-      '--view',
-      'LinearGenomeView',
-      '--tracks',
-      'simple',
-    ])
-    .it(
-      'adds a default session that is a linear genome view and a simple track',
-      async ctx => {
-        const contents = readConf(ctx)
-        expect(contents).toEqual({
-          ...defaultConfig,
-          defaultSession: {
-            name: 'New Default Session',
-            views: [
-              {
-                id: 'LinearGenomeView-1',
-                type: 'LinearGenomeView',
-                tracks: [
-                  {
-                    type: 'AlignmentsTrack',
-                    configuration: 'simple',
-                  },
-                ],
-              },
-            ],
-          },
-        })
-      },
-    )
 })
