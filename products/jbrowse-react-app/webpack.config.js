@@ -17,7 +17,7 @@ module.exports = {
       mode === 'production'
         ? 'react-app.umd.production.min.js'
         : 'react-app.umd.development.js',
-    library: 'JBrowseReactLinearGenomeView',
+    library: 'JBrowseReactApp',
     libraryTarget: 'umd',
   },
   devServer: {
