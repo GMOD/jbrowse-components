@@ -132,13 +132,13 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                   >
                     <div
                       aria-label="file, url, or account picker"
-                      class="MuiToggleButtonGroup-root css-1gjgmky-MuiToggleButtonGroup-root"
+                      class="MuiToggleButtonGroup-root css-bghv3y-MuiToggleButtonGroup-root"
                       role="group"
                     >
                       <button
                         aria-label="local file"
                         aria-pressed="false"
-                        class="MuiButtonBase-root MuiToggleButton-root MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal css-ueukts-MuiButtonBase-root-MuiToggleButton-root"
+                        class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-root MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButtonGroup-firstButton css-ueukts-MuiButtonBase-root-MuiToggleButton-root"
                         tabindex="0"
                         type="button"
                         value="file"
@@ -151,7 +151,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                       <button
                         aria-label="url"
                         aria-pressed="true"
-                        class="MuiButtonBase-root MuiToggleButton-root Mui-selected MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal css-ueukts-MuiButtonBase-root-MuiToggleButton-root"
+                        class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-root Mui-selected MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButtonGroup-lastButton css-ueukts-MuiButtonBase-root-MuiToggleButton-root"
                         tabindex="0"
                         type="button"
                         value="url"
@@ -256,7 +256,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                               viewBox="0 0 24 24"
                             >
                               <path
-                                d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+                                d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6zM19 4h-3.5l-1-1h-5l-1 1H5v2h14z"
                               />
                             </svg>
                             <span
@@ -313,7 +313,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                               viewBox="0 0 24 24"
                             >
                               <path
-                                d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+                                d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6zM19 4h-3.5l-1-1h-5l-1 1H5v2h14z"
                               />
                             </svg>
                             <span
@@ -402,7 +402,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                           viewBox="0 0 24 24"
                         >
                           <path
-                            d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+                            d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6zM19 4h-3.5l-1-1h-5l-1 1H5v2h14z"
                           />
                         </svg>
                         <span
@@ -454,7 +454,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                                   viewBox="0 0 24 24"
                                 >
                                   <path
-                                    d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+                                    d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6zM19 4h-3.5l-1-1h-5l-1 1H5v2h14z"
                                   />
                                 </svg>
                                 <span
@@ -511,7 +511,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                                   viewBox="0 0 24 24"
                                 >
                                   <path
-                                    d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+                                    d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6zM19 4h-3.5l-1-1h-5l-1 1H5v2h14z"
                                   />
                                 </svg>
                                 <span
@@ -595,7 +595,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                                 viewBox="0 0 24 24"
                               >
                                 <path
-                                  d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+                                  d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"
                                 />
                               </svg>
                             </button>
@@ -1143,7 +1143,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                       viewBox="0 0 24 24"
                     >
                       <path
-                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m1 17h-2v-2h2zm2.07-7.75-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25"
                       />
                     </svg>
                     <span
@@ -1386,7 +1386,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                   viewBox="0 0 24 24"
                                 >
                                   <path
-                                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+                                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8"
                                   />
                                 </svg>
                                 <span
@@ -1784,7 +1784,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                   viewBox="0 0 24 24"
                                 >
                                   <path
-                                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+                                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8"
                                   />
                                 </svg>
                                 <span
