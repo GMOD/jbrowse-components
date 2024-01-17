@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { observer } from 'mobx-react'
 import { getSession, useDebounce, measureText } from '@jbrowse/core/util'
 import BaseResult, {
@@ -84,6 +84,19 @@ const RefNameAutocomplete = observer(function ({
     maxWidth,
   )
 
+  const regions = assembly?.regions
+  const regionOptions = useMemo(
+    () =>
+      regions?.map(option => ({
+        result: new RefSequenceResult({
+          refName: option.refName,
+          label: option.refName,
+          matchedAttribute: 'refName',
+        }),
+      })) || [],
+    [regions],
+  )
+
   // notes on implementation:
   // The selectOnFocus setting helps highlight the field when clicked
   return (
@@ -128,17 +141,7 @@ const RefNameAutocomplete = observer(function ({
           }
           setInputValue(inputBoxVal)
         }}
-        options={
-          !searchOptions?.length
-            ? assembly?.regions?.map(option => ({
-                result: new RefSequenceResult({
-                  refName: option.refName,
-                  label: option.refName,
-                  matchedAttribute: 'refName',
-                }),
-              })) || []
-            : searchOptions
-        }
+        options={searchOptions?.length ? searchOptions : regionOptions}
         getOptionDisabled={option => option.group === 'limitOption'}
         filterOptions={(opts, { inputValue }) => getFiltered(opts, inputValue)}
         renderInput={params => (

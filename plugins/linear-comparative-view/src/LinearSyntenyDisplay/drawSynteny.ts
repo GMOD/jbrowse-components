@@ -1,4 +1,5 @@
 import { doesIntersect2, getContainingView } from '@jbrowse/core/util'
+// locals
 import { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
 import { LinearSyntenyDisplayModel } from './model'
 import { draw, drawMatchSimple } from './components/util'
