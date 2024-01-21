@@ -4,7 +4,7 @@
     "lib": ["es5", "dom"],
     "types": ["cypress", "@testing-library/cypress"],
     "allowJs": true,
-    "outDir": "dist"
+    "outDir": "dist",
   },
-  "include": ["./**/*"]
+  "include": ["./**/*"],
 }

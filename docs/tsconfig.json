@@ -10,7 +10,7 @@
     "strict": true,
     "declaration": true,
     "module": "commonjs",
-    "moduleResolution": "node"
+    "moduleResolution": "node",
   },
-  "include": ["generateConfigDocs.ts", "generateStateModelDocs.ts", "util.ts"]
+  "include": ["generateConfigDocs.ts", "generateStateModelDocs.ts", "util.ts"],
 }
