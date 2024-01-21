@@ -3,6 +3,6 @@
   "include": ["src"],
   "compilerOptions": {
     "jsx": "react-jsx",
-    "noEmit": true
-  }
+    "noEmit": true,
+  },
 }

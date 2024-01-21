@@ -6,12 +6,8 @@ import type {
 } from './configurationSchema'
 import type ConfigSlot from './configurationSlot'
 
-export type GetOptions<SCHEMA> = SCHEMA extends ConfigurationSchemaType<
-  any,
-  infer OPTIONS
->
-  ? OPTIONS
-  : never
+export type GetOptions<SCHEMA> =
+  SCHEMA extends ConfigurationSchemaType<any, infer OPTIONS> ? OPTIONS : never
 
 // type GetDefinition<SCHEMA> = SCHEMA extends ConfigurationSchemaType<
 //   infer D,
@@ -39,11 +35,10 @@ export type GetExplicitIdentifier<SCHEMA> =
     ? EXPLICIT_IDENTIFIER
     : never
 
-export type ConfigurationSchemaForModel<MODEL> = MODEL extends IStateTreeNode<
-  infer SCHEMA extends AnyConfigurationSchemaType
->
-  ? SCHEMA
-  : never
+export type ConfigurationSchemaForModel<MODEL> =
+  MODEL extends IStateTreeNode<infer SCHEMA extends AnyConfigurationSchemaType>
+    ? SCHEMA
+    : never
 
 export type ConfigurationSlotName<SCHEMA> = SCHEMA extends undefined
   ? never
