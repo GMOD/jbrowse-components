@@ -364,7 +364,8 @@
         {
           "type": "LinearPileupDisplay",
           "displayId": "volvox_cram_pileup_pileup",
-          "height": 400
+          "height": 400,
+          "colorBy": { "type": "mappingQuality" }
         }
       ]
     },
@@ -512,7 +513,8 @@
           "displayId": "volvox_alignments_alignments",
           "pileupDisplay": {
             "type": "LinearPileupDisplay",
-            "displayId": "volvox_bam_altname_alignments_pileup"
+            "displayId": "volvox_bam_altname_alignments_pileup",
+            "colorBy": { "type": "mappingQuality" }
           }
         }
       ]

@@ -6,7 +6,6 @@ import {
   isAlive,
   types,
   Instance,
-  IStateTreeNode,
 } from 'mobx-state-tree'
 import deepEqual from 'fast-deep-equal'
 
@@ -23,19 +22,9 @@ import { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 // locals
 import { LinearAlignmentsDisplayMixin } from './alignmentsModel'
-import { getLowerPanelDisplays } from './util'
+import { deepSnap, getLowerPanelDisplays } from './util'
 
 const minDisplayHeight = 20
-
-function deepSnap<T extends IStateTreeNode, U extends IStateTreeNode>(
-  x1: T,
-  x2: U,
-) {
-  return deepEqual(
-    x1 ? getSnapshot(x1) : undefined,
-    x2 ? getSnapshot(x2) : undefined,
-  )
-}
 
 function preCheck(self: AlignmentsDisplayModel) {
   const { PileupDisplay, SNPCoverageDisplay } = self
@@ -53,7 +42,7 @@ function propagateColorBy(self: AlignmentsDisplayModel) {
     return
   }
   if (!deepSnap(PileupDisplay.colorBy, SNPCoverageDisplay.colorBy)) {
-    SNPCoverageDisplay.setColorBy(getSnapshot(PileupDisplay.colorBy))
+    SNPCoverageDisplay.setColorBy(PileupDisplay.colorBy)
   }
 }
 
@@ -63,10 +52,9 @@ function propagateFilterBy(self: AlignmentsDisplayModel) {
     return
   }
   if (!deepSnap(PileupDisplay.filterBy, SNPCoverageDisplay.filterBy)) {
-    SNPCoverageDisplay.setFilterBy(getSnapshot(PileupDisplay.filterBy))
+    SNPCoverageDisplay.setFilterBy(PileupDisplay.filterBy)
   }
 }
-
 /**
  * #stateModel LinearAlignmentsDisplay
  * extends
