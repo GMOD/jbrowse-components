@@ -56,7 +56,8 @@ type LGV = LinearGenomeViewModel
 /**
  * #stateModel SharedLinearPileupDisplayMixin
  * #category display
- * extends `BaseLinearDisplay`
+ * extends
+ * - [BaseLinearDisplay](../baselineardisplay)
  */
 export function SharedLinearPileupDisplayMixin(
   configSchema: AnyConfigurationSchemaType,
@@ -88,7 +89,7 @@ export function SharedLinearPileupDisplayMixin(
         /**
          * #property
          */
-        colorBy: ColorByModel,
+        colorBySetting: ColorByModel,
         /**
          * #property
          */
@@ -103,6 +104,13 @@ export function SharedLinearPileupDisplayMixin(
       colorTagMap: observable.map<string, string>({}),
       featureUnderMouseVolatile: undefined as undefined | Feature,
       tagsReady: false,
+    }))
+    .views(self => ({
+      get colorBy() {
+        return self.colorBySetting
+          ? getSnapshot(self.colorBySetting)
+          : getConf(self, 'colorBy')
+      },
     }))
     .views(self => ({
       get autorunReady() {
@@ -152,7 +160,7 @@ export function SharedLinearPileupDisplayMixin(
         extra?: ExtraColorBy
       }) {
         self.colorTagMap = observable.map({}) // clear existing mapping
-        self.colorBy = cast(colorScheme)
+        self.colorBySetting = cast(colorScheme)
         if (colorScheme.tag) {
           self.tagsReady = false
         }
@@ -363,7 +371,7 @@ export function SharedLinearPileupDisplayMixin(
             notReady: superProps.notReady || !self.renderReady(),
             rpcDriverName,
             displayModel: self,
-            colorBy: colorBy ? getSnapshot(colorBy) : undefined,
+            colorBy: colorBy,
             filterBy: JSON.parse(JSON.stringify(filterBy)),
             filters: self.filters,
             colorTagMap: Object.fromEntries(colorTagMap.toJSON()),
@@ -601,4 +609,12 @@ export function SharedLinearPileupDisplayMixin(
         )
       },
     }))
+    .preProcessSnapshot(snap => {
+      if (snap) {
+        // @ts-expect-error
+        const { colorBy, ...rest } = snap
+        return { ...rest, colorBySetting: colorBy }
+      }
+      return snap
+    })
 }
