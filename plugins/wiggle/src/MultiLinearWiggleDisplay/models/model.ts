@@ -25,7 +25,7 @@ const randomColor = () =>
   '#000000'.replaceAll('0', () => (~~(Math.random() * 16)).toString(16))
 
 // lazies
-const SetColorDlg = lazy(() => import('../components/SetColorDialog'))
+const SetColorDialog = lazy(() => import('../components/SetColorDialog'))
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -414,7 +414,7 @@ export function stateModelFactory(
               label: 'Edit colors/arrangement...',
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
-                  SetColorDlg,
+                  SetColorDialog,
                   { model: self, handleClose },
                 ])
               },

@@ -38,10 +38,12 @@ import { createAutorun } from '../util'
 import { ColorByModel, ExtraColorBy } from '../shared/color'
 
 // async
-const FilterByTagDlg = lazy(() => import('../shared/FilterByTag'))
-const ColorByTagDlg = lazy(() => import('./components/ColorByTag'))
-const SetFeatureHeightDlg = lazy(() => import('./components/SetFeatureHeight'))
-const SetMaxHeightDlg = lazy(() => import('./components/SetMaxHeight'))
+const FilterByTagDialog = lazy(() => import('../shared/FilterByTag'))
+const ColorByTagDialog = lazy(() => import('./components/ColorByTag'))
+const SetFeatureHeightDialog = lazy(
+  () => import('./components/SetFeatureHeight'),
+)
+const SetMaxHeightDialog = lazy(() => import('./components/SetMaxHeight'))
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -465,7 +467,7 @@ export function SharedLinearPileupDisplayMixin(
               label: 'Color by tag...',
               onClick: () => {
                 getSession(self).queueDialog(doneCallback => [
-                  ColorByTagDlg,
+                  ColorByTagDialog,
                   { model: self, handleClose: doneCallback },
                 ])
               },
@@ -484,7 +486,7 @@ export function SharedLinearPileupDisplayMixin(
               icon: FilterListIcon,
               onClick: () => {
                 getSession(self).queueDialog(doneCallback => [
-                  FilterByTagDlg,
+                  FilterByTagDialog,
                   { model: self, handleClose: doneCallback },
                 ])
               },
@@ -510,7 +512,7 @@ export function SharedLinearPileupDisplayMixin(
                   label: 'Manually set height',
                   onClick: () => {
                     getSession(self).queueDialog(doneCallback => [
-                      SetFeatureHeightDlg,
+                      SetFeatureHeightDialog,
                       { model: self, handleClose: doneCallback },
                     ])
                   },
@@ -521,7 +523,7 @@ export function SharedLinearPileupDisplayMixin(
               label: 'Set max height...',
               onClick: () => {
                 getSession(self).queueDialog(doneCallback => [
-                  SetMaxHeightDlg,
+                  SetMaxHeightDialog,
                   { model: self, handleClose: doneCallback },
                 ])
               },

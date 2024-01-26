@@ -8,7 +8,7 @@ import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import { types } from 'mobx-state-tree'
 import { lazy } from 'react'
 
-const EditGCContentParamsDlg = lazy(
+const EditGCContentParamsDialog = lazy(
   () => import('./components/EditGCContentParams'),
 )
 
@@ -73,7 +73,7 @@ export default function stateModelFactory(
               label: 'Change GC parameters',
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
-                  EditGCContentParamsDlg,
+                  EditGCContentParamsDialog,
                   { model: self, handleClose },
                 ])
               },

@@ -23,16 +23,16 @@ import { HierarchicalTrackSelectorModel } from '../../model'
 const FacetedDialog = lazy(() => import('../faceted/FacetedDialog'))
 
 // lazy components
-const CloseConnectionDlg = lazy(
+const CloseConnectionDialog = lazy(
   () => import('../dialogs/CloseConnectionDialog'),
 )
-const DeleteConnectionDlg = lazy(
+const DeleteConnectionDialog = lazy(
   () => import('../dialogs/DeleteConnectionDialog'),
 )
-const ManageConnectionsDlg = lazy(
+const ManageConnectionsDialog = lazy(
   () => import('../dialogs/ManageConnectionsDialog'),
 )
-const ToggleConnectionsDlg = lazy(
+const ToggleConnectionsDialog = lazy(
   () => import('../dialogs/ToggleConnectionsDialog'),
 )
 
@@ -55,7 +55,8 @@ const HamburgerMenu = observer(function ({
 }) {
   const session = getSession(model)
   const [modalInfo, setModalInfo] = useState<ModalArgs>()
-  const [deleteDlgDetails, setDeleteDlgDetails] = useState<DialogDetails>()
+  const [deleteDialogDetails, setDeleteDialogDetails] =
+    useState<DialogDetails>()
   const [connectionToggleOpen, setConnectionToggleOpen] = useState(false)
   const [connectionManagerOpen, setConnectionManagerOpen] = useState(false)
   const [facetedOpen, setFacetedOpen] = useState(false)
@@ -80,7 +81,7 @@ const HamburgerMenu = observer(function ({
       }
     }
     if (deletingConnection) {
-      setDeleteDlgDetails({ name, connectionConf })
+      setDeleteDialogDetails({ name, connectionConf })
     }
   }
 
@@ -192,27 +193,27 @@ const HamburgerMenu = observer(function ({
       </CascadingMenuButton>
       <Suspense fallback={<React.Fragment />}>
         {modalInfo ? (
-          <CloseConnectionDlg
+          <CloseConnectionDialog
             modalInfo={modalInfo}
             onClose={() => setModalInfo(undefined)}
           />
         ) : null}
-        {deleteDlgDetails ? (
-          <DeleteConnectionDlg
-            handleClose={() => setDeleteDlgDetails(undefined)}
-            deleteDialogDetails={deleteDlgDetails}
+        {deleteDialogDetails ? (
+          <DeleteConnectionDialog
+            handleClose={() => setDeleteDialogDetails(undefined)}
+            deleteDialogDetails={deleteDialogDetails}
             session={session}
           />
         ) : null}
         {connectionManagerOpen ? (
-          <ManageConnectionsDlg
+          <ManageConnectionsDialog
             handleClose={() => setConnectionManagerOpen(false)}
             breakConnection={breakConnection}
             session={session}
           />
         ) : null}
         {connectionToggleOpen ? (
-          <ToggleConnectionsDlg
+          <ToggleConnectionsDialog
             handleClose={() => setConnectionToggleOpen(false)}
             session={session}
             breakConnection={breakConnection}

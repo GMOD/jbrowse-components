@@ -22,7 +22,7 @@ import SettingsIcon from '@mui/icons-material/Settings'
 import { useFeatureSequence } from './hooks'
 
 // lazies
-const SettingsDlg = lazy(() => import('./SequenceFeatureSettingsDialog'))
+const SettingsDialog = lazy(() => import('./SequenceFeatureSettingsDialog'))
 const SequencePanel = lazy(() => import('./SequencePanel'))
 
 const useStyles = makeStyles()(theme => ({
@@ -197,24 +197,24 @@ function Settings({
   setUpDownBp: (arg: number) => void
 }) {
   const { classes } = useStyles()
-  const [settingsDlgOpen, setSettingsDlgOpen] = useState(false)
+  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false)
   return (
     <>
       <FormControl className={classes.formControl}>
-        <IconButton onClick={() => setSettingsDlgOpen(true)}>
+        <IconButton onClick={() => setSettingsDialogOpen(true)}>
           <SettingsIcon />
         </IconButton>
       </FormControl>
-      {settingsDlgOpen ? (
+      {settingsDialogOpen ? (
         <Suspense fallback={<div />}>
-          <SettingsDlg
+          <SettingsDialog
             handleClose={arg => {
               if (arg) {
                 const { upDownBp, intronBp } = arg
                 setIntronBp(intronBp)
                 setUpDownBp(upDownBp)
               }
-              setSettingsDlgOpen(false)
+              setSettingsDialogOpen(false)
             }}
             upDownBp={upDownBp}
             intronBp={intronBp}

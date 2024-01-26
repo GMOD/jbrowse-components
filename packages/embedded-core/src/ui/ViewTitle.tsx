@@ -41,7 +41,7 @@ const useStyles = makeStyles()(theme => ({
 const ViewTitle = observer(({ view }: { view: IBaseViewModel }) => {
   const { classes } = useStyles()
   const { displayName } = view
-  const [dlgOpen, setDlgOpen] = useState(false)
+  const [dialogOpen, setDialogOpen] = useState(false)
   const session = getSession(view)
   return (
     <div className={classes.container}>
@@ -60,16 +60,16 @@ const ViewTitle = observer(({ view }: { view: IBaseViewModel }) => {
         </Typography>
       ) : null}
       <div className={classes.grow} />
-      <IconButton onClick={() => setDlgOpen(true)}>
+      <IconButton onClick={() => setDialogOpen(true)}>
         <div style={{ width: 22, height: 22 }}>
           <Logomark variant="white" />
         </div>
       </IconButton>
-      {dlgOpen ? (
+      {dialogOpen ? (
         <Suspense fallback={<div />}>
           <VersionAboutDialog
             open
-            onClose={() => setDlgOpen(false)}
+            onClose={() => setDialogOpen(false)}
             version={session.version}
           />
         </Suspense>
