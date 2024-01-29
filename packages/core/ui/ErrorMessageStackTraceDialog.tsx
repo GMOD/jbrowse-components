@@ -124,6 +124,8 @@ export default function ErrorMessageStackTraceDialog({
       ? errorText.slice(0, MAX_ERR_LEN) + '...'
       : errorText,
     mappedStackTrace || 'No stack trace available',
+    // @ts-expect-error add version info at bottom if we are in jbrowse-web
+    window.JBrowseSession ? `JBrowse ${window.JBrowseSession.version}` : '',
   ].join('\n')
   return (
     <Dialog open onClose={onClose} title="Stack trace" maxWidth="xl">
@@ -164,7 +166,7 @@ export default function ErrorMessageStackTraceDialog({
         >
           {clicked ? 'Copied!' : 'Copy stack trace to clipboard'}
         </Button>
-        <Button variant="contained" color="primary">
+        <Button variant="contained" color="primary" onClick={onClose}>
           Close
         </Button>
       </DialogActions>
