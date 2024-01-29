@@ -1,17 +1,14 @@
 import React, { lazy, useEffect, useRef } from 'react'
-import { Button, Paper, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-// icons
-import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
-
 // locals
 import { LinearGenomeViewModel } from '..'
 import TrackContainer from './TrackContainer'
 import TracksContainer from './TracksContainer'
+import NoTracksActive from './NoTracksActiveButton'
 
 const ImportForm = lazy(() => import('./ImportForm'))
 
@@ -30,31 +27,6 @@ const useStyles = makeStyles()(theme => ({
     zIndex: 1000,
   },
 }))
-
-function NoTracksActive({ model }: { model: LinearGenomeViewModel }) {
-  const { classes } = useStyles()
-  const { hideNoTracksActive } = model
-  return (
-    <Paper className={classes.note}>
-      {!hideNoTracksActive ? (
-        <>
-          <Typography>No tracks active.</Typography>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => model.activateTrackSelector()}
-            className={classes.top}
-            startIcon={<TrackSelectorIcon />}
-          >
-            Open track selector
-          </Button>
-        </>
-      ) : (
-        <div style={{ height: '48px' }}></div>
-      )}
-    </Paper>
-  )
-}
 
 const LinearGenomeView = observer(({ model }: { model: LGV }) => {
   const { tracks, error, initialized, hasDisplayedRegions } = model
