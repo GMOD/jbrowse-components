@@ -1,6 +1,9 @@
 import { blue, green, red, grey, orange } from '@mui/material/colors'
 import { createTheme, ThemeOptions } from '@mui/material/styles'
-import type { PaletteAugmentColorOptions } from '@mui/material/styles/createPalette'
+import type {
+  PaletteAugmentColorOptions,
+  PaletteColor,
+} from '@mui/material/styles/createPalette'
 import deepmerge from 'deepmerge'
 
 declare module '@mui/material/styles/createPalette' {
@@ -15,6 +18,15 @@ declare module '@mui/material/styles/createPalette' {
       G: Palette['primary']
       T: Palette['primary']
     }
+    frames: [
+      null,
+      Palette['primary'] | undefined,
+      Palette['primary'] | undefined,
+      Palette['primary'] | undefined,
+      Palette['primary'] | undefined,
+      Palette['primary'] | undefined,
+      Palette['primary'] | undefined,
+    ]
   }
   interface PaletteOptions {
     tertiary?: PaletteOptions['primary']
@@ -27,8 +39,27 @@ declare module '@mui/material/styles/createPalette' {
       G?: PaletteOptions['primary']
       T?: PaletteOptions['primary']
     }
+    frames?: [
+      null,
+      PaletteOptions['primary'],
+      PaletteOptions['primary'],
+      PaletteOptions['primary'],
+      PaletteOptions['primary'],
+      PaletteOptions['primary'],
+      PaletteOptions['primary'],
+    ]
   }
 }
+
+type Frames = [
+  null,
+  PaletteColor,
+  PaletteColor,
+  PaletteColor,
+  PaletteColor,
+  PaletteColor,
+  PaletteColor,
+]
 
 const midnight = '#0D233F'
 const grape = '#721E63'
@@ -53,6 +84,15 @@ function stockTheme() {
         G: refTheme.palette.augmentColor({ color: orange }),
         T: refTheme.palette.augmentColor({ color: red }),
       },
+      frames: [
+        null,
+        refTheme.palette.augmentColor({ color: { main: '#FF8080' } }),
+        refTheme.palette.augmentColor({ color: { main: '#80FF80' } }),
+        refTheme.palette.augmentColor({ color: { main: '#8080FF' } }),
+        refTheme.palette.augmentColor({ color: { main: '#8080FF' } }),
+        refTheme.palette.augmentColor({ color: { main: '#80FF80' } }),
+        refTheme.palette.augmentColor({ color: { main: '#FF8080' } }),
+      ] as Frames,
     },
     components: {
       MuiLink: {
@@ -101,6 +141,15 @@ function getDarkStockTheme() {
         G: refTheme.palette.augmentColor({ color: orange }),
         T: refTheme.palette.augmentColor({ color: red }),
       },
+      frames: [
+        null,
+        refTheme.palette.augmentColor({ color: { main: '#FF8080' } }),
+        refTheme.palette.augmentColor({ color: { main: '#80FF80' } }),
+        refTheme.palette.augmentColor({ color: { main: '#8080FF' } }),
+        refTheme.palette.augmentColor({ color: { main: '#8080FF' } }),
+        refTheme.palette.augmentColor({ color: { main: '#80FF80' } }),
+        refTheme.palette.augmentColor({ color: { main: '#FF8080' } }),
+      ] as Frames,
     },
     components: {
       MuiAppBar: {
@@ -135,6 +184,15 @@ function getDarkMinimalTheme() {
         G: refTheme.palette.augmentColor({ color: orange }),
         T: refTheme.palette.augmentColor({ color: red }),
       },
+      frames: [
+        null,
+        refTheme.palette.augmentColor({ color: { main: '#FF8080' } }),
+        refTheme.palette.augmentColor({ color: { main: '#80FF80' } }),
+        refTheme.palette.augmentColor({ color: { main: '#8080FF' } }),
+        refTheme.palette.augmentColor({ color: { main: '#8080FF' } }),
+        refTheme.palette.augmentColor({ color: { main: '#80FF80' } }),
+        refTheme.palette.augmentColor({ color: { main: '#FF8080' } }),
+      ] as Frames,
     },
   }
 }
@@ -155,6 +213,15 @@ function getMinimalTheme() {
         G: refTheme.palette.augmentColor({ color: orange }),
         T: refTheme.palette.augmentColor({ color: red }),
       },
+      frames: [
+        null,
+        refTheme.palette.augmentColor({ color: { main: '#FF8080' } }),
+        refTheme.palette.augmentColor({ color: { main: '#80FF80' } }),
+        refTheme.palette.augmentColor({ color: { main: '#8080FF' } }),
+        refTheme.palette.augmentColor({ color: { main: '#8080FF' } }),
+        refTheme.palette.augmentColor({ color: { main: '#80FF80' } }),
+        refTheme.palette.augmentColor({ color: { main: '#FF8080' } }),
+      ] as Frames,
     },
   }
 }
@@ -385,6 +452,10 @@ function createDefaultProps(theme?: ThemeOptions): ThemeOptions {
   }
 }
 
+function overwriteArrayMerge(_: unknown, sourceArray: unknown[]) {
+  return sourceArray
+}
+
 export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
   return deepmerge(
     {
@@ -394,6 +465,7 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
       ...createDefaultProps(theme),
     },
     theme || {},
+    { arrayMerge: overwriteArrayMerge },
   )
 }
 
@@ -407,7 +479,9 @@ export function createJBrowseTheme(
   return createTheme(
     createJBrowseBaseTheme(
       themeName === 'default'
-        ? deepmerge(themes.default, augmentTheme(configTheme))
+        ? deepmerge(themes.default, augmentTheme(configTheme), {
+            arrayMerge: overwriteArrayMerge,
+          })
         : augmentThemePlus(themes[themeName]) || themes.default,
     ),
   )
