@@ -792,9 +792,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                   </div>
                   <div
                     style="margin-top: 10px;"
-                  >
-                    <div />
-                  </div>
+                  />
                 </div>
               </div>
               <div
