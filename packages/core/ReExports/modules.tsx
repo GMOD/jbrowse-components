@@ -168,7 +168,7 @@ const LazyMUICore = Object.fromEntries(
   Object.entries(Entries).map(([key, ReactComponent]) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const Component = React.forwardRef((props: any, ref) => (
-      <Suspense fallback={<div />}>
+      <Suspense fallback={null}>
         <ReactComponent {...props} ref={ref} />
       </Suspense>
     ))
@@ -463,7 +463,7 @@ const LazyDataGridComponents = Object.fromEntries(
   Object.entries(DataGridEntries).map(([key, ReactComponent]) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const Component = React.forwardRef((props: any, ref) => (
-      <Suspense fallback={<div />}>
+      <Suspense fallback={null}>
         <ReactComponent {...props} ref={ref} />
       </Suspense>
     ))
@@ -474,7 +474,7 @@ const LazyDataGridComponents = Object.fromEntries(
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const LazyAttributes = React.forwardRef((props: any, ref) => (
-  <Suspense fallback={<div />}>
+  <Suspense fallback={null}>
     <Attributes {...props} ref={ref} />
   </Suspense>
 ))
@@ -482,7 +482,7 @@ LazyAttributes.displayName = 'Attributes'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const LazyFeatureDetails = React.forwardRef((props: any, ref) => (
-  <Suspense fallback={<div />}>
+  <Suspense fallback={null}>
     <FeatureDetails {...props} ref={ref} />
   </Suspense>
 ))
@@ -490,7 +490,7 @@ LazyFeatureDetails.displayName = 'FeatureDetails'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const LazyBaseCard = React.forwardRef((props: any, ref) => (
-  <Suspense fallback={<div />}>
+  <Suspense fallback={null}>
     <BaseCard {...props} ref={ref} />
   </Suspense>
 ))

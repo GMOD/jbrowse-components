@@ -46,7 +46,7 @@ const ShareButton = observer(function (props: {
         Share
       </Button>
       {open ? (
-        <React.Suspense fallback={<React.Fragment />}>
+        <React.Suspense fallback={null}>
           <ShareDialog handleClose={() => setOpen(false)} session={session} />
         </React.Suspense>
       ) : null}

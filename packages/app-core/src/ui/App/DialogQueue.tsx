@@ -13,7 +13,7 @@ const DialogQueue = observer(function ({
   return (
     <>
       {DialogComponent ? (
-        <Suspense fallback={<React.Fragment />}>
+        <Suspense fallback={null}>
           <DialogComponent {...DialogProps} />
         </Suspense>
       ) : null}

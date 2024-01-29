@@ -17,7 +17,7 @@ function HelpAdornment() {
         <HelpIcon fontSize="small" />
       </IconButton>
       {isHelpDialogDisplayed ? (
-        <Suspense fallback={<div />}>
+        <Suspense fallback={null}>
           <HelpDialog handleClose={() => setHelpDialogDisplayed(false)} />
         </Suspense>
       ) : null}

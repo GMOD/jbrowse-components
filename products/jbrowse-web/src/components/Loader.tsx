@@ -78,7 +78,7 @@ const SessionTriaged = observer(function ({
   sessionTriaged: SessionTriagedInfo
 }) {
   return (
-    <Suspense fallback={<React.Fragment />}>
+    <Suspense fallback={null}>
       {sessionTriaged?.origin === 'session' ? (
         <SessionWarningDialog
           loader={loader}

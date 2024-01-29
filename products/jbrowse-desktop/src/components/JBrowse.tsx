@@ -31,7 +31,7 @@ const JBrowseNonNullRoot = observer(function ({
       {session ? (
         <>
           <App session={session} />
-          <Suspense fallback={<div />}>
+          <Suspense fallback={null}>
             {isAssemblyEditing ? (
               <AssemblyManager
                 rootModel={rootModel}

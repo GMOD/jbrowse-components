@@ -206,7 +206,7 @@ function Settings({
         </IconButton>
       </FormControl>
       {settingsDialogOpen ? (
-        <Suspense fallback={<div />}>
+        <Suspense fallback={null}>
           <SettingsDialog
             handleClose={arg => {
               if (arg) {

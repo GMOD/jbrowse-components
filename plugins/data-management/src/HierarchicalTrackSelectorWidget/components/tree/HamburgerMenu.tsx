@@ -191,7 +191,7 @@ const HamburgerMenu = observer(function ({
       >
         <MenuIcon />
       </CascadingMenuButton>
-      <Suspense fallback={<React.Fragment />}>
+      <Suspense fallback={null}>
         {modalInfo ? (
           <CloseConnectionDialog
             modalInfo={modalInfo}

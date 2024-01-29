@@ -66,7 +66,7 @@ const ViewTitle = observer(({ view }: { view: IBaseViewModel }) => {
         </div>
       </IconButton>
       {dialogOpen ? (
-        <Suspense fallback={<div />}>
+        <Suspense fallback={null}>
           <VersionAboutDialog
             open
             onClose={() => setDialogOpen(false)}
