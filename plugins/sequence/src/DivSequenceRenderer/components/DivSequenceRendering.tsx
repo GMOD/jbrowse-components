@@ -12,15 +12,17 @@ import {
   defaultStops,
   defaultCodonTable,
   generateCodonTable,
+  Frame,
 } from '@jbrowse/core/util'
 import { Theme } from '@mui/material'
 
 function Translation(props: {
   codonTable: Record<string, string>
   seq: string
-  frame: number
+  frame: Frame
   bpPerPx: number
   region: Region
+  seqStart: number
   reverse?: boolean
   height: number
   y: number
@@ -32,23 +34,20 @@ function Translation(props: {
     frame,
     bpPerPx,
     region,
+    seqStart,
     height,
     y,
     reverse = false,
     theme,
   } = props
-  const scale = bpPerPx
+  const normalizedFrame = Math.abs(frame) - 1
+  const seqFrame = seqStart % 3
+  const frameShift = (normalizedFrame - seqFrame + 3) % 3
 
-  // the tilt variable normalizes the frame to where we are starting from,
-  // which increases consistency across blocks
-  const tilt = 3 - (region.start % 3)
-
-  // the effectiveFrame incorporates tilt and the frame to say what the
-  // effective frame that is plotted. The +3 is for when frame is -2 and this
-  // can otherwise result in effectiveFrame -1
-  const effectiveFrame = (frame + tilt + 3) % 3
-
-  const seqSliced = seq.slice(effectiveFrame)
+  const frameShiftAdjustedSeqLength = seq.length - frameShift
+  const multipleOfThreeLength =
+    frameShiftAdjustedSeqLength - (frameShiftAdjustedSeqLength % 3)
+  const seqSliced = seq.slice(frameShift, frameShift + multipleOfThreeLength)
 
   const translated: { letter: string; codon: string }[] = []
   for (let i = 0; i < seqSliced.length; i += 3) {
@@ -58,18 +57,19 @@ function Translation(props: {
     translated.push({ letter: aminoAcid, codon: normalizedCodon.toUpperCase() })
   }
 
-  const w = (1 / scale) * 3
-  const drop = region.start === 0 ? 0 : w
-  const render = 1 / bpPerPx >= 12
   const width = (region.end - region.start) / bpPerPx
+  const codonWidth = (1 / bpPerPx) * 3
+  const renderLetter = 1 / bpPerPx >= 12
+  const frameOffset = frameShift / bpPerPx
+  const startOffset = (region.start - seqStart) / bpPerPx
+  const offset = frameOffset - startOffset
 
-  const map = ['#d8d8d8', '#adadad', '#8f8f8f'].reverse()
   return (
     <>
       {translated.map((element, index) => {
         const x = region.reversed
-          ? width - (w * (index + 1) + effectiveFrame / scale - drop)
-          : w * index + effectiveFrame / scale - drop
+          ? width - (index + 1) * codonWidth - offset
+          : codonWidth * index + offset
         const { letter, codon } = element
         return (
           <React.Fragment key={`${index}-${letter}`}>
@@ -77,21 +77,23 @@ function Translation(props: {
               x={x}
               y={y}
               width={
-                render ? w : w + 0.7 /* small fudge factor when zoomed out*/
+                renderLetter
+                  ? codonWidth
+                  : codonWidth + 0.7 /* small fudge factor when zoomed out*/
               }
               height={height}
-              stroke={render ? '#555' : 'none'}
+              stroke={renderLetter ? '#555' : 'none'}
               fill={
                 defaultStarts.includes(codon)
                   ? theme?.palette.startCodon
                   : defaultStops.includes(codon)
                     ? theme?.palette.stopCodon
-                    : map[Math.abs(frame)]
+                    : theme?.palette.frames.at(frame)?.main
               }
             />
-            {render ? (
+            {renderLetter ? (
               <text
-                x={x + w / 2}
+                x={x + codonWidth / 2}
                 y={y + height / 2}
                 dominantBaseline="middle"
                 textAnchor="middle"
@@ -199,26 +201,34 @@ function SequenceSVG({
   // (applies to both translation rows and dna rows)
   let currY = -rowHeight
 
+  const forwardFrames: Frame[] = showTranslation && showForward ? [3, 2, 1] : []
+  const reverseFrames: Frame[] =
+    showTranslation && showReverse ? [-1, -2, -3] : []
+  // the upper translation row. if the view is reversed, the reverse translation
+  // is on the top
+  const topFrames = region.reversed ? reverseFrames.toReversed() : forwardFrames
+  // the lower translation row. if the view is reversed, the forward translation
+  // is on the bottom
+  const bottomFrames = region.reversed
+    ? forwardFrames.toReversed()
+    : reverseFrames
   return (
     <>
-      {/* the upper translation row. if the view is reversed, the reverse
-        translation is on the top */}
-      {showTranslation && (region.reversed ? showReverse : showForward)
-        ? [2, 1, 0].map(index => (
-            <Translation
-              key={`translation-${index}`}
-              seq={seq}
-              y={(currY += rowHeight)}
-              codonTable={codonTable}
-              frame={index}
-              bpPerPx={bpPerPx}
-              region={region}
-              theme={theme}
-              height={rowHeight}
-              reverse={region.reversed}
-            />
-          ))
-        : null}
+      {topFrames.map(index => (
+        <Translation
+          key={`translation-${index}`}
+          seq={seq}
+          y={(currY += rowHeight)}
+          codonTable={codonTable}
+          frame={index as Frame}
+          bpPerPx={bpPerPx}
+          region={region}
+          seqStart={feature.get('start')}
+          theme={theme}
+          height={height}
+          reverse={region.reversed}
+        />
+      ))}
 
       {showForward ? (
         <DNA
@@ -244,24 +254,21 @@ function SequenceSVG({
         />
       ) : null}
 
-      {/* the lower translation row. if the view is reversed, the forward
-        translation is on the bottom */}
-      {showTranslation && (region.reversed ? showForward : showReverse)
-        ? [0, -1, -2].map(index => (
-            <Translation
-              key={`rev-translation-${index}`}
-              seq={seq}
-              y={(currY += rowHeight)}
-              codonTable={codonTable}
-              frame={index}
-              bpPerPx={bpPerPx}
-              region={region}
-              theme={theme}
-              height={rowHeight}
-              reverse={!region.reversed}
-            />
-          ))
-        : null}
+      {bottomFrames.map(index => (
+        <Translation
+          key={`rev-translation-${index}`}
+          seq={seq}
+          y={(currY += rowHeight)}
+          codonTable={codonTable}
+          frame={index as Frame}
+          bpPerPx={bpPerPx}
+          region={region}
+          seqStart={feature.get('start')}
+          theme={theme}
+          height={height}
+          reverse={!region.reversed}
+        />
+      ))}
     </>
   )
 }
