@@ -6,11 +6,13 @@ import {
   Link,
   Typography,
 } from '@mui/material'
-import Dialog from './Dialog'
 
 import { RawSourceMap, SourceMapConsumer } from 'source-map-js'
-import LoadingEllipses from './LoadingEllipses'
 import copy from 'copy-to-clipboard'
+
+// locals
+import Dialog from './Dialog'
+import LoadingEllipses from './LoadingEllipses'
 
 // produce a source-map resolved stack trace
 // reference code https://stackoverflow.com/a/77158517/2129219
@@ -72,6 +74,20 @@ async function mapStackTrace(stack: string) {
   return mappedStack.join('\n')
 }
 
+const MAX_ERR_LEN = 10_000
+
+// Chrome has the error message in the stacktrace, firefox doesn't
+function stripMessage(trace: string, error: unknown) {
+  if (trace.startsWith('Error:')) {
+    // remove the error message, which can be very long due to mobx-state-tree
+    // stuff, to get just the stack trace
+    const err = `${error}`
+    return trace.slice(err.length)
+  } else {
+    return trace
+  }
+}
+
 export default function ErrorMessageStackTraceDialog({
   error,
   onClose,
@@ -82,7 +98,9 @@ export default function ErrorMessageStackTraceDialog({
   const [mappedStackTrace, setMappedStackTrace] = useState('')
   const [secondaryError, setSecondaryError] = useState<unknown>()
   const [clicked, setClicked] = useState(false)
-  const stackTrace = `${error.stack}`
+  const stackTracePreProcessed = `${error.stack}`
+  const errorText = `${error}`
+  const stackTrace = stripMessage(stackTracePreProcessed, errorText)
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
@@ -96,6 +114,16 @@ export default function ErrorMessageStackTraceDialog({
       }
     })()
   }, [stackTrace])
+
+  const errorBoxText = [
+    secondaryError
+      ? 'Error loading source map, showing raw stack trace below:'
+      : '',
+    errorText.length > MAX_ERR_LEN
+      ? errorText.slice(0, MAX_ERR_LEN) + '...'
+      : errorText,
+    mappedStackTrace,
+  ].join('\n')
   return (
     <Dialog open onClose={onClose} title="Stack trace" maxWidth="xl">
       <DialogContent>
@@ -105,36 +133,20 @@ export default function ErrorMessageStackTraceDialog({
             GitHub
           </Link>{' '}
           or send an email to{' '}
-          <Link href="mailto:jbrowse2dev@gmail.com">jbrowse2dev@gmail.com</Link>
+          <Link href="mailto:jbrowse2dev@gmail.com">jbrowse2dev@gmail.com</Link>{' '}
         </Typography>
         {mappedStackTrace ? (
           <div>
-            <Button
-              style={{ float: 'right' }}
-              variant="contained"
-              onClick={() => {
-                copy(mappedStackTrace)
-                setClicked(true)
-                setTimeout(() => {
-                  setClicked(false)
-                }, 1000)
-              }}
-            >
-              {clicked ? 'Copied!' : 'Copy stack trace to clipboard'}
-            </Button>
-
             <pre
               style={{
                 background: 'lightgrey',
                 border: '1px solid black',
                 overflow: 'auto',
                 margin: 20,
+                maxHeight: 300,
               }}
             >
-              {secondaryError
-                ? 'Error loading source map, showing raw stack trace below:\n'
-                : ''}
-              {mappedStackTrace}
+              {errorBoxText}
             </pre>
           </div>
         ) : (
@@ -142,6 +154,17 @@ export default function ErrorMessageStackTraceDialog({
         )}
       </DialogContent>
       <DialogActions>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => {
+            copy(errorBoxText)
+            setClicked(true)
+            setTimeout(() => setClicked(false), 1000)
+          }}
+        >
+          {clicked ? 'Copied!' : 'Copy stack trace to clipboard'}
+        </Button>
         <Button variant="contained" color="primary">
           Close
         </Button>
