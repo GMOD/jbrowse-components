@@ -331,7 +331,7 @@ const DivSequenceRendering = observer(function (props: {
   const width = (region.end - region.start) / bpPerPx
 
   return (
-    <Wrapper {...props} totalHeight={sequenceHeight} width={width}>
+    <Wrapper {...props} totalHeight={totalHeight} width={width}>
       <SequenceSVG {...props} />
     </Wrapper>
   )
