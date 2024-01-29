@@ -95,12 +95,13 @@ export default function ErrorMessageStackTraceDialog({
   onClose: () => void
   error: Error
 }) {
-  const [mappedStackTrace, setMappedStackTrace] = useState('')
+  const [mappedStackTrace, setMappedStackTrace] = useState<string>()
   const [secondaryError, setSecondaryError] = useState<unknown>()
   const [clicked, setClicked] = useState(false)
   const stackTracePreProcessed = `${error.stack}`
   const errorText = `${error}`
   const stackTrace = stripMessage(stackTracePreProcessed, errorText)
+
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
@@ -122,7 +123,7 @@ export default function ErrorMessageStackTraceDialog({
     errorText.length > MAX_ERR_LEN
       ? errorText.slice(0, MAX_ERR_LEN) + '...'
       : errorText,
-    mappedStackTrace,
+    mappedStackTrace || 'No stack trace available',
   ].join('\n')
   return (
     <Dialog open onClose={onClose} title="Stack trace" maxWidth="xl">
@@ -135,20 +136,18 @@ export default function ErrorMessageStackTraceDialog({
           or send an email to{' '}
           <Link href="mailto:jbrowse2dev@gmail.com">jbrowse2dev@gmail.com</Link>{' '}
         </Typography>
-        {mappedStackTrace ? (
-          <div>
-            <pre
-              style={{
-                background: 'lightgrey',
-                border: '1px solid black',
-                overflow: 'auto',
-                margin: 20,
-                maxHeight: 300,
-              }}
-            >
-              {errorBoxText}
-            </pre>
-          </div>
+        {mappedStackTrace !== undefined ? (
+          <pre
+            style={{
+              background: 'lightgrey',
+              border: '1px solid black',
+              overflow: 'auto',
+              margin: 20,
+              maxHeight: 300,
+            }}
+          >
+            {errorBoxText}
+          </pre>
         ) : (
           <LoadingEllipses />
         )}
