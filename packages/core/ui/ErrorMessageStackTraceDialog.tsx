@@ -127,31 +127,43 @@ export default function ErrorMessageStackTraceDialog({
     // @ts-expect-error add version info at bottom if we are in jbrowse-web
     window.JBrowseSession ? `JBrowse ${window.JBrowseSession.version}` : '',
   ].join('\n')
+
+  const err = encodeURIComponent(
+    'I got this error from JBrowse, here is the stack trace:\n\n```\n' +
+      errorBoxText +
+      '\n```\n',
+  )
+  const githubLink = `https://github.com/GMOD/jbrowse-components/issues/new?labels=bug&title=JBrowse+issue&body=${err}`
+  const emailLink = `mailto:jbrowse2dev@gmail.com?subject=JBrowse%202%20error&body=${err}`
   return (
     <Dialog open onClose={onClose} title="Stack trace" maxWidth="xl">
       <DialogContent>
-        <Typography>
-          Post a new issue with this stack trace at{' '}
-          <Link href="https://github.com/GMOD/jbrowse-components/issues/new/choose">
-            GitHub
-          </Link>{' '}
-          or send an email to{' '}
-          <Link href="mailto:jbrowse2dev@gmail.com">jbrowse2dev@gmail.com</Link>{' '}
-        </Typography>
-        {mappedStackTrace !== undefined ? (
-          <pre
-            style={{
-              background: 'lightgrey',
-              border: '1px solid black',
-              overflow: 'auto',
-              margin: 20,
-              maxHeight: 300,
-            }}
-          >
-            {errorBoxText}
-          </pre>
+        {mappedStackTrace === undefined ? (
+          <LoadingEllipses variant="h6" />
         ) : (
-          <LoadingEllipses />
+          <>
+            <Typography>
+              Post a new issue at{' '}
+              <Link href={githubLink} target="_blank">
+                GitHub
+              </Link>{' '}
+              or send an email to{' '}
+              <Link href={emailLink} target="_blank">
+                jbrowse2dev@gmail.com
+              </Link>{' '}
+            </Typography>
+            <pre
+              style={{
+                background: 'lightgrey',
+                border: '1px solid black',
+                overflow: 'auto',
+                margin: 20,
+                maxHeight: 300,
+              }}
+            >
+              {errorBoxText}
+            </pre>
+          </>
         )}
       </DialogContent>
       <DialogActions>
