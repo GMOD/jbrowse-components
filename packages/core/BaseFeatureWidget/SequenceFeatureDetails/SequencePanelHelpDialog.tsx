@@ -60,6 +60,11 @@ export default function HelpDialog({
           panel but cannot be pasted into some programs like notepad that only
           expect plain text.
         </Typography>
+        <Typography>
+          The * symbol indicates a stop codon. The & symbol indicates an
+          incomplete codon (e.g. less than 3 letters, or codon not in the codon
+          table)
+        </Typography>
       </DialogContent>
 
       <DialogActions>
