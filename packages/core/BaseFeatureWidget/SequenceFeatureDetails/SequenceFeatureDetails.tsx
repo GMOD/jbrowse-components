@@ -22,7 +22,9 @@ import SettingsIcon from '@mui/icons-material/Settings'
 import { useFeatureSequence } from './hooks'
 
 // lazies
-const SettingsDialog = lazy(() => import('./SequenceFeatureSettingsDialog'))
+const SequenceFeatureSettingsDialog = lazy(
+  () => import('./SequenceFeatureSettingsDialog'),
+)
 const SequencePanel = lazy(() => import('./SequencePanel'))
 
 const useStyles = makeStyles()(theme => ({
@@ -207,7 +209,7 @@ function Settings({
       </FormControl>
       {settingsDialogOpen ? (
         <Suspense fallback={null}>
-          <SettingsDialog
+          <SequenceFeatureSettingsDialog
             handleClose={arg => {
               if (arg) {
                 const { upDownBp, intronBp } = arg
