@@ -29,7 +29,7 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 const LinearGenomeView = observer(({ model }: { model: LGV }) => {
-  const { tracks, error, initialized, hasDisplayedRegions } = model
+  const { tracks } = model
   const ref = useRef<HTMLDivElement>(null)
   const session = getSession(model)
   const { classes } = useStyles()
@@ -49,13 +49,6 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
       document.removeEventListener('keydown', handleSelectView)
     }
   }, [session, model])
-
-  if (!initialized && !error) {
-    return <LoadingEllipses variant="h6" />
-  }
-  if (!hasDisplayedRegions || error) {
-    return <ImportForm model={model} />
-  }
 
   const MiniControlsComponent = model.MiniControlsComponent()
   const HeaderComponent = model.HeaderComponent()
@@ -92,4 +85,15 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
   )
 })
 
-export default LinearGenomeView
+const LinearGenomeViewWrapper = observer(({ model }: { model: LGV }) => {
+  const { error, initialized, hasDisplayedRegions } = model
+  if (!initialized && !error) {
+    return <LoadingEllipses variant="h6" />
+  } else if (!hasDisplayedRegions || error) {
+    return <ImportForm model={model} />
+  } else {
+    return <LinearGenomeView model={model} />
+  }
+})
+
+export default LinearGenomeViewWrapper
