@@ -8,7 +8,6 @@ import oauthServer from './oauth/server'
 import authRoute from './routes/auth'
 
 const app = express()
-export const port = 3030
 
 app.use(cors())
 
@@ -23,6 +22,11 @@ app.use(
   express.static(
     path.join(__dirname, '..', '..', '..', '..', '..', 'test_data', 'volvox'),
   ),
+)
+
+// eslint-disable-next-line no-console
+console.log(
+  `The redirect-uri is http://localhost:3000, must be running jbrowse-web on this port e.g. the default dev server port`,
 )
 
 export default app
