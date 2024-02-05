@@ -25,15 +25,6 @@
     "@jridgewell/gen-mapping" "^0.3.0"
     "@jridgewell/trace-mapping" "^0.3.9"
 
-"@asamuzakjp/dom-selector@^2.0.1":
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/@asamuzakjp/dom-selector/-/dom-selector-2.0.2.tgz#160f601d9a465bbdf641410afdc527f37325506e"
-  integrity sha512-x1KXOatwofR6ZAYzXRBL5wrdV0vwNxlTCK9NCuLqAzQYARqGcvFwiJA6A1ERuh+dgeA4Dxm3JBYictIes+SqUQ==
-  dependencies:
-    bidi-js "^1.0.3"
-    css-tree "^2.3.1"
-    is-potential-custom-element-name "^1.0.1"
-
 "@aw-web-design/x-default-browser@1.4.126":
   version "1.4.126"
   resolved "https://registry.yarnpkg.com/@aw-web-design/x-default-browser/-/x-default-browser-1.4.126.tgz#43e4bd8f0314ed907a8718d7e862a203af79bc16"
@@ -2847,29 +2838,25 @@
     pump "^3.0.0"
     tar-fs "^2.1.1"
 
-"@node-oauth/express-oauth-server@^3.0.0":
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/@node-oauth/express-oauth-server/-/express-oauth-server-3.0.1.tgz#f413c46e93ff72f03d839144b5f3010c5d48f26b"
-  integrity sha512-SD6vykQY8uA6BPquR14nVNK4ofIoEbamW1ixTIRMcRFtr6oNKyv0AOo75DbUbKcGs4Aa2HuDU33J/K1lbHZ5KA==
+"@node-oauth/express-oauth-server@^4.0.0":
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/@node-oauth/express-oauth-server/-/express-oauth-server-4.0.0.tgz#fed87a1332c6535b1014ea8aa210d1932bed3b44"
+  integrity sha512-IfVfk0Biypw5NNvVW5Nkz8h0FiieFcOiJLZZXipU8cX8Es+fc9Gbt/zbKgA6HPicL+vCvoUwT5ztSmh/iAxW+Q==
   dependencies:
-    "@node-oauth/oauth2-server" "^4.3.0"
-    bluebird "^3.7.2"
-    express "^4.18.2"
+    "@node-oauth/oauth2-server" "^5.1.0"
 
 "@node-oauth/formats@1.0.0":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@node-oauth/formats/-/formats-1.0.0.tgz#6525478802180199ecf6ea3208fc5e1b683031be"
   integrity sha512-DwSbLtdC8zC5B5gTJkFzJj5s9vr9SGzOgQvV9nH7tUVuMSScg0EswAczhjIapOmH3Y8AyP7C4Jv7b8+QJObWZA==
 
-"@node-oauth/oauth2-server@^4.3.0":
-  version "4.3.3"
-  resolved "https://registry.yarnpkg.com/@node-oauth/oauth2-server/-/oauth2-server-4.3.3.tgz#893f07b6e6b923ad50673fff32554abbf96dd4c4"
-  integrity sha512-0LiQ6sGwgd+WPQCkayORgv3ju6JNcZsU9IpiXSGCQ/LNlvhQCgwriVaVageXl1J9GwY/rq4wMg6DPwakGZLC2g==
+"@node-oauth/oauth2-server@^5.1.0":
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/@node-oauth/oauth2-server/-/oauth2-server-5.1.0.tgz#c71dae3cbe225cb6f34f1a776bcb7379c3b8f56d"
+  integrity sha512-sYvqL1GeZLRSwgl++/oOzxJj/ZBe2yXnp6E5LGNQ5qjpn0+t/dwquXILUe3Sk2Y8/wU7XeRxToOtBVeSVkuJag==
   dependencies:
     "@node-oauth/formats" "1.0.0"
     basic-auth "2.0.1"
-    bluebird "3.7.2"
-    promisify-any "2.0.1"
     type-is "1.6.18"
 
 "@nodelib/fs.scandir@2.1.5":
@@ -7012,13 +6999,6 @@ better-opn@^3.0.2:
   dependencies:
     open "^8.0.4"
 
-bidi-js@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/bidi-js/-/bidi-js-1.0.3.tgz#6f8bcf3c877c4d9220ddf49b9bb6930c88f877d2"
-  integrity sha512-RKshQI1R3YQ+n9YJz2QQ147P66ELpa1FQEg20Dk8oW9t2KgLbpDLLp9aGZ7y8WHSshDknG0bknqGw5/tyCs5tw==
-  dependencies:
-    require-from-string "^2.0.2"
-
 big-integer@^1.6.44:
   version "1.6.52"
   resolved "https://registry.yarnpkg.com/big-integer/-/big-integer-1.6.52.tgz#60a887f3047614a8e1bffe5d7173490a97dc8c85"
@@ -7080,15 +7060,10 @@ bluebird-lst@^1.0.9:
   dependencies:
     bluebird "^3.5.5"
 
-bluebird@3.7.2, bluebird@^3.5.1, bluebird@^3.5.5, bluebird@^3.7.2:
+bluebird@^3.5.1, bluebird@^3.5.5:
   version "3.7.2"
   resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.7.2.tgz#9f229c15be272454ffa973ace0dbee79a1b0c36f"
   integrity sha512-XpNj6GDQzdfW+r2Wnn7xiSAd7TM3jzkxGXBGTtWKuSXv1xUV+azxAm8jdWZN06QTQk+2N2XB9jRDkvbmQmcRtg==
-
-bluebird@^2.10.0:
-  version "2.11.0"
-  resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-2.11.0.tgz#534b9033c022c9579c56ba3b3e5a5caafbb650e1"
-  integrity sha512-UfFSr22dmHPQqPP9XWHRhq+gWnHCYguQGkXQlbyPtW5qTnhFWA8/iXg765tH0cAjy7l/zPJ1aBTO0g5XgA7kvQ==
 
 bn.js@^4.0.0, bn.js@^4.1.0, bn.js@^4.11.9:
   version "4.12.0"
@@ -7963,19 +7938,6 @@ cmd-shim@^5.0.0:
   integrity sha512-qkCtZ59BidfEwHltnJwkyVZn+XQojdAySM1D1gSeh11Z4pW1Kpolkyo53L5noc0nrxmIvyFwTmJRo4xs7FFLPw==
   dependencies:
     mkdirp-infer-owner "^2.0.0"
-
-co-bluebird@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/co-bluebird/-/co-bluebird-1.1.0.tgz#c8b9f3a9320a7ed30987dcca1a5c3cff59655c7c"
-  integrity sha512-JuoemMXxQjYAxbfRrNpOsLyiwDiY8mXvGqJyYLM7jMySDJtnMklW3V2o8uyubpc1eN2YoRsAdfZ1lfKCd3lsrA==
-  dependencies:
-    bluebird "^2.10.0"
-    co-use "^1.1.0"
-
-co-use@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/co-use/-/co-use-1.1.0.tgz#c6bb3cdf10cb735ecaa9daeeda46d725c94a4e62"
-  integrity sha512-1lVRtdywv41zQO/xvI2wU8w6oFcUYT6T84YKSxN25KN4N4Kld3scLovt8FjDmD63Cm7HtyRWHjezt+IanXmkyA==
 
 co@^4.6.0:
   version "4.6.0"
@@ -9419,11 +9381,6 @@ electron-is-dev@^1.1.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/electron-is-dev/-/electron-is-dev-1.2.0.tgz#2e5cea0a1b3ccf1c86f577cee77363ef55deb05e"
   integrity sha512-R1oD5gMBPS7PVU8gJwH6CtT0e6VSoD0+SzSnYpNm+dBkcijgA+K7VAMHDfnRq/lkKPZArpzplTW6jfiMYosdzw==
-
-electron-is-dev@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/electron-is-dev/-/electron-is-dev-2.0.0.tgz#833487a069b8dad21425c67a19847d9064ab19bd"
-  integrity sha512-3X99K852Yoqu9AcW50qz3ibYBWY79/pBhlMCab8ToEWS48R0T9tyxRiQhwylE7zQdXrMnx2JKqUJyMPmt5FBqA==
 
 electron-localshortcut@^3.1.0:
   version "3.2.1"
@@ -11834,11 +11791,6 @@ is-generator-function@^1.0.10, is-generator-function@^1.0.7:
   dependencies:
     has-tostringtag "^1.0.0"
 
-is-generator@^1.0.2:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/is-generator/-/is-generator-1.0.3.tgz#c14c21057ed36e328db80347966c693f886389f3"
-  integrity sha512-G56jBpbJeg7ds83HW1LuShNs8J73Fv3CPz/bmROHOHlnKkN8sWb9ujiagjmxxMUywftgq48HlBZELKKqFLk0oA==
-
 is-glob@^4.0.0, is-glob@^4.0.1, is-glob@^4.0.3, is-glob@~4.0.1:
   version "4.0.3"
   resolved "https://registry.yarnpkg.com/is-glob/-/is-glob-4.0.3.tgz#64f61e42cbbb2eec2071a9dac0b28ba1e65d5084"
@@ -12703,12 +12655,11 @@ jsdom@^20.0.0:
     ws "^8.11.0"
     xml-name-validator "^4.0.0"
 
-jsdom@^23.0.0:
-  version "23.2.0"
-  resolved "https://registry.yarnpkg.com/jsdom/-/jsdom-23.2.0.tgz#08083220146d41c467efa1c6969f02b525ba6c1d"
-  integrity sha512-L88oL7D/8ufIES+Zjz7v0aes+oBMh2Xnh3ygWvL0OaICOomKEPKuPnIfBJekiXr+BHbbMjrWn/xqrDQuxFTeyA==
+jsdom@^24.0.0:
+  version "24.0.0"
+  resolved "https://registry.yarnpkg.com/jsdom/-/jsdom-24.0.0.tgz#e2dc04e4c79da368481659818ee2b0cd7c39007c"
+  integrity sha512-UDS2NayCvmXSXVP6mpTj+73JnNQadZlr9N68189xib2tx5Mls7swlTNao26IoHv46BZJFvXygyRtyXd1feAk1A==
   dependencies:
-    "@asamuzakjp/dom-selector" "^2.0.1"
     cssstyle "^4.0.1"
     data-urls "^5.0.0"
     decimal.js "^10.4.3"
@@ -12717,6 +12668,7 @@ jsdom@^23.0.0:
     http-proxy-agent "^7.0.0"
     https-proxy-agent "^7.0.2"
     is-potential-custom-element-name "^1.0.1"
+    nwsapi "^2.2.7"
     parse5 "^7.1.2"
     rrweb-cssom "^0.6.0"
     saxes "^6.0.0"
@@ -14433,7 +14385,7 @@ nth-check@^2.0.1:
   dependencies:
     boolbase "^1.0.0"
 
-nwsapi@^2.2.2:
+nwsapi@^2.2.2, nwsapi@^2.2.7:
   version "2.2.7"
   resolved "https://registry.yarnpkg.com/nwsapi/-/nwsapi-2.2.7.tgz#738e0707d3128cb750dddcfe90e4610482df0f30"
   integrity sha512-ub5E4+FBPKwAZx0UwIQOjYWGHTEq5sPqHQNRN8Z9e4A7u3Tj1weLJsL59yH9vmvqEtBHaOmT6cYQKIZOxp35FQ==
@@ -15682,15 +15634,6 @@ promise-retry@^2.0.1:
   dependencies:
     err-code "^2.0.2"
     retry "^0.12.0"
-
-promisify-any@2.0.1:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/promisify-any/-/promisify-any-2.0.1.tgz#403e00a8813f175242ab50fe33a69f8eece47305"
-  integrity sha512-pVaGouFbTVxqpVJ+T5A15olNJDASAZHYq5cXz6mWdr6/X34mVWiG9MSdzHTcVBCv4aqBP7wGspi7BUSRbEmhsw==
-  dependencies:
-    bluebird "^2.10.0"
-    co-bluebird "^1.1.0"
-    is-generator "^1.0.2"
 
 prompts@^2.0.1, prompts@^2.4.0, prompts@^2.4.2:
   version "2.4.2"

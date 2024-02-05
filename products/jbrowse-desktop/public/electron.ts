@@ -1,6 +1,5 @@
 import electron, { dialog } from 'electron'
 import debug from 'electron-debug'
-import isDev from 'electron-is-dev'
 import fs from 'fs'
 import path from 'path'
 import url from 'url'
@@ -205,9 +204,9 @@ async function createWindow() {
   })
 
   await mainWindow.loadURL(
-    isDev
-      ? url.format(devServerUrl)
-      : `file://${path.join(app.getAppPath(), 'build', 'index.html')}`,
+    app.isPackaged
+      ? `file://${path.join(app.getAppPath(), 'build', 'index.html')}`
+      : url.format(devServerUrl),
   )
 
   mainWindow.webContents.setWindowOpenHandler(details => {
