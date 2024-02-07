@@ -26,7 +26,7 @@ type AppSession = SessionWithDrawerWidgets & {
   popSnackbarMessage: () => unknown
 }
 
-const ViewPanel = observer(function ({
+const StaticViewPanel = observer(function StaticViewPanel2({
   view,
   session,
 }: {
@@ -57,11 +57,9 @@ const ViewPanel = observer(function ({
             <ReactComponent model={view} session={session} />
           </Suspense>
         </ErrorBoundary>
-      ) : (
-        false
-      )}
+      ) : null}
     </ViewContainer>
   )
 })
 
-export default ViewPanel
+export default StaticViewPanel

@@ -8,6 +8,7 @@ import { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util'
 
 // locals
 import ViewHeader from './ViewHeader'
+import StaticViewWrapper from './StaticViewWrapper'
 
 const useStyles = makeStyles()(theme => ({
   viewContainer: {
@@ -23,7 +24,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const ViewContainer = observer(function ({
+const ViewContainer = observer(function ViewContainer2({
   view,
   onClose,
   onMinimize,
@@ -38,6 +39,7 @@ const ViewContainer = observer(function ({
   const ref = useWidthSetter(view, theme.spacing(1))
   const { classes, cx } = useStyles()
   const session = getSession(view) as SessionWithFocusedViewAndDrawerWidgets
+  const { focusedViewId } = session
 
   useEffect(() => {
     function handleSelectView(e: Event) {
@@ -60,12 +62,18 @@ const ViewContainer = observer(function ({
       elevation={12}
       className={cx(
         classes.viewContainer,
-        session.focusedViewId === view.id
-          ? classes.focusedView
-          : classes.unfocusedView,
+        focusedViewId === view.id ? classes.focusedView : classes.unfocusedView,
       )}
     >
-      <ViewHeader view={view} onClose={onClose} onMinimize={onMinimize} />
+      {view.isFloating ? (
+        <div style={{ cursor: 'all-scroll' }}>
+          <ViewHeader view={view} onClose={onClose} onMinimize={onMinimize} />
+        </div>
+      ) : (
+        <StaticViewWrapper>
+          <ViewHeader view={view} onClose={onClose} onMinimize={onMinimize} />
+        </StaticViewWrapper>
+      )}
       <Paper>{children}</Paper>
     </Paper>
   )
