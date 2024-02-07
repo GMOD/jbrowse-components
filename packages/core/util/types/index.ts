@@ -31,6 +31,7 @@ export interface AbstractViewContainer
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   extends IStateTreeNode<IType<any, unknown, any>> {
   views: AbstractViewModel[]
+  floating?: boolean
   removeView(view: AbstractViewModel): void
   addView(
     typeName: string,
@@ -281,11 +282,13 @@ export interface AbstractViewModel {
   id: string
   type: string
   width: number
+  floating: boolean
   minimized: boolean
   setWidth(width: number): void
   setMinimized(flag: boolean): void
   displayName: string | undefined
   setDisplayName: (arg: string) => void
+  setFloating: (arg: boolean) => void
   menuItems: () => MenuItem[]
 }
 export function isViewModel(thing: unknown): thing is AbstractViewModel {

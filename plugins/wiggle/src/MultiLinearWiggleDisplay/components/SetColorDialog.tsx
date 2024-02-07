@@ -2,10 +2,10 @@ import React, { useState } from 'react'
 import { Button, DialogContent, DialogActions } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { useLocalStorage } from '@jbrowse/core/util'
+import DraggableDialog from '@jbrowse/core/ui/DraggableDialog'
 import clone from 'clone'
 
 // locals
-import DraggableDialog from './DraggableDialog'
 import { Source } from '../../util'
 import SourcesGrid from './SourcesGrid'
 
@@ -35,7 +35,7 @@ export default function SetColorDialog({
       open
       onClose={handleClose}
       maxWidth="xl"
-      title={'Multi-wiggle color/arrangement editor'}
+      title="Multi-wiggle color/arrangement editor"
     >
       <DialogContent className={classes.content}>
         <Button

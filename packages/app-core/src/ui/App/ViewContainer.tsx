@@ -8,6 +8,7 @@ import { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util'
 
 // locals
 import ViewHeader from './ViewHeader'
+import StaticViewWrapper from './StaticViewWrapper'
 
 const useStyles = makeStyles()(theme => ({
   viewContainer: {
@@ -65,7 +66,15 @@ const ViewContainer = observer(function ({
           : classes.unfocusedView,
       )}
     >
-      <ViewHeader view={view} onClose={onClose} onMinimize={onMinimize} />
+      {view.floating ? (
+        <div style={{ cursor: 'all-scroll' }}>
+          <ViewHeader view={view} onClose={onClose} onMinimize={onMinimize} />
+        </div>
+      ) : (
+        <StaticViewWrapper>
+          <ViewHeader view={view} onClose={onClose} onMinimize={onMinimize} />
+        </StaticViewWrapper>
+      )}
       <Paper>{children}</Paper>
     </Paper>
   )
