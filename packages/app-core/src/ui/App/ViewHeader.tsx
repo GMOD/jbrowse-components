@@ -11,6 +11,7 @@ import { makeStyles } from 'tss-react/mui'
 
 import ViewContainerTitle from './ViewContainerTitle'
 import ViewMenu from './ViewMenu'
+import ViewHeaderButtons from './ViewHeaderButtons'
 
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 
@@ -29,32 +30,6 @@ const useStyles = makeStyles()(theme => ({
     alignItems: 'center',
   },
 }))
-
-const ViewButtons = observer(function ({
-  view,
-  onClose,
-  onMinimize,
-}: {
-  view: IBaseViewModel
-  onClose: () => void
-  onMinimize: () => void
-}) {
-  const { classes } = useStyles()
-  return (
-    <>
-      <IconButton data-testid="minimize_view" onClick={onMinimize}>
-        {view.minimized ? (
-          <AddIcon className={classes.icon} fontSize="small" />
-        ) : (
-          <MinimizeIcon className={classes.icon} fontSize="small" />
-        )}
-      </IconButton>
-      <IconButton data-testid="close_view" onClick={onClose}>
-        <CloseIcon className={classes.icon} fontSize="small" />
-      </IconButton>
-    </>
-  )
-})
 
 const ViewHeader = observer(function ({
   view,
@@ -77,7 +52,7 @@ const ViewHeader = observer(function ({
     }
   }, [])
   return (
-    <div ref={scrollRef} className={classes.viewHeader}>
+    <div ref={scrollRef} className={cx('viewHeader', classes.viewHeader)}>
       <ViewMenu model={view} IconProps={{ className: classes.icon }} />
       <div className={classes.grow} />
       <div className={classes.viewTitle}>
@@ -87,7 +62,11 @@ const ViewHeader = observer(function ({
         <ViewContainerTitle view={view} />
       </div>
       <div className={classes.grow} />
-      <ViewButtons onClose={onClose} onMinimize={onMinimize} view={view} />
+      <ViewHeaderButtons
+        onClose={onClose}
+        onMinimize={onMinimize}
+        view={view}
+      />
     </div>
   )
 })
