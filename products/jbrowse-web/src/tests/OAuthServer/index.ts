@@ -9,6 +9,8 @@ import authRoute from './routes/auth'
 
 const app = express()
 
+export const port = 3000
+
 app.use(cors())
 
 // Here we are configuring express to use body-parser as middle-ware.
