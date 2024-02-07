@@ -11,7 +11,7 @@ import Gridlines from './Gridlines'
 import TrackLabelContainer from './TrackLabelContainer'
 import TrackRenderingContainer from './TrackRenderingContainer'
 
-import type { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '../model'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 const useStyles = makeStyles()({

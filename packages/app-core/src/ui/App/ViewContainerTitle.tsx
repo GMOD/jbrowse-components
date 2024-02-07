@@ -24,6 +24,7 @@ const useStyles = makeStyles()(theme => ({
     backgroundColor: theme.palette.secondary.light,
   },
 }))
+
 const ViewContainerTitle = observer(function ({
   view,
 }: {

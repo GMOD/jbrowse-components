@@ -41,6 +41,56 @@ const ViewMenu = observer(function ({
     variant: 'popover',
   })
 
+  const options = [
+    ...(session.views.length > 1 && !model.isFloating
+      ? [
+          {
+            label: 'View order',
+            type: 'subMenu' as const,
+            subMenu: [
+              ...(session.views.length > 2
+                ? [
+                    {
+                      label: 'Move view to top',
+                      icon: KeyboardDoubleArrowUpIcon,
+                      onClick: () => {
+                        session.moveViewToTop(model.id)
+                      },
+                    },
+                  ]
+                : []),
+              {
+                label: 'Move view up',
+                icon: KeyboardArrowUpIcon,
+                onClick: () => {
+                  session.moveViewUp(model.id)
+                },
+              },
+              {
+                label: 'Move view down',
+                icon: KeyboardArrowDownIcon,
+                onClick: () => {
+                  session.moveViewDown(model.id)
+                },
+              },
+              ...(session.views.length > 2
+                ? [
+                    {
+                      label: 'Move view to bottom',
+                      icon: KeyboardDoubleArrowDownIcon,
+                      onClick: () => {
+                        session.moveViewToBottom(model.id)
+                      },
+                    },
+                  ]
+                : []),
+            ],
+          },
+        ]
+      : []),
+    ...model.menuItems(),
+  ]
+
   // note: This does not use CascadingMenuButton on purpose, because there was
   // a confusing bug related to it! see
   // https://github.com/GMOD/jbrowse-components/issues/4115
@@ -61,55 +111,11 @@ const ViewMenu = observer(function ({
         onMenuItemClick={(_event: unknown, callback: () => void) => {
           callback()
         }}
-        menuItems={[
-          ...(session.views.length > 1
-            ? [
-                {
-                  label: 'View order',
-                  type: 'subMenu' as const,
-                  subMenu: [
-                    ...(session.views.length > 2
-                      ? [
-                          {
-                            label: 'Move view to top',
-                            icon: KeyboardDoubleArrowUpIcon,
-                            onClick: () => {
-                              session.moveViewToTop(model.id)
-                            },
-                          },
-                        ]
-                      : []),
-                    {
-                      label: 'Move view up',
-                      icon: KeyboardArrowUpIcon,
-                      onClick: () => {
-                        session.moveViewUp(model.id)
-                      },
-                    },
-                    {
-                      label: 'Move view down',
-                      icon: KeyboardArrowDownIcon,
-                      onClick: () => {
-                        session.moveViewDown(model.id)
-                      },
-                    },
-                    ...(session.views.length > 2
-                      ? [
-                          {
-                            label: 'Move view to bottom',
-                            icon: KeyboardDoubleArrowDownIcon,
-                            onClick: () => {
-                              session.moveViewToBottom(model.id)
-                            },
-                          },
-                        ]
-                      : []),
-                  ],
-                },
-              ]
-            : []),
-          ...model.menuItems(),
-        ]}
+        menuItems={
+          options.length
+            ? options
+            : [{ label: 'No view menu', disabled: true, onClick: () => {} }]
+        }
         popupState={popupState}
       />
     </>
