@@ -53,9 +53,7 @@ const StaticViewPanel = observer(function ({
             <ReactComponent model={view} session={session} />
           </Suspense>
         </ErrorBoundary>
-      ) : (
-        false
-      )}
+      ) : null}
     </ViewContainer>
   )
 })

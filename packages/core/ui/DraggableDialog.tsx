@@ -21,19 +21,17 @@ const DraggableDialog = observer(function DraggableDialog(
   const { getFloatingProps } = useInteractions([clientPoint])
   return (
     <Portal>
-      <ScopedCssBaseline>
-        <Draggable nodeRef={ref}>
-          <div ref={ref}>
-            <div
-              ref={refs.setFloating}
-              style={floatingStyles}
-              {...getFloatingProps()}
-            >
-              {children}
-            </div>
+      <Draggable nodeRef={ref}>
+        <div ref={ref}>
+          <div
+            ref={refs.setFloating}
+            style={floatingStyles}
+            {...getFloatingProps()}
+          >
+            {children}
           </div>
-        </Draggable>
-      </ScopedCssBaseline>
+        </div>
+      </Draggable>
     </Portal>
   )
 })

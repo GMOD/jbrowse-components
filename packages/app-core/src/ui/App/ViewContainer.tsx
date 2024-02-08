@@ -39,6 +39,7 @@ const ViewContainer = observer(function ({
   const ref = useWidthSetter(view, theme.spacing(1))
   const { classes, cx } = useStyles()
   const session = getSession(view) as SessionWithFocusedViewAndDrawerWidgets
+  const { focusedViewId } = session
 
   useEffect(() => {
     function handleSelectView(e: Event) {
@@ -61,9 +62,7 @@ const ViewContainer = observer(function ({
       elevation={12}
       className={cx(
         classes.viewContainer,
-        session.focusedViewId === view.id
-          ? classes.focusedView
-          : classes.unfocusedView,
+        focusedViewId === view.id ? classes.focusedView : classes.unfocusedView,
       )}
     >
       {view.floating ? (
