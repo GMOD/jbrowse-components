@@ -1,5 +1,5 @@
 import React, { useRef } from 'react'
-import { DialogProps, Portal } from '@mui/material'
+import { Portal } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import {
@@ -9,10 +9,13 @@ import {
 } from '@floating-ui/react'
 import Draggable from 'react-draggable'
 
-const DraggableDialog = observer(function DraggableDialog(
-  props: DialogProps & { title: string },
-) {
-  const { children } = props
+const DraggableDialog = observer(function DraggableDialog({
+  children,
+  zIndex = 100000,
+}: {
+  zIndex?: number
+  children: React.ReactNode
+}) {
   const ref = useRef<HTMLDivElement>(null)
   const { refs, floatingStyles, context } = useFloating({
     placement: 'bottom-start',
@@ -22,7 +25,7 @@ const DraggableDialog = observer(function DraggableDialog(
   return (
     <Portal>
       <Draggable nodeRef={ref} handle=".viewHeader">
-        <div ref={ref} style={{ position: 'fixed', zIndex: 10000000000000 }}>
+        <div ref={ref} style={{ position: 'fixed', zIndex }}>
           <div
             ref={refs.setFloating}
             style={floatingStyles}

@@ -30,22 +30,16 @@ const FloatingViewPanel = observer(function ({
   session: AppSession
 }) {
   return (
-    <DraggableDialog open onClose={() => {}} maxWidth="xl" title="Testing">
-      <div
-        style={{
-          width: 10000,
-        }}
+    <DraggableDialog>
+      {/* @ts-ignore */}
+      <ResizableBox
+        className="box"
+        height={200}
+        resizeHandles={['se']}
+        width={1000}
       >
-        {/* @ts-ignore */}
-        <ResizableBox
-          className="box"
-          height={200}
-          resizeHandles={['se']}
-          width={1000}
-        >
-          <StaticViewPanel view={view} session={session} />
-        </ResizableBox>
-      </div>
+        <StaticViewPanel view={view} session={session} />
+      </ResizableBox>
     </DraggableDialog>
   )
 })
