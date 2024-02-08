@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useRef } from 'react'
+import { Resizable, ResizableBox } from 'react-resizable'
 import { observer } from 'mobx-react'
 
 // locals
@@ -11,6 +12,7 @@ import DraggableDialog from '@jbrowse/core/ui/DraggableDialog'
 
 // locals
 import StaticViewPanel from './StaticViewPanel'
+import './test.css'
 
 type AppSession = SessionWithDrawerWidgets & {
   savedSessionNames: string[]
@@ -29,8 +31,20 @@ const FloatingViewPanel = observer(function ({
 }) {
   return (
     <DraggableDialog open onClose={() => {}} maxWidth="xl" title="Testing">
-      <div style={{ width: window.innerWidth * 0.85 }}>
-        <StaticViewPanel view={view} session={session} />
+      <div
+        style={{
+          width: 10000,
+        }}
+      >
+        {/* @ts-ignore */}
+        <ResizableBox
+          className="box"
+          height={200}
+          resizeHandles={['se']}
+          width={1000}
+        >
+          <StaticViewPanel view={view} session={session} />
+        </ResizableBox>
       </div>
     </DraggableDialog>
   )

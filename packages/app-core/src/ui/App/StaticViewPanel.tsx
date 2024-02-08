@@ -26,7 +26,7 @@ type AppSession = SessionWithDrawerWidgets & {
   popSnackbarMessage: () => unknown
 }
 
-const StaticViewPanel = observer(function ({
+const StaticViewPanel = observer(function StaticViewPanel2({
   view,
   session,
 }: {

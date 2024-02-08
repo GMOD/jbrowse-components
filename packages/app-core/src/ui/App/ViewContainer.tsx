@@ -24,7 +24,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const ViewContainer = observer(function ({
+const ViewContainer = observer(function ViewContainer2({
   view,
   onClose,
   onMinimize,

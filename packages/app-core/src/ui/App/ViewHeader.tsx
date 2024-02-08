@@ -31,6 +31,7 @@ const ViewHeader = observer(function ({
 }) {
   const { cx, classes } = useStyles()
   return (
+    // stringly-typed viewHeader className used for draggable
     <div className={cx('viewHeader', classes.viewHeader)}>
       <ViewMenu model={view} IconProps={{ className: classes.icon }} />
       <div className={classes.grow} />
