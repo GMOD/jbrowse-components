@@ -1,5 +1,5 @@
 import React, { useRef } from 'react'
-import { DialogProps, ScopedCssBaseline, Portal } from '@mui/material'
+import { DialogProps, ScopedCssBaseline, Portal, Popover } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import {
@@ -22,7 +22,7 @@ const DraggableDialog = observer(function DraggableDialog(
   return (
     <Portal>
       <Draggable nodeRef={ref}>
-        <div ref={ref}>
+        <div ref={ref} style={{ position: 'fixed', zIndex: 10000000000000 }}>
           <div
             ref={refs.setFloating}
             style={floatingStyles}

@@ -29,7 +29,7 @@ const FloatingViewPanel = observer(function ({
 }) {
   return (
     <DraggableDialog open onClose={() => {}} maxWidth="xl" title="Testing">
-      <div style={{ background: 'white', width: window.innerWidth * 0.85 }}>
+      <div style={{ width: window.innerWidth * 0.85 }}>
         <StaticViewPanel view={view} session={session} />
       </div>
     </DraggableDialog>
