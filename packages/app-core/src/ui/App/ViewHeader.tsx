@@ -29,9 +29,9 @@ const ViewHeader = observer(function ({
   onClose: () => void
   onMinimize: () => void
 }) {
-  const { classes } = useStyles()
+  const { cx, classes } = useStyles()
   return (
-    <div className={classes.viewHeader}>
+    <div className={cx('viewHeader', classes.viewHeader)}>
       <ViewMenu model={view} IconProps={{ className: classes.icon }} />
       <div className={classes.grow} />
       <ViewTitle view={view} />
