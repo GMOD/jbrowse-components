@@ -21,15 +21,16 @@ import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 export function JBrowseConfigF({
   pluginManager,
   assemblyConfigSchema,
+  adminMode,
 }: {
   pluginManager: PluginManager
   assemblyConfigSchema: AnyConfigurationSchemaType
+  adminMode: boolean
 }) {
   return types.model('JBrowseConfig', {
     configuration: RootConfiguration({
       pluginManager,
     }),
-
     /**
      * #slot
      * defines plugins of the format
@@ -44,20 +45,21 @@ export function JBrowseConfigF({
      * ```
      */
     plugins: types.array(types.frozen<PluginDefinition>()),
-
     /**
      * #slot
      * configuration of the assemblies in the instance, see BaseAssembly
      */
     assemblies: types.array(assemblyConfigSchema),
-
     /**
      * #slot
      * track configuration is an array of track config schemas. multiple
      * instances of a track can exist that use the same configuration
      */
-    tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
-
+    tracks:
+      // @ts-expect-error
+      adminMode || globalThis.disableFrozenTracks
+        ? types.array(pluginManager.pluggableConfigSchemaType('track'))
+        : types.frozen([] as { trackId: string; [key: string]: unknown }[]),
     /**
      * #slot
      * configuration for internet accounts, see InternetAccounts
