@@ -3,7 +3,7 @@ import {
   readConfObject,
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
-import { getSession } from '@jbrowse/core/util'
+import { AbstractSessionModel } from '@jbrowse/core/util'
 import {
   BaseCard,
   Attributes,
@@ -14,12 +14,13 @@ type FileInfo = Record<string, unknown> | string
 
 export default function FileInfoPanel({
   config,
+  session,
 }: {
   config: AnyConfigurationModel
+  session: AbstractSessionModel
 }) {
   const [error, setError] = useState<unknown>()
   const [info, setInfo] = useState<FileInfo>()
-  const session = getSession(config)
   const { rpcManager } = session
 
   useEffect(() => {
