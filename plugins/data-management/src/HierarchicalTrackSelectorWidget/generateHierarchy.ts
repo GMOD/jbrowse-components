@@ -74,7 +74,9 @@ export function generateHierarchy({
     activeSortCategories: boolean
     collapsed: Map<string | number, boolean>
     view?: {
-      tracks: { configuration: AnyConfigurationModel }[]
+      tracks: {
+        configuration: AnyConfigurationModel
+      }[]
     }
   }
   noCategories?: boolean
@@ -94,8 +96,8 @@ export function generateHierarchy({
     return []
   }
   const session = getSession(model)
-  const viewTracks = view.tracks
   const confs = trackConfs.filter(conf => matches(filterText, conf, session))
+  const viewTrackIds = new Set(view.tracks.map(f => f.configuration.trackId))
 
   // uses getConf
   for (const conf of sortConfs(
@@ -139,17 +141,14 @@ export function generateHierarchy({
       }
     }
 
-    // uses splice to try to put all leaf nodes above "category nodes" if you
-    // change the splice to a simple push and open
-    // test_data/test_order/config.json you will see the weirdness
-    const r = currLevel.children.findIndex(elt => elt.children.length)
-    const idx = r === -1 ? currLevel.children.length : r
+    const r = currLevel.children.findLastIndex(elt => !elt.children.length)
+    const idx = r === -1 ? currLevel.children.length : r + 1
     currLevel.children.splice(idx, 0, {
       id: [extra, conf.trackId].filter(f => !!f).join(','),
       trackId: conf.trackId,
       name: getTrackName(conf, session),
       conf,
-      checked: viewTracks.some(f => f.configuration === conf),
+      checked: viewTrackIds.has(conf.trackId),
       children: [],
       type: 'track' as const,
     })
