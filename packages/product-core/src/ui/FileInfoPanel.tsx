@@ -4,20 +4,21 @@ import Attributes from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attrib
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
-import { getSession } from '@jbrowse/core/util'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 type FileInfo = Record<string, unknown> | string
 
 export default function FileInfoPanel({
   config,
+  session,
 }: {
   config: AnyConfigurationModel
+  session: AbstractSessionModel
 }) {
   const [error, setError] = useState<unknown>()
   const [info, setInfo] = useState<FileInfo>()
-  const session = getSession(config)
   const { rpcManager } = session
 
   useEffect(() => {

@@ -123,6 +123,12 @@ export function BaseWebSession({
       /**
        * #getter
        */
+      get tracksById(): Record<string, AnyConfigurationModel> {
+        return Object.fromEntries(this.tracks.map(t => [t.trackId, t]))
+      },
+      /**
+       * #getter
+       */
       get tracks(): AnyConfigurationModel[] {
         return [...self.sessionTracks, ...self.jbrowse.tracks]
       },
@@ -368,6 +374,7 @@ export function BaseWebSession({
                 {
                   config,
                   handleClose,
+                  session: self,
                 },
               ])
             },
