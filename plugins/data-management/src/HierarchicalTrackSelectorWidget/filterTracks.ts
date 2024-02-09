@@ -25,6 +25,8 @@ export function filterTracks(
   const viewAssemblyNames = self.assemblyNames
     .map(a => assemblyManager.getCanonicalAssemblyName(a))
     .filter(notEmpty)
+  const { displayTypes } = pluginManager.getViewType(view.type)!
+  const viewDisplays = displayTypes.map((d: { name: string }) => d.name)
   return tracks
     .filter(c => {
       const trackConfigAssemblyNames = readConfObject(c, 'assemblyNames') as
@@ -37,10 +39,10 @@ export function filterTracks(
         ? hasAnyOverlap(trackCanonicalAssemblyNames, viewAssemblyNames)
         : hasAllOverlap(trackCanonicalAssemblyNames, viewAssemblyNames)
     })
-    .filter(c => {
-      const { displayTypes } = pluginManager.getViewType(view.type)!
-      const compatDisplays = displayTypes.map(d => d.name)
-      const trackDisplays = c.displays.map((d: { type: string }) => d.type)
-      return hasAnyOverlap(compatDisplays, trackDisplays)
+
+    .filter(conf => {
+      const trackType = pluginManager.getTrackType(conf.type)!
+      const trackDisplays = trackType.displayTypes.map(d => d.name)
+      return hasAnyOverlap(viewDisplays, trackDisplays)
     })
 }

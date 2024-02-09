@@ -1,7 +1,9 @@
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
-import { getSession } from '@jbrowse/core/util'
 
+import { isStateTreeNode } from 'mobx-state-tree'
 import type PluginManager from '@jbrowse/core/PluginManager'
+
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 export function removeAttr(obj: Record<string, unknown>, attr: string) {
@@ -17,13 +19,14 @@ export function removeAttr(obj: Record<string, unknown>, attr: string) {
 
 export function generateDisplayableConfig({
   config,
+  session,
   pluginManager,
 }: {
   config: AnyConfigurationModel
+  session: AbstractSessionModel
   pluginManager: PluginManager
 }) {
-  const session = getSession(config)
-  const conf = readConfObject(config)
+  const conf = isStateTreeNode(config) ? readConfObject(config) : config
   return pluginManager.evaluateExtensionPoint(
     'Core-customizeAbout',
     {
