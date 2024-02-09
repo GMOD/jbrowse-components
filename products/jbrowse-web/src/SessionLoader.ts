@@ -279,7 +279,14 @@ const SessionLoader = types
     },
 
     decodeJb1StyleSession() {
-      const { loc, tracks, assembly, sessionTracksParsed: sessionTracks } = self
+      const {
+        loc,
+        tracks,
+        assembly,
+        tracklist,
+        nav,
+        sessionTracksParsed: sessionTracks,
+      } = self
       if (loc) {
         self.sessionSpec = {
           sessionTracks,
@@ -290,6 +297,8 @@ const SessionLoader = types
               sessionTracks,
               loc,
               assembly,
+              tracklist,
+              nav,
             },
           ],
         }

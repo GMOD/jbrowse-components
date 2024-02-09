@@ -5,7 +5,6 @@ import {
   StringParam,
   QueryParamProvider,
   useQueryParam,
-  BooleanParam,
 } from 'use-query-params'
 import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
 import { FatalErrorDialog, LoadingEllipses } from '@jbrowse/core/ui'
@@ -40,7 +39,6 @@ export function Loader({
   // types.maybe
 
   const Str = StringParam
-  const Bool = BooleanParam
 
   const [config] = useQueryParam('config', Str)
   const [session] = useQueryParam('session', Str)
@@ -50,8 +48,8 @@ export function Loader({
   const [sessionTracks, setSessionTracks] = useQueryParam('sessionTracks', Str)
   const [assembly, setAssembly] = useQueryParam('assembly', Str)
   const [tracks, setTracks] = useQueryParam('tracks', Str)
-  const [nav, setNav] = useQueryParam('nav', Bool)
-  const [tracklist, setTrackList] = useQueryParam('tracklist', Bool)
+  const [nav, setNav] = useQueryParam('nav', Str)
+  const [tracklist, setTrackList] = useQueryParam('tracklist', Str)
 
   const loader = SessionLoader.create({
     configPath: normalize(config),
@@ -62,8 +60,8 @@ export function Loader({
     assembly: normalize(assembly),
     tracks: normalize(tracks),
     sessionTracks: normalize(sessionTracks),
-    tracklist: normalize(tracklist),
-    nav: normalize(nav),
+    tracklist: JSON.parse(normalize(tracklist) || 'false'),
+    nav: JSON.parse(normalize(nav) || 'true'),
     initialTimestamp,
   })
 

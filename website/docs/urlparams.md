@@ -71,6 +71,22 @@ combine URL navigation with defaultSession, then you might consider making a
 small plugin to do so. Here is a code listing example:
 https://gist.github.com/cmdcolin/eedfcb11f8f153ba1fb07e56dfddd3b3
 
+### &tracklist=
+
+Example
+
+`&tracklist=true`
+
+This opens the track selector by default. Default false
+
+### &nav=
+
+Example
+
+`&nav=`
+
+Turns of the navigation bar of the linear genome view
+
 ### &tracks=
 
 Example

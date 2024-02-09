@@ -1,7 +1,8 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AbstractSessionModel, when } from '@jbrowse/core/util'
+// locals
 import { LinearGenomeViewModel } from '../LinearGenomeView'
-import { handleSelectedRegion } from '..//searchUtils'
+import { handleSelectedRegion } from '../searchUtils'
 
 type LGV = LinearGenomeViewModel
 
@@ -25,7 +26,6 @@ export default (pluginManager: PluginManager) => {
       nav?: boolean
     }) => {
       try {
-        console.log({ nav })
         const { assemblyManager } = session
         const view = session.addView('LinearGenomeView', {}) as LGV
 
@@ -57,7 +57,7 @@ export default (pluginManager: PluginManager) => {
           view.activateTrackSelector()
         }
         if (nav !== undefined) {
-          view.setHideHeader(nav)
+          view.setHideHeader(!nav)
         }
       } catch (e) {
         session.notify(`${e}`, 'error')
@@ -68,7 +68,9 @@ export default (pluginManager: PluginManager) => {
 }
 
 function tryTrack(
-  model: { showTrack: (arg: string) => void },
+  model: {
+    showTrack: (arg: string) => void
+  },
   trackId: string,
   idsNotFound: string[],
 ) {
