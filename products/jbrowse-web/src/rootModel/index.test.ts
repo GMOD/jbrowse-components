@@ -19,7 +19,7 @@ afterEach(() => {
   sessionStorage.clear()
 })
 
-test('creates with defaults', () => {
+it('creates with defaults', () => {
   const root = getRootModel().create({
     jbrowse: {
       configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
@@ -32,7 +32,7 @@ test('creates with defaults', () => {
   expect(getSnapshot(root.jbrowse.configuration)).toMatchSnapshot()
 })
 
-test('creates with a minimal session', () => {
+it('creates with a minimal session', () => {
   const root = getRootModel().create({
     jbrowse: {
       configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
@@ -42,7 +42,7 @@ test('creates with a minimal session', () => {
   expect(root.session).toBeTruthy()
 })
 
-test('activates a session snapshot', () => {
+it('activates a session snapshot', () => {
   const session = { name: 'testSession' }
   localStorage.setItem('localSaved-123', JSON.stringify({ session }))
   Storage.prototype.getItem = jest.fn(
@@ -58,7 +58,7 @@ test('activates a session snapshot', () => {
   expect(root.session).toBeTruthy()
 })
 
-test('adds track and connection configs to an assembly', () => {
+it('adds track and connection configs to an assembly', () => {
   const root = getRootModel().create({
     jbrowse: {
       configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
@@ -93,7 +93,7 @@ test('adds track and connection configs to an assembly', () => {
     type: 'FeatureTrack',
     trackId: 'trackId0',
   })
-  expect(getSnapshot(newTrackConf)).toMatchSnapshot()
+  expect(newTrackConf).toMatchSnapshot()
   expect(root.jbrowse.tracks.length).toBe(1)
   const newConnectionConf = root.jbrowse.addConnectionConf({
     type: 'JBrowse1Connection',
@@ -103,7 +103,7 @@ test('adds track and connection configs to an assembly', () => {
   expect(root.jbrowse.connections.length).toBe(1)
 })
 
-test('throws if session is invalid', () => {
+it('throws if session is invalid', () => {
   expect(() =>
     getRootModel().create({
       jbrowse: {
@@ -114,7 +114,7 @@ test('throws if session is invalid', () => {
   ).toThrow()
 })
 
-test('throws if session snapshot is invalid', () => {
+it('throws if session snapshot is invalid', () => {
   const root = getRootModel().create({
     jbrowse: {
       configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
@@ -125,7 +125,7 @@ test('throws if session snapshot is invalid', () => {
   }).toThrow()
 })
 
-test('adds menus', () => {
+it('adds menus', () => {
   const root = getRootModel().create({
     jbrowse: {
       configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },

@@ -5,7 +5,7 @@ import {
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
 import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
-import { getSession } from '@jbrowse/core/util'
+import { AbstractSessionModel } from '@jbrowse/core/util'
 import { getConfAssemblyNames } from '@jbrowse/core/util/tracks'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
@@ -27,16 +27,18 @@ const useStyles = makeStyles()(theme => ({
 
 const RefNameInfoDialog = observer(function ({
   config,
+  session,
   onClose,
 }: {
   config: AnyConfigurationModel
+  session: AbstractSessionModel
   onClose: () => void
 }) {
   const { classes } = useStyles()
   const [error, setError] = useState<unknown>()
   const [refNames, setRefNames] = useState<Record<string, string[]>>()
   const [copied, setCopied] = useState(false)
-  const { rpcManager } = getSession(config)
+  const { rpcManager } = session
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
