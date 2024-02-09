@@ -33,6 +33,10 @@ const useStyles = makeStyles()(theme => ({
     display: 'flex',
     paddingLeft: 5,
   },
+  wrapper: {
+    whiteSpace: 'nowrap',
+    width: '100%',
+  },
 }))
 
 // An individual node in the track selector. Note: manually sets cursor:
@@ -49,8 +53,7 @@ export default function Node({
   setOpen: (arg: boolean) => void
 }) {
   const { isLeaf, nestingLevel } = data
-
-  const { classes } = useStyles()
+  const { classes, cx } = useStyles()
   const width = 10
   const marginLeft = nestingLevel * width + (isLeaf ? width : 0)
 
@@ -64,12 +67,11 @@ export default function Node({
         />
       ))}
       <div
-        className={!isLeaf ? classes.accordionCard : undefined}
-        style={{
-          marginLeft,
-          whiteSpace: 'nowrap',
-          width: '100%',
-        }}
+        className={cx(
+          !isLeaf ? classes.accordionCard : undefined,
+          classes.wrapper,
+        )}
+        style={{ marginLeft }}
       >
         <div className={!isLeaf ? classes.accordionColor : undefined}>
           {!isLeaf ? (

@@ -21,12 +21,14 @@ window.resolveIdentifier = resolveIdentifier
 export default function JBrowseWeb({
   pluginManager,
   assemblyConfigSchema,
+  adminMode
 }: {
   pluginManager: PluginManager
   assemblyConfigSchema: AnyConfigurationSchemaType
+  adminMode: boolean
 }) {
   return types.snapshotProcessor(
-    JBrowseModelF({ pluginManager, assemblyConfigSchema }),
+    JBrowseModelF({ pluginManager, assemblyConfigSchema, adminMode }),
     {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       postProcessor(snapshot: Record<string, any>) {

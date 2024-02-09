@@ -36,9 +36,11 @@ import { types } from 'mobx-state-tree'
 export function JBrowseConfigF({
   pluginManager,
   assemblyConfigSchema,
+  adminMode
 }: {
   pluginManager: PluginManager
   assemblyConfigSchema: AnyConfigurationSchemaType
+  adminMode: boolean
 }) {
   return types.model('JBrowseConfig', {
     configuration: ConfigurationSchema('Root', {
@@ -121,7 +123,11 @@ export function JBrowseConfigF({
      * track configuration is an array of track config schemas. multiple
      * instances of a track can exist that use the same configuration
      */
-    tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
+    tracks:
+      // @ts-expect-error
+      adminMode || globalThis.disableFrozenTracks
+        ? types.array(pluginManager.pluggableConfigSchemaType('track'))
+        : types.frozen([] as { trackId: string; [key: string]: unknown }[]),
     /**
      * #slot
      * configuration for internet accounts, see InternetAccounts
@@ -150,7 +156,7 @@ export function JBrowseConfigF({
      * #slot
      */
     defaultSession: types.optional(types.frozen(), {
-      name: `New Session`,
+      name: `New session`,
     }),
   })
 }

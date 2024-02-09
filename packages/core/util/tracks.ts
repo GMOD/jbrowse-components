@@ -1,4 +1,13 @@
-import { getParent, isRoot, IAnyStateTreeNode } from 'mobx-state-tree'
+import {
+  getParent,
+  getRoot,
+  isRoot,
+  resolveIdentifier,
+  types,
+  IAnyStateTreeNode,
+  Instance,
+  IAnyType,
+} from 'mobx-state-tree'
 import { getSession, objectHash, getEnv } from './index'
 import { PreFileLocation, FileLocation } from './types'
 import {
@@ -264,4 +273,97 @@ export function getTrackName(
       : 'Reference sequence'
   }
   return trackName
+}
+
+type MSTArray<T extends IAnyType> = Instance<ReturnType<typeof types.array<T>>>
+
+interface MinimalTrack extends IAnyType {
+  configuration: { trackId: string }
+}
+
+type GenericView = {
+  type: string
+  tracks: MSTArray<MinimalTrack>
+}
+
+export function showTrackGeneric(
+  self: GenericView,
+  trackId: string,
+  initialSnapshot = {},
+  displayInitialSnapshot = {},
+) {
+  const { pluginManager } = getEnv(self)
+  const session = getSession(self)
+  let conf = session.tracks.find(t => t.trackId === trackId)
+  if (!conf) {
+    const schema = pluginManager.pluggableConfigSchemaType('track')
+    conf = resolveIdentifier(schema, getRoot(self), trackId)
+  }
+  if (!conf) {
+    throw new Error(`Could not resolve identifier "${trackId}"`)
+  }
+  const trackType = pluginManager.getTrackType(conf.type)
+  if (!trackType) {
+    throw new Error(`Unknown track type ${conf.type}`)
+  }
+  const viewType = pluginManager.getViewType(self.type)
+  const supportedDisplays = new Set(viewType.displayTypes.map(d => d.name))
+
+  const { displays = [] } = conf
+  const displayTypes = new Set()
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  displays.forEach((d: any) => d && displayTypes.add(d.type))
+  trackType.displayTypes.forEach(displayType => {
+    if (!displayTypes.has(displayType.name)) {
+      displays.push({
+        displayId: `${trackId}-${displayType.name}`,
+        type: displayType.name,
+      })
+    }
+  })
+
+  const displayConf = displays?.find((d: AnyConfigurationModel) =>
+    supportedDisplays.has(d.type),
+  )
+  if (!displayConf) {
+    throw new Error(
+      `Could not find a compatible display for view type ${self.type}`,
+    )
+  }
+
+  const found = self.tracks.find(t => t.configuration.trackId === trackId)
+  if (!found) {
+    const track = trackType.stateModel.create({
+      ...initialSnapshot,
+      type: conf.type,
+      configuration: conf,
+      displays: [
+        {
+          type: displayConf.type,
+          configuration: displayConf,
+          ...displayInitialSnapshot,
+        },
+      ],
+    })
+    self.tracks.push(track)
+    return track
+  }
+  return found
+}
+
+export function hideTrackGeneric(self: GenericView, trackId: string) {
+  const t = self.tracks.find(t => t.configuration.trackId === trackId)
+  if (t) {
+    self.tracks.remove(t)
+    return 1
+  }
+  return 0
+}
+
+export function toggleTrackGeneric(self: GenericView, trackId: string) {
+  const hiddenCount = hideTrackGeneric(self, trackId)
+  if (!hiddenCount) {
+    showTrackGeneric(self, trackId)
+  }
 }

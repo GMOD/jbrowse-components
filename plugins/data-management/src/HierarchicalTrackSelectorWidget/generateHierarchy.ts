@@ -4,10 +4,10 @@ import {
 } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
+import { MenuItem } from '@jbrowse/core/ui'
 
 // locals
 import { matches } from './util'
-import { MenuItem } from '@jbrowse/core/ui'
 
 function sortConfs(
   confs: AnyConfigurationModel[],
@@ -151,7 +151,7 @@ export function generateHierarchy({
       trackId: conf.trackId,
       name: getTrackName(conf, session),
       conf,
-      checked: viewTracks.some(f => f.configuration === conf),
+      checked: viewTracks.some(f => f.configuration.trackId === conf.trackId),
       children: [],
       type: 'track' as const,
     })
