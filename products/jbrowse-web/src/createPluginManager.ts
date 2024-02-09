@@ -47,8 +47,7 @@ export function createPluginManager(self: SessionLoaderModel) {
 
   // @ts-expect-error
   if (!self.configSnapshot?.configuration?.rpc?.defaultDriver) {
-    const { rpc } = rootModel.jbrowse.configuration
-    rpc.defaultDriver.set('WebWorkerRpcDriver')
+    rootModel.jbrowse.configuration.defaultDriver.set('WebWorkerRpcDriver')
   }
 
   let afterInitializedCb = () => {}
@@ -60,10 +59,7 @@ export function createPluginManager(self: SessionLoaderModel) {
     if (self.sessionError) {
       rootModel.setDefaultSession()
       rootModel.session.notify(
-        `Error loading session: ${self.sessionError}. If you
-                received this URL from another user, request that they send you
-                a session generated with the "Share" button instead of copying
-                and pasting their URL`,
+        `Error loading session: ${self.sessionError}. If you received this URL from another user, request that they send you a session generated with the "Share" button instead of copying and pasting their URL`,
       )
     } else if (self.sessionSnapshot) {
       rootModel.setSession(self.sessionSnapshot)

@@ -14,13 +14,18 @@ export default (pluginManager: PluginManager) => {
       assembly,
       loc,
       tracks = [],
+      tracklist,
+      nav,
     }: {
       session: AbstractSessionModel
       assembly?: string
       loc: string
       tracks?: string[]
+      tracklist?: boolean
+      nav?: boolean
     }) => {
       try {
+        console.log({ nav })
         const { assemblyManager } = session
         const view = session.addView('LinearGenomeView', {}) as LGV
 
@@ -47,6 +52,12 @@ export default (pluginManager: PluginManager) => {
           throw new Error(
             `Could not resolve identifiers: ${idsNotFound.join(',')}`,
           )
+        }
+        if (tracklist) {
+          view.activateTrackSelector()
+        }
+        if (nav !== undefined) {
+          view.setHideHeader(nav)
         }
       } catch (e) {
         session.notify(`${e}`, 'error')

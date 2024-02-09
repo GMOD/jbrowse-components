@@ -560,26 +560,26 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      toggleHeader() {
-        self.hideHeader = !self.hideHeader
+      setHideHeader(b: boolean) {
+        self.hideHeader = b
       },
       /**
        * #action
        */
-      toggleHeaderOverview() {
-        self.hideHeaderOverview = !self.hideHeaderOverview
+      setHideHeaderOverview(b: boolean) {
+        self.hideHeaderOverview = b
       },
       /**
        * #action
        */
-      toggleNoTracksActive() {
-        self.hideNoTracksActive = !self.hideNoTracksActive
+      setHideNoTracksActive(b: boolean) {
+        self.hideNoTracksActive = b
       },
       /**
        * #action
        */
-      toggleShowGridlines() {
-        self.showGridlines = !self.showGridlines
+      setShowGridlines(b: boolean) {
+        self.showGridlines = b
       },
       /**
        * #action
@@ -787,8 +787,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      toggleCenterLine() {
-        self.showCenterLine = !self.showCenterLine
+      setShowCenterLine(b: boolean) {
+        self.showCenterLine = b
       },
 
       /**
@@ -1102,32 +1102,34 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 label: 'Show center line',
                 type: 'checkbox',
                 checked: self.showCenterLine,
-                onClick: self.toggleCenterLine,
+                onClick: () => self.setShowCenterLine(!self.showCenterLine),
               },
               {
                 label: 'Show header',
                 type: 'checkbox',
                 checked: !self.hideHeader,
-                onClick: self.toggleHeader,
+                onClick: () => self.setHideHeader(!self.hideHeader),
               },
               {
                 label: 'Show header overview',
                 type: 'checkbox',
                 checked: !self.hideHeaderOverview,
-                onClick: self.toggleHeaderOverview,
+                onClick: () =>
+                  self.setHideHeaderOverview(!self.hideHeaderOverview),
                 disabled: self.hideHeader,
               },
               {
                 label: 'Show no tracks active button',
                 type: 'checkbox',
                 checked: !self.hideNoTracksActive,
-                onClick: self.toggleNoTracksActive,
+                onClick: () =>
+                  self.setHideNoTracksActive(!self.hideNoTracksActive),
               },
               {
                 label: 'Show guidelines',
                 type: 'checkbox',
                 checked: self.showGridlines,
-                onClick: self.toggleShowGridlines,
+                onClick: () => self.setShowGridlines(!self.showGridlines),
               },
               ...(canShowCytobands
                 ? [

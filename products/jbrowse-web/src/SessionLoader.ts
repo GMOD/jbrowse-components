@@ -28,6 +28,8 @@ const SessionLoader = types
     sessionTracks: types.maybe(types.string),
     assembly: types.maybe(types.string),
     tracks: types.maybe(types.string),
+    tracklist: types.maybe(types.boolean),
+    nav: types.maybe(types.boolean),
     initialTimestamp: types.number,
   })
   .volatile(() => ({
