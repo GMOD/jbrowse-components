@@ -11,30 +11,20 @@ process.on('unhandledRejection', err => {
 require('../config/env')
 
 const fs = require('fs')
-const chalk = require('react-dev-utils/chalk')
+const chalk = require('chalk')
 const webpack = require('webpack')
 const WebpackDevServer = require('webpack-dev-server')
-const clearConsole = require('react-dev-utils/clearConsole')
-const checkRequiredFiles = require('react-dev-utils/checkRequiredFiles')
 const {
   choosePort,
   createCompiler,
   prepareUrls,
 } = require('react-dev-utils/WebpackDevServerUtils')
+const clearConsole = require('react-dev-utils/clearConsole')
 const openBrowser = require('react-dev-utils/openBrowser')
-const semver = require('semver')
 const paths = require('../config/paths')
-const getClientEnvironment = require('../config/env')
-const react = require(require.resolve('react', { paths: [paths.appPath] }))
 
-const env = getClientEnvironment(paths.publicUrlOrPath.slice(0, -1))
 const useYarn = fs.existsSync(paths.yarnLockFile)
 const isInteractive = process.stdout.isTTY
-
-// Warn and crash if required files are missing
-if (!checkRequiredFiles([paths.appHtml, paths.appIndexJs])) {
-  process.exit(1)
-}
 
 // Tools like Cloud9 rely on this.
 const DEFAULT_PORT = parseInt(process.env.PORT, 10) || 3000
@@ -104,14 +94,6 @@ module.exports = function (config) {
       devServer.startCallback(() => {
         if (isInteractive) {
           clearConsole()
-        }
-
-        if (env.raw.FAST_REFRESH && semver.lt(react.version, '16.10.0')) {
-          console.log(
-            chalk.yellow(
-              `Fast Refresh requires React 16.10 or higher. You are using React ${react.version}.`,
-            ),
-          )
         }
 
         openBrowser(urls.localUrlForBrowser)
