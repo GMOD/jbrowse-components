@@ -83,10 +83,7 @@ Slots
   it is not an indexed file format.
 - `assemblyNames` - list of assembly names, typically two (first in list is
   target, second is query)
-- `queryAssembly` - alternative to assemblyNames: just the assemblyName of the
-  query
-- `targetAssembly` - alternative to assemblyNames: just the assemblyName of the
-  target
+
 
 ### ChainAdapter config
 
