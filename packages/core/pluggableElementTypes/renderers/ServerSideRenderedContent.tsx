@@ -61,8 +61,15 @@ const NewHydrate = observer(function ServerSideRenderedContent({
     }
   }, [html, theme, rest, hydrateFn, RenderingComponent])
 
-  // eslint-disable-next-line react/no-danger
-  return <div ref={ref} dangerouslySetInnerHTML={{ __html: html }} />
+  return (
+    <div
+      data-testid="hydrationContainer"
+      ref={ref}
+      style={{ display: 'flex' }}
+      // eslint-disable-next-line react/no-danger
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  )
 })
 
 const OldHydrate = observer(function ({
