@@ -295,19 +295,19 @@ const DivSequenceRendering = observer(function (props: {
   features: Map<string, Feature>
   regions: Region[]
   bpPerPx: number
+  height: number
   config: AnyConfigurationModel
   theme?: Theme
   showForward?: boolean
   showReverse?: boolean
   showTranslation?: boolean
 }) {
-  const { regions, bpPerPx } = props
+  const { regions, bpPerPx, height } = props
   const [region] = regions
   const width = (region.end - region.start) / bpPerPx
-  const totalHeight = 200
 
   return (
-    <Wrapper {...props} totalHeight={totalHeight} width={width}>
+    <Wrapper {...props} totalHeight={height} width={width}>
       <SequenceSVG {...props} />
     </Wrapper>
   )

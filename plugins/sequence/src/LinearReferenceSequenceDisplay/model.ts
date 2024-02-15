@@ -51,8 +51,13 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
          * #method
          */
         renderProps() {
-          const { showForward, rpcDriverName, showReverse, showTranslation } =
-            self
+          const {
+            showForward,
+            rpcDriverName,
+            showReverse,
+            showTranslation,
+            height,
+          } = self
           return {
             ...superRenderProps(),
             config: self.configuration.renderer,
@@ -60,6 +65,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
             showForward,
             showReverse,
             showTranslation,
+            height,
           }
         },
       }
