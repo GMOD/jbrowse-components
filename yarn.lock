@@ -6329,7 +6329,7 @@ abortable-promise-cache@^1.0.1, abortable-promise-cache@^1.2.0, abortable-promis
   dependencies:
     abortcontroller-polyfill "^1.2.9"
 
-abortcontroller-polyfill@^1.2.9, abortcontroller-polyfill@^1.7.3:
+abortcontroller-polyfill@^1.2.9:
   version "1.7.5"
   resolved "https://registry.yarnpkg.com/abortcontroller-polyfill/-/abortcontroller-polyfill-1.7.5.tgz#6738495f4e901fbb57b6c0611d0c75f76c485bed"
   integrity sha512-JMJ5soJWP18htbbxJjG7bG6yuI6pRhgJ0scHHTfkUjf6wjP912xZWvM+A4sJK3gqd9E8fcPbDnOefbA9Th/FIQ==
