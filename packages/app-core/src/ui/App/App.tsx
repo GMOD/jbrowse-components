@@ -29,7 +29,7 @@ const useStyles = makeStyles()(theme => ({
     gridTemplateRows: '[menubar] min-content [components] auto',
     height: '100vh',
   },
-  viewContainer: {
+  viewsContainer: {
     overflowY: 'auto',
     gridRow: 'components',
   },
@@ -59,12 +59,12 @@ const LazyDrawerWidget = observer(function (props: Props) {
   )
 })
 
-const ViewContainer = observer(function (props: Props) {
+const ViewsContainer = observer(function (props: Props) {
   const { session } = props
   const { views } = session
   const { classes } = useStyles()
   return (
-    <div className={classes.viewContainer}>
+    <div className={classes.viewsContainer}>
       {views.length > 0 ? (
         views.map(view => (
           <ViewPanel key={`view-${view.id}`} view={view} session={session} />
@@ -101,7 +101,7 @@ const App = observer(function (props: Props) {
         <AppBar className={classes.appBar} position="static">
           <AppToolbar {...props} />
         </AppBar>
-        <ViewContainer {...props} />
+        <ViewsContainer {...props} />
       </div>
       <AppFab session={session} />
 
