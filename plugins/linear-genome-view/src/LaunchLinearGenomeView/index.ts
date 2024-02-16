@@ -1,7 +1,8 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AbstractSessionModel, when } from '@jbrowse/core/util'
+// locals
 import { LinearGenomeViewModel } from '../LinearGenomeView'
-import { handleSelectedRegion } from '..//searchUtils'
+import { handleSelectedRegion } from '../searchUtils'
 
 type LGV = LinearGenomeViewModel
 
@@ -14,11 +15,15 @@ export default (pluginManager: PluginManager) => {
       assembly,
       loc,
       tracks = [],
+      tracklist,
+      nav,
     }: {
       session: AbstractSessionModel
       assembly?: string
       loc: string
       tracks?: string[]
+      tracklist?: boolean
+      nav?: boolean
     }) => {
       try {
         const { assemblyManager } = session
@@ -48,6 +53,12 @@ export default (pluginManager: PluginManager) => {
             `Could not resolve identifiers: ${idsNotFound.join(',')}`,
           )
         }
+        if (tracklist) {
+          view.activateTrackSelector()
+        }
+        if (nav !== undefined) {
+          view.setHideHeader(!nav)
+        }
       } catch (e) {
         session.notify(`${e}`, 'error')
         throw e
@@ -57,7 +68,9 @@ export default (pluginManager: PluginManager) => {
 }
 
 function tryTrack(
-  model: { showTrack: (arg: string) => void },
+  model: {
+    showTrack: (arg: string) => void
+  },
   trackId: string,
   idsNotFound: string[],
 ) {

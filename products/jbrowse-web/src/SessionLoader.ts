@@ -28,6 +28,8 @@ const SessionLoader = types
     sessionTracks: types.maybe(types.string),
     assembly: types.maybe(types.string),
     tracks: types.maybe(types.string),
+    tracklist: types.maybe(types.boolean),
+    nav: types.maybe(types.boolean),
     initialTimestamp: types.number,
   })
   .volatile(() => ({
@@ -277,7 +279,14 @@ const SessionLoader = types
     },
 
     decodeJb1StyleSession() {
-      const { loc, tracks, assembly, sessionTracksParsed: sessionTracks } = self
+      const {
+        loc,
+        tracks,
+        assembly,
+        tracklist,
+        nav,
+        sessionTracksParsed: sessionTracks,
+      } = self
       if (loc) {
         self.sessionSpec = {
           sessionTracks,
@@ -288,6 +297,8 @@ const SessionLoader = types
               sessionTracks,
               loc,
               assembly,
+              tracklist,
+              nav,
             },
           ],
         }
