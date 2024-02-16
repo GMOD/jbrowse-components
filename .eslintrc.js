@@ -145,7 +145,11 @@ module.exports = {
       },
     },
     {
-      files: ['**/jbrowse-cli/**/*.test.ts', '**/jbrowse-cli/**/*.test.tsx'],
+      files: [
+        '**/jbrowse-cli/**/*.test.ts',
+        '**/jbrowse-cli/**/*.test.tsx',
+        '**/jbrowse-img/**/*.test.ts',
+      ],
       rules: {
         'tsdoc/syntax': 'off',
       },
