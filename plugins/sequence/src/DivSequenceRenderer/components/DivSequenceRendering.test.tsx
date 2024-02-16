@@ -48,6 +48,7 @@ test('renders with one, zoomed way out', () => {
       }
       config={DivRenderingConfigSchema.create({})}
       bpPerPx={3}
+      height={160}
     />,
   )
 
@@ -67,6 +68,7 @@ test('renders with one feature with no seq, zoomed in, should throw', () => {
       }
       config={DivRenderingConfigSchema.create({})}
       bpPerPx={0.05}
+      height={160}
     />,
   )
 
@@ -94,6 +96,7 @@ test('renders with one feature with an incorrect seq, zoomed in, should throw', 
       }
       config={DivRenderingConfigSchema.create({})}
       bpPerPx={0.05}
+      height={160}
     />,
   )
 
@@ -121,6 +124,7 @@ test('renders with one feature with a correct seq, zoomed in, should render nice
       }
       config={DivRenderingConfigSchema.create({})}
       bpPerPx={0.05}
+      height={160}
     />,
   )
 
@@ -154,6 +158,7 @@ test('renders with one feature reversed with a correct seq, zoomed in, should re
       }
       config={DivRenderingConfigSchema.create({})}
       bpPerPx={0.05}
+      height={160}
     />,
   )
 
