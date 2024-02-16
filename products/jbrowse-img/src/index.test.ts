@@ -1,4 +1,3 @@
-/* eslint-disable tsdoc/syntax */
 /**
  * @jest-environment node
  */
@@ -9,26 +8,9 @@
 import { renderRegion } from './renderRegion'
 import path from 'path'
 import fs from 'fs'
-import { JSDOM } from 'jsdom'
-import { Image, createCanvas } from 'canvas'
-import fetch, { Headers, Response, Request } from 'node-fetch'
+import setupEnv from './setupEnv'
 
-// @ts-expect-error
-global.fetch = fetch
-// @ts-expect-error
-global.Headers = Headers
-// @ts-expect-error
-global.Response = Response
-// @ts-expect-error
-global.Request = Request
-
-const { document } = new JSDOM(`...`).window
-global.document = document
-
-// @ts-expect-error
-global.nodeImage = Image
-// @ts-expect-error
-global.nodeCreateCanvas = createCanvas
+setupEnv()
 
 function pa(s: string) {
   return path.join(__dirname, s)
