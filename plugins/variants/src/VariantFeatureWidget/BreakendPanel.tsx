@@ -26,8 +26,8 @@ function LocStringList({
     <div>
       <Typography>Link to linear view of breakend endpoints</Typography>
       <ul>
-        {locStrings.map(locString => (
-          <li key={`${JSON.stringify(locString)}`}>
+        {locStrings.map((locString, index) => (
+          <li key={`${locString}-${index}`}>
             <Link
               href="#"
               onClick={event => {

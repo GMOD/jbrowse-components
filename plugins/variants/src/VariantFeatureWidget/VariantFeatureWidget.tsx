@@ -1,6 +1,6 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { Divider, Paper } from '@mui/material'
+import { Paper } from '@mui/material'
 import { FeatureDetails } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import { parseBreakend } from '@gmod/vcf'
 
@@ -8,19 +8,8 @@ import { parseBreakend } from '@gmod/vcf'
 import VariantSampleGrid from './VariantSampleGrid'
 import BreakendPanel from './BreakendPanel'
 import VariantAnnotationTable from './VariantAnnotationTable'
-import { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import { VariantFeatureWidgetModel } from './stateModelFactory'
-
-const basicDescriptions = {
-  CHROM: 'chromosome: An identifier from the reference genome',
-  POS: 'position: The reference position, with the 1st base having position 1',
-  ID: 'identifier: Semi-colon separated list of unique identifiers where available',
-  REF: 'reference base(s): Each base must be one of A,C,G,T,N (case insensitive).',
-  ALT: 'alternate base(s): Comma-separated list of alternate non-reference alleles',
-  QUAL: 'quality: Phred-scaled quality score for the assertion made in ALT',
-  FILTER:
-    'filter status: PASS if this position has passed all filters, otherwise a semicolon-separated list of codes for filters that fail',
-}
+import { variantFieldDescriptions } from './variantFieldDescriptions'
 
 function AnnPanel({
   descriptions,
@@ -74,14 +63,11 @@ const VariantFeatureWidget = observer(function (props: {
     <Paper data-testid="variant-side-drawer">
       <FeatureDetails
         feature={rest}
-        descriptions={{ ...basicDescriptions, ...descriptions }}
+        descriptions={{ ...variantFieldDescriptions, ...descriptions }}
         {...props}
       />
-      <Divider />
       <CsqPanel feature={rest} descriptions={descriptions} />
-      <Divider />
       <AnnPanel feature={rest} descriptions={descriptions} />
-      <Divider />
       {feat.type === 'breakend' ? (
         <BreakendPanel
           feature={feat}
