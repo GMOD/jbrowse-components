@@ -65,7 +65,6 @@ const NewHydrate = observer(function ServerSideRenderedContent({
     <div
       data-testid="hydrationContainer"
       ref={ref}
-      style={{ display: 'flex' }}
       // eslint-disable-next-line react/no-danger
       dangerouslySetInnerHTML={{ __html: html }}
     />
