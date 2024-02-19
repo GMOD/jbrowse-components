@@ -42,6 +42,6 @@ test('open up a widget', () => {
   const { container, getByText } = render(
     <ReactComponent model={session.widget} />,
   )
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
   expect(getByText('ctgA:3..102 (+)')).toBeTruthy()
 })

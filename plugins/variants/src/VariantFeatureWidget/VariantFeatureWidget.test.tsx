@@ -38,5 +38,5 @@ test('renders with just the required model elements', () => {
   })
 
   const { container } = render(<VariantFeatureDetails model={model.widget} />)
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
 })
