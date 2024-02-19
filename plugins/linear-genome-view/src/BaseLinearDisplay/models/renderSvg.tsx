@@ -74,7 +74,7 @@ export async function renderBaseLinearDisplaySvg(
       {renderings.map(([block, rendering], index) => {
         const { offsetPx, widthPx } = block
         const offset = offsetPx - viewOffsetPx
-        const clipid = getId(id, index)
+        const clipid = `${getId(id, index)}-${Math.random()}`
 
         return (
           <React.Fragment key={`frag-${index}`}>
