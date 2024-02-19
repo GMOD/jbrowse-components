@@ -22,15 +22,35 @@ const useStyles = makeStyles()({
 })
 
 interface Track {
-  trackId: string
+  id: string
+  displays: { id: string; [key: string]: unknown }[]
   [key: string]: unknown
 }
 
-function remapIds(arr: Track[]) {
-  return arr.map(v => ({
-    ...v,
-    id: `${v.trackId}-${Math.random()}`,
+function stripIds(arr: Track[]) {
+  return arr.map(({ id, displays, ...rest }) => ({
+    ...rest,
+    displays: displays.map(({ id, ...rest }) => rest),
   }))
+}
+
+function Checkbox2({
+  checked,
+  label,
+  onChange,
+}: {
+  checked: boolean
+  label: string
+  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void
+}) {
+  const { classes } = useStyles()
+  return (
+    <FormControlLabel
+      className={classes.block}
+      control={<Checkbox checked={checked} onChange={onChange} />}
+      label={label}
+    />
+  )
 }
 
 const BreakendOptionDialog = observer(function ({
@@ -44,32 +64,20 @@ const BreakendOptionDialog = observer(function ({
   feature: Feature
   viewType: ViewType
 }) {
-  const { classes } = useStyles()
   const [copyTracks, setCopyTracks] = useState(true)
-  const [mirrorTracks, setMirrorTracks] = useState(true)
+  const [mirror, setMirror] = useState(true)
 
   return (
     <Dialog open onClose={handleClose} title="Breakpoint split view options">
       <DialogContent>
-        <FormControlLabel
-          className={classes.block}
-          control={
-            <Checkbox
-              checked={copyTracks}
-              onChange={event => setCopyTracks(event.target.checked)}
-            />
-          }
+        <Checkbox2
+          checked={copyTracks}
+          onChange={event => setCopyTracks(event.target.checked)}
           label="Copy tracks into the new view"
         />
-
-        <FormControlLabel
-          className={classes.block}
-          control={
-            <Checkbox
-              checked={mirrorTracks}
-              onChange={event => setMirrorTracks(event.target.checked)}
-            />
-          }
+        <Checkbox2
+          checked={mirror}
+          onChange={event => setMirror(event.target.checked)}
           label="Mirror tracks vertically in vertically stacked view"
         />
       </DialogContent>
@@ -84,19 +92,27 @@ const BreakendOptionDialog = observer(function ({
                 feature,
                 view,
               )
-
-              viewSnapshot.views[0].offsetPx -= view.width / 2 + 100
-              viewSnapshot.views[1].offsetPx -= view.width / 2 + 100
-              viewSnapshot.featureData = feature
+              const [view1, view2] = viewSnapshot.views
               // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
               const viewTracks = getSnapshot(view.tracks) as Track[]
-              viewSnapshot.views[0].tracks = remapIds(viewTracks)
-              viewSnapshot.views[1].tracks = remapIds(
-                mirrorTracks ? [...viewTracks].reverse() : viewTracks,
-              )
-              console.log({ viewSnapshot })
 
-              session.addView('BreakpointSplitView', viewSnapshot)
+              session.addView('BreakpointSplitView', {
+                ...viewSnapshot,
+                views: [
+                  {
+                    ...view1,
+                    tracks: stripIds(viewTracks),
+                    offsetPx: view1.offsetPx - view.width / 2 + 100,
+                  },
+                  {
+                    ...view2,
+                    tracks: stripIds(
+                      mirror ? [...viewTracks].reverse() : viewTracks,
+                    ),
+                    offsetPx: view2.offsetPx - view.width / 2 + 100,
+                  },
+                ],
+              })
             } catch (e) {
               console.error(e)
               session.notify(`${e}`)

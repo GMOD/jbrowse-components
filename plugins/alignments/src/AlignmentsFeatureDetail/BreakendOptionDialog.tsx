@@ -93,6 +93,7 @@ const BreakendOptionDialog = observer(function ({
             try {
               const viewSnapshot = getBreakpointSplitView({ view, f1, f2 })
               const [view1, view2] = viewSnapshot.views
+              // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
               const viewTracks = getSnapshot(view.tracks) as Track[]
 
               session.addView('BreakpointSplitView', {
