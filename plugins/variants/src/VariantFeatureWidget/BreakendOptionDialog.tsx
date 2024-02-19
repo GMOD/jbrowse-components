@@ -94,6 +94,7 @@ const BreakendOptionDialog = observer(function ({
               viewSnapshot.views[1].tracks = remapIds(
                 mirrorTracks ? [...viewTracks].reverse() : viewTracks,
               )
+              console.log({ viewSnapshot })
 
               session.addView('BreakpointSplitView', viewSnapshot)
             } catch (e) {

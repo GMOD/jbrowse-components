@@ -25,14 +25,15 @@ const useStyles = makeStyles()({
 })
 
 interface Track {
-  trackId: string
+  id: string
+  displays: { id: string; [key: string]: unknown }[]
   [key: string]: unknown
 }
 
-function remapIds(arr: Track[]) {
-  return arr.map(v => ({
-    ...v,
-    id: `${v.trackId}-${Math.random()}`,
+function stripIds(arr: Track[]) {
+  return arr.map(({ id, displays, ...rest }) => ({
+    ...rest,
+    displays: displays.map(({ id, ...rest }) => rest),
   }))
 }
 
@@ -68,7 +69,7 @@ const BreakendOptionDialog = observer(function ({
   viewType: ViewType
 }) {
   const [copyTracks, setCopyTracks] = useState(true)
-  const [mirrorTracks, setMirrorTracks] = useState(true)
+  const [mirror, setMirror] = useState(true)
 
   return (
     <Dialog open onClose={handleClose} title="Breakpoint split view options">
@@ -79,8 +80,8 @@ const BreakendOptionDialog = observer(function ({
           label="Copy tracks into the new view"
         />
         <Checkbox2
-          checked={mirrorTracks}
-          onChange={event => setMirrorTracks(event.target.checked)}
+          checked={mirror}
+          onChange={event => setMirror(event.target.checked)}
           label="Mirror tracks vertically in vertically stacked view"
         />
       </DialogContent>
@@ -91,17 +92,26 @@ const BreakendOptionDialog = observer(function ({
             const session = getSession(model)
             try {
               const viewSnapshot = getBreakpointSplitView({ view, f1, f2 })
-              viewSnapshot.views[0].offsetPx -= view.width / 2 + 100
-              viewSnapshot.views[1].offsetPx -= view.width / 2 + 100
-              // viewSnapshot.featureData = feature
-              // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+              const [view1, view2] = viewSnapshot.views
               const viewTracks = getSnapshot(view.tracks) as Track[]
-              viewSnapshot.views[0].tracks = remapIds(viewTracks)
-              viewSnapshot.views[1].tracks = remapIds(
-                mirrorTracks ? [...viewTracks].reverse() : viewTracks,
-              )
 
-              session.addView('BreakpointSplitView', viewSnapshot)
+              session.addView('BreakpointSplitView', {
+                ...viewSnapshot,
+                views: [
+                  {
+                    ...view1,
+                    tracks: stripIds(viewTracks),
+                    offsetPx: view1.offsetPx - view.width / 2 + 100,
+                  },
+                  {
+                    ...view2,
+                    tracks: stripIds(
+                      mirror ? [...viewTracks].reverse() : viewTracks,
+                    ),
+                    offsetPx: view2.offsetPx - view.width / 2 + 100,
+                  },
+                ],
+              })
             } catch (e) {
               console.error(e)
               session.notify(`${e}`)

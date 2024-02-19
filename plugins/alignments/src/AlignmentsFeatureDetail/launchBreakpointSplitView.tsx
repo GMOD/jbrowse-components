@@ -50,7 +50,6 @@ export function getBreakpointSplitView({
         hideHeader: true,
         bpPerPx,
         offsetPx: (topRegion.start + s) / bpPerPx,
-        tracks: [] as { trackId: string }[],
       },
       {
         type: 'LinearGenomeView',
@@ -58,7 +57,6 @@ export function getBreakpointSplitView({
         hideHeader: true,
         bpPerPx,
         offsetPx: (bottomRegion.start + e) / bpPerPx,
-        tracks: [] as { trackId: string }[],
       },
     ],
     displayName: `breakend split detail`,
