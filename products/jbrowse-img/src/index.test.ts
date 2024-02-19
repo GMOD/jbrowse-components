@@ -16,6 +16,10 @@ function pa(s: string) {
   return path.join(__dirname, s)
 }
 
+function fp(f: string) {
+  return pa('../data/volvox/' + f)
+}
+
 xtest('renders a region with --session and --config args', async () => {
   const result = await renderRegion({
     session: pa('../test/clingen_session.json'),
@@ -36,7 +40,6 @@ xtest('renders a region with --session, --tracks, and --assembly args', async ()
 }, 40000)
 
 test('renders volvox with variety of args', async () => {
-  const fp = (f: string) => pa('../data/volvox/' + f)
   const result = await renderRegion({
     fasta: fp('volvox.fa'),
     trackList: [
@@ -51,6 +54,16 @@ test('renders volvox with variety of args', async () => {
     loc: 'ctgA:1000-2000',
   })
   fs.writeFileSync(pa('../test/svg_from_volvox_fasta_and_bam.svg'), result)
+  expect(result).toBeTruthy()
+}, 40000)
+
+test('renders volvox alignments as snpcov', async () => {
+  const result = await renderRegion({
+    fasta: fp('volvox.fa'),
+    trackList: [['bam', [fp('volvox-sorted.bam'), 'snpcov', 'height:1000']]],
+    loc: 'ctgA:1000-2000',
+  })
+  fs.writeFileSync(pa('../test/volvox-snpcov.svg'), result)
   expect(result).toBeTruthy()
 }, 40000)
 
@@ -90,7 +103,6 @@ xtest('renders volvox with remote urls', async () => {
 }, 20000)
 
 test('renders volvox with variety of args (noRasterize)', async () => {
-  const fp = (f: string) => pa('../data/volvox/' + f)
   const result = await renderRegion({
     fasta: fp('volvox.fa'),
     trackList: [
