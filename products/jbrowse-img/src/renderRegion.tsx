@@ -172,7 +172,8 @@ export function readData({
   }
 
   trackList.forEach(track => {
-    const [type, [file]] = track
+    const [type, opts] = track
+    const [file] = opts
 
     if (type === 'bam') {
       configData.tracks = [
@@ -188,6 +189,16 @@ export function readData({
             index: { location: makeLocation(file + '.bai') },
             sequenceAdapter: configData.assembly.sequence.adapter,
           },
+          ...(opts.includes('snpcov')
+            ? {
+                displays: [
+                  {
+                    type: 'LinearSNPCoverageDisplay',
+                    displayId: path.basename(file) + '-' + Math.random(),
+                  },
+                ],
+              }
+            : {}),
         },
       ]
     }
@@ -205,6 +216,16 @@ export function readData({
             craiLocation: makeLocation(file + '.crai'),
             sequenceAdapter: configData.assembly.sequence.adapter,
           },
+          ...(opts.includes('snpcov')
+            ? {
+                displays: [
+                  {
+                    type: 'LinearSNPCoverageDisplay',
+                    displayId: path.basename(file) + '-' + Math.random(),
+                  },
+                ],
+              }
+            : {}),
         },
       ]
     }
