@@ -8,12 +8,15 @@ import {
   FormControlLabel,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { getSnapshot } from 'mobx-state-tree'
+import { getSession } from '@jbrowse/core/util'
 import { Dialog } from '@jbrowse/core/ui'
-import { getSession, Feature } from '@jbrowse/core/util'
 import { ViewType } from '@jbrowse/core/pluggableElementTypes'
+
 // locals
-import { VariantFeatureWidgetModel } from './stateModelFactory'
+import { AlignmentFeatureWidgetModel } from './stateModelFactory'
+import { getBreakpointSplitView } from './launchBreakpointSplitView'
+import { getSnapshot } from 'mobx-state-tree'
+import { ReducedFeature } from './getSAFeatures'
 
 const useStyles = makeStyles()({
   block: {
@@ -56,12 +59,13 @@ function Checkbox2({
 const BreakendOptionDialog = observer(function ({
   model,
   handleClose,
-  feature,
-  viewType,
+  f1,
+  f2,
 }: {
-  model: VariantFeatureWidgetModel
+  model: AlignmentFeatureWidgetModel
   handleClose: () => void
-  feature: Feature
+  f1: ReducedFeature
+  f2: ReducedFeature
   viewType: ViewType
 }) {
   const [copyTracks, setCopyTracks] = useState(true)
@@ -87,11 +91,7 @@ const BreakendOptionDialog = observer(function ({
             const { view } = model
             const session = getSession(model)
             try {
-              // @ts-expect-error
-              const viewSnapshot = viewType.snapshotFromBreakendFeature(
-                feature,
-                view,
-              )
+              const viewSnapshot = getBreakpointSplitView({ view, f1, f2 })
               const [view1, view2] = viewSnapshot.views
               // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
               const viewTracks = getSnapshot(view.tracks) as Track[]

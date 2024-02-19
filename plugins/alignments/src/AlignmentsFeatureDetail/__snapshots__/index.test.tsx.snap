@@ -1,320 +1,322 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`open up a widget 1`] = `
-<div
-  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1ps6pg7-MuiPaper-root"
-  data-testid="alignment-side-drawer"
->
+<div>
   <div
-    class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded MuiAccordion-gutters css-1c35hjw-MuiPaper-root-MuiAccordion-root"
+    class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1ps6pg7-MuiPaper-root"
+    data-testid="alignment-side-drawer"
   >
     <div
-      aria-expanded="true"
-      class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded MuiAccordionSummary-gutters css-sh22l5-MuiButtonBase-root-MuiAccordionSummary-root"
-      role="button"
-      tabindex="0"
+      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded MuiAccordion-gutters css-1c35hjw-MuiPaper-root-MuiAccordion-root"
     >
       <div
-        class="MuiAccordionSummary-content Mui-expanded MuiAccordionSummary-contentGutters css-o4b71y-MuiAccordionSummary-content"
-      >
-        <span
-          class="MuiTypography-root MuiTypography-button css-1f0on15-MuiTypography-root"
-        >
-           
-          ctgA_3_555_0:0:0_2:0... - match
-        </span>
-      </div>
-      <div
-        class="MuiAccordionSummary-expandIconWrapper Mui-expanded css-yw020d-MuiAccordionSummary-expandIconWrapper"
-      >
-        <svg
-          aria-hidden="true"
-          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ymsoo8-MuiSvgIcon-root-expandIcon"
-          data-testid="ExpandMoreIcon"
-          focusable="false"
-          viewBox="0 0 24 24"
-        >
-          <path
-            d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z"
-          />
-        </svg>
-      </div>
-    </div>
-    <div
-      class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-entered css-pwcg7p-MuiCollapse-root"
-      style="min-height: 0px;"
-    >
-      <div
-        class="MuiCollapse-wrapper MuiCollapse-vertical css-smkl36-MuiCollapse-wrapper"
+        aria-expanded="true"
+        class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded MuiAccordionSummary-gutters css-sh22l5-MuiButtonBase-root-MuiAccordionSummary-root"
+        role="button"
+        tabindex="0"
       >
         <div
-          class="MuiCollapse-wrapperInner MuiCollapse-vertical css-9l5vo-MuiCollapse-wrapperInner"
+          class="MuiAccordionSummary-content Mui-expanded MuiAccordionSummary-contentGutters css-o4b71y-MuiAccordionSummary-content"
+        >
+          <span
+            class="MuiTypography-root MuiTypography-button css-1f0on15-MuiTypography-root"
+          >
+             
+            ctgA_3_555_0:0:0_2:0... - match
+          </span>
+        </div>
+        <div
+          class="MuiAccordionSummary-expandIconWrapper Mui-expanded css-yw020d-MuiAccordionSummary-expandIconWrapper"
+        >
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ymsoo8-MuiSvgIcon-root-expandIcon"
+            data-testid="ExpandMoreIcon"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z"
+            />
+          </svg>
+        </div>
+      </div>
+      <div
+        class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-entered css-pwcg7p-MuiCollapse-root"
+        style="min-height: 0px;"
+      >
+        <div
+          class="MuiCollapse-wrapper MuiCollapse-vertical css-smkl36-MuiCollapse-wrapper"
         >
           <div
-            class="MuiAccordion-region"
-            role="region"
+            class="MuiCollapse-wrapperInner MuiCollapse-vertical css-9l5vo-MuiCollapse-wrapperInner"
           >
             <div
-              class="MuiAccordionDetails-root css-rqrb7m-MuiAccordionDetails-root-expansionPanelDetails"
+              class="MuiAccordion-region"
+              role="region"
             >
-              <p
-                class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-              >
-                Core details
-              </p>
               <div
-                class="css-1m8nxnb-field"
+                class="MuiAccordionDetails-root css-rqrb7m-MuiAccordionDetails-root-expansionPanelDetails"
               >
-                <div
-                  class="css-1q83rf3-fieldName"
+                <p
+                  class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
                 >
-                  Position
-                </div>
+                  Core details
+                </p>
                 <div
-                  class="css-1omt041-fieldValue"
+                  class="css-1m8nxnb-field"
                 >
-                  ctgA:3..102 (+)
-                </div>
-              </div>
-              <div
-                class="css-1m8nxnb-field"
-              >
-                <div
-                  class="css-1q83rf3-fieldName"
-                >
-                  Name
-                </div>
-                <div
-                  class="css-1omt041-fieldValue"
-                >
-                  <span>
-                    ctgA_3_555_0:0:0_2:0:0_102d
-                  </span>
-                </div>
-              </div>
-              <div
-                class="css-1m8nxnb-field"
-              >
-                <div
-                  class="css-1q83rf3-fieldName"
-                >
-                  Length
-                </div>
-                <div
-                  class="css-1omt041-fieldValue"
-                >
-                  <span>
-                    100
-                  </span>
-                </div>
-              </div>
-              <div
-                class="css-1m8nxnb-field"
-              >
-                <div
-                  class="css-1q83rf3-fieldName"
-                >
-                  Type
-                </div>
-                <div
-                  class="css-1omt041-fieldValue"
-                >
-                  <span>
-                    match
-                  </span>
-                </div>
-              </div>
-              <hr
-                class="MuiDivider-root MuiDivider-fullWidth css-9mgopn-MuiDivider-root"
-              />
-              <p
-                class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-              >
-                Attributes
-              </p>
-              <div
-                class="css-1m8nxnb-field"
-              >
-                <div
-                  class="css-1q83rf3-fieldName"
-                  style="width: 96px;"
-                >
-                  seq
-                </div>
-                <div
-                  class="css-1omt041-fieldValue"
-                >
-                  <div>
-                    TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG
-                  </div>
-                </div>
-              </div>
-              <div
-                class="css-1m8nxnb-field"
-              >
-                <div
-                  class="css-1q83rf3-fieldName"
-                  style="width: 96px;"
-                >
-                  score
-                </div>
-                <div
-                  class="css-1omt041-fieldValue"
-                >
-                  <div>
-                    37
-                  </div>
-                </div>
-              </div>
-              <div
-                class="css-1m8nxnb-field"
-              >
-                <div
-                  class="css-1q83rf3-fieldName"
-                  style="width: 96px;"
-                >
-                  qual
-                </div>
-                <div
-                  class="css-1omt041-fieldValue"
-                >
-                  <button
-                    type="button"
+                  <div
+                    class="css-1q83rf3-fieldName"
                   >
-                    Copy
-                  </button>
-                  <button
-                    type="button"
+                    Position
+                  </div>
+                  <div
+                    class="css-1omt041-fieldValue"
                   >
-                    Show more
-                  </button>
-                  <div>
-                    17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 1...
+                    ctgA:3..102 (+)
                   </div>
                 </div>
-              </div>
-              <div
-                class="css-1m8nxnb-field"
-              >
                 <div
-                  aria-label="Mapping quality of the mate/next segment"
-                  class="css-18vnxxj-fieldDescription-fieldName"
-                  data-mui-internal-clone-element="true"
+                  class="css-1m8nxnb-field"
                 >
-                  MQ
-                </div>
-                <div
-                  class="css-1omt041-fieldValue"
-                >
-                  <div>
-                    37
+                  <div
+                    class="css-1q83rf3-fieldName"
+                  >
+                    Name
+                  </div>
+                  <div
+                    class="css-1omt041-fieldValue"
+                  >
+                    <span>
+                      ctgA_3_555_0:0:0_2:0:0_102d
+                    </span>
                   </div>
                 </div>
-              </div>
-              <div
-                class="css-1m8nxnb-field"
-              >
                 <div
-                  class="css-1q83rf3-fieldName"
-                  style="width: 96px;"
+                  class="css-1m8nxnb-field"
                 >
-                  CIGAR
-                </div>
-                <div
-                  class="css-1omt041-fieldValue"
-                >
-                  <div>
-                    100M
+                  <div
+                    class="css-1q83rf3-fieldName"
+                  >
+                    Length
+                  </div>
+                  <div
+                    class="css-1omt041-fieldValue"
+                  >
+                    <span>
+                      100
+                    </span>
                   </div>
                 </div>
-              </div>
-              <div
-                class="css-1m8nxnb-field"
-              >
                 <div
-                  class="css-1q83rf3-fieldName"
-                  style="width: 96px;"
+                  class="css-1m8nxnb-field"
                 >
-                  length_on_ref
-                </div>
-                <div
-                  class="css-1omt041-fieldValue"
-                >
-                  <div>
-                    100
+                  <div
+                    class="css-1q83rf3-fieldName"
+                  >
+                    Type
+                  </div>
+                  <div
+                    class="css-1omt041-fieldValue"
+                  >
+                    <span>
+                      match
+                    </span>
                   </div>
                 </div>
-              </div>
-              <div
-                class="css-1m8nxnb-field"
-              >
-                <div
-                  class="css-1q83rf3-fieldName"
-                  style="width: 96px;"
+                <hr
+                  class="MuiDivider-root MuiDivider-fullWidth css-9mgopn-MuiDivider-root"
+                />
+                <p
+                  class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
                 >
-                  template_length
-                </div>
+                  Attributes
+                </p>
                 <div
-                  class="css-1omt041-fieldValue"
+                  class="css-1m8nxnb-field"
                 >
-                  <div>
-                    0
+                  <div
+                    class="css-1q83rf3-fieldName"
+                    style="width: 96px;"
+                  >
+                    seq
+                  </div>
+                  <div
+                    class="css-1omt041-fieldValue"
+                  >
+                    <div>
+                      TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div
-                class="css-1m8nxnb-field"
-              >
                 <div
-                  class="css-1q83rf3-fieldName"
-                  style="width: 96px;"
+                  class="css-1m8nxnb-field"
                 >
-                  seq_length
-                </div>
-                <div
-                  class="css-1omt041-fieldValue"
-                >
-                  <div>
-                    100
+                  <div
+                    class="css-1q83rf3-fieldName"
+                    style="width: 96px;"
+                  >
+                    score
+                  </div>
+                  <div
+                    class="css-1omt041-fieldValue"
+                  >
+                    <div>
+                      37
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div
-                class="css-1lttu3w-container"
-              >
-                <button
-                  class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium css-sghohy-MuiButtonBase-root-MuiButton-root"
-                  tabindex="0"
-                  type="button"
-                >
-                  Show feature sequence
-                  <span
-                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                  />
-                </button>
                 <div
-                  class="MuiFormControl-root css-147opmv-MuiFormControl-root-formControl"
+                  class="css-1m8nxnb-field"
+                >
+                  <div
+                    class="css-1q83rf3-fieldName"
+                    style="width: 96px;"
+                  >
+                    qual
+                  </div>
+                  <div
+                    class="css-1omt041-fieldValue"
+                  >
+                    <button
+                      type="button"
+                    >
+                      Copy
+                    </button>
+                    <button
+                      type="button"
+                    >
+                      Show more
+                    </button>
+                    <div>
+                      17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 1...
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="css-1m8nxnb-field"
+                >
+                  <div
+                    aria-label="Mapping quality of the mate/next segment"
+                    class="css-18vnxxj-fieldDescription-fieldName"
+                    data-mui-internal-clone-element="true"
+                  >
+                    MQ
+                  </div>
+                  <div
+                    class="css-1omt041-fieldValue"
+                  >
+                    <div>
+                      37
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="css-1m8nxnb-field"
+                >
+                  <div
+                    class="css-1q83rf3-fieldName"
+                    style="width: 96px;"
+                  >
+                    CIGAR
+                  </div>
+                  <div
+                    class="css-1omt041-fieldValue"
+                  >
+                    <div>
+                      100M
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="css-1m8nxnb-field"
+                >
+                  <div
+                    class="css-1q83rf3-fieldName"
+                    style="width: 96px;"
+                  >
+                    length_on_ref
+                  </div>
+                  <div
+                    class="css-1omt041-fieldValue"
+                  >
+                    <div>
+                      100
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="css-1m8nxnb-field"
+                >
+                  <div
+                    class="css-1q83rf3-fieldName"
+                    style="width: 96px;"
+                  >
+                    template_length
+                  </div>
+                  <div
+                    class="css-1omt041-fieldValue"
+                  >
+                    <div>
+                      0
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="css-1m8nxnb-field"
+                >
+                  <div
+                    class="css-1q83rf3-fieldName"
+                    style="width: 96px;"
+                  >
+                    seq_length
+                  </div>
+                  <div
+                    class="css-1omt041-fieldValue"
+                  >
+                    <div>
+                      100
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="css-1lttu3w-container"
                 >
                   <button
-                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium css-sghohy-MuiButtonBase-root-MuiButton-root"
                     tabindex="0"
                     type="button"
                   >
-                    <svg
-                      aria-hidden="true"
-                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                      data-testid="HelpIcon"
-                      focusable="false"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m1 17h-2v-2h2zm2.07-7.75-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25"
-                      />
-                    </svg>
+                    Show feature sequence
                     <span
                       class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                     />
                   </button>
+                  <div
+                    class="MuiFormControl-root css-147opmv-MuiFormControl-root-formControl"
+                  >
+                    <button
+                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                      tabindex="0"
+                      type="button"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                        data-testid="HelpIcon"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m1 17h-2v-2h2zm2.07-7.75-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25"
+                        />
+                      </svg>
+                      <span
+                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                      />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

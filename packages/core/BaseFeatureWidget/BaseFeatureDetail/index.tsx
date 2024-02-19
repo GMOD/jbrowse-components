@@ -20,15 +20,16 @@ import {
   getEnv,
   getSession,
   assembleLocString,
+  toLocale,
   ParsedLocString,
+  SimpleFeatureSerialized,
 } from '../../util'
 import { ErrorMessage } from '../../ui'
 import SequenceFeatureDetails from '../SequenceFeatureDetails'
 import { BaseCardProps, BaseProps } from '../types'
-import { SimpleFeatureSerialized } from '../../util'
 import SimpleField from './SimpleField'
 import Attributes from './Attributes'
-import { generateTitle, isEmpty, toLocale } from './util'
+import { generateTitle, isEmpty } from './util'
 
 // coreDetails are omitted in some circumstances
 const coreDetails = [
