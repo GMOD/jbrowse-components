@@ -1,9 +1,10 @@
 import React, { lazy, useEffect, useState } from 'react'
-import { Typography, Link } from '@mui/material'
+import { Typography, Link, Tooltip } from '@mui/material'
 import {
   SimpleFeature,
   SimpleFeatureSerialized,
   getSession,
+  toLocale,
 } from '@jbrowse/core/util'
 import { makeStyles } from 'tss-react/mui'
 import { ErrorMessage } from '@jbrowse/core/ui'
@@ -70,20 +71,24 @@ export default function LaunchBreakpointSplitViewPanel({
               const [f1, f2] = arg
               return (
                 <li key={`${JSON.stringify(arg)}-${index}`}>
-                  <Link
-                    href="#"
-                    className={classes.cursor}
-                    onClick={event => {
-                      event.preventDefault()
-                      session.queueDialog(handleClose => [
-                        BreakendOptionDialog,
-                        { handleClose, f1, f2, model, viewType },
-                      ])
-                    }}
-                  >
-                    Top panel: {f1.refName}:{f1.start}-{f1.end} -&gt; Bottom
-                    panel {f2.refName}:{f2.start}-{f2.end}
-                  </Link>
+                  <Tooltip title="Top panel->Bottom panel">
+                    <Link
+                      href="#"
+                      className={classes.cursor}
+                      onClick={event => {
+                        event.preventDefault()
+                        session.queueDialog(handleClose => [
+                          BreakendOptionDialog,
+                          { handleClose, f1, f2, model, viewType },
+                        ])
+                      }}
+                    >
+                      {f1.refName}:
+                      {toLocale(f1.strand === 1 ? f1.end : f1.start)} -&gt;{' '}
+                      {f2.refName}:
+                      {toLocale(f2.strand === 1 ? f2.start : f2.end)}
+                    </Link>
+                  </Tooltip>
                 </li>
               )
             })}

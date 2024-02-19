@@ -1,6 +1,6 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { Feature } from '@jbrowse/core/util'
+import { Feature, toLocale } from '@jbrowse/core/util'
 import { Tooltip } from '@jbrowse/plugin-wiggle'
 
 type Count = Record<
@@ -27,12 +27,14 @@ interface SNPInfo {
   '1': number
 }
 
-const en = (n: number) => n.toLocaleString('en-US')
 const toP = (s = 0) => +(+s).toFixed(1)
+
 const pct = (n: number, total: number) => `${toP((n / (total || 1)) * 100)}%`
+
 interface Props {
   feature: Feature
 }
+
 const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
   function TooltipContents2({ feature }, reactRef) {
     const start = feature.get('start')
@@ -48,7 +50,10 @@ const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
       '0': r0,
       ...info
     } = feature.get('snpinfo') as SNPInfo
-    const loc = [name, start === end ? en(start) : `${en(start)}..${en(end)}`]
+    const loc = [
+      name,
+      start === end ? toLocale(start) : `${toLocale(start)}..${toLocale(end)}`,
+    ]
       .filter(f => !!f)
       .join(':')
 

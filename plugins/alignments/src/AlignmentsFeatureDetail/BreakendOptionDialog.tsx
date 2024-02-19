@@ -16,6 +16,7 @@ import { ViewType } from '@jbrowse/core/pluggableElementTypes'
 import { AlignmentFeatureWidgetModel } from './stateModelFactory'
 import { getBreakpointSplitView } from './launchBreakpointSplitView'
 import { getSnapshot } from 'mobx-state-tree'
+import { ReducedFeature } from './getSAFeatures'
 
 const useStyles = makeStyles()({
   block: {
@@ -62,8 +63,8 @@ const BreakendOptionDialog = observer(function ({
 }: {
   model: AlignmentFeatureWidgetModel
   handleClose: () => void
-  f1: { start: number; end: number; refName: string }
-  f2: { start: number; end: number; refName: string }
+  f1: ReducedFeature
+  f2: ReducedFeature
   viewType: ViewType
 }) {
   const [copyTracks, setCopyTracks] = useState(true)
