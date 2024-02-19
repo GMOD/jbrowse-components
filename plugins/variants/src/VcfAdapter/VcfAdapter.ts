@@ -64,7 +64,7 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
 
     const str = new TextDecoder().decode(buffer)
     const { header, lines } = readVcf(str)
-    const intervalTree = {} as Record<string, IntervalTree>
+    const intervalTree = {} as Record<string, IntervalTree<VcfFeature>>
 
     const parser = new VCF({ header })
     let idx = 0
@@ -72,11 +72,11 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
       const f = new VcfFeature({
         variant: parser.parseLine(line),
         parser,
-        id: `${this.id}-vcf-${idx++}`,
+        id: `${this.id}-${idx++}`,
       })
       const key = f.get('refName')
       if (!intervalTree[key]) {
-        intervalTree[key] = new IntervalTree()
+        intervalTree[key] = new IntervalTree<VcfFeature>()
       }
       intervalTree[key].insert([f.get('start'), f.get('end')], f)
     }
