@@ -3259,7 +3259,7 @@
     wordwrap "^1.0.0"
     wrap-ansi "^7.0.0"
 
-"@oclif/core@^3.18.2", "@oclif/core@^3.19.1", "@oclif/core@^3.19.2":
+"@oclif/core@^3.18.2", "@oclif/core@^3.19.2":
   version "3.19.2"
   resolved "https://registry.yarnpkg.com/@oclif/core/-/core-3.19.2.tgz#1672061e7309f0048f9f9991607b303a9e5082fc"
   integrity sha512-/kUZZQZO92esToSTn+fnfMQdAj8uDJ/lsMNXBRBCiLQpwnIskHXy8JzYpynxxkzY2wbGREBceQhxCyDV0XpY4g==
@@ -14548,13 +14548,13 @@ obuf@^1.0.0, obuf@^1.1.2:
   integrity sha512-PX1wu0AmAdPqOL1mWhqmlOd8kOIZQwGZw6rh7uby9fTc5lhaOWFLX3I6R1hrF9k3zUY40e6igsLGkDXK92LJNg==
 
 oclif@^4.0.0:
-  version "4.4.15"
-  resolved "https://registry.yarnpkg.com/oclif/-/oclif-4.4.15.tgz#497debe9acb9cacd8c0c59a5beb1cfc7ef7ef987"
-  integrity sha512-L2X3I+iTWpuMTzr1McDf2k8YwS57P+C9Yeqvo2jzXZ/sotkhoNW0RwDO4nZFqHvyn6I9Dj4Q8OVGVa85c6M0EQ==
+  version "4.4.16"
+  resolved "https://registry.yarnpkg.com/oclif/-/oclif-4.4.16.tgz#30384a03e20b7294a048a5f36ed7a755e988c0fd"
+  integrity sha512-4qNgN8ZhLZV2k92HXBiIvFGDM2HKgXrB8auVe9EpNQPlZr/PXeW7CTYpkEm3VYrmtohe2p3ma5jIR/Nyuu/v6g==
   dependencies:
     "@aws-sdk/client-cloudfront" "^3.511.0"
     "@aws-sdk/client-s3" "^3.515.0"
-    "@oclif/core" "^3.19.1"
+    "@oclif/core" "^3.19.2"
     "@oclif/plugin-help" "^6.0.12"
     "@oclif/plugin-not-found" "^3.0.10"
     "@oclif/plugin-warn-if-update-available" "^3.0.10"

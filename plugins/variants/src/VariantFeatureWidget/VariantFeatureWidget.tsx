@@ -9,6 +9,7 @@ import VariantSampleGrid from './VariantSampleGrid'
 import BreakendPanel from './BreakendPanel'
 import VariantAnnotationTable from './VariantAnnotationTable'
 import { SimpleFeatureSerialized } from '@jbrowse/core/util'
+import { VariantFeatureWidgetModel } from './stateModelFactory'
 
 const basicDescriptions = {
   CHROM: 'chromosome: An identifier from the reference genome',
@@ -62,10 +63,7 @@ function CsqPanel({
 }
 
 const VariantFeatureWidget = observer(function (props: {
-  model: {
-    featureData: SimpleFeatureSerialized
-    descriptions: Record<string, string>
-  }
+  model: VariantFeatureWidgetModel
 }) {
   const { model } = props
   const { featureData, descriptions } = model

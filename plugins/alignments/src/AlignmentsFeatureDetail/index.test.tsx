@@ -5,7 +5,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 // locals
-import { stateModelFactory } from '.'
+import { stateModelFactory } from './stateModelFactory'
 import ReactComponent from './AlignmentsFeatureDetail'
 
 test('open up a widget', () => {

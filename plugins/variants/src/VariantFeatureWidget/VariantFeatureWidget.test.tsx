@@ -5,7 +5,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 // locals
-import { stateModelFactory } from '.'
+import { stateModelFactory } from './stateModelFactory'
 import VariantFeatureDetails from './VariantFeatureWidget'
 
 test('renders with just the required model elements', () => {
