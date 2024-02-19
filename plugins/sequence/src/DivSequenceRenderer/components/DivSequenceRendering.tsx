@@ -284,7 +284,12 @@ function Wrapper({
       data-testid="sequence_track"
       width={width}
       height={totalHeight}
-      style={{ width, height: totalHeight, userSelect: 'none' }}
+      style={{
+        width,
+        height: totalHeight,
+        userSelect: 'none',
+        display: 'block',
+      }}
     >
       {children}
     </svg>

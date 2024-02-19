@@ -4,6 +4,7 @@ exports[`click on one feature, and do not re-render 1`] = `
 <svg
   data-testid="svgfeatures"
   height="145"
+  style="display: block;"
   width="333.3333333333333"
 >
   <g>
@@ -46,6 +47,7 @@ exports[`no features 1`] = `
 <svg
   data-testid="svgfeatures"
   height="120"
+  style="display: block;"
   width="100"
 />
 `;
@@ -54,6 +56,7 @@ exports[`one feature (compact mode) 1`] = `
 <svg
   data-testid="svgfeatures"
   height="122"
+  style="display: block;"
   width="333.3333333333333"
 >
   <g>
@@ -219,6 +222,7 @@ exports[`one feature 1`] = `
 <svg
   data-testid="svgfeatures"
   height="115"
+  style="display: block;"
   width="333.3333333333333"
 >
   <g>
@@ -239,6 +243,7 @@ exports[`processed transcript (exons + impliedUTR) 1`] = `
 <svg
   data-testid="svgfeatures"
   height="139"
+  style="display: block;"
   width="333.3333333333333"
 >
   <g>
@@ -430,6 +435,7 @@ exports[`processed transcript (reducedRepresentation mode) 1`] = `
 <svg
   data-testid="svgfeatures"
   height="115"
+  style="display: block;"
   width="333.3333333333333"
 >
   <g>
@@ -450,6 +456,7 @@ exports[`processed transcript 1`] = `
 <svg
   data-testid="svgfeatures"
   height="127"
+  style="display: block;"
   width="333.3333333333333"
 >
   <g>
