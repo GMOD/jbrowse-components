@@ -158,7 +158,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
           sqLine.data.forEach(item => {
             if (item.tag === 'SN') {
               // this is the ref name
-              const refName = item.value
+              const refName = item.value!
               nameToId[refName] = refId
               idToName[refId] = refName
             }
