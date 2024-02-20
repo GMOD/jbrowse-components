@@ -532,6 +532,7 @@ exports[`renders one track, one region 1`] = `
                   <svg
                     data-testid="svgfeatures"
                     height="100"
+                    style="display: block;"
                     width="100"
                   />
                 </div>
@@ -1350,6 +1351,7 @@ exports[`renders two tracks, two regions 1`] = `
                   <svg
                     data-testid="svgfeatures"
                     height="100"
+                    style="display: block;"
                     width="100"
                   />
                 </div>
@@ -1364,6 +1366,7 @@ exports[`renders two tracks, two regions 1`] = `
                   <svg
                     data-testid="svgfeatures"
                     height="100"
+                    style="display: block;"
                     width="800"
                   />
                 </div>
@@ -1481,6 +1484,7 @@ exports[`renders two tracks, two regions 1`] = `
                   <svg
                     data-testid="svgfeatures"
                     height="100"
+                    style="display: block;"
                     width="100"
                   />
                 </div>
@@ -1495,6 +1499,7 @@ exports[`renders two tracks, two regions 1`] = `
                   <svg
                     data-testid="svgfeatures"
                     height="100"
+                    style="display: block;"
                     width="800"
                   />
                 </div>

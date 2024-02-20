@@ -1022,8 +1022,8 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         >
                           <svg
                             data-testid="sequence_track"
-                            height="200"
-                            style="width: 800px; height: 200px; user-select: none;"
+                            height="160"
+                            style="width: 800px; height: 160px; user-select: none; display: block;"
                             width="800"
                           >
                             <rect
@@ -3864,8 +3864,8 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         >
                           <svg
                             data-testid="sequence_track"
-                            height="200"
-                            style="width: 800px; height: 200px; user-select: none;"
+                            height="160"
+                            style="width: 800px; height: 160px; user-select: none; display: block;"
                             width="800"
                           >
                             <rect
