@@ -104,15 +104,6 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       get rendererTypeName() {
         return self.configuration.renderer.type
       },
-      get sequenceHeight() {
-        const { showTranslation, showReverse, showForward } = self
-        const r1 = showReverse && showTranslation ? self.rowHeight * 3 : 0
-        const r2 = showForward && showTranslation ? self.rowHeight * 3 : 0
-        const t = r1 + r2
-        const r = showReverse ? self.rowHeight : 0
-        const s = showForward ? self.rowHeight : 0
-        return t + r + s
-      },
     }))
     .actions(self => ({
       /**
