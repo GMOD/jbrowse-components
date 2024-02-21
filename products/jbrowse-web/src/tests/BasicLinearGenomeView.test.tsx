@@ -6,7 +6,7 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-const delay = { timeout: 10000 }
+const delay = { timeout: 1000 }
 const opts = [{}, delay]
 
 test('access about menu', async () => {
