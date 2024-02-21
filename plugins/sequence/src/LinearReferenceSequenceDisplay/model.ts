@@ -45,7 +45,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        rowHeight: 20,
+        rowHeight: 13,
       }),
     )
     .views(self => ({
