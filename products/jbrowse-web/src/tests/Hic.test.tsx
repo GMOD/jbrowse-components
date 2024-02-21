@@ -16,7 +16,7 @@ beforeEach(() => {
 
 setup()
 
-const delay = { timeout: 20000 }
+const delay = { timeout: 10000 }
 
 test('hic', async () => {
   const { view, findByTestId } = await createView(hicConfig)
