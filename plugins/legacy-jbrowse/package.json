@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@gmod/nclist": "^0.2.1",
-    "buffer-crc32": "^0.2.13",
+    "buffer-crc32": "^1.0.0",
     "generic-filehandle": "^3.0.0",
     "get-value": "^3.0.1",
     "set-value": "^4.0.1"
