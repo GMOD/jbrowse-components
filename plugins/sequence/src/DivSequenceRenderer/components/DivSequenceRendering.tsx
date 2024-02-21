@@ -102,7 +102,6 @@ function Translation(props: {
                 y={y + height / 2}
                 dominantBaseline="middle"
                 textAnchor="middle"
-                fontSize={height - 2}
               >
                 {letter}
               </text>
@@ -331,7 +330,7 @@ const DivSequenceRendering = observer(function (props: {
   const width = (region.end - region.start) / bpPerPx
 
   return (
-    <Wrapper {...props} totalHeight={totalHeight} width={width}>
+    <Wrapper {...props} totalHeight={sequenceHeight} width={width}>
       <SequenceSVG {...props} />
     </Wrapper>
   )
