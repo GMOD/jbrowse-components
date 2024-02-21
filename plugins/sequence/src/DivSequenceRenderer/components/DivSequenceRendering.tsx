@@ -98,10 +98,10 @@ function Translation(props: {
             {renderLetter ? (
               <text
                 x={x + codonWidth / 2}
+                fontSize={height - 2}
                 y={y + height / 2}
                 dominantBaseline="middle"
                 textAnchor="middle"
-                style={{ userSelect: 'none' }}
               >
                 {letter}
               </text>
@@ -157,10 +157,10 @@ function DNA(props: {
                 y={y + height / 2}
                 dominantBaseline="middle"
                 textAnchor="middle"
+                fontSize={height - 2}
                 fill={
                   color ? theme.palette.getContrastText(color.main) : 'black'
                 }
-                style={{ userSelect: 'none' }}
               >
                 {letter}
               </text>
@@ -329,7 +329,7 @@ const DivSequenceRendering = observer(function (props: {
   const width = (region.end - region.start) / bpPerPx
 
   return (
-    <Wrapper {...props} totalHeight={totalHeight} width={width}>
+    <Wrapper {...props} totalHeight={sequenceHeight} width={width}>
       <SequenceSVG {...props} />
     </Wrapper>
   )
