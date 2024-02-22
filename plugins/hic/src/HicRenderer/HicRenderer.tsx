@@ -11,7 +11,8 @@ import { toArray } from 'rxjs/operators'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import { colord } from '@jbrowse/core/util/colord'
 
 interface HicFeature {
   bin1: number
@@ -61,7 +62,9 @@ export default class HicRenderer extends ServerSideRendererType {
       resolution,
       sessionId,
       adapterConfig,
+      regions,
     } = props
+    const [region] = regions
     const { dataAdapter } = await getAdapter(
       this.pluginManager,
       sessionId,
@@ -71,26 +74,31 @@ export default class HicRenderer extends ServerSideRendererType {
       bpPerPx / resolution,
     )
 
-    const Color = await import('color').then(f => f.default)
     const w = res / (bpPerPx * Math.sqrt(2))
-    const baseColor = Color(readConfObject(config, 'baseColor'))
+    const baseColor = colord(readConfObject(config, 'baseColor'))
     if (features.length) {
       const offset = features[0].bin1
       let maxScore = 0
       let minBin = 0
       let maxBin = 0
       await abortBreakPoint(signal)
-      for (let i = 0; i < features.length; i++) {
-        const { bin1, bin2, counts } = features[i]
+      for (const { bin1, bin2, counts } of features) {
         maxScore = Math.max(counts, maxScore)
         minBin = Math.min(Math.min(bin1, bin2), minBin)
         maxBin = Math.max(Math.max(bin1, bin2), maxBin)
       }
       await abortBreakPoint(signal)
+      function horizontallyFlip() {
+        ctx.scale(-1, 1)
+        const width = (region.end - region.start) / bpPerPx
+        ctx.translate(-width, 0)
+      }
+      if (region.reversed === true) {
+        horizontallyFlip()
+      }
       ctx.rotate(-Math.PI / 4)
       let start = Date.now()
-      for (let i = 0; i < features.length; i++) {
-        const { bin1, bin2, counts } = features[i]
+      for (const { bin1, bin2, counts } of features) {
         ctx.fillStyle = readConfObject(config, 'color', {
           count: counts,
           maxScore,

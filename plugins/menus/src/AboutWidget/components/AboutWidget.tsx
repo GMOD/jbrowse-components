@@ -20,7 +20,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function About({ model }: { model: IAnyStateTreeNode }) {
+const AboutWidget = observer(function ({
+  model,
+}: {
+  model: IAnyStateTreeNode
+}) {
   const { classes } = useStyles()
   const { version } = getSession(model)
   const { pluginManager } = getEnv(model)
@@ -31,33 +35,6 @@ function About({ model }: { model: IAnyStateTreeNode }) {
       .map(p => p.name),
   )
 
-  const corePluginsRender = plugins
-    .filter(plugin => {
-      return corePlugins.has(plugin.name)
-    })
-    .map(plugin => (
-      <li key={plugin.name}>
-        {plugin.name} {plugin.version || ''}
-      </li>
-    ))
-
-  const externalPluginsRender = plugins
-    .filter(plugin => !corePlugins.has(plugin.name))
-    .map(plugin => {
-      const text = `${plugin.name} ${plugin.version || ''}`
-      return (
-        <li key={plugin.name}>
-          {plugin.url ? (
-            <Link target="_blank" rel="noopener noreferrer" href={plugin.url}>
-              {text}
-            </Link>
-          ) : (
-            text
-          )}
-        </li>
-      )
-    })
-
   return (
     <div className={classes.root}>
       <Typography variant="h4" align="center">
@@ -66,7 +43,7 @@ function About({ model }: { model: IAnyStateTreeNode }) {
       <Typography variant="h6" align="center" className={classes.subtitle}>
         {version}
       </Typography>
-      <Typography align="center" variant="body2">
+      <Typography align="center">
         JBrowse is a{' '}
         <Link href="http://gmod.org/" target="_blank" rel="noopener noreferrer">
           GMOD
@@ -78,21 +55,41 @@ function About({ model }: { model: IAnyStateTreeNode }) {
         © 2019-2022 The Evolutionary Software Foundation
       </Typography>
       <div className={classes.pluginList}>
-        {!externalPluginsRender.length ? null : (
-          <>
-            <Typography variant="h6">External plugins loaded</Typography>
-            <ul>{externalPluginsRender}</ul>
-          </>
-        )}
-        {!corePluginsRender.length ? null : (
-          <>
-            <Typography variant="h6">Core plugins loaded</Typography>
-            <ul>{corePluginsRender}</ul>
-          </>
-        )}
+        <Typography>External plugins loaded</Typography>
+        <ul>
+          {plugins
+            .filter(plugin => !corePlugins.has(plugin.name))
+            .map(plugin => {
+              const { url, name, version = '' } = plugin
+              const text = `${name} ${version || ''}`
+              return (
+                <li key={plugin.name}>
+                  {plugin.url ? (
+                    <Link target="_blank" rel="noopener noreferrer" href={url}>
+                      {text}
+                    </Link>
+                  ) : (
+                    <Typography>{text}</Typography>
+                  )}
+                </li>
+              )
+            })}
+        </ul>
+        <Typography>Core plugins loaded</Typography>
+        <ul>
+          {plugins
+            .filter(plugin => corePlugins.has(plugin.name))
+            .map(plugin => (
+              <li key={plugin.name}>
+                <Typography>
+                  {plugin.name} {plugin.version || ''}
+                </Typography>
+              </li>
+            ))}
+        </ul>
       </div>
     </div>
   )
-}
+})
 
-export default observer(About)
+export default AboutWidget

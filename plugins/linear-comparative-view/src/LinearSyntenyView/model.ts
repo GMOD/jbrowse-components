@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { lazy } from 'react'
 import { types, Instance } from 'mobx-state-tree'
 import { transaction } from 'mobx'
 import { getSession } from '@jbrowse/core/util'
@@ -14,15 +14,15 @@ import { Curves } from './components/Icons'
 
 // locals
 import baseModel from '../LinearComparativeView/model'
-import ExportSvgDlg from './components/ExportSvgDialog'
-import { renderToSvg } from './svgcomponents/SVGLinearSyntenyView'
+
+// lazies
+const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))
 
 export interface ExportSvgOptions {
   rasterizeLayers?: boolean
   scale?: number
   filename?: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Wrapper?: React.FC<any>
+  Wrapper?: React.FC<{ children: React.ReactNode }>
   fontSize?: number
   rulerHeight?: number
   textHeight?: number
@@ -35,13 +35,15 @@ export interface ExportSvgOptions {
 
 /**
  * #stateModel LinearSyntenyView
- * extends the `LinearComparativeView` base model
+ * extends
+ * - [LinearComparativeView](../linearcomparativeview)
  */
 export default function stateModelFactory(pluginManager: PluginManager) {
   return types
     .compose(
+      'LinearSyntenyView',
       baseModel(pluginManager),
-      types.model('LinearSyntenyView', {
+      types.model({
         /**
          * #property
          */
@@ -79,9 +81,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
       async exportSvg(opts: ExportSvgOptions) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const html = await renderToSvg(self as any, opts)
+        const { renderToSvg } = await import(
+          './svgcomponents/SVGLinearSyntenyView'
+        )
+        const html = await renderToSvg(self as LinearSyntenyViewModel, opts)
         const blob = new Blob([html], { type: 'image/svg+xml' })
         saveAs(blob, opts.filename || 'image.svg')
       },
@@ -135,15 +142,18 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             {
               label: 'Export SVG',
               icon: PhotoCameraIcon,
-              onClick: () => {
+              onClick: (): void => {
                 getSession(self).queueDialog(handleClose => [
-                  ExportSvgDlg,
+                  ExportSvgDialog,
                   { model: self, handleClose },
                 ])
               },
             },
           ]
         },
+        /**
+         * #method
+         */
         menuItems() {
           return [
             ...superMenuItems(),
@@ -152,7 +162,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               icon: PhotoCameraIcon,
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
-                  ExportSvgDlg,
+                  ExportSvgDialog,
                   { model: self, handleClose },
                 ])
               },

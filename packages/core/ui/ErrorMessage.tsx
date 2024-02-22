@@ -1,8 +1,13 @@
-import React from 'react'
+import React, { Suspense, lazy, useState } from 'react'
+import { Button } from '@mui/material'
+import RedErrorMessageBox from './RedErrorMessageBox'
 
-const ErrorMessage = ({ error }: { error: unknown }) => {
+const ErrorMessageStackTraceDialog = lazy(
+  () => import('./ErrorMessageStackTraceDialog'),
+)
+
+function parseError(str: string) {
   let snapshotError = ''
-  let str = `${error}`
   const findStr = 'is not assignable'
   const idx = str.indexOf(findStr)
   if (idx !== -1) {
@@ -26,18 +31,26 @@ const ErrorMessage = ({ error }: { error: unknown }) => {
       snapshotError = match2[1]
     }
   }
+  return snapshotError
+}
+
+const ErrorMessage = ({ error }: { error: unknown }) => {
+  const str = `${error}`
+  const snapshotError = parseError(str)
+  const [showStack, setShowStack] = useState(false)
   return (
-    <div
-      style={{
-        padding: 4,
-        margin: 4,
-        overflow: 'auto',
-        maxHeight: 200,
-        background: '#f88',
-        border: '1px solid black',
-      }}
-    >
+    <RedErrorMessageBox>
       {str.slice(0, 10000)}
+
+      {typeof error === 'object' && error && 'stack' in error ? (
+        <Button
+          style={{ float: 'right' }}
+          variant="contained"
+          onClick={() => setShowStack(!showStack)}
+        >
+          {showStack ? 'Hide stack trace' : 'Show stack trace'}
+        </Button>
+      ) : null}
       {snapshotError ? (
         <pre
           style={{
@@ -49,7 +62,15 @@ const ErrorMessage = ({ error }: { error: unknown }) => {
           {JSON.stringify(JSON.parse(snapshotError), null, 2)}
         </pre>
       ) : null}
-    </div>
+      {showStack ? (
+        <Suspense fallback={null}>
+          <ErrorMessageStackTraceDialog
+            error={error as Error}
+            onClose={() => setShowStack(false)}
+          />
+        </Suspense>
+      ) : null}
+    </RedErrorMessageBox>
   )
 }
 

@@ -1,60 +1,22 @@
 import React from 'react'
-import { renderToStaticMarkup } from 'react-dom/server'
 import { when } from 'mobx'
-import {
-  AbstractSessionModel,
-  getSession,
-  max,
-  measureText,
-  sum,
-} from '@jbrowse/core/util'
+import { getSession, renderToStaticMarkup, sum } from '@jbrowse/core/util'
 import { ThemeProvider } from '@mui/material'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-
-// locals
+import { getRoot } from 'mobx-state-tree'
 import {
   SVGTracks,
   SVGRuler,
   totalHeight,
-  LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
 import SVGBackground from './SVGBackground'
 import { ExportSvgOptions, BreakpointViewModel } from '../model'
-import { getTrackName } from '@jbrowse/core/util/tracks'
 import Overlay from '../components/Overlay'
+import { getTrackNameMaxLen, getTrackOffsets } from './util'
 
 type BSV = BreakpointViewModel
-
-function getTrackNameMaxLen(
-  views: LinearGenomeViewModel[],
-  fontSize: number,
-  session: AbstractSessionModel,
-) {
-  return max(
-    views.flatMap(view =>
-      view.tracks.map(t =>
-        measureText(getTrackName(t.configuration, session), fontSize),
-      ),
-    ),
-    0,
-  )
-}
-function getTrackOffsets(
-  view: LinearGenomeViewModel,
-  textOffset: number,
-  extra = 0,
-) {
-  const offsets = {} as { [key: string]: number }
-  let curr = textOffset
-  for (let i = 0; i < view.tracks.length; i++) {
-    const track = view.tracks[i]
-    offsets[track.configuration.trackId] = curr + extra
-    curr += track.displays[0].height + textOffset
-  }
-  return offsets
-}
 
 // render LGV to SVG
 export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
@@ -64,10 +26,11 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
     rulerHeight = 30,
     fontSize = 13,
     trackLabels = 'offset',
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    Wrapper = ({ children }: any) => <>{children}</>,
+    Wrapper = ({ children }) => <>{children}</>,
     themeName = 'default',
   } = opts
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { createRootFn } = getRoot<any>(model)
   const session = getSession(model)
   const theme = session.allThemes?.()[themeName]
   const { width, views } = model
@@ -90,7 +53,7 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
               return { track, result: await d.renderSvg({ ...opts, theme }) }
             }),
           ),
-        } as const),
+        }) as const,
     ),
   )
 
@@ -175,5 +138,6 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
         </svg>
       </Wrapper>
     </ThemeProvider>,
+    createRootFn,
   )
 }

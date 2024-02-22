@@ -82,12 +82,12 @@ type PluggableElementTypeGroup =
 
 /** internal class that holds the info for a certain element type */
 class TypeRecord<ElementClass extends PluggableElementBase> {
-  registeredTypes: { [name: string]: ElementClass } = {}
+  registeredTypes: Record<string, ElementClass> = {}
 
   constructor(
     public typeName: string,
-    public baseClass: // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    | { new (...args: any[]): ElementClass }
+    public baseClass:
+      | (new (...args: unknown[]) => ElementClass)
       // covers abstract class case
       | (Function & {
           prototype: ElementClass
@@ -139,8 +139,7 @@ export interface RuntimePluginLoadRecord extends PluginLoadRecord {
 export default class PluginManager {
   plugins: Plugin[] = []
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  jexl: any = createJexlInstance()
+  jexl = createJexlInstance()
 
   pluginMetadata: Record<string, PluginMetadata> = {}
 
@@ -192,7 +191,7 @@ export default class PluginManager {
 
   rootModel?: AbstractRootModel
 
-  extensionPoints: Map<string, Function[]> = new Map()
+  extensionPoints = new Map<string, Function[]>()
 
   constructor(initialPlugins: (Plugin | PluginLoadRecord)[] = []) {
     // add the core plugin
@@ -205,7 +204,7 @@ export default class PluginManager {
   }
 
   pluginConfigurationSchemas() {
-    const configurationSchemas: { [key: string]: unknown } = {}
+    const configurationSchemas: Record<string, unknown> = {}
     this.plugins.forEach(plugin => {
       if (plugin.configurationSchema) {
         configurationSchemas[plugin.name] = plugin.configurationSchema
@@ -232,7 +231,7 @@ export default class PluginManager {
 
     this.pluginMetadata[plugin.name] = metadata
     if ('definition' in load) {
-      this.runtimePluginDefinitions.push(load.definition as PluginDefinition)
+      this.runtimePluginDefinitions.push(load.definition)
     }
     plugin.install(this)
     this.plugins.push(plugin)

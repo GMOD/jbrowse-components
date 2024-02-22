@@ -4,8 +4,17 @@ import {
 } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
+import {
+  FormatAboutConfigSchemaFactory,
+  FormatDetailsConfigSchemaFactory,
+  HierarchicalConfigSchemaFactory,
+} from '@jbrowse/product-core'
 import { getParent, IAnyType, types } from 'mobx-state-tree'
 
+/**
+ * #config JBrowseReactLinearGenomeViewConfig
+ * #category root
+ */
 export default function createConfigModel(
   pluginManager: PluginManager,
   assemblyConfigSchemasType: IAnyType,
@@ -13,70 +22,82 @@ export default function createConfigModel(
   return types
     .model('Configuration', {
       configuration: ConfigurationSchema('Root', {
+        /**
+         * #slot configuration.rpc
+         */
         rpc: RpcManager.configSchema,
+        /**
+         * #slot configuration.highResolutionScaling
+         */
         highResolutionScaling: {
           type: 'number',
           defaultValue: 2,
         },
-        featureDetails: ConfigurationSchema('FeatureDetails', {
-          sequenceTypes: {
-            type: 'stringArray',
-            defaultValue: ['mRNA', 'transcript'],
-          },
-        }),
-        formatDetails: ConfigurationSchema('FormatDetails', {
-          feature: {
-            type: 'frozen',
-            description: 'adds extra fields to the feature details',
-            defaultValue: {},
-            contextVariable: ['feature'],
-          },
-          subfeatures: {
-            type: 'frozen',
-            description: 'adds extra fields to the subfeatures of a feature',
-            defaultValue: {},
-            contextVariable: ['feature'],
-          },
-          depth: {
-            type: 'number',
-            defaultValue: 2,
-            description: 'depth to iterate on subfeatures',
-          },
-        }),
-        formatAbout: ConfigurationSchema('FormatAbout', {
-          config: {
-            type: 'frozen',
-            description: 'formats configuration object in about dialog',
-            defaultValue: {},
-            contextVariable: ['config'],
-          },
-          hideUris: {
-            type: 'boolean',
-            defaultValue: false,
-          },
-        }),
+        hierarchical: HierarchicalConfigSchemaFactory(),
+        formatDetails: FormatDetailsConfigSchemaFactory(),
+        formatAbout: FormatAboutConfigSchemaFactory(),
+        /**
+         * #slot configuration.theme
+         */
         theme: { type: 'frozen', defaultValue: {} },
       }),
+      /**
+       * #slot
+       */
       assembly: assemblyConfigSchemasType,
+      /**
+       * #slot
+       */
       tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
+      /**
+       * #slot
+       */
       internetAccounts: types.array(
         pluginManager.pluggableConfigSchemaType('internet account'),
       ),
+      /**
+       * #slot
+       */
       connections: types.array(
         pluginManager.pluggableConfigSchemaType('connection'),
       ),
+      /**
+       * #slot
+       */
       aggregateTextSearchAdapters: types.array(
         pluginManager.pluggableConfigSchemaType('text search adapter'),
       ),
+      /**
+       * #slot
+       * defines plugins of the format
+       * ```typescript
+       * type PluginDefinition=
+       *    { umdUrl: string, name:string } |
+       *    { url: string, name: string } |
+       *    { esmUrl: string } |
+       *    { cjsUrl: string } |
+       *    { umdLoc: { uri: string } } |
+       *    { esmLoc: { uri: string } } |
+       * ```
+       */
       plugins: types.frozen(),
     })
     .views(self => ({
+      /**
+       * #getter
+       */
       get assemblies() {
         return [self.assembly]
       },
+      /**
+       * #getter
+       */
       get assemblyName(): string {
         return readConfObject(self.assembly, 'name')
       },
+      /**
+       * #getter
+       */
       get rpcManager() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getParent<any>(self).rpcManager

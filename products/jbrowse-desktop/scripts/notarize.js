@@ -10,6 +10,8 @@ exports.default = async function notarizing(context) {
   const appName = context.packager.appInfo.productFilename
 
   return notarize({
+    tool: 'notarytool',
+    teamId: '9KR53J86Q2',
     appBundleId: 'org.jbrowse2.app',
     appPath: `${appOutDir}/${appName}.app`,
     appleId: process.env.APPLEID,

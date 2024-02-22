@@ -12,6 +12,7 @@ import fs from 'fs'
 // local
 import { Entry } from './parseArgv'
 import { booleanize } from './util'
+import { createRoot } from 'react-dom/client'
 
 export interface Opts {
   noRasterize?: boolean
@@ -24,7 +25,7 @@ export interface Opts {
   aliases?: string
   cytobands?: string
   defaultSession?: string
-  trackList: Entry[]
+  trackList?: Entry[]
   tracks?: string
 }
 
@@ -171,7 +172,8 @@ export function readData({
   }
 
   trackList.forEach(track => {
-    const [type, [file]] = track
+    const [type, opts] = track
+    const [file] = opts
 
     if (type === 'bam') {
       configData.tracks = [
@@ -187,6 +189,16 @@ export function readData({
             index: { location: makeLocation(file + '.bai') },
             sequenceAdapter: configData.assembly.sequence.adapter,
           },
+          ...(opts.includes('snpcov')
+            ? {
+                displays: [
+                  {
+                    type: 'LinearSNPCoverageDisplay',
+                    displayId: path.basename(file) + '-' + Math.random(),
+                  },
+                ],
+              }
+            : {}),
         },
       ]
     }
@@ -204,6 +216,16 @@ export function readData({
             craiLocation: makeLocation(file + '.crai'),
             sequenceAdapter: configData.assembly.sequence.adapter,
           },
+          ...(opts.includes('snpcov')
+            ? {
+                displays: [
+                  {
+                    type: 'LinearSNPCoverageDisplay',
+                    displayId: path.basename(file) + '-' + Math.random(),
+                  },
+                ],
+              }
+            : {}),
         },
       ]
     }
@@ -367,7 +389,7 @@ function process(
     else if (opt.startsWith('force:')) {
       const [, force] = opt.split(':')
       if (force) {
-        display.updateStatsLimit({ bytes: Number.MAX_VALUE })
+        display.setFeatureDensityStatsLimit({ bytes: Number.MAX_VALUE })
       }
     }
 
@@ -416,7 +438,10 @@ function process(
 }
 
 export async function renderRegion(opts: Opts) {
-  const model = createViewState(readData(opts))
+  const model = createViewState({
+    ...readData(opts),
+    createRootFn: createRoot,
+  })
   const {
     loc,
     width = 1500,

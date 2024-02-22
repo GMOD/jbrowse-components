@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import isObject from 'is-object'
 import PluginManager from '../PluginManager'
 import {
@@ -12,6 +12,7 @@ import {
   hasParent,
   IAnyStateTreeNode,
   IStateTreeNode,
+  Instance,
 } from 'mobx-state-tree'
 import { reaction, IReactionPublic, IReactionOptions } from 'mobx'
 import { Feature } from './simpleFeature'
@@ -24,11 +25,16 @@ import {
   Region,
   TypeTestedByPredicate,
 } from './types'
+import { Region as MUIRegion } from './types/mst'
 import { isAbortException, checkAbortSignal } from './aborting'
 import { BaseBlock } from './blockTypes'
 import { isUriLocation } from './types'
-import useMeasure from '@jbrowse/core/util/useMeasure'
 
+// has to be the full path and not the relative path to get the jest mock
+import useMeasure from '@jbrowse/core/util/useMeasure'
+import { colord } from './colord'
+// eslint-disable-next-line react/no-deprecated
+import { flushSync, render } from 'react-dom'
 export * from './types'
 export * from './aborting'
 export * from './when'
@@ -37,12 +43,6 @@ export * from './dedupe'
 
 export * from './offscreenCanvasPonyfill'
 export * from './offscreenCanvasUtils'
-
-export const inDevelopment =
-  typeof process === 'object' &&
-  process.env &&
-  process.env.NODE_ENV === 'development'
-export const inProduction = !inDevelopment
 
 export function useDebounce<T>(value: T, delay: number) {
   const [debouncedValue, setDebouncedValue] = useState(value)
@@ -93,7 +93,8 @@ export function useDebouncedCallback<T>(
     }
   }
 
-  // make sure our timeout gets cleared if our consuming component gets unmounted
+  // make sure our timeout gets cleared if our consuming component gets
+  // unmounted
   useEffect(() => cleanup, [])
 
   return function debouncedCallback(...args: T[]) {
@@ -112,7 +113,9 @@ export function useDebouncedCallback<T>(
   }
 }
 
-/** find the first node in the hierarchy that matches the given predicate */
+/**
+ * find the first node in the hierarchy that matches the given predicate
+ */
 export function findParentThat(
   node: IAnyStateTreeNode,
   predicate: (thing: IAnyStateTreeNode) => boolean,
@@ -200,15 +203,21 @@ export function springAnimate(
   ]
 }
 
-// find the first node in the hierarchy that matches the given 'is' typescript type guard predicate
+/**
+ * find the first node in the hierarchy that matches the given 'is' typescript
+ * type guard predicate
+ */
 export function findParentThatIs<T extends (a: IAnyStateTreeNode) => boolean>(
   node: IAnyStateTreeNode,
   predicate: T,
-): TypeTestedByPredicate<T> & IAnyStateTreeNode {
+): TypeTestedByPredicate<T> {
   return findParentThat(node, predicate)
 }
 
-/** get the current JBrowse session model, starting at any node in the state tree */
+/**
+ * get the current JBrowse session model, starting at any node in the state
+ * tree
+ */
 export function getSession(node: IAnyStateTreeNode) {
   try {
     return findParentThatIs(node, isSessionModel)
@@ -217,7 +226,10 @@ export function getSession(node: IAnyStateTreeNode) {
   }
 }
 
-/** get the state model of the view in the state tree that contains the given node */
+/**
+ * get the state model of the view in the state tree that contains the given
+ * node
+ */
 export function getContainingView(node: IAnyStateTreeNode) {
   try {
     return findParentThatIs(node, isViewModel)
@@ -226,7 +238,10 @@ export function getContainingView(node: IAnyStateTreeNode) {
   }
 }
 
-/** get the state model of the view in the state tree that contains the given node */
+/**
+ * get the state model of the view in the state tree that contains the given
+ * node
+ */
 export function getContainingTrack(node: IAnyStateTreeNode) {
   try {
     return findParentThatIs(node, isTrackModel)
@@ -235,6 +250,10 @@ export function getContainingTrack(node: IAnyStateTreeNode) {
   }
 }
 
+/**
+ * get the state model of the display in the state tree that contains the given
+ * node
+ */
 export function getContainingDisplay(node: IAnyStateTreeNode) {
   try {
     return findParentThatIs(node, isDisplayModel)
@@ -370,8 +389,8 @@ export function parseLocStringOneBased(
           return {
             assemblyName,
             refName: prefix,
-            start: +start.replace(/,/g, ''),
-            end: +end.replace(/,/g, ''),
+            start: +start.replaceAll(',', ''),
+            end: +end.replaceAll(',', ''),
             reversed,
           }
         }
@@ -383,15 +402,15 @@ export function parseLocStringOneBased(
             return {
               assemblyName,
               refName: prefix,
-              start: +start.replace(/,/g, ''),
+              start: +start.replaceAll(',', ''),
               reversed,
             }
           }
           return {
             assemblyName,
             refName: prefix,
-            start: +start.replace(/,/g, ''),
-            end: +start.replace(/,/g, ''),
+            start: +start.replaceAll(',', ''),
+            end: +start.replaceAll(',', ''),
             reversed,
           }
         }
@@ -598,18 +617,21 @@ export function iterMap<T, U>(
   return results
 }
 
-// https://stackoverflow.com/a/53187807
 /**
  * Returns the index of the last element in the array where predicate is true,
  * and -1 otherwise.
+ * Based on https://stackoverflow.com/a/53187807
+ *
  * @param array - The source array to search in
+ *
  * @param predicate - find calls predicate once for each element of the array, in
- * descending order, until it finds one where predicate returns true. If such an
- * element is found, findLastIndex immediately returns that element index.
+ * descending order, until it finds one where predicate returns true.
+ *
+ * @returns findLastIndex returns element index where predicate is true.
  * Otherwise, findLastIndex returns -1.
  */
 export function findLastIndex<T>(
-  array: Array<T>,
+  array: T[],
   predicate: (value: T, index: number, obj: T[]) => boolean,
 ): number {
   let l = array.length
@@ -619,6 +641,19 @@ export function findLastIndex<T>(
     }
   }
   return -1
+}
+
+export function findLast<T>(
+  array: T[],
+  predicate: (value: T, index: number, obj: T[]) => boolean,
+): T | undefined {
+  let l = array.length
+  while (l--) {
+    if (predicate(array[l], l, array)) {
+      return array[l]
+    }
+  }
+  return undefined
 }
 
 /**
@@ -719,7 +754,7 @@ export function makeAbortableReaction<T, U, V>(
 
 export function renameRegionIfNeeded(
   refNameMap: Record<string, string>,
-  region: Region,
+  region: Region | Instance<typeof MUIRegion>,
 ): Region & { originalRefName?: string } {
   if (isStateTreeNode(region) && !isAlive(region)) {
     return region
@@ -728,8 +763,7 @@ export function renameRegionIfNeeded(
   if (region && refNameMap?.[region.refName]) {
     // clone the region so we don't modify it
     region = isStateTreeNode(region)
-      ? // @ts-expect-error
-        { ...getSnapshot(region) }
+      ? { ...getSnapshot(region) }
       : { ...region }
 
     // modify it directly in the container
@@ -746,7 +780,7 @@ export async function renameRegionsIfNeeded<
     assemblyName?: string
     regions?: Region[]
     signal?: AbortSignal
-    adapterConfig: unknown
+    adapterConfig: Record<string, unknown>
     sessionId: string
     statusCallback?: (arg: string) => void
   },
@@ -791,18 +825,26 @@ export function shorten(name: string, max = 70, short = 30) {
     : name
 }
 
-export function stringify({
-  refName,
-  coord,
-  oob,
-}: {
-  coord: number
-  refName?: string
-  oob?: boolean
-}) {
-  return refName
-    ? `${shorten(refName)}:${toLocale(coord)}${oob ? ' (out of bounds)' : ''}`
-    : ''
+export function stringify(
+  {
+    refName,
+    coord,
+    assemblyName,
+    oob,
+  }: {
+    assemblyName?: string
+    coord: number
+    refName?: string
+    oob?: boolean
+  },
+  useAssemblyName?: boolean,
+) {
+  return [
+    assemblyName && useAssemblyName ? `{${assemblyName}}` : '',
+    refName
+      ? `${shorten(refName)}:${toLocale(coord)}${oob ? ' (out of bounds)' : ''}`
+      : '',
+  ].join('')
 }
 
 // this is recommended in a later comment in
@@ -862,26 +904,12 @@ export const complement = (() => {
     b: 'v',
     R: 'Y',
     G: 'C',
-  } as { [key: string]: string }
+  } as Record<string, string>
 
   return (seqString: string) => {
-    return seqString.replace(complementRegex, m => complementTable[m] || '')
+    return seqString.replaceAll(complementRegex, m => complementTable[m] || '')
   }
 })()
-
-export function blobToDataURL(blob: Blob): Promise<string> {
-  const a = new FileReader()
-  return new Promise((resolve, reject) => {
-    a.onload = e => {
-      if (e.target) {
-        resolve(e.target.result as string)
-      } else {
-        reject(new Error('unknown result reading blob from canvas'))
-      }
-    }
-    a.readAsDataURL(blob)
-  })
-}
 
 // requires immediate execution in jest environment, because (hypothesis) it
 // otherwise listens for prerendered_canvas but reads empty pixels, and doesn't
@@ -982,7 +1010,7 @@ export const defaultCodonTable = {
  * permutations of upper and lower case nucleotides
  */
 export function generateCodonTable(table: any) {
-  const tempCodonTable: { [key: string]: string } = {}
+  const tempCodonTable: Record<string, string> = {}
   Object.keys(table).forEach(codon => {
     const aa = table[codon]
     const nucs: string[][] = []
@@ -1067,7 +1095,7 @@ export async function bytesForRegions(
     .reduce((a, b) => a + b.end - b.start, 0)
 }
 
-export type ViewSnap = {
+export interface ViewSnap {
   bpPerPx: number
   interRegionPaddingWidth: number
   minimumBlockWidth: number
@@ -1085,7 +1113,7 @@ export type ViewSnap = {
 
 // supported adapter types by text indexer
 //  ensure that this matches the method found in @jbrowse/text-indexing/util
-export function supportedIndexingAdapters(type: string) {
+export function isSupportedIndexingAdapter(type: string) {
   return [
     'Gff3TabixAdapter',
     'VcfTabixAdapter',
@@ -1117,6 +1145,7 @@ export function getTickDisplayStr(totalBp: number, bpPerPx: number) {
 }
 
 export function getViewParams(model: IAnyStateTreeNode, exportSVG?: boolean) {
+  // @ts-expect-error
   const { dynamicBlocks, staticBlocks, offsetPx } = getContainingView(model)
   const b = dynamicBlocks?.contentBlocks[0] || {}
   const staticblock = staticBlocks?.contentBlocks[0] || {}
@@ -1188,8 +1217,15 @@ export function getStr(obj: unknown) {
 }
 
 // tries to measure grid width without HTML tags included
-function coarseStripHTML(s: string) {
-  return s.replace(/(<([^>]+)>)/gi, '')
+export function coarseStripHTML(s: string) {
+  return s.replaceAll(/(<([^>]+)>)/gi, '')
+}
+
+// based on autolink-js, license MIT
+export function linkify(s: string) {
+  const pattern =
+    /(^|[\s\n]|<[A-Za-z]*\/?>)((?:https?|ftp):\/\/[\-A-Z0-9+\u0026\u2019@#\/%?=()~_|!:,.;]*[\-A-Z0-9+\u0026@#\/%=~()_|])/gi
+  return s.replaceAll(pattern, '$1<a href=\'$2\' target="_blank">$2</a>')
 }
 
 // heuristic measurement for a column of a @mui/x-data-grid, pass in values from a column
@@ -1237,24 +1273,24 @@ export function localStorageSetItem(str: string, item: string) {
 
 export function max(arr: number[], init = -Infinity) {
   let max = init
-  for (let i = 0; i < arr.length; i++) {
-    max = arr[i] > max ? arr[i] : max
+  for (const entry of arr) {
+    max = entry > max ? entry : max
   }
   return max
 }
 
 export function min(arr: number[], init = Infinity) {
   let min = init
-  for (let i = 0; i < arr.length; i++) {
-    min = arr[i] < min ? arr[i] : min
+  for (const entry of arr) {
+    min = entry < min ? entry : min
   }
   return min
 }
 
 export function sum(arr: number[]) {
   let sum = 0
-  for (let i = 0; i < arr.length; i++) {
-    sum += arr[i]
+  for (const entry of arr) {
+    sum += entry
   }
   return sum
 }
@@ -1263,9 +1299,111 @@ export function avg(arr: number[]) {
   return sum(arr) / arr.length
 }
 
+export function groupBy<T>(array: Iterable<T>, predicate: (v: T) => string) {
+  const result = {} as Record<string, T[] | undefined>
+  for (const value of array) {
+    const entry = (result[predicate(value)] ||= [])
+    entry.push(value)
+  }
+  return result
+}
+
+export function notEmpty<T>(value: T | null | undefined): value is T {
+  return value !== null && value !== undefined
+}
+
+export function mergeIntervals<T extends { start: number; end: number }>(
+  intervals: T[],
+  w = 5000,
+) {
+  // test if there are at least 2 intervals
+  if (intervals.length <= 1) {
+    return intervals
+  }
+
+  const stack = []
+  let top = null
+
+  // sort the intervals based on their start values
+  intervals = intervals.sort((a, b) => a.start - b.start)
+
+  // push the 1st interval into the stack
+  stack.push(intervals[0])
+
+  // start from the next interval and merge if needed
+  for (let i = 1; i < intervals.length; i++) {
+    // get the top element
+
+    top = stack.at(-1)!
+
+    // if the current interval doesn't overlap with the
+    // stack top element, push it to the stack
+    if (top.end + w < intervals[i].start - w) {
+      stack.push(intervals[i])
+    }
+    // otherwise update the end value of the top element
+    // if end of current interval is higher
+    else if (top.end < intervals[i].end) {
+      top.end = Math.max(top.end, intervals[i].end)
+      stack.pop()
+      stack.push(top)
+    }
+  }
+
+  return stack
+}
+
+interface BasicFeature {
+  end: number
+  start: number
+  refName: string
+}
+
+// hashmap of refName->array of features
+type FeaturesPerRef = Record<string, BasicFeature[]>
+
+export function gatherOverlaps(regions: BasicFeature[]) {
+  const memo = {} as FeaturesPerRef
+  for (const x of regions) {
+    if (!memo[x.refName]) {
+      memo[x.refName] = []
+    }
+    memo[x.refName].push(x)
+  }
+
+  return Object.values(memo).flatMap(group =>
+    mergeIntervals(group.sort((a, b) => a.start - b.start)),
+  )
+}
+
+export function stripAlpha(str: string) {
+  const c = colord(str)
+  return c.alpha(1).toHex()
+}
+
+// https://react.dev/reference/react-dom/server/renderToString#removing-rendertostring-from-the-client-code
+export function renderToStaticMarkup(
+  node: React.ReactElement,
+  createRootFn?: (elt: Element | DocumentFragment) => {
+    render: (node: React.ReactElement) => unknown
+  },
+) {
+  const div = document.createElement('div')
+  flushSync(() => {
+    if (createRootFn) {
+      createRootFn(div).render(node)
+    } else {
+      render(node, div)
+    }
+  })
+  return div.innerHTML
+}
+
 export {
   default as SimpleFeature,
   type Feature,
   type SimpleFeatureSerialized,
   isFeature,
 } from './simpleFeature'
+
+export { blobToDataURL } from './blobToDataURL'

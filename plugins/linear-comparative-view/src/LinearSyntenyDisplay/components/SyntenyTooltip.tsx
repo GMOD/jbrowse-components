@@ -1,8 +1,12 @@
-import React, { useMemo, useState } from 'react'
+import React from 'react'
 import { observer } from 'mobx-react'
-import { Portal, alpha } from '@mui/material'
+import { Portal, useTheme, alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { usePopper } from 'react-popper'
+import {
+  useClientPoint,
+  useFloating,
+  useInteractions,
+} from '@floating-ui/react'
 import { SanitizedHTML } from '@jbrowse/core/ui'
 
 function round(value: number) {
@@ -27,51 +31,30 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const SyntenyTooltip = observer(function ({
-  x,
-  y,
-  title,
-}: {
-  x: number
-  y: number
-  title: string
-}) {
-  const [width, setWidth] = useState(0)
-  const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null)
+const SyntenyTooltip = observer(function ({ title }: { title: string }) {
+  const theme = useTheme()
   const { classes } = useStyles()
 
-  // must be memoized a la https://github.com/popperjs/react-popper/issues/391
-  const virtElement = useMemo(
-    () => ({
-      getBoundingClientRect: () => {
-        return {
-          top: y,
-          left: x + width / 2,
-          bottom: y,
-          right: x,
-          width: 0,
-          height: 0,
-          x,
-          y,
-          toJSON() {},
-        }
-      },
-    }),
-    [x, y, width],
-  )
-  const { styles, attributes } = usePopper(virtElement, anchorEl)
+  const { refs, floatingStyles, context } = useFloating({
+    placement: 'right',
+  })
+
+  const clientPoint = useClientPoint(context)
+  const { getFloatingProps } = useInteractions([clientPoint])
+
+  const popperTheme = theme?.components?.MuiPopper
 
   return title ? (
-    <Portal>
+    <Portal container={popperTheme?.defaultProps?.container}>
       <div
-        ref={ref => {
-          setWidth(ref?.getBoundingClientRect().width || 0)
-          setAnchorEl(ref)
-        }}
         className={classes.tooltip}
-        // zIndex needed to go over widget drawer
-        style={{ ...styles.popper, zIndex: 100000 }}
-        {...attributes.popper}
+        ref={refs.setFloating}
+        style={{
+          ...floatingStyles,
+          zIndex: 100000,
+          pointerEvents: 'none',
+        }}
+        {...getFloatingProps()}
       >
         <SanitizedHTML html={title} />
       </div>

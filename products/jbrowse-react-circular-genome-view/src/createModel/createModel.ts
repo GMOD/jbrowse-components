@@ -1,3 +1,4 @@
+import React from 'react'
 import assemblyManagerFactory, {
   assemblyConfigSchemaFactory,
 } from '@jbrowse/core/assemblyManager'
@@ -10,8 +11,25 @@ import { cast, getSnapshot, Instance, SnapshotIn, types } from 'mobx-state-tree'
 import corePlugins from '../corePlugins'
 import createConfigModel from './createConfigModel'
 import createSessionModel from './createSessionModel'
+import { version } from '../version'
 
-export default function createModel(runtimePlugins: PluginConstructor[]) {
+/**
+ * #stateModel JBrowseReactCircularGenomeViewRootModel
+ */
+export default function createModel(
+  runtimePlugins: PluginConstructor[],
+  makeWorkerInstance: () => Worker = () => {
+    throw new Error('no makeWorkerInstance supplied')
+  },
+  hydrateFn?: (
+    container: Element | Document,
+    initialChildren: React.ReactNode,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ) => any,
+  createRootFn?: (elt: Element | DocumentFragment) => {
+    render: (node: React.ReactElement) => unknown
+  },
+) {
   const pluginManager = new PluginManager(
     [...corePlugins, ...runtimePlugins].map(P => new P()),
   )
@@ -24,20 +42,40 @@ export default function createModel(runtimePlugins: PluginConstructor[]) {
   )
   const rootModel = types
     .model('ReactCircularGenomeView', {
+      /**
+       * #property
+       */
       config: createConfigModel(pluginManager, assemblyConfigSchema),
+      /**
+       * #property
+       */
       session: Session,
-      assemblyManager: assemblyManagerType,
+      /**
+       * #property
+       */
+      assemblyManager: types.optional(assemblyManagerType, {}),
+      /**
+       * #property
+       */
       internetAccounts: types.array(
         pluginManager.pluggableMstType('internet account', 'stateModel'),
       ),
     })
     .volatile(() => ({
-      error: undefined as Error | undefined,
+      error: undefined as unknown,
+      adminMode: false,
+      version,
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
       setSession(sessionSnapshot: SnapshotIn<typeof Session>) {
         self.session = cast(sessionSnapshot)
       },
+      /**
+       * #action
+       */
       renameCurrentSession(sessionName: string) {
         if (self.session) {
           const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
@@ -45,14 +83,23 @@ export default function createModel(runtimePlugins: PluginConstructor[]) {
           this.setSession(snapshot)
         }
       },
-      setError(errorMessage: Error | undefined) {
-        self.error = errorMessage
+      /**
+       * #action
+       */
+      setError(error: unknown) {
+        self.error = error
       },
+      /**
+       * #action
+       */
       addInternetAccount(
         internetAccount: SnapshotIn<(typeof self.internetAccounts)[0]>,
       ) {
         self.internetAccounts.push(internetAccount)
       },
+      /**
+       * #action
+       */
       findAppropriateInternetAccount(location: UriLocation) {
         // find the existing account selected from menu
         const selectedId = location.internetAccountId
@@ -78,17 +125,28 @@ export default function createModel(runtimePlugins: PluginConstructor[]) {
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
       get jbrowse() {
         return self.config
       },
+      /**
+       * #getter
+       */
       get pluginManager() {
         return pluginManager
       },
     }))
     .volatile(self => ({
       rpcManager: new RpcManager(pluginManager, self.config.configuration.rpc, {
+        WebWorkerRpcDriver: {
+          makeWorkerInstance,
+        },
         MainThreadRpcDriver: {},
       }),
+      hydrateFn,
+      createRootFn,
       textSearchManager: new TextSearchManager(pluginManager),
     }))
   return { model: rootModel, pluginManager }

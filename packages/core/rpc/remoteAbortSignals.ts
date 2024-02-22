@@ -1,8 +1,10 @@
 /* ---------------- for the RPC client ----------------- */
 
 let abortSignalCounter = 0
-export type RemoteAbortSignal = { abortSignalId: number }
-const abortSignalIds: WeakMap<AbortSignal, number> = new WeakMap() // map of abortsignal => numerical ID
+export interface RemoteAbortSignal {
+  abortSignalId: number
+}
+const abortSignalIds = new WeakMap<AbortSignal, number>() // map of abortsignal => numerical ID
 
 /**
  * assign an ID to the given abort signal and return a plain object
@@ -51,7 +53,7 @@ export function isRemoteAbortSignal(
 
 // the server side keeps a set of surrogate abort controllers that can be
 // aborted based on ID
-const surrogateAbortControllers: Map<number, AbortController> = new Map() // numerical ID => surrogate abort controller
+const surrogateAbortControllers = new Map<number, AbortController>() // numerical ID => surrogate abort controller
 
 /**
  * deserialize the result of serializeAbortSignal into an AbortSignal

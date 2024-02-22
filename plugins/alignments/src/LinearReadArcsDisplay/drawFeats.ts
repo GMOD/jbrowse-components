@@ -1,24 +1,16 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 
 // locals
 import {
-  getOrientationColor,
-  getInsertSizeColor,
-  getInsertSizeAndOrientationColor,
+  getPairedOrientationColor,
+  getPairedInsertSizeColor,
+  getPairedInsertSizeAndOrientationColor,
 } from '../shared/color'
-import { ChainData } from '../shared/fetchChains'
 import { featurizeSA } from '../MismatchParser'
-import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
-
-export function hasPairedReads(features: ChainData) {
-  for (const f of features.chains.values()) {
-    if (f[0].flags & 1) {
-      return true
-    }
-  }
-  return false
-}
+import { LinearReadArcsDisplayModel } from './model'
+import { hasPairedReads } from '../shared/util'
 
 type LGV = LinearGenomeViewModel
 
@@ -33,23 +25,28 @@ interface CoreFeat {
   end: number
 }
 
-export default async function drawFeats(
-  self: {
-    setLastDrawnOffsetPx: (n: number) => void
-    drawInter?: boolean
-    drawLongRange?: boolean
-    setError: (e: unknown) => void
-    colorBy?: { type: string }
-    height: number
-    chainData?: ChainData
-    lineWidthSetting: number
-    jitterVal: number
-  },
+function drawLineAtOffset(
   ctx: CanvasRenderingContext2D,
+  offset: number,
+  height: number,
+  color: string,
+) {
+  // draws a vertical line off to middle of nowhere if the second end not found
+  ctx.strokeStyle = color
+  ctx.beginPath()
+  ctx.moveTo(offset, 0)
+  ctx.lineTo(offset, height)
+  ctx.stroke()
+}
+
+export function drawFeats(
+  self: LinearReadArcsDisplayModel,
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
 ) {
   const {
     chainData,
-    height,
     colorBy,
     drawInter,
     drawLongRange,
@@ -61,25 +58,14 @@ export default async function drawFeats(
   }
   const view = getContainingView(self) as LGV
   const { assemblyManager } = getSession(self)
-  self.setLastDrawnOffsetPx(view.offsetPx)
-  ctx.lineWidth = lineWidthSetting
   const { chains, stats } = chainData
   const hasPaired = hasPairedReads(chainData)
-  const assemblyName = view.assemblyNames[0]
-  const asm = assemblyManager.get(assemblyName)
+  const asm = assemblyManager.get(view.assemblyNames[0])
   const type = colorBy?.type || 'insertSizeAndOrientation'
   if (!asm) {
     return
   }
-
-  function drawLineAtOffset(p: number, c: string) {
-    // draws a vertical line off to middle of nowhere if the second end not found
-    ctx.strokeStyle = c
-    ctx.beginPath()
-    ctx.moveTo(p, 0)
-    ctx.lineTo(p, height)
-    ctx.stroke()
-  }
+  ctx.lineWidth = lineWidthSetting
 
   function draw(
     k1: CoreFeat & { tlen?: number; pair_orientation?: string },
@@ -94,21 +80,22 @@ export default async function drawFeats(
 
     const p1 = f1 ? k1.start : k1.end
     const p2 = hasPaired ? (f2 ? k2.start : k2.end) : f2 ? k2.end : k2.start
-    const ra1 = assembly.getCanonicalRefName(k1.refName)
-    const ra2 = assembly.getCanonicalRefName(k2.refName)
-    const r1 = view.bpToPx({ refName: ra1, coord: p1 })
-    const r2 = view.bpToPx({ refName: ra2, coord: p2 })
+    const ra1 = assembly.getCanonicalRefName(k1.refName) || k1.refName
+    const ra2 = assembly.getCanonicalRefName(k2.refName) || k2.refName
+    const r1 = view.bpToPx({ refName: ra1, coord: p1 })?.offsetPx
+    const r2 = view.bpToPx({ refName: ra2, coord: p2 })?.offsetPx
 
-    if (r1 && r2) {
-      const radius = (r2.offsetPx - r1.offsetPx) / 2
+    if (r1 !== undefined && r2 !== undefined) {
+      const radius = (r2 - r1) / 2
       const absrad = Math.abs(radius)
-      const p = r1.offsetPx - view.offsetPx
-      const p2 = r2.offsetPx - view.offsetPx
+      const p = r1 - view.offsetPx
+      const p2 = r2 - view.offsetPx
+      const drawArcInsteadOfBezier = absrad > 10_000
 
       // bezier (used for non-long-range arcs) requires moveTo before beginPath
       // arc (used for long-range) requires moveTo after beginPath (or else a
       // unwanted line at y=0 is rendered along with the arc)
-      if (longRange) {
+      if (longRange && drawArcInsteadOfBezier) {
         ctx.moveTo(p, 0)
         ctx.beginPath()
       } else {
@@ -116,16 +103,21 @@ export default async function drawFeats(
         ctx.moveTo(p, 0)
       }
 
-      if (longRange) {
+      if (longRange && drawArcInsteadOfBezier) {
         ctx.strokeStyle = 'red'
       } else {
         if (hasPaired) {
           if (type === 'insertSizeAndOrientation') {
-            ctx.strokeStyle = getInsertSizeAndOrientationColor(k1, k2, stats)
+            ctx.strokeStyle = getPairedInsertSizeAndOrientationColor(
+              k1,
+              k2,
+              stats,
+            )[0]
           } else if (type === 'orientation') {
-            ctx.strokeStyle = getOrientationColor(k1)
+            ctx.strokeStyle = getPairedOrientationColor(k1)[0]
           } else if (type === 'insertSize') {
-            ctx.strokeStyle = getInsertSizeColor(k1, k2, stats) || 'grey'
+            ctx.strokeStyle =
+              getPairedInsertSizeColor(k1, k2, stats)?.[0] || 'grey'
           } else if (type === 'gradient') {
             ctx.strokeStyle = `hsl(${Math.log10(absrad) * 10},50%,50%)`
           }
@@ -150,10 +142,20 @@ export default async function drawFeats(
         // avoid drawing gigantic circles that glitch out the rendering,
         // instead draw vertical lines
         if (absrad > 100_000) {
-          drawLineAtOffset(p + jitter(jitterVal), 'red')
-          drawLineAtOffset(p2 + jitter(jitterVal), 'red')
-        } else {
+          drawLineAtOffset(ctx, p + jitter(jitterVal), height, 'red')
+          drawLineAtOffset(ctx, p2 + jitter(jitterVal), height, 'red')
+        } else if (drawArcInsteadOfBezier) {
           ctx.arc(p + radius + jitter(jitterVal), 0, absrad, 0, Math.PI)
+          ctx.stroke()
+        } else {
+          ctx.bezierCurveTo(
+            p + jitter(jitterVal),
+            destY,
+            destX,
+            destY,
+            destX + jitter(jitterVal),
+            0,
+          )
           ctx.stroke()
         }
       } else {
@@ -168,34 +170,26 @@ export default async function drawFeats(
         ctx.stroke()
       }
     } else if (r1 && drawInter) {
-      drawLineAtOffset(r1.offsetPx - view.offsetPx, 'purple')
+      drawLineAtOffset(ctx, r1 - view.offsetPx, height, 'purple')
     }
   }
 
-  for (let i = 0; i < chains.length; i++) {
-    let chain = chains[i]
+  for (const chain of chains) {
+    // chain.length === 1, singleton (other pairs/mates not in view)
     if (chain.length === 1 && drawLongRange) {
-      // singleton feature
       const f = chain[0]
-
-      // special case where we look at RPOS/RNEXT
-      if (hasPaired) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const refName = f.next_ref!
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const coord = f.next_pos!
-        draw(
-          f,
-          { refName, start: coord, end: coord, strand: f.strand },
-          asm,
-          true,
+      if (hasPaired && !(f.flags & 8)) {
+        const mate = {
+          refName: f.next_ref || '',
+          start: f.next_pos || 0,
+          end: f.next_pos || 0,
+          strand: f.strand,
+        }
+        draw(f, mate, asm, true)
+      } else {
+        const features = [f, ...featurizeSA(f.SA, f.id, f.strand, f.name)].sort(
+          (a, b) => a.clipPos - b.clipPos,
         )
-      }
-
-      // special case where we look at SA
-      else {
-        const suppAlns = featurizeSA(f.SA, f.id, f.strand, f.name)
-        const features = [f, ...suppAlns].sort((a, b) => a.clipPos - b.clipPos)
         for (let i = 0; i < features.length - 1; i++) {
           const f = features[i]
           const v1 = features[i + 1]
@@ -203,15 +197,13 @@ export default async function drawFeats(
         }
       }
     } else {
-      if (!hasPaired) {
-        chain.sort((a, b) => a.clipPos - b.clipPos)
-        chain = chain.filter(f => !(f.flags & 256))
-      } else {
-        // ignore split/supplementary reads for hasPaired=true for now
-        chain = chain.filter(f => !(f.flags & 2048))
-      }
-      for (let i = 0; i < chain.length - 1; i++) {
-        draw(chain[i], chain[i + 1], asm, false)
+      const res = hasPaired
+        ? chain.filter(f => !(f.flags & 2048) && !(f.flags & 8))
+        : chain
+            .sort((a, b) => a.clipPos - b.clipPos)
+            .filter(f => !(f.flags & 256))
+      for (let i = 0; i < res.length - 1; i++) {
+        draw(res[i], res[i + 1], asm, false)
       }
     }
   }

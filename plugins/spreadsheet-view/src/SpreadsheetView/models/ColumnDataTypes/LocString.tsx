@@ -148,7 +148,7 @@ const OPERATION_PREDICATES = {
       )
     )
   },
-} as { [key: string]: (a: Loc, b: Loc) => boolean }
+} as Record<string, (a: Loc, b: Loc) => boolean>
 
 OPERATION_PREDICATES['does not overlap'] = (
   cellLocation,
@@ -233,7 +233,7 @@ const FilterModelType = types
         const { cellsWithDerived: cells } = row
         const cell = cells[columnNumber]
 
-        if (!cell || !cell.text || !cell.extendedData) {
+        if (!cell?.text || !cell.extendedData) {
           return false
         }
         const parsedCellText = cell.extendedData

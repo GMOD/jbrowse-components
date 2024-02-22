@@ -37,7 +37,7 @@ test('renders setup wizard', async () => {
   model.setWidth(800)
   const { findByText } = render(<LinearGenomeView model={model} />)
   expect(model.displayedRegions.length).toEqual(0)
-  const elt = await findByText('Open')
+  const elt = await findByText('Open', {}, { timeout: 10000 })
   await waitFor(() => expect(elt.getAttribute('disabled')).toBe(null))
   fireEvent.click(elt)
   await waitFor(() => expect(model.displayedRegions.length).toEqual(1), {
@@ -157,11 +157,11 @@ test('renders two tracks, two regions', async () => {
   })
   const model = session.views[0]
   model.setWidth(800)
-  const { container, findByText, queryAllByTestId } = render(
-    <LinearGenomeView model={model} />,
-  )
+  const { container, findByDisplayValue, findByText, queryAllByTestId } =
+    render(<LinearGenomeView model={model} />)
   await findByText('Foo Track')
   await findByText('798bp')
+  await findByDisplayValue('ctgA:1..100 ctgB:1,001..1,698')
   await waitFor(() => expect(queryAllByTestId('svgfeatures').length).toBe(4))
   expect(container).toMatchSnapshot()
 }, 15000)

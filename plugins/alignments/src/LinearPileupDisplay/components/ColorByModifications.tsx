@@ -9,45 +9,12 @@ import {
   Typography,
 } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
-import { makeStyles } from 'tss-react/mui'
+import ModificationTable from './ModificationsTable'
 
-const useStyles = makeStyles()(theme => ({
-  table: {
-    border: '1px solid #888',
-    margin: theme.spacing(4),
-    '& td': {
-      padding: theme.spacing(1),
-    },
-  },
-}))
-
-function ModificationTable({
-  modifications,
+const ColorByModificationsDialog = observer(function ({
+  model,
+  handleClose,
 }: {
-  modifications: [string, string][]
-}) {
-  const { classes } = useStyles()
-  return (
-    <table className={classes.table}>
-      <tbody>
-        {modifications.map(([key, value]) => (
-          <tr key={key}>
-            <td>{key}</td>
-            <td>{value}</td>
-            <td
-              style={{
-                width: '1em',
-                background: value,
-              }}
-            />
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  )
-}
-
-function ColorByTagDlg(props: {
   model: {
     setColorScheme: (arg: { type: string }) => void
     modificationTagMap: ObservableMap<string, string>
@@ -55,7 +22,6 @@ function ColorByTagDlg(props: {
   }
   handleClose: () => void
 }) {
-  const { model, handleClose } = props
   const { colorBy, modificationTagMap } = model
 
   const modifications = [...modificationTagMap.entries()]
@@ -84,13 +50,13 @@ function ColorByTagDlg(props: {
                   />
                 </>
               ) : (
-                <div>
+                <>
                   <Typography>
                     Note: color by modifications is already enabled. Loading
                     current modifications...
                   </Typography>
                   <CircularProgress size={15} />
-                </div>
+                </>
               )}
             </div>
           ) : null}
@@ -133,6 +99,6 @@ function ColorByTagDlg(props: {
       </DialogContent>
     </Dialog>
   )
-}
+})
 
-export default observer(ColorByTagDlg)
+export default ColorByModificationsDialog

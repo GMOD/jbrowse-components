@@ -2,7 +2,7 @@
  * By convention, exit codes in this base class are below 100
  */
 
-import Command from '@oclif/command'
+import { Command } from '@oclif/core'
 import { promises as fsPromises } from 'fs'
 import path from 'path'
 import parseJSON from 'json-parse-better-errors'
@@ -152,7 +152,7 @@ export default abstract class JBrowseCommand extends Command {
     return fsPromises.readFile(location, { encoding: 'utf8' })
   }
 
-  async readJsonFile(location: string): Promise<Record<string, unknown>> {
+  async readJsonFile<T>(location: string): Promise<T> {
     let contents
     try {
       contents = await fsPromises.readFile(location, { encoding: 'utf8' })

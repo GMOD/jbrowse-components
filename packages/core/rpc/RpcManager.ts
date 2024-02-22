@@ -5,7 +5,7 @@ import WebWorkerRpcDriver from './WebWorkerRpcDriver'
 import MainThreadRpcDriver from './MainThreadRpcDriver'
 
 type DriverClass = WebWorkerRpcDriver | MainThreadRpcDriver
-type BackendConfigurations = {
+interface BackendConfigurations {
   WebWorkerRpcDriver?: Omit<
     ConstructorParameters<typeof WebWorkerRpcDriver>[0],
     'config'

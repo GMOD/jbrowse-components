@@ -137,7 +137,7 @@ export function layOutFeature(args: FeatureLayOutArgs): SceneGraph {
   const width = (feature.get('end') - feature.get('start')) / bpPerPx
   const layoutParent = layout.parent
   const top = layoutParent ? layoutParent.top : 0
-  const subLayout = layout.addChild(
+  return layout.addChild(
     String(feature.id()),
     x,
     displayMode === 'collapse' ? 0 : top,
@@ -145,7 +145,6 @@ export function layOutFeature(args: FeatureLayOutArgs): SceneGraph {
     displayMode === 'compact' ? height / 2 : height,
     { GlyphComponent },
   )
-  return subLayout
 }
 
 export function layOutSubfeatures(args: SubfeatureLayOutArgs) {

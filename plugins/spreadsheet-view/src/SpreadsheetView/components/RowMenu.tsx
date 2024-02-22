@@ -49,7 +49,7 @@ const RowMenu = observer(function ({
 
   return (
     <Menu
-      anchorEl={currentRowMenu && currentRowMenu.anchorEl}
+      anchorEl={currentRowMenu?.anchorEl}
       open={Boolean(currentRowMenu)}
       onMenuItemClick={handleMenuItemClick}
       onClose={rowMenuClose}

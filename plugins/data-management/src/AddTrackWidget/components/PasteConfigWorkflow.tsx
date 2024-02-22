@@ -2,7 +2,11 @@ import React, { useState } from 'react'
 import { Button, TextField } from '@mui/material'
 import { ErrorMessage } from '@jbrowse/core/ui'
 import { makeStyles } from 'tss-react/mui'
-import { getSession } from '@jbrowse/core/util'
+import {
+  getSession,
+  isSessionModelWithWidgets,
+  isSessionWithAddTracks,
+} from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 // locals
@@ -19,7 +23,11 @@ const useStyles = makeStyles()({
   },
 })
 
-function AddTrackWorkflow({ model }: { model: AddTrackModel }) {
+const PasteConfigAddTrackWorkflow = observer(function ({
+  model,
+}: {
+  model: AddTrackModel
+}) {
   const { classes } = useStyles()
   const [val, setVal] = useState('')
   const [error, setError] = useState<unknown>()
@@ -47,11 +55,17 @@ function AddTrackWorkflow({ model }: { model: AddTrackModel }) {
             const session = getSession(model)
             const conf = JSON.parse(val)
             const confs = Array.isArray(conf) ? conf : [conf]
-            confs.forEach(c => session.addTrackConf(c))
-            confs.forEach(c => c.trackId)
-            model.clearData()
-            session.hideWidget(model)
+            if (
+              isSessionWithAddTracks(session) &&
+              isSessionModelWithWidgets(session)
+            ) {
+              confs.forEach(c => session.addTrackConf(c))
+              confs.forEach(c => model.view.showTrack(c.trackId))
+              model.clearData()
+              session.hideWidget(model)
+            }
           } catch (e) {
+            console.error(e)
             setError(e)
           }
         }}
@@ -60,5 +74,5 @@ function AddTrackWorkflow({ model }: { model: AddTrackModel }) {
       </Button>
     </div>
   )
-}
-export default observer(AddTrackWorkflow)
+})
+export default PasteConfigAddTrackWorkflow

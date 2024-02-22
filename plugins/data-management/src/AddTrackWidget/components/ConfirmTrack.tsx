@@ -9,7 +9,7 @@ import {
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import {
-  supportedIndexingAdapters,
+  isSupportedIndexingAdapter,
   getSession,
   isElectron,
 } from '@jbrowse/core/util'
@@ -82,7 +82,7 @@ function UnknownAdapterPrompt({ model }: { model: AddTrackModel }) {
   )
 }
 
-export default observer(function ConfirmTrack({
+const ConfirmTrack = observer(function ConfirmTrack({
   model,
 }: {
   model: AddTrackModel
@@ -132,7 +132,7 @@ export default observer(function ConfirmTrack({
     return <Typography>Could not recognize this data type.</Typography>
   }
 
-  const supportedForIndexing = supportedIndexingAdapters(trackAdapter?.type)
+  const supportedForIndexing = isSupportedIndexingAdapter(trackAdapter?.type)
   return (
     <div>
       {trackAdapter ? (
@@ -187,3 +187,5 @@ export default observer(function ConfirmTrack({
     </div>
   )
 })
+
+export default ConfirmTrack

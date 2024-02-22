@@ -7,7 +7,7 @@ exports[`JBrowse model creates with empty snapshot 1`] = `
   "configuration": {},
   "connections": [],
   "defaultSession": {
-    "name": "New session",
+    "name": "New Session",
   },
   "internetAccounts": [],
   "plugins": [],
@@ -123,11 +123,12 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           {
             "displayId": "volvox_refseq-LinearGCContentDisplay",
             "type": "LinearGCContentDisplay",
+            "windowDelta": 10,
+            "windowSize": 10,
           },
         ],
         "formatAbout": {
           "config": "jexl:{extraField:'important data'}",
-          "hideUris": true,
         },
         "metadata": {
           "date": "2020-08-20",
@@ -430,6 +431,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     },
   ],
   "configuration": {
+    "LinearGenomeViewPlugin": {
+      "trackLabels": "offset",
+    },
     "extraThemes": {
       "darkForest": {
         "name": "Dark (forest, from config file)",
@@ -448,6 +452,13 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "main": "#253",
           },
         },
+      },
+    },
+    "hierarchical": {
+      "defaultCollapsed": {
+        "categoryNames": [
+          "Methylation",
+        ],
       },
     },
     "logoPath": {
@@ -488,22 +499,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       },
     },
   },
-  "internetAccounts": [
-    {
-      "clientId": "50knr6xrjfc39sk",
-      "description": "Account to access Dropbox files",
-      "internetAccountId": "dropboxOAuth",
-      "name": "Dropbox",
-      "type": "DropboxOAuthInternetAccount",
-    },
-    {
-      "clientId": "109518325434-udfch80a0v70mgu65d5fejqsq5kvhm1b.apps.googleusercontent.com",
-      "description": "Account to access Google Drive files",
-      "internetAccountId": "googleOAuth",
-      "name": "Google Drive",
-      "type": "GoogleDriveOAuthInternetAccount",
-    },
-  ],
+  "internetAccounts": [],
   "plugins": [
     {
       "name": "UMDLocPlugin",
@@ -539,7 +535,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "volvox",
       ],
       "category": [
-        "VCF",
+        "Variants",
       ],
       "description": "A uniquely interesting track",
       "displays": [
@@ -550,6 +546,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_sv_test-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
+        },
+        {
+          "displayId": "volvox_sv_test-LinearPairedArcDisplay",
+          "type": "LinearPairedArcDisplay",
         },
       ],
       "name": "volvox structural variant test (<i>HTML italic</i>)",
@@ -578,7 +578,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "volvox",
       ],
       "category": [
-        "VCF",
+        "Variants",
       ],
       "displays": [
         {
@@ -588,6 +588,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_sv_test_renamed-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
+        },
+        {
+          "displayId": "volvox_sv_test_renamed-LinearPairedArcDisplay",
+          "type": "LinearPairedArcDisplay",
         },
       ],
       "name": "volvox structural variant test w/renamed refs",
@@ -703,6 +707,8 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         },
       ],
       "metadata": {
+        "description": "this is a metadata description",
+        "name": "this is a metadata name",
         "source": "We generated 150bp paired end reads from a <i>Volvox mythicus</i>, an imaginary species, for this jbrowse demo. See <a href=https://google.com>Google</a>",
         "sub": {
           "subkey": "wow",
@@ -1270,7 +1276,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "volvox",
       ],
       "category": [
-        "VCF",
+        "Variants",
       ],
       "displays": [
         {
@@ -1281,7 +1287,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "volvox_test_vcf-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
         },
+        {
+          "displayId": "volvox_test_vcf-LinearPairedArcDisplay",
+          "type": "LinearPairedArcDisplay",
+        },
       ],
+      "formatAbout": {
+        "hideUris": true,
+      },
       "name": "volvox 1000genomes vcf",
       "trackId": "volvox_test_vcf",
       "type": "VariantTrack",
@@ -1517,58 +1530,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "name": "wiggle_track xyplot",
       "trackId": "volvox_microarray",
-      "type": "QuantitativeTrack",
-    },
-    {
-      "adapter": {
-        "bigWigLocation": {
-          "internetAccountId": "dropboxOAuth",
-          "internetAccountPreAuthorization": undefined,
-          "locationType": "UriLocation",
-          "uri": "https://www.dropbox.com/s/96wflrzcbmf7nlj/volvox.bw?dl=0",
-        },
-        "type": "BigWigAdapter",
-      },
-      "assemblyNames": [
-        "volvox",
-      ],
-      "category": [
-        "Authentication",
-      ],
-      "displays": [
-        {
-          "displayId": "dropbox_bigwig-LinearWiggleDisplay",
-          "type": "LinearWiggleDisplay",
-        },
-      ],
-      "name": "Dropbox BigWig",
-      "trackId": "dropbox_bigwig",
-      "type": "QuantitativeTrack",
-    },
-    {
-      "adapter": {
-        "bigWigLocation": {
-          "internetAccountId": "googleOAuth",
-          "internetAccountPreAuthorization": undefined,
-          "locationType": "UriLocation",
-          "uri": "https://drive.google.com/file/d/1PIvZCOJioK9eBL1Vuvfa4L_Fv9zTooHk/view?usp=sharing",
-        },
-        "type": "BigWigAdapter",
-      },
-      "assemblyNames": [
-        "volvox",
-      ],
-      "category": [
-        "Authentication",
-      ],
-      "displays": [
-        {
-          "displayId": "google_bigwig-LinearWiggleDisplay",
-          "type": "LinearWiggleDisplay",
-        },
-      ],
-      "name": "Google Drive BigWig",
-      "trackId": "google_bigwig",
       "type": "QuantitativeTrack",
     },
     {
@@ -2314,7 +2275,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "volvox",
       ],
       "category": [
-        "VCF",
+        "Variants",
       ],
       "displays": [
         {
@@ -2324,6 +2285,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_filtered_vcf-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
+        },
+        {
+          "displayId": "volvox_filtered_vcf-LinearPairedArcDisplay",
+          "type": "LinearPairedArcDisplay",
         },
       ],
       "name": "volvox filtered vcf",
@@ -2352,7 +2317,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "vvx",
       ],
       "category": [
-        "VCF",
+        "Variants",
       ],
       "displays": [
         {
@@ -2362,6 +2327,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_filtered_vcf_assembly_alias-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
+        },
+        {
+          "displayId": "volvox_filtered_vcf_assembly_alias-LinearPairedArcDisplay",
+          "type": "LinearPairedArcDisplay",
         },
       ],
       "name": "volvox filtered vcf (with assembly alias)",
@@ -2394,6 +2363,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "type": "LinearArcDisplay",
         },
       ],
+      "formatDetails": {
+        "maxDepth": 0,
+      },
       "name": "BigBed genes",
       "trackId": "bigbed_genes",
       "type": "FeatureTrack",
@@ -2760,6 +2732,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "category": [
         "BigWig",
+        "XYPlot",
       ],
       "displays": [
         {
@@ -3017,7 +2990,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "volvox",
       ],
       "category": [
-        "VCF",
+        "Variants",
       ],
       "displays": [
         {
@@ -3032,6 +3005,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "type": "SvgFeatureRenderer",
           },
           "type": "LinearVariantDisplay",
+        },
+        {
+          "displayId": "variant_colors-LinearPairedArcDisplay",
+          "type": "LinearPairedArcDisplay",
         },
       ],
       "name": "volvox filtered vcf (green snp, purple indel)",
@@ -3361,7 +3338,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "volvox",
       ],
       "category": [
-        "VCF",
+        "Variants",
       ],
       "displays": [
         {
@@ -3371,6 +3348,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox.inv.vcf-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
+        },
+        {
+          "displayId": "volvox.inv.vcf-LinearPairedArcDisplay",
+          "type": "LinearPairedArcDisplay",
         },
       ],
       "name": "volvox inversions",
@@ -3688,7 +3669,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "volvox",
       ],
       "category": [
-        "VCF",
+        "Variants",
       ],
       "displays": [
         {
@@ -3698,6 +3679,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "variant_effect_demo_data-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
+        },
+        {
+          "displayId": "variant_effect_demo_data-LinearPairedArcDisplay",
+          "type": "LinearPairedArcDisplay",
         },
       ],
       "name": "Ensembl VEP example",
@@ -3718,7 +3703,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "volvox",
       ],
       "category": [
-        "VCF",
+        "Variants",
       ],
       "displays": [
         {
@@ -3728,6 +3713,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "variant_effect_demo_jannovar-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
+        },
+        {
+          "displayId": "variant_effect_demo_jannovar-LinearPairedArcDisplay",
+          "type": "LinearPairedArcDisplay",
         },
       ],
       "name": "Jannovar example",
@@ -4070,6 +4059,182 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "name": "volvox_inv_indels",
       "trackId": "volvox_inv_indels",
       "type": "SyntenyTrack",
+    },
+    {
+      "adapter": {
+        "craiLocation": {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "volvox-inv-pbsim.cram.crai",
+        },
+        "cramLocation": {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "volvox-inv-pbsim.cram",
+        },
+        "sequenceAdapter": {
+          "twoBitLocation": {
+            "locationType": "UriLocation",
+            "uri": "volvox.2bit",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "type": "CramAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Alignments",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox-inv-pbsim-LinearAlignmentsDisplay",
+          "type": "LinearAlignmentsDisplay",
+        },
+        {
+          "displayId": "volvox-inv-pbsim-LinearPileupDisplay",
+          "type": "LinearPileupDisplay",
+        },
+        {
+          "displayId": "volvox-inv-pbsim-LinearSNPCoverageDisplay",
+          "type": "LinearSNPCoverageDisplay",
+        },
+        {
+          "displayId": "volvox-inv-pbsim-LinearReadArcsDisplay",
+          "type": "LinearReadArcsDisplay",
+        },
+        {
+          "displayId": "volvox-inv-pbsim-LinearReadCloudDisplay",
+          "type": "LinearReadCloudDisplay",
+        },
+      ],
+      "name": "volvox-inv-pbsim",
+      "trackId": "volvox-inv-pbsim",
+      "type": "AlignmentsTrack",
+    },
+    {
+      "adapter": {
+        "bamLocation": {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "paired_end_stranded_rnaseq.bam",
+        },
+        "index": {
+          "location": {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
+            "locationType": "UriLocation",
+            "uri": "paired_end_stranded_rnaseq.bam.bai",
+          },
+        },
+        "sequenceAdapter": {
+          "twoBitLocation": {
+            "locationType": "UriLocation",
+            "uri": "volvox.2bit",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "type": "BamAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Alignments",
+      ],
+      "displays": [
+        {
+          "displayId": "paired_end_stranded_rnaseq-LinearAlignmentsDisplay",
+          "type": "LinearAlignmentsDisplay",
+        },
+        {
+          "displayId": "paired_end_stranded_rnaseq-LinearPileupDisplay",
+          "type": "LinearPileupDisplay",
+        },
+        {
+          "displayId": "paired_end_stranded_rnaseq-LinearSNPCoverageDisplay",
+          "type": "LinearSNPCoverageDisplay",
+        },
+        {
+          "displayId": "paired_end_stranded_rnaseq-LinearReadArcsDisplay",
+          "type": "LinearReadArcsDisplay",
+        },
+        {
+          "displayId": "paired_end_stranded_rnaseq-LinearReadCloudDisplay",
+          "type": "LinearReadCloudDisplay",
+        },
+      ],
+      "name": "volvox-stranded-rnaseq",
+      "trackId": "paired_end_stranded_rnaseq",
+      "type": "AlignmentsTrack",
+    },
+    {
+      "adapter": {
+        "bedLocation": {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "arc_test.bed",
+        },
+        "type": "BedAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Miscellaneous",
+      ],
+      "displays": [
+        {
+          "displayId": "arc_test-LinearBasicDisplay",
+          "type": "LinearBasicDisplay",
+        },
+        {
+          "displayId": "arc_test-LinearArcDisplay",
+          "type": "LinearArcDisplay",
+        },
+      ],
+      "name": "Arc test track",
+      "trackId": "arc_test",
+      "type": "FeatureTrack",
+    },
+    {
+      "adapter": {
+        "bedpeLocation": {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "volvox.bedpe",
+        },
+        "type": "BedpeAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Variants",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox_bedpe-LinearPairedArcDisplay",
+          "type": "LinearPairedArcDisplay",
+        },
+        {
+          "displayId": "volvox_bedpe-LinearVariantDisplay",
+          "type": "LinearVariantDisplay",
+        },
+        {
+          "displayId": "volvox_bedpe-ChordVariantDisplay",
+          "type": "ChordVariantDisplay",
+        },
+      ],
+      "name": "BEDPE arcs",
+      "trackId": "volvox_bedpe",
+      "type": "VariantTrack",
     },
   ],
 }

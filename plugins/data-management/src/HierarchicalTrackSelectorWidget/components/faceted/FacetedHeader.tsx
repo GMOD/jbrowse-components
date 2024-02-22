@@ -11,23 +11,13 @@ import ShoppingCart from '../ShoppingCart'
 import { HierarchicalTrackSelectorModel } from '../../model'
 
 export default function FacetedHeader({
-  setFilterText,
-  setUseShoppingCart,
-  setHideSparse,
-  hideSparse,
-  useShoppingCart,
-  filterText,
   model,
 }: {
-  setFilterText: (arg: string) => void
-  setUseShoppingCart: (arg: boolean) => void
-  setHideSparse: (arg: boolean) => void
-  filterText: string
-  useShoppingCart: boolean
-  hideSparse: boolean
   model: HierarchicalTrackSelectorModel
 }) {
+  const { faceted } = model
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
+  const { showOptions, showFilters, showSparse, useShoppingCart } = faceted
 
   return (
     <>
@@ -35,12 +25,12 @@ export default function FacetedHeader({
         <Grid item>
           <TextField
             label="Search..."
-            value={filterText}
-            onChange={event => setFilterText(event.target.value)}
+            value={faceted.filterText}
+            onChange={event => faceted.setFilterText(event.target.value)}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
-                  <IconButton onClick={() => setFilterText('')}>
+                  <IconButton onClick={() => faceted.setFilterText('')}>
                     <ClearIcon />
                   </IconButton>
                 </InputAdornment>
@@ -69,14 +59,26 @@ export default function FacetedHeader({
         menuItems={[
           {
             label: 'Add tracks to selection instead of turning them on/off',
-            onClick: () => setUseShoppingCart(!useShoppingCart),
+            onClick: () => faceted.setUseShoppingCart(!useShoppingCart),
             type: 'checkbox',
             checked: useShoppingCart,
           },
           {
-            label: 'Hide sparse metadata columns',
-            onClick: () => setHideSparse(!hideSparse),
-            checked: hideSparse,
+            label: 'Show sparse metadata columns',
+            onClick: () => faceted.setShowSparse(!showSparse),
+            checked: showSparse,
+            type: 'checkbox',
+          },
+          {
+            label: 'Show facet filters',
+            onClick: () => faceted.setShowFilters(!showFilters),
+            checked: showFilters,
+            type: 'checkbox',
+          },
+          {
+            label: 'Show extra table options',
+            onClick: () => faceted.setShowOptions(!showOptions),
+            checked: showOptions,
             type: 'checkbox',
           },
         ]}

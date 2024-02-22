@@ -1,6 +1,5 @@
 ---
 id: synteny_track
-toplevel: true
 title: Synteny track config
 ---
 

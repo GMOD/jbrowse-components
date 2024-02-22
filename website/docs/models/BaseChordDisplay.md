@@ -1,7 +1,6 @@
 ---
 id: basechorddisplay
 title: BaseChordDisplay
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,13 +8,13 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Source file
+### Source file
 
 [plugins/circular-view/src/BaseChordDisplay/models/model.tsx](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/BaseChordDisplay/models/model.tsx)
 
-## Docs
+extends
 
-extends `BaseDisplay`
+- [BaseDisplay](../basedisplay)
 
 ### BaseChordDisplay - Properties
 
@@ -35,6 +34,15 @@ bezierRadiusRatio: 0.1
 IMaybe<ISimpleType<string>>
 // code
 assemblyName: types.maybe(types.string)
+```
+
+#### property: configuration
+
+```js
+// type signature
+ConfigurationSchemaType<{ onChordClick: { type: string; description: string; defaultValue: boolean; contextVariable: string[]; }; }, ConfigurationSchemaOptions<undefined, "displayId">>
+// code
+configuration: ConfigurationReference(baseChordDisplayConfig)
 ```
 
 ### BaseChordDisplay - Getters

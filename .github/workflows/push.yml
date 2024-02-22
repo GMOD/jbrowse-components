@@ -4,14 +4,15 @@ on: push
 
 jobs:
   test:
-    name: Test and typecheck on node 16.x and ubuntu-latest
+    name: Test and typecheck on node 20.x and ubuntu-latest
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Use Node.js 16.x
-        uses: actions/setup-node@v3
+      - run: sudo apt-get -y install tabix
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
         with:
-          node-version: '16'
+          node-version: '20'
       - name: Install deps (with cache)
         uses: bahmutov/npm-install@v1
       - name: Test codebase
@@ -22,14 +23,14 @@ jobs:
         run: yarn typecheck
 
   buildwebsite:
-    name: Build website on node 16 and ubuntu-latest
+    name: Build website on node 20 and ubuntu-latest
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Use Node.js 16
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
         with:
-          node-version: '16'
+          node-version: '20'
       - name: Install website deps (with cache)
         uses: bahmutov/npm-install@v1
         with:
@@ -46,14 +47,14 @@ jobs:
           args: website/testing/ --check-anchors
 
   buildwholerepo:
-    name: Build whole repo on node 16 and ubuntu-latest
+    name: Build whole repo on node 20 and ubuntu-latest
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Use Node.js 16
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
         with:
-          node-version: '16'
+          node-version: '20'
       - name: Install deps (with cache)
         uses: bahmutov/npm-install@v1
       - name: Build codebase
@@ -72,16 +73,22 @@ jobs:
           yarn build
           yarn test:e2e
         working-directory: component_tests/cgv
+      - name: Test embedded react-app
+        run: |
+          yarn
+          yarn build
+          yarn test:e2e
+        working-directory: component_tests/react-app
 
   buildjbrowseweb:
-    name: Build only jbrowse-web and upload to s3 on node 16 and ubuntu-latest
+    name: Build only jbrowse-web and upload to s3 on node 20 and ubuntu-latest
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Use Node.js 16
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
         with:
-          node-version: '16'
+          node-version: '20'
       - name: Install deps (with cache)
         uses: bahmutov/npm-install@v1
       - name: Build project
@@ -105,11 +112,11 @@ jobs:
     name: Build and deploy static linear genome view Storybook site to AWS S3
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Use Node.js 16
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
         with:
-          node-version: '16'
+          node-version: '20'
       - name: Install deps (with cache)
         uses: bahmutov/npm-install@v1
       - name: Build Storybook static site
@@ -126,16 +133,45 @@ jobs:
         run: |
           pwd
           aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/lgv/$(echo ${{github.ref}} | cut -d "/" -f3-)
+          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/lgv/$(echo ${{github.ref}} | cut -d "/" -f3-)/*"
         working-directory: products/jbrowse-react-linear-genome-view
+  storybook_app:
+    name: Build and deploy static react app Storybook site to AWS S3
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install deps (with cache)
+        uses: bahmutov/npm-install@v1
+      - name: Build Storybook static site
+        run: |
+          yarn storybook:build
+        working-directory: products/jbrowse-react-app
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: Deploy Storybook for branch to S3
+        run: |
+          pwd
+          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/app/$(echo ${{github.ref}} | cut -d "/" -f3-)
+          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/app/$(echo ${{github.ref}} | cut -d "/" -f3-)/*"
+        working-directory: products/jbrowse-react-app
+
   storybook_cgv:
     name: Build and deploy static circular genome view Storybook site to AWS S3
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Use Node.js 16
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
         with:
-          node-version: '16'
+          node-version: '20'
       - name: Install deps (with cache)
         uses: bahmutov/npm-install@v1
       - name: Build Storybook static site
@@ -152,4 +188,5 @@ jobs:
         run: |
           pwd
           aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/cgv/$(echo ${{github.ref}} | cut -d "/" -f3-)
+          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/cgv/$(echo ${{github.ref}} | cut -d "/" -f3-)/*"
         working-directory: products/jbrowse-react-circular-genome-view

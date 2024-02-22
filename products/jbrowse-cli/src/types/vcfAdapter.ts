@@ -89,15 +89,14 @@ export async function* indexVcf({
       .filter((f): f is string => !!f)
 
     const ids = id.split(',')
-    for (let i = 0; i < ids.length; i++) {
-      const id = ids[i]
+    for (const id of ids) {
       const attrs = [id]
       const record = JSON.stringify([
         encodeURIComponent(locStr),
         encodeURIComponent(trackId),
         encodeURIComponent(id || ''),
         ...infoAttrs.map(a => encodeURIComponent(a || '')),
-      ]).replace(/,/g, '|')
+      ]).replaceAll(',', '|')
       yield `${record} ${[...new Set(attrs)].join(' ')}\n`
     }
   }

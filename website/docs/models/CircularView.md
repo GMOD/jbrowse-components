@@ -1,7 +1,6 @@
 ---
 id: circularview
 title: CircularView
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,13 +8,13 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Source file
+### Source file
 
-[plugins/circular-view/src/CircularView/models/CircularView.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/CircularView/models/CircularView.ts)
+[plugins/circular-view/src/CircularView/models/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/CircularView/models/model.ts)
 
-## Docs
+extends
 
-extends `BaseViewModel`
+- [BaseViewModel](../baseviewmodel)
 
 ### CircularView - Properties
 
@@ -132,6 +131,69 @@ scrollX: 0
 number
 // code
 scrollY: 0
+```
+
+#### property: minimumRadiusPx
+
+```js
+// type signature
+number
+// code
+minimumRadiusPx: 25
+```
+
+#### property: spacingPx
+
+```js
+// type signature
+number
+// code
+spacingPx: 10
+```
+
+#### property: paddingPx
+
+```js
+// type signature
+number
+// code
+paddingPx: 80
+```
+
+#### property: lockedPaddingPx
+
+```js
+// type signature
+number
+// code
+lockedPaddingPx: 100
+```
+
+#### property: minVisibleWidth
+
+```js
+// type signature
+number
+// code
+minVisibleWidth: 6
+```
+
+#### property: minimumBlockWidth
+
+```js
+// type signature
+number
+// code
+minimumBlockWidth: 20
+```
+
+#### property: trackSelectorType
+
+```js
+// type signature
+string
+// code
+trackSelectorType: 'hierarchical'
 ```
 
 ### CircularView - Getters
@@ -418,7 +480,7 @@ activateTrackSelector: () => Widget
 
 ```js
 // type signature
-toggleTrack: (trackId: string) => void
+toggleTrack: (trackId: string) => boolean
 ```
 
 #### action: setError

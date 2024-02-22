@@ -2,17 +2,20 @@ import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import React from 'react'
 import { render } from '@testing-library/react'
 import Rendering from './ArcRendering'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 test('no features', () => {
+  const r = ConfigurationSchema('Test', {}).create()
   const { container } = render(
     <Rendering
-      width={500}
-      height={500}
-      regions={[{ refName: 'zonk', start: 0, end: 300 }]}
-      blockKey={1}
-      config={{}}
+      exportSVG={false}
+      height={400}
+      displayModel={{ selectedFeatureId: 'none' }}
+      config={r}
+      regions={[
+        { refName: 'zonk', start: 0, end: 300, assemblyName: 'volvox' },
+      ]}
       bpPerPx={3}
-      displayModel={{}}
       features={new Map()}
     />,
   )
@@ -21,12 +24,16 @@ test('no features', () => {
 })
 
 test('one feature', () => {
+  const r = ConfigurationSchema('Test', {}).create()
   const { container } = render(
     <Rendering
-      width={500}
-      height={500}
-      regions={[{ refName: 'zonk', start: 0, end: 1000 }]}
-      blockKey={1}
+      exportSVG={false}
+      height={400}
+      config={r}
+      displayModel={{ selectedFeatureId: 'none' }}
+      regions={[
+        { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
+      ]}
       features={
         new Map([
           [
@@ -35,9 +42,7 @@ test('one feature', () => {
           ],
         ])
       }
-      config={{ type: 'DummyRenderer' }}
       bpPerPx={3}
-      displayModel={{}}
     />,
   )
 

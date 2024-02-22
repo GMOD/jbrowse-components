@@ -18,7 +18,7 @@ interface TrackWarning {
   displays: { warnings: { message: string; effect: string }[] }[]
 }
 
-export default observer(function WarningDialog({
+const WarningDialog = observer(function WarningDialog({
   trackWarnings,
   handleClose,
 }: {
@@ -63,7 +63,7 @@ export default observer(function WarningDialog({
           <DataGrid
             rows={rows}
             columns={columns}
-            disableSelectionOnClick
+            disableRowSelectionOnClick
             rowHeight={25}
             disableColumnMenu
           />
@@ -72,3 +72,5 @@ export default observer(function WarningDialog({
     </Dialog>
   )
 })
+
+export default WarningDialog

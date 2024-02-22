@@ -1,6 +1,6 @@
 import VCF, { parseBreakend } from '@gmod/vcf'
 
-const altTypeToSO: { [key: string]: string | undefined } = {
+const altTypeToSO: Record<string, string | undefined> = {
   DEL: 'deletion',
   INS: 'insertion',
   DUP: 'duplication',
@@ -50,16 +50,16 @@ export function getSOTermAndDescription(
     )
 
     descriptions = new Set(
-      [...prefixes].map(prefix => {
-        const suffixes = descs
-          .map(desc => {
-            const pref = desc.split('-> ')
-            return pref[1] && pref[0] === prefix ? pref[1] : ''
-          })
-          .filter(f => !!f)
+      [...prefixes]
+        .map(r => r.trim())
+        .map(prefix => {
+          const suffixes = descs
+            .map(desc => desc.split('->').map(r => r.trim()))
+            .map(pref => (pref[1] && pref[0] === prefix ? pref[1] : ''))
+            .filter(f => !!f)
 
-        return suffixes.length ? prefix + '-> ' + suffixes.join(',') : prefix
-      }),
+          return suffixes.length ? `${prefix} -> ${suffixes.join(',')}` : prefix
+        }),
     )
   }
   if (soTerms.size) {
@@ -115,7 +115,7 @@ export function getSOAndDescByExamination(ref: string, alt: string) {
   } else if (alt === '<DEL>') {
     return ['deletion', alt]
   } else if (alt === '<INV>') {
-    return ['deletion', alt]
+    return ['inversion', alt]
   } else if (alt === '<TRA>') {
     return ['translocation', alt]
   } else if (alt.includes('<')) {
@@ -125,9 +125,19 @@ export function getSOAndDescByExamination(ref: string, alt: string) {
       ? ['inversion', makeDescriptionString('inversion', ref, alt)]
       : ['substitution', makeDescriptionString('substitution', ref, alt)]
   } else if (ref.length <= alt.length) {
-    return ['insertion', makeDescriptionString('insertion', ref, alt)]
+    const len = alt.length - ref.length
+    const lena = len.toLocaleString('en-US')
+    return [
+      'insertion',
+      len > 5 ? lena + 'bp INS' : makeDescriptionString('insertion', ref, alt),
+    ]
   } else if (ref.length > alt.length) {
-    return ['deletion', makeDescriptionString('deletion', ref, alt)]
+    const len = ref.length - alt.length
+    const lena = len.toLocaleString('en-US')
+    return [
+      'deletion',
+      len > 5 ? lena + 'bp DEL' : makeDescriptionString('deletion', ref, alt),
+    ]
   }
 
   return ['indel', makeDescriptionString('indel', ref, alt)]

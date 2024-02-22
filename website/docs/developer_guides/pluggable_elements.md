@@ -1,7 +1,6 @@
 ---
 id: pluggable_elements
 title: Pluggable elements
-toplevel: true
 ---
 
 import Figure from '../figure'
@@ -36,7 +35,7 @@ functional and up-to-date plugin code found there.
 
 :::
 
-## Pluggable elements
+### Pluggable elements
 
 Pluggable elements are pieces of functionality that plugins can add to JBrowse.
 Examples of pluggable types include:
@@ -203,8 +202,7 @@ custom behaviors to a web-worker or server side process.
 
 The wiggle plugin, for example, registers two custom RPC method types:
 
-- `WiggleGetGlobalStats`
-- `WiggleGetMultiRegionStats`
+- `WiggleGetMultiRegionQuantitativeStats`
 
 These methods can run in the webworker when available.
 
@@ -225,7 +223,7 @@ or an
 [example for adding context menu items](/docs/developer_guides/modifying_menus)
 for more detailed information.
 
-## Next steps
+### Next steps
 
 Now that you have an overview of the different pluggable element types that are
 available to you, review your

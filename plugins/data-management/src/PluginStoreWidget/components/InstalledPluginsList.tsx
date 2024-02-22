@@ -2,10 +2,12 @@ import React from 'react'
 import { observer } from 'mobx-react'
 import { List, Typography } from '@mui/material'
 import PluginManager from '@jbrowse/core/PluginManager'
+
+// locals
 import { PluginStoreModel } from '../model'
 import InstalledPlugin from './InstalledPlugin'
 
-function InstalledPluginsList({
+const InstalledPluginsList = observer(function InstalledPluginsList({
   pluginManager,
   model,
 }: {
@@ -13,37 +15,23 @@ function InstalledPluginsList({
   model: PluginStoreModel
 }) {
   const { plugins } = pluginManager
-
-  const corePlugins = new Set(
-    plugins
-      .filter(p => pluginManager.pluginMetadata[p.name]?.isCore)
-      .map(p => p.name),
-  )
+  const { filterText } = model
 
   const externalPlugins = plugins.filter(
-    plugin => !corePlugins.has(plugin.name),
+    p => !pluginManager.pluginMetadata[p.name]?.isCore,
   )
 
   return (
     <List>
       {externalPlugins.length > 0 ? (
         externalPlugins
-          .filter(plugin =>
-            plugin.name.toLowerCase().includes(model.filterText.toLowerCase()),
-          )
-          .map(plugin => (
-            <InstalledPlugin
-              key={plugin.name}
-              plugin={plugin}
-              model={model}
-              pluginManager={pluginManager}
-            />
-          ))
+          .filter(p => p.name.toLowerCase().includes(filterText.toLowerCase()))
+          .map(p => <InstalledPlugin key={p.name} plugin={p} model={model} />)
       ) : (
         <Typography>No plugins currently installed</Typography>
       )}
     </List>
   )
-}
+})
 
-export default observer(InstalledPluginsList)
+export default InstalledPluginsList

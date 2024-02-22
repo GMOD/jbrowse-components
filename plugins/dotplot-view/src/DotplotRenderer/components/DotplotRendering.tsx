@@ -5,8 +5,10 @@ import { observer } from 'mobx-react'
 // locals
 import { DotplotRenderArgsDeserialized } from '../DotplotRenderer'
 
-function DotplotRendering(props: DotplotRenderArgsDeserialized) {
+const DotplotRendering = observer(function (
+  props: DotplotRenderArgsDeserialized,
+) {
   return <PrerenderedCanvas {...props} />
-}
+})
 
-export default observer(DotplotRendering)
+export default DotplotRendering

@@ -1,4 +1,4 @@
-import '@testing-library/jest-dom/extend-expect'
+import '@testing-library/jest-dom'
 
 import { fireEvent, getByRole } from '@testing-library/react'
 import { createView, doBeforeEach, hts } from './util'
@@ -10,8 +10,7 @@ beforeEach(() => {
 })
 
 test('opens feature detail from left click', async () => {
-  const { view, findByTestId, findAllByTestId, findByText } = await createView()
-  await findByText('Help')
+  const { view, findByTestId, findAllByTestId } = await createView()
   view.setNewView(0.05, 5000)
   fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), {}, delay))
 
@@ -24,7 +23,6 @@ test('opens feature detail from left click', async () => {
 
 test('open feature detail from right click', async () => {
   const { view, findByTestId, findAllByTestId, findByText } = await createView()
-  await findByText('Help')
   view.setNewView(0.05, 5000)
   fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), {}, delay))
   view.tracks[0].displays[0].setFeatureIdUnderMouse('test-vcf-604453')
@@ -40,18 +38,21 @@ test('open feature detail from right click', async () => {
 
 test('widget drawer navigation', async () => {
   const { view, session, findByTestId, findByText } = await createView()
-  await findByText('Help')
   view.setNewView(0.05, 5000)
   // opens a config editor widget
   fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), {}, delay))
   fireEvent.click(
-    await findByTestId('htsTrackEntryMenu-volvox_filtered_vcf', {}, delay),
+    await findByTestId(
+      'htsTrackEntryMenu-Tracks,volvox_filtered_vcf',
+      {},
+      delay,
+    ),
   )
   fireEvent.click(await findByText('Settings'))
   await findByTestId('configEditor', {}, delay)
   // shows up when there active widgets
   fireEvent.mouseDown(
-    getByRole(await findByTestId('widget-drawer-selects'), 'button'),
+    getByRole(await findByTestId('widget-drawer-selects'), 'combobox'),
   )
   fireEvent.click(
     await findByTestId(
@@ -77,7 +78,7 @@ test('widget drawer navigation', async () => {
   // @ts-expect-error
   expect(session.activeWidgets.size).toEqual(2)
   fireEvent.mouseDown(
-    getByRole(await findByTestId('widget-drawer-selects'), 'button'),
+    getByRole(await findByTestId('widget-drawer-selects'), 'combobox'),
   )
   fireEvent.click(await findByTestId('ConfigurationEditorWidget-drawer-delete'))
   // @ts-expect-error

@@ -1,60 +1,68 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 
-import { Typography, Select, MenuItem, FormControl } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
+import {
+  Checkbox,
+  FormControl,
+  InputLabel,
+  ListItemText,
+  MenuItem,
+  OutlinedInput,
+  Select,
+} from '@mui/material'
 
+// locals
 import { GridBookmarkModel } from '../model'
 
-const useStyles = makeStyles()(() => ({
-  container: {
-    display: 'flex',
-    flexDirection: 'row',
-    margin: 5,
-  },
-  selectText: {
-    marginRight: 8,
-    marginTop: 10,
-  },
-  flexItem: {
-    marginRight: 8,
-  },
-}))
-
-function AssemblySelector({ model }: { model: GridBookmarkModel }) {
-  const { classes } = useStyles()
-  const { assemblies, selectedAssembly, setSelectedAssembly } = model
-  const noAssemblies = assemblies.length === 0 ? true : false
-
-  const determineCurrentValue = (selectedAssembly: string) => {
-    if (selectedAssembly === 'all') {
-      return 'all'
-    } else if (assemblies.includes(selectedAssembly)) {
-      return selectedAssembly
-    }
-
-    return 'none'
-  }
+const AssemblySelector = observer(function ({
+  model,
+}: {
+  model: GridBookmarkModel
+}) {
+  const { validAssemblies, selectedAssemblies } = model
+  const noAssemblies = validAssemblies.size === 0 ? true : false
+  const label = 'Select assemblies'
+  const id = 'select-assemblies-label'
+  const selectedSet = new Set(selectedAssemblies)
+  const isAllSelected = [...validAssemblies].every(e => selectedSet.has(e))
 
   return (
-    <div className={classes.container}>
-      <Typography className={classes.selectText}>Select assembly:</Typography>
-      <FormControl className={classes.flexItem} disabled={noAssemblies}>
-        <Select
-          value={determineCurrentValue(selectedAssembly)}
-          onChange={event => setSelectedAssembly(event.target.value)}
+    <FormControl disabled={noAssemblies} fullWidth>
+      <InputLabel id={id}>{label}</InputLabel>
+      <Select
+        labelId={id}
+        multiple
+        value={selectedAssemblies}
+        onChange={event => model.setSelectedAssemblies([...event.target.value])}
+        input={<OutlinedInput label={label} />}
+        renderValue={selected => selected.join(', ')}
+      >
+        <MenuItem
+          onClickCapture={event => {
+            // onClickCapture allows us to avoid the parent Select onChange from triggering
+            if (isAllSelected) {
+              model.setSelectedAssemblies([])
+            } else {
+              model.setSelectedAssemblies(undefined)
+            }
+            event.preventDefault()
+          }}
         >
-          <MenuItem value="none">none</MenuItem>
-          <MenuItem value="all">all</MenuItem>
-          {assemblies.map(assembly => (
-            <MenuItem value={assembly} key={assembly}>
-              {assembly}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-    </div>
+          <Checkbox
+            checked={isAllSelected}
+            indeterminate={!isAllSelected && selectedAssemblies.length > 0}
+          />
+          <ListItemText primary="Select all" />
+        </MenuItem>
+        {[...validAssemblies].map(name => (
+          <MenuItem key={name} value={name}>
+            <Checkbox checked={selectedAssemblies.includes(name)} />
+            <ListItemText primary={name} />
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
   )
-}
+})
 
-export default observer(AssemblySelector)
+export default AssemblySelector

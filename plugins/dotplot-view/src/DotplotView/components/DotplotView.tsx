@@ -10,7 +10,7 @@ import { DotplotViewModel } from '../model'
 import ImportForm from './ImportForm'
 import Header from './Header'
 import Grid from './Grid'
-import { HorizontalAxis, VerticalAxis } from './Axes'
+import { VerticalAxis, HorizontalAxis } from './Axes'
 import { TooltipWhereClicked, TooltipWhereMouseovered } from './DotplotTooltip'
 
 const blank = { left: 0, top: 0, width: 0, height: 0 }
@@ -60,7 +60,10 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 type Coord = [number, number] | undefined
-type Rect = { left: number; top: number }
+interface Rect {
+  left: number
+  top: number
+}
 
 // produces offsetX/offsetY coordinates from a clientX and an element's
 // getBoundingClientRect
@@ -108,6 +111,7 @@ const DotplotViewInternal = observer(function ({
   const mousecurr = getOffset(mousecurrClient, svg)
   const mouseup = getOffset(mouseupClient, svg)
   const mouserect = mouseup || mousecurr
+  const mouserectClient = mouseupClient || mousecurrClient
   const xdistance = mousedown && mouserect ? mouserect[0] - mousedown[0] : 0
   const ydistance = mousedown && mouserect ? mouserect[1] - mousedown[1] : 0
   const { hview, vview, wheelMode, cursorMode } = model
@@ -187,22 +191,24 @@ const DotplotViewInternal = observer(function ({
     vview,
   ])
 
-  // detect a mouseup after a mousedown was submitted, autoremoves mouseup
-  // once that single mouseup is set
+  // detect a mouseup after a mousedown was submitted, autoremoves mouseup once
+  // that single mouseup is set
   useEffect(() => {
-    function globalMouseUp(event: MouseEvent) {
-      if (Math.abs(xdistance) > 3 && Math.abs(ydistance) > 3 && validSelect) {
-        setMouseUpClient([event.clientX, event.clientY])
-      } else {
-        setMouseDownClient(undefined)
-      }
-    }
-
     if (mousedown && !mouseup) {
+      function globalMouseUp(event: MouseEvent) {
+        if (Math.abs(xdistance) > 3 && Math.abs(ydistance) > 3 && validSelect) {
+          setMouseUpClient([event.clientX, event.clientY])
+        } else {
+          setMouseDownClient(undefined)
+        }
+      }
       window.addEventListener('mouseup', globalMouseUp, true)
-      return () => window.removeEventListener('mouseup', globalMouseUp, true)
+      return () => {
+        window.removeEventListener('mouseup', globalMouseUp, true)
+      }
+    } else {
+      return () => {}
     }
-    return () => {}
   }, [
     validSelect,
     mousedown,
@@ -241,14 +247,15 @@ const DotplotViewInternal = observer(function ({
               <TooltipWhereMouseovered
                 model={model}
                 mouserect={mouserect}
+                mouserectClient={mouserectClient}
                 xdistance={xdistance}
-                ydistance={ydistance}
               />
             ) : null}
             {validSelect ? (
               <TooltipWhereClicked
                 model={model}
                 mousedown={mousedown}
+                mousedownClient={mousedownClient}
                 xdistance={xdistance}
                 ydistance={ydistance}
               />
@@ -307,6 +314,8 @@ const DotplotViewInternal = observer(function ({
                   if (mousedown && mouseup) {
                     model.zoomIn(mousedown, mouseup)
                   }
+                  // below line is needed to prevent tooltip from sticking
+                  setMouseOvered(false)
                 },
               },
               {
@@ -315,6 +324,8 @@ const DotplotViewInternal = observer(function ({
                   if (mousedown && mouseup) {
                     model.onDotplotView(mousedown, mouseup)
                   }
+                  // below line is needed to prevent tooltip from sticking
+                  setMouseOvered(false)
                 },
               },
             ]}

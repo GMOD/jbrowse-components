@@ -35,7 +35,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function CallbackEditor({
+const CallbackEditor = observer(function ({
   slot,
 }: {
   slot: {
@@ -121,6 +121,6 @@ function CallbackEditor({
       </div>
     </>
   )
-}
+})
 
-export default observer(CallbackEditor)
+export default CallbackEditor

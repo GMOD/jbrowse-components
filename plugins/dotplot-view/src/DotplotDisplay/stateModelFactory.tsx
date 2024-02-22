@@ -22,6 +22,7 @@ import { DotplotViewModel, ExportSvgOptions } from '../DotplotView/model'
 
 /**
  * #stateModel DotplotDisplay
+ * #category display
  */
 export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
@@ -53,10 +54,10 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     )
     .views(self => ({
       get shouldDisplay() {
-        const view = getContainingView(self)
+        const { vview, hview } = getContainingView(self) as DotplotViewModel
         return (
-          view.vview.bpPerPx === self.data.bpPerPxY &&
-          view.hview.bpPerPx === self.data.bpPerPxX
+          vview.bpPerPx === self.data.bpPerPxY &&
+          hview.bpPerPx === self.data.bpPerPxX
         )
       },
       /**

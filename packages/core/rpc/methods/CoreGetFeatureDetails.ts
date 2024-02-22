@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType'
 import { RenderArgs } from './util'
 import { RemoteAbortSignal } from '../remoteAbortSignals'
@@ -47,11 +46,11 @@ export default class CoreGetFeatureDetails extends RpcMethodType {
       this.pluginManager.getRendererType(rendererType),
     )
 
-    // @ts-expect-error
-    const sess = RendererType.sessions[getLayoutId(args)]
-    const { layout } = sess.cachedLayout
-    const xref = layout.getDataByID(featureId)
-
-    return { feature: xref.toJSON() }
+    return {
+      // @ts-expect-error
+      feature: RendererType.sessions[getLayoutId(args)]?.cachedLayout.layout
+        .getDataByID(featureId)
+        ?.toJSON(),
+    }
   }
 }

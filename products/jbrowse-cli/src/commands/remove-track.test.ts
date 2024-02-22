@@ -9,6 +9,9 @@ import { setup, readConf } from '../testUtil'
 
 const twoPath = path.join(__dirname, '..', '..', 'test', 'data', 'simple.2bit')
 
+// Cleaning up exitCode in Node.js 20, xref https://github.com/jestjs/jest/issues/14501
+afterAll(() => (process.exitCode = 0))
+
 describe('add-assembly', () => {
   setup
     .do(ctx =>

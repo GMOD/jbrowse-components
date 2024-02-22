@@ -9,9 +9,9 @@ jobs:
     name: Build Windows desktop app
     runs-on: ubuntu-latest
     container:
-      image: docker://node:16-bullseye
+      image: docker://node:20-bullseye
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install deps (with cache)
         uses: bahmutov/npm-install@v1
       - name: Install wine

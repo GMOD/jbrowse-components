@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/text-indexing",
-  "version": "2.4.2",
+  "version": "2.10.2",
   "description": "JBrowse 2 text indexing for desktop",
   "keywords": [
     "jbrowse",
@@ -26,13 +26,12 @@
   "module": "",
   "files": [
     "dist",
-    "esm",
-    "src"
+    "esm"
   ],
   "scripts": {
     "build:esm": "tsc --build tsconfig.build.esm.json",
-    "build:es5": "tsc --build tsconfig.build.es5.json",
-    "build": "npm run build:esm && npm run build:es5",
+    "build:commonjs": "tsc --build tsconfig.build.commonjs.json",
+    "build": "npm run build:esm && npm run build:commonjs",
     "test": "cd ../..; jest packages/text-indexing",
     "clean": "rimraf dist esm *.tsbuildinfo",
     "prebuild": "yarn clean",
@@ -48,11 +47,13 @@
   },
   "peerDependencies": {
     "mobx": "^6.0.0",
-    "mobx-react": "^7.0.0",
+    "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",
-    "react": "^17.0.0",
-    "react-dom": "^17.0.0",
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0",
     "rxjs": "^7.0.0"
   },
-  "private": true
+  "publishConfig": {
+    "access": "public"
+  }
 }

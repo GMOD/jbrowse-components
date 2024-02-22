@@ -12,7 +12,6 @@ import deepEqual from 'fast-deep-equal'
 
 // jbrowse
 import {
-  ConfigurationReference,
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
   getConf,
@@ -20,19 +19,13 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { MenuItem } from '@jbrowse/core/ui'
+import { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
+
+// locals
+import { LinearAlignmentsDisplayMixin } from './alignmentsModel'
+import { getLowerPanelDisplays } from './util'
 
 const minDisplayHeight = 20
-
-function getLowerPanelDisplays(pluginManager: PluginManager) {
-  return (
-    pluginManager
-      .getDisplayElements()
-      // @ts-expect-error
-      .filter(f => f.subDisplay?.type === 'LinearAlignmentsDisplay')
-      // @ts-expect-error
-      .filter(f => f.subDisplay?.lowerPanel)
-  )
-}
 
 function deepSnap<T extends IStateTreeNode, U extends IStateTreeNode>(
   x1: T,
@@ -74,57 +67,11 @@ function propagateFilterBy(self: AlignmentsDisplayModel) {
   }
 }
 
-function AlignmentsModel(
-  pluginManager: PluginManager,
-  configSchema: AnyConfigurationSchemaType,
-) {
-  const lowerPanelDisplays = getLowerPanelDisplays(pluginManager).map(
-    f => f.stateModel,
-  )
-
-  return types.model({
-    /**
-     * #property
-     * refers to LinearPileupDisplay sub-display model
-     */
-    PileupDisplay: types.maybe(types.union(...lowerPanelDisplays)),
-    /**
-     * #property
-     * refers to LinearSNPCoverageDisplay sub-display model
-     */
-    SNPCoverageDisplay: types.maybe(
-      pluginManager.getDisplayType('LinearSNPCoverageDisplay').stateModel,
-    ),
-    /**
-     * #property
-     */
-    snpCovHeight: 45,
-    /**
-     * #property
-     */
-    type: types.literal('LinearAlignmentsDisplay'),
-    /**
-     * #property
-     */
-    configuration: ConfigurationReference(configSchema),
-    /**
-     * #property
-     */
-    heightPreConfig: types.maybe(types.number),
-    /**
-     * #property
-     */
-    userFeatureScreenDensity: types.maybe(types.number),
-    /**
-     * #property
-     */
-    lowerPanelType: 'LinearPileupDisplay',
-  })
-}
-
 /**
  * #stateModel LinearAlignmentsDisplay
- * extends `BaseDisplay`
+ * extends
+ * - [BaseDisplay](../basedisplay)
+ * - [LinearAlignmentsDisplayMixin](../linearalignmentsdisplaymixin)
  */
 function stateModelFactory(
   pluginManager: PluginManager,
@@ -134,7 +81,7 @@ function stateModelFactory(
     .compose(
       'LinearAlignmentsDisplay',
       BaseDisplay,
-      AlignmentsModel(pluginManager, configSchema),
+      LinearAlignmentsDisplayMixin(pluginManager, configSchema),
     )
     .volatile(() => ({
       scrollTop: 0,
@@ -161,6 +108,16 @@ function stateModelFactory(
       get height() {
         return self.heightPreConfig ?? getConf(self, 'height')
       },
+
+      /**
+       * #getter
+       */
+      get featureIdUnderMouse() {
+        return (
+          self.PileupDisplay.featureIdUnderMouse ||
+          self.SNPCoverageDisplay.featureIdUnderMouse
+        )
+      },
     }))
     .views(self => ({
       /**
@@ -185,7 +142,7 @@ function stateModelFactory(
        * #method
        */
       searchFeatureByID(id: string) {
-        return self.PileupDisplay.searchFeatureByID(id)
+        return self.PileupDisplay.searchFeatureByID?.(id)
       },
 
       /**
@@ -234,9 +191,9 @@ function stateModelFactory(
       /**
        * #action
        */
-      updateStatsLimit(stats?: unknown) {
-        self.PileupDisplay.updateStatsLimit(stats)
-        self.SNPCoverageDisplay.updateStatsLimit(stats)
+      setFeatureDensityStatsLimit(stats?: FeatureDensityStats) {
+        self.PileupDisplay.setFeatureDensityStatsLimit(stats)
+        self.SNPCoverageDisplay.setFeatureDensityStatsLimit(stats)
       },
 
       /**
@@ -328,7 +285,11 @@ function stateModelFactory(
        */
       async renderSvg(opts: { rasterizeLayers?: boolean }) {
         const pileupHeight = self.height - self.SNPCoverageDisplay.height
-        await when(() => self.PileupDisplay.ready)
+        await when(
+          () =>
+            !self.PileupDisplay.renderProps().notReady &&
+            !self.SNPCoverageDisplay.renderProps().notReady,
+        )
         return (
           <>
             <g>{await self.SNPCoverageDisplay.renderSvg(opts)}</g>
@@ -349,6 +310,9 @@ function stateModelFactory(
          * #method
          */
         trackMenuItems(): MenuItem[] {
+          if (!self.PileupDisplay) {
+            return []
+          }
           const extra = getLowerPanelDisplays(pluginManager).map(d => ({
             type: 'radio',
             label: d.displayName,

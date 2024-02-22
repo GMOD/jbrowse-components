@@ -63,19 +63,25 @@ const blockState = types
       },
       afterAttach() {
         const display = getContainingDisplay(self)
-        makeAbortableReaction(
-          self as any,
-          renderBlockData,
-          renderBlockEffect, // reaction doesn't expect async here
-          {
-            name: `${display.id}/${assembleLocString(self.region)} rendering`,
-            delay: display.renderDelay,
-            fireImmediately: true,
-          },
-          this.setLoading,
-          this.setRendered,
-          this.setError,
-        )
+        setTimeout(() => {
+          if (isAlive(self)) {
+            makeAbortableReaction(
+              self as any,
+              renderBlockData,
+              renderBlockEffect, // reaction doesn't expect async here
+              {
+                name: `${display.id}/${assembleLocString(
+                  self.region,
+                )} rendering`,
+                delay: display.renderDelay,
+                fireImmediately: true,
+              },
+              this.setLoading,
+              this.setRendered,
+              this.setError,
+            )
+          }
+        }, display.renderDelay)
       },
       setStatus(message: string) {
         self.status = message
@@ -175,25 +181,27 @@ const blockState = types
         getParent<any>(self, 2).reload()
       },
       beforeDestroy() {
-        if (renderInProgress && !renderInProgress.signal.aborted) {
-          renderInProgress.abort()
-        }
-        const display = getContainingDisplay(self)
-        const { rpcManager } = getSession(self)
-        const { rendererType } = display
-        const { renderArgs } = renderBlockData(cast(self))
-        // renderArgs can be undefined if an error occurred in this block
-        if (renderArgs) {
-          rendererType
-            .freeResourcesInClient(
-              rpcManager,
-              JSON.parse(JSON.stringify(renderArgs)),
-            )
-            .catch((e: Error) => {
-              // just console.error if it's something while it's being destroyed
-              console.warn('Error while destroying block', e)
-            })
-        }
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        ;(async () => {
+          try {
+            if (renderInProgress && !renderInProgress.signal.aborted) {
+              renderInProgress.abort()
+            }
+            const display = getContainingDisplay(self)
+            const { rpcManager } = getSession(self)
+            const { rendererType } = display
+            const { renderArgs } = renderBlockData(cast(self))
+            // renderArgs can be undefined if an error occurred in this block
+            if (renderArgs) {
+              await rendererType.freeResourcesInClient(
+                rpcManager,
+                JSON.parse(JSON.stringify(renderArgs)),
+              )
+            }
+          } catch (e) {
+            console.error('Error while destroying block', e)
+          }
+        })()
       },
     }
   })

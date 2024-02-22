@@ -2,12 +2,7 @@ const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
 module.exports = {
   stories: ['../stories/**/*.mdx', '../stories/**/*.stories.@(js|jsx|ts|tsx)'],
   staticDirs: ['../public'],
-  addons: [
-    '@storybook/addon-links',
-    '@storybook/addon-essentials',
-    '@storybook/preset-create-react-app',
-    '@storybook/addon-interactions',
-  ],
+  addons: ['@storybook/addon-essentials'],
   framework: {
     name: '@storybook/react-webpack5',
     options: {},
@@ -22,12 +17,16 @@ module.exports = {
         excludeAliases: ['console'],
       }),
     )
+
     config.module.rules.push({
       test: /\.(ts|tsx|js|jsx)$/,
       use: [
         {
-          loader: require.resolve('ts-loader'),
-          options: { transpileOnly: true },
+          loader: require.resolve('babel-loader'),
+          options: {
+            rootMode: 'upward',
+            presets: ['@babel/preset-react'],
+          },
         },
       ],
     })

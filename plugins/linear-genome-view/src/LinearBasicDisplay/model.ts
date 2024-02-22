@@ -14,12 +14,16 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 // locals
 import { BaseLinearDisplay } from '../BaseLinearDisplay'
 
-const SetMaxHeightDlg = lazy(() => import('./components/SetMaxHeight'))
+const SetMaxHeightDialog = lazy(() => import('./components/SetMaxHeight'))
 
 /**
  * #stateModel LinearBasicDisplay
+ * #category display
  * used by `FeatureTrack`, has simple settings like "show/hide feature labels",
  * etc.
+ *
+ * extends
+ * - [BaseLinearDisplay](../baselineardisplay)
  */
 function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
@@ -197,7 +201,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               label: 'Set max height',
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
-                  SetMaxHeightDlg,
+                  SetMaxHeightDialog,
                   { model: self, handleClose },
                 ])
               },

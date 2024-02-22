@@ -9,11 +9,15 @@ import {
 } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
 
-function ColorByTagDlg(props: {
-  model: { setColorScheme: Function }
+const ColorByTagDialog = observer(function ({
+  model,
+  handleClose,
+}: {
+  model: {
+    setColorScheme: (arg: { type: string; tag: string }) => void
+  }
   handleClose: () => void
 }) {
-  const { model, handleClose } = props
   const [tag, setTag] = useState('')
   const validTag = tag.match(/^[A-Za-z][A-Za-z0-9]$/)
 
@@ -30,24 +34,17 @@ function ColorByTagDlg(props: {
           value={tag}
           onChange={event => setTag(event.target.value)}
           placeholder="Enter tag name"
-          inputProps={{
-            maxLength: 2,
-            'data-testid': 'color-tag-name-input',
-          }}
+          inputProps={{ maxLength: 2 }}
           error={tag.length === 2 && !validTag}
           helperText={tag.length === 2 && !validTag ? 'Not a valid tag' : ''}
           autoComplete="off"
-          data-testid="color-tag-name"
         />
         <DialogActions>
           <Button
             variant="contained"
             color="primary"
             onClick={() => {
-              model.setColorScheme({
-                type: 'tag',
-                tag,
-              })
+              model.setColorScheme({ type: 'tag', tag })
               handleClose()
             }}
             disabled={!validTag}
@@ -61,6 +58,6 @@ function ColorByTagDlg(props: {
       </DialogContent>
     </Dialog>
   )
-}
+})
 
-export default observer(ColorByTagDlg)
+export default ColorByTagDialog

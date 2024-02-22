@@ -1,6 +1,6 @@
 ---
 id: developer_guide
-title: Overview
+title: Developer guide
 toplevel: true
 ---
 

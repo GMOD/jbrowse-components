@@ -3,12 +3,19 @@ import {
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { getSession } from '@jbrowse/core/util'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import { types } from 'mobx-state-tree'
+import { lazy } from 'react'
+
+const EditGCContentParamsDialog = lazy(
+  () => import('./components/EditGCContentParams'),
+)
 
 /**
  * #stateModel LinearGCContentDisplay
- * base model BaseWiggleDisplayModel
+ * #category display
+ * base model `BaseWiggleDisplayModel`
  */
 export default function stateModelFactory(
   pluginManager: PluginManager,
@@ -23,11 +30,56 @@ export default function stateModelFactory(
          * #property
          */
         type: types.literal('LinearGCContentDisplay'),
+        /**
+         * #property
+         */
+        windowSize: types.maybe(types.number),
+        /**
+         * #property
+         */
+        windowDelta: types.maybe(types.number),
       }),
     )
+    .actions(self => ({
+      setGCContentParams({
+        windowSize,
+        windowDelta,
+      }: {
+        windowSize: number
+        windowDelta: number
+      }) {
+        self.windowSize = windowSize
+        self.windowDelta = windowDelta
+      },
+    }))
+    .views(self => ({
+      get windowSizeSetting() {
+        return self.windowSize ?? getConf(self, 'windowSize')
+      },
+      get windowDeltaSetting() {
+        return self.windowDelta ?? getConf(self, 'windowDelta')
+      },
+    }))
     .views(self => {
-      const { renderProps: superRenderProps } = self
+      const {
+        trackMenuItems: superTrackMenuItems,
+        renderProps: superRenderProps,
+      } = self
       return {
+        trackMenuItems() {
+          return [
+            ...superTrackMenuItems(),
+            {
+              label: 'Change GC parameters',
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  EditGCContentParamsDialog,
+                  { model: self, handleClose },
+                ])
+              },
+            },
+          ]
+        },
         /**
          * #method
          * retrieves the sequence adapter from parent track, and puts it as a
@@ -40,6 +92,8 @@ export default function stateModelFactory(
             adapterConfig: {
               type: 'GCContentAdapter',
               sequenceAdapter,
+              windowSize: self.windowSizeSetting,
+              windowDelta: self.windowDeltaSetting,
             },
           }
         },

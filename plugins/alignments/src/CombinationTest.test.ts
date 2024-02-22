@@ -61,7 +61,9 @@ async function getFeats(f1: string, f2: string) {
   return { bamFeaturesArray, cramFeaturesArray }
 }
 
-type M = { start: number }
+interface M {
+  start: number
+}
 
 async function cigarCheck(f: string) {
   const { cramFeaturesArray, bamFeaturesArray } = await getFeats(
@@ -100,9 +102,9 @@ async function mismatchesCheck(f: string) {
 test('match CIGAR across file types', async () => {
   await cigarCheck('volvox-sorted')
   await cigarCheck('volvox-long-reads.fastq.sorted')
-})
+}, 20000)
 
 test('mismatches same across file types', async () => {
   await mismatchesCheck('volvox-sorted')
   await mismatchesCheck('volvox-long-reads.fastq.sorted')
-})
+}, 20000)

@@ -1,7 +1,8 @@
 import React from 'react'
 import { getSnapshot, getParent } from 'mobx-state-tree'
-import { ThemeProvider } from '@mui/material/styles'
-import { render, cleanup, fireEvent, waitFor } from '@testing-library/react'
+import { ThemeProvider } from '@mui/material'
+import { render, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 
@@ -26,107 +27,83 @@ const plugins = {
   ],
 }
 
-let session: ReturnType<typeof createTestSession>
-let model: PluginStoreModel
-
 beforeEach(() => {
-  session = createTestSession()
-  model = session.addWidget('PluginStoreWidget', 'pluginStoreWidget')
-  const { location } = window
-
-  // @ts-expect-error
-  delete window.location
-  window.location = {
-    ...location,
-    reload: jest.fn(),
-  }
-
-  // @ts-expect-error
-  fetch.resetMocks()
-
-  // @ts-expect-error
-  fetch.mockResponse(JSON.stringify(plugins))
+  Object.defineProperty(window, 'location', {
+    configurable: true,
+    value: {
+      reload: jest.fn(),
+    },
+  })
 })
 
-afterEach(cleanup)
+jest.spyOn(global, 'fetch').mockImplementation(async () => {
+  return new Response(JSON.stringify(plugins))
+})
+
+function setup(snapshot?: {}, adminMode?: boolean) {
+  const user = userEvent.setup()
+  const session = createTestSession(snapshot, adminMode)
+  const model = session.addWidget(
+    'PluginStoreWidget',
+    'pluginStoreWidget',
+  ) as PluginStoreModel
+  return { model, session, user }
+}
 
 test('renders with the available plugins', async () => {
+  const { model } = setup()
   const { container, findByText } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <PluginStoreWidget model={model} />
     </ThemeProvider>,
   )
   await findByText('multiple sequence alignment browser plugin for JBrowse 2')
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
 })
 
 test('Installs a session plugin', async () => {
+  const { user, session, model } = setup()
   const { findByText } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <PluginStoreWidget model={model} />
     </ThemeProvider>,
   )
-  await findByText('multiple sequence alignment browser plugin for JBrowse 2')
-  fireEvent.click(await findByText('Install'))
-  await waitFor(() => {
-    expect(window.location.reload).toHaveBeenCalled()
-  })
+  await user.click(await findByText('Install'))
+  await waitFor(() => expect(window.location.reload).toHaveBeenCalled())
   expect(getSnapshot(session.sessionPlugins)[0]).toEqual(plugins.plugins[0])
 })
 
 test('plugin store admin - adds a custom plugin correctly', async () => {
-  session = createTestSession({}, true)
-  model = session.addWidget('PluginStoreWidget', 'pluginStoreWidget')
-  const { findByText, getByText, getByLabelText } = render(
+  const { user, session, model } = setup({}, true)
+  const { findByText, findByLabelText } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <PluginStoreWidget model={model} />
     </ThemeProvider>,
   )
-  await findByText('multiple sequence alignment browser plugin for JBrowse 2')
-  fireEvent.click(getByText('Add custom plugin'))
-  fireEvent.change(getByLabelText('Plugin URL'), {
-    target: {
-      value:
-        'https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.esm.js',
-    },
-  })
-  fireEvent.change(getByLabelText('Plugin name'), {
-    target: {
-      value: 'MsaView',
-    },
-  })
-  fireEvent.click(getByText('Submit'))
+  await user.click(await findByText('Add custom plugin'))
+  await user.type(await findByLabelText('Plugin URL'), 'msaview.js')
+  await user.type(await findByLabelText('Plugin name'), 'MsaView')
+  await user.click(await findByText('Submit'))
 
-  await waitFor(() => {
-    expect(window.location.reload).toHaveBeenCalled()
-  })
+  await waitFor(() => expect(window.location.reload).toHaveBeenCalled())
 
   expect(getSnapshot(getParent(session)).jbrowse.plugins).toEqual([
     {
       name: 'MsaView',
-      umdUrl:
-        'https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.esm.js',
+      umdUrl: 'msaview.js',
     },
   ])
 })
 
 test('plugin store admin - removes a custom plugin correctly', async () => {
-  session = createTestSession({}, true)
-  model = session.addWidget('PluginStoreWidget', 'pluginStoreWidget')
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const rootModel = getParent<any>(session)
-  const { jbrowse } = rootModel
-  jbrowse.addPlugin(plugins.plugins[0])
-  const { findByText, getByText, getByTestId } = render(
+  const { user, session, model } = setup({}, true)
+  session.jbrowse.addPlugin(plugins.plugins[0])
+  const { findByText, findByTestId } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <PluginStoreWidget model={model} />
     </ThemeProvider>,
   )
-  await findByText('multiple sequence alignment browser plugin for JBrowse 2')
-  fireEvent.click(getByTestId('removePlugin-SVGPlugin'))
-  fireEvent.click(getByText('Confirm'))
-  await waitFor(() => {
-    expect(window.location.reload).toHaveBeenCalled()
-  })
+  await user.click(await findByTestId('removePlugin-SVGPlugin'))
+  await user.click(await findByText('Confirm'))
+  await waitFor(() => expect(window.location.reload).toHaveBeenCalled())
 })

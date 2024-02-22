@@ -1,5 +1,4 @@
 const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
-const webpack = require('webpack')
 
 module.exports = {
   devServer: config => {
@@ -12,10 +11,13 @@ module.exports = {
         excludeAliases: ['console'],
       }),
     ],
-    configure: {
-      resolve: {
-        fallback: { fs: false },
-      },
+    configure: config => {
+      config.resolve.fallback = { fs: false }
+      // the 'auto' setting is important for properly resolving the loading of
+      // worker chunks xref
+      // https://github.com/webpack/webpack/issues/13791#issuecomment-897579223
+      config.output.publicPath = 'auto'
+      return config
     },
   },
 }

@@ -2,6 +2,7 @@ import React, { useRef } from 'react'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { Menu } from '@jbrowse/core/ui'
+import { getEnv } from '@jbrowse/core/util'
 
 // local utils
 import { LinearGenomeViewModel, SCALE_BAR_HEIGHT } from '..'
@@ -24,7 +25,7 @@ const useStyles = makeStyles()({
 
 type LGV = LinearGenomeViewModel
 
-export default observer(function TracksContainer({
+const TracksContainer = observer(function TracksContainer({
   children,
   model,
 }: {
@@ -32,6 +33,7 @@ export default observer(function TracksContainer({
   model: LGV
 }) {
   const { classes } = useStyles()
+  const { pluginManager } = getEnv(model)
   const { mouseDown: mouseDown1, mouseUp } = useSideScroll(model)
   const ref = useRef<HTMLDivElement>(null)
   const {
@@ -51,17 +53,17 @@ export default observer(function TracksContainer({
   } = useRangeSelect(ref, model, true)
   useWheelScroll(ref, model)
 
+  const additional = pluginManager.evaluateExtensionPoint(
+    'LinearGenomeView-TracksContainerComponent',
+    undefined,
+    { model },
+  ) as React.ReactNode
+
   return (
     <div
       ref={ref}
       data-testid="trackContainer"
       className={classes.tracksContainer}
-      onClick={event => {
-        if (event.detail === 2) {
-          const left = ref.current?.getBoundingClientRect().left || 0
-          model.zoomTo(model.bpPerPx / 2, event.clientX - left, true)
-        }
-      }}
       onMouseDown={event => {
         mouseDown1(event)
         mouseDown2(event)
@@ -105,7 +107,10 @@ export default observer(function TracksContainer({
           />
         }
       />
+      {additional}
       {children}
     </div>
   )
 })
+
+export default TracksContainer

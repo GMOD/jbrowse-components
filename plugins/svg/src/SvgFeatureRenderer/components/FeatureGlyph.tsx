@@ -11,7 +11,7 @@ import { observer } from 'mobx-react'
 import type { DisplayModel } from './util'
 import FeatureLabel from './FeatureLabel'
 
-function FeatureGlyph(props: {
+const FeatureGlyph = observer(function (props: {
   feature: Feature
   rootLayout: SceneGraph
   config: AnyConfigurationModel
@@ -78,6 +78,6 @@ function FeatureGlyph(props: {
       ) : null}
     </g>
   )
-}
+})
 
-export default observer(FeatureGlyph)
+export default FeatureGlyph

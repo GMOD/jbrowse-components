@@ -26,7 +26,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function ManageConnectionsDlg({
+const ManageConnectionsDialog = observer(function ({
   session,
   handleClose,
   breakConnection,
@@ -79,6 +79,6 @@ function ManageConnectionsDlg({
       </DialogActions>
     </Dialog>
   )
-}
+})
 
-export default observer(ManageConnectionsDlg)
+export default ManageConnectionsDialog

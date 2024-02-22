@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-gff3",
-  "version": "2.4.2",
+  "version": "2.10.2",
   "description": "JBrowse 2 gff3.",
   "keywords": [
     "jbrowse",
@@ -20,7 +20,6 @@
   "main": "src/index.ts",
   "files": [
     "dist",
-    "src",
     "esm"
   ],
   "scripts": {
@@ -33,7 +32,7 @@
     "useSrc": "node ../../scripts/useSrc.js",
     "prebuild": "npm run clean",
     "build:esm": "tsc --build tsconfig.build.esm.json",
-    "build:es5": "tsc --build tsconfig.build.es5.json",
+    "build:commonjs": "tsc --build tsconfig.build.commonjs.json",
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {

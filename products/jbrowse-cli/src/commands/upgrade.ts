@@ -1,9 +1,9 @@
-import { flags } from '@oclif/command'
-import rimraf from 'rimraf'
+import { Args, Flags } from '@oclif/core'
+import { rimrafSync } from 'rimraf'
 import fs from 'fs'
 import path from 'path'
+import decompress from 'decompress'
 import fetch from '../fetchWithProxy'
-import unzip from 'unzipper'
 import JBrowseCommand from '../base'
 
 export default class Upgrade extends JBrowseCommand {
@@ -29,44 +29,43 @@ export default class Upgrade extends JBrowseCommand {
     '$ jbrowse upgrade --nightly',
   ]
 
-  static args = [
-    {
-      name: 'localPath',
+  static args = {
+    localPath: Args.string({
       required: false,
       description: `Location where JBrowse 2 is installed`,
       default: '.',
-    },
-  ]
+    }),
+  }
 
   static flags = {
-    help: flags.help({ char: 'h' }),
+    help: Flags.help({ char: 'h' }),
     // will need to account for pagenation once there is a lot of releases
-    listVersions: flags.boolean({
+    listVersions: Flags.boolean({
       char: 'l',
       description: 'Lists out all versions of JBrowse 2',
     }),
-    tag: flags.string({
+    tag: Flags.string({
       char: 't',
       description:
         'Version of JBrowse 2 to install. Format is v1.0.0.\nDefaults to latest',
     }),
-    branch: flags.string({
+    branch: Flags.string({
       description: 'Download a development build from a named git branch',
     }),
-    nightly: flags.boolean({
+    nightly: Flags.boolean({
       description: 'Download the latest development build from the main branch',
     }),
-    clean: flags.boolean({
+    clean: Flags.boolean({
       description: 'Removes old js,map,and LICENSE files in the installation',
     }),
-    url: flags.string({
+    url: Flags.string({
       char: 'u',
       description: 'A direct URL to a JBrowse 2 release',
     }),
   }
 
   async run() {
-    const { args: runArgs, flags: runFlags } = this.parse(Upgrade)
+    const { args: runArgs, flags: runFlags } = await this.parse(Upgrade)
     const { localPath: argsPath } = runArgs as { localPath: string }
     const { clean, listVersions, tag, url, branch, nightly } = runFlags
 
@@ -113,12 +112,13 @@ export default class Upgrade extends JBrowseCommand {
     }
 
     if (clean) {
-      rimraf.sync(path.join(argsPath, 'static'))
+      rimrafSync(path.join(argsPath, 'static'))
       fs.readdirSync(argsPath)
         .filter(f => f.includes('worker.js'))
         .forEach(f => fs.unlinkSync(path.join(argsPath, f)))
     }
-    await response.body.pipe(unzip.Extract({ path: argsPath })).promise()
+
+    await decompress(Buffer.from(await response.arrayBuffer()), argsPath)
     this.log(`Unpacked ${locationUrl} at ${argsPath}`)
   }
 }

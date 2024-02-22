@@ -16,4 +16,7 @@ export { BaseInternetAccountConfig } from './baseInternetAccountConfig'
 export { createBaseTrackModel } from './BaseTrackModel'
 export type { BaseTrackModel, BaseTrackStateModel } from './BaseTrackModel'
 export { createBaseTrackConfig } from './baseTrackConfig'
-export type { BaseTrackConfig, BaseTrackConfigModel } from './baseTrackConfig'
+export type {
+  BaseTrackConfig,
+  BaseTrackConfigSchema as BaseTrackConfigModel,
+} from './baseTrackConfig'

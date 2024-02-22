@@ -1,13 +1,13 @@
 import { polarToCartesian, assembleLocString, Region } from '@jbrowse/core/util'
 import { thetaRangesOverlap } from './viewportVisibleRegion'
 
-export type SliceElidedRegion = {
+export interface SliceElidedRegion {
   elided: true
   widthBp: number
   regions: Region[]
 }
 
-export type SliceNonElidedRegion = {
+export interface SliceNonElidedRegion {
   elided: false
   widthBp: number
   start: number

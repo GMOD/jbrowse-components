@@ -1,7 +1,7 @@
 import { ConfigurationSchema } from '../../configuration'
 
 /**
- * #config InternetAccount
+ * #config BaseInternetAccount
  * the "base" internet account type
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars

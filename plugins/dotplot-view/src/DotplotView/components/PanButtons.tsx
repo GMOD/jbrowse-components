@@ -30,7 +30,7 @@ const useStyles = makeStyles()({
   },
 })
 
-export default observer(function PanButtons({
+const PanButtons = observer(function PanButtons({
   model,
 }: {
   model: DotplotViewModel
@@ -91,3 +91,5 @@ export default observer(function PanButtons({
     </Paper>
   )
 })
+
+export default PanButtons

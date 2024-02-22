@@ -1,17 +1,14 @@
 ---
 id: dropboxoauthinternetaccount
 title: DropboxOAuthInternetAccount
-toplevel: true
 ---
 
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-## Source file
+### Source file
 
 [plugins/authentication/src/DropboxOAuthModel/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/DropboxOAuthModel/configSchema.ts)
-
-## Docs
 
 ### DropboxOAuthInternetAccount - Slots
 
@@ -64,17 +61,7 @@ domains: {
     }
 ```
 
-#### slot: hasRefreshToken
-
-```js
-hasRefreshToken: {
-      description: 'true if the endpoint can supply a refresh token',
-      type: 'boolean',
-      defaultValue: true,
-    }
-```
-
-## DropboxOAuthInternetAccount - Derives from
+### DropboxOAuthInternetAccount - Derives from
 
 ```js
 baseConfiguration: OAuthConfigSchema

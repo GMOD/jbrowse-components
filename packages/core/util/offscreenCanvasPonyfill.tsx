@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 // This file is a ponyfill for the HTML5 OffscreenCanvas API.
 
 import isNode from 'detect-node'
@@ -37,9 +38,9 @@ const weHave = {
 
 if (weHave.realOffscreenCanvas) {
   createCanvas = (width, height) => new OffscreenCanvas(width, height)
-  // eslint-disable-next-line no-restricted-globals
+
   createImageBitmap = window.createImageBitmap || self.createImageBitmap
-  // eslint-disable-next-line no-restricted-globals
+
   ImageBitmapType = window.ImageBitmap || self.ImageBitmap
 } else if (weHave.node) {
   // use node-canvas if we are running in node (i.e. automated tests)

@@ -1,6 +1,5 @@
 import electron, { dialog } from 'electron'
 import debug from 'electron-debug'
-import isDev from 'electron-is-dev'
 import fs from 'fs'
 import path from 'path'
 import url from 'url'
@@ -8,6 +7,9 @@ import windowStateKeeper from 'electron-window-state'
 import fetch from 'node-fetch'
 import { getFileStream } from './generateFastaIndex'
 import { generateFastaIndex } from '@gmod/faidx'
+
+// @ts-ignore
+import parseJson from 'json-parse-even-better-errors'
 
 import { autoUpdater } from 'electron-updater'
 
@@ -26,46 +28,30 @@ function stringify(obj: unknown) {
 }
 
 async function readRecentSessions(): Promise<RecentSession[]> {
-  let data = ''
   try {
-    data = await readFile(recentSessionsPath, 'utf8')
-    return JSON.parse(data)
+    return parseJson(await readFile(recentSessionsPath, 'utf8'))
   } catch (e) {
-    console.error(
-      `Failed to parse existing recentSessionsPath, data was ${data}`,
-      e,
+    throw new Error(
+      `Failed to load recent sessions file ${recentSessionsPath}: ${e}`,
     )
-    return []
   }
 }
 
 async function readSession(
   sessionPath: string,
 ): Promise<{ assemblies?: unknown[] }> {
-  let data = ''
   try {
-    data = await readFile(sessionPath, 'utf8')
-    return JSON.parse(data)
+    return parseJson(await readFile(sessionPath, 'utf8'))
   } catch (e) {
-    console.error(
-      `Failed to parse session at "${sessionPath}", data was ${data}`,
-      e,
-    )
-    return {}
+    throw new Error(`Failed to read session ${sessionPath}: ${e}`)
   }
 }
 
 async function readQuickstart(quickstartPath: string): Promise<unknown> {
-  let data = ''
   try {
-    data = await readFile(quickstartPath, 'utf8')
-    return JSON.parse(data)
+    return parseJson(await readFile(quickstartPath, 'utf8'))
   } catch (e) {
-    console.error(
-      `Failed to parse quickstart at "${quickstartPath}", data was ${data}`,
-      e,
-    )
-    return {}
+    throw new Error(`Failed to read quickstart file ${quickstartPath}: ${e}`)
   }
 }
 
@@ -212,14 +198,15 @@ async function createWindow() {
   // this ready-to-show handler must be attached before the loadURL
   mainWindow.once('ready-to-show', () => {
     // unsure how to error handle
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    autoUpdater.checkForUpdatesAndNotify()
+    autoUpdater.checkForUpdatesAndNotify().catch(e => {
+      console.error(e)
+    })
   })
 
   await mainWindow.loadURL(
-    isDev
-      ? url.format(devServerUrl)
-      : `file://${path.join(app.getAppPath(), 'build', 'index.html')}`,
+    app.isPackaged
+      ? `file://${path.join(app.getAppPath(), 'build', 'index.html')}`
+      : url.format(devServerUrl),
   )
 
   mainWindow.webContents.setWindowOpenHandler(details => {
@@ -233,89 +220,88 @@ async function createWindow() {
 
   const mainMenu = Menu.buildFromTemplate([
     // { role: 'appMenu' }
-    // @ts-expect-error
     ...(isMac
       ? [
           {
             label: app.name,
             submenu: [
-              { role: 'about' },
-              { type: 'separator' },
-              { role: 'services' },
-              { type: 'separator' },
-              { role: 'hide' },
-              { role: 'hideothers' },
-              { role: 'unhide' },
-              { type: 'separator' },
-              { role: 'quit' },
+              { role: 'about' as const },
+              { type: 'separator' as const },
+              { role: 'services' as const },
+              { type: 'separator' as const },
+              { role: 'hide' as const },
+              { role: 'hideOthers' as const },
+              { role: 'unhide' as const },
+              { type: 'separator' as const },
+              { role: 'quit' as const },
             ],
           },
         ]
       : []),
     {
       label: 'File',
-      // @ts-expect-error
-      submenu: [isMac ? { role: 'close' } : { role: 'quit' }],
+      submenu: [isMac ? { role: 'close' as const } : { role: 'quit' as const }],
     },
     {
       label: 'Edit',
       submenu: [
-        { role: 'undo' },
-        { role: 'redo' },
-        { type: 'separator' },
-        { role: 'cut' },
-        { role: 'copy' },
-        { role: 'paste' },
-        // @ts-expect-error
+        { role: 'undo' as const },
+        { role: 'redo' as const },
+        { type: 'separator' as const },
+        { role: 'cut' as const },
+        { role: 'copy' as const },
+        { role: 'paste' as const },
         ...(isMac
           ? [
-              { role: 'pasteAndMatchStyle' },
-              { role: 'delete' },
-              { role: 'selectAll' },
-              { type: 'separator' },
+              { role: 'pasteAndMatchStyle' as const },
+              { role: 'delete' as const },
+              { role: 'selectAll' as const },
+              { type: 'separator' as const },
               {
-                label: 'Speech',
-                submenu: [{ role: 'startspeaking' }, { role: 'stopspeaking' }],
+                label: 'Speech' as const,
+                submenu: [
+                  { role: 'startSpeaking' as const },
+                  { role: 'stopSpeaking' as const },
+                ],
               },
             ]
-          : [{ role: 'delete' }, { type: 'separator' }, { role: 'selectAll' }]),
+          : [
+              { role: 'delete' as const },
+              { type: 'separator' as const },
+              { role: 'selectAll' as const },
+            ]),
       ],
     },
     {
       label: 'View',
       submenu: [
-        { role: 'reload' },
-        // @ts-expect-error
-        { role: 'toggledevtools' },
-        { type: 'separator' },
-        // @ts-expect-error
-        { role: 'zoomin' },
-        // @ts-expect-error
-        { role: 'zoomout' },
-        { type: 'separator' },
-        { role: 'togglefullscreen' },
+        { role: 'reload' as const },
+        { role: 'toggleDevTools' as const },
+        { type: 'separator' as const },
+        { role: 'zoomIn' as const },
+        { role: 'zoomOut' as const },
+        { type: 'separator' as const },
+        { role: 'togglefullscreen' as const },
       ],
     },
     {
       label: 'Window',
       submenu: [
-        { role: 'minimize' },
-        { role: 'zoom' },
-        // @ts-expect-error
+        { role: 'minimize' as const },
+        { role: 'zoom' as const },
         ...(isMac
           ? [
-              { type: 'separator' },
-              { role: 'front' },
-              { type: 'separator' },
-              { role: 'window' },
+              { type: 'separator' as const },
+              { role: 'front' as const },
+              { type: 'separator' as const },
+              { role: 'window' as const },
             ]
-          : [{ role: 'close' }]),
+          : [{ role: 'close' as const }]),
       ],
     },
     {
       label: 'Help',
       role: 'help',
-      // @ts-expect-error
       submenu: [
         {
           label: 'Learn More',
@@ -461,8 +447,9 @@ ipcMain.handle(
 
     return new Promise(resolve => {
       win.webContents.on(
+        // @ts-expect-error unclear why this is needed
         'will-redirect',
-        function (event: Event, redirectUrl: string) {
+        (event: Event, redirectUrl: string) => {
           if (redirectUrl.startsWith(data.redirect_uri)) {
             event.preventDefault()
             resolve(redirectUrl)
@@ -585,7 +572,7 @@ ipcMain.handle(
   'renameSession',
   async (_event: unknown, path: string, newName: string) => {
     const sessions = await readRecentSessions()
-    const session = JSON.parse(await readFile(path, 'utf8'))
+    const session = parseJson(await readFile(path, 'utf8'))
     const idx = sessions.findIndex(row => row.path === path)
     if (idx !== -1) {
       sessions[idx].name = newName

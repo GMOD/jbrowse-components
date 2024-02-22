@@ -8,7 +8,7 @@ import { makeStyles } from 'tss-react/mui'
 import Ruler from './Ruler'
 import Controls from './Controls'
 import ImportForm from './ImportForm'
-import { CircularViewModel } from '../models/CircularView'
+import { CircularViewModel } from '../models/model'
 
 const dragHandleHeight = 3
 

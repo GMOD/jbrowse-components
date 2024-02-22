@@ -21,13 +21,14 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function LocalFileChooser(props: {
+function LocalFileChooser({
+  location,
+  setLocation,
+}: {
   location?: FileLocation
-  setLocation: Function
+  setLocation: (arg: FileLocation) => void
 }) {
   const { classes } = useStyles()
-  const { location, setLocation } = props
-
   const filename =
     location &&
     ((isBlobLocation(location) && location.name) ||
@@ -46,7 +47,7 @@ function LocalFileChooser(props: {
               type="file"
               hidden
               onChange={({ target }) => {
-                const file = target && target.files && target.files[0]
+                const file = target?.files?.[0]
                 if (file) {
                   if (isElectron) {
                     setLocation({
@@ -54,6 +55,7 @@ function LocalFileChooser(props: {
                       locationType: 'LocalPathLocation',
                     })
                   } else {
+                    // @ts-expect-error
                     setLocation(storeBlobLocation({ blob: file }))
                   }
                 }

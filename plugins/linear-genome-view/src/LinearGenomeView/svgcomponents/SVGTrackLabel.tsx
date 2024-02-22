@@ -1,5 +1,6 @@
 import React from 'react'
 import { useTheme } from '@mui/material'
+import { coarseStripHTML } from '@jbrowse/core/util'
 
 export default function SVGTrackLabel({
   trackLabels,
@@ -18,6 +19,7 @@ export default function SVGTrackLabel({
   const fill = theme.palette.text.primary
   const xoff = trackLabels === 'overlay' ? 5 : 0
   const yoff = trackLabels === 'offset' ? 5 : 0
+  const name = coarseStripHTML(trackName)
   return trackLabels !== 'none' ? (
     <g>
       {trackLabels === 'left' ? (
@@ -29,7 +31,7 @@ export default function SVGTrackLabel({
           dominantBaseline="hanging"
           textAnchor="end"
         >
-          {trackName}
+          {name}
         </text>
       ) : (
         <text
@@ -39,7 +41,7 @@ export default function SVGTrackLabel({
           fontSize={fontSize}
           dominantBaseline="hanging"
         >
-          {trackName}
+          {name}
         </text>
       )}
     </g>

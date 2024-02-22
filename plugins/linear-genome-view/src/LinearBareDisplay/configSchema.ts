@@ -4,6 +4,7 @@ import { baseLinearDisplayConfigSchema } from '../BaseLinearDisplay'
 
 /**
  * #config LinearBareDisplay
+ * #category display
  */
 function configSchemaFactory(pluginManager: PluginManager) {
   return ConfigurationSchema(

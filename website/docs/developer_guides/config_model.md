@@ -1,7 +1,6 @@
 ---
 id: config_model
 title: Configuration model basics
-toplevel: true
 ---
 
 import Figure from '../figure'
@@ -11,7 +10,7 @@ configuration model. The configuration model is used to structure the features
 and data available in a given JBrowse session, and each new pluggable element
 you create will need its own configuration schema.
 
-## Configuration slot types
+### Configuration slot types
 
 Our configuration system is "typed" to facilitate graphical editing of the
 configuration. Each configuration has a "schema" that lists what "configuration
@@ -38,7 +37,7 @@ Here is a mostly comprehensive list of config types:
 
 Let's examine the `PileupRenderer` configuration as an example.
 
-## Example config with multiple slot types
+### Example config with multiple slot types
 
 This `PileupRenderer` config contains an example of several different slot
 types:
@@ -75,7 +74,7 @@ export default ConfigurationSchema('PileupRenderer', {
 })
 ```
 
-## Accessing config values
+### Accessing config values
 
 So instead of accessing `config.displayMode`, we say,
 
@@ -95,7 +94,7 @@ Which would be equivalent to calling,
 readConfObject(track.configuration, 'maxHeight')`
 ```
 
-## Using config callbacks
+### Using config callbacks
 
 Config callbacks allow you to have a dynamic color based on some function logic
 you provide. All config slots can actually become config callback. The arguments
@@ -111,7 +110,7 @@ That implies the color configuration callback will be passed a feature, so the
 config callback can be a complex function determining the color to use based on
 various feature attributes.
 
-## Example of a config callback
+### Example of a config callback
 
 We use Jexl to express callbacks. See https://github.com/TomFrost/Jexl for more
 details.
@@ -172,7 +171,7 @@ a default value in your various pluggable elements.
 
 :::
 
-## Configuration internals
+### Configuration internals
 
 A configuration is a type of mobx-state-tree model, in which leaf nodes are
 ConfigSlot types, and other nodes are ConfigurationSchema types.

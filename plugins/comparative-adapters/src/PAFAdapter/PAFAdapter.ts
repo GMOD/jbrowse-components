@@ -15,15 +15,15 @@ import { unzip } from '@gmod/bgzf-filehandle'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 
 // locals
-import SyntenyFeature from './SyntenyFeature'
-import { isGzip } from '../util'
+import SyntenyFeature from '../SyntenyFeature'
 import {
-  getWeightedMeans,
   flipCigar,
-  parsePAF,
   swapIndelCigar,
-  PAFRecord,
-} from './util'
+  parsePAFLine,
+  isGzip,
+  parseLineByLine,
+} from '../util'
+import { getWeightedMeans, PAFRecord } from './util'
 
 const { parseCigar } = MismatchParser
 
@@ -51,12 +51,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     const pafLocation = openLocation(this.getConf('pafLocation'), pm)
     const buffer = (await pafLocation.readFile(opts)) as Buffer
     const buf = isGzip(buffer) ? await unzip(buffer) : buffer
-    // 512MB  max chrome string length is 512MB
-    if (buf.length > 536_870_888) {
-      throw new Error('Data exceeds maximum string length (512MB)')
-    }
-    const text = new TextDecoder('utf8', { fatal: true }).decode(buf)
-    return parsePAF(text)
+    return parseLineByLine(buf, parsePAFLine)
   }
 
   async hasDataForRefName() {
@@ -107,8 +102,12 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
 
       // The index of the assembly name in the query list corresponds to the
       // adapter in the subadapters list
-      const index = assemblyNames.indexOf(query.assemblyName)
       const { start: qstart, end: qend, refName: qref, assemblyName } = query
+      const index = assemblyNames.indexOf(assemblyName)
+
+      // if the getFeatures::query is on the query assembly, flip orientation
+      // of data
+      const flip = index === 0
       if (index === -1) {
         console.warn(`${assemblyName} not found in this adapter`)
         observer.complete()
@@ -122,9 +121,8 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
         let mateName = ''
         let mateStart = 0
         let mateEnd = 0
-        const flip = index === 0
-        const assemblyName = assemblyNames[+!flip]
-        if (index === 0) {
+
+        if (flip) {
           start = r.qstart
           end = r.qend
           refName = r.qname

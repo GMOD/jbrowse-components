@@ -1,0 +1,3 @@
+# Ignore the static build of storybook
+storybook-static/
+esm

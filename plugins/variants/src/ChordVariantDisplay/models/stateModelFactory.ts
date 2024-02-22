@@ -1,4 +1,7 @@
-import { BaseChordDisplayModel } from '@jbrowse/plugin-circular-view'
+import {
+  BaseChordDisplayModel,
+  CircularViewModel,
+} from '@jbrowse/plugin-circular-view'
 import {
   AnyConfigurationSchemaType,
   ConfigurationReference,
@@ -9,7 +12,8 @@ import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 
 /**
  * #stateModel ChordVariantDisplay
- * extends `BaseChordDisplay`
+ * extends
+ * - [BaseChordDisplay](../basechorddisplay)
  */
 const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
   return types
@@ -39,7 +43,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
        * #method
        */
       renderProps(): Record<string, unknown> {
-        const view = getContainingView(self)
+        const view = getContainingView(self) as CircularViewModel
         return {
           ...getParentRenderProps(self),
           rpcDriverName: self.rpcDriverName,

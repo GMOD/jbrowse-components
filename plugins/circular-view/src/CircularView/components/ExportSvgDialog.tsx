@@ -13,7 +13,7 @@ import {
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 
 // locals
-import { ExportSvgOptions } from '../models/CircularView'
+import { ExportSvgOptions } from '../models/model'
 import { getSession, useLocalStorage } from '@jbrowse/core/util'
 
 function LoadingMessage() {
@@ -29,7 +29,7 @@ function useSvgLocal<T>(key: string, val: T) {
   return useLocalStorage('svg-' + key, val)
 }
 
-export default function ExportSvgDlg({
+export default function ExportSvgDialog({
   model,
   handleClose,
 }: {

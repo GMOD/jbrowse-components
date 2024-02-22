@@ -1,14 +1,16 @@
 import React from 'react'
 import { Instance, types } from 'mobx-state-tree'
-import { getConf } from '../../configuration'
+import { ConfigurationReference, getConf } from '../../configuration'
 import { RemoteFileWithRangeCache } from '../../util/io'
 import { ElementId } from '../../util/types/mst'
 import { UriLocation, AnyReactComponentType } from '../../util/types'
+import { BaseInternetAccountConfig } from './baseInternetAccountConfig'
 
 const inWebWorker = typeof sessionStorage === 'undefined'
 
 /**
  * #stateModel BaseInternetAccountModel
+ * #category internetAccount
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
@@ -22,6 +24,10 @@ export const InternetAccount = types
      * #property
      */
     type: types.string,
+    /**
+     * #property
+     */
+    configuration: ConfigurationReference(BaseInternetAccountConfig),
   })
   .views(self => ({
     /**
@@ -40,7 +46,7 @@ export const InternetAccount = types
      * #getter
      */
     get internetAccountId(): string {
-      return getConf(self, 'internetAccountId')
+      return getConf(self, 'internetAccountId') // NOTE: this is the explicitIdentifier of the config schema
     },
     /**
      * #getter
@@ -111,8 +117,8 @@ export const InternetAccount = types
      * @param reject - If there is an error getting the token, call this function
      */
     getTokenFromUser(
-      resolve: (token: string) => void,
-      reject: (error: Error) => void,
+      _resolve: (token: string) => void,
+      _reject: (error: Error) => void,
     ): void {
       throw new Error('getTokenFromUser must be implemented by extending model')
     },
@@ -137,17 +143,18 @@ export const InternetAccount = types
     /**
      * #action
      * This can be used by an internetAccount to validate a token works before
-     * it is used. This is run when preAuthorizationInformation is requested, so
-     * it can be used to check that a token is valid before sending it to a
+     * it is used. This is run when preAuthorizationInformation is requested,
+     * so it can be used to check that a token is valid before sending it to a
      * worker thread. It expects the token to be returned so that this action
      * can also be used to generate a new token (e.g. by using a refresh token)
      * if the original one was invalid. Should throw an error if a token is
      * invalid.
+     *
      * @param token - Auth token
      * @param loc - UriLocation of the resource
      * @returns - Valid auth token
      */
-    async validateToken(token: string, loc: UriLocation) {
+    async validateToken(token: string, _loc: UriLocation) {
       return token
     },
   }))
@@ -159,6 +166,7 @@ export const InternetAccount = types
        * Try to get the token from the location pre-auth, from local storage,
        * or from a previously cached promise. If token is not available, uses
        * `getTokenFromUser`.
+       *
        * @param location - UriLocation of the resource
        * @returns A promise for the token
        */
@@ -181,17 +189,18 @@ export const InternetAccount = types
           tokenPromise = Promise.resolve(token)
           return tokenPromise
         }
-        tokenPromise = new Promise((r, x) => {
-          function resolve(token: string) {
-            self.storeToken(token)
-            r(token)
-          }
-          function reject(error: Error) {
-            self.removeToken()
-            x(error)
-          }
-          self.getTokenFromUser(resolve, reject)
-        })
+        tokenPromise = new Promise((resolve, reject) =>
+          self.getTokenFromUser(
+            token => {
+              self.storeToken(token)
+              resolve(token)
+            },
+            error => {
+              self.removeToken()
+              reject(error)
+            },
+          ),
+        )
         return tokenPromise
       },
     }
@@ -201,23 +210,27 @@ export const InternetAccount = types
      * #action
      */
     addAuthHeaderToInit(init: RequestInit = {}, token: string) {
-      const tokenInfoString = self.tokenType
-        ? `${self.tokenType} ${token}`
-        : token
-      const newHeaders = new Headers(init.headers || {})
-      newHeaders.append(self.authHeader, tokenInfoString)
-      return { ...init, headers: newHeaders }
+      return {
+        ...init,
+        headers: new Headers({
+          ...init.headers,
+          [self.authHeader]: self.tokenType
+            ? `${self.tokenType} ${token}`
+            : token,
+        }),
+      }
     },
     /**
      * #action
      * Gets the token and returns it along with the information needed to
      * create a new internetAccount.
+     *
      * @param location - UriLocation of the resource
      * @returns
      */
     async getPreAuthorizationInformation(location: UriLocation) {
       const authToken = await self.getToken(location)
-      let validatedToken: string
+      let validatedToken: string | undefined
       try {
         validatedToken = await self.validateToken(authToken, location)
       } catch (error) {
@@ -226,7 +239,10 @@ export const InternetAccount = types
       }
       return {
         internetAccountType: self.type,
-        authInfo: { token: validatedToken, configuration: getConf(self) },
+        authInfo: {
+          token: validatedToken,
+          configuration: getConf(self),
+        },
       }
     },
   }))
@@ -236,6 +252,7 @@ export const InternetAccount = types
      * Get a fetch method that will add any needed authentication headers to
      * the request before sending it. If location is provided, it will be
      * checked to see if it includes a token in it pre-auth information.
+     *
      * @param loc - UriLocation of the resource
      * @returns A function that can be used to fetch
      */

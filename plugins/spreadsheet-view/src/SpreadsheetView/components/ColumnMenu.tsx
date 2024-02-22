@@ -38,7 +38,10 @@ const ColumnMenu = observer(function ({
 
   // make a Map of categoryName => [entry...]
   type Record = (typeof dataTypeChoices)[0]
-  type RecordGroup = { isCategory: boolean; subMenuItems: Record[] }
+  interface RecordGroup {
+    isCategory: boolean
+    subMenuItems: Record[]
+  }
   const dataTypeTopLevelMenu = new Map<string, Record | RecordGroup>()
   dataTypeChoices.forEach(dataTypeRecord => {
     const { displayName, categoryName } = dataTypeRecord

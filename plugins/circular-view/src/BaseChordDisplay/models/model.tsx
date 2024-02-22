@@ -3,7 +3,7 @@ import clone from 'clone'
 import { getParent, isAlive, types } from 'mobx-state-tree'
 
 // jbrowse
-import { getConf } from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import CircularChordRendererType from '@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType'
 import RendererType from '@jbrowse/core/pluggableElementTypes/renderers/RendererType'
@@ -28,12 +28,14 @@ import { renderReactionData, renderReactionEffect } from './renderReaction'
 import {
   CircularViewModel,
   ExportSvgOptions,
-} from '../../CircularView/models/CircularView'
+} from '../../CircularView/models/model'
 import { ThemeOptions } from '@mui/material'
+import { baseChordDisplayConfig } from './configSchema'
 
 /**
  * #stateModel BaseChordDisplay
- * extends `BaseDisplay`
+ * extends
+ * - [BaseDisplay](../basedisplay)
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
@@ -50,6 +52,10 @@ export const BaseChordDisplayModel = types
        * #property
        */
       assemblyName: types.maybe(types.string),
+      /**
+       * #property
+       */
+      configuration: ConfigurationReference(baseChordDisplayConfig),
     }),
   )
   .volatile(() => ({

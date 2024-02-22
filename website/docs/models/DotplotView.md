@@ -1,7 +1,6 @@
 ---
 id: dotplotview
 title: DotplotView
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,11 +8,13 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Source file
+### Source file
 
 [plugins/dotplot-view/src/DotplotView/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotView/model.ts)
 
-## Docs
+extends
+
+- [BaseViewModel](../baseviewmodel)
 
 ### DotplotView - Properties
 
@@ -138,7 +139,7 @@ vview: types.optional(DotplotVView, {})
 
 ```js
 // type signature
-IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; configuration: ITypeUnion<any, any, any>; minimized: IType<...>; displays: IArrayType<...>; }, { ...; } & ... 1 more ... & { ...; }, _NotCustomized, _NotCustomized>>
+IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; configuration: AnyConfigurationSchemaType; minimized: IType<...>; displays: IArrayType<...>; }, { ...; } & ... 1 more ... & { ...; }, _NotCustomized, _NotCustomized>>
 // code
 tracks: types.array(
           pm.pluggableMstType('track', 'stateModel') as BaseTrackStateModel,
@@ -226,7 +227,7 @@ number
 
 ```js
 // type
-(({ id: string; displayedRegions: IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>; bpPerPx: number; offsetPx: number; interRegionPaddingWidth: numbe...
+({ id: string; displayedRegions: IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<...>, [...]>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>; bpPerPx: number; offsetPx: number; interRegion...
 ```
 
 #### getter: error
@@ -375,7 +376,7 @@ hideTrack: (trackId: string) => number
 
 ```js
 // type signature
-toggleTrack: (trackId: string) => void
+toggleTrack: (trackId: string) => boolean
 ```
 
 #### action: setAssemblyNames

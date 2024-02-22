@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
-import Color from 'color'
+import { colord } from '@jbrowse/core/util/colord'
 import { Popover, Select, MenuItem, TextField } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
 // locals
 import * as paletteColors from './colors'
-import { useLocalStorage } from '../util'
+import { useLocalStorage, useDebounce } from '../util'
 
 // we are using a vendored copy of react-colorful because the default uses
 // pure-ESM which is difficult to make pass with jest e.g.
@@ -90,17 +90,19 @@ export function ColorPicker({
   const presetColors = paletteColors[val as keyof typeof paletteColors]
   const palettes = Object.keys(paletteColors)
   const [text, setText] = useState(color)
-  const rgb = Color(color).rgb().toString()
+  const rgb = colord(color).toRgbString()
+  const rgbDebounced = useDebounce(rgb, 1000)
+
   const handleChange = (val: string) => {
     setText(val)
     try {
-      onChange(Color(val).rgb().toString())
+      onChange(colord(val).toRgbString())
     } catch (e) {}
   }
   return (
     <div style={{ display: 'flex', padding: 10 }}>
       <div style={{ width: 200, margin: 5 }}>
-        <RgbaStringColorPicker color={rgb} onChange={handleChange} />
+        <RgbaStringColorPicker color={rgbDebounced} onChange={handleChange} />
       </div>
       <div style={{ width: 200, margin: 5 }}>
         <Select

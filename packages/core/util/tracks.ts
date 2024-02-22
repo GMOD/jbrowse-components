@@ -70,7 +70,7 @@ export function getParentRenderProps(node: IAnyStateTreeNode) {
 export const UNKNOWN = 'UNKNOWN'
 export const UNSUPPORTED = 'UNSUPPORTED'
 
-let blobMap: { [key: string]: File } = {}
+let blobMap: Record<string, File> = {}
 
 // get a specific blob
 export function getBlob(id: string) {
@@ -83,7 +83,7 @@ export function getBlobMap() {
 }
 
 // used in new contexts like webworkers
-export function setBlobMap(map: { [key: string]: File }) {
+export function setBlobMap(map: Record<string, File>) {
   blobMap = map
 }
 

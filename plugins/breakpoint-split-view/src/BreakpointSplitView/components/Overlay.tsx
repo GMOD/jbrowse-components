@@ -7,7 +7,7 @@ import AlignmentConnections from './AlignmentConnections'
 import Breakends from './Breakends'
 import Translocations from './Translocations'
 
-export default observer(function (props: {
+const Overlay = observer(function (props: {
   parentRef: React.RefObject<SVGSVGElement>
   model: BreakpointViewModel
   trackId: string
@@ -27,3 +27,5 @@ export default observer(function (props: {
   }
   return null
 })
+
+export default Overlay

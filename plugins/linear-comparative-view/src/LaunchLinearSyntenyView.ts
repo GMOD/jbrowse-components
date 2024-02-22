@@ -1,8 +1,9 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AbstractSessionModel } from '@jbrowse/core/util'
-import { LinearSyntenyViewModel } from './LinearSyntenyView/model'
 import { when } from 'mobx'
 
+// locals
+import { LinearSyntenyViewModel } from './LinearSyntenyView/model'
 type LSV = LinearSyntenyViewModel
 
 export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
@@ -48,8 +49,12 @@ export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
         await Promise.all(
           views.map(async (data, idx) => {
             const view = model.views[idx]
-            const { loc, tracks = [] } = data
-            await view.navToLocString(loc)
+            const { assembly, loc, tracks = [] } = data
+            const asm = await assemblyManager.waitForAssembly(assembly)
+            if (!asm) {
+              throw new Error(`Assembly ${data.assembly} failed to load`)
+            }
+            await view.navToSearchString({ input: loc, assembly: asm })
             tracks.forEach(track => tryTrack(view, track, idsNotFound))
           }),
         )

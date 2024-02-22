@@ -1,7 +1,6 @@
 ---
 id: basedisplay
 title: BaseDisplay
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,11 +8,9 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Source file
+### Source file
 
 [packages/core/pluggableElementTypes/models/BaseDisplayModel.tsx](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/pluggableElementTypes/models/BaseDisplayModel.tsx)
-
-## Docs
 
 ### BaseDisplay - Properties
 
@@ -50,7 +47,7 @@ rpcDriverName: types.maybe(types.string)
 
 ```js
 // type
-React.FC<{ model: { id: string; type: string; rpcDriverName: string; } & NonEmptyObject & { rendererTypeName: string; error: unknown; } & IStateTreeNode<IModelType<{ id: IOptionalIType<ISimpleType<string>, [...]>; type: ISimpleType<...>; rpcDriverName: IMaybe<...>; }, { ...; }, _NotCustomized, _NotCustomized>>; onHo...
+React.FC<{ model: { id: string; type: string; rpcDriverName: string; } & NonEmptyObject & { rendererTypeName: string; error: unknown; message: string; } & IStateTreeNode<IModelType<{ id: IOptionalIType<ISimpleType<string>, [...]>; type: ISimpleType<...>; rpcDriverName: IMaybe<...>; }, { ...; }, _NotCustomized, _NotC...
 ```
 
 #### getter: DisplayBlurb
@@ -127,6 +124,13 @@ regionCannotBeRendered: () => any
 ```
 
 ### BaseDisplay - Actions
+
+#### action: setMessage
+
+```js
+// type signature
+setMessage: (arg?: string) => void
+```
 
 #### action: setError
 

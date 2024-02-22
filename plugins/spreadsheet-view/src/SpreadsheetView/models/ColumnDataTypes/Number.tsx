@@ -31,7 +31,7 @@ const OPERATION_PREDICATES = {
       numberInCell < secondNumber
     )
   },
-} as { [key: string]: (arg0: number, a: number, b?: number) => boolean }
+} as Record<string, (arg0: number, a: number, b?: number) => boolean>
 
 OPERATION_PREDICATES['not between'] = (
   numberInCell,
@@ -134,7 +134,7 @@ const FilterModelType = types
         const { cellsWithDerived } = row
         const cell = cellsWithDerived[columnNumber]
 
-        if (!cell || !cell.text) {
+        if (!cell?.text) {
           return false
         }
 

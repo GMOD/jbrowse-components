@@ -1,5 +1,6 @@
 import React from 'react'
 import { useTheme } from '@mui/material'
+import { stripAlpha } from '@jbrowse/core/util'
 
 export default function SVGBackground({
   width,
@@ -15,7 +16,7 @@ export default function SVGBackground({
       y={0}
       width={width}
       height={height}
-      fill={theme.palette.background.default}
+      fill={stripAlpha(theme.palette.background.default)}
     />
   )
 }

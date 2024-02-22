@@ -4,7 +4,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 /**
  * #config LinearComparativeDisplay
  */
-function configSchemaFactory(pluginManager: any) {
+function configSchemaFactory(_pluginManager: any) {
   return ConfigurationSchema(
     'LinearComparativeDisplay',
     {},

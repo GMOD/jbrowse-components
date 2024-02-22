@@ -133,14 +133,16 @@ const OverlayComparativeView = observer(({ model }: { model: LCV }) => {
   )
 })
 
-export default observer(function (props: {
+const LinearComparativeView = observer(function (props: {
   ExtraButtons?: React.ReactNode
   model: LCV
 }) {
   const { model } = props
 
   const middle = model.tracks.some(({ displays }) =>
-    displays.some((d: AnyConfigurationModel) => getConf(d, 'middle')),
+    displays.some((d: { configuration: AnyConfigurationModel }) =>
+      getConf(d, 'middle'),
+    ),
   )
   return middle ? (
     <MiddleComparativeView {...props} />
@@ -148,3 +150,5 @@ export default observer(function (props: {
     <OverlayComparativeView {...props} />
   )
 })
+
+export default LinearComparativeView

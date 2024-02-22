@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-authentication",
-  "version": "2.4.2",
+  "version": "2.10.2",
   "description": "JBrowse 2 Authentication",
   "keywords": [
     "jbrowse",
@@ -20,7 +20,6 @@
   "main": "src/index.ts",
   "files": [
     "dist",
-    "src",
     "esm"
   ],
   "scripts": {
@@ -33,19 +32,18 @@
     "useSrc": "node ../../scripts/useSrc.js",
     "prebuild": "npm run clean",
     "build:esm": "tsc --build tsconfig.build.esm.json",
-    "build:es5": "tsc --build tsconfig.build.es5.json",
+    "build:commonjs": "tsc --build tsconfig.build.commonjs.json",
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
-    "crypto-js": "^3.0.0",
-    "generic-filehandle": "^3.0.0",
-    "jwt-decode": "^3.1.2"
+    "crypto-js": "^4.2.0",
+    "generic-filehandle": "^3.0.0"
   },
   "peerDependencies": {
     "@jbrowse/core": "^2.0.0",
     "@mui/material": "^5.0.0",
     "mobx": "^6.0.0",
-    "mobx-react": "^7.0.0",
+    "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",

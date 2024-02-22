@@ -1,3 +1,5 @@
+import { isSupportedIndexingAdapter } from '@jbrowse/core/util'
+
 export interface UriLocation {
   uri: string
   locationType: 'UriLocation'
@@ -85,10 +87,9 @@ export interface VcfAdapter {
   type: 'VcfAdapter'
   vcfLocation: UriLocation | LocalPathLocation
 }
-export interface Track {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any
-}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type Track = Record<string, any>
+
 export interface TextSearching {
   indexingFeatureTypesToExclude?: string[]
   indexingAttributes?: string[]
@@ -115,17 +116,6 @@ export interface Config {
 }
 
 export type indexType = 'aggregate' | 'perTrack'
-
-// supported adapter types by text indexer
-//  ensure that this matches the method found in @jbrowse/core/util
-export function supportedIndexingAdapters(type: string) {
-  return [
-    'Gff3TabixAdapter',
-    'VcfTabixAdapter',
-    'Gff3Adapter',
-    'VcfAdapter',
-  ].includes(type)
-}
 
 export function createTextSearchConf(
   name: string,
@@ -162,7 +152,7 @@ export function findTrackConfigsToIndex(
   trackIds: string[],
   assemblyName?: string,
 ) {
-  const configs = trackIds
+  return trackIds
     .map(trackId => {
       const currentTrack = tracks.find(t => trackId === t.trackId)
       if (!currentTrack) {
@@ -173,6 +163,5 @@ export function findTrackConfigsToIndex(
     .filter(track =>
       assemblyName ? track.assemblyNames.includes(assemblyName) : true,
     )
-    .filter(track => supportedIndexingAdapters(track.adapter.type))
-  return configs
+    .filter(track => isSupportedIndexingAdapter(track.adapter?.type))
 }

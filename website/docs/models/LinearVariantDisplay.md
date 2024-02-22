@@ -1,7 +1,6 @@
 ---
 id: linearvariantdisplay
 title: LinearVariantDisplay
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,14 +8,13 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Source file
+### Source file
 
 [plugins/variants/src/LinearVariantDisplay/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearVariantDisplay/model.ts)
 
-## Docs
+similar to basic display, but provides custom widget on feature click extends
 
-extends `LinearBasicDisplay` very similar to basic display, but provides custom
-widget on feature click
+- [LinearBasicDisplay](../linearbasicdisplay)
 
 ### LinearVariantDisplay - Properties
 
@@ -33,7 +31,7 @@ type: types.literal('LinearVariantDisplay')
 
 ```js
 // type signature
-ITypeUnion<any, any, any>
+AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
 ```

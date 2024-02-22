@@ -49,7 +49,7 @@ const model = types
         ({
           type: 'RowFullText',
           stringToFind: '',
-        } as SnapshotIn<typeof RowFullTextFilter>),
+        }) as SnapshotIn<typeof RowFullTextFilter>,
     ),
     columnFilters: types.array(AnyColumnFilter),
   })
@@ -65,8 +65,8 @@ const model = types
       }
     },
     rowPassesFilters(sheet: unknown, row: unknown) {
-      for (let i = 0; i < this.filters.length; i += 1) {
-        if (!this.filters[i].predicate(sheet, row)) {
+      for (const filter of this.filters) {
+        if (!filter.predicate(sheet, row)) {
           return false
         }
       }

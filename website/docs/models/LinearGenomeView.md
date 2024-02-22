@@ -1,7 +1,6 @@
 ---
 id: lineargenomeview
 title: LinearGenomeView
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,11 +8,13 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Source file
+### Source file
 
 [plugins/linear-genome-view/src/LinearGenomeView/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/LinearGenomeView/model.ts)
 
-## Docs
+extends
+
+- [BaseViewModel](../baseviewmodel)
 
 ### LinearGenomeView - Properties
 
@@ -128,20 +129,6 @@ trackSelectorType: types.optional(
         )
 ```
 
-#### property: trackLabels
-
-how to display the track labels, can be "overlapping", "offset", or "hidden"
-
-```js
-// type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
-// code
-trackLabels: types.optional(
-          types.string,
-          () => localStorageGetItem('lgv-trackLabels') || 'overlapping',
-        )
-```
-
 #### property: showCenterLine
 
 show the "center line"
@@ -172,6 +159,23 @@ showCytobandsSetting: types.optional(types.boolean, () =>
         )
 ```
 
+#### property: trackLabels
+
+how to display the track labels, can be "overlapping", "offset", or "hidden", or
+empty string "" (which results in conf being used). see LinearGenomeViewPlugin
+https://jbrowse.org/jb2/docs/config/lineargenomeviewplugin/ docs for how conf is
+used
+
+```js
+// type signature
+IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+trackLabels: types.optional(
+          types.string,
+          () => localStorageGetItem('lgv-trackLabels') || '',
+        )
+```
+
 #### property: showGridlines
 
 show the "gridlines" in the track area
@@ -184,6 +188,16 @@ showGridlines: true
 ```
 
 ### LinearGenomeView - Getters
+
+#### getter: trackLabelsSetting
+
+this is the effective value of the track labels setting, incorporating both the
+config and view state. use this instead of view.trackLabels
+
+```js
+// type
+any
+```
 
 #### getter: width
 
@@ -228,13 +242,6 @@ any
 ```
 
 #### getter: hasDisplayedRegions
-
-```js
-// type
-boolean
-```
-
-#### getter: isSearchDialogDisplayed
 
 ```js
 // type
@@ -379,7 +386,7 @@ BlockSet
 #### getter: dynamicBlocks
 
 dynamic blocks represent the exact coordinates of the currently visible genome
-regions on the screen. they are similar to static blocks, but statcic blocks can
+regions on the screen. they are similar to static blocks, but static blocks can
 go offscreen while dynamic blocks represent exactly what is on screen
 
 ```js
@@ -513,18 +520,7 @@ rubberBandMenuItems: () => MenuItem[]
 
 ```js
 // type signature
-bpToPx: ({
-  refName,
-  coord,
-  regionNumber,
-}: {
-  refName: string,
-  coord: number,
-  regionNumber?: number,
-}) => {
-  index: number
-  offsetPx: number
-}
+bpToPx: ({ refName, coord, regionNumber, }: { refName: string; coord: number; regionNumber?: number; }) => { index: number; offsetPx: number; }
 ```
 
 #### method: centerAt
@@ -541,17 +537,7 @@ centerAt: (coord: number, refName: string, regionNumber: number) => void
 
 ```js
 // type signature
-pxToBp: (px: number) => {
-  coord: number
-  index: number
-  refName: string
-  oob: boolean
-  assemblyName: string
-  offset: number
-  start: number
-  end: number
-  reversed: boolean
-}
+pxToBp: (px: number) => { coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed: boolean; }
 ```
 
 ### LinearGenomeView - Actions
@@ -574,7 +560,7 @@ setWidth: (newWidth: number) => void
 
 ```js
 // type signature
-setError: (error: Error) => void
+setError: (error: unknown) => void
 ```
 
 #### action: toggleHeader
@@ -621,7 +607,9 @@ zoomTo: (bpPerPx: number, offset?: number, centerAtOffset?: boolean) => number
 
 #### action: setOffsets
 
-sets offsets used in the get sequence dialog
+sets offsets of rubberband, used in the get sequence dialog can call
+view.getSelectedRegions(view.leftOffset,view.rightOffset) to compute the
+selected regions from the offsets
 
 ```js
 // type signature
@@ -632,14 +620,7 @@ setOffsets: (left?: BpOffset, right?: BpOffset) => void
 
 ```js
 // type signature
-setSearchResults: (results?: BaseResult[], query?: string) => void
-```
-
-#### action: setGetSequenceDialogOpen
-
-```js
-// type signature
-setGetSequenceDialogOpen: (open: boolean) => void
+setSearchResults: (searchResults: BaseResult[], searchQuery: string, assemblyName?: string) => void
 ```
 
 #### action: setNewView
@@ -660,11 +641,7 @@ horizontallyFlip: () => void
 
 ```js
 // type signature
-showTrack: (
-  trackId: string,
-  initialSnapshot?: {},
-  displayInitialSnapshot?: {},
-) => any
+showTrack: (trackId: string, initialSnapshot?: {}, displayInitialSnapshot?: {}) => any
 ```
 
 #### action: hideTrack
@@ -692,14 +669,14 @@ closeView: () => void
 
 ```js
 // type signature
-toggleTrack: (trackId: string) => void
+toggleTrack: (trackId: string) => boolean
 ```
 
 #### action: setTrackLabels
 
 ```js
 // type signature
-setTrackLabels: (setting: "hidden" | "offset" | "overlapping") => void
+setTrackLabels: (setting: "offset" | "hidden" | "overlapping") => void
 ```
 
 #### action: toggleCenterLine
@@ -820,18 +797,39 @@ moveTo: (start?: BpOffset, end?: BpOffset) => void
 
 #### action: navToLocString
 
-navigate to the given locstring
+Navigate to the given locstring, will change displayed regions if needed, and
+wait for assemblies to be initialized
 
 ```js
 // type signature
-navToLocString: (locString: string, optAssemblyName?: string) => Promise<void>
+navToLocString: (input: string, optAssemblyName?: string) => Promise<any>
+```
+
+#### action: navToSearchString
+
+Performs a text index search, and navigates to it immediately if a single result
+is returned. Will pop up a search dialog if multiple results are returned
+
+```js
+// type signature
+navToSearchString: ({ input, assembly, }: { input: string; assembly: { configuration: any; } & NonEmptyObject & { error: unknown; loaded: boolean; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; lowerCaseRefNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 6 more ... & IStateTreeNode<....
+```
+
+#### action: navToLocations
+
+Similar to `navToLocString`, but accepts parsed location objects instead of
+strings. Will try to perform `setDisplayedRegions` if changing regions
+
+```js
+// type signature
+navToLocations: (parsedLocStrings: ParsedLocString[], assemblyName?: string) => Promise<void>
 ```
 
 #### action: navTo
 
 Navigate to a location based on its refName and optionally start, end, and
-assemblyName. Can handle if there are multiple displayedRegions from same
-refName. Only navigates to a location if it is entirely within a
+assemblyName. Will not try to change displayed regions, use `navToLocations`
+instead. Only navigates to a location if it is entirely within a
 displayedRegion. Navigates to the first matching location encountered.
 
 Throws an error if navigation was unsuccessful
@@ -842,6 +840,13 @@ navTo: (query: NavLocation) => void
 ```
 
 #### action: navToMultiple
+
+Navigate to a location based on its refName and optionally start, end, and
+assemblyName. Will not try to change displayed regions, use navToLocations
+instead. Only navigates to a location if it is entirely within a
+displayedRegion. Navigates to the first matching location encountered.
+
+Throws an error if navigation was unsuccessful
 
 ```js
 // type signature

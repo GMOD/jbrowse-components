@@ -32,6 +32,7 @@ interface Property {
 interface Model {
   name: string
   id: string
+  category?: string
   docs: string
 }
 interface StateModel {
@@ -45,25 +46,48 @@ interface StateModel {
 
 function generateStateModelDocs(files: string[]) {
   const cwd = process.cwd() + '/'
-  const contents = {} as { [key: string]: StateModel }
+  const contents = {} as Record<string, StateModel>
   extractWithComment(files, obj => {
     const fn = obj.filename
     const fn2 = fn.replace(cwd, '')
-    if (!contents[fn]) {
-      contents[obj.filename] = {
-        model: undefined,
-        getters: [],
-        actions: [],
-        methods: [],
-        properties: [],
-        filename: fn2,
-      }
+    contents[fn] ??= {
+      model: undefined,
+      getters: [],
+      actions: [],
+      methods: [],
+      properties: [],
+      filename: fn2,
     }
     const current = contents[fn]
     const name = rm(obj.comment, '#' + obj.type) || obj.name
-    const docs = filter(obj.comment, '#' + obj.type)
+    const docs = filter(filter(obj.comment, '#' + obj.type), '#category')
     const code = removeComments(obj.node)
     const id = slugify(name, { lower: true })
+
+    // category currently unused, but can organize sidebar
+    let category = rm(obj.comment, '#category')
+
+    if (!category) {
+      if (name.endsWith('Adapter')) {
+        category = 'adapter'
+      } else if (name.endsWith('Display')) {
+        category = 'display'
+      } else if (name.endsWith('View')) {
+        category = 'view'
+      } else if (name.endsWith('Renderer')) {
+        category = 'renderer'
+      } else if (name.includes('Session')) {
+        category = 'session'
+      } else if (name.includes('Root')) {
+        category = 'root'
+      } else if (name.includes('Assembly')) {
+        category = 'assemblyManagement'
+      } else if (name.includes('InternetAccount')) {
+        category = 'internetAccount'
+      } else if (name.includes('Connection')) {
+        category = 'connection'
+      }
+    }
 
     if (obj.type === 'stateModel') {
       current.model = { ...obj, name, docs, id }
@@ -91,98 +115,79 @@ function generateStateModelDocs(files: string[]) {
           `${getters.length ? `### ${model.name} - Getters` : ''}\n` +
           getters
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .map(({ name, docs, signature }: any) => {
-              return `#### getter: ${name}
-
-${docs}
-
-\`\`\`js
-// type
-${signature || ''}
-\`\`\`
-`
-            })
+            .map(({ name, docs, signature }: any) =>
+              join(
+                `#### getter: ${name}`,
+                docs,
+                codeBlock('// type', signature || ''),
+              ),
+            )
             .join('\n')
 
         const methodstr =
           `${methods.length ? `### ${model.name} - Methods` : ''}\n` +
           methods
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .map(({ name, docs, signature }: any) => {
-              return `#### method: ${name}
-
-${docs}
-
-\`\`\`js
-// type signature
-${name}: ${signature || ''}
-\`\`\`
-`
-            })
+            .map(({ name, docs, signature }: any) =>
+              join(
+                `#### method: ${name}`,
+                docs,
+                codeBlock('// type signature', `${name}: ${signature || ''}`),
+              ),
+            )
             .join('\n')
 
         const propertiesstr =
           `${properties.length ? `### ${model.name} - Properties` : ''}\n` +
           properties
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .map(({ name, docs, code, signature }: any) => {
-              return `#### property: ${name}
-
-${docs}
-
-\`\`\`js
-// type signature
-${signature || ''}
-// code
-${code}
-\`\`\`
-`
-            })
+            .map(({ name, docs, code, signature }: any) =>
+              join(
+                `#### property: ${name}`,
+                docs,
+                codeBlock(
+                  '// type signature',
+                  signature || '',
+                  '// code',
+                  code,
+                ),
+              ),
+            )
             .join('\n')
 
         const actionstr =
           `${actions.length ? `### ${model.name} - Actions` : ''}\n` +
           actions
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .map(({ name, docs, signature }: any) => {
-              return `#### action: ${name}
-
-${docs}
-
-\`\`\`js
-// type signature
-${name}: ${signature || ''}
-\`\`\`
-`
-            })
+            .map(({ name, docs, signature }: any) =>
+              join(
+                `#### action: ${name}`,
+                docs,
+                codeBlock('// type signature', `${name}: ${signature || ''}`),
+              ),
+            )
             .join('\n')
 
+        const dir = `website/docs/models`
+        try {
+          fs.mkdirSync(dir)
+        } catch (e) {}
         fs.writeFileSync(
-          `website/docs/models/${model.name}.md`,
+          `${dir}/${model.name}.md`,
           `---
 id: ${model.id}
 title: ${model.name}
-toplevel: true
 ---
-
 
 Note: this document is automatically generated from mobx-state-tree objects in
 our source code. See [Core concepts and intro to pluggable
 elements](/docs/developer_guide/) for more info
 
-
-
-## Source file
+### Source file
 
 [${filename}](https://github.com/GMOD/jbrowse-components/blob/main/${filename})
 
-
-## Docs
-
-
 ${model.docs}
-
-
 
 ${propertiesstr}
 
@@ -198,3 +203,16 @@ ${actionstr}
     },
   )
 })()
+
+function codeBlock(...lines: string[]) {
+  return `
+
+\`\`\`js
+${lines.join('\n')}
+\`\`\`
+`
+}
+
+function join(...lines: string[]) {
+  return lines.join('\n\n')
+}

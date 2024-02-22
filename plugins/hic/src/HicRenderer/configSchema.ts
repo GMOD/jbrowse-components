@@ -2,6 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
  * #config HicRenderer
+ * #category renderer
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 

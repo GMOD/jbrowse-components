@@ -1,6 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { Feature } from '@jbrowse/core/util'
-import { drawXY } from '../drawxy'
+import { drawXY } from '../drawXY'
 import WiggleBaseRenderer, {
   RenderArgsDeserializedWithFeatures,
 } from '../WiggleBaseRenderer'
@@ -19,7 +19,6 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
     const pivotValue = readConfObject(config, 'bicolorPivotValue')
     const negColor = readConfObject(config, 'negColor')
     const posColor = readConfObject(config, 'posColor')
-    const Color = await import('color').then(f => f.default)
 
     return drawXY(ctx, {
       ...props,
@@ -31,7 +30,6 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
               readConfObject(config, 'color', { feature }),
       offset: YSCALEBAR_LABEL_OFFSET,
       features: [...features.values()],
-      Color,
     })
   }
 }

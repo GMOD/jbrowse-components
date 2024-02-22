@@ -44,8 +44,10 @@ test('test serialize arguments with augmentLocationObject', async () => {
   expect(mockRpc.serializeNewAuthArguments).toHaveBeenCalledTimes(2)
   expect(mockRpc.serializeNewAuthArguments).toHaveBeenCalledWith(
     locationInAdapter,
+    '',
   )
   expect(mockRpc.serializeNewAuthArguments).toHaveBeenCalledWith(
     deeplyNestedLocation,
+    '',
   )
 })

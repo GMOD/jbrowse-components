@@ -1,114 +1,48 @@
-import React, { useState } from 'react'
-import {
-  Typography,
-  FormControl,
-  Select,
-  IconButton,
-  Tooltip,
-} from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
+import React from 'react'
+import { observer } from 'mobx-react'
 
-// icon
-import ClearIcon from '@mui/icons-material/Clear'
-import MinimizeIcon from '@mui/icons-material/Minimize'
-import AddIcon from '@mui/icons-material/Add'
+// locals
+import FacetFilter from './FacetFilter'
+import { HierarchicalTrackSelectorModel } from '../../model'
+import { Row, getRowStr } from './util'
 
-const useStyles = makeStyles()(theme => ({
-  facet: {
-    margin: 0,
-    marginLeft: theme.spacing(2),
-  },
-  select: {
-    marginBottom: theme.spacing(2),
-  },
-}))
-
-function FacetFilter({
-  column,
-  vals,
-  width,
-  dispatch,
-  filters,
-}: {
-  column: { field: string }
-  vals: [string, number][]
-  width: number
-  dispatch: (arg: { key: string; val: string[] }) => void
-  filters: Record<string, string[]>
-}) {
-  const { classes } = useStyles()
-  const [visible, setVisible] = useState(true)
-  return (
-    <FormControl key={column.field} className={classes.facet} style={{ width }}>
-      <div style={{ display: 'flex' }}>
-        <Typography>{column.field}</Typography>
-        <Tooltip title="Clear selection on this facet filter">
-          <IconButton
-            onClick={() => {
-              dispatch({ key: column.field, val: [] })
-            }}
-            size="small"
-          >
-            <ClearIcon />
-          </IconButton>
-        </Tooltip>
-        <Tooltip title="Minimize/expand this facet filter">
-          <IconButton onClick={() => setVisible(!visible)} size="small">
-            {visible ? <MinimizeIcon /> : <AddIcon />}
-          </IconButton>
-        </Tooltip>
-      </div>
-      {visible ? (
-        <Select
-          multiple
-          native
-          className={classes.select}
-          value={filters[column.field]}
-          onChange={event => {
-            // @ts-expect-error
-            const { options } = event.target
-            const val: string[] = []
-            const len = options.length
-            for (let i = 0; i < len; i++) {
-              if (options[i].selected) {
-                val.push(options[i].value)
-              }
-            }
-            dispatch({ key: column.field, val })
-          }}
-        >
-          {vals
-            .sort((a, b) => a[0].localeCompare(b[0]))
-            .map(([name, count]) => (
-              <option key={name} value={name}>
-                {name} ({count})
-              </option>
-            ))}
-        </Select>
-      ) : null}
-    </FormControl>
-  )
-}
-
-export default function FacetFilters({
+const FacetFilters = observer(function ({
   rows,
   columns,
-  dispatch,
-  filters,
-  width,
+  model,
 }: {
-  rows: Record<string, unknown>[]
-  filters: Record<string, string[]>
+  rows: Row[]
   columns: { field: string }[]
-  dispatch: (arg: { key: string; val: string[] }) => void
-  width: number
+  model: HierarchicalTrackSelectorModel
 }) {
+  const { faceted } = model
+  const { filters } = faceted
   const facets = columns.slice(1)
-  const uniqs = facets.map(() => new Map<string, number>())
-  for (const row of rows) {
-    for (const [index, column] of facets.entries()) {
-      const elt = uniqs[index]
-      const key = `${row[column.field] || ''}`
+  const uniqs = new Map(
+    facets.map(f => [f.field, new Map<string, number>()] as const),
+  )
+
+  // this code "stages the facet filters" in order that the user has selected
+  // them, which relies on the js behavior that the order of the returned keys is
+  // related to the insertion order.
+  const filterKeys = faceted.filters.keys()
+  const facetKeys = facets.map(f => f.field)
+  const ret = new Set<string>()
+  for (const entry of filterKeys) {
+    // give non-empty filters priority
+    if (filters.get(entry)?.length) {
+      ret.add(entry)
+    }
+  }
+  for (const entry of facetKeys) {
+    ret.add(entry)
+  }
+
+  let currentRows = rows
+  for (const facet of ret) {
+    const elt = uniqs.get(facet)!
+    for (const row of currentRows) {
+      const key = getRowStr(facet, row)
       const val = elt.get(key)
       // we don't allow filtering on empty yet
       if (key) {
@@ -119,20 +53,26 @@ export default function FacetFilters({
         }
       }
     }
+    const filter = filters.get(facet)?.length
+      ? new Set(filters.get(facet))
+      : undefined
+
+    currentRows = currentRows.filter(row =>
+      filter !== undefined ? filter.has(getRowStr(facet, row)) : true,
+    )
   }
 
   return (
     <div>
-      {facets.map((column, index) => (
+      {facets.map(c => (
         <FacetFilter
-          key={column.field}
-          vals={[...uniqs[index]]}
-          column={column}
-          width={width}
-          dispatch={dispatch}
-          filters={filters}
+          key={c.field}
+          vals={[...uniqs.get(c.field)!]}
+          column={c}
+          model={model}
         />
       ))}
     </div>
   )
-}
+})
+export default FacetFilters

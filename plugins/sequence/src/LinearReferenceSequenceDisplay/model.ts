@@ -42,8 +42,26 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         showTranslation: true,
+        /**
+         * #property
+         */
+        rowHeight: 20,
       }),
     )
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get sequenceHeight() {
+        const { showTranslation, showReverse, showForward } = self
+        const r1 = showReverse && showTranslation ? self.rowHeight * 3 : 0
+        const r2 = showForward && showTranslation ? self.rowHeight * 3 : 0
+        const t = r1 + r2
+        const r = showReverse ? self.rowHeight : 0
+        const s = showForward ? self.rowHeight : 0
+        return t + r + s
+      },
+    }))
     .views(self => {
       const { renderProps: superRenderProps } = self
       return {
@@ -51,8 +69,14 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
          * #method
          */
         renderProps() {
-          const { showForward, rpcDriverName, showReverse, showTranslation } =
-            self
+          const {
+            showForward,
+            rpcDriverName,
+            showReverse,
+            showTranslation,
+            rowHeight,
+            sequenceHeight,
+          } = self
           return {
             ...superRenderProps(),
             config: self.configuration.renderer,
@@ -60,6 +84,8 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
             showForward,
             showReverse,
             showTranslation,
+            rowHeight,
+            sequenceHeight,
           }
         },
       }
@@ -106,13 +132,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
             if (view?.bpPerPx >= 1) {
               self.setHeight(50)
             } else {
-              const { showTranslation, showReverse, showForward } = self
-              const r1 = showReverse && showTranslation ? 60 : 0
-              const r2 = showForward && showTranslation ? 60 : 0
-              const t = r1 + r2
-              const r = showReverse ? 20 : 0
-              const s = showForward ? 20 : 0
-              self.setHeight(t + r + s)
+              self.setHeight(self.sequenceHeight)
             }
           }),
         )

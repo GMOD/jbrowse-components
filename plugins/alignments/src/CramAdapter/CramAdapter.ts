@@ -4,24 +4,26 @@ import {
   BaseOptions,
   BaseSequenceAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { checkAbortSignal, Region, Feature } from '@jbrowse/core/util'
+import {
+  checkAbortSignal,
+  Region,
+  Feature,
+  updateStatus,
+  toLocale,
+} from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { toArray } from 'rxjs/operators'
 import { firstValueFrom } from 'rxjs'
+
+// locals
 import CramSlightlyLazyFeature from './CramSlightlyLazyFeature'
+import { IFilter } from '../shared'
 
 interface Header {
   idToName?: string[]
   nameToId?: Record<string, number>
   readGroups?: (string | undefined)[]
-}
-
-interface FilterBy {
-  flagInclude: number
-  flagExclude: number
-  tagFilter: { tag: string; value: unknown }
-  readName: string
 }
 
 export default class CramAdapter extends BaseFeatureDataAdapter {
@@ -86,7 +88,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
     return this.configureP
   }
 
-  async getHeader(opts?: BaseOptions) {
+  async getHeader(_opts?: BaseOptions) {
     const { cram } = await this.configure()
     return cram.cram.getHeaderText()
   }
@@ -128,13 +130,14 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       })
       .join('')
 
-    if (sequence.length !== end - start) {
+    const qlen = end - start
+    if (sequence.length !== qlen) {
       throw new Error(
-        `sequence fetch failed: fetching ${refName}:${(
-          start - 1
-        ).toLocaleString()}-${end.toLocaleString()} returned ${sequence.length.toLocaleString()} bases, but should have returned ${(
-          end - start
-        ).toLocaleString()}`,
+        `fetching ${refName}:${toLocale(
+          start - 1,
+        )}-${toLocale(end)} returned ${toLocale(sequence.length)} bases, should have returned ${toLocale(
+          qlen,
+        )}`,
       )
     }
     return sequence
@@ -142,36 +145,34 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
 
   private async setupPre(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts || {}
-    const conf = await this.configure()
-    statusCallback('Downloading index')
-    const { cram } = conf
-    const samHeader = await cram.cram.getSamHeader()
+    return updateStatus('Downloading index', statusCallback, async () => {
+      const conf = await this.configure()
+      const { cram } = conf
+      const samHeader = await cram.cram.getSamHeader()
 
-    // use the @SQ lines in the header to figure out the
-    // mapping between ref ID numbers and names
-    const idToName: string[] = []
-    const nameToId: Record<string, number> = {}
-    samHeader
-      .filter(l => l.tag === 'SQ')
-      .forEach((sqLine, refId) => {
-        sqLine.data.forEach(item => {
-          if (item.tag === 'SN') {
-            // this is the ref name
-            const refName = item.value
+      // use the @SQ lines in the header to figure out the
+      // mapping between ref ID numbers and names
+      const idToName: string[] = []
+      const nameToId: Record<string, number> = {}
+      samHeader
+        .filter(l => l.tag === 'SQ')
+        .forEach((sqLine, refId) => {
+          const SN = sqLine.data.find(item => item.tag === 'SN')
+          if (SN) {
+            const refName = SN.value
             nameToId[refName] = refId
             idToName[refId] = refName
           }
         })
-      })
 
-    const readGroups = samHeader
-      .filter(l => l.tag === 'RG')
-      .map(rgLine => rgLine.data.find(item => item.tag === 'ID')?.value)
+      const readGroups = samHeader
+        .filter(l => l.tag === 'RG')
+        .map(rgLine => rgLine.data.find(item => item.tag === 'ID')?.value)
 
-    const data = { idToName, nameToId, readGroups }
-    statusCallback('')
-    this.samHeader = data
-    return { samHeader: data, ...conf }
+      const data = { idToName, nameToId, readGroups }
+      this.samHeader = data
+      return { samHeader: data, ...conf }
+    })
   }
 
   private async setup(opts?: BaseOptions) {
@@ -217,14 +218,14 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   getFeatures(
     region: Region & { originalRefName?: string },
     opts?: BaseOptions & {
-      filterBy: FilterBy
+      filterBy: IFilter
     },
   ) {
     const { signal, filterBy, statusCallback = () => {} } = opts || {}
     const { refName, start, end, originalRefName } = region
 
     return ObservableCreate<Feature>(async observer => {
-      const { cram } = await this.setup(opts)
+      const { cram, samHeader } = await this.setup(opts)
 
       const refId = this.refNameToId(refName)
       if (refId === undefined) {
@@ -236,38 +237,48 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       if (originalRefName) {
         this.seqIdToOriginalRefName[refId] = originalRefName
       }
-      statusCallback('Downloading alignments')
-      const records = await cram.getRecordsForRange(refId, start, end)
+      const records = await updateStatus(
+        'Downloading alignments',
+        statusCallback,
+        () => cram.getRecordsForRange(refId, start, end),
+      )
       checkAbortSignal(signal)
-      const {
-        flagInclude = 0,
-        flagExclude = 0,
-        tagFilter,
-        readName,
-      } = filterBy || {}
+      await updateStatus('Processing alignments', statusCallback, () => {
+        const {
+          flagInclude = 0,
+          flagExclude = 0,
+          tagFilter,
+          readName,
+        } = filterBy || {}
 
-      let filtered = records.filter(record => {
-        const flags = record.flags
-        return (flags & flagInclude) === flagInclude && !(flags & flagExclude)
+        for (const record of records) {
+          const flags = record.flags
+          if ((flags & flagInclude) !== flagInclude && !(flags & flagExclude)) {
+            continue
+          }
+
+          if (tagFilter) {
+            const v =
+              tagFilter.tag === 'RG'
+                ? samHeader.readGroups?.[record.readGroupId]
+                : record.tags[tagFilter.tag]
+            if (
+              !(tagFilter.value === '*'
+                ? v !== undefined
+                : `${v}` === tagFilter.value)
+            ) {
+              continue
+            }
+          }
+
+          if (readName && record.readName !== readName) {
+            continue
+          }
+          observer.next(this.cramRecordToFeature(record))
+        }
+
+        observer.complete()
       })
-
-      if (tagFilter) {
-        filtered = filtered.filter(record => {
-          // @ts-expect-error
-          const val = record[tagFilter.tag]
-          return val === '*' ? val !== undefined : val === tagFilter.value
-        })
-      }
-
-      if (readName) {
-        filtered = filtered.filter(record => record.readName === readName)
-      }
-
-      filtered.forEach(record => {
-        observer.next(this.cramRecordToFeature(record))
-      })
-      statusCallback('')
-      observer.complete()
     }, signal)
   }
 
@@ -278,7 +289,10 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   }
 
   // we return the configured fetchSizeLimit, and the bytes for the region
-  async estimateRegionsStats(regions: Region[], opts?: BaseOptions) {
+  async getMultiRegionFeatureDensityStats(
+    regions: Region[],
+    opts?: BaseOptions,
+  ) {
     const bytes = await this.bytesForRegions(regions, opts)
     const fetchSizeLimit = this.getConf('fetchSizeLimit')
     return {

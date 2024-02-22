@@ -1,17 +1,14 @@
 ---
 id: multirowxyplotrenderer
 title: MultiRowXYPlotRenderer
-toplevel: true
 ---
 
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-## Source file
+### Source file
 
 [plugins/wiggle/src/MultiRowXYPlotRenderer/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/MultiRowXYPlotRenderer/configSchema.ts)
-
-## Docs
 
 ### MultiRowXYPlotRenderer - Slots
 
@@ -55,7 +52,7 @@ minSize: {
     }
 ```
 
-## MultiRowXYPlotRenderer - Derives from
+### MultiRowXYPlotRenderer - Derives from
 
 ```js
 baseConfiguration: baseWiggleRendererConfigSchema

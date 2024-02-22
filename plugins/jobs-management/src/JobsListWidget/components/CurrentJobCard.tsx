@@ -11,7 +11,11 @@ import {
 } from '@mui/material'
 import { NewJob } from '../model'
 
-function CurrentJobCard({ job }: { job: NewJob }) {
+const CurrentJobCard = observer(function CurrentJobCard({
+  job,
+}: {
+  job: NewJob
+}) {
   const [clicked, setClicked] = useState(false)
   return (
     <Card variant="outlined">
@@ -58,6 +62,7 @@ function CurrentJobCard({ job }: { job: NewJob }) {
             color="inherit"
             disabled={clicked || job.progressPct === 0}
             onClick={() => {
+              job.setStatusMessage('Aborted via cancel button')
               job.cancelCallback && job.cancelCallback()
               setClicked(true)
             }}
@@ -68,6 +73,6 @@ function CurrentJobCard({ job }: { job: NewJob }) {
       ) : null}
     </Card>
   )
-}
+})
 
-export default observer(CurrentJobCard)
+export default CurrentJobCard

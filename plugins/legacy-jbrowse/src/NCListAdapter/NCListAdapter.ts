@@ -73,7 +73,7 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
 
   async hasDataForRefName(refName: string) {
     const root = await this.nclist.getDataRoot(refName)
-    return !!(root && root.stats && root.stats.featureCount)
+    return !!root?.stats?.featureCount
   }
 
   /**

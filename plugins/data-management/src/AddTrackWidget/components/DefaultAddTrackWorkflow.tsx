@@ -14,7 +14,9 @@ import { getRoot } from 'mobx-state-tree'
 import {
   getSession,
   isElectron,
-  supportedIndexingAdapters,
+  isSessionModelWithWidgets,
+  isSessionWithAddTracks,
+  isSupportedIndexingAdapter,
 } from '@jbrowse/core/util'
 import { getConf } from '@jbrowse/core/configuration'
 import { observer } from 'mobx-react'
@@ -45,7 +47,11 @@ const useStyles = makeStyles()(theme => ({
 
 const steps = ['Enter track data', 'Confirm track type']
 
-function AddTrackWorkflow({ model }: { model: AddTrackModel }) {
+const DefaultAddTrackWorkflow = observer(function ({
+  model,
+}: {
+  model: AddTrackModel
+}) {
   const [activeStep, setActiveStep] = useState(0)
   const { classes } = useStyles()
 
@@ -81,13 +87,16 @@ function AddTrackWorkflow({ model }: { model: AddTrackModel }) {
     }
 
     const trackId = [
-      `${trackName.toLowerCase().replace(/ /g, '_')}-${Date.now()}`,
+      `${trackName.toLowerCase().replaceAll(' ', '_')}-${Date.now()}`,
       `${session.adminMode ? '' : '-sessionTrack'}`,
     ].join('')
 
     const assemblyInstance = session.assemblyManager.get(assembly)
-
-    if (trackAdapter && trackAdapter.type !== 'UNKNOWN') {
+    if (!isSessionWithAddTracks(session)) {
+      setTrackErrorMessage('Unable to add tracks to this model')
+      return
+    }
+    if (assemblyInstance && trackAdapter && trackAdapter.type !== 'UNKNOWN') {
       session.addTrackConf({
         trackId,
         type: trackType,
@@ -98,50 +107,40 @@ function AddTrackWorkflow({ model }: { model: AddTrackModel }) {
           sequenceAdapter: getConf(assemblyInstance, ['sequence', 'adapter']),
         },
       })
-      if (model.view) {
-        model.view.showTrack(trackId)
-        if (
-          isElectron &&
-          textIndexTrack &&
-          supportedIndexingAdapters(trackAdapter.type)
-        ) {
-          const attr = textIndexingConf || {
-            attributes: ['Name', 'ID'],
-            exclude: ['CDS', 'exon'],
-          }
-          const indexName = trackName + '-index'
-          const newEntry = {
-            indexingParams: {
-              ...attr,
-              assemblies: [assembly],
-              tracks: [trackId],
-              indexType: 'perTrack',
-              name: indexName,
-              timestamp: new Date().toISOString(),
-            },
-            name: indexName,
-            cancelCallback: () => jobsManager.abortJob(),
-          }
-          jobsManager.queueJob(newEntry)
+      model.view.showTrack?.(trackId)
+      if (
+        isElectron &&
+        textIndexTrack &&
+        isSupportedIndexingAdapter(trackAdapter.type)
+      ) {
+        const attr = textIndexingConf || {
+          attributes: ['Name', 'ID'],
+          exclude: ['CDS', 'exon'],
         }
-      } else {
-        session.notify(
-          'Open a new view, or use the track selector in an existing view, to view this track',
-          'info',
-        )
+        const indexName = trackName + '-index'
+        const newEntry = {
+          indexingParams: {
+            ...attr,
+            assemblies: [assembly],
+            tracks: [trackId],
+            indexType: 'perTrack',
+            name: indexName,
+            timestamp: new Date().toISOString(),
+          },
+          name: indexName,
+          cancelCallback: () => jobsManager.abortJob(),
+        }
+        jobsManager.queueJob(newEntry)
       }
       model.clearData()
-      session.hideWidget(model)
+      if (isSessionModelWithWidgets(session)) {
+        session.hideWidget(model)
+      }
     } else {
       setTrackErrorMessage(
         'Failed to add track.\nThe configuration of this file is not currently supported.',
       )
     }
-  }
-
-  function handleBack() {
-    setTrackErrorMessage(undefined)
-    setActiveStep(activeStep - 1)
   }
 
   function isNextDisabled() {
@@ -170,7 +169,10 @@ function AddTrackWorkflow({ model }: { model: AddTrackModel }) {
               <div className={classes.actionsContainer}>
                 <Button
                   disabled={activeStep === 0}
-                  onClick={handleBack}
+                  onClick={() => {
+                    setTrackErrorMessage(undefined)
+                    setActiveStep(activeStep - 1)
+                  }}
                   className={classes.button}
                 >
                   Back
@@ -197,5 +199,5 @@ function AddTrackWorkflow({ model }: { model: AddTrackModel }) {
       </Stepper>
     </div>
   )
-}
-export default observer(AddTrackWorkflow)
+})
+export default DefaultAddTrackWorkflow

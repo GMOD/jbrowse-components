@@ -1,6 +1,5 @@
 ---
 id: alignments_track
-toplevel: true
 title: Alignments track
 ---
 
@@ -88,8 +87,8 @@ reads by the HP tag:
 ### Color by modifications/methylation
 
 If you have data that marks DNA/RNA modifications using the MM tag in BAM/CRAM
-format, then the alignments track can use these merks to color these
-modification. It uses two modes:
+format, then the alignments track can use these tags to color modifications. It
+uses two modes:
 
 1. Modifications mode - draws the modifications as they are
 2. Methylation mode - draws both unmodified and modified CpGs (unmodified
@@ -191,4 +190,4 @@ display" will re-pack features into that area.
 Users can create a more compact display of alignments using Track menu->Pileup
 settings->Set feature height->Compact
 
-![](/img/alignments/compact.png)
+<Figure caption="Compact view of alignments" src="/img/alignments/compact.png" />

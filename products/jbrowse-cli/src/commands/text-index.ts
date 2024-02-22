@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import { Readable } from 'stream'
 import { ixIxxStream } from 'ixixx'
-import { flags } from '@oclif/command'
+import { Flags } from '@oclif/core'
 
 // locals
 import { indexGff3 } from '../types/gff3Adapter'
@@ -53,66 +53,66 @@ export default class TextIndex extends JBrowseCommand {
   ]
 
   static flags = {
-    help: flags.help({ char: 'h' }),
-    tracks: flags.string({
+    help: Flags.help({ char: 'h' }),
+    tracks: Flags.string({
       description: `Specific tracks to index, formatted as comma separated trackIds. If unspecified, indexes all available tracks`,
     }),
-    target: flags.string({
+    target: Flags.string({
       description:
         'Path to config file in JB2 installation directory to read from.',
     }),
-    out: flags.string({
+    out: Flags.string({
       description: 'Synonym for target',
     }),
 
-    attributes: flags.string({
+    attributes: Flags.string({
       description: 'Comma separated list of attributes to index',
       default: 'Name,ID',
     }),
-    assemblies: flags.string({
+    assemblies: Flags.string({
       char: 'a',
       description:
         'Specify the assembl(ies) to create an index for. If unspecified, creates an index for each assembly in the config',
     }),
-    force: flags.boolean({
+    force: Flags.boolean({
       default: false,
       description: 'Overwrite previously existing indexes',
     }),
-    quiet: flags.boolean({
+    quiet: Flags.boolean({
       char: 'q',
       default: false,
       description: 'Hide the progress bars',
     }),
-    perTrack: flags.boolean({
+    perTrack: Flags.boolean({
       default: false,
       description: 'If set, creates an index per track',
     }),
-    exclude: flags.string({
+    exclude: Flags.string({
       description: 'Adds gene type to list of excluded types',
       default: 'CDS,exon',
     }),
-    prefixSize: flags.integer({
+    prefixSize: Flags.integer({
       description:
         'Specify the prefix size for the ixx index. We attempt to automatically calculate this, but you can manually specify this too. If many genes have similar gene IDs e.g. Z000000001, Z000000002 the prefix size should be larger so that they get split into different bins',
     }),
-    file: flags.string({
+    file: Flags.string({
       description:
         'File or files to index (can be used to create trix indexes for embedded component use cases not using a config.json for example)',
       multiple: true,
     }),
-    fileId: flags.string({
+    fileId: Flags.string({
       description:
         'Set the trackId used for the indexes generated with the --file argument',
       multiple: true,
     }),
-    dryrun: flags.boolean({
+    dryrun: Flags.boolean({
       description:
         'Just print out tracks that will be indexed by the process, without doing any indexing',
     }),
   }
 
   async run() {
-    const { flags } = this.parse(TextIndex)
+    const { flags } = await this.parse(TextIndex)
     const { perTrack, file } = flags
 
     if (file) {
@@ -126,7 +126,7 @@ export default class TextIndex extends JBrowseCommand {
   }
 
   async aggregateIndex() {
-    const { flags } = this.parse(TextIndex)
+    const { flags } = await this.parse(TextIndex)
     const {
       out,
       target,
@@ -237,7 +237,7 @@ export default class TextIndex extends JBrowseCommand {
   }
 
   async perTrackIndex() {
-    const { flags } = this.parse(TextIndex)
+    const { flags } = await this.parse(TextIndex)
     const {
       out,
       target,
@@ -327,7 +327,7 @@ export default class TextIndex extends JBrowseCommand {
   }
 
   async indexFileList() {
-    const { flags } = this.parse(TextIndex)
+    const { flags } = await this.parse(TextIndex)
     const {
       out,
       target,
@@ -338,6 +338,9 @@ export default class TextIndex extends JBrowseCommand {
       exclude,
       prefixSize,
     } = flags
+    if (!file) {
+      throw new Error('Cannot index file list without files')
+    }
     const outFlag = target || out || '.'
     const trixDir = path.join(outFlag, 'trix')
     if (!fs.existsSync(trixDir)) {

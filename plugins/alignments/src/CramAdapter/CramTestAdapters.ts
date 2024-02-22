@@ -2,7 +2,7 @@ import { GenericFilehandle } from 'generic-filehandle'
 import { Observable } from 'rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { ConfigurationSchema } from '@jbrowse/core/configuration/configurationSchema'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 // setup for Cram Adapter Testing
 export function parseSmallFasta(text: string) {
@@ -13,7 +13,7 @@ export function parseSmallFasta(text: string) {
       const [defLine, ...seqLines] = entryText.split(/\n|\r\n|\r/)
       const [id, ...descriptionLines] = defLine.split(' ')
       const description = descriptionLines.join(' ')
-      const sequence = seqLines.join('').replace(/\s/g, '')
+      const sequence = seqLines.join('').replaceAll(/\s/g, '')
       return { id, description, sequence }
     })
 }

@@ -94,12 +94,19 @@ const RenderedBlocks = observer(function ({
             />
           )
         }
-        throw new Error(`invalid block type ${typeof block}`)
+        throw new Error(`invalid block type ${JSON.stringify(block)}`)
       })}
     </>
   )
 })
-function LinearBlocks({ model }: { model: BaseLinearDisplayModel }) {
+
+export { RenderedBlocks }
+
+const LinearBlocks = observer(function ({
+  model,
+}: {
+  model: BaseLinearDisplayModel
+}) {
   const { classes } = useStyles()
   const { blockDefinitions } = model
   const viewModel = getContainingView(model) as LGV
@@ -113,7 +120,6 @@ function LinearBlocks({ model }: { model: BaseLinearDisplayModel }) {
       <RenderedBlocks model={model} />
     </div>
   )
-}
+})
 
-export { RenderedBlocks, useStyles }
-export default observer(LinearBlocks)
+export default LinearBlocks

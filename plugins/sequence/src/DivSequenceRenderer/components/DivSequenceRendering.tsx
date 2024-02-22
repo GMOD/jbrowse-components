@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
@@ -86,8 +85,8 @@ function Translation(props: {
                 defaultStarts.includes(codon)
                   ? theme?.palette.startCodon
                   : defaultStops.includes(codon)
-                  ? theme?.palette.stopCodon
-                  : map[Math.abs(frame)]
+                    ? theme?.palette.stopCodon
+                    : map[Math.abs(frame)]
               }
             />
             {render ? (
@@ -109,7 +108,7 @@ function Translation(props: {
 
 function DNA(props: {
   seq: string
-  theme: any
+  theme: Theme
   bpPerPx: number
   height: number
   region: Region
@@ -132,6 +131,7 @@ function DNA(props: {
   return (
     <>
       {seq.split('').map((letter, index) => {
+        // @ts-expect-error
         const color = theme.palette.bases[letter.toUpperCase()]
         const x = reverse ? rightPx - (index + 1) * w : leftPx + index * w
         return (
@@ -164,7 +164,7 @@ function DNA(props: {
   )
 }
 
-const SequenceSVG = ({
+function SequenceSVG({
   regions,
   theme: configTheme,
   features = new Map(),
@@ -172,11 +172,20 @@ const SequenceSVG = ({
   showForward = true,
   showTranslation = true,
   bpPerPx,
-}: any) => {
+  rowHeight,
+}: {
+  regions: Region[]
+  theme?: Theme
+  features: Map<string, Feature>
+  showReverse?: boolean
+  showForward?: boolean
+  showTranslation?: boolean
+  bpPerPx: number
+  rowHeight: number
+}) {
   const [region] = regions
   const theme = createJBrowseTheme(configTheme)
   const codonTable = generateCodonTable(defaultCodonTable)
-  const height = 20
   const [feature] = [...features.values()]
   if (!feature) {
     return null
@@ -188,7 +197,7 @@ const SequenceSVG = ({
 
   // incrementer for the y-position of the current sequence being rendered
   // (applies to both translation rows and dna rows)
-  let currY = -20
+  let currY = -rowHeight
 
   return (
     <>
@@ -199,13 +208,13 @@ const SequenceSVG = ({
             <Translation
               key={`translation-${index}`}
               seq={seq}
-              y={(currY += 20)}
+              y={(currY += rowHeight)}
               codonTable={codonTable}
               frame={index}
               bpPerPx={bpPerPx}
               region={region}
               theme={theme}
-              height={height}
+              height={rowHeight}
               reverse={region.reversed}
             />
           ))
@@ -213,8 +222,8 @@ const SequenceSVG = ({
 
       {showForward ? (
         <DNA
-          height={height}
-          y={(currY += 20)}
+          height={rowHeight}
+          y={(currY += rowHeight)}
           feature={feature}
           region={region}
           seq={region.reversed ? complement(seq) : seq}
@@ -225,8 +234,8 @@ const SequenceSVG = ({
 
       {showReverse ? (
         <DNA
-          height={height}
-          y={(currY += 20)}
+          height={rowHeight}
+          y={(currY += rowHeight)}
           feature={feature}
           region={region}
           seq={region.reversed ? seq : complement(seq)}
@@ -242,13 +251,13 @@ const SequenceSVG = ({
             <Translation
               key={`rev-translation-${index}`}
               seq={seq}
-              y={(currY += 20)}
+              y={(currY += rowHeight)}
               codonTable={codonTable}
               frame={index}
               bpPerPx={bpPerPx}
               region={region}
               theme={theme}
-              height={height}
+              height={rowHeight}
               reverse={!region.reversed}
             />
           ))
@@ -257,7 +266,7 @@ const SequenceSVG = ({
   )
 }
 
-const Wrapper = ({
+function Wrapper({
   exportSVG,
   width,
   totalHeight,
@@ -267,7 +276,7 @@ const Wrapper = ({
   width: number
   totalHeight: number
   children: React.ReactNode
-}) => {
+}) {
   return exportSVG ? (
     <>{children}</>
   ) : (
@@ -275,34 +284,40 @@ const Wrapper = ({
       data-testid="sequence_track"
       width={width}
       height={totalHeight}
-      style={{ width, height: totalHeight }}
+      style={{
+        width,
+        height: totalHeight,
+        userSelect: 'none',
+        display: 'block',
+      }}
     >
       {children}
     </svg>
   )
 }
 
-function Sequence(props: {
+const DivSequenceRendering = observer(function (props: {
   exportSVG?: { rasterizeLayers: boolean }
   features: Map<string, Feature>
   regions: Region[]
   bpPerPx: number
+  rowHeight: number
+  sequenceHeight: number
   config: AnyConfigurationModel
-  theme?: any
+  theme?: Theme
   showForward?: boolean
   showReverse?: boolean
   showTranslation?: boolean
 }) {
-  const { regions, bpPerPx } = props
+  const { regions, bpPerPx, sequenceHeight } = props
   const [region] = regions
   const width = (region.end - region.start) / bpPerPx
-  const totalHeight = 200
 
   return (
-    <Wrapper {...props} totalHeight={totalHeight} width={width}>
+    <Wrapper {...props} totalHeight={sequenceHeight} width={width}>
       <SequenceSVG {...props} />
     </Wrapper>
   )
-}
+})
 
-export default observer(Sequence)
+export default DivSequenceRendering

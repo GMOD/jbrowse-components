@@ -16,9 +16,9 @@ import MoreVert from '@mui/icons-material/MoreVert'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 
 // locals
-import { CircularViewModel } from '../models/CircularView'
+import { CircularViewModel } from '../models/model'
 import { getSession } from '@jbrowse/core/util'
-import ExportSvgDlg from './ExportSvgDialog'
+import ExportSvgDialog from './ExportSvgDialog'
 
 const useStyles = makeStyles()(theme => ({
   controls: {
@@ -30,7 +30,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default observer(function ({ model }: { model: CircularViewModel }) {
+const Controls = observer(function ({ model }: { model: CircularViewModel }) {
   const { classes } = useStyles()
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   return (
@@ -100,7 +100,7 @@ export default observer(function ({ model }: { model: CircularViewModel }) {
               icon: PhotoCamera,
               onClick: () => {
                 getSession(model).queueDialog(handleClose => [
-                  ExportSvgDlg,
+                  ExportSvgDialog,
                   { model, handleClose },
                 ])
               },
@@ -117,3 +117,5 @@ export default observer(function ({ model }: { model: CircularViewModel }) {
     </div>
   )
 })
+
+export default Controls

@@ -3,10 +3,11 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
  * #config GCContentAdapter
+ * #category adapter
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
-const GCContentAdapterF = (pluginManager: PluginManager) => {
+const GCContentAdapterF = (_pluginManager: PluginManager) => {
   return ConfigurationSchema(
     'GCContentAdapter',
     {
@@ -16,6 +17,20 @@ const GCContentAdapterF = (pluginManager: PluginManager) => {
       sequenceAdapter: {
         type: 'frozen',
         defaultValue: null,
+      },
+      /**
+       * #slot
+       */
+      windowSize: {
+        type: 'number',
+        defaultValue: 100,
+      },
+      /**
+       * #slot
+       */
+      windowDelta: {
+        type: 'number',
+        defaultValue: 100,
       },
     },
     { explicitlyTyped: true },

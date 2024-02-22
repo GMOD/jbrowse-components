@@ -11,6 +11,7 @@ import {
 } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
 import { makeStyles } from 'tss-react/mui'
+import { IFilter } from '.'
 
 const useStyles = makeStyles()(theme => ({
   paper: {
@@ -37,7 +38,7 @@ const flagNames = [
   'supplementary alignment',
 ]
 
-function Bitmask(props: { flag?: number; setFlag: Function }) {
+function Bitmask(props: { flag?: number; setFlag: (arg: number) => void }) {
   const { flag = 0, setFlag } = props
   return (
     <>
@@ -70,26 +71,21 @@ function Bitmask(props: { flag?: number; setFlag: Function }) {
   )
 }
 
-function FilterByTagDlg(props: {
+const FilterByTagDialog = observer(function (props: {
   model: {
-    filterBy?: {
-      flagExclude: number
-      flagInclude: number
-      readName?: string
-      tagFilter?: { tag: string; value: string }
-    }
-    setFilterBy: Function
+    filterBy: IFilter
+    setFilterBy: (arg: IFilter) => void
   }
   handleClose: () => void
 }) {
   const { model, handleClose } = props
   const { classes } = useStyles()
   const { filterBy } = model
-  const [flagInclude, setFlagInclude] = useState(filterBy?.flagInclude)
-  const [flagExclude, setFlagExclude] = useState(filterBy?.flagExclude)
-  const [tag, setTag] = useState(filterBy?.tagFilter?.tag || '')
-  const [tagValue, setTagValue] = useState(filterBy?.tagFilter?.value || '')
-  const [readName, setReadName] = useState(filterBy?.readName || '')
+  const [flagInclude, setFlagInclude] = useState(filterBy.flagInclude)
+  const [flagExclude, setFlagExclude] = useState(filterBy.flagExclude)
+  const [tag, setTag] = useState(filterBy.tagFilter?.tag || '')
+  const [tagValue, setTagValue] = useState(filterBy.tagFilter?.value || '')
+  const [readName, setReadName] = useState(filterBy.readName || '')
   const validTag = tag.match(/^[A-Za-z][A-Za-z0-9]$/)
 
   const site = 'https://broadinstitute.github.io/picard/explain-flags.html'
@@ -125,23 +121,15 @@ function FilterByTagDlg(props: {
             value={tag}
             onChange={event => setTag(event.target.value)}
             placeholder="Enter tag name"
-            inputProps={{
-              maxLength: 2,
-              'data-testid': 'color-tag-name-input',
-            }}
+            inputProps={{ maxLength: 2 }}
             error={tag.length === 2 && !validTag}
             helperText={tag.length === 2 && !validTag ? 'Not a valid tag' : ''}
-            data-testid="color-tag-name"
           />
           <TextField
             className={classes.field}
             value={tagValue}
             onChange={event => setTagValue(event.target.value)}
             placeholder="Enter tag value"
-            inputProps={{
-              'data-testid': 'color-tag-name-input',
-            }}
-            data-testid="color-tag-value"
           />
         </Paper>
         <Paper className={classes.paper} variant="outlined">
@@ -151,10 +139,6 @@ function FilterByTagDlg(props: {
             value={readName}
             onChange={event => setReadName(event.target.value)}
             placeholder="Enter read name"
-            inputProps={{
-              'data-testid': 'color-tag-readname-input',
-            }}
-            data-testid="color-tag-readname"
           />
         </Paper>
         <DialogActions>
@@ -192,6 +176,6 @@ function FilterByTagDlg(props: {
       </DialogContent>
     </Dialog>
   )
-}
+})
 
-export default observer(FilterByTagDlg)
+export default FilterByTagDialog

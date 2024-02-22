@@ -3,7 +3,7 @@ import { AbstractSessionModel } from '@jbrowse/core/util'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 // locals
-import { CircularViewModel } from '../CircularView/models/CircularView'
+import { CircularViewModel } from '../CircularView/models/model'
 
 type CGV = CircularViewModel
 
@@ -14,7 +14,6 @@ export default (pluginManager: PluginManager) => {
     async ({
       session,
       assembly,
-      loc,
       tracks = [],
     }: {
       session: AbstractSessionModel

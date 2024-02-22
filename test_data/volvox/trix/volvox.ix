@@ -74,6 +74,7 @@ helix ["ctgA%3A13801..14007"|"gff3tabix_genes"|"m05"|"helix%20loop%20helix"],1 [
 hox ["ctgA%3A28332..30033"|"gff3tabix_genes"|"m02"|"HOX"],1
 i ["ctgA%3A4715..5968"|"gff3tabix_genes"|"f05"|"Ok!%20Ok!%20I%20get%20the%20message."],1
 ig-like ["ctgA%3A33325..35791"|"gff3tabix_genes"|"m04"|"Ig-like"],1
+inv133 ["ctgA%3A1..1000"|"volvox.inv.vcf"|"inv133"],1
 inv134 ["ctgA%3A2700..10000"|"volvox.inv.vcf"|"inv134"],1
 inv135 ["ctgA%3A6000..9000"|"volvox.inv.vcf"|"inv135"],1 ["ctgA%3A6000..9000"|"volvox.inv.vcf"|"inv135"],2
 inv9000 ["ctgA%3A6000..9000"|"volvox.inv.vcf"|"inv9000"],1

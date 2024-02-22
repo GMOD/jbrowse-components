@@ -26,9 +26,10 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
     colEnd: number
   }>
 
-  protected intervalTrees: {
-    [key: string]: Promise<IntervalTree | undefined> | undefined
-  } = {}
+  protected intervalTrees: Record<
+    string,
+    Promise<IntervalTree | undefined> | undefined
+  > = {}
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
@@ -107,7 +108,7 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
       return columnNames
     }
     const defs = header.split(/\n|\r\n|\r/).filter(f => !!f)
-    const defline = defs[defs.length - 1]
+    const defline = defs.at(-1)
     return defline?.includes('\t')
       ? defline
           .slice(1)

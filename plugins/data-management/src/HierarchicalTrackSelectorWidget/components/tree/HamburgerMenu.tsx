@@ -1,17 +1,17 @@
 import React, { Suspense, lazy, useState } from 'react'
-import { IconButton } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import JBrowseMenu from '@jbrowse/core/ui/Menu'
 import {
   getSession,
-  isSessionModelWithWidgets,
+  isSessionModelWithConnectionEditing,
   isSessionModelWithConnections,
+  isSessionModelWithWidgets,
+  isSessionWithAddTracks,
 } from '@jbrowse/core/util'
 import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 
 // icons
 import MenuIcon from '@mui/icons-material/Menu'
@@ -19,31 +19,27 @@ import MenuIcon from '@mui/icons-material/Menu'
 // locals
 import { HierarchicalTrackSelectorModel } from '../../model'
 
+// lazies
+const FacetedDialog = lazy(() => import('../faceted/FacetedDialog'))
+
 // lazy components
-const CloseConnectionDlg = lazy(
+const CloseConnectionDialog = lazy(
   () => import('../dialogs/CloseConnectionDialog'),
 )
-const DeleteConnectionDlg = lazy(
+const DeleteConnectionDialog = lazy(
   () => import('../dialogs/DeleteConnectionDialog'),
 )
-const ManageConnectionsDlg = lazy(
+const ManageConnectionsDialog = lazy(
   () => import('../dialogs/ManageConnectionsDialog'),
 )
-const ToggleConnectionsDlg = lazy(
+const ToggleConnectionsDialog = lazy(
   () => import('../dialogs/ToggleConnectionsDialog'),
 )
 
-const useStyles = makeStyles()(theme => ({
-  menuIcon: {
-    marginRight: theme.spacing(1),
-    marginBottom: 0,
-  },
-}))
-
 interface ModalArgs {
   connectionConf: AnyConfigurationModel
-  safelyBreakConnection: Function
-  dereferenceTypeCount: { [key: string]: number }
+  safelyBreakConnection: () => void
+  dereferenceTypeCount: Record<string, number>
   name: string
 }
 
@@ -52,28 +48,25 @@ interface DialogDetails {
   connectionConf: AnyConfigurationModel
 }
 
-export default observer(function HamburgerMenu({
+const HamburgerMenu = observer(function ({
   model,
-  setAssemblyIdx,
 }: {
   model: HierarchicalTrackSelectorModel
-  setAssemblyIdx: Function
 }) {
   const session = getSession(model)
-  const [menuEl, setMenuEl] = useState<HTMLButtonElement>()
   const [modalInfo, setModalInfo] = useState<ModalArgs>()
-  const [deleteDlgDetails, setDeleteDlgDetails] = useState<DialogDetails>()
+  const [deleteDialogDetails, setDeleteDialogDetails] =
+    useState<DialogDetails>()
   const [connectionToggleOpen, setConnectionToggleOpen] = useState(false)
   const [connectionManagerOpen, setConnectionManagerOpen] = useState(false)
-  const { classes } = useStyles()
-  const { assemblyNames } = model
+  const [facetedOpen, setFacetedOpen] = useState(false)
 
   function breakConnection(
     connectionConf: AnyConfigurationModel,
     deletingConnection?: boolean,
   ) {
     const name = readConfObject(connectionConf, 'name')
-    const result = session.prepareToBreakConnection(connectionConf)
+    const result = session.prepareToBreakConnection?.(connectionConf)
     if (result) {
       const [safelyBreakConnection, dereferenceTypeCount] = result
       if (Object.keys(dereferenceTypeCount).length > 0) {
@@ -88,108 +81,154 @@ export default observer(function HamburgerMenu({
       }
     }
     if (deletingConnection) {
-      setDeleteDlgDetails({ name, connectionConf })
+      setDeleteDialogDetails({ name, connectionConf })
     }
   }
 
-  const connectionMenuItems = [
-    {
-      label: 'Turn on/off connections...',
-      onClick: () => setConnectionToggleOpen(true),
-    },
-  ]
-
-  if (isSessionModelWithConnections(session)) {
-    connectionMenuItems.unshift({
-      label: 'Add connection...',
-      onClick: () => {
-        if (isSessionModelWithWidgets(session)) {
-          session.showWidget(
-            session.addWidget('AddConnectionWidget', 'addConnectionWidget'),
-          )
-        }
-      },
-    })
-
-    connectionMenuItems.push({
-      label: 'Delete connections...',
-      onClick: () => setConnectionManagerOpen(true),
-    })
-  }
   return (
     <>
-      <IconButton
-        className={classes.menuIcon}
-        onClick={event => setMenuEl(event.currentTarget)}
-      >
-        <MenuIcon />
-      </IconButton>
-
-      <JBrowseMenu
-        anchorEl={menuEl}
-        open={Boolean(menuEl)}
-        onMenuItemClick={(_, callback) => {
-          callback()
-          setMenuEl(undefined)
-        }}
-        onClose={() => setMenuEl(undefined)}
+      <CascadingMenuButton
         menuItems={[
           {
-            label: 'Add track...',
+            label: 'Open faceted track selector',
             onClick: () => {
-              if (isSessionModelWithWidgets(session)) {
-                session.showWidget(
-                  session.addWidget('AddTrackWidget', 'addTrackWidget', {
-                    view: model.view.id,
-                  }),
-                )
-              }
+              setFacetedOpen(true)
             },
           },
-          ...(session.makeConnection ? connectionMenuItems : []),
-
-          ...(assemblyNames.length > 1
+          ...(isSessionWithAddTracks(session)
             ? [
                 {
-                  label: 'Select assembly...',
-                  subMenu: assemblyNames.map((name, idx) => ({
-                    label: name,
-                    onClick: () => setAssemblyIdx(idx),
-                  })),
+                  label: 'Add track...',
+                  onClick: () => {
+                    if (isSessionModelWithWidgets(session)) {
+                      session.showWidget(
+                        session.addWidget('AddTrackWidget', 'addTrackWidget', {
+                          view: model.view.id,
+                        }),
+                      )
+                    }
+                  },
                 },
               ]
             : []),
+          {
+            label: 'Connections...',
+            subMenu: [
+              ...(isSessionModelWithConnections(session)
+                ? [
+                    {
+                      label: 'Turn on/off connections...',
+                      onClick: () => setConnectionToggleOpen(true),
+                    },
+                  ]
+                : []),
+              ...(isSessionModelWithConnectionEditing(session)
+                ? [
+                    {
+                      label: 'Add connection...',
+                      onClick: () => {
+                        if (isSessionModelWithWidgets(session)) {
+                          session.showWidget(
+                            session.addWidget(
+                              'AddConnectionWidget',
+                              'addConnectionWidget',
+                            ),
+                          )
+                        }
+                      },
+                    },
+                    {
+                      label: 'Delete connections...',
+                      onClick: () => setConnectionManagerOpen(true),
+                    },
+                  ]
+                : []),
+            ],
+          },
+          {
+            label: 'Sort...',
+            type: 'subMenu',
+            subMenu: [
+              {
+                label: 'Sort tracks by name',
+                type: 'checkbox',
+                checked: model.activeSortTrackNames,
+                onClick: () =>
+                  model.setSortTrackNames(!model.activeSortTrackNames),
+              },
+              {
+                label: 'Sort categories by name',
+                type: 'checkbox',
+                checked: model.activeSortCategories,
+                onClick: () =>
+                  model.setSortCategories(!model.activeSortCategories),
+              },
+            ],
+          },
+          {
+            label: 'Collapse...',
+            type: 'subMenu',
+            subMenu: [
+              ...(model.hasAnySubcategories
+                ? [
+                    {
+                      label: 'Collapse subcategories',
+                      onClick: () => model.collapseSubCategories(),
+                    },
+                  ]
+                : []),
+              {
+                label: 'Collapse top-level categories',
+                onClick: () => model.collapseTopLevelCategories(),
+              },
+              {
+                label: 'Expand all categories',
+                onClick: () => model.expandAllCategories(),
+              },
+            ],
+          },
         ]}
-      />
-      <Suspense fallback={<div />}>
+      >
+        <MenuIcon />
+      </CascadingMenuButton>
+      <Suspense fallback={null}>
         {modalInfo ? (
-          <CloseConnectionDlg
+          <CloseConnectionDialog
             modalInfo={modalInfo}
-            setModalInfo={setModalInfo}
+            onClose={() => setModalInfo(undefined)}
           />
         ) : null}
-        {deleteDlgDetails ? (
-          <DeleteConnectionDlg
-            handleClose={() => setDeleteDlgDetails(undefined)}
-            deleteDialogDetails={deleteDlgDetails}
+        {deleteDialogDetails ? (
+          <DeleteConnectionDialog
+            handleClose={() => setDeleteDialogDetails(undefined)}
+            deleteDialogDetails={deleteDialogDetails}
             session={session}
           />
         ) : null}
         {connectionManagerOpen ? (
-          <ManageConnectionsDlg
+          <ManageConnectionsDialog
             handleClose={() => setConnectionManagerOpen(false)}
             breakConnection={breakConnection}
             session={session}
           />
         ) : null}
         {connectionToggleOpen ? (
-          <ToggleConnectionsDlg
+          <ToggleConnectionsDialog
             handleClose={() => setConnectionToggleOpen(false)}
             session={session}
             breakConnection={breakConnection}
+          />
+        ) : null}
+
+        {facetedOpen ? (
+          <FacetedDialog
+            handleClose={() => setFacetedOpen(false)}
+            model={model}
           />
         ) : null}
       </Suspense>
     </>
   )
 })
+
+export default HamburgerMenu

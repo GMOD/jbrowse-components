@@ -1,6 +1,8 @@
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AbstractSessionModel, isAbstractMenuManager } from '@jbrowse/core/util'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { types } from 'mobx-state-tree'
 
 // icons
 import LineStyleIcon from '@mui/icons-material/LineStyle'
@@ -19,7 +21,6 @@ import LinearGenomeViewF, {
 } from './LinearGenomeView'
 
 import LinearBasicDisplayF from './LinearBasicDisplay'
-
 import FeatureTrackF from './FeatureTrack'
 import BasicTrackF from './BasicTrack'
 import LaunchLinearGenomeViewF from './LaunchLinearGenomeView'
@@ -35,6 +36,24 @@ export default class LinearGenomeViewPlugin extends Plugin {
     ZoomControls,
     LinearGenomeView,
   }
+
+  /**
+   * #config LinearGenomeViewConfigSchema
+   */
+  configurationSchema = ConfigurationSchema('LinearGenomeViewConfigSchema', {
+    /**
+     * #slot configuration.LinearGenomeViewPlugin.trackLabels
+     */
+    trackLabels: {
+      type: 'string',
+      defaultValue: 'overlapping',
+      model: types.enumeration('trackLabelOptions', [
+        'offset',
+        'overlapping',
+        'hidden',
+      ]),
+    },
+  })
 
   install(pluginManager: PluginManager) {
     FeatureTrackF(pluginManager)
@@ -58,27 +77,34 @@ export default class LinearGenomeViewPlugin extends Plugin {
   }
 }
 
-export type { BaseLinearDisplayModel, BlockModel } from './BaseLinearDisplay'
+export type {
+  ExportSvgDisplayOptions,
+  BaseLinearDisplayModel,
+  BlockModel,
+} from './BaseLinearDisplay'
 
 export { configSchemaFactory as linearBareDisplayConfigSchemaFactory } from './LinearBareDisplay'
 export {
-  BlockMsg,
   baseLinearDisplayConfigSchema,
-  BaseLinearDisplayComponent,
   BaseLinearDisplay,
+  BlockMsg,
+  BaseLinearDisplayComponent,
+  TrackHeightMixin,
+  FeatureDensityMixin,
+  TooLargeMessage,
 } from './BaseLinearDisplay'
 export {
   type LinearGenomeViewModel,
-  RefNameAutocomplete,
   type LinearGenomeViewStateModel,
+  RefNameAutocomplete,
   SearchBox,
 } from './LinearGenomeView'
 export {
   renderToSvg,
   SVGTracks,
-  totalHeight,
   SVGRuler,
 } from './LinearGenomeView/svgcomponents/SVGLinearGenomeView'
+export { totalHeight } from './LinearGenomeView/svgcomponents/util'
 export {
   configSchema as linearBasicDisplayConfigSchemaFactory,
   modelFactory as linearBasicDisplayModelFactory,

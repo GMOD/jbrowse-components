@@ -73,9 +73,7 @@ export function convertTrackConfig(
     jb2TrackConfig.description = description
   }
 
-  const category =
-    jb1TrackConfig.category ||
-    (jb1TrackConfig.metadata && jb1TrackConfig.metadata.category)
+  const category = jb1TrackConfig.category || jb1TrackConfig.metadata?.category
   jb2TrackConfig.category = category ? category.split(/\s*\/\s*/) : []
 
   const { storeClass } = jb1TrackConfig
@@ -96,8 +94,8 @@ export function convertTrackConfig(
 
   const resolveUrlTemplate = (urlTemplate: string) => {
     return new URL(urlTemplate, `${dataRoot}/`).href
-      .replace(/%7B/gi, '{')
-      .replace(/%7D/gi, '}')
+      .replaceAll(/%7B/gi, '{')
+      .replaceAll(/%7D/gi, '}')
   }
   const urlTemplate = resolveUrlTemplate(jb1TrackConfig.urlTemplate)
 

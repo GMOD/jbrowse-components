@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { polarToCartesian, Feature } from '@jbrowse/core/util'
 import {
@@ -45,18 +45,14 @@ const Chord = observer(function Chord({
   onClick,
 }: {
   feature: Feature
-  blocksForRefs: { [key: string]: Block }
+  blocksForRefs: Record<string, Block>
   radius: number
   config: AnyConfigurationModel
   bezierRadius: number
   selected: boolean
-  onClick: (
-    feature: Feature,
-    reg: AnyRegion,
-    endBlock: AnyRegion,
-    evt: unknown,
-  ) => void
+  onClick: (feat: Feature, reg: AnyRegion, end: AnyRegion, evt: unknown) => void
 }) {
+  const [hovered, setHovered] = useState(false)
   // find the blocks that our start and end points belong to
   const startBlock = blocksForRefs[feature.get('refName')]
   if (!startBlock) {
@@ -112,23 +108,24 @@ const Chord = observer(function Chord({
     return (
       <path
         data-testid={`chord-${feature.id()}`}
+        cursor="crosshair"
+        fill="none"
         d={['M', ...startXY, 'Q', ...controlXY, ...endXY].join(' ')}
-        style={{ stroke: strokeColor }}
+        stroke={hovered ? hoverStrokeColor : strokeColor}
+        strokeWidth={hovered ? 3 : 1}
         onClick={evt => {
           if (endBlock && startBlock) {
             onClick(feature, startBlock.region, endBlock.region, evt)
           }
         }}
-        onMouseOver={evt => {
+        onMouseOver={() => {
           if (!selected) {
-            evt.currentTarget.style.stroke = hoverStrokeColor
-            evt.currentTarget.style.strokeWidth = '3px'
+            setHovered(true)
           }
         }}
-        onMouseOut={evt => {
+        onMouseOut={() => {
           if (!selected) {
-            evt.currentTarget.style.stroke = strokeColor
-            evt.currentTarget.style.strokeWidth = '1px'
+            setHovered(false)
           }
         }}
       />

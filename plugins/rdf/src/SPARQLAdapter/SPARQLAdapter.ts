@@ -19,9 +19,7 @@ interface SPARQLEntry {
   dataTypes?: string
 }
 
-interface SPARQLBinding {
-  [key: string]: SPARQLEntry
-}
+type SPARQLBinding = Record<string, SPARQLEntry>
 
 interface SPARQLResponseHead {
   vars: string[]
@@ -112,7 +110,7 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
     if (this.additionalQueryParams.length) {
       additionalQueryParams = `&${this.additionalQueryParams.join('&')}`
     }
-    const signal = opts && opts.signal
+    const signal = opts?.signal
     const response = await fetch(
       `${this.endpoint}?query=${query}${additionalQueryParams}`,
       {
@@ -124,7 +122,7 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
   }
 
   private resultsToRefNames(response: SPARQLResponse): string[] {
-    const rows = ((response || {}).results || {}).bindings || []
+    const rows = response?.results?.bindings || []
     if (!rows.length) {
       return []
     }
@@ -139,7 +137,7 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
     results: SPARQLResponse,
     refName: string,
   ): SimpleFeature[] {
-    const rows = ((results || {}).results || {}).bindings || []
+    const rows = results?.results?.bindings || []
     if (!rows.length) {
       return []
     }
@@ -221,7 +219,7 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
               delete seenFeatures[uniqueId]
               found = true
               break
-            } else if (subfeature && subfeature.subfeatures) {
+            } else if (subfeature?.subfeatures) {
               subfeatures.push(...subfeature.subfeatures)
             }
           }

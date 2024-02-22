@@ -1,5 +1,3 @@
-import { inDevelopment } from '..'
-
 interface AbsoluteCache {
   dirty: boolean
   left?: number
@@ -29,20 +27,6 @@ export default class SceneGraph {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public data?: Record<string, any>,
   ) {
-    if (
-      inDevelopment &&
-      (typeof name !== 'string' ||
-        typeof left !== 'number' ||
-        Number.isNaN(left) ||
-        typeof top !== 'number' ||
-        Number.isNaN(top) ||
-        typeof width !== 'number' ||
-        Number.isNaN(width) ||
-        typeof height !== 'number' ||
-        Number.isNaN(height))
-    ) {
-      throw new TypeError('invalid SceneGraph arguments')
-    }
     this.children = new Map()
     this.absoluteCache = { dirty: true }
   }

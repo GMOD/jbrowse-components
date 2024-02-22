@@ -1,7 +1,6 @@
 ---
 id: disable_analytics
 title: Disabling analytics
-toplevel: true
 ---
 
 Currently, jbrowse-web and jbrowse-desktop use Google Analytics for collecting

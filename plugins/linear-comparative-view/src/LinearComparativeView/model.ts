@@ -1,3 +1,4 @@
+import { lazy } from 'react'
 import {
   addDisposer,
   cast,
@@ -14,7 +15,7 @@ import { autorun, transaction } from 'mobx'
 
 // jbrowse
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
-import { MenuItem, ReturnToImportFormDialog } from '@jbrowse/core/ui'
+import { MenuItem } from '@jbrowse/core/ui'
 import { getSession, isSessionModelWithWidgets, avg } from '@jbrowse/core/util'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -28,8 +29,15 @@ import {
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 
+// lazies
+const ReturnToImportFormDialog = lazy(
+  () => import('@jbrowse/core/ui/ReturnToImportFormDialog'),
+)
+
 /**
  * #stateModel LinearComparativeView
+ * extends
+ * - [BaseViewModel](../baseviewmodel)
  */
 function stateModelFactory(pluginManager: PluginManager) {
   return types
@@ -151,13 +159,15 @@ function stateModelFactory(pluginManager: PluginManager) {
       // e.g. read vs ref
       beforeDestroy() {
         const session = getSession(self)
-        self.assemblyNames.forEach(asm => session.removeTemporaryAssembly(asm))
+        for (const name of self.assemblyNames) {
+          session.removeTemporaryAssembly?.(name)
+        }
       },
 
       onSubviewAction(actionName: string, path: string, args?: unknown[]) {
         self.views.forEach(view => {
           const ret = getPath(view)
-          if (ret.lastIndexOf(path) !== ret.length - path.length) {
+          if (!ret.endsWith(path)) {
             // @ts-expect-error
             view[actionName](args?.[0])
           }
@@ -234,13 +244,12 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       toggleTrack(trackId: string) {
-        // if we have any tracks with that configuration, turn them off
         const hiddenCount = this.hideTrack(trackId)
-
-        // if none had that configuration, turn one on
         if (!hiddenCount) {
           this.showTrack(trackId)
+          return true
         }
+        return false
       },
 
       /**

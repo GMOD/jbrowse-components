@@ -5,7 +5,7 @@ import { observer } from 'mobx-react'
 import Loading from './Loading'
 import DisplayError from './DisplayError'
 
-export default observer(function BaseChordDisplay({
+const BaseChordDisplay = observer(function ({
   display,
 }: {
   display: {
@@ -24,3 +24,5 @@ export default observer(function BaseChordDisplay({
 
   return display.reactElement
 })
+
+export default BaseChordDisplay

@@ -1,4 +1,4 @@
-import { drawDensity } from '../drawxy'
+import { drawDensity } from '../drawDensity'
 
 import WiggleBaseRenderer, {
   RenderArgsDeserializedWithFeatures,

@@ -3,11 +3,13 @@ import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 import { axisPropsFromTickScale, Axis, LEFT, RIGHT } from 'react-d3-axis-mod'
 
-export default observer(function ({
+type Ticks = ReturnType<typeof axisPropsFromTickScale>
+
+const YScaleBar = observer(function ({
   model,
   orientation,
 }: {
-  model: { ticks?: ReturnType<typeof axisPropsFromTickScale> }
+  model: { ticks?: Ticks }
   orientation?: string
 }) {
   const { ticks } = model
@@ -23,3 +25,5 @@ export default observer(function ({
     />
   ) : null
 })
+
+export default YScaleBar

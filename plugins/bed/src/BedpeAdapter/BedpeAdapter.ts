@@ -22,22 +22,27 @@ export function featureData(
   const ref1 = l[flip ? 3 : 0]
   const start1 = +l[flip ? 4 : 1]
   const end1 = +l[flip ? 5 : 2]
-  const ref2 = +l[!flip ? 3 : 0]
+  const ref2 = l[!flip ? 3 : 0]
   const start2 = +l[!flip ? 4 : 1]
   const end2 = +l[!flip ? 5 : 2]
   const name = l[6]
   const score = +l[7]
   const strand1 = parseStrand(l[8])
   const strand2 = parseStrand(l[9])
-  const extra = l.slice(9)
+  const extra = l.slice(10)
   const rest = names
-    ? Object.fromEntries(names.slice(9).map((n, idx) => [n, extra[idx]]))
+    ? Object.fromEntries(names.slice(10).map((n, idx) => [n, extra[idx]]))
     : extra
+  let ALT
+  if (['DUP', 'TRA', 'INV', 'CNV', 'DEL'].includes(extra[0])) {
+    ALT = `<${extra[0]}>`
+  }
 
   return new SimpleFeature({
     start: start1,
     end: end1,
     refName: ref1,
+    ...(ALT ? { ALT: [ALT] } : {}), // it's an array in VCF
     strand: strand1,
     name,
     ...rest,
@@ -62,14 +67,15 @@ function parseStrand(strand: string) {
 export default class BedpeAdapter extends BaseFeatureDataAdapter {
   protected bedpeFeatures?: Promise<{
     header: string
-    feats1: Record<string, string[]>
-    feats2: Record<string, string[]>
+    feats1: Record<string, string[] | undefined>
+    feats2: Record<string, string[] | undefined>
     columnNames: string[]
   }>
 
-  protected intervalTrees: {
-    [key: string]: Promise<IntervalTree | undefined> | undefined
-  } = {}
+  protected intervalTrees: Record<
+    string,
+    Promise<IntervalTree | undefined> | undefined
+  > = {}
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
@@ -90,8 +96,8 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
       headerLines.push(lines[i])
     }
     const header = headerLines.join('\n')
-    const feats1 = {} as Record<string, string[]>
-    const feats2 = {} as Record<string, string[]>
+    const feats1 = {} as Record<string, string[] | undefined>
+    const feats2 = {} as Record<string, string[] | undefined>
     for (; i < lines.length; i++) {
       const line = lines[i]
       const cols = line.split('\t')
@@ -103,8 +109,8 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
       if (!feats2[r2]) {
         feats2[r2] = []
       }
-      feats1[r1].push(line)
-      feats2[r2].push(line)
+      feats1[r1]!.push(line)
+      feats2[r2]!.push(line)
     }
     const columnNames = this.getConf('columnNames')
 
@@ -143,7 +149,7 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
       return columnNames
     }
     const defs = header.split(/\n|\r\n|\r/).filter(f => !!f)
-    const defline = defs[defs.length - 1]
+    const defline = defs.at(-1)
     return defline?.includes('\t')
       ? defline
           .slice(1)
@@ -154,25 +160,18 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
 
   private async loadFeatureTreeP(refName: string) {
     const { feats1, feats2 } = await this.loadData()
-    const lines1 = feats1[refName]
-    const lines2 = feats2[refName]
     const names = await this.getNames()
-
     const intervalTree = new IntervalTree()
-    const ret1 = lines1?.map((f, i) => {
-      const uniqueId = `${this.id}-${refName}-${i}`
-      return featureData(f, uniqueId, false, names)
-    })
-    const ret2 = lines2?.map((f, i) => {
-      const uniqueId = `${this.id}-${refName}-${i}`
-      return featureData(f, uniqueId, true, names)
-    })
+    const ret1 =
+      feats1[refName]?.map((f, i) =>
+        featureData(f, `${this.id}-${refName}-${i}-r1`, false, names),
+      ) ?? []
+    const ret2 =
+      feats2[refName]?.map((f, i) =>
+        featureData(f, `${this.id}-${refName}-${i}-r2`, true, names),
+      ) ?? []
 
-    for (const obj of ret1) {
-      intervalTree.insert([obj.get('start'), obj.get('end')], obj)
-    }
-
-    for (const obj of ret2) {
+    for (const obj of [...ret1, ...ret2]) {
       intervalTree.insert([obj.get('start'), obj.get('end')], obj)
     }
 

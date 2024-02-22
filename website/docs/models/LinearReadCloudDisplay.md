@@ -1,7 +1,6 @@
 ---
 id: linearreadclouddisplay
 title: LinearReadCloudDisplay
-toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
@@ -9,13 +8,15 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Source file
+### Source file
 
-[plugins/alignments/src/LinearReadCloudDisplay/model.tsx](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearReadCloudDisplay/model.tsx)
+[plugins/alignments/src/LinearReadCloudDisplay/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearReadCloudDisplay/model.ts)
 
-## Docs
+it is not a block based track, hence not BaseLinearDisplay extends
 
-extends `BaseLinearDisplay`
+- [BaseDisplay](../basedisplay)
+- [TrackHeightMixin](../trackheightmixin)
+- [FeatureDensityMixin](../featuredensitymixin)
 
 ### LinearReadCloudDisplay - Properties
 
@@ -32,7 +33,7 @@ type: types.literal('LinearReadCloudDisplay')
 
 ```js
 // type signature
-ITypeUnion<any, any, any>
+AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -61,13 +62,13 @@ colorBy: types.maybe(
         )
 ```
 
-### LinearReadCloudDisplay - Getters
-
-#### getter: ready
+#### property: drawSingletons
 
 ```js
-// type
-boolean
+// type signature
+true
+// code
+drawSingletons: true
 ```
 
 ### LinearReadCloudDisplay - Methods
@@ -76,22 +77,47 @@ boolean
 
 ```js
 // type signature
-trackMenuItems: () => MenuItem[]
+trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
 ```
 
 #### method: renderSvg
 
 ```js
 // type signature
-renderSvg: (opts: { rasterizeLayers?: boolean; }) => Promise<Element>
+renderSvg: (opts: { rasterizeLayers?: boolean; }) => Promise<React.ReactNode>
 ```
 
 ### LinearReadCloudDisplay - Actions
 
-#### action: reload
+#### action: setDrawSingletons
 
-internal, a reference to a HTMLCanvas because we use a autorun to draw the
-canvas
+```js
+// type signature
+setDrawSingletons: (f: boolean) => void
+```
+
+#### action: setLastDrawnOffsetPx
+
+```js
+// type signature
+setLastDrawnOffsetPx: (n: number) => void
+```
+
+#### action: setLastDrawnBpPerPx
+
+```js
+// type signature
+setLastDrawnBpPerPx: (n: number) => void
+```
+
+#### action: setLoading
+
+```js
+// type signature
+setLoading: (f: boolean) => void
+```
+
+#### action: reload
 
 ```js
 // type signature
@@ -99,6 +125,9 @@ reload: () => void
 ```
 
 #### action: setRef
+
+internal, a reference to a HTMLCanvas because we use a autorun to draw the
+canvas
 
 ```js
 // type signature
@@ -112,30 +141,9 @@ setRef: (ref: HTMLCanvasElement) => void
 setChainData: (args: ChainData) => void
 ```
 
-#### action: setLoading
-
-```js
-// type signature
-setLoading: (f: boolean) => void
-```
-
-#### action: setDrawn
-
-```js
-// type signature
-setDrawn: (f: boolean) => void
-```
-
 #### action: setFilterBy
 
 ```js
 // type signature
-setFilterBy: (filter: Filter) => void
-```
-
-#### action: setLastDrawnOffsetPx
-
-```js
-// type signature
-setLastDrawnOffsetPx: (n: number) => void
+setFilterBy: (filter: IFilter) => void
 ```

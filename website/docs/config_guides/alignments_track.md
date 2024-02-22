@@ -1,6 +1,5 @@
 ---
 id: alignments_track
-toplevel: true
 title: Alignments track configuration
 ---
 

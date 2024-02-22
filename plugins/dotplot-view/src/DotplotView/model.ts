@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { lazy } from 'react'
 import {
   addDisposer,
   cast,
@@ -14,7 +14,6 @@ import { saveAs } from 'file-saver'
 import { autorun, transaction } from 'mobx'
 
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import { ReturnToImportFormDialog } from '@jbrowse/core/ui'
 import { BaseTrackStateModel } from '@jbrowse/core/pluggableElementTypes/models'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
@@ -25,6 +24,7 @@ import {
   measureText,
   max,
   localStorageGetItem,
+  getTickDisplayStr,
 } from '@jbrowse/core/util'
 import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -38,27 +38,51 @@ import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 // locals
 import { Dotplot1DView, DotplotHView, DotplotVView } from './1dview'
 import { getBlockLabelKeysToHide, makeTicks } from './components/util'
-import { renderToSvg } from './svgcomponents/SVGDotplotView'
-import ExportSvgDlg from './components/ExportSvgDialog'
+import { BaseBlock } from './blockTypes'
 
+// lazies
+const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))
+const ReturnToImportFormDialog = lazy(
+  () => import('@jbrowse/core/ui/ReturnToImportFormDialog'),
+)
 type Coord = [number, number]
 
 export interface ExportSvgOptions {
   rasterizeLayers?: boolean
   filename?: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Wrapper?: React.FC<any>
+  Wrapper?: React.FC<{ children: React.ReactNode }>
   themeName?: string
+}
+
+function stringLenPx(a: string) {
+  return measureText(a.slice(0, 30))
+}
+
+function pxWidthForBlocks(
+  blocks: BaseBlock[],
+  bpPerPx: number,
+  hide: Set<string>,
+) {
+  return max([
+    ...blocks.filter(b => !hide.has(b.key)).map(b => stringLenPx(b.refName)),
+    ...blocks
+      .filter(b => !hide.has(b.key))
+      .map(b => stringLenPx(getTickDisplayStr(b.end, bpPerPx))),
+  ])
 }
 
 /**
  * #stateModel DotplotView
+ * #category view
+ * extends
+ * - [BaseViewModel](../baseviewmodel)
  */
 export default function stateModelFactory(pm: PluginManager) {
   return types
     .compose(
+      'DotplotView',
       BaseViewModel,
-      types.model('DotplotView', {
+      types.model({
         /**
          * #property
          */
@@ -400,7 +424,9 @@ export default function stateModelFactory(pm: PluginManager) {
         const hiddenCount = this.hideTrack(trackId)
         if (!hiddenCount) {
           this.showTrack(trackId)
+          return true
         }
+        return false
       },
       /**
        * #action
@@ -533,15 +559,17 @@ export default function stateModelFactory(pm: PluginManager) {
        * creates an svg export and save using FileSaver
        */
       async exportSvg(opts: ExportSvgOptions = {}) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const html = await renderToSvg(self as any, opts)
+        const { renderToSvg } = await import('./svgcomponents/SVGDotplotView')
+        const html = await renderToSvg(self as DotplotViewModel, opts)
         const blob = new Blob([html], { type: 'image/svg+xml' })
         saveAs(blob, opts.filename || 'image.svg')
       },
       // if any of our assemblies are temporary assemblies
       beforeDestroy() {
         const session = getSession(self)
-        self.assemblyNames.forEach(asm => session.removeTemporaryAssembly(asm))
+        for (const name in self.assemblyNames) {
+          session.removeTemporaryAssembly?.(name)
+        }
       },
       afterAttach() {
         addDisposer(
@@ -608,14 +636,9 @@ export default function stateModelFactory(pm: PluginManager) {
 
             const vhide = getBlockLabelKeysToHide(vblocks, viewHeight, voffset)
             const hhide = getBlockLabelKeysToHide(hblocks, viewWidth, hoffset)
+            const by = pxWidthForBlocks(hblocks, vview.bpPerPx, hhide)
+            const bx = pxWidthForBlocks(vblocks, hview.bpPerPx, vhide)
 
-            const len = (a: string) => measureText(a.slice(0, 30))
-            const by = max(
-              hblocks.filter(b => !hhide.has(b.key)).map(b => len(b.refName)),
-            )
-            const bx = max(
-              vblocks.filter(b => !vhide.has(b.key)).map(b => len(b.refName)),
-            )
             // these are set via autorun to avoid dependency cycle
             self.setBorderY(Math.max(by + padding, 50))
             self.setBorderX(Math.max(bx + padding, 50))
@@ -684,7 +707,7 @@ export default function stateModelFactory(pm: PluginManager) {
             icon: PhotoCameraIcon,
             onClick: () => {
               getSession(self).queueDialog(handleClose => [
-                ExportSvgDlg,
+                ExportSvgDialog,
                 { model: self, handleClose },
               ])
             },

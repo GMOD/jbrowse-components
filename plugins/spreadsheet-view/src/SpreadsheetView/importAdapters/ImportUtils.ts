@@ -56,7 +56,7 @@ function guessColumnType(
   } catch (error) {
     //
   }
-  if (parsedLoc && parsedLoc.refName && typeof parsedLoc.start === 'number') {
+  if (parsedLoc?.refName && typeof parsedLoc.start === 'number') {
     guessedType = 'LocString'
   } else if (/^\d+(\.\d+)?$/.test(text)) {
     guessedType = 'Number'

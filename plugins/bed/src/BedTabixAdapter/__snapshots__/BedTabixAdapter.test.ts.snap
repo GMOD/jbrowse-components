@@ -112,6 +112,7 @@ exports[`adapter can fetch features bed with autosql 1`] = `
       {
         "end": 2,
         "parentId": "test-52986",
+        "refName": "ctgA",
         "start": 1,
         "strand": 0,
         "type": "three_prime_UTR",
@@ -215,6 +216,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
       {
         "end": 1200,
         "parentId": "test-45690",
+        "refName": "ctgA",
         "start": 1049,
         "strand": 1,
         "type": "five_prime_UTR",
@@ -223,6 +225,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
       {
         "end": 1500,
         "parentId": "test-45690",
+        "refName": "ctgA",
         "start": 1200,
         "strand": 1,
         "type": "CDS",
@@ -231,6 +234,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
       {
         "end": 3902,
         "parentId": "test-45690",
+        "refName": "ctgA",
         "start": 2999,
         "strand": 1,
         "type": "CDS",
@@ -239,6 +243,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
       {
         "end": 5500,
         "parentId": "test-45690",
+        "refName": "ctgA",
         "start": 4999,
         "strand": 1,
         "type": "CDS",
@@ -247,6 +252,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
       {
         "end": 7608,
         "parentId": "test-45690",
+        "refName": "ctgA",
         "start": 6999,
         "strand": 1,
         "type": "CDS",
@@ -255,6 +261,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
       {
         "end": 9000,
         "parentId": "test-45690",
+        "refName": "ctgA",
         "start": 7608,
         "strand": 1,
         "type": "three_prime_UTR",
@@ -276,6 +283,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
       {
         "end": 1200,
         "parentId": "test-45787",
+        "refName": "ctgA",
         "start": 1049,
         "strand": 1,
         "type": "five_prime_UTR",
@@ -284,6 +292,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
       {
         "end": 1500,
         "parentId": "test-45787",
+        "refName": "ctgA",
         "start": 1200,
         "strand": 1,
         "type": "CDS",
@@ -292,6 +301,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
       {
         "end": 5500,
         "parentId": "test-45787",
+        "refName": "ctgA",
         "start": 4999,
         "strand": 1,
         "type": "CDS",
@@ -300,6 +310,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
       {
         "end": 7608,
         "parentId": "test-45787",
+        "refName": "ctgA",
         "start": 6999,
         "strand": 1,
         "type": "CDS",
@@ -308,6 +319,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
       {
         "end": 9000,
         "parentId": "test-45787",
+        "refName": "ctgA",
         "start": 7608,
         "strand": 1,
         "type": "three_prime_UTR",
@@ -329,6 +341,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
       {
         "end": 1500,
         "parentId": "test-45875",
+        "refName": "ctgA",
         "start": 1299,
         "strand": 1,
         "type": "five_prime_UTR",
@@ -337,6 +350,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
       {
         "end": 3300,
         "parentId": "test-45875",
+        "refName": "ctgA",
         "start": 2999,
         "strand": 1,
         "type": "five_prime_UTR",
@@ -345,6 +359,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
       {
         "end": 3902,
         "parentId": "test-45875",
+        "refName": "ctgA",
         "start": 3300,
         "strand": 1,
         "type": "CDS",
@@ -353,6 +368,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
       {
         "end": 5500,
         "parentId": "test-45875",
+        "refName": "ctgA",
         "start": 4999,
         "strand": 1,
         "type": "CDS",
@@ -361,6 +377,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
       {
         "end": 7600,
         "parentId": "test-45875",
+        "refName": "ctgA",
         "start": 6999,
         "strand": 1,
         "type": "CDS",
@@ -369,6 +386,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
       {
         "end": 9000,
         "parentId": "test-45875",
+        "refName": "ctgA",
         "start": 7600,
         "strand": 1,
         "type": "three_prime_UTR",
@@ -390,6 +408,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
       {
         "end": 17999,
         "parentId": "test-45972",
+        "refName": "ctgA",
         "start": 17399,
         "strand": 1,
         "type": "five_prime_UTR",
@@ -398,6 +417,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
       {
         "end": 18800,
         "parentId": "test-45972",
+        "refName": "ctgA",
         "start": 17999,
         "strand": 1,
         "type": "CDS",
@@ -406,6 +426,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
       {
         "end": 19500,
         "parentId": "test-45972",
+        "refName": "ctgA",
         "start": 18999,
         "strand": 1,
         "type": "CDS",
@@ -414,6 +435,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
       {
         "end": 21200,
         "parentId": "test-45972",
+        "refName": "ctgA",
         "start": 20999,
         "strand": 1,
         "type": "CDS",
@@ -422,6 +444,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
       {
         "end": 23000,
         "parentId": "test-45972",
+        "refName": "ctgA",
         "start": 21200,
         "strand": 1,
         "type": "three_prime_UTR",

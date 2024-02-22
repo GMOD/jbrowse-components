@@ -3,7 +3,8 @@ import { observer } from 'mobx-react'
 import { VariableSizeTree } from 'react-vtree'
 import { getSession } from '@jbrowse/core/util'
 // locals
-import { TreeNode, HierarchicalTrackSelectorModel } from '../../model'
+import { TreeNode } from '../../generateHierarchy'
+import { HierarchicalTrackSelectorModel } from '../../model'
 import Node from './TrackListNode'
 
 function getNodeData(
@@ -12,8 +13,8 @@ function getNodeData(
   extra: Record<string, unknown>,
   selection: Record<string, unknown>,
 ) {
-  const isLeaf = !!node.conf
-  const selected = !!selection[node.id]
+  const isLeaf = node.type === 'track'
+  const selected = isLeaf ? selection[node.trackId] : false
   return {
     data: {
       defaultHeight: isLeaf ? 22 : 40,
@@ -34,7 +35,7 @@ type NodeData = ReturnType<typeof getNodeData>
 // this is the main tree component for the hierarchical track selector in note:
 // in jbrowse-web the toolbar is position="sticky" which means the autosizer
 // includes the height of the toolbar, so we subtract the given offsets
-export default observer(function HierarchicalTree({
+const HierarchicalTree = observer(function HierarchicalTree({
   height,
   tree,
   model,
@@ -54,7 +55,12 @@ export default observer(function HierarchicalTree({
 
   const extra = useMemo(
     () => ({
-      onChange: (trackId: string) => view.toggleTrack(trackId),
+      onChange: (trackId: string) => {
+        const trackTurnedOn = view.toggleTrack(trackId)
+        if (trackTurnedOn) {
+          model.addToRecentlyUsed(trackId)
+        }
+      },
       toggleCollapse: (pathName: string) => model.toggleCategory(pathName),
       tree,
       model,
@@ -64,17 +70,15 @@ export default observer(function HierarchicalTree({
   )
   const treeWalker = useCallback(
     function* treeWalker() {
-      for (let i = 0; i < tree.children.length; i++) {
-        const r = tree.children[i]
-        yield getNodeData(r, 0, extra, obj)
+      for (const child of tree.children) {
+        yield getNodeData(child, 0, extra, obj)
       }
 
       while (true) {
         // @ts-expect-error
         const parentMeta = yield
 
-        for (let i = 0; i < parentMeta.node.children.length; i++) {
-          const curr = parentMeta.node.children[i]
+        for (const curr of parentMeta.node.children) {
           yield getNodeData(curr, parentMeta.nestingLevel + 1, extra, obj)
         }
       }
@@ -99,3 +103,5 @@ export default observer(function HierarchicalTree({
     </>
   )
 })
+
+export default HierarchicalTree

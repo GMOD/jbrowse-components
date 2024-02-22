@@ -1,7 +1,7 @@
 import React, { ReactElement } from 'react'
 import { getDefaultValue } from '../../util/mst-reflection'
 import PluggableElementBase from '../PluggableElementBase'
-import { AnyConfigurationSchemaType } from '../../configuration/configurationSchema'
+import { AnyConfigurationSchemaType } from '../../configuration'
 import { AnyReactComponentType } from '../../util'
 import PluginManager from '../../PluginManager'
 
@@ -15,7 +15,7 @@ export interface RenderResults {
 export default class RendererType extends PluggableElementBase {
   ReactComponent: AnyReactComponentType
 
-  supportsSVG = false
+  supportsSVG = true
 
   configSchema: AnyConfigurationSchemaType
 

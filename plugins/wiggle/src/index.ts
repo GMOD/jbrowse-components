@@ -30,8 +30,8 @@ import MultiWiggleAddTrackWidgetF from './MultiWiggleAddTrackWidget'
 import * as utils from './util'
 
 import {
-  WiggleGetGlobalStats,
-  WiggleGetMultiRegionStats,
+  WiggleGetGlobalQuantitativeStats,
+  WiggleGetMultiRegionQuantitativeStats,
   MultiWiggleGetSources,
 } from './WiggleRPC/rpcMethods'
 
@@ -101,8 +101,8 @@ export default class WigglePlugin extends Plugin {
       },
     )
 
-    pm.addRpcMethod(() => new WiggleGetGlobalStats(pm))
-    pm.addRpcMethod(() => new WiggleGetMultiRegionStats(pm))
+    pm.addRpcMethod(() => new WiggleGetGlobalQuantitativeStats(pm))
+    pm.addRpcMethod(() => new WiggleGetMultiRegionQuantitativeStats(pm))
     pm.addRpcMethod(() => new MultiWiggleGetSources(pm))
   }
 

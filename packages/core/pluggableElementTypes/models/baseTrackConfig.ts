@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { types, Instance } from 'mobx-state-tree'
 import { ConfigurationSchema } from '../../configuration'
 import PluginManager from '../../PluginManager'
@@ -97,7 +96,6 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
           defaultValue: {},
           contextVariable: ['feature'],
         },
-
         /**
          * #slot formatDetails.subfeatures
          */
@@ -107,7 +105,6 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
           defaultValue: {},
           contextVariable: ['feature'],
         },
-
         /**
          * #slot formatDetails.depth
          */
@@ -116,6 +113,14 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
           defaultValue: 2,
           description:
             'depth of subfeatures to iterate the formatter on formatDetails.subfeatures (e.g. you may not want to format the exon/cds subfeatures, so limited to 2',
+        },
+        /**
+         * #slot formatDetails.maxDepth
+         */
+        maxDepth: {
+          type: 'number',
+          defaultValue: 99999,
+          description: 'Maximum depth to render subfeatures',
         },
       }),
       formatAbout: ConfigurationSchema('FormatAbout', {
@@ -139,21 +144,29 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
       }),
     },
     {
-      preProcessSnapshot: s => {
-        const snap = JSON.parse(JSON.stringify(s))
-        const displayTypes = new Set()
+      preProcessSnapshot: s2 => {
+        const snap = pluginManager.evaluateExtensionPoint(
+          'Core-preProcessTrackConfig',
+          JSON.parse(JSON.stringify(s2)),
+        ) as {
+          trackId: string
+          name: string
+          type: string
+          displays: { type: string; displayId: string }[]
+        }
         const { displays = [] } = snap
         if (snap.trackId !== 'placeholderId') {
           // Gets the displays on the track snapshot and the possible displays
           // from the track type and adds any missing possible displays to the
           // snapshot
-          displays.forEach((d: any) => d && displayTypes.add(d.type))
-          const trackType = pluginManager.getTrackType(snap.type)
-          trackType.displayTypes.forEach(displayType => {
-            if (!displayTypes.has(displayType.name)) {
+          const configDisplayTypes = new Set(
+            displays.filter(d => !!d).map(d => d.type),
+          )
+          pluginManager.getTrackType(snap.type).displayTypes.forEach(d => {
+            if (!configDisplayTypes.has(d.name)) {
               displays.push({
-                displayId: `${snap.trackId}-${displayType.name}`,
-                type: displayType.name,
+                displayId: `${snap.trackId}-${d.name}`,
+                type: d.name,
               })
             }
           })
@@ -165,6 +178,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
        */
       explicitIdentifier: 'trackId',
       explicitlyTyped: true,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       actions: (self: any) => ({
         addDisplayConf(conf: { type: string; displayId: string }) {
           const { type } = conf
@@ -172,6 +186,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
             throw new Error(`unknown display type ${type}`)
           }
           const display = self.displays.find(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (d: any) => d?.displayId === conf.displayId,
           )
           if (display) {
@@ -185,5 +200,5 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
   )
 }
 
-export type BaseTrackConfigModel = ReturnType<typeof createBaseTrackConfig>
-export type BaseTrackConfig = Instance<BaseTrackConfigModel>
+export type BaseTrackConfigSchema = ReturnType<typeof createBaseTrackConfig>
+export type BaseTrackConfig = Instance<BaseTrackConfigSchema>

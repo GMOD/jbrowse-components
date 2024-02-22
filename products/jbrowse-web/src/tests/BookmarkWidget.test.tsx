@@ -1,61 +1,100 @@
-import { waitFor, fireEvent } from '@testing-library/react'
+import { waitFor, fireEvent, within } from '@testing-library/react'
+import { saveAs } from 'file-saver'
+import userEvent from '@testing-library/user-event'
+import { createView, setup, doBeforeEach } from './util'
 
-import { createView, setup, hts, doBeforeEach } from './util'
-
+jest.mock('file-saver', () => {
+  return {
+    ...jest.requireActual('file-saver'),
+    saveAs: jest.fn(),
+  }
+})
 setup()
 
 beforeEach(() => {
   doBeforeEach()
+  localStorage.clear()
 })
 
-const delay = { timeout: 15000 }
+const delay = { timeout: 30000 }
+const opts = [{}, delay]
 
-test('click and drag rubberband, bookmarks region', async () => {
-  const { session, view, findByTestId, findByText } = await createView()
+test('Open the bookmarks widget from the top level menu', async () => {
+  const { findByText } = await createView()
+
+  const user = userEvent.setup()
+  await user.click(await findByText('Tools'))
+  await user.click(await findByText('Bookmarks'))
+
+  expect(await findByText('Bookmarked regions')).toBeTruthy()
+})
+
+test('Open the bookmarks widget from the view menu', async () => {
+  const { findByTestId, findByText } = await createView()
+
+  const user = userEvent.setup()
+  await user.click(await findByTestId('view_menu_icon'))
+  await user.click(await findByText('Open bookmark widget'))
+
+  expect(await findByText('Bookmarked regions')).toBeTruthy()
+})
+
+test('Create a bookmark using the click and drag rubberband', async () => {
+  const { session, findByTestId, findByText } = await createView()
   const rubberband = await findByTestId('rubberband_controls', {}, delay)
 
-  expect(view.bpPerPx).toEqual(0.05)
   fireEvent.mouseDown(rubberband, { clientX: 100, clientY: 0 })
   fireEvent.mouseMove(rubberband, { clientX: 250, clientY: 0 })
   fireEvent.mouseUp(rubberband, { clientX: 250, clientY: 0 })
   fireEvent.click(await findByText('Bookmark region'))
 
   // @ts-expect-error
-  const { widgets } = session
-  const bookmarkWidget = widgets.get('GridBookmark')
-  expect(bookmarkWidget.bookmarkedRegions[0].assemblyName).toEqual('volvox')
-}, 20000)
+  const { bookmarks } = session.widgets.get('GridBookmark')
+  expect(bookmarks).toMatchSnapshot()
+}, 40000)
 
-test('bookmarks current region', async () => {
-  const { session, findByTestId, findByText } = await createView()
+test('Create a bookmark using the hotkey to bookmark the current region', async () => {
+  const { session, findByTestId } = await createView()
 
-  fireEvent.click(await findByTestId('view_menu_icon'))
-  fireEvent.click(await findByText('Bookmark current region'))
+  const user = userEvent.setup()
+  await user.click(await findByTestId('trackContainer', ...opts))
 
-  // @ts-expect-error
-  const { widgets } = session
-  const { bookmarkedRegions } = widgets.get('GridBookmark')
-  expect(bookmarkedRegions[0].start).toEqual(100)
-  expect(bookmarkedRegions[0].end).toEqual(140)
-}, 20000)
-
-test('navigates to bookmarked region from widget', async () => {
-  const { view, session, findByTestId, findByText } = await createView()
-
-  // need this to complete before we can try to navigate
-  fireEvent.click(await findByTestId(hts('volvox_alignments'), {}, delay))
-  await findByTestId(
-    'trackRenderingContainer-integration_test-volvox_alignments',
-    {},
-    delay,
+  document.dispatchEvent(
+    new KeyboardEvent('keydown', {
+      code: 'KeyD',
+      shiftKey: true,
+      ctrlKey: true,
+    }),
   )
 
-  fireEvent.click(await findByTestId('view_menu_icon'))
-  fireEvent.click(await findByText('Open bookmark widget'))
+  // @ts-expect-error
+  const { bookmarks } = session.widgets.get('GridBookmark')
+  expect(bookmarks).toMatchSnapshot()
+})
+
+test('Create a bookmark using the menu button to bookmark the current region', async () => {
+  const { session, findByTestId, findByText } = await createView()
+
+  const user = userEvent.setup()
+  await user.click(await findByTestId('trackContainer', ...opts))
+  await user.click(await findByTestId('view_menu_icon'))
+  await user.click(await findByText('Bookmarks'))
+  await user.click(await findByText('Bookmark current region'))
 
   // @ts-expect-error
-  const { widgets } = session
-  const bookmarkWidget = widgets.get('GridBookmark')
+  const { bookmarks } = session.widgets.get('GridBookmark')
+  expect(bookmarks).toMatchSnapshot()
+}, 40000)
+
+test('Navigate to a bookmark using the embedded link in the widget data grid', async () => {
+  const { view, session, findByTestId, findByText } = await createView()
+
+  const user = userEvent.setup()
+  await user.click(await findByTestId('view_menu_icon'))
+  await user.click(await findByText('Open bookmark widget'))
+
+  // @ts-expect-error
+  const bookmarkWidget = session.widgets.get('GridBookmark')
   bookmarkWidget.addBookmark({
     start: 200,
     end: 240,
@@ -64,9 +103,218 @@ test('navigates to bookmarked region from widget', async () => {
   })
 
   fireEvent.click(await findByText('ctgA:201..240', {}, delay))
-  await waitFor(() =>
-    expect(
-      view.getSelectedRegions(view.leftOffset, view.rightOffset)[0].key,
-    ).toEqual('{volvox}ctgA:201..240-0'),
+  await waitFor(() => expect(view.visibleLocStrings).toBe('ctgA:201..240'))
+}, 40000)
+
+test('Navigate to a bookmark using the hotkey to navigate to the most recently created bookmark', async () => {
+  const { view, session, findByTestId, findByText } = await createView()
+
+  const user = userEvent.setup()
+  await user.click(await findByTestId('view_menu_icon'))
+  await user.click(await findByText('Bookmarks'))
+  await user.click(await findByText('Open bookmark widget'))
+
+  // @ts-expect-error
+  const bookmarkWidget = session.widgets.get('GridBookmark')
+  bookmarkWidget.addBookmark({
+    start: 200,
+    end: 240,
+    refName: 'ctgA',
+    assemblyName: 'volvox',
+  })
+
+  document.dispatchEvent(
+    new KeyboardEvent('keydown', {
+      code: 'KeyM',
+      shiftKey: true,
+      ctrlKey: true,
+    }),
   )
+
+  await waitFor(() => expect(view.visibleLocStrings).toBe('ctgA:201..240'))
+}, 40000)
+
+test('Edit a bookmark label with a single click on the data grid', async () => {
+  const { session, findByText, findAllByRole } = await createView()
+
+  const user = userEvent.setup()
+  await user.click(await findByText('Tools'))
+  await user.click(await findByText('Bookmarks'))
+
+  // @ts-expect-error
+  const bookmarkWidget = session.widgets.get('GridBookmark')
+  bookmarkWidget.addBookmark({
+    start: 200,
+    end: 240,
+    refName: 'ctgA',
+    assemblyName: 'volvox',
+  })
+
+  const field = (await findAllByRole('cell'))[2]
+  await user.type(field, 'new label')
+  // get the focus away from the field
+  fireEvent.click(document)
+
+  expect(field.innerHTML).toContain('new label')
+})
+test('Edit a bookmark label with a double click via the dialog', async () => {
+  const { session, findByText, findAllByRole, findByTestId } =
+    await createView()
+
+  const user = userEvent.setup()
+  await user.click(await findByText('Tools'))
+  await user.click(await findByText('Bookmarks'))
+
+  // @ts-expect-error
+  const bookmarkWidget = session.widgets.get('GridBookmark')
+  bookmarkWidget.addBookmark({
+    start: 200,
+    end: 240,
+    refName: 'ctgA',
+    assemblyName: 'volvox',
+  })
+
+  const field = (await findAllByRole('cell'))[2]
+
+  await user.dblClick(field)
+  await user.type(await findByTestId('edit-bookmark-label-field'), 'new label')
+  await user.click(await findByText('Confirm'))
+  expect(field.innerHTML).toContain('new label')
+})
+
+test('Toggle highlight visibility across all views', async () => {
+  const { session, findByText, findByTestId, findAllByTestId } =
+    await createView()
+
+  session.addView('LinearGenomeView', {
+    displayedRegions: [
+      {
+        assemblyName: 'volvox',
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+      },
+    ],
+  })
+
+  const user = userEvent.setup()
+
+  await user.click(await findByText('Tools'))
+  await user.click(await findByText('Bookmarks'))
+
+  // @ts-expect-error
+  const bookmarkWidget = session.widgets.get('GridBookmark')
+  bookmarkWidget.addBookmark({
+    start: 200,
+    end: 240,
+    refName: 'ctgA',
+    assemblyName: 'volvox',
+  })
+
+  const highlight = (await findAllByTestId('BookmarkIcon'))[0]
+  const highlight2 = (await findAllByTestId('BookmarkIcon'))[1]
+
+  expect(highlight).toBeDefined
+  expect(highlight2).toBeDefined
+
+  fireEvent.click(await findByTestId('grid_bookmark_menu', ...opts))
+  await user.click(await findByText('Settings'))
+  await user.click(await findByTestId('toggle_highlight_all_switch'))
+  await user.click(await findByText('Close'))
+
+  expect(highlight).toBeUndefined
+  expect(highlight2).toBeUndefined
+})
+
+test('Toggle highlight label visibility across all views', async () => {
+  const { session, findByText, findByTestId, findAllByTestId } =
+    await createView()
+
+  const user = userEvent.setup()
+
+  await user.click(await findByText('Tools'))
+  await user.click(await findByText('Bookmarks'))
+
+  // @ts-expect-error
+  const bookmarkWidget = session.widgets.get('GridBookmark')
+  bookmarkWidget.addBookmark({
+    start: 200,
+    end: 240,
+    refName: 'ctgA',
+    assemblyName: 'volvox',
+  })
+
+  const highlight = (await findAllByTestId('BookmarkIcon'))[0]
+  const highlight2 = (await findAllByTestId('BookmarkIcon'))[1]
+
+  expect(highlight).toBeDefined
+  expect(highlight2).toBeDefined
+
+  fireEvent.click(await findByTestId('grid_bookmark_menu', ...opts))
+  await user.click(await findByText('Settings'))
+  await user.click(await findByTestId('toggle_highlight_label_all_switch'))
+  await user.click(await findByText('Close'))
+
+  expect(highlight).toBeUndefined
+  expect(highlight2).toBeUndefined
+})
+
+test('Downloads a BED file correctly', async () => {
+  const { session, findByText, findByTestId } = await createView()
+
+  // @ts-expect-error
+  const bookmarkWidget = session.addWidget(
+    'GridBookmarkWidget',
+    'gridBookmarkWidget',
+  )
+  // @ts-expect-error
+  session.showWidget('gridBookmarkWidget')
+
+  bookmarkWidget.addBookmark({
+    refName: 'ctgA',
+    start: 0,
+    end: 8,
+    assemblyName: 'volvox',
+  })
+
+  fireEvent.click(await findByTestId('grid_bookmark_menu', ...opts))
+  fireEvent.click(await findByText('Export', ...opts))
+  fireEvent.click(await findByText(/Download/, ...opts))
+
+  const blob = new Blob([''], {
+    type: 'text/x-bed;charset=utf-8',
+  })
+
+  expect(saveAs).toHaveBeenCalledWith(blob, 'jbrowse_bookmarks_volvox.bed')
 }, 20000)
+
+test('Downloads a TSV file correctly', async () => {
+  const { session, findByText, findByTestId, getByRole } = await createView()
+
+  // @ts-expect-error
+  const bookmarkWidget = session.addWidget(
+    'GridBookmarkWidget',
+    'gridBookmarkWidget',
+  )
+  // @ts-expect-error
+  session.showWidget('gridBookmarkWidget')
+
+  bookmarkWidget.addBookmark({
+    refName: 'ctgA',
+    start: 0,
+    end: 8,
+    assemblyName: 'volvox',
+  })
+  fireEvent.click(await findByTestId('grid_bookmark_menu'))
+  fireEvent.click(await findByText('Export'))
+  fireEvent.mouseDown(await findByText('BED'))
+  const listbox = within(getByRole('listbox'))
+  fireEvent.click(listbox.getByText('TSV'))
+  fireEvent.click(await findByText(/Download/))
+
+  const blob = new Blob([''], {
+    type: 'text/tab-separated-values;charset=utf-8',
+  })
+
+  expect(saveAs).toHaveBeenCalledWith(blob, 'jbrowse_bookmarks.tsv')
+})

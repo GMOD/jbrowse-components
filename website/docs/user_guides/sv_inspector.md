@@ -1,15 +1,12 @@
 ---
 id: sv_inspector_view
 title: SV inspector view
-toplevel: true
 ---
 
 import Figure from '../figure'
 
 The Structural Variant (SV) inspector is a "workflow" that is designed to help
 users inspect structural variant calls.
-
-### Opening the SV inspector
 
 We can start the SV inspector by launching it from the App level menu bar
 
@@ -51,7 +48,7 @@ We can start the SV inspector workflow by opening up this file containing
 translocation events called from a breast cancer cell line SKBR3, based on
 [these published data](http://schatz-lab.org/publications/SKBR3/).
 
-## Example VCF for use in the SV inspector
+### Example VCF for use in the SV inspector
 
 https://jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.new.vcf
 

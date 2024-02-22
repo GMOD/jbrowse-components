@@ -1,5 +1,6 @@
+import React from 'react'
 import { PluginConstructor } from '@jbrowse/core/Plugin'
-import { autorun } from 'mobx'
+import { assembleLocString } from '@jbrowse/core/util'
 import { SnapshotIn, onPatch, IJsonPatch } from 'mobx-state-tree'
 import createModel, {
   createSessionModel,
@@ -32,6 +33,14 @@ interface ViewStateOptions {
   disableAddTracks?: boolean
   onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
   makeWorkerInstance?: () => Worker
+  hydrateFn?: (
+    container: Element | Document,
+    initialChildren: React.ReactNode,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ) => any
+  createRootFn?: (elt: Element | DocumentFragment) => {
+    render: (node: React.ReactElement) => unknown
+  }
 }
 
 export default function createViewState(opts: ViewStateOptions) {
@@ -46,10 +55,14 @@ export default function createViewState(opts: ViewStateOptions) {
     onChange,
     disableAddTracks = false,
     makeWorkerInstance,
+    hydrateFn,
+    createRootFn,
   } = opts
   const { model, pluginManager } = createModel(
     plugins || [],
     makeWorkerInstance,
+    hydrateFn,
+    createRootFn,
   )
   let { defaultSession } = opts
   if (!defaultSession) {
@@ -90,23 +103,18 @@ export default function createViewState(opts: ViewStateOptions) {
   pluginManager.setRootModel(stateTree)
   pluginManager.configure()
   if (location) {
-    autorun(async reaction => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    ;(async () => {
       const { session } = stateTree
       try {
-        if (!session.view.initialized) {
-          return
-        }
-
-        if (typeof location === 'string') {
-          await session.view.navToLocString(location, assembly.name)
-        } else {
-          session.view.navTo(location)
-        }
+        await session.view.navToLocString(
+          typeof location === 'string' ? location : assembleLocString(location),
+          assembly.name,
+        )
       } catch (e) {
         session.notify(`${e}`, 'error')
       }
-      reaction.dispose()
-    })
+    })()
   }
   if (onChange) {
     onPatch(stateTree, onChange)

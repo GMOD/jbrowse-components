@@ -347,7 +347,21 @@
             "locationType": "UriLocation"
           }
         }
-      }
+      },
+      "displays": [
+        {
+          "type": "LinearVariantDisplay",
+          "displayId": "clinvar_ncbi-LinearVariantDisplay",
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "color1": "jexl:get(feature,'INFO').CLNSIG=='Benign'?'blue':get(feature,'INFO').CLNSIG=='Likely_benign'?'deepskyblue':get(feature,'INFO').CLNSIG=='Uncertain_significance'?'gray':get(feature,'INFO').CLNSIG=='Pathogenic'?'red':get(feature,'INFO').CLNSIG=='Likely_pathogenic'?'orange':get(feature,'INFO').CLNSIG=='Conflicting_interpretations_of_pathogenicity'?'brown':'purple'"
+          }
+        },
+        {
+          "type": "ChordVariantDisplay",
+          "displayId": "clinvar_ncbi-ChordVariantDisplay"
+        }
+      ]
     },
     {
       "type": "VariantTrack",
@@ -367,7 +381,21 @@
             "locationType": "UriLocation"
           }
         }
-      }
+      },
+      "displays": [
+        {
+          "type": "LinearVariantDisplay",
+          "displayId": "clinvar_ncbi_hg38-LinearVariantDisplay",
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "color1": "jexl:get(feature,'INFO').CLNSIG=='Benign'?'blue':get(feature,'INFO').CLNSIG=='Likely_benign'?'deepskyblue':get(feature,'INFO').CLNSIG=='Uncertain_significance'?'gray':get(feature,'INFO').CLNSIG=='Pathogenic'?'red':get(feature,'INFO').CLNSIG=='Likely_pathogenic'?'orange':get(feature,'INFO').CLNSIG=='Conflicting_interpretations_of_pathogenicity'?'brown':'purple'"
+          }
+        },
+        {
+          "type": "ChordVariantDisplay",
+          "displayId": "clinvar_ncbi_hg38-ChordVariantDisplay"
+        }
+      ]
     },
     {
       "type": "FeatureTrack",
@@ -1316,6 +1344,41 @@
     },
     {
       "type": "VariantTrack",
+      "trackId": "breast_cancer_sniffles_hg19_traonly",
+      "name": "SKBR3 pacbio (sniffles VCF, TRA only)",
+      "adapter": {
+        "type": "VcfAdapter",
+        "vcfLocation": {
+          "uri": "https://jbrowse.org/genomes/hg19/SKBR3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.filtered.vcf",
+          "locationType": "UriLocation"
+        }
+      },
+      "category": ["SKBR3"],
+      "assemblyNames": ["hg19"]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "breast_cancer_sniffles_hg19_traonly_tabix",
+      "name": "SKBR3 pacbio (sniffles VCF, TRA only tabix)",
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "https://jbrowse.org/genomes/hg19/SKBR3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.filtered.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/genomes/hg19/SKBR3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.filtered.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "category": ["SKBR3"],
+      "assemblyNames": ["hg19"]
+    },
+    {
+      "type": "VariantTrack",
       "trackId": "1000genomes_indels",
       "name": "InDels",
       "assemblyNames": ["hg19"],
@@ -1375,7 +1438,7 @@
       }
     },
     {
-      "type": "FeatureTrack",
+      "type": "VariantTrack",
       "trackId": "skbr3_bedpe",
       "name": "SKBR3 BEDPE",
       "assemblyNames": ["hg19"],
@@ -1383,9 +1446,28 @@
       "adapter": {
         "type": "BedpeAdapter",
         "bedpeLocation": {
-          "uri": "reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.bedpe"
+          "uri": "https://jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.bedpe"
         }
       }
+    },
+    {
+      "type": "VariantTrack",
+      "name": "SKBR3 BEDPE arcs",
+      "trackId": "skbr3_bedpe_arcs",
+      "assemblyNames": ["hg19"],
+      "category": ["SKBR3"],
+      "adapter": {
+        "type": "BedpeAdapter",
+        "bedpeLocation": {
+          "uri": "https://jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.bedpe"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearPairedArcDisplay",
+          "displayId": "skbr3_bedpe_arcs-LinearPairedArcDisplay"
+        }
+      ]
     },
     {
       "type": "FeatureTrack",
@@ -3489,7 +3571,7 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "http://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/mastermind.bb",
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/mastermind.bb",
           "locationType": "UriLocation"
         }
       }
@@ -3503,7 +3585,7 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "http://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/mastermind.bb",
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/mastermind.bb",
           "locationType": "UriLocation"
         }
       }
@@ -3689,11 +3771,11 @@
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/COLO829/colo829.normal.ngmlr.sorted.merged.cram",
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/COLO829/colo829.normal.ngmlr.sorted.cram",
           "locationType": "UriLocation"
         },
         "craiLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/COLO829/colo829.normal.ngmlr.sorted.merged.cram.crai",
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/COLO829/colo829.normal.ngmlr.sorted.cram.crai",
           "locationType": "UriLocation"
         },
         "sequenceAdapter": {
@@ -4157,6 +4239,80 @@
           }
         ]
       }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "name": "Paired-end stranded RNA-seq",
+      "metadata": {
+        "source": "From sample files listed at https://rseqc.sourceforge.net/"
+      },
+      "trackId": "Pairend_StrandSpecific_51mer_Human_hg19",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/paired_end_rnaseq/Pairend_StrandSpecific_51mer_Human_hg19.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/paired_end_rnaseq/Pairend_StrandSpecific_51mer_Human_hg19.bam.bai",
+            "locationType": "UriLocation"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "assemblyNames": ["hg19"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "NA12878-DirectRNA.pass.dedup.NoU.fastq.hg38.minimap2.sorted",
+      "name": "NA12878-DirectRNA.pass.dedup.NoU.fastq.hg38.minimap2.sorted",
+      "category": ["NA12878"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://jbrowse.org/genomes/GRCh38/NA12878/NA12878-DirectRNA.pass.dedup.NoU.fastq.hg38.minimap2.sorted.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/NA12878/NA12878-DirectRNA.pass.dedup.NoU.fastq.hg38.minimap2.sorted.bam.bai",
+            "locationType": "UriLocation"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "assemblyNames": ["hg38"]
     }
   ],
   "connections": [],

@@ -1,21 +1,16 @@
 import BaseResult from './BaseResults'
 import PluginManager from '../PluginManager'
 import QuickLRU from '../util/QuickLRU'
-import { SearchType, BaseTextSearchAdapter } from '../data_adapters/BaseAdapter'
+import {
+  BaseTextSearchAdapter,
+  BaseTextSearchArgs,
+} from '../data_adapters/BaseAdapter'
 import { readConfObject, AnyConfigurationModel } from '../configuration'
-
-export interface BaseArgs {
-  queryString: string
-  searchType?: SearchType
-  signal?: AbortSignal
-  limit?: number
-  pageNumber?: number
-}
 
 export interface SearchScope {
   includeAggregateIndexes: boolean
   assemblyName: string
-  tracks?: Array<string>
+  tracks?: string[]
 }
 
 export default class TextSearchManager {
@@ -43,9 +38,11 @@ export default class TextSearchManager {
 
   relevantAdapters(searchScope: SearchScope) {
     const pm = this.pluginManager
-    const { aggregateTextSearchAdapters, tracks } = pm.rootModel?.jbrowse as {
-      tracks: AnyConfigurationModel[]
+    const { aggregateTextSearchAdapters } = pm.rootModel?.jbrowse as {
       aggregateTextSearchAdapters: AnyConfigurationModel[]
+    }
+    const { tracks } = pm.rootModel?.session as {
+      tracks: AnyConfigurationModel[]
     }
 
     const { assemblyName } = searchScope
@@ -91,7 +88,7 @@ export default class TextSearchManager {
    * limit of results to return, searchType...prefix | full | exact", etc.
    */
   async search(
-    args: BaseArgs,
+    args: BaseTextSearchArgs,
     searchScope: SearchScope,
     rankFn: (results: BaseResult[]) => BaseResult[],
   ) {

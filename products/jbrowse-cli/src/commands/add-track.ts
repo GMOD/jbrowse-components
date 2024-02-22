@@ -1,4 +1,4 @@
-import { flags } from '@oclif/command'
+import { Args, Flags } from '@oclif/core'
 import fs from 'fs'
 import path from 'path'
 import parseJSON from 'json-parse-better-errors'
@@ -25,14 +25,59 @@ function makeLocationProtocol(protocol: string) {
   }
 }
 
-interface Track {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any
+function fileOperation({
+  srcFilename,
+  destFilename,
+  mode,
+}: {
+  srcFilename: string
+  destFilename: string
+  mode: string
+}) {
+  if (mode === 'copy') {
+    return copyFile(srcFilename, destFilename, COPYFILE_EXCL)
+  } else if (mode === 'move') {
+    return rename(srcFilename, destFilename)
+  } else if (mode === 'symlink') {
+    return symlink(path.resolve(srcFilename), destFilename)
+  }
+  return undefined
 }
+
+// get path of destination, and remove file at that path if it exists and force
+// is set
+function destinationFn({
+  destinationDir,
+  srcFilename,
+  subDir,
+  force,
+}: {
+  destinationDir: string
+  srcFilename: string
+  subDir: string
+  force: boolean
+}) {
+  const dest = path.resolve(
+    path.join(destinationDir, subDir, path.basename(srcFilename)),
+  )
+  if (force) {
+    try {
+      fs.unlinkSync(dest)
+    } catch (e) {
+      /* unconditionally unlinkSync, due to
+       * https://github.com/nodejs/node/issues/14025#issuecomment-754021370
+       * and https://github.com/GMOD/jbrowse-components/issues/2768 */
+    }
+  }
+  return dest
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Track = Record<string, any>
 
 interface Config {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  assemblies?: { name: string; sequence: { [key: string]: any } }[]
+  assemblies?: { name: string; sequence: Record<string, any> }[]
   configuration?: {}
   connections?: unknown[]
   defaultSession?: {}
@@ -82,90 +127,89 @@ export default class AddTrack extends JBrowseCommand {
     '$ jbrowse add-track /url/relative/path.bam --load inPlace',
   ]
 
-  static args = [
-    {
-      name: 'track',
+  static args = {
+    track: Args.string({
       required: true,
       description: `Track file or URL`,
-    },
-  ]
+    }),
+  }
 
   static flags = {
-    trackType: flags.string({
+    trackType: Flags.string({
       char: 't',
       description: `Type of track, by default inferred from track file`,
     }),
-    name: flags.string({
+    name: Flags.string({
       char: 'n',
       description:
         'Name of the track. Will be defaulted to the trackId if none specified',
     }),
-    indexFile: flags.string({
+    indexFile: Flags.string({
       description: 'Optional index file for the track',
     }),
-    description: flags.string({
+    description: Flags.string({
       char: 'd',
       description: 'Optional description of the track',
     }),
-    assemblyNames: flags.string({
+    assemblyNames: Flags.string({
       char: 'a',
       description:
         'Assembly name or names for track as comma separated string. If none, will default to the assembly in your config file',
     }),
-    category: flags.string({
+    category: Flags.string({
       description:
         'Optional Comma separated string of categories to group tracks',
     }),
-    config: flags.string({
+    config: Flags.string({
       description: `Any extra config settings to add to a track. i.e '{"defaultRendering": "density"}'`,
     }),
-    target: flags.string({
+    target: Flags.string({
       description: 'path to config file in JB2 installation to write out to.',
     }),
-    out: flags.string({
+    out: Flags.string({
       description: 'synonym for target',
     }),
-    subDir: flags.string({
+    subDir: Flags.string({
       description:
         'when using --load a file, output to a subdirectory of the target dir',
       default: '',
     }),
-    help: flags.help({ char: 'h' }),
-    trackId: flags.string({
+    help: Flags.help({ char: 'h' }),
+    trackId: Flags.string({
       description:
         'trackId for the track, by default inferred from filename, must be unique throughout config',
     }),
-    load: flags.string({
+    load: Flags.string({
       char: 'l',
       description:
         'Required flag when using a local file. Choose how to manage the track. Copy, symlink, or move the track to the JBrowse directory. Or inPlace to leave track alone',
       options: ['copy', 'symlink', 'move', 'inPlace'],
     }),
-    skipCheck: flags.boolean({
+    skipCheck: Flags.boolean({
       description:
         'Skip check for whether or not the file or URL exists or if you are in a JBrowse directory',
     }),
-    overwrite: flags.boolean({
+    overwrite: Flags.boolean({
       description: 'Overwrites existing track if it shares the same trackId',
     }),
-    force: flags.boolean({
+    force: Flags.boolean({
       char: 'f',
       description: 'Equivalent to `--skipCheck --overwrite`',
     }),
-    protocol: flags.string({
+    protocol: Flags.string({
       description: 'Force protocol to a specific value',
       default: 'uri',
     }),
-    bed1: flags.string({
+    bed1: Flags.string({
       description: 'Used only for mcscan anchors/simpleAnchors types',
     }),
-    bed2: flags.string({
+    bed2: Flags.string({
       description: 'Used only for mcscan anchors/simpleAnchors types',
     }),
   }
 
   async run() {
-    const { args: runArgs, flags: runFlags } = this.parse(AddTrack)
+    const { args: runArgs, flags: runFlags } = await this.parse(AddTrack)
 
     const { track: argsTrack } = runArgs
     const {
@@ -191,7 +235,7 @@ export default class AddTrack extends JBrowseCommand {
 
     let { trackType, trackId, name, assemblyNames } = runFlags
 
-    const configDirectory = path.dirname(this.target)
+    const configDir = path.dirname(this.target)
     if (!argsTrack) {
       this.error(
         'No track provided. Example usage: jbrowse add-track yourfile.bam',
@@ -200,7 +244,7 @@ export default class AddTrack extends JBrowseCommand {
     }
 
     if (subDir) {
-      const dir = path.join(configDirectory, subDir)
+      const dir = path.join(configDir, subDir)
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir)
       }
@@ -224,6 +268,7 @@ export default class AddTrack extends JBrowseCommand {
     if (
       [
         'PAFAdapter',
+        'PairwiseIndexedPAFAdapter',
         'DeltaAdapter',
         'ChainAdapter',
         'MashMapAdapter',
@@ -232,6 +277,7 @@ export default class AddTrack extends JBrowseCommand {
       ].includes(adapter.type)
     ) {
       // @ts-expect-error
+      // this is for the adapter's assembly names
       adapter.assemblyNames = assemblyNames.split(',').map(a => a.trim())
     }
 
@@ -258,7 +304,7 @@ export default class AddTrack extends JBrowseCommand {
     // only add track if there is an existing config.json
     const configContents: Config = await this.readJsonFile(this.target)
 
-    if (!configContents.assemblies || !configContents.assemblies.length) {
+    if (!configContents.assemblies?.length) {
       this.error('No assemblies found. Please add one before adding tracks', {
         exit: 150,
       })
@@ -303,9 +349,7 @@ export default class AddTrack extends JBrowseCommand {
       configContents.tracks = []
     }
 
-    const idx = configContents.tracks.findIndex(
-      configTrack => configTrack.trackId === trackId,
-    )
+    const idx = configContents.tracks.findIndex(c => c.trackId === trackId)
 
     if (idx !== -1) {
       this.debug(`Found existing trackId ${trackId} in configuration`)
@@ -322,40 +366,24 @@ export default class AddTrack extends JBrowseCommand {
       configContents.tracks.push(trackConfig)
     }
 
-    // get path of destination, and remove file at that path if it exists and
-    // force is set
-    const destinationFn = (dir: string, file: string) => {
-      const dest = path.resolve(path.join(dir, subDir, path.basename(file)))
-      if (force) {
-        try {
-          fs.unlinkSync(dest)
-        } catch (e) {
-          /* unconditionally unlinkSync, due to
-           * https://github.com/nodejs/node/issues/14025#issuecomment-754021370
-           * and https://github.com/GMOD/jbrowse-components/issues/2768 */
-        }
-      }
-      return dest
+    if (load && load !== 'inPlace') {
+      await Promise.all(
+        Object.values(this.guessFileNames({ location, index, bed1, bed2 }))
+          .filter(f => !!f)
+          .map(srcFilename =>
+            fileOperation({
+              mode: load,
+              srcFilename,
+              destFilename: destinationFn({
+                destinationDir: configDir,
+                srcFilename,
+                force,
+                subDir,
+              }),
+            }),
+          ),
+      )
     }
-
-    const loadType =
-      (load as 'copy' | 'inPlace' | 'move' | 'symlink' | undefined) || 'inPlace'
-
-    const callbacks = {
-      copy: (src: string, dest: string) => copyFile(src, dest, COPYFILE_EXCL),
-      move: (src: string, dest: string) => rename(src, dest),
-      symlink: (src: string, dest: string) => symlink(path.resolve(src), dest),
-      inPlace: () => {
-        /* do nothing */
-      },
-    }
-    await Promise.all(
-      Object.values(this.guessFileNames({ location, index, bed1, bed2 }))
-        .filter(f => !!f)
-        .map(src =>
-          callbacks[loadType](src, destinationFn(configDirectory, src)),
-        ),
-    )
 
     this.debug(`Writing configuration to file ${this.target}`)
     await this.writeJsonFile(this.target, configContents)
@@ -383,65 +411,55 @@ export default class AddTrack extends JBrowseCommand {
     if (/\.anchors(.simple)?$/i.test(location)) {
       return {
         file: location,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         bed1: bed1!,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         bed2: bed2!,
       }
-    }
-    if (/\.bam$/i.test(location)) {
+    } else if (/\.bam$/i.test(location)) {
       return {
         file: location,
         index: index || `${location}.bai`,
       }
-    }
-
-    if (/\.cram$/i.test(location)) {
+    } else if (/\.cram$/i.test(location)) {
       return {
         file: location,
         index: index || `${location}.crai`,
       }
-    }
-
-    if (
+    } else if (
       /\.gff3?\.b?gz$/i.test(location) ||
       /\.vcf\.b?gz$/i.test(location) ||
-      /\.bed\.b?gz$/i.test(location)
+      /\.bed\.b?gz$/i.test(location) ||
+      /\.pif\.b?gz$/i.test(location)
     ) {
       return {
         file: location,
         index: index || `${location}.tbi`,
       }
-    }
-
-    if (/\.(fa|fasta|fas|fna|mfa)$/i.test(location)) {
+    } else if (/\.(fa|fasta|fas|fna|mfa)$/i.test(location)) {
       return {
         file: location,
         index: index || `${location}.fai`,
       }
-    }
-
-    if (/\.(fa|fasta|fas|fna|mfa)\.b?gz$/i.test(location)) {
+    } else if (/\.(fa|fasta|fas|fna|mfa)\.b?gz$/i.test(location)) {
       return {
         file: location,
         index: `${location}.fai`,
         index2: `${location}.gzi`,
       }
-    }
-
-    if (
+    } else if (
       /\.2bit$/i.test(location) ||
+      /\.bedpe(\.gz)?$/i.test(location) ||
       /\/trackData.jsonz?$/i.test(location) ||
       /\/sparql$/i.test(location) ||
-      /\.out(.gz)?$/i.test(location) ||
-      /\.paf(.gz)?$/i.test(location) ||
-      /\.delta(.gz)?$/i.test(location) ||
+      /\.out(\.gz)?$/i.test(location) ||
+      /\.paf(\.gz)?$/i.test(location) ||
+      /\.delta(\.gz)?$/i.test(location) ||
+      /\.bed?$/i.test(location) ||
       /\.(bw|bigwig)$/i.test(location) ||
       /\.(bb|bigbed)$/i.test(location) ||
       /\.vcf$/i.test(location) ||
       /\.gtf?$/i.test(location) ||
       /\.gff3?$/i.test(location) ||
-      /\.chain(.gz)?$/i.test(location)
+      /\.chain(\.gz)?$/i.test(location)
     ) {
       return {
         file: location,
@@ -475,24 +493,18 @@ export default class AddTrack extends JBrowseCommand {
           indexType: index?.toUpperCase().endsWith('CSI') ? 'CSI' : 'BAI',
         },
       }
-    }
-
-    if (/\.cram$/i.test(location)) {
+    } else if (/\.cram$/i.test(location)) {
       return {
         type: 'CramAdapter',
         cramLocation: makeLocation(location),
         craiLocation: makeLocation(`${location}.crai`),
       }
-    }
-
-    if (/\.gff3?$/i.test(location)) {
+    } else if (/\.gff3?$/i.test(location)) {
       return {
         type: 'Gff3Adapter',
         gffLocation: makeLocation(location),
       }
-    }
-
-    if (/\.gff3?\.b?gz$/i.test(location)) {
+    } else if (/\.gff3?\.b?gz$/i.test(location)) {
       return {
         type: 'Gff3TabixAdapter',
         gffGzLocation: makeLocation(location),
@@ -501,23 +513,17 @@ export default class AddTrack extends JBrowseCommand {
           indexType: index?.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
         },
       }
-    }
-
-    if (/\.gtf?$/i.test(location)) {
+    } else if (/\.gtf?$/i.test(location)) {
       return {
         type: 'GtfAdapter',
         gtfLocation: makeLocation(location),
       }
-    }
-
-    if (/\.vcf$/i.test(location)) {
+    } else if (/\.vcf$/i.test(location)) {
       return {
         type: 'VcfAdapter',
         vcfLocation: makeLocation(location),
       }
-    }
-
-    if (/\.vcf\.b?gz$/i.test(location)) {
+    } else if (/\.vcf\.b?gz$/i.test(location)) {
       return {
         type: 'VcfTabixAdapter',
         vcfGzLocation: makeLocation(location),
@@ -526,21 +532,30 @@ export default class AddTrack extends JBrowseCommand {
           indexType: index?.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
         },
       }
-    }
-
-    if (/\.vcf\.idx$/i.test(location)) {
+    } else if (/\.vcf\.idx$/i.test(location)) {
       return {
         type: 'UNSUPPORTED',
       }
-    }
-
-    if (/\.bed$/i.test(location)) {
+    } else if (/\.bedpe(.gz)?$/i.test(location)) {
       return {
-        type: 'UNSUPPORTED',
+        type: 'BedpeAdapter',
+        bedpeLocation: makeLocation(location),
       }
-    }
-
-    if (/\.bed\.b?gz$/i.test(location)) {
+    } else if (/\.bed$/i.test(location)) {
+      return {
+        type: 'BedAdapter',
+        bedLocation: makeLocation(location),
+      }
+    } else if (/\.pif\.b?gz$/i.test(location)) {
+      return {
+        type: 'PairwiseIndexedPAFAdapter',
+        pifGzLocation: makeLocation(location),
+        index: {
+          location: makeLocation(index || `${location}.tbi`),
+          indexType: index?.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
+        },
+      }
+    } else if (/\.bed\.b?gz$/i.test(location)) {
       return {
         type: 'BedTabixAdapter',
         bedGzLocation: makeLocation(location),
@@ -549,116 +564,81 @@ export default class AddTrack extends JBrowseCommand {
           indexType: index?.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
         },
       }
-    }
-
-    if (/\.bed$/i.test(location)) {
-      return {
-        type: 'BedAdapter',
-        bedLocation: makeLocation(location),
-      }
-    }
-
-    if (/\.(bb|bigbed)$/i.test(location)) {
+    } else if (/\.(bb|bigbed)$/i.test(location)) {
       return {
         type: 'BigBedAdapter',
         bigBedLocation: makeLocation(location),
       }
-    }
-
-    if (/\.(bw|bigwig)$/i.test(location)) {
+    } else if (/\.(bw|bigwig)$/i.test(location)) {
       return {
         type: 'BigWigAdapter',
         bigWigLocation: makeLocation(location),
       }
-    }
-
-    if (/\.(fa|fasta|fna|mfa)$/i.test(location)) {
+    } else if (/\.(fa|fasta|fna|mfa)$/i.test(location)) {
       return {
         type: 'IndexedFastaAdapter',
         fastaLocation: makeLocation(location),
         faiLocation: makeLocation(index || `${location}.fai`),
       }
-    }
-
-    if (/\.(fa|fasta|fna|mfa)\.b?gz$/i.test(location)) {
+    } else if (/\.(fa|fasta|fna|mfa)\.b?gz$/i.test(location)) {
       return {
         type: 'BgzipFastaAdapter',
         fastaLocation: makeLocation(location),
         faiLocation: makeLocation(`${location}.fai`),
         gziLocation: makeLocation(`${location}.gzi`),
       }
-    }
-
-    if (/\.2bit$/i.test(location)) {
+    } else if (/\.2bit$/i.test(location)) {
       return {
         type: 'TwoBitAdapter',
         twoBitLocation: makeLocation(location),
       }
-    }
-
-    if (/\.sizes$/i.test(location)) {
+    } else if (/\.sizes$/i.test(location)) {
       return {
         type: 'UNSUPPORTED',
       }
-    }
-
-    if (/\/trackData.jsonz?$/i.test(location)) {
+    } else if (/\/trackData.jsonz?$/i.test(location)) {
       return {
         type: 'NCListAdapter',
         rootUrlTemplate: makeLocation(location),
       }
-    }
-
-    if (/\/sparql$/i.test(location)) {
+    } else if (/\/sparql$/i.test(location)) {
       return {
         type: 'SPARQLAdapter',
         endpoint: location,
       }
-    }
-
-    if (/\.hic$/i.test(location)) {
+    } else if (/\.hic$/i.test(location)) {
       return {
         type: 'HicAdapter',
         hicLocation: makeLocation(location),
       }
-    }
-
-    if (/\.paf(.gz)?$/i.test(location)) {
+    } else if (/\.paf(.gz)?$/i.test(location)) {
       return {
         type: 'PAFAdapter',
         pafLocation: makeLocation(location),
       }
-    }
-
-    if (/\.out(.gz)?$/i.test(location)) {
+    } else if (/\.out(.gz)?$/i.test(location)) {
       return {
         type: 'MashMapAdapter',
         outLocation: makeLocation(location),
       }
-    }
-    if (/\.chain(.gz)?$/i.test(location)) {
+    } else if (/\.chain(.gz)?$/i.test(location)) {
       return {
         type: 'ChainAdapter',
         chainLocation: makeLocation(location),
       }
-    }
-    if (/\.delta(.gz)?$/i.test(location)) {
+    } else if (/\.delta(.gz)?$/i.test(location)) {
       return {
         type: 'DeltaAdapter',
         deltaLocation: makeLocation(location),
       }
-    }
-
-    if (/\.anchors(.gz)?$/i.test(location)) {
+    } else if (/\.anchors(.gz)?$/i.test(location)) {
       return {
         type: 'MCScanAnchorsAdapter',
         mcscanAnchorsLocation: makeLocation(location),
         bed1Location: bed1 ? makeLocation(bed1) : undefined,
         bed2Location: bed2 ? makeLocation(bed2) : undefined,
       }
-    }
-
-    if (/\.anchors.simple(.gz)?$/i.test(location)) {
+    } else if (/\.anchors.simple(.gz)?$/i.test(location)) {
       return {
         type: 'MCScanSimpleAnchorsAdapter',
         mcscanSimpleAnchorsLocation: makeLocation(location),
@@ -673,7 +653,7 @@ export default class AddTrack extends JBrowseCommand {
   }
 
   guessTrackType(adapterType: string): string {
-    const known: { [key: string]: string | undefined } = {
+    const known: Record<string, string | undefined> = {
       BamAdapter: 'AlignmentsTrack',
       CramAdapter: 'AlignmentsTrack',
       BgzipFastaAdapter: 'ReferenceSequenceTrack',
@@ -682,11 +662,14 @@ export default class AddTrack extends JBrowseCommand {
       TwoBitAdapter: 'ReferenceSequenceTrack',
       VcfTabixAdapter: 'VariantTrack',
       VcfAdapter: 'VariantTrack',
+      BedpeAdapter: 'VariantTrack',
+      BedAdapter: 'FeatureTrack',
       HicAdapter: 'HicTrack',
       PAFAdapter: 'SyntenyTrack',
       DeltaAdapter: 'SyntenyTrack',
       ChainAdapter: 'SyntenyTrack',
       MashMapAdapter: 'SyntenyTrack',
+      PairwiseIndexedPAFAdapter: 'SyntenyTrack',
       MCScanAnchorsAdapter: 'SyntenyTrack',
       MCScanSimpleAnchorsAdapter: 'SyntenyTrack',
     }

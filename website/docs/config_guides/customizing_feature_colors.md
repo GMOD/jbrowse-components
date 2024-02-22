@@ -1,7 +1,6 @@
 ---
 id: customizing_feature_colors
 title: Customizing feature colors with callbacks and plugins
-toplevel: true
 ---
 
 If you have a color callback that has a lot of logic in it, then using jexl to
@@ -33,7 +32,7 @@ For example, create a file named "myplugin.js" (see also Footnote 1)
   // the plugin will be included in both the main thread and web worker, so
   // install plugin to either window or self (webworker global scope)
   ;(typeof self !== 'undefined' ? self : window).JBrowsePluginMyPlugin = {
-    default: Plugin,
+    default: MyPlugin,
   }
 })()
 ```

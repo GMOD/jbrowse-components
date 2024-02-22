@@ -53,7 +53,9 @@ export async function* indexGff3({
   })
 
   for await (const line of rl) {
-    if (line.startsWith('#')) {
+    if (!line.trim()) {
+      continue
+    } else if (line.startsWith('#')) {
       continue
     } else if (line.startsWith('>')) {
       break
@@ -85,7 +87,7 @@ export async function* indexGff3({
           encodeURIComponent(locStr),
           encodeURIComponent(trackId),
           ...attrs.map(a => encodeURIComponent(a)),
-        ]).replace(/,/g, '|')
+        ]).replaceAll(',', '|')
 
         yield `${record} ${[...new Set(attrs)].join(' ')}\n`
       }

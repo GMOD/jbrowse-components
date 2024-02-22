@@ -1,17 +1,14 @@
 ---
 id: linearhicdisplay
 title: LinearHicDisplay
-toplevel: true
 ---
 
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-## Source file
+### Source file
 
 [plugins/hic/src/LinearHicDisplay/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/hic/src/LinearHicDisplay/configSchema.ts)
-
-## Docs
 
 ### LinearHicDisplay - Slots
 
@@ -21,7 +18,7 @@ source code. See [Config guide](/docs/config_guide) for more info
 renderer: pluginManager.getRendererType('HicRenderer').configSchema
 ```
 
-## LinearHicDisplay - Derives from
+### LinearHicDisplay - Derives from
 
 ```js
 baseConfiguration: baseLinearDisplayConfigSchema

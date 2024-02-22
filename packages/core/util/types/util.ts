@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
-import { IAnyModelType, Instance } from 'mobx-state-tree'
 import PluginManager from '../../PluginManager'
 
 /**
@@ -21,8 +20,3 @@ export type AnyReactComponentType = React.ComponentType<any>
 /** get the type that a predicate asserts */
 export type TypeTestedByPredicate<PREDICATE extends (thing: any) => boolean> =
   PREDICATE extends (thing: any) => thing is infer TYPE ? TYPE : never
-
-/** get the type for an instance of an MST model in a PM factory function */
-export type InstanceOfModelReturnedBy<
-  FACTORY extends (pm: PluginManager) => IAnyModelType,
-> = Instance<ReturnType<FACTORY>>

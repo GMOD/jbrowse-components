@@ -2,23 +2,18 @@
 import React from 'react'
 import { ThemeOptions } from '@mui/material'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { getConf } from '@jbrowse/core/configuration'
+import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { MenuItem } from '@jbrowse/core/ui'
 import {
-  isAbortException,
   getContainingView,
   getContainingTrack,
   getSession,
-  getViewParams,
   isSelectionContainer,
   isSessionModelWithWidgets,
   isFeature,
   Feature,
-  ReactRendering,
 } from '@jbrowse/core/util'
-import { Stats } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { BaseBlock } from '@jbrowse/core/util/blockTypes'
-import { Region } from '@jbrowse/core/util/types'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { autorun } from 'mobx'
@@ -30,9 +25,10 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 // locals
 import { LinearGenomeViewModel, ExportSvgOptions } from '../../LinearGenomeView'
 import { Tooltip } from '../components/BaseLinearDisplay'
-import TooLargeMessage from '../components/TooLargeMessage'
-import BlockState, { renderBlockData } from './serverSideRenderedBlock'
-import { getId, getDisplayStr, estimateRegionsStatsPre } from './util'
+import BlockState from './serverSideRenderedBlock'
+import configSchema from './configSchema'
+import TrackHeightMixin from './TrackHeightMixin'
+import FeatureDensityMixin from './FeatureDensityMixin'
 
 type LGV = LinearGenomeViewModel
 
@@ -46,28 +42,31 @@ export interface Layout {
 
 type LayoutRecord = [number, number, number, number]
 
-const minDisplayHeight = 20
+export interface ExportSvgDisplayOptions extends ExportSvgOptions {
+  overrideHeight: number
+  theme: ThemeOptions
+}
 
 /**
  * #stateModel BaseLinearDisplay
- * extends `BaseDisplay`
+ * #category display
+ *
+ * BaseLinearDisplay is used as the basis for many linear genome view tracks.
+ * It is block based, and can use 'static blocks' or 'dynamic blocks'
+ *
+ * extends
+ * - [BaseDisplay](../basedisplay)
+ * - [TrackHeightMixin](../trackheightmixin)
+ * - [FeatureDensityMixin](../featuredensitymixin)
  */
 function stateModelFactory() {
   return types
     .compose(
       'BaseLinearDisplay',
       BaseDisplay,
+      TrackHeightMixin(),
+      FeatureDensityMixin(),
       types.model({
-        /**
-         * #property
-         */
-        heightPreConfig: types.maybe(
-          types.refinement(
-            'displayHeight',
-            types.number,
-            n => n >= minDisplayHeight,
-          ),
-        ),
         /**
          * #property
          * updated via autorun
@@ -76,26 +75,14 @@ function stateModelFactory() {
         /**
          * #property
          */
-        userBpPerPxLimit: types.maybe(types.number),
-        /**
-         * #property
-         */
-        userByteSizeLimit: types.maybe(types.number),
+        configuration: ConfigurationReference(configSchema),
       }),
     )
     .volatile(() => ({
-      currBpPerPx: 0,
-      scrollTop: 0,
-      message: '',
       featureIdUnderMouse: undefined as undefined | string,
       contextMenuFeature: undefined as undefined | Feature,
-      estimatedRegionsStatsP: undefined as undefined | Promise<Stats>,
-      estimatedRegionsStats: undefined as undefined | Stats,
     }))
     .views(self => ({
-      get height() {
-        return self.heightPreConfig ?? (getConf(self, 'height') as number)
-      },
       /**
        * #getter
        */
@@ -106,12 +93,11 @@ function stateModelFactory() {
        * #getter
        */
       get blockDefinitions() {
-        const { blockType } = this
         const view = getContainingView(self) as LGV
         if (!view.initialized) {
           throw new Error('view not initialized yet')
         }
-        return view[blockType]
+        return view[this.blockType]
       },
     }))
     .views(self => ({
@@ -210,152 +196,9 @@ function stateModelFactory() {
         })
         return ret
       },
-
-      /**
-       * #getter
-       */
-      get currentBytesRequested() {
-        return self.estimatedRegionsStats?.bytes || 0
-      },
-
-      /**
-       * #getter
-       */
-      get currentFeatureScreenDensity() {
-        const view = getContainingView(self) as LGV
-        return (self.estimatedRegionsStats?.featureDensity || 0) * view.bpPerPx
-      },
-
-      /**
-       * #getter
-       */
-      get maxFeatureScreenDensity() {
-        return getConf(self, 'maxFeatureScreenDensity')
-      },
-      /**
-       * #getter
-       */
-      get estimatedStatsReady() {
-        return !!self.estimatedRegionsStats || !!self.userBpPerPxLimit
-      },
-
-      /**
-       * #getter
-       */
-      get maxAllowableBytes() {
-        return (
-          self.userByteSizeLimit ||
-          self.estimatedRegionsStats?.fetchSizeLimit ||
-          (getConf(self, 'fetchSizeLimit') as number)
-        )
-      },
     }))
+
     .actions(self => ({
-      /**
-       * #action
-       */
-      setMessage(message: string) {
-        self.message = message
-      },
-    }))
-    .actions(self => ({
-      afterAttach() {
-        // watch the parent's blocks to update our block state when they change,
-        // then we recreate the blocks on our own model (creating and deleting to
-        // match the parent blocks)
-        addDisposer(
-          self,
-          autorun(() => {
-            const blocksPresent: { [key: string]: boolean } = {}
-            const view = getContainingView(self) as LGV
-            if (view.initialized) {
-              self.blockDefinitions.contentBlocks.forEach(block => {
-                blocksPresent[block.key] = true
-                if (!self.blockState.has(block.key)) {
-                  this.addBlock(block.key, block)
-                }
-              })
-              self.blockState.forEach((_, key) => {
-                if (!blocksPresent[key]) {
-                  this.deleteBlock(key)
-                }
-              })
-            }
-          }),
-        )
-      },
-
-      /**
-       * #action
-       */
-      async estimateRegionsStats() {
-        if (!self.estimatedRegionsStatsP) {
-          self.estimatedRegionsStatsP = estimateRegionsStatsPre(self).catch(
-            e => {
-              this.setRegionsStatsP(undefined)
-              throw e
-            },
-          )
-        }
-        return self.estimatedRegionsStatsP
-      },
-
-      /**
-       * #action
-       */
-      setRegionsStatsP(arg: any) {
-        self.estimatedRegionsStatsP = arg
-      },
-
-      /**
-       * #action
-       */
-      setRegionsStats(estimatedRegionsStats?: Stats) {
-        self.estimatedRegionsStats = estimatedRegionsStats
-      },
-      /**
-       * #action
-       */
-      clearRegionsStats() {
-        self.estimatedRegionsStatsP = undefined
-        self.estimatedRegionsStats = undefined
-      },
-      /**
-       * #action
-       */
-      setHeight(displayHeight: number) {
-        self.heightPreConfig =
-          displayHeight > minDisplayHeight ? displayHeight : minDisplayHeight
-        return self.height
-      },
-      /**
-       * #action
-       */
-      resizeHeight(distance: number) {
-        const oldHeight = self.height
-        const newHeight = this.setHeight(self.height + distance)
-        return newHeight - oldHeight
-      },
-
-      /**
-       * #action
-       */
-      setScrollTop(scrollTop: number) {
-        self.scrollTop = scrollTop
-      },
-
-      /**
-       * #action
-       */
-      updateStatsLimit(stats?: Stats) {
-        const view = getContainingView(self) as LGV
-        if (stats?.bytes) {
-          self.userByteSizeLimit = stats.bytes
-        } else {
-          self.userBpPerPxLimit = view.bpPerPx
-        }
-      },
-
       /**
        * #action
        */
@@ -368,12 +211,7 @@ function stateModelFactory() {
           }),
         )
       },
-      /**
-       * #action
-       */
-      setCurrBpPerPx(n: number) {
-        self.currBpPerPx = n
-      },
+
       /**
        * #action
        */
@@ -406,21 +244,15 @@ function stateModelFactory() {
        * #action
        */
       clearFeatureSelection() {
-        const session = getSession(self)
-        session.clearSelection()
+        getSession(self).clearSelection()
       },
       /**
        * #action
        */
-      setFeatureIdUnderMouse(feature: string | undefined) {
+      setFeatureIdUnderMouse(feature?: string) {
         self.featureIdUnderMouse = feature
       },
-      /**
-       * #action
-       */
-      reload() {
-        ;[...self.blockState.values()].map(val => val.doReload())
-      },
+
       /**
        * #action
        */
@@ -428,41 +260,7 @@ function stateModelFactory() {
         self.contextMenuFeature = feature
       },
     }))
-    .views(self => ({
-      /**
-       * #getter
-       * region is too large if:
-       * - stats are ready
-       * - region is greater than 20kb (don't warn when zoomed in less than that)
-       * - and bytes is greater than max allowed bytes or density greater than max density
-       */
-      get regionTooLarge() {
-        const view = getContainingView(self) as LGV
-        if (!self.estimatedStatsReady || view.dynamicBlocks.totalBp < 20_000) {
-          return false
-        }
-        return (
-          self.currentBytesRequested > self.maxAllowableBytes ||
-          (self.userBpPerPxLimit
-            ? view.bpPerPx > self.userBpPerPxLimit
-            : self.currentFeatureScreenDensity > self.maxFeatureScreenDensity)
-        )
-      },
 
-      /**
-       * #getter
-       * only shows a message of bytes requested is defined, the feature density
-       * based stats don't produce any helpful message besides to zoom in
-       */
-      get regionTooLargeReason() {
-        const req = self.currentBytesRequested
-        const max = self.maxAllowableBytes
-
-        return req && req > max
-          ? `Requested too much data (${getDisplayStr(req)})`
-          : ''
-      },
-    }))
     .actions(self => {
       const { reload: superReload } = self
 
@@ -472,99 +270,15 @@ function stateModelFactory() {
          */
         async reload() {
           self.setError()
-          const view = getContainingView(self) as LGV
-
-          // extra check for contentBlocks.length
-          // https://github.com/GMOD/jbrowse-components/issues/2694
-          if (!view.initialized || !view.staticBlocks.contentBlocks.length) {
-            return
-          }
-
-          try {
-            const estimatedRegionsStats = await self.estimateRegionsStats()
-
-            if (isAlive(self)) {
-              self.setRegionsStats(estimatedRegionsStats)
-              superReload()
-            }
-          } catch (e) {
-            console.error(e)
-            self.setError(e)
-          }
+          self.setCurrStatsBpPerPx(0)
+          self.clearFeatureDensityStats()
+          ;[...self.blockState.values()].map(val => val.doReload())
+          superReload()
         },
       }
     })
-    .actions(self => ({
-      afterAttach() {
-        // this autorun performs stats estimation
-        //
-        // the chain of events calls estimateRegionsStats against the data
-        // adapter which by default uses featureDensity, but can also respond
-        // with a byte size estimate and fetch size limit (data adapter can
-        // define what is too much data)
-        addDisposer(
-          self,
-          autorun(async () => {
-            try {
-              const view = getContainingView(self) as LGV
 
-              // extra check for contentBlocks.length
-              // https://github.com/GMOD/jbrowse-components/issues/2694
-              if (
-                !view.initialized ||
-                !view.staticBlocks.contentBlocks.length
-              ) {
-                return
-              }
-
-              // don't re-estimate featureDensity even if zoom level changes,
-              // jbrowse1-style assume it's sort of representative
-              if (self.estimatedRegionsStats?.featureDensity !== undefined) {
-                self.setCurrBpPerPx(view.bpPerPx)
-                return
-              }
-
-              // we estimate stats once at a given zoom level
-              if (view.bpPerPx === self.currBpPerPx) {
-                return
-              }
-
-              self.clearRegionsStats()
-              self.setCurrBpPerPx(view.bpPerPx)
-              const estimatedRegionsStats = await self.estimateRegionsStats()
-              if (isAlive(self)) {
-                self.setRegionsStats(estimatedRegionsStats)
-              }
-            } catch (e) {
-              if (!isAbortException(e) && isAlive(self)) {
-                console.error(e)
-                self.setError(e)
-              }
-            }
-          }),
-        )
-      },
-    }))
     .views(self => ({
-      /**
-       * #method
-       */
-      regionCannotBeRenderedText(_region: Region) {
-        return self.regionTooLarge ? 'Force load to see features' : ''
-      },
-
-      /**
-       * #method
-       * @param region -
-       * @returns falsy if the region is fine to try rendering. Otherwise,
-       *  return a react node + string of text.
-       *  string of text describes why it cannot be rendered
-       *  react node allows user to force load at current setting
-       */
-      regionCannotBeRendered(_region: Region) {
-        return self.regionTooLarge ? <TooLargeMessage model={self} /> : null
-      },
-
       /**
        * #method
        */
@@ -596,11 +310,9 @@ function stateModelFactory() {
        * #method
        */
       renderProps() {
-        const view = getContainingView(self) as LGV
         return {
           ...getParentRenderProps(self),
-          notReady:
-            self.currBpPerPx !== view.bpPerPx || !self.estimatedRegionsStats,
+          notReady: !self.featureDensityStatsReady,
           rpcDriverName: self.rpcDriverName,
           displayModel: self,
           onFeatureClick(_: unknown, featureId?: string) {
@@ -647,90 +359,34 @@ function stateModelFactory() {
       /**
        * #method
        */
-      async renderSvg(
-        opts: ExportSvgOptions & {
-          overrideHeight: number
-          theme: ThemeOptions
-        },
-      ) {
-        const { height, id } = self
-        const { overrideHeight } = opts
-        const view = getContainingView(self) as LGV
-        const { offsetPx: viewOffsetPx, roundedDynamicBlocks, width } = view
-
-        const renderings = await Promise.all(
-          roundedDynamicBlocks.map(async block => {
-            const blockState = BlockState.create({
-              key: block.key,
-              region: block,
-            })
-
-            // regionCannotBeRendered can return jsx so look for plaintext
-            // version, or just get the default if none available
-            const cannotBeRenderedReason =
-              self.regionCannotBeRenderedText(block) ||
-              self.regionCannotBeRendered(block)
-
-            if (cannotBeRenderedReason) {
-              return [
-                block,
-                {
-                  reactElement: (
-                    <>
-                      <rect x={0} y={0} width={width} height={20} fill="#aaa" />
-                      <text x={0} y={15}>
-                        {cannotBeRenderedReason}
-                      </text>
-                    </>
-                  ),
-                },
-              ] as const
+      async renderSvg(opts: ExportSvgDisplayOptions) {
+        const { renderBaseLinearDisplaySvg } = await import('./renderSvg')
+        return renderBaseLinearDisplaySvg(self as BaseLinearDisplayModel, opts)
+      },
+      afterAttach() {
+        // watch the parent's blocks to update our block state when they change,
+        // then we recreate the blocks on our own model (creating and deleting to
+        // match the parent blocks)
+        addDisposer(
+          self,
+          autorun(() => {
+            const blocksPresent: Record<string, boolean> = {}
+            const view = getContainingView(self) as LGV
+            if (!view.initialized) {
+              return
             }
-
-            const { rpcManager, renderArgs, renderProps, rendererType } =
-              renderBlockData(blockState, self)
-
-            return [
-              block,
-              await rendererType.renderInClient(rpcManager, {
-                ...renderArgs,
-                ...renderProps,
-                viewParams: getViewParams(self, true),
-                exportSVG: opts,
-                theme: opts.theme || renderProps.theme,
-              }),
-            ] as const
+            self.blockDefinitions.contentBlocks.forEach(block => {
+              blocksPresent[block.key] = true
+              if (!self.blockState.has(block.key)) {
+                self.addBlock(block.key, block)
+              }
+            })
+            self.blockState.forEach((_, key) => {
+              if (!blocksPresent[key]) {
+                self.deleteBlock(key as string)
+              }
+            })
           }),
-        )
-
-        return (
-          <>
-            {renderings.map(([block, rendering], index) => {
-              const { offsetPx, widthPx } = block
-              const offset = offsetPx - viewOffsetPx
-              const clipid = getId(id, index)
-
-              return (
-                <React.Fragment key={`frag-${index}`}>
-                  <defs>
-                    <clipPath id={clipid}>
-                      <rect
-                        x={0}
-                        y={0}
-                        width={widthPx}
-                        height={overrideHeight || height}
-                      />
-                    </clipPath>
-                  </defs>
-                  <g transform={`translate(${offset} 0)`}>
-                    <g clipPath={`url(#${clipid})`}>
-                      <ReactRendering rendering={rendering} />
-                    </g>
-                  </g>
-                </React.Fragment>
-              )
-            })}
-          </>
         )
       },
     }))

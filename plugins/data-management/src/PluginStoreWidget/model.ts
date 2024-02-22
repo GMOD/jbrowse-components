@@ -2,7 +2,7 @@ import { types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 
-export default function f(pluginManager: PluginManager) {
+export default function stateModelFactory(pluginManager: PluginManager) {
   return types
     .model('PluginStoreModel', {
       id: ElementId,
@@ -22,5 +22,5 @@ export default function f(pluginManager: PluginManager) {
     }))
 }
 
-export type PluginStoreStateModel = ReturnType<typeof f>
+export type PluginStoreStateModel = ReturnType<typeof stateModelFactory>
 export type PluginStoreModel = Instance<PluginStoreStateModel>

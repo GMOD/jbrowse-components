@@ -1,37 +1,33 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from 'react'
+import React, { lazy } from 'react'
 import { Link, Typography } from '@mui/material'
-import SimpleFeature, {
+import {
+  getEnv,
+  getSession,
+  SimpleFeature,
   SimpleFeatureSerialized,
-} from '@jbrowse/core/util/simpleFeature'
-import { getEnv, getSession } from '@jbrowse/core/util'
+} from '@jbrowse/core/util'
 import { BaseCard } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
-import BreakendOptionDialog from './BreakendOptionDialog'
+import { ViewType } from '@jbrowse/core/pluggableElementTypes'
 
-export default function BreakendPanel(props: {
+import { VariantFeatureWidgetModel } from './stateModelFactory'
+
+// lazies
+const BreakendOptionDialog = lazy(() => import('./BreakendOptionDialog'))
+
+function LocStringList({
+  locStrings,
+  model,
+}: {
   locStrings: string[]
-  model: any
-  feature: SimpleFeatureSerialized
+  model: VariantFeatureWidgetModel
 }) {
-  const { model, locStrings, feature } = props
   const session = getSession(model)
-  const { pluginManager } = getEnv(session)
-  const [breakpointDialog, setBreakpointDialog] = useState(false)
-  let viewType
-
-  try {
-    viewType = pluginManager.getViewType('BreakpointSplitView')
-  } catch (e) {
-    // ignore
-  }
-
-  const simpleFeature = new SimpleFeature(feature)
   return (
-    <BaseCard {...props} title="Breakends">
+    <div>
       <Typography>Link to linear view of breakend endpoints</Typography>
       <ul>
-        {locStrings.map(locString => (
-          <li key={`${JSON.stringify(locString)}`}>
+        {locStrings.map((locString, index) => (
+          <li key={`${locString}-${index}`}>
             <Link
               href="#"
               onClick={event => {
@@ -56,37 +52,76 @@ export default function BreakendPanel(props: {
           </li>
         ))}
       </ul>
-      {viewType ? (
-        <div>
-          <Typography>
-            Launch split views with breakend source and target
-          </Typography>
-          <ul>
-            {locStrings.map(locString => (
-              <li key={`${JSON.stringify(locString)}`}>
-                <Link
-                  href="#"
-                  onClick={event => {
-                    event.preventDefault()
-                    setBreakpointDialog(true)
-                  }}
-                >
-                  {`${feature.refName}:${feature.start} // ${locString} (split view)`}
-                </Link>
-              </li>
-            ))}
-          </ul>
-          {breakpointDialog ? (
-            <BreakendOptionDialog
-              model={model}
-              feature={simpleFeature}
-              viewType={viewType}
-              handleClose={() => {
-                setBreakpointDialog(false)
+    </div>
+  )
+}
+
+function LaunchBreakpointSplitViewPanel({
+  locStrings,
+  model,
+  feature,
+  viewType,
+}: {
+  locStrings: string[]
+  model: VariantFeatureWidgetModel
+  feature: SimpleFeatureSerialized
+  viewType: ViewType
+}) {
+  const session = getSession(model)
+  const simpleFeature = new SimpleFeature(feature)
+  return (
+    <div>
+      <Typography>
+        Launch split views with breakend source and target
+      </Typography>
+      <ul>
+        {locStrings.map(locString => (
+          <li key={`${JSON.stringify(locString)}`}>
+            <Link
+              href="#"
+              onClick={event => {
+                event.preventDefault()
+                session.queueDialog(handleClose => [
+                  BreakendOptionDialog,
+                  { handleClose, model, feature: simpleFeature, viewType },
+                ])
               }}
-            />
-          ) : null}
-        </div>
+            >
+              {`${feature.refName}:${feature.start} // ${locString} (split view)`}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+export default function BreakendPanel(props: {
+  locStrings: string[]
+  model: VariantFeatureWidgetModel
+  feature: SimpleFeatureSerialized
+}) {
+  const { model, locStrings, feature } = props
+  const session = getSession(model)
+  const { pluginManager } = getEnv(session)
+  let viewType: ViewType | undefined
+
+  try {
+    viewType = pluginManager.getViewType('BreakpointSplitView')
+  } catch (e) {
+    // ignore
+  }
+
+  return (
+    <BaseCard {...props} title="Breakends">
+      <LocStringList model={model} locStrings={locStrings} />
+      {viewType ? (
+        <LaunchBreakpointSplitViewPanel
+          viewType={viewType}
+          model={model}
+          locStrings={locStrings}
+          feature={feature}
+        />
       ) : null}
     </BaseCard>
   )

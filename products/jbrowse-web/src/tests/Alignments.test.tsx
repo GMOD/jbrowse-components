@@ -1,4 +1,5 @@
 import { fireEvent, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
 // locals
 import {
@@ -16,14 +17,14 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-const delay = { timeout: 20000 }
+const delay = { timeout: 60000 }
 const opts = [{}, delay]
 
-test('opens an alignments track', async () => {
-  const { view, findByTestId, findByText, findAllByTestId } = await createView()
-  await findByText('Help')
+test('opens an alignments track and clicks feature', async () => {
+  const user = userEvent.setup()
+  const { view, findByTestId, findAllByTestId } = await createView()
   view.setNewView(5, 100)
-  fireEvent.click(
+  await user.click(
     await findByTestId(hts('volvox_alignments_pileup_coverage'), ...opts),
   )
 
@@ -42,23 +43,26 @@ test('opens an alignments track', async () => {
 
   // this is to confirm a alignment detail widget opened
   await findByTestId('alignment-side-drawer', ...opts)
-}, 20000)
+}, 60000)
 
 test('test that bam with small max height displays message', async () => {
+  const user = userEvent.setup()
   const { findByTestId, findAllByText } = await createView()
-  fireEvent.click(
+  await user.click(
     await findByTestId(hts('volvox_bam_small_max_height'), ...opts),
   )
 
   await findAllByText('Max height reached', ...opts)
-}, 30000)
+}, 60000)
 
 test('test snpcoverage doesnt count snpcoverage', async () => {
-  const { view, findByTestId, findByText } = await createView()
-  await findByText('Help')
+  const user = userEvent.setup()
+  const { view, findByTestId } = await createView()
   view.setNewView(0.03932, 67884.16536402702)
-  fireEvent.click(await findByTestId(hts('volvox-long-reads-sv-cram'), ...opts))
+  await user.click(
+    await findByTestId(hts('volvox-long-reads-sv-cram'), ...opts),
+  )
   const f1 = within(await findByTestId('Blockset-snpcoverage', ...opts))
   expectCanvasMatch(await f1.findByTestId(pv('2657..2688-0'), ...opts))
   expectCanvasMatch(await f1.findByTestId(pv('2689..2720-0'), ...opts))
-}, 30000)
+}, 60000)

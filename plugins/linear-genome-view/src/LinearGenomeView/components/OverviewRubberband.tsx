@@ -25,6 +25,9 @@ const useStyles = makeStyles()({
     position: 'absolute',
     zIndex: 10,
   },
+  rel: {
+    position: 'relative',
+  },
 })
 
 const HoverTooltip = observer(function ({
@@ -63,7 +66,7 @@ const HoverTooltip = observer(function ({
   )
 })
 
-export default observer(function OverviewRubberband({
+const OverviewRubberband = observer(function OverviewRubberband({
   model,
   overview,
   ControlComponent = <div />,
@@ -155,7 +158,7 @@ export default observer(function OverviewRubberband({
 
   if (startX === undefined) {
     return (
-      <div style={{ position: 'relative' }}>
+      <div className={classes.rel}>
         {guideX !== undefined ? (
           <HoverTooltip
             model={model}
@@ -195,7 +198,7 @@ export default observer(function OverviewRubberband({
   }
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div className={classes.rel}>
       {leftBpOffset && rightBpOffset ? (
         <RubberbandSpan
           leftBpOffset={leftBpOffset}
@@ -217,3 +220,5 @@ export default observer(function OverviewRubberband({
     </div>
   )
 })
+
+export default OverviewRubberband

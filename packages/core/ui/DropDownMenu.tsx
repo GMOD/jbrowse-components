@@ -20,7 +20,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function DropDownMenu({
+const DropDownMenu = observer(function ({
   menuTitle,
   session,
   menuItems,
@@ -34,15 +34,6 @@ function DropDownMenu({
   const anchorEl = useRef(null)
   const { classes } = useStyles()
 
-  function handleToggle() {
-    setOpen(!open)
-  }
-
-  function handleMenuItemClick(_event: unknown, callback: Function) {
-    callback(session)
-    handleClose()
-  }
-
   function handleClose() {
     setOpen(false)
   }
@@ -51,7 +42,7 @@ function DropDownMenu({
     <>
       <Button
         ref={anchorEl}
-        onClick={handleToggle}
+        onClick={() => setOpen(!open)}
         color="inherit"
         data-testid="dropDownMenuButton"
         classes={{ root: classes.buttonRoot }}
@@ -62,13 +53,16 @@ function DropDownMenu({
       <Menu
         anchorEl={anchorEl.current}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-        onMenuItemClick={handleMenuItemClick}
+        onMenuItemClick={(_event, callback) => {
+          callback(session)
+          handleClose()
+        }}
         open={open}
         onClose={handleClose}
         menuItems={menuItems}
       />
     </>
   )
-}
+})
 
-export default observer(DropDownMenu)
+export default DropDownMenu

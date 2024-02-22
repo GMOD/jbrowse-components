@@ -35,7 +35,7 @@ export const sortFeature = (
     }
 
     case 'tag': {
-      const tag = sortedBy.tag as string
+      const tag = sortedBy.tag!
       const getTag = (f: Feature, t: string) => {
         return isCram ? f.get('tags')[t] : f.get(t)
       }
@@ -75,8 +75,8 @@ export const sortFeature = (
       featuresInCenterLine.sort((a, b) => {
         const aMismatch = baseMap.get(a.id())
         const bMismatch = baseMap.get(b.id())
-        const acode = bMismatch && bMismatch.base.toUpperCase()
-        const bcode = aMismatch && aMismatch.base.toUpperCase()
+        const acode = bMismatch?.base.toUpperCase()
+        const bcode = aMismatch?.base.toUpperCase()
         if (acode === bcode && acode === '*') {
           // @ts-expect-error
           return aMismatch.length - bMismatch.length
@@ -98,12 +98,10 @@ export const sortFeature = (
     }
   }
 
-  const sortedMap = new Map(
+  return new Map(
     [...featuresInCenterLine, ...featuresOutsideCenter].map(feature => [
       feature.id(),
       feature,
     ]),
   )
-
-  return sortedMap
 }

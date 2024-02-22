@@ -1,0 +1,35 @@
+import { Meta, Story } from '@storybook/blocks'
+import { WithWebWorker } from './JBrowseLinearGenomeView.stories'
+
+<Meta title="Using WebWorker RPC" />
+
+## Web Worker RPC
+
+Developers can configure their instance of `@jbrowse/react-linear-genome-view`
+to use web workers from v2.1.6 forward. By importing `makeWorkerInstance` and
+adding the `WebWorkerRpcDriver` configuration to `createViewState`, the app will
+use the WebWorker RPC
+
+Using WebWorker RPC can greatly reduce "hanging" of the main thread browsing
+alignments datasets like BAM / CRAM.
+
+[See our create-react-app v5 demo project for example using web worker](https://jbrowse.org/jb2/docs/embedded_components/)
+
+## Example
+
+<Story of={WithWebWorker} />
+
+## Note 1
+
+It may be important to use `"publicPath":"auto"` for your webpack config to
+properly resolve the web workers
+[(see this issue for webpack)](https://github.com/webpack/webpack/issues/13791#issuecomment-897579223)
+in create-react-app
+
+## Note 2
+
+The web worker functionality is not enabled by default because it requires your
+bundler to understand the `new Worker` construct, which not all bundlers
+support, but we do recommend using it if you are able to as it can improve speed
+and user experience. Link for `webpack` support of `new Worker` syntax,
+[see here](https://webpack.js.org/guides/web-workers/)

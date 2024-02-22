@@ -3,6 +3,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
  * #config Gff3TabixAdapter
+ * #category adapter
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 

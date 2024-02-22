@@ -189,7 +189,7 @@ const RenderedFeatures = observer(
   },
 )
 
-function SvgFeatureRendering(props: {
+const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
   layout: BaseLayout<unknown>
   blockKey: string
   regions: Region[]
@@ -219,7 +219,7 @@ function SvgFeatureRendering(props: {
   const {
     layout,
     blockKey,
-    regions,
+    regions = [],
     bpPerPx,
     config,
     displayModel = {},
@@ -235,7 +235,7 @@ function SvgFeatureRendering(props: {
     onClick,
   } = props
 
-  const [region] = regions || []
+  const [region] = regions
   const width = (region.end - region.start) / bpPerPx
   const displayMode = readConfObject(config, 'displayMode') as string
 
@@ -313,22 +313,20 @@ function SvgFeatureRendering(props: {
     setHeight(layout.getTotalHeight())
   }, [layout])
 
-  if (exportSVG) {
-    return (
-      <RenderedFeatures
-        displayMode={displayMode}
-        isFeatureDisplayed={featureDisplayHandler}
-        region={region}
-        {...props}
-      />
-    )
-  }
-  return (
+  return exportSVG ? (
+    <RenderedFeatures
+      displayMode={displayMode}
+      isFeatureDisplayed={featureDisplayHandler}
+      region={region}
+      {...props}
+    />
+  ) : (
     <svg
       ref={ref}
       data-testid="svgfeatures"
       width={width}
       height={height + svgHeightPadding}
+      style={{ display: 'block' }}
       onMouseDown={mouseDown}
       onMouseUp={mouseUp}
       onMouseEnter={onMouseEnter}
@@ -353,6 +351,6 @@ function SvgFeatureRendering(props: {
       />
     </svg>
   )
-}
+})
 
-export default observer(SvgFeatureRendering)
+export default SvgFeatureRendering

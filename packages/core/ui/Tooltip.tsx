@@ -14,7 +14,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const Tooltip = ({
+const Tooltip = observer(function ({
   offsetX,
   offsetY,
   configuration,
@@ -26,7 +26,7 @@ const Tooltip = ({
   configuration: AnyConfigurationModel
   feature?: Feature
   timeout?: number
-}) => {
+}) {
   const { classes } = useStyles()
   const [shown, setShown] = useState(false)
   useEffect(() => {
@@ -47,6 +47,6 @@ const Tooltip = ({
     )
   }
   return null
-}
+})
 
-export default observer(Tooltip)
+export default Tooltip

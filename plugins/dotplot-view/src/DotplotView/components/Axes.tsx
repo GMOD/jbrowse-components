@@ -24,7 +24,6 @@ const useStyles = makeStyles()(() => ({
     userSelect: 'none',
   },
 }))
-
 export const HorizontalAxis = observer(function ({
   model,
 }: {
@@ -55,6 +54,21 @@ export const HorizontalAxisRaw = observer(function ({
     staticBlocks: hview.staticBlocks,
   }
 
+  const ticks = hticks
+    .map(
+      tick =>
+        [
+          tick,
+          bpToPx({
+            refName: tick.refName,
+            coord: tick.base,
+            self: hviewSnap,
+          })?.offsetPx,
+        ] as const,
+    )
+    .filter(f => f[1] !== undefined)
+    .map(f => [f[0], f[1]! - offsetPx] as const)
+
   return (
     <>
       {dblocks
@@ -79,14 +93,8 @@ export const HorizontalAxisRaw = observer(function ({
             </text>
           )
         })}
-      {hticks.map(tick => {
-        const x =
-          (bpToPx({
-            refName: tick.refName,
-            coord: tick.base,
-            self: hviewSnap,
-          })?.offsetPx || 0) - offsetPx
-        return (
+      {ticks.map(([tick, x]) =>
+        x > 0 && x < width ? (
           <line
             key={`line-${JSON.stringify(tick)}`}
             x1={x}
@@ -94,25 +102,18 @@ export const HorizontalAxisRaw = observer(function ({
             y1={0}
             y2={tick.type === 'major' ? 6 : 4}
             strokeWidth={1}
-            stroke={theme.palette.divider}
+            stroke={theme.palette.grey[400]}
           />
-        )
-      })}
-      {hticks
-        .filter(tick => tick.type === 'major')
-        .map(tick => {
-          const x =
-            (bpToPx({
-              refName: tick.refName,
-              coord: tick.base,
-              self: hviewSnap,
-            })?.offsetPx || 0) - offsetPx
-          const y = 0
-          return x > 10 ? (
+        ) : null,
+      )}
+      {ticks
+        .filter(t => t[0].type === 'major')
+        .map(([tick, x]) =>
+          x > 10 && x < width ? (
             <text
               x={x - 7}
-              y={y}
-              transform={`rotate(${htextRotation},${x},${y})`}
+              y={0}
+              transform={`rotate(${htextRotation},${x},${0})`}
               key={`text-${JSON.stringify(tick)}`}
               fill={theme.palette.text.primary}
               fontSize={11}
@@ -121,8 +122,8 @@ export const HorizontalAxisRaw = observer(function ({
             >
               {getTickDisplayStr(tick.base + 1, bpPerPx)}
             </text>
-          ) : null
-        })}
+          ) : null,
+        )}
       <text
         y={borderY - 12}
         x={(viewWidth - borderX) / 2}
@@ -136,7 +137,6 @@ export const HorizontalAxisRaw = observer(function ({
     </>
   )
 })
-
 export const VerticalAxis = observer(function ({
   model,
 }: {
@@ -166,6 +166,21 @@ export const VerticalAxisRaw = observer(function ({
     width,
     staticBlocks: vview.staticBlocks,
   }
+  const ticks = vticks
+    .map(
+      tick =>
+        [
+          tick,
+          bpToPx({
+            refName: tick.refName,
+            coord: tick.base,
+            self: vviewSnap,
+          })?.offsetPx,
+        ] as const,
+    )
+    .filter(f => f[1] !== undefined)
+    .map(f => [f[0], f[1]! - offsetPx] as const)
+
   return (
     <>
       {dblocks
@@ -189,14 +204,8 @@ export const VerticalAxisRaw = observer(function ({
             </text>
           )
         })}
-      {vticks.map(tick => {
-        const y =
-          (bpToPx({
-            refName: tick.refName,
-            coord: tick.base,
-            self: vviewSnap,
-          })?.offsetPx || 0) - offsetPx
-        return (
+      {ticks.map(([tick, y]) =>
+        y > 0 ? (
           <line
             key={`line-${JSON.stringify(tick)}`}
             y1={viewHeight - y}
@@ -204,20 +213,14 @@ export const VerticalAxisRaw = observer(function ({
             x1={borderX}
             x2={borderX - (tick.type === 'major' ? 6 : 4)}
             strokeWidth={1}
-            stroke={theme.palette.divider}
+            stroke={theme.palette.grey[400]}
           />
-        )
-      })}
-      {vticks
-        .filter(tick => tick.type === 'major')
-        .map(tick => {
-          const y =
-            (bpToPx({
-              refName: tick.refName,
-              coord: tick.base,
-              self: vviewSnap,
-            })?.offsetPx || 0) - offsetPx
-          return y > 10 ? (
+        ) : null,
+      )}
+      {ticks
+        .filter(t => t[0].type === 'major')
+        .map(([tick, y]) =>
+          y > 10 && y < viewHeight ? (
             <text
               y={viewHeight - y - 3}
               x={borderX - 7}
@@ -229,8 +232,8 @@ export const VerticalAxisRaw = observer(function ({
             >
               {getTickDisplayStr(tick.base + 1, bpPerPx)}
             </text>
-          ) : null
-        })}
+          ) : null,
+        )}
       <text
         y={(viewHeight - borderY) / 2}
         x={12}

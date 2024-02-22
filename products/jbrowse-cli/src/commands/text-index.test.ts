@@ -65,6 +65,9 @@ function verifyIxxFiles(ctx: string, base = 'volvox') {
   expect(ixxdata).toMatchSnapshot()
 }
 
+// Cleaning up exitCode in Node.js 20, xref https://github.com/jestjs/jest/issues/14501
+afterAll(() => (process.exitCode = 0))
+
 // Base text index command
 // Test throwing an error if --tracks and no track ids provided
 describe('textIndexCommandErrors', () => {
@@ -75,7 +78,7 @@ describe('textIndexCommandErrors', () => {
 
   setup
     .command(['text-index', '--Command'])
-    .catch(err => expect(err.message).toContain('Unexpected argument:'))
+    .catch(err => expect(err.message).toContain('Nonexistent flag:'))
     .it('fails if there is an invalid flag')
 })
 

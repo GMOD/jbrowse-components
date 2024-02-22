@@ -1,7 +1,6 @@
 import React from 'react'
 import { render, waitFor } from '@testing-library/react'
 
-import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import { LocalFile } from 'generic-filehandle'
 import rangeParser from 'range-parser'
 
@@ -23,8 +22,6 @@ const getFile = (url: string) =>
   )
 
 jest.mock('../makeWorkerInstance', () => () => {})
-
-expect.extend({ toMatchImageSnapshot })
 
 const delay = { timeout: 20000 }
 
@@ -63,7 +60,7 @@ jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
   try {
     const file = getFile(`${url}`)
     const maxRangeRequest = 2000000 // kind of arbitrary, part of the rangeParser
-    if (args && args.headers && 'range' in args.headers) {
+    if (args?.headers && 'range' in args.headers) {
       const range = rangeParser(maxRangeRequest, args.headers.range)
       if (range === -2 || range === -1) {
         throw new Error(`Error parsing range "${args.headers.range}"`)
@@ -127,10 +124,10 @@ test('approves sessionPlugins from plugin list', async () => {
 // minimal session,
 // {"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"url":"https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js"}]}}
 test('pops up a warning for evil plugin in sessionPlugins', async () => {
-  const { findByTestId } = render(
+  const { findByText } = render(
     <App search='?config=test_data/volvox/config_main_thread.json&session=json-{"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"url":"https://evil.com/evil.js"}]}}' />,
   )
-  await findByTestId('session-warning-modal')
+  await findByText(/Warning/, {}, delay)
 }, 20000)
 
 test('can use config from a url with nonexistent share param ', async () => {
@@ -142,9 +139,9 @@ test('can use config from a url with nonexistent share param ', async () => {
 
 test('can catch error from loading a bad config', async () => {
   const { findAllByText } = render(
-    <App search="?config=test_data/bad_config_for_testing_error_catcher.json" />,
+    <App search="?config=test_data/bad_config_test/config.json" />,
   )
-  await findAllByText(/Failed to load/)
+  await findAllByText(/Error while converting/)
 }, 20000)
 
 test('can use a spec url for lgv', async () => {

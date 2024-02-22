@@ -15,8 +15,12 @@ export default class NCListFeature implements Feature {
 
   private uniqueId: string
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  constructor(private ncFeature: any, parent?: Feature, id?: string) {
+  constructor(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private ncFeature: any,
+    parent?: Feature,
+    id?: string,
+  ) {
     this.uniqueId = id || ncFeature.id()
     this.parentHandle = parent
   }
@@ -34,8 +38,7 @@ export default class NCListFeature implements Feature {
   jb1TagToJb2Tag(tag: string): string {
     const t = tag.toLowerCase()
     // @ts-expect-error
-    const mapped = jb1ToJb2[t] || t
-    return mapped
+    return jb1ToJb2[t] || t
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
