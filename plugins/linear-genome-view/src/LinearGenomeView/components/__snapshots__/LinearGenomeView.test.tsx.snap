@@ -327,7 +327,7 @@ exports[`renders one track, one region 1`] = `
     </div>
     <div
       class="css-75rarj-tracksContainer"
-      data-testid="trackContainer"
+      data-testid="tracksContainer"
     >
       <div
         class="css-1rfvwmf-verticalGuidesZoomContainer"
@@ -899,7 +899,7 @@ exports[`renders two tracks, two regions 1`] = `
     </div>
     <div
       class="css-75rarj-tracksContainer"
-      data-testid="trackContainer"
+      data-testid="tracksContainer"
     >
       <div
         class="css-1rfvwmf-verticalGuidesZoomContainer"

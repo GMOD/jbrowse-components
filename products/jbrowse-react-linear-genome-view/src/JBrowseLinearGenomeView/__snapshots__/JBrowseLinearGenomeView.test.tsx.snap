@@ -418,7 +418,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
             </div>
             <div
               class="css-75rarj-tracksContainer"
-              data-testid="trackContainer"
+              data-testid="tracksContainer"
             >
               <div
                 class="css-1rfvwmf-verticalGuidesZoomContainer"
