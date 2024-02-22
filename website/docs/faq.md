@@ -237,11 +237,12 @@ will be using the `LinearBasicDisplay`.
 
 ### How do I get (more) categories to filter on in the faceted track selector?
 
-The faceted track selector displays all the different adapters, categories, and 
-all the metadata. Categories are also used to group tracks in the track selector.
-New categories can be added with the `--category` option from `jbrowse add-track`.
+The faceted track selector displays all the different adapters, categories, and
+all the metadata. Categories are also used to group tracks in the track
+selector. New categories can be added with the `--category` option from
+`jbrowse add-track`.
 
-Alternatively, you can add a metadata to a track, which will be used in the 
+Alternatively, you can add a metadata to a track, which will be used in the
 faceted track selector:
 
 ```
