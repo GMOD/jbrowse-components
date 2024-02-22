@@ -1,7 +1,7 @@
 {
   "title": "JBrowse",
   "tagline": "Next generation genome browser",
-  "url": "https://jbrowse.com",
+  "url": "https://jbrowse.org",
   "baseUrl": "/jb2/",
   "favicon": "img/favicon.ico",
   "trailingSlash": true,
