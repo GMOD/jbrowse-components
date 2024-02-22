@@ -17,6 +17,7 @@ export default (pluginManager: PluginManager) => {
       tracks = [],
       tracklist,
       nav,
+      highlight,
     }: {
       session: AbstractSessionModel
       assembly?: string
@@ -24,6 +25,7 @@ export default (pluginManager: PluginManager) => {
       tracks?: string[]
       tracklist?: boolean
       nav?: boolean
+      highlight?: string
     }) => {
       try {
         const { assemblyManager } = session
@@ -58,6 +60,9 @@ export default (pluginManager: PluginManager) => {
         }
         if (nav !== undefined) {
           view.setHideHeader(!nav)
+        }
+        if (highlight !== undefined) {
+          view.setHighlight(highlight)
         }
       } catch (e) {
         session.notify(`${e}`, 'error')

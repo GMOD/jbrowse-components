@@ -29,6 +29,7 @@ const SessionLoader = types
     assembly: types.maybe(types.string),
     tracks: types.maybe(types.string),
     tracklist: types.maybe(types.boolean),
+    highlight: types.maybe(types.string),
     nav: types.maybe(types.boolean),
     initialTimestamp: types.number,
   })
@@ -285,6 +286,7 @@ const SessionLoader = types
         assembly,
         tracklist,
         nav,
+        highlight,
         sessionTracksParsed: sessionTracks,
       } = self
       if (loc) {
@@ -299,6 +301,7 @@ const SessionLoader = types
               assembly,
               tracklist,
               nav,
+              highlight,
             },
           ],
         }

@@ -243,6 +243,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * show the "gridlines" in the track area
          */
         showGridlines: true,
+
+        /**
+         * #property
+         * temporary highlight that users can add as a bookmark, used for URL query
+         */
+        // TODO: strong typing
+        highlight: types.optional(types.string, '')
       }),
     )
     .volatile(() => ({
@@ -580,6 +587,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       setShowGridlines(b: boolean) {
         self.showGridlines = b
+      },
+      /**
+       * #action
+       */
+      // TODO: strong type highlight
+      setHighlight(highlight: any) {
+        self.highlight = highlight
       },
       /**
        * #action
