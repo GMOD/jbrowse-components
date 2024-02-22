@@ -15,7 +15,7 @@ export default abstract class Plugin {
 
   configure(_pluginManager: PluginManager): void {}
 
-  configurationSchema: AnyConfigurationSchemaType | undefined = undefined
+  configurationSchema?: AnyConfigurationSchemaType
 }
 
 export type PluginConstructor = new (...args: unknown[]) => Plugin
