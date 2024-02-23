@@ -1,5 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { AbstractSessionModel, when } from '@jbrowse/core/util'
+import { AbstractSessionModel, when, parseLocString } from '@jbrowse/core/util'
 // locals
 import { LinearGenomeViewModel } from '../LinearGenomeView'
 import { handleSelectedRegion } from '../searchUtils'
@@ -29,6 +29,9 @@ export default (pluginManager: PluginManager) => {
     }) => {
       try {
         const { assemblyManager } = session
+
+        const { isValidRefName } = assemblyManager
+
         const view = session.addView('LinearGenomeView', {}) as LGV
 
         await when(() => !!view.volatileWidth)
@@ -62,7 +65,14 @@ export default (pluginManager: PluginManager) => {
           view.setHideHeader(!nav)
         }
         if (highlight !== undefined) {
-          view.setHighlight(highlight)
+          const location = parseLocString(highlight, refName =>
+            isValidRefName(refName, assembly),
+          )
+          if (location && location.start && location.end) {
+            location.assemblyName = assembly
+
+            view.setHighlight(location)
+          }
         }
       } catch (e) {
         session.notify(`${e}`, 'error')

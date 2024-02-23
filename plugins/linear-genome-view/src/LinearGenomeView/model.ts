@@ -246,10 +246,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
-         * temporary highlight that users can add as a bookmark, used for URL query
+         * highlights on the LGV from the URL paramaters
          */
-        // TODO: strong typing
-        highlight: types.optional(types.string, '')
+        highlight: types.optional(types.frozen(), ''),
       }),
     )
     .volatile(() => ({

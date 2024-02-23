@@ -1,12 +1,7 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
-import {
-  ParsedLocString,
-  SessionWithWidgets,
-  getSession,
-  parseLocString,
-} from '@jbrowse/core/util'
+import { ParsedLocString } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 import { Tooltip } from '@mui/material'
 
@@ -36,15 +31,6 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
     return
   }
 
-  const session = getSession(model) as SessionWithWidgets
-  const { isValidRefName } = session.assemblyManager
-
-  // alias
-  const isValidRefNameA = (refName: string, assembly?: string) => {
-    const asm = assembly ?? model.assemblyNames[0]
-    return isValidRefName(refName, asm)
-  }
-
   // coords
   const mapCoords = (r: ParsedLocString) => {
     const s = model.bpToPx({
@@ -63,45 +49,33 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
       : undefined
   }
 
-  try {
-    const location = parseLocString(model.highlight, isValidRefNameA)
-    if (location && (!location.start || !location.end)) {
-      return
-    }
+  const h = mapCoords(model.highlight)
+  const color = 'rgba(252, 186, 3, 0.35)'
 
-    // @ts-ignore
-    location.assemblyName = model.assemblyNames[0]
-
-    const h = mapCoords(location)
-    const color = 'rgba(252, 186, 3, 0.35)'
-
-    return (
-      <>
-        {h ? (
-          <div
-            key={`${h.left}_${h.width}`}
-            className={classes.highlight}
-            style={{ left: h.left, width: h.width, background: color }}
-          >
-            <Tooltip title={'Highlighted from URL parameter'} arrow>
-              <LinkIcon
-                fontSize="small"
-                sx={{
-                  color: `${
-                    colord(color).alpha() !== 0
-                      ? colord(color).alpha(0.8).toRgbString()
-                      : colord(color).alpha(0).toRgbString()
-                  }`,
-                }}
-              />
-            </Tooltip>
-          </div>
-        ) : null}
-      </>
-    )
-  } catch (error) {
-    return
-  }
+  return (
+    <>
+      {h ? (
+        <div
+          key={`${h.left}_${h.width}`}
+          className={classes.highlight}
+          style={{ left: h.left, width: h.width, background: color }}
+        >
+          <Tooltip title={'Highlighted from URL parameter'} arrow>
+            <LinkIcon
+              fontSize="small"
+              sx={{
+                color: `${
+                  colord(color).alpha() !== 0
+                    ? colord(color).alpha(0.8).toRgbString()
+                    : colord(color).alpha(0).toRgbString()
+                }`,
+              }}
+            />
+          </Tooltip>
+        </div>
+      ) : null}
+    </>
+  )
 })
 
 export default Highlight
