@@ -1,20 +1,26 @@
 import { useEffect } from 'react'
 
-import { getSession, useWidthSetter } from '@jbrowse/core/util'
+import { useWidthSetter } from '@jbrowse/core/util'
 import { Paper, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 import ViewHeader from './ViewHeader'
+import ViewWrapper from './ViewWrapper'
 
-import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
-import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util'
+import type {
+  AbstractViewModel,
+  SessionWithFocusedViewAndDrawerWidgets,
+} from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
   viewContainer: {
-    overflow: 'hidden',
     margin: theme.spacing(0.5),
     padding: `0 ${theme.spacing(1)} ${theme.spacing(1)}`,
+    overflow: 'visible',
+  },
+  viewContentsContainer: {
+    overflow: 'visible',
   },
   focusedView: {
     background: theme.palette.secondary.main,
@@ -26,19 +32,14 @@ const useStyles = makeStyles()(theme => ({
 
 const ViewContainer = observer(function ({
   view,
-  onClose,
-  onMinimize,
-  children,
+  session,
 }: {
-  view: IBaseViewModel
-  onClose: () => void
-  onMinimize: () => void
-  children: React.ReactNode
+  view: AbstractViewModel
+  session: SessionWithFocusedViewAndDrawerWidgets
 }) {
   const theme = useTheme()
   const ref = useWidthSetter(view, theme.spacing(1))
   const { classes, cx } = useStyles()
-  const session = getSession(view) as SessionWithFocusedViewAndDrawerWidgets
 
   useEffect(() => {
     function handleSelectView(e: Event) {
@@ -55,20 +56,33 @@ const ViewContainer = observer(function ({
     }
   }, [ref, session, view])
 
+  const backgroundColorClassName =
+    session.focusedViewId === view.id
+      ? classes.focusedView
+      : classes.unfocusedView
+  const viewContainerClassName = cx(
+    classes.viewContainer,
+    backgroundColorClassName,
+  )
+
   return (
-    <Paper
-      ref={ref}
-      elevation={12}
-      className={cx(
-        classes.viewContainer,
-        session.focusedViewId === view.id
-          ? classes.focusedView
-          : classes.unfocusedView,
-      )}
-    >
-      <ViewHeader view={view} onClose={onClose} onMinimize={onMinimize} />
-      <Paper>{children}</Paper>
-    </Paper>
+    <>
+      <Paper ref={ref} elevation={12} className={viewContainerClassName}>
+        <ViewHeader
+          view={view}
+          onClose={() => {
+            session.removeView(view)
+          }}
+          onMinimize={() => {
+            view.setMinimized(!view.minimized)
+          }}
+          className={backgroundColorClassName}
+        />
+        <Paper elevation={0} className={classes.viewContentsContainer}>
+          <ViewWrapper view={view} session={session} />
+        </Paper>
+      </Paper>
+    </>
   )
 })
 
