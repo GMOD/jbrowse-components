@@ -1,8 +1,11 @@
-import React from 'react'
+import React, { useRef, useState } from 'react'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 import { colord } from '@jbrowse/core/util/colord'
-import { Tooltip } from '@mui/material'
+import { ParsedLocString, getSession } from '@jbrowse/core/util'
+import { Menu } from '@jbrowse/core/ui'
+import { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
+import { IconButton, Tooltip } from '@mui/material'
 
 // icons
 import LinkIcon from '@mui/icons-material/Link'
@@ -11,6 +14,8 @@ import LinkIcon from '@mui/icons-material/Link'
 import { LinearGenomeViewModel } from '../model'
 
 type LGV = LinearGenomeViewModel
+
+const COLOR = 'rgb(218, 165, 32)'
 
 const useStyles = makeStyles()({
   highlight: {
@@ -33,6 +38,21 @@ interface ParsedLocStringA {
 
 const Highlight = observer(function Highlight({ model }: { model: LGV }) {
   const { classes } = useStyles()
+  const [open, setOpen] = useState(false)
+  const anchorEl = useRef(null)
+
+  const session = getSession(model)
+
+  const menuItems = [
+    {
+      label: 'Dismiss highlight',
+      onClick: () => model.setHighlight({} as ParsedLocString),
+    },
+  ]
+
+  function handleClose() {
+    setOpen(false)
+  }
 
   if (!model.highlight) {
     return
@@ -56,30 +76,96 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
       : undefined
   }
 
-  const h = mapCoords(model.highlight)
-  const color = 'rgba(252, 186, 3, 0.35)'
+  const h = mapCoords(model.highlight as ParsedLocStringA)
 
   return (
     <>
       {h ? (
         <div
-          key={`${h.left}_${h.width}`}
           className={classes.highlight}
-          style={{ left: h.left, width: h.width, background: color }}
+          style={{
+            left: h.left,
+            width: h.width,
+            background: `${colord(COLOR).alpha(0.35).toRgbString()}`,
+            borderLeft: `solid ${COLOR}`,
+            borderRight: `solid ${COLOR}`,
+          }}
         >
           <Tooltip title={'Highlighted from URL parameter'} arrow>
-            <LinkIcon
-              fontSize="small"
-              sx={{
-                color: `${
-                  colord(color).alpha() !== 0
-                    ? colord(color).alpha(0.8).toRgbString()
-                    : colord(color).alpha(0).toRgbString()
-                }`,
-              }}
-            />
+            <IconButton ref={anchorEl} onClick={() => setOpen(true)}>
+              <LinkIcon
+                fontSize="small"
+                sx={{
+                  color: `${colord(COLOR).darken(0.2).toRgbString()}`,
+                }}
+              />
+            </IconButton>
           </Tooltip>
+          <Menu
+            anchorEl={anchorEl.current}
+            // anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+            onMenuItemClick={(_event, callback) => {
+              callback(session)
+              handleClose()
+            }}
+            open={open}
+            onClose={handleClose}
+            menuItems={menuItems}
+          />
         </div>
+      ) : null}
+    </>
+  )
+})
+
+export const OverviewHighlight = observer(function OverviewHighlight({
+  model,
+  overview,
+}: {
+  model: LGV
+  overview: Base1DViewModel
+}) {
+  const { classes } = useStyles()
+
+  const { cytobandOffset } = model
+
+  // coords
+  const mapCoords = (r: ParsedLocStringA) => {
+    const s =
+      overview.bpToPx({
+        ...r,
+        coord: r.reversed ? r.end : r.start,
+      }) || 0
+
+    const e =
+      overview.bpToPx({
+        ...r,
+        coord: r.reversed ? r.start : r.end,
+      }) || 0
+
+    return s && e
+      ? {
+          width: Math.abs(e - s),
+          left: s + cytobandOffset,
+        }
+      : undefined
+  }
+
+  const h = mapCoords(model.highlight as ParsedLocStringA)
+
+  return (
+    <>
+      {h ? (
+        <div
+          className={classes.highlight}
+          style={{
+            width: h.width,
+            left: h.left,
+            background: `${colord(COLOR).alpha(0.35).toRgbString()}`,
+            borderLeft: `solid ${COLOR}`,
+            borderRight: `solid ${COLOR}`,
+          }}
+        />
       ) : null}
     </>
   )

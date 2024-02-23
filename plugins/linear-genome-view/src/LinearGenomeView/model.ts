@@ -248,7 +248,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * #property
          * highlights on the LGV from the URL parameters
          */
-        highlight: types.optional(types.frozen(), ''),
+        highlight: types.optional(
+          types.frozen<ParsedLocString>(),
+          {} as ParsedLocString,
+        ),
       }),
     )
     .volatile(() => ({
