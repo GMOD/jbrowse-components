@@ -68,7 +68,7 @@ export default (pluginManager: PluginManager) => {
           const location = parseLocString(highlight, refName =>
             isValidRefName(refName, assembly),
           )
-          if (location && location.start && location.end) {
+          if (location?.start && location?.end) {
             location.assemblyName = assembly
 
             view.setHighlight(location)

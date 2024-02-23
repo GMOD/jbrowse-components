@@ -590,8 +590,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      // TODO: strong type highlight
-      setHighlight(highlight: any) {
+      setHighlight(highlight: ParsedLocString) {
         self.highlight = highlight
       },
       /**

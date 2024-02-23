@@ -1,7 +1,6 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
-import { ParsedLocString } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 import { Tooltip } from '@mui/material'
 
@@ -24,6 +23,14 @@ const useStyles = makeStyles()({
   },
 })
 
+interface ParsedLocStringA {
+  assemblyName: string
+  refName: string
+  start: number
+  end: number
+  reversed: boolean
+}
+
 const Highlight = observer(function Highlight({ model }: { model: LGV }) {
   const { classes } = useStyles()
 
@@ -32,14 +39,14 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
   }
 
   // coords
-  const mapCoords = (r: ParsedLocString) => {
+  const mapCoords = (r: ParsedLocStringA) => {
     const s = model.bpToPx({
       refName: r.refName,
-      coord: r.start!!,
+      coord: r.start,
     })
     const e = model.bpToPx({
       refName: r.refName,
-      coord: r.end!!,
+      coord: r.end,
     })
     return s && e
       ? {
