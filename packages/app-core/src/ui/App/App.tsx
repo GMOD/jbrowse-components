@@ -10,7 +10,7 @@ import { MenuItem as JBMenuItem } from '@jbrowse/core/ui/Menu'
 // locals
 import AppToolbar from './AppToolbar'
 import ViewLauncher from './ViewLauncher'
-import ViewPanel from './ViewPanel'
+import ViewContainer from './ViewContainer'
 import DialogQueue from './DialogQueue'
 import AppFab from './AppFab'
 
@@ -67,7 +67,11 @@ const ViewsContainer = observer(function (props: Props) {
     <div className={classes.viewsContainer}>
       {views.length > 0 ? (
         views.map(view => (
-          <ViewPanel key={`view-${view.id}`} view={view} session={session} />
+          <ViewContainer
+            key={`view-${view.id}`}
+            view={view}
+            session={session}
+          />
         ))
       ) : (
         <ViewLauncher {...props} />
