@@ -246,7 +246,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
-         * highlights on the LGV from the URL paramaters
+         * highlights on the LGV from the URL parameters
          */
         highlight: types.optional(types.frozen(), ''),
       }),
