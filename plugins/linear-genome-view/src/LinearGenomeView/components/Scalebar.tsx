@@ -5,6 +5,7 @@ import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
+import Gridlines from './Gridlines'
 import ScalebarCoordinateLabels from './ScalebarCoordinateLabels'
 import ScalebarRefNameLabels from './ScalebarRefNameLabels'
 
@@ -19,7 +20,6 @@ const useStyles = makeStyles()({
   },
   zoomContainer: {
     position: 'relative',
-    zIndex: 1,
   },
   scalebar: {
     position: 'absolute',
@@ -51,6 +51,8 @@ const Scalebar = observer(
         style={style}
         {...other}
       >
+        {/* offset 1px since for left track border */}
+        <Gridlines model={model} offset={1} />
         <div
           className={classes.zoomContainer}
           style={{

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 
+import { VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import AddIcon from '@mui/icons-material/Add'
 import CloseIcon from '@mui/icons-material/Close'
@@ -23,7 +24,7 @@ const useStyles = makeStyles()(theme => ({
   },
   viewHeader: {
     display: 'flex',
-    height: 28,
+    height: VIEW_HEADER_HEIGHT,
     position: 'sticky',
     top: 0,
     zIndex: 7,

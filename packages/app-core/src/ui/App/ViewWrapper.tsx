@@ -1,17 +1,14 @@
 import React, { Suspense } from 'react'
-import { ErrorBoundary } from 'react-error-boundary'
+
+// ui elements
+import LoadingEllipses from '@jbrowse/core/ui/LoadingEllipses'
+import { getEnv } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-// locals
-import {
-  getEnv,
+import type {
   AbstractViewModel,
   SessionWithFocusedViewAndDrawerWidgets,
 } from '@jbrowse/core/util'
-
-// ui elements
-import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
-import LoadingEllipses from '@jbrowse/core/ui/LoadingEllipses'
 
 const ViewWrapper = observer(function ({
   view,
@@ -31,13 +28,9 @@ const ViewWrapper = observer(function ({
   }
 
   return (
-    <ErrorBoundary
-      FallbackComponent={({ error }) => <ErrorMessage error={error} />}
-    >
-      <Suspense fallback={<LoadingEllipses variant="h6" />}>
-        <ReactComponent model={view} session={session} />
-      </Suspense>
-    </ErrorBoundary>
+    <Suspense fallback={<LoadingEllipses variant="h6" />}>
+      <ReactComponent model={view} session={session} />
+    </Suspense>
   )
 })
 

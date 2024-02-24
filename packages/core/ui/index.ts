@@ -14,3 +14,4 @@ export { default as PrerenderedCanvas } from './PrerenderedCanvas'
 export { default as ResizeHandle } from './ResizeHandle'
 export { default as SanitizedHTML } from './SanitizedHTML'
 export * from './Menu'
+export const VIEW_HEADER_HEIGHT = 28

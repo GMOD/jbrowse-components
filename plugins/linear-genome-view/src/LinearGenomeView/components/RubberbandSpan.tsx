@@ -12,9 +12,9 @@ const useStyles = makeStyles()(theme => {
       height: '100%',
       background,
       position: 'absolute',
-      zIndex: 10,
+      zIndex: 4,
       textAlign: 'center',
-      overflow: 'hidden',
+      overflow: 'visible',
     },
     rubberbandControl: {
       cursor: 'crosshair',
@@ -23,6 +23,7 @@ const useStyles = makeStyles()(theme => {
     },
     rubberbandText: {
       color: tertiary.contrastText,
+      position: 'sticky',
     },
     popover: {
       mouseEvents: 'none',
@@ -46,7 +47,7 @@ function Tooltip({
   side,
   text,
 }: {
-  anchorEl: HTMLDivElement
+  anchorEl: HTMLSpanElement
   side: string
   text: string
 }) {
@@ -79,15 +80,17 @@ export default function RubberbandSpan({
   numOfBpSelected,
   left,
   width,
+  top = 0,
 }: {
   leftBpOffset: Offset
   rightBpOffset: Offset
   numOfBpSelected?: number
   left: number
   width: number
+  top?: number
 }) {
   const { classes } = useStyles()
-  const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null)
+  const [anchorEl, setAnchorEl] = useState<HTMLSpanElement | null>(null)
   return (
     <>
       {anchorEl ? (
@@ -104,15 +107,16 @@ export default function RubberbandSpan({
           />
         </>
       ) : null}
-      <div
-        ref={el => {
-          setAnchorEl(el)
-        }}
-        className={classes.rubberband}
-        style={{ left, width }}
-      >
+      <div className={classes.rubberband} style={{ left, width }}>
         {numOfBpSelected ? (
-          <Typography variant="h6" className={classes.rubberbandText}>
+          <Typography
+            ref={el => {
+              setAnchorEl(el)
+            }}
+            variant="h6"
+            className={classes.rubberbandText}
+            style={{ top }}
+          >
             {toLocale(numOfBpSelected)} bp
           </Typography>
         ) : null}
