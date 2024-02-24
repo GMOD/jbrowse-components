@@ -11,7 +11,7 @@ import TrackLabel from './TrackLabel'
 
 const useStyles = makeStyles()({
   trackLabel: {
-    zIndex: 3,
+    zIndex: 2,
   },
 
   trackLabelOffset: {

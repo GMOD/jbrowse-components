@@ -10,7 +10,7 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 
 // locals
-import { LinearGenomeViewModel, SPACING } from '..'
+import { HEADER_BAR_HEIGHT, LinearGenomeViewModel, SPACING } from '..'
 import OverviewScalebar from './OverviewScalebar'
 import ZoomControls from './ZoomControls'
 import SearchBox from './SearchBox'
@@ -19,6 +19,7 @@ type LGV = LinearGenomeViewModel
 const useStyles = makeStyles()(theme => ({
   headerBar: {
     display: 'flex',
+    height: HEADER_BAR_HEIGHT,
   },
   headerForm: {
     flexWrap: 'nowrap',
