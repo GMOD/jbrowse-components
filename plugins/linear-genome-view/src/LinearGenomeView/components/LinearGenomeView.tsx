@@ -1,7 +1,7 @@
 import React, { lazy, useEffect, useRef } from 'react'
 import { Button, Paper, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { LoadingEllipses } from '@jbrowse/core/ui'
+import { LoadingEllipses, VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
@@ -9,7 +9,12 @@ import { observer } from 'mobx-react'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 
 // locals
-import { LinearGenomeViewModel } from '..'
+import {
+  HEADER_BAR_HEIGHT,
+  HEADER_OVERVIEW_HEIGHT,
+  LinearGenomeViewModel,
+  SCALE_BAR_HEIGHT,
+} from '..'
 import TrackContainer from './TrackContainer'
 import TracksContainer from './TracksContainer'
 
@@ -18,6 +23,16 @@ const ImportForm = lazy(() => import('./ImportForm'))
 type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles()(theme => ({
+  header: {
+    background: theme.palette.background.paper,
+    position: 'sticky',
+    top: VIEW_HEADER_HEIGHT,
+    zIndex: 5,
+  },
+  pinnedTracks: {
+    position: 'sticky',
+    zIndex: 3,
+  },
   note: {
     textAlign: 'center',
     paddingTop: theme.spacing(1),
@@ -25,6 +40,7 @@ const useStyles = makeStyles()(theme => ({
   },
   rel: {
     position: 'relative',
+    overflow: 'visible',
   },
   top: {
     zIndex: 1000,
@@ -88,6 +104,14 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
   const MiniControlsComponent = model.MiniControlsComponent()
   const HeaderComponent = model.HeaderComponent()
 
+  let pinnedTracksTop = VIEW_HEADER_HEIGHT + SCALE_BAR_HEIGHT
+  if (!model.hideHeader) {
+    pinnedTracksTop += HEADER_BAR_HEIGHT
+    if (!model.hideHeaderOverview) {
+      pinnedTracksTop += HEADER_OVERVIEW_HEIGHT
+    }
+  }
+
   return (
     <div
       className={classes.rel}
@@ -105,15 +129,31 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
         session.setHovered({ hoverPosition, hoverFeature })
       }}
     >
-      <HeaderComponent model={model} />
-      <MiniControlsComponent model={model} />
+      <div className={classes.header}>
+        <HeaderComponent model={model} />
+        <MiniControlsComponent model={model} />
+      </div>
       <TracksContainer model={model}>
         {!tracks.length ? (
           <NoTracksActive model={model} />
         ) : (
-          tracks.map(track => (
-            <TrackContainer key={track.id} model={model} track={track} />
-          ))
+          <>
+            <div
+              className={classes.pinnedTracks}
+              style={{ top: pinnedTracksTop }}
+            >
+              {tracks
+                .filter(track => track.pinned)
+                .map(track => (
+                  <TrackContainer key={track.id} model={model} track={track} />
+                ))}
+            </div>
+            {tracks
+              .filter(track => !track.pinned)
+              .map(track => (
+                <TrackContainer key={track.id} model={model} track={track} />
+              ))}
+          </>
         )}
       </TracksContainer>
     </div>

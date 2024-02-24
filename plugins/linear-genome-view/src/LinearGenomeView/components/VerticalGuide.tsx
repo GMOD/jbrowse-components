@@ -5,7 +5,12 @@ import { observer } from 'mobx-react'
 import { stringify } from '@jbrowse/core/util'
 
 // locals
-import { LinearGenomeViewModel } from '..'
+import {
+  HEADER_BAR_HEIGHT,
+  HEADER_OVERVIEW_HEIGHT,
+  LinearGenomeViewModel,
+} from '..'
+import { VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
 
 type LGV = LinearGenomeViewModel
 
@@ -15,7 +20,12 @@ const useStyles = makeStyles()({
     height: '100%',
     width: 1,
     position: 'absolute',
-    zIndex: 10,
+    background: 'red',
+    zIndex: 4,
+  },
+  tooltipTarget: {
+    position: 'sticky',
+    width: 1,
   },
 })
 
@@ -27,16 +37,28 @@ const VerticalGuide = observer(function VerticalGuide({
   coordX: number
 }) {
   const { classes } = useStyles()
+  let tooltipTop = VIEW_HEADER_HEIGHT
+  if (!model.hideHeader) {
+    tooltipTop += HEADER_BAR_HEIGHT
+    if (!model.hideHeaderOverview) {
+      tooltipTop += HEADER_OVERVIEW_HEIGHT
+    }
+  }
   return (
-    <Tooltip open placement="top" title={stringify(model.pxToBp(coordX))} arrow>
-      <div
-        className={classes.guide}
-        style={{
-          left: coordX,
-          background: 'red',
-        }}
-      />
-    </Tooltip>
+    <>
+      <Tooltip
+        open
+        placement="top"
+        title={stringify(model.pxToBp(coordX))}
+        arrow
+      >
+        <div
+          className={classes.tooltipTarget}
+          style={{ left: coordX + 6, top: tooltipTop }}
+        />
+      </Tooltip>
+      <div className={classes.guide} style={{ left: coordX }} />
+    </>
   )
 })
 

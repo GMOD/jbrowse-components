@@ -23,7 +23,6 @@ const useStyles = makeStyles()({
     height: '100%',
     width: 1,
     position: 'absolute',
-    zIndex: 10,
   },
   rel: {
     position: 'relative',

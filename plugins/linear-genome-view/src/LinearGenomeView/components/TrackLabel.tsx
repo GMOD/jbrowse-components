@@ -1,5 +1,6 @@
 import React from 'react'
 import { IconButton, Paper, Typography, alpha } from '@mui/material'
+import PushPinIcon from '@mui/icons-material/PushPin'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getConf } from '@jbrowse/core/configuration'
@@ -56,10 +57,15 @@ const TrackLabel = observer(
     const view = getContainingView(track) as LGV
     const session = getSession(track)
     const trackConf = track.configuration
-    const minimized = track.minimized
+    const { minimized, pinned } = track
     const trackId = getConf(track, 'trackId')
     const trackName = getTrackName(trackConf, session)
     const items = [
+      {
+        label: pinned ? 'Unpin track' : 'Pin track',
+        icon: PushPinIcon,
+        onClick: () => track.setPinned(!pinned),
+      },
       {
         label: 'Track order',
         type: 'subMenu',

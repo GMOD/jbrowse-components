@@ -3,6 +3,7 @@ import { IconButton } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
+import { VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
 
 // icons
 import CloseIcon from '@mui/icons-material/Close'
@@ -24,7 +25,7 @@ const useStyles = makeStyles()(theme => ({
   },
   viewHeader: {
     display: 'flex',
-    height: 28,
+    height: VIEW_HEADER_HEIGHT,
     position: 'sticky',
     top: 0,
     zIndex: 7,
