@@ -27,7 +27,6 @@ const useStyles = makeStyles()({
     whiteSpace: 'nowrap',
     position: 'relative',
     background: 'none',
-    zIndex: 2,
   },
 })
 
