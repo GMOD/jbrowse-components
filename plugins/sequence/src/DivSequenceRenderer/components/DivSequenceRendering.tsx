@@ -288,6 +288,7 @@ function Wrapper({
         width,
         height: totalHeight,
         userSelect: 'none',
+        // use block because svg by default is inline, which adds a margin
         display: 'block',
       }}
     >
