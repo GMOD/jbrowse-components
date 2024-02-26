@@ -45,7 +45,7 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
   const { classes } = useStyles()
   const [open, setOpen] = useState(false)
   const anchorEl = useRef(null)
-  const color = useTheme().palette.quaternary.main ?? 'goldenrod'
+  const color = useTheme().palette.quaternary?.main ?? 'goldenrod'
 
   const session = getSession(model) as SessionWithWidgets
 
@@ -153,7 +153,7 @@ export const OverviewHighlight = observer(function OverviewHighlight({
   overview: Base1DViewModel
 }) {
   const { classes } = useStyles()
-  const color = useTheme().palette.quaternary.main ?? 'goldenrod'
+  const color = useTheme().palette.quaternary?.main ?? 'goldenrod'
 
   const { cytobandOffset } = model
 
