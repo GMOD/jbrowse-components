@@ -2,20 +2,25 @@ import React, { useRef, useState } from 'react'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 import { colord } from '@jbrowse/core/util/colord'
-import { ParsedLocString, getSession } from '@jbrowse/core/util'
+import {
+  ParsedLocString,
+  Region,
+  SessionWithWidgets,
+  getSession,
+} from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
 import { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
-import { IconButton, Tooltip } from '@mui/material'
+import { IconButton, Tooltip, useTheme } from '@mui/material'
 
 // icons
 import LinkIcon from '@mui/icons-material/Link'
+import CloseIcon from '@mui/icons-material/Close'
+import BookmarkIcon from '@mui/icons-material/Bookmark'
 
 // locals
 import { LinearGenomeViewModel } from '../model'
 
 type LGV = LinearGenomeViewModel
-
-const COLOR = 'rgb(218, 165, 32)'
 
 const useStyles = makeStyles()({
   highlight: {
@@ -40,13 +45,35 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
   const { classes } = useStyles()
   const [open, setOpen] = useState(false)
   const anchorEl = useRef(null)
+  const color = useTheme().palette.quaternary.main
 
-  const session = getSession(model)
+  const session = getSession(model) as SessionWithWidgets
+
+  const dismissHighlight = () => {
+    model.setHighlight({} as ParsedLocString)
+  }
 
   const menuItems = [
     {
       label: 'Dismiss highlight',
-      onClick: () => model.setHighlight({} as ParsedLocString),
+      icon: CloseIcon,
+      onClick: () => dismissHighlight(),
+    },
+    {
+      label: 'Bookmark highlighted region',
+      icon: BookmarkIcon,
+      onClick: () => {
+        let bookmarkWidget = session.widgets.get('GridBookmark')
+        if (!bookmarkWidget) {
+          bookmarkWidget = session.addWidget(
+            'GridBookmarkWidget',
+            'GridBookmark',
+          )
+        }
+        // @ts-ignore
+        bookmarkWidget.addBookmark(model.highlight as Region)
+        dismissHighlight()
+      },
     },
   ]
 
@@ -86,9 +113,9 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
           style={{
             left: h.left,
             width: h.width,
-            background: `${colord(COLOR).alpha(0.35).toRgbString()}`,
-            borderLeft: `solid ${COLOR}`,
-            borderRight: `solid ${COLOR}`,
+            background: `${colord(color).alpha(0.35).toRgbString()}`,
+            borderLeft: `solid ${color}`,
+            borderRight: `solid ${color}`,
           }}
         >
           <Tooltip title={'Highlighted from URL parameter'} arrow>
@@ -96,7 +123,7 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
               <LinkIcon
                 fontSize="small"
                 sx={{
-                  color: `${colord(COLOR).darken(0.2).toRgbString()}`,
+                  color: `${colord(color).darken(0.2).toRgbString()}`,
                 }}
               />
             </IconButton>
@@ -126,6 +153,7 @@ export const OverviewHighlight = observer(function OverviewHighlight({
   overview: Base1DViewModel
 }) {
   const { classes } = useStyles()
+  const color = useTheme().palette.quaternary.main
 
   const { cytobandOffset } = model
 
@@ -161,9 +189,9 @@ export const OverviewHighlight = observer(function OverviewHighlight({
           style={{
             width: h.width,
             left: h.left,
-            background: `${colord(COLOR).alpha(0.35).toRgbString()}`,
-            borderLeft: `solid ${COLOR}`,
-            borderRight: `solid ${COLOR}`,
+            background: `${colord(color).alpha(0.35).toRgbString()}`,
+            borderLeft: `solid ${color}`,
+            borderRight: `solid ${color}`,
           }}
         />
       ) : null}
