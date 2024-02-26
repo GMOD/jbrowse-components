@@ -31,6 +31,7 @@ module.exports = {
   rules: {
     'react-refresh/only-export-components': 'warn',
 
+    // typescript eslint off
     '@typescript-eslint/ban-ts-ignore': 'off',
     '@typescript-eslint/ban-ts-comment': 'off',
     '@typescript-eslint/ban-types': 'off',
@@ -57,7 +58,9 @@ module.exports = {
     '@typescript-eslint/no-unsafe-assignment': 'off',
     '@typescript-eslint/no-unsafe-call': 'off',
     '@typescript-eslint/no-unsafe-return': 'off',
-
+    // typescript eslint error
+    '@typescript-eslint/strict-boolean-expressions': 'error',
+    // testing library
     'testing-library/render-result-naming-convention': 'off',
     'testing-library/prefer-screen-queries': 'off',
 
@@ -102,7 +105,7 @@ module.exports = {
     'unicorn/prefer-number-properties': 'off',
     'unicorn/no-process-exit': 'off',
 
-    'no-use-before-define': 'off',
+    // base rules
     curly: 'error',
     'no-global-assign': 'warn',
     'no-console': [
@@ -114,17 +117,6 @@ module.exports = {
     'no-debugger': 'warn',
     'no-undef': 'error',
     'no-underscore-dangle': 'warn',
-
-    'prettier/prettier': 'warn',
-
-    'react/no-danger': 'warn',
-    'react/prop-types': 'off',
-    'react/destructuring-assignment': 'error',
-    'react/no-unused-prop-types': 'error',
-    'react/no-unused-state': 'error',
-    'react/no-unescaped-entities': 'off',
-    'react/prefer-stateless-function': 'error',
-
     'spaced-comment': [
       'error',
       'always',
@@ -132,6 +124,17 @@ module.exports = {
         markers: ['/'],
       },
     ],
+    // prettier
+    'prettier/prettier': 'warn',
+
+    // react
+    'react/no-danger': 'warn',
+    'react/prop-types': 'off',
+    'react/destructuring-assignment': 'error',
+    'react/no-unused-prop-types': 'error',
+    'react/no-unused-state': 'error',
+    'react/no-unescaped-entities': 'off',
+    'react/prefer-stateless-function': 'error',
   },
   globals: {
     globalThis: false,
