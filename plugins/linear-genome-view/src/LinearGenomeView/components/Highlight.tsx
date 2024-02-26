@@ -159,19 +159,17 @@ export const OverviewHighlight = observer(function OverviewHighlight({
 
   // coords
   const mapCoords = (r: ParsedLocStringA) => {
-    const s =
-      overview.bpToPx({
-        ...r,
-        coord: r.reversed ? r.end : r.start,
-      }) || 0
+    const s = overview.bpToPx({
+      ...r,
+      coord: r.reversed ? r.end : r.start,
+    })
 
-    const e =
-      overview.bpToPx({
-        ...r,
-        coord: r.reversed ? r.start : r.end,
-      }) || 0
+    const e = overview.bpToPx({
+      ...r,
+      coord: r.reversed ? r.start : r.end,
+    })
 
-    return s && e
+    return s !== undefined && e != undefined
       ? {
           width: Math.abs(e - s),
           left: s + cytobandOffset,
