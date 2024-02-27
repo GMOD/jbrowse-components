@@ -1,5 +1,10 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { AbstractSessionModel, when, parseLocString } from '@jbrowse/core/util'
+import {
+  AbstractSessionModel,
+  when,
+  parseLocString,
+  ParsedLocString,
+} from '@jbrowse/core/util'
 // locals
 import { LinearGenomeViewModel } from '../LinearGenomeView'
 import { handleSelectedRegion } from '../searchUtils'
@@ -67,7 +72,7 @@ export default (pluginManager: PluginManager) => {
         if (highlight !== undefined) {
           const location = parseLocString(highlight, refName =>
             isValidRefName(refName, assembly),
-          )
+          ) as Required<ParsedLocString>
           if (location?.start !== undefined && location?.end !== undefined) {
             location.assemblyName = assembly
             view.setHighlight(location)

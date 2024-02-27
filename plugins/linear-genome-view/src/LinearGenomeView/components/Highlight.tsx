@@ -9,7 +9,6 @@ import {
   getSession,
 } from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
-import { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import { IconButton, Tooltip, useTheme } from '@mui/material'
 
 // icons
@@ -22,24 +21,17 @@ import { LinearGenomeViewModel } from '../model'
 
 type LGV = LinearGenomeViewModel
 
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => ({
   highlight: {
     height: '100%',
     position: 'absolute',
-    textAlign: 'center',
-    overflow: 'hidden',
-    display: 'flex',
-    alignItems: 'start',
+    background: `${colord(theme.palette.quaternary?.main ?? 'goldenrod')
+      .alpha(0.35)
+      .toRgbString()}`,
+    borderLeft: `1px solid ${theme.palette.quaternary?.main ?? 'goldenrod'}`,
+    borderRight: `1px solid ${theme.palette.quaternary?.main ?? 'goldenrod'}`,
   },
-})
-
-interface ParsedLocStringA {
-  assemblyName: string
-  refName: string
-  start: number
-  end: number
-  reversed: boolean
-}
+}))
 
 const Highlight = observer(function Highlight({ model }: { model: LGV }) {
   const { classes } = useStyles()
@@ -50,7 +42,7 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
   const session = getSession(model) as SessionWithWidgets
 
   const dismissHighlight = () => {
-    model.setHighlight({} as ParsedLocString)
+    model.setHighlight(undefined)
   }
 
   const menuItems = [
@@ -86,7 +78,7 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
   }
 
   // coords
-  const mapCoords = (r: ParsedLocStringA) => {
+  const mapCoords = (r: Required<ParsedLocString>) => {
     const s = model.bpToPx({
       refName: r.refName,
       coord: r.start,
@@ -103,7 +95,7 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
       : undefined
   }
 
-  const h = mapCoords(model.highlight as ParsedLocStringA)
+  const h = mapCoords(model.highlight as Required<ParsedLocString>)
 
   return (
     <>
@@ -113,9 +105,6 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
           style={{
             left: h.left,
             width: h.width,
-            background: `${colord(color).alpha(0.35).toRgbString()}`,
-            borderLeft: `solid ${color}`,
-            borderRight: `solid ${color}`,
           }}
         >
           <Tooltip title={'Highlighted from URL parameter'} arrow>
@@ -130,7 +119,6 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
           </Tooltip>
           <Menu
             anchorEl={anchorEl.current}
-            // anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
             onMenuItemClick={(_event, callback) => {
               callback(session)
               handleClose()
@@ -140,58 +128,6 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
             menuItems={menuItems}
           />
         </div>
-      ) : null}
-    </>
-  )
-})
-
-export const OverviewHighlight = observer(function OverviewHighlight({
-  model,
-  overview,
-}: {
-  model: LGV
-  overview: Base1DViewModel
-}) {
-  const { classes } = useStyles()
-  const color = useTheme().palette.quaternary?.main ?? 'goldenrod'
-
-  const { cytobandOffset } = model
-
-  // coords
-  const mapCoords = (r: ParsedLocStringA) => {
-    const s = overview.bpToPx({
-      ...r,
-      coord: r.reversed ? r.end : r.start,
-    })
-
-    const e = overview.bpToPx({
-      ...r,
-      coord: r.reversed ? r.start : r.end,
-    })
-
-    return s !== undefined && e != undefined
-      ? {
-          width: Math.abs(e - s),
-          left: s + cytobandOffset,
-        }
-      : undefined
-  }
-
-  const h = mapCoords(model.highlight as ParsedLocStringA)
-
-  return (
-    <>
-      {h ? (
-        <div
-          className={classes.highlight}
-          style={{
-            width: h.width,
-            left: h.left,
-            background: `${colord(color).alpha(0.35).toRgbString()}`,
-            borderLeft: `solid ${color}`,
-            borderRight: `solid ${color}`,
-          }}
-        />
       ) : null}
     </>
   )

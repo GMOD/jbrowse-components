@@ -248,10 +248,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * #property
          * highlights on the LGV from the URL parameters
          */
-        highlight: types.optional(
-          types.frozen<ParsedLocString>(),
-          {} as ParsedLocString,
-        ),
+        highlight: types.maybe(types.frozen<Required<ParsedLocString>>()),
       }),
     )
     .volatile(() => ({
@@ -593,7 +590,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setHighlight(highlight: ParsedLocString) {
+      setHighlight(highlight: Required<ParsedLocString> | undefined) {
         self.highlight = highlight
       },
       /**
