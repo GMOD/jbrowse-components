@@ -81,9 +81,9 @@ tab-separated list of aliases for that name.
 
 ### Running the `jbrowse` command
 
-We can use JBrowse CLI to create a JBrowse Web config file, which we can
-use to get the assembly for JBrowse Linear Genome View. We create a config file
-with an assembly (or add an assembly to an existing config file) with the
+We can use JBrowse CLI to create a JBrowse Web config file, which we can use to
+get the assembly for JBrowse Linear Genome View. We create a config file with an
+assembly (or add an assembly to an existing config file) with the
 `jbrowse add-assembly` command. Go ahead and run `jbrowse add-assembly --help`
 to see all the options available.
 
