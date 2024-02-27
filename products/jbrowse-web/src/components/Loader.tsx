@@ -48,6 +48,7 @@ export function Loader({
   const [sessionTracks, setSessionTracks] = useQueryParam('sessionTracks', Str)
   const [assembly, setAssembly] = useQueryParam('assembly', Str)
   const [tracks, setTracks] = useQueryParam('tracks', Str)
+  const [highlight, setHighlight] = useQueryParam('highlight', Str)
   const [nav, setNav] = useQueryParam('nav', Str)
   const [tracklist, setTrackList] = useQueryParam('tracklist', Str)
 
@@ -61,6 +62,7 @@ export function Loader({
     tracks: normalize(tracks),
     sessionTracks: normalize(sessionTracks),
     tracklist: JSON.parse(normalize(tracklist) || 'false'),
+    highlight: normalize(highlight),
     nav: JSON.parse(normalize(nav) || 'true'),
     initialTimestamp,
   })
@@ -73,6 +75,7 @@ export function Loader({
     setSessionTracks(undefined, 'replaceIn')
     setTrackList(undefined, 'replaceIn')
     setNav(undefined, 'replaceIn')
+    setHighlight(undefined, 'replaceIn')
   }, [
     setAssembly,
     setLoc,
@@ -81,6 +84,7 @@ export function Loader({
     setTracks,
     setPassword,
     setSessionTracks,
+    setHighlight,
   ])
 
   return <Renderer loader={loader} />
