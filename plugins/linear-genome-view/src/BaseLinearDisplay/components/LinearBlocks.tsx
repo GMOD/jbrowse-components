@@ -46,13 +46,14 @@ const RenderedBlocks = observer(function ({
   model: BaseLinearDisplayModel
 }) {
   const { classes } = useStyles()
-  const { blockDefinitions, blockState } = model
+  const { blockDefinitions, blockState, layoutMaxHeight } = model
+  console.log({ layoutMaxHeight })
+
   return (
     <>
       {blockDefinitions.map(block => {
         if (block instanceof ContentBlock) {
           const state = blockState.get(block.key)
-
           return (
             <ContentBlockComponent
               block={block}

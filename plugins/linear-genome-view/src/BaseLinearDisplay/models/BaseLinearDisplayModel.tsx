@@ -12,6 +12,7 @@ import {
   isSessionModelWithWidgets,
   isFeature,
   Feature,
+  max,
 } from '@jbrowse/core/util'
 import { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
@@ -101,6 +102,18 @@ function stateModelFactory() {
       },
     }))
     .views(self => ({
+      get layoutMaxHeight() {
+        const { blockDefinitions, blockState } = self
+        const maxHeight = max(
+          blockDefinitions.map(block => {
+            const state = blockState.get(block.key)
+            return state?.layout?.getTotalHeight()
+          }),
+          0,
+        )
+        console.log({ maxHeight })
+        return maxHeight
+      },
       /**
        * #getter
        * how many milliseconds to wait for the display to
