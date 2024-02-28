@@ -52,7 +52,11 @@ const OverviewHighlight = observer(function OverviewHighlight({
       : undefined
   }
 
-  const h = mapCoords(model.highlight as Required<ParsedLocString>)
+  if (!model.highlight) {
+    return null
+  }
+
+  const h = mapCoords(model.highlight)
 
   return (
     <>

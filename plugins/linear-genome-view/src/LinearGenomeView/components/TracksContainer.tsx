@@ -108,7 +108,7 @@ const TracksContainer = observer(function TracksContainer({
           />
         }
       />
-      {model.highlight ? <Highlight model={model} /> : null}
+      <Highlight model={model} />
       {additional}
       {children}
     </div>

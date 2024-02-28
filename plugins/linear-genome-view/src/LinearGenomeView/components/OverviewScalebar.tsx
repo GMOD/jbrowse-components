@@ -264,9 +264,7 @@ const Scalebar = observer(function ({
           />
         )
       })}
-      {model.highlight ? (
-        <OverviewHighlight model={model} overview={overview} />
-      ) : null}
+      <OverviewHighlight model={model} overview={overview} />
     </div>
   )
 })
