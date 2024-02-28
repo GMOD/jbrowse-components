@@ -72,8 +72,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
       },
       get location() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const sessionPath = getParent<any>(self).sessionPath
-        return path.basename(sessionPath)
+        return path.dirname(getParent<any>(self).sessionPath)
       },
     }))
     .actions(self => ({
