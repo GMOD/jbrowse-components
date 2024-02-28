@@ -12,6 +12,7 @@ import {
   findTrackConfigsToIndex,
 } from '@jbrowse/text-indexing'
 import { isAbortException, isSessionModelWithWidgets } from '@jbrowse/core/util'
+import path from 'path'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Track = Record<string, any>
@@ -33,11 +34,7 @@ interface JobsEntry {
   statusMessage?: string
 }
 export interface TextJobsEntry extends JobsEntry {
-  name: string
   indexingParams: TrackTextIndexing
-  cancelCallback?: () => void
-  progressPct?: number
-  statusMessage?: string
 }
 
 export default function jobsModelFactory(_pluginManager: PluginManager) {
@@ -75,8 +72,8 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
       },
       get location() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const path = getParent<any>(self).sessionPath
-        return path.slice(0, Math.max(0, path.lastIndexOf('/')))
+        const sessionPath = getParent<any>(self).sessionPath
+        return path.basename(sessionPath)
       },
     }))
     .actions(self => ({

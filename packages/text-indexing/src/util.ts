@@ -1,4 +1,5 @@
 import { isSupportedIndexingAdapter } from '@jbrowse/core/util'
+import path from 'path'
 
 export interface UriLocation {
   uri: string
@@ -123,23 +124,20 @@ export function createTextSearchConf(
   assemblyNames: string[],
   locationPath: string,
 ) {
-  // const locationPath = self.sessionPath.substring(
-  //   0,
-  //   self.sessionPath.lastIndexOf('/'),
-  // )
+  const base = path.join(locationPath, 'trix')
   return {
     type: 'TrixTextSearchAdapter',
     textSearchAdapterId: name,
     ixFilePath: {
-      localPath: locationPath + `/trix/${name}.ix`,
+      localPath: path.join(base, `${name}.ix`),
       locationType: 'LocalPathLocation',
     },
     ixxFilePath: {
-      localPath: locationPath + `/trix/${name}.ixx`,
+      localPath: path.join(base, `${name}.ixx`),
       locationType: 'LocalPathLocation',
     },
     metaFilePath: {
-      localPath: locationPath + `/trix/${name}.json`,
+      localPath: path.join(base, `${name}.json`),
       locationType: 'LocalPathLocation',
     },
     tracks: trackIds,
