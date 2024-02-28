@@ -74,7 +74,7 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
   }
 
   if (!model.highlight) {
-    return
+    return null
   }
 
   // coords
@@ -95,7 +95,7 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
       : undefined
   }
 
-  const h = mapCoords(model.highlight as Required<ParsedLocString>)
+  const h = mapCoords(model.highlight)
 
   return (
     <>
