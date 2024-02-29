@@ -54,15 +54,6 @@ export default (pluginManager: PluginManager) => {
           )
         }
 
-        await handleSelectedRegion({ input: loc, model: view, assembly: asm })
-
-        const idsNotFound = [] as string[]
-        tracks.forEach(track => tryTrack(view, track, idsNotFound))
-        if (idsNotFound.length) {
-          throw new Error(
-            `Could not resolve identifiers: ${idsNotFound.join(',')}`,
-          )
-        }
         if (tracklist) {
           view.activateTrackSelector()
         }
@@ -77,6 +68,16 @@ export default (pluginManager: PluginManager) => {
             location.assemblyName = assembly
             view.setHighlight(location)
           }
+        }
+
+        await handleSelectedRegion({ input: loc, model: view, assembly: asm })
+
+        const idsNotFound = [] as string[]
+        tracks.forEach(track => tryTrack(view, track, idsNotFound))
+        if (idsNotFound.length) {
+          throw new Error(
+            `Could not resolve identifiers: ${idsNotFound.join(',')}`,
+          )
         }
       } catch (e) {
         session.notify(`${e}`, 'error')
