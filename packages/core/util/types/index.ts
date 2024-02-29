@@ -352,10 +352,6 @@ export interface AbstractRootModel {
 
 /** root model with more included for the heavier JBrowse web and desktop app */
 export interface AppRootModel extends AbstractRootModel {
-  isAssemblyEditing: boolean
-  isDefaultSessionEditing: boolean
-  setAssemblyEditing: (arg: boolean) => boolean
-  setDefaultSessionEditing: (arg: boolean) => boolean
   internetAccounts: BaseInternetAccountModel[]
   findAppropriateInternetAccount(
     location: UriLocation,
@@ -366,7 +362,6 @@ export function isAppRootModel(thing: unknown): thing is AppRootModel {
   return (
     typeof thing === 'object' &&
     thing !== null &&
-    'isAssemblyEditing' in thing &&
     'findAppropriateInternetAccount' in thing
   )
 }

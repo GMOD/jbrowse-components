@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react'
+import React from 'react'
 import { observer } from 'mobx-react'
 import { ThemeProvider } from '@mui/material/styles'
 import { CssBaseline } from '@mui/material'
@@ -6,7 +6,6 @@ import { CssBaseline } from '@mui/material'
 // jbrowse
 import { App } from '@jbrowse/app-core'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { AssemblyManager } from '@jbrowse/plugin-data-management'
 
 // locals
 import { DesktopRootModel } from '../rootModel'
@@ -16,35 +15,18 @@ const JBrowseNonNullRoot = observer(function ({
 }: {
   rootModel: DesktopRootModel
 }) {
-  const { session, error, isAssemblyEditing, setAssemblyEditing } = rootModel
+  const { session, error } = rootModel
 
   if (error) {
     throw error
   }
-  if (!session) {
-    return null
-  }
 
-  return (
+  return session ? (
     <ThemeProvider theme={session.theme}>
       <CssBaseline />
-      {session ? (
-        <>
-          <App session={session} />
-          <Suspense fallback={null}>
-            {isAssemblyEditing ? (
-              <AssemblyManager
-                rootModel={rootModel}
-                onClose={() => setAssemblyEditing(false)}
-              />
-            ) : null}
-          </Suspense>
-        </>
-      ) : (
-        <div>No session</div>
-      )}
+      <App session={session} />
     </ThemeProvider>
-  )
+  ) : null
 })
 
 const JBrowse = observer(function ({
