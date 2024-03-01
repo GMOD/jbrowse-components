@@ -60,7 +60,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          */
         adjustLayoutHeight: types.optional(
           types.string,
-          () => localStorageGetItem('lgv-adjustLayoutHeight') || '',
+          () => localStorageGetItem('lgv-adjustLayoutHeight') || 'off',
         ),
       }),
     )

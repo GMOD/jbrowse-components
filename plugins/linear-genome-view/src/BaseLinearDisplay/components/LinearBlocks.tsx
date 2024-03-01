@@ -46,7 +46,7 @@ const RenderedBlocks = observer(function ({
   model: BaseLinearDisplayModel
 }) {
   const { classes } = useStyles()
-  const { blockDefinitions, blockState, layoutMaxHeight } = model
+  const { blockDefinitions, blockState } = model
   return (
     <>
       {blockDefinitions.map(block => {

@@ -20,7 +20,6 @@ import {
   types,
   SnapshotIn,
   Instance,
-  onAction,
 } from 'mobx-state-tree'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
@@ -410,16 +409,6 @@ export function BaseWebSession({
           autorun(() => {
             localStorageSetItem('drawerPosition', self.drawerPosition)
             localStorageSetItem('themeName', self.themeName)
-          }),
-        )
-        addDisposer(
-          self,
-          onAction(self, param => {
-            const { name, path, args } = param
-
-            // doesn't link showTrack/hideTrack, doesn't make sense in
-            // synteny views most time
-            // console.log({ name, path, args })
           }),
         )
       },
