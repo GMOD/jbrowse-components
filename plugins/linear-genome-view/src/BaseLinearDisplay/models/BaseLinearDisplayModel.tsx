@@ -102,6 +102,11 @@ function stateModelFactory() {
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       * max height determined by the blockState
+       * configurable to default track height to this to show all features
+       */
       get layoutMaxHeight() {
         const { blockDefinitions, blockState } = self
         const maxHeight = max(
@@ -109,9 +114,8 @@ function stateModelFactory() {
             const state = blockState.get(block.key)
             return state?.layout?.getTotalHeight()
           }),
-          0,
+          100,
         )
-        console.log({ maxHeight })
         return maxHeight
       },
       /**

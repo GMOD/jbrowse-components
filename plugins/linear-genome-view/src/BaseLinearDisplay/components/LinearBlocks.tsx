@@ -47,8 +47,6 @@ const RenderedBlocks = observer(function ({
 }) {
   const { classes } = useStyles()
   const { blockDefinitions, blockState, layoutMaxHeight } = model
-  console.log({ layoutMaxHeight })
-
   return (
     <>
       {blockDefinitions.map(block => {

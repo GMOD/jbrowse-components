@@ -28,9 +28,23 @@ export default function TrackHeightMixin() {
       scrollTop: 0,
     }))
     .views(self => ({
+      get adjustLayout() {
+        return (
+          // @ts-expect-error
+          self.trackHeightSetting === 'on' ||
+          // @ts-expect-error
+          self.trackHeightSetting === 'first_render'
+        )
+      },
       get height() {
-        // @ts-expect-error
-        return self.heightPreConfig ?? (getConf(self, 'height') as number)
+        return (
+          self.heightPreConfig ??
+          (this.adjustLayout
+            ? // @ts-expect-error
+              self.layoutMaxHeight
+            : // @ts-expect-error
+              (getConf(self, 'height') as number))
+        )
       },
     }))
     .actions(self => ({
