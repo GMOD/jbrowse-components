@@ -16,12 +16,13 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import { Save, SaveAs, DNA, Cable } from '@jbrowse/core/ui/Icons'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { SessionWithDialogs } from '@jbrowse/product-core'
+import { AssemblyManager } from '@jbrowse/plugin-data-management'
 
 // locals
 import { getSaveSession } from './Sessions'
 import { DesktopRootModel } from '.'
 import OpenSequenceDialog from '../components/OpenSequenceDialog'
-
+import { AbstractSessionModel } from '@jbrowse/core/util'
 const PreferencesDialog = lazy(() => import('../components/PreferencesDialog'))
 const { ipcRenderer } = window.require('electron')
 
@@ -230,7 +231,12 @@ export function DesktopMenusMixin(_pluginManager: PluginManager) {
               label: 'Open assembly manager',
               icon: SettingsIcon,
               onClick: () => {
-                self.setAssemblyEditing(true)
+                ;(self.session as AbstractSessionModel).queueDialog(
+                  handleClose => [
+                    AssemblyManager,
+                    { rootModel: self, onClose: handleClose },
+                  ],
+                )
               },
             },
           ],
