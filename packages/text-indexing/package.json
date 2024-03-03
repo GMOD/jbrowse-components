@@ -43,7 +43,8 @@
   "dependencies": {
     "@babel/runtime": "^7.16.3",
     "ixixx": "^2.0.1",
-    "node-fetch": "^2.6.0"
+    "node-fetch": "^2.6.0",
+    "sanitize-filename": "^1.6.3"
   },
   "peerDependencies": {
     "mobx": "^6.0.0",
