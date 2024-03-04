@@ -95,6 +95,7 @@ function Translation(props: {
                 y={y + height / 2}
                 dominantBaseline="middle"
                 textAnchor="middle"
+                fontSize={height - 2}
               >
                 {letter}
               </text>
@@ -150,6 +151,7 @@ function DNA(props: {
                 y={y + height / 2}
                 dominantBaseline="middle"
                 textAnchor="middle"
+                fontSize={height - 2}
                 fill={
                   color ? theme.palette.getContrastText(color.main) : 'black'
                 }
