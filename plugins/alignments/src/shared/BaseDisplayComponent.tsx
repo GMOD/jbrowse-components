@@ -6,11 +6,12 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
+import { getContainingView } from '@jbrowse/core/util'
+import { Button, Tooltip } from '@mui/material'
 
 // local
 import { LinearReadCloudDisplayModel } from '../LinearReadCloudDisplay/model'
 import { LinearReadArcsDisplayModel } from '../LinearReadArcsDisplay/model'
-import { getContainingView } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
   loading: {
@@ -38,8 +39,13 @@ const BaseDisplayComponent = observer(function ({
     <BlockMsg
       message={`${error}`}
       severity="error"
-      buttonText="Reload"
-      action={model.reload}
+      action={
+        <Tooltip title="Reload">
+          <Button data-testid="reload_button" onClick={() => model.reload()}>
+            Reload
+          </Button>
+        </Tooltip>
+      }
     />
   ) : regionTooLarge ? (
     model.regionCannotBeRendered()

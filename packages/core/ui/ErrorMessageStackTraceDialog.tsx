@@ -88,6 +88,42 @@ function stripMessage(trace: string, error: unknown) {
   }
 }
 
+function Contents({ text }: { text: string }) {
+  const err = encodeURIComponent(
+    'I got this error from JBrowse, here is the stack trace:\n\n```\n' +
+      text +
+      '\n```\n',
+  )
+  const githubLink = `https://github.com/GMOD/jbrowse-components/issues/new?labels=bug&title=JBrowse+issue&body=${err}`
+  const emailLink = `mailto:jbrowse2dev@gmail.com?subject=JBrowse%202%20error&body=${err}`
+
+  return (
+    <>
+      <Typography>
+        Post a new issue at{' '}
+        <Link href={githubLink} target="_blank">
+          GitHub
+        </Link>{' '}
+        or send an email to{' '}
+        <Link href={emailLink} target="_blank">
+          jbrowse2dev@gmail.com
+        </Link>{' '}
+      </Typography>
+      <pre
+        style={{
+          background: 'lightgrey',
+          border: '1px solid black',
+          overflow: 'auto',
+          margin: 20,
+          maxHeight: 300,
+        }}
+      >
+        {text}
+      </pre>
+    </>
+  )
+}
+
 export default function ErrorMessageStackTraceDialog({
   error,
   onClose,
@@ -128,42 +164,13 @@ export default function ErrorMessageStackTraceDialog({
     window.JBrowseSession ? `JBrowse ${window.JBrowseSession.version}` : '',
   ].join('\n')
 
-  const err = encodeURIComponent(
-    'I got this error from JBrowse, here is the stack trace:\n\n```\n' +
-      errorBoxText +
-      '\n```\n',
-  )
-  const githubLink = `https://github.com/GMOD/jbrowse-components/issues/new?labels=bug&title=JBrowse+issue&body=${err}`
-  const emailLink = `mailto:jbrowse2dev@gmail.com?subject=JBrowse%202%20error&body=${err}`
   return (
     <Dialog open onClose={onClose} title="Stack trace" maxWidth="xl">
       <DialogContent>
         {mappedStackTrace === undefined ? (
           <LoadingEllipses variant="h6" />
         ) : (
-          <>
-            <Typography>
-              Post a new issue at{' '}
-              <Link href={githubLink} target="_blank">
-                GitHub
-              </Link>{' '}
-              or send an email to{' '}
-              <Link href={emailLink} target="_blank">
-                jbrowse2dev@gmail.com
-              </Link>{' '}
-            </Typography>
-            <pre
-              style={{
-                background: 'lightgrey',
-                border: '1px solid black',
-                overflow: 'auto',
-                margin: 20,
-                maxHeight: 300,
-              }}
-            >
-              {errorBoxText}
-            </pre>
-          </>
+          <Contents text={errorBoxText} />
         )}
       </DialogContent>
       <DialogActions>
