@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useState } from 'react'
+import React, { lazy } from 'react'
 import { Tooltip, IconButton } from '@mui/material'
 
 import { makeStyles } from 'tss-react/mui'
@@ -50,7 +50,6 @@ const ServerSideRenderedBlockContent = observer(function ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   model: any
 }) {
-  const [showStack, setShowStack] = useState(false)
   if (model.error) {
     return (
       <BlockMsg
