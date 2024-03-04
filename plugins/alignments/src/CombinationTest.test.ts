@@ -31,6 +31,7 @@ async function getFeats(f1: string, f2: string) {
       craiLocation: {
         localPath: require.resolve(f1 + '.crai'),
       },
+      sequenceAdapter: {},
     }),
     getVolvoxSequenceSubAdapter,
     pluginManager,
