@@ -1,4 +1,6 @@
-import React from 'react'
+import React, { Suspense, lazy, useState } from 'react'
+import { Tooltip, IconButton } from '@mui/material'
+
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
@@ -6,9 +8,15 @@ import { LoadingEllipses } from '@jbrowse/core/ui'
 
 // icons
 import RefreshIcon from '@mui/icons-material/Refresh'
+import ReportIcon from '@mui/icons-material/Report'
 
 // locals
 import BlockMsg from './BlockMsg'
+import { getSession } from '@jbrowse/core/util'
+
+const ErrorMessageStackTraceDialog = lazy(
+  () => import('@jbrowse/core/ui/ErrorMessageStackTraceDialog'),
+)
 
 const useStyles = makeStyles()(theme => {
   const bg = theme.palette.action.disabledBackground
@@ -42,14 +50,36 @@ const ServerSideRenderedBlockContent = observer(function ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   model: any
 }) {
+  const [showStack, setShowStack] = useState(false)
   if (model.error) {
     return (
       <BlockMsg
         message={`${model.error}`}
         severity="error"
-        buttonText="reload"
-        icon={<RefreshIcon />}
-        action={model.reload}
+        action={
+          <>
+            <Tooltip title="Reload">
+              <IconButton
+                data-testid="reload_button"
+                onClick={() => model.reload()}
+              >
+                <RefreshIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Show stack trace">
+              <IconButton
+                onClick={() => {
+                  getSession(model).queueDialog(onClose => [
+                    ErrorMessageStackTraceDialog,
+                    { onClose, error: model.error },
+                  ])
+                }}
+              >
+                <ReportIcon />
+              </IconButton>
+            </Tooltip>
+          </>
+        }
       />
     )
   } else if (model.message) {
