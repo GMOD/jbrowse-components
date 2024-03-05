@@ -169,6 +169,9 @@
       "build/**/*",
       "node_modules/**/*"
     ],
+    "publish": [
+      "github"
+    ],
     "directories": {
       "buildResources": "assets/"
     },
