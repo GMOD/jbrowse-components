@@ -123,6 +123,9 @@
         "default",
         "removable-media"
       ],
+      "publish": [
+        "github"
+      ],
       "slots": [
         "default"
       ]
