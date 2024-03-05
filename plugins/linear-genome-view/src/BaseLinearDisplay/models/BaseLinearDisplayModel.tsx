@@ -12,7 +12,6 @@ import {
   isSessionModelWithWidgets,
   isFeature,
   Feature,
-  max,
 } from '@jbrowse/core/util'
 import { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
@@ -104,19 +103,26 @@ function stateModelFactory() {
     .views(self => ({
       /**
        * #getter
-       * max height determined by the blockState
-       * configurable to default the track height to this to show all features
+       * array of all block heights
        */
-      get layoutMaxHeight() {
-        const { blockDefinitions, blockState } = self
-        const maxHeight = max(
-          blockDefinitions.map(block => {
+      get blockHeights() {
+        try {
+          const { blockDefinitions, blockState } = self
+          return blockDefinitions.map(block => {
             const state = blockState.get(block.key)
             return state?.layout?.getTotalHeight()
-          }),
-          100,
-        )
-        return maxHeight
+          })
+        } catch (e) {
+          return [undefined]
+        }
+      },
+
+      /**
+       * #getter
+       * returns true if all blocks are defined
+       */
+      get allBlocksRendered() {
+        return this.blockHeights.every(b => b !== undefined)
       },
 
       /**

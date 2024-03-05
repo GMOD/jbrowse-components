@@ -1,8 +1,9 @@
-import { types } from 'mobx-state-tree'
+import { addDisposer, types } from 'mobx-state-tree'
 import { getConf } from '@jbrowse/core/configuration'
-import { getContainingView } from '@jbrowse/core/util'
+import { getContainingView, max } from '@jbrowse/core/util'
 
 import { LinearGenomeViewModel } from '../../LinearGenomeView'
+import { autorun } from 'mobx'
 
 const minDisplayHeight = 20
 
@@ -32,7 +33,7 @@ export default function TrackHeightMixin() {
       /**
        * #property
        */
-      firstRenderHeight: 100,
+      firstRenderHeight: 0,
     }))
     .actions(self => ({
       /**
@@ -46,32 +47,44 @@ export default function TrackHeightMixin() {
     .views(self => ({
       /**
        * #getter
-       * returns the height value as determined by the trackHeightSetting
+       * returns the value of the track height setting from the view model
        */
-      get adjustLayout() {
+      get trackHeightSetting() {
         const { trackHeightSetting } = getContainingView(
           self,
         ) as LinearGenomeViewModel
 
-        // @ts-expect-error
-        const height = self.layoutMaxHeight
-
-        return trackHeightSetting === 'on'
-          ? height
-          : trackHeightSetting === 'first_render' &&
-              self.firstRenderHeight === 100
-            ? self.setFirstRenderHeight(height)
-            : trackHeightSetting === 'first_render'
-              ? self.firstRenderHeight
-              : undefined
+        return trackHeightSetting
       },
+      /**
+       * #getter
+       * the max height between the rendered blocks and the configured height
+       */
+      get maxBlockHeight() {
+        // @ts-expect-error
+        const confHeight = getConf(self, 'height') as number
+        // @ts-expect-error
+        return max(self.blockHeights, confHeight)
+      },
+      /**
+       * #getter
+       * returns the height value as it corresponds to the setting
+       */
+      get layoutMaxHeight() {
+        // @ts-expect-error
+        const confHeight = getConf(self, 'height') as number
+        return this.trackHeightSetting === 'on'
+          ? this.maxBlockHeight
+          : this.trackHeightSetting === 'first_render'
+            ? max([self.firstRenderHeight], confHeight)
+            : confHeight
+      },
+      /**
+       * #getter
+       * returns the height of the track as a combination of the config and the settings
+       */
       get height() {
-        return (
-          self.heightPreConfig ??
-          this.adjustLayout ??
-          // @ts-expect-error
-          (getConf(self, 'height') as number)
-        )
+        return self.heightPreConfig ?? this.layoutMaxHeight
       },
     }))
     .actions(self => ({
@@ -95,6 +108,21 @@ export default function TrackHeightMixin() {
         const oldHeight = self.height
         const newHeight = this.setHeight(self.height + distance)
         return newHeight - oldHeight
+      },
+    }))
+    .actions(self => ({
+      afterAttach() {
+        addDisposer(
+          self,
+          autorun(() => {
+            const ready =
+              // @ts-expect-error
+              self.allBlocksRendered && self.firstRenderHeight === 0
+            if (self.trackHeightSetting === 'first_render' && ready) {
+              self.setFirstRenderHeight(self.maxBlockHeight)
+            }
+          }),
+        )
       },
     }))
 }

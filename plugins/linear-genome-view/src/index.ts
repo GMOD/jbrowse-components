@@ -54,7 +54,7 @@ export default class LinearGenomeViewPlugin extends Plugin {
       ]),
     },
     /**
-     * #slot configuration.LinearGenomeViewPlugin.trackLabels
+     * #slot configuration.LinearGenomeViewPlugin.trackHeight
      */
     trackHeight: {
       type: 'string',
