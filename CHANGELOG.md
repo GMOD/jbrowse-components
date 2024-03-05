@@ -1,3 +1,53 @@
+yarn run v1.22.19 $ lerna-changelog --silent --silent --next-version 2.10.3
+
+## 2.10.3 (2024-03-05)
+
+#### :rocket: Enhancement
+
+- Other
+  - [#4257](https://github.com/GMOD/jbrowse-components/pull/4257) Smaller
+    sequence track size ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4256](https://github.com/GMOD/jbrowse-components/pull/4256) Update deps
+    including electron 28->29 ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4234](https://github.com/GMOD/jbrowse-components/pull/4234) Adds URL query
+    param for highlight on LGV
+    ([@carolinebridge-oicr](https://github.com/carolinebridge-oicr))
+- `core`, `product-core`
+  - [#4255](https://github.com/GMOD/jbrowse-components/pull/4255) Allow getting
+    stack trace from track errors ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- [#4254](https://github.com/GMOD/jbrowse-components/pull/4254) Throw if no
+  sequenceAdapter supplied to CramAdapter
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#4250](https://github.com/GMOD/jbrowse-components/pull/4250) Fix the viewport
+  calculations for when URL params includes &tracklist=true
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#4232](https://github.com/GMOD/jbrowse-components/pull/4232) Fix for missing
+  INFO.STRANDS tag for TRA features in breakpoint split view
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#4224](https://github.com/GMOD/jbrowse-components/pull/4224) Fix parsing of
+  BAM and CRAM refNames that contain a colon
+  ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :memo: Documentation
+
+- [#4240](https://github.com/GMOD/jbrowse-components/pull/4240) Small fixes to
+  embedding tutorial docs ([@kwentine](https://github.com/kwentine))
+- [#4223](https://github.com/GMOD/jbrowse-components/pull/4223) Add FAQ section
+  about faceted track selector
+  ([@Maarten-vd-Sande](https://github.com/Maarten-vd-Sande))
+
+#### Committers: 5
+
+- Caroline Bridge
+  ([@carolinebridge-oicr](https://github.com/carolinebridge-oicr))
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens))
+- Quentin Agren ([@kwentine](https://github.com/kwentine))
+- [@Maarten-vd-Sande](https://github.com/Maarten-vd-Sande) Done in 1.44s.
+
 yarn run v1.22.19 $ lerna-changelog --silent --silent --next-version 2.10.2
 
 ## 2.10.2 (2024-02-19)
