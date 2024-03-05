@@ -105,7 +105,7 @@ function stateModelFactory() {
       /**
        * #getter
        * max height determined by the blockState
-       * configurable to default track height to this to show all features
+       * configurable to default the track height to this to show all features
        */
       get layoutMaxHeight() {
         const { blockDefinitions, blockState } = self
@@ -118,6 +118,7 @@ function stateModelFactory() {
         )
         return maxHeight
       },
+
       /**
        * #getter
        * how many milliseconds to wait for the display to

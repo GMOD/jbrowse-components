@@ -53,6 +53,18 @@ export default class LinearGenomeViewPlugin extends Plugin {
         'hidden',
       ]),
     },
+    /**
+     * #slot configuration.LinearGenomeViewPlugin.trackLabels
+     */
+    trackHeight: {
+      type: 'string',
+      defaultValue: 'off',
+      model: types.enumeration('trackHeightOptions', [
+        'off',
+        'on',
+        'first_render',
+      ]),
+    },
   })
 
   install(pluginManager: PluginManager) {

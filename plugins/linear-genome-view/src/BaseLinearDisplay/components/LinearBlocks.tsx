@@ -52,6 +52,7 @@ const RenderedBlocks = observer(function ({
       {blockDefinitions.map(block => {
         if (block instanceof ContentBlock) {
           const state = blockState.get(block.key)
+
           return (
             <ContentBlockComponent
               block={block}

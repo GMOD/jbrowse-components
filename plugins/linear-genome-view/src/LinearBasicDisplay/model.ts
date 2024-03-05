@@ -4,7 +4,7 @@ import {
   ConfigurationReference,
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
-import { getSession, localStorageGetItem } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import { MenuItem } from '@jbrowse/core/ui'
 import { types, getEnv, Instance } from 'mobx-state-tree'
 
@@ -55,13 +55,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         configuration: ConfigurationReference(configSchema),
-        /**
-         * #property
-         */
-        adjustLayoutHeight: types.optional(
-          types.string,
-          () => localStorageGetItem('lgv-adjustLayoutHeight') || 'off',
-        ),
       }),
     )
     .views(self => ({
@@ -124,16 +117,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           getEnv(self),
         )
       },
-      /**
-       * #getter
-       */
-      get trackHeightSetting() {
-        const sessionSetting = getConf(getSession(self), [
-          'renderer',
-          'trackHeight',
-        ])
-        return self.adjustLayoutHeight || sessionSetting
-      },
     }))
 
     .actions(self => ({
@@ -160,13 +143,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setMaxHeight(val?: number) {
         self.trackMaxHeight = val
-      },
-      /**
-       * #action
-       */
-      setAdjustLayoutHeight(setting: 'on' | 'off' | 'first_render') {
-        localStorage.setItem('lgv-adjustLayoutHeight', setting)
-        self.adjustLayoutHeight = setting
       },
     }))
     .views(self => {
@@ -229,29 +205,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   { model: self, handleClose },
                 ])
               },
-            },
-            {
-              label: 'Auto-adjust track height',
-              subMenu: [
-                {
-                  label: 'Off (use trackHeight from config)',
-                  type: 'radio',
-                  checked: self.trackHeightSetting === 'off',
-                  onClick: () => self.setAdjustLayoutHeight('off'),
-                },
-                {
-                  label: 'On (auto-adjust to show all features)',
-                  type: 'radio',
-                  checked: self.trackHeightSetting === 'on',
-                  onClick: () => self.setAdjustLayoutHeight('on'),
-                },
-                {
-                  label: 'On first render (auto-adjust to show all features)',
-                  type: 'radio',
-                  checked: self.trackHeightSetting === 'first_render',
-                  onClick: () => self.setAdjustLayoutHeight('first_render'),
-                },
-              ],
             },
           ]
         },

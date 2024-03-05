@@ -1,5 +1,8 @@
-import { getConf } from '@jbrowse/core/configuration'
 import { types } from 'mobx-state-tree'
+import { getConf } from '@jbrowse/core/configuration'
+import { getContainingView } from '@jbrowse/core/util'
+
+import { LinearGenomeViewModel } from '../../LinearGenomeView'
 
 const minDisplayHeight = 20
 
@@ -26,24 +29,48 @@ export default function TrackHeightMixin() {
        * #property
        */
       scrollTop: 0,
+      /**
+       * #property
+       */
+      firstRenderHeight: 100,
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       */
+      setFirstRenderHeight(val: number) {
+        self.firstRenderHeight = val
+        return val
+      },
     }))
     .views(self => ({
+      /**
+       * #getter
+       * returns the height value as determined by the trackHeightSetting
+       */
       get adjustLayout() {
-        return (
-          // @ts-expect-error
-          self.trackHeightSetting === 'on' ||
-          // @ts-expect-error
-          self.trackHeightSetting === 'first_render'
-        )
+        const { trackHeightSetting } = getContainingView(
+          self,
+        ) as LinearGenomeViewModel
+
+        // @ts-expect-error
+        const height = self.layoutMaxHeight
+
+        return trackHeightSetting === 'on'
+          ? height
+          : trackHeightSetting === 'first_render' &&
+              self.firstRenderHeight === 100
+            ? self.setFirstRenderHeight(height)
+            : trackHeightSetting === 'first_render'
+              ? self.firstRenderHeight
+              : undefined
       },
       get height() {
         return (
           self.heightPreConfig ??
-          (this.adjustLayout
-            ? // @ts-expect-error
-              self.layoutMaxHeight
-            : // @ts-expect-error
-              (getConf(self, 'height') as number))
+          this.adjustLayout ??
+          // @ts-expect-error
+          (getConf(self, 'height') as number)
         )
       },
     }))
