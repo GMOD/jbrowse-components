@@ -39,7 +39,7 @@
     "@mui/system": "^5.14.4",
     "@mui/x-data-grid": "^6.0.1",
     "@node-oauth/express-oauth-server": "^4.0.0",
-    "@oclif/test": "^2.4.8",
+    "@oclif/test": "^3.2.1",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.3",
     "@r2wc/react-to-web-component": "^2.0.3",
     "@storybook/addon-essentials": "^7.0.0",
