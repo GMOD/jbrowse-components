@@ -25,11 +25,10 @@ const useStyles = makeStyles()(theme => ({
   highlight: {
     height: '100%',
     position: 'absolute',
+    overflow: 'hidden',
     background: `${colord(theme.palette.quaternary?.main ?? 'goldenrod')
       .alpha(0.35)
       .toRgbString()}`,
-    borderLeft: `1px solid ${theme.palette.quaternary?.main ?? 'goldenrod'}`,
-    borderRight: `1px solid ${theme.palette.quaternary?.main ?? 'goldenrod'}`,
   },
 }))
 
