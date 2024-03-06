@@ -105,7 +105,7 @@ function stateModelFactory() {
        * #getter
        * array of all block heights
        */
-      get blockHeights() {
+      get layoutBlockHeights() {
         try {
           const { blockDefinitions, blockState } = self
           return blockDefinitions.map(block => {
@@ -121,8 +121,8 @@ function stateModelFactory() {
        * #getter
        * returns true if all blocks are defined
        */
-      get allBlocksRendered() {
-        return this.blockHeights.every(b => b !== undefined)
+      get allLayoutBlocksRendered() {
+        return this.layoutBlockHeights.every(b => b !== undefined)
       },
 
       /**

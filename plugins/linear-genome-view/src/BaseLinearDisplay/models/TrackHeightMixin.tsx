@@ -49,22 +49,22 @@ export default function TrackHeightMixin() {
        * #getter
        * returns the value of the track height setting from the view model
        */
-      get trackHeightSetting() {
-        const { trackHeightSetting } = getContainingView(
+      get adjustTrackLayoutHeightSetting() {
+        const { adjustTrackLayoutHeightSetting } = getContainingView(
           self,
         ) as LinearGenomeViewModel
 
-        return trackHeightSetting
+        return adjustTrackLayoutHeightSetting
       },
       /**
        * #getter
        * the max height between the rendered blocks and the configured height
        */
-      get maxBlockHeight() {
+      get maxLayoutBlockHeight() {
         // @ts-expect-error
         const confHeight = getConf(self, 'height') as number
         // @ts-expect-error
-        return max(self.blockHeights, confHeight)
+        return max(self.layoutBlockHeights, confHeight)
       },
       /**
        * #getter
@@ -73,9 +73,9 @@ export default function TrackHeightMixin() {
       get layoutMaxHeight() {
         // @ts-expect-error
         const confHeight = getConf(self, 'height') as number
-        return this.trackHeightSetting === 'on'
-          ? this.maxBlockHeight
-          : this.trackHeightSetting === 'first_render'
+        return this.adjustTrackLayoutHeightSetting === 'on'
+          ? this.maxLayoutBlockHeight
+          : this.adjustTrackLayoutHeightSetting === 'first_render'
             ? max([self.firstRenderHeight], confHeight)
             : confHeight
       },
@@ -117,9 +117,12 @@ export default function TrackHeightMixin() {
           autorun(() => {
             const ready =
               // @ts-expect-error
-              self.allBlocksRendered && self.firstRenderHeight === 0
-            if (self.trackHeightSetting === 'first_render' && ready) {
-              self.setFirstRenderHeight(self.maxBlockHeight)
+              self.allLayoutBlocksRendered && self.firstRenderHeight === 0
+            if (
+              self.adjustTrackLayoutHeightSetting === 'first_render' &&
+              ready
+            ) {
+              self.setFirstRenderHeight(self.maxLayoutBlockHeight)
             }
           }),
         )

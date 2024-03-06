@@ -242,9 +242,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * #property
          * setting to auto-adjust the layout height of tracks
          */
-        adjustLayoutHeight: types.optional(
+        adjustTrackLayoutHeight: types.optional(
           types.string,
-          () => localStorageGetItem('lgv-adjustLayoutHeight') || 'off',
+          () => localStorageGetItem('lgv-adjustTrackLayoutHeight') || 'off',
         ),
 
         /**
@@ -292,12 +292,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get trackHeightSetting() {
+      get adjustTrackLayoutHeightSetting() {
         const sessionSetting = getConf(getSession(self), [
           'LinearGenomeViewPlugin',
           'trackHeight',
         ])
-        return self.adjustLayoutHeight || sessionSetting
+        return self.adjustTrackLayoutHeight || sessionSetting
       },
       /**
        * #getter
@@ -818,9 +818,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setAdjustLayoutHeight(setting: 'on' | 'off' | 'first_render') {
-        localStorage.setItem('lgv-adjustLayoutHeight', setting)
-        self.adjustLayoutHeight = setting
+      setadjustTrackLayoutHeight(setting: 'on' | 'off' | 'first_render') {
+        localStorage.setItem('lgv-adjustTrackLayoutHeight', setting)
+        self.adjustTrackLayoutHeight = setting
       },
 
       /**
@@ -1215,20 +1215,20 @@ export function stateModelFactory(pluginManager: PluginManager) {
               {
                 label: 'Use default (from config)',
                 type: 'radio',
-                checked: self.trackHeightSetting === 'off',
-                onClick: () => self.setAdjustLayoutHeight('off'),
+                checked: self.adjustTrackLayoutHeightSetting === 'off',
+                onClick: () => self.setadjustTrackLayoutHeight('off'),
               },
               {
                 label: 'Auto-adjust to show all features on track',
                 type: 'radio',
-                checked: self.trackHeightSetting === 'on',
-                onClick: () => self.setAdjustLayoutHeight('on'),
+                checked: self.adjustTrackLayoutHeightSetting === 'on',
+                onClick: () => self.setadjustTrackLayoutHeight('on'),
               },
               {
                 label: 'Auto-adjust to show height of initial features',
                 type: 'radio',
-                checked: self.trackHeightSetting === 'first_render',
-                onClick: () => self.setAdjustLayoutHeight('first_render'),
+                checked: self.adjustTrackLayoutHeightSetting === 'first_render',
+                onClick: () => self.setadjustTrackLayoutHeight('first_render'),
               },
             ],
           },
