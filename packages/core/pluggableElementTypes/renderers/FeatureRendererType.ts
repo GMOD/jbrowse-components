@@ -55,11 +55,13 @@ export interface ResultsDeserialized extends ServerSideResultsDeserialized {
 }
 
 export default class FeatureRendererType extends ServerSideRendererType {
+  featureCache = {} as Record<string, Map<string, Feature>>
+
   /**
    * replaces the `displayModel` param (which on the client is a MST model)
-   * with a stub that only contains the `selectedFeature`, since this is the only
-   * part of the track model that most renderers read. also serializes the config
-   * and regions to JSON from MST objects.
+   * with a stub that only contains the `selectedFeature`, since this is the
+   * only part of the track model that most renderers read. also serializes the
+   * config and regions to JSON from MST objects.
    *
    * @param args - the arguments passed to render
    */
@@ -139,16 +141,14 @@ export default class FeatureRendererType extends ServerSideRendererType {
    * @param renderArgs -
    * @returns Map of features as `{ id => feature, ... }`
    */
-  async getFeatures(
-    renderArgs: RenderArgsDeserialized,
-  ): Promise<Map<string, Feature>> {
+  async getFeatures(renderArgs: RenderArgsDeserialized) {
     const pm = this.pluginManager
     const { signal, regions, sessionId, adapterConfig } = renderArgs
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
     if (!isFeatureAdapter(dataAdapter)) {
       throw new Error('Adapter does not support retrieving features')
     }
-    const features = new Map()
+    const features = new Map<string, Feature>()
 
     if (!regions || regions.length === 0) {
       return features
@@ -204,8 +204,19 @@ export default class FeatureRendererType extends ServerSideRendererType {
   async render(
     props: RenderArgsDeserialized & { features?: Map<string, Feature> },
   ): Promise<RenderResults> {
-    const features = props.features || (await this.getFeatures(props))
+    const { blockKey } = props
+    const res = this.featureCache[blockKey]
+    if (!res) {
+      this.featureCache[blockKey] =
+        props.features || (await this.getFeatures(props))
+      console.log('no cache hit')
+    } else {
+      console.log('cache hit')
+    }
+    const features = this.featureCache[blockKey]
+    console.time(blockKey)
     const result = await super.render({ ...props, features })
+    console.timeEnd(blockKey)
     return { ...result, features }
   }
 }
