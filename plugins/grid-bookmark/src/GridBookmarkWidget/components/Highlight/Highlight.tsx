@@ -3,12 +3,12 @@ import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 import { SessionWithWidgets, getSession, notEmpty } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
+import { Tooltip } from '@mui/material'
 
 // icons
 import BookmarkIcon from '@mui/icons-material/Bookmark'
 
 // locals
-import { Tooltip } from '@mui/material'
 import { GridBookmarkModel } from '../../model'
 import { IExtendedLGV } from '../../model'
 

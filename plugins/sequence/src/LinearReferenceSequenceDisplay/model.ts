@@ -42,12 +42,14 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         showTranslation: true,
-        /**
-         * #property
-         */
-        rowHeight: 13,
       }),
     )
+    .volatile(() => ({
+      /**
+       * #property
+       */
+      rowHeight: 15,
+    }))
     .views(self => ({
       /**
        * #getter

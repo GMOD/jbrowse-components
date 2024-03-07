@@ -243,6 +243,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * show the "gridlines" in the track area
          */
         showGridlines: true,
+
+        /**
+         * #property
+         * highlights on the LGV from the URL parameters
+         */
+        highlight: types.maybe(types.frozen<Required<ParsedLocString>>()),
       }),
     )
     .volatile(() => ({
@@ -580,6 +586,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       setShowGridlines(b: boolean) {
         self.showGridlines = b
+      },
+      /**
+       * #action
+       */
+      setHighlight(highlight: Required<ParsedLocString> | undefined) {
+        self.highlight = highlight
       },
       /**
        * #action

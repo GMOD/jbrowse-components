@@ -19,6 +19,7 @@ import { getCytobands } from './util'
 import OverviewRubberband from './OverviewRubberband'
 import Cytobands from './Cytobands'
 import OverviewScalebarPolygon from './OverviewScalebarPolygon'
+import OverviewHighlight from './OverviewHighlight'
 
 const wholeSeqSpacer = 2
 
@@ -263,6 +264,7 @@ const Scalebar = observer(function ({
           />
         )
       })}
+      <OverviewHighlight model={model} overview={overview} />
     </div>
   )
 })

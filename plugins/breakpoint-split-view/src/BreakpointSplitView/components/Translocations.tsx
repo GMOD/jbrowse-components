@@ -10,6 +10,16 @@ import { BreakpointViewModel, LayoutRecord } from '../model'
 
 const [LEFT] = [0, 1, 2, 3]
 
+function str(s: string) {
+  if (s === '+') {
+    return 1
+  } else if (s === '-') {
+    return -1
+  } else {
+    return 0
+  }
+}
+
 const Translocations = observer(function ({
   model,
   trackId,
@@ -78,7 +88,8 @@ const Translocations = observer(function ({
           const info = f1.get('INFO')
           const chr2 = info.CHR2[0]
           const end2 = info.END[0]
-          const [myDirection, mateDirection] = info.STRANDS[0].split('')
+          const res = info.STRANDS?.[0]?.split('') // not all files have STRANDS
+          const [myDirection, mateDirection] = res ?? ['.', '.']
 
           const r = getPxFromCoordinate(views[level2], chr2, end2)
           if (r) {
@@ -102,7 +113,7 @@ const Translocations = observer(function ({
 
             const path = [
               'M', // move to
-              x1 - 20 * (myDirection === '+' ? 1 : -1) * (reversed1 ? -1 : 1),
+              x1 - 20 * str(myDirection) * (reversed1 ? -1 : 1),
               y1,
               'L', // line to
               x1,
@@ -111,7 +122,7 @@ const Translocations = observer(function ({
               x2,
               y2,
               'L', // line to
-              x2 - 20 * (mateDirection === '+' ? 1 : -1) * (reversed2 ? -1 : 1),
+              x2 - 20 * str(mateDirection) * (reversed2 ? -1 : 1),
               y2,
             ].join(' ')
             ret.push(

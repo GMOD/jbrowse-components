@@ -102,6 +102,7 @@ function Translation(props: {
                 y={y + height / 2}
                 dominantBaseline="middle"
                 textAnchor="middle"
+                fontSize={height - 2}
               >
                 {letter}
               </text>
@@ -303,6 +304,7 @@ function Wrapper({
         width,
         height: totalHeight,
         userSelect: 'none',
+        // use block because svg by default is inline, which adds a margin
         display: 'block',
       }}
     >

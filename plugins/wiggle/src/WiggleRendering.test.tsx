@@ -19,5 +19,5 @@ test('one', async () => {
   )
   const test = getByTestId('wiggle-rendering-test')
   expect(fireEvent.click(test)).toBeTruthy()
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
 })

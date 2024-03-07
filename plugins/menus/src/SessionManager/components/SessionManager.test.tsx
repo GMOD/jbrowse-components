@@ -9,6 +9,6 @@ describe('<SessionManager />', () => {
   it('renders', () => {
     const session = createTestSession()
     const { container } = render(<SessionManager session={session} />)
-    expect(container.firstChild).toMatchSnapshot()
+    expect(container).toMatchSnapshot()
   })
 })

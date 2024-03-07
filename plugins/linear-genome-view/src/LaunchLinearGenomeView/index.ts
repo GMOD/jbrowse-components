@@ -1,5 +1,10 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { AbstractSessionModel, when } from '@jbrowse/core/util'
+import {
+  AbstractSessionModel,
+  when,
+  parseLocString,
+  ParsedLocString,
+} from '@jbrowse/core/util'
 // locals
 import { LinearGenomeViewModel } from '../LinearGenomeView'
 import { handleSelectedRegion } from '../searchUtils'
@@ -17,6 +22,7 @@ export default (pluginManager: PluginManager) => {
       tracks = [],
       tracklist,
       nav,
+      highlight,
     }: {
       session: AbstractSessionModel
       assembly?: string
@@ -24,9 +30,13 @@ export default (pluginManager: PluginManager) => {
       tracks?: string[]
       tracklist?: boolean
       nav?: boolean
+      highlight?: string
     }) => {
       try {
         const { assemblyManager } = session
+
+        const { isValidRefName } = assemblyManager
+
         const view = session.addView('LinearGenomeView', {}) as LGV
 
         await when(() => !!view.volatileWidth)
@@ -44,6 +54,22 @@ export default (pluginManager: PluginManager) => {
           )
         }
 
+        if (tracklist) {
+          view.activateTrackSelector()
+        }
+        if (nav !== undefined) {
+          view.setHideHeader(!nav)
+        }
+        if (highlight !== undefined) {
+          const location = parseLocString(highlight, refName =>
+            isValidRefName(refName, assembly),
+          ) as Required<ParsedLocString>
+          if (location?.start !== undefined && location?.end !== undefined) {
+            location.assemblyName = assembly
+            view.setHighlight(location)
+          }
+        }
+
         await handleSelectedRegion({ input: loc, model: view, assembly: asm })
 
         const idsNotFound = [] as string[]
@@ -52,12 +78,6 @@ export default (pluginManager: PluginManager) => {
           throw new Error(
             `Could not resolve identifiers: ${idsNotFound.join(',')}`,
           )
-        }
-        if (tracklist) {
-          view.activateTrackSelector()
-        }
-        if (nav !== undefined) {
-          view.setHideHeader(!nav)
         }
       } catch (e) {
         session.notify(`${e}`, 'error')

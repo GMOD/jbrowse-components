@@ -71,6 +71,15 @@ combine URL navigation with defaultSession, then you might consider making a
 small plugin to do so. Here is a code listing example:
 https://gist.github.com/cmdcolin/eedfcb11f8f153ba1fb07e56dfddd3b3
 
+### &highlight=
+
+Example
+
+`&highlight=chr1:6000-7000`
+
+This will create a highlight over the specified region when combined with
+[&assembly=](#assembly) and [&loc=](#loc).
+
 ### &tracklist=
 
 Example

@@ -326,7 +326,10 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
       data-testid="svgfeatures"
       width={width}
       height={height + svgHeightPadding}
-      style={{ display: 'block' }}
+      style={{
+        // use block because svg by default is inline, which adds a margin
+        display: 'block',
+      }}
       onMouseDown={mouseDown}
       onMouseUp={mouseUp}
       onMouseEnter={onMouseEnter}

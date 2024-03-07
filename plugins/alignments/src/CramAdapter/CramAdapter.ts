@@ -49,12 +49,6 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   public async configurePre() {
     const cramLocation = this.getConf('cramLocation')
     const craiLocation = this.getConf('craiLocation')
-    if (!cramLocation) {
-      throw new Error('missing cramLocation argument')
-    }
-    if (!craiLocation) {
-      throw new Error('missing craiLocation argument')
-    }
     const pm = this.pluginManager
 
     const cram = new IndexedCramFile({
@@ -70,6 +64,9 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
     }
 
     const seqConf = this.getConf('sequenceAdapter')
+    if (!seqConf) {
+      throw new Error('no sequenceAdapter supplied to CramAdapter config')
+    }
     const subadapter = await this.getSubAdapter(seqConf)
 
     return {

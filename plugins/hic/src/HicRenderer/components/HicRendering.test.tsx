@@ -17,5 +17,5 @@ test('one', () => {
     />,
   )
 
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
 })
