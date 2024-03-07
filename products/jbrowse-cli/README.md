@@ -53,7 +53,7 @@ It is likely preferable in most cases to install the tools globally with
 - [`jbrowse add-track-json TRACK`](#jbrowse-add-track-json-track)
 - [`jbrowse admin-server`](#jbrowse-admin-server)
 - [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
-- [`jbrowse help [COMMANDS]`](#jbrowse-help-commands)
+- [`jbrowse help [COMMAND]`](#jbrowse-help-command)
 - [`jbrowse make-pif FILE`](#jbrowse-make-pif-file)
 - [`jbrowse remove-track TRACK`](#jbrowse-remove-track-track)
 - [`jbrowse set-default-session`](#jbrowse-set-default-session)
@@ -458,16 +458,16 @@ EXAMPLES
 _See code:
 [src/commands/create.ts](https://github.com/GMOD/jbrowse-components/blob/v2.10.3/products/jbrowse-cli/src/commands/create.ts)_
 
-## `jbrowse help [COMMANDS]`
+## `jbrowse help [COMMAND]`
 
 Display help for jbrowse.
 
 ```
 USAGE
-  $ jbrowse help [COMMANDS] [-n]
+  $ jbrowse help [COMMAND] [-n]
 
 ARGUMENTS
-  COMMANDS  Command to show help for.
+  COMMAND  Command to show help for.
 
 FLAGS
   -n, --nested-commands  Include all nested commands in the output.
@@ -477,7 +477,7 @@ DESCRIPTION
 ```
 
 _See code:
-[@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.0.15/src/commands/help.ts)_
+[@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.0.17/src/commands/help.ts)_
 
 ## `jbrowse make-pif FILE`
 
