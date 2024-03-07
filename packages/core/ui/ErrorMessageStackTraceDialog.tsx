@@ -14,6 +14,20 @@ import copy from 'copy-to-clipboard'
 import Dialog from './Dialog'
 import LoadingEllipses from './LoadingEllipses'
 
+function Link2({
+  href,
+  children,
+}: {
+  href: string
+  children: React.ReactNode
+}) {
+  return (
+    <Link target="_blank" href={href}>
+      {children}
+    </Link>
+  )
+}
+
 // produce a source-map resolved stack trace
 // reference code https://stackoverflow.com/a/77158517/2129219
 const sourceMaps: Record<string, RawSourceMap> = {}
@@ -30,9 +44,7 @@ async function getSourceMapFromUri(uri: string) {
   mapUri = new URL(mapUri, uri).href + uriQuery
 
   const map = await (await fetch(mapUri)).json()
-
   sourceMaps[uri] = map
-
   return map
 }
 
@@ -100,14 +112,8 @@ function Contents({ text }: { text: string }) {
   return (
     <>
       <Typography>
-        Post a new issue at{' '}
-        <Link href={githubLink} target="_blank">
-          GitHub
-        </Link>{' '}
-        or send an email to{' '}
-        <Link href={emailLink} target="_blank">
-          jbrowse2dev@gmail.com
-        </Link>{' '}
+        Post a new issue at <Link2 href={githubLink}>GitHub</Link2> or send an
+        email to <Link2 href={emailLink}>jbrowse2dev@gmail.com</Link2>{' '}
       </Typography>
       <pre
         style={{
@@ -129,12 +135,12 @@ export default function ErrorMessageStackTraceDialog({
   onClose,
 }: {
   onClose: () => void
-  error: Error
+  error: unknown
 }) {
   const [mappedStackTrace, setMappedStackTrace] = useState<string>()
   const [secondaryError, setSecondaryError] = useState<unknown>()
   const [clicked, setClicked] = useState(false)
-  const stackTracePreProcessed = `${error.stack}`
+  const stackTracePreProcessed = `${typeof error === 'object' && error !== null && 'stack' in error ? error.stack : ''}`
   const errorText = `${error}`
   const stackTrace = stripMessage(stackTracePreProcessed, errorText)
 

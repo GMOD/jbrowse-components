@@ -24,7 +24,7 @@ function makeSubpartsFilter(
   }
 
   return (feature: Feature) =>
-    (filter as string[])
+    filter
       .map(typeName => typeName.toLowerCase())
       .includes(feature.get('type').toLowerCase())
 }

@@ -65,7 +65,7 @@ const ErrorMessage = ({ error }: { error: unknown }) => {
       {showStack ? (
         <Suspense fallback={null}>
           <ErrorMessageStackTraceDialog
-            error={error as Error}
+            error={error}
             onClose={() => setShowStack(false)}
           />
         </Suspense>
