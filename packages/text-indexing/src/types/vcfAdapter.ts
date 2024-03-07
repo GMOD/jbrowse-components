@@ -1,6 +1,6 @@
 import { createGunzip } from 'zlib'
 import readline from 'readline'
-import { Track } from '../util'
+import { Track, decodeURIComponentNoThrow } from '../util'
 import { getLocalOrRemoteStream } from './common'
 import { checkAbortSignal } from '@jbrowse/core/util'
 
@@ -52,7 +52,9 @@ export async function* indexVcf(
         .map(f => f.split('='))
         .map(([key, val]) => [
           key.trim(),
-          val ? decodeURIComponent(val).trim().split(',').join(' ') : undefined,
+          val
+            ? decodeURIComponentNoThrow(val).trim().split(',').join(' ')
+            : undefined,
         ]),
     )
 

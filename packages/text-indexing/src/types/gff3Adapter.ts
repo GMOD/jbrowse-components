@@ -1,6 +1,6 @@
 import { createGunzip } from 'zlib'
 import readline from 'readline'
-import { Track } from '../util'
+import { Track, decodeURIComponentNoThrow } from '../util'
 import { getLocalOrRemoteStream } from './common'
 import { checkAbortSignal } from '@jbrowse/core/util'
 
@@ -51,7 +51,7 @@ export async function* indexGff3(
           .map(f => f.split('='))
           .map(([key, val]) => [
             key.trim(),
-            decodeURIComponent(val).trim().split(',').join(' '),
+            decodeURIComponentNoThrow(val).trim().split(',').join(' '),
           ]),
       )
       const attrs = attributes
