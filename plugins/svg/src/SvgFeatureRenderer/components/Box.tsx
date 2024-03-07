@@ -22,10 +22,18 @@ const Box = observer(function Box(props: {
   bpPerPx: number
   selected?: boolean
   topLevel?: boolean
-  children?: React.ReactNode
+  colorByCDS: boolean
 }) {
   const theme = useTheme()
-  const { feature, region, config, featureLayout, bpPerPx, topLevel } = props
+  const {
+    colorByCDS,
+    feature,
+    region,
+    config,
+    featureLayout,
+    bpPerPx,
+    topLevel,
+  } = props
   const { start, end } = region
   const screenWidth = (end - start) / bpPerPx
   const featureStart = feature.get('start')
@@ -53,6 +61,7 @@ const Box = observer(function Box(props: {
     ? readConfObject(config, 'color3', { feature })
     : readConfObject(config, 'color1', { feature })
   if (
+    colorByCDS &&
     featureType === 'CDS' &&
     featureStrand !== undefined &&
     featurePhase !== undefined

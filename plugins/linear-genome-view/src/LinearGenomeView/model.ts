@@ -249,6 +249,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * highlights on the LGV from the URL parameters
          */
         highlight: types.maybe(types.frozen<Required<ParsedLocString>>()),
+
+        /**
+         * #property
+         * color by CDS
+         */
+        colorByCDS: types.optional(types.boolean, () =>
+          Boolean(JSON.parse(localStorageGetItem('lgv-colorByCDS') || 'false')),
+        ),
       }),
     )
     .volatile(() => ({
@@ -464,10 +472,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return {
           ...getParentRenderProps(self),
           bpPerPx: self.bpPerPx,
-          highResolutionScaling: getConf(
-            getSession(self),
-            'highResolutionScaling',
-          ),
+          colorByCDS: self.colorByCDS,
         }
       },
 
