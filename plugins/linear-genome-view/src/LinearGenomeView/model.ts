@@ -14,6 +14,7 @@ import {
   isSessionModelWithWidgets,
   isSessionWithAddTracks,
   localStorageGetItem,
+  localStorageSetItem,
   measureText,
   springAnimate,
   sum,
@@ -50,6 +51,7 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import PaletteIcon from '@mui/icons-material/Palette'
 
 import MiniControls from './components/MiniControls'
 import Header from './components/Header'
@@ -550,6 +552,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      setColorByCDS(flag: boolean) {
+        self.colorByCDS = flag
+      },
       /**
        * #action
        */
@@ -1108,6 +1116,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
             onClick: self.horizontallyFlip,
           },
           {
+            label: 'Color by CDS',
+            type: 'checkbox',
+            checked: self.colorByCDS,
+            icon: PaletteIcon,
+            onClick: () => self.setColorByCDS(!self.colorByCDS),
+          },
+          {
             label: 'Show...',
             icon: VisibilityIcon,
             subMenu: [
@@ -1127,6 +1142,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 checked: !self.hideHeader,
                 onClick: () => self.setHideHeader(!self.hideHeader),
               },
+
               {
                 label: 'Show header overview',
                 type: 'checkbox',
@@ -1293,11 +1309,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
           self,
           autorun(() => {
             const s = (s: unknown) => JSON.stringify(s)
-            const { showCytobandsSetting, showCenterLine } = self
-            if (typeof localStorage !== 'undefined') {
-              localStorage.setItem('lgv-showCytobands', s(showCytobandsSetting))
-              localStorage.setItem('lgv-showCenterLine', s(showCenterLine))
-            }
+            const { showCytobandsSetting, showCenterLine, colorByCDS } = self
+            localStorageSetItem('lgv-showCytobands', s(showCytobandsSetting))
+            localStorageSetItem('lgv-showCenterLine', s(showCenterLine))
+            localStorageSetItem('lgv-colorByCDS', s(colorByCDS))
           }),
         )
       },

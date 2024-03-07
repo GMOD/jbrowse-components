@@ -7,6 +7,7 @@ import {
   AnyConfigurationSchemaType,
   ConfigurationReference,
 } from '@jbrowse/core/configuration'
+import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { getContainingView } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
 
@@ -81,6 +82,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
           } = self
           return {
             ...superRenderProps(),
+            ...getParentRenderProps(self),
             config: self.configuration.renderer,
             rpcDriverName,
             showForward,

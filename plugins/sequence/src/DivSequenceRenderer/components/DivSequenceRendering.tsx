@@ -16,10 +16,23 @@ import {
 } from '@jbrowse/core/util'
 import { Theme } from '@mui/material'
 
-function Translation(props: {
+function Translation({
+  codonTable,
+  seq,
+  frame,
+  bpPerPx,
+  colorByCDS,
+  region,
+  seqStart,
+  height,
+  y,
+  reverse = false,
+  theme,
+}: {
   codonTable: Record<string, string>
   seq: string
   frame: Frame
+  colorByCDS: boolean
   bpPerPx: number
   region: Region
   seqStart: number
@@ -28,18 +41,6 @@ function Translation(props: {
   y: number
   theme?: Theme
 }) {
-  const {
-    codonTable,
-    seq,
-    frame,
-    bpPerPx,
-    region,
-    seqStart,
-    height,
-    y,
-    reverse = false,
-    theme,
-  } = props
   const normalizedFrame = Math.abs(frame) - 1
   const seqFrame = seqStart % 3
   const frameShift = (normalizedFrame - seqFrame + 3) % 3
@@ -54,7 +55,10 @@ function Translation(props: {
     const codon = seqSliced.slice(i, i + 3)
     const normalizedCodon = reverse ? revcom(codon) : codon
     const aminoAcid = codonTable[normalizedCodon] || ''
-    translated.push({ letter: aminoAcid, codon: normalizedCodon.toUpperCase() })
+    translated.push({
+      letter: aminoAcid,
+      codon: normalizedCodon.toUpperCase(),
+    })
   }
 
   const width = (region.end - region.start) / bpPerPx
@@ -63,8 +67,9 @@ function Translation(props: {
   const frameOffset = frameShift / bpPerPx
   const startOffset = (region.start - seqStart) / bpPerPx
   const offset = frameOffset - startOffset
-
-  const defaultFill = theme?.palette.frames.at(frame)?.main
+  const defaultFill = colorByCDS
+    ? theme?.palette.framesCDS.at(frame)?.main
+    : theme?.palette.frames.at(frame)?.main
   return (
     <>
       <rect x={0} y={y} width={width} height={height} fill={defaultFill} />
@@ -175,6 +180,7 @@ function DNA(props: {
 function SequenceSVG({
   regions,
   theme: configTheme,
+  colorByCDS,
   features = new Map(),
   showReverse = true,
   showForward = true,
@@ -185,6 +191,7 @@ function SequenceSVG({
   regions: Region[]
   theme?: Theme
   features: Map<string, Feature>
+  colorByCDS: boolean
   showReverse?: boolean
   showForward?: boolean
   showTranslation?: boolean
@@ -212,19 +219,17 @@ function SequenceSVG({
   const forwardFrames: Frame[] = showTranslation && showForward ? [3, 2, 1] : []
   const reverseFrames: Frame[] =
     showTranslation && showReverse ? [-1, -2, -3] : []
-  // the upper translation row. if the view is reversed, the reverse translation
-  // is on the top
-  const topFrames = region.reversed ? reverseFrames.toReversed() : forwardFrames
-  // the lower translation row. if the view is reversed, the forward translation
-  // is on the bottom
-  const bottomFrames = region.reversed
-    ? forwardFrames.toReversed()
-    : reverseFrames
+
+  // if region.reversed, the forward translation is on bottom, reverse on top
+  const [topFrames, bottomFrames] = region.reversed
+    ? [reverseFrames.toReversed(), forwardFrames.toReversed()]
+    : [forwardFrames, reverseFrames]
   return (
     <>
       {topFrames.map(index => (
         <Translation
           key={`translation-${index}`}
+          colorByCDS={colorByCDS}
           seq={seq}
           y={(currY += rowHeight)}
           codonTable={codonTable}
@@ -265,6 +270,7 @@ function SequenceSVG({
       {bottomFrames.map(index => (
         <Translation
           key={`rev-translation-${index}`}
+          colorByCDS={colorByCDS}
           seq={seq}
           y={(currY += rowHeight)}
           codonTable={codonTable}
@@ -300,11 +306,11 @@ function Wrapper({
       width={width}
       height={totalHeight}
       style={{
+        // use block because svg by default is inline, which adds a margin
+        display: 'block',
         width,
         height: totalHeight,
         userSelect: 'none',
-        // use block because svg by default is inline, which adds a margin
-        display: 'block',
       }}
     >
       {children}
@@ -316,6 +322,7 @@ const DivSequenceRendering = observer(function (props: {
   exportSVG?: { rasterizeLayers: boolean }
   features: Map<string, Feature>
   regions: Region[]
+  colorByCDS: boolean
   bpPerPx: number
   rowHeight: number
   sequenceHeight: number
