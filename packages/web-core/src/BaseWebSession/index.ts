@@ -226,6 +226,7 @@ export function BaseWebSession({
       renderProps() {
         return {
           theme: self.theme,
+          highResolutionScaling: getConf(self, 'highResolutionScaling'),
         }
       },
     }))

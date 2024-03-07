@@ -3,7 +3,7 @@ import { lazy } from 'react'
 import { AbstractSessionModel } from '@jbrowse/core/util/types'
 import { getParent, types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { readConfObject } from '@jbrowse/core/configuration'
+import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import InfoIcon from '@mui/icons-material/Info'
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
 import {
@@ -94,7 +94,10 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
        * #method
        */
       renderProps() {
-        return { theme: readConfObject(self.configuration, 'theme') }
+        return {
+          theme: getConf(self, 'theme'),
+          highResolutionScaling: getConf(self, 'highResolutionScaling'),
+        }
       },
     }))
     .actions(self => ({
