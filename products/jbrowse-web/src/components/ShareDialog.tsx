@@ -70,43 +70,52 @@ const ShareDialog = observer(function ({
     let cancelled = false
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
-      try {
-        if (currentSetting === 'short') {
-          setLoading(true)
-          const locationUrl = new URL(window.location.href)
-          const result = await shareSessionToDynamo(snap, url, locationUrl.href)
-          if (!cancelled) {
-            const params = new URLSearchParams(locationUrl.search)
-            params.set('session', `share-${result.json.sessionId}`)
-            params.set('password', result.password)
-            locationUrl.search = params.toString()
-            setShortUrl(locationUrl.href)
+      // checking !error allows retry when error state is cleared
+      if (!error) {
+        try {
+          if (currentSetting === 'short') {
+            setLoading(true)
+            const locationUrl = new URL(window.location.href)
+            const result = await shareSessionToDynamo(
+              snap,
+              url,
+              locationUrl.href,
+            )
+            if (!cancelled) {
+              const params = new URLSearchParams(locationUrl.search)
+              params.set('session', `share-${result.json.sessionId}`)
+              params.set('password', result.password)
+              locationUrl.search = params.toString()
+              setShortUrl(locationUrl.href)
 
-            setSessionParam(`share-${result.json.sessionId}`)
-            setPasswordParam(result.password)
+              setSessionParam(`share-${result.json.sessionId}`)
+              setPasswordParam(result.password)
+            }
+          } else {
+            const sess = await toUrlSafeB64(
+              JSON.stringify(getSnapshot(session)),
+            )
+            const longUrl = new URL(window.location.href)
+            const longParams = new URLSearchParams(longUrl.search)
+            longParams.set('session', `encoded-${sess}`)
+            setSessionParam(`encoded-${sess}`)
+            longUrl.search = longParams.toString()
+            if (!cancelled) {
+              setLongUrl(longUrl.toString())
+            }
           }
-        } else {
-          const sess = await toUrlSafeB64(JSON.stringify(getSnapshot(session)))
-          const longUrl = new URL(window.location.href)
-          const longParams = new URLSearchParams(longUrl.search)
-          longParams.set('session', `encoded-${sess}`)
-          setSessionParam(`encoded-${sess}`)
-          longUrl.search = longParams.toString()
-          if (!cancelled) {
-            setLongUrl(longUrl.toString())
-          }
+        } catch (e) {
+          setError(e)
+        } finally {
+          setLoading(false)
         }
-      } catch (e) {
-        setError(e)
-      } finally {
-        setLoading(false)
       }
     })()
 
     return () => {
       cancelled = true
     }
-  }, [currentSetting, session, url, snap])
+  }, [currentSetting, error, session, url, snap])
 
   return (
     <>
@@ -126,7 +135,7 @@ const ShareDialog = observer(function ({
 
           {currentSetting === 'short' ? (
             error ? (
-              <ErrorMessage error={error} />
+              <ErrorMessage error={error} onReset={() => setError(undefined)} />
             ) : loading ? (
               <Typography>Generating short URL...</Typography>
             ) : (

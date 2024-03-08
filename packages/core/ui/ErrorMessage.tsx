@@ -1,7 +1,13 @@
 import React, { Suspense, lazy, useState } from 'react'
-import { Button } from '@mui/material'
+import { Button, IconButton } from '@mui/material'
+
+// locals
 import RedErrorMessageBox from './RedErrorMessageBox'
 
+// icons
+import { Refresh } from '@mui/icons-material'
+
+// lazies
 const ErrorMessageStackTraceDialog = lazy(
   () => import('./ErrorMessageStackTraceDialog'),
 )
@@ -34,7 +40,13 @@ function parseError(str: string) {
   return snapshotError
 }
 
-const ErrorMessage = ({ error }: { error: unknown }) => {
+const ErrorMessage = ({
+  error,
+  onReset,
+}: {
+  error: unknown
+  onReset: () => void
+}) => {
   const str = `${error}`
   const snapshotError = parseError(str)
   const [showStack, setShowStack] = useState(false)
@@ -50,6 +62,11 @@ const ErrorMessage = ({ error }: { error: unknown }) => {
         >
           {showStack ? 'Hide stack trace' : 'Show stack trace'}
         </Button>
+      ) : null}
+      {onReset ? (
+        <IconButton onClick={onReset}>
+          <Refresh />
+        </IconButton>
       ) : null}
       {snapshotError ? (
         <pre
