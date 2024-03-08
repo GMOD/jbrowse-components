@@ -2,11 +2,8 @@ import React, { useEffect, useRef } from 'react'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 import { SessionWithWidgets, getSession, notEmpty } from '@jbrowse/core/util'
-import { colord } from '@jbrowse/core/util/colord'
+import { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import { Tooltip } from '@mui/material'
-
-// icons
-import BookmarkIcon from '@mui/icons-material/Bookmark'
 
 // locals
 import { GridBookmarkModel } from '../../model'
@@ -18,14 +15,20 @@ const useStyles = makeStyles()({
   highlight: {
     height: '100%',
     position: 'absolute',
-    overflow: 'hidden',
   },
 })
 
-const Highlight = observer(function Highlight({ model }: { model: LGV }) {
+const OverviewHighlight = observer(function OverviewHighlight({
+  model,
+  overview,
+}: {
+  model: LGV
+  overview: Base1DViewModel
+}) {
   const { classes } = useStyles()
-
+  const { cytobandOffset } = model
   const session = getSession(model) as SessionWithWidgets
+
   const { showBookmarkHighlights, showBookmarkLabels } = model
   const assemblyNames = new Set(session.assemblyNames)
 
@@ -51,18 +54,18 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
         ? bookmarks.current
             .filter(value => assemblyNames.has(value.assemblyName))
             .map(r => {
-              const s = model.bpToPx({
-                refName: r.refName,
-                coord: r.start,
+              const s = overview.bpToPx({
+                ...r,
+                coord: r.reversed ? r.end : r.start,
               })
-              const e = model.bpToPx({
-                refName: r.refName,
-                coord: r.end,
+              const e = overview.bpToPx({
+                ...r,
+                coord: r.reversed ? r.start : r.end,
               })
-              return s && e
+              return s !== undefined && e !== undefined
                 ? {
-                    width: Math.max(Math.abs(e.offsetPx - s.offsetPx), 3),
-                    left: Math.min(s.offsetPx, e.offsetPx) - model.offsetPx,
+                    width: Math.abs(e - s),
+                    left: s + cytobandOffset,
                     highlight: r.highlight,
                     label: r.label,
                   }
@@ -70,34 +73,39 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
             })
             .filter(notEmpty)
             .map(({ left, width, highlight, label }, idx) => (
-              <div
-                key={`${left}_${width}_${idx}`}
-                className={classes.highlight}
-                style={{
-                  left,
-                  width,
-                  background: highlight,
-                }}
-              >
+              <>
                 {showBookmarkLabels ? (
                   <Tooltip title={label} arrow>
-                    <BookmarkIcon
-                      fontSize="small"
-                      sx={{
-                        color: `${
-                          colord(highlight).alpha() !== 0
-                            ? colord(highlight).alpha(0.8).toRgbString()
-                            : colord(highlight).alpha(0).toRgbString()
-                        }`,
+                    <div
+                      key={`${left}_${width}_${idx}`}
+                      className={classes.highlight}
+                      style={{
+                        left,
+                        width,
+                        background: highlight,
+                        borderLeft: `1px solid ${highlight}`,
+                        borderRight: `1px solid ${highlight}`,
                       }}
                     />
                   </Tooltip>
-                ) : null}
-              </div>
+                ) : (
+                  <div
+                    key={`${left}_${width}_${idx}`}
+                    className={classes.highlight}
+                    style={{
+                      left,
+                      width,
+                      background: highlight,
+                      borderLeft: `1px solid ${highlight}`,
+                      borderRight: `1px solid ${highlight}`,
+                    }}
+                  />
+                )}
+              </>
             ))
         : null}
     </>
   )
 })
 
-export default Highlight
+export default OverviewHighlight
