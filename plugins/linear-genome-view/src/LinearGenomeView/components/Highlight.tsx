@@ -40,6 +40,7 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
   const color = useTheme().palette.quaternary?.main ?? 'goldenrod'
 
   const session = getSession(model) as SessionWithWidgets
+  const { assemblyManager } = session
 
   const dismissHighlight = () => {
     model.setHighlight(undefined)
@@ -95,7 +96,14 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
       : undefined
   }
 
-  const h = mapCoords(model.highlight)
+  const asm = assemblyManager.get(model.highlight?.assemblyName)
+
+  const h = mapCoords({
+    ...model.highlight,
+    refName:
+      asm?.getCanonicalRefName(model.highlight.refName) ??
+      model.highlight.refName,
+  })
 
   return (
     <>
@@ -108,7 +116,11 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
           }}
         >
           <Tooltip title={'Highlighted from URL parameter'} arrow>
-            <IconButton ref={anchorEl} onClick={() => setOpen(true)}>
+            <IconButton
+              ref={anchorEl}
+              onClick={() => setOpen(true)}
+              style={{ zIndex: 4 }}
+            >
               <LinkIcon
                 fontSize="small"
                 sx={{
