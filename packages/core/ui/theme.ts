@@ -7,6 +7,7 @@ declare module '@mui/material/styles/createPalette' {
   interface Palette {
     tertiary: Palette['primary']
     quaternary: Palette['primary']
+    highlight: Palette['primary']
     stopCodon?: string
     startCodon?: string
     bases: {
@@ -19,6 +20,7 @@ declare module '@mui/material/styles/createPalette' {
   interface PaletteOptions {
     tertiary?: PaletteOptions['primary']
     quaternary?: PaletteOptions['primary']
+    highlight?: PaletteOptions['primary']
     stopCodon?: string
     startCodon?: string
     bases?: {
@@ -45,6 +47,7 @@ function stockTheme() {
       secondary: { main: grape },
       tertiary: refTheme.palette.augmentColor({ color: { main: forest } }),
       quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
+      highlight: refTheme.palette.augmentColor({ color: { main: mandarin } }),
       stopCodon: '#e22',
       startCodon: '#3e3',
       bases: {
@@ -93,6 +96,7 @@ function getDarkStockTheme() {
       secondary: { main: grape },
       tertiary: refTheme.palette.augmentColor({ color: { main: forest } }),
       quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
+      highlight: refTheme.palette.augmentColor({ color: { main: mandarin } }),
       stopCodon: '#e22',
       startCodon: '#3e3',
       bases: {
@@ -127,6 +131,7 @@ function getDarkMinimalTheme() {
       secondary: { main: grey[800] },
       tertiary: refTheme.palette.augmentColor({ color: { main: grey[900] } }),
       quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
+      highlight: refTheme.palette.augmentColor({ color: { main: mandarin } }),
       stopCodon: '#e22',
       startCodon: '#3e3',
       bases: {
@@ -147,6 +152,7 @@ function getMinimalTheme() {
       secondary: { main: grey[800] },
       tertiary: refTheme.palette.augmentColor({ color: { main: grey[900] } }),
       quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
+      highlight: refTheme.palette.augmentColor({ color: { main: mandarin } }),
       stopCodon: '#e22',
       startCodon: '#3e3',
       bases: {

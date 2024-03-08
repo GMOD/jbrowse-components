@@ -83,6 +83,8 @@ const OverviewHighlight = observer(function OverviewHighlight({
                         left,
                         width,
                         background: highlight,
+                        borderLeft: `1px solid ${highlight}`,
+                        borderRight: `1px solid ${highlight}`,
                       }}
                     />
                   </Tooltip>
@@ -94,6 +96,8 @@ const OverviewHighlight = observer(function OverviewHighlight({
                       left,
                       width,
                       background: highlight,
+                      borderLeft: `1px solid ${highlight}`,
+                      borderRight: `1px solid ${highlight}`,
                     }}
                   />
                 )}
