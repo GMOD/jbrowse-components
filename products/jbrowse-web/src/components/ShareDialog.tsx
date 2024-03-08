@@ -103,6 +103,7 @@ const ShareDialog = observer(function ({
     })()
   }, [currentSetting, error, session, url, snap])
 
+  const disabled = (currentSetting === 'short' && loading) || !!error
   return (
     <>
       <Dialog
@@ -134,7 +135,7 @@ const ShareDialog = observer(function ({
         <DialogActions>
           <Button
             startIcon={<BookmarkAddIcon />}
-            disabled={currentSetting === 'short' && loading}
+            disabled={disabled}
             onClick={event => {
               event.preventDefault()
               setPassword(passwordParam, 'replaceIn')
@@ -151,7 +152,7 @@ const ShareDialog = observer(function ({
               session.notify('Copied to clipboard', 'success')
             }}
             startIcon={<ContentCopyIcon />}
-            disabled={currentSetting === 'short' && loading}
+            disabled={disabled}
           >
             Copy to Clipboard
           </Button>
