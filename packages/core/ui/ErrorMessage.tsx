@@ -1,11 +1,12 @@
 import React, { Suspense, lazy, useState } from 'react'
-import { Button, IconButton } from '@mui/material'
+import { IconButton, Tooltip } from '@mui/material'
 
 // locals
 import RedErrorMessageBox from './RedErrorMessageBox'
 
 // icons
-import { Refresh } from '@mui/icons-material'
+import RefreshIcon from '@mui/icons-material/Refresh'
+import ReportIcon from '@mui/icons-material/Report'
 
 // lazies
 const ErrorMessageStackTraceDialog = lazy(
@@ -54,20 +55,22 @@ const ErrorMessage = ({
     <RedErrorMessageBox>
       {str.slice(0, 10000)}
 
-      {typeof error === 'object' && error && 'stack' in error ? (
-        <Button
-          style={{ float: 'right' }}
-          variant="contained"
-          onClick={() => setShowStack(!showStack)}
-        >
-          {showStack ? 'Hide stack trace' : 'Show stack trace'}
-        </Button>
-      ) : null}
-      {onReset ? (
-        <IconButton onClick={onReset}>
-          <Refresh />
-        </IconButton>
-      ) : null}
+      <div style={{ float: 'right', marginLeft: 100 }}>
+        {typeof error === 'object' && error && 'stack' in error ? (
+          <Tooltip title="Get stack trace">
+            <IconButton onClick={() => setShowStack(true)} color="primary">
+              <ReportIcon />
+            </IconButton>
+          </Tooltip>
+        ) : null}
+        {onReset ? (
+          <Tooltip title="Retry">
+            <IconButton onClick={onReset} color="primary">
+              <RefreshIcon />
+            </IconButton>
+          </Tooltip>
+        ) : null}
+      </div>
       {snapshotError ? (
         <pre
           style={{
