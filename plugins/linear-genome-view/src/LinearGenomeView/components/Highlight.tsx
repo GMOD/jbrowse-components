@@ -96,9 +96,7 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
       : undefined
   }
 
-  const asm = assemblyManager.assemblies.find(
-    asm => asm.name === model.highlight?.assemblyName,
-  )
+  const asm = assemblyManager.get(model.highlight?.assemblyName)
 
   const h = mapCoords({
     ...model.highlight,
