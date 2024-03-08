@@ -1,7 +1,14 @@
 import React, { Suspense, lazy, useState } from 'react'
-import { Button } from '@mui/material'
+import { IconButton, Tooltip } from '@mui/material'
+
+// locals
 import RedErrorMessageBox from './RedErrorMessageBox'
 
+// icons
+import RefreshIcon from '@mui/icons-material/Refresh'
+import ReportIcon from '@mui/icons-material/Report'
+
+// lazies
 const ErrorMessageStackTraceDialog = lazy(
   () => import('./ErrorMessageStackTraceDialog'),
 )
@@ -34,7 +41,13 @@ function parseError(str: string) {
   return snapshotError
 }
 
-const ErrorMessage = ({ error }: { error: unknown }) => {
+const ErrorMessage = ({
+  error,
+  onReset,
+}: {
+  error: unknown
+  onReset?: () => void
+}) => {
   const str = `${error}`
   const snapshotError = parseError(str)
   const [showStack, setShowStack] = useState(false)
@@ -42,15 +55,22 @@ const ErrorMessage = ({ error }: { error: unknown }) => {
     <RedErrorMessageBox>
       {str.slice(0, 10000)}
 
-      {typeof error === 'object' && error && 'stack' in error ? (
-        <Button
-          style={{ float: 'right' }}
-          variant="contained"
-          onClick={() => setShowStack(!showStack)}
-        >
-          {showStack ? 'Hide stack trace' : 'Show stack trace'}
-        </Button>
-      ) : null}
+      <div style={{ float: 'right', marginLeft: 100 }}>
+        {typeof error === 'object' && error && 'stack' in error ? (
+          <Tooltip title="Get stack trace">
+            <IconButton onClick={() => setShowStack(true)} color="primary">
+              <ReportIcon />
+            </IconButton>
+          </Tooltip>
+        ) : null}
+        {onReset ? (
+          <Tooltip title="Retry">
+            <IconButton onClick={onReset} color="primary">
+              <RefreshIcon />
+            </IconButton>
+          </Tooltip>
+        ) : null}
+      </div>
       {snapshotError ? (
         <pre
           style={{
@@ -65,7 +85,7 @@ const ErrorMessage = ({ error }: { error: unknown }) => {
       {showStack ? (
         <Suspense fallback={null}>
           <ErrorMessageStackTraceDialog
-            error={error as Error}
+            error={error}
             onClose={() => setShowStack(false)}
           />
         </Suspense>
