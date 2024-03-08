@@ -46,7 +46,7 @@ const ErrorMessage = ({
   onReset,
 }: {
   error: unknown
-  onReset: () => void
+  onReset?: () => void
 }) => {
   const str = `${error}`
   const snapshotError = parseError(str)

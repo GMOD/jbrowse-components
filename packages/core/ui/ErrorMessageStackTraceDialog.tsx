@@ -7,7 +7,7 @@ import {
   Typography,
 } from '@mui/material'
 
-import { RawSourceMap, SourceMapConsumer } from 'source-map-js'
+import { SourceMapConsumer } from 'source-map-js'
 import copy from 'copy-to-clipboard'
 
 // locals
@@ -28,22 +28,40 @@ function Link2({
   )
 }
 
+async function myfetch(uri: string) {
+  const res = await fetch(uri)
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status} fetching ${uri}: ${await res.text()}`)
+  }
+  return res
+}
+
+async function myfetchjson(uri: string) {
+  const res = await myfetch(uri)
+  return res.json()
+}
+
+async function myfetchtext(uri: string) {
+  const res = await myfetch(uri)
+  return res.text()
+}
+
 // produce a source-map resolved stack trace
 // reference code https://stackoverflow.com/a/77158517/2129219
-const sourceMaps: Record<string, RawSourceMap> = {}
+const sourceMaps: Record<string, SourceMapConsumer> = {}
 async function getSourceMapFromUri(uri: string) {
   if (sourceMaps[uri] != undefined) {
     return sourceMaps[uri]
   }
   const uriQuery = new URL(uri).search
-  const currentScriptContent = await (await fetch(uri)).text()
+  const currentScriptContent = await myfetchtext(uri)
 
   let mapUri =
     new RegExp(/\/\/# sourceMappingURL=(.*)/).exec(currentScriptContent)?.[1] ||
     ''
   mapUri = new URL(mapUri, uri).href + uriQuery
 
-  const map = await (await fetch(mapUri)).json()
+  const map = new SourceMapConsumer(await myfetchjson(mapUri))
   sourceMaps[uri] = map
   return map
 }
@@ -60,7 +78,7 @@ async function mapStackTrace(stack: string) {
     }
 
     const uri = match[2]
-    const consumer = new SourceMapConsumer(await getSourceMapFromUri(uri))
+    const consumer = await getSourceMapFromUri(uri)
 
     const originalPosition = consumer.originalPositionFor({
       line: parseInt(match[3]),
