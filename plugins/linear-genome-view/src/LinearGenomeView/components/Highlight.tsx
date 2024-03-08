@@ -108,7 +108,11 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
           }}
         >
           <Tooltip title={'Highlighted from URL parameter'} arrow>
-            <IconButton ref={anchorEl} onClick={() => setOpen(true)}>
+            <IconButton
+              ref={anchorEl}
+              onClick={() => setOpen(true)}
+              style={{ zIndex: 4 }}
+            >
               <LinkIcon
                 fontSize="small"
                 sx={{
