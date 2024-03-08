@@ -2,7 +2,11 @@ import React from 'react'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 import { colord } from '@jbrowse/core/util/colord'
-import { ParsedLocString } from '@jbrowse/core/util'
+import {
+  ParsedLocString,
+  SessionWithWidgets,
+  getSession,
+} from '@jbrowse/core/util'
 import { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 
 // locals
@@ -32,6 +36,9 @@ const OverviewHighlight = observer(function OverviewHighlight({
   const { classes } = useStyles()
   const { cytobandOffset } = model
 
+  const session = getSession(model) as SessionWithWidgets
+  const { assemblyManager } = session
+
   // coords
   const mapCoords = (r: Required<ParsedLocString>) => {
     const s = overview.bpToPx({
@@ -56,7 +63,16 @@ const OverviewHighlight = observer(function OverviewHighlight({
     return null
   }
 
-  const h = mapCoords(model.highlight)
+  const asm = assemblyManager.assemblies.find(
+    asm => asm.name === model.highlight?.assemblyName,
+  )
+
+  const h = mapCoords({
+    ...model.highlight,
+    refName:
+      asm?.getCanonicalRefName(model.highlight.refName) ??
+      model.highlight.refName,
+  })
 
   return (
     <>

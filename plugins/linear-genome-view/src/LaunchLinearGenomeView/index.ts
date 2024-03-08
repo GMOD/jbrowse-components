@@ -68,9 +68,6 @@ export default (pluginManager: PluginManager) => {
           const location = {
             ...parsedLocString,
             assemblyName: assembly,
-            refName:
-              asm.getCanonicalRefName(parsedLocString.refName) ??
-              parsedLocString.refName,
           }
 
           if (location?.start !== undefined && location?.end !== undefined) {
