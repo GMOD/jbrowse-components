@@ -1,0 +1,63 @@
+{
+  "assemblies": [
+    {
+      "name": "volvox",
+      "aliases": ["vvx"],
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "volvox_refseq",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "connections": [],
+  "defaultSession": {
+    "name": "Session",
+    "type": "spec",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "tracks": ["volvox_cram_pileup"],
+        "loc": "ctgA:1-100",
+        "assembly": "volvox"
+      },
+      {
+        "type": "LinearGenomeView",
+        "tracks": ["volvox_cram_pileup"],
+        "loc": "ctgB:1-100",
+        "assembly": "volvox"
+      }
+    ]
+  },
+  "tracks": [
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "volvox_cram_pileup",
+      "name": "volvox-sorted.cram",
+      "category": ["Integration test"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "volvox-sorted-altname.cram"
+        },
+        "craiLocation": {
+          "uri": "volvox-sorted-altname.cram.crai"
+        },
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit"
+          }
+        },
+        "fetchSizeLimit": 1000
+      }
+    }
+  ]
+}

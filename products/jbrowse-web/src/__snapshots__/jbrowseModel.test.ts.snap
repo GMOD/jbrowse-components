@@ -470,34 +470,26 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
   },
   "connections": [],
   "defaultSession": {
-    "activeWidgets": {
-      "hierarchicalTrackSelector": "hierarchicalTrackSelector",
-    },
-    "name": "Integration test example",
+    "name": "Session",
+    "type": "spec",
     "views": [
       {
-        "bpPerPx": 0.05,
-        "displayedRegions": [
-          {
-            "assemblyName": "volvox",
-            "end": 50001,
-            "refName": "ctgA",
-            "start": 0,
-          },
+        "assembly": "volvox",
+        "loc": "ctgA:1-100",
+        "tracks": [
+          "volvox_cram_pileup",
         ],
-        "id": "integration_test",
-        "offsetPx": 2000,
+        "type": "LinearGenomeView",
+      },
+      {
+        "assembly": "volvox",
+        "loc": "ctgB:1-100",
+        "tracks": [
+          "volvox_cram_pileup",
+        ],
         "type": "LinearGenomeView",
       },
     ],
-    "widgets": {
-      "hierarchicalTrackSelector": {
-        "filterText": "",
-        "id": "hierarchicalTrackSelector",
-        "type": "HierarchicalTrackSelectorWidget",
-        "view": "integration_test",
-      },
-    },
   },
   "internetAccounts": [],
   "plugins": [

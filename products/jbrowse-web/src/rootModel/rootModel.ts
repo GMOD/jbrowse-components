@@ -278,6 +278,7 @@ export default function RootModel({
 
         this.setSession(newSession)
       },
+
       /**
        * #action
        */
