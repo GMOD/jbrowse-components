@@ -1,7 +1,7 @@
 import { Suspense, lazy, useEffect, useRef } from 'react'
 
 import { LoadingEllipses, VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, partition } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
@@ -87,6 +87,11 @@ const LinearGenomeViewContainer = observer(function ({
     }
   }
 
+  const [pinnedTracks, unpinnedTracks] = partition(
+    tracks,
+    track => track.pinned,
+  )
+
   return (
     <div
       className={classes.rel}
@@ -117,21 +122,20 @@ const LinearGenomeViewContainer = observer(function ({
           </Suspense>
         ) : (
           <>
-            <div
-              className={classes.pinnedTracks}
-              style={{ top: pinnedTracksTop }}
-            >
-              {tracks
-                .filter(track => track.pinned)
-                .map(track => (
+            {pinnedTracks.length ? (
+              <Paper
+                elevation={6}
+                className={classes.pinnedTracks}
+                style={{ top: pinnedTracksTop }}
+              >
+                {pinnedTracks.map(track => (
                   <TrackContainer key={track.id} model={model} track={track} />
                 ))}
-            </div>
-            {tracks
-              .filter(track => !track.pinned)
-              .map(track => (
-                <TrackContainer key={track.id} model={model} track={track} />
-              ))}
+              </Paper>
+            ) : null}
+            {unpinnedTracks.map(track => (
+              <TrackContainer key={track.id} model={model} track={track} />
+            ))}
           </>
         )}
       </TracksContainer>
