@@ -1295,10 +1295,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 </div>
               </div>
               <div
-                class="css-10yx2nr-pinnedTracks"
-                style="top: 113px;"
-              />
-              <div
                 class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-1m8zmvt-MuiPaper-root-root-unpinnedTrack"
               >
                 <div
