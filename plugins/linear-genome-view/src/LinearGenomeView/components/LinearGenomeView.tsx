@@ -2,7 +2,7 @@ import React, { lazy, useEffect, useRef } from 'react'
 import { Button, Paper, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { LoadingEllipses, VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, partition } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 // icons
@@ -112,6 +112,11 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
     }
   }
 
+  const [pinnedTracks, unpinnedTracks] = partition(
+    tracks,
+    track => track.pinned,
+  )
+
   return (
     <div
       className={classes.rel}
@@ -138,21 +143,20 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
           <NoTracksActive model={model} />
         ) : (
           <>
-            <div
-              className={classes.pinnedTracks}
-              style={{ top: pinnedTracksTop }}
-            >
-              {tracks
-                .filter(track => track.pinned)
-                .map(track => (
+            {pinnedTracks.length ? (
+              <Paper
+                elevation={6}
+                className={classes.pinnedTracks}
+                style={{ top: pinnedTracksTop }}
+              >
+                {pinnedTracks.map(track => (
                   <TrackContainer key={track.id} model={model} track={track} />
                 ))}
-            </div>
-            {tracks
-              .filter(track => !track.pinned)
-              .map(track => (
-                <TrackContainer key={track.id} model={model} track={track} />
-              ))}
+              </Paper>
+            ) : null}
+            {unpinnedTracks.map(track => (
+              <TrackContainer key={track.id} model={model} track={track} />
+            ))}
           </>
         )}
       </TracksContainer>
