@@ -48,8 +48,6 @@ const RefNameAutocomplete = observer(function ({
   const { coarseVisibleLocStrings, hasDisplayedRegions } = model
 
   useEffect(() => {
-    let active = true
-
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
@@ -59,21 +57,13 @@ const RefNameAutocomplete = observer(function ({
 
         setLoaded(false)
         const results = await fetchResults(debouncedSearch)
-        if (active) {
-          setLoaded(true)
-          setSearchOptions(getDeduplicatedResult(results))
-        }
+        setLoaded(true)
+        setSearchOptions(getDeduplicatedResult(results))
       } catch (e) {
         console.error(e)
-        if (active) {
-          session.notify(`${e}`, 'error')
-        }
+        session.notifyError(`${e}`, e)
       }
     })()
-
-    return () => {
-      active = false
-    }
   }, [assemblyName, fetchResults, debouncedSearch, session, model])
 
   const inputBoxVal = coarseVisibleLocStrings || value || ''

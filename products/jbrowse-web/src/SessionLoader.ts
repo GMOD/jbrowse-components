@@ -386,7 +386,6 @@ const SessionLoader = types
             }
           } catch (e) {
             console.error(e)
-            console.log({ e })
             self.setSessionError(e)
           }
         }),

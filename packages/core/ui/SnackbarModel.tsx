@@ -7,6 +7,7 @@ import { NotificationLevel, SnackAction } from '../util/types'
 import Report from '@mui/icons-material/Report'
 
 // lazies
+// eslint-disable-next-line react-refresh/only-export-components
 const ErrorMessageStackTraceDialog = lazy(
   () => import('@jbrowse/core/ui/ErrorMessageStackTraceDialog'),
 )
@@ -21,7 +22,11 @@ export interface SnackbarMessage {
  * #stateModel SnackbarModel
  * #category session
  */
-function makeExtension(snackbarMessages: IObservableArray<SnackbarMessage>) {
+function makeExtension(
+  snackbarMessages: IObservableArray<SnackbarMessage>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  self: any,
+) {
   return {
     views: {
       /**
@@ -47,7 +52,6 @@ function makeExtension(snackbarMessages: IObservableArray<SnackbarMessage>) {
         this.notify(errorMessage, 'error', {
           name: <Report />,
           onClick: () => {
-            // @ts-expect-error
             self.queueDialog((onClose: () => void) => [
               ErrorMessageStackTraceDialog,
               {
@@ -99,9 +103,9 @@ export default function addSnackbarToModel<
     ReturnType<typeof makeExtension>['actions'] &
     ReturnType<typeof makeExtension>['views']
 > {
-  return tree.extend(() => {
+  return tree.extend(self => {
     const snackbarMessages = observable.array<SnackbarMessage>()
 
-    return makeExtension(snackbarMessages)
+    return makeExtension(snackbarMessages, self)
   })
 }

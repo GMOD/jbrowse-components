@@ -118,14 +118,14 @@ function stripMessage(trace: string, error: unknown) {
   }
 }
 
-function Contents({ text, extra }: { text: string; extra: unknown }) {
+function Contents({ text, extra }: { text: string; extra?: unknown }) {
   const err = encodeURIComponent(
     [
       'I got this error from JBrowse, here is the stack trace:\n',
       '```',
       text,
       '```',
-      `supporting data: ${extra}`,
+      extra ? `supporting data: ${extra}` : '',
     ].join('\n') + '\n',
   )
   const githubLink = `https://github.com/GMOD/jbrowse-components/issues/new?labels=bug&title=JBrowse+issue&body=${err}`
@@ -160,7 +160,7 @@ export default function ErrorMessageStackTraceDialog({
 }: {
   onClose: () => void
   error: unknown
-  extra: unknown
+  extra?: unknown
 }) {
   const [mappedStackTrace, setMappedStackTrace] = useState<string>()
   const [secondaryError, setSecondaryError] = useState<unknown>()
