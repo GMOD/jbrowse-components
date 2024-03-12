@@ -1,3 +1,4 @@
+import React, { lazy } from 'react'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { doAnalytics } from '@jbrowse/core/util/analytics'
 
@@ -6,6 +7,14 @@ import JBrowseRootModelFactory from './rootModel/rootModel'
 import sessionModelFactory from './sessionModel'
 import corePlugins from './corePlugins'
 import { SessionLoaderModel, loadSessionSpec } from './SessionLoader'
+
+// icons
+import Report from '@mui/icons-material/Report'
+
+// lazies
+const ErrorMessageStackTraceDialog = lazy(
+  () => import('@jbrowse/core/ui/ErrorMessageStackTraceDialog'),
+)
 
 export function createPluginManager(self: SessionLoaderModel) {
   // it is ready when a session has loaded and when there is no config
@@ -52,15 +61,11 @@ export function createPluginManager(self: SessionLoaderModel) {
 
   let afterInitializedCb = () => {}
 
-  // in order: saves the previous autosave for recovery, tries to
-  // load the local session if session in query, or loads the default
-  // session
+  // in order: saves the previous autosave for recovery, tries to load the
+  // local session if session in query, or loads the default session
   try {
     if (self.sessionError) {
-      rootModel.setDefaultSession()
-      rootModel.session.notify(
-        `Error loading session: ${self.sessionError}. If you received this URL from another user, request that they send you a session generated with the "Share" button instead of copying and pasting their URL`,
-      )
+      throw self.sessionError
     } else if (self.sessionSnapshot) {
       rootModel.setSession(self.sessionSnapshot)
     } else if (self.sessionSpec) {
@@ -72,15 +77,24 @@ export function createPluginManager(self: SessionLoaderModel) {
   } catch (e) {
     rootModel.setDefaultSession()
     const str = `${e}`
-    const errorMessage = str
-      .replace('[mobx-state-tree] ', '')
-      .replace(/\(.+/, '')
+    const m = str.replace('[mobx-state-tree] ', '').replace(/\(.+/, '')
+    const r = m.length > 1000 ? `${m.slice(0, 1000)}...see more in console` : m
+    const s = r.startsWith('Error:') ? r : `Error: ${r}`
     rootModel.session?.notify(
-      `Session could not be loaded. ${
-        errorMessage.length > 1000
-          ? `${errorMessage.slice(0, 1000)}...see more in console`
-          : errorMessage
-      }`,
+      `${s}. If you received this URL from another user, request that they send you a session generated with the "Share" button instead of copying and pasting their URL`,
+      'primary',
+      {
+        name: <Report />,
+        onClick: () =>
+          rootModel.session.queueDialog((onClose: () => void) => [
+            ErrorMessageStackTraceDialog,
+            {
+              onClose,
+              error: self.sessionError,
+              extra: self.sessionSnapshot,
+            },
+          ]),
+      },
     )
     console.error(e)
   }

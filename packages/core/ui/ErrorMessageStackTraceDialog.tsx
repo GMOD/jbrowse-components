@@ -118,11 +118,15 @@ function stripMessage(trace: string, error: unknown) {
   }
 }
 
-function Contents({ text }: { text: string }) {
+function Contents({ text, extra }: { text: string; extra: unknown }) {
   const err = encodeURIComponent(
-    'I got this error from JBrowse, here is the stack trace:\n\n```\n' +
-      text +
-      '\n```\n',
+    [
+      'I got this error from JBrowse, here is the stack trace:\n',
+      '```',
+      text,
+      '```',
+      `supporting data: ${extra}`,
+    ].join('\n') + '\n',
   )
   const githubLink = `https://github.com/GMOD/jbrowse-components/issues/new?labels=bug&title=JBrowse+issue&body=${err}`
   const emailLink = `mailto:jbrowse2dev@gmail.com?subject=JBrowse%202%20error&body=${err}`
@@ -143,6 +147,7 @@ function Contents({ text }: { text: string }) {
         }}
       >
         {text}
+        {extra ? `extra: ${extra}` : ''}
       </pre>
     </>
   )
@@ -151,9 +156,11 @@ function Contents({ text }: { text: string }) {
 export default function ErrorMessageStackTraceDialog({
   error,
   onClose,
+  extra,
 }: {
   onClose: () => void
   error: unknown
+  extra: unknown
 }) {
   const [mappedStackTrace, setMappedStackTrace] = useState<string>()
   const [secondaryError, setSecondaryError] = useState<unknown>()
@@ -181,7 +188,7 @@ export default function ErrorMessageStackTraceDialog({
       ? 'Error loading source map, showing raw stack trace below:'
       : '',
     errorText.length > MAX_ERR_LEN
-      ? errorText.slice(0, MAX_ERR_LEN) + '...'
+      ? `${errorText.slice(0, MAX_ERR_LEN)}...`
       : errorText,
     mappedStackTrace || 'No stack trace available',
     // @ts-expect-error add version info at bottom if we are in jbrowse-web
@@ -194,7 +201,7 @@ export default function ErrorMessageStackTraceDialog({
         {mappedStackTrace === undefined ? (
           <LoadingEllipses variant="h6" />
         ) : (
-          <Contents text={errorBoxText} />
+          <Contents text={errorBoxText} extra={extra} />
         )}
       </DialogContent>
       <DialogActions>
