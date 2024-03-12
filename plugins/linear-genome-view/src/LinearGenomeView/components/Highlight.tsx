@@ -25,11 +25,10 @@ const useStyles = makeStyles()(theme => ({
   highlight: {
     height: '100%',
     position: 'absolute',
-    background: `${colord(theme.palette.quaternary?.main ?? 'goldenrod')
+    overflow: 'hidden',
+    background: `${colord(theme.palette.highlight?.main ?? 'goldenrod')
       .alpha(0.35)
       .toRgbString()}`,
-    borderLeft: `1px solid ${theme.palette.quaternary?.main ?? 'goldenrod'}`,
-    borderRight: `1px solid ${theme.palette.quaternary?.main ?? 'goldenrod'}`,
   },
 }))
 
@@ -37,9 +36,10 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
   const { classes } = useStyles()
   const [open, setOpen] = useState(false)
   const anchorEl = useRef(null)
-  const color = useTheme().palette.quaternary?.main ?? 'goldenrod'
+  const color = useTheme().palette.highlight?.main ?? 'goldenrod'
 
   const session = getSession(model) as SessionWithWidgets
+  const { assemblyManager } = session
 
   const dismissHighlight = () => {
     model.setHighlight(undefined)
@@ -95,7 +95,14 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
       : undefined
   }
 
-  const h = mapCoords(model.highlight)
+  const asm = assemblyManager.get(model.highlight?.assemblyName)
+
+  const h = mapCoords({
+    ...model.highlight,
+    refName:
+      asm?.getCanonicalRefName(model.highlight.refName) ??
+      model.highlight.refName,
+  })
 
   return (
     <>
@@ -108,7 +115,11 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
           }}
         >
           <Tooltip title={'Highlighted from URL parameter'} arrow>
-            <IconButton ref={anchorEl} onClick={() => setOpen(true)}>
+            <IconButton
+              ref={anchorEl}
+              onClick={() => setOpen(true)}
+              style={{ zIndex: 4 }}
+            >
               <LinkIcon
                 fontSize="small"
                 sx={{

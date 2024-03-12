@@ -72,7 +72,7 @@ const Box = observer(function Box(props: {
       featureStrand,
       featurePhase,
     )
-    const frameColor = theme.palette.frames.at(frame)?.main
+    const frameColor = theme.palette.framesCDS.at(frame)?.main
     if (frameColor) {
       fill = frameColor
     }

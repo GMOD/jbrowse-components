@@ -157,7 +157,7 @@ exports[`renders 1`] = `
                   class="css-1spe31o-actionsContainer"
                 >
                   <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary Mui-disabled MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary css-1j3hqkx-MuiButtonBase-root-MuiButton-root-button"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium Mui-disabled MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium css-1j3hqkx-MuiButtonBase-root-MuiButton-root-button"
                     disabled=""
                     tabindex="-1"
                     type="button"
@@ -165,7 +165,7 @@ exports[`renders 1`] = `
                     Back
                   </button>
                   <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary css-1xo5g2a-MuiButtonBase-root-MuiButton-root-button"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium css-1xo5g2a-MuiButtonBase-root-MuiButton-root-button"
                     data-testid="addConnectionNext"
                     tabindex="0"
                     type="button"

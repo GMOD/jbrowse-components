@@ -7,32 +7,62 @@ import {
   Typography,
 } from '@mui/material'
 
-import { RawSourceMap, SourceMapConsumer } from 'source-map-js'
+import { SourceMapConsumer } from 'source-map-js'
 import copy from 'copy-to-clipboard'
 
 // locals
 import Dialog from './Dialog'
 import LoadingEllipses from './LoadingEllipses'
 
+function Link2({
+  href,
+  children,
+}: {
+  href: string
+  children: React.ReactNode
+}) {
+  return (
+    <Link target="_blank" href={href}>
+      {children}
+    </Link>
+  )
+}
+
+async function myfetch(uri: string) {
+  const res = await fetch(uri)
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status} fetching ${uri}: ${await res.text()}`)
+  }
+  return res
+}
+
+async function myfetchjson(uri: string) {
+  const res = await myfetch(uri)
+  return res.json()
+}
+
+async function myfetchtext(uri: string) {
+  const res = await myfetch(uri)
+  return res.text()
+}
+
 // produce a source-map resolved stack trace
 // reference code https://stackoverflow.com/a/77158517/2129219
-const sourceMaps: Record<string, RawSourceMap> = {}
+const sourceMaps: Record<string, SourceMapConsumer> = {}
 async function getSourceMapFromUri(uri: string) {
   if (sourceMaps[uri] != undefined) {
     return sourceMaps[uri]
   }
   const uriQuery = new URL(uri).search
-  const currentScriptContent = await (await fetch(uri)).text()
+  const currentScriptContent = await myfetchtext(uri)
 
   let mapUri =
     new RegExp(/\/\/# sourceMappingURL=(.*)/).exec(currentScriptContent)?.[1] ||
     ''
   mapUri = new URL(mapUri, uri).href + uriQuery
 
-  const map = await (await fetch(mapUri)).json()
-
+  const map = new SourceMapConsumer(await myfetchjson(mapUri))
   sourceMaps[uri] = map
-
   return map
 }
 
@@ -48,7 +78,7 @@ async function mapStackTrace(stack: string) {
     }
 
     const uri = match[2]
-    const consumer = new SourceMapConsumer(await getSourceMapFromUri(uri))
+    const consumer = await getSourceMapFromUri(uri)
 
     const originalPosition = consumer.originalPositionFor({
       line: parseInt(match[3]),
@@ -100,14 +130,8 @@ function Contents({ text }: { text: string }) {
   return (
     <>
       <Typography>
-        Post a new issue at{' '}
-        <Link href={githubLink} target="_blank">
-          GitHub
-        </Link>{' '}
-        or send an email to{' '}
-        <Link href={emailLink} target="_blank">
-          jbrowse2dev@gmail.com
-        </Link>{' '}
+        Post a new issue at <Link2 href={githubLink}>GitHub</Link2> or send an
+        email to <Link2 href={emailLink}>jbrowse2dev@gmail.com</Link2>{' '}
       </Typography>
       <pre
         style={{
@@ -129,12 +153,12 @@ export default function ErrorMessageStackTraceDialog({
   onClose,
 }: {
   onClose: () => void
-  error: Error
+  error: unknown
 }) {
   const [mappedStackTrace, setMappedStackTrace] = useState<string>()
   const [secondaryError, setSecondaryError] = useState<unknown>()
   const [clicked, setClicked] = useState(false)
-  const stackTracePreProcessed = `${error.stack}`
+  const stackTracePreProcessed = `${typeof error === 'object' && error !== null && 'stack' in error ? error.stack : ''}`
   const errorText = `${error}`
   const stackTrace = stripMessage(stackTracePreProcessed, errorText)
 

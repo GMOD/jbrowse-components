@@ -42,10 +42,10 @@
     "@oclif/test": "^3.2.1",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.3",
     "@r2wc/react-to-web-component": "^2.0.3",
-    "@storybook/addon-essentials": "^7.0.0",
-    "@storybook/node-logger": "^7.0.0",
-    "@storybook/react": "^7.0.0",
-    "@storybook/react-webpack5": "^7.0.0",
+    "@storybook/addon-essentials": "^8.0.0",
+    "@storybook/node-logger": "^8.0.0",
+    "@storybook/react": "^8.0.0",
+    "@storybook/react-webpack5": "^8.0.0",
     "@testing-library/dom": "^9.0.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",
@@ -145,7 +145,7 @@
     "semver": "^7.3.4",
     "slugify": "^1.6.5",
     "source-map-loader": "^5.0.0",
-    "storybook": "^7.0.0",
+    "storybook": "^8.0.0",
     "style-loader": "^3.3.1",
     "terser-webpack-plugin": "^5.2.5",
     "ts-node": "^10.4.0",
@@ -158,6 +158,5 @@
     "webpack-dev-server": "^5.0.0",
     "webpack-manifest-plugin": "^5.0.0"
   },
-  "version": "0.0.0",
-  "dependencies": {}
+  "version": "0.0.0"
 }
