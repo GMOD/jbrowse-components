@@ -67,7 +67,7 @@ export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
           )
         }
       } catch (e) {
-        session.notify(`${e}`, 'error')
+        session.notifyError(`${e}`, e)
         throw e
       }
     },

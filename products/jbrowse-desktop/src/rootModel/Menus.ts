@@ -54,7 +54,7 @@ export function DesktopMenusMixin(_pluginManager: PluginManager) {
                   }
                 } catch (e) {
                   console.error(e)
-                  self.session?.notify(`${e}`, 'error')
+                  self.session?.notifyError(`${e}`, e)
                 }
               },
             },
@@ -67,7 +67,7 @@ export function DesktopMenusMixin(_pluginManager: PluginManager) {
                     await self.saveSession(getSaveSession(self))
                   } catch (e) {
                     console.error(e)
-                    self.session?.notify(`${e}`, 'error')
+                    self.session?.notifyError(`${e}`, e)
                   }
                 }
               },
@@ -84,7 +84,7 @@ export function DesktopMenusMixin(_pluginManager: PluginManager) {
                   await self.saveSession(getSaveSession(self))
                 } catch (e) {
                   console.error(e)
-                  self.session?.notify(`${e}`, 'error')
+                  self.session?.notifyError(`${e}`, e)
                 }
               },
             },
@@ -110,7 +110,7 @@ export function DesktopMenusMixin(_pluginManager: PluginManager) {
                         })
                       } catch (e) {
                         console.error(e)
-                        self.session?.notify(`${e}`)
+                        self.session?.notifyError(`${e}`, e)
                       }
                       doneCallback()
                     },
