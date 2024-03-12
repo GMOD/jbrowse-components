@@ -5,11 +5,18 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
   <svg
     data-testid="sequence_track"
     height="160"
-    style="width: 20000px; height: 160px; user-select: none; display: block;"
+    style="display: block; width: 20000px; height: 160px; user-select: none;"
     width="20000"
   >
     <rect
       fill="#d8d8d8"
+      height="20"
+      width="20000"
+      x="0"
+      y="0"
+    />
+    <rect
+      fill="none"
       height="20"
       stroke="#555"
       width="60"
@@ -24,7 +31,7 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
       y="10"
     />
     <rect
-      fill="#d8d8d8"
+      fill="none"
       height="20"
       stroke="#555"
       width="60"
@@ -39,22 +46,14 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
       y="10"
     />
     <rect
-      fill="#d8d8d8"
+      fill="#adadad"
       height="20"
-      stroke="#555"
-      width="60"
-      x="19780"
-      y="0"
-    />
-    <text
-      dominant-baseline="middle"
-      font-size="18"
-      text-anchor="middle"
-      x="19810"
-      y="10"
+      width="20000"
+      x="0"
+      y="20"
     />
     <rect
-      fill="#adadad"
+      fill="none"
       height="20"
       stroke="#555"
       width="60"
@@ -69,7 +68,7 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
       y="30"
     />
     <rect
-      fill="#adadad"
+      fill="none"
       height="20"
       stroke="#555"
       width="60"
@@ -84,7 +83,7 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
       y="30"
     />
     <rect
-      fill="#adadad"
+      fill="none"
       height="20"
       stroke="#555"
       width="60"
@@ -101,20 +100,12 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
     <rect
       fill="#8f8f8f"
       height="20"
-      stroke="#555"
-      width="60"
-      x="19940"
+      width="20000"
+      x="0"
       y="40"
     />
-    <text
-      dominant-baseline="middle"
-      font-size="18"
-      text-anchor="middle"
-      x="19970"
-      y="50"
-    />
     <rect
-      fill="#8f8f8f"
+      fill="none"
       height="20"
       stroke="#555"
       width="60"
@@ -129,7 +120,7 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
       y="50"
     />
     <rect
-      fill="#8f8f8f"
+      fill="none"
       height="20"
       stroke="#555"
       width="60"
@@ -470,20 +461,12 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
     <rect
       fill="#8f8f8f"
       height="20"
-      stroke="#555"
-      width="60"
-      x="19940"
+      width="20000"
+      x="0"
       y="100"
     />
-    <text
-      dominant-baseline="middle"
-      font-size="18"
-      text-anchor="middle"
-      x="19970"
-      y="110"
-    />
     <rect
-      fill="#8f8f8f"
+      fill="none"
       height="20"
       stroke="#555"
       width="60"
@@ -498,7 +481,7 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
       y="110"
     />
     <rect
-      fill="#8f8f8f"
+      fill="none"
       height="20"
       stroke="#555"
       width="60"
@@ -515,91 +498,90 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
     <rect
       fill="#adadad"
       height="20"
-      stroke="#555"
-      width="60"
-      x="19900"
+      width="20000"
+      x="0"
       y="120"
     />
-    <text
-      dominant-baseline="middle"
-      font-size="18"
-      text-anchor="middle"
-      x="19930"
-      y="130"
-    />
     <rect
-      fill="#adadad"
-      height="20"
-      stroke="#555"
-      width="60"
-      x="19840"
-      y="120"
-    />
-    <text
-      dominant-baseline="middle"
-      font-size="18"
-      text-anchor="middle"
-      x="19870"
-      y="130"
-    />
-    <rect
-      fill="#adadad"
-      height="20"
-      stroke="#555"
-      width="60"
-      x="19780"
-      y="120"
-    />
-    <text
-      dominant-baseline="middle"
-      font-size="18"
-      text-anchor="middle"
-      x="19810"
-      y="130"
-    />
-    <rect
-      fill="#d8d8d8"
+      fill="none"
       height="20"
       stroke="#555"
       width="60"
       x="19920"
-      y="140"
+      y="120"
     />
     <text
       dominant-baseline="middle"
       font-size="18"
       text-anchor="middle"
       x="19950"
-      y="150"
+      y="130"
     />
     <rect
-      fill="#d8d8d8"
+      fill="none"
       height="20"
       stroke="#555"
       width="60"
       x="19860"
-      y="140"
+      y="120"
     />
     <text
       dominant-baseline="middle"
       font-size="18"
       text-anchor="middle"
       x="19890"
-      y="150"
+      y="130"
     />
     <rect
-      fill="#d8d8d8"
+      fill="none"
       height="20"
       stroke="#555"
       width="60"
       x="19800"
-      y="140"
+      y="120"
     />
     <text
       dominant-baseline="middle"
       font-size="18"
       text-anchor="middle"
       x="19830"
+      y="130"
+    />
+    <rect
+      fill="#d8d8d8"
+      height="20"
+      width="20000"
+      x="0"
+      y="140"
+    />
+    <rect
+      fill="none"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="19900"
+      y="140"
+    />
+    <text
+      dominant-baseline="middle"
+      font-size="18"
+      text-anchor="middle"
+      x="19930"
+      y="150"
+    />
+    <rect
+      fill="none"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="19840"
+      y="140"
+    />
+    <text
+      dominant-baseline="middle"
+      font-size="18"
+      text-anchor="middle"
+      x="19870"
       y="150"
     />
   </svg>
@@ -611,11 +593,18 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
   <svg
     data-testid="sequence_track"
     height="160"
-    style="width: 20000px; height: 160px; user-select: none; display: block;"
+    style="display: block; width: 20000px; height: 160px; user-select: none;"
     width="20000"
   >
     <rect
       fill="#d8d8d8"
+      height="20"
+      width="20000"
+      x="0"
+      y="0"
+    />
+    <rect
+      fill="none"
       height="20"
       stroke="#555"
       width="60"
@@ -630,7 +619,7 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
       y="10"
     />
     <rect
-      fill="#d8d8d8"
+      fill="none"
       height="20"
       stroke="#555"
       width="60"
@@ -645,22 +634,14 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
       y="10"
     />
     <rect
-      fill="#d8d8d8"
+      fill="#adadad"
       height="20"
-      stroke="#555"
-      width="60"
-      x="160"
-      y="0"
-    />
-    <text
-      dominant-baseline="middle"
-      font-size="18"
-      text-anchor="middle"
-      x="190"
-      y="10"
+      width="20000"
+      x="0"
+      y="20"
     />
     <rect
-      fill="#adadad"
+      fill="none"
       height="20"
       stroke="#555"
       width="60"
@@ -675,7 +656,7 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
       y="30"
     />
     <rect
-      fill="#adadad"
+      fill="none"
       height="20"
       stroke="#555"
       width="60"
@@ -690,7 +671,7 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
       y="30"
     />
     <rect
-      fill="#adadad"
+      fill="none"
       height="20"
       stroke="#555"
       width="60"
@@ -707,20 +688,12 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
     <rect
       fill="#8f8f8f"
       height="20"
-      stroke="#555"
-      width="60"
+      width="20000"
       x="0"
       y="40"
     />
-    <text
-      dominant-baseline="middle"
-      font-size="18"
-      text-anchor="middle"
-      x="30"
-      y="50"
-    />
     <rect
-      fill="#8f8f8f"
+      fill="none"
       height="20"
       stroke="#555"
       width="60"
@@ -735,7 +708,7 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
       y="50"
     />
     <rect
-      fill="#8f8f8f"
+      fill="none"
       height="20"
       stroke="#555"
       width="60"
@@ -1076,20 +1049,12 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
     <rect
       fill="#8f8f8f"
       height="20"
-      stroke="#555"
-      width="60"
+      width="20000"
       x="0"
       y="100"
     />
-    <text
-      dominant-baseline="middle"
-      font-size="18"
-      text-anchor="middle"
-      x="30"
-      y="110"
-    />
     <rect
-      fill="#8f8f8f"
+      fill="none"
       height="20"
       stroke="#555"
       width="60"
@@ -1104,7 +1069,7 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
       y="110"
     />
     <rect
-      fill="#8f8f8f"
+      fill="none"
       height="20"
       stroke="#555"
       width="60"
@@ -1121,91 +1086,90 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
     <rect
       fill="#adadad"
       height="20"
-      stroke="#555"
-      width="60"
-      x="40"
+      width="20000"
+      x="0"
       y="120"
     />
-    <text
-      dominant-baseline="middle"
-      font-size="18"
-      text-anchor="middle"
-      x="70"
-      y="130"
-    />
     <rect
-      fill="#adadad"
-      height="20"
-      stroke="#555"
-      width="60"
-      x="100"
-      y="120"
-    />
-    <text
-      dominant-baseline="middle"
-      font-size="18"
-      text-anchor="middle"
-      x="130"
-      y="130"
-    />
-    <rect
-      fill="#adadad"
-      height="20"
-      stroke="#555"
-      width="60"
-      x="160"
-      y="120"
-    />
-    <text
-      dominant-baseline="middle"
-      font-size="18"
-      text-anchor="middle"
-      x="190"
-      y="130"
-    />
-    <rect
-      fill="#d8d8d8"
+      fill="none"
       height="20"
       stroke="#555"
       width="60"
       x="20"
-      y="140"
+      y="120"
     />
     <text
       dominant-baseline="middle"
       font-size="18"
       text-anchor="middle"
       x="50"
-      y="150"
+      y="130"
     />
     <rect
-      fill="#d8d8d8"
+      fill="none"
       height="20"
       stroke="#555"
       width="60"
       x="80"
-      y="140"
+      y="120"
     />
     <text
       dominant-baseline="middle"
       font-size="18"
       text-anchor="middle"
       x="110"
-      y="150"
+      y="130"
     />
     <rect
-      fill="#d8d8d8"
+      fill="none"
       height="20"
       stroke="#555"
       width="60"
       x="140"
-      y="140"
+      y="120"
     />
     <text
       dominant-baseline="middle"
       font-size="18"
       text-anchor="middle"
       x="170"
+      y="130"
+    />
+    <rect
+      fill="#d8d8d8"
+      height="20"
+      width="20000"
+      x="0"
+      y="140"
+    />
+    <rect
+      fill="none"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="40"
+      y="140"
+    />
+    <text
+      dominant-baseline="middle"
+      font-size="18"
+      text-anchor="middle"
+      x="70"
+      y="150"
+    />
+    <rect
+      fill="none"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="100"
+      y="140"
+    />
+    <text
+      dominant-baseline="middle"
+      font-size="18"
+      text-anchor="middle"
+      x="130"
       y="150"
     />
   </svg>
@@ -1217,26 +1181,25 @@ exports[`renders with one feature with an incorrect seq, zoomed in, should throw
   <svg
     data-testid="sequence_track"
     height="160"
-    style="width: 20000px; height: 160px; user-select: none; display: block;"
+    style="display: block; width: 20000px; height: 160px; user-select: none;"
     width="20000"
   >
     <rect
       fill="#d8d8d8"
       height="20"
-      stroke="#555"
-      width="60"
-      x="40"
+      width="20000"
+      x="0"
       y="0"
-    />
-    <text
-      dominant-baseline="middle"
-      font-size="18"
-      text-anchor="middle"
-      x="70"
-      y="10"
     />
     <rect
       fill="#adadad"
+      height="20"
+      width="20000"
+      x="0"
+      y="20"
+    />
+    <rect
+      fill="none"
       height="20"
       stroke="#555"
       width="60"
@@ -1253,17 +1216,9 @@ exports[`renders with one feature with an incorrect seq, zoomed in, should throw
     <rect
       fill="#8f8f8f"
       height="20"
-      stroke="#555"
-      width="60"
+      width="20000"
       x="0"
       y="40"
-    />
-    <text
-      dominant-baseline="middle"
-      font-size="18"
-      text-anchor="middle"
-      x="30"
-      y="50"
     />
     <rect
       fill="#4caf50"
@@ -1376,47 +1331,38 @@ exports[`renders with one feature with an incorrect seq, zoomed in, should throw
     <rect
       fill="#8f8f8f"
       height="20"
-      stroke="#555"
-      width="60"
+      width="20000"
       x="0"
       y="100"
-    />
-    <text
-      dominant-baseline="middle"
-      font-size="18"
-      text-anchor="middle"
-      x="30"
-      y="110"
     />
     <rect
       fill="#adadad"
       height="20"
+      width="20000"
+      x="0"
+      y="120"
+    />
+    <rect
+      fill="none"
+      height="20"
       stroke="#555"
       width="60"
-      x="40"
+      x="20"
       y="120"
     />
     <text
       dominant-baseline="middle"
       font-size="18"
       text-anchor="middle"
-      x="70"
+      x="50"
       y="130"
     />
     <rect
       fill="#d8d8d8"
       height="20"
-      stroke="#555"
-      width="60"
-      x="20"
+      width="20000"
+      x="0"
       y="140"
-    />
-    <text
-      dominant-baseline="middle"
-      font-size="18"
-      text-anchor="middle"
-      x="50"
-      y="150"
     />
   </svg>
 </div>
@@ -1427,7 +1373,7 @@ exports[`renders with one feature with no seq, zoomed in, should throw 1`] = `
   <svg
     data-testid="sequence_track"
     height="160"
-    style="width: 20000px; height: 160px; user-select: none; display: block;"
+    style="display: block; width: 20000px; height: 160px; user-select: none;"
     width="20000"
   />
 </div>
@@ -1438,72 +1384,50 @@ exports[`renders with one, zoomed way out 1`] = `
   <svg
     data-testid="sequence_track"
     height="160"
-    style="width: 333.3333333333333px; height: 160px; user-select: none; display: block;"
+    style="display: block; width: 333.3333333333333px; height: 160px; user-select: none;"
     width="333.3333333333333"
   >
     <rect
+      fill="#d8d8d8"
+      height="20"
+      width="333.3333333333333"
+      x="0"
+      y="0"
+    />
+    <rect
       fill="#adadad"
       height="20"
-      stroke="none"
-      width="1.7"
-      x="0.3333333333333333"
+      width="333.3333333333333"
+      x="0"
       y="20"
     />
     <rect
       fill="#8f8f8f"
       height="20"
-      stroke="none"
-      width="1.7"
+      width="333.3333333333333"
       x="0"
       y="40"
     />
     <rect
-      fill="#4caf50"
-      height="20"
-      stroke="none"
-      width="0.8"
-      x="0.3"
-      y="60"
-    />
-    <rect
-      fill="#aaa"
-      height="20"
-      stroke="none"
-      width="0.8"
-      x="1.1"
-      y="60"
-    />
-    <rect
-      fill="#f44336"
-      height="20"
-      stroke="none"
-      width="0.8"
-      x="0.3"
-      y="80"
-    />
-    <rect
-      fill="#aaa"
-      height="20"
-      stroke="none"
-      width="0.8"
-      x="1.1"
-      y="80"
-    />
-    <rect
       fill="#8f8f8f"
       height="20"
-      stroke="none"
-      width="1.7"
+      width="333.3333333333333"
       x="0"
-      y="100"
+      y="60"
+    />
+    <rect
+      fill="#adadad"
+      height="20"
+      width="333.3333333333333"
+      x="0"
+      y="80"
     />
     <rect
       fill="#d8d8d8"
       height="20"
-      stroke="none"
-      width="1.7"
-      x="0.3333333333333333"
-      y="140"
+      width="333.3333333333333"
+      x="0"
+      y="100"
     />
   </svg>
 </div>

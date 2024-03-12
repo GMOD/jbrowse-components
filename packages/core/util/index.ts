@@ -944,10 +944,9 @@ export function getFrame(
   strand: 1 | -1,
   phase: 0 | 1 | 2,
 ): Frame {
-  if (strand === 1) {
-    return (((start + phase) % 3) + 1) as 1 | 2 | 3
-  }
-  return (-1 * ((end - phase) % 3) - 1) as -1 | -2 | -3
+  return strand === 1
+    ? ((((start + phase) % 3) + 1) as 1 | 2 | 3)
+    : ((-1 * ((end - phase) % 3) - 1) as -1 | -2 | -3)
 }
 
 export const defaultStarts = ['ATG']

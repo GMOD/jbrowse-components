@@ -19,6 +19,7 @@ const FeatureGlyph = observer(function (props: {
   description: string
   shouldShowName: boolean
   shouldShowDescription: boolean
+  colorByCDS: boolean
   fontHeight: number
   allowedWidthExpansion: number
   exportSVG?: unknown

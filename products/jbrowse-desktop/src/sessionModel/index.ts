@@ -1,4 +1,4 @@
-import { readConfObject } from '@jbrowse/core/configuration'
+import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
 import { types, Instance, getParent } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -138,7 +138,10 @@ export default function sessionModelFactory({
        * #method
        */
       renderProps() {
-        return { theme: readConfObject(self.configuration, 'theme') }
+        return {
+          theme: getConf(self, 'theme'),
+          highResolutionScaling: getConf(self, 'highResolutionScaling'),
+        }
       },
     }))
 
