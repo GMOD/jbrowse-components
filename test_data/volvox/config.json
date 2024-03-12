@@ -725,6 +725,34 @@
     },
     {
       "type": "MultiQuantitativeTrack",
+      "trackId": "k1",
+      "name": "k1",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "name": "k1",
+            "source": "j1",
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "out1.bw"
+            }
+          },
+          {
+            "name": "k2",
+            "source": "j2",
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "out2.bw"
+            }
+          }
+        ]
+      }
+    },
+
+    {
+      "type": "MultiQuantitativeTrack",
       "trackId": "volvox_microarray_multi",
       "name": "MultiWig",
       "assemblyNames": ["volvox"],

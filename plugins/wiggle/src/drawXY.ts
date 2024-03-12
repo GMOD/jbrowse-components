@@ -74,7 +74,14 @@ export function drawXY(
 
   const toY = (n: number) => clamp(height - (scale(n) || 0), 0, height) + offset
   const toOrigin = (n: number) => toY(originY) - toY(n)
-  const getHeight = (n: number) => (filled ? toOrigin(n) : Math.max(minSize, 1))
+  const getHeight = (n: number) => {
+    if (filled) {
+      const h = toOrigin(n) // can be negative
+      return Math.abs(h) < 1 ? 1 : h
+    } else {
+      return Math.max(minSize, 1)
+    }
+  }
   let hasClipping = false
 
   let prevLeftPx = -Infinity
