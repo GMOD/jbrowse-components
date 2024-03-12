@@ -1,6 +1,15 @@
+import React, { lazy } from 'react'
 import { IModelType, ModelProperties } from 'mobx-state-tree'
 import { IObservableArray, observable } from 'mobx'
+// locals
 import { NotificationLevel, SnackAction } from '../util/types'
+// icons
+import Report from '@mui/icons-material/Report'
+
+// lazies
+const ErrorMessageStackTraceDialog = lazy(
+  () => import('@jbrowse/core/ui/ErrorMessageStackTraceDialog'),
+)
 
 export interface SnackbarMessage {
   message: string
@@ -33,6 +42,22 @@ function makeExtension(snackbarMessages: IObservableArray<SnackbarMessage>) {
             this.removeSnackbarMessage(message)
           }, 5000)
         }
+      },
+      notifyError(errorMessage: string, error?: unknown, extra?: unknown) {
+        this.notify(errorMessage, 'error', {
+          name: <Report />,
+          onClick: () => {
+            // @ts-expect-error
+            self.queueDialog((onClose: () => void) => [
+              ErrorMessageStackTraceDialog,
+              {
+                onClose,
+                error,
+                extra,
+              },
+            ])
+          },
+        })
       },
       /**
        * #action

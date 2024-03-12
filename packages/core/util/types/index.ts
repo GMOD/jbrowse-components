@@ -50,7 +50,7 @@ export function isViewContainer(
 
 export type NotificationLevel = 'error' | 'info' | 'warning' | 'success'
 export interface SnackAction {
-  name: string
+  name: React.ReactElement
   onClick: () => void
 }
 

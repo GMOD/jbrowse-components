@@ -11,11 +11,6 @@ import { SessionLoaderModel, loadSessionSpec } from './SessionLoader'
 // icons
 import Report from '@mui/icons-material/Report'
 
-// lazies
-const ErrorMessageStackTraceDialog = lazy(
-  () => import('@jbrowse/core/ui/ErrorMessageStackTraceDialog'),
-)
-
 export function createPluginManager(self: SessionLoaderModel) {
   // it is ready when a session has loaded and when there is no config
   // error Assuming that the query changes self.sessionError or
@@ -80,21 +75,10 @@ export function createPluginManager(self: SessionLoaderModel) {
     const m = str.replace('[mobx-state-tree] ', '').replace(/\(.+/, '')
     const r = m.length > 1000 ? `${m.slice(0, 1000)}...see more in console` : m
     const s = r.startsWith('Error:') ? r : `Error: ${r}`
-    rootModel.session?.notify(
+    rootModel.session?.notifyError(
       `${s}. If you received this URL from another user, request that they send you a session generated with the "Share" button instead of copying and pasting their URL`,
-      'primary',
-      {
-        name: <Report />,
-        onClick: () =>
-          rootModel.session.queueDialog((onClose: () => void) => [
-            ErrorMessageStackTraceDialog,
-            {
-              onClose,
-              error: self.sessionError,
-              extra: self.sessionSnapshot,
-            },
-          ]),
-      },
+      self.sessionError,
+      self.sessionSnapshot,
     )
     console.error(e)
   }
