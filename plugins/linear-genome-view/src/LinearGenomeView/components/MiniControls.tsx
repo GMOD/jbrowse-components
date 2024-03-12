@@ -1,6 +1,6 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { IconButton, Paper } from '@mui/material'
+import { IconButton, Paper, alpha } from '@mui/material'
 
 // icons
 import ZoomIn from '@mui/icons-material/ZoomIn'
@@ -21,10 +21,7 @@ const useStyles = makeStyles()(theme => ({
     background: theme.palette.background.paper,
   },
   focusedBackground: {
-    background: theme.palette.secondary.light,
-    svg: {
-      fill: theme.palette.secondary.contrastText,
-    },
+    background: alpha(theme.palette.secondary.light, 0.2),
   },
 }))
 
@@ -33,33 +30,32 @@ const MiniControls = observer(function ({
 }: {
   model: LinearGenomeViewModel
 }) {
-  const { classes, cx } = useStyles()
+  const { classes } = useStyles()
   const { id, bpPerPx, maxBpPerPx, minBpPerPx, scaleFactor, hideHeader } = model
   const { focusedViewId } = getSession(model)
   return hideHeader ? (
-    <Paper
-      className={cx(
-        classes.background,
-        focusedViewId === id ? classes.focusedBackground : undefined,
-      )}
-    >
-      <CascadingMenuButton menuItems={model.menuItems()}>
-        <ArrowDown fontSize="small" />
-      </CascadingMenuButton>
-      <IconButton
-        data-testid="zoom_out"
-        onClick={() => model.zoom(bpPerPx * 2)}
-        disabled={bpPerPx >= maxBpPerPx - 0.0001 || scaleFactor !== 1}
+    <Paper className={classes.background}>
+      <Paper
+        className={focusedViewId === id ? classes.focusedBackground : undefined}
       >
-        <ZoomOut fontSize="small" />
-      </IconButton>
-      <IconButton
-        data-testid="zoom_in"
-        onClick={() => model.zoom(bpPerPx / 2)}
-        disabled={bpPerPx <= minBpPerPx + 0.0001 || scaleFactor !== 1}
-      >
-        <ZoomIn fontSize="small" />
-      </IconButton>
+        <CascadingMenuButton menuItems={model.menuItems()}>
+          <ArrowDown fontSize="small" />
+        </CascadingMenuButton>
+        <IconButton
+          data-testid="zoom_out"
+          onClick={() => model.zoom(bpPerPx * 2)}
+          disabled={bpPerPx >= maxBpPerPx - 0.0001 || scaleFactor !== 1}
+        >
+          <ZoomOut fontSize="small" />
+        </IconButton>
+        <IconButton
+          data-testid="zoom_in"
+          onClick={() => model.zoom(bpPerPx / 2)}
+          disabled={bpPerPx <= minBpPerPx + 0.0001 || scaleFactor !== 1}
+        >
+          <ZoomIn fontSize="small" />
+        </IconButton>
+      </Paper>
     </Paper>
   ) : null
 })
