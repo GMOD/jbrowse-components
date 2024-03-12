@@ -7,6 +7,7 @@ import {
   AnyConfigurationSchemaType,
   ConfigurationReference,
 } from '@jbrowse/core/configuration'
+import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { getContainingView } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
 
@@ -81,6 +82,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
           } = self
           return {
             ...superRenderProps(),
+            ...getParentRenderProps(self),
             config: self.configuration.renderer,
             rpcDriverName,
             showForward,
@@ -98,7 +100,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       regionCannotBeRendered(/* region */) {
         const view = getContainingView(self) as LGV
-        return view?.bpPerPx >= 1 ? 'Zoom in to see sequence' : undefined
+        return view?.bpPerPx > 3 ? 'Zoom in to see sequence' : undefined
       },
       /**
        * #getter
@@ -131,7 +133,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
           self,
           autorun(() => {
             const view = getContainingView(self) as LGV
-            if (view?.bpPerPx >= 1) {
+            if (view?.bpPerPx > 3) {
               self.setHeight(50)
             } else {
               self.setHeight(self.sequenceHeight)

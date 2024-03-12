@@ -14,7 +14,7 @@ import Subfeatures from './Subfeatures'
 
 export interface Glyph
   extends React.FC<{
-    children: React.ReactNode
+    colorByCDS: boolean
     feature: Feature
     featureLayout: SceneGraph
     selected?: boolean
@@ -118,7 +118,7 @@ export function layOut({
   return subLayout
 }
 
-export function layOutFeature(args: FeatureLayOutArgs): SceneGraph {
+export function layOutFeature(args: FeatureLayOutArgs) {
   const { layout, feature, bpPerPx, reversed, config, extraGlyphs } = args
   const displayMode = readConfObject(config, 'displayMode') as string
   const GlyphComponent =

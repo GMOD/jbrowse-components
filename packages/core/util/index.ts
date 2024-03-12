@@ -936,6 +936,19 @@ export function measureText(str: unknown, fontSize = 10) {
   return total * fontSize
 }
 
+export type Frame = 1 | 2 | 3 | -1 | -2 | -3
+
+export function getFrame(
+  start: number,
+  end: number,
+  strand: 1 | -1,
+  phase: 0 | 1 | 2,
+): Frame {
+  return strand === 1
+    ? ((((start + phase) % 3) + 1) as 1 | 2 | 3)
+    : ((-1 * ((end - phase) % 3) - 1) as -1 | -2 | -3)
+}
+
 export const defaultStarts = ['ATG']
 export const defaultStops = ['TAA', 'TAG', 'TGA']
 export const defaultCodonTable = {

@@ -1,6 +1,9 @@
 import { blue, green, red, grey, orange } from '@mui/material/colors'
 import { createTheme, ThemeOptions } from '@mui/material/styles'
-import type { PaletteAugmentColorOptions } from '@mui/material/styles/createPalette'
+import type {
+  PaletteAugmentColorOptions,
+  PaletteColor,
+} from '@mui/material/styles/createPalette'
 import deepmerge from 'deepmerge'
 
 declare module '@mui/material/styles/createPalette' {
@@ -16,6 +19,24 @@ declare module '@mui/material/styles/createPalette' {
       G: Palette['primary']
       T: Palette['primary']
     }
+    frames: [
+      null,
+      Palette['primary'] | undefined,
+      Palette['primary'] | undefined,
+      Palette['primary'] | undefined,
+      Palette['primary'] | undefined,
+      Palette['primary'] | undefined,
+      Palette['primary'] | undefined,
+    ]
+    framesCDS: [
+      null,
+      Palette['primary'] | undefined,
+      Palette['primary'] | undefined,
+      Palette['primary'] | undefined,
+      Palette['primary'] | undefined,
+      Palette['primary'] | undefined,
+      Palette['primary'] | undefined,
+    ]
   }
   interface PaletteOptions {
     tertiary?: PaletteOptions['primary']
@@ -29,15 +50,68 @@ declare module '@mui/material/styles/createPalette' {
       G?: PaletteOptions['primary']
       T?: PaletteOptions['primary']
     }
+    framesCDS?: [
+      null,
+      Palette['primary'] | undefined,
+      Palette['primary'] | undefined,
+      Palette['primary'] | undefined,
+      Palette['primary'] | undefined,
+      Palette['primary'] | undefined,
+      Palette['primary'] | undefined,
+    ]
+    frames?: [
+      null,
+      Palette['primary'] | undefined,
+      Palette['primary'] | undefined,
+      Palette['primary'] | undefined,
+      Palette['primary'] | undefined,
+      Palette['primary'] | undefined,
+      Palette['primary'] | undefined,
+    ]
   }
 }
+
+type Frames = [
+  null,
+  PaletteColor,
+  PaletteColor,
+  PaletteColor,
+  PaletteColor,
+  PaletteColor,
+  PaletteColor,
+]
 
 const midnight = '#0D233F'
 const grape = '#721E63'
 const forest = '#135560'
 const mandarin = '#FFB11D'
-
 const refTheme = createTheme()
+const bases = {
+  A: refTheme.palette.augmentColor({ color: green }),
+  C: refTheme.palette.augmentColor({ color: blue }),
+  G: refTheme.palette.augmentColor({ color: orange }),
+  T: refTheme.palette.augmentColor({ color: red }),
+}
+const framesCDS = [
+  null,
+  refTheme.palette.augmentColor({ color: { main: '#FF8080' } }),
+  refTheme.palette.augmentColor({ color: { main: '#80FF80' } }),
+  refTheme.palette.augmentColor({ color: { main: '#8080FF' } }),
+  refTheme.palette.augmentColor({ color: { main: '#8080FF' } }),
+  refTheme.palette.augmentColor({ color: { main: '#80FF80' } }),
+  refTheme.palette.augmentColor({ color: { main: '#FF8080' } }),
+] as Frames
+const frames = [
+  null,
+  refTheme.palette.augmentColor({ color: { main: '#8f8f8f' } }),
+  refTheme.palette.augmentColor({ color: { main: '#adadad' } }),
+  refTheme.palette.augmentColor({ color: { main: '#d8d8d8' } }),
+  refTheme.palette.augmentColor({ color: { main: '#d8d8d8' } }),
+  refTheme.palette.augmentColor({ color: { main: '#adadad' } }),
+  refTheme.palette.augmentColor({ color: { main: '#8f8f8f' } }),
+] as Frames
+const stopCodon = '#e22'
+const startCodon = '#3e3'
 
 function stockTheme() {
   return {
@@ -48,14 +122,11 @@ function stockTheme() {
       tertiary: refTheme.palette.augmentColor({ color: { main: forest } }),
       quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
       highlight: refTheme.palette.augmentColor({ color: { main: mandarin } }),
-      stopCodon: '#e22',
-      startCodon: '#3e3',
-      bases: {
-        A: refTheme.palette.augmentColor({ color: green }),
-        C: refTheme.palette.augmentColor({ color: blue }),
-        G: refTheme.palette.augmentColor({ color: orange }),
-        T: refTheme.palette.augmentColor({ color: red }),
-      },
+      stopCodon,
+      startCodon,
+      bases,
+      frames,
+      framesCDS,
     },
     components: {
       MuiLink: {
@@ -97,14 +168,11 @@ function getDarkStockTheme() {
       tertiary: refTheme.palette.augmentColor({ color: { main: forest } }),
       quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
       highlight: refTheme.palette.augmentColor({ color: { main: mandarin } }),
-      stopCodon: '#e22',
-      startCodon: '#3e3',
-      bases: {
-        A: refTheme.palette.augmentColor({ color: green }),
-        C: refTheme.palette.augmentColor({ color: blue }),
-        G: refTheme.palette.augmentColor({ color: orange }),
-        T: refTheme.palette.augmentColor({ color: red }),
-      },
+      stopCodon,
+      startCodon,
+      bases,
+      frames,
+      framesCDS,
     },
     components: {
       MuiAppBar: {
@@ -132,14 +200,11 @@ function getDarkMinimalTheme() {
       tertiary: refTheme.palette.augmentColor({ color: { main: grey[900] } }),
       quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
       highlight: refTheme.palette.augmentColor({ color: { main: mandarin } }),
-      stopCodon: '#e22',
-      startCodon: '#3e3',
-      bases: {
-        A: refTheme.palette.augmentColor({ color: green }),
-        C: refTheme.palette.augmentColor({ color: blue }),
-        G: refTheme.palette.augmentColor({ color: orange }),
-        T: refTheme.palette.augmentColor({ color: red }),
-      },
+      stopCodon,
+      startCodon,
+      bases,
+      frames,
+      framesCDS,
     },
   }
 }
@@ -153,14 +218,11 @@ function getMinimalTheme() {
       tertiary: refTheme.palette.augmentColor({ color: { main: grey[900] } }),
       quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
       highlight: refTheme.palette.augmentColor({ color: { main: mandarin } }),
-      stopCodon: '#e22',
-      startCodon: '#3e3',
-      bases: {
-        A: refTheme.palette.augmentColor({ color: green }),
-        C: refTheme.palette.augmentColor({ color: blue }),
-        G: refTheme.palette.augmentColor({ color: orange }),
-        T: refTheme.palette.augmentColor({ color: red }),
-      },
+      stopCodon,
+      startCodon,
+      bases,
+      frames,
+      framesCDS,
     },
   }
 }
@@ -391,6 +453,10 @@ function createDefaultProps(theme?: ThemeOptions): ThemeOptions {
   }
 }
 
+function overwriteArrayMerge(_: unknown, sourceArray: unknown[]) {
+  return sourceArray
+}
+
 export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
   return deepmerge(
     {
@@ -400,6 +466,7 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
       ...createDefaultProps(theme),
     },
     theme || {},
+    { arrayMerge: overwriteArrayMerge },
   )
 }
 
@@ -413,7 +480,9 @@ export function createJBrowseTheme(
   return createTheme(
     createJBrowseBaseTheme(
       themeName === 'default'
-        ? deepmerge(themes.default, augmentTheme(configTheme))
+        ? deepmerge(themes.default, augmentTheme(configTheme), {
+            arrayMerge: overwriteArrayMerge,
+          })
         : augmentThemePlus(themes[themeName]) || themes.default,
     ),
   )
@@ -453,14 +522,22 @@ function augmentThemePlus(theme: ThemeOptions = {}) {
   if (!theme?.palette?.quaternary) {
     theme = deepmerge(theme, {
       palette: {
-        quaternary: refTheme.palette.augmentColor({ color: { main: '#aaa' } }),
+        quaternary: refTheme.palette.augmentColor({
+          color: {
+            main: '#aaa',
+          },
+        }),
       },
     })
   }
   if (!theme?.palette?.tertiary) {
     theme = deepmerge(theme, {
       palette: {
-        tertiary: refTheme.palette.augmentColor({ color: { main: '#aaa' } }),
+        tertiary: refTheme.palette.augmentColor({
+          color: {
+            main: '#aaa',
+          },
+        }),
       },
     })
   }

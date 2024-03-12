@@ -15,6 +15,7 @@ test('no features', () => {
   const { container } = render(
     <Rendering
       blockKey="hello"
+      colorByCDS={false}
       features={new Map()}
       regions={[
         { refName: 'zonk', start: 0, end: 300, assemblyName: 'volvox' },
@@ -40,6 +41,7 @@ test('one feature', () => {
   const { container } = render(
     <Rendering
       blockKey="hello"
+      colorByCDS={false}
       regions={[
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
@@ -63,6 +65,7 @@ test('click on one feature, and do not re-render', () => {
   const { container, getByTestId } = render(
     <Rendering
       blockKey="hello"
+      colorByCDS={false}
       regions={[
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
@@ -92,6 +95,7 @@ test('one feature (compact mode)', () => {
   const { container } = render(
     <Rendering
       blockKey="hello"
+      colorByCDS={false}
       regions={[
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
@@ -255,6 +259,7 @@ test('processed transcript (reducedRepresentation mode)', () => {
   const { container } = render(
     <Rendering
       blockKey="hello"
+      colorByCDS={false}
       regions={[
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
@@ -277,6 +282,7 @@ test('processed transcript', () => {
   const { container } = render(
     <Rendering
       blockKey="hello"
+      colorByCDS={false}
       regions={[
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
@@ -436,6 +442,7 @@ test('processed transcript (exons + impliedUTR)', () => {
   const { container } = render(
     <Rendering
       blockKey="hello"
+      colorByCDS={false}
       regions={[
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
@@ -1078,9 +1085,7 @@ test('svg selected', () => {
           assemblyName: 'volvox',
         }}
         displayModel={{
-          getFeatureByID: () => {
-            return [0, 0, 10, 10]
-          },
+          getFeatureByID: () => [0, 0, 10, 10],
           featureIdUnderMouse: 'one',
           selectedFeatureId: 'one',
         }}
