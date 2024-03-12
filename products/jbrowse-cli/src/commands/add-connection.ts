@@ -136,8 +136,9 @@ export default class AddConnection extends JBrowseCommand {
           }
         : {}),
       connectionId: id,
-      assemblyNames:
-        assemblyNames || type === 'JBrowse1Connection'
+      assemblyNames: assemblyNames
+        ? assemblyNames.split(',')
+        : type === 'JBrowse1Connection'
           ? [configContents.assemblies[0]?.name]
           : undefined,
       ...(config ? parseJSON(config) : {}),
