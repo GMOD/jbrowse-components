@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { lazy } from 'react'
 import { AbstractSessionModel } from '@jbrowse/core/util/types'
-import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
+import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
 import { getConf } from '@jbrowse/core/configuration'
 import { cast, getParent, types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -34,7 +34,7 @@ const AboutDialog = lazy(() => import('./AboutDialog'))
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export default function sessionModelFactory(pluginManager: PluginManager) {
-  const model = types
+  return types
     .compose(
       'ReactLinearGenomeViewSession',
       BaseSessionModel(pluginManager),
@@ -44,6 +44,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       TracksManagerSessionMixin(pluginManager),
       ReferenceManagementSessionMixin(pluginManager),
       SessionTracksManagerSessionMixin(pluginManager),
+      SnackbarModel(),
     )
     .props({
       /**
@@ -149,8 +150,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         ]
       },
     }))
-
-  return addSnackbarToModel(model)
 }
 
 export type SessionStateModel = ReturnType<typeof sessionModelFactory>

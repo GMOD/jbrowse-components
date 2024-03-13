@@ -9,7 +9,6 @@ import {
   AnyConfiguration,
 } from '@jbrowse/core/configuration'
 import { AssemblyManager, JBrowsePlugin } from '@jbrowse/core/util/types'
-import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
 import {
@@ -22,15 +21,6 @@ import {
   Instance,
 } from 'mobx-state-tree'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
-import { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
-
-// icons
-import SettingsIcon from '@mui/icons-material/Settings'
-import CopyIcon from '@mui/icons-material/FileCopy'
-import DeleteIcon from '@mui/icons-material/Delete'
-import InfoIcon from '@mui/icons-material/Info'
-
-// locals
 import PluginManager from '@jbrowse/core/PluginManager'
 import {
   DialogQueueSessionMixin,
@@ -45,11 +35,21 @@ import {
   SessionAssembliesMixin,
   TemporaryAssembliesMixin,
 } from '@jbrowse/app-core'
+import { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
+import { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
+import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
+
+// icons
+import SettingsIcon from '@mui/icons-material/Settings'
+import CopyIcon from '@mui/icons-material/FileCopy'
+import DeleteIcon from '@mui/icons-material/Delete'
+import InfoIcon from '@mui/icons-material/Info'
+
 // locals
 import { WebSessionConnectionsMixin } from '../SessionConnections'
-import { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
 
+// lazies
 const AboutDialog = lazy(() => import('./AboutDialog'))
 
 /**
@@ -92,6 +92,7 @@ export function BaseWebSession({
         TemporaryAssembliesMixin(pluginManager, assemblyConfigSchema),
         WebSessionConnectionsMixin(pluginManager),
         AppFocusMixin(),
+        SnackbarModel(),
       ),
     )
     .props({
@@ -420,7 +421,7 @@ export function BaseWebSession({
     sessionModel,
   ) as typeof sessionModel
 
-  return types.snapshotProcessor(addSnackbarToModel(extendedSessionModel), {
+  return types.snapshotProcessor(extendedSessionModel, {
     // @ts-expect-error
     preProcessor(snapshot) {
       if (snapshot) {
