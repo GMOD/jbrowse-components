@@ -50,7 +50,7 @@ export function isViewContainer(
 
 export type NotificationLevel = 'error' | 'info' | 'warning' | 'success'
 export interface SnackAction {
-  name: string
+  name: React.ReactElement
   onClick: () => void
 }
 
@@ -105,6 +105,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
     level?: NotificationLevel,
     action?: SnackAction,
   ) => void
+  notifyError: (message: string, error?: unknown, extra?: unknown) => void
   assemblyManager: AssemblyManager
   version: string
   getTrackActionMenuItems?: Function

@@ -41,7 +41,7 @@ export async function navToBookmark(
     await view.navToLocString(locString, assembly)
   } catch (e) {
     console.error(e)
-    session.notify(`${e}`, 'error')
+    session.notifyError(`${e}`, e)
   }
 }
 

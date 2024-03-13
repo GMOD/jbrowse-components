@@ -1,12 +1,7 @@
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
-import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
 import { types, Instance, getParent } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
-
-// icons
-import { DesktopSessionTrackMenuMixin } from './TrackMenu'
 import { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
-import { DesktopRootModel } from '../rootModel'
 import {
   ConnectionManagementSessionMixin,
   DialogQueueSessionMixin,
@@ -16,7 +11,6 @@ import {
   ThemeManagerSessionMixin,
   TracksManagerSessionMixin,
 } from '@jbrowse/product-core'
-import { DesktopSessionFactory } from './DesktopSession'
 import {
   AppFocusMixin,
   SessionAssembliesMixin,
@@ -24,6 +18,14 @@ import {
 } from '@jbrowse/app-core'
 import { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import { AbstractSessionModel } from '@jbrowse/core/util'
+import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
+
+// icons
+import { DesktopSessionTrackMenuMixin } from './TrackMenu'
+
+// locals
+import { DesktopRootModel } from '../rootModel'
+import { DesktopSessionFactory } from './DesktopSession'
 
 /**
  * #stateModel JBrowseDesktopSessionModel
@@ -67,6 +69,7 @@ export default function sessionModelFactory({
       TemporaryAssembliesMixin(pluginManager, assemblyConfigSchema),
       DesktopSessionTrackMenuMixin(pluginManager),
       AppFocusMixin(),
+      SnackbarModel(),
     )
     .views(self => ({
       /**
@@ -150,7 +153,7 @@ export default function sessionModelFactory({
     sessionModel,
   ) as typeof sessionModel
 
-  return types.snapshotProcessor(addSnackbarToModel(extendedSessionModel), {
+  return types.snapshotProcessor(extendedSessionModel, {
     // @ts-expect-error
     preProcessor(snapshot) {
       if (snapshot) {
