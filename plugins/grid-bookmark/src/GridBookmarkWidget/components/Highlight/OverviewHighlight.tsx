@@ -25,9 +25,9 @@ const OverviewHighlight = observer(function OverviewHighlight({
   model: LGV
   overview: Base1DViewModel
 }) {
-  const { classes } = useStyles()
   const { cytobandOffset } = model
   const session = getSession(model) as SessionWithWidgets
+  const { classes } = useStyles()
 
   const { showBookmarkHighlights, showBookmarkLabels } = model
   const assemblyNames = new Set(session.assemblyNames)
@@ -48,64 +48,45 @@ const OverviewHighlight = observer(function OverviewHighlight({
     }
   }, [session, bookmarkWidget])
 
-  return (
-    <>
-      {showBookmarkHighlights && bookmarks.current
-        ? bookmarks.current
-            .filter(value => assemblyNames.has(value.assemblyName))
-            .map(r => {
-              const s = overview.bpToPx({
-                ...r,
-                coord: r.reversed ? r.end : r.start,
-              })
-              const e = overview.bpToPx({
-                ...r,
-                coord: r.reversed ? r.start : r.end,
-              })
-              return s !== undefined && e !== undefined
-                ? {
-                    width: Math.abs(e - s),
-                    left: s + cytobandOffset,
-                    highlight: r.highlight,
-                    label: r.label,
-                  }
-                : undefined
-            })
-            .filter(notEmpty)
-            .map(({ left, width, highlight, label }, idx) => (
-              <>
-                {showBookmarkLabels ? (
-                  <Tooltip title={label} arrow>
-                    <div
-                      key={`${left}_${width}_${idx}`}
-                      className={classes.highlight}
-                      style={{
-                        left,
-                        width,
-                        background: highlight,
-                        borderLeft: `1px solid ${highlight}`,
-                        borderRight: `1px solid ${highlight}`,
-                      }}
-                    />
-                  </Tooltip>
-                ) : (
-                  <div
-                    key={`${left}_${width}_${idx}`}
-                    className={classes.highlight}
-                    style={{
-                      left,
-                      width,
-                      background: highlight,
-                      borderLeft: `1px solid ${highlight}`,
-                      borderRight: `1px solid ${highlight}`,
-                    }}
-                  />
-                )}
-              </>
-            ))
-        : null}
-    </>
-  )
+  return showBookmarkHighlights && bookmarks.current
+    ? bookmarks.current
+        .filter(value => assemblyNames.has(value.assemblyName))
+        .map(r => {
+          const rev = r.reversed
+          const s = overview.bpToPx({ ...r, coord: rev ? r.end : r.start })
+          const e = overview.bpToPx({ ...r, coord: rev ? r.start : r.end })
+          return s !== undefined && e !== undefined
+            ? {
+                width: Math.abs(e - s),
+                left: s + cytobandOffset,
+                highlight: r.highlight,
+                label: r.label,
+              }
+            : undefined
+        })
+        .filter(notEmpty)
+        .map((obj, idx) => {
+          const { left, width, highlight, label } = obj
+          return (
+            <Tooltip
+              key={JSON.stringify(obj) + '-' + idx}
+              title={showBookmarkLabels ? label : ''}
+              arrow
+            >
+              <div
+                className={classes.highlight}
+                style={{
+                  left,
+                  width,
+                  background: highlight,
+                  borderLeft: `1px solid ${highlight}`,
+                  borderRight: `1px solid ${highlight}`,
+                }}
+              />
+            </Tooltip>
+          )
+        })
+    : null
 })
 
 export default OverviewHighlight
