@@ -59,13 +59,8 @@ const AlignmentConnections = observer(function ({
     yOffset = rect.top
   }
 
-  if (!assembly) {
-    return null
-  }
-
-  return (
+  return assembly ? (
     <g
-      stroke={theme.palette.text.disabled}
       fill="none"
       data-testid={layoutMatches.length ? `${trackId}-loaded` : trackId}
     >
@@ -133,6 +128,7 @@ const AlignmentConnections = observer(function ({
             <path
               d={path}
               key={id}
+              stroke={theme.palette.text.disabled}
               data-testid="r1"
               strokeWidth={mouseoverElt === id ? 5 : 1}
               onClick={() => {
@@ -160,7 +156,7 @@ const AlignmentConnections = observer(function ({
         return ret
       })}
     </g>
-  )
+  ) : null
 })
 
 export default AlignmentConnections
