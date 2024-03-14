@@ -102,11 +102,21 @@ function stateModelFactory(
       },
     }))
     .views(self => ({
+      get pileupHeight() {
+        return self.PileupDisplay.adjustTrackLayoutHeightSetting === 'on' ||
+          self.PileupDisplay.adjustTrackLayoutHeightSetting === 'first_render'
+          ? self.PileupDisplay.height + self.SNPCoverageDisplay.height
+          : undefined
+      },
       /**
        * #getter
        */
       get height() {
-        return self.heightPreConfig ?? getConf(self, 'height')
+        console.log(self.heightPreConfig, this.pileupHeight)
+        // what is setting this heightPerConfig
+        return (
+          self.heightPreConfig ?? this.pileupHeight ?? getConf(self, 'height')
+        )
       },
 
       /**
@@ -271,14 +281,16 @@ function stateModelFactory(
           }),
         )
 
-        addDisposer(
-          self,
-          autorun(() => {
-            self.PileupDisplay.setHeight(
-              self.height - self.SNPCoverageDisplay.height,
-            )
-          }),
-        )
+        // addDisposer(
+        //   self,
+        //   autorun(() => {
+        // conditionally run only when we're not auto-formatting
+        // perhaps combine with other autorun at the bottom
+        //     self.PileupDisplay.setHeight(
+        //       self.height - self.SNPCoverageDisplay.height,
+        //     )
+        //   }),
+        // )
       },
       /**
        * #action
@@ -348,6 +360,28 @@ function stateModelFactory(
       const { height, ...rest } = snap
       return { heightPreConfig: height, ...rest }
     })
+    .actions(self => ({
+      afterAttach() {
+        addDisposer(
+          self,
+          autorun(() => {
+            // this override works but is dodgy
+            const { PileupDisplay, SNPCoverageDisplay } = self
+            const ready =
+              // @ts-expect-error
+              self.allLayoutBlocksRendered && self.firstRenderHeight === 0
+            if (
+              PileupDisplay.adjustTrackLayoutHeightSetting === 'on' ||
+              (PileupDisplay.adjustTrackLayoutHeightSetting ===
+                'first_render' &&
+                ready)
+            ) {
+              self.setHeight(PileupDisplay.height + SNPCoverageDisplay.height)
+            }
+          }),
+        )
+      },
+    }))
 }
 
 export default stateModelFactory

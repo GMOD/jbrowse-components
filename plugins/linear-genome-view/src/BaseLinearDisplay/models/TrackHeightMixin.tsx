@@ -84,6 +84,7 @@ export default function TrackHeightMixin() {
        * returns the height of the track as a combination of the config and the settings
        */
       get height() {
+        console.log(self.heightPreConfig)
         return self.heightPreConfig ?? this.layoutMaxHeight
       },
     }))
