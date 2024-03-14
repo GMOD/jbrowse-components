@@ -4,6 +4,7 @@ import { clamp } from '@jbrowse/core/util'
 
 // locals
 import { LayoutRecord } from './model'
+import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 
 type LGV = LinearGenomeViewModel
 
@@ -34,8 +35,18 @@ function heightFromSpecificLevel(
     : views[level].trackRefs[trackId]?.getBoundingClientRect().top || 0
 }
 
-export function getPxFromCoordinate(view: LGV, refName: string, coord: number) {
-  return (view.bpToPx({ refName, coord })?.offsetPx || 0) - view.offsetPx
+export function getPxFromCoordinate(
+  view: LGV,
+  refName: string,
+  coord: number,
+  asm: Assembly,
+) {
+  return (
+    (view.bpToPx({
+      refName: asm.getCanonicalRefName(refName) || refName,
+      coord,
+    })?.offsetPx || 0) - view.offsetPx
+  )
 }
 
 // get's the yposition of a layout record in a track

@@ -5,11 +5,12 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { Region } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
+import { SimpleFeature, Feature, Region } from '@jbrowse/core/util'
 import { map, mergeAll } from 'rxjs/operators'
+
+// locals
 import { ucscProcessedTranscript } from '../util'
 
 function isUCSC(f: Feature) {

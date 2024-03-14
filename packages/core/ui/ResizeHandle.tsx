@@ -12,11 +12,14 @@ const useStyles = makeStyles()({
   },
   flexbox_verticalHandle: {
     cursor: 'col-resize',
-    alignSelf: 'stretch', // the height: 100% is actually unable to function inside flexbox
+    alignSelf: 'stretch',
+    // uses alignSelf:stretch with flexbox as the height: 100% is actually
+    // unable to function inside flexbox
   },
   flexbox_horizontalHandle: {
     cursor: 'row-resize',
-    alignSelf: 'stretch', // similar to above
+    alignSelf: 'stretch',
+    // similar to above
   },
 })
 

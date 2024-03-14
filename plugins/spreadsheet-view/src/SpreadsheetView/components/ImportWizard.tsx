@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import {
   Button,
-  Checkbox,
   FormControl,
   FormGroup,
   FormLabel,
@@ -11,13 +10,17 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 import { getRoot } from 'mobx-state-tree'
+import { makeStyles } from 'tss-react/mui'
 import { AbstractRootModel, getSession } from '@jbrowse/core/util'
-import { FileSelector, ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
+import {
+  FileSelector,
+  ErrorMessage,
+  AssemblySelector,
+  LoadingEllipses,
+} from '@jbrowse/core/ui'
 
 // locals
 import { ImportWizardModel } from '../models/ImportWizard'
-import NumberEditor from './NumberEditor'
-import { makeStyles } from 'tss-react/mui'
 
 const useStyles = makeStyles()({
   container: {
@@ -31,23 +34,16 @@ const ImportWizard = observer(({ model }: { model: ImportWizardModel }) => {
   const session = getSession(model)
   const { classes } = useStyles()
   const { assemblyNames, assemblyManager } = session
-  const {
-    fileType,
-    canCancel,
-    fileSource,
-    isReadyToOpen,
-    fileTypes,
-    hasColumnNameLine,
-    error,
-  } = model
+  const { fileType, fileSource, fileTypes, error, loading } = model
   const [selected, setSelected] = useState(assemblyNames[0])
   const err = assemblyManager.get(selected)?.error || error
   const showRowControls = fileType === 'CSV' || fileType === 'TSV'
-  const rootModel = getRoot(model)
+  const rootModel = getRoot<AbstractRootModel>(model)
 
   return (
     <div className={classes.container}>
       {err ? <ErrorMessage error={err} /> : null}
+      {loading ? <LoadingEllipses /> : null}
       <div>
         <FormControl component="fieldset">
           <FormLabel component="legend">Tabular file</FormLabel>
@@ -55,7 +51,7 @@ const ImportWizard = observer(({ model }: { model: ImportWizardModel }) => {
             <FileSelector
               location={fileSource}
               setLocation={arg => model.setFileSource(arg)}
-              rootModel={rootModel as AbstractRootModel}
+              rootModel={rootModel}
             />
           </FormGroup>
         </FormControl>
@@ -81,23 +77,6 @@ const ImportWizard = observer(({ model }: { model: ImportWizardModel }) => {
         <div>
           <FormControl component="fieldset">
             <FormLabel component="legend">Column Names</FormLabel>
-            <FormControlLabel
-              disabled={!showRowControls}
-              label="has column names on line"
-              labelPlacement="end"
-              control={
-                <Checkbox
-                  checked={hasColumnNameLine}
-                  onClick={() => model.toggleHasColumnNameLine()}
-                />
-              }
-            />
-            <NumberEditor
-              model={model}
-              disabled={!showRowControls || !hasColumnNameLine}
-              modelPropName="columnNameLineNumber"
-              modelSetterName="setColumnNameLineNumber"
-            />
           </FormControl>
         </div>
       ) : null}
@@ -108,30 +87,18 @@ const ImportWizard = observer(({ model }: { model: ImportWizardModel }) => {
           onChange={val => setSelected(val)}
         />
       </div>
-      <div>
-        {canCancel ? (
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => model.cancelButton()}
-            disabled={!canCancel}
-          >
-            Cancel
-          </Button>
-        ) : null}{' '}
-        <Button
-          disabled={!isReadyToOpen || !!err}
-          variant="contained"
-          data-testid="open_spreadsheet"
-          color="primary"
-          onClick={() => {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            model.import(selected)
-          }}
-        >
-          Open
-        </Button>
-      </div>
+      <Button
+        disabled={!!err}
+        variant="contained"
+        data-testid="open_spreadsheet"
+        color="primary"
+        onClick={() => {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          model.import(selected)
+        }}
+      >
+        Open
+      </Button>
     </div>
   )
 })
