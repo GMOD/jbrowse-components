@@ -16,10 +16,9 @@ const useStyles = makeStyles()(theme => ({
   viewContainer: {
     margin: theme.spacing(0.5),
     padding: `0 ${theme.spacing(1)} ${theme.spacing(1)}`,
-    overflow: 'visible',
-  },
-  viewContentsContainer: {
-    overflow: 'visible',
+    overflow: 'clip',
+    // xref https://stackoverflow.com/questions/43909940/why-does-overflowhidden-prevent-positionsticky-from-working
+    // note that contain:paint also seems to work
   },
   focusedView: {
     background: theme.palette.secondary.main,
@@ -75,7 +74,7 @@ const ViewContainer = observer(function ({
           onMinimize={() => view.setMinimized(!view.minimized)}
           className={backgroundColorClassName}
         />
-        <Paper elevation={0} className={classes.viewContentsContainer}>
+        <Paper elevation={0}>
           <ViewWrapper view={view} session={session} />
         </Paper>
       </Paper>
