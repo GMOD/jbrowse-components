@@ -1,6 +1,9 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 import { IconButton, Paper, alpha } from '@mui/material'
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import { makeStyles } from 'tss-react/mui'
+import { getSession } from '@jbrowse/core/util'
 
 // icons
 import ZoomIn from '@mui/icons-material/ZoomIn'
@@ -9,9 +12,6 @@ import ArrowDown from '@mui/icons-material/KeyboardArrowDown'
 
 // locals
 import { LinearGenomeViewModel } from '..'
-import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-import { makeStyles } from 'tss-react/mui'
-import { getSession } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
   background: {
