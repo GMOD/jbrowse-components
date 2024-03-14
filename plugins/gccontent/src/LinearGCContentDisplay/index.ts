@@ -19,4 +19,18 @@ export default (pluginManager: PluginManager) => {
       ReactComponent: LinearWiggleDisplayReactComponent,
     })
   })
+
+  pluginManager.addDisplayType(() => {
+    const configSchema = configSchemaFactory(pluginManager)
+    const stateModel = stateModelFactory(pluginManager, configSchema)
+    return new DisplayType({
+      name: 'LinearGCContentDisplay2',
+      configSchema,
+      stateModel,
+      displayName: 'GC content display',
+      trackType: 'GCContentTrack',
+      viewType: 'LinearGenomeView',
+      ReactComponent: LinearWiggleDisplayReactComponent,
+    })
+  })
 }

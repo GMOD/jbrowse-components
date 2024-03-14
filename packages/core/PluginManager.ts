@@ -37,8 +37,8 @@ import CorePlugin from './CorePlugin'
 import createJexlInstance from './util/jexl'
 import { PluginDefinition } from './PluginLoader'
 
-/** little helper class that keeps groups of callbacks that are
-then run in a specified order by group */
+// helper class that keeps groups of callbacks that are then run in a specified
+// order by group
 class PhasedScheduler<PhaseName extends string> {
   phaseCallbacks = new Map<PhaseName, Function[]>()
 
@@ -120,11 +120,11 @@ class TypeRecord<ElementClass extends PluggableElementBase> {
 type AnyFunction = (...args: any) => any
 
 /**
- * free-form string-to-unknown mapping of metadata related to the instance
- * of this plugin. `isCore` is typically set to `Boolean(true)` if the plugin was
- * loaded as part of the "core" set of plugins for this application.
- * Can also use this metadata to stash other things about why the plugin is
- * loaded, such as where it came from, what plugin depends on it, etc.
+ * free-form string-to-unknown mapping of metadata related to the instance of
+ * this plugin. `isCore` is typically set to `Boolean(true)` if the plugin was
+ * loaded as part of the "core" set of plugins for this application. Can also
+ * use this metadata to stash other things about why the plugin is loaded, such
+ * as where it came from, what plugin depends on it, etc.
  */
 export type PluginMetadata = Record<string, unknown>
 
@@ -195,7 +195,12 @@ export default class PluginManager {
 
   constructor(initialPlugins: (Plugin | PluginLoadRecord)[] = []) {
     // add the core plugin
-    this.addPlugin({ plugin: new CorePlugin(), metadata: { isCore: true } })
+    this.addPlugin({
+      plugin: new CorePlugin(),
+      metadata: {
+        isCore: true,
+      },
+    })
 
     // add all the initial plugins
     initialPlugins.forEach(plugin => {
@@ -524,6 +529,7 @@ export default class PluginManager {
       const displays = this.getElementTypesInGroup('display') as DisplayType[]
       displays.forEach(display => {
         // track may have already added the displayType in its cb
+        console.log({ t: track.displayTypes })
         if (
           display.trackType === track.name &&
           !track.displayTypes.includes(display)
