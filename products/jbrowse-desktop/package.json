@@ -133,10 +133,26 @@
         },
         {
           "target": "snap"
+        },
+        {
+          "target": "deb"
         }
       ],
       "executableName": "jbrowse-desktop",
       "artifactName": "jbrowse-desktop-v${version}-linux.${ext}"
+    },
+    "deb": {
+      "maintainer": "colin.diesh@gmail.com"
+    },
+    "snap": {
+      "confinement": "strict",
+      "plugs": [
+        "default",
+        "removable-media"
+      ],
+      "slots": [
+        "default"
+      ]
     },
     "mac": {
       "mergeASARs": false,
