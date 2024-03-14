@@ -104,32 +104,19 @@
     "use-query-params": "^2.0.0"
   },
   "devDependencies": {
-    "electron": "29.1.0"
+    "electron": "29.1.2"
   },
   "browserslist": [
     "last 1 chrome version"
   ],
   "build": {
-    "electronVersion": "29.1.0",
+    "electronVersion": "29.1.2",
     "extraMetadata": {
       "main": "build/electron.js"
     },
     "appId": "org.jbrowse2.app",
     "productName": "JBrowse 2",
     "copyright": "Copyright © 2019",
-    "snap": {
-      "confinement": "strict",
-      "plugs": [
-        "default",
-        "removable-media"
-      ],
-      "publish": [
-        "github"
-      ],
-      "slots": [
-        "default"
-      ]
-    },
     "win": {
       "publish": [
         "github"
@@ -140,8 +127,32 @@
       "publish": [
         "github"
       ],
+      "target": [
+        {
+          "target": "AppImage"
+        },
+        {
+          "target": "snap"
+        },
+        {
+          "target": "deb"
+        }
+      ],
       "executableName": "jbrowse-desktop",
       "artifactName": "jbrowse-desktop-v${version}-linux.${ext}"
+    },
+    "deb": {
+      "maintainer": "colin.diesh@gmail.com"
+    },
+    "snap": {
+      "confinement": "strict",
+      "plugs": [
+        "default",
+        "removable-media"
+      ],
+      "slots": [
+        "default"
+      ]
     },
     "mac": {
       "mergeASARs": false,
