@@ -529,7 +529,6 @@ export default class PluginManager {
       const displays = this.getElementTypesInGroup('display') as DisplayType[]
       displays.forEach(display => {
         // track may have already added the displayType in its cb
-        console.log({ t: track.displayTypes })
         if (
           display.trackType === track.name &&
           !track.displayTypes.includes(display)
