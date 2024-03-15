@@ -818,7 +818,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setadjustTrackLayoutHeight(setting: 'on' | 'off' | 'first_render') {
+      setAdjustTrackLayoutHeight(setting: 'on' | 'off' | 'first_render') {
         localStorage.setItem('lgv-adjustTrackLayoutHeight', setting)
         self.adjustTrackLayoutHeight = setting
       },
@@ -1213,22 +1213,22 @@ export function stateModelFactory(pluginManager: PluginManager) {
             label: 'Track height',
             subMenu: [
               {
-                label: 'Use default (from config)',
+                label: 'Use manually resized height, or default (from config)',
                 type: 'radio',
                 checked: self.adjustTrackLayoutHeightSetting === 'off',
-                onClick: () => self.setadjustTrackLayoutHeight('off'),
+                onClick: () => self.setAdjustTrackLayoutHeight('off'),
               },
               {
                 label: 'Auto-adjust to show all features on track',
                 type: 'radio',
                 checked: self.adjustTrackLayoutHeightSetting === 'on',
-                onClick: () => self.setadjustTrackLayoutHeight('on'),
+                onClick: () => self.setAdjustTrackLayoutHeight('on'),
               },
               {
                 label: 'Auto-adjust to show height of initial features',
                 type: 'radio',
                 checked: self.adjustTrackLayoutHeightSetting === 'first_render',
-                onClick: () => self.setadjustTrackLayoutHeight('first_render'),
+                onClick: () => self.setAdjustTrackLayoutHeight('first_render'),
               },
             ],
           },

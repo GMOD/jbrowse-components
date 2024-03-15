@@ -110,7 +110,7 @@ function stateModelFactory() {
           const { blockDefinitions, blockState } = self
           return blockDefinitions.map(block => {
             const state = blockState.get(block.key)
-            return state?.layout?.getTotalHeight()
+            return state?.layout?.getTotalHeight() + 100
           })
         } catch (e) {
           return [undefined]

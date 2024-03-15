@@ -102,21 +102,11 @@ function stateModelFactory(
       },
     }))
     .views(self => ({
-      get pileupHeight() {
-        return self.PileupDisplay.adjustTrackLayoutHeightSetting === 'on' ||
-          self.PileupDisplay.adjustTrackLayoutHeightSetting === 'first_render'
-          ? self.PileupDisplay.height + self.SNPCoverageDisplay.height
-          : undefined
-      },
       /**
        * #getter
        */
       get height() {
-        console.log(self.heightPreConfig, this.pileupHeight)
-        // what is setting this heightPerConfig
-        return (
-          self.heightPreConfig ?? this.pileupHeight ?? getConf(self, 'height')
-        )
+        return self.heightPreConfig ?? getConf(self, 'height')
       },
 
       /**
@@ -232,6 +222,7 @@ function stateModelFactory(
        * #action
        */
       resizeHeight(distance: number) {
+        self.PileupDisplay.resizeHeight(distance)
         const oldHeight = self.height
         const newHeight = this.setHeight(self.height + distance)
         return newHeight - oldHeight
@@ -280,17 +271,6 @@ function stateModelFactory(
             self.setSNPCoverageHeight(self.SNPCoverageDisplay.height)
           }),
         )
-
-        // addDisposer(
-        //   self,
-        //   autorun(() => {
-        // conditionally run only when we're not auto-formatting
-        // perhaps combine with other autorun at the bottom
-        //     self.PileupDisplay.setHeight(
-        //       self.height - self.SNPCoverageDisplay.height,
-        //     )
-        //   }),
-        // )
       },
       /**
        * #action
@@ -365,18 +345,19 @@ function stateModelFactory(
         addDisposer(
           self,
           autorun(() => {
-            // this override works but is dodgy
+            // Sets the heightPreConfig conditional to whether the user has the layout height setting on (impacts the PileupDisplay)
             const { PileupDisplay, SNPCoverageDisplay } = self
-            const ready =
-              // @ts-expect-error
-              self.allLayoutBlocksRendered && self.firstRenderHeight === 0
-            if (
-              PileupDisplay.adjustTrackLayoutHeightSetting === 'on' ||
-              (PileupDisplay.adjustTrackLayoutHeightSetting ===
-                'first_render' &&
-                ready)
-            ) {
+
+            const setting = PileupDisplay.adjustTrackLayoutHeightSetting
+
+            if (setting === 'on' || setting === 'first_render') {
               self.setHeight(PileupDisplay.height + SNPCoverageDisplay.height)
+            }
+
+            if (setting === 'off') {
+              self.PileupDisplay.setHeight(
+                self.height - self.SNPCoverageDisplay.height,
+              )
             }
           }),
         )
