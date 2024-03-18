@@ -16,8 +16,14 @@ import {
 import { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import { autorun } from 'mobx'
-import { addDisposer, isAlive, types, Instance } from 'mobx-state-tree'
+import { autorun, when } from 'mobx'
+import {
+  addDisposer,
+  isAlive,
+  types,
+  getSnapshot,
+  Instance,
+} from 'mobx-state-tree'
 
 // icons
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
@@ -299,6 +305,46 @@ function stateModelFactory() {
                   onClick: () => {
                     if (self.contextMenuFeature) {
                       self.selectFeature(self.contextMenuFeature)
+                    }
+                  },
+                },
+                {
+                  label: 'Collapse introns',
+                  onClick: async () => {
+                    const { contextMenuFeature } = self
+                    if (contextMenuFeature) {
+                      const refName = contextMenuFeature.get('refName')
+                      const view = getContainingView(self) as LGV
+                      const singleTranscript =
+                        contextMenuFeature.get('subfeatures')?.[0]
+                      const res =
+                        singleTranscript
+                          ?.get('subfeatures')
+                          ?.filter(f => f.get('type') === 'exon')
+                          .map(f => ({
+                            refName,
+                            start: f.get('start') - 100,
+                            end: f.get('end') + 100,
+                            assemblyName: view.assemblyNames[0],
+                          })) || []
+                      res.sort((a, b) => a.start - b.start)
+
+                      // need to strip ID before copying view snap
+                      const { id, ...rest } = getSnapshot(view)
+                      const newView = getSession(self).addView(
+                        'LinearGenomeView',
+                        {
+                          ...rest,
+                          tracks: rest.tracks.map(track => {
+                            const { id, ...rest } = track
+                            return { ...rest }
+                          }),
+                          displayedRegions: res,
+                        },
+                      ) as LGV
+                      await when(() => newView.initialized)
+
+                      newView.showAllRegions()
                     }
                   },
                 },
