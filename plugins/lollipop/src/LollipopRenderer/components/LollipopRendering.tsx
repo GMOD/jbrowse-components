@@ -119,17 +119,17 @@ const LollipopRendering = observer(function (props: Record<string, any>) {
         return (
           <React.Fragment key={feature.id()}>
             <Stick
+              key={`stick-${feature.id()}`}
               {...props}
               config={config}
               layoutRecord={layoutRecord}
               feature={feature}
-              key={`stick-${feature.id()}`}
             />
             <Lollipop
+              key={`body-${feature.id()}`}
               {...props}
               layoutRecord={layoutRecord}
               feature={feature}
-              key={`body-${feature.id()}`}
               selectedFeatureId={selectedFeatureId}
             />
           </React.Fragment>

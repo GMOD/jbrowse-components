@@ -29,7 +29,7 @@ export function getSOTermAndDescription(
   const soTerms = new Set<string>()
   let descriptions = new Set<string>()
   alt.forEach(a => {
-    let [soTerm, description] = getSOAndDescFromAltDefs(ref, a, parser)
+    let [soTerm, description] = getSOAndDescFromAltDefs(a, parser)
     if (!soTerm) {
       ;[soTerm, description] = getSOAndDescByExamination(ref, a)
     }
@@ -68,11 +68,7 @@ export function getSOTermAndDescription(
   return []
 }
 
-export function getSOAndDescFromAltDefs(
-  ref: string,
-  alt: string,
-  parser: VCF,
-): string[] {
+export function getSOAndDescFromAltDefs(alt: string, parser: VCF): string[] {
   if (typeof alt === 'string' && !alt.startsWith('<')) {
     return []
   }
@@ -90,11 +86,7 @@ export function getSOAndDescFromAltDefs(
   // try to look for a definition for a parent term if we can
   const modAlt = alt.split(':')
   if (modAlt.length > 1) {
-    return getSOAndDescFromAltDefs(
-      ref,
-      `<${modAlt.slice(0, -1).join(':')}>`,
-      parser,
-    )
+    return getSOAndDescFromAltDefs(`<${modAlt.slice(0, -1).join(':')}>`, parser)
   }
 
   // no parent

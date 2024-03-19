@@ -10,15 +10,11 @@ const DialogQueue = observer(function ({
   session: SessionWithDrawerWidgets
 }) {
   const { DialogComponent, DialogProps } = session
-  return (
-    <>
-      {DialogComponent ? (
-        <Suspense fallback={null}>
-          <DialogComponent {...DialogProps} />
-        </Suspense>
-      ) : null}
-    </>
-  )
+  return DialogComponent ? (
+    <Suspense fallback={null}>
+      <DialogComponent {...DialogProps} />
+    </Suspense>
+  ) : null
 })
 
 export default DialogQueue

@@ -25,14 +25,14 @@ type MaybeAnyConfigurationModel = AnyConfigurationModel | undefined
 
 // for settings that are config dependent
 function postNoConfigF() {
-  return typeof window !== undefined
+  return typeof window !== 'undefined'
     ? [window.location.host, window.location.pathname].join('-')
     : 'empty'
 }
 
 // for settings that are not config dependent
 function postF() {
-  return typeof window !== undefined
+  return typeof window !== 'undefined'
     ? [
         postNoConfigF(),
         new URLSearchParams(window.location.search).get('config'),

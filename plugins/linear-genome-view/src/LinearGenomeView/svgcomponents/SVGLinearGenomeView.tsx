@@ -32,7 +32,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
     cytobandHeight = 100,
     trackLabels = 'offset',
     themeName = 'default',
-    Wrapper = ({ children }) => <>{children}</>,
+    Wrapper = ({ children }) => children,
   } = opts
   const session = getSession(model)
   const { allThemes } = session
