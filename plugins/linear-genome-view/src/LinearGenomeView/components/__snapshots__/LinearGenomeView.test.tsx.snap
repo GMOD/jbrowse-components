@@ -157,7 +157,7 @@ exports[`renders one track, one region 1`] = `
               />
             </button>
             <div
-              class="MuiAutocomplete-root css-1h51icj-MuiAutocomplete-root"
+              class="MuiAutocomplete-root css-clttge-MuiAutocomplete-root"
               data-testid="autocomplete"
               style="width: 175px;"
             >
@@ -265,17 +265,17 @@ exports[`renders one track, one region 1`] = `
               </svg>
             </button>
             <span
-              class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall css-1ub3usb-MuiSlider-root-slider"
+              class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall css-m0837o-MuiSlider-root-slider"
             >
               <span
-                class="MuiSlider-rail css-14pt78w-MuiSlider-rail"
+                class="MuiSlider-rail css-7o8aqz-MuiSlider-rail"
               />
               <span
-                class="MuiSlider-track css-1n40zqk-MuiSlider-track"
+                class="MuiSlider-track css-nl6333-MuiSlider-track"
                 style="left: 0%; width: 0%;"
               />
               <span
-                class="MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary css-cv58vo-MuiSlider-thumb"
+                class="MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary css-14eyfr9-MuiSlider-thumb"
                 data-index="0"
                 style="left: 0%;"
               >
@@ -731,7 +731,7 @@ exports[`renders two tracks, two regions 1`] = `
               />
             </button>
             <div
-              class="MuiAutocomplete-root css-1h51icj-MuiAutocomplete-root"
+              class="MuiAutocomplete-root css-clttge-MuiAutocomplete-root"
               data-testid="autocomplete"
               style="width: 283.990625px;"
             >
@@ -841,17 +841,17 @@ exports[`renders two tracks, two regions 1`] = `
               />
             </button>
             <span
-              class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall css-1ub3usb-MuiSlider-root-slider"
+              class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall css-m0837o-MuiSlider-root-slider"
             >
               <span
-                class="MuiSlider-rail css-14pt78w-MuiSlider-rail"
+                class="MuiSlider-rail css-7o8aqz-MuiSlider-rail"
               />
               <span
-                class="MuiSlider-track css-1n40zqk-MuiSlider-track"
+                class="MuiSlider-track css-nl6333-MuiSlider-track"
                 style="left: 0%; width: 9.774680693120512%;"
               />
               <span
-                class="MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary css-cv58vo-MuiSlider-thumb"
+                class="MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary css-14eyfr9-MuiSlider-thumb"
                 data-index="0"
                 style="left: 9.774680693120512%;"
               >

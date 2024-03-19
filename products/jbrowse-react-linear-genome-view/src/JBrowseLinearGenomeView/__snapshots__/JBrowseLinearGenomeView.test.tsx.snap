@@ -246,7 +246,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                       />
                     </button>
                     <div
-                      class="MuiAutocomplete-root css-1xnbq41-MuiAutocomplete-root"
+                      class="MuiAutocomplete-root css-1p6gcs-MuiAutocomplete-root"
                       data-testid="autocomplete"
                       style="width: 175px;"
                     >
@@ -356,17 +356,17 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                       />
                     </button>
                     <span
-                      class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall css-1o03u7v-MuiSlider-root-slider"
+                      class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall css-155bqyq-MuiSlider-root-slider"
                     >
                       <span
-                        class="MuiSlider-rail css-14pt78w-MuiSlider-rail"
+                        class="MuiSlider-rail css-7o8aqz-MuiSlider-rail"
                       />
                       <span
-                        class="MuiSlider-track css-1n40zqk-MuiSlider-track"
+                        class="MuiSlider-track css-nl6333-MuiSlider-track"
                         style="left: 0%; width: 56.78411120929245%;"
                       />
                       <span
-                        class="MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary css-1ck72b3-MuiSlider-thumb"
+                        class="MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary css-1j77ekx-MuiSlider-thumb"
                         data-index="0"
                         style="left: 56.78411120929245%;"
                       >
