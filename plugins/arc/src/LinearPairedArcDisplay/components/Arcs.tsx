@@ -115,7 +115,7 @@ const Wrapper = observer(function ({
   const view = getContainingView(model) as LGV
   const width = Math.round(view.dynamicBlocks.totalWidthPx)
   return exportSVG ? (
-    <>{children}</>
+    children
   ) : (
     <svg width={width} height={height}>
       {children}

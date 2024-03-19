@@ -104,44 +104,40 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
       model.highlight.refName,
   })
 
-  return (
-    <>
-      {h ? (
-        <div
-          className={classes.highlight}
-          style={{
-            left: h.left,
-            width: h.width,
-          }}
+  return h ? (
+    <div
+      className={classes.highlight}
+      style={{
+        left: h.left,
+        width: h.width,
+      }}
+    >
+      <Tooltip title={'Highlighted from URL parameter'} arrow>
+        <IconButton
+          ref={anchorEl}
+          onClick={() => setOpen(true)}
+          style={{ zIndex: 4 }}
         >
-          <Tooltip title={'Highlighted from URL parameter'} arrow>
-            <IconButton
-              ref={anchorEl}
-              onClick={() => setOpen(true)}
-              style={{ zIndex: 4 }}
-            >
-              <LinkIcon
-                fontSize="small"
-                sx={{
-                  color: `${colord(color).darken(0.2).toRgbString()}`,
-                }}
-              />
-            </IconButton>
-          </Tooltip>
-          <Menu
-            anchorEl={anchorEl.current}
-            onMenuItemClick={(_event, callback) => {
-              callback(session)
-              handleClose()
+          <LinkIcon
+            fontSize="small"
+            sx={{
+              color: `${colord(color).darken(0.2).toRgbString()}`,
             }}
-            open={open}
-            onClose={handleClose}
-            menuItems={menuItems}
           />
-        </div>
-      ) : null}
-    </>
-  )
+        </IconButton>
+      </Tooltip>
+      <Menu
+        anchorEl={anchorEl.current}
+        onMenuItemClick={(_event, callback) => {
+          callback(session)
+          handleClose()
+        }}
+        open={open}
+        onClose={handleClose}
+        menuItems={menuItems}
+      />
+    </div>
+  ) : null
 })
 
 export default Highlight

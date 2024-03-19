@@ -1237,7 +1237,7 @@ export function coarseStripHTML(s: string) {
 // based on autolink-js, license MIT
 export function linkify(s: string) {
   const pattern =
-    /(^|[\s\n]|<[A-Za-z]*\/?>)((?:https?|ftp):\/\/[\-A-Z0-9+\u0026\u2019@#\/%?=()~_|!:,.;]*[\-A-Z0-9+\u0026@#\/%=~()_|])/gi
+    /(^|[\s\n]|<[A-Za-z]*\/?>)((?:https?|ftp):\/\/[-A-Z0-9+\u0026\u2019@#/%?=()~_|!:,.;]*[-A-Z0-9+\u0026@#/%=~()_|])/gi
   return s.replaceAll(pattern, '$1<a href=\'$2\' target="_blank">$2</a>')
 }
 

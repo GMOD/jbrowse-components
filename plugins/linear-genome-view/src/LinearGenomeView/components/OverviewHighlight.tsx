@@ -72,19 +72,15 @@ const OverviewHighlight = observer(function OverviewHighlight({
       model.highlight.refName,
   })
 
-  return (
-    <>
-      {h ? (
-        <div
-          className={classes.highlight}
-          style={{
-            width: h.width,
-            left: h.left,
-          }}
-        />
-      ) : null}
-    </>
-  )
+  return h ? (
+    <div
+      className={classes.highlight}
+      style={{
+        width: h.width,
+        left: h.left,
+      }}
+    />
+  ) : null
 })
 
 export default OverviewHighlight

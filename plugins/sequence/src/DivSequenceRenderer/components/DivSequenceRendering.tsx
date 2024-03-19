@@ -233,7 +233,7 @@ function SequenceSVG({
           seq={seq}
           y={(currY += rowHeight)}
           codonTable={codonTable}
-          frame={index as Frame}
+          frame={index}
           bpPerPx={bpPerPx}
           region={region}
           seqStart={feature.get('start')}
@@ -274,7 +274,7 @@ function SequenceSVG({
           seq={seq}
           y={(currY += rowHeight)}
           codonTable={codonTable}
-          frame={index as Frame}
+          frame={index}
           bpPerPx={bpPerPx}
           region={region}
           seqStart={feature.get('start')}
@@ -299,7 +299,7 @@ function Wrapper({
   children: React.ReactNode
 }) {
   return exportSVG ? (
-    <>{children}</>
+    children
   ) : (
     <svg
       data-testid="sequence_track"
