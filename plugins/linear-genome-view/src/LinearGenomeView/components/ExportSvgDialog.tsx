@@ -8,6 +8,7 @@ import {
   FormControlLabel,
   MenuItem,
   TextField,
+  TextFieldProps,
   Typography,
 } from '@mui/material'
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
@@ -27,6 +28,14 @@ function LoadingMessage() {
 
 function useSvgLocal<T>(key: string, val: T) {
   return useLocalStorage('svg-' + key, val)
+}
+
+function TextField2({ children, ...rest }: TextFieldProps) {
+  return (
+    <div>
+      <TextField {...rest}>{children}</TextField>
+    </div>
+  )
 }
 
 export default function ExportSvgDialog({
@@ -55,13 +64,12 @@ export default function ExportSvgDialog({
         ) : loading ? (
           <LoadingMessage />
         ) : null}
-        <TextField
+        <TextField2
           helperText="filename"
           value={filename}
           onChange={event => setFilename(event.target.value)}
         />
-        <br />
-        <TextField
+        <TextField2
           select
           label="Track label positioning"
           variant="outlined"
@@ -73,10 +81,9 @@ export default function ExportSvgDialog({
           <MenuItem value="overlay">Overlay</MenuItem>
           <MenuItem value="left">Left</MenuItem>
           <MenuItem value="none">None</MenuItem>
-        </TextField>
-        <br />
+        </TextField2>
         {session.allThemes ? (
-          <TextField
+          <TextField2
             select
             label="Theme"
             variant="outlined"
@@ -91,7 +98,7 @@ export default function ExportSvgDialog({
                 }
               </MenuItem>
             ))}
-          </TextField>
+          </TextField2>
         ) : null}
 
         {offscreenCanvas ? (
@@ -137,6 +144,7 @@ export default function ExportSvgDialog({
             } catch (e) {
               console.error(e)
               setError(e)
+            } finally {
               setLoading(false)
             }
           }}
