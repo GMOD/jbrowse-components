@@ -10,40 +10,40 @@ describe('Scalebar genome view component', () => {
     const session = createTestSession({
       views: [
         {
-          type: 'LinearGenomeView',
-          offsetPx: 0,
           bpPerPx: 1,
+          configuration: {},
           displayedRegions: [
-            { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
+            { assemblyName: 'volvox', end: 100, refName: 'ctgA', start: 0 },
             {
               assemblyName: 'volvox',
+              end: 200,
               refName: 'ctgB',
               start: 100,
-              end: 200,
             },
           ],
+          offsetPx: 0,
           tracks: [],
-          configuration: {},
+          type: 'LinearGenomeView',
         },
       ],
     }) as any
     session.addAssemblyConf({
       name: 'volMyt1',
       sequence: {
-        trackId: 'ref0',
-        type: 'ReferenceSequenceTrack',
         adapter: {
-          type: 'FromConfigSequenceAdapter',
           features: [
             {
-              refName: 'ctgA',
-              uniqueId: 'firstId',
-              start: 0,
               end: 10,
+              refName: 'ctgA',
               seq: 'cattgttgcg',
+              start: 0,
+              uniqueId: 'firstId',
             },
           ],
+          type: 'FromConfigSequenceAdapter',
         },
+        trackId: 'ref0',
+        type: 'ReferenceSequenceTrack',
       },
     })
     const model = session.views[0]
@@ -57,35 +57,35 @@ describe('Scalebar genome view component', () => {
     const session = createTestSession({
       views: [
         {
-          type: 'LinearGenomeView',
-          offsetPx: -100,
           bpPerPx: 1,
-          displayedRegions: [
-            { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
-            { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 100 },
-          ],
-          tracks: [],
           configuration: {},
+          displayedRegions: [
+            { assemblyName: 'volvox', end: 100, refName: 'ctgA', start: 0 },
+            { assemblyName: 'volvox', end: 100, refName: 'ctgB', start: 0 },
+          ],
+          offsetPx: -100,
+          tracks: [],
+          type: 'LinearGenomeView',
         },
       ],
     }) as any
     session.addAssemblyConf({
       name: 'volMyt1',
       sequence: {
-        trackId: 'ref0',
-        type: 'ReferenceSequenceTrack',
         adapter: {
-          type: 'FromConfigSequenceAdapter',
           features: [
             {
-              refName: 'ctgA',
-              uniqueId: 'firstId',
-              start: 0,
               end: 10,
+              refName: 'ctgA',
               seq: 'cattgttgcg',
+              start: 0,
+              uniqueId: 'firstId',
             },
           ],
+          type: 'FromConfigSequenceAdapter',
         },
+        trackId: 'ref0',
+        type: 'ReferenceSequenceTrack',
       },
     })
     const model = session.views[0]
@@ -100,37 +100,37 @@ describe('Scalebar genome view component', () => {
     const session = createTestSession({
       views: [
         {
-          type: 'LinearGenomeView',
-          offsetPx: -100,
           bpPerPx: 1,
-          displayedRegions: [
-            { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
-            { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 1 },
-            { assemblyName: 'volvox', refName: 'ctgC', start: 0, end: 1 },
-            { assemblyName: 'volvox', refName: 'ctgD', start: 0, end: 1 },
-          ],
-          tracks: [],
           configuration: {},
+          displayedRegions: [
+            { assemblyName: 'volvox', end: 1000, refName: 'ctgA', start: 0 },
+            { assemblyName: 'volvox', end: 1, refName: 'ctgB', start: 0 },
+            { assemblyName: 'volvox', end: 1, refName: 'ctgC', start: 0 },
+            { assemblyName: 'volvox', end: 1, refName: 'ctgD', start: 0 },
+          ],
+          offsetPx: -100,
+          tracks: [],
+          type: 'LinearGenomeView',
         },
       ],
     }) as any
     session.addAssemblyConf({
       name: 'volMyt1',
       sequence: {
-        trackId: 'ref0',
-        type: 'ReferenceSequenceTrack',
         adapter: {
-          type: 'FromConfigSequenceAdapter',
           features: [
             {
-              refName: 'ctgA',
-              uniqueId: 'firstId',
-              start: 0,
               end: 10,
+              refName: 'ctgA',
               seq: 'cattgttgcg',
+              start: 0,
+              uniqueId: 'firstId',
             },
           ],
+          type: 'FromConfigSequenceAdapter',
         },
+        trackId: 'ref0',
+        type: 'ReferenceSequenceTrack',
       },
     })
     const model = session.views[0]

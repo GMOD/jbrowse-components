@@ -11,50 +11,55 @@ const TrixTextSearchAdapter = ConfigurationSchema(
     /**
      * #slot
      */
-    ixFilePath: {
-      type: 'fileLocation',
-      defaultValue: { uri: 'out.ix', locationType: 'UriLocation' },
-      description: 'the location of the trix ix file',
+    assemblyNames: {
+      defaultValue: [],
+      description: 'List of assemblies covered by text search adapter',
+      type: 'stringArray',
     },
+
+    /**
+     * #slot
+     */
+    ixFilePath: {
+      defaultValue: { locationType: 'UriLocation', uri: 'out.ix' },
+      description: 'the location of the trix ix file',
+      type: 'fileLocation',
+    },
+
     /**
      * #slot
      */
     ixxFilePath: {
-      type: 'fileLocation',
-      defaultValue: { uri: 'out.ixx', locationType: 'UriLocation' },
+      defaultValue: { locationType: 'UriLocation', uri: 'out.ixx' },
       description: 'the location of the trix ixx file',
+      type: 'fileLocation',
     },
+
     /**
      * #slot
      */
     metaFilePath: {
-      type: 'fileLocation',
-      defaultValue: { uri: 'meta.json', locationType: 'UriLocation' },
+      defaultValue: { locationType: 'UriLocation', uri: 'meta.json' },
       description: 'the location of the metadata json file for the trix index',
+      type: 'fileLocation',
     },
+
     /**
      * #slot
      */
     tracks: {
-      type: 'stringArray',
       defaultValue: [],
       description: 'List of tracks covered by text search adapter',
-    },
-    /**
-     * #slot
-     */
-    assemblyNames: {
       type: 'stringArray',
-      defaultValue: [],
-      description: 'List of assemblies covered by text search adapter',
     },
   },
   {
-    explicitlyTyped: true,
     /**
      * #identifier
      */
     explicitIdentifier: 'textSearchAdapterId',
+
+    explicitlyTyped: true,
   },
 )
 

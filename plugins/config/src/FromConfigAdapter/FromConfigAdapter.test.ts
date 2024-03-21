@@ -5,14 +5,14 @@ import configSchema from './configSchema'
 
 test('adapter can fetch features', async () => {
   const features = [
-    { uniqueId: 'one', refName: 'ctgA', start: 20, end: 40 },
-    { uniqueId: 'two', refName: 'ctgB', start: 50, end: 60 },
+    { end: 40, refName: 'ctgA', start: 20, uniqueId: 'one' },
+    { end: 60, refName: 'ctgB', start: 50, uniqueId: 'two' },
   ]
   const adapter = new Adapter(configSchema.create({ features }))
   const result = adapter.getFeatures({
+    end: 20000,
     refName: 'ctgA',
     start: 0,
-    end: 20000,
   })
 
   const featuresArray = await firstValueFrom(result.pipe(toArray()))
@@ -23,32 +23,32 @@ test('adapter can fetch features', async () => {
 test('adapter can fetch features with subfeatures', async () => {
   const features = [
     {
-      refName: 'ctgA',
-      uniqueId: 'feat1',
-      start: 200,
       end: 750,
       name: 'Feature1',
+      refName: 'ctgA',
+      start: 200,
       subfeatures: [
         {
-          uniqueId: 'feat2',
-          start: 225,
           end: 300,
           name: 'Feature2',
+          start: 225,
+          uniqueId: 'feat2',
         },
         {
-          uniqueId: 'feat3',
-          start: 400,
           end: 600,
           name: 'Feature3',
+          start: 400,
+          uniqueId: 'feat3',
         },
       ],
+      uniqueId: 'feat1',
     },
   ]
   const adapter = new Adapter(configSchema.create({ features }))
   const result = adapter.getFeatures({
+    end: 20000,
     refName: 'ctgA',
     start: 0,
-    end: 20000,
   })
 
   const featuresArray = await firstValueFrom(result.pipe(toArray()))

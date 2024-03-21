@@ -35,12 +35,12 @@ export function renderAlignment({
   const region = regions[0]
 
   ctx.fillStyle = getAlignmentShapeColor({
-    feature,
-    config,
-    tag,
-    defaultColor,
-    colorType,
     colorTagMap,
+    colorType,
+    config,
+    defaultColor,
+    feature,
+    tag,
   })
 
   renderAlignmentShape({ ctx, feat, renderArgs })
@@ -50,47 +50,47 @@ export function renderAlignment({
   switch (colorType) {
     case 'perBaseQuality':
       renderPerBaseQuality({
+        bpPerPx,
+        canvasWidth,
         ctx,
         feat,
         region,
-        bpPerPx,
-        canvasWidth,
       })
       break
 
     case 'perBaseLettering':
       renderPerBaseLettering({
+        bpPerPx,
+        canvasWidth,
+        charHeight,
+        charWidth,
+        colorForBase,
+        contrastForBase,
         ctx,
         feat,
         region,
-        bpPerPx,
-        colorForBase,
-        contrastForBase,
-        charWidth,
-        charHeight,
-        canvasWidth,
       })
       break
 
     case 'modifications':
       renderModifications({
+        bpPerPx,
+        canvasWidth,
         ctx,
         feat,
         region,
-        bpPerPx,
         renderArgs,
-        canvasWidth,
       })
       break
 
     case 'methylation':
       renderMethylation({
+        bpPerPx,
+        canvasWidth,
         ctx,
         feat,
         region,
-        bpPerPx,
         renderArgs,
-        canvasWidth,
       })
       break
   }

@@ -58,27 +58,27 @@ export default function FacetedHeader({
         }}
         menuItems={[
           {
+            checked: useShoppingCart,
             label: 'Add tracks to selection instead of turning them on/off',
             onClick: () => faceted.setUseShoppingCart(!useShoppingCart),
             type: 'checkbox',
-            checked: useShoppingCart,
           },
           {
+            checked: showSparse,
             label: 'Show sparse metadata columns',
             onClick: () => faceted.setShowSparse(!showSparse),
-            checked: showSparse,
             type: 'checkbox',
           },
           {
+            checked: showFilters,
             label: 'Show facet filters',
             onClick: () => faceted.setShowFilters(!showFilters),
-            checked: showFilters,
             type: 'checkbox',
           },
           {
+            checked: showOptions,
             label: 'Show extra table options',
             onClick: () => faceted.setShowOptions(!showOptions),
-            checked: showOptions,
             type: 'checkbox',
           },
         ]}

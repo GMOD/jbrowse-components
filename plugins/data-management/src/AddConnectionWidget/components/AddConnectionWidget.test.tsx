@@ -13,20 +13,20 @@ function makeSession() {
   session.addAssemblyConf({
     name: 'volMyt1',
     sequence: {
-      trackId: 'ref0',
-      type: 'ReferenceSequenceTrack',
       adapter: {
-        type: 'FromConfigSequenceAdapter',
         features: [
           {
-            refName: 'ctgA',
-            uniqueId: 'firstId',
-            start: 0,
             end: 1000,
+            refName: 'ctgA',
             seq: 'cattgttgcggagttgaacaACGGCATTAGGAACACTTCCGTCTCtcacttttatacgattatgattggttctttagccttggtttagattggtagtagtagcggcgctaatgctacctgaattgagaactcgagcgggggctaggcaaattctgattcagcctgacttctcttggaaccctgcccataaatcaaagggttagtgcggccaaaacgttggacaacggtattagaagaccaacctgaccaccaaaccgtcaattaaccggtatcttctcggaaacggcggttctctcctagatagcgatctgtggtctcaccatgcaatttaaacaggtgagtaaagattgctacaaatacgagactagctgtcaccagatgctgttcatctgttggctccttggtcgctccgttgtacccaggctactttgaaagagcgcagaatacttagacggtatcgatcatggtagcatagcattctgataacatgtatggagttcgaacatccgtctggggccggacggtccgtttgaggttggttgatctgggtgatagtcagcaagatagacgttagataacaaattaaaggattttaccttagattgcgactagtacaacggtacatcggtgattcgcgctctactagatcacgctatgggtaccataaacaaacggtggaccttctcaagctggttgacgcctcagcaacataggcttcctcctccacgcatctcagcataaaaggcttataaactgcttctttgtgccagagcaactcaattaagcccttggtaccgtgggcacgcattctgtcacggtgaccaactgttcatcctgaatcgccgaatgggactatttggtacaggaatcaagcggatggcactactgcagcttatttacgacggtattcttaaagtttttaagacaatgtatttcatgggtagttcggtttgttttattgctacacaggctcttgtagacgacctacttagcactacgg',
+            start: 0,
+            uniqueId: 'firstId',
           },
         ],
+        type: 'FromConfigSequenceAdapter',
       },
+      trackId: 'ref0',
+      type: 'ReferenceSequenceTrack',
     },
   })
   const model = session.addWidget('AddConnectionWidget', 'addConnectionWidget')
@@ -37,7 +37,7 @@ function renderWidget() {
   const user = userEvent.setup()
   const { model, session } = makeSession()
   const result = render(<AddConnectionWidget model={model} />)
-  return { ...result, session, model, user }
+  return { ...result, model, session, user }
 }
 
 test('renders', () => {

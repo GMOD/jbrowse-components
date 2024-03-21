@@ -12,11 +12,11 @@ const ChromSizesAdapter = ConfigurationSchema(
      * #slot
      */
     chromSizesLocation: {
-      type: 'fileLocation',
       defaultValue: {
-        uri: '/path/to/species.chrom.sizes',
         locationType: 'UriLocation',
+        uri: '/path/to/species.chrom.sizes',
       },
+      type: 'fileLocation',
     },
   },
   { explicitlyTyped: true },

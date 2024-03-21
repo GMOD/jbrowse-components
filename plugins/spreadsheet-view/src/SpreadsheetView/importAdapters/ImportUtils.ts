@@ -89,10 +89,10 @@ function dataToSpreadsheetSnapshot(
         maxCols = row.length
       }
       return {
-        id: String(id),
         cells: row.map((text, columnNumber) => {
           return { columnNumber, text }
         }),
+        id: String(id),
       }
     }),
   }
@@ -125,19 +125,19 @@ function dataToSpreadsheetSnapshot(
     }
 
     columns[columnNumber] = {
-      name: columnNames[columnNumber],
       dataType: {
         type: guessedType,
       },
+      name: columnNames[columnNumber],
     }
   }
 
   return {
-    rowSet,
-    columnDisplayOrder,
-    hasColumnNames: !!hasColumnNameLine,
-    columns,
     assemblyName: selectedAssemblyName,
+    columnDisplayOrder,
+    columns,
+    hasColumnNames: !!hasColumnNameLine,
+    rowSet,
   }
 }
 

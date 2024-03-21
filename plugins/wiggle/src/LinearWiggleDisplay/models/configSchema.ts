@@ -25,17 +25,17 @@ export default function WiggleConfigFactory(pluginManager: PluginManager) {
        * #slot
        */
       defaultRendering: {
-        type: 'stringEnum',
-        model: types.enumeration('Rendering', ['density', 'xyplot', 'line']),
         defaultValue: 'xyplot',
+        model: types.enumeration('Rendering', ['density', 'xyplot', 'line']),
+        type: 'stringEnum',
       },
       /**
        * #slot
        */
       renderers: ConfigurationSchema('RenderersConfiguration', {
         DensityRenderer: DensityRendererConfigSchema,
-        XYPlotRenderer: XYPlotRendererConfigSchema,
         LinePlotRenderer: LinePlotRendererConfigSchema,
+        XYPlotRenderer: XYPlotRendererConfigSchema,
       }),
     },
     {

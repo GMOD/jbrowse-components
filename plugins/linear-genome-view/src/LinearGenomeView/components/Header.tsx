@@ -17,34 +17,34 @@ import SearchBox from './SearchBox'
 
 type LGV = LinearGenomeViewModel
 const useStyles = makeStyles()(theme => ({
+  bp: {
+    alignItems: 'center',
+    display: 'flex',
+    marginLeft: 5,
+  },
+  buttonSpacer: {
+    marginRight: theme.spacing(2),
+  },
   headerBar: {
     display: 'flex',
   },
+
   headerForm: {
     flexWrap: 'nowrap',
     marginRight: 7,
   },
-  spacer: {
-    flexGrow: 1,
-  },
-
   panButton: {
     background: alpha(theme.palette.background.paper, 0.8),
     color: theme.palette.text.primary,
     margin: SPACING,
   },
-  bp: {
-    display: 'flex',
-    alignItems: 'center',
-    marginLeft: 5,
+  spacer: {
+    flexGrow: 1,
   },
   toggleButton: {
-    height: 44,
     border: 'none',
+    height: 44,
     marginLeft: theme.spacing(4),
-  },
-  buttonSpacer: {
-    marginRight: theme.spacing(2),
   },
 }))
 

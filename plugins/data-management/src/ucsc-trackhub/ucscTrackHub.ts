@@ -24,8 +24,8 @@ export function makeLoc(
   base: { uri: string; baseUri?: string },
 ) {
   return {
-    uri: new URL(first, new URL(base.uri, base.baseUri)).href,
     locationType: 'UriLocation',
+    uri: new URL(first, new URL(base.uri, base.baseUri)).href,
   }
 }
 
@@ -36,12 +36,12 @@ export function makeLocAlt(first: string, alt: string, base: { uri: string }) {
 export function makeLoc2(first: string, alt?: string) {
   return first
     ? {
-        uri: first,
         locationType: 'LocalPath',
+        uri: first,
       }
     : {
-        uri: alt,
         locationType: 'UriLocation',
+        uri: alt,
       }
 }
 
@@ -82,16 +82,16 @@ export function generateTracks({
         .map(p => p?.data.shortLabel)
         .filter((f): f is string => !!f)
       const res = makeTrackConfig({
-        track: track!,
         categories,
-        trackDbLoc,
-        trackDb,
         sequenceAdapter,
+        track: track!,
+        trackDb,
+        trackDbLoc,
       })
       return {
         ...res,
-        trackId: `ucsc-trackhub-${objectHash(res)}`,
         assemblyNames: [assemblyName],
+        trackId: `ucsc-trackhub-${objectHash(res)}`,
       }
     })
     .filter(notEmpty)
@@ -127,35 +127,35 @@ function makeTrackConfig({
   switch (baseTrackType) {
     case 'bam':
       return {
-        type: 'AlignmentsTrack',
-        name: track.data.longLabel,
-        description: track.data.longLabel,
-        category: categories,
         adapter: {
-          type: 'BamAdapter',
           bamLocation: bigDataLocation,
           index: {
             location: isUri
               ? makeLocAlt(bigDataIdx, bigDataUrl + '.bai', trackDbLoc)
               : makeLoc2(bigDataIdx, bigDataUrl + '.bai'),
           },
+          type: 'BamAdapter',
         },
+        category: categories,
+        description: track.data.longLabel,
+        name: track.data.longLabel,
+        type: 'AlignmentsTrack',
       }
 
     case 'cram':
       return {
-        type: 'AlignmentsTrack',
-        name,
-        description: track.data.longLabel,
-        category: categories,
         adapter: {
-          type: 'CramAdapter',
-          cramLocation: bigDataLocation,
           craiLocation: isUri
             ? makeLocAlt(bigDataIdx, bigDataUrl + '.crai', trackDbLoc)
             : makeLoc2(bigDataIdx, bigDataUrl + '.crai'),
+          cramLocation: bigDataLocation,
           sequenceAdapter,
+          type: 'CramAdapter',
         },
+        category: categories,
+        description: track.data.longLabel,
+        name,
+        type: 'AlignmentsTrack',
       }
     case 'bigBarChart':
     case 'bigBed':
@@ -166,54 +166,54 @@ function makeTrackConfig({
     case 'bigNarrowPeak':
     case 'bigPsl':
       return {
-        type: 'FeatureTrack',
-        name,
-        description: track.data.longLabel,
-        category: categories,
         adapter: {
-          type: 'BigBedAdapter',
           bigBedLocation: bigDataLocation,
+          type: 'BigBedAdapter',
         },
+        category: categories,
+        description: track.data.longLabel,
+        name,
+        type: 'FeatureTrack',
       }
     case 'bigWig':
       return {
-        type: 'QuantitativeTrack',
-        name,
-        description: track.data.longLabel,
-        category: categories,
         adapter: {
-          type: 'BigWigAdapter',
           bigWigLocation: bigDataLocation,
+          type: 'BigWigAdapter',
         },
+        category: categories,
+        description: track.data.longLabel,
+        name,
+        type: 'QuantitativeTrack',
       }
 
     case 'vcfTabix':
       return {
-        type: 'VariantTrack',
-        name,
-        description: track.data.longLabel,
-        category: categories,
         adapter: {
-          type: 'VcfTabixAdapter',
-          vcfGzLocation: bigDataLocation,
           index: {
             location: isUri
               ? makeLocAlt(bigDataIdx, bigDataUrl + '.tbi', trackDbLoc)
               : makeLoc2(bigDataIdx, bigDataUrl + '.tbi'),
           },
+          type: 'VcfTabixAdapter',
+          vcfGzLocation: bigDataLocation,
         },
+        category: categories,
+        description: track.data.longLabel,
+        name,
+        type: 'VariantTrack',
       }
 
     case 'hic':
       return {
-        type: 'HicTrack',
-        name,
-        description: track.data.longLabel,
-        category: categories,
         adapter: {
-          type: 'HicAdapter',
           hicLocation: bigDataLocation,
+          type: 'HicAdapter',
         },
+        category: categories,
+        description: track.data.longLabel,
+        name,
+        type: 'HicTrack',
       }
 
     // unsupported types

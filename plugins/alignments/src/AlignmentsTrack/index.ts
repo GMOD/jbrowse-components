@@ -7,9 +7,9 @@ export default function register(pm: PluginManager) {
   pm.addTrackType(() => {
     const configSchema = configSchemaF(pm)
     const track = new TrackType({
-      name: 'AlignmentsTrack',
-      displayName: 'Alignments track',
       configSchema,
+      displayName: 'Alignments track',
+      name: 'AlignmentsTrack',
       stateModel: createBaseTrackModel(pm, 'AlignmentsTrack', configSchema),
     })
     const linearAlignmentsDisplay = pm.getDisplayType('LinearAlignmentsDisplay')

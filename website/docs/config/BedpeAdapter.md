@@ -20,11 +20,11 @@ can be plaintext or gzipped, not indexed so loaded into memory on startup
 
 ```js
 bedpeLocation: {
-      type: 'fileLocation',
       defaultValue: {
-        uri: '/path/to/my.bedpe.gz',
         locationType: 'UriLocation',
+        uri: '/path/to/my.bedpe.gz',
       },
+      type: 'fileLocation',
     }
 ```
 
@@ -32,8 +32,8 @@ bedpeLocation: {
 
 ```js
 columnNames: {
-      type: 'stringArray',
-      description: 'List of column names',
       defaultValue: [],
+      description: 'List of column names',
+      type: 'stringArray',
     }
 ```

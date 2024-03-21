@@ -59,5 +59,5 @@ export interface LayoutFeature {
 export function getCharWidthHeight() {
   const charWidth = measureText('A')
   const charHeight = measureText('M') - 2
-  return { charWidth, charHeight }
+  return { charHeight, charWidth }
 }

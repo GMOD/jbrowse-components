@@ -9,29 +9,29 @@ const useStyles = makeStyles()(theme => {
     ? alpha(tertiary.light, 0.7)
     : alpha(primary.light, 0.7)
   return {
-    rubberband: {
-      height: '100%',
-      background,
-      position: 'absolute',
-      zIndex: 10,
-      textAlign: 'center',
-      overflow: 'hidden',
-    },
-    rubberbandControl: {
-      cursor: 'crosshair',
-      width: '100%',
-      minHeight: 8,
-    },
-    rubberbandText: {
-      color: tertiary ? tertiary.contrastText : primary.contrastText,
-    },
-    popover: {
-      mouseEvents: 'none',
-      cursor: 'crosshair',
-    },
     paper: {
       paddingLeft: theme.spacing(1),
       paddingRight: theme.spacing(1),
+    },
+    popover: {
+      cursor: 'crosshair',
+      mouseEvents: 'none',
+    },
+    rubberband: {
+      background,
+      height: '100%',
+      overflow: 'hidden',
+      position: 'absolute',
+      textAlign: 'center',
+      zIndex: 10,
+    },
+    rubberbandControl: {
+      cursor: 'crosshair',
+      minHeight: 8,
+      width: '100%',
+    },
+    rubberbandText: {
+      color: tertiary ? tertiary.contrastText : primary.contrastText,
     },
   }
 })
@@ -66,8 +66,8 @@ export default function RubberbandSpan({
             classes={{ paper: classes.paper }}
             open
             anchorEl={ref.current}
-            anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
-            transformOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            anchorOrigin={{ horizontal: 'left', vertical: 'top' }}
+            transformOrigin={{ horizontal: 'right', vertical: 'bottom' }}
             keepMounted
             disableRestoreFocus
           >
@@ -78,8 +78,8 @@ export default function RubberbandSpan({
             classes={{ paper: classes.paper }}
             open
             anchorEl={ref.current}
-            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-            transformOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+            anchorOrigin={{ horizontal: 'right', vertical: 'top' }}
+            transformOrigin={{ horizontal: 'left', vertical: 'bottom' }}
             keepMounted
             disableRestoreFocus
           >

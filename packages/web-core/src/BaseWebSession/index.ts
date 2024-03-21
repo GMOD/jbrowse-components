@@ -121,18 +121,6 @@ export function BaseWebSession({
     .views(self => ({
       /**
        * #getter
-       */
-      get tracks(): AnyConfigurationModel[] {
-        return [...self.sessionTracks, ...self.jbrowse.tracks]
-      },
-      /**
-       * #getter
-       */
-      get root() {
-        return getParent<any>(self)
-      },
-      /**
-       * #getter
        * list of sessionAssemblies and jbrowse config assemblies, does not
        * include temporaryAssemblies. basically the list to be displayed in a
        * AssemblySelector dropdown
@@ -140,12 +128,27 @@ export function BaseWebSession({
       get assemblies(): Instance<BaseAssemblyConfigSchema[]> {
         return [...self.jbrowse.assemblies, ...self.sessionAssemblies]
       },
+
       /**
        * #getter
        * list of config connections and session connections
        */
       get connections(): BaseConnectionConfigModel[] {
         return [...self.jbrowse.connections, ...self.sessionConnections]
+      },
+
+      /**
+       * #getter
+       */
+      get root() {
+        return getParent<any>(self)
+      },
+
+      /**
+       * #getter
+       */
+      get tracks(): AnyConfigurationModel[] {
+        return [...self.sessionTracks, ...self.jbrowse.tracks]
       },
     }))
     .actions(self => ({
@@ -160,6 +163,13 @@ export function BaseWebSession({
     .views(self => ({
       /**
        * #getter
+       */
+      get assemblyManager(): AssemblyManager {
+        return self.root.assemblyManager
+      },
+
+      /**
+       * #getter
        * list of sessionAssemblies and jbrowse config assemblies, does not
        * include temporaryAssemblies. basically the list to be displayed in a
        * AssemblySelector dropdown
@@ -167,77 +177,95 @@ export function BaseWebSession({
       get assemblyNames() {
         return self.assemblies.map(f => readConfObject(f, 'name') as string)
       },
-      /**
-       * #getter
-       */
-      get version() {
-        return self.root.version
-      },
-      /**
-       * #getter
-       */
-      get shareURL() {
-        return getConf(self.jbrowse, 'shareURL')
-      },
-      /**
-       * #getter
-       */
-      get textSearchManager(): TextSearchManager {
-        return self.root.textSearchManager
-      },
-      /**
-       * #getter
-       */
-      get assemblyManager(): AssemblyManager {
-        return self.root.assemblyManager
-      },
-      /**
-       * #getter
-       */
-      get savedSessions() {
-        return self.root.savedSessions
-      },
-      /**
-       * #getter
-       */
-      get previousAutosaveId() {
-        return self.root.previousAutosaveId
-      },
-      /**
-       * #getter
-       */
-      get savedSessionNames() {
-        return self.root.savedSessionNames
-      },
+
       /**
        * #getter
        */
       get history() {
         return self.root.history
       },
+
       /**
        * #getter
        */
       get menus() {
         return self.root.menus
       },
+
+      /**
+       * #getter
+       */
+      get previousAutosaveId() {
+        return self.root.previousAutosaveId
+      },
+
       /**
        * #method
        */
       renderProps() {
         return {
-          theme: self.theme,
           highResolutionScaling: getConf(self, 'highResolutionScaling'),
+          theme: self.theme,
         }
+      },
+
+      /**
+       * #getter
+       */
+      get savedSessionNames() {
+        return self.root.savedSessionNames
+      },
+
+      /**
+       * #getter
+       */
+      get savedSessions() {
+        return self.root.savedSessions
+      },
+
+      /**
+       * #getter
+       */
+      get shareURL() {
+        return getConf(self.jbrowse, 'shareURL')
+      },
+
+      /**
+       * #getter
+       */
+      get textSearchManager(): TextSearchManager {
+        return self.root.textSearchManager
+      },
+
+      /**
+       * #getter
+       */
+      get version() {
+        return self.root.version
       },
     }))
     .actions(self => ({
       /**
        * #action
        */
+      activateSession(sessionName: string) {
+        return self.root.activateSession(sessionName)
+      },
+
+      /**
+       * #action
+       */
       addAssemblyConf(conf: AnyConfiguration) {
         self.jbrowse.addAssemblyConf(conf)
       },
+
+      /**
+       * #action
+       */
+      addSavedSession(sessionSnapshot: SnapshotIn<typeof self>) {
+        return self.root.addSavedSession(sessionSnapshot)
+      },
+
       /**
        * #action
        */
@@ -247,6 +275,27 @@ export function BaseWebSession({
         }
         self.sessionPlugins.push(plugin)
         self.root.setPluginsUpdated(true)
+      },
+
+      /**
+       * #action
+       */
+      duplicateCurrentSession() {
+        return self.root.duplicateCurrentSession()
+      },
+
+      /**
+       * #action
+       */
+      loadAutosaveSession() {
+        return self.root.loadAutosaveSession()
+      },
+
+      /**
+       * #action
+       */
+      removeSavedSession(sessionSnapshot: { name: string }) {
+        return self.root.removeSavedSession(sessionSnapshot)
       },
 
       /**
@@ -268,42 +317,8 @@ export function BaseWebSession({
       /**
        * #action
        */
-      addSavedSession(sessionSnapshot: SnapshotIn<typeof self>) {
-        return self.root.addSavedSession(sessionSnapshot)
-      },
-
-      /**
-       * #action
-       */
-      removeSavedSession(sessionSnapshot: { name: string }) {
-        return self.root.removeSavedSession(sessionSnapshot)
-      },
-
-      /**
-       * #action
-       */
       renameCurrentSession(sessionName: string) {
         return self.root.renameCurrentSession(sessionName)
-      },
-
-      /**
-       * #action
-       */
-      duplicateCurrentSession() {
-        return self.root.duplicateCurrentSession()
-      },
-      /**
-       * #action
-       */
-      activateSession(sessionName: string) {
-        return self.root.activateSession(sessionName)
-      },
-
-      /**
-       * #action
-       */
-      setDefaultSession() {
-        return self.root.setDefaultSession()
       },
 
       /**
@@ -316,8 +331,8 @@ export function BaseWebSession({
       /**
        * #action
        */
-      loadAutosaveSession() {
-        return self.root.loadAutosaveSession()
+      setDefaultSession() {
+        return self.root.setDefaultSession()
       },
 
       /**
@@ -352,6 +367,7 @@ export function BaseWebSession({
         const isRefSeq = config.type === 'ReferenceSequenceTrack'
         return [
           {
+            icon: InfoIcon,
             label: 'About track',
             onClick: () => {
               self.queueDialog(handleClose => [
@@ -359,23 +375,23 @@ export function BaseWebSession({
                 { config, handleClose },
               ])
             },
-            icon: InfoIcon,
           },
           {
-            label: 'Settings',
             disabled: !canEdit,
-            onClick: () => self.editTrackConfiguration(config),
             icon: SettingsIcon,
+            label: 'Settings',
+            onClick: () => self.editTrackConfiguration(config),
           },
           {
-            label: 'Delete track',
             disabled: !canEdit || isRefSeq,
-            onClick: () => self.deleteTrackConf(config),
             icon: DeleteIcon,
+            label: 'Delete track',
+            onClick: () => self.deleteTrackConf(config),
           },
           {
-            label: 'Copy track',
             disabled: isRefSeq,
+            icon: CopyIcon,
+            label: 'Copy track',
             onClick: () => {
               interface Display {
                 displayId: string
@@ -399,7 +415,6 @@ export function BaseWebSession({
               snap.name += ' (copy)'
               self.addTrackConf(snap)
             },
-            icon: CopyIcon,
           },
         ]
       },

@@ -50,40 +50,40 @@ export function makeImageData({
   const drawIndels = shouldDrawIndels()
   for (const feat of layoutRecords) {
     renderAlignment({
-      ctx,
-      feat,
-      renderArgs,
-      defaultColor,
+      canvasWidth,
+      charHeight,
+      charWidth,
       colorForBase,
       contrastForBase,
-      charWidth,
-      charHeight,
-      canvasWidth,
+      ctx,
+      defaultColor,
+      feat,
+      renderArgs,
     })
     renderMismatches({
-      ctx,
-      feat,
-      renderArgs,
-      mismatchAlpha,
-      drawSNPsMuted,
-      drawIndels,
-      largeInsertionIndicatorScale,
-      minSubfeatureWidth,
-      charWidth,
+      canvasWidth,
       charHeight,
+      charWidth,
       colorForBase,
       contrastForBase,
-      canvasWidth,
+      ctx,
+      drawIndels,
+      drawSNPsMuted,
+      feat,
+      largeInsertionIndicatorScale,
+      minSubfeatureWidth,
+      mismatchAlpha,
+      renderArgs,
     })
     if (showSoftClip) {
       renderSoftClipping({
+        canvasWidth,
+        colorForBase,
+        config,
         ctx,
         feat,
         renderArgs,
-        colorForBase,
-        config,
         theme,
-        canvasWidth,
       })
     }
   }

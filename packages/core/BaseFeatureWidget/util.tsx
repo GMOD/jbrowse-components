@@ -42,8 +42,8 @@ export function revlist(list: Feat[], seqlen: number) {
   return list
     .map(sub => ({
       ...sub,
-      start: seqlen - sub.end,
       end: seqlen - sub.start,
+      start: seqlen - sub.end,
     }))
     .sort((a, b) => a.start - b.start)
 }
@@ -68,11 +68,11 @@ export function calculateUTRs(cds: Feat[], exons: Feat[]) {
 
   const fiveUTRs = [
     ...exons.slice(0, firstCdsIdx),
-    { start: firstCdsExon.start, end: firstCds.start },
+    { end: firstCds.start, start: firstCdsExon.start },
   ].map(elt => ({ ...elt, type: 'five_prime_UTR' }))
 
   const threeUTRs = [
-    { start: lastCds.end, end: lastCdsExon.end },
+    { end: lastCdsExon.end, start: lastCds.end },
     ...exons.slice(lastCdsIdx + 1),
   ].map(elt => ({ ...elt, type: 'three_prime_UTR' }))
 
@@ -89,11 +89,11 @@ export function calculateUTRs2(cds: Feat[], parentFeat: Feat) {
 
   const lastCds = cds.at(-1)!
 
-  const fiveUTRs = [{ start: parentFeat.start, end: firstCds.start }].map(
+  const fiveUTRs = [{ end: firstCds.start, start: parentFeat.start }].map(
     elt => ({ ...elt, type: 'five_prime_UTR' }),
   )
 
-  const threeUTRs = [{ start: lastCds.end, end: parentFeat.end }].map(elt => ({
+  const threeUTRs = [{ end: parentFeat.end, start: lastCds.end }].map(elt => ({
     ...elt,
     type: 'three_prime_UTR',
   }))

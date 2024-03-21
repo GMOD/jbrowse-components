@@ -34,8 +34,8 @@ export type MenuItemWithDisabledCallback = MenuItem & {
 
 const defaultRowMenuItems: MenuItemWithDisabledCallback[] = [
   {
-    label: 'Toggle select',
     icon: DoneIcon,
+    label: 'Toggle select',
     onClick(_view: unknown, spreadsheet: Spreadsheet) {
       const rowNumber = spreadsheet.rowMenuPosition?.rowNumber
       if (rowNumber !== undefined) {
@@ -59,11 +59,10 @@ const model = types
     /**
      * #property
      */
-    type: types.literal('SpreadsheetView'),
-    /**
-     * #property
-     */
-    offsetPx: 0,
+    filterControls: types.optional(FilterControlsModel, () =>
+      FilterControlsModel.create({}),
+    ),
+
     /**
      * #property
      */
@@ -75,20 +74,24 @@ const model = types
       ),
       defaultHeight,
     ),
-    /**
-     * #property
-     */
-    hideVerticalResizeHandle: false,
+
     /**
      * #property
      */
     hideFilterControls: false,
+
     /**
      * #property
      */
-    filterControls: types.optional(FilterControlsModel, () =>
-      FilterControlsModel.create({}),
+    hideVerticalResizeHandle: false,
+
+    /**
+     * #property
+     */
+    importWizard: types.optional(ImportWizardModel, () =>
+      ImportWizardModel.create(),
     ),
+
     /**
      * #property
      * switch specifying whether we are showing the import wizard or the
@@ -98,34 +101,46 @@ const model = types
       types.enumeration('SpreadsheetViewMode', ['import', 'display']),
       'import',
     ),
+
     /**
      * #property
      */
-    importWizard: types.optional(ImportWizardModel, () =>
-      ImportWizardModel.create(),
-    ),
+    offsetPx: 0,
+
     /**
      * #property
      */
     spreadsheet: types.maybe(SpreadsheetModel),
+
+    /**
+     * #property
+     */
+    type: types.literal('SpreadsheetView'),
   })
   .volatile(() => ({
-    width: 400,
     rowMenuItems: defaultRowMenuItems,
+    width: 400,
   }))
   .views(self => ({
     /**
      * #getter
      */
-    get readyToDisplay() {
-      return !!self.spreadsheet && self.spreadsheet.isLoaded
+    get assembly() {
+      const name = self.spreadsheet?.assemblyName
+      if (name) {
+        const assemblies = getSession(self).assemblies
+        return assemblies?.find(asm => readConfObject(asm, 'name') === name)
+      }
+      return undefined
     },
+
     /**
      * #getter
      */
     get hideRowSelection() {
       return !!getEnv(self).hideRowSelection
     },
+
     /**
      * #getter
      */
@@ -139,54 +154,21 @@ const model = types
       }
       return undefined
     },
+
     /**
      * #getter
      */
-    get assembly() {
-      const name = self.spreadsheet?.assemblyName
-      if (name) {
-        const assemblies = getSession(self).assemblies
-        return assemblies?.find(asm => readConfObject(asm, 'name') === name)
-      }
-      return undefined
+    get readyToDisplay() {
+      return !!self.spreadsheet && self.spreadsheet.isLoaded
     },
   }))
   .actions(self => ({
     /**
      * #action
      */
-    setRowMenuItems(newItems: MenuItem[]) {
-      self.rowMenuItems = newItems
-    },
-    /**
-     * #action
-     */
-    setWidth(newWidth: number) {
-      self.width = newWidth
-      return self.width
-    },
-    /**
-     * #action
-     */
-    setHeight(newHeight: number) {
-      self.height = newHeight > minHeight ? newHeight : minHeight
-      return self.height
-    },
-    /**
-     * #action
-     */
-    resizeHeight(distance: number) {
-      const oldHeight = self.height
-      const newHeight = this.setHeight(self.height + distance)
-      return newHeight - oldHeight
-    },
-    /**
-     * #action
-     */
-    resizeWidth(distance: number) {
-      const oldWidth = self.width
-      const newWidth = this.setWidth(self.width + distance)
-      return newWidth - oldWidth
+    closeView() {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      getParent<any>(self, 2).removeView(self)
     },
 
     /**
@@ -198,12 +180,25 @@ const model = types
       self.spreadsheet = cast(spreadsheet)
       self.mode = 'display'
     },
+
     /**
      * #action
      */
-    setImportMode() {
-      self.mode = 'import'
+    resizeHeight(distance: number) {
+      const oldHeight = self.height
+      const newHeight = this.setHeight(self.height + distance)
+      return newHeight - oldHeight
     },
+
+    /**
+     * #action
+     */
+    resizeWidth(distance: number) {
+      const oldWidth = self.width
+      const newWidth = this.setWidth(self.width + distance)
+      return newWidth - oldWidth
+    },
+
     /**
      * #action
      */
@@ -212,12 +207,35 @@ const model = types
         self.mode = 'display'
       }
     },
+
     /**
      * #action
      */
-    closeView() {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      getParent<any>(self, 2).removeView(self)
+    setHeight(newHeight: number) {
+      self.height = newHeight > minHeight ? newHeight : minHeight
+      return self.height
+    },
+
+    /**
+     * #action
+     */
+    setImportMode() {
+      self.mode = 'import'
+    },
+
+    /**
+     * #action
+     */
+    setRowMenuItems(newItems: MenuItem[]) {
+      self.rowMenuItems = newItems
+    },
+
+    /**
+     * #action
+     */
+    setWidth(newWidth: number) {
+      self.width = newWidth
+      return self.width
     },
   }))
   .views(self => ({
@@ -227,9 +245,9 @@ const model = types
     menuItems() {
       return [
         {
+          icon: FolderOpenIcon,
           label: 'Return to import form',
           onClick: () => self.setImportMode(),
-          icon: FolderOpenIcon,
         },
       ]
     },

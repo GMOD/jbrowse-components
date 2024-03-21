@@ -103,18 +103,21 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
             observer.next(
               new SimpleFeature({
                 ...f1,
-                uniqueId: `${index}-${rowNum}`,
-                syntenyId: rowNum,
-
-                // note: strand would be -1 if the two features are on opposite
-                // strands, indicating inverted alignment
-                strand: f1.strand * f2.strand,
                 assemblyName: assemblyNames[+!flip],
-                score,
                 mate: {
                   ...f2,
                   assemblyName: assemblyNames[+flip],
                 },
+
+                score,
+
+                // note: strand would be -1 if the two features are on opposite
+                // strands, indicating inverted alignment
+                strand: f1.strand * f2.strand,
+
+                syntenyId: rowNum,
+
+                uniqueId: `${index}-${rowNum}`,
               }),
             )
           }

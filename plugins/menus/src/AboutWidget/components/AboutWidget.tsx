@@ -7,16 +7,16 @@ import { makeStyles } from 'tss-react/mui'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 const useStyles = makeStyles()(theme => ({
+  pluginList: {
+    margin: theme.spacing(1),
+    marginTop: theme.spacing(5),
+  },
   root: {
     margin: theme.spacing(2),
     paddingTop: theme.spacing(2),
   },
   subtitle: {
     margin: theme.spacing(1),
-  },
-  pluginList: {
-    margin: theme.spacing(1),
-    marginTop: theme.spacing(5),
   },
 }))
 

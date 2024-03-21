@@ -20,21 +20,21 @@ function generateSessionId(session) {
 
 async function uploadSession(sessionId, session, dateShared, referer) {
   const params = {
+    ConditionExpression: 'attribute_not_exists(sessionId)',
     Item: {
-      sessionId: {
-        S: sessionId,
-      },
-      session: {
-        S: session,
-      },
       dateShared: {
         S: dateShared,
       },
       referer: {
         S: referer,
       },
-    },
-    ConditionExpression: 'attribute_not_exists(sessionId)', // write once
+      session: {
+        S: session,
+      },
+      sessionId: {
+        S: sessionId,
+      },
+    }, // write once
     TableName: sessionTable,
   }
   return dynamodb.putItem(params).promise()
@@ -48,15 +48,15 @@ exports.handler = async event => {
     await uploadSession(sessionId, session, dateShared, referer)
   } catch (e) {
     const response = {
-      statusCode: 400,
       body: JSON.stringify({ message: `${e}` }),
+      statusCode: 400,
     }
     return response
   }
 
   const response = {
-    statusCode: 200,
     body: JSON.stringify({ sessionId }),
+    statusCode: 200,
   }
   return response
 }

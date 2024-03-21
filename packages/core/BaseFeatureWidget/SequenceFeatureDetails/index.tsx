@@ -17,13 +17,13 @@ const HelpDialog = lazy(() => import('./SequenceHelpDialog'))
 const SequenceFeatureDetails = lazy(() => import('./SequenceFeatureDetails'))
 
 const useStyles = makeStyles()(theme => ({
-  formControl: {
-    margin: 0,
+  container: {
+    marginBottom: theme.spacing(4),
+    marginTop: theme.spacing(4),
   },
 
-  container: {
-    marginTop: theme.spacing(4),
-    marginBottom: theme.spacing(4),
+  formControl: {
+    margin: 0,
   },
 }))
 

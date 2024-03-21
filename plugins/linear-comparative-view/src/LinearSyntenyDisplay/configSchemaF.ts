@@ -13,16 +13,16 @@ function configSchemaFactory(pluginManager: PluginManager) {
        * #slot
        * currently unused
        */
-      trackIds: {
-        type: 'stringArray',
-        defaultValue: [],
-      },
+      middle: { defaultValue: true, type: 'boolean' },
 
       /**
        * #slot
        * currently unused
        */
-      middle: { type: 'boolean', defaultValue: true },
+      trackIds: {
+        defaultValue: [],
+        type: 'stringArray',
+      },
     },
     {
       /**

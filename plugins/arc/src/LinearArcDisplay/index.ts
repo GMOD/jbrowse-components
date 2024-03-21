@@ -9,13 +9,13 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaFactory(pluginManager)
     return new DisplayType({
-      name: 'LinearArcDisplay',
-      displayName: 'Arc display',
+      ReactComponent: BaseLinearDisplayComponent,
       configSchema,
+      displayName: 'Arc display',
+      name: 'LinearArcDisplay',
       stateModel: stateModelFactory(configSchema),
       trackType: 'FeatureTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: BaseLinearDisplayComponent,
     })
   })
 }

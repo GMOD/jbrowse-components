@@ -101,9 +101,9 @@ export default class HicRenderer extends ServerSideRendererType {
       let start = Date.now()
       for (const { bin1, bin2, counts } of features) {
         ctx.fillStyle = readConfObject(config, 'color', {
+          baseColor,
           count: counts,
           maxScore,
-          baseColor,
         })
         ctx.fillRect((bin1 - offset) * w, (bin2 - offset) * w, w, w)
         if (+Date.now() - start > 400) {
@@ -131,8 +131,8 @@ export default class HicRenderer extends ServerSideRendererType {
       ...renderProps,
       ...res,
       features,
-      region: renderProps.regions[0],
       height,
+      region: renderProps.regions[0],
       width,
     })
 

@@ -18,15 +18,6 @@ extends
 
 ### LinearSyntenyDisplay - Properties
 
-#### property: type
-
-```js
-// type signature
-ISimpleType<"LinearSyntenyDisplay">
-// code
-type: types.literal('LinearSyntenyDisplay')
-```
-
 #### property: configuration
 
 ```js
@@ -34,6 +25,15 @@ type: types.literal('LinearSyntenyDisplay')
 AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
+```
+
+#### property: type
+
+```js
+// type signature
+ISimpleType<"LinearSyntenyDisplay">
+// code
+type: types.literal('LinearSyntenyDisplay')
 ```
 
 ### LinearSyntenyDisplay - Getters
@@ -45,11 +45,11 @@ configuration: ConfigurationReference(configSchema)
 any
 ```
 
-#### getter: trackIds
+#### getter: featMap
 
 ```js
 // type
-string[]
+{ [k: string]: FeatPos; }
 ```
 
 #### getter: numFeats
@@ -68,14 +68,42 @@ used for synteny svg rendering
 boolean
 ```
 
-#### getter: featMap
+#### getter: trackIds
 
 ```js
 // type
-{ [k: string]: FeatPos; }
+string[]
 ```
 
 ### LinearSyntenyDisplay - Actions
+
+#### action: setCigarClickMapCanvasRef
+
+```js
+// type signature
+setCigarClickMapCanvasRef: (ref: HTMLCanvasElement) => void
+```
+
+#### action: setCigarMouseoverId
+
+```js
+// type signature
+setCigarMouseoverId: (arg: number) => void
+```
+
+#### action: setClickId
+
+```js
+// type signature
+setClickId: (arg?: string) => void
+```
+
+#### action: setClickMapCanvasRef
+
+```js
+// type signature
+setClickMapCanvasRef: (ref: HTMLCanvasElement) => void
+```
 
 #### action: setFeatPositions
 
@@ -91,20 +119,6 @@ setFeatPositions: (arg: FeatPos[]) => void
 setMainCanvasRef: (ref: HTMLCanvasElement) => void
 ```
 
-#### action: setClickMapCanvasRef
-
-```js
-// type signature
-setClickMapCanvasRef: (ref: HTMLCanvasElement) => void
-```
-
-#### action: setCigarClickMapCanvasRef
-
-```js
-// type signature
-setCigarClickMapCanvasRef: (ref: HTMLCanvasElement) => void
-```
-
 #### action: setMouseoverCanvasRef
 
 ```js
@@ -117,18 +131,4 @@ setMouseoverCanvasRef: (ref: HTMLCanvasElement) => void
 ```js
 // type signature
 setMouseoverId: (arg?: string) => void
-```
-
-#### action: setCigarMouseoverId
-
-```js
-// type signature
-setCigarMouseoverId: (arg: number) => void
-```
-
-#### action: setClickId
-
-```js
-// type signature
-setClickId: (arg?: string) => void
 ```

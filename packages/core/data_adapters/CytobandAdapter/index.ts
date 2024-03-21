@@ -6,9 +6,9 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addAdapterType(
     () =>
       new AdapterType({
-        name: 'CytobandAdapter',
         configSchema,
         getAdapterClass: () => import('./CytobandAdapter').then(f => f.default),
+        name: 'CytobandAdapter',
       }),
   )
 }

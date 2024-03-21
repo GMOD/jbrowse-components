@@ -75,8 +75,8 @@ export default class WigglePlugin extends Plugin {
           const adapterName = 'BigWigAdapter'
           const fileName = getFileName(file)
           const obj = {
-            type: adapterName,
             bigWigLocation: file,
+            type: adapterName,
           }
 
           if (regexGuess.test(fileName) && !hint) {
@@ -108,12 +108,12 @@ export default class WigglePlugin extends Plugin {
 
   exports = {
     LinearWiggleDisplayReactComponent,
-    XYPlotRendererReactComponent,
-    XYPlotRenderer,
     WiggleBaseRenderer,
+    XYPlotRenderer,
+    XYPlotRendererReactComponent,
     linearWiggleDisplayModelFactory,
-    xyPlotRendererConfigSchema,
     utils,
+    xyPlotRendererConfigSchema,
   }
 }
 

@@ -13,15 +13,15 @@ const BaseViewModel = types
   .model('BaseView', {
     /**
      * #property
-     */
-    id: ElementId,
-
-    /**
-     * #property
      * displayName is displayed in the header of the view, or assembly names
      * being used if none is specified
      */
     displayName: types.maybe(types.string),
+
+    /**
+     * #property
+     */
+    id: ElementId,
 
     /**
      * #property
@@ -49,6 +49,13 @@ const BaseViewModel = types
 
     /**
      * #action
+     */
+    setMinimized(flag: boolean) {
+      self.minimized = flag
+    },
+
+    /**
+     * #action
      * width is an important attribute of the view model, when it becomes set, it
      * often indicates when the app can start drawing to it. certain views like
      * lgv are strict about this because if it tries to draw before it knows the
@@ -60,13 +67,6 @@ const BaseViewModel = types
      */
     setWidth(newWidth: number) {
       self.width = newWidth
-    },
-
-    /**
-     * #action
-     */
-    setMinimized(flag: boolean) {
-      self.minimized = flag
     },
   }))
 

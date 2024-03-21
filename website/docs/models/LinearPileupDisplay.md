@@ -18,15 +18,6 @@ extends
 
 ### LinearPileupDisplay - Properties
 
-#### property: type
-
-```js
-// type signature
-ISimpleType<"LinearPileupDisplay">
-// code
-type: types.literal('LinearPileupDisplay')
-```
-
 #### property: configuration
 
 ```js
@@ -34,15 +25,6 @@ type: types.literal('LinearPileupDisplay')
 AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
-```
-
-#### property: showSoftClipping
-
-```js
-// type signature
-false
-// code
-showSoftClipping: false
 ```
 
 #### property: mismatchAlpha
@@ -54,21 +36,39 @@ IMaybe<ISimpleType<boolean>>
 mismatchAlpha: types.maybe(types.boolean)
 ```
 
+#### property: showSoftClipping
+
+```js
+// type signature
+false
+// code
+showSoftClipping: false
+```
+
 #### property: sortedBy
 
 ```js
 // type signature
-IMaybe<IModelType<{ type: ISimpleType<string>; pos: ISimpleType<number>; tag: IMaybe<ISimpleType<string>>; refName: ISimpleType<string>; assemblyName: ISimpleType<...>; }, {}, _NotCustomized, _NotCustomized>>
+IMaybe<IModelType<{ assemblyName: ISimpleType<string>; pos: ISimpleType<number>; refName: ISimpleType<string>; tag: IMaybe<ISimpleType<string>>; type: ISimpleType<...>; }, {}, _NotCustomized, _NotCustomized>>
 // code
 sortedBy: types.maybe(
           types.model({
-            type: types.string,
-            pos: types.number,
-            tag: types.maybe(types.string),
-            refName: types.string,
             assemblyName: types.string,
+            pos: types.number,
+            refName: types.string,
+            tag: types.maybe(types.string),
+            type: types.string,
           }),
         )
+```
+
+#### property: type
+
+```js
+// type signature
+ISimpleType<"LinearPileupDisplay">
+// code
+type: types.literal('LinearPileupDisplay')
 ```
 
 ### LinearPileupDisplay - Getters
@@ -96,18 +96,18 @@ any
 renderReady: () => boolean
 ```
 
-#### method: renderPropsPre
-
-```js
-// type signature
-renderPropsPre: () => any
-```
-
 #### method: renderProps
 
 ```js
 // type signature
 renderProps: () => any
+```
+
+#### method: renderPropsPre
+
+```js
+// type signature
+renderPropsPre: () => any
 ```
 
 #### method: trackMenuItems
@@ -119,6 +119,13 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 
 ### LinearPileupDisplay - Actions
 
+#### action: clearSelected
+
+```js
+// type signature
+clearSelected: () => void
+```
+
 #### action: setCurrSortBpPerPx
 
 ```js
@@ -126,11 +133,14 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 setCurrSortBpPerPx: (n: number) => void
 ```
 
-#### action: updateModificationColorMap
+#### action: setFeatureHeight
+
+overrides base from SharedLinearPileupDisplay to make sortReady false since
+changing feature height destroys the sort-induced layout
 
 ```js
 // type signature
-updateModificationColorMap: (uniqueModifications: string[]) => void
+setFeatureHeight: (n?: number) => void
 ```
 
 #### action: setModificationsReady
@@ -147,18 +157,11 @@ setModificationsReady: (flag: boolean) => void
 setSortReady: (flag: boolean) => void
 ```
 
-#### action: clearSelected
+#### action: setSortedBy
 
 ```js
 // type signature
-clearSelected: () => void
-```
-
-#### action: toggleSoftClipping
-
-```js
-// type signature
-toggleSoftClipping: () => void
+setSortedBy: (type: string, tag?: string) => void
 ```
 
 #### action: toggleMismatchAlpha
@@ -168,11 +171,18 @@ toggleSoftClipping: () => void
 toggleMismatchAlpha: () => void
 ```
 
-#### action: setSortedBy
+#### action: toggleSoftClipping
 
 ```js
 // type signature
-setSortedBy: (type: string, tag?: string) => void
+toggleSoftClipping: () => void
+```
+
+#### action: updateModificationColorMap
+
+```js
+// type signature
+updateModificationColorMap: (uniqueModifications: string[]) => void
 ```
 
 #### action: reload

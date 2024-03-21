@@ -9,11 +9,11 @@ export const configSchema = ConfigurationSchema('JobsListWidget', {})
 export default function JobsListWidgetF(pluginManager: PluginManager) {
   pluginManager.addWidgetType(() => {
     return new WidgetType({
-      name: 'JobsListWidget',
-      heading: 'Jobs list',
-      configSchema,
-      stateModel: stateModelFactory(pluginManager),
       ReactComponent: lazy(() => import('./components/JobsListWidget')),
+      configSchema,
+      heading: 'Jobs list',
+      name: 'JobsListWidget',
+      stateModel: stateModelFactory(pluginManager),
     })
   })
 }

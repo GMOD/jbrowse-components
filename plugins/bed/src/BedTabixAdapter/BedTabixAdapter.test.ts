@@ -20,10 +20,10 @@ test('adapter can fetch features from volvox-bed12.bed.gz', async () => {
   )
 
   const features = adapter.getFeatures({
+    assemblyName: 'volvox',
+    end: 20000,
     refName: 'ctgA',
     start: 0,
-    end: 20000,
-    assemblyName: 'volvox',
   })
   expect(await adapter.hasDataForRefName('ctgA')).toBe(true)
   expect(await adapter.hasDataForRefName('ctgB')).toBe(false)
@@ -50,10 +50,10 @@ test('adapter can fetch features from volvox.sort.bed.gz simple bed3', async () 
   )
 
   const features = adapter.getFeatures({
+    assemblyName: 'volvox',
+    end: 20000,
     refName: 'contigA',
     start: 0,
-    end: 20000,
-    assemblyName: 'volvox',
   })
   expect(await adapter.hasDataForRefName('contigA')).toBe(true)
   expect(await adapter.hasDataForRefName('ctgB')).toBe(false)
@@ -66,16 +66,6 @@ test('adapter can fetch features from volvox.sort.bed.gz simple bed3', async () 
 test('adapter can fetch features bed with autosql', async () => {
   const adapter = new BedTabixAdapter(
     MyConfigSchema.create({
-      bedGzLocation: {
-        localPath: require.resolve('./test_data/volvox-autosql.bed.gz'),
-        locationType: 'LocalPathLocation',
-      },
-      index: {
-        location: {
-          localPath: require.resolve('./test_data/volvox-autosql.bed.gz.tbi'),
-          locationType: 'LocalPathLocation',
-        },
-      },
       autoSql: `table gdcCancer
 "somatic variants converted from MAF files obtained through the NCI GDC"
     (
@@ -117,13 +107,23 @@ test('adapter can fetch features bed with autosql', async () => {
     lstring Matched_Norm_Sample_Barcode;  "Matcheds normal sample barcode"
     lstring case_id;                "Case ID number"
 )`,
+      bedGzLocation: {
+        localPath: require.resolve('./test_data/volvox-autosql.bed.gz'),
+        locationType: 'LocalPathLocation',
+      },
+      index: {
+        location: {
+          localPath: require.resolve('./test_data/volvox-autosql.bed.gz.tbi'),
+          locationType: 'LocalPathLocation',
+        },
+      },
     }),
   )
   const features = adapter.getFeatures({
+    assemblyName: 'volvox',
+    end: 20000,
     refName: 'ctgA',
     start: 0,
-    end: 20000,
-    assemblyName: 'volvox',
   })
   expect(await adapter.hasDataForRefName('ctgA')).toBe(true)
   expect(await adapter.hasDataForRefName('ctgB')).toBe(false)
@@ -154,10 +154,10 @@ test('adapter can fetch bed with header', async () => {
   )
 
   const features = adapter.getFeatures({
+    assemblyName: 'volvox',
+    end: 20000,
     refName: 'contigA',
     start: 0,
-    end: 20000,
-    assemblyName: 'volvox',
   })
   expect(await adapter.hasDataForRefName('contigA')).toBe(true)
   expect(await adapter.hasDataForRefName('ctgB')).toBe(false)
@@ -184,10 +184,10 @@ test('adapter can use gwas header', async () => {
   )
 
   const features = adapter.getFeatures({
+    assemblyName: 'hg19',
+    end: 100_000,
     refName: '1',
     start: 0,
-    end: 100_000,
-    assemblyName: 'hg19',
   })
 
   const featuresArray = await firstValueFrom(features.pipe(toArray()))

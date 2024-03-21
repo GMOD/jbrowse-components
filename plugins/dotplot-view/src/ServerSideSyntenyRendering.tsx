@@ -42,7 +42,7 @@ const ServerSideSyntenyRendering = observer(function ({
       ref={featureCanvas}
       width={width * highResolutionScaling}
       height={height * highResolutionScaling}
-      style={{ width, height, ...style }}
+      style={{ height, width, ...style }}
     />
   )
 })

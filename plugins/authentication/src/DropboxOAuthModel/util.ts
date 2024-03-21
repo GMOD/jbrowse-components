@@ -12,12 +12,12 @@ interface DropboxError {
  * https://www.dropbox.com/developers/documentation/http/documentation#sharing-get_shared_link_file
  * */
 const dropboxErrorMessages: Record<string, string | undefined> = {
-  shared_link_not_found: "The shared link wasn't found.",
   shared_link_access_denied:
     'The caller is not allowed to access this shared link.',
+  shared_link_is_directory: 'Directories cannot be retrieved by this endpoint.',
+  shared_link_not_found: "The shared link wasn't found.",
   unsupported_link_type:
     'This type of link is not supported; use files/export instead.',
-  shared_link_is_directory: 'Directories cannot be retrieved by this endpoint.',
 }
 
 export async function getDescriptiveErrorMessage(
@@ -32,5 +32,5 @@ export async function getDescriptiveErrorMessage(
   } catch (error) {
     /* do nothing */
   }
-  return getResponseError({ response, reason, statusText: errorMessage })
+  return getResponseError({ reason, response, statusText: errorMessage })
 }

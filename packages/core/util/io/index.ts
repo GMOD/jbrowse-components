@@ -129,9 +129,9 @@ function getInternetAccount(
       location.internetAccountPreAuthorization.internetAccountType,
     )
     return internetAccountType.stateModel.create({
-      type: location.internetAccountPreAuthorization.internetAccountType,
       configuration:
         location.internetAccountPreAuthorization.authInfo.configuration,
+      type: location.internetAccountPreAuthorization.internetAccountType,
     })
   }
   return undefined

@@ -60,9 +60,9 @@ export const WithInlinePlugins = () => {
   const { assembly, tracks } = getVolvoxConfig()
   const state = createViewState({
     assembly,
+    location: 'ctgA:1105..1221',
     plugins: [HighlightRegionPlugin],
     tracks,
-    location: 'ctgA:1105..1221',
   })
 
   return (

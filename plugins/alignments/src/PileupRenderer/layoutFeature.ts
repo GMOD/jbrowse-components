@@ -74,9 +74,9 @@ export function layoutFeature({
 
   return {
     feature,
+    heightPx,
     leftPx,
     rightPx,
     topPx: displayMode === 'collapse' ? 0 : topPx,
-    heightPx,
   }
 }

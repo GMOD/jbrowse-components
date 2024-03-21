@@ -56,8 +56,8 @@ function Translation({
     const normalizedCodon = reverse ? revcom(codon) : codon
     const aminoAcid = codonTable[normalizedCodon] || ''
     translated.push({
-      letter: aminoAcid,
       codon: normalizedCodon.toUpperCase(),
+      letter: aminoAcid,
     })
   }
 
@@ -308,9 +308,9 @@ function Wrapper({
       style={{
         // use block because svg by default is inline, which adds a margin
         display: 'block',
-        width,
         height: totalHeight,
         userSelect: 'none',
+        width,
       }}
     >
       {children}

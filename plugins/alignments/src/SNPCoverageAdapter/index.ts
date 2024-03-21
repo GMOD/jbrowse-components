@@ -5,14 +5,14 @@ import configSchema from './configSchema'
 export default function (pluginManager: PluginManager) {
   pluginManager.addAdapterType(() => {
     return new AdapterType({
-      name: 'SNPCoverageAdapter',
-      displayName: 'SNPCoverage adapter',
       adapterMetadata: {
         hiddenFromGUI: true,
       },
+      configSchema,
+      displayName: 'SNPCoverage adapter',
       getAdapterClass: () =>
         import('./SNPCoverageAdapter').then(r => r.default),
-      configSchema,
+      name: 'SNPCoverageAdapter',
     })
   })
 }

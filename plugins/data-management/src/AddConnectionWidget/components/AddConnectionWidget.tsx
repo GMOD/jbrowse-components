@@ -15,18 +15,18 @@ import ConnectionTypeSelect from './ConnectionTypeSelect'
 import { isSessionWithConnections } from '@jbrowse/product-core'
 
 const useStyles = makeStyles()(theme => ({
+  actionsContainer: {
+    marginBottom: theme.spacing(2),
+  },
+  button: {
+    marginRight: theme.spacing(1),
+    marginTop: theme.spacing(1),
+  },
   root: {
     marginTop: theme.spacing(1),
   },
   stepper: {
     backgroundColor: theme.palette.background.default,
-  },
-  button: {
-    marginTop: theme.spacing(1),
-    marginRight: theme.spacing(1),
-  },
-  actionsContainer: {
-    marginBottom: theme.spacing(2),
   },
 }))
 

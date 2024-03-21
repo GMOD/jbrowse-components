@@ -29,21 +29,23 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        type: types.literal('LinearComparativeDisplay'),
-        /**
-         * #property
-         */
         configuration: ConfigurationReference(configSchema),
+
         /**
          * #property
          */
         height: 100,
+
+        /**
+         * #property
+         */
+        type: types.literal('LinearComparativeDisplay'),
       }),
     )
     .volatile((/* self */) => ({
-      renderInProgress: undefined as AbortController | undefined,
       features: undefined as Feature[] | undefined,
       message: undefined as string | undefined,
+      renderInProgress: undefined as AbortController | undefined,
     }))
     .views(self => ({
       /**
@@ -51,9 +53,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       renderProps() {
         return {
-          rpcDriverName: self.rpcDriverName,
           displayModel: self,
           highResolutionScaling: 2,
+          rpcDriverName: self.rpcDriverName,
         }
       },
     }))
@@ -61,6 +63,21 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       let renderInProgress: undefined | AbortController
 
       return {
+        /**
+         * #action
+         * controlled by a reaction
+         */
+        setError(error: unknown) {
+          console.error(error)
+          if (renderInProgress && !renderInProgress.signal.aborted) {
+            renderInProgress.abort()
+          }
+          // the rendering failed for some reason
+          self.message = undefined
+          self.error = error
+          renderInProgress = undefined
+        },
+
         /**
          * #action
          * controlled by a reaction
@@ -125,21 +142,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             self.features = features
           }
         },
-
-        /**
-         * #action
-         * controlled by a reaction
-         */
-        setError(error: unknown) {
-          console.error(error)
-          if (renderInProgress && !renderInProgress.signal.aborted) {
-            renderInProgress.abort()
-          }
-          // the rendering failed for some reason
-          self.message = undefined
-          self.error = error
-          renderInProgress = undefined
-        },
       }
     })
     .actions(self => ({
@@ -150,9 +152,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           renderBlockData,
           renderBlockEffect,
           {
-            name: `${self.type} ${self.id} rendering`,
             delay: 1000,
             fireImmediately: true,
+            name: `${self.type} ${self.id} rendering`,
           },
           self.setLoading,
           self.setRendered,
@@ -176,15 +178,15 @@ function renderBlockData(self: LinearComparativeDisplay) {
 
   return parent.initialized
     ? {
-        rpcManager,
         renderProps: {
           ...display.renderProps(),
-          view: parent,
           adapterConfig,
+          self,
           sessionId,
           timeout: 1000000,
-          self,
+          view: parent,
         },
+        rpcManager,
       }
     : undefined
 }
@@ -199,9 +201,9 @@ async function renderBlockEffect(props: ReturnType<typeof renderBlockData>) {
   const view0 = renderProps.view.views[0]
 
   const features = (await rpcManager.call('getFeats', 'CoreGetFeatures', {
+    adapterConfig,
     regions: view0.staticBlocks.contentBlocks,
     sessionId: 'getFeats',
-    adapterConfig,
   })) as Feature[]
 
   return {

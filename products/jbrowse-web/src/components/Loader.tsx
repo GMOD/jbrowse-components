@@ -53,18 +53,18 @@ export function Loader({
   const [tracklist, setTrackList] = useQueryParam('tracklist', Str)
 
   const loader = SessionLoader.create({
-    configPath: normalize(config),
-    sessionQuery: normalize(session),
-    password: normalize(password),
     adminKey: normalize(adminKey),
-    loc: normalize(loc),
     assembly: normalize(assembly),
-    tracks: normalize(tracks),
+    configPath: normalize(config),
+    highlight: normalize(highlight),
+    initialTimestamp,
+    loc: normalize(loc),
+    nav: JSON.parse(normalize(nav) || 'true'),
+    password: normalize(password),
+    sessionQuery: normalize(session),
     sessionTracks: normalize(sessionTracks),
     tracklist: JSON.parse(normalize(tracklist) || 'false'),
-    highlight: normalize(highlight),
-    nav: JSON.parse(normalize(nav) || 'true'),
-    initialTimestamp,
+    tracks: normalize(tracks),
   })
 
   useEffect(() => {

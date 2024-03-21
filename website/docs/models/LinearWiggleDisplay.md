@@ -50,18 +50,18 @@ string
 { range: number[]; values: number[]; format: (d: NumberValue) => string; position: ScaleLinear<number, number, never> | ScaleQuantize<number, never>; }
 ```
 
-#### getter: needsScalebar
-
-```js
-// type
-boolean
-```
-
 #### getter: fillSetting
 
 ```js
 // type
 ;1 | 0 | 2
+```
+
+#### getter: needsScalebar
+
+```js
+// type
+boolean
 ```
 
 ### LinearWiggleDisplay - Methods

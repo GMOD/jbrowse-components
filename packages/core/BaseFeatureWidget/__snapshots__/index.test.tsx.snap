@@ -62,12 +62,12 @@ exports[`open up a widget 1`] = `
                 class="css-1m8nxnb-field"
               >
                 <div
-                  class="css-1q83rf3-fieldName"
+                  class="css-tc7en1-fieldName"
                 >
                   Position
                 </div>
                 <div
-                  class="css-1omt041-fieldValue"
+                  class="css-tuydmv-fieldValue"
                 >
                   ctgA:3..102 (+)
                 </div>
@@ -76,12 +76,12 @@ exports[`open up a widget 1`] = `
                 class="css-1m8nxnb-field"
               >
                 <div
-                  class="css-1q83rf3-fieldName"
+                  class="css-tc7en1-fieldName"
                 >
                   Length
                 </div>
                 <div
-                  class="css-1omt041-fieldValue"
+                  class="css-tuydmv-fieldValue"
                 >
                   <span>
                     100
@@ -100,13 +100,13 @@ exports[`open up a widget 1`] = `
                 class="css-1m8nxnb-field"
               >
                 <div
-                  class="css-1q83rf3-fieldName"
+                  class="css-tc7en1-fieldName"
                   style="width: 40px;"
                 >
                   score
                 </div>
                 <div
-                  class="css-1omt041-fieldValue"
+                  class="css-tuydmv-fieldValue"
                 >
                   <span>
                     37
@@ -114,7 +114,7 @@ exports[`open up a widget 1`] = `
                 </div>
               </div>
               <div
-                class="css-1lttu3w-container"
+                class="css-1i3pk1y-container"
               >
                 <button
                   class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary css-sghohy-MuiButtonBase-root-MuiButton-root"

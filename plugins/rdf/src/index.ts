@@ -15,10 +15,10 @@ export default class RdfPlugin extends Plugin {
     pluginManager.addAdapterType(
       () =>
         new AdapterType({
-          name: 'SPARQLAdapter',
-          displayName: 'SPARQL adapter',
-          configSchema: sparqlAdapterConfigSchema,
           AdapterClass: SPARQLAdapterClass,
+          configSchema: sparqlAdapterConfigSchema,
+          displayName: 'SPARQL adapter',
+          name: 'SPARQLAdapter',
         }),
     )
     pluginManager.addToExtensionPoint(
@@ -34,8 +34,8 @@ export default class RdfPlugin extends Plugin {
           const fileName = getFileName(file)
           if (regexGuess.test(fileName) || adapterHint === adapterName) {
             return {
-              type: adapterName,
               endpoint: file,
+              type: adapterName,
             }
           }
           return adapterGuesser(file, index, adapterHint)

@@ -16,7 +16,7 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ```js
 bigBedLocation: {
+      defaultValue: { locationType: 'UriLocation', uri: '/path/to/my.bb' },
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.bb', locationType: 'UriLocation' },
     }
 ```

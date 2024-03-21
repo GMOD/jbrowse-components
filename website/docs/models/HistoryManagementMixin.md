@@ -20,7 +20,7 @@ used for undo/redo
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ undoIdx: IType<number, number, number>; targetPath: IType<string, string, string>; }, { history: unknown[]; notTrackingUndo: boolean; } & { readonly canUndo: boolean; readonly canRedo: boolean; } & { ...; }, _NotCustomized, _NotCustomized>, [...]>
+IOptionalIType<IModelType<{ targetPath: IType<string, string, string>; undoIdx: IType<number, number, number>; }, { history: unknown[]; notTrackingUndo: boolean; } & { readonly canRedo: boolean; readonly canUndo: boolean; } & { ...; }, _NotCustomized, _NotCustomized>, [...]>
 // code
 history: types.optional(TimeTraveller, { targetPath: '../session' })
 ```

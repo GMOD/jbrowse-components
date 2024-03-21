@@ -148,13 +148,13 @@ export default class SceneGraph {
         yOffset += node.top
       })
       this.absoluteCache = {
+        bottom: this.bottom + yOffset,
         dirty: false,
+        height: this.height,
         left: this.left + xOffset,
         right: this.right + xOffset,
         top: this.top + yOffset,
-        bottom: this.bottom + yOffset,
         width: this.width,
-        height: this.height,
       }
     }
     return this.absoluteCache

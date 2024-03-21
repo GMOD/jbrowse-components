@@ -22,25 +22,25 @@ import MinimizeIcon from '@mui/icons-material/Minimize'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 
 const useStyles = makeStyles()(theme => ({
-  formControl: {
-    margin: 0,
-  },
-  spacer: {
-    flexGrow: 1,
-  },
   drawerSelect: {
-    margin: 0,
     color: theme.palette.secondary.contrastText,
+    margin: 0,
   },
-
   dropDownIcon: {
     color: theme.palette.secondary.contrastText,
   },
+  formControl: {
+    margin: 0,
+  },
+
   headerFocused: {
     background: theme.palette.secondary.main,
   },
   headerUnfocused: {
     background: theme.palette.secondary.dark,
+  },
+  spacer: {
+    flexGrow: 1,
   },
 }))
 

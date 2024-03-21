@@ -15,7 +15,7 @@ export default function sessionModelFactory({
   pluginManager: PluginManager
   assemblyConfigSchema: BaseAssemblyConfigSchema
 }) {
-  return BaseWebSession({ pluginManager, assemblyConfigSchema })
+  return BaseWebSession({ assemblyConfigSchema, pluginManager })
 }
 
 export type WebSessionModelType = ReturnType<typeof sessionModelFactory>

@@ -29,11 +29,11 @@ const useStyles = makeStyles()(theme => ({
   button: {
     margin: theme.spacing(1),
   },
-  formControl: {
-    margin: 0,
-  },
   container2: {
     marginTop: theme.spacing(1),
+  },
+  formControl: {
+    margin: 0,
   },
 }))
 

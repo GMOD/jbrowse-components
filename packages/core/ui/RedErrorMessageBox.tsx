@@ -8,12 +8,12 @@ export default function RedErrorMessageBox({
   return (
     <div
       style={{
-        padding: 4,
-        margin: 4,
-        overflow: 'auto',
-        maxHeight: 200,
         background: '#f88',
         border: '1px solid black',
+        margin: 4,
+        maxHeight: 200,
+        overflow: 'auto',
+        padding: 4,
       }}
     >
       {children}

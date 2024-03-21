@@ -19,7 +19,7 @@ export function AboutDialog({
   const AboutComponent = pluginManager.evaluateExtensionPoint(
     'Core-replaceAbout',
     AboutContents,
-    { session, config },
+    { config, session },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ) as React.FC<any>
 

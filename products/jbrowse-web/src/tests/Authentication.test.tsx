@@ -24,19 +24,19 @@ test('open a bigwig track that needs oauth authentication and has existing token
     ...config,
     tracks: [
       {
-        type: 'QuantitativeTrack',
-        trackId: 'volvox_microarray_dropbox',
-        name: 'wiggle_track xyplot dropbox',
-        category: ['Integration test'],
-        assemblyNames: ['volvox'],
         adapter: {
-          type: 'BigWigAdapter',
           bigWigLocation: {
-            uri: 'volvox_microarray.bw',
-            locationType: 'UriLocation',
             internetAccountId: 'dropboxOAuth',
+            locationType: 'UriLocation',
+            uri: 'volvox_microarray.bw',
           },
+          type: 'BigWigAdapter',
         },
+        assemblyNames: ['volvox'],
+        category: ['Integration test'],
+        name: 'wiggle_track xyplot dropbox',
+        trackId: 'volvox_microarray_dropbox',
+        type: 'QuantitativeTrack',
       },
     ],
   })
@@ -62,28 +62,28 @@ test('opens a bigwig track that needs external token authentication', async () =
     ...config,
     internetAccounts: [
       {
-        type: 'ExternalTokenInternetAccount',
-        internetAccountId: 'ExternalTokenTest',
-        name: 'External token',
         description: 'External Token for testing',
         domains: [],
+        internetAccountId: 'ExternalTokenTest',
+        name: 'External token',
+        type: 'ExternalTokenInternetAccount',
       },
     ],
     tracks: [
       {
-        type: 'QuantitativeTrack',
-        trackId: 'volvox_microarray_externaltoken',
-        name: 'wiggle_track xyplot external token',
-        category: ['Integration test'],
-        assemblyNames: ['volvox'],
         adapter: {
-          type: 'BigWigAdapter',
           bigWigLocation: {
-            uri: 'volvox_microarray.bw',
-            locationType: 'UriLocation',
             internetAccountId: 'ExternalTokenTest',
+            locationType: 'UriLocation',
+            uri: 'volvox_microarray.bw',
           },
+          type: 'BigWigAdapter',
         },
+        assemblyNames: ['volvox'],
+        category: ['Integration test'],
+        name: 'wiggle_track xyplot external token',
+        trackId: 'volvox_microarray_externaltoken',
+        type: 'QuantitativeTrack',
       },
     ],
   })

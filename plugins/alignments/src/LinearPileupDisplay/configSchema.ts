@@ -16,32 +16,9 @@ function configSchemaF(pluginManager: PluginManager) {
       /**
        * #slot
        */
-      defaultRendering: {
-        type: 'stringEnum',
-        model: types.enumeration('Rendering', ['pileup']),
-        defaultValue: 'pileup',
-      },
-      /**
-       * #slot
-       */
-      renderers: ConfigurationSchema('RenderersConfiguration', {
-        PileupRenderer:
-          pluginManager.getRendererType('PileupRenderer').configSchema,
-      }),
-      /**
-       * #slot
-       */
-      maxFeatureScreenDensity: {
-        type: 'number',
-        description: 'maximum features per pixel that is displayed in the view',
-        defaultValue: 5,
-      },
-
-      /**
-       * #slot
-       */
       colorScheme: {
-        type: 'stringEnum',
+        defaultValue: 'normal',
+        description: 'color scheme to use',
         model: types.enumeration('colorScheme', [
           'strand',
           'normal',
@@ -50,9 +27,34 @@ function configSchemaF(pluginManager: PluginManager) {
           'mappingQuality',
           'tag',
         ]),
-        description: 'color scheme to use',
-        defaultValue: 'normal',
+        type: 'stringEnum',
       },
+
+      /**
+       * #slot
+       */
+      defaultRendering: {
+        defaultValue: 'pileup',
+        model: types.enumeration('Rendering', ['pileup']),
+        type: 'stringEnum',
+      },
+
+      /**
+       * #slot
+       */
+      maxFeatureScreenDensity: {
+        defaultValue: 5,
+        description: 'maximum features per pixel that is displayed in the view',
+        type: 'number',
+      },
+
+      /**
+       * #slot
+       */
+      renderers: ConfigurationSchema('RenderersConfiguration', {
+        PileupRenderer:
+          pluginManager.getRendererType('PileupRenderer').configSchema,
+      }),
     },
     {
       /**

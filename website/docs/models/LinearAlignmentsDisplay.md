@@ -19,13 +19,6 @@ extends
 
 ### LinearAlignmentsDisplay - Getters
 
-#### getter: height
-
-```js
-// type
-any
-```
-
 #### getter: featureIdUnderMouse
 
 ```js
@@ -33,14 +26,7 @@ any
 any
 ```
 
-#### getter: pileupConf
-
-```js
-// type
-any
-```
-
-#### getter: features
+#### getter: height
 
 ```js
 // type
@@ -54,14 +40,28 @@ any
 any
 ```
 
-#### getter: sortedBy
+#### getter: coverageConf
 
 ```js
 // type
 any
 ```
 
-#### getter: coverageConf
+#### getter: features
+
+```js
+// type
+any
+```
+
+#### getter: pileupConf
+
+```js
+// type
+any
+```
+
+#### getter: sortedBy
 
 ```js
 // type
@@ -93,13 +93,6 @@ trackMenuItems: () => MenuItem[]
 
 ### LinearAlignmentsDisplay - Actions
 
-#### action: setScrollTop
-
-```js
-// type signature
-setScrollTop: (scrollTop: number) => void
-```
-
 #### action: setSNPCoverageHeight
 
 ```js
@@ -107,11 +100,18 @@ setScrollTop: (scrollTop: number) => void
 setSNPCoverageHeight: (n: number) => void
 ```
 
-#### action: setSNPCoverageDisplay
+#### action: setScrollTop
 
 ```js
 // type signature
-setSNPCoverageDisplay: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
+setScrollTop: (scrollTop: number) => void
+```
+
+#### action: resizeHeight
+
+```js
+// type signature
+resizeHeight: (distance: number) => number
 ```
 
 #### action: setFeatureDensityStatsLimit
@@ -119,13 +119,6 @@ setSNPCoverageDisplay: (configuration: { [x: string]: any; } & NonEmptyObject & 
 ```js
 // type signature
 setFeatureDensityStatsLimit: (stats?: FeatureDensityStats) => void
-```
-
-#### action: setPileupDisplay
-
-```js
-// type signature
-setPileupDisplay: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
 ```
 
 #### action: setHeight
@@ -142,11 +135,18 @@ setHeight: (n: number) => number
 setLowerPanelType: (type: string) => void
 ```
 
-#### action: resizeHeight
+#### action: setPileupDisplay
 
 ```js
 // type signature
-resizeHeight: (distance: number) => number
+setPileupDisplay: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
+```
+
+#### action: setSNPCoverageDisplay
+
+```js
+// type signature
+setSNPCoverageDisplay: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
 ```
 
 #### action: renderSvg

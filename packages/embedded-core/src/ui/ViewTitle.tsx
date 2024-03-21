@@ -12,28 +12,28 @@ import ViewMenu from './ViewMenu'
 const VersionAboutDialog = lazy(() => import('./VersionAboutDialog'))
 
 const useStyles = makeStyles()(theme => ({
-  icon: {
-    color: theme.palette.secondary.contrastText,
+  container: {
+    display: 'flex',
   },
   displayName: {
-    marginTop: 2,
     color: theme.palette.secondary.contrastText,
+    marginTop: 2,
   },
   grow: {
     flexGrow: 1,
   },
-  container: {
-    display: 'flex',
+  icon: {
+    color: theme.palette.secondary.contrastText,
   },
   iconRoot: {
     '&:hover': {
+      '@media (hover: none)': {
+        backgroundColor: 'transparent',
+      },
       backgroundColor: alpha(
         theme.palette.secondary.contrastText,
         theme.palette.action.hoverOpacity,
       ),
-      '@media (hover: none)': {
-        backgroundColor: 'transparent',
-      },
     },
   },
 }))
@@ -61,7 +61,7 @@ const ViewTitle = observer(({ view }: { view: IBaseViewModel }) => {
       ) : null}
       <div className={classes.grow} />
       <IconButton onClick={() => setDialogOpen(true)}>
-        <div style={{ width: 22, height: 22 }}>
+        <div style={{ height: 22, width: 22 }}>
           <Logomark variant="white" />
         </div>
       </IconButton>

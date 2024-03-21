@@ -15,8 +15,8 @@ const useStyles = makeStyles()({
   },
 
   trackLabelOffset: {
-    position: 'relative',
     display: 'inline-block',
+    position: 'relative',
   },
   trackLabelOverlap: {
     position: 'absolute',

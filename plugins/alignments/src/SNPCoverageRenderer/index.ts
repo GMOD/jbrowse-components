@@ -8,9 +8,9 @@ export default function register(pluginManager: PluginManager) {
   pluginManager.addRendererType(
     () =>
       new SNPCoverageRenderer({
-        name: 'SNPCoverageRenderer',
         ReactComponent: WiggleRendering,
         configSchema,
+        name: 'SNPCoverageRenderer',
         pluginManager,
       }),
   )

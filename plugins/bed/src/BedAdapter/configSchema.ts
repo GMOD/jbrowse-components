@@ -11,57 +11,63 @@ const BedAdapter = ConfigurationSchema(
     /**
      * #slot
      */
-    bedLocation: {
-      type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.bed.gz', locationType: 'UriLocation' },
-    },
-    /**
-     * #slot
-     */
-    columnNames: {
-      type: 'stringArray',
-      description: 'List of column names',
-      defaultValue: [],
-    },
-    /**
-     * #slot
-     */
-    scoreColumn: {
-      type: 'string',
-      description: 'The column to use as a "score" attribute',
-      defaultValue: '',
-    },
-    /**
-     * #slot
-     */
     autoSql: {
-      type: 'string',
-      description: 'The autoSql definition for the data fields in the file',
       defaultValue: '',
+      description: 'The autoSql definition for the data fields in the file',
+      type: 'string',
     },
+
     /**
      * #slot
      */
-    colRef: {
-      type: 'number',
-      description: 'The column to use as a "refName" attribute',
-      defaultValue: 0,
+    bedLocation: {
+      defaultValue: { locationType: 'UriLocation', uri: '/path/to/my.bed.gz' },
+      type: 'fileLocation',
     },
-    /**
-     * #slot
-     */
-    colStart: {
-      type: 'number',
-      description: 'The column to use as a "start" attribute',
-      defaultValue: 1,
-    },
+
     /**
      * #slot
      */
     colEnd: {
-      type: 'number',
-      description: 'The column to use as a "end" attribute',
       defaultValue: 2,
+      description: 'The column to use as a "end" attribute',
+      type: 'number',
+    },
+
+    /**
+     * #slot
+     */
+    colRef: {
+      defaultValue: 0,
+      description: 'The column to use as a "refName" attribute',
+      type: 'number',
+    },
+
+    /**
+     * #slot
+     */
+    colStart: {
+      defaultValue: 1,
+      description: 'The column to use as a "start" attribute',
+      type: 'number',
+    },
+
+    /**
+     * #slot
+     */
+    columnNames: {
+      defaultValue: [],
+      description: 'List of column names',
+      type: 'stringArray',
+    },
+
+    /**
+     * #slot
+     */
+    scoreColumn: {
+      defaultValue: '',
+      description: 'The column to use as a "score" attribute',
+      type: 'string',
     },
   },
   { explicitlyTyped: true },

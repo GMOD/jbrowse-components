@@ -8,26 +8,26 @@ import { SvInspectorViewModel } from '../models/SvInspectorView'
 import CircularViewOptions from './CircularViewOptions'
 
 const useStyles = makeStyles()(theme => ({
-  resizeHandleVert: {
-    background: theme.palette.action.selected,
-    width: 4,
-    boxSizing: 'border-box',
-    borderTop: '1px solid #fafafa',
+  container: {
+    overflow: 'hidden',
   },
   resizeHandleHoriz: {
     background: theme.palette.action.selected,
-    height: 4,
-    boxSizing: 'border-box',
     borderTop: '1px solid #fafafa',
+    boxSizing: 'border-box',
+    height: 4,
+  },
+  resizeHandleVert: {
+    background: theme.palette.action.selected,
+    borderTop: '1px solid #fafafa',
+    boxSizing: 'border-box',
+    width: 4,
   },
   viewControls: {
     margin: 0,
   },
   viewsContainer: {
     display: 'flex',
-  },
-  container: {
-    overflow: 'hidden',
   },
 }))
 

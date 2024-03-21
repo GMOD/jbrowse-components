@@ -41,8 +41,8 @@ export default function LaunchBreakpointSplitViewPanel({
     ;(async () => {
       try {
         const feats = await getSAFeatures({
-          view,
           feature: new SimpleFeature(feature),
+          view,
         })
         setRes(feats)
       } catch (e) {
@@ -77,7 +77,7 @@ export default function LaunchBreakpointSplitViewPanel({
                     event.preventDefault()
                     session.queueDialog(handleClose => [
                       BreakendOptionDialog,
-                      { handleClose, f1, f2, model, viewType },
+                      { f1, f2, handleClose, model, viewType },
                     ])
                   }}
                 >

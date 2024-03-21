@@ -31,47 +31,47 @@ function getAdapter({
 }) {
   if (radioOption === '.paf') {
     return {
-      type: 'PAFAdapter',
       pafLocation: fileLocation,
       queryAssembly: assembly1,
       targetAssembly: assembly2,
+      type: 'PAFAdapter',
     }
   } else if (radioOption === '.out') {
     return {
-      type: 'MashMapAdapter',
       outLocation: fileLocation,
       queryAssembly: assembly1,
       targetAssembly: assembly2,
+      type: 'MashMapAdapter',
     }
   } else if (radioOption === '.delta') {
     return {
-      type: 'DeltaAdapter',
       deltaLocation: fileLocation,
       queryAssembly: assembly1,
       targetAssembly: assembly2,
+      type: 'DeltaAdapter',
     }
   } else if (radioOption === '.chain') {
     return {
-      type: 'ChainAdapter',
       chainLocation: fileLocation,
       queryAssembly: assembly1,
       targetAssembly: assembly2,
+      type: 'ChainAdapter',
     }
   } else if (radioOption === '.anchors') {
     return {
-      type: 'MCScanAnchorsAdapter',
-      mcscanAnchorsLocation: fileLocation,
+      assemblyNames: [assembly1, assembly2],
       bed1Location,
       bed2Location,
-      assemblyNames: [assembly1, assembly2],
+      mcscanAnchorsLocation: fileLocation,
+      type: 'MCScanAnchorsAdapter',
     }
   } else if (radioOption === '.anchors.simple') {
     return {
-      type: 'MCScanSimpleAnchorsAdapter',
-      mcscanSimpleAnchorsLocation: fileLocation,
+      assemblyNames: [assembly1, assembly2],
       bed1Location,
       bed2Location,
-      assemblyNames: [assembly1, assembly2],
+      mcscanSimpleAnchorsLocation: fileLocation,
+      type: 'MCScanSimpleAnchorsAdapter',
     }
   } else {
     throw new Error(
@@ -110,18 +110,18 @@ const OpenTrack = observer(
           setError(undefined)
 
           setSessionTrackData({
-            trackId,
-            name: fn,
-            assemblyNames: [assembly2, assembly1],
-            type: 'SyntenyTrack',
             adapter: getAdapter({
-              radioOption,
               assembly1,
               assembly2,
-              fileLocation,
               bed1Location,
               bed2Location,
+              fileLocation,
+              radioOption,
             }),
+            assemblyNames: [assembly2, assembly1],
+            name: fn,
+            trackId,
+            type: 'SyntenyTrack',
           })
         }
       } catch (e) {

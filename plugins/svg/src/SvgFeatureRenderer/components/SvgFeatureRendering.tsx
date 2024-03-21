@@ -67,12 +67,12 @@ function RenderedFeatureGlyph(props: {
   const rootLayout = new SceneGraph('root', 0, 0, 0, 0)
   const GlyphComponent = chooseGlyphComponent(feature, extraGlyphs)
   const featureLayout = (GlyphComponent.layOut || layOut)({
-    layout: rootLayout,
-    feature,
     bpPerPx,
-    reversed,
     config,
     extraGlyphs,
+    feature,
+    layout: rootLayout,
+    reversed,
   })
   let shouldShowName = false
   let shouldShowDescription = false

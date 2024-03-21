@@ -21,15 +21,17 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        type: types.literal('LinearArcDisplay'),
-        /**
-         * #property
-         */
         configuration: ConfigurationReference(configSchema),
+
         /**
          * #property
          */
         displayMode: types.maybe(types.string),
+
+        /**
+         * #property
+         */
+        type: types.literal('LinearArcDisplay'),
       }),
     )
 
@@ -86,9 +88,9 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         renderProps() {
           return {
             ...superRenderProps(),
-            rpcDriverName: self.rpcDriverName,
             config: self.rendererConfig,
             height: self.height,
+            rpcDriverName: self.rpcDriverName,
           }
         },
       }
@@ -114,16 +116,16 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               label: 'Display mode',
               subMenu: [
                 {
-                  type: 'radio',
+                  checked: self.displayMode === 'arcs',
                   label: 'Arcs',
                   onClick: () => self.setDisplayMode('arcs'),
-                  checked: self.displayMode === 'arcs',
+                  type: 'radio',
                 },
                 {
-                  type: 'radio',
+                  checked: self.displayMode === 'semicircles',
                   label: 'Semi-circles',
                   onClick: () => self.setDisplayMode('semicircles'),
-                  checked: self.displayMode === 'semicircles',
+                  type: 'radio',
                 },
               ],
             },

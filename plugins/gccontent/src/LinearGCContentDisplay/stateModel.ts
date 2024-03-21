@@ -30,14 +30,16 @@ export default function stateModelFactory(
          * #property
          */
         type: types.literal('LinearGCContentDisplay'),
-        /**
-         * #property
-         */
-        windowSize: types.maybe(types.number),
+
         /**
          * #property
          */
         windowDelta: types.maybe(types.number),
+
+        /**
+         * #property
+         */
+        windowSize: types.maybe(types.number),
       }),
     )
     .actions(self => ({
@@ -53,11 +55,11 @@ export default function stateModelFactory(
       },
     }))
     .views(self => ({
-      get windowSizeSetting() {
-        return self.windowSize ?? getConf(self, 'windowSize')
-      },
       get windowDeltaSetting() {
         return self.windowDelta ?? getConf(self, 'windowDelta')
+      },
+      get windowSizeSetting() {
+        return self.windowSize ?? getConf(self, 'windowSize')
       },
     }))
     .views(self => {
@@ -66,20 +68,6 @@ export default function stateModelFactory(
         renderProps: superRenderProps,
       } = self
       return {
-        trackMenuItems() {
-          return [
-            ...superTrackMenuItems(),
-            {
-              label: 'Change GC parameters',
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  EditGCContentParamsDialog,
-                  { model: self, handleClose },
-                ])
-              },
-            },
-          ]
-        },
         /**
          * #method
          * retrieves the sequence adapter from parent track, and puts it as a
@@ -90,12 +78,27 @@ export default function stateModelFactory(
           return {
             ...superRenderProps(),
             adapterConfig: {
-              type: 'GCContentAdapter',
               sequenceAdapter,
-              windowSize: self.windowSizeSetting,
+              type: 'GCContentAdapter',
               windowDelta: self.windowDeltaSetting,
+              windowSize: self.windowSizeSetting,
             },
           }
+        },
+
+        trackMenuItems() {
+          return [
+            ...superTrackMenuItems(),
+            {
+              label: 'Change GC parameters',
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  EditGCContentParamsDialog,
+                  { handleClose, model: self },
+                ])
+              },
+            },
+          ]
         },
       }
     })

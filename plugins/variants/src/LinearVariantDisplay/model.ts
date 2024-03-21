@@ -30,11 +30,12 @@ export default function stateModelFactory(
         /**
          * #property
          */
-        type: types.literal('LinearVariantDisplay'),
+        configuration: ConfigurationReference(configSchema),
+
         /**
          * #property
          */
-        configuration: ConfigurationReference(configSchema),
+        type: types.literal('LinearVariantDisplay'),
       }),
     )
 
@@ -59,10 +60,10 @@ export default function stateModelFactory(
           )
           session.showWidget(
             session.addWidget('VariantFeatureWidget', 'variantFeature', {
-              featureData: feature.toJSON(),
-              view,
-              track,
               descriptions,
+              featureData: feature.toJSON(),
+              track,
+              view,
             }),
           )
         }

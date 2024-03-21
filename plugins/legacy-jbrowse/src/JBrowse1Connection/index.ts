@@ -9,11 +9,11 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addConnectionType(
     () =>
       new ConnectionType({
-        name: 'JBrowse1Connection',
         configSchema,
-        stateModel: modelFactory(pluginManager),
-        displayName: 'JBrowse 1 Data',
         description: 'A JBrowse 1 data directory',
+        displayName: 'JBrowse 1 Data',
+        name: 'JBrowse1Connection',
+        stateModel: modelFactory(pluginManager),
         url: '//jbrowse.org/',
       }),
   )

@@ -8,8 +8,8 @@ import { ImportWizardModel } from '../models/ImportWizard'
 
 const useStyles = makeStyles()({
   textField: {
-    width: '2rem',
     verticalAlign: 'baseline',
+    width: '2rem',
   },
 })
 

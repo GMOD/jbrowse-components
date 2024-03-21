@@ -35,27 +35,27 @@ export async function doConnect(self: any) {
         session.addSessionAssembly({
           name: genomeName,
           sequence: {
-            type: 'ReferenceSequenceTrack',
-            trackId: `${genomeName}-${nanoid()}`,
             adapter: {
-              type: 'TwoBitAdapter',
-              twoBitLocation: {
-                uri: resolve(genome.data.twoBitPath, hubUri),
-              },
               chromSizesLocation: {
                 uri: resolve(genome.data.chromSizes, hubUri),
               },
+              twoBitLocation: {
+                uri: resolve(genome.data.twoBitPath, hubUri),
+              },
+              type: 'TwoBitAdapter',
             },
+            trackId: `${genomeName}-${nanoid()}`,
+            type: 'ReferenceSequenceTrack',
           },
         })
       }
       const asm2 = assemblyManager.get(genomeName)
       const sequenceAdapter = getConf(asm2!, ['sequence', 'adapter'])
       const tracksNew = generateTracks({
-        trackDb: tracks,
-        trackDbLoc: hubFileLocation,
         assemblyName: genomeName,
         sequenceAdapter,
+        trackDb: tracks,
+        trackDbLoc: hubFileLocation,
       })
       self.addTrackConfs(tracksNew)
     } else {
@@ -69,8 +69,8 @@ export async function doConnect(self: any) {
       const hubUri = resolve(hubFileLocation.uri, hubFileLocation.baseUri)
       const genomesFileLocation = hubUri
         ? {
-            uri: resolve(genomeFile, hubUri),
             locationType: 'UriLocation' as const,
+            uri: resolve(genomeFile, hubUri),
           }
         : {
             localPath: genomeFile,
@@ -98,8 +98,8 @@ export async function doConnect(self: any) {
         const base = new URL(genomeFile, hubUri)
         const loc = hubUri
           ? {
-              uri: new URL(db, base).href,
               locationType: 'UriLocation' as const,
+              uri: new URL(db, base).href,
             }
           : {
               localPath: db,
@@ -108,10 +108,10 @@ export async function doConnect(self: any) {
         const trackDb = await fetchTrackDbFile(loc)
         const sequenceAdapter = getConf(asm, ['sequence', 'adapter'])
         const tracks = generateTracks({
-          trackDb,
-          trackDbLoc: loc,
           assemblyName: genomeName,
           sequenceAdapter,
+          trackDb,
+          trackDbLoc: loc,
         })
         self.addTrackConfs(tracks)
         map[genomeName] = tracks.length

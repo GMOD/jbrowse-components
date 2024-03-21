@@ -75,27 +75,27 @@ export default class BreakpointSplitViewType extends ViewType {
     bottomMarkedRegion[0].end = endPos + endMod
     bottomMarkedRegion[1].start = endPos + endMod
     return {
-      type: 'BreakpointSplitView',
-      views: [
-        {
-          type: 'LinearGenomeView',
-          displayedRegions: topMarkedRegion,
-          hideHeader: true,
-          bpPerPx,
-          offsetPx: (topRegion.start + feature.get('start')) / bpPerPx,
-        },
-        {
-          type: 'LinearGenomeView',
-          displayedRegions: bottomMarkedRegion,
-          hideHeader: true,
-          bpPerPx,
-          offsetPx: (bottomRegion.start + endPos) / bpPerPx,
-        },
-      ],
       displayName: `${
         feature.get('name') || feature.get('id') || 'breakend'
       } split detail`,
       featureData: undefined as unknown,
+      type: 'BreakpointSplitView',
+      views: [
+        {
+          bpPerPx,
+          displayedRegions: topMarkedRegion,
+          hideHeader: true,
+          offsetPx: (topRegion.start + feature.get('start')) / bpPerPx,
+          type: 'LinearGenomeView',
+        },
+        {
+          bpPerPx,
+          displayedRegions: bottomMarkedRegion,
+          hideHeader: true,
+          offsetPx: (bottomRegion.start + endPos) / bpPerPx,
+          type: 'LinearGenomeView',
+        },
+      ],
     }
   }
 }

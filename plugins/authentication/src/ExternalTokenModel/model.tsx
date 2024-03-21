@@ -11,8 +11,8 @@ const stateModelFactory = (
 ) => {
   return InternetAccount.named('ExternalTokenInternetAccount')
     .props({
-      type: types.literal('ExternalTokenInternetAccount'),
       configuration: ConfigurationReference(configSchema),
+      type: types.literal('ExternalTokenInternetAccount'),
     })
     .views(self => ({
       get validateWithHEAD(): boolean {
@@ -29,7 +29,6 @@ const stateModelFactory = (
         session.queueDialog((doneCallback: () => void) => [
           ExternalTokenEntryForm,
           {
-            internetAccountId: self.internetAccountId,
             handleClose: (token: string) => {
               if (token) {
                 resolve(token)
@@ -38,6 +37,7 @@ const stateModelFactory = (
               }
               doneCallback()
             },
+            internetAccountId: self.internetAccountId,
           },
         ])
       },

@@ -18,31 +18,18 @@ extends
 
 ### LinearSNPCoverageDisplay - Properties
 
-#### property: type
+#### property: colorBy
 
 ```js
 // type signature
-ISimpleType<"LinearSNPCoverageDisplay">
+IMaybe<IModelType<{ tag: IMaybe<ISimpleType<string>>; type: ISimpleType<string>; }, {}, _NotCustomized, _NotCustomized>>
 // code
-type: types.literal('LinearSNPCoverageDisplay')
-```
-
-#### property: drawInterbaseCounts
-
-```js
-// type signature
-IMaybe<ISimpleType<boolean>>
-// code
-drawInterbaseCounts: types.maybe(types.boolean)
-```
-
-#### property: drawIndicators
-
-```js
-// type signature
-IMaybe<ISimpleType<boolean>>
-// code
-drawIndicators: types.maybe(types.boolean)
+colorBy: types.maybe(
+          types.model({
+            tag: types.maybe(types.string),
+            type: types.string,
+          }),
+        )
 ```
 
 #### property: drawArcs
@@ -54,27 +41,31 @@ IMaybe<ISimpleType<boolean>>
 drawArcs: types.maybe(types.boolean)
 ```
 
+#### property: drawIndicators
+
+```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
+drawIndicators: types.maybe(types.boolean)
+```
+
+#### property: drawInterbaseCounts
+
+```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
+drawInterbaseCounts: types.maybe(types.boolean)
+```
+
 #### property: filterBy
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ flagInclude: IOptionalIType<ISimpleType<number>, [undefined]>; flagExclude: IOptionalIType<ISimpleType<number>, [undefined]>; readName: IMaybe<...>; tagFilter: IMaybe<...>; }, {}, _NotCustomized, _NotCustomized>, [...]>
+IOptionalIType<IModelType<{ flagExclude: IOptionalIType<ISimpleType<number>, [undefined]>; flagInclude: IOptionalIType<ISimpleType<number>, [undefined]>; readName: IMaybe<...>; tagFilter: IMaybe<...>; }, {}, _NotCustomized, _NotCustomized>, [...]>
 // code
 filterBy: types.optional(FilterModel, {})
-```
-
-#### property: colorBy
-
-```js
-// type signature
-IMaybe<IModelType<{ type: ISimpleType<string>; tag: IMaybe<ISimpleType<string>>; }, {}, _NotCustomized, _NotCustomized>>
-// code
-colorBy: types.maybe(
-          types.model({
-            type: types.string,
-            tag: types.maybe(types.string),
-          }),
-        )
 ```
 
 #### property: jexlFilters
@@ -86,23 +77,25 @@ IOptionalIType<IArrayType<ISimpleType<string>>, [undefined]>
 jexlFilters: types.optional(types.array(types.string), [])
 ```
 
+#### property: type
+
+```js
+// type signature
+ISimpleType<"LinearSNPCoverageDisplay">
+// code
+type: types.literal('LinearSNPCoverageDisplay')
+```
+
 ### LinearSNPCoverageDisplay - Getters
 
-#### getter: rendererConfig
+#### getter: autorunReady
 
 ```js
 // type
-{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>
+boolean
 ```
 
 #### getter: drawArcsSetting
-
-```js
-// type
-any
-```
-
-#### getter: drawInterbaseCountsSetting
 
 ```js
 // type
@@ -116,11 +109,18 @@ any
 any
 ```
 
-#### getter: autorunReady
+#### getter: drawInterbaseCountsSetting
 
 ```js
 // type
-boolean
+any
+```
+
+#### getter: rendererConfig
+
+```js
+// type
+{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>
 ```
 
 #### getter: TooltipComponent
@@ -135,16 +135,16 @@ boolean
 ```js
 // type
 {
-  type: string
   subadapter: any
+  type: string
 }
 ```
 
-#### getter: rendererTypeName
+#### getter: filters
 
 ```js
 // type
-string
+SerializableFilterChain
 ```
 
 #### getter: needsScalebar
@@ -154,11 +154,11 @@ string
 boolean
 ```
 
-#### getter: filters
+#### getter: rendererTypeName
 
 ```js
 // type
-SerializableFilterChain
+string
 ```
 
 ### LinearSNPCoverageDisplay - Methods
@@ -186,6 +186,13 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 
 ### LinearSNPCoverageDisplay - Actions
 
+#### action: setColorBy
+
+```js
+// type signature
+setColorBy: (colorBy?: { type: string; tag?: string; }) => void
+```
+
 #### action: setConfig
 
 ```js
@@ -198,13 +205,6 @@ setConfig: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubsche
 ```js
 // type signature
 setFilterBy: (filter: IFilter) => void
-```
-
-#### action: setColorBy
-
-```js
-// type signature
-setColorBy: (colorBy?: { type: string; tag?: string; }) => void
 ```
 
 #### action: setJexlFilters
@@ -228,6 +228,13 @@ updateModificationColorMap: (uniqueModifications: string[]) => void
 setModificationsReady: (flag: boolean) => void
 ```
 
+#### action: toggleDrawArcs
+
+```js
+// type signature
+toggleDrawArcs: () => void
+```
+
 #### action: toggleDrawIndicators
 
 ```js
@@ -240,11 +247,4 @@ toggleDrawIndicators: () => void
 ```js
 // type signature
 toggleDrawInterbaseCounts: () => void
-```
-
-#### action: toggleDrawArcs
-
-```js
-// type signature
-toggleDrawArcs: () => void
 ```

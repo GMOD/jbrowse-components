@@ -16,13 +16,13 @@ import { loadPluginManager, RecentSessionData } from './util'
 import { measureGridWidth } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
-  pointer: {
-    cursor: 'pointer',
-  },
   cell: {
-    whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  },
+  pointer: {
+    cursor: 'pointer',
   },
 })
 
@@ -67,14 +67,14 @@ export default function RecentSessionsList({
     const showDateTooltip = now - date.getTime() < oneDayLength
     return {
       id: session.path,
-      name: session.name,
-      rename: session.name,
-      showDateTooltip,
       lastModified: showDateTooltip
         ? format(updated)
         : date.toLocaleString('en-US'),
-      updated: session.updated,
+      name: session.name,
       path: session.path,
+      rename: session.name,
+      showDateTooltip,
+      updated: session.updated,
     }
   })
   const arr = ['name', 'path', 'lastModified']
@@ -121,11 +121,9 @@ export default function RecentSessionsList({
         columns={[
           {
             field: 'rename',
-            minWidth: 40,
-            width: widths.rename,
-            sortable: false,
             filterable: false,
             headerName: ' ',
+            minWidth: 40,
             renderCell: params => {
               return (
                 <IconButton
@@ -142,11 +140,12 @@ export default function RecentSessionsList({
                 </IconButton>
               )
             },
+            sortable: false,
+            width: widths.rename,
           },
           {
             field: 'name',
             headerName: 'Session name',
-            width: widths.name,
             renderCell: params => {
               const { value } = params
               return (
@@ -165,11 +164,11 @@ export default function RecentSessionsList({
                 </Link>
               )
             },
+            width: widths.name,
           },
           {
             field: 'path',
             headerName: 'Session path',
-            width: widths.path,
             renderCell: params => {
               const { value } = params
               return (
@@ -178,6 +177,7 @@ export default function RecentSessionsList({
                 </Tooltip>
               )
             },
+            width: widths.path,
           },
           {
             field: 'lastModified',

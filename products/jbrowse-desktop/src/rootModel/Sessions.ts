@@ -36,11 +36,10 @@ export function DesktopSessionManagementMixin(_pluginManager: PluginManager) {
         /**
          * #action
          */
-        async saveSession(val: unknown) {
-          if (self.sessionPath) {
-            await ipcRenderer.invoke('saveSession', self.sessionPath, val)
-          }
+        activateSession(sessionSnapshot: SnapshotIn<BaseSession>) {
+          self.setSession(sessionSnapshot)
         },
+
         /**
          * #action
          */
@@ -62,11 +61,14 @@ export function DesktopSessionManagementMixin(_pluginManager: PluginManager) {
             name: newSnapshotName,
           })
         },
+
         /**
          * #action
          */
-        activateSession(sessionSnapshot: SnapshotIn<BaseSession>) {
-          self.setSession(sessionSnapshot)
+        async saveSession(val: unknown) {
+          if (self.sessionPath) {
+            await ipcRenderer.invoke('saveSession', self.sessionPath, val)
+          }
         },
       }
     })

@@ -12,50 +12,54 @@ const SNPCoverageRenderer = ConfigurationSchema(
      * #slot
      */
     clipColor: {
-      type: 'color',
-      description: 'the color of the clipping marker',
       defaultValue: 'red',
+      description: 'the color of the clipping marker',
+      type: 'color',
     },
-    /**
-     * #slot
-     */
-    indicatorThreshold: {
-      type: 'number',
-      description:
-        'the proportion of reads containing a insertion/clip indicator',
-      defaultValue: 0.4,
+
+    color: {
+      defaultValue: '#d3d3d3',
+      description: 'Background color for the SNPCoverage renderer',
+      type: 'color',
     },
+
     /**
      * #slot
      */
     drawArcs: {
-      type: 'boolean',
+      defaultValue: true,
       description: 'Draw sashimi-style arcs for intron features',
-      defaultValue: true,
-    },
-    /**
-     * #slot
-     */
-    drawInterbaseCounts: {
       type: 'boolean',
-      description:
-        'draw count "upsidedown histogram" of the interbase events that don\'t contribute to the coverage count so are not drawn in the normal histogram',
-      defaultValue: true,
     },
+
     /**
      * #slot
      */
     drawIndicators: {
-      type: 'boolean',
+      defaultValue: true,
       description:
         'draw a triangular indicator where an event has been detected',
-      defaultValue: true,
+      type: 'boolean',
     },
 
-    color: {
-      type: 'color',
-      description: 'Background color for the SNPCoverage renderer',
-      defaultValue: '#d3d3d3',
+    /**
+     * #slot
+     */
+    drawInterbaseCounts: {
+      defaultValue: true,
+      description:
+        'draw count "upsidedown histogram" of the interbase events that don\'t contribute to the coverage count so are not drawn in the normal histogram',
+      type: 'boolean',
+    },
+
+    /**
+     * #slot
+     */
+    indicatorThreshold: {
+      defaultValue: 0.4,
+      description:
+        'the proportion of reads containing a insertion/clip indicator',
+      type: 'number',
     },
   },
   { explicitlyTyped: true },

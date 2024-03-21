@@ -9,13 +9,13 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaFactory(pluginManager)
     return new DisplayType({
-      name: 'MultiLinearWiggleDisplay',
-      displayName: 'Multi-wiggle display',
+      ReactComponent: lazy(() => import('./components/WiggleDisplayComponent')),
       configSchema,
+      displayName: 'Multi-wiggle display',
+      name: 'MultiLinearWiggleDisplay',
       stateModel: modelFactory(pluginManager, configSchema),
       trackType: 'MultiQuantitativeTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: lazy(() => import('./components/WiggleDisplayComponent')),
     })
   })
 }

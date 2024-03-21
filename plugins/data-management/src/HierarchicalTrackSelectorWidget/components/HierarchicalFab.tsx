@@ -17,8 +17,8 @@ import { HierarchicalTrackSelectorModel } from '../model'
 
 const useStyles = makeStyles()(theme => ({
   fab: {
-    position: 'absolute',
     bottom: theme.spacing(6),
+    position: 'absolute',
     right: theme.spacing(6),
   },
 }))

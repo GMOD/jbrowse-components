@@ -19,24 +19,24 @@ import { LinearGenomeViewModel } from '..'
 import TrackLabelDragHandle from './TrackLabelDragHandle'
 
 const useStyles = makeStyles()(theme => ({
+  iconButton: {
+    padding: theme.spacing(1),
+  },
   root: {
-    background: alpha(theme.palette.background.paper, 0.8),
     '&:hover': {
       background: theme.palette.background.paper,
     },
+    background: alpha(theme.palette.background.paper, 0.8),
     transition: theme.transitions.create(['background'], {
       duration: theme.transitions.duration.shortest,
     }),
   },
-  trackName: {
-    margin: '0 auto',
-    width: '90%',
-    fontSize: '0.8rem',
-    pointerEvents: 'none',
-  },
 
-  iconButton: {
-    padding: theme.spacing(1),
+  trackName: {
+    fontSize: '0.8rem',
+    margin: '0 auto',
+    pointerEvents: 'none',
+    width: '90%',
   },
 }))
 
@@ -61,8 +61,8 @@ const TrackLabel = observer(
     const trackName = getTrackName(trackConf, session)
     const items = [
       {
-        label: minimized ? 'Restore track' : 'Minimize track',
         icon: minimized ? AddIcon : MinimizeIcon,
+        label: minimized ? 'Restore track' : 'Minimize track',
         onClick: () => track.setMinimized(!minimized),
       },
       ...(session.getTrackActionMenuItems?.(trackConf) || []),

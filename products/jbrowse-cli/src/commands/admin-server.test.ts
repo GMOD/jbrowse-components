@@ -28,15 +28,15 @@ const testConfigContents = {
     {
       name: 'testAssembly',
       sequence: {
-        type: 'testSequenceTrack',
-        trackId: '',
         adapter: {
-          type: 'testSeqAdapter',
           twoBitLocation: {
-            uri: 'test.2bit',
             locationType: 'UriLocation',
+            uri: 'test.2bit',
           },
+          type: 'testSeqAdapter',
         },
+        trackId: '',
+        type: 'testSequenceTrack',
       },
     },
   ],
@@ -79,9 +79,9 @@ async function killExpress({ stdout }: { stdout: string }) {
     return
   }
   return fetch(`http://localhost:${getPort(stdout)}/shutdown`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ adminKey: getAdminKey(stdout) }),
+    headers: { 'Content-Type': 'application/json' },
+    method: 'POST',
   })
 }
 
@@ -127,11 +127,11 @@ describe('admin-server', () => {
     .it('notifies the user if adminKey is incorrect', async () => {
       const payload = { adminKey: 'badKey' }
       const response = await fetch('http://localhost:9093/updateConfig', {
-        method: 'POST',
+        body: JSON.stringify(payload),
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(payload),
+        method: 'POST',
       })
       expect(response.status).toBe(403)
       expect(await response.text()).toBe('Admin key does not match')
@@ -144,11 +144,11 @@ describe('admin-server', () => {
       const config = { foo: 'bar' }
       const payload = { adminKey, config }
       const response = await fetch('http://localhost:9094/updateConfig', {
-        method: 'POST',
+        body: JSON.stringify(payload),
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(payload),
+        method: 'POST',
       })
 
       expect(await response.text()).toBe('Config written to disk')
@@ -164,11 +164,11 @@ describe('admin-server', () => {
       const config = { foo: 'bar' }
       const payload = { adminKey, config }
       const response = await fetch('http://localhost:9095/updateConfig', {
-        method: 'POST',
+        body: JSON.stringify(payload),
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(payload),
+        method: 'POST',
       })
       expect(response.status).toBe(500)
       expect(await response.text()).toMatch(/Could not write config file/)
@@ -180,13 +180,13 @@ describe('admin-server', () => {
       const adminKey = getAdminKey(ctx.stdout)
       const configPath = '/etc/passwd'
       const config = { foo: 'bar' }
-      const payload = { configPath, adminKey, config }
+      const payload = { adminKey, config, configPath }
       const response = await fetch('http://localhost:9096/updateConfig', {
-        method: 'POST',
+        body: JSON.stringify(payload),
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(payload),
+        method: 'POST',
       })
       expect(response.status).toBe(500)
       expect(await response.text()).toMatch(

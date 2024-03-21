@@ -20,8 +20,8 @@ export default (pluginManager: PluginManager) => {
         const adapterName = 'TwoBitAdapter'
         const fileName = getFileName(file)
         const obj = {
-          type: adapterName,
           twoBitLocation: file,
+          type: adapterName,
         }
         if (regexGuess.test(fileName) && !adapterHint) {
           return obj
@@ -56,9 +56,9 @@ export default (pluginManager: PluginManager) => {
         const adapterName = 'IndexedFastaAdapter'
         const fileName = getFileName(file)
         const obj = {
-          type: adapterName,
-          fastaLocation: file,
           faiLocation: index || makeIndex(file, '.fai'),
+          fastaLocation: file,
+          type: adapterName,
         }
 
         if (regexGuess.test(fileName) && !adapterHint) {
@@ -94,9 +94,9 @@ export default (pluginManager: PluginManager) => {
         const adapterName = 'BgzipFastaAdapter'
         const fileName = getFileName(file)
         const obj = {
-          type: adapterName,
           faiLocation: makeIndex(file, '.fai'),
           gziLocation: makeIndex(file, '.gzi'),
+          type: adapterName,
         }
 
         if (regexGuess.test(fileName) && !adapterHint) {

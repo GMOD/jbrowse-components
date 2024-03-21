@@ -9,7 +9,7 @@ test('one', async () => {
       width={500}
       height={500}
       features={new Map()}
-      regions={[{ refName: 'chr1', start: 1, end: 3, assemblyName: 'volvox' }]}
+      regions={[{ assemblyName: 'volvox', end: 3, refName: 'chr1', start: 1 }]}
       bpPerPx={3}
       blockKey="test"
       onMouseMove={() => {}}

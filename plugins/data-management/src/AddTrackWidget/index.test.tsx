@@ -26,8 +26,8 @@ function standardInitializer() {
       widget: stateModelFactory(pluginManager),
     })
     .volatile(() => ({
-      rpcManager: {},
       configuration: {},
+      rpcManager: {},
     }))
 
   // assemblyNames is defined on the view, which is done in LGV for example
@@ -36,9 +36,9 @@ function standardInitializer() {
   return SessionModel.create(
     {
       view: {
+        assemblyNames: ['volvox'],
         id: 'testing',
         type: 'FakeView',
-        assemblyNames: ['volvox'],
       },
       widget: {
         type: 'AddTrackWidget',
@@ -60,9 +60,9 @@ function setWindowLoc(loc: string) {
 }
 
 const FakeViewModel = types.model('FakeView', {
+  assemblyNames: types.maybe(types.array(types.string)),
   id: types.identifier,
   type: types.literal('FakeView'),
-  assemblyNames: types.maybe(types.array(types.string)),
 })
 
 // register a true fake view plugin because the widget.view is a true
@@ -73,9 +73,9 @@ class FakeViewPlugin extends Plugin {
   install(pluginManager: PluginManager) {
     pluginManager.addViewType(() => {
       return new ViewType({
+        ReactComponent: () => <div>Hello world</div>,
         name: 'FakeView',
         stateModel: FakeViewModel,
-        ReactComponent: () => <div>Hello world</div>,
       })
     })
   }
@@ -94,8 +94,8 @@ describe('tests on an LGV type system with view.assemblyNames, using URL', () =>
   it('adds relative URL (BAM)', () => {
     const { widget } = session
     widget.setTrackData({
-      uri: 'volvox-sorted.bam',
       locationType: 'UriLocation',
+      uri: 'volvox-sorted.bam',
     })
     expect(widget.trackName).toBe('volvox-sorted.bam')
     expect(widget.isFtp).toBe(false)
@@ -107,8 +107,8 @@ describe('tests on an LGV type system with view.assemblyNames, using URL', () =>
   it('adds full URL (BAM)', () => {
     const { widget } = session
     widget.setTrackData({
-      uri: 'http://google.com/volvox-sorted.bam',
       locationType: 'UriLocation',
+      uri: 'http://google.com/volvox-sorted.bam',
     })
     expect(widget.trackName).toBe('volvox-sorted.bam')
     expect(widget.isRelativeUrl).toBe(false)
@@ -118,8 +118,8 @@ describe('tests on an LGV type system with view.assemblyNames, using URL', () =>
   it('test wrongProtocol returning false', () => {
     const { widget } = session
     widget.setTrackData({
-      uri: 'http://google.com/volvox-sorted.bam',
       locationType: 'UriLocation',
+      uri: 'http://google.com/volvox-sorted.bam',
     })
     setWindowLoc('http://google.com')
 
@@ -129,8 +129,8 @@ describe('tests on an LGV type system with view.assemblyNames, using URL', () =>
   it('test wrongProtocol returning true', () => {
     const { widget } = session
     widget.setTrackData({
-      uri: 'http://google.com/volvox-sorted.bam',
       locationType: 'UriLocation',
+      uri: 'http://google.com/volvox-sorted.bam',
     })
     setWindowLoc('https://google.com')
     expect(widget.wrongProtocol).toBe(true)
@@ -150,8 +150,8 @@ test('tests on an view without view.assemblyNames', () => {
   // view.assemblyNames (it is just a convenience)
   const session = SessionModel.create({
     view: {
-      type: 'FakeView',
       id: 'testing',
+      type: 'FakeView',
     },
     widget: {
       type: 'AddTrackWidget',
@@ -161,8 +161,8 @@ test('tests on an view without view.assemblyNames', () => {
 
   const { widget } = session
   widget.setTrackData({
-    uri: 'volvox-sorted.bam',
     locationType: 'UriLocation',
+    uri: 'volvox-sorted.bam',
   })
   expect(widget.trackName).toBe('volvox-sorted.bam')
   expect(widget.isRelativeUrl).toBe(true)
@@ -182,8 +182,8 @@ describe('tests different file types', () => {
   it('adds bam', () => {
     const { widget } = session
     widget.setTrackData({
-      uri: 'volvox-sorted.bam',
       locationType: 'UriLocation',
+      uri: 'volvox-sorted.bam',
     })
     expect(widget.trackType).toBe('AlignmentsTrack')
   })
@@ -191,8 +191,8 @@ describe('tests different file types', () => {
   it('adds cram', () => {
     const { widget } = session
     widget.setTrackData({
-      uri: 'volvox-sorted.cram',
       locationType: 'UriLocation',
+      uri: 'volvox-sorted.cram',
     })
     expect(widget.trackType).toBe('AlignmentsTrack')
   })
@@ -200,8 +200,8 @@ describe('tests different file types', () => {
   it('adds .vcf.gz', () => {
     const { widget } = session
     widget.setTrackData({
-      uri: 'volvox-sorted.vcf.gz',
       locationType: 'UriLocation',
+      uri: 'volvox-sorted.vcf.gz',
     })
     expect(widget.trackType).toBe('VariantTrack')
   })
@@ -209,8 +209,8 @@ describe('tests different file types', () => {
   it('adds .gff3', () => {
     const { widget } = session
     widget.setTrackData({
-      uri: 'volvox-sorted.gff3',
       locationType: 'UriLocation',
+      uri: 'volvox-sorted.gff3',
     })
     expect(widget.trackType).toBe('FeatureTrack')
   })
@@ -218,8 +218,8 @@ describe('tests different file types', () => {
   it('adds .hic', () => {
     const { widget } = session
     widget.setTrackData({
-      uri: 'volvox-sorted.hic',
       locationType: 'UriLocation',
+      uri: 'volvox-sorted.hic',
     })
     expect(widget.trackType).toBe('HicTrack')
   })

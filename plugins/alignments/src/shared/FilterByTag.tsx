@@ -14,12 +14,12 @@ import { makeStyles } from 'tss-react/mui'
 import { IFilter } from '.'
 
 const useStyles = makeStyles()(theme => ({
-  paper: {
-    padding: theme.spacing(2),
-    margin: theme.spacing(2),
-  },
   field: {
     margin: theme.spacing(2),
+  },
+  paper: {
+    margin: theme.spacing(2),
+    padding: theme.spacing(2),
   },
 }))
 
@@ -149,8 +149,8 @@ const FilterByTagDialog = observer(function (props: {
             type="submit"
             onClick={() => {
               model.setFilterBy({
-                flagInclude,
                 flagExclude,
+                flagInclude,
                 readName,
                 tagFilter:
                   tag !== ''

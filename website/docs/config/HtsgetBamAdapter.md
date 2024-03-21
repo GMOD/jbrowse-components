@@ -19,9 +19,9 @@ library
 
 ```js
 htsgetBase: {
-      type: 'string',
-      description: 'the base URL to fetch from',
       defaultValue: '',
+      description: 'the base URL to fetch from',
+      type: 'string',
     }
 ```
 
@@ -29,9 +29,9 @@ htsgetBase: {
 
 ```js
 htsgetTrackId: {
-      type: 'string',
-      description: 'the trackId, which is appended to the base URL',
       defaultValue: '',
+      description: 'the trackId, which is appended to the base URL',
+      type: 'string',
     }
 ```
 
@@ -39,9 +39,9 @@ htsgetTrackId: {
 
 ```js
 sequenceAdapter: {
-      type: 'frozen',
+      defaultValue: null,
       description:
         'sequence data adapter, used to calculate SNPs when BAM reads lacking MD tags',
-      defaultValue: null,
+      type: 'frozen',
     }
 ```

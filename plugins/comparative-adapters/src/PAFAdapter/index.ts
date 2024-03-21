@@ -6,13 +6,13 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addAdapterType(
     () =>
       new AdapterType({
-        name: 'PAFAdapter',
-        displayName: 'PAF adapter',
-        configSchema,
         adapterMetadata: {
           hiddenFromGUI: true,
         },
+        configSchema,
+        displayName: 'PAF adapter',
         getAdapterClass: () => import('./PAFAdapter').then(r => r.default),
+        name: 'PAFAdapter',
       }),
   )
 }

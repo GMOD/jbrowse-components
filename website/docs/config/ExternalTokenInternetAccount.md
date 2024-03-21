@@ -16,9 +16,9 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ```js
 validateWithHEAD: {
+      defaultValue: true,
       description: 'validate the token with a HEAD request before using it',
       type: 'boolean',
-      defaultValue: true,
     }
 ```
 

@@ -13,8 +13,8 @@ const useStyles = makeStyles()({
   },
   dragHandleIcon: {
     display: 'inline-block',
-    verticalAlign: 'middle',
     pointerEvents: 'none',
+    verticalAlign: 'middle',
   },
 })
 

@@ -13,56 +13,61 @@ const WiggleRenderer = ConfigurationSchema(
     /**
      * #slot
      */
-    color: {
-      type: 'color',
-      description: 'the color of track, overrides posColor and negColor',
-      defaultValue: '#f0f',
-    },
-    /**
-     * #slot
-     */
-    posColor: {
-      type: 'color',
-      description: 'the color to use when the score is positive',
-      defaultValue: 'blue',
-    },
-    /**
-     * #slot
-     */
-    negColor: {
-      type: 'color',
-      description: 'the color to use when the score is negative',
-      defaultValue: 'red',
-    },
-    /**
-     * #slot
-     */
-    clipColor: {
-      type: 'color',
-      description: 'the color of the clipping marker',
-      defaultValue: 'red',
-    },
-    /**
-     * #slot
-     */
     bicolorPivot: {
-      type: 'stringEnum',
+      defaultValue: 'numeric',
+      description: 'type of bicolor pivot',
       model: types.enumeration('Scale type', [
         'numeric',
         'mean',
         'z_score',
         'none',
       ]),
-      description: 'type of bicolor pivot',
-      defaultValue: 'numeric',
+      type: 'stringEnum',
     },
+
     /**
      * #slot
      */
     bicolorPivotValue: {
-      type: 'number',
       defaultValue: 0,
       description: 'value to use for bicolor pivot',
+      type: 'number',
+    },
+
+    /**
+     * #slot
+     */
+    clipColor: {
+      defaultValue: 'red',
+      description: 'the color of the clipping marker',
+      type: 'color',
+    },
+
+    /**
+     * #slot
+     */
+    color: {
+      defaultValue: '#f0f',
+      description: 'the color of track, overrides posColor and negColor',
+      type: 'color',
+    },
+
+    /**
+     * #slot
+     */
+    negColor: {
+      defaultValue: 'red',
+      description: 'the color to use when the score is negative',
+      type: 'color',
+    },
+
+    /**
+     * #slot
+     */
+    posColor: {
+      defaultValue: 'blue',
+      description: 'the color to use when the score is positive',
+      type: 'color',
     },
   },
   { explicitlyTyped: true },

@@ -19,60 +19,19 @@ export const InternetAccount = types
     /**
      * #property
      */
+    configuration: ConfigurationReference(BaseInternetAccountConfig),
+
+    /**
+     * #property
+     */
     id: ElementId,
+
     /**
      * #property
      */
     type: types.string,
-    /**
-     * #property
-     */
-    configuration: ConfigurationReference(BaseInternetAccountConfig),
   })
   .views(self => ({
-    /**
-     * #getter
-     */
-    get name(): string {
-      return getConf(self, 'name')
-    },
-    /**
-     * #getter
-     */
-    get description(): string {
-      return getConf(self, 'description')
-    },
-    /**
-     * #getter
-     */
-    get internetAccountId(): string {
-      return getConf(self, 'internetAccountId') // NOTE: this is the explicitIdentifier of the config schema
-    },
-    /**
-     * #getter
-     */
-    get authHeader(): string {
-      return getConf(self, 'authHeader')
-    },
-    /**
-     * #getter
-     */
-    get tokenType(): string {
-      return getConf(self, 'tokenType')
-    },
-    /**
-     * #getter
-     */
-    get domains(): string[] {
-      return getConf(self, 'domains')
-    },
-    /**
-     * #getter
-     * Can use this to customize what is displayed in fileSelector's toggle box
-     */
-    get toggleContents(): React.ReactNode {
-      return null
-    },
     /**
      * #getter
      * Can use this to customize what the fileSelector. It takes a prop called
@@ -81,6 +40,42 @@ export const InternetAccount = types
     get SelectorComponent(): AnyReactComponentType | undefined {
       return undefined
     },
+
+    /**
+     * #getter
+     */
+    get authHeader(): string {
+      return getConf(self, 'authHeader')
+    },
+
+    /**
+     * #getter
+     */
+    get description(): string {
+      return getConf(self, 'description')
+    },
+
+    /**
+     * #getter
+     */
+    get domains(): string[] {
+      return getConf(self, 'domains')
+    },
+
+    /**
+     * #getter
+     */
+    get internetAccountId(): string {
+      return getConf(self, 'internetAccountId') // NOTE: this is the explicitIdentifier of the config schema
+    },
+
+    /**
+     * #getter
+     */
+    get name(): string {
+      return getConf(self, 'name')
+    },
+
     /**
      * #getter
      * Can use this to add a label to the UrlChooser. Has no effect if a custom
@@ -88,6 +83,21 @@ export const InternetAccount = types
      */
     get selectorLabel(): string | undefined {
       return undefined
+    },
+
+    /**
+     * #getter
+     * Can use this to customize what is displayed in fileSelector's toggle box
+     */
+    get toggleContents(): React.ReactNode {
+      return null
+    },
+
+    /**
+     * #getter
+     */
+    get tokenType(): string {
+      return getConf(self, 'tokenType')
     },
   }))
   .views(self => ({
@@ -122,23 +132,26 @@ export const InternetAccount = types
     ): void {
       throw new Error('getTokenFromUser must be implemented by extending model')
     },
-    /**
-     * #action
-     */
-    storeToken(token: string) {
-      sessionStorage.setItem(self.tokenKey, token)
-    },
+
     /**
      * #action
      */
     removeToken() {
       sessionStorage.removeItem(self.tokenKey)
     },
+
     /**
      * #action
      */
     retrieveToken() {
       return sessionStorage.getItem(self.tokenKey)
+    },
+
+    /**
+     * #action
+     */
+    storeToken(token: string) {
+      sessionStorage.setItem(self.tokenKey, token)
     },
     /**
      * #action
@@ -238,11 +251,11 @@ export const InternetAccount = types
         throw error
       }
       return {
-        internetAccountType: self.type,
         authInfo: {
-          token: validatedToken,
           configuration: getConf(self),
+          token: validatedToken,
         },
+        internetAccountType: self.type,
       }
     },
   }))

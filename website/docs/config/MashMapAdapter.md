@@ -16,30 +16,10 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ```js
 assemblyNames: {
-      type: 'stringArray',
       defaultValue: [],
       description:
         'Target is the first value in the array, query is the second',
-    }
-```
-
-#### slot: targetAssembly
-
-```js
-targetAssembly: {
-      type: 'string',
-      defaultValue: '',
-      description: 'Alternative to assemblyNames array: the target assembly',
-    }
-```
-
-#### slot: queryAssembly
-
-```js
-queryAssembly: {
-      type: 'string',
-      defaultValue: '',
-      description: 'Alternative to assemblyNames array: the query assembly',
+      type: 'stringArray',
     }
 ```
 
@@ -47,10 +27,30 @@ queryAssembly: {
 
 ```js
 outLocation: {
-      type: 'fileLocation',
       defaultValue: {
-        uri: '/path/to/mashmap.out',
         locationType: 'UriLocation',
+        uri: '/path/to/mashmap.out',
       },
+      type: 'fileLocation',
+    }
+```
+
+#### slot: queryAssembly
+
+```js
+queryAssembly: {
+      defaultValue: '',
+      description: 'Alternative to assemblyNames array: the query assembly',
+      type: 'string',
+    }
+```
+
+#### slot: targetAssembly
+
+```js
+targetAssembly: {
+      defaultValue: '',
+      description: 'Alternative to assemblyNames array: the target assembly',
+      type: 'string',
     }
 ```

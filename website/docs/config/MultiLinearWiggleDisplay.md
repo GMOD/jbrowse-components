@@ -20,7 +20,7 @@ extends
 
 ```js
 defaultRendering: {
-        type: 'stringEnum',
+        defaultValue: 'multirowxy',
         model: types.enumeration('Rendering', [
           'multirowxy',
           'xyplot',
@@ -28,7 +28,16 @@ defaultRendering: {
           'multiline',
           'multirowline',
         ]),
-        defaultValue: 'multirowxy',
+        type: 'stringEnum',
+      }
+```
+
+#### slot: height
+
+```js
+height: {
+        defaultValue: 200,
+        type: 'number',
       }
 ```
 
@@ -36,21 +45,12 @@ defaultRendering: {
 
 ```js
 renderers: ConfigurationSchema('RenderersConfiguration', {
-  MultiXYPlotRenderer: MultiXYPlotRendererConfigSchema,
   MultiDensityRenderer: MultiDensityRendererConfigSchema,
-  MultiRowXYPlotRenderer: MultiRowXYPlotRendererConfigSchema,
   MultiLineRenderer: MultiLineRendererConfigSchema,
   MultiRowLineRenderer: MultiRowLineRendererConfigSchema,
+  MultiRowXYPlotRenderer: MultiRowXYPlotRendererConfigSchema,
+  MultiXYPlotRenderer: MultiXYPlotRendererConfigSchema,
 })
-```
-
-#### slot: height
-
-```js
-height: {
-        type: 'number',
-        defaultValue: 200,
-      }
 ```
 
 ### MultiLinearWiggleDisplay - Derives from

@@ -81,13 +81,13 @@ export default class VCFFeature implements Feature {
     const isSymbolic = ALT?.some(f => f.includes('<'))
 
     return {
+      aliases: ID && ID.length > 1 ? variant.ID.slice(1) : undefined,
+      description,
+      end: isSymbolic && INFO.END && !isTRA ? +INFO.END[0] : start + REF.length,
+      name: ID?.join(','),
       refName: CHROM,
       start,
-      end: isSymbolic && INFO.END && !isTRA ? +INFO.END[0] : start + REF.length,
-      description,
       type,
-      name: ID?.join(','),
-      aliases: ID && ID.length > 1 ? variant.ID.slice(1) : undefined,
     }
   }
 

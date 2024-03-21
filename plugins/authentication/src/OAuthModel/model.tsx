@@ -33,11 +33,12 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
       /**
        * #property
        */
-      type: types.literal('OAuthInternetAccount'),
+      configuration: ConfigurationReference(configSchema),
+
       /**
        * #property
        */
-      configuration: ConfigurationReference(configSchema),
+      type: types.literal('OAuthInternetAccount'),
     })
     .views(() => {
       let codeVerifier: string | undefined = undefined
@@ -63,30 +64,42 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
       get authEndpoint(): string {
         return getConf(self, 'authEndpoint')
       },
-      /**
-       * #getter
-       */
-      get tokenEndpoint(): string {
-        return getConf(self, 'tokenEndpoint')
-      },
-      /**
-       * #getter
-       */
-      get needsPKCE(): boolean {
-        return getConf(self, 'needsPKCE')
-      },
+
       /**
        * #getter
        */
       get clientId(): string {
         return getConf(self, 'clientId')
       },
+
+      /**
+       * #getter
+       */
+      get needsPKCE(): boolean {
+        return getConf(self, 'needsPKCE')
+      },
+
+      /**
+       * #getter
+       */
+      get refreshTokenKey() {
+        return `${self.internetAccountId}-refreshToken`
+      },
+
+      /**
+       * #getter
+       */
+      get responseType(): 'token' | 'code' {
+        return getConf(self, 'responseType')
+      },
+
       /**
        * #getter
        */
       get scopes(): string {
         return getConf(self, 'scopes')
       },
+
       /**
        * #method
        * OAuth state parameter:
@@ -97,39 +110,16 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
       state(): string | undefined {
         return getConf(self, 'state')
       },
+
       /**
        * #getter
        */
-      get responseType(): 'token' | 'code' {
-        return getConf(self, 'responseType')
-      },
-      /**
-       * #getter
-       */
-      get refreshTokenKey() {
-        return `${self.internetAccountId}-refreshToken`
+      get tokenEndpoint(): string {
+        return getConf(self, 'tokenEndpoint')
       },
     }))
 
     .actions(self => ({
-      /**
-       * #action
-       */
-      storeRefreshToken(refreshToken: string) {
-        localStorage.setItem(self.refreshTokenKey, refreshToken)
-      },
-      /**
-       * #action
-       */
-      removeRefreshToken() {
-        localStorage.removeItem(self.refreshTokenKey)
-      },
-      /**
-       * #method
-       */
-      retrieveRefreshToken() {
-        return localStorage.getItem(self.refreshTokenKey)
-      },
       /**
        * #action
        */
@@ -139,25 +129,25 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
       ): Promise<string> {
         const params = new URLSearchParams(
           Object.entries({
+            client_id: self.clientId,
             code: token,
             grant_type: 'authorization_code',
-            client_id: self.clientId,
             redirect_uri: redirectUri,
             ...(self.needsPKCE ? { code_verifier: self.codeVerifierPKCE } : {}),
           }),
         )
 
         const response = await fetch(self.tokenEndpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: params.toString(),
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          method: 'POST',
         })
 
         if (!response.ok) {
           throw new Error(
             await getResponseError({
-              response,
               reason: 'Failed to obtain token',
+              response,
             }),
           )
         }
@@ -167,6 +157,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           this.storeRefreshToken(token),
         )
       },
+
       /**
        * #action
        */
@@ -174,15 +165,15 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
         refreshToken: string,
       ): Promise<string> {
         const response = await fetch(self.tokenEndpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: new URLSearchParams(
             Object.entries({
+              client_id: self.clientId,
               grant_type: 'refresh_token',
               refresh_token: refreshToken,
-              client_id: self.clientId,
             }),
           ).toString(),
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          method: 'POST',
         })
 
         if (!response.ok) {
@@ -199,6 +190,27 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
         return processTokenResponse(data, token =>
           this.storeRefreshToken(token),
         )
+      },
+
+      /**
+       * #action
+       */
+      removeRefreshToken() {
+        localStorage.removeItem(self.refreshTokenKey)
+      },
+
+      /**
+       * #method
+       */
+      retrieveRefreshToken() {
+        return localStorage.getItem(self.refreshTokenKey)
+      },
+
+      /**
+       * #action
+       */
+      storeRefreshToken(refreshToken: string) {
+        localStorage.setItem(self.refreshTokenKey, refreshToken)
       },
     }))
     .actions(self => {
@@ -278,6 +290,38 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           }
           this.deleteMessageChannel()
         },
+
+        /**
+         * #action
+         */
+        async getTokenFromUser(
+          resolve: (token: string) => void,
+          reject: (error: Error) => void,
+        ) {
+          const refreshToken = self.retrieveRefreshToken()
+          let doUserFlow = true
+
+          // if there is a refresh token, then try it out, and only if that
+          // refresh token succeeds, set doUserFlow to false
+          if (refreshToken) {
+            try {
+              const token =
+                await self.exchangeRefreshForAccessToken(refreshToken)
+              resolve(token)
+              doUserFlow = false
+            } catch (e) {
+              console.error(e)
+              self.removeRefreshToken()
+            }
+          }
+          if (doUserFlow) {
+            this.addMessageChannel(resolve, reject)
+            // may want to improve handling
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            this.useEndpointForAuthorization(resolve, reject)
+          }
+        },
+
         /**
          * #action
          * opens external OAuth flow, popup for web and new browser window for
@@ -319,8 +363,8 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           if (isElectron) {
             const { ipcRenderer } = window.require('electron')
             const redirectUri = await ipcRenderer.invoke('openAuthWindow', {
-              internetAccountId: self.internetAccountId,
               data,
+              internetAccountId: self.internetAccountId,
               url: url.toString(),
             })
 
@@ -332,36 +376,6 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             this.finishOAuthWindow(eventFromDesktop, resolve, reject)
           } else {
             window.open(url, eventName, `width=500,height=600,left=0,top=0`)
-          }
-        },
-        /**
-         * #action
-         */
-        async getTokenFromUser(
-          resolve: (token: string) => void,
-          reject: (error: Error) => void,
-        ) {
-          const refreshToken = self.retrieveRefreshToken()
-          let doUserFlow = true
-
-          // if there is a refresh token, then try it out, and only if that
-          // refresh token succeeds, set doUserFlow to false
-          if (refreshToken) {
-            try {
-              const token =
-                await self.exchangeRefreshForAccessToken(refreshToken)
-              resolve(token)
-              doUserFlow = false
-            } catch (e) {
-              console.error(e)
-              self.removeRefreshToken()
-            }
-          }
-          if (doUserFlow) {
-            this.addMessageChannel(resolve, reject)
-            // may want to improve handling
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            this.useEndpointForAuthorization(resolve, reject)
           }
         },
         /**
@@ -390,8 +404,8 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
 
             throw new Error(
               await getResponseError({
-                response,
                 reason: 'Error validating token',
+                response,
               }),
             )
           }

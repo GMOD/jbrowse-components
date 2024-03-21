@@ -82,11 +82,11 @@ export class BaseBlock {
 
   toRegion() {
     return {
-      refName: this.refName,
-      start: this.start,
-      end: this.end,
       assemblyName: this.assemblyName,
+      end: this.end,
+      refName: this.refName,
       reversed: this.reversed,
+      start: this.start,
     }
   }
 }

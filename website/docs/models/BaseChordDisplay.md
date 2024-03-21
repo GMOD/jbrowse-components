@@ -18,15 +18,6 @@ extends
 
 ### BaseChordDisplay - Properties
 
-#### property: bezierRadiusRatio
-
-```js
-// type signature
-number
-// code
-bezierRadiusRatio: 0.1
-```
-
 #### property: assemblyName
 
 ```js
@@ -36,11 +27,20 @@ IMaybe<ISimpleType<string>>
 assemblyName: types.maybe(types.string)
 ```
 
+#### property: bezierRadiusRatio
+
+```js
+// type signature
+number
+// code
+bezierRadiusRatio: 0.1
+```
+
 #### property: configuration
 
 ```js
 // type signature
-ConfigurationSchemaType<{ onChordClick: { type: string; description: string; defaultValue: boolean; contextVariable: string[]; }; }, ConfigurationSchemaOptions<undefined, "displayId">>
+ConfigurationSchemaType<{ onChordClick: { contextVariable: string[]; defaultValue: boolean; description: string; type: string; }; }, ConfigurationSchemaOptions<undefined, "displayId">>
 // code
 configuration: ConfigurationReference(baseChordDisplayConfig)
 ```
@@ -75,18 +75,18 @@ string
 
 ### BaseChordDisplay - Methods
 
-#### method: renderProps
-
-```js
-// type signature
-renderProps: () => any
-```
-
 #### method: isCompatibleWithRenderer
 
 ```js
 // type signature
 isCompatibleWithRenderer: (renderer: RendererType) => boolean
+```
+
+#### method: renderProps
+
+```js
+// type signature
+renderProps: () => any
 ```
 
 #### method: renderSvg
@@ -105,6 +105,13 @@ renderSvg: (opts: ExportSvgOptions & { theme: ThemeOptions; }) => Promise<Elemen
 onChordClick: (feature: Feature) => void
 ```
 
+#### action: renderError
+
+```js
+// type signature
+renderError: (error: unknown) => void
+```
+
 #### action: renderStarted
 
 ```js
@@ -117,13 +124,6 @@ renderStarted: () => void
 ```js
 // type signature
 renderSuccess: ({ message, data, reactElement, html, renderingComponent, }: { message: string; data: any; html: string; reactElement: React.ReactElement; renderingComponent: React.ComponentType<any>; }) => void
-```
-
-#### action: renderError
-
-```js
-// type signature
-renderError: (error: unknown) => void
 ```
 
 #### action: setRefNameMap

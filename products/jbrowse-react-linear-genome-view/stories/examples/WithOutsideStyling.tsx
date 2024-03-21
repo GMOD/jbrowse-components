@@ -6,12 +6,12 @@ export const WithOutsideStyling = () => {
   const { assembly, tracks } = getVolvoxConfig()
   const state = createViewState({
     assembly,
-    tracks,
     location: 'ctgA:1105..1221',
+    tracks,
   })
 
   return (
-    <div style={{ textAlign: 'center', fontFamily: 'monospace' }}>
+    <div style={{ fontFamily: 'monospace', textAlign: 'center' }}>
       <p>
         This parent container has textAlign:&apos;center&apos; and a monospace
         font, but these attributes are not affecting the internal LGV

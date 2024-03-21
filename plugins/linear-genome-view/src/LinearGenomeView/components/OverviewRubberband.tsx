@@ -13,20 +13,20 @@ import { getRelativeX } from './util'
 type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles()({
-  rubberbandControl: {
-    cursor: 'crosshair',
-    width: '100%',
-    minHeight: 8,
-  },
   guide: {
-    pointerEvents: 'none',
     height: '100%',
-    width: 1,
+    pointerEvents: 'none',
     position: 'absolute',
+    width: 1,
     zIndex: 10,
   },
   rel: {
     position: 'relative',
+  },
+  rubberbandControl: {
+    cursor: 'crosshair',
+    minHeight: 8,
+    width: '100%',
   },
 })
 

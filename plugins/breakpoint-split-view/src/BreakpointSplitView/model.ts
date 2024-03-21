@@ -84,8 +84,8 @@ async function getBlockFeatures(
       (
         (await rpcManager.call(sessionId, 'CoreGetFeatures', {
           adapterConfig: getConf(track, ['adapter']),
-          sessionId,
           regions: view.staticBlocks.contentBlocks,
+          sessionId,
         })) as Feature[][]
       ).flat(),
     ),
@@ -108,10 +108,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        type: types.literal('BreakpointSplitView'),
-        /**
-         * #property
-         */
         height: types.optional(
           types.refinement(
             'viewHeight',
@@ -120,22 +116,31 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           ),
           defaultHeight,
         ),
-        /**
-         * #property
-         */
-        trackSelectorType: 'hierarchical',
-        /**
-         * #property
-         */
-        showIntraviewLinks: true,
-        /**
-         * #property
-         */
-        linkViews: false,
+
         /**
          * #property
          */
         interactToggled: false,
+
+        /**
+         * #property
+         */
+        linkViews: false,
+
+        /**
+         * #property
+         */
+        showIntraviewLinks: true,
+
+        /**
+         * #property
+         */
+        trackSelectorType: 'hierarchical',
+
+        /**
+         * #property
+         */
+        type: types.literal('BreakpointSplitView'),
         /**
          * #property
          */
@@ -146,8 +151,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       }),
     )
     .volatile(() => ({
-      width: 800,
       matchedTrackFeatures: {} as Record<string, Feature[][]>,
+      width: 800,
     }))
     .views(self => ({
       /**
@@ -164,52 +169,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       * Find all track ids that match across multiple views
-       */
-      get matchedTracks() {
-        return intersect(
-          elt => elt.configuration.trackId as string,
-          ...self.views.map(view => view.tracks),
-        )
-      },
-
-      /**
-       * #method
-       * Get tracks with a given trackId across multiple views
-       */
-      getMatchedTracks(trackConfigId: string) {
-        return self.views
-          .map(view => view.getTrack(trackConfigId))
-          .filter(f => !!f)
-      },
-
-      /**
-       * #method
-       *
-       * Translocation features are handled differently
-       * since they do not have a mate e.g. they are one sided
-       */
-      hasTranslocations(trackConfigId: string) {
-        return [...this.getTrackFeatures(trackConfigId).values()].find(
-          f => f.get('type') === 'translocation',
-        )
-      },
-
-      /**
-       * #method
-       * Get a composite map of featureId-\>feature map for a track across
-       * multiple views
-       */
-      getTrackFeatures(trackConfigId: string) {
-        return new Map(
-          self.matchedTrackFeatures[trackConfigId]
-            ?.flat()
-            .map(f => [f.id(), f]),
-        )
-      },
-
       /**
        * #method
        */
@@ -230,6 +189,52 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 : undefined
             })
             .filter(notEmpty),
+        )
+      },
+
+      /**
+       * #method
+       * Get tracks with a given trackId across multiple views
+       */
+      getMatchedTracks(trackConfigId: string) {
+        return self.views
+          .map(view => view.getTrack(trackConfigId))
+          .filter(f => !!f)
+      },
+
+      /**
+       * #method
+       * Get a composite map of featureId-\>feature map for a track across
+       * multiple views
+       */
+      getTrackFeatures(trackConfigId: string) {
+        return new Map(
+          self.matchedTrackFeatures[trackConfigId]
+            ?.flat()
+            .map(f => [f.id(), f]),
+        )
+      },
+
+      /**
+       * #method
+       *
+       * Translocation features are handled differently
+       * since they do not have a mate e.g. they are one sided
+       */
+      hasTranslocations(trackConfigId: string) {
+        return [...this.getTrackFeatures(trackConfigId).values()].find(
+          f => f.get('type') === 'translocation',
+        )
+      },
+
+      /**
+       * #getter
+       * Find all track ids that match across multiple views
+       */
+      get matchedTracks() {
+        return intersect(
+          elt => elt.configuration.trackId as string,
+          ...self.views.map(view => view.tracks),
         )
       },
     }))
@@ -268,6 +273,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         )
       },
 
+      /**
+       * #action
+       */
+      closeView() {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        getParent<any>(self, 2).removeView(self)
+      },
+
       onSubviewAction(actionName: string, path: string, args?: unknown[]) {
         self.views.forEach(view => {
           const ret = getPath(view)
@@ -281,14 +294,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setWidth(newWidth: number) {
-        self.width = newWidth
-        self.views.forEach(v => v.setWidth(newWidth))
-      },
-
-      /**
-       * #action
-       */
       removeView(view: LGV) {
         self.views.remove(view)
       },
@@ -296,9 +301,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      closeView() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        getParent<any>(self, 2).removeView(self)
+      setMatchedTrackFeatures(obj: Record<string, Feature[][]>) {
+        self.matchedTrackFeatures = obj
+      },
+
+      /**
+       * #action
+       */
+      setWidth(newWidth: number) {
+        self.width = newWidth
+        self.views.forEach(v => v.setWidth(newWidth))
       },
 
       /**
@@ -320,13 +332,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       toggleLinkViews() {
         self.linkViews = !self.linkViews
-      },
-
-      /**
-       * #action
-       */
-      setMatchedTrackFeatures(obj: Record<string, Feature[][]>) {
-        self.matchedTrackFeatures = obj
       },
     }))
     .actions(self => ({
@@ -368,34 +373,34 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             .map(f => ({ label: `View ${f[0] + 1} Menu`, subMenu: f[1] })),
 
           {
-            label: 'Show intra-view links',
-            type: 'checkbox',
             checked: self.showIntraviewLinks,
+            label: 'Show intra-view links',
             onClick: () => self.toggleIntraviewLinks(),
+            type: 'checkbox',
           },
           {
-            label: 'Allow clicking alignment squiggles?',
-            type: 'checkbox',
             checked: self.interactToggled,
+            label: 'Allow clicking alignment squiggles?',
             onClick: () => self.toggleInteract(),
+            type: 'checkbox',
           },
 
           {
-            label: 'Link views',
-            type: 'checkbox',
-            icon: LinkIcon,
             checked: self.linkViews,
+            icon: LinkIcon,
+            label: 'Link views',
             onClick: () => {
               self.toggleLinkViews()
             },
+            type: 'checkbox',
           },
           {
-            label: 'Export SVG',
             icon: PhotoCamera,
+            label: 'Export SVG',
             onClick: (): void => {
               getSession(self).queueDialog(handleClose => [
                 ExportSvgDialog,
-                { model: self, handleClose },
+                { handleClose, model: self },
               ])
             },
           },

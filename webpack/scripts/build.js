@@ -151,7 +151,7 @@ module.exports = function (config) {
           })
         } else {
           messages = formatWebpackMessages(
-            stats.toJson({ all: false, warnings: true, errors: true }),
+            stats.toJson({ all: false, errors: true, warnings: true }),
           )
         }
         if (messages.errors.length) {
@@ -184,8 +184,8 @@ module.exports = function (config) {
         }
 
         const resolveArgs = {
-          stats,
           previousFileSizes,
+          stats,
           warnings: messages.warnings,
         }
 

@@ -6,15 +6,15 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addAdapterType(
     () =>
       new AdapterType({
-        name: 'BigWigAdapter',
-        displayName: 'BigWig adapter',
-        configSchema,
         adapterCapabilities: [
           'hasResolution',
           'hasLocalStats',
           'hasGlobalStats',
         ],
+        configSchema,
+        displayName: 'BigWig adapter',
         getAdapterClass: () => import('./BigWigAdapter').then(r => r.default),
+        name: 'BigWigAdapter',
       }),
   )
 }

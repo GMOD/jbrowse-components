@@ -23,9 +23,9 @@ describe('base data adapter', () => {
     const adapter = new Adapter(ConfigurationSchema('empty', {}).create())
     const features = adapter.getFeatures({
       assemblyName: 'volvox',
+      end: 20000,
       refName: 'ctgA',
       start: 0,
-      end: 20000,
     })
     const featuresArray = features.pipe(toArray()).toPromise()
 
@@ -44,9 +44,9 @@ describe('base data adapter', () => {
           if (region.refName === 'ctgA') {
             observer.next(
               new SimpleFeature({
-                uniqueId: 'testFeature',
-                start: 100,
                 end: 200,
+                start: 100,
+                uniqueId: 'testFeature',
               }),
             )
           }
@@ -59,9 +59,9 @@ describe('base data adapter', () => {
     const adapter = new Adapter(ConfigurationSchema('empty', {}).create())
     const features = adapter.getFeatures({
       assemblyName: 'volvox',
+      end: 20000,
       refName: 'ctgA',
       start: 0,
-      end: 20000,
     })
     const featuresArray = await features.pipe(toArray()).toPromise()
     expect(featuresArray).toMatchInlineSnapshot(`
@@ -75,9 +75,9 @@ describe('base data adapter', () => {
     `)
     const features2 = adapter.getFeatures({
       assemblyName: 'volvox',
+      end: 20000,
       refName: 'ctgC',
       start: 0,
-      end: 20000,
     })
     const featuresArray2 = await features2.pipe(toArray()).toPromise()
     expect(featuresArray2).toMatchInlineSnapshot(`[]`)

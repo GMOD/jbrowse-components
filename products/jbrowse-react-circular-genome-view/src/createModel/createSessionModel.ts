@@ -58,47 +58,53 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get version() {
-        return getParent<any>(self).version
-      },
-      /**
-       * #getter
-       */
       get assemblies() {
         return [getParent<any>(self).config.assembly]
       },
-      /**
-       * #getter
-       */
-      get assemblyNames() {
-        return [getParent<any>(self).config.assemblyName]
-      },
-      /**
-       * #getter
-       */
-      get connections() {
-        return getParent<any>(self).config.connections
-      },
+
       /**
        * #getter
        */
       get assemblyManager() {
         return getParent<any>(self).assemblyManager
       },
+
       /**
        * #getter
        */
-      get views() {
-        return [self.view]
+      get assemblyNames() {
+        return [getParent<any>(self).config.assemblyName]
       },
+
+      /**
+       * #getter
+       */
+      get connections() {
+        return getParent<any>(self).config.connections
+      },
+
       /**
        * #method
        */
       renderProps() {
         return {
-          theme: getConf(self, 'theme'),
           highResolutionScaling: getConf(self, 'highResolutionScaling'),
+          theme: getConf(self, 'theme'),
         }
+      },
+
+      /**
+       * #getter
+       */
+      get version() {
+        return getParent<any>(self).version
+      },
+
+      /**
+       * #getter
+       */
+      get views() {
+        return [self.view]
       },
     }))
     .actions(self => ({
@@ -132,6 +138,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       getTrackActionMenuItems(config: any) {
         return [
           {
+            icon: InfoIcon,
             label: 'About track',
             onClick: () => {
               self.queueDialog(doneCallback => [
@@ -139,7 +146,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
                 { config, handleClose: doneCallback },
               ])
             },
-            icon: InfoIcon,
           },
         ]
       },

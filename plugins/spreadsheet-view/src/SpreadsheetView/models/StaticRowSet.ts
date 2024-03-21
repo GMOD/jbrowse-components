@@ -15,22 +15,12 @@ const StaticRowModel = types
       return this.sortedFilteredRows.length
     },
 
-    get selectedCount() {
-      return this.selectedRows.length
-    },
-
     get selectedAndPassingFiltersCount() {
       return this.selectedFilteredRows.length
     },
 
-    get sortedRows() {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const parent = getParent<any>(self)
-      return [...self.rows].sort(parent.rowSortingComparisonFunction)
-    },
-
-    get selectedRows() {
-      return self.rows.filter(r => r.isSelected)
+    get selectedCount() {
+      return this.selectedRows.length
     },
 
     get selectedFilteredRows() {
@@ -44,6 +34,10 @@ const StaticRowModel = types
       )
     },
 
+    get selectedRows() {
+      return self.rows.filter(r => r.isSelected)
+    },
+
     // the set of all rows that pass the filters, sorted
     get sortedFilteredRows() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -54,6 +48,12 @@ const StaticRowModel = types
       return self.rows
         .filter(row => filterControls.rowPassesFilters(sheet, row))
         .sort(sheet.rowSortingComparisonFunction)
+    },
+
+    get sortedRows() {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const parent = getParent<any>(self)
+      return [...self.rows].sort(parent.rowSortingComparisonFunction)
     },
   }))
   .actions(self => ({

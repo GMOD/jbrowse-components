@@ -12,11 +12,11 @@ const configSchema = ConfigurationSchema('GridBookmarkWidget', {})
 export default (pluginManager: PluginManager) => {
   pluginManager.addWidgetType(() => {
     return new WidgetType({
-      name: 'GridBookmarkWidget',
-      heading: 'Bookmarked regions',
-      configSchema,
-      stateModel: stateModelFactory(pluginManager),
       ReactComponent: lazy(() => import('./components/GridBookmarkWidget')),
+      configSchema,
+      heading: 'Bookmarked regions',
+      name: 'GridBookmarkWidget',
+      stateModel: stateModelFactory(pluginManager),
     })
   })
   AddHighlightModelF(pluginManager)

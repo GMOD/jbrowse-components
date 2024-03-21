@@ -27,13 +27,13 @@ export interface InfoArgs {
 
 const useStyles = makeStyles()({
   cell: {
-    whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
   },
   resizeHandle: {
-    marginLeft: 5,
     background: 'grey',
+    marginLeft: 5,
     width: 5,
   },
 })
@@ -81,23 +81,23 @@ const FacetedSelector = observer(function FacetedSelector({
     },
     ...filteredNonMetadataKeys.map(e => ({
       field: e,
-      width: widthsDebounced[e] ?? 100,
       renderCell: (params: GridCellParams) => {
         const val = params.value as string
         return val ? <SanitizedHTML className={classes.cell} html={val} /> : ''
       },
+      width: widthsDebounced[e] ?? 100,
     })),
     ...filteredMetadataKeys.map(e => ({
       field: `metadata.${e}`,
       headerName: ['name', ...filteredNonMetadataKeys].includes(e)
         ? `${e} (from metadata)`
         : e,
-      width: widthsDebounced['metadata.' + e] ?? 100,
-      valueGetter: (params: GridCellParams) => params.row.metadata[e],
       renderCell: (params: GridCellParams) => {
         const val = params.row.metadata[e] as string
         return val ? <SanitizedHTML className={classes.cell} html={val} /> : ''
       },
+      valueGetter: (params: GridCellParams) => params.row.metadata[e],
+      width: widthsDebounced['metadata.' + e] ?? 100,
     })),
   ]
 
@@ -108,8 +108,8 @@ const FacetedSelector = observer(function FacetedSelector({
         ref={ref}
         style={{
           display: 'flex',
-          overflow: 'hidden',
           height: window.innerHeight * frac,
+          overflow: 'hidden',
           width: window.innerWidth * frac,
         }}
       >
@@ -192,7 +192,7 @@ const FacetedSelector = observer(function FacetedSelector({
               onDrag={dist => faceted.setPanelWidth(panelWidth - dist)}
               className={classes.resizeHandle}
             />
-            <div style={{ width: panelWidth, overflow: 'auto' }}>
+            <div style={{ overflow: 'auto', width: panelWidth }}>
               <FacetFilters model={model} rows={rows} columns={columns} />
             </div>
           </>

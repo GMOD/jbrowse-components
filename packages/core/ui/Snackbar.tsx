@@ -32,7 +32,7 @@ const Snackbar = observer(function ({ session }: { session: SnackbarSession }) {
     <MUISnackbar
       open
       onClose={handleClose}
-      anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      anchorOrigin={{ horizontal: 'center', vertical: 'bottom' }}
     >
       <Alert
         onClose={handleClose}

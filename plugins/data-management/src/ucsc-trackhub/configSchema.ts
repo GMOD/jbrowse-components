@@ -12,22 +12,23 @@ const UCSCTrackHubConnection = ConfigurationSchema(
     /**
      * #slot
      */
-    hubTxtLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: 'http://mysite.com/path/to/hub.txt',
-        locationType: 'UriLocation',
-      },
-      description: 'location of the hub file (usually called hub.txt)',
-    },
-    /**
-     * #slot
-     */
     assemblyNames: {
-      type: 'stringArray',
       defaultValue: [],
       description:
         'optional list of genomes to import from this track hub, if empty all genomes will be imported',
+      type: 'stringArray',
+    },
+
+    /**
+     * #slot
+     */
+    hubTxtLocation: {
+      defaultValue: {
+        locationType: 'UriLocation',
+        uri: 'http://mysite.com/path/to/hub.txt',
+      },
+      description: 'location of the hub file (usually called hub.txt)',
+      type: 'fileLocation',
     },
   },
   {

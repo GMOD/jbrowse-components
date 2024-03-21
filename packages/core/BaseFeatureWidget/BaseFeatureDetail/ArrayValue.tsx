@@ -14,12 +14,12 @@ const useStyles = makeStyles()(theme => ({
   },
 
   fieldSubvalue: {
-    wordBreak: 'break-word',
-    maxHeight: 300,
-    padding: theme.spacing(0.5),
     border: `1px solid ${theme.palette.action.selected}`,
     boxSizing: 'border-box',
+    maxHeight: 300,
     overflow: 'auto',
+    padding: theme.spacing(0.5),
+    wordBreak: 'break-word',
   },
 }))
 

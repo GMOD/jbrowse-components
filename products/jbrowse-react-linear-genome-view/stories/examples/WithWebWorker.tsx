@@ -13,14 +13,14 @@ export const WithWebWorker = () => {
   const { assembly, tracks } = getVolvoxConfig()
   const state = createViewState({
     assembly,
-    tracks,
-    location: 'ctgA:1105..1221',
     configuration: {
       rpc: {
         defaultDriver: 'WebWorkerRpcDriver',
       },
     },
+    location: 'ctgA:1105..1221',
     makeWorkerInstance,
+    tracks,
   })
   state.session.view.showTrack('Deep sequencing')
 

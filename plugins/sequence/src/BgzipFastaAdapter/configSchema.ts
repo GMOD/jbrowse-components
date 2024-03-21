@@ -10,40 +10,43 @@ const BgzipFastaAdapter = ConfigurationSchema(
     /**
      * #slot
      */
-    fastaLocation: {
-      type: 'fileLocation',
-      defaultValue: { uri: '/path/to/seq.fa.gz', locationType: 'UriLocation' },
-    },
-    /**
-     * #slot
-     */
     faiLocation: {
-      type: 'fileLocation',
       defaultValue: {
-        uri: '/path/to/seq.fa.gz.fai',
         locationType: 'UriLocation',
+        uri: '/path/to/seq.fa.gz.fai',
       },
+      type: 'fileLocation',
     },
+
     /**
      * #slot
      */
-    metadataLocation: {
-      description: 'Optional metadata file',
+    fastaLocation: {
+      defaultValue: { locationType: 'UriLocation', uri: '/path/to/seq.fa.gz' },
       type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/fa.metadata.yaml',
-        locationType: 'UriLocation',
-      },
     },
+
     /**
      * #slot
      */
     gziLocation: {
-      type: 'fileLocation',
       defaultValue: {
-        uri: '/path/to/seq.fa.gz.gzi',
         locationType: 'UriLocation',
+        uri: '/path/to/seq.fa.gz.gzi',
       },
+      type: 'fileLocation',
+    },
+
+    /**
+     * #slot
+     */
+    metadataLocation: {
+      defaultValue: {
+        locationType: 'UriLocation',
+        uri: '/path/to/fa.metadata.yaml',
+      },
+      description: 'Optional metadata file',
+      type: 'fileLocation',
     },
   },
   { explicitlyTyped: true },

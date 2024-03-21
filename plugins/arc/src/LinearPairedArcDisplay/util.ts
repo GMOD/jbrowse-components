@@ -21,54 +21,54 @@ export function getTagAlt(feature: Feature, tag: string, alt: string) {
 // orientation definitions from igv.js, see also
 // https://software.broadinstitute.org/software/igv/interpreting_pair_orientations
 export const orientationTypes = {
+  ff: {
+    F1F2: 'RL',
+    F1R2: 'RR',
+
+    F2F1: 'LR',
+    F2R1: 'LL',
+
+    R1F2: 'LL',
+    R1R2: 'LR',
+
+    R2F1: 'RR',
+    R2R1: 'RL',
+  } as Record<string, string>,
+
   fr: {
+    F1F2: 'LL',
     F1R2: 'LR',
+
+    F2F1: 'LL',
     F2R1: 'LR',
 
-    F1F2: 'LL',
-    F2F1: 'LL',
-
-    R1R2: 'RR',
-    R2R1: 'RR',
-
     R1F2: 'RL',
+    R1R2: 'RR',
+
     R2F1: 'RL',
+    R2R1: 'RR',
   } as Record<string, string>,
 
   rf: {
-    R1F2: 'LR',
-    R2F1: 'LR',
-
-    R1R2: 'LL',
-    R2R1: 'LL',
-
     F1F2: 'RR',
-    F2F1: 'RR',
-
     F1R2: 'RL',
+
+    F2F1: 'RR',
     F2R1: 'RL',
-  } as Record<string, string>,
 
-  ff: {
-    F2F1: 'LR',
-    R1R2: 'LR',
+    R1F2: 'LR',
+    R1R2: 'LL',
 
-    F2R1: 'LL',
-    R1F2: 'LL',
-
-    R2F1: 'RR',
-    F1R2: 'RR',
-
-    R2R1: 'RL',
-    F1F2: 'RL',
+    R2F1: 'LR',
+    R2R1: 'LL',
   } as Record<string, string>,
 }
 
 export const pairMap = {
-  LR: 'color_pair_lr',
   LL: 'color_pair_ll',
-  RR: 'color_pair_rr',
+  LR: 'color_pair_lr',
   RL: 'color_pair_rl',
+  RR: 'color_pair_rr',
 } as const
 
 export function getColorWGBS(strand: number, base: string) {
@@ -102,8 +102,8 @@ export async function fetchSequence(
     adapter
       .getFeatures({
         ...region,
-        refName: originalRefName || refName,
         end: end + 1,
+        refName: originalRefName || refName,
         start: Math.max(0, start - 1),
       })
       .pipe(toArray()),
@@ -119,14 +119,14 @@ export function shouldFetchReferenceSequence(type?: string) {
 // adapted from IGV
 // https://github.com/igvteam/igv/blob/e803e3af2d8c9ea049961dfd4628146bdde9a574/src/main/java/org/broad/igv/sam/mods/BaseModificationColors.java#L27
 export const modificationColors = {
-  m: 'rgb(255,0,0)',
-  h: 'rgb(11, 132, 165)',
-  o: 'rgb(111, 78, 129)',
-  f: 'rgb(246, 200, 95)',
-  c: 'rgb(157, 216, 102)',
-  g: 'rgb(255, 160, 86)',
-  e: 'rgb(141, 221, 208)',
   b: 'rgb(202, 71, 47)',
+  c: 'rgb(157, 216, 102)',
+  e: 'rgb(141, 221, 208)',
+  f: 'rgb(246, 200, 95)',
+  g: 'rgb(255, 160, 86)',
+  h: 'rgb(11, 132, 165)',
+  m: 'rgb(255,0,0)',
+  o: 'rgb(111, 78, 129)',
 } as Record<string, string | undefined>
 
 type DisplayModel = IAnyStateTreeNode & { setError: (arg: unknown) => void }

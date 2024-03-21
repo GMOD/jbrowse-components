@@ -12,8 +12,8 @@ export default class LinePlotRenderer extends WiggleBaseRenderer {
   ) {
     return drawLine(ctx, {
       ...props,
-      offset: YSCALEBAR_LABEL_OFFSET,
       colorCallback: () => 'grey',
+      offset: YSCALEBAR_LABEL_OFFSET,
     })
   }
 }

@@ -10,35 +10,35 @@ const configSchema = ConfigurationSchema(
   'CramAdapter',
   {
     /**
-     * #slot fetchSizeLimit
+     * #slot craiLocation
      */
-    fetchSizeLimit: {
-      type: 'number',
-      description:
-        'size in bytes over which to display a warning to the user that too much data will be fetched',
-      defaultValue: 3_000_000,
+    craiLocation: {
+      defaultValue: {
+        locationType: 'UriLocation',
+        uri: '/path/to/my.cram.crai',
+      },
+      type: 'fileLocation',
     },
 
     /**
      * #slot cramLocation
      */
     cramLocation: {
-      type: 'fileLocation',
       defaultValue: {
-        uri: '/path/to/my.cram',
         locationType: 'UriLocation',
+        uri: '/path/to/my.cram',
       },
+      type: 'fileLocation',
     },
 
     /**
-     * #slot craiLocation
+     * #slot fetchSizeLimit
      */
-    craiLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/my.cram.crai',
-        locationType: 'UriLocation',
-      },
+    fetchSizeLimit: {
+      defaultValue: 3_000_000,
+      description:
+        'size in bytes over which to display a warning to the user that too much data will be fetched',
+      type: 'number',
     },
 
     /**
@@ -47,9 +47,9 @@ const configSchema = ConfigurationSchema(
      * currently needs to be manually added
      */
     sequenceAdapter: {
-      type: 'frozen',
-      description: 'sequence data adapter',
       defaultValue: null,
+      description: 'sequence data adapter',
+      type: 'frozen',
     },
   },
   { explicitlyTyped: true },

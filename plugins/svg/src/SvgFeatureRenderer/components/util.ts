@@ -98,21 +98,21 @@ export function layOut({
 }: FeatureLayOutArgs): SceneGraph {
   const displayMode = readConfObject(config, 'displayMode')
   const subLayout = layOutFeature({
-    layout,
-    feature,
     bpPerPx,
-    reversed,
     config,
     extraGlyphs,
+    feature,
+    layout,
+    reversed,
   })
   if (displayMode !== 'reducedRepresentation') {
     layOutSubfeatures({
-      layout: subLayout,
-      subfeatures: feature.get('subfeatures') || [],
       bpPerPx,
-      reversed,
       config,
       extraGlyphs,
+      layout: subLayout,
+      reversed,
+      subfeatures: feature.get('subfeatures') || [],
     })
   }
   return subLayout
@@ -151,12 +151,12 @@ export function layOutSubfeatures(args: SubfeatureLayOutArgs) {
   const { layout, subfeatures, bpPerPx, reversed, config, extraGlyphs } = args
   subfeatures.forEach(feature => {
     ;(chooseGlyphComponent(feature, extraGlyphs).layOut || layOut)({
-      layout,
-      feature,
       bpPerPx,
-      reversed,
       config,
       extraGlyphs,
+      feature,
+      layout,
+      reversed,
     })
   })
 }

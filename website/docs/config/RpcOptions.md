@@ -16,10 +16,10 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ```js
 defaultDriver: {
-      type: 'string',
+      defaultValue: 'MainThreadRpcDriver',
       description:
         'the RPC driver to use for tracks and tasks that are not configured to use a specific RPC backend',
-      defaultValue: 'MainThreadRpcDriver',
+      type: 'string',
     }
 ```
 

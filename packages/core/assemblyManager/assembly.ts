@@ -61,8 +61,8 @@ async function loadRefNameMap(
 ) {
   const { sessionId } = options
   await when(() => !!(assembly.regions && assembly.refNameAliases), {
-    signal,
     name: 'when assembly ready',
+    signal,
   })
 
   const refNames = (await assembly.rpcManager.call(
@@ -170,13 +170,13 @@ export default function assemblyFactory(
       configuration: types.safeReference(assemblyConfigType),
     })
     .volatile(() => ({
+      cytobands: undefined as Feature[] | undefined,
       error: undefined as unknown,
       loaded: false,
       loadingP: undefined as Promise<void> | undefined,
-      volatileRegions: undefined as BasicRegion[] | undefined,
-      refNameAliases: undefined as RefNameAliases | undefined,
       lowerCaseRefNameAliases: undefined as RefNameAliases | undefined,
-      cytobands: undefined as Feature[] | undefined,
+      refNameAliases: undefined as RefNameAliases | undefined,
+      volatileRegions: undefined as BasicRegion[] | undefined,
     }))
     .views(self => ({
       getConf(arg: string) {
@@ -187,49 +187,17 @@ export default function assemblyFactory(
       /**
        * #getter
        */
-      get initialized() {
-        // @ts-expect-error
-        self.load()
-        return !!self.refNameAliases
-      },
-      /**
-       * #getter
-       */
-      get name(): string {
-        return self.getConf('name') || ''
-      },
-      /**
-       * #getter
-       */
-      get regions() {
-        // @ts-expect-error
-        self.load()
-        return self.volatileRegions
-      },
-      /**
-       * #getter
-       */
       get aliases(): string[] {
         return self.getConf('aliases') || []
       },
-      /**
-       * #getter
-       */
-      get displayName(): string | undefined {
-        return self.getConf('displayName')
-      },
-      /**
-       * #getter
-       */
-      hasName(name: string) {
-        return this.allAliases.includes(name)
-      },
+
       /**
        * #getter
        */
       get allAliases() {
         return [this.name, ...this.aliases]
       },
+
       /**
        * #getter
        * note: lowerCaseRefNameAliases not included here: this allows the list
@@ -241,6 +209,39 @@ export default function assemblyFactory(
           ? undefined
           : Object.keys(self.refNameAliases)
       },
+
+      /**
+       * #getter
+       */
+      get allRefNamesWithLowerCase() {
+        return this.allRefNames && this.lowerCaseRefNames
+          ? [...new Set([...this.allRefNames, ...this.lowerCaseRefNames])]
+          : undefined
+      },
+
+      /**
+       * #getter
+       */
+      get displayName(): string | undefined {
+        return self.getConf('displayName')
+      },
+
+      /**
+       * #getter
+       */
+      hasName(name: string) {
+        return this.allAliases.includes(name)
+      },
+
+      /**
+       * #getter
+       */
+      get initialized() {
+        // @ts-expect-error
+        self.load()
+        return !!self.refNameAliases
+      },
+
       /**
        * #getter
        */
@@ -253,24 +254,33 @@ export default function assemblyFactory(
       /**
        * #getter
        */
-      get allRefNamesWithLowerCase() {
-        return this.allRefNames && this.lowerCaseRefNames
-          ? [...new Set([...this.allRefNames, ...this.lowerCaseRefNames])]
-          : undefined
+      get name(): string {
+        return self.getConf('name') || ''
       },
-      /**
-       * #getter
-       */
-      get rpcManager(): RpcManager {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return getParent<any>(self, 2).rpcManager
-      },
+
       /**
        * #getter
        */
       get refNameColors() {
         const colors: string[] = self.getConf('refNameColors') || []
         return colors.length === 0 ? refNameColors : colors
+      },
+
+      /**
+       * #getter
+       */
+      get regions() {
+        // @ts-expect-error
+        self.load()
+        return self.volatileRegions
+      },
+
+      /**
+       * #getter
+       */
+      get rpcManager(): RpcManager {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return getParent<any>(self, 2).rpcManager
       },
     }))
     .views(self => ({
@@ -324,52 +334,6 @@ export default function assemblyFactory(
       /**
        * #action
        */
-      setLoaded({
-        adapterRegionsWithAssembly,
-        refNameAliases,
-        lowerCaseRefNameAliases,
-        cytobands,
-      }: Loading) {
-        self.loaded = true
-        this.setRegions(adapterRegionsWithAssembly)
-        this.setRefNameAliases(refNameAliases, lowerCaseRefNameAliases)
-        this.setCytobands(cytobands)
-      },
-      /**
-       * #action
-       */
-      setError(e: unknown) {
-        console.error(e)
-        self.error = e
-      },
-      /**
-       * #action
-       */
-      setRegions(regions: Region[]) {
-        self.volatileRegions = regions
-      },
-      /**
-       * #action
-       */
-      setRefNameAliases(aliases: RefNameAliases, lcAliases: RefNameAliases) {
-        self.refNameAliases = aliases
-        self.lowerCaseRefNameAliases = lcAliases
-      },
-      /**
-       * #action
-       */
-      setCytobands(cytobands: Feature[]) {
-        self.cytobands = cytobands
-      },
-      /**
-       * #action
-       */
-      setLoadingP(p?: Promise<void>) {
-        self.loadingP = p
-      },
-      /**
-       * #action
-       */
       load() {
         if (!self.loadingP) {
           self.loadingP = this.loadPre().catch(e => {
@@ -379,6 +343,7 @@ export default function assemblyFactory(
         }
         return self.loadingP
       },
+
       /**
        * #action
        */
@@ -418,10 +383,62 @@ export default function assemblyFactory(
 
         this.setLoaded({
           adapterRegionsWithAssembly,
-          refNameAliases,
-          lowerCaseRefNameAliases,
           cytobands,
+          lowerCaseRefNameAliases,
+          refNameAliases,
         })
+      },
+
+      /**
+       * #action
+       */
+      setCytobands(cytobands: Feature[]) {
+        self.cytobands = cytobands
+      },
+
+      /**
+       * #action
+       */
+      setError(e: unknown) {
+        console.error(e)
+        self.error = e
+      },
+
+      /**
+       * #action
+       */
+      setLoaded({
+        adapterRegionsWithAssembly,
+        refNameAliases,
+        lowerCaseRefNameAliases,
+        cytobands,
+      }: Loading) {
+        self.loaded = true
+        this.setRegions(adapterRegionsWithAssembly)
+        this.setRefNameAliases(refNameAliases, lowerCaseRefNameAliases)
+        this.setCytobands(cytobands)
+      },
+
+      /**
+       * #action
+       */
+      setLoadingP(p?: Promise<void>) {
+        self.loadingP = p
+      },
+
+      /**
+       * #action
+       */
+      setRefNameAliases(aliases: RefNameAliases, lcAliases: RefNameAliases) {
+        self.refNameAliases = aliases
+        self.lowerCaseRefNameAliases = lcAliases
+      },
+
+      /**
+       * #action
+       */
+      setRegions(regions: Region[]) {
+        self.volatileRegions = regions
       },
     }))
     .views(self => ({
@@ -437,8 +454,8 @@ export default function assemblyFactory(
           adapterConfigCacheKey(adapterConf),
           {
             adapterConf,
-            self: self as Assembly,
             options: rest,
+            self: self as Assembly,
           } as CacheData,
 
           // signal intentionally not passed here, fixes issues like #2221.

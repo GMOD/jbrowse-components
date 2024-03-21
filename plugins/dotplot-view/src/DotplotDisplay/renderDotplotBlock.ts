@@ -20,21 +20,21 @@ export function renderBlockData(self: IAnyStateTreeNode) {
   if (parent.initialized) {
     const { viewWidth, viewHeight, borderSize, borderX, borderY } = parent
     return {
-      rendererType,
-      rpcManager,
       renderProps: {
         ...self.renderProps(),
-        view: clone(getSnapshot(parent)),
-        width: viewWidth,
-        height: viewHeight,
+        adapterConfig,
         borderSize,
         borderX,
         borderY,
-        adapterConfig,
+        height: viewHeight,
         rendererType: rendererType.name,
         sessionId: getRpcSessionId(self),
-        timeout: 1000000, // 10000,
+        timeout: 1000000,
+        view: clone(getSnapshot(parent)),
+        width: viewWidth, // 10000,
       },
+      rendererType,
+      rpcManager,
     }
   }
   return undefined
@@ -53,8 +53,8 @@ export async function renderBlockEffect(
     renderProps,
   )
   return {
-    reactElement,
     data,
+    reactElement,
     renderingComponent: rendererType.ReactComponent,
   }
 }

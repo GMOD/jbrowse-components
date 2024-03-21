@@ -12,21 +12,21 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ### IndexedFastaAdapter - Slots
 
-#### slot: fastaLocation
-
-```js
-fastaLocation: {
-      type: 'fileLocation',
-      defaultValue: { uri: '/path/to/seq.fa', locationType: 'UriLocation' },
-    }
-```
-
 #### slot: faiLocation
 
 ```js
 faiLocation: {
+      defaultValue: { locationType: 'UriLocation', uri: '/path/to/seq.fa.fai' },
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/seq.fa.fai', locationType: 'UriLocation' },
+    }
+```
+
+#### slot: fastaLocation
+
+```js
+fastaLocation: {
+      defaultValue: { locationType: 'UriLocation', uri: '/path/to/seq.fa' },
+      type: 'fileLocation',
     }
 ```
 
@@ -34,11 +34,11 @@ faiLocation: {
 
 ```js
 metadataLocation: {
+      defaultValue: {
+        locationType: 'UriLocation',
+        uri: '/path/to/fa.metadata.yaml',
+      },
       description: 'Optional metadata file',
       type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/fa.metadata.yaml',
-        locationType: 'UriLocation',
-      },
     }
 ```

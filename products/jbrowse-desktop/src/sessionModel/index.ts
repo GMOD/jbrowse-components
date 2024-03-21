@@ -89,47 +89,56 @@ export default function sessionModelFactory({
       /**
        * #action
        */
-      renameCurrentSession(sessionName: string) {
-        return self.root.renameCurrentSession(sessionName)
+      editTrackConfiguration(configuration: BaseTrackConfig) {
+        self.editConfiguration(configuration)
       },
+
       /**
        * #action
        */
-      editTrackConfiguration(configuration: BaseTrackConfig) {
-        self.editConfiguration(configuration)
+      renameCurrentSession(sessionName: string) {
+        return self.root.renameCurrentSession(sessionName)
       },
     }))
     .views(self => ({
       /**
        * #getter
        */
-      get assemblyNames(): string[] {
-        return self.assemblies.map(a => readConfObject(a, 'name'))
+      get assemblyManager() {
+        return self.root.assemblyManager
       },
+
       /**
        * #getter
        */
-      get version() {
-        return self.root.version
+      get assemblyNames(): string[] {
+        return self.assemblies.map(a => readConfObject(a, 'name'))
       },
+
       /**
        * #getter
        */
       get history() {
         return self.root.history
       },
+
       /**
        * #getter
        */
       get menus() {
         return self.root.menus
       },
+
       /**
-       * #getter
+       * #method
        */
-      get assemblyManager() {
-        return self.root.assemblyManager
+      renderProps() {
+        return {
+          highResolutionScaling: getConf(self, 'highResolutionScaling'),
+          theme: getConf(self, 'theme'),
+        }
       },
+
       /**
        * #getter
        */
@@ -138,13 +147,10 @@ export default function sessionModelFactory({
       },
 
       /**
-       * #method
+       * #getter
        */
-      renderProps() {
-        return {
-          theme: getConf(self, 'theme'),
-          highResolutionScaling: getConf(self, 'highResolutionScaling'),
-        }
+      get version() {
+        return self.root.version
       },
     }))
 

@@ -7,14 +7,14 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addAdapterType(
     () =>
       new AdapterType({
-        name: 'SequenceSearchAdapter',
-        displayName: 'Sequence search adapter',
         adapterMetadata: {
           hiddenFromGUI: true,
         },
         configSchema,
+        displayName: 'Sequence search adapter',
         getAdapterClass: () =>
           import('./SequenceSearchAdapter').then(r => r.default),
+        name: 'SequenceSearchAdapter',
       }),
   )
 }

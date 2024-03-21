@@ -21,9 +21,9 @@ export default (pluginManager: PluginManager) => {
         const adapterName = 'CramAdapter'
         const fileName = getFileName(file)
         const obj = {
-          type: adapterName,
-          cramLocation: file,
           craiLocation: index || makeIndex(file, '.crai'),
+          cramLocation: file,
+          type: adapterName,
         }
         if (regexGuess.test(fileName) && !adapterHint) {
           return obj
@@ -49,12 +49,12 @@ export default (pluginManager: PluginManager) => {
         const indexName = index && getFileName(index)
 
         const obj = {
-          type: adapterName,
           bamLocation: file,
           index: {
-            location: index || makeIndex(file, '.bai'),
             indexType: makeIndexType(indexName, 'CSI', 'BAI'),
+            location: index || makeIndex(file, '.bai'),
           },
+          type: adapterName,
         }
         if (regexGuess.test(fileName) && !adapterHint) {
           return obj

@@ -96,7 +96,7 @@ export function storeBlobLocation(location: PreFileLocation) {
   if (location && 'blob' in location) {
     const blobId = `b${+Date.now()}-${counter++}`
     blobMap[blobId] = location.blob
-    return { name: location?.blob.name, blobId, locationType: 'BlobLocation' }
+    return { blobId, locationType: 'BlobLocation', name: location?.blob.name }
   }
   return location
 }
@@ -109,7 +109,7 @@ export function storeBlobLocation(location: PreFileLocation) {
  */
 export function makeIndex(location: FileLocation, suffix: string) {
   if ('uri' in location) {
-    return { uri: location.uri + suffix, locationType: 'UriLocation' }
+    return { locationType: 'UriLocation', uri: location.uri + suffix }
   }
 
   if ('localPath' in location) {
@@ -224,11 +224,11 @@ export function generateUnsupportedTrackConf(
   categories: string[] | undefined,
 ) {
   const conf = {
-    type: 'FeatureTrack',
-    name: `${trackName} (Unsupported)`,
-    description: `Support not yet implemented for "${trackUrl}"`,
     category: categories,
+    description: `Support not yet implemented for "${trackUrl}"`,
+    name: `${trackName} (Unsupported)`,
     trackId: '',
+    type: 'FeatureTrack',
   }
   conf.trackId = objectHash(conf)
   return conf
@@ -240,11 +240,11 @@ export function generateUnknownTrackConf(
   categories: string[] | undefined,
 ) {
   const conf = {
-    type: 'FeatureTrack',
-    name: `${trackName} (Unknown)`,
-    description: `Could not determine track type for "${trackUrl}"`,
     category: categories,
+    description: `Could not determine track type for "${trackUrl}"`,
+    name: `${trackName} (Unknown)`,
     trackId: '',
+    type: 'FeatureTrack',
   }
   conf.trackId = objectHash(conf)
   return conf

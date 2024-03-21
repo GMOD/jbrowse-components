@@ -9,8 +9,8 @@ export default class extends IndexedFasta {
     const faiLocation = this.getConf('faiLocation')
     const gziLocation = this.getConf('gziLocation')
     const fastaOpts = {
-      fasta: openLocation(fastaLocation as FileLocation, this.pluginManager),
       fai: openLocation(faiLocation as FileLocation, this.pluginManager),
+      fasta: openLocation(fastaLocation as FileLocation, this.pluginManager),
       gzi: openLocation(gziLocation as FileLocation, this.pluginManager),
     }
 

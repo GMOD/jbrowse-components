@@ -23,22 +23,20 @@ extends
 
 ### SvInspectorView - Properties
 
-#### property: id
+#### property: circularView
 
 ```js
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+IOptionalIType<IModelType<{ displayName: IMaybe<ISimpleType<string>>; id: IOptionalIType<ISimpleType<string>, [undefined]>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 7 more ... & { ...; }, _NotCustomized, _NotCustomized>, [...]>
 // code
-id: ElementId
-```
-
-#### property: type
-
-```js
-// type signature
-ISimpleType<"SvInspectorView">
-// code
-type: types.literal('SvInspectorView')
+circularView: types.optional(CircularModel, () =>
+          CircularModel.create({
+            disableImportForm: true,
+            hideTrackSelectorButton: true,
+            hideVerticalResizeHandle: true,
+            type: 'CircularView',
+          }),
+        )
 ```
 
 #### property: height
@@ -57,13 +55,13 @@ height: types.optional(
         )
 ```
 
-#### property: onlyDisplayRelevantRegionsInCircularView
+#### property: id
 
 ```js
 // type signature
-false
+IOptionalIType<ISimpleType<string>, [undefined]>
 // code
-onlyDisplayRelevantRegionsInCircularView: false
+id: ElementId
 ```
 
 #### property: mode
@@ -81,44 +79,39 @@ mode: types.optional(
         )
 ```
 
+#### property: onlyDisplayRelevantRegionsInCircularView
+
+```js
+// type signature
+false
+// code
+onlyDisplayRelevantRegionsInCircularView: false
+```
+
 #### property: spreadsheetView
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 5 more ... & { ...; }, _NotCustomized, _NotCustomized>, [...]>
+IOptionalIType<IModelType<{ displayName: IMaybe<ISimpleType<string>>; id: IOptionalIType<ISimpleType<string>, [undefined]>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 5 more ... & { ...; }, _NotCustomized, _NotCustomized>, [...]>
 // code
 spreadsheetView: types.optional(SpreadsheetModel, () =>
           SpreadsheetModel.create({
-            type: 'SpreadsheetView',
             hideVerticalResizeHandle: true,
+            type: 'SpreadsheetView',
           }),
         )
 ```
 
-#### property: circularView
+#### property: type
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 7 more ... & { ...; }, _NotCustomized, _NotCustomized>, [...]>
+ISimpleType<"SvInspectorView">
 // code
-circularView: types.optional(CircularModel, () =>
-          CircularModel.create({
-            type: 'CircularView',
-            hideVerticalResizeHandle: true,
-            hideTrackSelectorButton: true,
-            disableImportForm: true,
-          }),
-        )
+type: types.literal('SvInspectorView')
 ```
 
 ### SvInspectorView - Getters
-
-#### getter: selectedRows
-
-```js
-// type
-any
-```
 
 #### getter: assemblyName
 
@@ -127,11 +120,11 @@ any
 any
 ```
 
-#### getter: showCircularView
+#### getter: featureRefNames
 
 ```js
 // type
-boolean
+any[]
 ```
 
 #### getter: features
@@ -146,23 +139,30 @@ any
 ```js
 // type
 {
-  type: string
   features: any
+  type: string
 }
-```
-
-#### getter: featureRefNames
-
-```js
-// type
-any[]
 ```
 
 #### getter: featuresCircularTrackConfiguration
 
 ```js
 // type
-{ type: string; trackId: string; name: string; adapter: any; assemblyNames: any[]; displays: { type: string; displayId: string; onChordClick: string; renderer: { type: string; }; }[]; }
+{ adapter: any; assemblyNames: any[]; displays: { displayId: string; onChordClick: string; renderer: { type: string; }; type: string; }[]; name: string; trackId: string; type: string; }
+```
+
+#### getter: selectedRows
+
+```js
+// type
+any
+```
+
+#### getter: showCircularView
+
+```js
+// type
+boolean
 ```
 
 ### SvInspectorView - Methods
@@ -171,16 +171,30 @@ any[]
 
 ```js
 // type signature
-menuItems: () => { label: string; onClick: () => void; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; }[]
+menuItems: () => { icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; label: string; onClick: () => void; }[]
 ```
 
 ### SvInspectorView - Actions
 
-#### action: setWidth
+#### action: closeView
 
 ```js
 // type signature
-setWidth: (newWidth: number) => void
+closeView: () => void
+```
+
+#### action: setDisplayMode
+
+```js
+// type signature
+setDisplayMode: () => void
+```
+
+#### action: setDisplayedRegions
+
+```js
+// type signature
+setDisplayedRegions: (regions: Region[]) => void
 ```
 
 #### action: setHeight
@@ -197,32 +211,18 @@ setHeight: (newHeight: number) => number
 setImportMode: () => void
 ```
 
-#### action: setDisplayMode
-
-```js
-// type signature
-setDisplayMode: () => void
-```
-
-#### action: closeView
-
-```js
-// type signature
-closeView: () => void
-```
-
-#### action: setDisplayedRegions
-
-```js
-// type signature
-setDisplayedRegions: (regions: Region[]) => void
-```
-
 #### action: setOnlyDisplayRelevantRegionsInCircularView
 
 ```js
 // type signature
 setOnlyDisplayRelevantRegionsInCircularView: (val: boolean) => void
+```
+
+#### action: setWidth
+
+```js
+// type signature
+setWidth: (newWidth: number) => void
 ```
 
 #### action: resizeHeight

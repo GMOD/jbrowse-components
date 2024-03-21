@@ -8,14 +8,14 @@ export default function register(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaFactory(pluginManager)
     return new DisplayType({
-      name: 'LinearPileupDisplay',
-      displayName: 'Pileup display',
+      ReactComponent: BaseLinearDisplayComponent,
       configSchema,
+      displayName: 'Pileup display',
+      name: 'LinearPileupDisplay',
       stateModel: modelFactory(configSchema),
-      subDisplay: { type: 'LinearAlignmentsDisplay', lowerPanel: true },
+      subDisplay: { lowerPanel: true, type: 'LinearAlignmentsDisplay' },
       trackType: 'AlignmentsTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: BaseLinearDisplayComponent,
     })
   })
 }

@@ -12,8 +12,8 @@ const BigBedAdapter = ConfigurationSchema(
      * #slot
      */
     bigBedLocation: {
+      defaultValue: { locationType: 'UriLocation', uri: '/path/to/my.bb' },
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.bb', locationType: 'UriLocation' },
     },
   },
   { explicitlyTyped: true },

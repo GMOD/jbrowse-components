@@ -18,7 +18,7 @@ info
 
 ```js
 // type signature
-IArrayType<ConfigurationSchemaType<{ aliases: { type: string; defaultValue: any[]; description: string; }; sequence: AnyConfigurationSchemaType; refNameColors: { type: string; defaultValue: any[]; description: string; }; refNameAliases: ConfigurationSchemaType<...>; cytobands: ConfigurationSchemaType<...>; displayNa...
+IArrayType<ConfigurationSchemaType<{ aliases: { defaultValue: any[]; description: string; type: string; }; cytobands: ConfigurationSchemaType<{ adapter: IAnyModelType; }, ConfigurationSchemaOptions<undefined, undefined>>; displayName: { ...; }; refNameAliases: ConfigurationSchemaType<...>; refNameColors: { ...; }; s...
 // code
 sessionAssemblies: types.array(assemblyConfigSchemasType)
 ```
@@ -29,7 +29,7 @@ sessionAssemblies: types.array(assemblyConfigSchemasType)
 
 ```js
 // type signature
-addSessionAssembly: (conf: AnyConfiguration) => { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<ConfigurationSchemaType<{ aliases: { type: string; defaultValue: any[]; description: string; }; ... 4 more ...; displayName: { ...; }; }, ConfigurationSchemaOptions<...>>>
+addSessionAssembly: (conf: AnyConfiguration) => { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<ConfigurationSchemaType<{ aliases: { defaultValue: any[]; description: string; type: string; }; ... 4 more ...; sequence: AnyConfigurationSchemaType; }, ConfigurationSchemaOpt...
 ```
 
 #### action: removeSessionAssembly

@@ -7,13 +7,13 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addAdapterType(
     () =>
       new AdapterType({
-        name: 'RefNameAliasAdapter',
-        configSchema,
-        getAdapterClass: () =>
-          import('./RefNameAliasAdapter').then(r => r.default),
         adapterMetadata: {
           hiddenFromGUI: true,
         },
+        configSchema,
+        getAdapterClass: () =>
+          import('./RefNameAliasAdapter').then(r => r.default),
+        name: 'RefNameAliasAdapter',
       }),
   )
 }

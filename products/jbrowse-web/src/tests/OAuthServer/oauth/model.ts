@@ -19,30 +19,10 @@ const db: {
 } = {}
 
 const model: MyModel = {
-  async getClient(clientId, clientSecret) {
-    if (db.client) {
-      return db.client
-    }
-    db.client = {
-      // Retrieved from the database
-      id: clientId,
-      clientSecret,
-      grants: ['authorization_code', 'refresh_token'],
-      redirectUris: ['http://localhost:3000/'],
-    }
-    return db.client
-  },
-  async saveToken(token, client, user) {
-    /* This is where you insert the token into the database */
-    db.token = {
-      accessToken: token.accessToken,
-      accessTokenExpiresAt: token.accessTokenExpiresAt,
-      refreshToken: token.refreshToken,
-      refreshTokenExpiresAt: token.refreshTokenExpiresAt,
-      client: client,
-      user: user,
-    }
-    return db.token
+  async generateAuthorizationCode(_client, _user, _scope) {
+    const seed = crypto.randomBytes(256)
+    const code = crypto.createHash('sha1').update(seed).digest('hex')
+    return code
   },
   async getAccessToken(token) {
     /* This is where you select the token from the database where the code matches */
@@ -50,6 +30,24 @@ const model: MyModel = {
       return false
     }
     return db.token
+  },
+  async getAuthorizationCode(_authorizationCode) {
+    /* this is where we fetch the stored data from the code */
+    return db.authorizationCode
+  },
+  async getClient(clientId, clientSecret) {
+    if (db.client) {
+      return db.client
+    }
+    db.client = {
+      clientSecret,
+
+      grants: ['authorization_code', 'refresh_token'],
+      // Retrieved from the database
+      id: clientId,
+      redirectUris: ['http://localhost:3000/'],
+    }
+    return db.client
   },
   async getRefreshToken(_token) {
     /* Retrieves the token from the database */
@@ -62,6 +60,12 @@ const model: MyModel = {
     }
     return dbToken as RefreshToken
   },
+  async revokeAuthorizationCode(_authorizationCode) {
+    /* This is where we delete codes */
+    delete db.authorizationCode
+    const codeWasFoundAndDeleted = true // Return true if code found and deleted, false otherwise
+    return codeWasFoundAndDeleted
+  },
   async revokeToken(token) {
     /* Delete the token from the database */
     if (!token) {
@@ -69,31 +73,28 @@ const model: MyModel = {
     }
     return true
   },
-  async generateAuthorizationCode(_client, _user, _scope) {
-    const seed = crypto.randomBytes(256)
-    const code = crypto.createHash('sha1').update(seed).digest('hex')
-    return code
-  },
   async saveAuthorizationCode(code, client, user) {
     /* This is where you store the access code data into the database */
     db.authorizationCode = {
       authorizationCode: code.authorizationCode,
-      expiresAt: code.expiresAt,
       client: client,
-      user: user,
+      expiresAt: code.expiresAt,
       redirectUri: code.redirectUri,
+      user: user,
     }
     return db.authorizationCode
   },
-  async getAuthorizationCode(_authorizationCode) {
-    /* this is where we fetch the stored data from the code */
-    return db.authorizationCode
-  },
-  async revokeAuthorizationCode(_authorizationCode) {
-    /* This is where we delete codes */
-    delete db.authorizationCode
-    const codeWasFoundAndDeleted = true // Return true if code found and deleted, false otherwise
-    return codeWasFoundAndDeleted
+  async saveToken(token, client, user) {
+    /* This is where you insert the token into the database */
+    db.token = {
+      accessToken: token.accessToken,
+      accessTokenExpiresAt: token.accessTokenExpiresAt,
+      client: client,
+      refreshToken: token.refreshToken,
+      refreshTokenExpiresAt: token.refreshTokenExpiresAt,
+      user: user,
+    }
+    return db.token
   },
   async verifyScope(_token, _scope) {
     /* This is where we check to make sure the client has access to this scope */

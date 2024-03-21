@@ -16,7 +16,7 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ```js
 gtfLocation: {
+      defaultValue: { locationType: 'UriLocation', uri: '/path/to/my.gtf' },
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.gtf', locationType: 'UriLocation' },
     }
 ```

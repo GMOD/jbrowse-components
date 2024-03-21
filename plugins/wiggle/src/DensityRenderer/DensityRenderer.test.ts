@@ -16,40 +16,40 @@ global.nodeCreateCanvas = createCanvas
 const pluginManager = {} as any
 
 const renderer = new DensityRenderer({
-  name: 'DensityRenderer',
   ReactComponent,
   configSchema,
+  name: 'DensityRenderer',
   pluginManager,
 })
 
 test('inverted mode and reversed', async () => {
   const renderProps = {
+    bpPerPx: 3,
+    config: {
+      negColor: 'blue',
+      posColor: 'red',
+    },
     features: [
-      new SimpleFeature({ id: 't1', data: { start: 1, end: 100, score: 1 } }),
-      new SimpleFeature({ id: 't2', data: { start: 101, end: 200, score: 2 } }),
+      new SimpleFeature({ data: { end: 100, score: 1, start: 1 }, id: 't1' }),
+      new SimpleFeature({ data: { end: 200, score: 2, start: 101 }, id: 't2' }),
     ],
+    height: 100,
+    highResolutionScaling: 1,
     regions: [
       {
-        end: 100,
-        start: 1,
-        reversed: true,
-        refName: 'ctgA',
         assemblyName: 'volvox',
+        end: 100,
+        refName: 'ctgA',
+        reversed: true,
+        start: 1,
       },
     ],
     scaleOpts: {
       domain: [0, 100],
-      range: [0, 200],
       inverted: true,
+      range: [0, 200],
       scaleType: 'linear',
     },
-    config: {
-      posColor: 'red',
-      negColor: 'blue',
-    },
-    bpPerPx: 3,
-    highResolutionScaling: 1,
-    height: 100,
   }
 
   const res = await renderToAbstractCanvas(1000, 200, renderProps, ctx =>

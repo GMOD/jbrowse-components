@@ -47,11 +47,12 @@ export const BaseChordDisplayModel = types
       /**
        * #property
        */
-      bezierRadiusRatio: 0.1,
+      assemblyName: types.maybe(types.string),
+
       /**
        * #property
        */
-      assemblyName: types.maybe(types.string),
+      bezierRadiusRatio: 0.1,
       /**
        * #property
        */
@@ -59,15 +60,15 @@ export const BaseChordDisplayModel = types
     }),
   )
   .volatile(() => ({
+    data: undefined,
     // NOTE: all this volatile stuff has to be filled in at once
     // so that it stays consistent
     filled: false,
-    reactElement: undefined as React.ReactElement | undefined,
-    data: undefined,
     html: undefined as string | undefined,
     message: '',
-    renderingComponent: undefined as undefined | AnyReactComponentType,
+    reactElement: undefined as React.ReactElement | undefined,
     refNameMap: undefined as Record<string, string> | undefined,
+    renderingComponent: undefined as undefined | AnyReactComponentType,
   }))
   .actions(self => {
     const { pluginManager } = getEnv(self)
@@ -77,7 +78,7 @@ export const BaseChordDisplayModel = types
        * #action
        */
       onChordClick(feature: Feature) {
-        getConf(self, 'onChordClick', { feature, track, pluginManager })
+        getConf(self, 'onChordClick', { feature, pluginManager, track })
       },
     }
   })
@@ -111,16 +112,23 @@ export const BaseChordDisplayModel = types
     /**
      * #method
      */
+    isCompatibleWithRenderer(renderer: RendererType) {
+      return !!(renderer instanceof CircularChordRendererType)
+    },
+
+    /**
+     * #method
+     */
     renderProps() {
       const view = getContainingView(self) as CircularViewModel
       return {
         ...getParentRenderProps(self),
-        rpcDriverName: self.rpcDriverName,
-        displayModel: self,
         bezierRadius: view.radiusPx * self.bezierRadiusRatio,
-        radius: view.radiusPx,
         blockDefinitions: this.blockDefinitions,
+        displayModel: self,
         onChordClick: self.onChordClick,
+        radius: view.radiusPx,
+        rpcDriverName: self.rpcDriverName,
       }
     },
 
@@ -144,13 +152,6 @@ export const BaseChordDisplayModel = types
         )
       }
       return ThisRendererType
-    },
-
-    /**
-     * #method
-     */
-    isCompatibleWithRenderer(renderer: RendererType) {
-      return !!(renderer instanceof CircularChordRendererType)
     },
 
     /**
@@ -178,6 +179,21 @@ export const BaseChordDisplayModel = types
     /**
      * #action
      */
+    renderError(error: unknown) {
+      console.error(error)
+      // the rendering failed for some reason
+      self.filled = false
+      self.message = ''
+      self.reactElement = undefined
+      self.html = undefined
+      self.data = undefined
+      self.error = error
+      self.renderingComponent = undefined
+    },
+
+    /**
+     * #action
+     */
     renderStarted() {
       self.filled = false
       self.message = ''
@@ -187,6 +203,7 @@ export const BaseChordDisplayModel = types
       self.error = undefined
       self.renderingComponent = undefined
     },
+
     /**
      * #action
      */
@@ -222,20 +239,6 @@ export const BaseChordDisplayModel = types
         self.renderingComponent = renderingComponent
       }
     },
-    /**
-     * #action
-     */
-    renderError(error: unknown) {
-      console.error(error)
-      // the rendering failed for some reason
-      self.filled = false
-      self.message = ''
-      self.reactElement = undefined
-      self.html = undefined
-      self.data = undefined
-      self.error = error
-      self.renderingComponent = undefined
-    },
 
     /**
      * #action
@@ -253,9 +256,10 @@ export const BaseChordDisplayModel = types
         // @ts-expect-error
         renderReactionEffect,
         {
-          name: `${self.type} ${self.id} rendering`,
           // delay: self.renderDelay || 300,
           fireImmediately: true,
+
+          name: `${self.type} ${self.id} rendering`,
         },
         self.renderStarted,
         self.renderSuccess,
@@ -265,22 +269,23 @@ export const BaseChordDisplayModel = types
       makeAbortableReaction(
         self,
         () => ({
-          assemblyNames: getTrackAssemblyNames(self.parentTrack),
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           adapter: getConf(getParent<any>(self, 2), 'adapter'),
+
           assemblyManager: getSession(self).assemblyManager,
+          assemblyNames: getTrackAssemblyNames(self.parentTrack),
         }),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         async ({ assemblyNames, adapter, assemblyManager }: any, signal) => {
           return assemblyManager.getRefNameMapForAdapter(
             adapter,
             assemblyNames[0],
-            { signal, sessionId: getRpcSessionId(self) },
+            { sessionId: getRpcSessionId(self), signal },
           )
         },
         {
-          name: `${self.type} ${self.id} getting refNames`,
           fireImmediately: true,
+          name: `${self.type} ${self.id} getting refNames`,
         },
         () => {},
         refNameMap => self.setRefNameMap(refNameMap),

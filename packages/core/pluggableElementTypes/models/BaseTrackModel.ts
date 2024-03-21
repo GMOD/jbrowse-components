@@ -46,45 +46,29 @@ export function createBaseTrackModel(
       /**
        * #property
        */
-      id: ElementId,
-      /**
-       * #property
-       */
-      type: types.literal(trackType),
-      /**
-       * #property
-       */
       configuration: ConfigurationReference(baseTrackConfig),
-      /**
-       * #property
-       */
-      minimized: false,
+
       /**
        * #property
        */
       displays: types.array(pm.pluggableMstType('display', 'stateModel')),
+
+      /**
+       * #property
+       */
+      id: ElementId,
+
+      /**
+       * #property
+       */
+      minimized: false,
+
+      /**
+       * #property
+       */
+      type: types.literal(trackType),
     })
     .views(self => ({
-      /**
-       * #getter
-       * determines which webworker to send the track to, currently based on trackId
-       */
-      get rpcSessionId() {
-        return self.configuration?.trackId
-      },
-      /**
-       * #getter
-       */
-      get name() {
-        return getConf(self, 'name')
-      },
-      /**
-       * #getter
-       */
-      get textSearchAdapter() {
-        return getConf(self, 'textSearchAdapter')
-      },
-
       /**
        * #getter
        */
@@ -103,13 +87,6 @@ export function createBaseTrackModel(
       /**
        * #getter
        */
-      get viewMenuActions(): MenuItem[] {
-        return self.displays.flatMap(d => d.viewMenuActions)
-      },
-
-      /**
-       * #getter
-       */
       get canConfigure() {
         const session = getSession(self)
         const { sessionTracks, adminMode } = session
@@ -121,33 +98,37 @@ export function createBaseTrackModel(
             ))
         )
       },
+
+      /**
+       * #getter
+       */
+      get name() {
+        return getConf(self, 'name')
+      },
+
+      /**
+       * #getter
+       * determines which webworker to send the track to, currently based on trackId
+       */
+      get rpcSessionId() {
+        return self.configuration?.trackId
+      },
+
+      /**
+       * #getter
+       */
+      get textSearchAdapter() {
+        return getConf(self, 'textSearchAdapter')
+      },
+
+      /**
+       * #getter
+       */
+      get viewMenuActions(): MenuItem[] {
+        return self.displays.flatMap(d => d.viewMenuActions)
+      },
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      setMinimized(flag: boolean) {
-        self.minimized = flag
-      },
-
-      /**
-       * #action
-       */
-      showDisplay(displayId: string, initialSnapshot = {}) {
-        const schema = pm.pluggableConfigSchemaType('display')
-        const conf = resolveIdentifier(schema, getRoot(self), displayId)
-        const displayType = pm.getDisplayType(conf.type)
-        if (!displayType) {
-          throw new Error(`unknown display type ${conf.type}`)
-        }
-        const display = displayType.stateModel.create({
-          ...initialSnapshot,
-          type: conf.type,
-          configuration: conf,
-        })
-        self.displays.push(display)
-      },
-
       /**
        * #action
        */
@@ -177,9 +158,34 @@ export function createBaseTrackModel(
         }
         self.displays.splice(idx, 1, {
           ...initialSnapshot,
-          type: conf.type,
           configuration: conf,
+          type: conf.type,
         })
+      },
+
+      /**
+       * #action
+       */
+      setMinimized(flag: boolean) {
+        self.minimized = flag
+      },
+
+      /**
+       * #action
+       */
+      showDisplay(displayId: string, initialSnapshot = {}) {
+        const schema = pm.pluggableConfigSchemaType('display')
+        const conf = resolveIdentifier(schema, getRoot(self), displayId)
+        const displayType = pm.getDisplayType(conf.type)
+        if (!displayType) {
+          throw new Error(`unknown display type ${conf.type}`)
+        }
+        const display = displayType.stateModel.create({
+          ...initialSnapshot,
+          configuration: conf,
+          type: conf.type,
+        })
+        self.displays.push(display)
       },
     }))
     .views(self => ({
@@ -198,14 +204,14 @@ export function createBaseTrackModel(
           ...(compatDisp.length > 1
             ? [
                 {
-                  type: 'subMenu',
                   label: 'Display types',
                   subMenu: compatDisp.map(d => ({
-                    type: 'radio',
-                    label: pm.getDisplayType(d.type).displayName,
                     checked: d.displayId === shownId,
+                    label: pm.getDisplayType(d.type).displayName,
                     onClick: () => self.replaceDisplay(shownId, d.displayId),
+                    type: 'radio',
                   })),
+                  type: 'subMenu',
                 },
               ]
             : []),

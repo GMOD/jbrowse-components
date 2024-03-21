@@ -67,10 +67,10 @@ Add an assembly to a JBrowse 2 configuration
 
 ```
 USAGE
-  $ jbrowse add-assembly SEQUENCE [-t indexedFasta|bgzipFasta|twoBit|chromSizes|custom] [-n <value>] [-a <value>]
-    [--displayName <value>] [--faiLocation <value>] [--gziLocation <value>] [--refNameAliasesType aliases|custom
-    --refNameAliases <value>] [--refNameColors <value>] [--target <value>] [--out <value>] [-h] [-l
-    copy|symlink|move|inPlace] [--skipCheck] [--overwrite] [-f]
+  $ jbrowse add-assembly SEQUENCE [-a <value>] [--displayName <value>] [--faiLocation <value>] [-f] [--gziLocation
+    <value>] [-h] [-l copy|symlink|move|inPlace] [-n <value>] [--out <value>] [--overwrite] [--refNameAliasesType
+    aliases|custom --refNameAliases <value>] [--refNameColors <value>] [--skipCheck] [--target <value>] [-t
+    indexedFasta|bgzipFasta|twoBit|chromSizes|custom]
 
 ARGUMENTS
   SEQUENCE
@@ -213,8 +213,8 @@ Add a connection to a JBrowse 2 configuration
 
 ```
 USAGE
-  $ jbrowse add-connection CONNECTIONURLORPATH [-t <value>] [-a <value>] [-c <value>] [--connectionId <value>] [-n
-    <value>] [--target <value>] [--out <value>] [-h] [--skipCheck] [--overwrite] [-f]
+  $ jbrowse add-connection CONNECTIONURLORPATH [-a <value>] [-c <value>] [--connectionId <value>] [-f] [-h] [-n
+    <value>] [--out <value>] [--overwrite] [--skipCheck] [--target <value>] [-t <value>]
 
 ARGUMENTS
   CONNECTIONURLORPATH  URL of data directory
@@ -264,10 +264,10 @@ Add a track to a JBrowse 2 configuration
 
 ```
 USAGE
-  $ jbrowse add-track TRACK [-t <value>] [-n <value>] [--indexFile <value>] [-d <value>] [-a <value>]
-    [--category <value>] [--config <value>] [--target <value>] [--out <value>] [--subDir <value>] [-h] [--trackId
-    <value>] [-l copy|symlink|move|inPlace] [--skipCheck] [--overwrite] [-f] [--protocol <value>] [--bed1 <value>]
-    [--bed2 <value>]
+  $ jbrowse add-track TRACK [-a <value>] [--bed1 <value>] [--bed2 <value>] [--category <value>] [--config
+    <value>] [-d <value>] [-f] [-h] [--indexFile <value>] [-l copy|symlink|move|inPlace] [-n <value>] [--out <value>]
+    [--overwrite] [--protocol <value>] [--skipCheck] [--subDir <value>] [--target <value>] [--trackId <value>] [-t
+    <value>]
 
 ARGUMENTS
   TRACK  Track file or URL
@@ -346,7 +346,7 @@ configuration
 
 ```
 USAGE
-  $ jbrowse add-track-json TRACK [-u] [--target <value>] [--out <value>]
+  $ jbrowse add-track-json TRACK [--out <value>] [--target <value>] [-u]
 
 ARGUMENTS
   TRACK  track JSON file or command line arg blob
@@ -375,7 +375,7 @@ Start up a small admin server for JBrowse configuration
 
 ```
 USAGE
-  $ jbrowse admin-server [-p <value>] [--root <value>] [--bodySizeLimit <value>] [-h]
+  $ jbrowse admin-server [--bodySizeLimit <value>] [-h] [-p <value>] [--root <value>]
 
 FLAGS
   -h, --help                   Show CLI help.
@@ -407,7 +407,7 @@ Downloads and installs the latest JBrowse 2 release
 
 ```
 USAGE
-  $ jbrowse create LOCALPATH [-h] [-f] [-l] [--branch <value>] [--nightly] [-u <value>] [-t <value>]
+  $ jbrowse create LOCALPATH [--branch <value>] [-f] [-h] [-l] [--nightly] [-t <value>] [-u <value>]
 
 ARGUMENTS
   LOCALPATH  Location where JBrowse 2 will be installed
@@ -464,10 +464,10 @@ Display help for jbrowse.
 
 ```
 USAGE
-  $ jbrowse help [COMMAND] [-n]
+  $ jbrowse help [COMMAND...] [-n]
 
 ARGUMENTS
-  COMMAND  Command to show help for.
+  COMMAND...  Command to show help for.
 
 FLAGS
   -n, --nested-commands  Include all nested commands in the output.
@@ -485,7 +485,7 @@ creates pairwise indexed PAF (PIF), with bgzip and tabix
 
 ```
 USAGE
-  $ jbrowse make-pif FILE [--out <value>] [--csi] [-h]
+  $ jbrowse make-pif FILE [--csi] [-h] [--out <value>]
 
 ARGUMENTS
   FILE  PAF file as input
@@ -516,7 +516,7 @@ can cause crashes in saved sessions that refer to this track!
 
 ```
 USAGE
-  $ jbrowse remove-track TRACK [--target <value>] [--out <value>]
+  $ jbrowse remove-track TRACK [--out <value>] [--target <value>]
 
 ARGUMENTS
   TRACK  track JSON file or command line arg blob
@@ -543,7 +543,7 @@ Set a default session with views and tracks
 
 ```
 USAGE
-  $ jbrowse set-default-session [-s <value>] [-n <value>] [-c] [--target <value>] [--out <value>] [--delete] [-h]
+  $ jbrowse set-default-session [-c] [--delete] [-h] [-n <value>] [--out <value>] [-s <value>] [--target <value>]
 
 FLAGS
   -c, --currentSession   List out the current default session
@@ -607,9 +607,9 @@ Make a text-indexing file for any given track(s).
 
 ```
 USAGE
-  $ jbrowse text-index [-h] [--tracks <value>] [--target <value>] [--out <value>] [--attributes <value>] [-a
-    <value>] [--force] [-q] [--perTrack] [--exclude <value>] [--prefixSize <value>] [--file <value>] [--fileId <value>]
-    [--dryrun]
+  $ jbrowse text-index [-a <value>] [--attributes <value>] [--dryrun] [--exclude <value>] [--file <value>]
+    [--fileId <value>] [--force] [-h] [--out <value>] [--perTrack] [--prefixSize <value>] [-q] [--target <value>]
+    [--tracks <value>]
 
 FLAGS
   -a, --assemblies=<value>  Specify the assembl(ies) to create an index for. If unspecified, creates an index for each
@@ -674,7 +674,7 @@ Upgrades JBrowse 2 to latest version
 
 ```
 USAGE
-  $ jbrowse upgrade [LOCALPATH] [-h] [-l] [-t <value>] [--branch <value>] [--nightly] [--clean] [-u <value>]
+  $ jbrowse upgrade [LOCALPATH] [--branch <value>] [--clean] [-h] [-l] [--nightly] [-t <value>] [-u <value>]
 
 ARGUMENTS
   LOCALPATH  [default: .] Location where JBrowse 2 is installed

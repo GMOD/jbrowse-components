@@ -91,7 +91,7 @@ const BreakendOptionDialog = observer(function ({
             const { view } = model
             const session = getSession(model)
             try {
-              const viewSnapshot = getBreakpointSplitView({ view, f1, f2 })
+              const viewSnapshot = getBreakpointSplitView({ f1, f2, view })
               const [view1, view2] = viewSnapshot.views
               // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
               const viewTracks = getSnapshot(view.tracks) as Track[]
@@ -101,15 +101,15 @@ const BreakendOptionDialog = observer(function ({
                 views: [
                   {
                     ...view1,
-                    tracks: stripIds(viewTracks),
                     offsetPx: view1.offsetPx - view.width / 2 + 100,
+                    tracks: stripIds(viewTracks),
                   },
                   {
                     ...view2,
+                    offsetPx: view2.offsetPx - view.width / 2 + 100,
                     tracks: stripIds(
                       mirror ? [...viewTracks].reverse() : viewTracks,
                     ),
-                    offsetPx: view2.offsetPx - view.width / 2 + 100,
                   },
                 ],
               })

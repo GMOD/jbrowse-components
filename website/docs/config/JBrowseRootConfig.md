@@ -28,36 +28,31 @@ have a configurationSchema field on their class are mixed into this object
 
 ### JBrowseRootConfig - Slots
 
-#### slot: configuration.rpc
+#### slot: aggregateTextSearchAdapters
+
+configuration for aggregate text search adapters (created by e.g. jbrowse
+text-index, but can be a pluggable TextSearchAdapter type)
 
 ```js
-rpc: RpcManager.configSchema
+aggregateTextSearchAdapters: types.array(
+  pluginManager.pluggableConfigSchemaType('text search adapter'),
+)
 ```
 
-#### slot: configuration.highResolutionScaling
+#### slot: assemblies
+
+configuration of the assemblies in the instance, see BaseAssembly
 
 ```js
-highResolutionScaling: {
-        type: 'number',
-        defaultValue: 2,
-      }
+assemblies: types.array(assemblyConfigSchema)
 ```
 
 #### slot: configuration.disableAnalytics
 
 ```js
 disableAnalytics: {
-        type: 'boolean',
         defaultValue: false,
-      }
-```
-
-#### slot: configuration.theme
-
-```js
-theme: {
-        type: 'frozen',
-        defaultValue: {},
+        type: 'boolean',
       }
 ```
 
@@ -65,8 +60,17 @@ theme: {
 
 ```js
 extraThemes: {
-        type: 'frozen',
         defaultValue: {},
+        type: 'frozen',
+      }
+```
+
+#### slot: configuration.highResolutionScaling
+
+```js
+highResolutionScaling: {
+        defaultValue: 2,
+        type: 'number',
       }
 ```
 
@@ -74,9 +78,50 @@ extraThemes: {
 
 ```js
 logoPath: {
+        defaultValue: { locationType: 'UriLocation', uri: '' },
         type: 'fileLocation',
-        defaultValue: { uri: '', locationType: 'UriLocation' },
       }
+```
+
+#### slot: configuration.rpc
+
+```js
+rpc: RpcManager.configSchema
+```
+
+#### slot: configuration.theme
+
+```js
+theme: {
+        defaultValue: {},
+        type: 'frozen',
+      }
+```
+
+#### slot: connections
+
+configuration for connections
+
+```js
+connections: types.array(pluginManager.pluggableConfigSchemaType('connection'))
+```
+
+#### slot: defaultSession
+
+```js
+defaultSession: types.optional(types.frozen(), {
+  name: `New Session`,
+})
+```
+
+#### slot: internetAccounts
+
+configuration for internet accounts, see InternetAccounts
+
+```js
+internetAccounts: types.array(
+  pluginManager.pluggableConfigSchemaType('internet account'),
+)
 ```
 
 #### slot: plugins
@@ -97,14 +142,6 @@ type PluginDefinition=
 plugins: types.array(types.frozen<PluginDefinition>())
 ```
 
-#### slot: assemblies
-
-configuration of the assemblies in the instance, see BaseAssembly
-
-```js
-assemblies: types.array(assemblyConfigSchema)
-```
-
 #### slot: tracks
 
 track configuration is an array of track config schemas. multiple instances of a
@@ -112,41 +149,4 @@ track can exist that use the same configuration
 
 ```js
 tracks: types.array(pluginManager.pluggableConfigSchemaType('track'))
-```
-
-#### slot: internetAccounts
-
-configuration for internet accounts, see InternetAccounts
-
-```js
-internetAccounts: types.array(
-  pluginManager.pluggableConfigSchemaType('internet account'),
-)
-```
-
-#### slot: aggregateTextSearchAdapters
-
-configuration for aggregate text search adapters (created by e.g. jbrowse
-text-index, but can be a pluggable TextSearchAdapter type)
-
-```js
-aggregateTextSearchAdapters: types.array(
-  pluginManager.pluggableConfigSchemaType('text search adapter'),
-)
-```
-
-#### slot: connections
-
-configuration for connections
-
-```js
-connections: types.array(pluginManager.pluggableConfigSchemaType('connection'))
-```
-
-#### slot: defaultSession
-
-```js
-defaultSession: types.optional(types.frozen(), {
-  name: `New Session`,
-})
 ```

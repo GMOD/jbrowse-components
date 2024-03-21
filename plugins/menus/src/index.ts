@@ -30,49 +30,49 @@ export default class extends Plugin {
   install(pluginManager: PluginManager) {
     pluginManager.addWidgetType(() => {
       return new WidgetType({
-        name: 'AboutWidget',
-        heading: 'About',
-        configSchema: aboutConfigSchema,
-        stateModel: aboutStateModel,
         ReactComponent: lazy(
           () => import('./AboutWidget/components/AboutWidget'),
         ),
+        configSchema: aboutConfigSchema,
+        heading: 'About',
+        name: 'AboutWidget',
+        stateModel: aboutStateModel,
       })
     })
 
     pluginManager.addWidgetType(() => {
       return new WidgetType({
-        name: 'HelpWidget',
-        heading: 'Help',
-        configSchema: helpConfigSchema,
-        stateModel: helpStateModel,
         ReactComponent: lazy(
           () => import('./HelpWidget/components/HelpWidget'),
         ),
+        configSchema: helpConfigSchema,
+        heading: 'Help',
+        name: 'HelpWidget',
+        stateModel: helpStateModel,
       })
     })
 
     pluginManager.addWidgetType(() => {
       return new WidgetType({
-        name: 'ImportSessionWidget',
-        heading: 'Import session',
-        configSchema: importSessionConfigSchema,
-        stateModel: importSessionStateModel,
         ReactComponent: lazy(
           () => import('./ImportSessionWidget/components/ImportSessionWidget'),
         ),
+        configSchema: importSessionConfigSchema,
+        heading: 'Import session',
+        name: 'ImportSessionWidget',
+        stateModel: importSessionStateModel,
       })
     })
 
     pluginManager.addWidgetType(() => {
       return new WidgetType({
-        name: 'SessionManager',
-        heading: 'Sessions',
-        configSchema: sessionManagerConfigSchema,
-        stateModel: sessionManagerStateModel,
         ReactComponent: lazy(
           () => import('./SessionManager/components/SessionManager'),
         ),
+        configSchema: sessionManagerConfigSchema,
+        heading: 'Sessions',
+        name: 'SessionManager',
+        stateModel: sessionManagerStateModel,
       })
     })
   }
@@ -80,16 +80,16 @@ export default class extends Plugin {
   configure(pluginManager: PluginManager) {
     if (isAbstractMenuManager(pluginManager.rootModel)) {
       pluginManager.rootModel.appendToMenu('Help', {
-        label: 'About',
         icon: InfoIcon,
+        label: 'About',
         onClick: (session: SessionWithWidgets) => {
           const widget = session.addWidget('AboutWidget', 'aboutWidget')
           session.showWidget(widget)
         },
       })
       pluginManager.rootModel.appendToMenu('Help', {
-        label: 'Help',
         icon: HelpIcon,
+        label: 'Help',
         onClick: (session: SessionWithWidgets) => {
           const widget = session.addWidget('HelpWidget', 'helpWidget')
           session.showWidget(widget)

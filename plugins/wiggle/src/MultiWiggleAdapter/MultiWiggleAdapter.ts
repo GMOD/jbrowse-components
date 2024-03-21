@@ -39,11 +39,11 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     if (!subConfs?.length) {
       const entries = this.getConf('bigWigs') as string[]
       subConfs = entries.map(entry => ({
-        type: 'BigWigAdapter',
-        source: getFilename(entry),
         bigWigLocation: {
           uri: entry,
         },
+        source: getFilename(entry),
+        type: 'BigWigAdapter',
       }))
     }
 
@@ -80,7 +80,7 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     ).filter(f => !!f)
     const scoreMin = min(stats.map(s => s.scoreMin))
     const scoreMax = max(stats.map(s => s.scoreMax))
-    return { scoreMin, scoreMax }
+    return { scoreMax, scoreMin }
   }
 
   public getFeatures(region: Region, opts: WiggleOptions = {}) {
@@ -95,8 +95,8 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
                 ? p
                 : new SimpleFeature({
                     ...p.toJSON(),
-                    uniqueId: `${adp.source}-${p.id()}`,
                     source: adp.source,
+                    uniqueId: `${adp.source}-${p.id()}`,
                   }),
             ),
           ),
@@ -115,8 +115,8 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   async getSources() {
     const adapters = await this.getAdapters()
     return adapters.map(({ dataAdapter, source, name, ...rest }) => ({
-      name: source,
       __name: name,
+      name: source,
       ...rest,
     }))
   }

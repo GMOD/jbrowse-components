@@ -7,10 +7,10 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addAdapterType(
     () =>
       new AdapterType({
-        name: 'BedpeAdapter',
-        displayName: 'BEDPE adapter',
         configSchema,
+        displayName: 'BEDPE adapter',
         getAdapterClass: () => import('./BedpeAdapter').then(r => r.default),
+        name: 'BedpeAdapter',
       }),
   )
 }

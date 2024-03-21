@@ -21,52 +21,56 @@ export default function createConfigModel(
 ) {
   return types
     .model('Configuration', {
-      configuration: ConfigurationSchema('Root', {
-        /**
-         * #slot configuration.rpc
-         */
-        rpc: RpcManager.configSchema,
-        /**
-         * #slot configuration.highResolutionScaling
-         */
-        highResolutionScaling: {
-          type: 'number',
-          defaultValue: 2,
-        },
-        hierarchical: HierarchicalConfigSchemaFactory(),
-        formatDetails: FormatDetailsConfigSchemaFactory(),
-        formatAbout: FormatAboutConfigSchemaFactory(),
-        /**
-         * #slot configuration.theme
-         */
-        theme: { type: 'frozen', defaultValue: {} },
-      }),
-      /**
-       * #slot
-       */
-      assembly: assemblyConfigSchemasType,
-      /**
-       * #slot
-       */
-      tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
-      /**
-       * #slot
-       */
-      internetAccounts: types.array(
-        pluginManager.pluggableConfigSchemaType('internet account'),
-      ),
-      /**
-       * #slot
-       */
-      connections: types.array(
-        pluginManager.pluggableConfigSchemaType('connection'),
-      ),
       /**
        * #slot
        */
       aggregateTextSearchAdapters: types.array(
         pluginManager.pluggableConfigSchemaType('text search adapter'),
       ),
+
+      /**
+       * #slot
+       */
+      assembly: assemblyConfigSchemasType,
+
+      configuration: ConfigurationSchema('Root', {
+        formatAbout: FormatAboutConfigSchemaFactory(),
+
+        formatDetails: FormatDetailsConfigSchemaFactory(),
+
+        hierarchical: HierarchicalConfigSchemaFactory(),
+
+        /**
+         * #slot configuration.highResolutionScaling
+         */
+        highResolutionScaling: {
+          defaultValue: 2,
+          type: 'number',
+        },
+        /**
+         * #slot configuration.rpc
+         */
+        rpc: RpcManager.configSchema,
+        /**
+         * #slot configuration.theme
+         */
+        theme: { defaultValue: {}, type: 'frozen' },
+      }),
+
+      /**
+       * #slot
+       */
+      connections: types.array(
+        pluginManager.pluggableConfigSchemaType('connection'),
+      ),
+
+      /**
+       * #slot
+       */
+      internetAccounts: types.array(
+        pluginManager.pluggableConfigSchemaType('internet account'),
+      ),
+
       /**
        * #slot
        * defines plugins of the format
@@ -81,6 +85,11 @@ export default function createConfigModel(
        * ```
        */
       plugins: types.frozen(),
+
+      /**
+       * #slot
+       */
+      tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
     })
     .views(self => ({
       /**

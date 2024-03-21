@@ -5,23 +5,23 @@ import { makeStyles } from 'tss-react/mui'
 import ResizeHandle from './ResizeHandle'
 
 const useStyles = makeStyles()(theme => ({
+  hiddenTick: {
+    height: '100%',
+    position: 'absolute',
+    width: 5,
+  },
   resizeBar: {
     background: theme.palette.action.disabledBackground,
     height: 12,
-    position: 'relative',
     overflow: 'hidden',
+    position: 'relative',
   },
   tick: {
-    position: 'absolute',
+    background: theme.palette.action.disabled,
     height: '100%',
     pointerEvents: 'none',
-    background: theme.palette.action.disabled,
-    width: 1,
-  },
-  hiddenTick: {
     position: 'absolute',
-    height: '100%',
-    width: 5,
+    width: 1,
   },
 }))
 

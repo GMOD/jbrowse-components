@@ -28,8 +28,8 @@ export function drawFeats(
   const hasPaired = hasPairedReads(chainData)
 
   if (hasPaired) {
-    drawPairChains({ self, view, asm, ctx, chainData })
+    drawPairChains({ asm, chainData, ctx, self, view })
   } else {
-    drawLongReadChains({ self, view, asm, ctx, chainData })
+    drawLongReadChains({ asm, chainData, ctx, self, view })
   }
 }

@@ -52,11 +52,11 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
     const pm = this.pluginManager
 
     const cram = new IndexedCramFile({
-      cramFilehandle: openLocation(cramLocation, pm),
-      index: new CraiIndex({ filehandle: openLocation(craiLocation, pm) }),
-      seqFetch: (...args) => this.seqFetch(...args),
       checkSequenceMD5: false,
-      fetchSizeLimit: 200_000_000, // just make this a large size to avoid hitting it
+      cramFilehandle: openLocation(cramLocation, pm),
+      fetchSizeLimit: 200_000_000,
+      index: new CraiIndex({ filehandle: openLocation(craiLocation, pm) }),
+      seqFetch: (...args) => this.seqFetch(...args), // just make this a large size to avoid hitting it
     })
 
     if (!this.getSubAdapter) {
@@ -106,10 +106,10 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
     const seqChunks = await firstValueFrom(
       sequenceAdapter
         .getFeatures({
+          assemblyName: '',
+          end,
           refName,
           start,
-          end,
-          assemblyName: '',
         })
         .pipe(toArray()),
     )

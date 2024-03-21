@@ -2,9 +2,9 @@ import SimpleFeature from './simpleFeature'
 
 test('can create a simple feature', () => {
   const f = new SimpleFeature({
-    uniqueId: 'test',
-    start: 100,
     end: 200,
+    start: 100,
+    uniqueId: 'test',
   })
   expect(f.id()).toEqual('test')
   expect(f.get('start')).toEqual(100)
@@ -13,13 +13,13 @@ test('can create a simple feature', () => {
 
 test('can create a simple with subfeatures', () => {
   const f = new SimpleFeature({
-    uniqueId: 'test',
-    start: 100,
     end: 500,
+    start: 100,
     subfeatures: [
-      { start: 100, end: 200 },
-      { start: 400, end: 500 },
+      { end: 200, start: 100 },
+      { end: 500, start: 400 },
     ],
+    uniqueId: 'test',
   })
   expect(f.id()).toEqual('test')
   expect(f.get('start')).toEqual(100)

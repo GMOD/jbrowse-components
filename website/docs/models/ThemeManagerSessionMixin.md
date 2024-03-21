@@ -14,18 +14,18 @@ info
 
 ### ThemeManagerSessionMixin - Getters
 
-#### getter: themeName
-
-```js
-// type
-string
-```
-
 #### getter: theme
 
 ```js
 // type
 Theme
+```
+
+#### getter: themeName
+
+```js
+// type
+string
 ```
 
 ### ThemeManagerSessionMixin - Methods

@@ -16,9 +16,9 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ```js
 displayCrossHatches: {
-      type: 'boolean',
-      description: 'choose to draw cross hatches (sideways lines)',
       defaultValue: false,
+      description: 'choose to draw cross hatches (sideways lines)',
+      type: 'boolean',
     }
 ```
 

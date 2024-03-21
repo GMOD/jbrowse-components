@@ -24,8 +24,8 @@ const DrawerWidget = observer(function ({
         'Core-replaceWidget',
         pluginManager.getWidgetType(visibleWidget.type).ReactComponent,
         {
-          session,
           model: visibleWidget,
+          session,
         },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ) as React.FC<any>)

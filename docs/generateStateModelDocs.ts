@@ -51,12 +51,12 @@ function generateStateModelDocs(files: string[]) {
     const fn = obj.filename
     const fn2 = fn.replace(cwd, '')
     contents[fn] ??= {
-      model: undefined,
-      getters: [],
       actions: [],
-      methods: [],
-      properties: [],
       filename: fn2,
+      getters: [],
+      methods: [],
+      model: undefined,
+      properties: [],
     }
     const current = contents[fn]
     const name = rm(obj.comment, '#' + obj.type) || obj.name
@@ -90,15 +90,15 @@ function generateStateModelDocs(files: string[]) {
     }
 
     if (obj.type === 'stateModel') {
-      current.model = { ...obj, name, docs, id }
+      current.model = { ...obj, docs, id, name }
     } else if (obj.type === 'getter') {
-      current.getters.push({ ...obj, name, docs, code })
+      current.getters.push({ ...obj, code, docs, name })
     } else if (obj.type === 'method') {
-      current.methods.push({ ...obj, name, docs, code })
+      current.methods.push({ ...obj, code, docs, name })
     } else if (obj.type === 'action') {
-      current.actions.push({ ...obj, name, docs, code })
+      current.actions.push({ ...obj, code, docs, name })
     } else if (obj.type === 'property') {
-      current.properties.push({ ...obj, name, docs, code })
+      current.properties.push({ ...obj, code, docs, name })
     }
   })
   return contents

@@ -33,8 +33,8 @@ export default class HicPlugin extends Plugin {
           const adapterName = 'HicAdapter'
           const fileName = getFileName(file)
           const obj = {
-            type: adapterName,
             hicLocation: file,
+            type: adapterName,
           }
 
           if (regexGuess.test(fileName) && !adapterHint) {

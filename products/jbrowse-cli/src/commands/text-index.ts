@@ -53,48 +53,24 @@ export default class TextIndex extends JBrowseCommand {
   ]
 
   static flags = {
-    help: Flags.help({ char: 'h' }),
-    tracks: Flags.string({
-      description: `Specific tracks to index, formatted as comma separated trackIds. If unspecified, indexes all available tracks`,
-    }),
-    target: Flags.string({
-      description:
-        'Path to config file in JB2 installation directory to read from.',
-    }),
-    out: Flags.string({
-      description: 'Synonym for target',
-    }),
-
-    attributes: Flags.string({
-      description: 'Comma separated list of attributes to index',
-      default: 'Name,ID',
-    }),
     assemblies: Flags.string({
       char: 'a',
       description:
         'Specify the assembl(ies) to create an index for. If unspecified, creates an index for each assembly in the config',
     }),
-    force: Flags.boolean({
-      default: false,
-      description: 'Overwrite previously existing indexes',
+    attributes: Flags.string({
+      default: 'Name,ID',
+      description: 'Comma separated list of attributes to index',
     }),
-    quiet: Flags.boolean({
-      char: 'q',
-      default: false,
-      description: 'Hide the progress bars',
-    }),
-    perTrack: Flags.boolean({
-      default: false,
-      description: 'If set, creates an index per track',
+    dryrun: Flags.boolean({
+      description:
+        'Just print out tracks that will be indexed by the process, without doing any indexing',
     }),
     exclude: Flags.string({
-      description: 'Adds gene type to list of excluded types',
       default: 'CDS,exon',
+      description: 'Adds gene type to list of excluded types',
     }),
-    prefixSize: Flags.integer({
-      description:
-        'Specify the prefix size for the ixx index. We attempt to automatically calculate this, but you can manually specify this too. If many genes have similar gene IDs e.g. Z000000001, Z000000002 the prefix size should be larger so that they get split into different bins',
-    }),
+
     file: Flags.string({
       description:
         'File or files to index (can be used to create trix indexes for embedded component use cases not using a config.json for example)',
@@ -105,9 +81,33 @@ export default class TextIndex extends JBrowseCommand {
         'Set the trackId used for the indexes generated with the --file argument',
       multiple: true,
     }),
-    dryrun: Flags.boolean({
+    force: Flags.boolean({
+      default: false,
+      description: 'Overwrite previously existing indexes',
+    }),
+    help: Flags.help({ char: 'h' }),
+    out: Flags.string({
+      description: 'Synonym for target',
+    }),
+    perTrack: Flags.boolean({
+      default: false,
+      description: 'If set, creates an index per track',
+    }),
+    prefixSize: Flags.integer({
       description:
-        'Just print out tracks that will be indexed by the process, without doing any indexing',
+        'Specify the prefix size for the ixx index. We attempt to automatically calculate this, but you can manually specify this too. If many genes have similar gene IDs e.g. Z000000001, Z000000002 the prefix size should be larger so that they get split into different bins',
+    }),
+    quiet: Flags.boolean({
+      char: 'q',
+      default: false,
+      description: 'Hide the progress bars',
+    }),
+    target: Flags.string({
+      description:
+        'Path to config file in JB2 installation directory to read from.',
+    }),
+    tracks: Flags.string({
+      description: `Specific tracks to index, formatted as comma separated trackIds. If unspecified, indexes all available tracks`,
     }),
   }
 
@@ -189,32 +189,32 @@ export default class TextIndex extends JBrowseCommand {
         }
 
         await this.indexDriver({
-          trackConfigs,
-          outLocation,
-          quiet,
-          name: asm,
-          attributes: attributes.split(','),
-          typesToExclude: exclude.split(','),
           assemblyNames: [asm],
+          attributes: attributes.split(','),
+          name: asm,
+          outLocation,
           prefixSize,
+          quiet,
+          trackConfigs,
+          typesToExclude: exclude.split(','),
         })
 
         const trixConf = {
-          type: 'TrixTextSearchAdapter',
-          textSearchAdapterId: id,
+          assemblyNames: [asm],
           ixFilePath: {
-            uri: `trix/${asm}.ix`,
             locationType: 'UriLocation',
+            uri: `trix/${asm}.ix`,
           },
           ixxFilePath: {
-            uri: `trix/${asm}.ixx`,
             locationType: 'UriLocation',
+            uri: `trix/${asm}.ixx`,
           },
           metaFilePath: {
-            uri: `trix/${asm}_meta.json`,
             locationType: 'UriLocation',
+            uri: `trix/${asm}_meta.json`,
           },
-          assemblyNames: [asm],
+          textSearchAdapterId: id,
+          type: 'TrixTextSearchAdapter',
         } as TrixTextSearchAdapter
 
         if (idx === -1) {
@@ -282,14 +282,14 @@ export default class TextIndex extends JBrowseCommand {
       this.log('Indexing track ' + trackId + '...')
 
       await this.indexDriver({
-        trackConfigs: [trackConfig],
-        attributes: attributes.split(','),
-        outLocation,
-        quiet,
-        name: trackId,
-        typesToExclude: exclude.split(','),
         assemblyNames,
+        attributes: attributes.split(','),
+        name: trackId,
+        outLocation,
         prefixSize,
+        quiet,
+        trackConfigs: [trackConfig],
+        typesToExclude: exclude.split(','),
       })
       if (!textSearching?.textSearchAdapter) {
         // modifies track with new text search adapter
@@ -300,21 +300,21 @@ export default class TextIndex extends JBrowseCommand {
             textSearching: {
               ...textSearching,
               textSearchAdapter: {
-                type: 'TrixTextSearchAdapter',
-                textSearchAdapterId: trackId + '-index',
+                assemblyNames: assemblyNames,
                 ixFilePath: {
-                  uri: `trix/${trackId}.ix`,
                   locationType: 'UriLocation' as const,
+                  uri: `trix/${trackId}.ix`,
                 },
                 ixxFilePath: {
-                  uri: `trix/${trackId}.ixx`,
                   locationType: 'UriLocation' as const,
+                  uri: `trix/${trackId}.ixx`,
                 },
                 metaFilePath: {
-                  uri: `trix/${trackId}_meta.json`,
                   locationType: 'UriLocation' as const,
+                  uri: `trix/${trackId}_meta.json`,
                 },
-                assemblyNames: assemblyNames,
+                textSearchAdapterId: trackId + '-index',
+                type: 'TrixTextSearchAdapter',
               },
             },
           }
@@ -358,14 +358,14 @@ export default class TextIndex extends JBrowseCommand {
     }
 
     await this.indexDriver({
-      trackConfigs,
-      outLocation: outFlag,
-      name: trackConfigs.length > 1 ? 'aggregate' : path.basename(file[0]),
-      quiet,
-      attributes: attributes.split(','),
-      typesToExclude: exclude.split(','),
       assemblyNames: [],
+      attributes: attributes.split(','),
+      name: trackConfigs.length > 1 ? 'aggregate' : path.basename(file[0]),
+      outLocation: outFlag,
       prefixSize,
+      quiet,
+      trackConfigs,
+      typesToExclude: exclude.split(','),
     })
 
     this.log(
@@ -394,28 +394,28 @@ export default class TextIndex extends JBrowseCommand {
   }) {
     const readStream = Readable.from(
       this.indexFiles({
-        trackConfigs,
         attributes,
         outLocation,
         quiet,
+        trackConfigs,
         typesToExclude,
       }),
     )
 
     const ixIxxStream = await this.runIxIxx({
-      readStream,
-      outLocation,
       name,
+      outLocation,
       prefixSize,
+      readStream,
     })
 
     await generateMeta({
-      trackConfigs,
-      attributes,
-      outLocation,
-      name,
-      typesToExclude,
       assemblyNames,
+      attributes,
+      name,
+      outLocation,
+      trackConfigs,
+      typesToExclude,
     })
     return ixIxxStream
   }
@@ -456,21 +456,21 @@ export default class TextIndex extends JBrowseCommand {
       }
       if (type === 'Gff3TabixAdapter' || type === 'Gff3Adapter') {
         yield* indexGff3({
-          config,
           attributesToIndex: indexingAttributes,
+          config,
           inLocation: getLoc(loc),
           outLocation,
-          typesToExclude: indexingFeatureTypesToExclude,
           quiet,
+          typesToExclude: indexingFeatureTypesToExclude,
         })
       } else if (type === 'VcfTabixAdapter' || type === 'VcfAdapter') {
         yield* indexVcf({
-          config,
           attributesToIndex: indexingAttributes,
+          config,
           inLocation: getLoc(loc),
           outLocation,
-          typesToExclude: indexingFeatureTypesToExclude,
           quiet,
+          typesToExclude: indexingFeatureTypesToExclude,
         })
       }
     }

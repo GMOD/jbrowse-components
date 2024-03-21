@@ -9,13 +9,13 @@ export const WithTwoLinearGenomeViews = () => {
   const { assembly, tracks } = getVolvoxConfig()
   const state1 = createViewState({
     assembly,
-    tracks,
     location: 'ctgA:1105..1221',
+    tracks,
   })
   const state2 = createViewState({
     assembly,
-    tracks,
     location: 'ctgA:5560..30589',
+    tracks,
   })
   return (
     <div>

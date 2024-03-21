@@ -47,8 +47,8 @@ function ToggleButtonWithTooltip(props: ToggleButtonProps) {
   const { classes } = useStyles()
   const { title = '', children, disabled, onClick, ...other } = props
   const adjustedButtonProps = {
-    disabled: disabled,
     component: disabled ? 'div' : undefined,
+    disabled: disabled,
     onClick: disabled ? undefined : onClick,
   }
   return (
@@ -107,11 +107,11 @@ export default function RecentSessionPanel({
     return (
       <CircularProgress
         style={{
+          left: '50%',
+          marginLeft: -25,
+          marginTop: -25,
           position: 'fixed',
           top: '50%',
-          left: '50%',
-          marginTop: -25,
-          marginLeft: -25,
         }}
         size={50}
       />

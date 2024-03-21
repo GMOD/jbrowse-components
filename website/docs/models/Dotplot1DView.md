@@ -26,21 +26,7 @@ this uses padding=false and elision=false
 BlockSet
 ```
 
-#### getter: scaleFactor
-
-```js
-// type
-number
-```
-
 #### getter: maxBpPerPx
-
-```js
-// type
-number
-```
-
-#### getter: minBpPerPx
 
 ```js
 // type
@@ -54,7 +40,21 @@ number
 number
 ```
 
+#### getter: minBpPerPx
+
+```js
+// type
+number
+```
+
 #### getter: minOffset
+
+```js
+// type
+number
+```
+
+#### getter: scaleFactor
 
 ```js
 // type
@@ -63,16 +63,16 @@ number
 
 ### Dotplot1DView - Actions
 
-#### action: setScaleFactor
-
-```js
-// type signature
-setScaleFactor: (n: number) => void
-```
-
 #### action: center
 
 ```js
 // type signature
 center: () => void
+```
+
+#### action: setScaleFactor
+
+```js
+// type signature
+setScaleFactor: (n: number) => void
 ```

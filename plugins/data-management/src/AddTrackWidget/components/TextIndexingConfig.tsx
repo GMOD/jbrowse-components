@@ -21,14 +21,14 @@ import AddIcon from '@mui/icons-material/Add'
 import { AddTrackModel } from '../model'
 
 const useStyles = makeStyles()(theme => ({
+  card: {
+    marginTop: theme.spacing(1),
+  },
+
   paper: {
     display: 'flex',
     flexDirection: 'column',
     padding: theme.spacing(1),
-  },
-
-  card: {
-    marginTop: theme.spacing(1),
   },
 }))
 

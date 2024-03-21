@@ -1,22 +1,6 @@
 // NOTE: this jest config should be used by projects in packages/*, products/*,
 // and plugins/* dirs
 module.exports = {
-  roots: ['.', 'packages/', 'products/', 'plugins/'],
-  moduleFileExtensions: ['js', 'ts', 'tsx', 'jsx', 'json', 'node'],
-
-  transform: {
-    '^.+\\.(ts|tsx|js|jsx)$': '<rootDir>/config/jest/babelTransform.js',
-    '^.+\\.css$': '<rootDir>/config/jest/cssTransform.js',
-  },
-  transformIgnorePatterns: [
-    '[/\\\\]node_modules[/\\\\].+\\.(js|jsx)$',
-    '^.+\\.module\\.(css|sass|scss)$',
-  ],
-  testMatch: [
-    '<rootDir>/**/__tests__/**/*.{js,jsx,ts,tsx}',
-    '<rootDir>/**/*.(spec|test).{js,jsx,ts,tsx}',
-  ],
-  testPathIgnorePatterns: ['/dist/', '/cypress/', '/demos/'],
   collectCoverageFrom: [
     'packages/*/src/**/*.{js,jsx,ts,tsx}',
     'products/*/src/**/*.{js,jsx,ts,tsx}',
@@ -30,12 +14,28 @@ module.exports = {
     'react-colorful.js',
     'QuickLRU.js',
   ],
+
+  moduleFileExtensions: ['js', 'ts', 'tsx', 'jsx', 'json', 'node'],
+  roots: ['.', 'packages/', 'products/', 'plugins/'],
   setupFiles: [
     '<rootDir>/config/jest/textEncoder.js',
     '<rootDir>/config/jest/fetchMock.js',
     '<rootDir>/config/jest/console.js',
   ],
-  testEnvironmentOptions: { url: 'http://localhost' },
-  testTimeout: 15000,
   testEnvironment: 'jsdom',
+  testEnvironmentOptions: { url: 'http://localhost' },
+  testMatch: [
+    '<rootDir>/**/__tests__/**/*.{js,jsx,ts,tsx}',
+    '<rootDir>/**/*.(spec|test).{js,jsx,ts,tsx}',
+  ],
+  testPathIgnorePatterns: ['/dist/', '/cypress/', '/demos/'],
+  testTimeout: 15000,
+  transform: {
+    '^.+\\.(ts|tsx|js|jsx)$': '<rootDir>/config/jest/babelTransform.js',
+    '^.+\\.css$': '<rootDir>/config/jest/cssTransform.js',
+  },
+  transformIgnorePatterns: [
+    '[/\\\\]node_modules[/\\\\].+\\.(js|jsx)$',
+    '^.+\\.module\\.(css|sass|scss)$',
+  ],
 }

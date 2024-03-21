@@ -9,28 +9,28 @@ interface LogoProps {
 function getColors(variant?: LogoVariant) {
   if (variant === 'black') {
     return {
-      midnight: '#808080',
       forrest: '#666666',
       grape: '#4d4d4d',
-      mandarin: '#333333',
       gray: '#1a1a1a',
+      mandarin: '#333333',
+      midnight: '#808080',
     }
   }
   if (variant === 'white') {
     return {
-      midnight: '#ffffff',
       forrest: '#e6e6e6',
       grape: '#cccccc',
-      mandarin: '#b3b3b3',
       gray: '#999999',
+      mandarin: '#b3b3b3',
+      midnight: '#ffffff',
     }
   }
   return {
-    midnight: '#0d233f',
     forrest: '#135560',
     grape: '#721e63',
-    mandarin: '#ffb11d',
     gray: '#dadada',
+    mandarin: '#ffb11d',
+    midnight: '#0d233f',
   }
 }
 

@@ -11,10 +11,10 @@ type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles()({
   guide: {
-    pointerEvents: 'none',
     height: '100%',
-    width: 1,
+    pointerEvents: 'none',
     position: 'absolute',
+    width: 1,
     zIndex: 10,
   },
 })
@@ -32,8 +32,8 @@ const VerticalGuide = observer(function VerticalGuide({
       <div
         className={classes.guide}
         style={{
-          left: coordX,
           background: 'red',
+          left: coordX,
         }}
       />
     </Tooltip>

@@ -12,15 +12,15 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 import { getAllChildren, treeToMap, NodeData } from '../util'
 
 const useStyles = makeStyles()(theme => ({
-  contrastColor: {
-    color: theme.palette.tertiary.contrastText,
-  },
-
   // margin:auto 0 to center text vertically
   accordionText: {
     margin: 'auto 0',
     // width 100 so you can click anywhere on the category bar
     width: '100%',
+  },
+
+  contrastColor: {
+    color: theme.palette.tertiary.contrastText,
   },
 }))
 

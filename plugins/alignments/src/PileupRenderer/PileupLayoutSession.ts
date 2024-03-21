@@ -51,12 +51,12 @@ export class PileupLayoutSession extends LayoutSession {
   get layout(): MyMultiLayout {
     if (!this.cachedLayout || !this.cachedLayoutIsValid(this.cachedLayout)) {
       this.cachedLayout = {
-        layout: this.makeLayout(),
         config: readConfObject(this.config),
-        filters: this.filters,
         filterBy: this.filterBy,
-        sortedBy: this.sortedBy,
+        filters: this.filters,
+        layout: this.makeLayout(),
         showSoftClip: this.showSoftClip,
+        sortedBy: this.sortedBy,
       }
     }
     return this.cachedLayout.layout

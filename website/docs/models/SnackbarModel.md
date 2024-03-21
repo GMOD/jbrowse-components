@@ -10,16 +10,7 @@ info
 
 ### Source file
 
-[packages/core/ui/SnackbarModel.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/ui/SnackbarModel.ts)
-
-### SnackbarModel - Getters
-
-#### getter: snackbarMessages
-
-```js
-// type
-IObservableArray<SnackbarMessage>
-```
+[packages/core/ui/SnackbarModel.tsx](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/ui/SnackbarModel.tsx)
 
 ### SnackbarModel - Actions
 
@@ -30,18 +21,18 @@ IObservableArray<SnackbarMessage>
 notify: (message: string, level?: NotificationLevel, action?: SnackAction) => void
 ```
 
-#### action: pushSnackbarMessage
-
-```js
-// type signature
-pushSnackbarMessage: (message: string, level?: NotificationLevel, action?: SnackAction) => number
-```
-
 #### action: popSnackbarMessage
 
 ```js
 // type signature
 popSnackbarMessage: () => SnackbarMessage
+```
+
+#### action: pushSnackbarMessage
+
+```js
+// type signature
+pushSnackbarMessage: (message: string, level?: NotificationLevel, action?: SnackAction) => number
 ```
 
 #### action: removeSnackbarMessage

@@ -15,10 +15,10 @@ export default ConfigurationSchema(
      * #slot
      */
     defaultDriver: {
-      type: 'string',
+      defaultValue: 'MainThreadRpcDriver',
       description:
         'the RPC driver to use for tracks and tasks that are not configured to use a specific RPC backend',
-      defaultValue: 'MainThreadRpcDriver',
+      type: 'string',
     },
     /**
      * #slot

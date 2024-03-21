@@ -18,26 +18,6 @@ extends
 
 ### CircularView - Properties
 
-#### property: type
-
-```js
-// type signature
-ISimpleType<"CircularView">
-// code
-type: types.literal('CircularView')
-```
-
-#### property: offsetRadians
-
-similar to offsetPx in linear genome view
-
-```js
-// type signature
-number
-// code
-offsetRadians: -Math.PI / 2
-```
-
 #### property: bpPerPx
 
 ```js
@@ -47,44 +27,6 @@ number
 bpPerPx: 200
 ```
 
-#### property: tracks
-
-```js
-// type signature
-IArrayType<IAnyType>
-// code
-tracks: types.array(
-          pluginManager.pluggableMstType('track', 'stateModel'),
-        )
-```
-
-#### property: hideVerticalResizeHandle
-
-```js
-// type signature
-false
-// code
-hideVerticalResizeHandle: false
-```
-
-#### property: hideTrackSelectorButton
-
-```js
-// type signature
-false
-// code
-hideTrackSelectorButton: false
-```
-
-#### property: lockedFitToWindow
-
-```js
-// type signature
-true
-// code
-lockedFitToWindow: true
-```
-
 #### property: disableImportForm
 
 ```js
@@ -92,6 +34,15 @@ lockedFitToWindow: true
 false
 // code
 disableImportForm: false
+```
+
+#### property: displayedRegions
+
+```js
+// type signature
+IArrayType<IModelType<{ end: ISimpleType<number>; refName: ISimpleType<string>; reversed: IOptionalIType<ISimpleType<boolean>, [undefined]>; start: ISimpleType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>>
+// code
+displayedRegions: types.array(Region)
 ```
 
 #### property: height
@@ -106,58 +57,31 @@ height: types.optional(
         )
 ```
 
-#### property: displayedRegions
+#### property: hideTrackSelectorButton
 
 ```js
 // type signature
-IArrayType<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>>
+false
 // code
-displayedRegions: types.array(Region)
+hideTrackSelectorButton: false
 ```
 
-#### property: scrollX
+#### property: hideVerticalResizeHandle
 
 ```js
 // type signature
-number
+false
 // code
-scrollX: 0
+hideVerticalResizeHandle: false
 ```
 
-#### property: scrollY
+#### property: lockedFitToWindow
 
 ```js
 // type signature
-number
+true
 // code
-scrollY: 0
-```
-
-#### property: minimumRadiusPx
-
-```js
-// type signature
-number
-// code
-minimumRadiusPx: 25
-```
-
-#### property: spacingPx
-
-```js
-// type signature
-number
-// code
-spacingPx: 10
-```
-
-#### property: paddingPx
-
-```js
-// type signature
-number
-// code
-paddingPx: 80
+lockedFitToWindow: true
 ```
 
 #### property: lockedPaddingPx
@@ -187,6 +111,82 @@ number
 minimumBlockWidth: 20
 ```
 
+#### property: offsetRadians
+
+similar to offsetPx in linear genome view
+
+```js
+// type signature
+number
+// code
+offsetRadians: -Math.PI / 2
+```
+
+#### property: type
+
+```js
+// type signature
+ISimpleType<"CircularView">
+// code
+type: types.literal('CircularView')
+```
+
+#### property: minimumRadiusPx
+
+```js
+// type signature
+number
+// code
+minimumRadiusPx: 25
+```
+
+#### property: paddingPx
+
+```js
+// type signature
+number
+// code
+paddingPx: 80
+```
+
+#### property: tracks
+
+```js
+// type signature
+IArrayType<IAnyType>
+// code
+tracks: types.array(
+          pluginManager.pluggableMstType('track', 'stateModel'),
+        )
+```
+
+#### property: scrollX
+
+```js
+// type signature
+number
+// code
+scrollX: 0
+```
+
+#### property: scrollY
+
+```js
+// type signature
+number
+// code
+scrollY: 0
+```
+
+#### property: spacingPx
+
+```js
+// type signature
+number
+// code
+spacingPx: 10
+```
+
 #### property: trackSelectorType
 
 ```js
@@ -197,86 +197,6 @@ trackSelectorType: 'hierarchical'
 ```
 
 ### CircularView - Getters
-
-#### getter: width
-
-```js
-// type
-number
-```
-
-#### getter: visibleSection
-
-```js
-// type
-{
-  rho: [number, number]
-  theta: [number, number]
-}
-```
-
-#### getter: circumferencePx
-
-```js
-// type
-number
-```
-
-#### getter: radiusPx
-
-```js
-// type
-number
-```
-
-#### getter: bpPerRadian
-
-```js
-// type
-number
-```
-
-#### getter: pxPerRadian
-
-```js
-// type
-any
-```
-
-#### getter: centerXY
-
-```js
-// type
-;[number, number]
-```
-
-#### getter: totalBp
-
-```js
-// type
-number
-```
-
-#### getter: maximumRadiusPx
-
-```js
-// type
-number
-```
-
-#### getter: maxBpPerPx
-
-```js
-// type
-number
-```
-
-#### getter: minBpPerPx
-
-```js
-// type
-number
-```
 
 #### getter: atMaxBpPerPx
 
@@ -292,11 +212,32 @@ boolean
 boolean
 ```
 
-#### getter: tooSmallToLock
+#### getter: bpPerRadian
 
 ```js
 // type
-boolean
+number
+```
+
+#### getter: centerXY
+
+```js
+// type
+;[number, number]
+```
+
+#### getter: circumferencePx
+
+```js
+// type
+number
+```
+
+#### getter: assemblyNames
+
+```js
+// type
+string[]
 ```
 
 #### getter: figureDimensions
@@ -306,18 +247,11 @@ boolean
 ;[number, number]
 ```
 
-#### getter: figureWidth
+#### getter: maxBpPerPx
 
 ```js
 // type
-any
-```
-
-#### getter: figureHeight
-
-```js
-// type
-any
+number
 ```
 
 #### getter: elidedRegions
@@ -330,11 +264,49 @@ see reasonably
 SliceRegion[]
 ```
 
-#### getter: assemblyNames
+#### getter: visibleSection
 
 ```js
 // type
-string[]
+{
+  rho: [number, number]
+  theta: [number, number]
+}
+```
+
+#### getter: width
+
+```js
+// type
+number
+```
+
+#### getter: figureHeight
+
+```js
+// type
+any
+```
+
+#### getter: maximumRadiusPx
+
+```js
+// type
+number
+```
+
+#### getter: figureWidth
+
+```js
+// type
+any
+```
+
+#### getter: radiusPx
+
+```js
+// type
+number
 ```
 
 #### getter: initialized
@@ -342,6 +314,34 @@ string[]
 ```js
 // type
 any
+```
+
+#### getter: pxPerRadian
+
+```js
+// type
+any
+```
+
+#### getter: minBpPerPx
+
+```js
+// type
+number
+```
+
+#### getter: totalBp
+
+```js
+// type
+number
+```
+
+#### getter: tooSmallToLock
+
+```js
+// type
+boolean
 ```
 
 #### getter: staticSlices
@@ -371,18 +371,18 @@ menuItems: () => MenuItem[]
 
 ### CircularView - Actions
 
-#### action: setWidth
+#### action: activateTrackSelector
 
 ```js
 // type signature
-setWidth: (newWidth: number) => number
+activateTrackSelector: () => Widget
 ```
 
-#### action: setHeight
+#### action: closeView
 
 ```js
 // type signature
-setHeight: (newHeight: number) => number
+closeView: () => void
 ```
 
 #### action: resizeHeight
@@ -392,25 +392,18 @@ setHeight: (newHeight: number) => number
 resizeHeight: (distance: number) => number
 ```
 
+#### action: addTrackConf
+
+```js
+// type signature
+addTrackConf: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>, initialSnapshot?: {}) => void
+```
+
 #### action: resizeWidth
 
 ```js
 // type signature
 resizeWidth: (distance: number) => number
-```
-
-#### action: rotateClockwiseButton
-
-```js
-// type signature
-rotateClockwiseButton: () => void
-```
-
-#### action: rotateCounterClockwiseButton
-
-```js
-// type signature
-rotateCounterClockwiseButton: () => void
 ```
 
 #### action: rotateClockwise
@@ -420,11 +413,90 @@ rotateCounterClockwiseButton: () => void
 rotateClockwise: (distance?: number) => void
 ```
 
+#### action: exportSvg
+
+creates an svg export and save using FileSaver
+
+```js
+// type signature
+exportSvg: (opts?: ExportSvgOptions) => Promise<void>
+```
+
+#### action: rotateClockwiseButton
+
+```js
+// type signature
+rotateClockwiseButton: () => void
+```
+
 #### action: rotateCounterClockwise
 
 ```js
 // type signature
 rotateCounterClockwise: (distance?: number) => void
+```
+
+#### action: hideTrack
+
+```js
+// type signature
+hideTrack: (trackId: string) => number
+```
+
+#### action: setHeight
+
+```js
+// type signature
+setHeight: (newHeight: number) => number
+```
+
+#### action: rotateCounterClockwiseButton
+
+```js
+// type signature
+rotateCounterClockwiseButton: () => void
+```
+
+#### action: setWidth
+
+```js
+// type signature
+setWidth: (newWidth: number) => number
+```
+
+#### action: setBpPerPx
+
+```js
+// type signature
+setBpPerPx: (newVal: number) => void
+```
+
+#### action: setDisplayedRegions
+
+```js
+// type signature
+setDisplayedRegions: (regions: SnapshotOrInstance<IModelType<{ end: ISimpleType<number>; refName: ISimpleType<string>; reversed: IOptionalIType<ISimpleType<boolean>, [undefined]>; start: ISimpleType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>>[]) => void
+```
+
+#### action: setError
+
+```js
+// type signature
+setError: (error: unknown) => void
+```
+
+#### action: setModelViewWhenAdjust
+
+```js
+// type signature
+setModelViewWhenAdjust: (secondCondition: boolean) => void
+```
+
+#### action: showTrack
+
+```js
+// type signature
+showTrack: (trackId: string, initialSnapshot?: {}) => void
 ```
 
 #### action: zoomInButton
@@ -441,76 +513,6 @@ zoomInButton: () => void
 zoomOutButton: () => void
 ```
 
-#### action: setBpPerPx
-
-```js
-// type signature
-setBpPerPx: (newVal: number) => void
-```
-
-#### action: setModelViewWhenAdjust
-
-```js
-// type signature
-setModelViewWhenAdjust: (secondCondition: boolean) => void
-```
-
-#### action: closeView
-
-```js
-// type signature
-closeView: () => void
-```
-
-#### action: setDisplayedRegions
-
-```js
-// type signature
-setDisplayedRegions: (regions: SnapshotOrInstance<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>>[]) => void
-```
-
-#### action: activateTrackSelector
-
-```js
-// type signature
-activateTrackSelector: () => Widget
-```
-
-#### action: toggleTrack
-
-```js
-// type signature
-toggleTrack: (trackId: string) => boolean
-```
-
-#### action: setError
-
-```js
-// type signature
-setError: (error: unknown) => void
-```
-
-#### action: showTrack
-
-```js
-// type signature
-showTrack: (trackId: string, initialSnapshot?: {}) => void
-```
-
-#### action: addTrackConf
-
-```js
-// type signature
-addTrackConf: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>, initialSnapshot?: {}) => void
-```
-
-#### action: hideTrack
-
-```js
-// type signature
-hideTrack: (trackId: string) => number
-```
-
 #### action: toggleFitToWindowLock
 
 ```js
@@ -518,11 +520,9 @@ hideTrack: (trackId: string) => number
 toggleFitToWindowLock: () => boolean
 ```
 
-#### action: exportSvg
-
-creates an svg export and save using FileSaver
+#### action: toggleTrack
 
 ```js
 // type signature
-exportSvg: (opts?: ExportSvgOptions) => Promise<void>
+toggleTrack: (trackId: string) => boolean
 ```

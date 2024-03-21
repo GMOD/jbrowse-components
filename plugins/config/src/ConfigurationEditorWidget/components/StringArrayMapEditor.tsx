@@ -58,13 +58,13 @@ const StringArrayMapEditor = observer(function ({
           <CardContent>
             <StringArrayEditor
               slot={{
-                name: slot.name,
-                value: val,
+                add: (val: string) => slot.addToKey(key, val),
                 description: `Values associated with entry ${key}`,
+                name: slot.name,
+                removeAtIndex: (idx: number) => slot.removeAtKeyIndex(key, idx),
                 setAtIndex: (idx: number, val: string) =>
                   slot.setAtKeyIndex(key, idx, val),
-                removeAtIndex: (idx: number) => slot.removeAtKeyIndex(key, idx),
-                add: (val: string) => slot.addToKey(key, val),
+                value: val,
               }}
             />
           </CardContent>

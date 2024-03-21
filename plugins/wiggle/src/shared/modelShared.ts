@@ -33,51 +33,18 @@ export default function SharedWiggleMixin(
         /**
          * #property
          */
-        selectedRendering: types.optional(types.string, ''),
-        /**
-         * #property
-         */
-        resolution: types.optional(types.number, 1),
-        /**
-         * #property
-         */
-        fill: types.maybe(types.boolean),
-        /**
-         * #property
-         */
-        minSize: types.maybe(types.number),
+        autoscale: types.maybe(types.string),
+
         /**
          * #property
          */
         color: types.maybe(types.string),
+
         /**
          * #property
          */
-        posColor: types.maybe(types.string),
-        /**
-         * #property
-         */
-        negColor: types.maybe(types.string),
-        /**
-         * #property
-         */
-        summaryScoreMode: types.maybe(types.string),
-        /**
-         * #property
-         */
-        rendererTypeNameState: types.maybe(types.string),
-        /**
-         * #property
-         */
-        scale: types.maybe(types.string),
-        /**
-         * #property
-         */
-        autoscale: types.maybe(types.string),
-        /**
-         * #property
-         */
-        displayCrossHatches: types.maybe(types.boolean),
+        configuration: ConfigurationReference(configSchema),
+
         /**
          * #property
          */
@@ -88,10 +55,56 @@ export default function SharedWiggleMixin(
           }),
           {},
         ),
+
         /**
          * #property
          */
-        configuration: ConfigurationReference(configSchema),
+        displayCrossHatches: types.maybe(types.boolean),
+
+        /**
+         * #property
+         */
+        fill: types.maybe(types.boolean),
+
+        /**
+         * #property
+         */
+        minSize: types.maybe(types.number),
+
+        /**
+         * #property
+         */
+        negColor: types.maybe(types.string),
+
+        /**
+         * #property
+         */
+        posColor: types.maybe(types.string),
+
+        /**
+         * #property
+         */
+        rendererTypeNameState: types.maybe(types.string),
+
+        /**
+         * #property
+         */
+        resolution: types.optional(types.number, 1),
+
+        /**
+         * #property
+         */
+        scale: types.maybe(types.string),
+
+        /**
+         * #property
+         */
+        selectedRendering: types.optional(types.string, ''),
+
+        /**
+         * #property
+         */
+        summaryScoreMode: types.maybe(types.string),
       }),
     )
     .volatile(() => ({
@@ -100,51 +113,6 @@ export default function SharedWiggleMixin(
       statsFetchInProgress: undefined as undefined | AbortController,
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      updateQuantitativeStats(stats: { scoreMin: number; scoreMax: number }) {
-        const { scoreMin, scoreMax } = stats
-        const EPSILON = 0.000001
-        if (!self.stats) {
-          self.stats = { scoreMin, scoreMax }
-        } else if (
-          Math.abs(self.stats.scoreMax - scoreMax) > EPSILON ||
-          Math.abs(self.stats.scoreMin - scoreMin) > EPSILON
-        ) {
-          self.stats = { scoreMin, scoreMax }
-        }
-      },
-      /**
-       * #action
-       */
-      setColor(color?: string) {
-        self.color = color
-      },
-      /**
-       * #action
-       */
-      setPosColor(color?: string) {
-        self.posColor = color
-      },
-      /**
-       * #action
-       */
-      setNegColor(color?: string) {
-        self.negColor = color
-      },
-
-      /**
-       * #action
-       */
-      setLoading(aborter: AbortController) {
-        const { statsFetchInProgress: statsFetch } = self
-        if (statsFetch !== undefined && !statsFetch.signal.aborted) {
-          statsFetch.abort()
-        }
-        self.statsFetchInProgress = aborter
-      },
-
       /**
        * #action
        * this overrides the BaseLinearDisplayModel to avoid popping up a
@@ -161,8 +129,22 @@ export default function SharedWiggleMixin(
       /**
        * #action
        */
-      setResolution(res: number) {
-        self.resolution = res
+      setAutoscale(val: string) {
+        self.autoscale = val
+      },
+
+      /**
+       * #action
+       */
+      setColor(color?: string) {
+        self.color = color
+      },
+
+      /**
+       * #action
+       */
+      setCrossHatches(cross: boolean) {
+        self.displayCrossHatches = cross
       },
 
       /**
@@ -184,8 +166,54 @@ export default function SharedWiggleMixin(
       /**
        * #action
        */
-      toggleLogScale() {
-        self.scale = self.scale === 'log' ? 'linear' : 'log'
+      setLoading(aborter: AbortController) {
+        const { statsFetchInProgress: statsFetch } = self
+        if (statsFetch !== undefined && !statsFetch.signal.aborted) {
+          statsFetch.abort()
+        }
+        self.statsFetchInProgress = aborter
+      },
+
+      /**
+       * #action
+       */
+      setMaxScore(val?: number) {
+        self.constraints.max = val
+      },
+
+      /**
+       * #action
+       */
+      setMinScore(val?: number) {
+        self.constraints.min = val
+      },
+
+      /**
+       * #action
+       */
+      setNegColor(color?: string) {
+        self.negColor = color
+      },
+
+      /**
+       * #action
+       */
+      setPosColor(color?: string) {
+        self.posColor = color
+      },
+
+      /**
+       * #action
+       */
+      setRendererType(val: string) {
+        self.rendererTypeNameState = val
+      },
+
+      /**
+       * #action
+       */
+      setResolution(res: number) {
+        self.resolution = res
       },
 
       /**
@@ -205,34 +233,6 @@ export default function SharedWiggleMixin(
       /**
        * #action
        */
-      setAutoscale(val: string) {
-        self.autoscale = val
-      },
-
-      /**
-       * #action
-       */
-      setMaxScore(val?: number) {
-        self.constraints.max = val
-      },
-
-      /**
-       * #action
-       */
-      setRendererType(val: string) {
-        self.rendererTypeNameState = val
-      },
-
-      /**
-       * #action
-       */
-      setMinScore(val?: number) {
-        self.constraints.min = val
-      },
-
-      /**
-       * #action
-       */
       toggleCrossHatches() {
         self.displayCrossHatches = !self.displayCrossHatches
       },
@@ -240,8 +240,24 @@ export default function SharedWiggleMixin(
       /**
        * #action
        */
-      setCrossHatches(cross: boolean) {
-        self.displayCrossHatches = cross
+      toggleLogScale() {
+        self.scale = self.scale === 'log' ? 'linear' : 'log'
+      },
+
+      /**
+       * #action
+       */
+      updateQuantitativeStats(stats: { scoreMin: number; scoreMax: number }) {
+        const { scoreMin, scoreMax } = stats
+        const EPSILON = 0.000001
+        if (!self.stats) {
+          self.stats = { scoreMax, scoreMin }
+        } else if (
+          Math.abs(self.stats.scoreMax - scoreMax) > EPSILON ||
+          Math.abs(self.stats.scoreMin - scoreMin) > EPSILON
+        ) {
+          self.stats = { scoreMax, scoreMin }
+        }
       },
     }))
 
@@ -255,24 +271,10 @@ export default function SharedWiggleMixin(
 
       /**
        * #getter
-       */
-      get rendererTypeNameSimple() {
-        return self.rendererTypeNameState ?? getConf(self, 'defaultRendering')
-      },
-
-      /**
-       * #getter
        * subclasses can define these, as snpcoverage track does
        */
       get filters() {
         return undefined
-      },
-
-      /**
-       * #getter
-       */
-      get scaleType() {
-        return self.scale ?? getConf(self, 'scaleType')
       },
 
       /**
@@ -288,6 +290,20 @@ export default function SharedWiggleMixin(
       get minScore() {
         return self.constraints.min ?? getConf(self, 'minScore')
       },
+
+      /**
+       * #getter
+       */
+      get rendererTypeNameSimple() {
+        return self.rendererTypeNameState ?? getConf(self, 'defaultRendering')
+      },
+
+      /**
+       * #getter
+       */
+      get scaleType() {
+        return self.scale ?? getConf(self, 'scaleType')
+      },
     }))
     .views(self => ({
       /**
@@ -298,6 +314,14 @@ export default function SharedWiggleMixin(
         const { pluginManager } = getEnv(self)
         return pluginManager.getAdapterType(type).adapterCapabilities
       },
+
+      /**
+       * #getter
+       */
+      get autoscaleType() {
+        return self.autoscale ?? getConf(self, 'autoscale')
+      },
+
       /**
        * #getter
        */
@@ -331,13 +355,6 @@ export default function SharedWiggleMixin(
           getEnv(self),
         )
       },
-
-      /**
-       * #getter
-       */
-      get autoscaleType() {
-        return self.autoscale ?? getConf(self, 'autoscale')
-      },
     }))
     .views(self => {
       let oldDomain: [number, number] = [0, 0]
@@ -352,8 +369,8 @@ export default function SharedWiggleMixin(
           }
 
           const ret = getNiceDomain({
-            domain: [stats.scoreMin, stats.scoreMax],
             bounds: [minScore, maxScore],
+            domain: [stats.scoreMin, stats.scoreMax],
             scaleType,
           })
 
@@ -375,34 +392,6 @@ export default function SharedWiggleMixin(
       /**
        * #getter
        */
-      get filled(): boolean {
-        const { fill, rendererConfig } = self
-        return fill ?? readConfObject(rendererConfig, 'filled')
-      },
-      /**
-       * #getter
-       */
-      get summaryScoreModeSetting(): string {
-        const { summaryScoreMode: mode, rendererConfig } = self
-        return mode ?? readConfObject(rendererConfig, 'summaryScoreMode')
-      },
-
-      /**
-       * #getter
-       */
-      get scaleOpts() {
-        return {
-          domain: self.domain,
-          stats: self.stats,
-          autoscaleType: self.autoscaleType,
-          scaleType: self.scaleType,
-          inverted: getConf(self, 'inverted'),
-        }
-      },
-
-      /**
-       * #getter
-       */
       get canHaveFill() {
         return self.rendererTypeName === 'XYPlotRenderer'
       },
@@ -414,6 +403,22 @@ export default function SharedWiggleMixin(
         const { displayCrossHatches: hatches, rendererConfig } = self
         return hatches ?? readConfObject(rendererConfig, 'displayCrossHatches')
       },
+
+      /**
+       * #getter
+       */
+      get filled(): boolean {
+        const { fill, rendererConfig } = self
+        return fill ?? readConfObject(rendererConfig, 'filled')
+      },
+
+      /**
+       * #getter
+       */
+      get hasGlobalStats() {
+        return self.adapterCapabilities.includes('hasGlobalStats')
+      },
+
       /**
        * #getter
        */
@@ -424,8 +429,22 @@ export default function SharedWiggleMixin(
       /**
        * #getter
        */
-      get hasGlobalStats() {
-        return self.adapterCapabilities.includes('hasGlobalStats')
+      get scaleOpts() {
+        return {
+          autoscaleType: self.autoscaleType,
+          domain: self.domain,
+          inverted: getConf(self, 'inverted'),
+          scaleType: self.scaleType,
+          stats: self.stats,
+        }
+      },
+
+      /**
+       * #getter
+       */
+      get summaryScoreModeSetting(): string {
+        const { summaryScoreMode: mode, rendererConfig } = self
+        return mode ?? readConfObject(rendererConfig, 'summaryScoreMode')
       },
     }))
     .views(self => ({
@@ -452,10 +471,10 @@ export default function SharedWiggleMixin(
                 {
                   label: 'Summary score mode',
                   subMenu: ['min', 'max', 'avg', 'whiskers'].map(elt => ({
-                    label: elt,
-                    type: 'radio',
                     checked: self.summaryScoreModeSetting === elt,
+                    label: elt,
                     onClick: () => self.setSummaryScoreMode(elt),
+                    type: 'radio',
                   })),
                 },
               ]
@@ -477,10 +496,10 @@ export default function SharedWiggleMixin(
                 : []),
               ['localsd', 'Local ± 3σ'],
             ].map(([val, label]) => ({
-              label,
-              type: 'radio',
               checked: self.autoscaleType === val,
+              label,
               onClick: () => self.setAutoscale(val),
+              type: 'radio',
             })),
           },
           {
@@ -488,7 +507,7 @@ export default function SharedWiggleMixin(
             onClick: () => {
               getSession(self).queueDialog(handleClose => [
                 SetMinMaxDialog,
-                { model: self, handleClose },
+                { handleClose, model: self },
               ])
             },
           },

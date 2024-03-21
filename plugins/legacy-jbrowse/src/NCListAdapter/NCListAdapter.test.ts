@@ -30,17 +30,17 @@ test('adapter can fetch features from ensembl_genes test set', async () => {
   const args = {
     refNames: [],
     rootUrlTemplate: {
-      uri: 'ensembl_genes/{refseq}/trackData.json',
       locationType: 'UriLocation',
+      uri: 'ensembl_genes/{refseq}/trackData.json',
     },
   }
   const adapter = new Adapter(configSchema.create(args))
 
   const features = adapter.getFeatures({
     assemblyName: 'volvox',
+    end: 35960388,
     refName: '21',
     start: 34960388,
-    end: 35960388,
   })
 
   const featArr = await firstValueFrom(features.pipe(toArray()))

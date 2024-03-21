@@ -32,8 +32,8 @@ export function drawImageOntoCanvasContext(
 }
 
 const weHave = {
-  realOffscreenCanvas: typeof OffscreenCanvas === 'function',
   node: isNode,
+  realOffscreenCanvas: typeof OffscreenCanvas === 'function',
 }
 
 if (weHave.realOffscreenCanvas) {
@@ -70,20 +70,20 @@ if (weHave.realOffscreenCanvas) {
   createCanvas = (width: number, height: number) => {
     const context = new CanvasSequence()
     return {
-      width,
-      height,
       getContext() {
         return context
       },
+      height,
+      width,
     }
   }
   createImageBitmap = async canvas => {
     const ctx = canvas.getContext('2d')
     return {
-      height: canvas.height,
-      width: canvas.width,
-      serializedCommands: ctx.toJSON(),
       containsNoTransferables: true,
+      height: canvas.height,
+      serializedCommands: ctx.toJSON(),
+      width: canvas.width,
     }
   }
   ImageBitmapType = String

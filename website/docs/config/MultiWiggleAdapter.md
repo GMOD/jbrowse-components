@@ -12,23 +12,23 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ### MultiWiggleAdapter - Slots
 
-#### slot: subadapters
-
-```js
-subadapters: {
-      type: 'frozen',
-      defaultValue: [],
-      description: 'array of subadapter JSON objects',
-    }
-```
-
 #### slot: bigWigs
 
 ```js
 bigWigs: {
-      type: 'frozen',
+      defaultValue: [],
       description:
         'array of bigwig filenames, alternative to the subadapters slot',
+      type: 'frozen',
+    }
+```
+
+#### slot: subadapters
+
+```js
+subadapters: {
       defaultValue: [],
+      description: 'array of subadapter JSON objects',
+      type: 'frozen',
     }
 ```

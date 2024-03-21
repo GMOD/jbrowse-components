@@ -388,10 +388,10 @@ export function parseLocStringOneBased(
         if (start !== undefined && end !== undefined) {
           return {
             assemblyName,
-            refName: prefix,
-            start: +start.replaceAll(',', ''),
             end: +end.replaceAll(',', ''),
+            refName: prefix,
             reversed,
+            start: +start.replaceAll(',', ''),
           }
         }
       } else if (singleMatch) {
@@ -402,16 +402,16 @@ export function parseLocStringOneBased(
             return {
               assemblyName,
               refName: prefix,
-              start: +start.replaceAll(',', ''),
               reversed,
+              start: +start.replaceAll(',', ''),
             }
           }
           return {
             assemblyName,
-            refName: prefix,
-            start: +start.replaceAll(',', ''),
             end: +start.replaceAll(',', ''),
+            refName: prefix,
             reversed,
+            start: +start.replaceAll(',', ''),
           }
         }
       } else {
@@ -769,7 +769,7 @@ export function renameRegionIfNeeded(
     // modify it directly in the container
     const newRef = refNameMap[region.refName]
     if (newRef) {
-      return { ...region, refName: newRef, originalRefName: region.refName }
+      return { ...region, originalRefName: region.refName, refName: newRef }
     }
   }
   return region
@@ -872,38 +872,38 @@ export const complement = (() => {
   // generated with:
   // perl -MJSON -E '@l = split "","acgtrymkswhbvdnxACGTRYMKSWHBVDNX"; print to_json({ map { my $in = $_; tr/acgtrymkswhbvdnxACGTRYMKSWHBVDNX/tgcayrkmswdvbhnxTGCAYRKMSWDVBHNX/; $in => $_ } @l})'
   const complementTable = {
-    S: 'S',
-    w: 'w',
-    T: 'A',
-    r: 'y',
-    a: 't',
-    N: 'N',
-    K: 'M',
-    x: 'x',
-    d: 'h',
-    Y: 'R',
-    V: 'B',
-    y: 'r',
-    M: 'K',
-    h: 'd',
-    k: 'm',
-    C: 'G',
-    g: 'c',
-    t: 'a',
     A: 'T',
-    n: 'n',
+    B: 'V',
+    C: 'G',
+    D: 'H',
+    G: 'C',
+    H: 'D',
+    K: 'M',
+    M: 'K',
+    N: 'N',
+    R: 'Y',
+    S: 'S',
+    T: 'A',
+    V: 'B',
     W: 'W',
     X: 'X',
-    m: 'k',
-    v: 'b',
-    B: 'V',
-    s: 's',
-    H: 'D',
-    c: 'g',
-    D: 'H',
+    Y: 'R',
+    a: 't',
     b: 'v',
-    R: 'Y',
-    G: 'C',
+    c: 'g',
+    d: 'h',
+    g: 'c',
+    h: 'd',
+    k: 'm',
+    m: 'k',
+    n: 'n',
+    r: 'y',
+    s: 's',
+    t: 'a',
+    v: 'b',
+    w: 'w',
+    x: 'x',
+    y: 'r',
   } as Record<string, string>
 
   return (seqString: string) => {
@@ -952,70 +952,70 @@ export function getFrame(
 export const defaultStarts = ['ATG']
 export const defaultStops = ['TAA', 'TAG', 'TGA']
 export const defaultCodonTable = {
-  TCA: 'S',
-  TCC: 'S',
-  TCG: 'S',
-  TCT: 'S',
-  TTC: 'F',
-  TTT: 'F',
-  TTA: 'L',
-  TTG: 'L',
-  TAC: 'Y',
-  TAT: 'Y',
-  TAA: '*',
-  TAG: '*',
-  TGC: 'C',
-  TGT: 'C',
-  TGA: '*',
-  TGG: 'W',
-  CTA: 'L',
-  CTC: 'L',
-  CTG: 'L',
-  CTT: 'L',
-  CCA: 'P',
-  CCC: 'P',
-  CCG: 'P',
-  CCT: 'P',
-  CAC: 'H',
-  CAT: 'H',
-  CAA: 'Q',
-  CAG: 'Q',
-  CGA: 'R',
-  CGC: 'R',
-  CGG: 'R',
-  CGT: 'R',
-  ATA: 'I',
-  ATC: 'I',
-  ATT: 'I',
-  ATG: 'M',
+  AAA: 'K',
+  AAC: 'N',
+  AAG: 'K',
+  AAT: 'N',
   ACA: 'T',
   ACC: 'T',
   ACG: 'T',
   ACT: 'T',
-  AAC: 'N',
-  AAT: 'N',
-  AAA: 'K',
-  AAG: 'K',
-  AGC: 'S',
-  AGT: 'S',
   AGA: 'R',
+  AGC: 'S',
   AGG: 'R',
-  GTA: 'V',
-  GTC: 'V',
-  GTG: 'V',
-  GTT: 'V',
+  AGT: 'S',
+  ATA: 'I',
+  ATC: 'I',
+  ATG: 'M',
+  ATT: 'I',
+  CAA: 'Q',
+  CAC: 'H',
+  CAG: 'Q',
+  CAT: 'H',
+  CCA: 'P',
+  CCC: 'P',
+  CCG: 'P',
+  CCT: 'P',
+  CGA: 'R',
+  CGC: 'R',
+  CGG: 'R',
+  CGT: 'R',
+  CTA: 'L',
+  CTC: 'L',
+  CTG: 'L',
+  CTT: 'L',
+  GAA: 'E',
+  GAC: 'D',
+  GAG: 'E',
+  GAT: 'D',
   GCA: 'A',
   GCC: 'A',
   GCG: 'A',
   GCT: 'A',
-  GAC: 'D',
-  GAT: 'D',
-  GAA: 'E',
-  GAG: 'E',
   GGA: 'G',
   GGC: 'G',
   GGG: 'G',
   GGT: 'G',
+  GTA: 'V',
+  GTC: 'V',
+  GTG: 'V',
+  GTT: 'V',
+  TAA: '*',
+  TAC: 'Y',
+  TAG: '*',
+  TAT: 'Y',
+  TCA: 'S',
+  TCC: 'S',
+  TCG: 'S',
+  TCT: 'S',
+  TGA: '*',
+  TGC: 'C',
+  TGG: 'W',
+  TGT: 'C',
+  TTA: 'L',
+  TTC: 'F',
+  TTG: 'L',
+  TTT: 'F',
 }
 
 /**
@@ -1102,8 +1102,8 @@ export async function bytesForRegions(
   return blockResults
     .flat()
     .map(block => ({
-      start: block.minv.blockPosition,
       end: block.maxv.blockPosition + 65535,
+      start: block.minv.blockPosition,
     }))
     .reduce((a, b) => a + b.end - b.start, 0)
 }
@@ -1164,10 +1164,10 @@ export function getViewParams(model: IAnyStateTreeNode, exportSVG?: boolean) {
   const staticblock = staticBlocks?.contentBlocks[0] || {}
   const staticblock1 = staticBlocks?.contentBlocks[1] || {}
   return {
+    end: b.end as number,
     offsetPx: exportSVG ? 0 : offsetPx - staticblock.offsetPx,
     offsetPx1: exportSVG ? 0 : offsetPx - staticblock1.offsetPx,
     start: b.start as number,
-    end: b.end as number,
   }
 }
 

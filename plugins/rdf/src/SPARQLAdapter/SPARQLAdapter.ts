@@ -176,11 +176,11 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
         seenFeatures[uniqueId] = {
           data: {
             ...rd,
-            uniqueId,
+            end: parseInt(rd.end, 10),
             refName,
             start: parseInt(rd.start, 10),
-            end: parseInt(rd.end, 10),
             strand: parseInt(rd.strand, 10) || 0,
+            uniqueId,
           },
         }
       })
@@ -234,8 +234,8 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
       seenFeature =>
         new SimpleFeature({
           ...seenFeatures[seenFeature].data,
-          uniqueId: seenFeature,
           subfeatures: seenFeatures[seenFeature].data.subfeatures,
+          uniqueId: seenFeature,
         }),
     )
   }

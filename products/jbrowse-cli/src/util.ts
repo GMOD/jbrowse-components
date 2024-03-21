@@ -14,7 +14,7 @@ export async function getLocalOrRemoteStream(uri: string, out: string) {
     totalBytes = fs.statSync(filename).size
     stream = fs.createReadStream(filename)
   }
-  return { totalBytes, stream }
+  return { stream, totalBytes }
 }
 
 export function decodeURIComponentNoThrow(uri: string) {

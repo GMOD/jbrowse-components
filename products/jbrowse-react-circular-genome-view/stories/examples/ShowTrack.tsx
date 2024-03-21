@@ -7,86 +7,86 @@ export const ShowTrack = () => {
   const defaultSession = {
     name: 'Storybook',
     view: {
-      id: 'circularView',
-      type: 'CircularView',
       bpPerPx: 90,
-
       displayedRegions: [
         {
+          assemblyName: 'volvox',
+          end: 50001,
           refName: 'ctgA',
           start: 0,
-          end: 50001,
-          assemblyName: 'volvox',
         },
         {
+          assemblyName: 'volvox',
+          end: 6079,
           refName: 'ctgB',
           start: 0,
-          end: 6079,
-          assemblyName: 'volvox',
         },
       ],
+      id: 'circularView',
+
+      type: 'CircularView',
     },
   }
   const state = createViewState({
     assembly: {
-      name: 'volvox',
       aliases: ['vvx'],
-      sequence: {
-        type: 'ReferenceSequenceTrack',
-        trackId: 'volvox_refseq',
-        metadata: {
-          date: '2020-08-20',
-        },
-        adapter: {
-          type: 'TwoBitAdapter',
-          twoBitLocation: {
-            uri: 'test_data/volvox/volvox.2bit',
-            locationType: 'UriLocation',
-          },
-        },
-      },
+      name: 'volvox',
       refNameAliases: {
         adapter: {
-          type: 'FromConfigAdapter',
           adapterId: 'W6DyPGJ0UU',
           features: [
             {
+              aliases: ['A', 'contigA'],
               refName: 'ctgA',
               uniqueId: 'alias1',
-              aliases: ['A', 'contigA'],
             },
             {
+              aliases: ['B', 'contigB'],
               refName: 'ctgB',
               uniqueId: 'alias2',
-              aliases: ['B', 'contigB'],
             },
           ],
+          type: 'FromConfigAdapter',
         },
+      },
+      sequence: {
+        adapter: {
+          twoBitLocation: {
+            locationType: 'UriLocation',
+            uri: 'test_data/volvox/volvox.2bit',
+          },
+          type: 'TwoBitAdapter',
+        },
+        metadata: {
+          date: '2020-08-20',
+        },
+        trackId: 'volvox_refseq',
+        type: 'ReferenceSequenceTrack',
       },
     },
+    defaultSession,
     tracks: [
       {
-        type: 'VariantTrack',
-        trackId: 'volvox_sv_test',
-        name: 'volvox structural variant test',
-        category: ['VCF'],
-        assemblyNames: ['volvox'],
         adapter: {
-          type: 'VcfTabixAdapter',
-          vcfGzLocation: {
-            uri: 'test_data/volvox/volvox.dup.vcf.gz',
-            locationType: 'UriLocation',
-          },
           index: {
             location: {
-              uri: 'test_data/volvox/volvox.dup.vcf.gz.tbi',
               locationType: 'UriLocation',
+              uri: 'test_data/volvox/volvox.dup.vcf.gz.tbi',
             },
           },
+          type: 'VcfTabixAdapter',
+          vcfGzLocation: {
+            locationType: 'UriLocation',
+            uri: 'test_data/volvox/volvox.dup.vcf.gz',
+          },
         },
+        assemblyNames: ['volvox'],
+        category: ['VCF'],
+        name: 'volvox structural variant test',
+        trackId: 'volvox_sv_test',
+        type: 'VariantTrack',
       },
     ],
-    defaultSession,
   })
 
   state.session.view.showTrack('volvox_sv_test')

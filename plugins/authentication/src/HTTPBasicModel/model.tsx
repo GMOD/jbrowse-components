@@ -19,11 +19,12 @@ const stateModelFactory = (
       /**
        * #property
        */
-      type: types.literal('HTTPBasicInternetAccount'),
+      configuration: ConfigurationReference(configSchema),
+
       /**
        * #property
        */
-      configuration: ConfigurationReference(configSchema),
+      type: types.literal('HTTPBasicInternetAccount'),
     })
     .views(self => ({
       /**
@@ -46,7 +47,6 @@ const stateModelFactory = (
         session.queueDialog((doneCallback: () => void) => [
           HTTPBasicLoginForm,
           {
-            internetAccountId: self.internetAccountId,
             handleClose: (token: string) => {
               if (token) {
                 resolve(token)
@@ -55,6 +55,7 @@ const stateModelFactory = (
               }
               doneCallback()
             },
+            internetAccountId: self.internetAccountId,
           },
         ])
       },
@@ -70,8 +71,8 @@ const stateModelFactory = (
         if (!response.ok) {
           throw new Error(
             await getResponseError({
-              response,
               reason: 'Error validating token',
+              response,
             }),
           )
         }

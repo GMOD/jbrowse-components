@@ -35,15 +35,15 @@ export function useFeatureSequence(
       const sessionId = 'getSequence'
       const feats = await rpcManager.call(sessionId, 'CoreGetFeatures', {
         adapterConfig: getConf(assembly, ['sequence', 'adapter']),
-        sessionId,
         regions: [
           {
-            start,
+            assemblyName,
             end,
             refName: assembly.getCanonicalRefName(refName),
-            assemblyName,
+            start,
           },
         ],
+        sessionId,
       })
 
       const [feat] = feats as Feature[]
@@ -67,7 +67,7 @@ export function useFeatureSequence(
           const up = await fetchSeq(Math.max(0, b), start, refName)
           const down = await fetchSeq(end, e, refName)
           if (!finished) {
-            setSequence({ seq, upstream: up, downstream: down })
+            setSequence({ downstream: down, seq, upstream: up })
           }
         }
       } catch (e) {
@@ -80,5 +80,5 @@ export function useFeatureSequence(
       finished = true
     }
   }, [feature, model, upDownBp, forceLoad])
-  return { sequence, error }
+  return { error, sequence }
 }

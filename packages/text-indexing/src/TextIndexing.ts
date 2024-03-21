@@ -179,12 +179,12 @@ async function indexDriver(
   const ixIxxStream = await runIxIxx(readable, idxLocation, name)
   checkAbortSignal(signal)
   await generateMeta({
-    configs: tracks,
-    attributes,
-    outDir: idxLocation,
-    name,
-    exclude,
     assemblyNames,
+    attributes,
+    configs: tracks,
+    exclude,
+    name,
+    outDir: idxLocation,
   })
   checkAbortSignal(signal)
   return ixIxxStream

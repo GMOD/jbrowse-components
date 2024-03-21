@@ -44,14 +44,14 @@ const TrackLabelMenu = function ({
         ...(getSession(model).getTrackActionMenuItems?.(conf) || []),
         model.isFavorite(trackId)
           ? {
+              icon: StarIcon,
               label: 'Remove from favorites',
               onClick: () => model.removeFromFavorites(trackId),
-              icon: StarIcon,
             }
           : {
+              icon: FilledStarIcon,
               label: 'Add to favorites',
               onClick: () => model.addToFavorites(trackId),
-              icon: FilledStarIcon,
             },
         {
           label: 'Add to selection',

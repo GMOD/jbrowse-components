@@ -68,35 +68,42 @@ export function SharedLinearPileupDisplayMixin(
         /**
          * #property
          */
+        colorBy: ColorByModel,
+
+        /**
+         * #property
+         */
         configuration: ConfigurationReference(configSchema),
-        /**
-         * #property
-         */
-        featureHeight: types.maybe(types.number),
-        /**
-         * #property
-         */
-        noSpacing: types.maybe(types.boolean),
+
         /**
          * #property
          */
         fadeLikelihood: types.maybe(types.boolean),
+
         /**
          * #property
          */
-        trackMaxHeight: types.maybe(types.number),
-        /**
-         * #property
-         */
-        colorBy: ColorByModel,
+        featureHeight: types.maybe(types.number),
+
         /**
          * #property
          */
         filterBy: types.optional(FilterModel, {}),
+
         /**
          * #property
          */
         jexlFilters: types.optional(types.array(types.string), []),
+
+        /**
+         * #property
+         */
+        noSpacing: types.maybe(types.boolean),
+
+        /**
+         * #property
+         */
+        trackMaxHeight: types.maybe(types.number),
       }),
     )
     .volatile(() => ({
@@ -117,30 +124,29 @@ export function SharedLinearPileupDisplayMixin(
     .actions(self => ({
       /**
        * #action
+       * uses copy-to-clipboard and generates notification
        */
-      setTagsReady(flag: boolean) {
-        self.tagsReady = flag
+      copyFeatureToClipboard(feature: Feature) {
+        const { uniqueId, ...rest } = feature.toJSON()
+        const session = getSession(self)
+        copy(JSON.stringify(rest, null, 4))
+        session.notify('Copied to clipboard', 'success')
       },
 
       /**
        * #action
        */
-      setMaxHeight(n: number) {
-        self.trackMaxHeight = n
-      },
-
-      /**
-       * #action
-       */
-      setFeatureHeight(n?: number) {
-        self.featureHeight = n
-      },
-
-      /**
-       * #action
-       */
-      setNoSpacing(flag?: boolean) {
-        self.noSpacing = flag
+      selectFeature(feature: Feature) {
+        const session = getSession(self)
+        if (isSessionModelWithWidgets(session)) {
+          const featureWidget = session.addWidget(
+            'AlignmentsFeatureWidget',
+            'alignmentFeature',
+            { featureData: feature.toJSON(), view: getContainingView(self) },
+          )
+          session.showWidget(featureWidget)
+        }
+        session.setSelection(feature)
       },
 
       /**
@@ -156,6 +162,62 @@ export function SharedLinearPileupDisplayMixin(
         if (colorScheme.tag) {
           self.tagsReady = false
         }
+      },
+
+      /**
+       * #action
+       */
+      setConfig(conf: AnyConfigurationModel) {
+        self.configuration = conf
+      },
+
+      /**
+       * #action
+       */
+      setFeatureHeight(n?: number) {
+        self.featureHeight = n
+      },
+
+      /**
+       * #action
+       */
+      setFeatureUnderMouse(feat?: Feature) {
+        self.featureUnderMouseVolatile = feat
+      },
+
+      /**
+       * #action
+       */
+      setFilterBy(filter: IFilter) {
+        self.filterBy = cast(filter)
+      },
+
+      /**
+       * #action
+       */
+      setJexlFilters(filters: string[]) {
+        self.jexlFilters = cast(filters)
+      },
+
+      /**
+       * #action
+       */
+      setMaxHeight(n: number) {
+        self.trackMaxHeight = n
+      },
+
+      /**
+       * #action
+       */
+      setNoSpacing(flag?: boolean) {
+        self.noSpacing = flag
+      },
+
+      /**
+       * #action
+       */
+      setTagsReady(flag: boolean) {
+        self.tagsReady = flag
       },
 
       /**
@@ -185,61 +247,6 @@ export function SharedLinearPileupDisplayMixin(
           }
         })
       },
-
-      /**
-       * #action
-       */
-      setFeatureUnderMouse(feat?: Feature) {
-        self.featureUnderMouseVolatile = feat
-      },
-
-      /**
-       * #action
-       */
-      selectFeature(feature: Feature) {
-        const session = getSession(self)
-        if (isSessionModelWithWidgets(session)) {
-          const featureWidget = session.addWidget(
-            'AlignmentsFeatureWidget',
-            'alignmentFeature',
-            { featureData: feature.toJSON(), view: getContainingView(self) },
-          )
-          session.showWidget(featureWidget)
-        }
-        session.setSelection(feature)
-      },
-
-      /**
-       * #action
-       * uses copy-to-clipboard and generates notification
-       */
-      copyFeatureToClipboard(feature: Feature) {
-        const { uniqueId, ...rest } = feature.toJSON()
-        const session = getSession(self)
-        copy(JSON.stringify(rest, null, 4))
-        session.notify('Copied to clipboard', 'success')
-      },
-
-      /**
-       * #action
-       */
-      setConfig(conf: AnyConfigurationModel) {
-        self.configuration = conf
-      },
-
-      /**
-       * #action
-       */
-      setFilterBy(filter: IFilter) {
-        self.filterBy = cast(filter)
-      },
-
-      /**
-       * #action
-       */
-      setJexlFilters(filters: string[]) {
-        self.jexlFilters = cast(filters)
-      },
     }))
 
     .views(self => ({
@@ -267,6 +274,27 @@ export function SharedLinearPileupDisplayMixin(
       /**
        * #getter
        */
+      get featureHeightSetting() {
+        return readConfObject(self.rendererConfig, 'height')
+      },
+
+      /**
+       * #getter
+       */
+      get featureUnderMouse() {
+        return self.featureUnderMouseVolatile
+      },
+
+      /**
+       * #getter
+       */
+      get filters() {
+        return new SerializableFilterChain({ filters: self.jexlFilters })
+      },
+
+      /**
+       * #getter
+       */
       get maxHeight() {
         return readConfObject(self.rendererConfig, 'maxHeight')
       },
@@ -274,26 +302,8 @@ export function SharedLinearPileupDisplayMixin(
       /**
        * #getter
        */
-      get featureHeightSetting() {
-        return readConfObject(self.rendererConfig, 'height')
-      },
-      /**
-       * #getter
-       */
-      get featureUnderMouse() {
-        return self.featureUnderMouseVolatile
-      },
-      /**
-       * #getter
-       */
       renderReady() {
         return self.tagsReady
-      },
-      /**
-       * #getter
-       */
-      get filters() {
-        return new SerializableFilterChain({ filters: self.jexlFilters })
       },
     }))
     .views(self => {
@@ -306,132 +316,8 @@ export function SharedLinearPileupDisplayMixin(
         /**
          * #getter
          */
-        get rendererTypeName() {
-          const viewName = getConf(self, 'defaultRendering')
-          const rendererType = rendererTypes.get(viewName)
-          if (!rendererType) {
-            throw new Error(`unknown alignments view name ${viewName}`)
-          }
-          return rendererType
-        },
-
-        /**
-         * #method
-         */
-        contextMenuItems() {
-          const feat = self.contextMenuFeature
-          return feat
-            ? [
-                {
-                  label: 'Open feature details',
-                  icon: MenuOpenIcon,
-                  onClick: (): void => {
-                    self.clearFeatureSelection()
-                    if (feat) {
-                      self.selectFeature(feat)
-                    }
-                  },
-                },
-                {
-                  label: 'Copy info to clipboard',
-                  icon: ContentCopyIcon,
-                  onClick: (): void => {
-                    if (feat) {
-                      self.copyFeatureToClipboard(feat)
-                    }
-                  },
-                },
-              ]
-            : []
-        },
-
-        /**
-         * #getter
-         */
         get DisplayBlurb() {
           return LinearPileupDisplayBlurb
-        },
-        /**
-         * #method
-         */
-        renderPropsPre() {
-          const { colorTagMap, colorBy, filterBy, rpcDriverName } = self
-
-          const superProps = superRenderProps()
-          return {
-            ...superProps,
-            notReady: superProps.notReady || !self.renderReady(),
-            rpcDriverName,
-            displayModel: self,
-            colorBy: colorBy ? getSnapshot(colorBy) : undefined,
-            filterBy: JSON.parse(JSON.stringify(filterBy)),
-            filters: self.filters,
-            colorTagMap: Object.fromEntries(colorTagMap.toJSON()),
-            config: self.rendererConfig,
-            async onFeatureClick(_: unknown, featureId?: string) {
-              const session = getSession(self)
-              const { rpcManager } = session
-              try {
-                const f = featureId || self.featureIdUnderMouse
-                if (!f) {
-                  self.clearFeatureSelection()
-                } else {
-                  const sessionId = getRpcSessionId(self)
-                  const { feature } = (await rpcManager.call(
-                    sessionId,
-                    'CoreGetFeatureDetails',
-                    {
-                      featureId: f,
-                      sessionId,
-                      layoutId: getContainingView(self).id,
-                      rendererType: 'PileupRenderer',
-                    },
-                  )) as { feature: SimpleFeatureSerialized | undefined }
-
-                  if (feature) {
-                    self.selectFeature(new SimpleFeature(feature))
-                  }
-                }
-              } catch (e) {
-                console.error(e)
-                session.notify(`${e}`)
-              }
-            },
-
-            onClick() {
-              self.clearFeatureSelection()
-            },
-            // similar to click but opens a menu with further options
-            async onFeatureContextMenu(_: unknown, featureId?: string) {
-              const session = getSession(self)
-              const { rpcManager } = session
-              try {
-                const f = featureId || self.featureIdUnderMouse
-                if (!f) {
-                  self.clearFeatureSelection()
-                } else {
-                  const sessionId = getRpcSessionId(self)
-                  const { feature } = (await rpcManager.call(
-                    sessionId,
-                    'CoreGetFeatureDetails',
-                    {
-                      featureId: f,
-                      sessionId,
-                      layoutId: getContainingView(self).id,
-                      rendererType: 'PileupRenderer',
-                    },
-                  )) as { feature: SimpleFeatureSerialized }
-
-                  if (feature) {
-                    self.setContextMenuFeature(new SimpleFeature(feature))
-                  }
-                }
-              } catch (e) {
-                console.error(e)
-                session.notify(`${e}`)
-              }
-            },
-          }
         },
 
         /**
@@ -468,7 +354,7 @@ export function SharedLinearPileupDisplayMixin(
               onClick: () => {
                 getSession(self).queueDialog(doneCallback => [
                   ColorByTagDialog,
-                  { model: self, handleClose: doneCallback },
+                  { handleClose: doneCallback, model: self },
                 ])
               },
             },
@@ -478,16 +364,142 @@ export function SharedLinearPileupDisplayMixin(
         /**
          * #method
          */
+        contextMenuItems() {
+          const feat = self.contextMenuFeature
+          return feat
+            ? [
+                {
+                  icon: MenuOpenIcon,
+                  label: 'Open feature details',
+                  onClick: (): void => {
+                    self.clearFeatureSelection()
+                    if (feat) {
+                      self.selectFeature(feat)
+                    }
+                  },
+                },
+                {
+                  icon: ContentCopyIcon,
+                  label: 'Copy info to clipboard',
+                  onClick: (): void => {
+                    if (feat) {
+                      self.copyFeatureToClipboard(feat)
+                    }
+                  },
+                },
+              ]
+            : []
+        },
+
+        /**
+         * #method
+         */
+        renderPropsPre() {
+          const { colorTagMap, colorBy, filterBy, rpcDriverName } = self
+
+          const superProps = superRenderProps()
+          return {
+            ...superProps,
+            colorBy: colorBy ? getSnapshot(colorBy) : undefined,
+            colorTagMap: Object.fromEntries(colorTagMap.toJSON()),
+            config: self.rendererConfig,
+            displayModel: self,
+            filterBy: JSON.parse(JSON.stringify(filterBy)),
+            filters: self.filters,
+            notReady: superProps.notReady || !self.renderReady(),
+            onClick() {
+              self.clearFeatureSelection()
+            },
+            async onFeatureClick(_: unknown, featureId?: string) {
+              const session = getSession(self)
+              const { rpcManager } = session
+              try {
+                const f = featureId || self.featureIdUnderMouse
+                if (!f) {
+                  self.clearFeatureSelection()
+                } else {
+                  const sessionId = getRpcSessionId(self)
+                  const { feature } = (await rpcManager.call(
+                    sessionId,
+                    'CoreGetFeatureDetails',
+                    {
+                      featureId: f,
+                      layoutId: getContainingView(self).id,
+                      rendererType: 'PileupRenderer',
+                      sessionId,
+                    },
+                  )) as { feature: SimpleFeatureSerialized | undefined }
+
+                  if (feature) {
+                    self.selectFeature(new SimpleFeature(feature))
+                  }
+                }
+              } catch (e) {
+                console.error(e)
+                session.notify(`${e}`)
+              }
+            },
+
+            // similar to click but opens a menu with further options
+            async onFeatureContextMenu(_: unknown, featureId?: string) {
+              const session = getSession(self)
+              const { rpcManager } = session
+              try {
+                const f = featureId || self.featureIdUnderMouse
+                if (!f) {
+                  self.clearFeatureSelection()
+                } else {
+                  const sessionId = getRpcSessionId(self)
+                  const { feature } = (await rpcManager.call(
+                    sessionId,
+                    'CoreGetFeatureDetails',
+                    {
+                      featureId: f,
+                      layoutId: getContainingView(self).id,
+                      rendererType: 'PileupRenderer',
+                      sessionId,
+                    },
+                  )) as { feature: SimpleFeatureSerialized }
+
+                  if (feature) {
+                    self.setContextMenuFeature(new SimpleFeature(feature))
+                  }
+                }
+              } catch (e) {
+                console.error(e)
+                session.notify(`${e}`)
+              }
+            },
+
+            rpcDriverName,
+          }
+        },
+
+        /**
+         * #getter
+         */
+        get rendererTypeName() {
+          const viewName = getConf(self, 'defaultRendering')
+          const rendererType = rendererTypes.get(viewName)
+          if (!rendererType) {
+            throw new Error(`unknown alignments view name ${viewName}`)
+          }
+          return rendererType
+        },
+
+        /**
+         * #method
+         */
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
             {
-              label: 'Filter by',
               icon: FilterListIcon,
+              label: 'Filter by',
               onClick: () => {
                 getSession(self).queueDialog(doneCallback => [
                   FilterByTagDialog,
-                  { model: self, handleClose: doneCallback },
+                  { handleClose: doneCallback, model: self },
                 ])
               },
             },
@@ -513,7 +525,7 @@ export function SharedLinearPileupDisplayMixin(
                   onClick: () => {
                     getSession(self).queueDialog(doneCallback => [
                       SetFeatureHeightDialog,
-                      { model: self, handleClose: doneCallback },
+                      { handleClose: doneCallback, model: self },
                     ])
                   },
                 },
@@ -524,7 +536,7 @@ export function SharedLinearPileupDisplayMixin(
               onClick: () => {
                 getSession(self).queueDialog(doneCallback => [
                   SetMaxHeightDialog,
-                  { model: self, handleClose: doneCallback },
+                  { handleClose: doneCallback, model: self },
                 ])
               },
             },
@@ -578,9 +590,9 @@ export function SharedLinearPileupDisplayMixin(
                     'CoreGetFeatureDetails',
                     {
                       featureId,
-                      sessionId,
                       layoutId: view.id,
                       rendererType: 'PileupRenderer',
+                      sessionId,
                     },
                   )) as { feature: SimpleFeatureSerialized }
 

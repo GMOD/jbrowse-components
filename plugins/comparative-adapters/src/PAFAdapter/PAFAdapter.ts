@@ -152,25 +152,25 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
 
           observer.next(
             new SyntenyFeature({
-              uniqueId: i + assemblyName,
               assemblyName,
-              start,
               end,
-              type: 'match',
               refName,
+              start,
               strand,
+              type: 'match',
+              uniqueId: i + assemblyName,
               ...rest,
               CIGAR,
-              syntenyId: i,
-              identity: numMatches / blockLen,
-              numMatches,
               blockLen,
+              identity: numMatches / blockLen,
               mate: {
-                start: mateStart,
+                assemblyName: assemblyNames[+flip],
                 end: mateEnd,
                 refName: mateName,
-                assemblyName: assemblyNames[+flip],
+                start: mateStart,
               },
+              numMatches,
+              syntenyId: i,
             }),
           )
         }

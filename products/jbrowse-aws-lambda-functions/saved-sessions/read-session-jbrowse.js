@@ -9,8 +9,8 @@ const dynamodb = new AWS.DynamoDB.DocumentClient({
 
 function readSession(sessionId) {
   const params = {
-    TableName: sessionTable,
     Key: { sessionId },
+    TableName: sessionTable,
   }
   return dynamodb.get(params).promise()
 }
@@ -27,21 +27,21 @@ exports.handler = async event => {
     tableData = await readSession(sessionId)
   } catch (e) {
     return {
-      statusCode: 500,
       body: JSON.stringify({ message: `${e}` }),
+      statusCode: 500,
     }
   }
 
   const sessionObj = tableData.Item
   if (!sessionObj) {
     return {
-      statusCode: 404,
       body: JSON.stringify({ message: `Session not found` }),
+      statusCode: 404,
     }
   }
 
   return {
-    statusCode: 200,
     body: JSON.stringify(sessionObj),
+    statusCode: 200,
   }
 }

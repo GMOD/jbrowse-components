@@ -10,13 +10,13 @@ export default function WiggleConfigFactory(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'LinearGCContentDisplay',
     {
-      windowSize: {
-        type: 'number',
-        defaultValue: 100,
-      },
       windowDelta: {
-        type: 'number',
         defaultValue: 100,
+        type: 'number',
+      },
+      windowSize: {
+        defaultValue: 100,
+        type: 'number',
       },
     },
     {

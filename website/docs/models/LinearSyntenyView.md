@@ -18,15 +18,6 @@ extends
 
 ### LinearSyntenyView - Properties
 
-#### property: type
-
-```js
-// type signature
-ISimpleType<"LinearSyntenyView">
-// code
-type: types.literal('LinearSyntenyView')
-```
-
 #### property: /
 
 ```js
@@ -43,6 +34,15 @@ drawCIGAR: true
 false
 // code
 drawCurves: false
+```
+
+#### property: type
+
+```js
+// type signature
+ISimpleType<"LinearSyntenyView">
+// code
+type: types.literal('LinearSyntenyView')
 ```
 
 ### LinearSyntenyView - Methods
@@ -66,11 +66,11 @@ menuItems: () => MenuItem[]
 
 ### LinearSyntenyView - Actions
 
-#### action: toggleCurves
+#### action: showAllRegions
 
 ```js
 // type signature
-toggleCurves: () => void
+showAllRegions: () => void
 ```
 
 #### action: toggleCIGAR
@@ -80,11 +80,11 @@ toggleCurves: () => void
 toggleCIGAR: () => void
 ```
 
-#### action: showAllRegions
+#### action: toggleCurves
 
 ```js
 // type signature
-showAllRegions: () => void
+toggleCurves: () => void
 ```
 
 #### action: exportSvg

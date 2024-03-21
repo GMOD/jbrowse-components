@@ -22,19 +22,19 @@ function debounce(func: (...args: unknown[]) => void, timeout = 300) {
 
 const TimeTraveller = types
   .model('TimeTraveller', {
-    undoIdx: -1,
     targetPath: '',
+    undoIdx: -1,
   })
   .volatile(() => ({
     history: [] as unknown[],
     notTrackingUndo: false,
   }))
   .views(self => ({
-    get canUndo() {
-      return self.undoIdx > 0 && !self.notTrackingUndo
-    },
     get canRedo() {
       return self.undoIdx < self.history.length - 1 && !self.notTrackingUndo
+    },
+    get canUndo() {
+      return self.undoIdx > 0 && !self.notTrackingUndo
     },
   }))
   .actions(self => {
@@ -43,14 +43,6 @@ const TimeTraveller = types
     let skipNextUndoState = false
 
     return {
-      // allows user code to (temporarily) stop tracking undo states
-      stopTrackingUndo() {
-        self.notTrackingUndo = true
-      },
-      // allows user code to resume tracking undo states
-      resumeTrackingUndo() {
-        self.notTrackingUndo = false
-      },
       addUndoState(todos: unknown) {
         if (self.notTrackingUndo) {
           return
@@ -71,6 +63,7 @@ const TimeTraveller = types
       beforeDestroy() {
         snapshotDisposer()
       },
+
       initialize() {
         targetStore = self.targetPath
           ? resolvePath(self, self.targetPath)
@@ -90,13 +83,23 @@ const TimeTraveller = types
           this.addUndoState(getSnapshot(targetStore))
         }
       },
-      undo() {
-        self.undoIdx--
+
+      redo() {
+        self.undoIdx++
         skipNextUndoState = true
         applySnapshot(targetStore, self.history[self.undoIdx])
       },
-      redo() {
-        self.undoIdx++
+
+      // allows user code to resume tracking undo states
+      resumeTrackingUndo() {
+        self.notTrackingUndo = false
+      },
+      // allows user code to (temporarily) stop tracking undo states
+      stopTrackingUndo() {
+        self.notTrackingUndo = true
+      },
+      undo() {
+        self.undoIdx--
         skipNextUndoState = true
         applySnapshot(targetStore, self.history[self.undoIdx])
       },

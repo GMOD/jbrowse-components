@@ -25,16 +25,6 @@ composed of
 
 ### JBrowseReactLinearGenomeViewSessionModel - Properties
 
-#### property: view
-
-```js
-// type signature
-IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 15 more ... & { ...; }, _NotCustomized, _NotCustomized>
-// code
-view: pluginManager.getViewType('LinearGenomeView')
-        .stateModel as LinearGenomeViewStateModel
-```
-
 #### property: sessionTracks
 
 ```js
@@ -46,27 +36,30 @@ sessionTracks: types.array(
       )
 ```
 
+#### property: view
+
+```js
+// type signature
+IModelType<{ displayName: IMaybe<ISimpleType<string>>; id: IOptionalIType<ISimpleType<string>, [undefined]>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 15 more ... & { ...; }, _NotCustomized, _NotCustomized>
+// code
+view: pluginManager.getViewType('LinearGenomeView')
+        .stateModel as LinearGenomeViewStateModel
+```
+
 ### JBrowseReactLinearGenomeViewSessionModel - Getters
-
-#### getter: version
-
-```js
-// type
-any
-```
-
-#### getter: disableAddTracks
-
-```js
-// type
-any
-```
 
 #### getter: assemblies
 
 ```js
 // type
 any[]
+```
+
+#### getter: assemblyManager
+
+```js
+// type
+any
 ```
 
 #### getter: assemblyNames
@@ -83,7 +76,14 @@ any[]
 any
 ```
 
-#### getter: assemblyManager
+#### getter: disableAddTracks
+
+```js
+// type
+any
+```
+
+#### getter: version
 
 ```js
 // type
@@ -94,7 +94,7 @@ any
 
 ```js
 // type
-({ id: string; displayName: string; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<...>; reversed: IOptionalIType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>> & ...
+({ displayName: string; id: string; minimized: boolean; bpPerPx: number; colorByCDS: boolean; displayedRegions: IMSTArray<IModelType<{ end: ISimpleType<number>; refName: ISimpleType<string>; reversed: IOptionalIType<...>; start: ISimpleType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeN...
 ```
 
 ### JBrowseReactLinearGenomeViewSessionModel - Methods
@@ -104,6 +104,7 @@ any
 ```js
 // type signature
 renderProps: () => {
+  highResolutionScaling: any
   theme: any
 }
 ```
@@ -112,7 +113,7 @@ renderProps: () => {
 
 ```js
 // type signature
-getTrackActionMenuItems: (config: any) => { label: string; onClick: () => void; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; }[]
+getTrackActionMenuItems: (config: any) => { icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; label: string; onClick: () => void; }[]
 ```
 
 ### JBrowseReactLinearGenomeViewSessionModel - Actions
@@ -121,5 +122,5 @@ getTrackActionMenuItems: (config: any) => { label: string; onClick: () => void; 
 
 ```js
 // type signature
-addView: (typeName: string, initialState?: {}) => { id: string; displayName: string; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<...>; end: ISimpleType<...>; reversed: IOptionalIType<...>; } & { ...; }, { ...; }...
+addView: (typeName: string, initialState?: {}) => { displayName: string; id: string; minimized: boolean; bpPerPx: number; colorByCDS: boolean; displayedRegions: IMSTArray<IModelType<{ end: ISimpleType<number>; refName: ISimpleType<...>; reversed: IOptionalIType<...>; start: ISimpleType<...>; } & { ...; }, { ...; }, _NotCusto...
 ```

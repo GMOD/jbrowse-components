@@ -9,18 +9,18 @@ export function FormatAboutConfigSchemaFactory() {
      * #slot configuration.formatAbout.config
      */
     config: {
-      type: 'frozen',
-      description: 'formats configuration object in about dialog',
-      defaultValue: {},
       contextVariable: ['config'],
+      defaultValue: {},
+      description: 'formats configuration object in about dialog',
+      type: 'frozen',
     },
     /**
      * #slot configuration.formatAbout.hideUris
      */
 
     hideUris: {
-      type: 'boolean',
       defaultValue: false,
+      type: 'boolean',
     },
   })
 }

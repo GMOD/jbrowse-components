@@ -22,8 +22,8 @@ const useStyles = makeStyles()(theme => ({
     padding: theme.spacing(2),
   },
   paper: {
-    padding: theme.spacing(2),
     margin: theme.spacing(2),
+    padding: theme.spacing(2),
   },
   stagedAssemblies: {
     background: '#dfd',
@@ -85,9 +85,9 @@ const OpenSequenceDialog = ({
       const faiLocation = await ipcRenderer.invoke('indexFasta', fastaLocation)
       return {
         adapter: {
-          type: 'IndexedFastaAdapter',
-          fastaLocation,
           faiLocation: { localPath: faiLocation },
+          fastaLocation,
+          type: 'IndexedFastaAdapter',
         },
       }
     }
@@ -97,9 +97,9 @@ const OpenSequenceDialog = ({
       }
       return {
         adapter: {
-          type: 'IndexedFastaAdapter',
-          fastaLocation,
           faiLocation,
+          fastaLocation,
+          type: 'IndexedFastaAdapter',
         },
       }
     } else if (adapterSelection === 'BgzipFastaAdapter') {
@@ -114,10 +114,10 @@ const OpenSequenceDialog = ({
       }
       return {
         adapter: {
-          type: 'BgzipFastaAdapter',
-          fastaLocation,
           faiLocation,
+          fastaLocation,
           gziLocation,
+          type: 'BgzipFastaAdapter',
         },
       }
     } else if (adapterSelection === 'TwoBitAdapter') {
@@ -126,9 +126,9 @@ const OpenSequenceDialog = ({
       }
       return {
         adapter: {
-          type: 'TwoBitAdapter',
-          twoBitLocation,
           chromSizesLocation,
+          twoBitLocation,
+          type: 'TwoBitAdapter',
         },
       }
     }
@@ -137,19 +137,19 @@ const OpenSequenceDialog = ({
 
   async function createAssemblyConfig() {
     return {
-      name: assemblyName,
       displayName: assemblyDisplayName,
+      name: assemblyName,
       sequence: {
-        type: 'ReferenceSequenceTrack',
         trackId: `${assemblyName}-${Date.now()}`,
+        type: 'ReferenceSequenceTrack',
         ...(await createAssemblyAdapterConfig()),
       },
       ...(!isBlank(refNameAliasesLocation)
         ? {
             refNameAliases: {
               adapter: {
-                type: 'RefNameAliasAdapter',
                 location: refNameAliasesLocation,
+                type: 'RefNameAliasAdapter',
               },
             },
           }
@@ -158,8 +158,8 @@ const OpenSequenceDialog = ({
         ? {
             cytobands: {
               adapter: {
-                type: 'CytobandAdapter',
                 cytobandsLocation: cytobandsLocation,
+                type: 'CytobandAdapter',
               },
             },
           }

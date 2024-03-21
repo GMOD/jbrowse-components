@@ -59,12 +59,12 @@ export function stateModelFactory(
         /**
          * #property
          */
-        type: types.literal('MultiLinearWiggleDisplay'),
+        layout: types.optional(types.frozen<Source[]>(), []),
 
         /**
          * #property
          */
-        layout: types.optional(types.frozen<Source[]>(), []),
+        type: types.literal('MultiLinearWiggleDisplay'),
       }),
     )
     .volatile(() => ({
@@ -75,14 +75,22 @@ export function stateModelFactory(
       /**
        * #action
        */
-      setLayout(layout: Source[]) {
-        self.layout = layout
+      clearLayout() {
+        self.layout = []
       },
+
       /**
        * #action
        */
-      clearLayout() {
-        self.layout = []
+      setFeatureUnderMouse(f?: Feature) {
+        self.featureUnderMouseVolatile = f
+      },
+
+      /**
+       * #action
+       */
+      setLayout(layout: Source[]) {
+        self.layout = layout
       },
 
       /**
@@ -93,26 +101,20 @@ export function stateModelFactory(
           self.sourcesVolatile = sources
         }
       },
-
-      /**
-       * #action
-       */
-      setFeatureUnderMouse(f?: Feature) {
-        self.featureUnderMouseVolatile = f
-      },
     }))
     .views(self => ({
       /**
        * #getter
        */
-      get featureUnderMouse() {
-        return self.featureUnderMouseVolatile
+      get TooltipComponent() {
+        return Tooltip as unknown as React.FC
       },
+
       /**
        * #getter
        */
-      get TooltipComponent() {
-        return Tooltip as unknown as React.FC
+      get featureUnderMouse() {
+        return self.featureUnderMouseVolatile
       },
 
       /**
@@ -128,6 +130,43 @@ export function stateModelFactory(
       },
     }))
     .views(self => ({
+      get canHaveFill() {
+        return (
+          self.rendererTypeName === 'MultiXYPlotRenderer' ||
+          self.rendererTypeName === 'MultiRowXYPlotRenderer'
+        )
+      },
+
+      /**
+       * #getter
+       */
+      get isMultiRow() {
+        return (
+          self.rendererTypeName === 'MultiRowXYPlotRenderer' ||
+          self.rendererTypeName === 'MultiRowLineRenderer' ||
+          self.rendererTypeName === 'MultiDensityRenderer'
+        )
+      },
+
+      /**
+       * #getter
+       * can be used to give it a "color scale" like a R heatmap, not
+       * implemented like this yet but flag can be used for this
+       */
+      get needsCustomLegend() {
+        return self.rendererTypeName === 'MultiDensityRenderer'
+      },
+
+      /**
+       * #getter
+       */
+      get needsFullHeightScalebar() {
+        return (
+          self.rendererTypeName === 'MultiXYPlotRenderer' ||
+          self.rendererTypeName === 'MultiLineRenderer'
+        )
+      },
+
       /**
        * #getter
        */
@@ -139,40 +178,16 @@ export function stateModelFactory(
           self.rendererTypeName === 'MultiRowLineRenderer'
         )
       },
+
       /**
        * #getter
+       * positions multi-row below the tracklabel even if using overlap
+       * tracklabels for everything else
        */
-      get needsFullHeightScalebar() {
-        return (
-          self.rendererTypeName === 'MultiXYPlotRenderer' ||
-          self.rendererTypeName === 'MultiLineRenderer'
-        )
-      },
-      /**
-       * #getter
-       */
-      get isMultiRow() {
-        return (
-          self.rendererTypeName === 'MultiRowXYPlotRenderer' ||
-          self.rendererTypeName === 'MultiRowLineRenderer' ||
-          self.rendererTypeName === 'MultiDensityRenderer'
-        )
-      },
-      /**
-       * #getter
-       * can be used to give it a "color scale" like a R heatmap, not
-       * implemented like this yet but flag can be used for this
-       */
-      get needsCustomLegend() {
-        return self.rendererTypeName === 'MultiDensityRenderer'
+      get prefersOffset() {
+        return this.isMultiRow
       },
 
-      get canHaveFill() {
-        return (
-          self.rendererTypeName === 'MultiXYPlotRenderer' ||
-          self.rendererTypeName === 'MultiRowXYPlotRenderer'
-        )
-      },
       /**
        * #getter
        * the multirowxy and multiline don't need to use colors on the legend
@@ -184,14 +199,6 @@ export function stateModelFactory(
           self.rendererTypeName === 'MultiRowLineRenderer' ||
           self.rendererTypeName === 'MultiRowXYPlotRenderer'
         )
-      },
-      /**
-       * #getter
-       * positions multi-row below the tracklabel even if using overlap
-       * tracklabels for everything else
-       */
-      get prefersOffset() {
-        return this.isMultiRow
       },
       /**
        * #getter
@@ -243,30 +250,6 @@ export function stateModelFactory(
       /**
        * #getter
        */
-      get ticks() {
-        const { scaleType, domain, isMultiRow, rowHeight, useMinimalTicks } =
-          self
-
-        if (!domain) {
-          return undefined
-        }
-
-        const offset = isMultiRow ? 0 : YSCALEBAR_LABEL_OFFSET
-        const ticks = axisPropsFromTickScale(
-          getScale({
-            scaleType,
-            domain,
-            range: [rowHeight - offset, offset],
-            inverted: getConf(self, 'inverted') as boolean,
-          }),
-          4,
-        )
-        return useMinimalTicks ? { ...ticks, values: domain } : ticks
-      },
-
-      /**
-       * #getter
-       */
       get colors() {
         return [
           'red',
@@ -281,10 +264,61 @@ export function stateModelFactory(
           'pink',
         ]
       },
+
+      /**
+       * #getter
+       */
+      get ticks() {
+        const { scaleType, domain, isMultiRow, rowHeight, useMinimalTicks } =
+          self
+
+        if (!domain) {
+          return undefined
+        }
+
+        const offset = isMultiRow ? 0 : YSCALEBAR_LABEL_OFFSET
+        const ticks = axisPropsFromTickScale(
+          getScale({
+            domain,
+            inverted: getConf(self, 'inverted') as boolean,
+            range: [rowHeight - offset, offset],
+            scaleType,
+          }),
+          4,
+        )
+        return useMinimalTicks ? { ...ticks, values: domain } : ticks
+      },
     }))
     .views(self => {
       const { renderProps: superRenderProps } = self
       return {
+        /**
+         * #getter
+         */
+        get fillSetting() {
+          if (self.filled) {
+            return 0
+          } else if (!self.filled && self.minSize === 1) {
+            return 1
+          } else {
+            return 2
+          }
+        },
+
+        /**
+         * #getter
+         */
+        get hasGlobalStats() {
+          return self.adapterCapabilities.includes('hasGlobalStats')
+        },
+
+        /**
+         * #getter
+         */
+        get hasResolution() {
+          return self.adapterCapabilities.includes('hasResolution')
+        },
+
         /**
          * #method
          */
@@ -304,47 +338,20 @@ export function stateModelFactory(
           } = self
           return {
             ...superProps,
-            notReady: superProps.notReady || !sources || !stats,
-            displayModel: self,
             config,
             displayCrossHatches,
+            displayModel: self,
             filters,
             height,
+            notReady: superProps.notReady || !sources || !stats,
+            onMouseLeave: () => self.setFeatureUnderMouse(undefined),
+            onMouseMove: (_: unknown, f: Feature) =>
+              self.setFeatureUnderMouse(f),
             resolution,
             rpcDriverName,
             scaleOpts,
             sources,
             ticks,
-            onMouseMove: (_: unknown, f: Feature) =>
-              self.setFeatureUnderMouse(f),
-            onMouseLeave: () => self.setFeatureUnderMouse(undefined),
-          }
-        },
-
-        /**
-         * #getter
-         */
-        get hasResolution() {
-          return self.adapterCapabilities.includes('hasResolution')
-        },
-
-        /**
-         * #getter
-         */
-        get hasGlobalStats() {
-          return self.adapterCapabilities.includes('hasGlobalStats')
-        },
-
-        /**
-         * #getter
-         */
-        get fillSetting() {
-          if (self.filled) {
-            return 0
-          } else if (!self.filled && self.minSize === 1) {
-            return 1
-          } else {
-            return 2
           }
         },
       }
@@ -370,10 +377,10 @@ export function stateModelFactory(
                     label: 'Fill mode',
                     subMenu: ['filled', 'no fill', 'no fill w/ emphasis'].map(
                       (elt, idx) => ({
-                        label: elt,
-                        type: 'radio',
                         checked: self.fillSetting === idx,
+                        label: elt,
                         onClick: () => self.setFill(idx),
+                        type: 'radio',
                       }),
                     ),
                   },
@@ -383,10 +390,10 @@ export function stateModelFactory(
             ...(self.needsScalebar
               ? [
                   {
-                    type: 'checkbox',
-                    label: 'Draw cross hatches',
                     checked: self.displayCrossHatchesSetting,
+                    label: 'Draw cross hatches',
                     onClick: () => self.toggleCrossHatches(),
+                    type: 'checkbox',
                   },
                 ]
               : []),
@@ -401,10 +408,10 @@ export function stateModelFactory(
                       'multiline',
                       'multirowline',
                     ].map(key => ({
-                      label: key,
-                      type: 'radio',
                       checked: self.rendererTypeNameSimple === key,
+                      label: key,
                       onClick: () => self.setRendererType(key),
+                      type: 'radio',
                     })),
                   },
                 ]
@@ -415,7 +422,7 @@ export function stateModelFactory(
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   SetColorDialog,
-                  { model: self, handleClose },
+                  { handleClose, model: self },
                 ])
               },
             },
@@ -441,8 +448,8 @@ export function stateModelFactory(
                   sessionId,
                   'MultiWiggleGetSources',
                   {
-                    sessionId,
                     adapterConfig,
+                    sessionId,
                   },
                 )) as Source[]
                 if (isAlive(self)) {

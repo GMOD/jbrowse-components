@@ -49,12 +49,12 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
     const { version, fileType } = header
     const { fields, ...rest } = parser.autoSql
     return {
-      version,
-      fileType,
       autoSql: { ...rest },
       fields: Object.fromEntries(
         fields.map(({ name, comment }) => [name, comment]),
       ),
+      fileType,
+      version,
     }
   }
 
@@ -65,8 +65,8 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
       try {
         const { parser, bigbed } = await this.configure(opts)
         const ob = await bigbed.getFeatureStream(refName, start, end, {
-          signal,
           basesPerSpan: end - start,
+          signal,
         })
         ob.pipe(
           mergeAll(),
@@ -89,10 +89,10 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
                 const bmin = (starts[b] || 0) + blocksOffset
                 const bmax = bmin + (sizes[b] || 0)
                 data.subfeatures.push({
-                  uniqueId: `${r.uniqueId}-${b}`,
-                  start: bmin,
                   end: bmax,
+                  start: bmin,
                   type: 'block',
+                  uniqueId: `${r.uniqueId}-${b}`,
                 })
               }
             }
@@ -102,13 +102,13 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
             const { chromStart, chromEnd, chrom, ...rest } = data
 
             const f = new SimpleFeature({
-              id: `${this.id}-${r.uniqueId}`,
               data: {
                 ...rest,
-                start: r.start,
                 end: r.end,
                 refName,
+                start: r.start,
               },
+              id: `${this.id}-${r.uniqueId}`,
             })
 
             // collection of heuristics for suggesting that this feature

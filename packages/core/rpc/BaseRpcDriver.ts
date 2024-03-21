@@ -39,8 +39,8 @@ export async function watchWorker(
   // after first ping succeeds, apply wait for timeout
   while (true) {
     await worker.call('ping', [], {
-      timeout: pingTime * 2,
       rpcDriverClassName,
+      timeout: pingTime * 2,
     })
     await new Promise(resolve => setTimeout(resolve, pingTime))
   }
@@ -150,7 +150,7 @@ export default abstract class BaseRpcDriver {
     await worker.call(
       functionName,
       { signalId },
-      { timeout: 1000000, rpcDriverClassName: this.name },
+      { rpcDriverClassName: this.name, timeout: 1000000 },
     )
   }
 
@@ -215,9 +215,10 @@ export default abstract class BaseRpcDriver {
     // now actually call the worker
     const callP = worker
       .call(functionName, filteredAndSerializedArgs, {
-        timeout: 5 * 60 * 1000, // 5 minutes
-        statusCallback: args.statusCallback,
         rpcDriverClassName: this.name,
+        // 5 minutes
+        statusCallback: args.statusCallback,
+        timeout: 5 * 60 * 1000,
         ...options,
       })
       .finally(() => {

@@ -8,20 +8,20 @@ import { AbstractSessionModel } from '@jbrowse/core/util'
 import ShareIcon from '@mui/icons-material/Share'
 
 const useStyles = makeStyles()(theme => ({
-  shareDiv: {
-    textAlign: 'center',
-    paddingLeft: '2px',
-  },
   shareButton: {
-    backgroundColor: alpha(
-      theme.palette.primary.contrastText,
-      theme.palette.action.hoverOpacity,
-    ),
     '&:hover': {
       '@media (hover: none)': {
         backgroundColor: 'transparent',
       },
     },
+    backgroundColor: alpha(
+      theme.palette.primary.contrastText,
+      theme.palette.action.hoverOpacity,
+    ),
+  },
+  shareDiv: {
+    paddingLeft: '2px',
+    textAlign: 'center',
   },
 }))
 

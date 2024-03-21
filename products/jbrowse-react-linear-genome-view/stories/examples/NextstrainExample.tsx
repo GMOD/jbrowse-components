@@ -10,9 +10,6 @@ export const NextstrainExample = () => {
   const { assembly, tracks, defaultSession } = nextstrainConfig
   const state = createViewState({
     assembly,
-    tracks,
-    defaultSession,
-    location: 'SARS-CoV-2:1..29,903',
     configuration: {
       theme: {
         palette: {
@@ -25,6 +22,9 @@ export const NextstrainExample = () => {
         },
       },
     },
+    defaultSession,
+    location: 'SARS-CoV-2:1..29,903',
+    tracks,
   })
   return (
     <div>

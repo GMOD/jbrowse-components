@@ -8,9 +8,9 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addRendererType(
     () =>
       new ArcRenderer({
-        name: 'ArcRenderer',
         ReactComponent,
         configSchema,
+        name: 'ArcRenderer',
         pluginManager,
       }),
   )

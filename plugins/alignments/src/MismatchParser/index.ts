@@ -43,11 +43,11 @@ export function cigarToMismatches(
             seq[soffset + j].toUpperCase() !== ref[roffset + j].toUpperCase()
           ) {
             mismatches.push({
+              altbase: ref[roffset + j],
+              base: seq[soffset + j],
+              length: 1,
               start: roffset + j,
               type: 'mismatch',
-              base: seq[soffset + j],
-              altbase: ref[roffset + j],
-              length: 1,
             })
           }
         }
@@ -56,25 +56,25 @@ export function cigarToMismatches(
     }
     if (op === 'I') {
       mismatches.push({
-        start: roffset,
-        type: 'insertion',
         base: `${len}`,
         length: 0,
+        start: roffset,
+        type: 'insertion',
       })
       soffset += len
     } else if (op === 'D') {
       mismatches.push({
-        start: roffset,
-        type: 'deletion',
         base: '*',
         length: len,
+        start: roffset,
+        type: 'deletion',
       })
     } else if (op === 'N') {
       mismatches.push({
-        start: roffset,
-        type: 'skip',
         base: 'N',
         length: len,
+        start: roffset,
+        type: 'skip',
       })
     } else if (op === 'X') {
       const r = seq?.slice(soffset, soffset + len) || []
@@ -82,29 +82,29 @@ export function cigarToMismatches(
 
       for (let j = 0; j < len; j++) {
         mismatches.push({
+          base: r[j],
+          length: 1,
+          qual: q[j],
           start: roffset + j,
           type: 'mismatch',
-          base: r[j],
-          qual: q[j],
-          length: 1,
         })
       }
       soffset += len
     } else if (op === 'H') {
       mismatches.push({
-        start: roffset,
-        type: 'hardclip',
         base: `H${len}`,
         cliplen: len,
         length: 1,
+        start: roffset,
+        type: 'hardclip',
       })
     } else if (op === 'S') {
       mismatches.push({
-        start: roffset,
-        type: 'softclip',
         base: `S${len}`,
         cliplen: len,
         length: 1,
+        start: roffset,
+        type: 'softclip',
       })
       soffset += len
     }
@@ -127,7 +127,7 @@ export function mdToMismatches(
   seq: string,
   qual?: Buffer,
 ) {
-  let curr: Mismatch = { start: 0, base: '', length: 0, type: 'mismatch' }
+  let curr: Mismatch = { base: '', length: 0, start: 0, type: 'mismatch' }
   let lastCigar = 0
   let lastTemplateOffset = 0
   let lastRefOffset = 0
@@ -144,9 +144,9 @@ export function mdToMismatches(
 
     // get a new mismatch record ready
     curr = {
-      start: curr.start + curr.length,
-      length: 0,
       base: '',
+      length: 0,
+      start: curr.start + curr.length,
       type: 'mismatch',
     }
   }
@@ -332,7 +332,7 @@ export function getModificationPositions(
     if (strand === '-') {
       console.warn('unsupported negative strand modifications')
       // make sure to return a somewhat matching type even in this case
-      result.push({ type: 'unsupported', positions: [] as number[] })
+      result.push({ positions: [] as number[], type: 'unsupported' })
     }
 
     // this logic also based on parse_mm.pl from hts-specs is that in the
@@ -358,8 +358,8 @@ export function getModificationPositions(
         positions.sort((a, b) => a - b)
       }
       result.push({
-        type,
         positions,
+        type,
       })
     }
   }
@@ -487,19 +487,19 @@ export function featurizeSA(
         )
         const saRealStart = +saStart - 1
         return {
-          refName: saRef,
-          start: saRealStart,
-          end: saRealStart + saLengthOnRef,
-          seqLength: saLength,
-          clipPos: saClipPos,
           CIGAR: saCigar,
-          strand: (normalize ? strand : 1) * saStrandNormalized,
-          uniqueId: `${id}_SA${index}`,
+          clipPos: saClipPos,
+          end: saRealStart + saLengthOnRef,
           mate: {
-            start: saClipPos,
             end: saClipPos + saLengthSansClipping,
             refName: readName,
+            start: saClipPos,
           },
+          refName: saRef,
+          seqLength: saLength,
+          start: saRealStart,
+          strand: (normalize ? strand : 1) * saStrandNormalized,
+          uniqueId: `${id}_SA${index}`,
         }
       }) || []
   )

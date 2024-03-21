@@ -7,13 +7,13 @@ import { lazy } from 'react'
 export default (pluginManager: PluginManager) => {
   pluginManager.addWidgetType(() => {
     return new WidgetType({
-      name: 'HierarchicalTrackSelectorWidget',
-      heading: 'Available tracks',
-      configSchema,
-      stateModel: stateModelFactory(pluginManager),
       ReactComponent: lazy(
         () => import('./components/HierarchicalTrackSelector'),
       ),
+      configSchema,
+      heading: 'Available tracks',
+      name: 'HierarchicalTrackSelectorWidget',
+      stateModel: stateModelFactory(pluginManager),
     })
   })
 }

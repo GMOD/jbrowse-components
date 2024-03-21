@@ -6,26 +6,26 @@ import MyConfigSchema from './configSchema'
 test('adapter can fetch features from peach_grape.paf', async () => {
   const adapter = new Adapter(
     MyConfigSchema.create({
+      assemblyNames: ['peach', 'grape'],
       pafLocation: {
         localPath: require.resolve('./test_data/peach_grape.paf'),
         locationType: 'LocalPathLocation',
       },
-      assemblyNames: ['peach', 'grape'],
     }),
   )
 
   const features1 = adapter.getFeatures({
+    assemblyName: 'peach',
+    end: 200000,
     refName: 'Pp01',
     start: 0,
-    end: 200000,
-    assemblyName: 'peach',
   })
 
   const features2 = adapter.getFeatures({
+    assemblyName: 'grape',
+    end: 200000,
     refName: 'chr1',
     start: 0,
-    end: 200000,
-    assemblyName: 'grape',
   })
 
   const fa1 = await firstValueFrom(features1.pipe(toArray()))

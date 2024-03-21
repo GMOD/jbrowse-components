@@ -65,10 +65,10 @@ export function getCytobands(assembly: Assembly | undefined, refName: string) {
   return (
     assembly?.cytobands
       ?.map(f => ({
+        end: f.get('end'),
         refName:
           assembly.getCanonicalRefName(f.get('refName')) || f.get('refName'),
         start: f.get('start'),
-        end: f.get('end'),
         type: f.get('type') as string,
       }))
       .filter(f => f.refName === refName) || []

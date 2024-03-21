@@ -1,64 +1,64 @@
 import calculateVisibleRegions from './calculateDynamicBlocks'
 
-const ctgA = { assemblyName: 'test', refName: 'ctgA', start: 0, end: 50000 }
+const ctgA = { assemblyName: 'test', end: 50000, refName: 'ctgA', start: 0 }
 
 test('one', () => {
   expect(
     calculateVisibleRegions({
+      bpPerPx: 1,
+      displayedRegions: [ctgA],
+      interRegionPaddingWidth: 2,
+      minimumBlockWidth: 20,
       offsetPx: 0,
       width: 200,
-      displayedRegions: [ctgA],
-      bpPerPx: 1,
-      minimumBlockWidth: 20,
-      interRegionPaddingWidth: 2,
     }).getBlocks(),
   ).toMatchSnapshot()
 })
 test('two', () => {
   expect(
     calculateVisibleRegions({
+      bpPerPx: 1,
+      displayedRegions: [{ ...ctgA, reversed: true }],
+      interRegionPaddingWidth: 2,
+      minimumBlockWidth: 20,
       offsetPx: 0,
       width: 200,
-      displayedRegions: [{ ...ctgA, reversed: true }],
-      bpPerPx: 1,
-      minimumBlockWidth: 20,
-      interRegionPaddingWidth: 2,
     }).getBlocks(),
   ).toMatchSnapshot()
 })
 test('three', () => {
   expect(
     calculateVisibleRegions({
+      bpPerPx: 1,
+      displayedRegions: [{ ...ctgA, reversed: true }],
+      interRegionPaddingWidth: 2,
+      minimumBlockWidth: 20,
       offsetPx: -100,
       width: 200,
-      displayedRegions: [{ ...ctgA, reversed: true }],
-      bpPerPx: 1,
-      minimumBlockWidth: 20,
-      interRegionPaddingWidth: 2,
     }).getBlocks(),
   ).toMatchSnapshot()
 })
 test('four', () => {
   expect(
     calculateVisibleRegions({
+      bpPerPx: 1,
+      displayedRegions: [ctgA],
+      interRegionPaddingWidth: 2,
+      minimumBlockWidth: 20,
       offsetPx: -100,
       width: 350,
-      displayedRegions: [ctgA],
-      bpPerPx: 1,
-      minimumBlockWidth: 20,
-      interRegionPaddingWidth: 2,
     }).getBlocks(),
   ).toMatchSnapshot()
 })
 test('five', () => {
   expect(
     calculateVisibleRegions({
+      bpPerPx: 0.05,
+      displayedRegions: [{ ...ctgA, reversed: false }],
+      interRegionPaddingWidth: 2,
+      minimumBlockWidth: 20,
       offsetPx: 521,
       width: 927,
-      displayedRegions: [{ ...ctgA, reversed: false }],
-      bpPerPx: 0.05,
-      minimumBlockWidth: 20,
-      interRegionPaddingWidth: 2,
     }).getBlocks(),
   ).toMatchSnapshot()
 })

@@ -200,10 +200,10 @@ const GetSequenceDialog = observer(function ({
               : sequence
           }
           InputProps={{
-            readOnly: true,
             classes: {
               input: classes.textAreaFont,
             },
+            readOnly: true,
           }}
         />
         <FormGroup>

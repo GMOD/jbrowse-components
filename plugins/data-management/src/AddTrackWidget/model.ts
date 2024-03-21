@@ -44,74 +44,22 @@ export default function f(pluginManager: PluginManager) {
       ),
     })
     .volatile(() => ({
-      trackSource: 'fromFile',
-      trackData: undefined as FileLocation | undefined,
-      indexTrackData: undefined as FileLocation | undefined,
+      adapterHint: '',
 
       // alts
       altAssemblyName: '',
-      altTrackName: '',
-      altTrackType: '',
 
-      adapterHint: '',
+      altTrackName: '',
+
+      altTrackType: '',
+      indexTrackData: undefined as FileLocation | undefined,
       textIndexTrack: true,
+
       textIndexingConf: undefined as IndexingAttr | undefined,
+      trackData: undefined as FileLocation | undefined,
+      trackSource: 'fromFile',
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      setAdapterHint(obj: string) {
-        self.adapterHint = obj
-      },
-      /**
-       * #action
-       */
-      setTrackSource(str: string) {
-        self.trackSource = str
-      },
-      /**
-       * #action
-       */
-      setTextIndexingConf(conf: IndexingAttr) {
-        self.textIndexingConf = conf
-      },
-      /**
-       * #action
-       */
-      setTextIndexTrack(flag: boolean) {
-        self.textIndexTrack = flag
-      },
-      /**
-       * #action
-       */
-      setTrackData(obj: FileLocation) {
-        self.trackData = obj
-      },
-      /**
-       * #action
-       */
-      setIndexTrackData(obj: FileLocation) {
-        self.indexTrackData = obj
-      },
-      /**
-       * #action
-       */
-      setAssembly(str: string) {
-        self.altAssemblyName = str
-      },
-      /**
-       * #action
-       */
-      setTrackName(str: string) {
-        self.altTrackName = str
-      },
-      /**
-       * #action
-       */
-      setTrackType(str: string) {
-        self.altTrackType = str
-      },
       /**
        * #action
        */
@@ -126,27 +74,84 @@ export default function f(pluginManager: PluginManager) {
         self.textIndexingConf = undefined
         self.textIndexTrack = true
       },
+
+      /**
+       * #action
+       */
+      setAdapterHint(obj: string) {
+        self.adapterHint = obj
+      },
+
+      /**
+       * #action
+       */
+      setAssembly(str: string) {
+        self.altAssemblyName = str
+      },
+
+      /**
+       * #action
+       */
+      setIndexTrackData(obj: FileLocation) {
+        self.indexTrackData = obj
+      },
+
+      /**
+       * #action
+       */
+      setTextIndexTrack(flag: boolean) {
+        self.textIndexTrack = flag
+      },
+
+      /**
+       * #action
+       */
+      setTextIndexingConf(conf: IndexingAttr) {
+        self.textIndexingConf = conf
+      },
+
+      /**
+       * #action
+       */
+      setTrackData(obj: FileLocation) {
+        self.trackData = obj
+      },
+
+      /**
+       * #action
+       */
+      setTrackName(str: string) {
+        self.altTrackName = str
+      },
+
+      /**
+       * #action
+       */
+      setTrackSource(str: string) {
+        self.trackSource = str
+      },
+
+      /**
+       * #action
+       */
+      setTrackType(str: string) {
+        self.altTrackType = str
+      },
     }))
     .views(self => ({
       /**
        * #getter
        */
-      get trackAdapter() {
-        const { trackData, indexTrackData, adapterHint } = self
-
-        return trackData
-          ? guessAdapter(trackData, indexTrackData, adapterHint, self)
-          : undefined
+      get assembly() {
+        return self.altAssemblyName || self.view.assemblyNames?.[0]
       },
 
       /**
        * #getter
        */
-      get trackName() {
-        return (
-          self.altTrackName ||
-          (self.trackData ? getFileName(self.trackData) : '')
-        )
+      get indexHttp() {
+        // @ts-expect-error
+        return self.indexTrackData?.uri?.startsWith('http://')
       },
 
       /**
@@ -163,19 +168,21 @@ export default function f(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get isRelativeTrackUrl() {
-        // @ts-expect-error
-        const uri = self.trackData?.uri
-        return uri ? !isAbsoluteUrl(uri) : false
-      },
-      /**
-       * #getter
-       */
       get isRelativeIndexUrl() {
         // @ts-expect-error
         const uri = self.indexTrackData?.uri
         return uri ? !isAbsoluteUrl(uri) : false
       },
+
+      /**
+       * #getter
+       */
+      get isRelativeTrackUrl() {
+        // @ts-expect-error
+        const uri = self.trackData?.uri
+        return uri ? !isAbsoluteUrl(uri) : false
+      },
+
       /**
        * #getter
        */
@@ -186,25 +193,41 @@ export default function f(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get trackHttp() {
-        // @ts-expect-error
-        return self.trackData?.uri?.startsWith('http://')
-      },
-      /**
-       * #getter
-       */
-      get indexHttp() {
-        // @ts-expect-error
-        return self.indexTrackData?.uri?.startsWith('http://')
+      get trackAdapter() {
+        const { trackData, indexTrackData, adapterHint } = self
+
+        return trackData
+          ? guessAdapter(trackData, indexTrackData, adapterHint, self)
+          : undefined
       },
 
       /**
        * #getter
        */
-      get wrongProtocol() {
+      get trackHttp() {
+        // @ts-expect-error
+        return self.trackData?.uri?.startsWith('http://')
+      },
+
+      /**
+       * #getter
+       */
+      get trackName() {
         return (
-          window.location.protocol === 'https:' &&
-          (this.trackHttp || this.indexHttp)
+          self.altTrackName ||
+          (self.trackData ? getFileName(self.trackData) : '')
+        )
+      },
+
+      /**
+       * #getter
+       */
+      get trackType() {
+        return (
+          self.altTrackType ||
+          (this.trackAdapter
+            ? guessTrackType(this.trackAdapter.type, self)
+            : '')
         )
       },
 
@@ -218,19 +241,10 @@ export default function f(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get assembly() {
-        return self.altAssemblyName || self.view.assemblyNames?.[0]
-      },
-
-      /**
-       * #getter
-       */
-      get trackType() {
+      get wrongProtocol() {
         return (
-          self.altTrackType ||
-          (this.trackAdapter
-            ? guessTrackType(this.trackAdapter.type, self)
-            : '')
+          window.location.protocol === 'https:' &&
+          (this.trackHttp || this.indexHttp)
         )
       },
     }))

@@ -6,13 +6,13 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addAdapterType(
     () =>
       new AdapterType({
-        name: 'FromConfigAdapter',
-        configSchema,
-        getAdapterClass: () =>
-          import('./FromConfigAdapter').then(r => r.default),
         adapterMetadata: {
           hiddenFromGUI: true,
         },
+        configSchema,
+        getAdapterClass: () =>
+          import('./FromConfigAdapter').then(r => r.default),
+        name: 'FromConfigAdapter',
       }),
   )
 }

@@ -80,10 +80,10 @@ function stateModelFactory(
           return undefined
         }
         const scale = getScale({
-          scaleType,
           domain,
-          range,
           inverted,
+          range,
+          scaleType,
         })
         const ticks = axisPropsFromTickScale(scale, 4)
         return height < 100 || minimalTicks
@@ -95,23 +95,15 @@ function stateModelFactory(
       const { renderProps: superRenderProps } = self
       return {
         /**
-         * #method
+         * #getter
          */
-        renderProps() {
-          const superProps = superRenderProps()
-          const { filters, ticks, height, resolution, scaleOpts } = self
-          return {
-            ...superProps,
-            notReady: superProps.notReady || !self.stats,
-            rpcDriverName: self.rpcDriverName,
-            displayModel: self,
-            config: self.rendererConfig,
-            displayCrossHatches: self.displayCrossHatchesSetting,
-            scaleOpts,
-            resolution,
-            height,
-            ticks,
-            filters,
+        get fillSetting() {
+          if (self.filled) {
+            return 0
+          } else if (!self.filled && self.minSize === 1) {
+            return 1
+          } else {
+            return 2
           }
         },
 
@@ -122,16 +114,25 @@ function stateModelFactory(
           const { rendererTypeName: type } = self
           return type === 'XYPlotRenderer' || type === 'LinePlotRenderer'
         },
+
         /**
-         * #getter
+         * #method
          */
-        get fillSetting() {
-          if (self.filled) {
-            return 0
-          } else if (!self.filled && self.minSize === 1) {
-            return 1
-          } else {
-            return 2
+        renderProps() {
+          const superProps = superRenderProps()
+          const { filters, ticks, height, resolution, scaleOpts } = self
+          return {
+            ...superProps,
+            config: self.rendererConfig,
+            displayCrossHatches: self.displayCrossHatchesSetting,
+            displayModel: self,
+            filters,
+            height,
+            notReady: superProps.notReady || !self.stats,
+            resolution,
+            rpcDriverName: self.rpcDriverName,
+            scaleOpts,
+            ticks,
           }
         },
       }
@@ -157,10 +158,10 @@ function stateModelFactory(
                     label: 'Fill mode',
                     subMenu: ['filled', 'no fill', 'no fill w/ emphasis'].map(
                       (elt, idx) => ({
-                        label: elt,
-                        type: 'radio',
                         checked: self.fillSetting === idx,
+                        label: elt,
                         onClick: () => self.setFill(idx),
+                        type: 'radio',
                       }),
                     ),
                   },
@@ -170,10 +171,10 @@ function stateModelFactory(
             ...(self.needsScalebar
               ? [
                   {
-                    type: 'checkbox',
-                    label: 'Draw cross hatches',
                     checked: self.displayCrossHatchesSetting,
+                    label: 'Draw cross hatches',
                     onClick: () => self.toggleCrossHatches(),
+                    type: 'checkbox',
                   },
                 ]
               : []),
@@ -183,10 +184,10 @@ function stateModelFactory(
                   {
                     label: 'Renderer type',
                     subMenu: ['xyplot', 'density', 'line'].map(key => ({
-                      label: key,
-                      type: 'radio',
                       checked: self.rendererTypeNameSimple === key,
+                      label: key,
                       onClick: () => self.setRendererType(key),
+                      type: 'radio',
                     })),
                   },
                 ]
@@ -197,7 +198,7 @@ function stateModelFactory(
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   SetColorDialog,
-                  { model: self, handleClose },
+                  { handleClose, model: self },
                 ])
               },
             },

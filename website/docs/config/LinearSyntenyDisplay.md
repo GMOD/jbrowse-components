@@ -12,23 +12,23 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ### LinearSyntenyDisplay - Slots
 
+#### slot: middle
+
+currently unused
+
+```js
+middle: { defaultValue: true, type: 'boolean' }
+```
+
 #### slot: trackIds
 
 currently unused
 
 ```js
 trackIds: {
-        type: 'stringArray',
         defaultValue: [],
+        type: 'stringArray',
       }
-```
-
-#### slot: middle
-
-currently unused
-
-```js
-middle: { type: 'boolean', defaultValue: true }
 ```
 
 ### LinearSyntenyDisplay - Derives from

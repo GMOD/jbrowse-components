@@ -13,8 +13,8 @@ const configSchema = ConfigurationSchema(
      * normally refers to a BAM or CRAM adapter
      */
     subadapter: {
-      type: 'frozen',
       defaultValue: null,
+      type: 'frozen',
     },
   },
   { explicitlyTyped: true },

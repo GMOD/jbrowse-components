@@ -12,23 +12,24 @@ const JBrowse1Connection = ConfigurationSchema(
     /**
      * #slot
      */
-    dataDirLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: 'http://mysite.com/jbrowse/data/',
-        locationType: 'UriLocation',
-      },
-      description:
-        'the location of the JBrowse 1 data directory, often something like http://mysite.com/jbrowse/data/',
-    },
-    /**
-     * #slot
-     */
     assemblyNames: {
+      defaultValue: [],
       description:
         'name of the assembly the connection belongs to, should be a single entry',
       type: 'stringArray',
-      defaultValue: [],
+    },
+
+    /**
+     * #slot
+     */
+    dataDirLocation: {
+      defaultValue: {
+        locationType: 'UriLocation',
+        uri: 'http://mysite.com/jbrowse/data/',
+      },
+      description:
+        'the location of the JBrowse 1 data directory, often something like http://mysite.com/jbrowse/data/',
+      type: 'fileLocation',
     },
   },
   {

@@ -12,43 +12,47 @@ export const BaseInternetAccountConfig = ConfigurationSchema(
     /**
      * #slot
      */
-    name: {
-      description: 'descriptive name of the internet account',
+    authHeader: {
+      defaultValue: 'Authorization',
+      description: 'request header for credentials',
       type: 'string',
-      defaultValue: '',
     },
+
     /**
      * #slot
      */
     description: {
+      defaultValue: '',
       description: 'a description of the internet account',
       type: 'string',
-      defaultValue: '',
     },
-    /**
-     * #slot
-     */
-    authHeader: {
-      description: 'request header for credentials',
-      type: 'string',
-      defaultValue: 'Authorization',
-    },
-    /**
-     * #slot
-     */
-    tokenType: {
-      description: 'a custom name for a token to include in the header',
-      type: 'string',
-      defaultValue: '',
-    },
+
     /**
      * #slot
      */
     domains: {
+      defaultValue: [],
       description:
         'array of valid domains the url can contain to use this account',
       type: 'stringArray',
-      defaultValue: [],
+    },
+
+    /**
+     * #slot
+     */
+    name: {
+      defaultValue: '',
+      description: 'descriptive name of the internet account',
+      type: 'string',
+    },
+
+    /**
+     * #slot
+     */
+    tokenType: {
+      defaultValue: '',
+      description: 'a custom name for a token to include in the header',
+      type: 'string',
     },
   },
   {

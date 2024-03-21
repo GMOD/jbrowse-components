@@ -65,10 +65,10 @@ yargs
     type: 'number',
   })
   .option('pngwidth', {
+    default: 2048,
     description:
       'Set the width of the png canvas if using png output, default 2048px',
     type: 'number',
-    default: 2048,
   })
   // track types
   .option('configtracks', {
@@ -118,10 +118,10 @@ yargs
 
   // other
   .option('out', {
+    default: 'out.svg',
     description:
       'File to output to. Default: out.svg. If a filename with extension .png is supplied the program will try to automatically execute rsvg-convert to convert it to png',
     type: 'string',
-    default: 'out.svg',
   })
   .option('noRasterize', {
     description:

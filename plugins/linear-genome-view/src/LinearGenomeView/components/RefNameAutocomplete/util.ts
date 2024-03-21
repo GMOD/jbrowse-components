@@ -57,8 +57,8 @@ export function getDeduplicatedResult(results: BaseResult[]) {
             // deduplicate a "multi-result"
             result: new BaseResult({
               displayString,
-              results,
               label: displayString,
+              results,
             }),
           },
   )

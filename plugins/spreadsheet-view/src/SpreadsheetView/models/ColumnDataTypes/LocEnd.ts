@@ -10,12 +10,12 @@ const FilterModelType = types.compose(
 )
 
 const LocEnd = MakeSpreadsheetColumnType('LocEnd', {
+  FilterModelType,
   categoryName: 'Location',
-  displayName: 'End',
   compare(cellA: { text: string }, cellB: { text: string }) {
     return parseFloat(cellA.text) - parseFloat(cellB.text)
   },
-  FilterModelType,
+  displayName: 'End',
 })
 
 export default LocEnd

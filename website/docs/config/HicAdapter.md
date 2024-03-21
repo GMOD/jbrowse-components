@@ -16,10 +16,10 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ```js
 hicLocation: {
-      type: 'fileLocation',
       defaultValue: {
-        uri: '/path/to/my.hic',
         locationType: 'UriLocation',
+        uri: '/path/to/my.hic',
       },
+      type: 'fileLocation',
     }
 ```

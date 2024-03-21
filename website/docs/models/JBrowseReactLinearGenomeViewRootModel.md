@@ -14,31 +14,22 @@ info
 
 ### JBrowseReactLinearGenomeViewRootModel - Properties
 
-#### property: config
-
-```js
-// type signature
-IModelType<{ configuration: ConfigurationSchemaType<{ rpc: ConfigurationSchemaType<{ defaultDriver: { type: string; description: string; defaultValue: string; }; drivers: IOptionalIType<IMapType<ITypeUnion<ModelCreationType<ExtractCFromProps<Record<string, any>>>, ModelSnapshotType<...>, {} & ... 1 more ... & NonEmp...
-// code
-config: createConfigModel(pluginManager, assemblyConfig)
-```
-
-#### property: session
-
-```js
-// type signature
-IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number, number, number>; } & { ...; } & { ...; } & { ...; } & { ...; }, { ...; } & ... 21 more ... & { ...; }, _NotCustomized, _NotCustomized>
-// code
-session: Session
-```
-
 #### property: assemblyManager
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loaded: boolean; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; lowerCaseRefNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 5 more...
+IOptionalIType<IModelType<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { cytobands: Feature[]; error: unknown; loaded: boolean; loadingP: Promise<void>; lowerCaseRefNameAliases: RefNameAliases; refNameAliases: RefNameAliases; volatileRegions: BasicRegion[]; } & ... 5 more...
 // code
 assemblyManager: types.optional(AssemblyManager, {})
+```
+
+#### property: config
+
+```js
+// type signature
+IModelType<{ aggregateTextSearchAdapters: IArrayType<IAnyModelType>; assembly: IAnyType; configuration: ConfigurationSchemaType<{ formatAbout: ConfigurationSchemaType<{ config: { contextVariable: string[]; defaultValue: {}; description: string; type: string; }; hideUris: { ...; }; }, ConfigurationSchemaOptions<...>>...
+// code
+config: createConfigModel(pluginManager, assemblyConfig)
 ```
 
 #### property: disableAddTracks
@@ -61,22 +52,38 @@ internetAccounts: types.array(
       )
 ```
 
+#### property: session
+
+```js
+// type signature
+IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; margin: IType<number, number, number>; name: ISimpleType<string>; } & { ...; } & { ...; } & { ...; } & { ...; }, { ...; } & ... 21 more ... & { ...; }, _NotCustomized, _NotCustomized>
+// code
+session: Session
+```
+
 ### JBrowseReactLinearGenomeViewRootModel - Getters
 
 #### getter: jbrowse
 
 ```js
 // type
-{ configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<ConfigurationSchemaType<{ rpc: ConfigurationSchemaType<{ defaultDriver: { type: string; description: string; defaultValue: string; }; drivers: IOptionalIType<...>; }, ConfigurationSchema...
+{ aggregateTextSearchAdapters: IMSTArray<IAnyModelType> & IStateTreeNode<IArrayType<IAnyModelType>>; ... 5 more ...; tracks: IMSTArray<...> & IStateTreeNode<...>; } & NonEmptyObject & { ...; } & IStateTreeNode<...>
 ```
 
 ### JBrowseReactLinearGenomeViewRootModel - Actions
 
-#### action: setSession
+#### action: addInternetAccount
 
 ```js
 // type signature
-setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number, number, number>; } & { ...; } & { ...; } & { ...; } & { ...; }>>) => void
+addInternetAccount: (internetAccount: any) => void
+```
+
+#### action: findAppropriateInternetAccount
+
+```js
+// type signature
+findAppropriateInternetAccount: (location: UriLocation) => any
 ```
 
 #### action: renameCurrentSession
@@ -93,16 +100,9 @@ renameCurrentSession: (sessionName: string) => void
 setError: (error: unknown) => void
 ```
 
-#### action: addInternetAccount
+#### action: setSession
 
 ```js
 // type signature
-addInternetAccount: (internetAccount: any) => void
-```
-
-#### action: findAppropriateInternetAccount
-
-```js
-// type signature
-findAppropriateInternetAccount: (location: UriLocation) => any
+setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; margin: IType<number, number, number>; name: ISimpleType<string>; } & { ...; } & { ...; } & { ...; } & { ...; }>>) => void
 ```

@@ -6,10 +6,10 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addAdapterType(
     () =>
       new AdapterType({
-        name: 'HicAdapter',
-        displayName: 'Hi-C adapter',
         configSchema,
+        displayName: 'Hi-C adapter',
         getAdapterClass: () => import('./HicAdapter').then(r => r.default),
+        name: 'HicAdapter',
       }),
   )
 }

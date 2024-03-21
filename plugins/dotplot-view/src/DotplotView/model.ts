@@ -86,55 +86,52 @@ export default function stateModelFactory(pm: PluginManager) {
         /**
          * #property
          */
-        id: ElementId,
-        /**
-         * #property
-         */
-        type: types.literal('DotplotView'),
-        /**
-         * #property
-         */
-        height: 600,
+        assemblyNames: types.array(types.string),
+
         /**
          * #property
          */
         borderSize: 20,
-        /**
-         * #property
-         */
-        tickSize: 5,
-        /**
-         * #property
-         */
-        vtextRotation: 0,
-        /**
-         * #property
-         */
-        htextRotation: -90,
-        /**
-         * #property
-         */
-        fontSize: 15,
-        /**
-         * #property
-         */
-        trackSelectorType: 'hierarchical',
-        /**
-         * #property
-         */
-        assemblyNames: types.array(types.string),
+
         /**
          * #property
          */
         drawCigar: true,
+
+        /**
+         * #property
+         */
+        fontSize: 15,
+
+        /**
+         * #property
+         */
+        height: 600,
+
+        /**
+         * #property
+         */
+        htextRotation: -90,
+
         /**
          * #property
          */
         hview: types.optional(DotplotHView, {}),
+
         /**
          * #property
          */
-        vview: types.optional(DotplotVView, {}),
+        id: ElementId,
+
+        /**
+         * #property
+         */
+        tickSize: 5,
+
+        /**
+         * #property
+         */
+        trackSelectorType: 'hierarchical',
 
         /**
          * #property
@@ -145,16 +142,32 @@ export default function stateModelFactory(pm: PluginManager) {
 
         /**
          * #property
+         */
+        type: types.literal('DotplotView'),
+
+        /**
+         * #property
          * this represents tracks specific to this view specifically used
          * for read vs ref dotplots where this track would not really apply
          * elsewhere
          */
         viewTrackConfigs: types.array(pm.pluggableConfigSchemaType('track')),
+
+        /**
+         * #property
+         */
+        vtextRotation: 0,
+
+        /**
+         * #property
+         */
+        vview: types.optional(DotplotVView, {}),
       }),
     )
     .volatile(() => ({
-      volatileWidth: undefined as number | undefined,
-      volatileError: undefined as unknown,
+      borderX: 100,
+
+      borderY: 100,
 
       // these are 'personal preferences', stored in volatile and
       // loaded/written to localStorage
@@ -162,9 +175,9 @@ export default function stateModelFactory(pm: PluginManager) {
       showPanButtons: Boolean(
         JSON.parse(localStorageGetItem('dotplot-showPanbuttons') || 'true'),
       ),
+      volatileError: undefined as unknown,
+      volatileWidth: undefined as number | undefined,
       wheelMode: localStorageGetItem('dotplot-wheelMode') || 'zoom',
-      borderX: 100,
-      borderY: 100,
     }))
     .views(self => ({
       /**
@@ -181,6 +194,16 @@ export default function stateModelFactory(pm: PluginManager) {
       /**
        * #getter
        */
+      get assembliesInitialized() {
+        const { assemblyManager } = getSession(self)
+        return self.assemblyNames.every(
+          n => assemblyManager.get(n)?.initialized ?? true,
+        )
+      },
+
+      /**
+       * #getter
+       */
       get assemblyErrors() {
         const { assemblyManager } = getSession(self)
         return self.assemblyNames
@@ -188,17 +211,19 @@ export default function stateModelFactory(pm: PluginManager) {
           .filter(f => !!f)
           .join(', ')
       },
+    }))
+    .views(self => ({
       /**
        * #getter
        */
-      get assembliesInitialized() {
-        const { assemblyManager } = getSession(self)
-        return self.assemblyNames.every(
-          n => assemblyManager.get(n)?.initialized ?? true,
-        )
+      get hticks() {
+        const { hview } = self
+        const { dynamicBlocks, staticBlocks, bpPerPx } = hview
+        return dynamicBlocks.contentBlocks.length > 5
+          ? []
+          : makeTicks(staticBlocks.contentBlocks, bpPerPx)
       },
-    }))
-    .views(self => ({
+
       /**
        * #getter
        */
@@ -210,49 +235,12 @@ export default function stateModelFactory(pm: PluginManager) {
           self.assembliesInitialized
         )
       },
-      /**
-       * #getter
-       */
-      get hticks() {
-        const { hview } = self
-        const { dynamicBlocks, staticBlocks, bpPerPx } = hview
-        return dynamicBlocks.contentBlocks.length > 5
-          ? []
-          : makeTicks(staticBlocks.contentBlocks, bpPerPx)
-      },
-      /**
-       * #getter
-       */
-      get vticks() {
-        const { vview } = self
-        const { dynamicBlocks, staticBlocks, bpPerPx } = vview
-        return dynamicBlocks.contentBlocks.length > 5
-          ? []
-          : makeTicks(staticBlocks.contentBlocks, bpPerPx)
-      },
+
       /**
        * #getter
        */
       get loading() {
         return self.assemblyNames.length > 0 && !this.initialized
-      },
-      /**
-       * #getter
-       */
-      get viewWidth() {
-        return self.width - self.borderX
-      },
-      /**
-       * #getter
-       */
-      get viewHeight() {
-        return self.height - self.borderY
-      },
-      /**
-       * #getter
-       */
-      get views() {
-        return [self.hview, self.vview]
       },
 
       /**
@@ -266,100 +254,40 @@ export default function stateModelFactory(pm: PluginManager) {
           highResolutionScaling: getConf(session, 'highResolutionScaling'),
         }
       },
+
+      /**
+       * #getter
+       */
+      get viewHeight() {
+        return self.height - self.borderY
+      },
+
+      /**
+       * #getter
+       */
+      get viewWidth() {
+        return self.width - self.borderX
+      },
+
+      /**
+       * #getter
+       */
+      get views() {
+        return [self.hview, self.vview]
+      },
+
+      /**
+       * #getter
+       */
+      get vticks() {
+        const { vview } = self
+        const { dynamicBlocks, staticBlocks, bpPerPx } = vview
+        return dynamicBlocks.contentBlocks.length > 5
+          ? []
+          : makeTicks(staticBlocks.contentBlocks, bpPerPx)
+      },
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      setShowPanButtons(flag: boolean) {
-        self.showPanButtons = flag
-      },
-      /**
-       * #action
-       */
-      setWheelMode(str: string) {
-        self.wheelMode = str
-      },
-      /**
-       * #action
-       */
-      setCursorMode(str: string) {
-        self.cursorMode = str
-      },
-      /**
-       * #action
-       */
-      setDrawCigar(flag: boolean) {
-        self.drawCigar = flag
-      },
-      /**
-       * #action
-       * returns to the import form
-       */
-      clearView() {
-        self.hview.setDisplayedRegions([])
-        self.vview.setDisplayedRegions([])
-        self.assemblyNames = cast([])
-        self.tracks.clear()
-      },
-      /**
-       * #action
-       */
-      setBorderX(n: number) {
-        self.borderX = n
-      },
-      /**
-       * #action
-       */
-      setBorderY(n: number) {
-        self.borderY = n
-      },
-      /**
-       * #action
-       */
-      setWidth(newWidth: number) {
-        self.volatileWidth = newWidth
-        return self.volatileWidth
-      },
-      /**
-       * #action
-       */
-      setHeight(newHeight: number) {
-        self.height = newHeight
-        return self.height
-      },
-
-      /**
-       * #action
-       */
-      setError(e: unknown) {
-        self.volatileError = e
-      },
-
-      /**
-       * #action
-       * removes the view itself from the state tree entirely by calling the
-       * parent removeView
-       */
-      closeView() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        getParent<any>(self, 2).removeView(self)
-      },
-
-      /**
-       * #action
-       */
-      zoomOutButton() {
-        self.hview.zoomOut()
-        self.vview.zoomOut()
-      },
-      /**
-       * #action
-       */
-      zoomInButton() {
-        self.hview.zoomIn()
-        self.vview.zoomIn()
-      },
       /**
        * #action
        */
@@ -377,6 +305,218 @@ export default function stateModelFactory(pm: PluginManager) {
           }
         }
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
+      },
+
+      /**
+       * #action
+       * returns to the import form
+       */
+      clearView() {
+        self.hview.setDisplayedRegions([])
+        self.vview.setDisplayedRegions([])
+        self.assemblyNames = cast([])
+        self.tracks.clear()
+      },
+
+      /**
+       * #action
+       * removes the view itself from the state tree entirely by calling the
+       * parent removeView
+       */
+      closeView() {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        getParent<any>(self, 2).removeView(self)
+      },
+
+      /**
+       * #action
+       */
+      getCoords(mousedown: Coord, mouseup: Coord) {
+        const [xmin, xmax] = minmax(mouseup[0], mousedown[0])
+        const [ymin, ymax] = minmax(mouseup[1], mousedown[1])
+        return Math.abs(xmax - xmin) > 3 && Math.abs(ymax - ymin) > 3
+          ? [
+              self.hview.pxToBp(xmin),
+              self.hview.pxToBp(xmax),
+              self.vview.pxToBp(self.viewHeight - ymin),
+              self.vview.pxToBp(self.viewHeight - ymax),
+            ]
+          : undefined
+      },
+
+      /**
+       * #action
+       */
+      hideTrack(trackId: string) {
+        const schema = pm.pluggableConfigSchemaType('track')
+        const conf = resolveIdentifier(schema, getRoot(self), trackId)
+        const t = self.tracks.filter(t => t.configuration === conf)
+        transaction(() => t.forEach(t => self.tracks.remove(t)))
+        return t.length
+      },
+
+      /**
+       * #action
+       * creates a linear synteny view from the clicked and dragged region
+       */
+      onDotplotView(mousedown: Coord, mouseup: Coord) {
+        const result = this.getCoords(mousedown, mouseup)
+        if (result) {
+          const [x1, x2, y1, y2] = result
+          const session = getSession(self)
+
+          const d1 = Dotplot1DView.create({
+            ...getSnapshot(self.hview),
+            interRegionPaddingWidth: 0,
+            minimumBlockWidth: 0,
+          })
+          const d2 = Dotplot1DView.create({
+            ...getSnapshot(self.vview),
+            interRegionPaddingWidth: 0,
+            minimumBlockWidth: 0,
+          })
+          d1.setVolatileWidth(self.hview.width)
+          d2.setVolatileWidth(self.vview.width)
+          d1.moveTo(x1, x2)
+          d2.moveTo(y2, y1)
+          d1.zoomTo(d1.bpPerPx / (self.width / self.hview.width), 0)
+          d2.zoomTo(d2.bpPerPx / (self.width / self.vview.width), 0)
+
+          // add the specific evidence tracks to the LGVs in the split view
+          // note: scales the bpPerPx by scaling proportional of the dotplot
+          // width to the eventual lgv width
+          const tracks = self.tracks
+            .map(track =>
+              track.configuration.displays.find(
+                (display: { type: string }) =>
+                  display.type === 'LinearSyntenyDisplay',
+              ),
+            )
+            .filter(f => !!f)
+            .map(displayConf => {
+              const trackConf = getParent<AnyConfigurationModel>(displayConf, 2)
+              return {
+                configuration: trackConf,
+                displays: [
+                  { configuration: displayConf, type: displayConf.type },
+                ],
+                type: trackConf.type,
+              }
+            })
+
+          const { id: _unused1, ...rest1 } = getSnapshot(d1)
+          const { id: _unused2, ...rest2 } = getSnapshot(d2)
+          const viewSnapshot = {
+            tracks,
+            type: 'LinearSyntenyView',
+            views: [
+              {
+                hideHeader: true,
+                tracks: [],
+                type: 'LinearGenomeView',
+                ...rest1,
+              },
+              {
+                hideHeader: true,
+                tracks: [],
+                type: 'LinearGenomeView',
+                ...rest2,
+              },
+            ],
+          }
+
+          session.addView('LinearSyntenyView', viewSnapshot)
+        }
+      },
+
+      /**
+       * #action
+       */
+      setAssemblyNames(target: string, query: string) {
+        self.assemblyNames = cast([target, query])
+      },
+
+      /**
+       * #action
+       */
+      setBorderX(n: number) {
+        self.borderX = n
+      },
+
+      /**
+       * #action
+       */
+      setBorderY(n: number) {
+        self.borderY = n
+      },
+
+      /**
+       * #action
+       */
+      setCursorMode(str: string) {
+        self.cursorMode = str
+      },
+
+      /**
+       * #action
+       */
+      setDrawCigar(flag: boolean) {
+        self.drawCigar = flag
+      },
+
+      /**
+       * #action
+       */
+      setError(e: unknown) {
+        self.volatileError = e
+      },
+
+      /**
+       * #action
+       */
+      setHeight(newHeight: number) {
+        self.height = newHeight
+        return self.height
+      },
+
+      /**
+       * #action
+       */
+      setShowPanButtons(flag: boolean) {
+        self.showPanButtons = flag
+      },
+
+      /**
+       * #action
+       */
+      setViews(arr: SnapshotIn<Base1DViewModel>[]) {
+        self.hview = cast(arr[0])
+        self.vview = cast(arr[1])
+      },
+
+      /**
+       * #action
+       */
+      setWheelMode(str: string) {
+        self.wheelMode = str
+      },
+
+      /**
+       * #action
+       */
+      setWidth(newWidth: number) {
+        self.volatileWidth = newWidth
+        return self.volatileWidth
+      },
+
+      /**
+       * #action
+       */
+      showAllRegions() {
+        self.hview.zoomTo(self.hview.maxBpPerPx)
+        self.vview.zoomTo(self.vview.maxBpPerPx)
+        self.vview.center()
+        self.hview.center()
       },
 
       /**
@@ -400,23 +540,13 @@ export default function stateModelFactory(pm: PluginManager) {
         }
         const track = trackType.stateModel.create({
           ...initialSnapshot,
-          type: conf.type,
           configuration: conf,
-          displays: [{ type: displayConf.type, configuration: displayConf }],
+          displays: [{ configuration: displayConf, type: displayConf.type }],
+          type: conf.type,
         })
         self.tracks.push(track)
       },
 
-      /**
-       * #action
-       */
-      hideTrack(trackId: string) {
-        const schema = pm.pluggableConfigSchemaType('track')
-        const conf = resolveIdentifier(schema, getRoot(self), trackId)
-        const t = self.tracks.filter(t => t.configuration === conf)
-        transaction(() => t.forEach(t => self.tracks.remove(t)))
-        return t.length
-      },
       /**
        * #action
        */
@@ -427,35 +557,6 @@ export default function stateModelFactory(pm: PluginManager) {
           return true
         }
         return false
-      },
-      /**
-       * #action
-       */
-      setAssemblyNames(target: string, query: string) {
-        self.assemblyNames = cast([target, query])
-      },
-      /**
-       * #action
-       */
-      setViews(arr: SnapshotIn<Base1DViewModel>[]) {
-        self.hview = cast(arr[0])
-        self.vview = cast(arr[1])
-      },
-
-      /**
-       * #action
-       */
-      getCoords(mousedown: Coord, mouseup: Coord) {
-        const [xmin, xmax] = minmax(mouseup[0], mousedown[0])
-        const [ymin, ymax] = minmax(mouseup[1], mousedown[1])
-        return Math.abs(xmax - xmin) > 3 && Math.abs(ymax - ymin) > 3
-          ? [
-              self.hview.pxToBp(xmin),
-              self.hview.pxToBp(xmax),
-              self.vview.pxToBp(self.viewHeight - ymin),
-              self.vview.pxToBp(self.viewHeight - ymax),
-            ]
-          : undefined
       },
 
       /**
@@ -470,107 +571,24 @@ export default function stateModelFactory(pm: PluginManager) {
           self.vview.moveTo(y2, y1)
         }
       },
+
       /**
        * #action
        */
-      showAllRegions() {
-        self.hview.zoomTo(self.hview.maxBpPerPx)
-        self.vview.zoomTo(self.vview.maxBpPerPx)
-        self.vview.center()
-        self.hview.center()
+      zoomInButton() {
+        self.hview.zoomIn()
+        self.vview.zoomIn()
       },
+
       /**
        * #action
-       * creates a linear synteny view from the clicked and dragged region
        */
-      onDotplotView(mousedown: Coord, mouseup: Coord) {
-        const result = this.getCoords(mousedown, mouseup)
-        if (result) {
-          const [x1, x2, y1, y2] = result
-          const session = getSession(self)
-
-          const d1 = Dotplot1DView.create({
-            ...getSnapshot(self.hview),
-            minimumBlockWidth: 0,
-            interRegionPaddingWidth: 0,
-          })
-          const d2 = Dotplot1DView.create({
-            ...getSnapshot(self.vview),
-            minimumBlockWidth: 0,
-            interRegionPaddingWidth: 0,
-          })
-          d1.setVolatileWidth(self.hview.width)
-          d2.setVolatileWidth(self.vview.width)
-          d1.moveTo(x1, x2)
-          d2.moveTo(y2, y1)
-          d1.zoomTo(d1.bpPerPx / (self.width / self.hview.width), 0)
-          d2.zoomTo(d2.bpPerPx / (self.width / self.vview.width), 0)
-
-          // add the specific evidence tracks to the LGVs in the split view
-          // note: scales the bpPerPx by scaling proportional of the dotplot
-          // width to the eventual lgv width
-          const tracks = self.tracks
-            .map(track =>
-              track.configuration.displays.find(
-                (display: { type: string }) =>
-                  display.type === 'LinearSyntenyDisplay',
-              ),
-            )
-            .filter(f => !!f)
-            .map(displayConf => {
-              const trackConf = getParent<AnyConfigurationModel>(displayConf, 2)
-              return {
-                type: trackConf.type,
-                configuration: trackConf,
-                displays: [
-                  { type: displayConf.type, configuration: displayConf },
-                ],
-              }
-            })
-
-          const { id: _unused1, ...rest1 } = getSnapshot(d1)
-          const { id: _unused2, ...rest2 } = getSnapshot(d2)
-          const viewSnapshot = {
-            type: 'LinearSyntenyView',
-            views: [
-              {
-                type: 'LinearGenomeView',
-                tracks: [],
-                hideHeader: true,
-                ...rest1,
-              },
-              {
-                type: 'LinearGenomeView',
-                tracks: [],
-                hideHeader: true,
-                ...rest2,
-              },
-            ],
-            tracks,
-          }
-
-          session.addView('LinearSyntenyView', viewSnapshot)
-        }
+      zoomOutButton() {
+        self.hview.zoomOut()
+        self.vview.zoomOut()
       },
     }))
     .actions(self => ({
-      /**
-       * #action
-       * creates an svg export and save using FileSaver
-       */
-      async exportSvg(opts: ExportSvgOptions = {}) {
-        const { renderToSvg } = await import('./svgcomponents/SVGDotplotView')
-        const html = await renderToSvg(self as DotplotViewModel, opts)
-        const blob = new Blob([html], { type: 'image/svg+xml' })
-        saveAs(blob, opts.filename || 'image.svg')
-      },
-      // if any of our assemblies are temporary assemblies
-      beforeDestroy() {
-        const session = getSession(self)
-        for (const name in self.assemblyNames) {
-          session.removeTemporaryAssembly?.(name)
-        }
-      },
       afterAttach() {
         addDisposer(
           self,
@@ -645,6 +663,24 @@ export default function stateModelFactory(pm: PluginManager) {
           }),
         )
       },
+
+      // if any of our assemblies are temporary assemblies
+      beforeDestroy() {
+        const session = getSession(self)
+        for (const name in self.assemblyNames) {
+          session.removeTemporaryAssembly?.(name)
+        }
+      },
+      /**
+       * #action
+       * creates an svg export and save using FileSaver
+       */
+      async exportSvg(opts: ExportSvgOptions = {}) {
+        const { renderToSvg } = await import('./svgcomponents/SVGDotplotView')
+        const html = await renderToSvg(self as DotplotViewModel, opts)
+        const blob = new Blob([html], { type: 'image/svg+xml' })
+        saveAs(blob, opts.filename || 'image.svg')
+      },
       /**
        * #action
        */
@@ -675,20 +711,27 @@ export default function stateModelFactory(pm: PluginManager) {
     }))
     .views(self => ({
       /**
+       * #getter
+       */
+      get error() {
+        return self.volatileError || self.assemblyErrors
+      },
+
+      /**
        * #method
        */
       menuItems() {
         const session = getSession(self)
         return [
           {
+            icon: FolderOpenIcon,
             label: 'Return to import form',
             onClick: () => {
               getSession(self).queueDialog(handleClose => [
                 ReturnToImportFormDialog,
-                { model: self, handleClose },
+                { handleClose, model: self },
               ])
             },
-            icon: FolderOpenIcon,
           },
           {
             label: 'Square view - same bp per pixel',
@@ -703,31 +746,25 @@ export default function stateModelFactory(pm: PluginManager) {
             onClick: () => self.showAllRegions(),
           },
           {
-            label: 'Export SVG',
             icon: PhotoCameraIcon,
+            label: 'Export SVG',
             onClick: () => {
               getSession(self).queueDialog(handleClose => [
                 ExportSvgDialog,
-                { model: self, handleClose },
+                { handleClose, model: self },
               ])
             },
           },
           ...(isSessionModelWithWidgets(session)
             ? [
                 {
+                  icon: TrackSelectorIcon,
                   label: 'Open track selector',
                   onClick: self.activateTrackSelector,
-                  icon: TrackSelectorIcon,
                 },
               ]
             : []),
         ]
-      },
-      /**
-       * #getter
-       */
-      get error() {
-        return self.volatileError || self.assemblyErrors
       },
     }))
 }

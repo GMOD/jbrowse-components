@@ -20,21 +20,39 @@ function stateModelFactory() {
        * #property
        */
       id: ElementId,
-      /**
-       * #property
-       */
-      type: types.string,
+
       /**
        * #property
        */
       rpcDriverName: types.maybe(types.string),
+
+      /**
+       * #property
+       */
+      type: types.string,
     })
     .volatile(() => ({
-      rendererTypeName: '',
       error: undefined as unknown,
       message: undefined as string | undefined,
+      rendererTypeName: '',
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
+      get DisplayBlurb(): React.FC<{ model: typeof self }> | null {
+        return null
+      },
+
+      /**
+       * #getter
+       * if a display-level message should be displayed instead,
+       * make this return a react component
+       */
+      get DisplayMessageComponent() {
+        return undefined as undefined | React.FC<any>
+      },
+
       /**
        * #getter
        */
@@ -50,13 +68,6 @@ function stateModelFactory() {
           onHorizontalScroll?: Function
           blockState?: Record<string, any>
         }>
-      },
-
-      /**
-       * #getter
-       */
-      get DisplayBlurb(): React.FC<{ model: typeof self }> | null {
-        return null
       },
 
       /**
@@ -82,15 +93,27 @@ function stateModelFactory() {
 
       /**
        * #method
+       * @param region -
+       * @returns falsy if the region is fine to try rendering. Otherwise,
+       *  return a react node + string of text.
+       *  string of text describes why it cannot be rendered
+       *  react node allows user to force load at current setting
+       */
+      regionCannotBeRendered(/* region */) {
+        return null
+      },
+
+      /**
+       * #method
        * the react props that are passed to the Renderer when data
        * is rendered in this display
        */
       renderProps() {
         return {
           ...getParentRenderProps(self),
+          displayModel: self,
           notReady: getContainingView(self).minimized,
           rpcDriverName: self.rpcDriverName,
-          displayModel: self,
         }
       },
 
@@ -116,14 +139,6 @@ function stateModelFactory() {
       },
 
       /**
-       * #getter
-       * if a display-level message should be displayed instead,
-       * make this return a react component
-       */
-      get DisplayMessageComponent() {
-        return undefined as undefined | React.FC<any>
-      },
-      /**
        * #method
        */
       trackMenuItems(): MenuItem[] {
@@ -136,42 +151,34 @@ function stateModelFactory() {
       get viewMenuActions(): MenuItem[] {
         return []
       },
-      /**
-       * #method
-       * @param region -
-       * @returns falsy if the region is fine to try rendering. Otherwise,
-       *  return a react node + string of text.
-       *  string of text describes why it cannot be rendered
-       *  react node allows user to force load at current setting
-       */
-      regionCannotBeRendered(/* region */) {
-        return null
-      },
     }))
     .actions(self => ({
       /**
        * #action
+       * base display reload does nothing, see specialized displays for details
        */
-      setMessage(arg?: string) {
-        self.message = arg
-      },
+      reload() {},
+
       /**
        * #action
        */
       setError(error?: unknown) {
         self.error = error
       },
+
+      /**
+       * #action
+       */
+      setMessage(arg?: string) {
+        self.message = arg
+      },
+
       /**
        * #action
        */
       setRpcDriverName(rpcDriverName: string) {
         self.rpcDriverName = rpcDriverName
       },
-      /**
-       * #action
-       * base display reload does nothing, see specialized displays for details
-       */
-      reload() {},
     }))
 }
 

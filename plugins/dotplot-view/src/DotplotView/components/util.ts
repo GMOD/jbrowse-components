@@ -101,10 +101,10 @@ export function makeTicks(
       base += iterPitch
     ) {
       if (emitMinor && base % gridPitch.majorPitch) {
-        ticks.push({ type: 'minor', base: base - 1, index, refName })
+        ticks.push({ base: base - 1, index, refName, type: 'minor' })
         index += 1
       } else if (emitMajor && Math.abs(base - start) > gridPitch.minorPitch) {
-        ticks.push({ type: 'major', base: base - 1, index, refName })
+        ticks.push({ base: base - 1, index, refName, type: 'major' })
         index += 1
       }
     }

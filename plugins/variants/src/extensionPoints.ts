@@ -22,12 +22,12 @@ export default (pluginManager: PluginManager) => {
         const fileName = getFileName(file)
         const indexName = index && getFileName(index)
         const obj = {
+          index: {
+            indexType: makeIndexType(indexName, 'CSI', 'TBI'),
+            location: index || makeIndex(file, '.tbi'),
+          },
           type: adapterName,
           vcfGzLocation: file,
-          index: {
-            location: index || makeIndex(file, '.tbi'),
-            indexType: makeIndexType(indexName, 'CSI', 'TBI'),
-          },
         }
         if (regexGuess.test(fileName) && !adapterHint) {
           return obj

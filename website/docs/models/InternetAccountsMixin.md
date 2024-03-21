@@ -27,13 +27,6 @@ internetAccounts: types.array(
 
 ### InternetAccountsMixin - Actions
 
-#### action: initializeInternetAccount
-
-```js
-// type signature
-initializeInternetAccount: (internetAccountConfig: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>, initialSnapshot?: {}) => any
-```
-
 #### action: createEphemeralInternetAccount
 
 ```js
@@ -46,4 +39,11 @@ createEphemeralInternetAccount: (internetAccountId: string, initialSnapshot: {},
 ```js
 // type signature
 findAppropriateInternetAccount: (location: UriLocation) => any
+```
+
+#### action: initializeInternetAccount
+
+```js
+// type signature
+initializeInternetAccount: (internetAccountConfig: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>, initialSnapshot?: {}) => any
 ```

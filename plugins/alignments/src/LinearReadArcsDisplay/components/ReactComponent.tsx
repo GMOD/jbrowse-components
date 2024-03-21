@@ -30,7 +30,7 @@ const Arcs = observer(function ({
     <canvas
       data-testid="arc-canvas"
       ref={cb}
-      style={{ width, height, position: 'absolute' }}
+      style={{ height, position: 'absolute', width }}
       width={width * 2}
       height={height * 2}
     />

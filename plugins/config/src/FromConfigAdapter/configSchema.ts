@@ -12,8 +12,8 @@ const configSchema = ConfigurationSchema(
      * #slot
      */
     features: {
-      type: 'frozen',
       defaultValue: [],
+      type: 'frozen',
     },
   },
   { explicitlyTyped: true, implicitIdentifier: 'adapterId' },

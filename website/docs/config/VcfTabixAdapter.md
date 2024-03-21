@@ -12,22 +12,13 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ### VcfTabixAdapter - Slots
 
-#### slot: vcfGzLocation
-
-```js
-vcfGzLocation: {
-      type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.vcf.gz', locationType: 'UriLocation' },
-    }
-```
-
 #### slot: index.indexType
 
 ```js
 indexType: {
+        defaultValue: 'TBI',
         model: types.enumeration('IndexType', ['TBI', 'CSI']),
         type: 'stringEnum',
-        defaultValue: 'TBI',
       }
 ```
 
@@ -35,10 +26,19 @@ indexType: {
 
 ```js
 location: {
-        type: 'fileLocation',
         defaultValue: {
-          uri: '/path/to/my.vcf.gz.tbi',
           locationType: 'UriLocation',
+          uri: '/path/to/my.vcf.gz.tbi',
         },
+        type: 'fileLocation',
       }
+```
+
+#### slot: vcfGzLocation
+
+```js
+vcfGzLocation: {
+      defaultValue: { locationType: 'UriLocation', uri: '/path/to/my.vcf.gz' },
+      type: 'fileLocation',
+    }
 ```

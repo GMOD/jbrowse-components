@@ -80,51 +80,51 @@ const ColumnMenu = observer(function ({
   const menuItems = [
     // top-level column menu
     {
-      label: 'Sort ascending',
-      icon: SortIcon,
-      type: 'radio',
       checked: isSortingAscending,
+      icon: SortIcon,
+      label: 'Sort ascending',
       onClick: () => sortMenuClick(false),
+      type: 'radio',
     },
     {
-      label: 'Sort descending',
-      icon: SortIcon,
-      type: 'radio',
       checked: isSortingDescending,
+      icon: SortIcon,
+      label: 'Sort descending',
       onClick: () => sortMenuClick(true),
+      type: 'radio',
     },
     {
-      label: 'No sort',
-      icon: SortIcon,
-      type: 'radio',
       checked: !isSortingDescending && !isSortingAscending,
+      icon: SortIcon,
+      label: 'No sort',
       onClick: () => spreadsheetModel.setSortColumns([]),
+      type: 'radio',
     },
     // data type menu
     {
-      label: `Type: ${dataTypeDisplayName}`,
       icon: PermDataSettingIcon,
+      label: `Type: ${dataTypeDisplayName}`,
       subMenu: iterMap(
         dataTypeTopLevelMenu.entries(),
         ([displayName, record]) => {
           if ('typeName' in record && record.typeName) {
             const { typeName } = record
             return {
-              label: displayName || typeName,
               icon: dataTypeName === typeName ? CheckIcon : undefined,
+              label: displayName || typeName,
               onClick: () =>
                 spreadsheetModel.setColumnType(columnNumber, typeName),
             }
           } else if ('subMenuItems' in record && record.subMenuItems) {
             const { subMenuItems } = record
             return {
-              label: displayName,
               icon: subMenuItems.some(i => i.typeName === dataTypeName)
                 ? CheckIcon
                 : undefined,
+              label: displayName,
               subMenu: subMenuItems.map(({ typeName, displayName }) => ({
-                label: displayName,
                 icon: typeName === dataTypeName ? CheckIcon : undefined,
+                label: displayName,
                 onClick: () =>
                   spreadsheetModel.setColumnType(columnNumber, typeName),
               })),
@@ -141,8 +141,8 @@ const ColumnMenu = observer(function ({
   // implemented
   if (dataType?.hasFilter) {
     menuItems.push({
-      label: 'Create filter',
       icon: FilterListIcon,
+      label: 'Create filter',
       onClick: () =>
         viewModel.filterControls.addBlankColumnFilter(columnNumber),
     })
@@ -159,8 +159,8 @@ const ColumnMenu = observer(function ({
       onClose={columnMenuClose}
       menuItems={menuItems}
       anchorOrigin={{
-        vertical: 'bottom',
         horizontal: 'right',
+        vertical: 'bottom',
       }}
     />
   )

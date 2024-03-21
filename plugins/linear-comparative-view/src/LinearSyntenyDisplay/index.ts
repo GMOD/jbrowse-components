@@ -10,12 +10,12 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaF(pluginManager)
     return new DisplayType({
-      name: 'LinearSyntenyDisplay',
+      ReactComponent: lazy(() => import('./components/Component')),
       configSchema,
+      name: 'LinearSyntenyDisplay',
       stateModel: stateModelFactory(configSchema),
       trackType: 'SyntenyTrack',
       viewType: 'LinearSyntenyView',
-      ReactComponent: lazy(() => import('./components/Component')),
     })
   })
 }

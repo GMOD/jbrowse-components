@@ -18,7 +18,7 @@ used for specifying refNames+sizes of an assembly
 
 ```js
 features: {
-      type: 'frozen',
       defaultValue: [],
+      type: 'frozen',
     }
 ```

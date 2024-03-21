@@ -18,8 +18,19 @@ used to configure BAM adapter
 
 ```js
 bamLocation: {
+      defaultValue: { locationType: 'UriLocation', uri: '/path/to/my.bam' },
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.bam', locationType: 'UriLocation' },
+    }
+```
+
+#### slot: fetchSizeLimit
+
+```js
+fetchSizeLimit: {
+      defaultValue: 5_000_000,
+      description:
+        'size to fetch in bytes over which to display a warning to the user that too much data will be fetched',
+      type: 'number',
     }
 ```
 
@@ -27,9 +38,9 @@ bamLocation: {
 
 ```js
 indexType: {
+        defaultValue: 'BAI',
         model: types.enumeration('IndexType', ['BAI', 'CSI']),
         type: 'stringEnum',
-        defaultValue: 'BAI',
       }
 ```
 
@@ -37,23 +48,12 @@ indexType: {
 
 ```js
 location: {
-        type: 'fileLocation',
         defaultValue: {
-          uri: '/path/to/my.bam.bai',
           locationType: 'UriLocation',
+          uri: '/path/to/my.bam.bai',
         },
+        type: 'fileLocation',
       }
-```
-
-#### slot: fetchSizeLimit
-
-```js
-fetchSizeLimit: {
-      type: 'number',
-      description:
-        'size to fetch in bytes over which to display a warning to the user that too much data will be fetched',
-      defaultValue: 5_000_000,
-    }
 ```
 
 #### slot: sequenceAdapter
@@ -63,9 +63,9 @@ needs to be manually added
 
 ```js
 sequenceAdapter: {
-      type: 'frozen',
+      defaultValue: null,
       description:
         'sequence data adapter, used to calculate SNPs when BAM reads lacking MD tags',
-      defaultValue: null,
+      type: 'frozen',
     }
 ```

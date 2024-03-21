@@ -9,27 +9,27 @@ const configSchema = ConfigurationSchema('BreakpointAlignmentsWidget', {})
 
 const stateModel = types
   .model('BreakpointAlignmentsWidget', {
+    featureData: types.frozen(),
     id: ElementId,
     type: types.literal('BreakpointAlignmentsWidget'),
-    featureData: types.frozen(),
   })
   .actions(self => ({
-    setFeatureData(data: unknown) {
-      self.featureData = data
-    },
     clearFeatureData() {
       self.featureData = undefined
+    },
+    setFeatureData(data: unknown) {
+      self.featureData = data
     },
   }))
 
 export default (pluginManager: PluginManager) => {
   pluginManager.addWidgetType(() => {
     return new WidgetType({
-      name: 'BreakpointAlignmentsWidget',
-      heading: 'Breakpoint feature details',
-      configSchema,
-      stateModel,
       ReactComponent: lazy(() => import('./BreakpointAlignmentsFeatureDetail')),
+      configSchema,
+      heading: 'Breakpoint feature details',
+      name: 'BreakpointAlignmentsWidget',
+      stateModel,
     })
   })
 }

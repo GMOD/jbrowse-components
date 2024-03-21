@@ -195,7 +195,7 @@ export default class PluginManager {
 
   constructor(initialPlugins: (Plugin | PluginLoadRecord)[] = []) {
     // add the core plugin
-    this.addPlugin({ plugin: new CorePlugin(), metadata: { isCore: true } })
+    this.addPlugin({ metadata: { isCore: true }, plugin: new CorePlugin() })
 
     // add all the initial plugins
     initialPlugins.forEach(plugin => {

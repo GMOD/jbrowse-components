@@ -14,39 +14,12 @@ generally exists on the config.json or root config as configuration.hierarchical
 
 ### HierarchicalConfigSchema - Slots
 
-#### slot: configuration.hierarchical.sort.trackNames
-
-```js
-trackNames: {
-        type: 'boolean',
-        defaultValue: false,
-      }
-```
-
-#### slot: configuration.hierarchical.sort.categories
-
-```js
-categories: {
-        type: 'boolean',
-        defaultValue: false,
-      }
-```
-
 #### slot: configuration.hierarchical.defaultCollapsed.categoryNames
 
 ```js
 categoryNames: {
-        type: 'stringArray',
         defaultValue: [],
-      }
-```
-
-#### slot: configuration.hierarchical.defaultCollapsed.topLevelCategories
-
-```js
-topLevelCategories: {
-        type: 'boolean',
-        defaultValue: false,
+        type: 'stringArray',
       }
 ```
 
@@ -54,7 +27,34 @@ topLevelCategories: {
 
 ```js
 subCategories: {
-        type: 'boolean',
         defaultValue: false,
+        type: 'boolean',
+      }
+```
+
+#### slot: configuration.hierarchical.defaultCollapsed.topLevelCategories
+
+```js
+topLevelCategories: {
+        defaultValue: false,
+        type: 'boolean',
+      }
+```
+
+#### slot: configuration.hierarchical.sort.categories
+
+```js
+categories: {
+        defaultValue: false,
+        type: 'boolean',
+      }
+```
+
+#### slot: configuration.hierarchical.sort.trackNames
+
+```js
+trackNames: {
+        defaultValue: false,
+        type: 'boolean',
       }
 ```

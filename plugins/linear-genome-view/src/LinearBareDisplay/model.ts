@@ -21,11 +21,12 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        type: types.literal('LinearBareDisplay'),
+        configuration: ConfigurationReference(configSchema),
+
         /**
          * #property
          */
-        configuration: ConfigurationReference(configSchema),
+        type: types.literal('LinearBareDisplay'),
       }),
     )
 
@@ -39,8 +40,8 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return {
             ...superRenderProps(),
             ...getParentRenderProps(self),
-            rpcDriverName: self.rpcDriverName,
             config: self.configuration.renderer,
+            rpcDriverName: self.rpcDriverName,
           }
         },
 

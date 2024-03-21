@@ -262,8 +262,8 @@ export default class PluginLoader {
   async load(baseUri?: string) {
     return Promise.all(
       this.definitions.map(async definition => ({
-        plugin: await this.loadPlugin(definition, baseUri),
         definition,
+        plugin: await this.loadPlugin(definition, baseUri),
       })),
     )
   }

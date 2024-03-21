@@ -22,8 +22,8 @@ function ellipses(slug: string) {
 
 const useStyles = makeStyles()(theme => ({
   connectionContainer: {
-    width: 500,
     margin: theme.spacing(4),
+    width: 500,
   },
 }))
 

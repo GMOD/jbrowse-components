@@ -12,8 +12,8 @@ describe('ConfigurationEditor widget', () => {
   it('renders with just the required model elements', () => {
     const TestSchema = ConfigurationSchema('TestThing', {
       foo: {
-        type: 'string',
         defaultValue: 'bar',
+        type: 'string',
       },
     })
 
@@ -25,53 +25,53 @@ describe('ConfigurationEditor widget', () => {
 
   it('renders all the different types of built-in slots', () => {
     const TestSchema = ConfigurationSchema('TestThing', {
-      stringTest: {
-        name: 'stringTest',
-        description: 'stringTest',
-        type: 'string',
-        defaultValue: 'string1',
-      },
-      fileLocationTest: {
-        name: 'fileLocationTest',
-        description: 'fileLocationTest',
-        type: 'fileLocation',
-        defaultValue: { uri: '/path/to/my.file', locationType: 'UriLocation' },
-      },
-      stringArrayTest: {
-        name: 'stringArrayTest',
-        description: 'stringArrayTest',
-        type: 'stringArray',
-        defaultValue: ['string1', 'string2'],
-      },
-      stringArrayMapTest: {
-        name: 'stringArrayMapTest',
-        description: 'stringArrayMapTest',
-        type: 'stringArrayMap',
-        defaultValue: { key1: ['string1', 'string2'] },
-      },
-      numberTest: {
-        name: 'numberTest',
-        description: 'numberTest',
-        type: 'number',
-        defaultValue: 88.5,
-      },
-      integerTest: {
-        name: 'integerTest',
-        description: 'integerTest',
-        type: 'integer',
-        defaultValue: 42,
+      booleanTest: {
+        defaultValue: true,
+        description: 'booleanTest',
+        name: 'booleanTest',
+        type: 'boolean',
       },
       colorTest: {
-        name: 'colorTest',
-        description: 'colorTest',
-        type: 'color',
         defaultValue: '#396494',
+        description: 'colorTest',
+        name: 'colorTest',
+        type: 'color',
       },
-      booleanTest: {
-        name: 'booleanTest',
-        description: 'booleanTest',
-        type: 'boolean',
-        defaultValue: true,
+      fileLocationTest: {
+        defaultValue: { locationType: 'UriLocation', uri: '/path/to/my.file' },
+        description: 'fileLocationTest',
+        name: 'fileLocationTest',
+        type: 'fileLocation',
+      },
+      integerTest: {
+        defaultValue: 42,
+        description: 'integerTest',
+        name: 'integerTest',
+        type: 'integer',
+      },
+      numberTest: {
+        defaultValue: 88.5,
+        description: 'numberTest',
+        name: 'numberTest',
+        type: 'number',
+      },
+      stringArrayMapTest: {
+        defaultValue: { key1: ['string1', 'string2'] },
+        description: 'stringArrayMapTest',
+        name: 'stringArrayMapTest',
+        type: 'stringArrayMap',
+      },
+      stringArrayTest: {
+        defaultValue: ['string1', 'string2'],
+        description: 'stringArrayTest',
+        name: 'stringArrayTest',
+        type: 'stringArray',
+      },
+      stringTest: {
+        defaultValue: 'string1',
+        description: 'stringTest',
+        name: 'stringTest',
+        type: 'string',
       },
     })
 

@@ -13,9 +13,9 @@ const useStyles = makeStyles()(theme => ({
     all: 'initial',
   },
   viewContainer: {
-    overflow: 'hidden',
     background: theme.palette.secondary.main,
     margin: theme.spacing(0.5),
+    overflow: 'hidden',
     padding: `0 ${theme.spacing(1)} ${theme.spacing(1)}`,
   },
 }))

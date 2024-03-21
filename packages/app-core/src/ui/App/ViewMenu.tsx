@@ -43,13 +43,13 @@ const ViewMenu = observer(function ({
     ...(session.views.length > 1
       ? [
           {
-            label: 'Move view up',
             icon: ArrowUpward,
+            label: 'Move view up',
             onClick: () => session.moveViewUp(model.id),
           },
           {
-            label: 'Move view down',
             icon: ArrowDownward,
+            label: 'Move view down',
             onClick: () => session.moveViewDown(model.id),
           },
         ]

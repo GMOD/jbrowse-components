@@ -19,29 +19,29 @@ const useStyles = makeStyles()(theme => {
     ? alpha(tertiary.main, 0.7)
     : alpha(primary.main, 0.7)
   return {
-    rubberband: {
-      height: '100%',
-      background,
-      position: 'absolute',
-      zIndex: 10,
-      textAlign: 'center',
-      overflow: 'hidden',
-    },
-    rubberbandControl: {
-      cursor: 'crosshair',
-      width: '100%',
-      minHeight: 8,
-    },
-    rubberbandText: {
-      color: tertiary ? tertiary.contrastText : primary.contrastText,
-    },
-    popover: {
-      mouseEvents: 'none',
-      cursor: 'crosshair',
-    },
     paper: {
       paddingLeft: theme.spacing(1),
       paddingRight: theme.spacing(1),
+    },
+    popover: {
+      cursor: 'crosshair',
+      mouseEvents: 'none',
+    },
+    rubberband: {
+      background,
+      height: '100%',
+      overflow: 'hidden',
+      position: 'absolute',
+      textAlign: 'center',
+      zIndex: 10,
+    },
+    rubberbandControl: {
+      cursor: 'crosshair',
+      minHeight: 8,
+      width: '100%',
+    },
+    rubberbandText: {
+      color: tertiary ? tertiary.contrastText : primary.contrastText,
     },
   }
 })
@@ -102,9 +102,9 @@ const LinearComparativeRubberband = observer(function Rubberband({
         // as stated above, store both clientX/Y and offsetX for different
         // purposes
         setAnchorPosition({
-          offsetX,
           clientX,
           clientY,
+          offsetX,
         })
         model.views.forEach(view => {
           const args = computeOffsets(offsetX, view)
@@ -207,12 +207,12 @@ const LinearComparativeRubberband = observer(function Rubberband({
             open
             anchorEl={rubberbandRef.current}
             anchorOrigin={{
-              vertical: 'top',
               horizontal: 'left',
+              vertical: 'top',
             }}
             transformOrigin={{
-              vertical: 'bottom',
               horizontal: 'right',
+              vertical: 'bottom',
             }}
             keepMounted
             disableRestoreFocus
@@ -229,12 +229,12 @@ const LinearComparativeRubberband = observer(function Rubberband({
             open
             anchorEl={rubberbandRef.current}
             anchorOrigin={{
-              vertical: 'top',
               horizontal: 'right',
+              vertical: 'top',
             }}
             transformOrigin={{
-              vertical: 'bottom',
               horizontal: 'left',
+              vertical: 'bottom',
             }}
             keepMounted
             disableRestoreFocus

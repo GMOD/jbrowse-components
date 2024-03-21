@@ -135,10 +135,10 @@ export default function ExportSvgDialog({
             setError(undefined)
             try {
               await model.exportSvg({
-                rasterizeLayers,
                 filename,
-                trackLabels,
+                rasterizeLayers,
                 themeName,
+                trackLabels,
               })
               handleClose()
             } catch (e) {

@@ -19,6 +19,29 @@ import { getTickDisplayStr } from '@jbrowse/core/util'
 type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles()(theme => ({
+  majorTickLabel: {
+    background: theme.palette.background.paper,
+    fontSize: 11,
+    lineHeight: 'normal',
+    pointerEvents: 'none',
+    zIndex: 1,
+  },
+  refLabel: {
+    background: theme.palette.background.paper,
+    fontSize: 11,
+    fontWeight: 'bold',
+    left: 2,
+    lineHeight: 'normal',
+    pointerEvents: 'none',
+    position: 'absolute',
+    top: -1,
+    zIndex: 1,
+  },
+  scalebar: {
+    display: 'flex',
+    pointerEvents: 'none',
+    position: 'absolute',
+  },
   scalebarContainer: {
     overflow: 'hidden',
     position: 'relative',
@@ -27,35 +50,12 @@ const useStyles = makeStyles()(theme => ({
     position: 'relative',
     zIndex: 1,
   },
-  scalebar: {
-    position: 'absolute',
-    display: 'flex',
-    pointerEvents: 'none',
-  },
-  majorTickLabel: {
-    fontSize: 11,
-    zIndex: 1,
-    background: theme.palette.background.paper,
-    lineHeight: 'normal',
-    pointerEvents: 'none',
-  },
   tick: {
-    position: 'absolute',
-    width: 0,
     display: 'flex',
     justifyContent: 'center',
     pointerEvents: 'none',
-  },
-  refLabel: {
-    fontSize: 11,
     position: 'absolute',
-    left: 2,
-    top: -1,
-    fontWeight: 'bold',
-    lineHeight: 'normal',
-    zIndex: 1,
-    pointerEvents: 'none',
-    background: theme.palette.background.paper,
+    width: 0,
   },
 }))
 

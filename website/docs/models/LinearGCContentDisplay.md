@@ -25,15 +25,6 @@ ISimpleType<"LinearGCContentDisplay">
 type: types.literal('LinearGCContentDisplay')
 ```
 
-#### property: windowSize
-
-```js
-// type signature
-IMaybe<ISimpleType<number>>
-// code
-windowSize: types.maybe(types.number)
-```
-
 #### property: windowDelta
 
 ```js
@@ -41,6 +32,15 @@ windowSize: types.maybe(types.number)
 IMaybe<ISimpleType<number>>
 // code
 windowDelta: types.maybe(types.number)
+```
+
+#### property: windowSize
+
+```js
+// type signature
+IMaybe<ISimpleType<number>>
+// code
+windowSize: types.maybe(types.number)
 ```
 
 ### LinearGCContentDisplay - Methods

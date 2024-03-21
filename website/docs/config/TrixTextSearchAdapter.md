@@ -16,13 +16,23 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ### TrixTextSearchAdapter - Slots
 
+#### slot: assemblyNames
+
+```js
+assemblyNames: {
+      defaultValue: [],
+      description: 'List of assemblies covered by text search adapter',
+      type: 'stringArray',
+    }
+```
+
 #### slot: ixFilePath
 
 ```js
 ixFilePath: {
-      type: 'fileLocation',
-      defaultValue: { uri: 'out.ix', locationType: 'UriLocation' },
+      defaultValue: { locationType: 'UriLocation', uri: 'out.ix' },
       description: 'the location of the trix ix file',
+      type: 'fileLocation',
     }
 ```
 
@@ -30,9 +40,9 @@ ixFilePath: {
 
 ```js
 ixxFilePath: {
-      type: 'fileLocation',
-      defaultValue: { uri: 'out.ixx', locationType: 'UriLocation' },
+      defaultValue: { locationType: 'UriLocation', uri: 'out.ixx' },
       description: 'the location of the trix ixx file',
+      type: 'fileLocation',
     }
 ```
 
@@ -40,9 +50,9 @@ ixxFilePath: {
 
 ```js
 metaFilePath: {
-      type: 'fileLocation',
-      defaultValue: { uri: 'meta.json', locationType: 'UriLocation' },
+      defaultValue: { locationType: 'UriLocation', uri: 'meta.json' },
       description: 'the location of the metadata json file for the trix index',
+      type: 'fileLocation',
     }
 ```
 
@@ -50,18 +60,8 @@ metaFilePath: {
 
 ```js
 tracks: {
-      type: 'stringArray',
       defaultValue: [],
       description: 'List of tracks covered by text search adapter',
-    }
-```
-
-#### slot: assemblyNames
-
-```js
-assemblyNames: {
       type: 'stringArray',
-      defaultValue: [],
-      description: 'List of assemblies covered by text search adapter',
     }
 ```

@@ -15,14 +15,14 @@ type RowModel = Instance<typeof RowStateModel>
 
 const useStyles = makeStyles()(theme => ({
   dataTable: {
-    borderCollapse: 'collapse',
     '& td': {
       border: `1px solid ${theme.palette.action.disabledBackground}`,
-      padding: '0.2rem',
       maxWidth: '50em',
       overflow: 'hidden',
+      padding: '0.2rem',
       textOverflow: 'ellipsis',
     },
+    borderCollapse: 'collapse',
   },
 
   emptyMessage: {

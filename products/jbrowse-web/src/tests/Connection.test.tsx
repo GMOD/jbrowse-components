@@ -29,7 +29,7 @@ test('Open up a UCSC trackhub connection', async () => {
     if (request.url.startsWith(root)) {
       const str = request.url.replace(root, '')
       // @ts-expect-error
-      return readBuffer2({ url: str, headers: new Map() })
+      return readBuffer2({ headers: new Map(), url: str })
     }
     return readBuffer(request)
   })

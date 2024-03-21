@@ -31,8 +31,8 @@ function layoutFeat(args: {
     )
   }
   layout.add(feature.id(), centerPx, radiusPx * 2, radiusPx * 2, {
-    featureId: feature.id(),
     anchorX: centerPx,
+    featureId: feature.id(),
     radiusPx,
     score: readConfObject(args.config, 'score', { feature }),
   })
@@ -87,11 +87,11 @@ const LollipopRendering = observer(function (props: Record<string, any>) {
   const [region] = regions
   for (const feature of features.values()) {
     layoutFeat({
-      feature,
       bpPerPx,
-      region,
       config,
+      feature,
       layout,
+      region,
     })
   }
 

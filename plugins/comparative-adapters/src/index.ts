@@ -41,8 +41,8 @@ export default class ComparativeAdaptersPlugin extends Plugin {
           const fileName = getFileName(file)
           if (regexGuess.test(fileName) || adapterHint === adapterName) {
             return {
-              type: adapterName,
               pafLocation: file,
+              type: adapterName,
             }
           }
           return adapterGuesser(file, index, adapterHint)

@@ -16,20 +16,9 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ```js
 clipColor: {
-      type: 'color',
-      description: 'the color of the clipping marker',
       defaultValue: 'red',
-    }
-```
-
-#### slot: indicatorThreshold
-
-```js
-indicatorThreshold: {
-      type: 'number',
-      description:
-        'the proportion of reads containing a insertion/clip indicator',
-      defaultValue: 0.4,
+      description: 'the color of the clipping marker',
+      type: 'color',
     }
 ```
 
@@ -37,20 +26,9 @@ indicatorThreshold: {
 
 ```js
 drawArcs: {
-      type: 'boolean',
+      defaultValue: true,
       description: 'Draw sashimi-style arcs for intron features',
-      defaultValue: true,
-    }
-```
-
-#### slot: drawInterbaseCounts
-
-```js
-drawInterbaseCounts: {
       type: 'boolean',
-      description:
-        'draw count "upsidedown histogram" of the interbase events that don\'t contribute to the coverage count so are not drawn in the normal histogram',
-      defaultValue: true,
     }
 ```
 
@@ -58,9 +36,31 @@ drawInterbaseCounts: {
 
 ```js
 drawIndicators: {
-      type: 'boolean',
+      defaultValue: true,
       description:
         'draw a triangular indicator where an event has been detected',
+      type: 'boolean',
+    }
+```
+
+#### slot: drawInterbaseCounts
+
+```js
+drawInterbaseCounts: {
       defaultValue: true,
+      description:
+        'draw count "upsidedown histogram" of the interbase events that don\'t contribute to the coverage count so are not drawn in the normal histogram',
+      type: 'boolean',
+    }
+```
+
+#### slot: indicatorThreshold
+
+```js
+indicatorThreshold: {
+      defaultValue: 0.4,
+      description:
+        'the proportion of reads containing a insertion/clip indicator',
+      type: 'number',
     }
 ```

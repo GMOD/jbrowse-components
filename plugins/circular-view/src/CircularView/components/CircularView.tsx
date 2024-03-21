@@ -14,9 +14,9 @@ const dragHandleHeight = 3
 
 const useStyles = makeStyles()(theme => ({
   root: {
-    position: 'relative',
     marginBottom: theme.spacing(1),
     overflow: 'hidden',
+    position: 'relative',
   },
   scroller: {
     overflow: 'auto',
@@ -83,16 +83,16 @@ const CircularViewLoaded = observer(function ({
   } = model
   const { classes } = useStyles()
   return (
-    <div className={classes.root} style={{ width, height }} data-testid={id}>
-      <div className={classes.scroller} style={{ width, height }}>
+    <div className={classes.root} style={{ height, width }} data-testid={id}>
+      <div className={classes.scroller} style={{ height, width }}>
         <svg
           style={{
-            transform: `rotate(${offsetRadians}rad)`,
-            transition: 'transform 0.5s',
-            transformOrigin: centerXY.map(x => `${x}px`).join(' '),
-            position: 'absolute',
             left: 0,
+            position: 'absolute',
             top: 0,
+            transform: `rotate(${offsetRadians}rad)`,
+            transformOrigin: centerXY.map(x => `${x}px`).join(' '),
+            transition: 'transform 0.5s',
           }}
           width={figureWidth}
           height={figureHeight}
@@ -107,13 +107,13 @@ const CircularViewLoaded = observer(function ({
         <ResizeHandle
           onDrag={model.resizeHeight}
           style={{
-            height: dragHandleHeight,
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
             background: '#ccc',
-            boxSizing: 'border-box',
             borderTop: '1px solid #fafafa',
+            bottom: 0,
+            boxSizing: 'border-box',
+            height: dragHandleHeight,
+            left: 0,
+            position: 'absolute',
           }}
         />
       )}

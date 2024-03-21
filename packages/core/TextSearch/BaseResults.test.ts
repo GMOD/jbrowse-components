@@ -19,8 +19,8 @@ test('create LocationResult', () => {
 
 test('create RefSequenceResult', () => {
   const refSeqResult = new RefSequenceResult({
-    refName: 'chr1',
     label: 'chromosome 1',
+    refName: 'chr1',
   })
 
   expect(refSeqResult.getLabel()).toEqual('chromosome 1')
@@ -29,8 +29,8 @@ test('create RefSequenceResult', () => {
 
 test('can update score of result and throw appropriate errors', () => {
   const refSeqResult = new RefSequenceResult({
-    refName: 'chr1',
     label: 'chromosome 1',
+    refName: 'chr1',
   })
 
   expect(refSeqResult.getScore()).toBe(1)

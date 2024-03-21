@@ -13,35 +13,38 @@ const ChainAdapter = ConfigurationSchema(
      * #slot
      */
     assemblyNames: {
-      type: 'stringArray',
       defaultValue: [],
       description:
         'Target is the first value in the array, query is the second',
+      type: 'stringArray',
     },
+
     /**
      * #slot
-     * can be specified as alternative to assemblyNames
      */
-    targetAssembly: {
-      type: 'string',
-      defaultValue: '',
-      description: 'Alternative to assemblyNames array: the target assembly',
+    chainLocation: {
+      defaultValue: { locationType: 'UriLocation', uri: '/path/to/file.chain' },
+      type: 'fileLocation',
     },
+
     /**
      * #slot
      * can be specified as alternative to assemblyNames
      */
     queryAssembly: {
-      type: 'string',
       defaultValue: '',
       description: 'Alternative to assemblyNames array: the query assembly',
+      type: 'string',
     },
+
     /**
      * #slot
+     * can be specified as alternative to assemblyNames
      */
-    chainLocation: {
-      type: 'fileLocation',
-      defaultValue: { uri: '/path/to/file.chain', locationType: 'UriLocation' },
+    targetAssembly: {
+      defaultValue: '',
+      description: 'Alternative to assemblyNames array: the target assembly',
+      type: 'string',
     },
   },
   { explicitlyTyped: true },

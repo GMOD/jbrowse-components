@@ -21,13 +21,19 @@ connect multiple regions extends
 
 ### LinearReadArcsDisplay - Properties
 
-#### property: type
+#### property: colorBy
 
 ```js
 // type signature
-ISimpleType<"LinearReadArcsDisplay">
+IMaybe<IModelType<{ extra: IType<any, any, any>; tag: IMaybe<ISimpleType<string>>; type: ISimpleType<string>; }, {}, _NotCustomized, _NotCustomized>>
 // code
-type: types.literal('LinearReadArcsDisplay')
+colorBy: types.maybe(
+          types.model({
+            extra: types.frozen(),
+            tag: types.maybe(types.string),
+            type: types.string,
+          }),
+        )
 ```
 
 #### property: configuration
@@ -37,48 +43,6 @@ type: types.literal('LinearReadArcsDisplay')
 AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
-```
-
-#### property: filterBy
-
-```js
-// type signature
-IOptionalIType<IModelType<{ flagInclude: IOptionalIType<ISimpleType<number>, [undefined]>; flagExclude: IOptionalIType<ISimpleType<number>, [undefined]>; readName: IMaybe<...>; tagFilter: IMaybe<...>; }, {}, _NotCustomized, _NotCustomized>, [...]>
-// code
-filterBy: types.optional(FilterModel, {})
-```
-
-#### property: lineWidth
-
-```js
-// type signature
-IMaybe<ISimpleType<number>>
-// code
-lineWidth: types.maybe(types.number)
-```
-
-#### property: jitter
-
-```js
-// type signature
-IMaybe<ISimpleType<number>>
-// code
-jitter: types.maybe(types.number)
-```
-
-#### property: colorBy
-
-```js
-// type signature
-IMaybe<IModelType<{ type: ISimpleType<string>; tag: IMaybe<ISimpleType<string>>; extra: IType<any, any, any>; }, {}, _NotCustomized, _NotCustomized>>
-// code
-colorBy: types.maybe(
-          types.model({
-            type: types.string,
-            tag: types.maybe(types.string),
-            extra: types.frozen(),
-          }),
-        )
 ```
 
 #### property: drawInter
@@ -99,6 +63,42 @@ true
 drawLongRange: true
 ```
 
+#### property: filterBy
+
+```js
+// type signature
+IOptionalIType<IModelType<{ flagExclude: IOptionalIType<ISimpleType<number>, [undefined]>; flagInclude: IOptionalIType<ISimpleType<number>, [undefined]>; readName: IMaybe<...>; tagFilter: IMaybe<...>; }, {}, _NotCustomized, _NotCustomized>, [...]>
+// code
+filterBy: types.optional(FilterModel, {})
+```
+
+#### property: jitter
+
+```js
+// type signature
+IMaybe<ISimpleType<number>>
+// code
+jitter: types.maybe(types.number)
+```
+
+#### property: lineWidth
+
+```js
+// type signature
+IMaybe<ISimpleType<number>>
+// code
+lineWidth: types.maybe(types.number)
+```
+
+#### property: type
+
+```js
+// type signature
+ISimpleType<"LinearReadArcsDisplay">
+// code
+type: types.literal('LinearReadArcsDisplay')
+```
+
 ### LinearReadArcsDisplay - Getters
 
 #### getter: drawn
@@ -108,18 +108,18 @@ drawLongRange: true
 boolean
 ```
 
-#### getter: lineWidthSetting
-
-```js
-// type
-any
-```
-
 #### getter: jitterVal
 
 ```js
 // type
 number
+```
+
+#### getter: lineWidthSetting
+
+```js
+// type
+any
 ```
 
 ### LinearReadArcsDisplay - Methods
@@ -149,27 +149,6 @@ renderSvg: (opts: { rasterizeLayers?: boolean; }) => Promise<React.ReactNode>
 
 ### LinearReadArcsDisplay - Actions
 
-#### action: setLastDrawnOffsetPx
-
-```js
-// type signature
-setLastDrawnOffsetPx: (n: number) => void
-```
-
-#### action: setLastDrawnBpPerPx
-
-```js
-// type signature
-setLastDrawnBpPerPx: (n: number) => void
-```
-
-#### action: setLoading
-
-```js
-// type signature
-setLoading: (f: boolean) => void
-```
-
 #### action: reload
 
 ```js
@@ -177,14 +156,11 @@ setLoading: (f: boolean) => void
 reload: () => void
 ```
 
-#### action: setRef
-
-internal, a reference to a HTMLCanvas because we use a autorun to draw the
-canvas
+#### action: setChainData
 
 ```js
 // type signature
-setRef: (ref: HTMLCanvasElement) => void
+setChainData: (args: ChainData) => void
 ```
 
 #### action: setColorScheme
@@ -192,13 +168,6 @@ setRef: (ref: HTMLCanvasElement) => void
 ```js
 // type signature
 setColorScheme: (s: { type: string; }) => void
-```
-
-#### action: setChainData
-
-```js
-// type signature
-setChainData: (args: ChainData) => void
 ```
 
 #### action: setDrawInter
@@ -222,6 +191,30 @@ setDrawLongRange: (f: boolean) => void
 setFilterBy: (filter: IFilter) => void
 ```
 
+#### action: setJitter
+
+jitter val, helpful to jitter the x direction so you see better evidence when
+e.g. 100 long reads map to same x position
+
+```js
+// type signature
+setJitter: (n: number) => void
+```
+
+#### action: setLastDrawnBpPerPx
+
+```js
+// type signature
+setLastDrawnBpPerPx: (n: number) => void
+```
+
+#### action: setLastDrawnOffsetPx
+
+```js
+// type signature
+setLastDrawnOffsetPx: (n: number) => void
+```
+
 #### action: setLineWidth
 
 thin, bold, extrabold, etc
@@ -231,12 +224,19 @@ thin, bold, extrabold, etc
 setLineWidth: (n: number) => void
 ```
 
-#### action: setJitter
-
-jitter val, helpful to jitter the x direction so you see better evidence when
-e.g. 100 long reads map to same x position
+#### action: setLoading
 
 ```js
 // type signature
-setJitter: (n: number) => void
+setLoading: (f: boolean) => void
+```
+
+#### action: setRef
+
+internal, a reference to a HTMLCanvas because we use a autorun to draw the
+canvas
+
+```js
+// type signature
+setRef: (ref: HTMLCanvasElement) => void
 ```

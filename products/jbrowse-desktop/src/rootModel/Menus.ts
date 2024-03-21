@@ -44,8 +44,8 @@ export function DesktopMenusMixin(_pluginManager: PluginManager) {
           label: 'File',
           menuItems: [
             {
-              label: 'Open',
               icon: OpenIcon,
+              label: 'Open',
               onClick: async () => {
                 try {
                   const path = await ipcRenderer.invoke('promptOpenFile')
@@ -59,8 +59,8 @@ export function DesktopMenusMixin(_pluginManager: PluginManager) {
               },
             },
             {
-              label: 'Save',
               icon: Save,
+              label: 'Save',
               onClick: async () => {
                 if (self.session) {
                   try {
@@ -73,8 +73,8 @@ export function DesktopMenusMixin(_pluginManager: PluginManager) {
               },
             },
             {
-              label: 'Save as...',
               icon: SaveAs,
+              label: 'Save as...',
               onClick: async () => {
                 try {
                   const saveAsPath = await ipcRenderer.invoke(
@@ -92,8 +92,8 @@ export function DesktopMenusMixin(_pluginManager: PluginManager) {
               type: 'divider',
             },
             {
-              label: 'Open assembly...',
               icon: DNA,
+              label: 'Open assembly...',
               onClick: () => {
                 if (!self.session) {
                   return
@@ -119,8 +119,8 @@ export function DesktopMenusMixin(_pluginManager: PluginManager) {
               },
             },
             {
-              label: 'Open track...',
               icon: StorageIcon,
+              label: 'Open track...',
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onClick: (session: any) => {
                 if (session.views.length === 0) {
@@ -141,8 +141,8 @@ export function DesktopMenusMixin(_pluginManager: PluginManager) {
               },
             },
             {
-              label: 'Open connection...',
               icon: Cable,
+              label: 'Open connection...',
               onClick: () => {
                 if (self.session) {
                   const widget = self.session.addWidget(
@@ -157,15 +157,15 @@ export function DesktopMenusMixin(_pluginManager: PluginManager) {
               type: 'divider',
             },
             {
-              label: 'Return to start screen',
               icon: AppsIcon,
+              label: 'Return to start screen',
               onClick: () => {
                 self.setSession(undefined)
               },
             },
             {
-              label: 'Exit',
               icon: MeetingRoomIcon,
+              label: 'Exit',
               onClick: async () => {
                 await ipcRenderer.invoke('quit')
               },
@@ -180,8 +180,8 @@ export function DesktopMenusMixin(_pluginManager: PluginManager) {
           label: 'Tools',
           menuItems: [
             {
-              label: 'Undo',
               icon: UndoIcon,
+              label: 'Undo',
               onClick: () => {
                 if (self.history.canUndo) {
                   self.history.undo()
@@ -189,8 +189,8 @@ export function DesktopMenusMixin(_pluginManager: PluginManager) {
               },
             },
             {
-              label: 'Redo',
               icon: RedoIcon,
+              label: 'Redo',
               onClick: () => {
                 if (self.history.canRedo) {
                   self.history.redo()
@@ -199,8 +199,8 @@ export function DesktopMenusMixin(_pluginManager: PluginManager) {
             },
             { type: 'divider' },
             {
-              label: 'Plugin store',
               icon: ExtensionIcon,
+              label: 'Plugin store',
               onClick: () => {
                 if (self.session) {
                   const widget = self.session.addWidget(
@@ -212,29 +212,29 @@ export function DesktopMenusMixin(_pluginManager: PluginManager) {
               },
             },
             {
-              label: 'Preferences',
               icon: SettingsIcon,
+              label: 'Preferences',
               onClick: () => {
                 if (self.session) {
                   const session = self.session as SessionWithDialogs
                   session.queueDialog(handleClose => [
                     PreferencesDialog,
                     {
-                      session: self.session,
                       handleClose,
+                      session: self.session,
                     },
                   ])
                 }
               },
             },
             {
-              label: 'Open assembly manager',
               icon: SettingsIcon,
+              label: 'Open assembly manager',
               onClick: () => {
                 ;(self.session as AbstractSessionModel).queueDialog(
                   handleClose => [
                     AssemblyManager,
-                    { rootModel: self, onClose: handleClose },
+                    { onClose: handleClose, rootModel: self },
                   ],
                 )
               },

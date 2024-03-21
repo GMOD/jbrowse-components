@@ -44,7 +44,7 @@ const ColorByTagDialog = observer(function ({
             variant="contained"
             color="primary"
             onClick={() => {
-              model.setColorScheme({ type: 'tag', tag })
+              model.setColorScheme({ tag, type: 'tag' })
               handleClose()
             }}
             disabled={!validTag}

@@ -41,47 +41,56 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #property
        */
-      id: ElementId,
-      /**
-       * #property
-       */
-      type: types.literal('BaseFeatureWidget'),
-      /**
-       * #property
-       */
       featureData: types.frozen(),
+
       /**
        * #property
        */
       formattedFields: types.frozen(),
+
       /**
        * #property
        */
-      unformattedFeatureData: types.frozen(),
+      id: ElementId,
+
       /**
        * #property
        */
-      view: types.safeReference(
-        pluginManager.pluggableMstType('view', 'stateModel'),
-      ),
+      maxDepth: types.maybe(types.number),
+
       /**
        * #property
        */
       track: types.safeReference(
         pluginManager.pluggableMstType('track', 'stateModel'),
       ),
+
       /**
        * #property
        */
       trackId: types.maybe(types.string),
+
       /**
        * #property
        */
       trackType: types.maybe(types.string),
+
       /**
        * #property
        */
-      maxDepth: types.maybe(types.number),
+      type: types.literal('BaseFeatureWidget'),
+
+      /**
+       * #property
+       */
+      unformattedFeatureData: types.frozen(),
+
+      /**
+       * #property
+       */
+      view: types.safeReference(
+        pluginManager.pluggableMstType('view', 'stateModel'),
+      ),
     })
     .volatile(() => ({
       error: undefined as unknown,
@@ -91,21 +100,17 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setFeatureData(featureData: Record<string, unknown>) {
-        self.unformattedFeatureData = featureData
-      },
-      /**
-       * #action
-       */
       clearFeatureData() {
         self.featureData = undefined
       },
+
       /**
        * #action
        */
-      setFormattedData(feat: Record<string, unknown>) {
-        self.featureData = feat
+      setError(e: unknown) {
+        self.error = e
       },
+
       /**
        * #action
        */
@@ -114,11 +119,19 @@ export function stateModelFactory(pluginManager: PluginManager) {
         self.trackType = type
         self.maxDepth = maxDepth
       },
+
       /**
        * #action
        */
-      setError(e: unknown) {
-        self.error = e
+      setFeatureData(featureData: Record<string, unknown>) {
+        self.unformattedFeatureData = featureData
+      },
+
+      /**
+       * #action
+       */
+      setFormattedData(feat: Record<string, unknown>) {
+        self.featureData = feat
       },
     }))
     .actions(self => ({
@@ -175,8 +188,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       // @ts-expect-error
       const { featureData, finalizedFeatureData, ...rest } = snap
       return {
-        unformattedFeatureData: featureData,
         featureData: finalizedFeatureData,
+        unformattedFeatureData: featureData,
         ...rest,
       }
     })

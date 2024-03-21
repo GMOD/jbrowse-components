@@ -21,9 +21,9 @@ test('adapter can fetch features from volvox.bam', async () => {
 
   const features = adapter.getFeatures({
     assemblyName: 'volvox',
+    end: 20000,
     refName: 'ctgA',
     start: 0,
-    end: 20000,
   })
 
   const featuresArray = await firstValueFrom(features.pipe(toArray()))
@@ -55,9 +55,9 @@ test('adapter can fetch features from volvox.bam', async () => {
 
   const featuresCSI = adapterCSI.getFeatures({
     assemblyName: 'volvox',
+    end: 20000,
     refName: 'ctgA',
     start: 0,
-    end: 20000,
   })
   const featuresArrayCSI = await firstValueFrom(featuresCSI.pipe(toArray()))
   const featuresJsonArrayCSI = featuresArrayCSI.map(f => f.toJSON())
@@ -72,20 +72,20 @@ test('test usage of BamSlightlyLazyFeature toJSON (used in the widget)', async (
         locationType: 'LocalPathLocation',
       },
       index: {
+        indexType: 'BAI',
         location: {
           localPath: require.resolve('../../test_data/volvox-sorted.bam.bai'),
           locationType: 'LocalPathLocation',
         },
-        indexType: 'BAI',
       },
     }),
   )
 
   const features = adapter.getFeatures({
     assemblyName: 'volvox',
+    end: 100,
     refName: 'ctgA',
     start: 0,
-    end: 100,
   })
   const featuresArray = await firstValueFrom(features.pipe(toArray()))
   const f = featuresArray[0].toJSON()
@@ -103,20 +103,20 @@ test('test usage of BamSlightlyLazyFeature for extended CIGAR', async () => {
         locationType: 'LocalPathLocation',
       },
       index: {
+        indexType: 'BAI',
         location: {
           localPath: require.resolve('../../test_data/extended_cigar.bam.bai'),
           locationType: 'LocalPathLocation',
         },
-        indexType: 'BAI',
       },
     }),
   )
 
   const features = adapter.getFeatures({
     assemblyName: 'hg19',
+    end: 13340,
     refName: '1',
     start: 13260,
-    end: 13340,
   })
   const featuresArray = await firstValueFrom(features.pipe(toArray()))
   const f = featuresArray[0]

@@ -17,24 +17,6 @@ dotplot use this
 
 ### Base1DView - Properties
 
-#### property: id
-
-```js
-// type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
-// code
-id: ElementId
-```
-
-#### property: displayedRegions
-
-```js
-// type signature
-IArrayType<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>>
-// code
-displayedRegions: types.array(Region)
-```
-
 #### property: bpPerPx
 
 ```js
@@ -44,13 +26,22 @@ number
 bpPerPx: 0
 ```
 
-#### property: offsetPx
+#### property: displayedRegions
 
 ```js
 // type signature
-number
+IArrayType<IModelType<{ end: ISimpleType<number>; refName: ISimpleType<string>; reversed: IOptionalIType<ISimpleType<boolean>, [undefined]>; start: ISimpleType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>>
 // code
-offsetPx: 0
+displayedRegions: types.array(Region)
+```
+
+#### property: id
+
+```js
+// type signature
+IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+id: ElementId
 ```
 
 #### property: interRegionPaddingWidth
@@ -71,14 +62,16 @@ IOptionalIType<ISimpleType<number>, [undefined]>
 minimumBlockWidth: types.optional(types.number, 0)
 ```
 
-### Base1DView - Getters
-
-#### getter: width
+#### property: offsetPx
 
 ```js
-// type
+// type signature
 number
+// code
+offsetPx: 0
 ```
+
+### Base1DView - Getters
 
 #### getter: assemblyNames
 
@@ -115,6 +108,20 @@ number
 number
 ```
 
+#### getter: width
+
+```js
+// type
+number
+```
+
+#### getter: currBp
+
+```js
+// type
+any
+```
+
 #### getter: dynamicBlocks
 
 ```js
@@ -129,21 +136,7 @@ BlockSet
 BlockSet
 ```
 
-#### getter: currBp
-
-```js
-// type
-any
-```
-
 ### Base1DView - Methods
-
-#### method: pxToBp
-
-```js
-// type signature
-pxToBp: (px: number) => { coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed: boolean; }
-```
 
 #### method: bpToPx
 
@@ -152,14 +145,14 @@ pxToBp: (px: number) => { coord: number; index: number; refName: string; oob: bo
 bpToPx: ({ refName, coord, regionNumber, }: { refName: string; coord: number; regionNumber?: number; }) => number
 ```
 
-### Base1DView - Actions
-
-#### action: setDisplayedRegions
+#### method: pxToBp
 
 ```js
 // type signature
-setDisplayedRegions: (regions: Region[]) => void
+pxToBp: (px: number) => { coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed: boolean; }
 ```
+
+### Base1DView - Actions
 
 #### action: setBpPerPx
 
@@ -168,11 +161,41 @@ setDisplayedRegions: (regions: Region[]) => void
 setBpPerPx: (val: number) => void
 ```
 
+#### action: setDisplayedRegions
+
+```js
+// type signature
+setDisplayedRegions: (regions: Region[]) => void
+```
+
 #### action: setVolatileWidth
 
 ```js
 // type signature
 setVolatileWidth: (width: number) => void
+```
+
+#### action: centerAt
+
+```js
+// type signature
+centerAt: (coord: number, refName: string, regionNumber: number) => void
+```
+
+#### action: scroll
+
+note: the scroll is clamped to keep the view on the main screen
+
+```js
+// type signature
+scroll: (distance: number) => number
+```
+
+#### action: scrollTo
+
+```js
+// type signature
+scrollTo: (offsetPx: number) => number
 ```
 
 #### action: setFeatures
@@ -192,13 +215,6 @@ overview bar square with the scale bar
 showAllRegions: () => void
 ```
 
-#### action: zoomOut
-
-```js
-// type signature
-zoomOut: () => void
-```
-
 #### action: zoomIn
 
 ```js
@@ -206,34 +222,18 @@ zoomOut: () => void
 zoomIn: () => void
 ```
 
+#### action: zoomOut
+
+```js
+// type signature
+zoomOut: () => void
+```
+
 #### action: zoomTo
 
 ```js
 // type signature
 zoomTo: (bpPerPx: number, offset?: number) => number
-```
-
-#### action: scrollTo
-
-```js
-// type signature
-scrollTo: (offsetPx: number) => number
-```
-
-#### action: centerAt
-
-```js
-// type signature
-centerAt: (coord: number, refName: string, regionNumber: number) => void
-```
-
-#### action: scroll
-
-note: the scroll is clamped to keep the view on the main screen
-
-```js
-// type signature
-scroll: (distance: number) => number
 ```
 
 #### action: moveTo

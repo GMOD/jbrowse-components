@@ -57,9 +57,9 @@ export async function getFeatureDensityStatsPre(
   const sessionId = getRpcSessionId(self)
 
   return rpcManager.call(sessionId, 'CoreGetFeatureDensityStats', {
-    sessionId,
-    regions,
     adapterConfig,
+    regions,
+    sessionId,
     statusCallback: (message: string) => {
       if (isAlive(self)) {
         self.setMessage(message)

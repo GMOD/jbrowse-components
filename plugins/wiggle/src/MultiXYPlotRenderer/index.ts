@@ -8,9 +8,9 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addRendererType(
     () =>
       new MultiXYPlotRenderer({
-        name: 'MultiXYPlotRenderer',
         ReactComponent,
         configSchema,
+        name: 'MultiXYPlotRenderer',
         pluginManager,
       }),
   )

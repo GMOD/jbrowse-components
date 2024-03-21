@@ -39,17 +39,12 @@ export default class AddConnection extends JBrowseCommand {
 
   static args = {
     connectionUrlOrPath: Args.string({
-      required: true,
       description: `URL of data directory\nFor hub file, usually called hub.txt\nFor JBrowse 1, location of JB1 data directory similar to http://mysite.com/jbrowse/data/ `,
+      required: true,
     }),
   }
 
   static flags = {
-    type: Flags.string({
-      char: 't',
-      description:
-        'type of connection, ex. JBrowse1Connection, UCSCTrackHubConnection, custom',
-    }),
     assemblyNames: Flags.string({
       char: 'a',
       description:
@@ -62,29 +57,34 @@ export default class AddConnection extends JBrowseCommand {
     connectionId: Flags.string({
       description: `Id for the connection that must be unique to JBrowse.  Defaults to 'connectionType-assemblyName-currentTime'`,
     }),
+    force: Flags.boolean({
+      char: 'f',
+      description: 'Equivalent to `--skipCheck --overwrite`',
+    }),
+    help: Flags.help({ char: 'h' }),
     name: Flags.string({
       char: 'n',
       description:
         'Name of the connection. Defaults to connectionId if not provided',
     }),
-    target: Flags.string({
-      description:
-        'path to config file in JB2 installation directory to write out to.',
-    }),
     out: Flags.string({
       description: 'synonym for target',
-    }),
-    help: Flags.help({ char: 'h' }),
-    skipCheck: Flags.boolean({
-      description:
-        "Don't check whether or not the data directory URL exists or if you are in a JBrowse directory",
     }),
     overwrite: Flags.boolean({
       description: 'Overwrites any existing connections if same connection id',
     }),
-    force: Flags.boolean({
-      char: 'f',
-      description: 'Equivalent to `--skipCheck --overwrite`',
+    skipCheck: Flags.boolean({
+      description:
+        "Don't check whether or not the data directory URL exists or if you are in a JBrowse directory",
+    }),
+    target: Flags.string({
+      description:
+        'path to config file in JB2 installation directory to write out to.',
+    }),
+    type: Flags.string({
+      char: 't',
+      description:
+        'type of connection, ex. JBrowse1Connection, UCSCTrackHubConnection, custom',
     }),
   }
 
@@ -117,30 +117,30 @@ export default class AddConnection extends JBrowseCommand {
       connectionId ||
       [configType, assemblyNames, +Date.now()].filter(f => !!f).join('-')
     const connectionConfig = {
-      type: configType,
       name: name || id,
+      type: configType,
       ...(configType === 'UCSCTrackHubConnection'
         ? {
             hubTxtLocation: {
-              uri: url,
               locationType: 'UriLocation',
+              uri: url,
             },
           }
         : {}),
       ...(configType === 'JBrowse1Connection'
         ? {
             dataDirLocation: {
-              uri: url,
               locationType: 'UriLocation',
+              uri: url,
             },
           }
         : {}),
-      connectionId: id,
       assemblyNames: assemblyNames
         ? assemblyNames.split(',')
         : type === 'JBrowse1Connection'
           ? [configContents.assemblies[0]?.name]
           : undefined,
+      connectionId: id,
       ...(config ? parseJSON(config) : {}),
     }
 

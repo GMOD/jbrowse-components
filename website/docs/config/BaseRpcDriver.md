@@ -16,9 +16,9 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ```js
 workerCount: {
-      type: 'number',
+      defaultValue: 0,
       description:
         'The number of workers to use. If 0 (the default) JBrowse will decide how many workers to use.',
-      defaultValue: 0,
+      type: 'number',
     }
 ```

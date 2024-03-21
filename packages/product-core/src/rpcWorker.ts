@@ -96,7 +96,7 @@ export async function initializeWorker(
     })
     postMessage({ message: 'ready' })
   } catch (e) {
-    postMessage({ message: 'error', error: serializeError(e) })
+    postMessage({ error: serializeError(e), message: 'error' })
   }
   /* do nothing */
 }

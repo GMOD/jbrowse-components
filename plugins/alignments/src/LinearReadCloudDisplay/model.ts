@@ -41,11 +41,23 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        type: types.literal('LinearReadCloudDisplay'),
+        colorBy: types.maybe(
+          types.model({
+            extra: types.frozen(),
+            tag: types.maybe(types.string),
+            type: types.string,
+          }),
+        ),
+
         /**
          * #property
          */
         configuration: ConfigurationReference(configSchema),
+
+        /**
+         * #property
+         */
+        drawSingletons: true,
 
         /**
          * #property
@@ -55,40 +67,49 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        colorBy: types.maybe(
-          types.model({
-            type: types.string,
-            tag: types.maybe(types.string),
-            extra: types.frozen(),
-          }),
-        ),
-
-        /**
-         * #property
-         */
-        drawSingletons: true,
+        type: types.literal('LinearReadCloudDisplay'),
       }),
     )
     .volatile(() => ({
-      loading: false,
       chainData: undefined as ChainData | undefined,
-      lastDrawnOffsetPx: undefined as number | undefined,
       lastDrawnBpPerPx: 0,
+      lastDrawnOffsetPx: undefined as number | undefined,
+      loading: false,
       ref: null as HTMLCanvasElement | null,
     }))
     .actions(self => ({
       /**
        * #action
        */
-      setDrawSingletons(f: boolean) {
-        self.drawSingletons = f
+      reload() {
+        self.error = undefined
       },
+
       /**
        * #action
        */
-      setLastDrawnOffsetPx(n: number) {
-        self.lastDrawnOffsetPx = n
+      setChainData(args: ChainData) {
+        self.chainData = args
       },
+
+      setColorScheme(s: { type: string }) {
+        self.colorBy = cast(s)
+      },
+
+      /**
+       * #action
+       */
+      setDrawSingletons(f: boolean) {
+        self.drawSingletons = f
+      },
+
+      /**
+       * #action
+       */
+      setFilterBy(filter: IFilter) {
+        self.filterBy = cast(filter)
+      },
+
       /**
        * #action
        */
@@ -99,15 +120,17 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setLoading(f: boolean) {
-        self.loading = f
+      setLastDrawnOffsetPx(n: number) {
+        self.lastDrawnOffsetPx = n
       },
+
       /**
        * #action
        */
-      reload() {
-        self.error = undefined
+      setLoading(f: boolean) {
+        self.loading = f
       },
+
       /**
        * #action
        * internal, a reference to a HTMLCanvas because we use a autorun to draw
@@ -115,24 +138,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setRef(ref: HTMLCanvasElement | null) {
         self.ref = ref
-      },
-
-      setColorScheme(s: { type: string }) {
-        self.colorBy = cast(s)
-      },
-
-      /**
-       * #action
-       */
-      setChainData(args: ChainData) {
-        self.chainData = args
-      },
-
-      /**
-       * #action
-       */
-      setFilterBy(filter: IFilter) {
-        self.filterBy = cast(filter)
       },
     }))
     .views(self => ({
@@ -159,29 +164,40 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #method
          */
+        async renderSvg(opts: {
+          rasterizeLayers?: boolean
+        }): Promise<React.ReactNode> {
+          const { renderSvg } = await import('../shared/renderSvg')
+          const { drawFeats } = await import('./drawFeats')
+          return renderSvg(self as LinearReadCloudDisplayModel, opts, drawFeats)
+        },
+
+        /**
+         * #method
+         */
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
             {
-              label: 'Draw singletons',
-              type: 'checkbox',
               checked: self.drawSingletons,
+              label: 'Draw singletons',
               onClick: () => self.setDrawSingletons(!self.drawSingletons),
+              type: 'checkbox',
             },
             {
-              label: 'Filter by',
               icon: FilterListIcon,
+              label: 'Filter by',
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   FilterByTagDialog,
-                  { model: self, handleClose },
+                  { handleClose, model: self },
                 ])
               },
             },
 
             {
-              label: 'Color scheme',
               icon: PaletteIcon,
+              label: 'Color scheme',
               subMenu: [
                 {
                   label: 'Insert size ± 3σ and orientation',
@@ -203,17 +219,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               ],
             },
           ]
-        },
-
-        /**
-         * #method
-         */
-        async renderSvg(opts: {
-          rasterizeLayers?: boolean
-        }): Promise<React.ReactNode> {
-          const { renderSvg } = await import('../shared/renderSvg')
-          const { drawFeats } = await import('./drawFeats')
-          return renderSvg(self as LinearReadCloudDisplayModel, opts, drawFeats)
         },
       }
     })

@@ -6,8 +6,8 @@ import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 const useStyles = makeStyles()({
   container: {
-    overflow: 'auto',
     maxHeight: 600,
+    overflow: 'auto',
   },
 })
 const AssemblyEditor = observer(function ({

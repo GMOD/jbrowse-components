@@ -8,9 +8,9 @@ import { SpreadsheetModel } from '../models/Spreadsheet'
 
 const useStyles = makeStyles()({
   sortIndicator: {
+    fontSize: '1rem',
     position: 'relative',
     top: '0.2rem',
-    fontSize: '1rem',
   },
 })
 

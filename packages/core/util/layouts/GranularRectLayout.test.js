@@ -90,16 +90,16 @@ describe('GranularRectLayout', () => {
     l.addRect('test', 2581541, 2581542, 1)
 
     expect(
-      l.serializeRegion({ start: 2581491, end: 2818659 }).rectangles.test,
+      l.serializeRegion({ end: 2818659, start: 2581491 }).rectangles.test,
     ).toBeTruthy()
   })
 
   it('tests reinitializing layout due to throwing away old one', () => {
     const spy = jest.spyOn(console, 'warn').mockImplementation(() => {})
     const l = new Layout({
+      maxHeight: 600,
       pitchX: 1,
       pitchY: 1,
-      maxHeight: 600,
     })
 
     l.addRect('test1', 0, 10000, 1)
@@ -112,9 +112,9 @@ describe('GranularRectLayout', () => {
 
   it('tests adding a gigantic feature that fills entire row with another smaller added on top', () => {
     const l = new Layout({
+      maxHeight: 600,
       pitchX: 100,
       pitchY: 1,
-      maxHeight: 600,
     })
 
     expect(l.getByCoord(50000, 0)).toEqual(undefined)

@@ -8,13 +8,13 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaF(pluginManager)
     return new DisplayType({
-      name: 'LinearVariantDisplay',
-      displayName: 'Variant display',
+      ReactComponent: BaseLinearDisplayComponent,
       configSchema,
+      displayName: 'Variant display',
+      name: 'LinearVariantDisplay',
       stateModel: stateModelFactory(configSchema),
       trackType: 'VariantTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: BaseLinearDisplayComponent,
     })
   })
 }

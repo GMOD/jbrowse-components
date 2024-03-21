@@ -5,9 +5,9 @@ import { ElementId } from '@jbrowse/core/util/types/mst'
 export default function stateModelFactory(pluginManager: PluginManager) {
   return types
     .model('PluginStoreModel', {
+      filterText: '',
       id: ElementId,
       type: types.literal('PluginStoreWidget'),
-      filterText: '',
       view: types.safeReference(
         pluginManager.pluggableMstType('view', 'stateModel'),
       ),

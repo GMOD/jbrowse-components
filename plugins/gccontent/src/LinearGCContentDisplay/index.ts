@@ -10,13 +10,13 @@ export default (pluginManager: PluginManager) => {
     const configSchema = configSchemaFactory(pluginManager)
     const stateModel = stateModelFactory(pluginManager, configSchema)
     return new DisplayType({
-      name: 'LinearGCContentDisplay',
+      ReactComponent: LinearWiggleDisplayReactComponent,
       configSchema,
-      stateModel,
       displayName: 'GC content display',
+      name: 'LinearGCContentDisplay',
+      stateModel,
       trackType: 'ReferenceSequenceTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: LinearWiggleDisplayReactComponent,
     })
   })
 }

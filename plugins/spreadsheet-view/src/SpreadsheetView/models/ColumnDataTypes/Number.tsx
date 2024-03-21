@@ -15,6 +15,13 @@ const OPERATIONS = [
 
 // NOTE: assembly names, if present, are ignored in all of these predicates
 const OPERATION_PREDICATES = {
+  between: (numberInCell, firstNumber, secondNumber) => {
+    return (
+      numberInCell > firstNumber &&
+      secondNumber !== undefined &&
+      numberInCell < secondNumber
+    )
+  },
   equals: (numberInCell, firstNumber) => {
     return numberInCell === firstNumber
   },
@@ -23,13 +30,6 @@ const OPERATION_PREDICATES = {
   },
   'less than': (numberInCell, firstNumber) => {
     return numberInCell < firstNumber
-  },
-  between: (numberInCell, firstNumber, secondNumber) => {
-    return (
-      numberInCell > firstNumber &&
-      secondNumber !== undefined &&
-      numberInCell < secondNumber
-    )
   },
 } as Record<string, (arg0: number, a: number, b?: number) => boolean>
 
@@ -42,18 +42,18 @@ OPERATION_PREDICATES['not between'] = (
 }
 
 const useStyles = makeStyles()({
-  textFilterControlAdornment: { marginRight: '-18px' },
   textFilterControl: {
     '& .MuiInput-formControl': {
       marginTop: 8,
     },
     '& .MuiInputLabel-formControl': {
-      top: '-7px',
       '&.MuiInputLabel-shrink': {
         top: '-3px',
       },
+      top: '-7px',
     },
   },
+  textFilterControlAdornment: { marginRight: '-18px' },
 })
 
 // React component for the column filter control
@@ -112,11 +112,11 @@ const FilterReactComponent = observer(
 // MST model for the column filter control
 const FilterModelType = types
   .model('ColumnNumberFilter', {
-    type: types.literal('Number'),
     columnNumber: types.integer,
     firstNumber: types.maybe(types.number),
-    secondNumber: types.maybe(types.number),
     operation: types.optional(types.enumeration(OPERATIONS), OPERATIONS[0]),
+    secondNumber: types.maybe(types.number),
+    type: types.literal('Number'),
   })
   .views(self => ({
     // returns a function that tests the given row
@@ -157,21 +157,21 @@ const FilterModelType = types
       self.firstNumber =
         Number.isNaN(n) || typeof n !== 'number' ? undefined : n
     },
+    setOperation(op: string) {
+      self.operation = op
+    },
     setSecondNumber(n: number) {
       self.secondNumber =
         Number.isNaN(n) || typeof n !== 'number' ? undefined : n
-    },
-    setOperation(op: string) {
-      self.operation = op
     },
   }))
   .volatile(() => ({ ReactComponent: FilterReactComponent }))
 
 const NumberColumn = MakeSpreadsheetColumnType('Number', {
+  FilterModelType,
   compare(cellA: { text: string }, cellB: { text: string }) {
     return parseFloat(cellA.text) - parseFloat(cellB.text)
   },
-  FilterModelType,
 })
 
 export { NumberColumn, FilterModelType }

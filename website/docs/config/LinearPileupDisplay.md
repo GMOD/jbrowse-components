@@ -12,13 +12,41 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ### LinearPileupDisplay - Slots
 
+#### slot: colorScheme
+
+```js
+colorScheme: {
+        defaultValue: 'normal',
+        description: 'color scheme to use',
+        model: types.enumeration('colorScheme', [
+          'strand',
+          'normal',
+          'insertSize',
+          'insertSizeAndOrientation',
+          'mappingQuality',
+          'tag',
+        ]),
+        type: 'stringEnum',
+      }
+```
+
 #### slot: defaultRendering
 
 ```js
 defaultRendering: {
-        type: 'stringEnum',
-        model: types.enumeration('Rendering', ['pileup']),
         defaultValue: 'pileup',
+        model: types.enumeration('Rendering', ['pileup']),
+        type: 'stringEnum',
+      }
+```
+
+#### slot: maxFeatureScreenDensity
+
+```js
+maxFeatureScreenDensity: {
+        defaultValue: 5,
+        description: 'maximum features per pixel that is displayed in the view',
+        type: 'number',
       }
 ```
 
@@ -28,34 +56,6 @@ defaultRendering: {
 renderers: ConfigurationSchema('RenderersConfiguration', {
   PileupRenderer: pluginManager.getRendererType('PileupRenderer').configSchema,
 })
-```
-
-#### slot: maxFeatureScreenDensity
-
-```js
-maxFeatureScreenDensity: {
-        type: 'number',
-        description: 'maximum features per pixel that is displayed in the view',
-        defaultValue: 5,
-      }
-```
-
-#### slot: colorScheme
-
-```js
-colorScheme: {
-        type: 'stringEnum',
-        model: types.enumeration('colorScheme', [
-          'strand',
-          'normal',
-          'insertSize',
-          'insertSizeAndOrientation',
-          'mappingQuality',
-          'tag',
-        ]),
-        description: 'color scheme to use',
-        defaultValue: 'normal',
-      }
 ```
 
 ### LinearPileupDisplay - Derives from

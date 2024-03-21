@@ -150,11 +150,11 @@ exports[`renders nothing with no assembly 1`] = `
         style="position: absolute; left: 0px; top: 0px; height: 40px; width: 100%;"
       >
         <div
-          class="css-1eoby3c-accordionCard"
+          class="css-162k08k-accordionCard"
           style="margin-left: 0px; white-space: nowrap; width: 100%;"
         >
           <div
-            class="css-1dqsl7q-accordionColor"
+            class="css-1b2ykgq-accordionColor"
           >
             <div
               class="css-1c2x1yy-accordionText"
@@ -202,7 +202,7 @@ exports[`renders nothing with no assembly 1`] = `
     </div>
   </div>
   <button
-    class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-secondary MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-secondary css-15opis6-MuiButtonBase-root-MuiFab-root-fab"
+    class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-secondary MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-secondary css-142fnmg-MuiButtonBase-root-MuiFab-root-fab"
     tabindex="0"
     type="button"
   >
@@ -374,11 +374,11 @@ exports[`renders with a couple of categorized tracks 1`] = `
         style="position: absolute; left: 0px; top: 0px; height: 40px; width: 100%;"
       >
         <div
-          class="css-1eoby3c-accordionCard"
+          class="css-162k08k-accordionCard"
           style="margin-left: 0px; white-space: nowrap; width: 100%;"
         >
           <div
-            class="css-1dqsl7q-accordionColor"
+            class="css-1b2ykgq-accordionColor"
           >
             <div
               class="css-1c2x1yy-accordionText"
@@ -427,8 +427,8 @@ exports[`renders with a couple of categorized tracks 1`] = `
         style="position: absolute; left: 0px; top: 40px; height: 22px; width: 100%;"
       >
         <div
-          class="css-1a5q6y9-nestingLevelMarker"
-          style="left: 4px; height: 22px;"
+          class="css-1hcjaqn-nestingLevelMarker"
+          style="height: 22px; left: 4px;"
         />
         <div
           style="margin-left: 20px; white-space: nowrap; width: 100%;"
@@ -436,7 +436,7 @@ exports[`renders with a couple of categorized tracks 1`] = `
           <div>
             <label
               aria-label=""
-              class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-h6tcxi-MuiFormControlLabel-root-checkboxLabel"
+              class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-5byeu7-MuiFormControlLabel-root-checkboxLabel"
               data-mui-internal-clone-element="true"
             >
               <span
@@ -502,15 +502,15 @@ exports[`renders with a couple of categorized tracks 1`] = `
         style="position: absolute; left: 0px; top: 62px; height: 40px; width: 100%;"
       >
         <div
-          class="css-1a5q6y9-nestingLevelMarker"
-          style="left: 4px; height: 40px;"
+          class="css-1hcjaqn-nestingLevelMarker"
+          style="height: 40px; left: 4px;"
         />
         <div
-          class="css-1eoby3c-accordionCard"
+          class="css-162k08k-accordionCard"
           style="margin-left: 10px; white-space: nowrap; width: 100%;"
         >
           <div
-            class="css-1dqsl7q-accordionColor"
+            class="css-1b2ykgq-accordionColor"
           >
             <div
               class="css-1c2x1yy-accordionText"
@@ -559,12 +559,12 @@ exports[`renders with a couple of categorized tracks 1`] = `
         style="position: absolute; left: 0px; top: 102px; height: 22px; width: 100%;"
       >
         <div
-          class="css-1a5q6y9-nestingLevelMarker"
-          style="left: 4px; height: 22px;"
+          class="css-1hcjaqn-nestingLevelMarker"
+          style="height: 22px; left: 4px;"
         />
         <div
-          class="css-1a5q6y9-nestingLevelMarker"
-          style="left: 14px; height: 22px;"
+          class="css-1hcjaqn-nestingLevelMarker"
+          style="height: 22px; left: 14px;"
         />
         <div
           style="margin-left: 30px; white-space: nowrap; width: 100%;"
@@ -572,7 +572,7 @@ exports[`renders with a couple of categorized tracks 1`] = `
           <div>
             <label
               aria-label=""
-              class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-h6tcxi-MuiFormControlLabel-root-checkboxLabel"
+              class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-5byeu7-MuiFormControlLabel-root-checkboxLabel"
               data-mui-internal-clone-element="true"
             >
               <span
@@ -639,19 +639,19 @@ exports[`renders with a couple of categorized tracks 1`] = `
         style="position: absolute; left: 0px; top: 124px; height: 40px; width: 100%;"
       >
         <div
-          class="css-1a5q6y9-nestingLevelMarker"
-          style="left: 4px; height: 40px;"
+          class="css-1hcjaqn-nestingLevelMarker"
+          style="height: 40px; left: 4px;"
         />
         <div
-          class="css-1a5q6y9-nestingLevelMarker"
-          style="left: 14px; height: 40px;"
+          class="css-1hcjaqn-nestingLevelMarker"
+          style="height: 40px; left: 14px;"
         />
         <div
-          class="css-1eoby3c-accordionCard"
+          class="css-162k08k-accordionCard"
           style="margin-left: 20px; white-space: nowrap; width: 100%;"
         >
           <div
-            class="css-1dqsl7q-accordionColor"
+            class="css-1b2ykgq-accordionColor"
           >
             <div
               class="css-1c2x1yy-accordionText"
@@ -700,16 +700,16 @@ exports[`renders with a couple of categorized tracks 1`] = `
         style="position: absolute; left: 0px; top: 164px; height: 22px; width: 100%;"
       >
         <div
-          class="css-1a5q6y9-nestingLevelMarker"
-          style="left: 4px; height: 22px;"
+          class="css-1hcjaqn-nestingLevelMarker"
+          style="height: 22px; left: 4px;"
         />
         <div
-          class="css-1a5q6y9-nestingLevelMarker"
-          style="left: 14px; height: 22px;"
+          class="css-1hcjaqn-nestingLevelMarker"
+          style="height: 22px; left: 14px;"
         />
         <div
-          class="css-1a5q6y9-nestingLevelMarker"
-          style="left: 24px; height: 22px;"
+          class="css-1hcjaqn-nestingLevelMarker"
+          style="height: 22px; left: 24px;"
         />
         <div
           style="margin-left: 40px; white-space: nowrap; width: 100%;"
@@ -717,7 +717,7 @@ exports[`renders with a couple of categorized tracks 1`] = `
           <div>
             <label
               aria-label=""
-              class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-h6tcxi-MuiFormControlLabel-root-checkboxLabel"
+              class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-5byeu7-MuiFormControlLabel-root-checkboxLabel"
               data-mui-internal-clone-element="true"
             >
               <span
@@ -782,7 +782,7 @@ exports[`renders with a couple of categorized tracks 1`] = `
     </div>
   </div>
   <button
-    class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-secondary MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-secondary css-15opis6-MuiButtonBase-root-MuiFab-root-fab"
+    class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-secondary MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-secondary css-142fnmg-MuiButtonBase-root-MuiFab-root-fab"
     tabindex="0"
     type="button"
   >
@@ -954,11 +954,11 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
         style="position: absolute; left: 0px; top: 0px; height: 40px; width: 100%;"
       >
         <div
-          class="css-1eoby3c-accordionCard"
+          class="css-162k08k-accordionCard"
           style="margin-left: 0px; white-space: nowrap; width: 100%;"
         >
           <div
-            class="css-1dqsl7q-accordionColor"
+            class="css-1b2ykgq-accordionColor"
           >
             <div
               class="css-1c2x1yy-accordionText"
@@ -1007,8 +1007,8 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
         style="position: absolute; left: 0px; top: 40px; height: 22px; width: 100%;"
       >
         <div
-          class="css-1a5q6y9-nestingLevelMarker"
-          style="left: 4px; height: 22px;"
+          class="css-1hcjaqn-nestingLevelMarker"
+          style="height: 22px; left: 4px;"
         />
         <div
           style="margin-left: 20px; white-space: nowrap; width: 100%;"
@@ -1016,7 +1016,7 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
           <div>
             <label
               aria-label=""
-              class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-h6tcxi-MuiFormControlLabel-root-checkboxLabel"
+              class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-5byeu7-MuiFormControlLabel-root-checkboxLabel"
               data-mui-internal-clone-element="true"
             >
               <span
@@ -1081,8 +1081,8 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
         style="position: absolute; left: 0px; top: 62px; height: 22px; width: 100%;"
       >
         <div
-          class="css-1a5q6y9-nestingLevelMarker"
-          style="left: 4px; height: 22px;"
+          class="css-1hcjaqn-nestingLevelMarker"
+          style="height: 22px; left: 4px;"
         />
         <div
           style="margin-left: 20px; white-space: nowrap; width: 100%;"
@@ -1090,7 +1090,7 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
           <div>
             <label
               aria-label=""
-              class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-h6tcxi-MuiFormControlLabel-root-checkboxLabel"
+              class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-5byeu7-MuiFormControlLabel-root-checkboxLabel"
               data-mui-internal-clone-element="true"
             >
               <span
@@ -1156,8 +1156,8 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
         style="position: absolute; left: 0px; top: 84px; height: 22px; width: 100%;"
       >
         <div
-          class="css-1a5q6y9-nestingLevelMarker"
-          style="left: 4px; height: 22px;"
+          class="css-1hcjaqn-nestingLevelMarker"
+          style="height: 22px; left: 4px;"
         />
         <div
           style="margin-left: 20px; white-space: nowrap; width: 100%;"
@@ -1165,7 +1165,7 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
           <div>
             <label
               aria-label=""
-              class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-h6tcxi-MuiFormControlLabel-root-checkboxLabel"
+              class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-5byeu7-MuiFormControlLabel-root-checkboxLabel"
               data-mui-internal-clone-element="true"
             >
               <span
@@ -1230,7 +1230,7 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
     </div>
   </div>
   <button
-    class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-secondary MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-secondary css-15opis6-MuiButtonBase-root-MuiFab-root-fab"
+    class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-secondary MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-secondary css-142fnmg-MuiButtonBase-root-MuiFab-root-fab"
     tabindex="0"
     type="button"
   >

@@ -1,7 +1,7 @@
 import ConfigSlot from './configurationSlot'
 
 test('can convert a string slot to and from a callback', () => {
-  const model = ConfigSlot('tester', { type: 'string', defaultValue: 'foo' })
+  const model = ConfigSlot('tester', { defaultValue: 'foo', type: 'string' })
   const instance = model.create()
   expect(instance.value).toBe('foo')
   expect(instance.expr.evalSync()).toBe('foo')
@@ -15,9 +15,9 @@ test('can convert a string slot to and from a callback', () => {
 
 test('can convert a numeric slot to and from a callback', () => {
   const model = ConfigSlot('tester', {
-    type: 'number',
-    defaultValue: 12,
     contextVariable: ['something'],
+    defaultValue: 12,
+    type: 'number',
   })
   const instance = model.create()
   expect(instance.value).toBe(12)
@@ -29,8 +29,8 @@ test('can convert a numeric slot to and from a callback', () => {
 
 test('can convert a stringArray slot to and from a callback', () => {
   const model = ConfigSlot('tester', {
-    type: 'stringArray',
     defaultValue: ['foo', 'bar'],
+    type: 'stringArray',
   })
   const instance = model.create()
   expect(instance.value).toEqual(['foo', 'bar'])
@@ -45,8 +45,8 @@ test('can convert a stringArray slot to and from a callback', () => {
 
 test('can convert a slot with a default function value to a scalar value', () => {
   const model = ConfigSlot('tester', {
-    type: 'string',
     defaultValue: 'jexl:get(feature,"foo")',
+    type: 'string',
   })
   const instance = model.create()
   expect(instance.value).toBe('jexl:get(feature,"foo")')

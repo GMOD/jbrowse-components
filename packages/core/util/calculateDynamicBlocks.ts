@@ -106,17 +106,17 @@ export default function calculateDynamicBlocks(
       const widthPx = (end - start) / bpPerPx
       const blockData = {
         assemblyName,
-        refName,
-        start,
         end,
-        reversed,
-        offsetPx: blockOffsetPx,
-        parentRegion,
-        regionNumber,
-        widthPx,
         isLeftEndOfDisplayedRegion,
         isRightEndOfDisplayedRegion,
         key: '',
+        offsetPx: blockOffsetPx,
+        parentRegion,
+        refName,
+        regionNumber,
+        reversed,
+        start,
+        widthPx,
       }
       blockData.key = `${assembleLocStringFast(blockData)}-${regionNumber}${
         reversed ? '-reversed' : ''
@@ -126,9 +126,9 @@ export default function calculateDynamicBlocks(
         blocks.push(
           new InterRegionPaddingBlock({
             key: `${blockData.key}-beforeFirstRegion`,
-            widthPx: -offsetPx,
             offsetPx: blockData.offsetPx + offsetPx,
             variant: 'boundary',
+            widthPx: -offsetPx,
           }),
         )
       }
@@ -149,8 +149,8 @@ export default function calculateDynamicBlocks(
           blocks.push(
             new InterRegionPaddingBlock({
               key: `${blockData.key}-rightpad`,
-              widthPx: interRegionPaddingWidth,
               offsetPx: blockData.offsetPx + blockData.widthPx,
+              widthPx: interRegionPaddingWidth,
             }),
           )
           displayedRegionLeftPx += interRegionPaddingWidth
@@ -164,9 +164,9 @@ export default function calculateDynamicBlocks(
           blocks.push(
             new InterRegionPaddingBlock({
               key: `${blockData.key}-afterLastRegion`,
-              widthPx: width - blockOffsetPx + offsetPx,
               offsetPx: blockOffsetPx,
               variant: 'boundary',
+              widthPx: width - blockOffsetPx + offsetPx,
             }),
           )
         }

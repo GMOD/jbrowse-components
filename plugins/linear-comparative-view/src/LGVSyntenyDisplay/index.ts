@@ -9,12 +9,12 @@ export default (pluginManager: PluginManager) => {
     const configSchema = configSchemaF(pluginManager)
     const stateModel = stateModelF(configSchema)
     return new DisplayType({
-      name: 'LGVSyntenyDisplay',
+      ReactComponent: BaseLinearDisplayComponent,
       configSchema,
+      name: 'LGVSyntenyDisplay',
       stateModel,
       trackType: 'SyntenyTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: BaseLinearDisplayComponent,
     })
   })
 }

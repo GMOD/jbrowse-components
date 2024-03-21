@@ -95,17 +95,17 @@ export default function calculateStaticBlocks(
       const widthPx = (end - start) / bpPerPx
       const blockData = {
         assemblyName,
-        refName,
-        start,
         end,
-        reversed,
-        offsetPx: (regionBpOffset + blockNum * blockSizeBp) / bpPerPx,
-        parentRegion,
-        regionNumber,
-        widthPx,
         isLeftEndOfDisplayedRegion,
         isRightEndOfDisplayedRegion,
         key: '',
+        offsetPx: (regionBpOffset + blockNum * blockSizeBp) / bpPerPx,
+        parentRegion,
+        refName,
+        regionNumber,
+        reversed,
+        start,
+        widthPx,
       }
       blockData.key = `${assembleLocStringFast(blockData)}-${regionNumber}${
         reversed ? '-reversed' : ''
@@ -115,9 +115,9 @@ export default function calculateStaticBlocks(
         blocks.push(
           new InterRegionPaddingBlock({
             key: `${blockData.key}-beforeFirstRegion`,
-            widthPx: width,
             offsetPx: blockData.offsetPx - width,
             variant: 'boundary',
+            widthPx: width,
           }),
         )
       }
@@ -139,8 +139,8 @@ export default function calculateStaticBlocks(
           blocks.push(
             new InterRegionPaddingBlock({
               key: `${blockData.key}-rightpad`,
-              widthPx: interRegionPaddingWidth,
               offsetPx: blockData.offsetPx + blockData.widthPx,
+              widthPx: interRegionPaddingWidth,
             }),
           )
         }
@@ -152,9 +152,9 @@ export default function calculateStaticBlocks(
           blocks.push(
             new InterRegionPaddingBlock({
               key: `${blockData.key}-afterLastRegion`,
-              widthPx: width,
               offsetPx: blockData.offsetPx + blockData.widthPx,
               variant: 'boundary',
+              widthPx: width,
             }),
           )
         }

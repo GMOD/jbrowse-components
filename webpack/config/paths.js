@@ -52,24 +52,24 @@ const resolveModule = (resolveFn, filePath) => {
 
 // config after eject: we're in ./config/
 module.exports = {
-  dotenv: resolveApp('.env'),
-  appPath: resolveApp('.'),
   appBuild: resolveApp(buildPath),
-  appPublic: resolveApp('public'),
   appHtml: resolveApp('public/index.html'),
   appIndexJs: resolveModule(resolveApp, 'src/index'),
-  appPackageJson: resolveApp('package.json'),
-  appSrc: resolveApp('src'),
-  appTsConfig: resolveApp('tsconfig.json'),
   appJsConfig: resolveApp('jsconfig.json'),
-  yarnLockFile: resolveApp('yarn.lock'),
-  testsSetup: resolveModule(resolveApp, 'src/setupTests'),
-  proxySetup: resolveApp('src/setupProxy.js'),
   appNodeModules: resolveApp('node_modules'),
-  appWebpackCache: resolveApp('node_modules/.cache'),
+  appPackageJson: resolveApp('package.json'),
+  appPath: resolveApp('.'),
+  appPublic: resolveApp('public'),
+  appSrc: resolveApp('src'),
   appTsBuildInfoFile: resolveApp('node_modules/.cache/tsconfig.tsbuildinfo'),
-  swSrc: resolveModule(resolveApp, 'src/service-worker'),
+  appTsConfig: resolveApp('tsconfig.json'),
+  appWebpackCache: resolveApp('node_modules/.cache'),
+  dotenv: resolveApp('.env'),
+  proxySetup: resolveApp('src/setupProxy.js'),
   publicUrlOrPath,
+  swSrc: resolveModule(resolveApp, 'src/service-worker'),
+  testsSetup: resolveModule(resolveApp, 'src/setupTests'),
+  yarnLockFile: resolveApp('yarn.lock'),
 }
 
 module.exports.moduleFileExtensions = moduleFileExtensions

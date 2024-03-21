@@ -43,20 +43,6 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
     }))
     .views(self => ({
       /**
-       * #method
-       */
-      get(asmName: string) {
-        return self.assemblyNameMap[asmName]
-      },
-
-      /**
-       * #getter
-       */
-      get assemblyNamesList() {
-        return this.assemblyList.map(asm => asm.name)
-      },
-
-      /**
        * #getter
        * looks at jbrowse.assemblies, session.sessionAssemblies, and
        * session.temporaryAssemblies to load from
@@ -76,46 +62,26 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
         ] as AnyConfigurationModel[]
       },
 
+      /**
+       * #getter
+       */
+      get assemblyNamesList() {
+        return this.assemblyList.map(asm => asm.name)
+      },
+
+      /**
+       * #method
+       */
+      get(asmName: string) {
+        return self.assemblyNameMap[asmName]
+      },
+
       get rpcManager(): RpcManager {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getParent<any>(self).rpcManager
       },
     }))
     .views(self => ({
-      /**
-       * #method
-       * use this method instead of assemblyManager.get(assemblyName)
-       * to get an assembly with regions loaded
-       */
-      async waitForAssembly(assemblyName: string) {
-        if (!assemblyName) {
-          throw new Error('no assembly name supplied to waitForAssembly')
-        }
-        let assembly = self.get(assemblyName)
-        if (!assembly) {
-          try {
-            await when(() => Boolean(self.get(assemblyName)), { timeout: 1000 })
-            assembly = self.get(assemblyName)
-          } catch (e) {
-            // ignore
-          }
-        }
-
-        if (!assembly) {
-          return undefined
-        }
-        await assembly.load()
-        await when(
-          () =>
-            !!(assembly?.regions && assembly.refNameAliases) ||
-            !!assembly?.error,
-        )
-        if (assembly.error) {
-          throw assembly.error
-        }
-        return assembly
-      },
-
       /**
        * #method
        */
@@ -158,8 +124,56 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
           `Failed to look up refName ${refName} on ${assemblyName} because assembly does not exist`,
         )
       },
+
+      /**
+       * #method
+       * use this method instead of assemblyManager.get(assemblyName)
+       * to get an assembly with regions loaded
+       */
+      async waitForAssembly(assemblyName: string) {
+        if (!assemblyName) {
+          throw new Error('no assembly name supplied to waitForAssembly')
+        }
+        let assembly = self.get(assemblyName)
+        if (!assembly) {
+          try {
+            await when(() => Boolean(self.get(assemblyName)), { timeout: 1000 })
+            assembly = self.get(assemblyName)
+          } catch (e) {
+            // ignore
+          }
+        }
+
+        if (!assembly) {
+          return undefined
+        }
+        await assembly.load()
+        await when(
+          () =>
+            !!(assembly?.regions && assembly.refNameAliases) ||
+            !!assembly?.error,
+        )
+        if (assembly.error) {
+          throw assembly.error
+        }
+        return assembly
+      },
     }))
     .actions(self => ({
+      /**
+       * #action
+       * private: you would generally want to add to manipulate
+       * jbrowse.assemblies, session.sessionAssemblies, or
+       * session.temporaryAssemblies instead of using this directly
+       *
+       * this can take an active instance of an assembly, in which case it is
+       * referred to, or it can take an identifier e.g. assembly name, which is
+       * used as a reference. snapshots cannot be used
+       */
+      addAssembly(configuration: Conf) {
+        self.assemblies.push({ configuration })
+      },
+
       afterAttach() {
         addDisposer(
           self,
@@ -194,20 +208,6 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
        */
       removeAssembly(asm: Assembly) {
         self.assemblies.remove(asm)
-      },
-
-      /**
-       * #action
-       * private: you would generally want to add to manipulate
-       * jbrowse.assemblies, session.sessionAssemblies, or
-       * session.temporaryAssemblies instead of using this directly
-       *
-       * this can take an active instance of an assembly, in which case it is
-       * referred to, or it can take an identifier e.g. assembly name, which is
-       * used as a reference. snapshots cannot be used
-       */
-      addAssembly(configuration: Conf) {
-        self.assemblies.push({ configuration })
       },
 
       /**

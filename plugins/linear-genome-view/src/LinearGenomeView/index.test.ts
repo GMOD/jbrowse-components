@@ -34,8 +34,8 @@ function initialize() {
       },
     )
     return new TrackType({
-      name: 'BasicTrack',
       configSchema,
+      name: 'BasicTrack',
       stateModel: createBaseTrackModel(stubManager, 'BasicTrack', configSchema),
     })
   })
@@ -46,12 +46,12 @@ function initialize() {
       { explicitlyTyped: true },
     )
     return new DisplayType({
-      name: 'LinearBareDisplay',
+      ReactComponent: BaseLinearDisplayComponent,
       configSchema,
+      name: 'LinearBareDisplay',
       stateModel: LinearBasicDisplayStateModelFactory(configSchema),
       trackType: 'BasicTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: BaseLinearDisplayComponent,
     })
   })
   stubManager.createPluggableElements()
@@ -76,11 +76,11 @@ function initialize() {
       assemblies: types.map(Assembly),
     })
     .actions(self => ({
-      isValidRefName(str: string) {
-        return str === 'ctgA' || str === 'ctgB'
-      },
       get(str: string) {
         return self.assemblies.get(str)
+      },
+      isValidRefName(str: string) {
+        return str === 'ctgA' || str === 'ctgB'
       },
       waitForAssembly(str: string) {
         return self.assemblies.get(str)
@@ -89,10 +89,6 @@ function initialize() {
   const LinearGenomeModel = stateModelFactory(stubManager)
   const Session = types
     .model({
-      name: 'testSession',
-      rpcManager: 'rpcManagerExists',
-      view: types.maybe(LinearGenomeModel),
-      configuration: types.map(types.string),
       assemblyManager: types.optional(AssemblyManager, {
         assemblies: {
           volvox: {
@@ -101,6 +97,10 @@ function initialize() {
           },
         },
       }),
+      configuration: types.map(types.string),
+      name: 'testSession',
+      rpcManager: 'rpcManagerExists',
+      view: types.maybe(LinearGenomeModel),
     })
     .actions(self => ({
       setView(view: LGV) {
@@ -109,7 +109,7 @@ function initialize() {
       },
     }))
 
-  return { Session, LinearGenomeModel, Assembly }
+  return { Assembly, LinearGenomeModel, Session }
 }
 
 test('can instantiate a mostly empty model and read a default configuration value', () => {
@@ -118,8 +118,8 @@ test('can instantiate a mostly empty model and read a default configuration valu
     configuration: {},
   }).setView(
     LinearGenomeModel.create({
-      type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'BasicTrack' }],
+      type: 'LinearGenomeView',
     }),
   )
 
@@ -135,13 +135,13 @@ test('can instantiate a model that lets you navigate', () => {
   const model = session.setView(
     LinearGenomeModel.create({
       id: 'test1',
-      type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'BasicTrack' }],
+      type: 'LinearGenomeView',
     }),
   )
   model.setWidth(800)
   model.setDisplayedRegions([
-    { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
+    { assemblyName: 'volvox', end: 10000, refName: 'ctgA', start: 0 },
   ])
   expect(model.maxBpPerPx).toBeCloseTo(13.888)
   model.setNewView(0.02, 0)
@@ -182,14 +182,14 @@ test('can instantiate a model that has multiple displayed regions', () => {
   const model = session.setView(
     LinearGenomeModel.create({
       id: 'test2',
-      type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'BasicTrack' }],
+      type: 'LinearGenomeView',
     }),
   )
   model.setWidth(800)
   model.setDisplayedRegions([
-    { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
-    { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgB' },
+    { assemblyName: 'volvox', end: 10000, refName: 'ctgA', start: 0 },
+    { assemblyName: 'volvox', end: 10000, refName: 'ctgB', start: 0 },
   ])
   expect(model.maxBpPerPx).toBeCloseTo(27.777)
   model.setNewView(0.02, 0)
@@ -210,18 +210,18 @@ test('can instantiate a model that tests navTo/moveTo', async () => {
   const model = session.setView(
     LinearGenomeModel.create({
       id: 'test3',
-      type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'BasicTrack' }],
+      type: 'LinearGenomeView',
     }),
   )
   model.setWidth(width)
   model.setDisplayedRegions([
-    { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
-    { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgB' },
+    { assemblyName: 'volvox', end: 10000, refName: 'ctgA', start: 0 },
+    { assemblyName: 'volvox', end: 10000, refName: 'ctgB', start: 0 },
   ])
   expect(model.maxBpPerPx).toBeCloseTo(27.7777)
 
-  model.navTo({ refName: 'ctgA', start: 0, end: 100 })
+  model.navTo({ end: 100, refName: 'ctgA', start: 0 })
   expect(model.offsetPx).toBe(0)
   expect(model.bpPerPx).toBe(0.125)
 
@@ -229,19 +229,19 @@ test('can instantiate a model that tests navTo/moveTo', async () => {
   expect(model.offsetPx).toBe(0)
   expect(model.bpPerPx).toBe(12.5)
 
-  model.navTo({ refName: 'contigA', start: 0, end: 100 })
+  model.navTo({ end: 100, refName: 'contigA', start: 0 })
   expect(model.offsetPx).toBe(0)
   expect(model.bpPerPx).toBe(0.125)
 
-  expect(() => model.navTo({ refName: 'ctgA', start: 200, end: 100 })).toThrow(
+  expect(() => model.navTo({ end: 100, refName: 'ctgA', start: 200 })).toThrow(
     /start greater than end/,
   )
 
-  expect(() => model.navTo({ refName: 'noExist', start: 0, end: 100 })).toThrow(
+  expect(() => model.navTo({ end: 100, refName: 'noExist', start: 0 })).toThrow(
     /could not find a region/,
   )
 
-  expect(() => model.navTo({ refName: 'ctgA', end: 20100 })).toThrow(
+  expect(() => model.navTo({ end: 20100, refName: 'ctgA' })).toThrow(
     /could not find a region/,
   )
 
@@ -250,10 +250,10 @@ test('can instantiate a model that tests navTo/moveTo', async () => {
   )
 
   expect(() =>
-    model.navTo({ refName: 'ctgA', start: 20000, end: 20100 }),
+    model.navTo({ end: 20100, refName: 'ctgA', start: 20000 }),
   ).toThrow(/could not find a region/)
 
-  expect(() => model.navTo({ refName: 'ctgA', start: 0, end: 20000 })).toThrow(
+  expect(() => model.navTo({ end: 20000, refName: 'ctgA', start: 0 })).toThrow(
     /could not find a region/,
   )
 })
@@ -272,35 +272,35 @@ test('can navToMultiple', () => {
   )
   model.setWidth(width)
   model.setDisplayedRegions([
-    { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10000 },
-    { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 10000 },
-    { assemblyName: 'volvox', refName: 'ctgC', start: 0, end: 10000 },
-    { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10000 },
-    { assemblyName: 'volvox', refName: 'ctgC', start: 0, end: 10000 },
+    { assemblyName: 'volvox', end: 10000, refName: 'ctgA', start: 0 },
+    { assemblyName: 'volvox', end: 10000, refName: 'ctgB', start: 0 },
+    { assemblyName: 'volvox', end: 10000, refName: 'ctgC', start: 0 },
+    { assemblyName: 'volvox', end: 10000, refName: 'ctgA', start: 0 },
+    { assemblyName: 'volvox', end: 10000, refName: 'ctgC', start: 0 },
   ])
 
-  model.navToMultiple([{ refName: 'ctgA', start: 0, end: 10000 }])
+  model.navToMultiple([{ end: 10000, refName: 'ctgA', start: 0 }])
   expect(model.offsetPx).toBe(0)
   expect(model.bpPerPx).toBe(12.5)
 
   model.navToMultiple([
-    { refName: 'ctgA', start: 5000, end: 10000 },
-    { refName: 'ctgB', start: 0, end: 5000 },
+    { end: 10000, refName: 'ctgA', start: 5000 },
+    { end: 5000, refName: 'ctgB', start: 0 },
   ])
   expect(model.offsetPx).toBe(399)
   expect(model.bpPerPx).toBeCloseTo(12.531)
 
   model.navToMultiple([
-    { refName: 'ctgA', start: 5000, end: 10000 },
-    { refName: 'ctgB', start: 0, end: 10000 },
-    { refName: 'ctgC', start: 0, end: 5000 },
+    { end: 10000, refName: 'ctgA', start: 5000 },
+    { end: 10000, refName: 'ctgB', start: 0 },
+    { end: 5000, refName: 'ctgC', start: 0 },
   ])
   expect(model.offsetPx).toBe(199)
   expect(model.bpPerPx).toBeCloseTo(25.125)
 
   model.navToMultiple([
-    { refName: 'ctgA', start: 5000, end: 10000 },
-    { refName: 'ctgC', start: 0, end: 5000 },
+    { end: 10000, refName: 'ctgA', start: 5000 },
+    { end: 5000, refName: 'ctgC', start: 0 },
   ])
   expect(model.offsetPx).toBe(199)
   expect(model.bpPerPx).toBeCloseTo(25.12562)
@@ -322,9 +322,9 @@ describe('Zoom to selected displayed regions', () => {
     )
     model.setWidth(width)
     model.setDisplayedRegions([
-      { assemblyName: 'volvox', refName: 'ctgA', start: 5000, end: 20000 },
-      { assemblyName: 'volvox', refName: 'ctgA', start: 30000, end: 40000 },
-      { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 3000 },
+      { assemblyName: 'volvox', end: 20000, refName: 'ctgA', start: 5000 },
+      { assemblyName: 'volvox', end: 40000, refName: 'ctgA', start: 30000 },
+      { assemblyName: 'volvox', end: 3000, refName: 'ctgB', start: 0 },
     ])
   })
 
@@ -337,20 +337,20 @@ describe('Zoom to selected displayed regions', () => {
 
     model.moveTo(
       {
-        start: 5000,
-        index: 0,
-        end: 20000,
         coord: 5001,
+        end: 20000,
+        index: 0,
         offset: 0,
         refName: 'ctgA',
+        start: 5000,
       },
       {
-        start: 0,
-        index: 2,
         coord: 1,
         end: 3000,
+        index: 2,
         offset: 1,
         refName: 'ctgB',
+        start: 0,
       },
     )
 
@@ -361,20 +361,20 @@ describe('Zoom to selected displayed regions', () => {
   it('can select over one refSeq', () => {
     model.moveTo(
       {
-        start: 5000,
-        index: 0,
-        end: 20000,
         coord: 5001,
+        end: 20000,
+        index: 0,
         offset: 0,
         refName: 'ctgA',
+        start: 5000,
       },
       {
-        start: 5000,
-        index: 0,
         coord: 10000,
         end: 20000,
+        index: 0,
         offset: 5000,
         refName: 'ctgA',
+        start: 5000,
       },
     )
     expect(model.offsetPx).toEqual(0)
@@ -385,20 +385,20 @@ describe('Zoom to selected displayed regions', () => {
   it('can select one region with start or end outside of displayed region', () => {
     model.moveTo(
       {
-        start: 5000,
-        index: 0,
-        end: 20000,
         coord: 4999,
+        end: 20000,
+        index: 0,
         offset: -1,
         refName: 'ctgA',
+        start: 5000,
       },
       {
-        start: 5000,
-        index: 0,
-        end: 20000,
         coord: 19000,
+        end: 20000,
+        index: 0,
         offset: 19000,
         refName: 'ctgA',
+        start: 5000,
       },
     )
     // offsetPx is still 0 since we are starting from the first coord
@@ -415,18 +415,18 @@ describe('Zoom to selected displayed regions', () => {
     // totalBp = 28000 / 1000 = 28 as maxBpPerPx
     model.moveTo(
       {
-        start: 5000,
-        index: 0,
         end: 20000,
+        index: 0,
         offset: 5000,
         refName: 'ctgA',
+        start: 5000,
       },
       {
-        start: 0,
-        index: 2,
         end: 3000,
+        index: 2,
         offset: 2000,
         refName: 'ctgB',
+        start: 0,
       },
     )
     // 22000 / 792 (width - interRegionPadding) = 27.78
@@ -437,9 +437,9 @@ describe('Zoom to selected displayed regions', () => {
 
   it('can navigate to overlapping regions with a region between', () => {
     model.setDisplayedRegions([
-      { assemblyName: 'volvox', refName: 'ctgA', start: 5000, end: 20000 },
-      { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 3000 },
-      { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 35000 },
+      { assemblyName: 'volvox', end: 20000, refName: 'ctgA', start: 5000 },
+      { assemblyName: 'volvox', end: 3000, refName: 'ctgB', start: 0 },
+      { assemblyName: 'volvox', end: 35000, refName: 'ctgA', start: 0 },
     ])
     model.setWidth(800)
     model.showAllRegions()
@@ -448,20 +448,20 @@ describe('Zoom to selected displayed regions', () => {
     expect(model.bpPerPx).toBeCloseTo(73.61111)
     model.moveTo(
       {
-        start: 5000,
         coord: 15000,
-        index: 0,
         end: 20000,
+        index: 0,
         offset: 10000,
         refName: 'ctgA',
+        start: 5000,
       },
       {
-        start: 0,
         coord: 15000,
-        index: 2,
         end: 35000,
+        index: 2,
         offset: 15000,
         refName: 'ctgA',
+        start: 0,
       },
     )
     expect(model.offsetPx).toBe(346)
@@ -480,15 +480,15 @@ test('can instantiate a model that >2 regions', () => {
   const model = session.setView(
     LinearGenomeModel.create({
       id: 'test4',
-      type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'BasicTrack' }],
+      type: 'LinearGenomeView',
     }),
   )
   model.setWidth(width)
   model.setDisplayedRegions([
-    { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
-    { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgB' },
-    { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgC' },
+    { assemblyName: 'volvox', end: 10000, refName: 'ctgA', start: 0 },
+    { assemblyName: 'volvox', end: 10000, refName: 'ctgB', start: 0 },
+    { assemblyName: 'volvox', end: 10000, refName: 'ctgC', start: 0 },
   ])
   model.moveTo({ index: 0, offset: 100 }, { index: 2, offset: 100 })
   model.setNewView(1, 0)
@@ -504,24 +504,24 @@ test('can instantiate a model that >2 regions', () => {
   model.setDisplayName('Volvox view')
   expect(model.displayName).toBe('Volvox view')
   model.moveTo(
-    { refName: 'ctgA', index: 0, offset: 0, start: 0, end: 10000 },
-    { refName: 'ctgC', index: 2, offset: 0, start: 0, end: 10000 },
+    { end: 10000, index: 0, offset: 0, refName: 'ctgA', start: 0 },
+    { end: 10000, index: 2, offset: 0, refName: 'ctgC', start: 0 },
   )
   model.moveTo(
-    { refName: 'ctgB', index: 1, offset: 0, start: 0, end: 10000 },
-    { refName: 'ctgC', index: 2, offset: 0, start: 0, end: 10000 },
+    { end: 10000, index: 1, offset: 0, refName: 'ctgB', start: 0 },
+    { end: 10000, index: 2, offset: 0, refName: 'ctgC', start: 0 },
   )
   expect(model.offsetPx).toEqual(10000 / model.bpPerPx)
   expect(model.displayedRegionsTotalPx).toEqual(30000 / model.bpPerPx)
   model.showAllRegions()
   expect(model.offsetPx).toEqual(-40)
 
-  expect(model.bpToPx({ refName: 'ctgA', coord: 100 })).toEqual({
+  expect(model.bpToPx({ coord: 100, refName: 'ctgA' })).toEqual({
     index: 0,
     offsetPx: Math.round(100 / model.bpPerPx),
   })
 
-  expect(model.bpToPx({ refName: 'ctgB', coord: 100 })).toEqual({
+  expect(model.bpToPx({ coord: 100, refName: 'ctgB' })).toEqual({
     index: 1,
     offsetPx: Math.round(10100 / model.bpPerPx) + model.interRegionPaddingWidth,
   })
@@ -536,33 +536,33 @@ test('can perform bpToPx in a way that makes sense on things that happen outside
   const model = session.setView(
     LinearGenomeModel.create({
       id: 'test5',
-      type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'BasicTrack' }],
+      type: 'LinearGenomeView',
     }),
   )
   model.setWidth(width)
   model.setDisplayedRegions([
     {
       assemblyName: 'volvox',
-      start: 1000,
       end: 2000,
       refName: 'ctgA',
       reversed: true,
+      start: 1000,
     },
   ])
 
-  expect(model.bpToPx({ refName: 'ctgA', coord: 500 })).toBe(undefined)
+  expect(model.bpToPx({ coord: 500, refName: 'ctgA' })).toBe(undefined)
   expect(model.pxToBp(-1).coord).toEqual(2002)
   expect(model.pxToBp(100).offset).toEqual(100)
   expect(model.pxToBp(100).coord).toEqual(1901)
   // testing bpToPx and pxToBp when region is reversed
 
   // coordinate is out of bounds
-  expect(model.bpToPx({ refName: 'ctgA', coord: 0 })).toEqual(undefined)
-  expect(model.bpToPx({ refName: 'ctgA', coord: 2001 })).toEqual(undefined)
+  expect(model.bpToPx({ coord: 0, refName: 'ctgA' })).toEqual(undefined)
+  expect(model.bpToPx({ coord: 2001, refName: 'ctgA' })).toEqual(undefined)
 
   // offset here should be 500 because coord 1500 - 1000 start = 500
-  expect(model.bpToPx({ refName: 'ctgA', coord: 1500 })).toEqual({
+  expect(model.bpToPx({ coord: 1500, refName: 'ctgA' })).toEqual({
     index: 0,
     offsetPx: 500,
   })
@@ -588,8 +588,8 @@ test('can perform pxToBp on human genome things with ellided blocks (zoomed in)'
   const model = session.setView(
     LinearGenomeModel.create({
       id: 'test6',
-      type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'BasicTrack' }],
+      type: 'LinearGenomeView',
     }),
   )
   const width = 800
@@ -613,8 +613,8 @@ test('can perform pxToBp on human genome things with ellided blocks (zoomed out)
   const model = session.setView(
     LinearGenomeModel.create({
       id: 'test6',
-      type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'BasicTrack' }],
+      type: 'LinearGenomeView',
     }),
   )
   const width = 800
@@ -648,8 +648,8 @@ test('can showAllRegionsInAssembly', async () => {
   const model = session.setView(
     LinearGenomeModel.create({
       id: 'test4',
-      type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'BasicTrack' }],
+      type: 'LinearGenomeView',
     }),
   )
   model.setWidth(width)
@@ -679,37 +679,37 @@ describe('get sequence for selected displayed regions', () => {
     )
     model.setWidth(width)
     model.setDisplayedRegions([
-      { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 50001 },
-      { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 6079 },
+      { assemblyName: 'volvox', end: 50001, refName: 'ctgA', start: 0 },
+      { assemblyName: 'volvox', end: 6079, refName: 'ctgB', start: 0 },
     ])
   })
 
   it('can select whole region and handles both offsets being oob', () => {
     model.setDisplayedRegions([
-      { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 800 },
+      { assemblyName: 'volvox', end: 800, refName: 'ctgA', start: 0 },
     ])
     model.setOffsets(
       {
-        refName: 'ctgA',
+        assemblyName: 'volvox',
+        coord: -10,
+        end: 800,
         index: 0,
         offset: -10,
-        start: 0,
-        end: 800,
-        coord: -10,
-        reversed: false,
-        assemblyName: 'volvox',
         oob: true,
+        refName: 'ctgA',
+        reversed: false,
+        start: 0,
       },
       {
-        refName: 'ctgA',
+        assemblyName: 'volvox',
+        coord: 810,
+        end: 800,
         index: 0,
         offset: 810,
-        start: 0,
-        end: 800,
-        coord: 810,
-        reversed: false,
-        assemblyName: 'volvox',
         oob: true,
+        refName: 'ctgA',
+        reversed: false,
+        start: 0,
       },
     )
     const singleRegion = model.getSelectedRegions(
@@ -723,26 +723,26 @@ describe('get sequence for selected displayed regions', () => {
   it('handles when start or end offsets are out of bounds of displayed regions', () => {
     model.setOffsets(
       {
-        refName: 'ctgA',
-        start: 0,
-        end: 50001,
-        reversed: false,
         assemblyName: 'volvox',
-        oob: true,
         coord: -8,
-        offset: -8.77999706864357,
+        end: 50001,
         index: 0,
+        offset: -8.77999706864357,
+        oob: true,
+        refName: 'ctgA',
+        reversed: false,
+        start: 0,
       },
       {
-        refName: 'ctgA',
-        start: 0,
-        end: 50001,
-        reversed: false,
         assemblyName: 'volvox',
-        oob: true,
         coord: -4,
-        offset: -4.12999706864357,
+        end: 50001,
         index: 0,
+        offset: -4.12999706864357,
+        oob: true,
+        refName: 'ctgA',
+        reversed: false,
+        start: 0,
       },
     )
     const outOfBounds = model.getSelectedRegions(
@@ -755,9 +755,9 @@ describe('get sequence for selected displayed regions', () => {
 
   it('selects multiple regions with a region in between', () => {
     model.setDisplayedRegions([
-      { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 500 },
-      { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 3000 },
-      { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 200 },
+      { assemblyName: 'volvox', end: 500, refName: 'ctgA', start: 0 },
+      { assemblyName: 'volvox', end: 3000, refName: 'ctgB', start: 0 },
+      { assemblyName: 'volvox', end: 200, refName: 'ctgA', start: 0 },
     ])
     model.setWidth(800)
     model.showAllRegions()
@@ -766,26 +766,26 @@ describe('get sequence for selected displayed regions', () => {
     // setting up this test case in the browser
     model.setOffsets(
       {
-        refName: 'ctgA',
-        start: 0,
-        end: 500,
-        reversed: false,
         assemblyName: 'volvox',
-        oob: false,
-        offset: 200,
         coord: 200,
+        end: 500,
         index: 0,
+        offset: 200,
+        oob: false,
+        refName: 'ctgA',
+        reversed: false,
+        start: 0,
       },
       {
-        refName: 'ctgA',
-        start: 0,
-        end: 200,
-        reversed: false,
         assemblyName: 'volvox',
-        oob: false,
-        offset: 100,
         coord: 100,
+        end: 200,
         index: 2,
+        offset: 100,
+        oob: false,
+        refName: 'ctgA',
+        reversed: false,
+        start: 0,
       },
     )
     const overlapping = model.getSelectedRegions(
@@ -803,31 +803,31 @@ describe('get sequence for selected displayed regions', () => {
 
   it('can select over two regions in diff reference sequence', () => {
     model.setDisplayedRegions([
-      { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 50001 },
-      { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 6079 },
+      { assemblyName: 'volvox', end: 50001, refName: 'ctgA', start: 0 },
+      { assemblyName: 'volvox', end: 6079, refName: 'ctgB', start: 0 },
     ])
     model.setOffsets(
       {
-        refName: 'ctgA',
+        assemblyName: 'volvox',
+        coord: 49999,
+        end: 50001,
         index: 0,
         offset: 49998,
-        start: 0,
-        end: 50001,
-        coord: 49999,
-        reversed: false,
-        assemblyName: 'volvox',
         oob: false,
+        refName: 'ctgA',
+        reversed: false,
+        start: 0,
       },
       {
-        refName: 'ctgB',
+        assemblyName: 'volvox',
+        coord: 10,
+        end: 6079,
         index: 1,
         offset: 9,
-        start: 0,
-        end: 6079,
-        coord: 10,
-        reversed: false,
-        assemblyName: 'volvox',
         oob: false,
+        refName: 'ctgB',
+        reversed: false,
+        start: 0,
       },
     )
     const multipleRegions = model.getSelectedRegions(
@@ -845,34 +845,34 @@ describe('get sequence for selected displayed regions', () => {
     model.setDisplayedRegions([
       {
         assemblyName: 'volvox',
-        refName: 'ctgA',
-        start: 0,
         end: 50001,
+        refName: 'ctgA',
         reversed: true,
+        start: 0,
       },
     ])
     const hfRegion = model.getSelectedRegions(
       {
-        refName: 'ctgA',
-        start: 0,
-        end: 50001,
-        reversed: true,
         assemblyName: 'volvox',
-        oob: false,
-        offset: 1.03696711063385,
         coord: 50000,
+        end: 50001,
         index: 0,
+        offset: 1.03696711063385,
+        oob: false,
+        refName: 'ctgA',
+        reversed: true,
+        start: 0,
       },
       {
-        refName: 'ctgA',
-        start: 0,
-        end: 50001,
-        reversed: true,
         assemblyName: 'volvox',
-        oob: false,
-        offset: 3.93696711063385,
         coord: 49998,
+        end: 50001,
         index: 0,
+        offset: 3.93696711063385,
+        oob: false,
+        refName: 'ctgA',
+        reversed: true,
+        start: 0,
       },
     )
 
@@ -899,11 +899,11 @@ test('navToLocString with human assembly', async () => {
       assemblies: types.map(HumanAssembly),
     })
     .actions(self => ({
-      isValidRefName(str: string) {
-        return !str.includes(':')
-      },
       get(str: string) {
         return self.assemblies.get(str)
+      },
+      isValidRefName(str: string) {
+        return !str.includes(':')
       },
       waitForAssembly(str: string) {
         return self.assemblies.get(str)
@@ -911,15 +911,14 @@ test('navToLocString with human assembly', async () => {
     }))
 
   const HumanSession = types.model({
+    assemblyManager: AssemblyManager,
+    configuration: types.map(types.string),
     name: 'testSession',
     rpcManager: 'rpcManagerExists',
-    configuration: types.map(types.string),
-    assemblyManager: AssemblyManager,
     view: LinearGenomeModel,
   })
 
   const model = HumanSession.create({
-    configuration: {},
     assemblyManager: {
       assemblies: {
         hg38: {
@@ -928,6 +927,7 @@ test('navToLocString with human assembly', async () => {
         },
       },
     },
+    configuration: {},
     view: {
       type: 'LinearGenomeView',
     },
@@ -956,8 +956,8 @@ test('multi region', async () => {
     configuration: {},
   }).setView(
     LinearGenomeModel.create({
-      type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'BasicTrack' }],
+      type: 'LinearGenomeView',
     }),
   )
   model.setWidth(800)
@@ -974,8 +974,8 @@ test('space separated locstring', async () => {
     configuration: {},
   }).setView(
     LinearGenomeModel.create({
-      type: 'LinearGenomeView',
       tracks: [{ name: 'foo track', type: 'BasicTrack' }],
+      type: 'LinearGenomeView',
     }),
   )
   model.setWidth(800)

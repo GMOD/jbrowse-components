@@ -8,13 +8,13 @@ import { LinearGenomeViewModel } from '..'
 
 const useStyles = makeStyles()(theme => ({
   container: {
+    alignItems: 'center',
     display: 'flex',
     flexDirection: 'row',
-    alignItems: 'center',
   },
   slider: {
-    width: 70,
     color: theme.palette.text.secondary,
+    width: 70,
   },
 }))
 

@@ -14,5 +14,5 @@ export default function JBrowseWeb({
   pluginManager: PluginManager
   assemblyConfigSchema: AnyConfigurationSchemaType
 }) {
-  return JBrowseModelF({ pluginManager, assemblyConfigSchema })
+  return JBrowseModelF({ assemblyConfigSchema, pluginManager })
 }

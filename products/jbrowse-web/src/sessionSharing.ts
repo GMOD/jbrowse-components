@@ -48,9 +48,9 @@ export async function shareSessionToDynamo(
   data.append('referer', referer)
 
   const response = await fetch(`${url}share`, {
+    body: data,
     method: 'POST',
     mode: 'cors',
-    body: data,
   })
 
   if (!response.ok) {
@@ -59,8 +59,8 @@ export async function shareSessionToDynamo(
   }
   const json = await response.json()
   return {
-    json,
     encryptedSession,
+    json,
     password,
   }
 }

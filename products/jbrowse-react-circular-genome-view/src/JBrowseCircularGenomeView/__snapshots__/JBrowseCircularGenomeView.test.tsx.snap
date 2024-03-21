@@ -9,7 +9,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
       class="MuiScopedCssBaseline-root css-1pa2gw3-MuiScopedCssBaseline-root"
     >
       <div
-        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation12 css-tgvt3g-MuiPaper-root-viewContainer"
+        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation12 css-fjb4rr-MuiPaper-root-viewContainer"
       >
         <div
           class="css-10rokvf-container"
@@ -18,7 +18,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
             aria-controls="view-menu"
             aria-haspopup="true"
             aria-label="more"
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-edgeStart MuiIconButton-sizeSmall css-15c2os-MuiButtonBase-root-MuiIconButton-root-iconRoot"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-edgeStart MuiIconButton-sizeSmall css-1mtmnc6-MuiButtonBase-root-MuiIconButton-root-iconRoot"
             data-testid="view_menu_icon"
             tabindex="0"
             type="button"
@@ -50,7 +50,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
             type="button"
           >
             <div
-              style="width: 22px; height: 22px;"
+              style="height: 22px; width: 22px;"
             >
               <svg
                 viewBox="0 0 175 175"
@@ -86,24 +86,24 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
           class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1ps6pg7-MuiPaper-root"
         >
           <div
-            class="css-1vtmdlf-root"
+            class="css-1pv1qoa-root"
             data-testid="test_view"
-            style="width: 800px; height: 400px;"
+            style="height: 400px; width: 800px;"
           >
             <div
               class="css-4l8qn4-scroller"
-              style="width: 800px; height: 400px;"
+              style="height: 400px; width: 800px;"
             >
               <svg
                 height="216.3661977236758"
-                style="transform: rotate(-1.5707963267948966rad); transition: transform 0.5s; transform-origin: 108.1830988618379px 108.1830988618379px; position: absolute; left: 0px; top: 0px;"
+                style="left: 0px; position: absolute; top: 0px; transform: rotate(-1.5707963267948966rad); transform-origin: 108.1830988618379px 108.1830988618379px; transition: transform 0.5s;"
                 width="216.3661977236758"
               >
                 <g
                   transform="translate(108.1830988618379,108.1830988618379)"
                 >
                   <text
-                    class="css-wdlapd-rulerLabel"
+                    class="css-4zcl9m-rulerLabel"
                     dominant-baseline="baseline"
                     style="fill: rgb(153, 102, 0);"
                     text-anchor="middle"
@@ -123,7 +123,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                     stroke-width="2"
                   />
                   <text
-                    class="css-wdlapd-rulerLabel"
+                    class="css-4zcl9m-rulerLabel"
                     dominant-baseline="baseline"
                     style="fill: rgb(102, 102, 0);"
                     text-anchor="middle"
@@ -146,7 +146,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
               </svg>
             </div>
             <div
-              class="css-1vhj25i-controls"
+              class="css-odf05k-controls"
             >
               <button
                 class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
@@ -299,7 +299,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
             <div
               class="css-1g8jgpw-horizontalHandle"
               data-resizer="true"
-              style="height: 3px; position: absolute; bottom: 0px; left: 0px; background: rgb(204, 204, 204); box-sizing: border-box; border-top: 1px solid #fafafa;"
+              style="background: rgb(204, 204, 204); border-top: 1px solid #fafafa; bottom: 0px; box-sizing: border-box; height: 3px; left: 0px; position: absolute;"
             />
           </div>
         </div>

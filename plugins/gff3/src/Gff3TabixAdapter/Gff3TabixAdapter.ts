@@ -43,17 +43,17 @@ export default class extends BaseFeatureDataAdapter {
 
     this.dontRedispatch = dontRedispatch || ['chromosome', 'contig', 'region']
     this.gff = new TabixIndexedFile({
-      filehandle: openLocation(gffGzLocation, this.pluginManager),
+      chunkCacheSize: 50 * 2 ** 20,
       csiFilehandle:
         indexType === 'CSI'
           ? openLocation(location, this.pluginManager)
           : undefined,
+      filehandle: openLocation(gffGzLocation, this.pluginManager),
+      renameRefSeqs: (n: string) => n,
       tbiFilehandle:
         indexType !== 'CSI'
           ? openLocation(location, this.pluginManager)
           : undefined,
-      chunkCacheSize: 50 * 2 ** 20,
-      renameRefSeqs: (n: string) => n,
     })
   }
 
@@ -112,7 +112,7 @@ export default class extends BaseFeatureDataAdapter {
           // make a new feature callback to only return top-level features
           // in the original query range
           await this.getFeaturesHelper(
-            { ...query, start: minStart, end: maxEnd },
+            { ...query, end: maxEnd, start: minStart },
             opts,
             metadata,
             observer,
@@ -137,11 +137,11 @@ export default class extends BaseFeatureDataAdapter {
         .join('\n')
 
       const features = gff.parseStringSync(gff3, {
-        parseFeatures: true,
+        disableDerivesFromReferences: true,
         parseComments: false,
         parseDirectives: false,
+        parseFeatures: true,
         parseSequences: false,
-        disableDerivesFromReferences: true,
       })
 
       features.forEach(featureLocs =>
@@ -173,10 +173,10 @@ export default class extends BaseFeatureDataAdapter {
 
     // note: index column numbers are 1-based
     return {
-      start: +fields[columnNumbers.start - 1],
       end: +fields[columnNumbers.end - 1],
-      lineHash: fileOffset,
       fields,
+      lineHash: fileOffset,
+      start: +fields[columnNumbers.start - 1],
     }
   }
 

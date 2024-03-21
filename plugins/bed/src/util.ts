@@ -33,35 +33,35 @@ export function ucscProcessedTranscript(feature: Feature) {
       // left-side UTR
       const prime = feature.get('strand') > 0 ? 'five' : 'three'
       newChildren.push({
-        type: `${prime}_prime_UTR`,
-        start,
         end,
         refName,
+        start,
+        type: `${prime}_prime_UTR`,
       })
     } else if (thickStart > start && thickStart < end && thickEnd >= end) {
       // UTR | CDS
       const prime = feature.get('strand') > 0 ? 'five' : 'three'
       newChildren.push(
         {
-          type: `${prime}_prime_UTR`,
-          start,
           end: thickStart,
           refName,
+          start,
+          type: `${prime}_prime_UTR`,
         },
         {
-          type: 'CDS',
-          start: thickStart,
           end,
           refName,
+          start: thickStart,
+          type: 'CDS',
         },
       )
     } else if (thickStart <= start && thickEnd >= end) {
       // CDS
       newChildren.push({
-        type: 'CDS',
-        start,
         end,
         refName,
+        start,
+        type: 'CDS',
       })
     } else if (thickStart > start && thickStart < end && thickEnd < end) {
       // UTR | CDS | UTR
@@ -69,22 +69,22 @@ export function ucscProcessedTranscript(feature: Feature) {
       const rightPrime = feature.get('strand') > 0 ? 'three' : 'five'
       newChildren.push(
         {
-          type: `${leftPrime}_prime_UTR`,
-          start,
           end: thickStart,
           refName,
+          start,
+          type: `${leftPrime}_prime_UTR`,
         },
         {
-          type: `CDS`,
-          start: thickStart,
           end: thickEnd,
           refName,
+          start: thickStart,
+          type: `CDS`,
         },
         {
-          type: `${rightPrime}_prime_UTR`,
-          start: thickEnd,
           end,
           refName,
+          start: thickEnd,
+          type: `${rightPrime}_prime_UTR`,
         },
       )
     } else if (thickStart <= start && thickEnd > start && thickEnd < end) {
@@ -92,26 +92,26 @@ export function ucscProcessedTranscript(feature: Feature) {
       const prime = feature.get('strand') > 0 ? 'three' : 'five'
       newChildren.push(
         {
-          type: `CDS`,
-          start,
           end: thickEnd,
           refName,
+          start,
+          type: `CDS`,
         },
         {
-          type: `${prime}_prime_UTR`,
-          start: thickEnd,
           end,
           refName,
+          start: thickEnd,
+          type: `${prime}_prime_UTR`,
         },
       )
     } else if (thickEnd <= start) {
       // right-side UTR
       const prime = feature.get('strand') > 0 ? 'three' : 'five'
       newChildren.push({
-        type: `${prime}_prime_UTR`,
-        start,
         end,
         refName,
+        start,
+        type: `${prime}_prime_UTR`,
       })
     }
   })
@@ -172,11 +172,11 @@ export function featureData(
       const bmin = (starts[b] || 0) + blocksOffset
       const bmax = bmin + (sizes[b] || 0)
       data.subfeatures.push({
-        uniqueId: `${uniqueId}-${b}`,
-        start: bmin,
         end: bmax,
         refName,
+        start: bmin,
         type: 'block',
+        uniqueId: `${uniqueId}-${b}`,
       })
     }
   }
@@ -189,9 +189,9 @@ export function featureData(
   delete data.chromEnd
   const f = new SimpleFeature({
     ...data,
-    start,
     end,
     refName,
+    start,
     uniqueId,
   })
   return f.get('thickStart') ? ucscProcessedTranscript(f) : f

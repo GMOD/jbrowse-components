@@ -9,8 +9,8 @@ export default (pm: PluginManager) => {
   pm.addAddTrackWorkflowType(
     () =>
       new AddTrackWorkflowType({
-        name: 'Multi-wiggle track',
         ReactComponent: lazy(() => import('./AddTrackWorkflow')),
+        name: 'Multi-wiggle track',
         stateModel: types.model({}),
       }),
   )

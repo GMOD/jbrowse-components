@@ -17,25 +17,25 @@ import AppFab from './AppFab'
 const DrawerWidget = lazy(() => import('./DrawerWidget'))
 
 const useStyles = makeStyles()(theme => ({
-  root: {
-    display: 'grid',
-    height: '100vh',
-    width: '100%',
-    colorScheme: theme.palette.mode,
-  },
-  appContainer: {
-    gridColumn: 'main',
-    display: 'grid',
-    gridTemplateRows: '[menubar] min-content [components] auto',
-    height: '100vh',
-  },
-  viewContainer: {
-    overflowY: 'auto',
-    gridRow: 'components',
-  },
   appBar: {
     flexGrow: 1,
     gridRow: 'menubar',
+  },
+  appContainer: {
+    display: 'grid',
+    gridColumn: 'main',
+    gridTemplateRows: '[menubar] min-content [components] auto',
+    height: '100vh',
+  },
+  root: {
+    colorScheme: theme.palette.mode,
+    display: 'grid',
+    height: '100vh',
+    width: '100%',
+  },
+  viewContainer: {
+    gridRow: 'components',
+    overflowY: 'auto',
   },
 }))
 

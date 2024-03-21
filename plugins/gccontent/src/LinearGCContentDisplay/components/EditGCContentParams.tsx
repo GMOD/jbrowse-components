@@ -52,8 +52,8 @@ const EditGCContentParamsDialog = observer(function ({
             variant="contained"
             onClick={() => {
               model.setGCContentParams({
-                windowSize: +windowSize,
                 windowDelta: +windowDelta,
+                windowSize: +windowSize,
               })
               handleClose()
             }}

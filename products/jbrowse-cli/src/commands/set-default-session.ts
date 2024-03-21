@@ -31,31 +31,31 @@ export default class SetDefaultSession extends JBrowseCommand {
   ]
 
   static flags = {
-    session: Flags.string({
-      char: 's',
-      description: 'set path to a file containing session in json format',
-    }),
-    name: Flags.string({
-      char: 'n',
-      description: 'Give a name for the default session',
-      default: 'New Default Session',
-    }),
     currentSession: Flags.boolean({
       char: 'c',
       description: 'List out the current default session',
-    }),
-    target: Flags.string({
-      description:
-        'path to config file in JB2 installation directory to write out to',
-    }),
-    out: Flags.string({
-      description: 'synonym for target',
     }),
     delete: Flags.boolean({
       description: 'Delete any existing default session.',
     }),
     help: Flags.help({
       char: 'h',
+    }),
+    name: Flags.string({
+      char: 'n',
+      default: 'New Default Session',
+      description: 'Give a name for the default session',
+    }),
+    out: Flags.string({
+      description: 'synonym for target',
+    }),
+    session: Flags.string({
+      char: 's',
+      description: 'set path to a file containing session in json format',
+    }),
+    target: Flags.string({
+      description:
+        'path to config file in JB2 installation directory to write out to',
     }),
   }
 

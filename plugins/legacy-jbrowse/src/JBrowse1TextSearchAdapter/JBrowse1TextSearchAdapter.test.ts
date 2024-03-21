@@ -30,17 +30,17 @@ test('search upper case', async () => {
 
   const adapter = new Adapter(
     configSchema.create({
-      type: 'JBrowse1TextSearchAdapter',
-      textSearchAdapterId: 'JBrowse1GenerateNamesAdapterTest',
       namesIndexLocation: {
-        uri: decodeURI(new URL(`file://${rootTemplate}`).href),
         locationType: 'UriLocation',
+        uri: decodeURI(new URL(`file://${rootTemplate}`).href),
       },
+      textSearchAdapterId: 'JBrowse1GenerateNamesAdapterTest',
+      type: 'JBrowse1TextSearchAdapter',
     }),
   )
   const results = await adapter.searchIndex({
-    searchType: 'prefix',
     queryString: 'Apple',
+    searchType: 'prefix',
   })
   // check results are of type BaseResult for prefix search
   expect(results.length).toBeGreaterThan(0)
@@ -51,8 +51,8 @@ test('search upper case', async () => {
 
   // exact search
   const results2 = await adapter.searchIndex({
-    searchType: 'exact',
     queryString: 'Apple3',
+    searchType: 'exact',
   })
   // check results are of type location for exact search
   expect(results2.length).toEqual(5)
@@ -68,17 +68,17 @@ test('search lower case', async () => {
 
   const adapter = new Adapter(
     configSchema.create({
-      type: 'JBrowse1TextSearchAdapter',
-      textSearchAdapterId: 'JBrowse1GenerateNamesAdapterTest',
       namesIndexLocation: {
-        uri: decodeURI(new URL(`file://${rootTemplate}`).href),
         locationType: 'UriLocation',
+        uri: decodeURI(new URL(`file://${rootTemplate}`).href),
       },
+      textSearchAdapterId: 'JBrowse1GenerateNamesAdapterTest',
+      type: 'JBrowse1TextSearchAdapter',
     }),
   )
   const results = await adapter.searchIndex({
-    searchType: 'prefix',
     queryString: 'apple',
+    searchType: 'prefix',
   })
   // check results are of type BaseResult for prefix search
   expect(results.length).toBeGreaterThan(0)
@@ -89,8 +89,8 @@ test('search lower case', async () => {
 
   // exact search
   const results2 = await adapter.searchIndex({
-    searchType: 'exact',
     queryString: 'apple3',
+    searchType: 'exact',
   })
   // check results are of type location for exact search
   expect(results2.length).toEqual(5)

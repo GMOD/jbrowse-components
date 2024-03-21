@@ -22,25 +22,27 @@ const stateModelFactory = (
       /**
        * #property
        */
-      type: types.literal('DropboxOAuthInternetAccount'),
+      configuration: ConfigurationReference(configSchema),
+
       /**
        * #property
        */
-      configuration: ConfigurationReference(configSchema),
+      type: types.literal('DropboxOAuthInternetAccount'),
     })
     .views(() => ({
+      /**
+       * #getter
+       */
+      get selectorLabel() {
+        return 'Enter Dropbox share link'
+      },
+
       /**
        * #getter
        * The FileSelector icon for Dropbox
        */
       get toggleContents() {
         return <DropboxIcon />
-      },
-      /**
-       * #getter
-       */
-      get selectorLabel() {
-        return 'Enter Dropbox share link'
       },
     }))
     .actions(self => ({
@@ -78,14 +80,14 @@ const stateModelFactory = (
         const response = await fetch(
           'https://api.dropboxapi.com/2/sharing/get_shared_link_metadata',
           {
-            method: 'POST',
+            body: JSON.stringify({
+              url: location.uri,
+            }),
             headers: {
               Authorization: `Bearer ${token}`,
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-              url: location.uri,
-            }),
+            method: 'POST',
           },
         )
         if (!response.ok) {

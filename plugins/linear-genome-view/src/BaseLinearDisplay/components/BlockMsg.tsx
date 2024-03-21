@@ -4,8 +4,8 @@ import { makeStyles } from 'tss-react/mui'
 
 const useStyles = makeStyles()({
   ellipses: {
-    textOverflow: 'ellipsis',
     overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
 })
 

@@ -12,58 +12,58 @@ const timeout = 30000
 const assembly = {
   name: 'volvox',
   sequence: {
-    type: 'ReferenceSequenceTrack',
-    trackId: 'volvox_refseq',
     adapter: {
-      type: 'FromConfigSequenceAdapter',
       features: [
         {
-          refName: 'ctgA',
-          uniqueId: 'firstId',
-          start: 0,
           end: 120,
+          refName: 'ctgA',
           seq: 'cattgttgcggagttgaacaACGGCATTAGGAACACTTCCGTCTCtcacttttatacgattatgattggttctttagccttggtttagattggtagtagtagcggcgctaatgctacctg',
+          start: 0,
+          uniqueId: 'firstId',
         },
       ],
+      type: 'FromConfigSequenceAdapter',
     },
+    trackId: 'volvox_refseq',
+    type: 'ReferenceSequenceTrack',
   },
 }
 
 const defaultSession = {
   name: 'Test',
   view: {
-    id: 'test_view',
-    type: 'LinearGenomeView',
     bpPerPx: 0.05,
     displayedRegions: [
       {
-        refName: 'ctgA',
-        start: 0,
-        end: 120,
-        reversed: false,
         assemblyName: 'volvox',
+        end: 120,
+        refName: 'ctgA',
+        reversed: false,
+        start: 0,
       },
     ],
+    id: 'test_view',
     tracks: [
       {
-        type: 'ReferenceSequenceTrack',
         configuration: 'volvox_refseq',
         displays: [
           {
-            type: 'LinearReferenceSequenceDisplay',
             configuration: 'volvox_refseq-LinearReferenceSequenceDisplay',
+            type: 'LinearReferenceSequenceDisplay',
           },
         ],
+        type: 'ReferenceSequenceTrack',
       },
     ],
+    type: 'LinearGenomeView',
   },
 }
 
 test('<JBrowseLinearGenomeView /> renders successfully', async () => {
   const state = createViewState({
     assembly,
-    tracks: [],
     defaultSession,
+    tracks: [],
   })
   const { container, getAllByTestId, getByPlaceholderText } = render(
     <JBrowseLinearGenomeView viewState={state} />,

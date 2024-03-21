@@ -50,14 +50,22 @@ export default function SnackbarModel() {
             self.queueDialog((onClose: () => void) => [
               ErrorMessageStackTraceDialog,
               {
-                onClose,
                 error,
                 extra,
+                onClose,
               },
             ])
           },
         })
       },
+
+      /**
+       * #action
+       */
+      popSnackbarMessage() {
+        return self.snackbarMessages.pop()
+      },
+
       /**
        * #action
        */
@@ -66,13 +74,7 @@ export default function SnackbarModel() {
         level?: NotificationLevel,
         action?: SnackAction,
       ) {
-        return self.snackbarMessages.push({ message, level, action })
-      },
-      /**
-       * #action
-       */
-      popSnackbarMessage() {
-        return self.snackbarMessages.pop()
+        return self.snackbarMessages.push({ action, level, message })
       },
       /**
        * #action

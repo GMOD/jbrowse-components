@@ -27,31 +27,13 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 id: ElementId
 ```
 
-#### property: type
+#### property: interactToggled
 
 ```js
 // type signature
-ISimpleType<"LinearComparativeView">
+false
 // code
-type: types.literal('LinearComparativeView')
-```
-
-#### property: trackSelectorType
-
-```js
-// type signature
-string
-// code
-trackSelectorType: 'hierarchical'
-```
-
-#### property: showIntraviewLinks
-
-```js
-// type signature
-true
-// code
-showIntraviewLinks: true
+interactToggled: false
 ```
 
 #### property: linkViews
@@ -63,15 +45,6 @@ false
 linkViews: false
 ```
 
-#### property: interactToggled
-
-```js
-// type signature
-false
-// code
-interactToggled: false
-```
-
 #### property: middleComparativeHeight
 
 ```js
@@ -79,6 +52,24 @@ interactToggled: false
 number
 // code
 middleComparativeHeight: 100
+```
+
+#### property: showIntraviewLinks
+
+```js
+// type signature
+true
+// code
+showIntraviewLinks: true
+```
+
+#### property: trackSelectorType
+
+```js
+// type signature
+string
+// code
+trackSelectorType: 'hierarchical'
 ```
 
 #### property: tracks
@@ -92,18 +83,13 @@ tracks: types.array(
         )
 ```
 
-#### property: views
-
-currently this is limited to an array of two
+#### property: type
 
 ```js
 // type signature
-IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 15 more ... & { ...; }, _NotCustomized, _NotCustomized>>
+ISimpleType<"LinearComparativeView">
 // code
-views: types.array(
-          pluginManager.getViewType('LinearGenomeView')
-            .stateModel as LinearGenomeViewStateModel,
-        )
+type: types.literal('LinearComparativeView')
 ```
 
 #### property: viewTrackConfigs
@@ -120,7 +106,28 @@ viewTrackConfigs: types.array(
         )
 ```
 
+#### property: views
+
+currently this is limited to an array of two
+
+```js
+// type signature
+IArrayType<IModelType<{ displayName: IMaybe<ISimpleType<string>>; id: IOptionalIType<ISimpleType<string>, [undefined]>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 15 more ... & { ...; }, _NotCustomized, _NotCustomized>>
+// code
+views: types.array(
+          pluginManager.getViewType('LinearGenomeView')
+            .stateModel as LinearGenomeViewStateModel,
+        )
+```
+
 ### LinearComparativeView - Getters
+
+#### getter: assemblyNames
+
+```js
+// type
+any[]
+```
 
 #### getter: highResolutionScaling
 
@@ -141,13 +148,6 @@ boolean
 ```js
 // type
 any[][]
-```
-
-#### getter: assemblyNames
-
-```js
-// type
-any[]
 ```
 
 ### LinearComparativeView - Methods
@@ -178,25 +178,18 @@ rubberBandMenuItems: () => { label: string; onClick: () => void; }[]
 
 ### LinearComparativeView - Actions
 
-#### action: setWidth
+#### action: activateTrackSelector
 
 ```js
 // type signature
-setWidth: (newWidth: number) => void
+activateTrackSelector: () => Widget
 ```
 
-#### action: setViews
+#### action: clearView
 
 ```js
 // type signature
-setViews: (views: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }>>[]) => void
-```
-
-#### action: removeView
-
-```js
-// type signature
-removeView: (view: { id: string; displayName: string; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<...>; reversed: IOptionalIType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomize...
+clearView: () => void
 ```
 
 #### action: closeView
@@ -209,6 +202,20 @@ removeView
 closeView: () => void
 ```
 
+#### action: hideTrack
+
+```js
+// type signature
+hideTrack: (trackId: string) => number
+```
+
+#### action: removeView
+
+```js
+// type signature
+removeView: (view: { displayName: string; id: string; minimized: boolean; bpPerPx: number; colorByCDS: boolean; displayedRegions: IMSTArray<IModelType<{ end: ISimpleType<number>; refName: ISimpleType<string>; reversed: IOptionalIType<...>; start: ISimpleType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>> & IStat...
+```
+
 #### action: setMiddleComparativeHeight
 
 ```js
@@ -216,25 +223,18 @@ closeView: () => void
 setMiddleComparativeHeight: (n: number) => number
 ```
 
-#### action: toggleLinkViews
+#### action: setViews
 
 ```js
 // type signature
-toggleLinkViews: () => void
+setViews: (views: ModelCreationType<ExtractCFromProps<{ displayName: IMaybe<ISimpleType<string>>; id: IOptionalIType<ISimpleType<string>, [undefined]>; minimized: IType<boolean, boolean, boolean>; } & { ...; }>>[]) => void
 ```
 
-#### action: activateTrackSelector
+#### action: setWidth
 
 ```js
 // type signature
-activateTrackSelector: () => Widget
-```
-
-#### action: toggleTrack
-
-```js
-// type signature
-toggleTrack: (trackId: string) => boolean
+setWidth: (newWidth: number) => void
 ```
 
 #### action: showTrack
@@ -244,13 +244,6 @@ toggleTrack: (trackId: string) => boolean
 showTrack: (trackId: string, initialSnapshot?: {}) => void
 ```
 
-#### action: hideTrack
-
-```js
-// type signature
-hideTrack: (trackId: string) => number
-```
-
 #### action: squareView
 
 ```js
@@ -258,9 +251,16 @@ hideTrack: (trackId: string) => number
 squareView: () => void
 ```
 
-#### action: clearView
+#### action: toggleLinkViews
 
 ```js
 // type signature
-clearView: () => void
+toggleLinkViews: () => void
+```
+
+#### action: toggleTrack
+
+```js
+// type signature
+toggleTrack: (trackId: string) => boolean
 ```

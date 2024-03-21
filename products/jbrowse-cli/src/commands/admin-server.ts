@@ -24,21 +24,21 @@ export default class AdminServer extends JBrowseCommand {
   static examples = ['$ jbrowse admin-server', '$ jbrowse admin-server -p 8888']
 
   static flags = {
+    bodySizeLimit: Flags.string({
+      default: '25mb',
+      description:
+        'Size limit of the update message; may need to increase if config is large.\nArgument is passed to bytes library for parsing: https://www.npmjs.com/package/bytes.',
+    }),
+    help: Flags.help({ char: 'h' }),
     port: Flags.string({
       char: 'p',
       description: 'Specifified port to start the server on;\nDefault is 9090.',
     }),
+
     root: Flags.string({
       description:
         'path to the root of the JB2 installation.\nCreates ./config.json if nonexistent. note that you can navigate to ?config=path/to/subconfig.json in the web browser and it will write to rootDir/path/to/subconfig.json',
     }),
-    bodySizeLimit: Flags.string({
-      description:
-        'Size limit of the update message; may need to increase if config is large.\nArgument is passed to bytes library for parsing: https://www.npmjs.com/package/bytes.',
-      default: '25mb',
-    }),
-
-    help: Flags.help({ char: 'h' }),
   }
 
   async run() {
@@ -149,7 +149,7 @@ export default class AdminServer extends JBrowseCommand {
     if (networkAddress) {
       message += `\n${chalk.bold('- On Your Network:')}  ${networkAddress}`
     }
-    this.log(boxen(message, { padding: 1, borderColor: 'blue', margin: 1 }))
+    this.log(boxen(message, { borderColor: 'blue', margin: 1, padding: 1 }))
     this.log(
       `If you are running yarn start you can launch http://localhost:3000?adminKey=${adminKey}&adminServer=http://localhost:${port}/updateConfig`,
     )

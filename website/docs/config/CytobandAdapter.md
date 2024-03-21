@@ -16,7 +16,7 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ```js
 cytobandLocation: {
-      type: 'fileLocation',
       defaultValue: { uri: '/path/to/cytoband.txt.gz' },
+      type: 'fileLocation',
     }
 ```

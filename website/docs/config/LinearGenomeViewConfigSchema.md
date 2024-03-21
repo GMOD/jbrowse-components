@@ -16,12 +16,12 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ```js
 trackLabels: {
-      type: 'string',
       defaultValue: 'overlapping',
       model: types.enumeration('trackLabelOptions', [
         'offset',
         'overlapping',
         'hidden',
       ]),
+      type: 'string',
     }
 ```

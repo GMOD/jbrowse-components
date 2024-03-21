@@ -35,14 +35,14 @@ export default function (pm: PluginManager) {
                     const session = getSession(model)
                     if (isSessionWithAddTracks(session)) {
                       session.addTrackConf({
-                        type: 'MultiQuantitativeTrack',
-                        trackId,
-                        name: arg.name,
-                        assemblyNames,
                         adapter: {
-                          type: 'MultiWiggleAdapter',
                           subadapters,
+                          type: 'MultiWiggleAdapter',
                         },
+                        assemblyNames,
+                        name: arg.name,
+                        trackId,
+                        type: 'MultiQuantitativeTrack',
                       })
                       model.view.showTrack(trackId)
                     }
@@ -50,13 +50,13 @@ export default function (pm: PluginManager) {
                   getSession(model).queueDialog(handleClose => [
                     ConfirmDialog,
                     {
-                      tracks,
                       onClose: (arg: boolean, arg1?: { name: string }) => {
                         if (arg && arg1) {
                           makeTrack(arg1)
                         }
                         handleClose()
                       },
+                      tracks,
                     },
                   ])
                 },

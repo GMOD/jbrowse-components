@@ -12,11 +12,11 @@ const baseChordDisplayConfig = ConfigurationSchema(
      * #slot
      */
     onChordClick: {
-      type: 'boolean',
+      contextVariable: ['feature', 'track', 'pluginManager'],
+      defaultValue: false,
       description:
         'callback that should be run when a chord in the track is clicked',
-      defaultValue: false,
-      contextVariable: ['feature', 'track', 'pluginManager'],
+      type: 'boolean',
     },
   },
   {

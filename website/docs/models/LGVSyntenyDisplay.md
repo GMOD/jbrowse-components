@@ -21,15 +21,6 @@ extends
 
 ### LGVSyntenyDisplay - Properties
 
-#### property: type
-
-```js
-// type signature
-ISimpleType<"LGVSyntenyDisplay">
-// code
-type: types.literal('LGVSyntenyDisplay')
-```
-
 #### property: configuration
 
 ```js
@@ -37,6 +28,15 @@ type: types.literal('LGVSyntenyDisplay')
 AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(schema)
+```
+
+#### property: type
+
+```js
+// type signature
+ISimpleType<"LGVSyntenyDisplay">
+// code
+type: types.literal('LGVSyntenyDisplay')
 ```
 
 ### LGVSyntenyDisplay - Methods

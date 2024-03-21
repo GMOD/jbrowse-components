@@ -7,9 +7,9 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addRendererType(
     () =>
       new MultiDensityRenderer({
-        name: 'MultiDensityRenderer',
         ReactComponent,
         configSchema,
+        name: 'MultiDensityRenderer',
         pluginManager,
       }),
   )

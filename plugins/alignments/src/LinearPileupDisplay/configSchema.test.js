@@ -36,9 +36,9 @@ class SvgFeatureRendererPlugin extends Plugin {
     pluginManager.addRendererType(
       () =>
         new BoxRendererType({
-          name: 'SvgFeatureRenderer',
           ReactComponent: SvgFeatureRendererReactComponent,
           configSchema: svgFeatureRendererConfigSchema,
+          name: 'SvgFeatureRenderer',
           pluginManager,
         }),
     )
@@ -55,9 +55,9 @@ test('has a type attr', () => {
       .configure(),
   )
   const config = configSchema.create({
-    type: 'LinearPileupDisplay',
     displayId: 'display0',
     name: 'Zonker Display',
+    type: 'LinearPileupDisplay',
   })
   expect(config.type).toEqual('LinearPileupDisplay')
 })
@@ -74,9 +74,9 @@ test('set custom jexl filters on linear pileup display', () => {
   )
 
   const config = {
-    type: 'LinearPileupDisplay',
     displayId: 'display0',
     name: 'Zonker Display',
+    type: 'LinearPileupDisplay',
   }
 
   const model = modelFactory(configSchema)

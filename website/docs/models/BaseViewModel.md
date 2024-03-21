@@ -14,15 +14,6 @@ info
 
 ### BaseViewModel - Properties
 
-#### property: id
-
-```js
-// type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
-// code
-id: ElementId
-```
-
 #### property: displayName
 
 displayName is displayed in the header of the view, or assembly names being used
@@ -33,6 +24,15 @@ if none is specified
 IMaybe<ISimpleType<string>>
 // code
 displayName: types.maybe(types.string)
+```
+
+#### property: id
+
+```js
+// type signature
+IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+id: ElementId
 ```
 
 #### property: minimized
@@ -62,6 +62,13 @@ minimized: false
 setDisplayName: (name: string) => void
 ```
 
+#### action: setMinimized
+
+```js
+// type signature
+setMinimized: (flag: boolean) => void
+```
+
 #### action: setWidth
 
 width is an important attribute of the view model, when it becomes set, it often
@@ -75,11 +82,4 @@ how wide they are to properly draw genomic regions
 ```js
 // type signature
 setWidth: (newWidth: number) => void
-```
-
-#### action: setMinimized
-
-```js
-// type signature
-setMinimized: (flag: boolean) => void
 ```

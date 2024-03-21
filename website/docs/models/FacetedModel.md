@@ -23,14 +23,14 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 filterText: types.optional(types.string, '')
 ```
 
-#### property: showSparse
+#### property: panelWidth
 
 ```js
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-showSparse: types.optional(types.boolean, () =>
-        JSON.parse(localStorageGetItem('facet-showSparse') || 'false'),
+panelWidth: types.optional(types.number, () =>
+        JSON.parse(localStorageGetItem('facet-panelWidth') || '400'),
       )
 ```
 
@@ -56,14 +56,14 @@ showOptions: types.optional(types.boolean, () =>
       )
 ```
 
-#### property: panelWidth
+#### property: showSparse
 
 ```js
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-panelWidth: types.optional(types.number, () =>
-        JSON.parse(localStorageGetItem('facet-panelWidth') || '400'),
+showSparse: types.optional(types.boolean, () =>
+        JSON.parse(localStorageGetItem('facet-showSparse') || 'false'),
       )
 ```
 
@@ -80,21 +80,7 @@ panelWidth: types.optional(types.number, () =>
 
 ```js
 // type
-{ readonly id: string; readonly conf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>; ... 4 more ...; readonly metadata: any; }[]
-```
-
-#### getter: filteredNonMetadataKeys
-
-```js
-// type
-string[] | readonly ["category", "adapter", "description"]
-```
-
-#### getter: metadataKeys
-
-```js
-// type
-any[]
+{ readonly adapter: string; readonly category: string; readonly conf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>; readonly description: string; readonly id: string; readonly metadata: Record<...>; readonly name: string...
 ```
 
 #### getter: fields
@@ -104,11 +90,25 @@ any[]
 any[]
 ```
 
+#### getter: filteredNonMetadataKeys
+
+```js
+// type
+string[] | readonly ["category", "adapter", "description"]
+```
+
 #### getter: filteredRows
 
 ```js
 // type
-{ readonly id: string; readonly conf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>; ... 4 more ...; readonly metadata: any; }[]
+{ readonly adapter: string; readonly category: string; readonly conf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>; readonly description: string; readonly id: string; readonly metadata: Record<...>; readonly name: string...
+```
+
+#### getter: metadataKeys
+
+```js
+// type
+any[]
 ```
 
 ### FacetedModel - Actions
@@ -120,20 +120,6 @@ any[]
 setFilter: (key: string, value: string[]) => void
 ```
 
-#### action: setPanelWidth
-
-```js
-// type signature
-setPanelWidth: (width: number) => void
-```
-
-#### action: setUseShoppingCart
-
-```js
-// type signature
-setUseShoppingCart: (f: boolean) => void
-```
-
 #### action: setFilterText
 
 ```js
@@ -141,11 +127,18 @@ setUseShoppingCart: (f: boolean) => void
 setFilterText: (str: string) => void
 ```
 
-#### action: setShowSparse
+#### action: setPanelWidth
 
 ```js
 // type signature
-setShowSparse: (f: boolean) => void
+setPanelWidth: (width: number) => void
+```
+
+#### action: setShowFilters
+
+```js
+// type signature
+setShowFilters: (f: boolean) => void
 ```
 
 #### action: setShowOptions
@@ -155,11 +148,18 @@ setShowSparse: (f: boolean) => void
 setShowOptions: (f: boolean) => void
 ```
 
-#### action: setShowFilters
+#### action: setShowSparse
 
 ```js
 // type signature
-setShowFilters: (f: boolean) => void
+setShowSparse: (f: boolean) => void
+```
+
+#### action: setUseShoppingCart
+
+```js
+// type signature
+setUseShoppingCart: (f: boolean) => void
 ```
 
 #### action: setVisible

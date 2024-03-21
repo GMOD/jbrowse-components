@@ -59,7 +59,7 @@ const WarningDialog = observer(function WarningDialog({
           used. Check that the query and target are configured correctly, and
           that the right assemblies are being compared.
         </DialogContentText>
-        <div style={{ height: 600, width: '100%', overflow: 'auto' }}>
+        <div style={{ height: 600, overflow: 'auto', width: '100%' }}>
           <DataGrid
             rows={rows}
             columns={columns}

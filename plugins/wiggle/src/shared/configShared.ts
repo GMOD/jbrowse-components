@@ -15,8 +15,9 @@ export default function sharedWiggleConfigFactory() {
        * #slot
        */
       autoscale: {
-        type: 'stringEnum',
         defaultValue: 'local',
+        description:
+          'global/local using their min/max values or w/ standard deviations (globalsd/localsd)',
         model: types.enumeration('Autoscale type', [
           'global',
           'local',
@@ -24,61 +25,66 @@ export default function sharedWiggleConfigFactory() {
           'localsd',
           'zscore',
         ]),
-        description:
-          'global/local using their min/max values or w/ standard deviations (globalsd/localsd)',
-      },
-
-      /**
-       * #slot
-       */
-      minimalTicks: {
-        type: 'boolean',
-        defaultValue: false,
-        description: 'use the minimal amount of ticks',
-      },
-
-      /**
-       * #slot
-       */
-      minScore: {
-        type: 'number',
-        defaultValue: Number.MIN_VALUE,
-        description: 'minimum value for the y-scale',
-      },
-      /**
-       * #slot
-       */
-      maxScore: {
-        type: 'number',
-        description: 'maximum value for the y-scale',
-        defaultValue: Number.MAX_VALUE,
-      },
-      /**
-       * #slot
-       */
-      numStdDev: {
-        type: 'number',
-        description:
-          'number of standard deviations to use for autoscale types globalsd or localsd',
-        defaultValue: 3,
-      },
-      /**
-       * #slot
-       */
-      scaleType: {
         type: 'stringEnum',
-        model: types.enumeration('Scale type', ['linear', 'log']), // todo zscale
-        description: 'The type of scale to use',
-        defaultValue: 'linear',
       },
 
       /**
        * #slot
        */
       inverted: {
-        type: 'boolean',
-        description: 'draw upside down',
         defaultValue: false,
+        description: 'draw upside down',
+        type: 'boolean',
+      },
+
+      /**
+       * #slot
+       */
+      maxScore: {
+        defaultValue: Number.MAX_VALUE,
+        description: 'maximum value for the y-scale',
+        type: 'number',
+      },
+
+      /**
+       * #slot
+       */
+      minScore: {
+        defaultValue: Number.MIN_VALUE,
+        description: 'minimum value for the y-scale',
+        type: 'number',
+      },
+
+      /**
+       * #slot
+       */
+      minimalTicks: {
+        defaultValue: false,
+        description: 'use the minimal amount of ticks',
+        type: 'boolean',
+      },
+
+      /**
+       * #slot
+       */
+      numStdDev: {
+        defaultValue: 3,
+        description:
+          'number of standard deviations to use for autoscale types globalsd or localsd',
+        type: 'number',
+      },
+
+      /**
+       * #slot
+       */
+      scaleType: {
+        defaultValue: 'linear',
+        // todo zscale
+        description: 'The type of scale to use',
+
+        model: types.enumeration('Scale type', ['linear', 'log']),
+
+        type: 'stringEnum',
       },
     },
     {

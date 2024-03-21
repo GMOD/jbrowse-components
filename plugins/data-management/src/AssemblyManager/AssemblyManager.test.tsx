@@ -4,23 +4,23 @@ import AssemblyManager from './AssemblyManager'
 
 const mockRootModel = {
   jbrowse: {
+    addAssemblyConf: jest.fn(),
     assemblies: [
       {
         name: 'testAssembly',
         sequence: {
-          type: 'testSequenceTrack',
-          trackId: '',
           adapter: {
-            type: 'testSeqAdapter',
             twoBitLocation: {
-              uri: 'test.2bit',
               locationType: 'UriLocation',
+              uri: 'test.2bit',
             },
+            type: 'testSeqAdapter',
           },
+          trackId: '',
+          type: 'testSequenceTrack',
         },
       },
     ],
-    addAssemblyConf: jest.fn(),
     removeAssemblyConf: jest.fn(),
   },
   session: {

@@ -8,34 +8,34 @@ const config = {
   assemblies: [
     {
       name: 'volvox',
-      sequence: {
-        type: 'ReferenceSequenceTrack',
-        trackId: 'volvox_refseq',
-        adapter: {
-          type: 'TwoBitAdapter',
-          twoBitLocation: {
-            uri: 'volvox.2bit',
-            locationType: 'UriLocation',
-          },
-        },
-      },
       refNameAliases: {
         adapter: {
-          type: 'FromConfigAdapter',
           adapterId: 'W6DyPGJ0UU',
           features: [
             {
+              aliases: ['A', 'contigA'],
               refName: 'ctgA',
               uniqueId: 'alias1',
-              aliases: ['A', 'contigA'],
             },
             {
+              aliases: ['B', 'contigB'],
               refName: 'ctgB',
               uniqueId: 'alias2',
-              aliases: ['B', 'contigB'],
             },
           ],
+          type: 'FromConfigAdapter',
         },
+      },
+      sequence: {
+        adapter: {
+          twoBitLocation: {
+            locationType: 'UriLocation',
+            uri: 'volvox.2bit',
+          },
+          type: 'TwoBitAdapter',
+        },
+        trackId: 'volvox_refseq',
+        type: 'ReferenceSequenceTrack',
       },
     },
   ],
@@ -44,46 +44,46 @@ const config = {
     name: 'Integration test example',
     views: [
       {
-        id: 'integration_test',
-        type: 'LinearGenomeView',
-        offsetPx: 2000,
         bpPerPx: 0.05,
         displayedRegions: [
           {
+            assemblyName: 'volvox',
+            end: 50001,
             refName: 'ctgA',
             start: 0,
-            end: 50001,
-            assemblyName: 'volvox',
           },
         ],
+        id: 'integration_test',
+        offsetPx: 2000,
+        type: 'LinearGenomeView',
       },
     ],
   },
   tracks: [
     {
-      type: 'AlignmentsTrack',
-      trackId: 'volvox_cram',
-      name: 'volvox-sorted.cram',
-      assemblyNames: ['volvox'],
-      category: ['Alignments'],
       adapter: {
-        type: 'CramAdapter',
-        cramLocation: {
-          uri: 'volvox-sorted.cram',
-          locationType: 'UriLocation',
-        },
         craiLocation: {
-          uri: 'volvox-sorted.cram.crai',
           locationType: 'UriLocation',
+          uri: 'volvox-sorted.cram.crai',
+        },
+        cramLocation: {
+          locationType: 'UriLocation',
+          uri: 'volvox-sorted.cram',
         },
         sequenceAdapter: {
-          type: 'TwoBitAdapter',
           twoBitLocation: {
-            uri: 'volvox.2bit',
             locationType: 'UriLocation',
+            uri: 'volvox.2bit',
           },
+          type: 'TwoBitAdapter',
         },
+        type: 'CramAdapter',
       },
+      assemblyNames: ['volvox'],
+      category: ['Alignments'],
+      name: 'volvox-sorted.cram',
+      trackId: 'volvox_cram',
+      type: 'AlignmentsTrack',
     },
   ],
 }

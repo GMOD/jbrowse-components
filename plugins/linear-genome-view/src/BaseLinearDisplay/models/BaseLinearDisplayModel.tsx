@@ -79,16 +79,10 @@ function stateModelFactory() {
       }),
     )
     .volatile(() => ({
-      featureIdUnderMouse: undefined as undefined | string,
       contextMenuFeature: undefined as undefined | Feature,
+      featureIdUnderMouse: undefined as undefined | string,
     }))
     .views(self => ({
-      /**
-       * #getter
-       */
-      get blockType(): 'staticBlocks' | 'dynamicBlocks' {
-        return 'staticBlocks'
-      },
       /**
        * #getter
        */
@@ -99,15 +93,22 @@ function stateModelFactory() {
         }
         return view[this.blockType]
       },
+
+      /**
+       * #getter
+       */
+      get blockType(): 'staticBlocks' | 'dynamicBlocks' {
+        return 'staticBlocks'
+      },
     }))
     .views(self => ({
       /**
        * #getter
-       * how many milliseconds to wait for the display to
-       * "settle" before re-rendering a block
+       * if a display-level message should be displayed instead of the blocks,
+       * make this return a react component
        */
-      get renderDelay() {
-        return 50
+      get DisplayMessageComponent() {
+        return undefined as undefined | React.FC<any>
       },
 
       /**
@@ -115,6 +116,15 @@ function stateModelFactory() {
        */
       get TooltipComponent(): React.FC<any> {
         return Tooltip as unknown as React.FC
+      },
+
+      /**
+       * #getter
+       * how many milliseconds to wait for the display to
+       * "settle" before re-rendering a block
+       */
+      get renderDelay() {
+        return 50
       },
 
       /**
@@ -132,16 +142,16 @@ function stateModelFactory() {
         }
         return undefined
       },
-      /**
-       * #getter
-       * if a display-level message should be displayed instead of the blocks,
-       * make this return a react component
-       */
-      get DisplayMessageComponent() {
-        return undefined as undefined | React.FC<any>
-      },
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
+      get featureUnderMouse() {
+        const feat = self.featureIdUnderMouse
+        return feat ? this.features.get(feat) : undefined
+      },
+
       /**
        * #getter
        * a CompositeMap of `featureId -> feature obj` that
@@ -160,9 +170,8 @@ function stateModelFactory() {
       /**
        * #getter
        */
-      get featureUnderMouse() {
-        const feat = self.featureIdUnderMouse
-        return feat ? this.features.get(feat) : undefined
+      getFeatureByID(blockKey: string, id: string): LayoutRecord | undefined {
+        return self.blockState.get(blockKey)?.layout?.getByID(id)
       },
 
       /**
@@ -174,13 +183,6 @@ function stateModelFactory() {
         y: number,
       ): string | undefined {
         return self.blockState.get(blockKey)?.layout?.getByCoord(x, y)
-      },
-
-      /**
-       * #getter
-       */
-      getFeatureByID(blockKey: string, id: string): LayoutRecord | undefined {
-        return self.blockState.get(blockKey)?.layout?.getByID(id)
       },
 
       /**
@@ -215,9 +217,17 @@ function stateModelFactory() {
       /**
        * #action
        */
+      clearFeatureSelection() {
+        getSession(self).clearSelection()
+      },
+
+      /**
+       * #action
+       */
       deleteBlock(key: string) {
         self.blockState.delete(key)
       },
+
       /**
        * #action
        */
@@ -228,9 +238,9 @@ function stateModelFactory() {
             'BaseFeatureWidget',
             'baseFeature',
             {
-              view: getContainingView(self),
-              track: getContainingTrack(self),
               featureData: feature.toJSON(),
+              track: getContainingTrack(self),
+              view: getContainingView(self),
             },
           )
 
@@ -240,24 +250,19 @@ function stateModelFactory() {
           session.setSelection(feature)
         }
       },
-      /**
-       * #action
-       */
-      clearFeatureSelection() {
-        getSession(self).clearSelection()
-      },
-      /**
-       * #action
-       */
-      setFeatureIdUnderMouse(feature?: string) {
-        self.featureIdUnderMouse = feature
-      },
 
       /**
        * #action
        */
       setContextMenuFeature(feature?: Feature) {
         self.contextMenuFeature = feature
+      },
+
+      /**
+       * #action
+       */
+      setFeatureIdUnderMouse(feature?: string) {
+        self.featureIdUnderMouse = feature
       },
     }))
 
@@ -282,20 +287,13 @@ function stateModelFactory() {
       /**
        * #method
        */
-      trackMenuItems(): MenuItem[] {
-        return []
-      },
-
-      /**
-       * #method
-       */
       contextMenuItems(): MenuItem[] {
         return [
           ...(self.contextMenuFeature
             ? [
                 {
-                  label: 'Open feature details',
                   icon: MenuOpenIcon,
+                  label: 'Open feature details',
                   onClick: () => {
                     if (self.contextMenuFeature) {
                       self.selectFeature(self.contextMenuFeature)
@@ -306,15 +304,23 @@ function stateModelFactory() {
             : []),
         ]
       },
+
       /**
        * #method
        */
       renderProps() {
         return {
           ...getParentRenderProps(self),
-          notReady: !self.featureDensityStatsReady,
-          rpcDriverName: self.rpcDriverName,
           displayModel: self,
+          notReady: !self.featureDensityStatsReady,
+          onClick() {
+            self.clearFeatureSelection()
+          },
+          onContextMenu() {
+            self.setContextMenuFeature(undefined)
+            self.clearFeatureSelection()
+          },
+
           onFeatureClick(_: unknown, featureId?: string) {
             const f = featureId || self.featureIdUnderMouse
             if (!f) {
@@ -326,9 +332,7 @@ function stateModelFactory() {
               }
             }
           },
-          onClick() {
-            self.clearFeatureSelection()
-          },
+
           // similar to click but opens a menu with further options
           onFeatureContextMenu(_: unknown, featureId?: string) {
             const f = featureId || self.featureIdUnderMouse
@@ -340,29 +344,26 @@ function stateModelFactory() {
             }
           },
 
-          onMouseMove(_: unknown, featureId?: string) {
-            self.setFeatureIdUnderMouse(featureId)
-          },
-
           onMouseLeave(_: unknown) {
             self.setFeatureIdUnderMouse(undefined)
           },
 
-          onContextMenu() {
-            self.setContextMenuFeature(undefined)
-            self.clearFeatureSelection()
+          onMouseMove(_: unknown, featureId?: string) {
+            self.setFeatureIdUnderMouse(featureId)
           },
+
+          rpcDriverName: self.rpcDriverName,
         }
       },
-    }))
-    .actions(self => ({
+
       /**
        * #method
        */
-      async renderSvg(opts: ExportSvgDisplayOptions) {
-        const { renderBaseLinearDisplaySvg } = await import('./renderSvg')
-        return renderBaseLinearDisplaySvg(self as BaseLinearDisplayModel, opts)
+      trackMenuItems(): MenuItem[] {
+        return []
       },
+    }))
+    .actions(self => ({
       afterAttach() {
         // watch the parent's blocks to update our block state when they change,
         // then we recreate the blocks on our own model (creating and deleting to
@@ -388,6 +389,13 @@ function stateModelFactory() {
             })
           }),
         )
+      },
+      /**
+       * #method
+       */
+      async renderSvg(opts: ExportSvgDisplayOptions) {
+        const { renderBaseLinearDisplaySvg } = await import('./renderSvg')
+        return renderBaseLinearDisplaySvg(self as BaseLinearDisplayModel, opts)
       },
     }))
     .preProcessSnapshot(snap => {

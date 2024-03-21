@@ -34,42 +34,56 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        type: types.literal('LinearBasicDisplay'),
-        /**
-         * #property
-         */
-        trackShowLabels: types.maybe(types.boolean),
-        /**
-         * #property
-         */
-        trackShowDescriptions: types.maybe(types.boolean),
+        configuration: ConfigurationReference(configSchema),
+
         /**
          * #property
          */
         trackDisplayMode: types.maybe(types.string),
+
         /**
          * #property
          */
         trackMaxHeight: types.maybe(types.number),
+
         /**
          * #property
          */
-        configuration: ConfigurationReference(configSchema),
+        trackShowDescriptions: types.maybe(types.boolean),
+
+        /**
+         * #property
+         */
+        trackShowLabels: types.maybe(types.boolean),
+
+        /**
+         * #property
+         */
+        type: types.literal('LinearBasicDisplay'),
       }),
     )
     .views(self => ({
       /**
        * #getter
        */
-      get rendererTypeName() {
-        return getConf(self, ['renderer', 'type'])
+      get displayMode() {
+        return (
+          self.trackDisplayMode ?? getConf(self, ['renderer', 'displayMode'])
+        )
       },
 
       /**
        * #getter
        */
-      get showLabels() {
-        return self.trackShowLabels ?? getConf(self, ['renderer', 'showLabels'])
+      get maxHeight() {
+        return self.trackMaxHeight ?? getConf(self, ['renderer', 'maxHeight'])
+      },
+
+      /**
+       * #getter
+       */
+      get rendererTypeName() {
+        return getConf(self, ['renderer', 'type'])
       },
 
       /**
@@ -85,17 +99,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #getter
        */
-      get maxHeight() {
-        return self.trackMaxHeight ?? getConf(self, ['renderer', 'maxHeight'])
-      },
-
-      /**
-       * #getter
-       */
-      get displayMode() {
-        return (
-          self.trackDisplayMode ?? getConf(self, ['renderer', 'displayMode'])
-        )
+      get showLabels() {
+        return self.trackShowLabels ?? getConf(self, ['renderer', 'showLabels'])
       },
     }))
     .views(self => ({
@@ -109,10 +114,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         return self.rendererType.configSchema.create(
           {
             ...config,
-            showLabels: self.showLabels,
-            showDescriptions: self.showDescriptions,
             displayMode: self.displayMode,
             maxHeight: self.maxHeight,
+            showDescriptions: self.showDescriptions,
+            showLabels: self.showLabels,
           },
           getEnv(self),
         )
@@ -123,26 +128,29 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      toggleShowLabels() {
-        self.trackShowLabels = !self.showLabels
+      setDisplayMode(val: string) {
+        self.trackDisplayMode = val
       },
+
+      /**
+       * #action
+       */
+      setMaxHeight(val?: number) {
+        self.trackMaxHeight = val
+      },
+
       /**
        * #action
        */
       toggleShowDescriptions() {
         self.trackShowDescriptions = !self.showDescriptions
       },
+
       /**
        * #action
        */
-      setDisplayMode(val: string) {
-        self.trackDisplayMode = val
-      },
-      /**
-       * #action
-       */
-      setMaxHeight(val?: number) {
-        self.trackMaxHeight = val
+      toggleShowLabels() {
+        self.trackShowLabels = !self.showLabels
       },
     }))
     .views(self => {
@@ -171,22 +179,22 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return [
             ...superTrackMenuItems(),
             {
-              label: 'Show labels',
-              icon: VisibilityIcon,
-              type: 'checkbox',
               checked: self.showLabels,
+              icon: VisibilityIcon,
+              label: 'Show labels',
               onClick: () => self.toggleShowLabels(),
-            },
-            {
-              label: 'Show descriptions',
-              icon: VisibilityIcon,
               type: 'checkbox',
-              checked: self.showDescriptions,
-              onClick: () => self.toggleShowDescriptions(),
             },
             {
-              label: 'Display mode',
+              checked: self.showDescriptions,
               icon: VisibilityIcon,
+              label: 'Show descriptions',
+              onClick: () => self.toggleShowDescriptions(),
+              type: 'checkbox',
+            },
+            {
+              icon: VisibilityIcon,
+              label: 'Display mode',
               subMenu: [
                 'compact',
                 'reducedRepresentation',
@@ -202,7 +210,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   SetMaxHeightDialog,
-                  { model: self, handleClose },
+                  { handleClose, model: self },
                 ])
               },
             },

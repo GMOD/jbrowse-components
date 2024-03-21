@@ -10,13 +10,13 @@ export default (pluginManager: PluginManager) => {
     const configSchema = configSchemaFactory(pluginManager)
     const stateModel = modelFactory(pluginManager, configSchema)
     return new DisplayType({
-      name: 'LinearWiggleDisplay',
-      displayName: 'Wiggle display',
+      ReactComponent: lazy(() => import('./components/WiggleDisplayComponent')),
       configSchema,
+      displayName: 'Wiggle display',
+      name: 'LinearWiggleDisplay',
       stateModel,
       trackType: 'QuantitativeTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: lazy(() => import('./components/WiggleDisplayComponent')),
     })
   })
 }

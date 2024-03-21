@@ -9,16 +9,16 @@ const configSchema = ConfigurationSchema('SyntenyFeatureWidget', {})
 
 const stateModel = types
   .model('SyntenyFeatureWidget', {
+    featureData: types.frozen(),
     id: ElementId,
     type: types.literal('SyntenyFeatureWidget'),
-    featureData: types.frozen(),
   })
   .actions(self => ({
-    setFeatureData(data: unknown) {
-      self.featureData = data
-    },
     clearFeatureData() {
       self.featureData = undefined
+    },
+    setFeatureData(data: unknown) {
+      self.featureData = data
     },
   }))
 
@@ -26,11 +26,11 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addWidgetType(
     () =>
       new WidgetType({
-        name: 'SyntenyFeatureWidget',
-        heading: 'Synteny feature details',
-        configSchema,
-        stateModel,
         ReactComponent: lazy(() => import('./SyntenyFeatureDetail')),
+        configSchema,
+        heading: 'Synteny feature details',
+        name: 'SyntenyFeatureWidget',
+        stateModel,
       }),
   )
 }

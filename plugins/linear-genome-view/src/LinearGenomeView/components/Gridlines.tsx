@@ -18,30 +18,30 @@ import { makeTicks } from '../util'
 type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles()(theme => ({
-  verticalGuidesZoomContainer: {
-    position: 'absolute',
-    height: '100%',
-    width: '100%',
-    zIndex: 1,
-    pointerEvents: 'none',
-  },
-  verticalGuidesContainer: {
-    position: 'absolute',
-    height: '100%',
-    zIndex: 1,
-    pointerEvents: 'none',
-    display: 'flex',
-  },
-  tick: {
-    position: 'absolute',
-    height: '100%',
-    width: 1,
-  },
   majorTick: {
     background: theme.palette.action.disabled,
   },
   minorTick: {
     background: theme.palette.divider,
+  },
+  tick: {
+    height: '100%',
+    position: 'absolute',
+    width: 1,
+  },
+  verticalGuidesContainer: {
+    display: 'flex',
+    height: '100%',
+    pointerEvents: 'none',
+    position: 'absolute',
+    zIndex: 1,
+  },
+  verticalGuidesZoomContainer: {
+    height: '100%',
+    pointerEvents: 'none',
+    position: 'absolute',
+    width: '100%',
+    zIndex: 1,
   },
 }))
 

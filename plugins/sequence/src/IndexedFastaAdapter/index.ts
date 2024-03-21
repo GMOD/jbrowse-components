@@ -7,14 +7,14 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addAdapterType(
     () =>
       new AdapterType({
-        name: 'IndexedFastaAdapter',
-        displayName: 'Indexed FASTA adapter',
-        configSchema,
         adapterMetadata: {
           hiddenFromGUI: true,
         },
+        configSchema,
+        displayName: 'Indexed FASTA adapter',
         getAdapterClass: () =>
           import('./IndexedFastaAdapter').then(r => r.default),
+        name: 'IndexedFastaAdapter',
       }),
   )
 }

@@ -49,8 +49,8 @@ export default function rootModelFactory({
 }) {
   const assemblyConfigSchema = assemblyConfigSchemaF(pluginManager)
   const sessionModelType = sessionModelFactory({
-    pluginManager,
     assemblyConfigSchema,
+    pluginManager,
   })
   const jbrowseModelType = JBrowseDesktop(pluginManager, assemblyConfigSchema)
   const JobsManager = jobsModelFactory(pluginManager)
@@ -58,10 +58,10 @@ export default function rootModelFactory({
     .compose(
       'JBrowseDesktopRootModel',
       BaseRootModelFactory({
-        pluginManager,
-        jbrowseModelType,
-        sessionModelType,
         assemblyConfigSchema,
+        jbrowseModelType,
+        pluginManager,
+        sessionModelType,
       }),
       InternetAccountsRootModelMixin(pluginManager),
       DesktopMenusMixin(pluginManager),
@@ -76,21 +76,21 @@ export default function rootModelFactory({
       jobsManager: types.optional(JobsManager, {}),
     })
     .volatile(self => ({
-      version: packageJSON.version,
       adminMode: true,
-      hydrateFn: hydrateRoot,
       createRootFn: createRoot,
+      hydrateFn: hydrateRoot,
+      openNewSessionCallback: async (_path: string) => {
+        console.error('openNewSessionCallback unimplemented')
+      },
       rpcManager: new RpcManager(
         pluginManager,
         self.jbrowse.configuration.rpc,
         {
-          WebWorkerRpcDriver: { makeWorkerInstance },
           MainThreadRpcDriver: {},
+          WebWorkerRpcDriver: { makeWorkerInstance },
         },
       ),
-      openNewSessionCallback: async (_path: string) => {
-        console.error('openNewSessionCallback unimplemented')
-      },
+      version: packageJSON.version,
     }))
     .actions(self => ({
       /**

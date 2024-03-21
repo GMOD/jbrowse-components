@@ -16,15 +16,6 @@ base model `BaseLinearDisplay`
 
 ### LinearReferenceSequenceDisplay - Properties
 
-#### property: type
-
-```js
-// type signature
-ISimpleType<"LinearReferenceSequenceDisplay">
-// code
-type: types.literal('LinearReferenceSequenceDisplay')
-```
-
 #### property: configuration
 
 ```js
@@ -61,7 +52,32 @@ true
 showTranslation: true
 ```
 
+#### property: type
+
+```js
+// type signature
+ISimpleType<"LinearReferenceSequenceDisplay">
+// code
+type: types.literal('LinearReferenceSequenceDisplay')
+```
+
+#### property: rowHeight
+
+```js
+// type signature
+number
+// code
+rowHeight: 15
+```
+
 ### LinearReferenceSequenceDisplay - Getters
+
+#### getter: sequenceHeight
+
+```js
+// type
+number
+```
 
 #### getter: rendererTypeName
 
@@ -90,7 +106,7 @@ regionCannotBeRendered: () => 'Zoom in to see sequence'
 
 ```js
 // type signature
-trackMenuItems: () => { label: string; type: string; checked: boolean; onClick: () => void; }[]
+trackMenuItems: () => { checked: boolean; label: string; onClick: () => void; type: string; }[]
 ```
 
 ### LinearReferenceSequenceDisplay - Actions

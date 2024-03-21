@@ -14,10 +14,10 @@ test('adapter can fetch features from volvox-bed12.bed', async () => {
   )
 
   const features = adapter.getFeatures({
+    assemblyName: 'volvox',
+    end: 20000,
     refName: 'ctgA',
     start: 0,
-    end: 20000,
-    assemblyName: 'volvox',
   })
   expect(await adapter.hasDataForRefName('ctgA')).toBe(true)
   expect(await adapter.hasDataForRefName('ctgB')).toBe(false)
@@ -38,10 +38,10 @@ test('adapter can fetch features from volvox.sort.bed simple bed3', async () => 
   )
 
   const features = adapter.getFeatures({
+    assemblyName: 'volvox',
+    end: 20000,
     refName: 'contigA',
     start: 0,
-    end: 20000,
-    assemblyName: 'volvox',
   })
   expect(await adapter.hasDataForRefName('contigA')).toBe(true)
   expect(await adapter.hasDataForRefName('ctgB')).toBe(false)
@@ -54,11 +54,6 @@ test('adapter can fetch features from volvox.sort.bed simple bed3', async () => 
 test('adapter can fetch features bed with autosql', async () => {
   const adapter = new BedAdapter(
     MyConfigSchema.create({
-      bedLocation: {
-        localPath: require.resolve('./test_data/volvox-autosql.bed'),
-        locationType: 'LocalPathLocation',
-      },
-
       autoSql: `table gdcCancer
 "somatic variants converted from MAF files obtained through the NCI GDC"
     (
@@ -100,13 +95,18 @@ test('adapter can fetch features bed with autosql', async () => {
     lstring Matched_Norm_Sample_Barcode;  "Matcheds normal sample barcode"
     lstring case_id;                "Case ID number"
 )`,
+
+      bedLocation: {
+        localPath: require.resolve('./test_data/volvox-autosql.bed'),
+        locationType: 'LocalPathLocation',
+      },
     }),
   )
   const features = adapter.getFeatures({
+    assemblyName: 'volvox',
+    end: 20000,
     refName: 'ctgA',
     start: 0,
-    end: 20000,
-    assemblyName: 'volvox',
   })
   expect(await adapter.hasDataForRefName('ctgA')).toBe(true)
   expect(await adapter.hasDataForRefName('ctgB')).toBe(false)
@@ -127,10 +127,10 @@ test('adapter can fetch bed with header', async () => {
   )
 
   const features = adapter.getFeatures({
+    assemblyName: 'volvox',
+    end: 20000,
     refName: 'contigA',
     start: 0,
-    end: 20000,
-    assemblyName: 'volvox',
   })
   expect(await adapter.hasDataForRefName('contigA')).toBe(true)
   expect(await adapter.hasDataForRefName('ctgB')).toBe(false)
@@ -147,17 +147,17 @@ test('adapter can use gwas header', async () => {
         localPath: require.resolve('./test_data/gwas.bed'),
         locationType: 'LocalPathLocation',
       },
+      colEnd: 1,
       colRef: 0,
       colStart: 1,
-      colEnd: 1,
     }),
   )
 
   const features = adapter.getFeatures({
+    assemblyName: 'hg19',
+    end: 100_000,
     refName: '1',
     start: 0,
-    end: 100_000,
-    assemblyName: 'hg19',
   })
 
   const featuresArray = await firstValueFrom(features.pipe(toArray()))

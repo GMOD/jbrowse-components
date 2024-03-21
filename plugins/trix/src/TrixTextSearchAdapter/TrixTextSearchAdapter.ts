@@ -101,9 +101,9 @@ export default class TrixTextSearchAdapter
             : `${label} (${context})`
 
         return new BaseResult({
-          locString: loc,
-          label: labelField,
           displayString,
+          label: labelField,
+          locString: loc,
           matchedObject: result.map(record => decodeURIComponent(record)),
           trackId,
         })

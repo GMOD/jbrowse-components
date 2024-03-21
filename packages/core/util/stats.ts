@@ -61,13 +61,13 @@ export function calcStdFromSums(
 export function rectifyStats(s: UnrectifiedQuantitativeStats) {
   return {
     ...s,
+    featureDensity: (s.featureCount || 1) / s.basesCovered,
     scoreMean: (s.scoreSum || 0) / (s.featureCount || s.basesCovered || 1),
     scoreStdDev: calcStdFromSums(
       s.scoreSum,
       s.scoreSumSquares,
       s.featureCount || s.basesCovered,
     ),
-    featureDensity: (s.featureCount || 1) / s.basesCovered,
   } as QuantitativeStats
 }
 
@@ -120,11 +120,11 @@ export async function scoresToStats(
 ) {
   const { start, end } = region
   const seed = {
-    scoreMin: Number.MAX_VALUE,
+    featureCount: 0,
     scoreMax: Number.MIN_VALUE,
+    scoreMin: Number.MAX_VALUE,
     scoreSum: 0,
     scoreSumSquares: 0,
-    featureCount: 0,
   }
   let found = false
 
@@ -149,26 +149,26 @@ export async function scoresToStats(
 
   return found
     ? rectifyStats({
+        basesCovered: end - start + 1,
+        featureCount,
         scoreMax,
         scoreMin,
         scoreSum,
         scoreSumSquares,
-        featureCount,
-        basesCovered: end - start + 1,
       })
     : blankStats()
 }
 
 export function blankStats() {
   return {
-    scoreMin: 0,
+    basesCovered: 0,
+    featureCount: 0,
+    featureDensity: 0,
     scoreMax: 0,
     scoreMean: 0,
+    scoreMin: 0,
     scoreStdDev: 0,
     scoreSum: 0,
     scoreSumSquares: 0,
-    featureCount: 0,
-    featureDensity: 0,
-    basesCovered: 0,
   } as QuantitativeStats
 }

@@ -79,8 +79,8 @@ module.exports = function (config) {
         appName,
         config,
         urls,
-        useYarn,
         useTypeScript,
+        useYarn,
         webpack,
       })
 

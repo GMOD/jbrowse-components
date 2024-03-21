@@ -14,19 +14,19 @@ type EditableTypographyClassKey =
 const useStyles = makeStyles()(theme => ({
   input: {},
   inputBase: {},
-  typography: {
-    top: 6,
-    left: 2,
-    position: 'absolute',
-    whiteSpace: 'nowrap',
-    visibility: 'hidden',
+  inputFocused: {
+    borderStyle: 'solid',
+    borderWidth: 2,
   },
   inputRoot: {
     padding: theme.spacing(0.5),
   },
-  inputFocused: {
-    borderStyle: 'solid',
-    borderWidth: 2,
+  typography: {
+    left: 2,
+    position: 'absolute',
+    top: 6,
+    visibility: 'hidden',
+    whiteSpace: 'nowrap',
   },
 }))
 
@@ -85,9 +85,9 @@ const EditableTypography = React.forwardRef<HTMLDivElement, Props>(
             },
           }}
           classes={{
+            focused: classes.inputFocused,
             input: classes.input,
             root: classes.inputRoot,
-            focused: classes.inputFocused,
           }}
           value={val}
           onChange={event => setEditedValue(event.target.value)}

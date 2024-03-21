@@ -17,24 +17,24 @@ const colFilterHeight = 46
 const statusBarHeight = 40
 
 const useStyles = makeStyles()(theme => ({
-  header: {
-    overflow: 'hidden',
-    whiteSpace: 'nowrap',
-    boxSizing: 'border-box',
-    height: headerHeight,
-    paddingLeft: theme.spacing(1),
-  },
   contentArea: {
     overflow: 'auto',
   },
-  resizeHandle: {
-    height: 3,
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    background: theme.palette.action.disabled,
+  header: {
     boxSizing: 'border-box',
+    height: headerHeight,
+    overflow: 'hidden',
+    paddingLeft: theme.spacing(1),
+    whiteSpace: 'nowrap',
+  },
+  resizeHandle: {
+    background: theme.palette.action.disabled,
     borderTop: '1px solid #fafafa',
+    bottom: 0,
+    boxSizing: 'border-box',
+    height: 3,
+    left: 0,
+    position: 'absolute',
   },
 }))
 
@@ -82,8 +82,8 @@ const SpreadsheetView = observer(function ({
         <div className={classes.contentArea}>
           <div
             style={{
-              position: 'relative',
               display: mode === 'display' ? undefined : 'none',
+              position: 'relative',
             }}
           >
             {spreadsheet ? (

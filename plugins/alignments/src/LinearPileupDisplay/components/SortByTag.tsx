@@ -28,8 +28,8 @@ const SortByTagDialog = observer(function (props: {
           onChange={event => setTag(event.target.value)}
           placeholder="Enter tag name"
           inputProps={{
-            maxLength: 2,
             'data-testid': 'sort-tag-name-input',
+            maxLength: 2,
           }}
           error={tag.length === 2 && !validTag}
           helperText={tag.length === 2 && !validTag ? 'Not a valid tag' : ''}

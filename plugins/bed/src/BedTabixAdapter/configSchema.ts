@@ -12,9 +12,27 @@ const BedTabixAdapter = ConfigurationSchema(
     /**
      * #slot
      */
+    autoSql: {
+      defaultValue: '',
+      description: 'The autoSql definition for the data fields in the file',
+      type: 'string',
+    },
+
+    /**
+     * #slot
+     */
     bedGzLocation: {
+      defaultValue: { locationType: 'UriLocation', uri: '/path/to/my.bed.gz' },
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.bed.gz', locationType: 'UriLocation' },
+    },
+
+    /**
+     * #slot
+     */
+    columnNames: {
+      defaultValue: [],
+      description: 'List of column names',
+      type: 'stringArray',
     },
 
     index: ConfigurationSchema('TabixIndex', {
@@ -22,47 +40,29 @@ const BedTabixAdapter = ConfigurationSchema(
        * #slot index.indexType
        */
       indexType: {
+        defaultValue: 'TBI',
         model: types.enumeration('IndexType', ['TBI', 'CSI']),
         type: 'stringEnum',
-        defaultValue: 'TBI',
       },
       /**
        * #slot index.location
        */
       location: {
-        type: 'fileLocation',
         defaultValue: {
-          uri: '/path/to/my.bed.gz.tbi',
           locationType: 'UriLocation',
+          uri: '/path/to/my.bed.gz.tbi',
         },
+        type: 'fileLocation',
       },
     }),
 
     /**
      * #slot
      */
-    columnNames: {
-      type: 'stringArray',
-      description: 'List of column names',
-      defaultValue: [],
-    },
-
-    /**
-     * #slot
-     */
     scoreColumn: {
-      type: 'string',
+      defaultValue: '',
       description: 'The column to use as a "score" attribute',
-      defaultValue: '',
-    },
-
-    /**
-     * #slot
-     */
-    autoSql: {
       type: 'string',
-      description: 'The autoSql definition for the data fields in the file',
-      defaultValue: '',
     },
   },
   { explicitlyTyped: true },

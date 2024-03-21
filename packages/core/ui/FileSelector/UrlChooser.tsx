@@ -21,8 +21,8 @@ const UrlChooser = observer(function ({
       label={label || 'Enter URL'}
       onChange={event => {
         setLocation({
-          uri: event.target.value.trim(),
           locationType: 'UriLocation',
+          uri: event.target.value.trim(),
         })
       }}
     />

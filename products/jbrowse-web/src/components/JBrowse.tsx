@@ -41,13 +41,13 @@ const JBrowse = observer(function ({
     return onSnapshot(jbrowse, async snapshot => {
       try {
         const response = await fetch(adminServer || `/updateConfig`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             adminKey,
-            configPath,
             config: snapshot,
+            configPath,
           }),
+          headers: { 'Content-Type': 'application/json' },
+          method: 'POST',
         })
         if (!response.ok) {
           const message = await response.text()

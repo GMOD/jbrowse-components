@@ -14,14 +14,14 @@ test('adapter can fetch sequence from volvox.chrom.sizes', async () => {
   const regions = await adapter.getRegions()
   expect(regions).toEqual([
     {
+      end: 50001,
       refName: 'ctgA',
       start: 0,
-      end: 50001,
     },
     {
+      end: 6079,
       refName: 'ctgB',
       start: 0,
-      end: 6079,
     },
   ])
 })

@@ -16,19 +16,9 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ```js
 authEndpoint: {
+      defaultValue: 'https:
       description: 'the authorization code endpoint of the internet account',
       type: 'string',
-      defaultValue: 'https:
-    }
-```
-
-#### slot: scopes
-
-```js
-scopes: {
-      description: 'optional scopes for the authorization call',
-      type: 'string',
-      defaultValue: 'https:
     }
 ```
 
@@ -36,10 +26,10 @@ scopes: {
 
 ```js
 domains: {
+      defaultValue: ['drive.google.com"'],
       description:
         'array of valid domains the url can contain to use this account',
       type: 'stringArray',
-      defaultValue: ['drive.google.com"'],
     }
 ```
 
@@ -47,9 +37,19 @@ domains: {
 
 ```js
 responseType: {
+      defaultValue: 'token',
       description: 'the type of response from the authorization endpoint',
       type: 'string',
-      defaultValue: 'token',
+    }
+```
+
+#### slot: scopes
+
+```js
+scopes: {
+      defaultValue: 'https:
+      description: 'optional scopes for the authorization call',
+      type: 'string',
     }
 ```
 

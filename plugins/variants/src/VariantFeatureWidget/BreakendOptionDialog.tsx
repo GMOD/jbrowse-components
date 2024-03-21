@@ -101,15 +101,15 @@ const BreakendOptionDialog = observer(function ({
                 views: [
                   {
                     ...view1,
-                    tracks: stripIds(viewTracks),
                     offsetPx: view1.offsetPx - view.width / 2 + 100,
+                    tracks: stripIds(viewTracks),
                   },
                   {
                     ...view2,
+                    offsetPx: view2.offsetPx - view.width / 2 + 100,
                     tracks: stripIds(
                       mirror ? [...viewTracks].reverse() : viewTracks,
                     ),
-                    offsetPx: view2.offsetPx - view.width / 2 + 100,
                   },
                 ],
               })

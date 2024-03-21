@@ -13,15 +13,15 @@ const defaultConfig = {
     {
       name: 'testAssembly',
       sequence: {
-        type: 'testSequenceTrack',
-        trackId: '',
         adapter: {
-          type: 'testSeqAdapter',
           twoBitLocation: {
-            uri: 'test.2bit',
             locationType: 'UriLocation',
+            uri: 'test.2bit',
           },
+          type: 'testSeqAdapter',
         },
+        trackId: '',
+        type: 'testSequenceTrack',
       },
     },
   ],
@@ -32,31 +32,31 @@ const defaultConfig = {
   },
   tracks: [
     {
-      type: 'AlignmentsTrack',
-      trackId: 'simple',
-      name: 'simple',
-      assemblyNames: ['testAssembly'],
       adapter: {
-        type: 'BamAdapter',
         bamLocation: {
-          uri: 'simple.bam',
           locationType: 'UriLocation',
+          uri: 'simple.bam',
         },
         index: {
           indexType: 'BAI',
           location: {
-            uri: 'simple.bam.bai',
             locationType: 'UriLocation',
+            uri: 'simple.bam.bai',
           },
         },
         sequenceAdapter: {
-          type: 'testSeqAdapter',
           twoBitLocation: {
-            uri: 'test.2bit',
             locationType: 'UriLocation',
+            uri: 'test.2bit',
           },
+          type: 'testSeqAdapter',
         },
+        type: 'BamAdapter',
       },
+      assemblyNames: ['testAssembly'],
+      name: 'simple',
+      trackId: 'simple',
+      type: 'AlignmentsTrack',
     },
   ],
 }
@@ -136,8 +136,8 @@ describe('set-default-session', () => {
 
       expect(contents).toEqual({
         ...defaultConfig,
-        tracks: [],
         defaultSession: undefined,
+        tracks: [],
       })
     })
   setup
@@ -154,22 +154,22 @@ describe('set-default-session', () => {
       const contents = readConf(ctx)
       expect(contents).toEqual({
         ...defaultConfig,
-        tracks: [],
         defaultSession: {
           name: 'test new session',
           views: [
             {
               id: '823WX',
-              type: 'LinearGenomeView',
               tracks: [
                 {
-                  type: 'AlignmentsTrack',
                   configuration: 'simple',
+                  type: 'AlignmentsTrack',
                 },
               ],
+              type: 'LinearGenomeView',
             },
           ],
         },
+        tracks: [],
       })
     })
 })

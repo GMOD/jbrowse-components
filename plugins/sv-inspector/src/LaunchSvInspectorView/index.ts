@@ -32,8 +32,8 @@ export default (pluginManager: PluginManager) => {
       view.spreadsheetView.importWizard.setFileType(fileType || ext || '')
       view.spreadsheetView.importWizard.setSelectedAssemblyName(assembly)
       view.spreadsheetView.importWizard.setFileSource({
-        uri,
         locationType: 'UriLocation',
+        uri,
       })
       await view.spreadsheetView.importWizard.import(assembly)
     },

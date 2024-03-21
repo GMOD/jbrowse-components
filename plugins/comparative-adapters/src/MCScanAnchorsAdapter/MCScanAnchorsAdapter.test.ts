@@ -7,10 +7,7 @@ import configSchema from './configSchema'
 test('adapter can fetch features from mcscan anchors file', async () => {
   const adapter = new Adapter(
     configSchema.create({
-      mcscanAnchorsLocation: {
-        localPath: require.resolve('./test_data/grape.peach.anchors.gz'),
-        locationType: 'LocalPathLocation',
-      },
+      assemblyNames: ['grape', 'peach'],
       bed1Location: {
         localPath: require.resolve('./test_data/grape.bed.gz'),
         locationType: 'LocalPathLocation',
@@ -20,22 +17,25 @@ test('adapter can fetch features from mcscan anchors file', async () => {
         locationType: 'LocalPathLocation',
       },
 
-      assemblyNames: ['grape', 'peach'],
+      mcscanAnchorsLocation: {
+        localPath: require.resolve('./test_data/grape.peach.anchors.gz'),
+        locationType: 'LocalPathLocation',
+      },
     }),
   )
 
   const features1 = adapter.getFeatures({
+    assemblyName: 'peach',
+    end: 200000,
     refName: 'Pp01',
     start: 0,
-    end: 200000,
-    assemblyName: 'peach',
   })
 
   const features2 = adapter.getFeatures({
+    assemblyName: 'grape',
+    end: 200000,
     refName: 'chr1',
     start: 0,
-    end: 200000,
-    assemblyName: 'grape',
   })
 
   const fa1 = await firstValueFrom(features1.pipe(toArray()))

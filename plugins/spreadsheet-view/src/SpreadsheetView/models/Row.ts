@@ -1,29 +1,29 @@
 import { types, getParent } from 'mobx-state-tree'
 
 const CellModel = types.model('SpreadsheetCell', {
-  text: types.string,
   extendedData: types.maybe(types.frozen()),
+  text: types.string,
 })
 
 const RowModel = types
   .model('SpreadsheetRow', {
-    id: types.identifier,
     cells: types.array(CellModel),
     extendedData: types.maybe(types.frozen()),
+    id: types.identifier,
     isSelected: false,
   })
   .actions(self => ({
-    toggleSelect() {
-      self.isSelected = !self.isSelected
-    },
-    unSelect() {
-      self.isSelected = false
-    },
     select() {
       self.isSelected = true
     },
     setExtendedData(data: unknown) {
       self.extendedData = data
+    },
+    toggleSelect() {
+      self.isSelected = !self.isSelected
+    },
+    unSelect() {
+      self.isSelected = false
     },
   }))
   .views(self => ({

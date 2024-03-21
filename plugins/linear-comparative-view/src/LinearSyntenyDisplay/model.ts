@@ -36,93 +36,101 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        type: types.literal('LinearSyntenyDisplay'),
+        configuration: ConfigurationReference(configSchema),
+
         /**
          * #property
          */
-        configuration: ConfigurationReference(configSchema),
+        type: types.literal('LinearSyntenyDisplay'),
       }),
     )
     .volatile(() => ({
-      // canvas used for drawing visible screen
-      mainCanvas: null as HTMLCanvasElement | null,
-
-      // canvas used for drawing click map with feature ids
-      // this renders a unique color per alignment, so that it can be re-traced
-      // after a feature click with getImageData at that pixel
-      clickMapCanvas: null as HTMLCanvasElement | null,
-
       // canvas used for drawing click map with cigar data
       // this can show if you are mousing over a insertion/deletion. it is similar
       // in purpose to the clickMapRef but was not feasible to pack this into the
       // clickMapRef
       cigarClickMapCanvas: null as HTMLCanvasElement | null,
 
+      // currently mouseover'd CIGAR subfeature
+      cigarMouseoverId: -1,
+
+      // currently click'd over feature
+      clickId: undefined as string | undefined,
+
+      // canvas used for drawing click map with feature ids
+      // this renders a unique color per alignment, so that it can be re-traced
+      // after a feature click with getImageData at that pixel
+      clickMapCanvas: null as HTMLCanvasElement | null,
+
+      // assigned by reaction
+      featPositions: [] as FeatPos[],
+
+      // canvas used for drawing visible screen
+      mainCanvas: null as HTMLCanvasElement | null,
+
       // canvas for drawing mouseover shading
       // this is separate from the other code for speed: don't have to redraw
       // entire canvas to do a feature's mouseover shading
       mouseoverCanvas: null as HTMLCanvasElement | null,
 
-      // assigned by reaction
-      featPositions: [] as FeatPos[],
-
       // currently mouse'd over feature
       mouseoverId: undefined as string | undefined,
-
-      // currently click'd over feature
-      clickId: undefined as string | undefined,
-
-      // currently mouseover'd CIGAR subfeature
-      cigarMouseoverId: -1,
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      setFeatPositions(arg: FeatPos[]) {
-        self.featPositions = arg
-      },
-      /**
-       * #action
-       */
-      setMainCanvasRef(ref: HTMLCanvasElement | null) {
-        self.mainCanvas = ref
-      },
-      /**
-       * #action
-       */
-      setClickMapCanvasRef(ref: HTMLCanvasElement | null) {
-        self.clickMapCanvas = ref
-      },
       /**
        * #action
        */
       setCigarClickMapCanvasRef(ref: HTMLCanvasElement | null) {
         self.cigarClickMapCanvas = ref
       },
-      /**
-       * #action
-       */
-      setMouseoverCanvasRef(ref: HTMLCanvasElement | null) {
-        self.mouseoverCanvas = ref
-      },
-      /**
-       * #action
-       */
-      setMouseoverId(arg?: string) {
-        self.mouseoverId = arg
-      },
+
       /**
        * #action
        */
       setCigarMouseoverId(arg: number) {
         self.cigarMouseoverId = arg
       },
+
       /**
        * #action
        */
       setClickId(arg?: string) {
         self.clickId = arg
+      },
+
+      /**
+       * #action
+       */
+      setClickMapCanvasRef(ref: HTMLCanvasElement | null) {
+        self.clickMapCanvas = ref
+      },
+
+      /**
+       * #action
+       */
+      setFeatPositions(arg: FeatPos[]) {
+        self.featPositions = arg
+      },
+
+      /**
+       * #action
+       */
+      setMainCanvasRef(ref: HTMLCanvasElement | null) {
+        self.mainCanvas = ref
+      },
+
+      /**
+       * #action
+       */
+      setMouseoverCanvasRef(ref: HTMLCanvasElement | null) {
+        self.mouseoverCanvas = ref
+      },
+
+      /**
+       * #action
+       */
+      setMouseoverId(arg?: string) {
+        self.mouseoverId = arg
       },
     }))
 
@@ -132,23 +140,26 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       get adapterConfig() {
         return {
-          name: self.parentTrack.configuration.adapter.type,
           assemblyNames: getConf(self, 'assemblyNames'),
+          name: self.parentTrack.configuration.adapter.type,
           ...getConf(self.parentTrack, 'adapter'),
         }
       },
+
       /**
        * #getter
        */
-      get trackIds() {
-        return getConf(self, 'trackIds') as string[]
+      get featMap() {
+        return Object.fromEntries(self.featPositions.map(f => [f.f.id(), f]))
       },
+
       /**
        * #getter
        */
       get numFeats() {
         return self.featPositions.length
       },
+
       /**
        * #getter
        * used for synteny svg rendering
@@ -160,8 +171,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #getter
        */
-      get featMap() {
-        return Object.fromEntries(self.featPositions.map(f => [f.f.id(), f]))
+      get trackIds() {
+        return getConf(self, 'trackIds') as string[]
       },
     }))
     .actions(self => ({

@@ -25,5 +25,5 @@ export async function getDescriptiveErrorMessage(
   } catch (error) {
     /* do nothing */
   }
-  return getResponseError({ response, reason, statusText: errorMessage })
+  return getResponseError({ reason, response, statusText: errorMessage })
 }

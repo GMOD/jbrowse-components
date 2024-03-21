@@ -45,50 +45,31 @@ export default function createModel(
       /**
        * #property
        */
-      config: createConfigModel(pluginManager, assemblyConfigSchema),
-      /**
-       * #property
-       */
-      session: Session,
-      /**
-       * #property
-       */
       assemblyManager: types.optional(assemblyManagerType, {}),
+
+      /**
+       * #property
+       */
+      config: createConfigModel(pluginManager, assemblyConfigSchema),
+
       /**
        * #property
        */
       internetAccounts: types.array(
         pluginManager.pluggableMstType('internet account', 'stateModel'),
       ),
+
+      /**
+       * #property
+       */
+      session: Session,
     })
     .volatile(() => ({
-      error: undefined as unknown,
       adminMode: false,
+      error: undefined as unknown,
       version,
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      setSession(sessionSnapshot: SnapshotIn<typeof Session>) {
-        self.session = cast(sessionSnapshot)
-      },
-      /**
-       * #action
-       */
-      renameCurrentSession(sessionName: string) {
-        if (self.session) {
-          const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
-          snapshot.name = sessionName
-          this.setSession(snapshot)
-        }
-      },
-      /**
-       * #action
-       */
-      setError(error: unknown) {
-        self.error = error
-      },
       /**
        * #action
        */
@@ -97,6 +78,7 @@ export default function createModel(
       ) {
         self.internetAccounts.push(internetAccount)
       },
+
       /**
        * #action
        */
@@ -123,6 +105,31 @@ export default function createModel(
         // no available internet accounts
         return null
       },
+
+      /**
+       * #action
+       */
+      renameCurrentSession(sessionName: string) {
+        if (self.session) {
+          const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
+          snapshot.name = sessionName
+          this.setSession(snapshot)
+        }
+      },
+
+      /**
+       * #action
+       */
+      setError(error: unknown) {
+        self.error = error
+      },
+
+      /**
+       * #action
+       */
+      setSession(sessionSnapshot: SnapshotIn<typeof Session>) {
+        self.session = cast(sessionSnapshot)
+      },
     }))
     .views(self => ({
       /**
@@ -139,14 +146,14 @@ export default function createModel(
       },
     }))
     .volatile(self => ({
+      createRootFn,
+      hydrateFn,
       rpcManager: new RpcManager(pluginManager, self.config.configuration.rpc, {
+        MainThreadRpcDriver: {},
         WebWorkerRpcDriver: {
           makeWorkerInstance,
         },
-        MainThreadRpcDriver: {},
       }),
-      hydrateFn,
-      createRootFn,
       textSearchManager: new TextSearchManager(pluginManager),
     }))
   return { model: rootModel, pluginManager }

@@ -14,8 +14,8 @@ test('csv to spreadsheet snapshot', async () => {
   )
   const buf = await fsPromises.readFile(filepath)
   const spreadsheetSnap = await parseCsvBuffer(buf, {
-    hasColumnNameLine: true,
     columnNameLineNumber: 1,
+    hasColumnNameLine: true,
     isValidRefName: () => true,
   })
   expect(spreadsheetSnap).toMatchSnapshot()

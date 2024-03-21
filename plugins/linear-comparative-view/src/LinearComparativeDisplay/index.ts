@@ -8,14 +8,14 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaFactory(pluginManager)
     return new DisplayType({
-      name: 'LinearComparativeDisplay',
-      configSchema,
-      stateModel: stateModelFactory(configSchema),
-      trackType: 'SyntenyTrack',
-      viewType: 'LinearComparativeView',
       ReactComponent: () => {
         return null
       },
+      configSchema,
+      name: 'LinearComparativeDisplay',
+      stateModel: stateModelFactory(configSchema),
+      trackType: 'SyntenyTrack',
+      viewType: 'LinearComparativeView',
     })
   })
 }

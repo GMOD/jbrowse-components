@@ -26,8 +26,8 @@ export async function* indexVcf({
   // https://webomnizz.com/download-a-file-with-progressbar-using-node-js/
   const progressBar = new SingleBar(
     {
-      format: '{bar} ' + trackId + ' {percentage}% | ETA: {eta}s',
       etaBuffer: 2000,
+      format: '{bar} ' + trackId + ' {percentage}% | ETA: {eta}s',
     },
     Presets.shades_classic,
   )

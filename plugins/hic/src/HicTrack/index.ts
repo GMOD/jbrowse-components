@@ -7,9 +7,9 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addTrackType(() => {
     const configSchema = configSchemaF(pluginManager)
     return new TrackType({
-      name: 'HicTrack',
-      displayName: 'Hi-C track',
       configSchema,
+      displayName: 'Hi-C track',
+      name: 'HicTrack',
       stateModel: createBaseTrackModel(pluginManager, 'HicTrack', configSchema),
     })
   })

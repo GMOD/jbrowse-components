@@ -41,94 +41,6 @@ export function JBrowseConfigF({
   assemblyConfigSchema: AnyConfigurationSchemaType
 }) {
   return types.model('JBrowseConfig', {
-    configuration: ConfigurationSchema('Root', {
-      /**
-       * #slot configuration.rpc
-       */
-      rpc: RpcManager.configSchema,
-
-      /**
-       * #slot configuration.highResolutionScaling
-       */
-      highResolutionScaling: {
-        type: 'number',
-        defaultValue: 2,
-      },
-
-      formatDetails: FormatDetailsConfigSchemaFactory(),
-      formatAbout: FormatAboutConfigSchemaFactory(),
-
-      /*
-       * #slot configuration.shareURL
-       */
-      shareURL: {
-        type: 'string',
-        defaultValue: 'https://share.jbrowse.org/api/v1/',
-      },
-      /**
-       * #slot configuration.disableAnalytics
-       */
-      disableAnalytics: {
-        type: 'boolean',
-        defaultValue: false,
-      },
-
-      hierarchical: HierarchicalConfigSchemaFactory(),
-      /**
-       * #slot configuration.theme
-       */
-      theme: {
-        type: 'frozen',
-        defaultValue: {},
-      },
-      /**
-       * #slot configuration.extraThemes
-       */
-      extraThemes: {
-        type: 'frozen',
-        defaultValue: {},
-      },
-      /**
-       * #slot configuration.logoPath
-       */
-      logoPath: {
-        type: 'fileLocation',
-        defaultValue: { uri: '', locationType: 'UriLocation' },
-      },
-      ...pluginManager.pluginConfigurationSchemas(),
-    }),
-    /**
-     * #slot
-     * defines plugins of the format
-     * ```typescript
-     * type PluginDefinition=
-     *    { umdUrl: string, name:string } |
-     *    { url: string, name: string } |
-     *    { esmUrl: string } |
-     *    { cjsUrl: string } |
-     *    { umdLoc: { uri: string } } |
-     *    { esmLoc: { uri: string } } |
-     * ```
-     */
-    plugins: types.array(types.frozen<PluginDefinition>()),
-    /**
-     * #slot
-     * configuration of the assemblies in the instance, see BaseAssembly
-     */
-    assemblies: types.array(assemblyConfigSchema),
-    /**
-     * #slot
-     * track configuration is an array of track config schemas. multiple
-     * instances of a track can exist that use the same configuration
-     */
-    tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
-    /**
-     * #slot
-     * configuration for internet accounts, see InternetAccounts
-     */
-    internetAccounts: types.array(
-      pluginManager.pluggableConfigSchemaType('internet account'),
-    ),
     /**
      * #slot
      * configuration for aggregate text search adapters (created by e.g.
@@ -137,6 +49,74 @@ export function JBrowseConfigF({
     aggregateTextSearchAdapters: types.array(
       pluginManager.pluggableConfigSchemaType('text search adapter'),
     ),
+
+    /**
+     * #slot
+     * configuration of the assemblies in the instance, see BaseAssembly
+     */
+    assemblies: types.array(assemblyConfigSchema),
+
+    configuration: ConfigurationSchema('Root', {
+      /**
+       * #slot configuration.disableAnalytics
+       */
+      disableAnalytics: {
+        defaultValue: false,
+        type: 'boolean',
+      },
+
+      /**
+       * #slot configuration.extraThemes
+       */
+      extraThemes: {
+        defaultValue: {},
+        type: 'frozen',
+      },
+
+      formatAbout: FormatAboutConfigSchemaFactory(),
+
+      formatDetails: FormatDetailsConfigSchemaFactory(),
+
+      hierarchical: HierarchicalConfigSchemaFactory(),
+
+      /**
+       * #slot configuration.highResolutionScaling
+       */
+      highResolutionScaling: {
+        defaultValue: 2,
+        type: 'number',
+      },
+
+      /**
+       * #slot configuration.logoPath
+       */
+      logoPath: {
+        defaultValue: { locationType: 'UriLocation', uri: '' },
+        type: 'fileLocation',
+      },
+
+      /**
+       * #slot configuration.rpc
+       */
+      rpc: RpcManager.configSchema,
+
+      /*
+       * #slot configuration.shareURL
+       */
+      shareURL: {
+        defaultValue: 'https://share.jbrowse.org/api/v1/',
+        type: 'string',
+      },
+
+      /**
+       * #slot configuration.theme
+       */
+      theme: {
+        defaultValue: {},
+        type: 'frozen',
+      },
+      ...pluginManager.pluginConfigurationSchemas(),
+    }),
 
     /**
      * #slot
@@ -152,5 +132,35 @@ export function JBrowseConfigF({
     defaultSession: types.optional(types.frozen(), {
       name: `New Session`,
     }),
+
+    /**
+     * #slot
+     * configuration for internet accounts, see InternetAccounts
+     */
+    internetAccounts: types.array(
+      pluginManager.pluggableConfigSchemaType('internet account'),
+    ),
+
+    /**
+     * #slot
+     * defines plugins of the format
+     * ```typescript
+     * type PluginDefinition=
+     *    { umdUrl: string, name:string } |
+     *    { url: string, name: string } |
+     *    { esmUrl: string } |
+     *    { cjsUrl: string } |
+     *    { umdLoc: { uri: string } } |
+     *    { esmLoc: { uri: string } } |
+     * ```
+     */
+    plugins: types.array(types.frozen<PluginDefinition>()),
+
+    /**
+     * #slot
+     * track configuration is an array of track config schemas. multiple
+     * instances of a track can exist that use the same configuration
+     */
+    tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
   })
 }

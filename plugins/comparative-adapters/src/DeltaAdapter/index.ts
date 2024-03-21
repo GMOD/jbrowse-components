@@ -6,13 +6,13 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addAdapterType(
     () =>
       new AdapterType({
-        name: 'DeltaAdapter',
-        displayName: 'MUMmer delta adapter',
-        configSchema,
         adapterMetadata: {
           hiddenFromGUI: true,
         },
+        configSchema,
+        displayName: 'MUMmer delta adapter',
         getAdapterClass: () => import('./DeltaAdapter').then(r => r.default),
+        name: 'DeltaAdapter',
       }),
   )
 }

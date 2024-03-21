@@ -6,10 +6,6 @@ import { keyframes } from 'tss-react'
 const useStyles = makeStyles()({
   dots: {
     '&::after': {
-      display: 'inline-block',
-      content: '""',
-      width: '1em',
-      textAlign: 'left',
       animation: `${keyframes`
       0% {
         content: '';
@@ -24,6 +20,10 @@ const useStyles = makeStyles()({
         content: '...';
       }
       `} 1.2s infinite ease-in-out`,
+      content: '""',
+      display: 'inline-block',
+      textAlign: 'left',
+      width: '1em',
     },
   },
 })

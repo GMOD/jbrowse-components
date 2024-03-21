@@ -128,8 +128,7 @@ export function createTextSearchConf(
   const base = path.join(locationPath, 'trix')
   const n = sanitize(name)
   return {
-    type: 'TrixTextSearchAdapter',
-    textSearchAdapterId: name,
+    assemblyNames,
     ixFilePath: {
       localPath: path.join(base, `${n}.ix`),
       locationType: 'LocalPathLocation',
@@ -142,8 +141,9 @@ export function createTextSearchConf(
       localPath: path.join(base, `${n}.json`),
       locationType: 'LocalPathLocation',
     },
+    textSearchAdapterId: name,
     tracks: trackIds,
-    assemblyNames,
+    type: 'TrixTextSearchAdapter',
   }
 }
 

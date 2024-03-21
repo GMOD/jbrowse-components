@@ -10,7 +10,7 @@ info
 
 ### Source file
 
-[packages/core/BaseFeatureWidget/index.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/BaseFeatureWidget/index.ts)
+[packages/core/BaseFeatureWidget/stateModelFactory.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/BaseFeatureWidget/stateModelFactory.ts)
 
 displays data about features, allowing configuration callbacks to modify the
 contents of what is displayed
@@ -18,24 +18,6 @@ contents of what is displayed
 see: formatDetails-\>feature,formatDetails-\>subfeatures
 
 ### BaseFeatureWidget - Properties
-
-#### property: id
-
-```js
-// type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
-// code
-id: ElementId
-```
-
-#### property: type
-
-```js
-// type signature
-ISimpleType<"BaseFeatureWidget">
-// code
-type: types.literal('BaseFeatureWidget')
-```
 
 #### property: featureData
 
@@ -55,24 +37,22 @@ IType<any, any, any>
 formattedFields: types.frozen()
 ```
 
-#### property: unformattedFeatureData
+#### property: id
 
 ```js
 // type signature
-IType<any, any, any>
+IOptionalIType<ISimpleType<string>, [undefined]>
 // code
-unformattedFeatureData: types.frozen()
+id: ElementId
 ```
 
-#### property: view
+#### property: maxDepth
 
 ```js
 // type signature
-IMaybe<IReferenceType<IAnyType>>
+IMaybe<ISimpleType<number>>
 // code
-view: types.safeReference(
-        pluginManager.pluggableMstType('view', 'stateModel'),
-      )
+maxDepth: types.maybe(types.number)
 ```
 
 #### property: track
@@ -104,23 +84,36 @@ IMaybe<ISimpleType<string>>
 trackType: types.maybe(types.string)
 ```
 
-#### property: maxDepth
+#### property: type
 
 ```js
 // type signature
-IMaybe<ISimpleType<number>>
+ISimpleType<"BaseFeatureWidget">
 // code
-maxDepth: types.maybe(types.number)
+type: types.literal('BaseFeatureWidget')
+```
+
+#### property: unformattedFeatureData
+
+```js
+// type signature
+IType<any, any, any>
+// code
+unformattedFeatureData: types.frozen()
+```
+
+#### property: view
+
+```js
+// type signature
+IMaybe<IReferenceType<IAnyType>>
+// code
+view: types.safeReference(
+        pluginManager.pluggableMstType('view', 'stateModel'),
+      )
 ```
 
 ### BaseFeatureWidget - Actions
-
-#### action: setFeatureData
-
-```js
-// type signature
-setFeatureData: (featureData: Record<string, unknown>) => void
-```
 
 #### action: clearFeatureData
 
@@ -129,11 +122,11 @@ setFeatureData: (featureData: Record<string, unknown>) => void
 clearFeatureData: () => void
 ```
 
-#### action: setFormattedData
+#### action: setError
 
 ```js
 // type signature
-setFormattedData: (feat: Record<string, unknown>) => void
+setError: (e: unknown) => void
 ```
 
 #### action: setExtra
@@ -143,9 +136,16 @@ setFormattedData: (feat: Record<string, unknown>) => void
 setExtra: (type?: string, trackId?: string, maxDepth?: number) => void
 ```
 
-#### action: setError
+#### action: setFeatureData
 
 ```js
 // type signature
-setError: (e: unknown) => void
+setFeatureData: (featureData: Record<string, unknown>) => void
+```
+
+#### action: setFormattedData
+
+```js
+// type signature
+setFormattedData: (feat: Record<string, unknown>) => void
 ```

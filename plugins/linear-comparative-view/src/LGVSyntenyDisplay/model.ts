@@ -28,11 +28,12 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        type: types.literal('LGVSyntenyDisplay'),
+        configuration: ConfigurationReference(schema),
+
         /**
          * #property
          */
-        configuration: ConfigurationReference(schema),
+        type: types.literal('LGVSyntenyDisplay'),
       }),
     )
     .views(self => {
@@ -53,9 +54,9 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                       getSession(self).queueDialog(handleClose => [
                         LaunchSyntenyViewDialog,
                         {
-                          model: self,
-                          handleClose,
                           feature,
+                          handleClose,
+                          model: self,
                         },
                       ])
                     },

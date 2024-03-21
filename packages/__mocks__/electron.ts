@@ -5,8 +5,8 @@ const { ipcMain, ipcRenderer } = createIPCMock()
 window.require = () => {
   return {
     ...jest.requireActual('electron'),
-    ipcRenderer,
     ipcMain,
+    ipcRenderer,
   }
 }
 

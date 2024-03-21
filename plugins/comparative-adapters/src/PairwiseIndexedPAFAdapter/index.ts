@@ -6,14 +6,14 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addAdapterType(
     () =>
       new AdapterType({
-        name: 'PairwiseIndexedPAFAdapter',
-        displayName: 'Pairwise indexed PAF adapter',
-        configSchema,
         adapterMetadata: {
           hiddenFromGUI: true,
         },
+        configSchema,
+        displayName: 'Pairwise indexed PAF adapter',
         getAdapterClass: () =>
           import('./PairwiseIndexedPAFAdapter').then(r => r.default),
+        name: 'PairwiseIndexedPAFAdapter',
       }),
   )
 }

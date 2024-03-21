@@ -12,11 +12,11 @@ import { BaseLinearDisplayModel } from '../models/BaseLinearDisplayModel'
 
 const useStyles = makeStyles()({
   display: {
-    position: 'relative',
-    whiteSpace: 'nowrap',
-    textAlign: 'left',
-    width: '100%',
     minHeight: '100%',
+    position: 'relative',
+    textAlign: 'left',
+    whiteSpace: 'nowrap',
+    width: '100%',
   },
 })
 
@@ -101,7 +101,7 @@ const BaseLinearDisplay = observer(function (props: {
         anchorReference="anchorPosition"
         anchorPosition={
           contextCoord
-            ? { top: contextCoord[1], left: contextCoord[0] }
+            ? { left: contextCoord[0], top: contextCoord[1] }
             : undefined
         }
         style={{ zIndex: theme.zIndex.tooltip }}

@@ -39,13 +39,13 @@ const SearchBox = observer(function ({
       onSelect={async option => {
         try {
           if (option.hasLocation()) {
-            await navToOption({ option, model, assemblyName })
+            await navToOption({ assemblyName, model, option })
           } else if (option.results?.length) {
             model.setSearchResults(option.results, option.getLabel())
           } else if (assembly) {
             await handleSelectedRegion({
-              input: option.getLabel(),
               assembly,
+              input: option.getLabel(),
               model,
             })
           }
@@ -57,26 +57,26 @@ const SearchBox = observer(function ({
       assemblyName={assemblyName}
       fetchResults={queryString =>
         fetchResults({
-          queryString,
-          searchScope,
-          rankSearchResults,
-          textSearchManager,
           assembly,
+          queryString,
+          rankSearchResults,
+          searchScope,
+          textSearchManager,
         })
       }
       model={model}
       minWidth={175}
       TextFieldProps={{
-        variant: 'outlined',
-        className: classes.headerRefName,
-        style: { margin: SPACING },
         InputProps: {
           style: {
-            padding: 0,
-            height: WIDGET_HEIGHT,
             background: alpha(theme.palette.background.paper, 0.8),
+            height: WIDGET_HEIGHT,
+            padding: 0,
           },
         },
+        className: classes.headerRefName,
+        style: { margin: SPACING },
+        variant: 'outlined',
       }}
     />
   )

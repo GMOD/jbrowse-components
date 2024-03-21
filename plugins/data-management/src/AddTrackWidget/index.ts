@@ -9,11 +9,11 @@ const configSchema = ConfigurationSchema('AddTrackWidget', {})
 export default (pluginManager: PluginManager) => {
   pluginManager.addWidgetType(() => {
     return new WidgetType({
-      name: 'AddTrackWidget',
-      heading: 'Add a track',
-      configSchema,
-      stateModel: stateModelFactory(pluginManager),
       ReactComponent: lazy(() => import('./components/AddTrackWidget')),
+      configSchema,
+      heading: 'Add a track',
+      name: 'AddTrackWidget',
+      stateModel: stateModelFactory(pluginManager),
     })
   })
 }

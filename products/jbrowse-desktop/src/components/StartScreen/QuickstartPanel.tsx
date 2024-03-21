@@ -30,12 +30,12 @@ const useStyles = makeStyles()(theme => ({
     height: '3em',
     margin: theme.spacing(2),
   },
-  checkboxContainer: {
-    display: 'flex',
-  },
   checkbox: {
     display: 'block',
     marginRight: 0,
+  },
+  checkboxContainer: {
+    display: 'flex',
   },
   panel: {
     marginTop: theme.spacing(2),

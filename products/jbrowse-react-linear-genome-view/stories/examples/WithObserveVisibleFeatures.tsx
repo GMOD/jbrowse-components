@@ -33,8 +33,8 @@ const VisibleFeatures = observer(function ({
       const sessionId = getRpcSessionId(track)
       const feats = await rpcManager.call(sessionId, 'CoreGetFeatures', {
         adapterConfig,
-        sessionId,
         regions: view.coarseDynamicBlocks,
+        sessionId,
       })
       setFeatures(feats as Feature[])
     })()
@@ -72,8 +72,8 @@ export const WithObserveVisibleFeatures = () => {
   const { assembly, tracks } = getVolvoxConfig()
   const state = createViewState({
     assembly,
-    tracks,
     location: 'ctgA:1105..1221',
+    tracks,
   })
   state.session.view.showTrack('volvox_cram')
   return (

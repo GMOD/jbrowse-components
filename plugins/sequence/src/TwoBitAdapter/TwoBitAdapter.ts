@@ -62,16 +62,16 @@ export default class TwoBitAdapter extends BaseSequenceAdapter {
     const chromSizesData = await this.chromSizesData
     if (chromSizesData) {
       return Object.keys(chromSizesData).map(refName => ({
+        end: chromSizesData[refName],
         refName,
         start: 0,
-        end: chromSizesData[refName],
       }))
     }
     const refSizes = await this.twobit.getSequenceSizes()
     return Object.keys(refSizes).map(refName => ({
+      end: refSizes[refName],
       refName,
       start: 0,
-      end: refSizes[refName],
     }))
   }
 
@@ -88,8 +88,8 @@ export default class TwoBitAdapter extends BaseSequenceAdapter {
       if (seq) {
         observer.next(
           new SimpleFeature({
+            data: { end: regionEnd, refName, seq, start },
             id: `${refName} ${start}-${regionEnd}`,
-            data: { refName, start, end: regionEnd, seq },
           }),
         )
       }

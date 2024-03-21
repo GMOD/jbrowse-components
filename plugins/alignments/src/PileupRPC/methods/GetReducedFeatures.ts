@@ -36,19 +36,19 @@ export default class PileupGetReducedFeatures extends PileupBaseRPC {
 
     const reduced = dedupe(
       featuresArray.map(f => ({
-        id: f.id(),
-        refName: f.get('refName'),
-        name: f.get('name'),
-        start: f.get('start'),
-        strand: f.get('strand'),
+        SA: getTag(f, 'SA'),
+        clipPos: f.get('clipPos'),
         end: f.get('end'),
         flags: f.get('flags'),
-        tlen: f.get('template_length'),
-        pair_orientation: f.get('pair_orientation'),
-        next_ref: f.get('next_ref'),
+        id: f.id(),
+        name: f.get('name'),
         next_pos: f.get('next_pos'),
-        clipPos: f.get('clipPos'),
-        SA: getTag(f, 'SA'),
+        next_ref: f.get('next_ref'),
+        pair_orientation: f.get('pair_orientation'),
+        refName: f.get('refName'),
+        start: f.get('start'),
+        strand: f.get('strand'),
+        tlen: f.get('template_length'),
       })),
       f => f.id,
     )
@@ -59,9 +59,9 @@ export default class PileupGetReducedFeatures extends PileupBaseRPC {
 
     return {
       chains: Object.values(chains),
-      stats,
-      hasPaired: !!stats,
       containsNoTransferables: true,
+      hasPaired: !!stats,
+      stats,
     }
   }
 }

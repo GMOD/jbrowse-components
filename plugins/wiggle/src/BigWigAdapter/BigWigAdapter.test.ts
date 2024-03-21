@@ -17,10 +17,10 @@ describe('adapter can fetch features from volvox.bw', () => {
   })
   it('test basic aspects of getfeatures', async () => {
     const features = adapter.getFeatures({
+      assemblyName: 'volvox',
+      end: 20000,
       refName: 'ctgA',
       start: 0,
-      end: 20000,
-      assemblyName: 'volvox',
     })
     expect(await adapter.refIdToName(0)).toBe('ctgA')
     expect(await adapter.refIdToName(1)).toBe(undefined)
@@ -37,10 +37,10 @@ describe('adapter can fetch features from volvox.bw', () => {
   it('get region stats', async () => {
     expect(
       await adapter.getRegionQuantitativeStats({
+        assemblyName: 'volvox',
+        end: 40000,
         refName: 'ctgA',
         start: 10000,
-        end: 40000,
-        assemblyName: 'volvox',
       }),
     ).toMatchSnapshot()
   })
@@ -49,16 +49,16 @@ describe('adapter can fetch features from volvox.bw', () => {
     expect(
       await adapter.getMultiRegionQuantitativeStats([
         {
+          assemblyName: 'volvox',
+          end: 39999,
           refName: 'ctgA',
           start: 10000,
-          end: 39999,
-          assemblyName: 'volvox',
         },
         {
+          assemblyName: 'volvox',
+          end: 99,
           refName: 'ctgB',
           start: 0,
-          end: 99,
-          assemblyName: 'volvox',
         },
       ]),
     ).toMatchSnapshot()

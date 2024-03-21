@@ -10,14 +10,14 @@ export default function register(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaF(pluginManager)
     return new DisplayType({
-      name: 'LinearReadArcsDisplay',
-      displayName: 'Arc display',
+      ReactComponent,
       configSchema,
+      displayName: 'Arc display',
+      name: 'LinearReadArcsDisplay',
       stateModel: stateModelF(configSchema),
+      subDisplay: { lowerPanel: true, type: 'LinearAlignmentsDisplay' },
       trackType: 'AlignmentsTrack',
       viewType: 'LinearGenomeView',
-      subDisplay: { type: 'LinearAlignmentsDisplay', lowerPanel: true },
-      ReactComponent,
     })
   })
 }

@@ -25,19 +25,19 @@ import CheckIcon from '@mui/icons-material/Check'
 import { PluginStoreModel } from '../model'
 
 const useStyles = makeStyles()({
+  bold: {
+    fontWeight: 600,
+  },
   card: {
     margin: '0.5em',
+  },
+  dataField: {
+    alignItems: 'center',
+    display: 'flex',
   },
   icon: {
     marginLeft: '0.5em',
     marginRight: '0.5em',
-  },
-  bold: {
-    fontWeight: 600,
-  },
-  dataField: {
-    display: 'flex',
-    alignItems: 'center',
   },
 })
 

@@ -23,15 +23,6 @@ extends
 
 ### LinearPairedArcDisplay - Properties
 
-#### property: type
-
-```js
-// type signature
-ISimpleType<"LinearPairedArcDisplay">
-// code
-type: types.literal('LinearPairedArcDisplay')
-```
-
 #### property: configuration
 
 ```js
@@ -48,6 +39,15 @@ configuration: ConfigurationReference(configSchema)
 IMaybe<ISimpleType<string>>
 // code
 displayMode: types.maybe(types.string)
+```
+
+#### property: type
+
+```js
+// type signature
+ISimpleType<"LinearPairedArcDisplay">
+// code
+type: types.literal('LinearPairedArcDisplay')
 ```
 
 ### LinearPairedArcDisplay - Getters
@@ -68,11 +68,11 @@ any
 selectFeature: (feature: Feature) => void
 ```
 
-#### action: setLoading
+#### action: setDisplayMode
 
 ```js
 // type signature
-setLoading: (flag: boolean) => void
+setDisplayMode: (flag: string) => void
 ```
 
 #### action: setFeatures
@@ -82,11 +82,11 @@ setLoading: (flag: boolean) => void
 setFeatures: (f: Feature[]) => void
 ```
 
-#### action: setDisplayMode
+#### action: setLoading
 
 ```js
 // type signature
-setDisplayMode: (flag: string) => void
+setLoading: (flag: boolean) => void
 ```
 
 #### action: renderSvg

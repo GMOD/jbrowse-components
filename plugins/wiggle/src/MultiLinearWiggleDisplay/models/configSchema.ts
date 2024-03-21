@@ -35,7 +35,7 @@ export default function WiggleConfigFactory(pluginManager: PluginManager) {
        * #slot
        */
       defaultRendering: {
-        type: 'stringEnum',
+        defaultValue: 'multirowxy',
         model: types.enumeration('Rendering', [
           'multirowxy',
           'xyplot',
@@ -43,27 +43,27 @@ export default function WiggleConfigFactory(pluginManager: PluginManager) {
           'multiline',
           'multirowline',
         ]),
-        defaultValue: 'multirowxy',
+        type: 'stringEnum',
+      },
+
+      /**
+       * #slot
+       */
+      height: {
+        defaultValue: 200,
+        type: 'number',
       },
 
       /**
        * #slot
        */
       renderers: ConfigurationSchema('RenderersConfiguration', {
-        MultiXYPlotRenderer: MultiXYPlotRendererConfigSchema,
         MultiDensityRenderer: MultiDensityRendererConfigSchema,
-        MultiRowXYPlotRenderer: MultiRowXYPlotRendererConfigSchema,
         MultiLineRenderer: MultiLineRendererConfigSchema,
         MultiRowLineRenderer: MultiRowLineRendererConfigSchema,
+        MultiRowXYPlotRenderer: MultiRowXYPlotRendererConfigSchema,
+        MultiXYPlotRenderer: MultiXYPlotRendererConfigSchema,
       }),
-
-      /**
-       * #slot
-       */
-      height: {
-        type: 'number',
-        defaultValue: 200,
-      },
     },
     {
       /**

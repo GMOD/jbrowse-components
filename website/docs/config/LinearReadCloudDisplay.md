@@ -12,30 +12,12 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ### LinearReadCloudDisplay - Slots
 
-#### slot: maxFeatureScreenDensity
-
-```js
-maxFeatureScreenDensity: {
-        type: 'number',
-        description: 'maximum features per pixel that is displayed in the view',
-        defaultValue: 5,
-      }
-```
-
-#### slot: featureHeight
-
-```js
-featureHeight: {
-        type: 'number',
-        defaultValue: 7,
-      }
-```
-
 #### slot: colorScheme
 
 ```js
 colorScheme: {
-        type: 'stringEnum',
+        defaultValue: 'normal',
+        description: 'color scheme to use',
         model: types.enumeration('colorScheme', [
           'strand',
           'normal',
@@ -44,8 +26,26 @@ colorScheme: {
           'mappingQuality',
           'tag',
         ]),
-        description: 'color scheme to use',
-        defaultValue: 'normal',
+        type: 'stringEnum',
+      }
+```
+
+#### slot: featureHeight
+
+```js
+featureHeight: {
+        defaultValue: 7,
+        type: 'number',
+      }
+```
+
+#### slot: maxFeatureScreenDensity
+
+```js
+maxFeatureScreenDensity: {
+        defaultValue: 5,
+        description: 'maximum features per pixel that is displayed in the view',
+        type: 'number',
       }
 ```
 

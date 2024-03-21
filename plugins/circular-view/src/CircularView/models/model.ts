@@ -60,16 +60,92 @@ function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        type: types.literal('CircularView'),
+        bpPerPx: 200,
+
+        /**
+         * #property
+         */
+        disableImportForm: false,
+
+        /**
+         * #property
+         */
+        displayedRegions: types.array(Region),
+
+        /**
+         * #property
+         */
+        height: types.optional(
+          types.refinement('trackHeight', types.number, n => n >= minHeight),
+          defaultHeight,
+        ),
+
+        /**
+         * #property
+         */
+        hideTrackSelectorButton: false,
+
+        /**
+         * #property
+         */
+        hideVerticalResizeHandle: false,
+
+        /**
+         * #property
+         */
+        lockedFitToWindow: true,
+
+        /**
+         * #property
+         */
+        lockedPaddingPx: 100,
+
+        /**
+         * #property
+         */
+        minVisibleWidth: 6,
+
+        /**
+         * #property
+         */
+        minimumBlockWidth: 20,
+
+        /**
+         * #property
+         */
+        minimumRadiusPx: 25,
+
         /**
          * #property
          * similar to offsetPx in linear genome view
          */
         offsetRadians: -Math.PI / 2,
+
         /**
          * #property
          */
-        bpPerPx: 200,
+        paddingPx: 80,
+
+        /**
+         * #property
+         */
+        scrollX: 0,
+
+        /**
+         * #property
+         */
+        scrollY: 0,
+
+        /**
+         * #property
+         */
+        spacingPx: 10,
+
+        /**
+         * #property
+         */
+        trackSelectorType: 'hierarchical',
+
         /**
          * #property
          */
@@ -80,98 +156,55 @@ function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        hideVerticalResizeHandle: false,
-        /**
-         * #property
-         */
-        hideTrackSelectorButton: false,
-        /**
-         * #property
-         */
-        lockedFitToWindow: true,
-        /**
-         * #property
-         */
-        disableImportForm: false,
-
-        /**
-         * #property
-         */
-        height: types.optional(
-          types.refinement('trackHeight', types.number, n => n >= minHeight),
-          defaultHeight,
-        ),
-        /**
-         * #property
-         */
-        displayedRegions: types.array(Region),
-        /**
-         * #property
-         */
-        scrollX: 0,
-        /**
-         * #property
-         */
-        scrollY: 0,
-
-        /**
-         * #property
-         */
-        minimumRadiusPx: 25,
-        /**
-         * #property
-         */
-        spacingPx: 10,
-        /**
-         * #property
-         */
-        paddingPx: 80,
-        /**
-         * #property
-         */
-        lockedPaddingPx: 100,
-        /**
-         * #property
-         */
-        minVisibleWidth: 6,
-        /**
-         * #property
-         */
-        minimumBlockWidth: 20,
-        /**
-         * #property
-         */
-        trackSelectorType: 'hierarchical',
+        type: types.literal('CircularView'),
       }),
     )
     .volatile(() => ({
-      volatileWidth: undefined as number | undefined,
       error: undefined as unknown,
+      volatileWidth: undefined as number | undefined,
     }))
     .views(self => ({
       /**
        * #getter
        */
-      get width() {
-        if (self.volatileWidth === undefined) {
-          throw new Error(
-            'wait for view to be initialized first before accessing width',
-          )
-        }
-        return self.volatileWidth
+      get assemblyNames() {
+        const assemblyNames: string[] = []
+        self.displayedRegions.forEach(displayedRegion => {
+          if (!assemblyNames.includes(displayedRegion.assemblyName)) {
+            assemblyNames.push(displayedRegion.assemblyName)
+          }
+        })
+        return assemblyNames
       },
 
       /**
        * #getter
        */
-      get visibleSection() {
-        const { scrollX, scrollY, width, height } = self
-        return viewportVisibleSection(
-          [scrollX, scrollX + width, scrollY, scrollY + height],
-          this.centerXY,
-          this.radiusPx,
-        )
+      get atMaxBpPerPx() {
+        return self.bpPerPx >= this.maxBpPerPx
       },
+
+      /**
+       * #getter
+       */
+      get atMinBpPerPx() {
+        return self.bpPerPx <= this.minBpPerPx
+      },
+
+      /**
+       * #getter
+       */
+      get bpPerRadian() {
+        return self.bpPerPx * this.radiusPx
+      },
+
+      /**
+       * #getter
+       */
+      get centerXY(): [number, number] {
+        return [this.radiusPx + self.paddingPx, this.radiusPx + self.paddingPx]
+      },
+
       /**
        * #getter
        */
@@ -185,106 +218,7 @@ function stateModelFactory(pluginManager: PluginManager) {
           elidedBp / self.bpPerPx + self.spacingPx * this.elidedRegions.length
         )
       },
-      /**
-       * #getter
-       */
-      get radiusPx() {
-        return this.circumferencePx / (2 * Math.PI)
-      },
-      /**
-       * #getter
-       */
-      get bpPerRadian() {
-        return self.bpPerPx * this.radiusPx
-      },
-      /**
-       * #getter
-       */
-      get pxPerRadian() {
-        return this.radiusPx
-      },
-      /**
-       * #getter
-       */
-      get centerXY(): [number, number] {
-        return [this.radiusPx + self.paddingPx, this.radiusPx + self.paddingPx]
-      },
-      /**
-       * #getter
-       */
-      get totalBp() {
-        let total = 0
-        for (const region of self.displayedRegions) {
-          total += region.end - region.start
-        }
-        return total
-      },
-      /**
-       * #getter
-       */
-      get maximumRadiusPx() {
-        return self.lockedFitToWindow
-          ? Math.min(self.width, self.height) / 2 - self.lockedPaddingPx
-          : 1000000
-      },
-      /**
-       * #getter
-       */
-      get maxBpPerPx() {
-        const minCircumferencePx = 2 * Math.PI * self.minimumRadiusPx
-        return this.totalBp / minCircumferencePx
-      },
-      /**
-       * #getter
-       */
-      get minBpPerPx() {
-        // min depends on window dimensions, clamp between old min(0.01) and max
-        const maxCircumferencePx = 2 * Math.PI * this.maximumRadiusPx
-        return clamp(
-          this.totalBp / maxCircumferencePx,
-          0.0000000001,
-          this.maxBpPerPx,
-        )
-      },
-      /**
-       * #getter
-       */
-      get atMaxBpPerPx() {
-        return self.bpPerPx >= this.maxBpPerPx
-      },
-      /**
-       * #getter
-       */
-      get atMinBpPerPx() {
-        return self.bpPerPx <= this.minBpPerPx
-      },
-      /**
-       * #getter
-       */
-      get tooSmallToLock() {
-        return this.minBpPerPx <= 0.0000000001
-      },
-      /**
-       * #getter
-       */
-      get figureDimensions(): [number, number] {
-        return [
-          this.radiusPx * 2 + 2 * self.paddingPx,
-          this.radiusPx * 2 + 2 * self.paddingPx,
-        ]
-      },
-      /**
-       * #getter
-       */
-      get figureWidth() {
-        return this.figureDimensions[0]
-      },
-      /**
-       * #getter
-       */
-      get figureHeight() {
-        return this.figureDimensions[1]
-      },
+
       /**
        * #getter
        * this is displayedRegions, post-processed to
@@ -304,13 +238,13 @@ function stateModelFactory(pluginManager: PluginManager) {
             } else {
               visible.push({
                 elided: true,
-                widthBp,
                 regions: [{ ...region }],
+                widthBp,
               })
             }
           } else {
             // big enough to see, display it
-            visible.push({ ...region, widthBp, elided: false })
+            visible.push({ ...region, elided: false, widthBp })
           }
         })
 
@@ -323,18 +257,31 @@ function stateModelFactory(pluginManager: PluginManager) {
         }
         return visible
       },
+
       /**
        * #getter
        */
-      get assemblyNames() {
-        const assemblyNames: string[] = []
-        self.displayedRegions.forEach(displayedRegion => {
-          if (!assemblyNames.includes(displayedRegion.assemblyName)) {
-            assemblyNames.push(displayedRegion.assemblyName)
-          }
-        })
-        return assemblyNames
+      get figureDimensions(): [number, number] {
+        return [
+          this.radiusPx * 2 + 2 * self.paddingPx,
+          this.radiusPx * 2 + 2 * self.paddingPx,
+        ]
       },
+
+      /**
+       * #getter
+       */
+      get figureHeight() {
+        return this.figureDimensions[1]
+      },
+
+      /**
+       * #getter
+       */
+      get figureWidth() {
+        return this.figureDimensions[0]
+      },
+
       /**
        * #getter
        */
@@ -344,6 +291,92 @@ function stateModelFactory(pluginManager: PluginManager) {
           self.volatileWidth !== undefined &&
           this.assemblyNames.every(a => assemblyManager.get(a)?.initialized)
         )
+      },
+
+      /**
+       * #getter
+       */
+      get maxBpPerPx() {
+        const minCircumferencePx = 2 * Math.PI * self.minimumRadiusPx
+        return this.totalBp / minCircumferencePx
+      },
+
+      /**
+       * #getter
+       */
+      get maximumRadiusPx() {
+        return self.lockedFitToWindow
+          ? Math.min(self.width, self.height) / 2 - self.lockedPaddingPx
+          : 1000000
+      },
+
+      /**
+       * #getter
+       */
+      get minBpPerPx() {
+        // min depends on window dimensions, clamp between old min(0.01) and max
+        const maxCircumferencePx = 2 * Math.PI * this.maximumRadiusPx
+        return clamp(
+          this.totalBp / maxCircumferencePx,
+          0.0000000001,
+          this.maxBpPerPx,
+        )
+      },
+
+      /**
+       * #getter
+       */
+      get pxPerRadian() {
+        return this.radiusPx
+      },
+
+      /**
+       * #getter
+       */
+      get radiusPx() {
+        return this.circumferencePx / (2 * Math.PI)
+      },
+
+      /**
+       * #getter
+       */
+      get tooSmallToLock() {
+        return this.minBpPerPx <= 0.0000000001
+      },
+
+      /**
+       * #getter
+       */
+      get totalBp() {
+        let total = 0
+        for (const region of self.displayedRegions) {
+          total += region.end - region.start
+        }
+        return total
+      },
+
+      /**
+       * #getter
+       */
+      get visibleSection() {
+        const { scrollX, scrollY, width, height } = self
+        return viewportVisibleSection(
+          [scrollX, scrollX + width, scrollY, scrollY + height],
+          this.centerXY,
+          this.radiusPx,
+        )
+      },
+
+      /**
+       * #getter
+       */
+      get width() {
+        if (self.volatileWidth === undefined) {
+          throw new Error(
+            'wait for view to be initialized first before accessing width',
+          )
+        }
+        return self.volatileWidth
       },
     }))
     .views(self => ({
@@ -367,118 +400,6 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setWidth(newWidth: number) {
-        self.volatileWidth = Math.max(newWidth, minWidth)
-        return self.volatileWidth
-      },
-      /**
-       * #action
-       */
-      setHeight(newHeight: number) {
-        self.height = Math.max(newHeight, minHeight)
-        return self.height
-      },
-      /**
-       * #action
-       */
-      resizeHeight(distance: number) {
-        const oldHeight = self.height
-        const newHeight = this.setHeight(self.height + distance)
-        this.setModelViewWhenAdjust(!self.tooSmallToLock)
-        return newHeight - oldHeight
-      },
-      /**
-       * #action
-       */
-      resizeWidth(distance: number) {
-        const oldWidth = self.width
-        const newWidth = this.setWidth(self.width + distance)
-        this.setModelViewWhenAdjust(!self.tooSmallToLock)
-        return newWidth - oldWidth
-      },
-      /**
-       * #action
-       */
-      rotateClockwiseButton() {
-        this.rotateClockwise(Math.PI / 6)
-      },
-
-      /**
-       * #action
-       */
-      rotateCounterClockwiseButton() {
-        this.rotateCounterClockwise(Math.PI / 6)
-      },
-
-      /**
-       * #action
-       */
-      rotateClockwise(distance = 0.17) {
-        self.offsetRadians += distance
-      },
-
-      /**
-       * #action
-       */
-      rotateCounterClockwise(distance = 0.17) {
-        self.offsetRadians -= distance
-      },
-
-      /**
-       * #action
-       */
-      zoomInButton() {
-        this.setBpPerPx(self.bpPerPx / 1.4)
-      },
-
-      /**
-       * #action
-       */
-      zoomOutButton() {
-        this.setBpPerPx(self.bpPerPx * 1.4)
-      },
-
-      /**
-       * #action
-       */
-      setBpPerPx(newVal: number) {
-        self.bpPerPx = clamp(newVal, self.minBpPerPx, self.maxBpPerPx)
-      },
-
-      /**
-       * #action
-       */
-      setModelViewWhenAdjust(secondCondition: boolean) {
-        if (self.lockedFitToWindow && secondCondition) {
-          this.setBpPerPx(self.minBpPerPx)
-        }
-      },
-
-      /**
-       * #action
-       */
-      closeView() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        getParent<any>(self, 2).removeView(self)
-      },
-
-      /**
-       * #action
-       */
-      setDisplayedRegions(regions: SnapshotOrInstance<typeof Region>[]) {
-        const previouslyEmpty = self.displayedRegions.length === 0
-        self.displayedRegions = cast(regions)
-
-        if (previouslyEmpty) {
-          this.setBpPerPx(self.minBpPerPx)
-        } else {
-          this.setBpPerPx(self.bpPerPx)
-        }
-      },
-
-      /**
-       * #action
-       */
       activateTrackSelector() {
         if (self.trackSelectorType === 'hierarchical') {
           const session = getSession(self)
@@ -493,51 +414,6 @@ function stateModelFactory(pluginManager: PluginManager) {
           }
         }
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
-      },
-
-      /**
-       * #action
-       */
-      toggleTrack(trackId: string) {
-        const hiddenCount = this.hideTrack(trackId)
-        if (!hiddenCount) {
-          this.showTrack(trackId)
-          return true
-        }
-        return false
-      },
-
-      /**
-       * #action
-       */
-      setError(error: unknown) {
-        self.error = error
-      },
-
-      /**
-       * #action
-       */
-      showTrack(trackId: string, initialSnapshot = {}) {
-        const schema = pluginManager.pluggableConfigSchemaType('track')
-        const conf = resolveIdentifier(schema, getRoot(self), trackId)
-        const trackType = pluginManager.getTrackType(conf.type)
-        if (!trackType) {
-          throw new Error(`unknown track type ${conf.type}`)
-        }
-        const viewType = pluginManager.getViewType(self.type)
-        const supportedDisplays = new Set(
-          viewType.displayTypes.map(d => d.name),
-        )
-        const displayConf = conf.displays.find((d: AnyConfigurationModel) =>
-          supportedDisplays.has(d.type),
-        )
-        const track = trackType.stateModel.create({
-          ...initialSnapshot,
-          type: conf.type,
-          configuration: conf,
-          displays: [{ type: displayConf.type, configuration: displayConf }],
-        })
-        self.tracks.push(track)
       },
 
       /**
@@ -560,12 +436,31 @@ function stateModelFactory(pluginManager: PluginManager) {
         self.tracks.push(
           trackType.stateModel.create({
             ...initialSnapshot,
+            configuration,
+            displays: [{ configuration: displayConf, type: displayConf.type }],
             name,
             type,
-            configuration,
-            displays: [{ type: displayConf.type, configuration: displayConf }],
           }),
         )
+      },
+
+      /**
+       * #action
+       */
+      closeView() {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        getParent<any>(self, 2).removeView(self)
+      },
+
+      /**
+       * #action
+       * creates an svg export and save using FileSaver
+       */
+      async exportSvg(opts: ExportSvgOptions = {}) {
+        const { renderToSvg } = await import('../svgcomponents/SVGCircularView')
+        const html = await renderToSvg(self as CircularViewModel, opts)
+        const blob = new Blob([html], { type: 'image/svg+xml' })
+        saveAs(blob, opts.filename || 'image.svg')
       },
 
       /**
@@ -582,6 +477,133 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
+      resizeHeight(distance: number) {
+        const oldHeight = self.height
+        const newHeight = this.setHeight(self.height + distance)
+        this.setModelViewWhenAdjust(!self.tooSmallToLock)
+        return newHeight - oldHeight
+      },
+
+      /**
+       * #action
+       */
+      resizeWidth(distance: number) {
+        const oldWidth = self.width
+        const newWidth = this.setWidth(self.width + distance)
+        this.setModelViewWhenAdjust(!self.tooSmallToLock)
+        return newWidth - oldWidth
+      },
+
+      /**
+       * #action
+       */
+      rotateClockwise(distance = 0.17) {
+        self.offsetRadians += distance
+      },
+
+      /**
+       * #action
+       */
+      rotateClockwiseButton() {
+        this.rotateClockwise(Math.PI / 6)
+      },
+
+      /**
+       * #action
+       */
+      rotateCounterClockwise(distance = 0.17) {
+        self.offsetRadians -= distance
+      },
+
+      /**
+       * #action
+       */
+      rotateCounterClockwiseButton() {
+        this.rotateCounterClockwise(Math.PI / 6)
+      },
+
+      /**
+       * #action
+       */
+      setBpPerPx(newVal: number) {
+        self.bpPerPx = clamp(newVal, self.minBpPerPx, self.maxBpPerPx)
+      },
+
+      /**
+       * #action
+       */
+      setDisplayedRegions(regions: SnapshotOrInstance<typeof Region>[]) {
+        const previouslyEmpty = self.displayedRegions.length === 0
+        self.displayedRegions = cast(regions)
+
+        if (previouslyEmpty) {
+          this.setBpPerPx(self.minBpPerPx)
+        } else {
+          this.setBpPerPx(self.bpPerPx)
+        }
+      },
+
+      /**
+       * #action
+       */
+      setError(error: unknown) {
+        self.error = error
+      },
+
+      /**
+       * #action
+       */
+      setHeight(newHeight: number) {
+        self.height = Math.max(newHeight, minHeight)
+        return self.height
+      },
+
+      /**
+       * #action
+       */
+      setModelViewWhenAdjust(secondCondition: boolean) {
+        if (self.lockedFitToWindow && secondCondition) {
+          this.setBpPerPx(self.minBpPerPx)
+        }
+      },
+
+      /**
+       * #action
+       */
+      setWidth(newWidth: number) {
+        self.volatileWidth = Math.max(newWidth, minWidth)
+        return self.volatileWidth
+      },
+
+      /**
+       * #action
+       */
+      showTrack(trackId: string, initialSnapshot = {}) {
+        const schema = pluginManager.pluggableConfigSchemaType('track')
+        const conf = resolveIdentifier(schema, getRoot(self), trackId)
+        const trackType = pluginManager.getTrackType(conf.type)
+        if (!trackType) {
+          throw new Error(`unknown track type ${conf.type}`)
+        }
+        const viewType = pluginManager.getViewType(self.type)
+        const supportedDisplays = new Set(
+          viewType.displayTypes.map(d => d.name),
+        )
+        const displayConf = conf.displays.find((d: AnyConfigurationModel) =>
+          supportedDisplays.has(d.type),
+        )
+        const track = trackType.stateModel.create({
+          ...initialSnapshot,
+          configuration: conf,
+          displays: [{ configuration: displayConf, type: displayConf.type }],
+          type: conf.type,
+        })
+        self.tracks.push(track)
+      },
+
+      /**
+       * #action
+       */
       toggleFitToWindowLock() {
         // when going unlocked -> locked and circle is cut off, set to the
         // locked minBpPerPx
@@ -589,15 +611,31 @@ function stateModelFactory(pluginManager: PluginManager) {
         this.setModelViewWhenAdjust(self.atMinBpPerPx)
         return self.lockedFitToWindow
       },
+
       /**
        * #action
-       * creates an svg export and save using FileSaver
        */
-      async exportSvg(opts: ExportSvgOptions = {}) {
-        const { renderToSvg } = await import('../svgcomponents/SVGCircularView')
-        const html = await renderToSvg(self as CircularViewModel, opts)
-        const blob = new Blob([html], { type: 'image/svg+xml' })
-        saveAs(blob, opts.filename || 'image.svg')
+      toggleTrack(trackId: string) {
+        const hiddenCount = this.hideTrack(trackId)
+        if (!hiddenCount) {
+          this.showTrack(trackId)
+          return true
+        }
+        return false
+      },
+
+      /**
+       * #action
+       */
+      zoomInButton() {
+        this.setBpPerPx(self.bpPerPx / 1.4)
+      },
+
+      /**
+       * #action
+       */
+      zoomOutButton() {
+        this.setBpPerPx(self.bpPerPx * 1.4)
       },
     }))
     .views(self => ({
@@ -608,24 +646,24 @@ function stateModelFactory(pluginManager: PluginManager) {
       menuItems(): MenuItem[] {
         return [
           {
+            icon: FolderOpenIcon,
             label: 'Return to import form',
             onClick: () => self.setDisplayedRegions([]),
-            icon: FolderOpenIcon,
           },
           {
-            label: 'Export SVG',
             icon: PhotoCameraIcon,
+            label: 'Export SVG',
             onClick: () => {
               getSession(self).queueDialog(handleClose => [
                 ExportSvgDialog,
-                { model: self, handleClose },
+                { handleClose, model: self },
               ])
             },
           },
           {
+            icon: TrackSelectorIcon,
             label: 'Open track selector',
             onClick: self.activateTrackSelector,
-            icon: TrackSelectorIcon,
           },
         ]
       },

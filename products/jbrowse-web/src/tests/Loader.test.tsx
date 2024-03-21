@@ -71,8 +71,8 @@ jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
       const { bytesRead } = await file.read(buf, 0, len, start)
       const stat = await file.stat()
       return new Response(buf.slice(0, bytesRead), {
-        status: 206,
         headers: [['content-range', `${start}-${end}/${stat.size}`]],
+        status: 206,
       })
     }
     return new Response(await file.readFile(), { status: 200 })

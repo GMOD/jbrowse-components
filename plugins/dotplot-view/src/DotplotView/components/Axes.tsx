@@ -11,15 +11,15 @@ import { getBlockLabelKeysToHide } from './util'
 import { DotplotViewModel } from '../model'
 
 const useStyles = makeStyles()(() => ({
-  vtext: {
-    gridColumn: '1/2',
-    gridRow: '1/2',
-    pointerEvents: 'none',
-    userSelect: 'none',
-  },
   htext: {
     gridColumn: '2/2',
     gridRow: '2/2',
+    pointerEvents: 'none',
+    userSelect: 'none',
+  },
+  vtext: {
+    gridColumn: '1/2',
+    gridRow: '1/2',
     pointerEvents: 'none',
     userSelect: 'none',
   },
@@ -50,8 +50,8 @@ export const HorizontalAxisRaw = observer(function ({
   const theme = useTheme()
   const hviewSnap = {
     ...getSnapshot(hview),
-    width,
     staticBlocks: hview.staticBlocks,
+    width,
   }
 
   const ticks = hticks
@@ -60,8 +60,8 @@ export const HorizontalAxisRaw = observer(function ({
         [
           tick,
           bpToPx({
-            refName: tick.refName,
             coord: tick.base,
+            refName: tick.refName,
             self: hviewSnap,
           })?.offsetPx,
         ] as const,
@@ -163,8 +163,8 @@ export const VerticalAxisRaw = observer(function ({
   const theme = useTheme()
   const vviewSnap = {
     ...getSnapshot(vview),
-    width,
     staticBlocks: vview.staticBlocks,
+    width,
   }
   const ticks = vticks
     .map(
@@ -172,8 +172,8 @@ export const VerticalAxisRaw = observer(function ({
         [
           tick,
           bpToPx({
-            refName: tick.refName,
             coord: tick.base,
+            refName: tick.refName,
             self: vviewSnap,
           })?.offsetPx,
         ] as const,

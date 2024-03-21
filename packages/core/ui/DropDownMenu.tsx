@@ -9,13 +9,13 @@ import Menu, { MenuItem } from './Menu'
 const useStyles = makeStyles()(theme => ({
   buttonRoot: {
     '&:hover': {
+      '@media (hover: none)': {
+        backgroundColor: 'transparent',
+      },
       backgroundColor: alpha(
         theme.palette.primary.contrastText,
         theme.palette.action.hoverOpacity,
       ),
-      '@media (hover: none)': {
-        backgroundColor: 'transparent',
-      },
     },
   },
 }))
@@ -52,7 +52,7 @@ const DropDownMenu = observer(function ({
       </Button>
       <Menu
         anchorEl={anchorEl.current}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
         onMenuItemClick={(_event, callback) => {
           callback(session)
           handleClose()

@@ -15,36 +15,25 @@ configuration.formatDetails
 
 ### FormatDetails - Slots
 
-#### slot: configuration.formatDetails.feature
-
-```js
-feature: {
-      type: 'frozen',
-      description: 'adds extra fields to the feature details',
-      defaultValue: {},
-      contextVariable: ['feature'],
-    }
-```
-
-#### slot: configuration.formatDetails.subfeatures
-
-```js
-subfeatures: {
-      type: 'frozen',
-      description: 'adds extra fields to the subfeatures of a feature',
-      defaultValue: {},
-      contextVariable: ['feature'],
-    }
-```
-
 #### slot: configuration.formatDetails.depth
 
 ```js
 depth: {
-      type: 'number',
       defaultValue: 2,
       description:
         'depth to iterate the formatDetails->subfeatures callback on subfeatures (used for example to only apply the callback to the first layer of subfeatures)',
+      type: 'number',
+    }
+```
+
+#### slot: configuration.formatDetails.feature
+
+```js
+feature: {
+      contextVariable: ['feature'],
+      defaultValue: {},
+      description: 'adds extra fields to the feature details',
+      type: 'frozen',
     }
 ```
 
@@ -52,8 +41,19 @@ depth: {
 
 ```js
 maxDepth: {
-      type: 'number',
       defaultValue: 10000,
       description: 'hide subfeatures greater than a certain depth',
+      type: 'number',
+    }
+```
+
+#### slot: configuration.formatDetails.subfeatures
+
+```js
+subfeatures: {
+      contextVariable: ['feature'],
+      defaultValue: {},
+      description: 'adds extra fields to the subfeatures of a feature',
+      type: 'frozen',
     }
 ```

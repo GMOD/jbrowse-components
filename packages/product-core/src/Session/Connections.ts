@@ -41,6 +41,41 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
       /**
        * #action
        */
+      addConnectionConf(connectionConf: AnyConfigurationModel) {
+        const { jbrowse } = self as typeof self & Instance<BaseRootModelType>
+        return jbrowse.addConnectionConf(connectionConf)
+      },
+
+      /**
+       * #action
+       */
+      breakConnection(configuration: AnyConfigurationModel) {
+        const name = readConfObject(configuration, 'name')
+        const connection = self.connectionInstances.find(c => c.name === name)
+        if (!connection) {
+          throw new Error(`no connection found with name ${name}`)
+        }
+        self.connectionInstances.remove(connection)
+      },
+
+      /**
+       * #action
+       */
+      clearConnections() {
+        self.connectionInstances.clear()
+      },
+
+      /**
+       * #action
+       */
+      deleteConnection(configuration: AnyConfigurationModel) {
+        const { jbrowse } = self as typeof self & Instance<BaseRootModelType>
+        return jbrowse.deleteConnectionConf(configuration)
+      },
+
+      /**
+       * #action
+       */
       makeConnection(
         configuration: AnyConfigurationModel,
         initialSnapshot = {},
@@ -56,11 +91,12 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
         }
         const length = self.connectionInstances.push({
           ...initialSnapshot,
+          configuration,
+
           name,
           // @ts-expect-error unsure why ts doesn't like `type` here, but is
           // needed
           type,
-          configuration,
         })
         return self.connectionInstances[length - 1]
       },
@@ -89,41 +125,6 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
           },
           derefTypeCount,
         ]
-      },
-
-      /**
-       * #action
-       */
-      breakConnection(configuration: AnyConfigurationModel) {
-        const name = readConfObject(configuration, 'name')
-        const connection = self.connectionInstances.find(c => c.name === name)
-        if (!connection) {
-          throw new Error(`no connection found with name ${name}`)
-        }
-        self.connectionInstances.remove(connection)
-      },
-
-      /**
-       * #action
-       */
-      deleteConnection(configuration: AnyConfigurationModel) {
-        const { jbrowse } = self as typeof self & Instance<BaseRootModelType>
-        return jbrowse.deleteConnectionConf(configuration)
-      },
-
-      /**
-       * #action
-       */
-      addConnectionConf(connectionConf: AnyConfigurationModel) {
-        const { jbrowse } = self as typeof self & Instance<BaseRootModelType>
-        return jbrowse.addConnectionConf(connectionConf)
-      },
-
-      /**
-       * #action
-       */
-      clearConnections() {
-        self.connectionInstances.clear()
       },
     }))
 }

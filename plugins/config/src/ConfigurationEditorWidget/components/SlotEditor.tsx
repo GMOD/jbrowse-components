@@ -156,19 +156,19 @@ const FileSelectorWrapper = observer(function ({
 })
 
 const valueComponents = {
-  string: StringEditor,
-  text: TextEditor,
+  boolean: BooleanEditor,
+  color: ColorEditor,
+  configRelationships: JsonEditor,
   fileLocation: FileSelectorWrapper,
+  frozen: JsonEditor,
+  integer: IntegerEditor,
+  number: NumberEditor,
+  numberMap: NumberMapEditor,
+  string: StringEditor,
   stringArray: StringArrayEditor,
   stringArrayMap: StringArrayMapEditor,
-  numberMap: NumberMapEditor,
-  number: NumberEditor,
-  integer: IntegerEditor,
-  color: ColorEditor,
   stringEnum: StringEnumEditor,
-  boolean: BooleanEditor,
-  frozen: JsonEditor,
-  configRelationships: JsonEditor,
+  text: TextEditor,
 }
 
 const SlotEditor = observer(function ({

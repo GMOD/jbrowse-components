@@ -14,6 +14,19 @@ info
 
 ### GridBookmarkWidgetModel - Properties
 
+#### property: bookmarks
+
+removed by postProcessSnapshot, only loaded from localStorage
+
+```js
+// type signature
+IOptionalIType<IArrayType<IModelType<{ end: ISimpleType<number>; refName: ISimpleType<string>; reversed: IOptionalIType<ISimpleType<boolean>, [undefined]>; start: ISimpleType<...>; } & { ...; } & { ...; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>>, [...]>
+// code
+bookmarks: types.optional(types.array(LabeledRegionModel), () =>
+        JSON.parse(localStorageGetItem(localStorageKeyF()) || '[]'),
+      )
+```
+
 #### property: id
 
 ```js
@@ -32,20 +45,21 @@ ISimpleType<"GridBookmarkWidget">
 type: types.literal('GridBookmarkWidget')
 ```
 
-#### property: bookmarks
+### GridBookmarkWidgetModel - Getters
 
-removed by postProcessSnapshot, only loaded from localStorage
+#### getter: areBookmarksHighlightLabelsOnAllOpenViews
 
 ```js
-// type signature
-IOptionalIType<IArrayType<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; } & { ...; } & { ...; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>>, [...]>
-// code
-bookmarks: types.optional(types.array(LabeledRegionModel), () =>
-        JSON.parse(localStorageGetItem(localStorageKeyF()) || '[]'),
-      )
+// type
+boolean
 ```
 
-### GridBookmarkWidgetModel - Getters
+#### getter: areBookmarksHighlightedOnAllOpenViews
+
+```js
+// type
+boolean
+```
 
 #### getter: bookmarkAssemblies
 
@@ -61,39 +75,25 @@ any[]
 Set<unknown>
 ```
 
-#### getter: areBookmarksHighlightedOnAllOpenViews
-
-```js
-// type
-boolean
-```
-
-#### getter: areBookmarksHighlightLabelsOnAllOpenViews
-
-```js
-// type
-boolean
-```
-
 #### getter: bookmarksWithValidAssemblies
 
 ```js
 // type
-({ refName: string; start: number; end: number; reversed: boolean; assemblyName: string; label: string; highlight: string; } & NonEmptyObject & { setRefName(newRefName: string): void; } & { ...; } & IStateTreeNode<...>)[]
-```
-
-#### getter: sharedBookmarksModel
-
-```js
-// type
-{ sharedBookmarks: IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; } & { ...; } & { ...; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>; } & NonEmptyObject & IStateTreeNod...
+({ end: number; refName: string; reversed: boolean; start: number; assemblyName: string; highlight: string; label: string; } & NonEmptyObject & { setRefName(newRefName: string): void; } & { ...; } & IStateTreeNode<...>)[]
 ```
 
 #### getter: allBookmarksModel
 
 ```js
 // type
-{ sharedBookmarks: IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; } & { ...; } & { ...; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>; } & NonEmptyObject & IStateTreeNod...
+{ sharedBookmarks: IMSTArray<IModelType<{ end: ISimpleType<number>; refName: ISimpleType<string>; reversed: IOptionalIType<ISimpleType<boolean>, [undefined]>; start: ISimpleType<...>; } & { ...; } & { ...; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>; } & NonEmptyObject & IStateTree...
+```
+
+#### getter: sharedBookmarksModel
+
+```js
+// type
+{ sharedBookmarks: IMSTArray<IModelType<{ end: ISimpleType<number>; refName: ISimpleType<string>; reversed: IOptionalIType<ISimpleType<boolean>, [undefined]>; start: ISimpleType<...>; } & { ...; } & { ...; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>; } & NonEmptyObject & IStateTree...
 ```
 
 #### getter: selectedAssemblies
@@ -112,18 +112,18 @@ any[]
 setSelectedAssemblies: (assemblies?: string[]) => void
 ```
 
-#### action: importBookmarks
-
-```js
-// type signature
-importBookmarks: (regions: Region[]) => void
-```
-
 #### action: addBookmark
 
 ```js
 // type signature
 addBookmark: (region: Region) => void
+```
+
+#### action: importBookmarks
+
+```js
+// type signature
+importBookmarks: (regions: Region[]) => void
 ```
 
 #### action: removeBookmark
@@ -133,39 +133,11 @@ addBookmark: (region: Region) => void
 removeBookmark: (index: number) => void
 ```
 
-#### action: updateBookmarkLabel
-
-```js
-// type signature
-updateBookmarkLabel: (bookmark: IExtendedLabeledRegionModel, label: string) => void
-```
-
-#### action: updateBookmarkHighlight
-
-```js
-// type signature
-updateBookmarkHighlight: (bookmark: IExtendedLabeledRegionModel, color: string) => void
-```
-
-#### action: updateBulkBookmarkHighlights
-
-```js
-// type signature
-updateBulkBookmarkHighlights: (color: string) => void
-```
-
-#### action: setSelectedBookmarks
-
-```js
-// type signature
-setSelectedBookmarks: (bookmarks: IExtendedLabeledRegionModel[]) => void
-```
-
 #### action: setBookmarkedRegions
 
 ```js
 // type signature
-setBookmarkedRegions: (regions: IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; } & { ...; } & { ...; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>>) => void
+setBookmarkedRegions: (regions: IMSTArray<IModelType<{ end: ISimpleType<number>; refName: ISimpleType<string>; reversed: IOptionalIType<ISimpleType<boolean>, [undefined]>; start: ISimpleType<...>; } & { ...; } & { ...; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>>) => void
 ```
 
 #### action: setHighlightToggle
@@ -180,6 +152,34 @@ setHighlightToggle: (toggle: boolean) => void
 ```js
 // type signature
 setLabelToggle: (toggle: boolean) => void
+```
+
+#### action: setSelectedBookmarks
+
+```js
+// type signature
+setSelectedBookmarks: (bookmarks: IExtendedLabeledRegionModel[]) => void
+```
+
+#### action: updateBookmarkHighlight
+
+```js
+// type signature
+updateBookmarkHighlight: (bookmark: IExtendedLabeledRegionModel, color: string) => void
+```
+
+#### action: updateBookmarkLabel
+
+```js
+// type signature
+updateBookmarkLabel: (bookmark: IExtendedLabeledRegionModel, label: string) => void
+```
+
+#### action: updateBulkBookmarkHighlights
+
+```js
+// type signature
+updateBulkBookmarkHighlights: (color: string) => void
 ```
 
 #### action: clearAllBookmarks

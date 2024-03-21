@@ -18,5 +18,5 @@ info
 
 ```js
 // type signature
-getTrackActionMenuItems: (trackConfig: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<ConfigurationSchemaType<{ name: { description: string; type: string; defaultValue: string; }; ... 8 more ...; formatAbout: ConfigurationSchemaType<...>; }, ConfigurationSchemaOptions<...>>>...
+getTrackActionMenuItems: (trackConfig: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<ConfigurationSchemaType<{ adapter: IAnyModelType; assemblyNames: { defaultValue: string[]; description: string; type: string; }; ... 7 more ...; textSearching: ConfigurationSchemaType<...>;...
 ```

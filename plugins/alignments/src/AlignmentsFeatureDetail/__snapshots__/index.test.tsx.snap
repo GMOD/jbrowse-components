@@ -67,12 +67,12 @@ exports[`open up a widget 1`] = `
                   class="css-1m8nxnb-field"
                 >
                   <div
-                    class="css-1q83rf3-fieldName"
+                    class="css-tc7en1-fieldName"
                   >
                     Position
                   </div>
                   <div
-                    class="css-1omt041-fieldValue"
+                    class="css-tuydmv-fieldValue"
                   >
                     ctgA:3..102 (+)
                   </div>
@@ -81,28 +81,12 @@ exports[`open up a widget 1`] = `
                   class="css-1m8nxnb-field"
                 >
                   <div
-                    class="css-1q83rf3-fieldName"
-                  >
-                    Name
-                  </div>
-                  <div
-                    class="css-1omt041-fieldValue"
-                  >
-                    <span>
-                      ctgA_3_555_0:0:0_2:0:0_102d
-                    </span>
-                  </div>
-                </div>
-                <div
-                  class="css-1m8nxnb-field"
-                >
-                  <div
-                    class="css-1q83rf3-fieldName"
+                    class="css-tc7en1-fieldName"
                   >
                     Length
                   </div>
                   <div
-                    class="css-1omt041-fieldValue"
+                    class="css-tuydmv-fieldValue"
                   >
                     <span>
                       100
@@ -113,12 +97,28 @@ exports[`open up a widget 1`] = `
                   class="css-1m8nxnb-field"
                 >
                   <div
-                    class="css-1q83rf3-fieldName"
+                    class="css-tc7en1-fieldName"
+                  >
+                    Name
+                  </div>
+                  <div
+                    class="css-tuydmv-fieldValue"
+                  >
+                    <span>
+                      ctgA_3_555_0:0:0_2:0:0_102d
+                    </span>
+                  </div>
+                </div>
+                <div
+                  class="css-1m8nxnb-field"
+                >
+                  <div
+                    class="css-tc7en1-fieldName"
                   >
                     Type
                   </div>
                   <div
-                    class="css-1omt041-fieldValue"
+                    class="css-tuydmv-fieldValue"
                   >
                     <span>
                       match
@@ -137,16 +137,16 @@ exports[`open up a widget 1`] = `
                   class="css-1m8nxnb-field"
                 >
                   <div
-                    class="css-1q83rf3-fieldName"
+                    class="css-tc7en1-fieldName"
                     style="width: 96px;"
                   >
-                    seq
+                    CIGAR
                   </div>
                   <div
-                    class="css-1omt041-fieldValue"
+                    class="css-tuydmv-fieldValue"
                   >
                     <div>
-                      TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG
+                      100M
                     </div>
                   </div>
                 </div>
@@ -154,13 +154,14 @@ exports[`open up a widget 1`] = `
                   class="css-1m8nxnb-field"
                 >
                   <div
-                    class="css-1q83rf3-fieldName"
-                    style="width: 96px;"
+                    aria-label="Mapping quality of the mate/next segment"
+                    class="css-acsoln-fieldDescription-fieldName"
+                    data-mui-internal-clone-element="true"
                   >
-                    score
+                    MQ
                   </div>
                   <div
-                    class="css-1omt041-fieldValue"
+                    class="css-tuydmv-fieldValue"
                   >
                     <div>
                       37
@@ -171,13 +172,30 @@ exports[`open up a widget 1`] = `
                   class="css-1m8nxnb-field"
                 >
                   <div
-                    class="css-1q83rf3-fieldName"
+                    class="css-tc7en1-fieldName"
+                    style="width: 96px;"
+                  >
+                    length_on_ref
+                  </div>
+                  <div
+                    class="css-tuydmv-fieldValue"
+                  >
+                    <div>
+                      100
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="css-1m8nxnb-field"
+                >
+                  <div
+                    class="css-tc7en1-fieldName"
                     style="width: 96px;"
                   >
                     qual
                   </div>
                   <div
-                    class="css-1omt041-fieldValue"
+                    class="css-tuydmv-fieldValue"
                   >
                     <button
                       type="button"
@@ -198,14 +216,13 @@ exports[`open up a widget 1`] = `
                   class="css-1m8nxnb-field"
                 >
                   <div
-                    aria-label="Mapping quality of the mate/next segment"
-                    class="css-18vnxxj-fieldDescription-fieldName"
-                    data-mui-internal-clone-element="true"
+                    class="css-tc7en1-fieldName"
+                    style="width: 96px;"
                   >
-                    MQ
+                    score
                   </div>
                   <div
-                    class="css-1omt041-fieldValue"
+                    class="css-tuydmv-fieldValue"
                   >
                     <div>
                       37
@@ -216,16 +233,16 @@ exports[`open up a widget 1`] = `
                   class="css-1m8nxnb-field"
                 >
                   <div
-                    class="css-1q83rf3-fieldName"
+                    class="css-tc7en1-fieldName"
                     style="width: 96px;"
                   >
-                    CIGAR
+                    seq
                   </div>
                   <div
-                    class="css-1omt041-fieldValue"
+                    class="css-tuydmv-fieldValue"
                   >
                     <div>
-                      100M
+                      TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG
                     </div>
                   </div>
                 </div>
@@ -233,13 +250,13 @@ exports[`open up a widget 1`] = `
                   class="css-1m8nxnb-field"
                 >
                   <div
-                    class="css-1q83rf3-fieldName"
+                    class="css-tc7en1-fieldName"
                     style="width: 96px;"
                   >
-                    length_on_ref
+                    seq_length
                   </div>
                   <div
-                    class="css-1omt041-fieldValue"
+                    class="css-tuydmv-fieldValue"
                   >
                     <div>
                       100
@@ -250,13 +267,13 @@ exports[`open up a widget 1`] = `
                   class="css-1m8nxnb-field"
                 >
                   <div
-                    class="css-1q83rf3-fieldName"
+                    class="css-tc7en1-fieldName"
                     style="width: 96px;"
                   >
                     template_length
                   </div>
                   <div
-                    class="css-1omt041-fieldValue"
+                    class="css-tuydmv-fieldValue"
                   >
                     <div>
                       0
@@ -264,24 +281,7 @@ exports[`open up a widget 1`] = `
                   </div>
                 </div>
                 <div
-                  class="css-1m8nxnb-field"
-                >
-                  <div
-                    class="css-1q83rf3-fieldName"
-                    style="width: 96px;"
-                  >
-                    seq_length
-                  </div>
-                  <div
-                    class="css-1omt041-fieldValue"
-                  >
-                    <div>
-                      100
-                    </div>
-                  </div>
-                </div>
-                <div
-                  class="css-1lttu3w-container"
+                  class="css-1i3pk1y-container"
                 >
                   <button
                     class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary css-sghohy-MuiButtonBase-root-MuiButton-root"

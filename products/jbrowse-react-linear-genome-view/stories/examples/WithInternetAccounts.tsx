@@ -9,31 +9,31 @@ export const WithInternetAccounts = () => {
   const { assembly } = getVolvoxConfig()
   const state = createViewState({
     assembly,
-    tracks: [
+    internetAccounts: [
       {
-        type: 'QuantitativeTrack',
-        trackId: 'google_bigwig',
-        name: 'Google Drive BigWig',
-        category: ['Authentication'],
-        assemblyNames: ['volvox'],
-        adapter: {
-          type: 'BigWigAdapter',
-          bigWigLocation: {
-            locationType: 'UriLocation',
-            uri: ' https://www.googleapis.com/drive/v3/files/1PIvZCOJioK9eBL1Vuvfa4L_Fv9zTooHk?alt=media',
-            internetAccountId: 'manualGoogleEntry',
-          },
-        },
+        description: 'Manually enter a token to access Google Drive files',
+        internetAccountId: 'manualGoogleEntry',
+        name: 'Google Drive Manual Token Entry',
+        tokenType: 'Bearer',
+        type: 'ExternalTokenInternetAccount',
       },
     ],
     location: 'ctgA:1105..1221',
-    internetAccounts: [
+    tracks: [
       {
-        type: 'ExternalTokenInternetAccount',
-        internetAccountId: 'manualGoogleEntry',
-        name: 'Google Drive Manual Token Entry',
-        description: 'Manually enter a token to access Google Drive files',
-        tokenType: 'Bearer',
+        adapter: {
+          bigWigLocation: {
+            internetAccountId: 'manualGoogleEntry',
+            locationType: 'UriLocation',
+            uri: ' https://www.googleapis.com/drive/v3/files/1PIvZCOJioK9eBL1Vuvfa4L_Fv9zTooHk?alt=media',
+          },
+          type: 'BigWigAdapter',
+        },
+        assemblyNames: ['volvox'],
+        category: ['Authentication'],
+        name: 'Google Drive BigWig',
+        trackId: 'google_bigwig',
+        type: 'QuantitativeTrack',
       },
     ],
   })

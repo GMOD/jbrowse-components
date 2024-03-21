@@ -49,143 +49,143 @@ test('export svg of synteny', async () => {
     const { findByTestId, findAllByText, findByText } = await createView({
       ...volvoxConfig,
       defaultSession: {
-        id: 'session_testing',
-        name: 'Integration test example 2/13/2023, 3:23:07 PM',
-        margin: 0,
+        activeWidgets: {
+          hierarchicalTrackSelector: 'hierarchicalTrackSelector',
+        },
+        drawerPosition: 'right',
         drawerWidth: 384,
+        id: 'session_testing',
+        margin: 0,
+        minimized: false,
+        name: 'Integration test example 2/13/2023, 3:23:07 PM',
+
+        sessionThemeName: 'default',
         views: [
           {
-            id: 'p1',
-            minimized: false,
-            type: 'LinearSyntenyView',
-            trackSelectorType: 'hierarchical',
-            showIntraviewLinks: true,
-            linkViews: true,
-            interactToggled: false,
-            middleComparativeHeight: 174,
-            tracks: [
-              {
-                id: 's1',
-                type: 'SyntenyTrack',
-                configuration: 'volvox_inv_indels',
-                minimized: false,
-                displays: [
-                  {
-                    id: 's1-display',
-                    type: 'LinearSyntenyDisplay',
-                    configuration: 'volvox_inv_indels-LinearSyntenyDisplay',
-                    height: 100,
-                  },
-                ],
-              },
-            ],
-            views: [
-              {
-                id: 'view1',
-                minimized: false,
-                type: 'LinearGenomeView',
-                offsetPx: 3677,
-                bpPerPx: 0.47741687344913153,
-                displayedRegions: [
-                  {
-                    refName: 'ctgA',
-                    start: 0,
-                    end: 50001,
-                    reversed: false,
-                    assemblyName: 'volvox',
-                  },
-                  {
-                    refName: 'ctgB',
-                    start: 0,
-                    end: 6079,
-                    reversed: false,
-                    assemblyName: 'volvox',
-                  },
-                ],
-                tracks: [
-                  {
-                    id: 't1',
-                    type: 'SyntenyTrack',
-                    configuration: 'volvox_inv_indels',
-                    minimized: false,
-                    displays: [
-                      {
-                        id: 't1-display',
-                        type: 'LGVSyntenyDisplay',
-                        configuration: 'volvox_inv_indels-LGVSyntenyDisplay',
-                        showSoftClipping: false,
-                        colorBy: {
-                          type: 'strand',
-                        },
-                        filterBy: {
-                          flagInclude: 0,
-                          flagExclude: 1540,
-                        },
-                      },
-                    ],
-                  },
-                ],
-              },
-              {
-                id: 'view2',
-                minimized: false,
-                type: 'LinearGenomeView',
-                offsetPx: 3627,
-                bpPerPx: 0.47741687344913153,
-                displayedRegions: [
-                  {
-                    refName: 'ctgA',
-                    start: 0,
-                    end: 49186,
-                    reversed: false,
-                    assemblyName: 'volvox_random_inv',
-                  },
-                ],
-                tracks: [
-                  {
-                    id: 't2',
-                    type: 'SyntenyTrack',
-                    configuration: 'volvox_inv_indels',
-                    minimized: false,
-                    displays: [
-                      {
-                        id: 't2-display',
-                        type: 'LGVSyntenyDisplay',
-                        configuration: 'volvox_inv_indels-LGVSyntenyDisplay',
-                        showSoftClipping: false,
-                        colorBy: {
-                          type: 'strand',
-                        },
-                        filterBy: {
-                          flagInclude: 0,
-                          flagExclude: 1540,
-                        },
-                      },
-                    ],
-                  },
-                ],
-              },
-            ],
-            viewTrackConfigs: [],
             drawCIGAR: true,
             drawCurves: true,
+            id: 'p1',
+            interactToggled: false,
+            linkViews: true,
+            middleComparativeHeight: 174,
+            minimized: false,
+            showIntraviewLinks: true,
+            trackSelectorType: 'hierarchical',
+            tracks: [
+              {
+                configuration: 'volvox_inv_indels',
+                displays: [
+                  {
+                    configuration: 'volvox_inv_indels-LinearSyntenyDisplay',
+                    height: 100,
+                    id: 's1-display',
+                    type: 'LinearSyntenyDisplay',
+                  },
+                ],
+                id: 's1',
+                minimized: false,
+                type: 'SyntenyTrack',
+              },
+            ],
+            type: 'LinearSyntenyView',
+            viewTrackConfigs: [],
+            views: [
+              {
+                bpPerPx: 0.47741687344913153,
+                displayedRegions: [
+                  {
+                    assemblyName: 'volvox',
+                    end: 50001,
+                    refName: 'ctgA',
+                    reversed: false,
+                    start: 0,
+                  },
+                  {
+                    assemblyName: 'volvox',
+                    end: 6079,
+                    refName: 'ctgB',
+                    reversed: false,
+                    start: 0,
+                  },
+                ],
+                id: 'view1',
+                minimized: false,
+                offsetPx: 3677,
+                tracks: [
+                  {
+                    configuration: 'volvox_inv_indels',
+                    displays: [
+                      {
+                        colorBy: {
+                          type: 'strand',
+                        },
+                        configuration: 'volvox_inv_indels-LGVSyntenyDisplay',
+                        filterBy: {
+                          flagExclude: 1540,
+                          flagInclude: 0,
+                        },
+                        id: 't1-display',
+                        showSoftClipping: false,
+                        type: 'LGVSyntenyDisplay',
+                      },
+                    ],
+                    id: 't1',
+                    minimized: false,
+                    type: 'SyntenyTrack',
+                  },
+                ],
+                type: 'LinearGenomeView',
+              },
+              {
+                bpPerPx: 0.47741687344913153,
+                displayedRegions: [
+                  {
+                    assemblyName: 'volvox_random_inv',
+                    end: 49186,
+                    refName: 'ctgA',
+                    reversed: false,
+                    start: 0,
+                  },
+                ],
+                id: 'view2',
+                minimized: false,
+                offsetPx: 3627,
+                tracks: [
+                  {
+                    configuration: 'volvox_inv_indels',
+                    displays: [
+                      {
+                        colorBy: {
+                          type: 'strand',
+                        },
+                        configuration: 'volvox_inv_indels-LGVSyntenyDisplay',
+                        filterBy: {
+                          flagExclude: 1540,
+                          flagInclude: 0,
+                        },
+                        id: 't2-display',
+                        showSoftClipping: false,
+                        type: 'LGVSyntenyDisplay',
+                      },
+                    ],
+                    id: 't2',
+                    minimized: false,
+                    type: 'SyntenyTrack',
+                  },
+                ],
+                type: 'LinearGenomeView',
+              },
+            ],
           },
         ],
         widgets: {
           hierarchicalTrackSelector: {
+            collapsed: {},
             id: 'hierarchicalTrackSelector',
             type: 'HierarchicalTrackSelectorWidget',
-            collapsed: {},
             view: 'WqWgaqv_gB',
           },
         },
-        activeWidgets: {
-          hierarchicalTrackSelector: 'hierarchicalTrackSelector',
-        },
-
-        minimized: false,
-        drawerPosition: 'right',
-        sessionThemeName: 'default',
       },
     })
 
@@ -240,80 +240,80 @@ test('export svg of dotplot', async () => {
   const { findByTestId, findByText } = await createView({
     ...volvoxConfig,
     defaultSession: {
-      id: 'yvVuWHcq2',
-      name: 'Integration test example 2/13/2023, 3:23:07 PM',
-      margin: 0,
       drawerWidth: 384,
+      id: 'yvVuWHcq2',
+      margin: 0,
+      name: 'Integration test example 2/13/2023, 3:23:07 PM',
       views: [
         {
+          assemblyNames: ['volvox_random_inv', 'volvox'],
+          borderSize: 20,
+          cursorMode: 'crosshair',
+          drawCigar: true,
+          fontSize: 15,
+          height: 600,
+          htextRotation: -90,
+          hview: {
+            bpPerPx: 10.643835752380955,
+            displayedRegions: [
+              {
+                assemblyName: 'volvox_random_inv',
+                end: 49186,
+                refName: 'ctgA',
+                reversed: false,
+                start: 0,
+              },
+            ],
+            id: 'FZRhMPvDfS',
+            interRegionPaddingWidth: 0,
+            minimumBlockWidth: 0,
+            offsetPx: 1173,
+          },
           id: 'JEjDwC61c',
           minimized: false,
-          type: 'DotplotView',
-          height: 600,
-          borderSize: 20,
           tickSize: 5,
-          vtextRotation: 0,
-          htextRotation: -90,
-          fontSize: 15,
           trackSelectorType: 'hierarchical',
-          assemblyNames: ['volvox_random_inv', 'volvox'],
-          drawCigar: true,
-          hview: {
-            id: 'FZRhMPvDfS',
-            displayedRegions: [
-              {
-                refName: 'ctgA',
-                start: 0,
-                end: 49186,
-                reversed: false,
-                assemblyName: 'volvox_random_inv',
-              },
-            ],
-            bpPerPx: 10.643835752380955,
-            offsetPx: 1173,
-            interRegionPaddingWidth: 0,
-            minimumBlockWidth: 0,
-          },
-          vview: {
-            id: 'DpNpiCTp4t',
-            displayedRegions: [
-              {
-                refName: 'ctgA',
-                start: 0,
-                end: 50001,
-                reversed: false,
-                assemblyName: 'volvox',
-              },
-              {
-                refName: 'ctgB',
-                start: 0,
-                end: 6079,
-                reversed: false,
-                assemblyName: 'volvox',
-              },
-            ],
-            bpPerPx: 20.505395171396007,
-            offsetPx: 681,
-            interRegionPaddingWidth: 0,
-            minimumBlockWidth: 0,
-          },
-          cursorMode: 'crosshair',
           tracks: [
             {
-              id: 'TCFk0NeAVI',
-              type: 'SyntenyTrack',
               configuration: 'volvox_inv_indels',
-              minimized: false,
               displays: [
                 {
+                  configuration: 'volvox_inv_indels-DotplotDisplay',
                   id: 'Exx5MRmlTg',
                   type: 'DotplotDisplay',
-                  configuration: 'volvox_inv_indels-DotplotDisplay',
                 },
               ],
+              id: 'TCFk0NeAVI',
+              minimized: false,
+              type: 'SyntenyTrack',
             },
           ],
+          type: 'DotplotView',
           viewTrackConfigs: [],
+          vtextRotation: 0,
+          vview: {
+            bpPerPx: 20.505395171396007,
+            displayedRegions: [
+              {
+                assemblyName: 'volvox',
+                end: 50001,
+                refName: 'ctgA',
+                reversed: false,
+                start: 0,
+              },
+              {
+                assemblyName: 'volvox',
+                end: 6079,
+                refName: 'ctgB',
+                reversed: false,
+                start: 0,
+              },
+            ],
+            id: 'DpNpiCTp4t',
+            interRegionPaddingWidth: 0,
+            minimumBlockWidth: 0,
+            offsetPx: 681,
+          },
         },
       ],
     },

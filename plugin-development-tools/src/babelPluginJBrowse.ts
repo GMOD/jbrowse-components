@@ -42,16 +42,6 @@ function createConfigItems(type: any, items: any[]) {
 }
 
 export const babelPluginJBrowse = createBabelInputPluginFactory(() => ({
-  // Passed the plugin options.
-  options({ custom: customOptions, ...pluginOptions }: any) {
-    return {
-      // Pull out any custom options that the plugin might have.
-      customOptions,
-
-      // Pass the options back with the two custom options removed.
-      pluginOptions,
-    }
-  },
   config(config: any, { customOptions }: any) {
     const defaultPlugins = createConfigItems(
       'plugin',
@@ -69,9 +59,10 @@ export const babelPluginJBrowse = createBabelInputPluginFactory(() => ({
           replacements,
         },
         {
-          name: 'babel-plugin-polyfill-regenerator',
           // don't pollute global env as this is being used in a library
           method: 'usage-pure',
+
+          name: 'babel-plugin-polyfill-regenerator',
         },
         { name: '@babel/plugin-proposal-class-properties' },
       ].filter(Boolean),
@@ -100,9 +91,9 @@ export const babelPluginJBrowse = createBabelInputPluginFactory(() => ({
       // if no preset-env, add it & merge with their presets
       const defaultPresets = createConfigItems('preset', [
         {
+          modules: false,
           name: '@babel/preset-env',
           targets: customOptions.targets,
-          modules: false,
         },
       ])
 
@@ -121,5 +112,15 @@ export const babelPluginJBrowse = createBabelInputPluginFactory(() => ({
     )
 
     return babelOptions
+  },
+  // Passed the plugin options.
+  options({ custom: customOptions, ...pluginOptions }: any) {
+    return {
+      // Pull out any custom options that the plugin might have.
+      customOptions,
+
+      // Pass the options back with the two custom options removed.
+      pluginOptions,
+    }
   },
 }))

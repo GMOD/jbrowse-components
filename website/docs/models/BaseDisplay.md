@@ -23,15 +23,6 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 id: ElementId
 ```
 
-#### property: type
-
-```js
-// type signature
-ISimpleType<string>
-// code
-type: types.string
-```
-
 #### property: rpcDriverName
 
 ```js
@@ -41,20 +32,39 @@ IMaybe<ISimpleType<string>>
 rpcDriverName: types.maybe(types.string)
 ```
 
-### BaseDisplay - Getters
-
-#### getter: RenderingComponent
+#### property: type
 
 ```js
-// type
-React.FC<{ model: { id: string; type: string; rpcDriverName: string; } & NonEmptyObject & { rendererTypeName: string; error: unknown; message: string; } & IStateTreeNode<IModelType<{ id: IOptionalIType<ISimpleType<string>, [...]>; type: ISimpleType<...>; rpcDriverName: IMaybe<...>; }, { ...; }, _NotCustomized, _NotC...
+// type signature
+ISimpleType<string>
+// code
+type: types.string
 ```
+
+### BaseDisplay - Getters
 
 #### getter: DisplayBlurb
 
 ```js
 // type
 any
+```
+
+#### getter: DisplayMessageComponent
+
+if a display-level message should be displayed instead, make this return a react
+component
+
+```js
+// type
+any
+```
+
+#### getter: RenderingComponent
+
+```js
+// type
+React.FC<{ model: { id: string; rpcDriverName: string; type: string; } & NonEmptyObject & { error: unknown; message: string; rendererTypeName: string; } & IStateTreeNode<IModelType<{ id: IOptionalIType<ISimpleType<string>, [...]>; rpcDriverName: IMaybe<...>; type: ISimpleType<...>; }, { ...; }, _NotCustomized, _NotC...
 ```
 
 #### getter: adapterConfig
@@ -80,16 +90,6 @@ the pluggable element type object for this display's renderer
 RendererType
 ```
 
-#### getter: DisplayMessageComponent
-
-if a display-level message should be displayed instead, make this return a react
-component
-
-```js
-// type
-any
-```
-
 #### getter: viewMenuActions
 
 ```js
@@ -98,6 +98,13 @@ MenuItem[]
 ```
 
 ### BaseDisplay - Methods
+
+#### method: regionCannotBeRendered
+
+```js
+// type signature
+regionCannotBeRendered: () => any
+```
 
 #### method: renderProps
 
@@ -116,20 +123,15 @@ renderProps: () => any
 trackMenuItems: () => MenuItem[]
 ```
 
-#### method: regionCannotBeRendered
-
-```js
-// type signature
-regionCannotBeRendered: () => any
-```
-
 ### BaseDisplay - Actions
 
-#### action: setMessage
+#### action: reload
+
+base display reload does nothing, see specialized displays for details
 
 ```js
 // type signature
-setMessage: (arg?: string) => void
+reload: () => void
 ```
 
 #### action: setError
@@ -139,18 +141,16 @@ setMessage: (arg?: string) => void
 setError: (error?: unknown) => void
 ```
 
+#### action: setMessage
+
+```js
+// type signature
+setMessage: (arg?: string) => void
+```
+
 #### action: setRpcDriverName
 
 ```js
 // type signature
 setRpcDriverName: (rpcDriverName: string) => void
-```
-
-#### action: reload
-
-base display reload does nothing, see specialized displays for details
-
-```js
-// type signature
-reload: () => void
 ```

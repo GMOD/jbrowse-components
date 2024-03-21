@@ -21,31 +21,13 @@ extends
 
 ### LinearBasicDisplay - Properties
 
-#### property: type
+#### property: configuration
 
 ```js
 // type signature
-ISimpleType<"LinearBasicDisplay">
+AnyConfigurationSchemaType
 // code
-type: types.literal('LinearBasicDisplay')
-```
-
-#### property: trackShowLabels
-
-```js
-// type signature
-IMaybe<ISimpleType<boolean>>
-// code
-trackShowLabels: types.maybe(types.boolean)
-```
-
-#### property: trackShowDescriptions
-
-```js
-// type signature
-IMaybe<ISimpleType<boolean>>
-// code
-trackShowDescriptions: types.maybe(types.boolean)
+configuration: ConfigurationReference(configSchema)
 ```
 
 #### property: trackDisplayMode
@@ -66,32 +48,36 @@ IMaybe<ISimpleType<number>>
 trackMaxHeight: types.maybe(types.number)
 ```
 
-#### property: configuration
+#### property: trackShowDescriptions
 
 ```js
 // type signature
-AnyConfigurationSchemaType
+IMaybe<ISimpleType<boolean>>
 // code
-configuration: ConfigurationReference(configSchema)
+trackShowDescriptions: types.maybe(types.boolean)
+```
+
+#### property: trackShowLabels
+
+```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
+trackShowLabels: types.maybe(types.boolean)
+```
+
+#### property: type
+
+```js
+// type signature
+ISimpleType<"LinearBasicDisplay">
+// code
+type: types.literal('LinearBasicDisplay')
 ```
 
 ### LinearBasicDisplay - Getters
 
-#### getter: rendererTypeName
-
-```js
-// type
-any
-```
-
-#### getter: showLabels
-
-```js
-// type
-any
-```
-
-#### getter: showDescriptions
+#### getter: displayMode
 
 ```js
 // type
@@ -105,7 +91,21 @@ any
 any
 ```
 
-#### getter: displayMode
+#### getter: rendererTypeName
+
+```js
+// type
+any
+```
+
+#### getter: showDescriptions
+
+```js
+// type
+any
+```
+
+#### getter: showLabels
 
 ```js
 // type
@@ -137,20 +137,6 @@ trackMenuItems: () => MenuItem[]
 
 ### LinearBasicDisplay - Actions
 
-#### action: toggleShowLabels
-
-```js
-// type signature
-toggleShowLabels: () => void
-```
-
-#### action: toggleShowDescriptions
-
-```js
-// type signature
-toggleShowDescriptions: () => void
-```
-
 #### action: setDisplayMode
 
 ```js
@@ -163,4 +149,18 @@ setDisplayMode: (val: string) => void
 ```js
 // type signature
 setMaxHeight: (val?: number) => void
+```
+
+#### action: toggleShowDescriptions
+
+```js
+// type signature
+toggleShowDescriptions: () => void
+```
+
+#### action: toggleShowLabels
+
+```js
+// type signature
+toggleShowLabels: () => void
 ```

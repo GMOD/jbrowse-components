@@ -14,9 +14,9 @@ const ExternalTokenConfigSchema = ConfigurationSchema(
      * #slot
      */
     validateWithHEAD: {
+      defaultValue: true,
       description: 'validate the token with a HEAD request before using it',
       type: 'boolean',
-      defaultValue: true,
     },
   },
   {

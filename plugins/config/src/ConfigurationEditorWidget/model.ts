@@ -6,12 +6,13 @@ export default (pluginManager: PluginManager) =>
   types
     .model('ConfigurationEditorWidget', {
       id: ElementId,
-      type: types.literal('ConfigurationEditorWidget'),
       // If you add different types of targets, don't forget to account for that
       // in the key of ./components/ConfigurationEditor.js
       target: types.safeReference(
         pluginManager.pluggableConfigSchemaType('track'),
       ),
+
+      type: types.literal('ConfigurationEditorWidget'),
     })
     .actions(self => ({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

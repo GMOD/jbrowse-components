@@ -15,6 +15,15 @@ quantitative "snpcoverage" sub-display track showing SNP frequencies
 
 ### LinearAlignmentsDisplay - Slots
 
+#### slot: height
+
+```js
+height: {
+        defaultValue: 250,
+        type: 'number',
+      }
+```
+
 #### slot: pileupDisplay
 
 ```js
@@ -25,15 +34,6 @@ pileupDisplay: pm.getDisplayType('LinearPileupDisplay').configSchema
 
 ```js
 snpCoverageDisplay: pm.getDisplayType('LinearSNPCoverageDisplay').configSchema
-```
-
-#### slot: height
-
-```js
-height: {
-        type: 'number',
-        defaultValue: 250,
-      }
 ```
 
 ### LinearAlignmentsDisplay - Derives from

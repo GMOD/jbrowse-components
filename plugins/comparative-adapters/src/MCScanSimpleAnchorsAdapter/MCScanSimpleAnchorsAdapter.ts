@@ -110,14 +110,14 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
         feats.forEach(f => {
           const [f11, f12, f21, f22, score, strand, rowNum] = f
           let r1 = {
+            end: Math.max(f11.end, f12.end),
             refName: f11.refName,
             start: Math.min(f11.start, f12.start),
-            end: Math.max(f11.end, f12.end),
           }
           let r2 = {
+            end: Math.max(f21.end, f22.end),
             refName: f21.refName,
             start: Math.min(f21.start, f22.start),
-            end: Math.max(f21.end, f22.end),
           }
           if (!flip) {
             ;[r2, r1] = [r1, r2]
@@ -129,15 +129,15 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
             observer.next(
               new SimpleFeature({
                 ...r1,
-                uniqueId: `${rowNum}`,
-                syntenyId: rowNum,
                 assemblyName: assemblyNames[+!flip],
-                score,
-                strand,
                 mate: {
                   ...r2,
                   assemblyName: assemblyNames[+flip],
                 },
+                score,
+                strand,
+                syntenyId: rowNum,
+                uniqueId: `${rowNum}`,
               }),
             )
           }

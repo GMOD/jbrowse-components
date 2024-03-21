@@ -23,13 +23,13 @@ import ImportCustomTrack from './ImportCustomTrack'
 import ImportSyntenyTrackSelector from './ImportSyntenyTrackSelector'
 
 const useStyles = makeStyles()(theme => ({
-  importFormContainer: {
-    padding: theme.spacing(4),
-    margin: '0 auto',
-  },
   assemblySelector: {
-    width: '75%',
     margin: '0 auto',
+    width: '75%',
+  },
+  importFormContainer: {
+    margin: '0 auto',
+    padding: theme.spacing(4),
   },
 }))
 
@@ -134,11 +134,11 @@ const LinearSyntenyViewImportForm = observer(function ({
               throw new Error(`Assembly ${sel} failed to load`)
             }
             return {
-              type: 'LinearGenomeView' as const,
               bpPerPx: 1,
-              offsetPx: 0,
-              hideHeader: true,
               displayedRegions: asm.regions,
+              hideHeader: true,
+              offsetPx: 0,
+              type: 'LinearGenomeView' as const,
             }
           }),
         ),

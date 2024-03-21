@@ -45,49 +45,7 @@ view: types.safeReference(
 
 ### AddTrackModel - Getters
 
-#### getter: trackAdapter
-
-```js
-// type
-AdapterConfig
-```
-
-#### getter: trackName
-
-```js
-// type
-string
-```
-
-#### getter: isFtp
-
-```js
-// type
-boolean
-```
-
-#### getter: isRelativeTrackUrl
-
-```js
-// type
-boolean
-```
-
-#### getter: isRelativeIndexUrl
-
-```js
-// type
-boolean
-```
-
-#### getter: isRelativeUrl
-
-```js
-// type
-any
-```
-
-#### getter: trackHttp
+#### getter: assembly
 
 ```js
 // type
@@ -101,11 +59,60 @@ any
 any
 ```
 
-#### getter: wrongProtocol
+#### getter: isFtp
+
+```js
+// type
+boolean
+```
+
+#### getter: isRelativeIndexUrl
+
+```js
+// type
+boolean
+```
+
+#### getter: isRelativeTrackUrl
+
+```js
+// type
+boolean
+```
+
+#### getter: isRelativeUrl
 
 ```js
 // type
 any
+```
+
+#### getter: trackAdapter
+
+```js
+// type
+AdapterConfig
+```
+
+#### getter: trackHttp
+
+```js
+// type
+any
+```
+
+#### getter: trackName
+
+```js
+// type
+string
+```
+
+#### getter: trackType
+
+```js
+// type
+string
 ```
 
 #### getter: unsupported
@@ -115,18 +122,11 @@ any
 boolean
 ```
 
-#### getter: assembly
+#### getter: wrongProtocol
 
 ```js
 // type
 any
-```
-
-#### getter: trackType
-
-```js
-// type
-string
 ```
 
 #### getter: warningMessage
@@ -138,46 +138,18 @@ string
 
 ### AddTrackModel - Actions
 
+#### action: clearData
+
+```js
+// type signature
+clearData: () => void
+```
+
 #### action: setAdapterHint
 
 ```js
 // type signature
 setAdapterHint: (obj: string) => void
-```
-
-#### action: setTrackSource
-
-```js
-// type signature
-setTrackSource: (str: string) => void
-```
-
-#### action: setTextIndexingConf
-
-```js
-// type signature
-setTextIndexingConf: (conf: IndexingAttr) => void
-```
-
-#### action: setTextIndexTrack
-
-```js
-// type signature
-setTextIndexTrack: (flag: boolean) => void
-```
-
-#### action: setTrackData
-
-```js
-// type signature
-setTrackData: (obj: FileLocation) => void
-```
-
-#### action: setIndexTrackData
-
-```js
-// type signature
-setIndexTrackData: (obj: FileLocation) => void
 ```
 
 #### action: setAssembly
@@ -187,6 +159,34 @@ setIndexTrackData: (obj: FileLocation) => void
 setAssembly: (str: string) => void
 ```
 
+#### action: setIndexTrackData
+
+```js
+// type signature
+setIndexTrackData: (obj: FileLocation) => void
+```
+
+#### action: setTextIndexTrack
+
+```js
+// type signature
+setTextIndexTrack: (flag: boolean) => void
+```
+
+#### action: setTextIndexingConf
+
+```js
+// type signature
+setTextIndexingConf: (conf: IndexingAttr) => void
+```
+
+#### action: setTrackData
+
+```js
+// type signature
+setTrackData: (obj: FileLocation) => void
+```
+
 #### action: setTrackName
 
 ```js
@@ -194,16 +194,16 @@ setAssembly: (str: string) => void
 setTrackName: (str: string) => void
 ```
 
+#### action: setTrackSource
+
+```js
+// type signature
+setTrackSource: (str: string) => void
+```
+
 #### action: setTrackType
 
 ```js
 // type signature
 setTrackType: (str: string) => void
-```
-
-#### action: clearData
-
-```js
-// type signature
-clearData: () => void
 ```

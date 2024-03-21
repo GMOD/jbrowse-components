@@ -22,8 +22,8 @@ describe('<AboutWidget />', () => {
             plugins: [
               {
                 name: 'HelloPlugin',
-                version: '1.0.0',
                 url: 'http://google.com',
+                version: '1.0.0',
               },
             ],
           },

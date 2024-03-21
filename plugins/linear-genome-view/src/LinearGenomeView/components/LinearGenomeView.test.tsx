@@ -12,20 +12,20 @@ jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 const assemblyConf = {
   name: 'volMyt1',
   sequence: {
-    trackId: 'sequenceConfigId',
-    type: 'ReferenceSequenceTrack',
     adapter: {
-      type: 'FromConfigSequenceAdapter',
       features: [
         {
-          refName: 'ctgA',
-          uniqueId: 'firstId',
-          start: 0,
           end: 10,
+          refName: 'ctgA',
           seq: 'cattgttgcg',
+          start: 0,
+          uniqueId: 'firstId',
         },
       ],
+      type: 'FromConfigSequenceAdapter',
     },
+    trackId: 'sequenceConfigId',
+    type: 'ReferenceSequenceTrack',
   },
 }
 
@@ -49,34 +49,34 @@ test('renders one track, one region', async () => {
   const session = createTestSession()
   session.addAssemblyConf(assemblyConf)
   session.addTrackConf({
-    trackId: 'testConfig',
+    adapter: { features: [], type: 'FromConfigAdapter' },
     assemblyNames: ['volMyt1'],
     name: 'Foo Track',
+    trackId: 'testConfig',
     type: 'BasicTrack',
-    adapter: { type: 'FromConfigAdapter', features: [] },
   })
   session.addView('LinearGenomeView', {
-    type: 'LinearGenomeView',
+    bpPerPx: 1,
+    displayedRegions: [
+      { assemblyName: 'volMyt1', end: 100, refName: 'ctgA', start: 0 },
+    ],
     id: 'lgv',
     offsetPx: 0,
-    bpPerPx: 1,
     tracks: [
       {
-        id: 'foo',
-        type: 'BasicTrack',
-        height: 20,
         configuration: 'testConfig',
         displays: [
           {
-            type: 'LinearBareDisplay',
             configuration: 'testConfig-LinearBareDisplay',
+            type: 'LinearBareDisplay',
           },
         ],
+        height: 20,
+        id: 'foo',
+        type: 'BasicTrack',
       },
     ],
-    displayedRegions: [
-      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 100 },
-    ],
+    type: 'LinearGenomeView',
   })
   const model = session.views[0]
   model.setWidth(800)
@@ -101,57 +101,57 @@ test('renders two tracks, two regions', async () => {
   const session = createTestSession()
   session.addAssemblyConf(assemblyConf)
   session.addTrackConf({
-    trackId: 'testConfig',
-    name: 'Foo Track',
+    adapter: { features: [], type: 'FromConfigAdapter' },
     assemblyNames: ['volMyt1'],
+    name: 'Foo Track',
+    trackId: 'testConfig',
     type: 'BasicTrack',
-    adapter: { type: 'FromConfigAdapter', features: [] },
   })
 
   session.addTrackConf({
-    trackId: 'testConfig2',
-    name: 'Bar Track',
+    adapter: { features: [], type: 'FromConfigAdapter' },
     assemblyNames: ['volMyt1'],
+    name: 'Bar Track',
+    trackId: 'testConfig2',
     type: 'BasicTrack',
-    adapter: { type: 'FromConfigAdapter', features: [] },
   })
   session.addView('LinearGenomeView', {
-    id: 'lgv',
-    offsetPx: 0,
     bpPerPx: 1,
     displayedRegions: [
-      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 100 },
+      { assemblyName: 'volMyt1', end: 100, refName: 'ctgA', start: 0 },
       {
         assemblyName: 'volMyt1',
+        end: 2000,
         refName: 'ctgB',
         start: 1000,
-        end: 2000,
       },
     ],
+    id: 'lgv',
+    offsetPx: 0,
     tracks: [
       {
-        id: 'foo',
-        type: 'BasicTrack',
-        height: 20,
         configuration: 'testConfig',
         displays: [
           {
-            type: 'LinearBareDisplay',
             configuration: 'testConfig-LinearBareDisplay',
+            type: 'LinearBareDisplay',
           },
         ],
+        height: 20,
+        id: 'foo',
+        type: 'BasicTrack',
       },
       {
-        id: 'bar',
-        type: 'BasicTrack',
-        height: 20,
         configuration: 'testConfig2',
         displays: [
           {
-            type: 'LinearBareDisplay',
             configuration: 'testConfig2-LinearBareDisplay',
+            type: 'LinearBareDisplay',
           },
         ],
+        height: 20,
+        id: 'bar',
+        type: 'BasicTrack',
       },
     ],
   })

@@ -119,10 +119,10 @@ export function pxToBp(
     return {
       // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
       ...(snap as Omit<typeof snap, symbol>),
-      oob: true,
       coord: coord(r, bp),
-      offset: bp,
       index: 0,
+      offset: bp,
+      oob: true,
     }
   }
 
@@ -138,10 +138,10 @@ export function pxToBp(
       return {
         // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
         ...(snap as Omit<typeof snap, symbol>),
-        oob: false,
-        offset,
         coord: coord(r, offset),
         index: i,
+        offset,
+        oob: false,
       }
     }
 
@@ -165,22 +165,22 @@ export function pxToBp(
     return {
       // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
       ...(snap as Omit<typeof snap, symbol>),
-      oob: true,
-      offset,
       coord: coord(r, offset),
       index: displayedRegions.length - 1,
+      offset,
+      oob: true,
     }
   }
   return {
-    coord: 0,
-    index: 0,
-    refName: '',
-    oob: true,
     assemblyName: '',
-    offset: 0,
-    start: 0,
+    coord: 0,
     end: 0,
+    index: 0,
+    offset: 0,
+    oob: true,
+    refName: '',
     reversed: false,
+    start: 0,
   }
 }
 

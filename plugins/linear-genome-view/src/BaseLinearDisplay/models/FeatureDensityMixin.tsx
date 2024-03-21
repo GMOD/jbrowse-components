@@ -33,11 +33,11 @@ export default function FeatureDensityMixin() {
       userByteSizeLimit: types.maybe(types.number),
     })
     .volatile(() => ({
+      currStatsBpPerPx: 0,
+      featureDensityStats: undefined as undefined | FeatureDensityStats,
       featureDensityStatsP: undefined as
         | undefined
         | Promise<FeatureDensityStats>,
-      featureDensityStats: undefined as undefined | FeatureDensityStats,
-      currStatsBpPerPx: 0,
     }))
     .views(self => ({
       /**
@@ -55,13 +55,6 @@ export default function FeatureDensityMixin() {
         return (self.featureDensityStats?.featureDensity || 0) * view.bpPerPx
       },
 
-      /**
-       * #getter
-       */
-      get maxFeatureScreenDensity() {
-        // @ts-expect-error
-        return getConf(self, 'maxFeatureScreenDensity')
-      },
       /**
        * #getter
        */
@@ -84,6 +77,14 @@ export default function FeatureDensityMixin() {
           (getConf(self, 'fetchSizeLimit') as number)
         )
       },
+
+      /**
+       * #getter
+       */
+      get maxFeatureScreenDensity() {
+        // @ts-expect-error
+        return getConf(self, 'maxFeatureScreenDensity')
+      },
     }))
     .actions(self => ({
       afterAttach() {
@@ -97,20 +98,11 @@ export default function FeatureDensityMixin() {
       /**
        * #action
        */
-      setCurrStatsBpPerPx(n: number) {
-        self.currStatsBpPerPx = n
+      clearFeatureDensityStats() {
+        self.featureDensityStatsP = undefined
+        self.featureDensityStats = undefined
       },
-      /**
-       * #action
-       */
-      setFeatureDensityStatsLimit(stats?: FeatureDensityStats) {
-        const view = getContainingView(self) as LGV
-        if (stats?.bytes) {
-          self.userByteSizeLimit = stats.bytes
-        } else {
-          self.userBpPerPxLimit = view.bpPerPx
-        }
-      },
+
       /**
        * #action
        */
@@ -131,8 +123,8 @@ export default function FeatureDensityMixin() {
       /**
        * #action
        */
-      setFeatureDensityStatsP(arg: any) {
-        self.featureDensityStatsP = arg
+      setCurrStatsBpPerPx(n: number) {
+        self.currStatsBpPerPx = n
       },
 
       /**
@@ -141,12 +133,24 @@ export default function FeatureDensityMixin() {
       setFeatureDensityStats(featureDensityStats?: FeatureDensityStats) {
         self.featureDensityStats = featureDensityStats
       },
+
       /**
        * #action
        */
-      clearFeatureDensityStats() {
-        self.featureDensityStatsP = undefined
-        self.featureDensityStats = undefined
+      setFeatureDensityStatsLimit(stats?: FeatureDensityStats) {
+        const view = getContainingView(self) as LGV
+        if (stats?.bytes) {
+          self.userByteSizeLimit = stats.bytes
+        } else {
+          self.userBpPerPxLimit = view.bpPerPx
+        }
+      },
+
+      /**
+       * #action
+       */
+      setFeatureDensityStatsP(arg: any) {
+        self.featureDensityStatsP = arg
       },
     }))
     .views(self => ({
@@ -191,13 +195,6 @@ export default function FeatureDensityMixin() {
     .views(self => ({
       /**
        * #method
-       */
-      regionCannotBeRenderedText(_region: Region) {
-        return self.regionTooLarge ? 'Force load to see features' : ''
-      },
-
-      /**
-       * #method
        * @param region -
        * @returns falsy if the region is fine to try rendering. Otherwise,
        *  return a react node + string of text.
@@ -208,6 +205,13 @@ export default function FeatureDensityMixin() {
         return self.regionTooLarge ? (
           <TooLargeMessage model={self as any} />
         ) : null
+      },
+
+      /**
+       * #method
+       */
+      regionCannotBeRenderedText(_region: Region) {
+        return self.regionTooLarge ? 'Force load to see features' : ''
       },
     }))
 }

@@ -37,14 +37,14 @@ export class TextIndexRpcMethod extends RpcMethodType {
 
     checkAbortSignal(signal)
     const indexingParams = {
-      outLocation,
-      tracks,
-      exclude,
-      attributes,
       assemblies,
+      attributes,
+      exclude,
       indexType,
-      statusCallback,
+      outLocation,
       signal,
+      statusCallback,
+      tracks,
     }
     await indexTracks(indexingParams)
     statusCallback('Indexing Complete.')

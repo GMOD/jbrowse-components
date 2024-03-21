@@ -19,11 +19,12 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        type: types.literal('LinearLollipopDisplay'),
+        configuration: ConfigurationReference(configSchema),
+
         /**
          * #property
          */
-        configuration: ConfigurationReference(configSchema),
+        type: types.literal('LinearLollipopDisplay'),
       }),
     )
 
@@ -48,8 +49,8 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         renderProps() {
           return {
             ...superRenderProps(),
-            rpcDriverName: self.rpcDriverName,
             config: self.configuration.renderer,
+            rpcDriverName: self.rpcDriverName,
           }
         },
         /**

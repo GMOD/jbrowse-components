@@ -18,14 +18,14 @@ export const WithErrorHandler = () => {
     try {
       const state = createViewState({
         assembly,
+        location: 'ctgA:1105..1221',
         tracks: [
           {
-            type: 'BadTrack',
             notProperTrack: 'error',
             shouldHaveTrackIdAndStuff: 'test',
+            type: 'BadTrack',
           },
         ],
-        location: 'ctgA:1105..1221',
       })
       setViewState(state)
     } catch (e) {

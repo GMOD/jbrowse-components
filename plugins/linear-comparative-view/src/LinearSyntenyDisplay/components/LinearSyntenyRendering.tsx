@@ -18,20 +18,20 @@ import { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
 import SyntenyContextMenu from './SyntenyContextMenu'
 
 const useStyles = makeStyles()({
-  pix: {
-    imageRendering: 'pixelated',
-    pointerEvents: 'none',
-    visibility: 'hidden',
-    position: 'absolute',
-  },
-  rel: {
-    position: 'relative',
-  },
   abs: {
     position: 'absolute',
   },
   none: {
     pointEvents: 'none',
+  },
+  pix: {
+    imageRendering: 'pixelated',
+    pointerEvents: 'none',
+    position: 'absolute',
+    visibility: 'hidden',
+  },
+  rel: {
+    position: 'relative',
   },
 })
 

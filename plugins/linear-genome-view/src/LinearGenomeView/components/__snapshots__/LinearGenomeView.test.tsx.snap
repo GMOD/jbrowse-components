@@ -10,65 +10,65 @@ exports[`renders one track, one region 1`] = `
         class="css-1v4ghfe-rel"
       >
         <div
-          class="css-dznme2-rubberbandControl"
+          class="css-13a0twb-rubberbandControl"
         >
           <div
             class="css-16vhz0m-scalebar"
           >
             <div
-              class="css-den3n5-scalebarVisibleRegion"
-              style="width: 800px; left: 0px; background: rgba(66, 165, 245, 0.3); border-color: #42a5f5;"
+              class="css-cp13ym-scalebarVisibleRegion"
+              style="background: rgba(66, 165, 245, 0.3); border-color: #42a5f5; left: 0px; width: 800px;"
             />
             <div
-              class="css-2jeg0a-scalebarContig"
-              style="width: 0px; left: 0px; background-color: rgb(153, 153, 153);"
+              class="css-1dz7ji7-scalebarContig"
+              style="background-color: rgb(153, 153, 153); left: 0px; width: 0px;"
             />
             <div>
               <p
-                class="MuiTypography-root MuiTypography-body1 css-1hokke9-MuiTypography-root-scalebarRefName"
-                style="left: 3px; color: rgb(153, 102, 0);"
+                class="MuiTypography-root MuiTypography-body1 css-wmz4h7-MuiTypography-root-scalebarRefName"
+                style="color: rgb(153, 102, 0); left: 3px;"
               >
                 ctgA
               </p>
               <div
-                class="css-rtx9ov-scalebarContig-scalebarContigForward-scalebarBorder"
-                style="left: 0px; width: 800px; border-color: rgb(153, 102, 0);"
+                class="css-1w3rcfl-scalebarContig-scalebarContigForward-scalebarBorder"
+                style="border-color: rgb(153, 102, 0); left: 0px; width: 800px;"
               >
                 <p
-                  class="MuiTypography-root MuiTypography-body2 css-7mggk8-MuiTypography-root-scalebarLabel"
-                  style="left: 160px; pointer-events: none; color: rgb(153, 102, 0);"
+                  class="MuiTypography-root MuiTypography-body2 css-bmx0qo-MuiTypography-root-scalebarLabel"
+                  style="color: rgb(153, 102, 0); left: 160px; pointer-events: none;"
                 >
                   20
                 </p>
                 <p
-                  class="MuiTypography-root MuiTypography-body2 css-7mggk8-MuiTypography-root-scalebarLabel"
-                  style="left: 320px; pointer-events: none; color: rgb(153, 102, 0);"
+                  class="MuiTypography-root MuiTypography-body2 css-bmx0qo-MuiTypography-root-scalebarLabel"
+                  style="color: rgb(153, 102, 0); left: 320px; pointer-events: none;"
                 >
                   40
                 </p>
                 <p
-                  class="MuiTypography-root MuiTypography-body2 css-7mggk8-MuiTypography-root-scalebarLabel"
-                  style="left: 480px; pointer-events: none; color: rgb(153, 102, 0);"
+                  class="MuiTypography-root MuiTypography-body2 css-bmx0qo-MuiTypography-root-scalebarLabel"
+                  style="color: rgb(153, 102, 0); left: 480px; pointer-events: none;"
                 >
                   60
                 </p>
                 <p
-                  class="MuiTypography-root MuiTypography-body2 css-7mggk8-MuiTypography-root-scalebarLabel"
-                  style="left: 640px; pointer-events: none; color: rgb(153, 102, 0);"
+                  class="MuiTypography-root MuiTypography-body2 css-bmx0qo-MuiTypography-root-scalebarLabel"
+                  style="color: rgb(153, 102, 0); left: 640px; pointer-events: none;"
                 >
                   80
                 </p>
                 <p
-                  class="MuiTypography-root MuiTypography-body2 css-7mggk8-MuiTypography-root-scalebarLabel"
-                  style="left: 800px; pointer-events: none; color: rgb(153, 102, 0);"
+                  class="MuiTypography-root MuiTypography-body2 css-bmx0qo-MuiTypography-root-scalebarLabel"
+                  style="color: rgb(153, 102, 0); left: 800px; pointer-events: none;"
                 >
                   100
                 </p>
               </div>
             </div>
             <div
-              class="css-2jeg0a-scalebarContig"
-              style="width: 0px; left: 800px; background-color: rgb(153, 153, 153);"
+              class="css-1dz7ji7-scalebarContig"
+              style="background-color: rgb(153, 153, 153); left: 800px; width: 0px;"
             />
           </div>
         </div>
@@ -77,7 +77,7 @@ exports[`renders one track, one region 1`] = `
         class="css-1fs11k8-overview"
       >
         <svg
-          class="css-191b84s-overviewSvg"
+          class="css-be5ryv-overviewSvg"
           height="48"
         >
           <polygon
@@ -90,7 +90,7 @@ exports[`renders one track, one region 1`] = `
           class="css-cwpsam-headerBar"
         >
           <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-7xx2bb-MuiButtonBase-root-MuiIconButton-root-toggleButton"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-1dnjxl1-MuiButtonBase-root-MuiIconButton-root-toggleButton"
             tabindex="0"
             title="Open track selector"
             type="button"
@@ -167,7 +167,7 @@ exports[`renders one track, one region 1`] = `
               >
                 <div
                   class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd MuiAutocomplete-inputRoot css-154xyx0-MuiInputBase-root-MuiOutlinedInput-root"
-                  style="padding: 0px; height: 32px; background: rgba(255, 255, 255, 0.8);"
+                  style="background: rgba(255, 255, 255, 0.8); height: 32px; padding: 0px;"
                 >
                   <input
                     aria-autocomplete="list"
@@ -238,12 +238,12 @@ exports[`renders one track, one region 1`] = `
             </div>
           </div>
           <p
-            class="MuiTypography-root MuiTypography-body2 css-1lztmv5-MuiTypography-root-bp"
+            class="MuiTypography-root MuiTypography-body2 css-1rfe2z1-MuiTypography-root-bp"
           >
             100bp
           </p>
           <div
-            class="css-z84q6m-container"
+            class="css-aftg6t-container"
           >
             <button
               class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeLarge css-mf1cb5-MuiButtonBase-root-MuiIconButton-root"
@@ -265,7 +265,7 @@ exports[`renders one track, one region 1`] = `
               </svg>
             </button>
             <span
-              class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall css-m0837o-MuiSlider-root-slider"
+              class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall css-1edy9hx-MuiSlider-root-slider"
             >
               <span
                 class="MuiSlider-rail css-7o8aqz-MuiSlider-rail"
@@ -326,104 +326,104 @@ exports[`renders one track, one region 1`] = `
       </div>
     </div>
     <div
-      class="css-75rarj-tracksContainer"
+      class="css-1uing2k-tracksContainer"
       data-testid="trackContainer"
     >
       <div
-        class="css-1rfvwmf-verticalGuidesZoomContainer"
+        class="css-ew3ujr-verticalGuidesZoomContainer"
       >
         <div
-          class="css-17gfnt3-verticalGuidesContainer"
+          class="css-dt9qsv-verticalGuidesContainer"
           style="left: -800px; width: 1700px;"
         >
           <div
-            class="css-a9ifge-boundaryPaddingBlock"
+            class="css-1pfai5x-boundaryPaddingBlock"
             style="width: 800px;"
           />
           <div
-            class="css-1dmfa10-contentBlock"
+            class="css-mbf20z-contentBlock"
             style="width: 100px;"
           >
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: -21px;"
             />
             <div
-              class="css-1qcgmte-tick-majorTick"
+              class="css-14qckh9-tick-majorTick"
               style="left: -1px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 19px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 39px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 59px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 79px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 99px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 119px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 139px;"
             />
           </div>
           <div
-            class="css-a9ifge-boundaryPaddingBlock"
+            class="css-1pfai5x-boundaryPaddingBlock"
             style="width: 800px;"
           />
         </div>
       </div>
       <div
-        class="css-dznme2-rubberbandControl"
+        class="css-13a0twb-rubberbandControl"
         data-testid="rubberband_controls"
       >
         <div
           class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-1coqp07-MuiPaper-root-scalebarContainer"
           data-resizer="true"
-          style="height: 17px; box-sizing: border-box;"
+          style="box-sizing: border-box; height: 17px;"
         >
           <div
             class="css-khofof-scalebarZoomContainer"
           >
             <div
-              class="css-y3821b-scalebar"
-              style="left: -801px; width: 1700px; height: 17px; box-sizing: border-box;"
+              class="css-qhclvi-scalebar"
+              style="left: -801px; width: 1700px; box-sizing: border-box; height: 17px;"
             >
               <div
-                class="css-a9ifge-boundaryPaddingBlock"
+                class="css-1pfai5x-boundaryPaddingBlock"
                 style="background: none; width: 800px;"
               />
               <div
-                class="css-1dmfa10-contentBlock"
+                class="css-mbf20z-contentBlock"
                 style="width: 100px;"
               >
                 <div
-                  class="css-1f3h2yl-tick"
+                  class="css-17wn6hf-tick"
                   style="left: -1px;"
                 />
               </div>
               <div
-                class="css-a9ifge-boundaryPaddingBlock"
+                class="css-1pfai5x-boundaryPaddingBlock"
                 style="background: none; width: 800px;"
               />
             </div>
           </div>
           <p
-            class="MuiTypography-root MuiTypography-body1 css-1vlu65o-MuiTypography-root-refLabel"
+            class="MuiTypography-root MuiTypography-body1 css-1tz11em-MuiTypography-root-refLabel"
             data-testid="refLabel-ctgA"
             style="left: -1px; padding-left: 1px;"
           >
@@ -435,7 +435,7 @@ exports[`renders one track, one region 1`] = `
         class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-dewezf-MuiPaper-root-root"
       >
         <div
-          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-lv7b0o-MuiPaper-root-trackLabel-trackLabelOverlap-root"
+          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1y25bls-MuiPaper-root-trackLabel-trackLabelOverlap-root"
         >
           <span
             class="css-k4omgw-dragHandle"
@@ -444,7 +444,7 @@ exports[`renders one track, one region 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1cz9l96-MuiSvgIcon-root-dragHandleIcon"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-nfq230-MuiSvgIcon-root-dragHandleIcon"
               data-testid="DragIndicatorIcon"
               focusable="false"
               viewBox="0 0 24 24"
@@ -476,7 +476,7 @@ exports[`renders one track, one region 1`] = `
             />
           </button>
           <span
-            class="MuiTypography-root MuiTypography-body1 css-877agm-MuiTypography-root-trackName"
+            class="MuiTypography-root MuiTypography-body1 css-1y4t7mk-MuiTypography-root-trackName"
           >
             <span>
               Foo Track
@@ -505,28 +505,28 @@ exports[`renders one track, one region 1`] = `
           </button>
         </div>
         <div
-          class="css-1ql7uaq-trackRenderingContainer"
+          class="css-12actu7-trackRenderingContainer"
           data-testid="trackRenderingContainer-lgv-testConfig"
           style="height: 100px;"
         >
           <div
-            class="css-v11ioz-renderingComponentContainer"
+            class="css-3moqa0-renderingComponentContainer"
             style="transform: scaleX(1);"
           >
             <div
-              class="css-1y9lrrz-display"
+              class="css-fkizlf-display"
               data-testid="display-testConfig-LinearBareDisplay"
             >
               <div
-                class="css-d6gpow-linearBlocks"
+                class="css-1bqet5b-linearBlocks"
                 style="left: -800px;"
               >
                 <div
-                  class="css-a9ifge-boundaryPaddingBlock"
+                  class="css-1pfai5x-boundaryPaddingBlock"
                   style="background: none; width: 800px;"
                 />
                 <div
-                  class="css-1dmfa10-contentBlock"
+                  class="css-mbf20z-contentBlock"
                   style="width: 100px;"
                 >
                   <svg
@@ -537,7 +537,7 @@ exports[`renders one track, one region 1`] = `
                   />
                 </div>
                 <div
-                  class="css-a9ifge-boundaryPaddingBlock"
+                  class="css-1pfai5x-boundaryPaddingBlock"
                   style="background: none; width: 800px;"
                 />
               </div>
@@ -545,11 +545,11 @@ exports[`renders one track, one region 1`] = `
           </div>
         </div>
         <div
-          class="css-1hk9st0-overlay"
+          class="css-i3hu8y-overlay"
           style="height: 100px;"
         />
         <div
-          class="css-14zcv15-horizontalHandle-resizeHandle"
+          class="css-zkitlt-horizontalHandle-resizeHandle"
           data-resizer="true"
         />
       </div>
@@ -568,72 +568,72 @@ exports[`renders two tracks, two regions 1`] = `
         class="css-1v4ghfe-rel"
       >
         <div
-          class="css-dznme2-rubberbandControl"
+          class="css-13a0twb-rubberbandControl"
         >
           <div
             class="css-16vhz0m-scalebar"
           >
             <div
-              class="css-den3n5-scalebarVisibleRegion"
-              style="width: 580px; left: 0px; background: rgba(66, 165, 245, 0.3); border-color: #42a5f5;"
+              class="css-cp13ym-scalebarVisibleRegion"
+              style="background: rgba(66, 165, 245, 0.3); border-color: #42a5f5; left: 0px; width: 580px;"
             />
             <div
-              class="css-2jeg0a-scalebarContig"
-              style="width: 0px; left: 0px; background-color: rgb(153, 153, 153);"
+              class="css-1dz7ji7-scalebarContig"
+              style="background-color: rgb(153, 153, 153); left: 0px; width: 0px;"
             />
             <div>
               <p
-                class="MuiTypography-root MuiTypography-body1 css-1hokke9-MuiTypography-root-scalebarRefName"
-                style="left: 3px; color: rgb(153, 102, 0);"
+                class="MuiTypography-root MuiTypography-body1 css-wmz4h7-MuiTypography-root-scalebarRefName"
+                style="color: rgb(153, 102, 0); left: 3px;"
               >
                 ctgA
               </p>
               <div
-                class="css-rtx9ov-scalebarContig-scalebarContigForward-scalebarBorder"
-                style="left: 0px; width: 72.72727272727273px; border-color: rgb(153, 102, 0);"
+                class="css-1w3rcfl-scalebarContig-scalebarContigForward-scalebarBorder"
+                style="border-color: rgb(153, 102, 0); left: 0px; width: 72.72727272727273px;"
               />
             </div>
             <div
-              class="css-2jeg0a-scalebarContig"
-              style="width: 0px; left: 72.72727272727273px; background-color: rgb(153, 153, 153);"
+              class="css-1dz7ji7-scalebarContig"
+              style="background-color: rgb(153, 153, 153); left: 72.72727272727273px; width: 0px;"
             />
             <div>
               <p
-                class="MuiTypography-root MuiTypography-body1 css-1hokke9-MuiTypography-root-scalebarRefName"
+                class="MuiTypography-root MuiTypography-body1 css-wmz4h7-MuiTypography-root-scalebarRefName"
                 style="left: 75.72727272727273px;"
               >
                 ctgB
               </p>
               <div
-                class="css-rtx9ov-scalebarContig-scalebarContigForward-scalebarBorder"
+                class="css-1w3rcfl-scalebarContig-scalebarContigForward-scalebarBorder"
                 style="left: 72.72727272727273px; width: 727.2727272727273px;"
               >
                 <p
-                  class="MuiTypography-root MuiTypography-body2 css-7mggk8-MuiTypography-root-scalebarLabel"
+                  class="MuiTypography-root MuiTypography-body2 css-bmx0qo-MuiTypography-root-scalebarLabel"
                   style="left: 145.0909090909091px; pointer-events: none;"
                 >
                   1,200
                 </p>
                 <p
-                  class="MuiTypography-root MuiTypography-body2 css-7mggk8-MuiTypography-root-scalebarLabel"
+                  class="MuiTypography-root MuiTypography-body2 css-bmx0qo-MuiTypography-root-scalebarLabel"
                   style="left: 290.1818181818182px; pointer-events: none;"
                 >
                   1,400
                 </p>
                 <p
-                  class="MuiTypography-root MuiTypography-body2 css-7mggk8-MuiTypography-root-scalebarLabel"
+                  class="MuiTypography-root MuiTypography-body2 css-bmx0qo-MuiTypography-root-scalebarLabel"
                   style="left: 435.27272727272725px; pointer-events: none;"
                 >
                   1,600
                 </p>
                 <p
-                  class="MuiTypography-root MuiTypography-body2 css-7mggk8-MuiTypography-root-scalebarLabel"
+                  class="MuiTypography-root MuiTypography-body2 css-bmx0qo-MuiTypography-root-scalebarLabel"
                   style="left: 580.3636363636364px; pointer-events: none;"
                 >
                   1,800
                 </p>
                 <p
-                  class="MuiTypography-root MuiTypography-body2 css-7mggk8-MuiTypography-root-scalebarLabel"
+                  class="MuiTypography-root MuiTypography-body2 css-bmx0qo-MuiTypography-root-scalebarLabel"
                   style="left: 725.4545454545454px; pointer-events: none;"
                 >
                   2,000
@@ -641,8 +641,8 @@ exports[`renders two tracks, two regions 1`] = `
               </div>
             </div>
             <div
-              class="css-2jeg0a-scalebarContig"
-              style="width: 0px; left: 800px; background-color: rgb(153, 153, 153);"
+              class="css-1dz7ji7-scalebarContig"
+              style="background-color: rgb(153, 153, 153); left: 800px; width: 0px;"
             />
           </div>
         </div>
@@ -651,7 +651,7 @@ exports[`renders two tracks, two regions 1`] = `
         class="css-1fs11k8-overview"
       >
         <svg
-          class="css-191b84s-overviewSvg"
+          class="css-be5ryv-overviewSvg"
           height="48"
         >
           <polygon
@@ -664,7 +664,7 @@ exports[`renders two tracks, two regions 1`] = `
           class="css-cwpsam-headerBar"
         >
           <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-7xx2bb-MuiButtonBase-root-MuiIconButton-root-toggleButton"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-1dnjxl1-MuiButtonBase-root-MuiIconButton-root-toggleButton"
             tabindex="0"
             title="Open track selector"
             type="button"
@@ -741,7 +741,7 @@ exports[`renders two tracks, two regions 1`] = `
               >
                 <div
                   class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd MuiAutocomplete-inputRoot css-154xyx0-MuiInputBase-root-MuiOutlinedInput-root"
-                  style="padding: 0px; height: 32px; background: rgba(255, 255, 255, 0.8);"
+                  style="background: rgba(255, 255, 255, 0.8); height: 32px; padding: 0px;"
                 >
                   <input
                     aria-autocomplete="list"
@@ -812,12 +812,12 @@ exports[`renders two tracks, two regions 1`] = `
             </div>
           </div>
           <p
-            class="MuiTypography-root MuiTypography-body2 css-1lztmv5-MuiTypography-root-bp"
+            class="MuiTypography-root MuiTypography-body2 css-1rfe2z1-MuiTypography-root-bp"
           >
             798bp
           </p>
           <div
-            class="css-z84q6m-container"
+            class="css-aftg6t-container"
           >
             <button
               class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeLarge css-mf1cb5-MuiButtonBase-root-MuiIconButton-root"
@@ -841,7 +841,7 @@ exports[`renders two tracks, two regions 1`] = `
               />
             </button>
             <span
-              class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall css-m0837o-MuiSlider-root-slider"
+              class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall css-1edy9hx-MuiSlider-root-slider"
             >
               <span
                 class="MuiSlider-rail css-7o8aqz-MuiSlider-rail"
@@ -902,331 +902,331 @@ exports[`renders two tracks, two regions 1`] = `
       </div>
     </div>
     <div
-      class="css-75rarj-tracksContainer"
+      class="css-1uing2k-tracksContainer"
       data-testid="trackContainer"
     >
       <div
-        class="css-1rfvwmf-verticalGuidesZoomContainer"
+        class="css-ew3ujr-verticalGuidesZoomContainer"
       >
         <div
-          class="css-17gfnt3-verticalGuidesContainer"
+          class="css-dt9qsv-verticalGuidesContainer"
           style="left: -800px; width: 1702px;"
         >
           <div
-            class="css-a9ifge-boundaryPaddingBlock"
+            class="css-1pfai5x-boundaryPaddingBlock"
             style="width: 800px;"
           />
           <div
-            class="css-1dmfa10-contentBlock"
+            class="css-mbf20z-contentBlock"
             style="width: 100px;"
           >
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: -21px;"
             />
             <div
-              class="css-1qcgmte-tick-majorTick"
+              class="css-14qckh9-tick-majorTick"
               style="left: -1px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 19px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 39px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 59px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 79px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 99px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 119px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 139px;"
             />
           </div>
           <div
-            class="css-1b6zgog-interRegionPaddingBlock"
+            class="css-12fbxzg-interRegionPaddingBlock"
             style="width: 2px;"
           />
           <div
-            class="css-1dmfa10-contentBlock"
+            class="css-mbf20z-contentBlock"
             style="width: 800px;"
           >
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: -21px;"
             />
             <div
-              class="css-1qcgmte-tick-majorTick"
+              class="css-14qckh9-tick-majorTick"
               style="left: -1px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 19px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 39px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 59px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 79px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 99px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 119px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 139px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 159px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 179px;"
             />
             <div
-              class="css-1qcgmte-tick-majorTick"
+              class="css-14qckh9-tick-majorTick"
               style="left: 199px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 219px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 239px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 259px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 279px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 299px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 319px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 339px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 359px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 379px;"
             />
             <div
-              class="css-1qcgmte-tick-majorTick"
+              class="css-14qckh9-tick-majorTick"
               style="left: 399px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 419px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 439px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 459px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 479px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 499px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 519px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 539px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 559px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 579px;"
             />
             <div
-              class="css-1qcgmte-tick-majorTick"
+              class="css-14qckh9-tick-majorTick"
               style="left: 599px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 619px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 639px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 659px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 679px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 699px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 719px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 739px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 759px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 779px;"
             />
             <div
-              class="css-1qcgmte-tick-majorTick"
+              class="css-14qckh9-tick-majorTick"
               style="left: 799px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 819px;"
             />
             <div
-              class="css-i794sq-tick-minorTick"
+              class="css-1nvuboo-tick-minorTick"
               style="left: 839px;"
             />
           </div>
         </div>
       </div>
       <div
-        class="css-dznme2-rubberbandControl"
+        class="css-13a0twb-rubberbandControl"
         data-testid="rubberband_controls"
       >
         <div
           class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-1coqp07-MuiPaper-root-scalebarContainer"
           data-resizer="true"
-          style="height: 17px; box-sizing: border-box;"
+          style="box-sizing: border-box; height: 17px;"
         >
           <div
             class="css-khofof-scalebarZoomContainer"
           >
             <div
-              class="css-y3821b-scalebar"
-              style="left: -801px; width: 1702px; height: 17px; box-sizing: border-box;"
+              class="css-qhclvi-scalebar"
+              style="left: -801px; width: 1702px; box-sizing: border-box; height: 17px;"
             >
               <div
-                class="css-a9ifge-boundaryPaddingBlock"
+                class="css-1pfai5x-boundaryPaddingBlock"
                 style="background: none; width: 800px;"
               />
               <div
-                class="css-1dmfa10-contentBlock"
+                class="css-mbf20z-contentBlock"
                 style="width: 100px;"
               >
                 <div
-                  class="css-1f3h2yl-tick"
+                  class="css-17wn6hf-tick"
                   style="left: -1px;"
                 />
               </div>
               <div
-                class="css-1b6zgog-interRegionPaddingBlock"
+                class="css-12fbxzg-interRegionPaddingBlock"
                 style="background: none; width: 2px;"
               />
               <div
-                class="css-1dmfa10-contentBlock"
+                class="css-mbf20z-contentBlock"
                 style="width: 800px;"
               >
                 <div
-                  class="css-1f3h2yl-tick"
+                  class="css-17wn6hf-tick"
                   style="left: -1px;"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-p92emw-MuiTypography-root-majorTickLabel"
+                    class="MuiTypography-root MuiTypography-body1 css-1t66qnm-MuiTypography-root-majorTickLabel"
                   >
                     1,000
                   </p>
                 </div>
                 <div
-                  class="css-1f3h2yl-tick"
+                  class="css-17wn6hf-tick"
                   style="left: 199px;"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-p92emw-MuiTypography-root-majorTickLabel"
+                    class="MuiTypography-root MuiTypography-body1 css-1t66qnm-MuiTypography-root-majorTickLabel"
                   >
                     1,200
                   </p>
                 </div>
                 <div
-                  class="css-1f3h2yl-tick"
+                  class="css-17wn6hf-tick"
                   style="left: 399px;"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-p92emw-MuiTypography-root-majorTickLabel"
+                    class="MuiTypography-root MuiTypography-body1 css-1t66qnm-MuiTypography-root-majorTickLabel"
                   >
                     1,400
                   </p>
                 </div>
                 <div
-                  class="css-1f3h2yl-tick"
+                  class="css-17wn6hf-tick"
                   style="left: 599px;"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-p92emw-MuiTypography-root-majorTickLabel"
+                    class="MuiTypography-root MuiTypography-body1 css-1t66qnm-MuiTypography-root-majorTickLabel"
                   >
                     1,600
                   </p>
                 </div>
                 <div
-                  class="css-1f3h2yl-tick"
+                  class="css-17wn6hf-tick"
                   style="left: 799px;"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-p92emw-MuiTypography-root-majorTickLabel"
+                    class="MuiTypography-root MuiTypography-body1 css-1t66qnm-MuiTypography-root-majorTickLabel"
                   >
                     1,800
                   </p>
@@ -1235,14 +1235,14 @@ exports[`renders two tracks, two regions 1`] = `
             </div>
           </div>
           <p
-            class="MuiTypography-root MuiTypography-body1 css-1vlu65o-MuiTypography-root-refLabel"
+            class="MuiTypography-root MuiTypography-body1 css-1tz11em-MuiTypography-root-refLabel"
             data-testid="refLabel-ctgA"
             style="left: -1px; padding-left: 1px;"
           >
             ctgA
           </p>
           <p
-            class="MuiTypography-root MuiTypography-body1 css-1vlu65o-MuiTypography-root-refLabel"
+            class="MuiTypography-root MuiTypography-body1 css-1tz11em-MuiTypography-root-refLabel"
             data-testid="refLabel-ctgB"
             style="left: 101px; padding-left: 1px;"
           >
@@ -1254,7 +1254,7 @@ exports[`renders two tracks, two regions 1`] = `
         class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-dewezf-MuiPaper-root-root"
       >
         <div
-          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-lv7b0o-MuiPaper-root-trackLabel-trackLabelOverlap-root"
+          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1y25bls-MuiPaper-root-trackLabel-trackLabelOverlap-root"
         >
           <span
             class="css-k4omgw-dragHandle"
@@ -1263,7 +1263,7 @@ exports[`renders two tracks, two regions 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1cz9l96-MuiSvgIcon-root-dragHandleIcon"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-nfq230-MuiSvgIcon-root-dragHandleIcon"
               data-testid="DragIndicatorIcon"
               focusable="false"
               viewBox="0 0 24 24"
@@ -1295,7 +1295,7 @@ exports[`renders two tracks, two regions 1`] = `
             />
           </button>
           <span
-            class="MuiTypography-root MuiTypography-body1 css-877agm-MuiTypography-root-trackName"
+            class="MuiTypography-root MuiTypography-body1 css-1y4t7mk-MuiTypography-root-trackName"
           >
             <span>
               Foo Track
@@ -1324,28 +1324,28 @@ exports[`renders two tracks, two regions 1`] = `
           </button>
         </div>
         <div
-          class="css-1ql7uaq-trackRenderingContainer"
+          class="css-12actu7-trackRenderingContainer"
           data-testid="trackRenderingContainer-lgv-testConfig"
           style="height: 100px;"
         >
           <div
-            class="css-v11ioz-renderingComponentContainer"
+            class="css-3moqa0-renderingComponentContainer"
             style="transform: scaleX(1);"
           >
             <div
-              class="css-1y9lrrz-display"
+              class="css-fkizlf-display"
               data-testid="display-testConfig-LinearBareDisplay"
             >
               <div
-                class="css-d6gpow-linearBlocks"
+                class="css-1bqet5b-linearBlocks"
                 style="left: -800px;"
               >
                 <div
-                  class="css-a9ifge-boundaryPaddingBlock"
+                  class="css-1pfai5x-boundaryPaddingBlock"
                   style="background: none; width: 800px;"
                 />
                 <div
-                  class="css-1dmfa10-contentBlock"
+                  class="css-mbf20z-contentBlock"
                   style="width: 100px;"
                 >
                   <svg
@@ -1356,11 +1356,11 @@ exports[`renders two tracks, two regions 1`] = `
                   />
                 </div>
                 <div
-                  class="css-1b6zgog-interRegionPaddingBlock"
+                  class="css-12fbxzg-interRegionPaddingBlock"
                   style="background: none; width: 2px;"
                 />
                 <div
-                  class="css-1dmfa10-contentBlock"
+                  class="css-mbf20z-contentBlock"
                   style="width: 800px;"
                 >
                   <svg
@@ -1375,11 +1375,11 @@ exports[`renders two tracks, two regions 1`] = `
           </div>
         </div>
         <div
-          class="css-1hk9st0-overlay"
+          class="css-i3hu8y-overlay"
           style="height: 100px;"
         />
         <div
-          class="css-14zcv15-horizontalHandle-resizeHandle"
+          class="css-zkitlt-horizontalHandle-resizeHandle"
           data-resizer="true"
         />
       </div>
@@ -1387,7 +1387,7 @@ exports[`renders two tracks, two regions 1`] = `
         class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-dewezf-MuiPaper-root-root"
       >
         <div
-          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-lv7b0o-MuiPaper-root-trackLabel-trackLabelOverlap-root"
+          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1y25bls-MuiPaper-root-trackLabel-trackLabelOverlap-root"
         >
           <span
             class="css-k4omgw-dragHandle"
@@ -1396,7 +1396,7 @@ exports[`renders two tracks, two regions 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1cz9l96-MuiSvgIcon-root-dragHandleIcon"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-nfq230-MuiSvgIcon-root-dragHandleIcon"
               data-testid="DragIndicatorIcon"
               focusable="false"
               viewBox="0 0 24 24"
@@ -1428,7 +1428,7 @@ exports[`renders two tracks, two regions 1`] = `
             />
           </button>
           <span
-            class="MuiTypography-root MuiTypography-body1 css-877agm-MuiTypography-root-trackName"
+            class="MuiTypography-root MuiTypography-body1 css-1y4t7mk-MuiTypography-root-trackName"
           >
             <span>
               Bar Track
@@ -1457,28 +1457,28 @@ exports[`renders two tracks, two regions 1`] = `
           </button>
         </div>
         <div
-          class="css-1ql7uaq-trackRenderingContainer"
+          class="css-12actu7-trackRenderingContainer"
           data-testid="trackRenderingContainer-lgv-testConfig2"
           style="height: 100px;"
         >
           <div
-            class="css-v11ioz-renderingComponentContainer"
+            class="css-3moqa0-renderingComponentContainer"
             style="transform: scaleX(1);"
           >
             <div
-              class="css-1y9lrrz-display"
+              class="css-fkizlf-display"
               data-testid="display-testConfig2-LinearBareDisplay"
             >
               <div
-                class="css-d6gpow-linearBlocks"
+                class="css-1bqet5b-linearBlocks"
                 style="left: -800px;"
               >
                 <div
-                  class="css-a9ifge-boundaryPaddingBlock"
+                  class="css-1pfai5x-boundaryPaddingBlock"
                   style="background: none; width: 800px;"
                 />
                 <div
-                  class="css-1dmfa10-contentBlock"
+                  class="css-mbf20z-contentBlock"
                   style="width: 100px;"
                 >
                   <svg
@@ -1489,11 +1489,11 @@ exports[`renders two tracks, two regions 1`] = `
                   />
                 </div>
                 <div
-                  class="css-1b6zgog-interRegionPaddingBlock"
+                  class="css-12fbxzg-interRegionPaddingBlock"
                   style="background: none; width: 2px;"
                 />
                 <div
-                  class="css-1dmfa10-contentBlock"
+                  class="css-mbf20z-contentBlock"
                   style="width: 800px;"
                 >
                   <svg
@@ -1508,11 +1508,11 @@ exports[`renders two tracks, two regions 1`] = `
           </div>
         </div>
         <div
-          class="css-1hk9st0-overlay"
+          class="css-i3hu8y-overlay"
           style="height: 100px;"
         />
         <div
-          class="css-14zcv15-horizontalHandle-resizeHandle"
+          class="css-zkitlt-horizontalHandle-resizeHandle"
           data-resizer="true"
         />
       </div>

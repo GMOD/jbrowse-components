@@ -8,9 +8,9 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addRendererType(
     () =>
       new DensityRenderer({
-        name: 'DensityRenderer',
         ReactComponent,
         configSchema,
+        name: 'DensityRenderer',
         pluginManager,
       }),
   )

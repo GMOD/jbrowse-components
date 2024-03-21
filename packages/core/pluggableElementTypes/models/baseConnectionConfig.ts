@@ -12,26 +12,28 @@ const BaseConnectionConfig = ConfigurationSchema(
     /**
      * #slot
      */
-    name: {
-      type: 'string',
-      defaultValue: 'nameOfConnection',
-      description: 'a unique name for this connection',
+    assemblyNames: {
+      defaultValue: [],
+      description: 'optional list of names of assemblies in this connection',
+      type: 'stringArray',
     },
+
     /**
      * #slot
      */
-    assemblyNames: {
-      type: 'stringArray',
-      defaultValue: [],
-      description: 'optional list of names of assemblies in this connection',
+    name: {
+      defaultValue: 'nameOfConnection',
+      description: 'a unique name for this connection',
+      type: 'string',
     },
   },
   {
-    explicitlyTyped: true,
     /**
      * #identifier
      */
     explicitIdentifier: 'connectionId',
+
+    explicitlyTyped: true,
   },
 )
 

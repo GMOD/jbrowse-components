@@ -3,8 +3,8 @@ import { useState, useEffect, useRef } from 'react'
 export default function useMeasure() {
   const ref = useRef<HTMLDivElement>(null)
   const [dims, setDims] = useState<{ width?: number; height?: number }>({
-    width: undefined,
     height: undefined,
+    width: undefined,
   })
   useEffect(() => {
     if (!ref.current) {
@@ -20,8 +20,8 @@ export default function useMeasure() {
     }
     const observer = new RS(entries => {
       setDims({
-        width: entries[0].contentRect.width,
         height: entries[0].contentRect.height,
+        width: entries[0].contentRect.width,
       })
     })
     observer.observe(ref.current)

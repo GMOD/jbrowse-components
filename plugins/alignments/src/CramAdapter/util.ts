@@ -34,10 +34,10 @@ export function readFeaturesToMismatches(
 
     if (sublen && insLen > 0) {
       mismatches[j++] = {
-        start: refPos,
-        type: 'insertion',
         base: `${insLen}`,
         length: 0,
+        start: refPos,
+        type: 'insertion',
       }
       insLen = 0
     }
@@ -46,38 +46,38 @@ export function readFeaturesToMismatches(
     if (code === 'X') {
       // substitution
       mismatches[j++] = {
-        start: refPos,
-        length: 1,
-        base: sub,
-        qual: qual?.[pos - 1],
         altbase: ref?.toUpperCase(),
+        base: sub,
+        length: 1,
+        qual: qual?.[pos - 1],
+        start: refPos,
         type: 'mismatch',
       }
     } else if (code === 'I') {
       // insertion
       mismatches[j++] = {
-        start: refPos,
-        type: 'insertion',
         base: `${data.length}`,
         length: 0,
+        start: refPos,
+        type: 'insertion',
       }
     } else if (code === 'N') {
       // reference skip
       mismatches[j++] = {
-        type: 'skip',
+        base: 'N',
         length: data,
         start: refPos,
-        base: 'N',
+        type: 'skip',
       }
     } else if (code === 'S') {
       // soft clip
       const len = data.length
       mismatches[j++] = {
-        start: refPos,
-        type: 'softclip',
         base: `S${len}`,
         cliplen: len,
         length: 1,
+        start: refPos,
+        type: 'softclip',
       }
     } else if (code === 'P') {
       // padding
@@ -85,19 +85,19 @@ export function readFeaturesToMismatches(
       // hard clip
       const len = data
       mismatches[j++] = {
-        start: refPos,
-        type: 'hardclip',
         base: `H${len}`,
         cliplen: len,
         length: 1,
+        start: refPos,
+        type: 'hardclip',
       }
     } else if (code === 'D') {
       // deletion
       mismatches[j++] = {
-        type: 'deletion',
+        base: '*',
         length: data,
         start: refPos,
-        base: '*',
+        type: 'deletion',
       }
     } else if (code === 'b') {
       // stretch of bases
@@ -116,10 +116,10 @@ export function readFeaturesToMismatches(
 
   if (sublen && insLen > 0) {
     mismatches[j++] = {
-      start: refPos,
-      type: 'insertion',
       base: `${insLen}`,
       length: 0,
+      start: refPos,
+      type: 'insertion',
     }
     insLen = 0
   }

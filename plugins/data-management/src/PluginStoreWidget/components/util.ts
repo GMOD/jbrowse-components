@@ -22,5 +22,5 @@ export function useFetchPlugins() {
       }
     })()
   }, [])
-  return { plugins, error }
+  return { error, plugins }
 }

@@ -53,8 +53,8 @@ const NumberMapEditor = observer(function ({
           <CardContent>
             <NumberEditor
               slot={{
-                value: val,
                 set: (val: number) => slot.add(key, val),
+                value: val,
               }}
             />
           </CardContent>

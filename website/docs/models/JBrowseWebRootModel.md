@@ -36,13 +36,6 @@ configPath: types.maybe(types.string)
 
 ### JBrowseWebRootModel - Getters
 
-#### getter: savedSessions
-
-```js
-// type
-any[]
-```
-
 #### getter: autosaveId
 
 ```js
@@ -57,7 +50,7 @@ string
 string
 ```
 
-#### getter: savedSessionNames
+#### getter: savedSessions
 
 ```js
 // type
@@ -71,6 +64,13 @@ any[]
 string
 ```
 
+#### getter: savedSessionNames
+
+```js
+// type
+any[]
+```
+
 ### JBrowseWebRootModel - Methods
 
 #### method: localStorageId
@@ -82,32 +82,11 @@ localStorageId: (name: string) => string
 
 ### JBrowseWebRootModel - Actions
 
-#### action: setSession
+#### action: activateSession
 
 ```js
 // type signature
-setSession: (sessionSnapshot?: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number, number, number>; }>>) => void
-```
-
-#### action: setPluginsUpdated
-
-```js
-// type signature
-setPluginsUpdated: (flag: boolean) => void
-```
-
-#### action: setDefaultSession
-
-```js
-// type signature
-setDefaultSession: () => void
-```
-
-#### action: renameCurrentSession
-
-```js
-// type signature
-renameCurrentSession: (sessionName: string) => void
+activateSession: (name: string) => void
 ```
 
 #### action: addSavedSession
@@ -117,13 +96,6 @@ renameCurrentSession: (sessionName: string) => void
 addSavedSession: (session: { name: string; }) => void
 ```
 
-#### action: removeSavedSession
-
-```js
-// type signature
-removeSavedSession: (session: { name: string; }) => void
-```
-
 #### action: duplicateCurrentSession
 
 ```js
@@ -131,11 +103,18 @@ removeSavedSession: (session: { name: string; }) => void
 duplicateCurrentSession: () => void
 ```
 
-#### action: activateSession
+#### action: removeSavedSession
 
 ```js
 // type signature
-activateSession: (name: string) => void
+removeSavedSession: (session: { name: string; }) => void
+```
+
+#### action: renameCurrentSession
+
+```js
+// type signature
+renameCurrentSession: (sessionName: string) => void
 ```
 
 #### action: saveSessionToLocalStorage
@@ -145,9 +124,30 @@ activateSession: (name: string) => void
 saveSessionToLocalStorage: () => void
 ```
 
+#### action: setDefaultSession
+
+```js
+// type signature
+setDefaultSession: () => void
+```
+
 #### action: setError
 
 ```js
 // type signature
 setError: (error?: unknown) => void
+```
+
+#### action: setPluginsUpdated
+
+```js
+// type signature
+setPluginsUpdated: (flag: boolean) => void
+```
+
+#### action: setSession
+
+```js
+// type signature
+setSession: (sessionSnapshot?: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; margin: IType<number, number, number>; name: ISimpleType<string>; }>>) => void
 ```

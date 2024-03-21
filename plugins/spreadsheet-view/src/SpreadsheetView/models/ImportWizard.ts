@@ -7,18 +7,18 @@ const IMPORT_SIZE_LIMIT = 30_000_000
 
 const fileTypes = ['CSV', 'TSV', 'VCF', 'BED', 'BEDPE', 'STAR-Fusion']
 const fileTypeParsers = {
-  CSV: () =>
-    import('../importAdapters/ImportUtils').then(r => r.parseCsvBuffer),
-  TSV: () =>
-    import('../importAdapters/ImportUtils').then(r => r.parseTsvBuffer),
-  VCF: () => import('../importAdapters/VcfImport').then(r => r.parseVcfBuffer),
   BED: () => import('../importAdapters/BedImport').then(r => r.parseBedBuffer),
   BEDPE: () =>
     import('../importAdapters/BedImport').then(r => r.parseBedPEBuffer),
+  CSV: () =>
+    import('../importAdapters/ImportUtils').then(r => r.parseCsvBuffer),
   'STAR-Fusion': () =>
     import('../importAdapters/STARFusionImport').then(
       r => r.parseSTARFusionBuffer,
     ),
+  TSV: () =>
+    import('../importAdapters/ImportUtils').then(r => r.parseTsvBuffer),
+  VCF: () => import('../importAdapters/VcfImport').then(r => r.parseVcfBuffer),
 }
 // regexp used to guess the type of a file or URL from its file extension
 const fileTypesRegexp = new RegExp(`\\.(${fileTypes.join('|')})(\\.gz)?$`, 'i')
@@ -34,7 +34,13 @@ const ImportWizard = types
     /**
      * #property
      */
+    columnNameLineNumber: 1,
+
+    /**
+     * #property
+     */
     fileType: types.optional(types.enumeration(fileTypes), 'CSV'),
+
     /**
      * #property
      */
@@ -42,20 +48,29 @@ const ImportWizard = types
     /**
      * #property
      */
-    columnNameLineNumber: 1,
-    /**
-     * #property
-     */
     selectedAssemblyName: types.maybe(types.string),
   })
   .volatile(() => ({
-    fileTypes,
+    error: undefined as unknown,
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fileSource: undefined as any,
-    error: undefined as unknown,
+    fileTypes,
     loading: false,
   }))
   .views(self => ({
+    get canCancel() {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return getParent<any>(self).readyToDisplay
+    },
+    get fileName() {
+      return (
+        self.fileSource.uri ||
+        self.fileSource.localPath ||
+        (self.fileSource.blobId && self.fileSource.name)
+      )
+    },
+
     get isReadyToOpen() {
       return (
         !self.error &&
@@ -65,22 +80,6 @@ const ImportWizard = types
           self.fileSource.uri)
       )
     },
-    get canCancel() {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return getParent<any>(self).readyToDisplay
-    },
-
-    get fileName() {
-      return (
-        self.fileSource.uri ||
-        self.fileSource.localPath ||
-        (self.fileSource.blobId && self.fileSource.name)
-      )
-    },
-
-    get requiresUnzip() {
-      return this.fileName.endsWith('gz')
-    },
 
     isValidRefName(refName: string, assemblyName?: string) {
       const { assemblyManager } = getSession(self)
@@ -89,62 +88,17 @@ const ImportWizard = types
       }
       return assemblyManager.isValidRefName(refName, assemblyName)
     },
+
+    get requiresUnzip() {
+      return this.fileName.endsWith('gz')
+    },
   }))
   .actions(self => ({
-    setSelectedAssemblyName(s: string) {
-      self.selectedAssemblyName = s
-    },
-    setFileSource(newSource: unknown) {
-      self.fileSource = newSource
-      self.error = undefined
-
-      if (self.fileSource) {
-        // try to autodetect the file type, ignore errors
-        const name = self.fileName
-
-        if (name) {
-          const firstMatch = fileTypesRegexp.exec(name)?.[1]
-          if (firstMatch) {
-            self.fileType =
-              firstMatch === 'tsv' && name.includes('star-fusion')
-                ? 'STAR-Fusion'
-                : firstMatch.toUpperCase()
-          }
-        }
-      }
-    },
-
-    toggleHasColumnNameLine() {
-      self.hasColumnNameLine = !self.hasColumnNameLine
-    },
-
-    setColumnNameLineNumber(newnumber: number) {
-      if (newnumber > 0) {
-        self.columnNameLineNumber = newnumber
-      }
-    },
-
-    setFileType(typeName: string) {
-      self.fileType = typeName
-    },
-
-    setError(error: unknown) {
-      console.error(error)
-      self.loading = false
-      self.error = error
-    },
-
-    setLoaded() {
-      self.loading = false
-      self.error = undefined
-    },
-
     cancelButton() {
       self.error = undefined
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       getParent<any>(self).setDisplayMode()
     },
-
     // fetch and parse the file, make a new Spreadsheet model for it,
     // then set the parent to display it
     async import(assemblyName: string) {
@@ -194,6 +148,55 @@ const ImportWizard = types
       } catch (e) {
         this.setError(e)
       }
+    },
+
+    setColumnNameLineNumber(newnumber: number) {
+      if (newnumber > 0) {
+        self.columnNameLineNumber = newnumber
+      }
+    },
+
+    setError(error: unknown) {
+      console.error(error)
+      self.loading = false
+      self.error = error
+    },
+
+    setFileSource(newSource: unknown) {
+      self.fileSource = newSource
+      self.error = undefined
+
+      if (self.fileSource) {
+        // try to autodetect the file type, ignore errors
+        const name = self.fileName
+
+        if (name) {
+          const firstMatch = fileTypesRegexp.exec(name)?.[1]
+          if (firstMatch) {
+            self.fileType =
+              firstMatch === 'tsv' && name.includes('star-fusion')
+                ? 'STAR-Fusion'
+                : firstMatch.toUpperCase()
+          }
+        }
+      }
+    },
+
+    setFileType(typeName: string) {
+      self.fileType = typeName
+    },
+
+    setLoaded() {
+      self.loading = false
+      self.error = undefined
+    },
+
+    setSelectedAssemblyName(s: string) {
+      self.selectedAssemblyName = s
+    },
+
+    toggleHasColumnNameLine() {
+      self.hasColumnNameLine = !self.hasColumnNameLine
     },
   }))
 

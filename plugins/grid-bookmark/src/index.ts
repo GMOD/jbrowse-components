@@ -47,20 +47,6 @@ export default class extends Plugin {
               showBookmarkLabels: true,
             })
             .actions(self => ({
-              /**
-               * #action
-               */
-              toggleShowBookmarkHighlights(toggle?: boolean) {
-                self.showBookmarkHighlights =
-                  toggle !== undefined ? toggle : !self.showBookmarkHighlights
-              },
-              /**
-               * #action
-               */
-              toggleShowBookmarkLabels(toggle?: boolean) {
-                self.showBookmarkLabels =
-                  toggle !== undefined ? toggle : !self.showBookmarkLabels
-              },
               activateBookmarkWidget() {
                 const session = getSession(self)
                 if (isSessionModelWithWidgets(session)) {
@@ -80,8 +66,34 @@ export default class extends Plugin {
 
                 throw new Error('Could not open bookmark widget')
               },
+
+              /**
+               * #action
+               */
+              toggleShowBookmarkHighlights(toggle?: boolean) {
+                self.showBookmarkHighlights =
+                  toggle !== undefined ? toggle : !self.showBookmarkHighlights
+              },
+              /**
+               * #action
+               */
+              toggleShowBookmarkLabels(toggle?: boolean) {
+                self.showBookmarkLabels =
+                  toggle !== undefined ? toggle : !self.showBookmarkLabels
+              },
             }))
             .actions(self => ({
+              bookmarkCurrentRegion() {
+                if (self.id === getSession(self).focusedViewId) {
+                  const selectedRegions = self.getSelectedRegions(
+                    undefined,
+                    undefined,
+                  )
+                  const bookmarkWidget = self.activateBookmarkWidget()
+                  bookmarkWidget.addBookmark(selectedRegions[0])
+                }
+              },
+
               navigateNewestBookmark() {
                 const session = getSession(self)
                 const bookmarkWidget = self.activateBookmarkWidget()
@@ -95,17 +107,6 @@ export default class extends Plugin {
                   )
                 }
               },
-
-              bookmarkCurrentRegion() {
-                if (self.id === getSession(self).focusedViewId) {
-                  const selectedRegions = self.getSelectedRegions(
-                    undefined,
-                    undefined,
-                  )
-                  const bookmarkWidget = self.activateBookmarkWidget()
-                  bookmarkWidget.addBookmark(selectedRegions[0])
-                }
-              },
             }))
             .views(self => {
               const superMenuItems = self.menuItems
@@ -116,32 +117,32 @@ export default class extends Plugin {
                     ...superMenuItems(),
                     { type: 'divider' },
                     {
-                      label: 'Bookmarks',
                       icon: BookmarksIcon,
+                      label: 'Bookmarks',
                       subMenu: [
                         {
-                          label: 'Open bookmark widget',
                           icon: BookmarksIcon,
+                          label: 'Open bookmark widget',
                           onClick: () => self.activateBookmarkWidget(),
                         },
                         {
-                          label: 'Bookmark current region',
                           icon: BookmarkIcon,
+                          label: 'Bookmark current region',
                           onClick: () => self.bookmarkCurrentRegion(),
                         },
                         {
-                          label: 'Toggle bookmark highlights',
-                          icon: HighlightIcon,
-                          type: 'checkbox',
                           checked: self.showBookmarkHighlights,
+                          icon: HighlightIcon,
+                          label: 'Toggle bookmark highlights',
                           onClick: () => self.toggleShowBookmarkHighlights(),
+                          type: 'checkbox',
                         },
                         {
-                          label: 'Toggle bookmark labels',
-                          icon: LabelIcon,
-                          type: 'checkbox',
                           checked: self.showBookmarkLabels,
+                          icon: LabelIcon,
+                          label: 'Toggle bookmark labels',
                           onClick: () => self.toggleShowBookmarkLabels(),
+                          type: 'checkbox',
                         },
                       ],
                     },
@@ -152,8 +153,8 @@ export default class extends Plugin {
                   return [
                     ...superRubberBandMenuItems(),
                     {
-                      label: 'Bookmark region',
                       icon: BookmarkIcon,
+                      label: 'Bookmark region',
                       onClick: () => {
                         const { leftOffset, rightOffset } = self
                         const selectedRegions = self.getSelectedRegions(
@@ -199,8 +200,8 @@ export default class extends Plugin {
   configure(pluginManager: PluginManager) {
     if (isAbstractMenuManager(pluginManager.rootModel)) {
       pluginManager.rootModel.appendToMenu('Tools', {
-        label: 'Bookmarks',
         icon: BookmarksIcon,
+        label: 'Bookmarks',
         onClick: (session: SessionWithWidgets) => {
           let bookmarkWidget = session.widgets.get('GridBookmark')
           if (!bookmarkWidget) {

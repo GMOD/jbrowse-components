@@ -24,9 +24,9 @@ const ShadowComponent = () => {
     setRootNode(root)
     setCacheNode(
       createCache({
+        container: root,
         key: 'react-shadow',
         prepend: true,
-        container: root,
       }),
     )
 
@@ -35,16 +35,22 @@ const ShadowComponent = () => {
     setConfig(
       createViewState({
         assembly: assembly,
-        tracks: tracks,
-        location: 'ctgA:1105..1221',
         configuration: {
           theme: {
-            palette: {
-              primary: {
-                main: '#4400a6',
-              },
-            },
             components: {
+              MuiMenu: {
+                defaultProps: {
+                  container: () => nodeForPin.current,
+                },
+              },
+              MuiModal: {
+                defaultProps: {
+                  container: () => nodeForPin.current,
+                },
+              },
+              MuiPaper: {
+                defaultProps: () => nodeForPin.current,
+              },
               MuiPopover: {
                 defaultProps: {
                   container: () => nodeForPin.current,
@@ -62,22 +68,16 @@ const ShadowComponent = () => {
                   },
                 },
               },
-              MuiModal: {
-                defaultProps: {
-                  container: () => nodeForPin.current,
-                },
-              },
-              MuiMenu: {
-                defaultProps: {
-                  container: () => nodeForPin.current,
-                },
-              },
-              MuiPaper: {
-                defaultProps: () => nodeForPin.current,
+            },
+            palette: {
+              primary: {
+                main: '#4400a6',
               },
             },
           },
         },
+        location: 'ctgA:1105..1221',
+        tracks: tracks,
       }),
     )
   }, [])

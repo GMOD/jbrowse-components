@@ -6,10 +6,10 @@ import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 export default (pluginManager: PluginManager) => {
   pluginManager.addViewType(() => {
     return new ViewType({
-      name: 'LinearSyntenyView',
-      displayName: 'Linear synteny view',
-      stateModel: modelFactory(pluginManager),
       ReactComponent: lazy(() => import('./components/LinearSyntenyView')),
+      displayName: 'Linear synteny view',
+      name: 'LinearSyntenyView',
+      stateModel: modelFactory(pluginManager),
     })
   })
 }

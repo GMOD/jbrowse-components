@@ -149,7 +149,7 @@ test('test choose option from dropdown refName autocomplete', async () => {
   fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
   fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
   fireEvent.click((await screen.findAllByText('ctgB'))[0])
-  fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
+  fireEvent.keyDown(autocomplete, { code: 'Enter', key: 'Enter' })
 
   await waitFor(() => {
     const n = getByPlaceholderText('Search for location') as HTMLInputElement

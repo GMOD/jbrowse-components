@@ -1,16 +1,16 @@
 import VCF, { parseBreakend } from '@gmod/vcf'
 
 const altTypeToSO: Record<string, string | undefined> = {
+  '*': 'sequence_variant',
+  CNV: 'copy_number_variation',
   DEL: 'deletion',
-  INS: 'insertion',
   DUP: 'duplication',
+  'DUP:TANDEM': 'tandem_duplication',
+  INS: 'insertion',
   INV: 'inversion',
   INVDUP: 'inverted duplication',
-  CNV: 'copy_number_variation',
-  TRA: 'translocation',
-  'DUP:TANDEM': 'tandem_duplication',
   NON_REF: 'sequence_variant',
-  '*': 'sequence_variant',
+  TRA: 'translocation',
 }
 
 /**

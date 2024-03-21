@@ -16,8 +16,8 @@ export default (pluginManager: PluginManager) => {
         const fileName = getFileName(file)
         if (regexGuess.test(fileName) || adapterHint === adapterName) {
           return {
-            type: adapterName,
             rootUrlTemplate: file,
+            type: adapterName,
           }
         }
         return adapterGuesser(file, index, adapterHint)

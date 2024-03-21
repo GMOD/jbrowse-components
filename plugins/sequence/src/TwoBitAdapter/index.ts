@@ -7,13 +7,13 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addAdapterType(
     () =>
       new AdapterType({
-        name: 'TwoBitAdapter',
-        displayName: 'TwoBit adapter',
-        configSchema,
         adapterMetadata: {
           hiddenFromGUI: true,
         },
+        configSchema,
+        displayName: 'TwoBit adapter',
         getAdapterClass: () => import('./TwoBitAdapter').then(r => r.default),
+        name: 'TwoBitAdapter',
       }),
   )
 }

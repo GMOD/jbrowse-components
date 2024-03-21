@@ -16,22 +16,22 @@ import TrackLabelContainer from './TrackLabelContainer'
 import TrackRenderingContainer from './TrackRenderingContainer'
 
 const useStyles = makeStyles()({
-  root: {
-    marginTop: 2,
-  },
-  resizeHandle: {
-    height: 3,
-    boxSizing: 'border-box',
-    position: 'relative',
-    zIndex: 2,
-  },
   overlay: {
+    left: 0,
     pointerEvents: 'none',
     position: 'absolute',
     top: 0,
-    left: 0,
     width: '100%',
     zIndex: 3,
+  },
+  resizeHandle: {
+    boxSizing: 'border-box',
+    height: 3,
+    position: 'relative',
+    zIndex: 2,
+  },
+  root: {
+    marginTop: 2,
   },
 })
 
@@ -78,8 +78,8 @@ const TrackContainer = observer(function ({
       <div
         className={classes.overlay}
         style={{
-          height: display.height,
           background: dimmed ? 'rgba(0, 0, 0, 0.4)' : undefined,
+          height: display.height,
         }}
         onDragEnter={debouncedOnDragEnter}
       />

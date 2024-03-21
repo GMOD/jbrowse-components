@@ -24,10 +24,10 @@ function inc(bin: any, strand: number, type: string, field: string) {
   let thisBin = bin[type][field]
   if (thisBin === undefined) {
     thisBin = bin[type][field] = {
-      total: 0,
       '-1': 0,
       '0': 0,
       '1': 0,
+      total: 0,
     }
   }
   thisBin.total++
@@ -43,8 +43,8 @@ export default async function generateCoverageBins(
   const { colorBy } = opts
   const extendedRegion = {
     ...region,
-    start: Math.max(0, region.start - 1),
     end: region.end + 1,
+    start: Math.max(0, region.start - 1),
   }
   const binMax = Math.ceil(extendedRegion.end - extendedRegion.start)
   const skipmap = {} as SkipMap
@@ -66,16 +66,16 @@ export default async function generateCoverageBins(
       if (i >= 0 && i < binMax) {
         if (bins[i] === undefined) {
           bins[i] = {
-            total: 0,
-            all: 0,
-            ref: 0,
             '-1': 0,
             '0': 0,
             '1': 0,
-            lowqual: {},
+            all: 0,
             cov: {},
             delskips: {},
+            lowqual: {},
             noncov: {},
+            ref: 0,
+            total: 0,
           }
         }
         if (j !== fend) {
@@ -101,16 +101,16 @@ export default async function generateCoverageBins(
             if (epos >= 0 && epos < bins.length && pos + fstart < fend) {
               if (bins[epos] === undefined) {
                 bins[epos] = {
-                  total: 0,
-                  all: 0,
-                  ref: 0,
                   '-1': 0,
                   '0': 0,
                   '1': 0,
-                  lowqual: {},
+                  all: 0,
                   cov: {},
                   delskips: {},
+                  lowqual: {},
                   noncov: {},
+                  ref: 0,
+                  total: 0,
                 }
               }
               const bin = bins[epos]
@@ -242,12 +242,12 @@ export default async function generateCoverageBins(
         const hash = `${mstart}_${mend}_${fstrand}`
         if (skipmap[hash] === undefined) {
           skipmap[hash] = {
-            feature: feature,
-            start: mstart,
             end: mend,
+            feature: feature,
+            score: 0,
+            start: mstart,
             strand: fstrand,
             xs: getTag(feature, 'XS') || getTag(feature, 'TS'),
-            score: 0,
           }
         }
         skipmap[hash].score++

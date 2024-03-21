@@ -22,14 +22,14 @@ test('test creating a text search adapter', () => {
 
   const Adapter = pm.getTextSearchAdapterType('JBrowse1TextSearchAdapter')
   const config = Adapter.configSchema.create({
-    type: 'JBrowse1TextSearchAdapter',
-    textSearchAdapterId: 'JBrowse1GenerateNamesAdapterTest',
-    namesIndexLocation: {
-      uri: 'names/',
-      locationType: 'UriLocation',
-    },
-    tracks: [],
     assemblies: [],
+    namesIndexLocation: {
+      locationType: 'UriLocation',
+      uri: 'names/',
+    },
+    textSearchAdapterId: 'JBrowse1GenerateNamesAdapterTest',
+    tracks: [],
+    type: 'JBrowse1TextSearchAdapter',
   })
   expect(getSnapshot(config)).toMatchSnapshot()
 })

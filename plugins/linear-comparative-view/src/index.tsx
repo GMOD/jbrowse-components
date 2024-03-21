@@ -31,8 +31,8 @@ export default class extends Plugin {
   configure(pluginManager: PluginManager) {
     if (isAbstractMenuManager(pluginManager.rootModel)) {
       pluginManager.rootModel.appendToSubMenu(['Add'], {
-        label: 'Linear synteny view',
         icon: CalendarIcon,
+        label: 'Linear synteny view',
         onClick: (session: AbstractSessionModel) => {
           session.addView('LinearSyntenyView', {})
         },

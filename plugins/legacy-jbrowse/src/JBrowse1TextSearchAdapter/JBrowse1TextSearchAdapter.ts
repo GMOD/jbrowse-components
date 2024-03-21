@@ -86,8 +86,8 @@ export default class JBrowse1TextSearchAdapter
         const end = result[5]
         const locstring = `${refName || name}:${start}-${end}`
         return new BaseResult({
-          locString: locstring,
           label: name,
+          locString: locstring,
           matchedAttribute: 'name',
           matchedObject: result,
           trackId: tracks[trackIndex],

@@ -13,49 +13,56 @@ import Grid from './Grid'
 import { VerticalAxis, HorizontalAxis } from './Axes'
 import { TooltipWhereClicked, TooltipWhereMouseovered } from './DotplotTooltip'
 
-const blank = { left: 0, top: 0, width: 0, height: 0 }
+const blank = { height: 0, left: 0, top: 0, width: 0 }
 
 const useStyles = makeStyles()(theme => ({
-  spacer: {
-    gridColumn: '1/2',
-    gridRow: '2/2',
-  },
-  root: {
-    position: 'relative',
-    marginBottom: theme.spacing(1),
-    overflow: 'hidden',
-  },
-
   container: {
     display: 'grid',
     padding: 5,
     position: 'relative',
   },
-  overlay: {
-    pointerEvents: 'none',
-    overflow: 'hidden',
-    display: 'flex',
-    width: '100%',
-    gridRow: '1/2',
+  content: {
     gridColumn: '2/2',
-    zIndex: 100, // needs to be below controls
+    gridRow: '1/2',
+    position: 'relative',
+  },
+
+  overlay: {
+    // needs to be below controls
     '& path': {
       cursor: 'crosshair',
       fill: 'none',
     },
-  },
 
-  content: {
-    position: 'relative',
+    display: 'flex',
+
     gridColumn: '2/2',
+
     gridRow: '1/2',
+
+    overflow: 'hidden',
+
+    pointerEvents: 'none',
+
+    width: '100%',
+    zIndex: 100,
+  },
+  resizeHandle: {
+    background: '#ccc',
+    borderTop: '1px solid #fafafa',
+    boxSizing: 'border-box',
+    height: 4,
   },
 
-  resizeHandle: {
-    height: 4,
-    background: '#ccc',
-    boxSizing: 'border-box',
-    borderTop: '1px solid #fafafa',
+  root: {
+    marginBottom: theme.spacing(1),
+    overflow: 'hidden',
+    position: 'relative',
+  },
+
+  spacer: {
+    gridColumn: '1/2',
+    gridRow: '2/2',
   },
 }))
 
@@ -228,8 +235,8 @@ const DotplotViewInternal = observer(function ({
           !validSelect || !(mousedown && mouserect)
             ? undefined
             : {
-                width: Math.abs(xdistance),
                 height: Math.abs(ydistance),
+                width: Math.abs(xdistance),
               }
         }
       />
@@ -301,8 +308,8 @@ const DotplotViewInternal = observer(function ({
             anchorPosition={
               mouseupClient
                 ? {
-                    top: mouseupClient[1] + 50,
                     left: mouseupClient[0] + 50,
+                    top: mouseupClient[1] + 50,
                   }
                 : undefined
             }

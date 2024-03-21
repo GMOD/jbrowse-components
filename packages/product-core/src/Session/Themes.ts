@@ -35,14 +35,7 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
         const extraThemes = getConf(self.jbrowse, 'extraThemes')
         return { ...defaultThemes, ...extraThemes }
       },
-      /**
-       * #getter
-       */
-      get themeName() {
-        const { sessionThemeName } = s
-        const all = this.allThemes()
-        return all[sessionThemeName] ? sessionThemeName : 'default'
-      },
+
       /**
        * #getter
        */
@@ -52,14 +45,17 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
         const all = this.allThemes()
         return createJBrowseTheme(configTheme, all, this.themeName)
       },
+
+      /**
+       * #getter
+       */
+      get themeName() {
+        const { sessionThemeName } = s
+        const all = this.allThemes()
+        return all[sessionThemeName] ? sessionThemeName : 'default'
+      },
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      setThemeName(name: string) {
-        self.sessionThemeName = name
-      },
       afterAttach() {
         addDisposer(
           self,
@@ -67,6 +63,12 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
             localStorageSetItem('themeName', self.themeName)
           }),
         )
+      },
+      /**
+       * #action
+       */
+      setThemeName(name: string) {
+        self.sessionThemeName = name
       },
     }))
 }

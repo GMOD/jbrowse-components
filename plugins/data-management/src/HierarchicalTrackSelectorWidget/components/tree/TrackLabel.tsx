@@ -11,15 +11,15 @@ import { isUnsupported, NodeData } from '../util'
 import TrackLabelMenu from './TrackLabelMenu'
 
 const useStyles = makeStyles()(theme => ({
-  compactCheckbox: {
-    padding: 0,
-  },
-
   checkboxLabel: {
-    marginRight: 0,
     '&:hover': {
       backgroundColor: theme.palette.action.selected,
     },
+    marginRight: 0,
+  },
+
+  compactCheckbox: {
+    padding: 0,
   },
   selected: {
     background: '#cccc',

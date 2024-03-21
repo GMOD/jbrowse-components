@@ -10,8 +10,8 @@ export default (pm: PluginManager) => {
     const configSchema = configSchemaF(pm)
 
     return new TrackType({
-      name: 'BasicTrack',
       configSchema,
+      name: 'BasicTrack',
       stateModel: createBaseTrackModel(pm, 'BasicTrack', configSchema),
     })
   })

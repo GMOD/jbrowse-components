@@ -56,9 +56,9 @@ export default class FromConfigRegionsAdapter
             regions.push(currentRegion)
           }
           currentRegion = {
+            end: feature.get('end'),
             refName,
             start: feature.get('start'),
-            end: feature.get('end'),
           }
         }
       }

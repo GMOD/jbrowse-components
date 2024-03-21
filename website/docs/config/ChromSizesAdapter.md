@@ -16,10 +16,10 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ```js
 chromSizesLocation: {
-      type: 'fileLocation',
       defaultValue: {
-        uri: '/path/to/species.chrom.sizes',
         locationType: 'UriLocation',
+        uri: '/path/to/species.chrom.sizes',
       },
+      type: 'fileLocation',
     }
 ```

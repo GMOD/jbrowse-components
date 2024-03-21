@@ -38,11 +38,11 @@ export default class extends BaseFeatureDataAdapter {
     const header = headerLines.join('\n')
 
     const feats = gff.parseStringSync(data, {
-      parseFeatures: true,
+      disableDerivesFromReferences: true,
       parseComments: false,
       parseDirectives: false,
+      parseFeatures: true,
       parseSequences: false,
-      disableDerivesFromReferences: true,
     })
 
     const intervalTree = {} as Record<string, IntervalTree>

@@ -17,29 +17,50 @@ export function stateModelFactory(_pluginManager: PluginManager) {
       /**
        * #property
        */
-      id: ElementId,
-      /**
-       * #property
-       */
-      type: types.literal('JobsListWidget'),
-      /**
-       * #property
-       */
-      jobs: types.array(Job),
+      aborted: types.array(Job),
+
       /**
        * #property
        */
       finished: types.array(Job),
+
+      /**
+       * #property
+       */
+      id: ElementId,
+
+      /**
+       * #property
+       */
+      jobs: types.array(Job),
+
       /**
        * #property
        */
       queued: types.array(Job),
+
       /**
        * #property
        */
-      aborted: types.array(Job),
+      type: types.literal('JobsListWidget'),
     })
     .actions(self => ({
+      /**
+       * #action
+       */
+      addAbortedJob(job: NewJob) {
+        self.aborted.push(job)
+        return self.aborted
+      },
+
+      /**
+       * #action
+       */
+      addFinishedJob(job: NewJob) {
+        self.finished.push(job)
+        return self.finished
+      },
+
       /**
        * #action
        */
@@ -50,6 +71,15 @@ export function stateModelFactory(_pluginManager: PluginManager) {
         addedJob.setCancelCallback(cancelCallback)
         return addedJob
       },
+
+      /**
+       * #action
+       */
+      addQueuedJob(job: NewJob) {
+        self.queued.push(job)
+        return self.finished
+      },
+
       /**
        * #action
        */
@@ -62,43 +92,13 @@ export function stateModelFactory(_pluginManager: PluginManager) {
       /**
        * #action
        */
-      addFinishedJob(job: NewJob) {
-        self.finished.push(job)
-        return self.finished
-      },
-      /**
-       * #action
-       */
-      addQueuedJob(job: NewJob) {
-        self.queued.push(job)
-        return self.finished
-      },
-      /**
-       * #action
-       */
-      addAbortedJob(job: NewJob) {
-        self.aborted.push(job)
-        return self.aborted
-      },
-      /**
-       * #action
-       */
       removeQueuedJob(jobName: string) {
         const indx = self.queued.findIndex(job => job.name === jobName)
         const removed = self.queued[indx]
         self.queued.splice(indx, 1)
         return removed
       },
-      /**
-       * #action
-       */
-      updateJobStatusMessage(jobName: string, message?: string) {
-        const job = self.jobs.find(job => job.name === jobName)
-        if (!job) {
-          throw new Error(`No job found with name ${jobName}`)
-        }
-        job.setStatusMessage(message)
-      },
+
       /**
        * #action
        */
@@ -108,6 +108,17 @@ export function stateModelFactory(_pluginManager: PluginManager) {
           throw new Error(`No job found with name ${jobName}`)
         }
         job.setProgressPct(pct)
+      },
+
+      /**
+       * #action
+       */
+      updateJobStatusMessage(jobName: string, message?: string) {
+        const job = self.jobs.find(job => job.name === jobName)
+        if (!job) {
+          throw new Error(`No job found with name ${jobName}`)
+        }
+        job.setStatusMessage(message)
       },
     }))
 }

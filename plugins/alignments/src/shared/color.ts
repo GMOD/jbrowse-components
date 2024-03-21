@@ -4,21 +4,21 @@ import { orientationTypes, pairMap } from '../util'
 import { ChainStats } from './fetchChains'
 
 export const fillColor = {
-  color_fwd_strand_not_proper: '#ECC8C8',
-  color_rev_strand_not_proper: '#BEBED8',
-  color_fwd_strand: '#EC8B8B',
-  color_rev_strand: '#8F8FD8',
-  color_fwd_missing_mate: '#D11919',
-  color_rev_missing_mate: '#1919D1',
   color_fwd_diff_chr: '#000',
-  color_rev_diff_chr: '#969696',
-  color_pair_lr: '#c8c8c8',
-  color_pair_rr: 'navy',
-  color_pair_rl: 'teal',
-  color_pair_ll: 'green',
-  color_nostrand: '#c8c8c8',
+  color_fwd_missing_mate: '#D11919',
+  color_fwd_strand: '#EC8B8B',
+  color_fwd_strand_not_proper: '#ECC8C8',
   color_interchrom: 'purple',
   color_longinsert: 'red',
+  color_nostrand: '#c8c8c8',
+  color_pair_ll: 'green',
+  color_pair_lr: '#c8c8c8',
+  color_pair_rl: 'teal',
+  color_pair_rr: 'navy',
+  color_rev_diff_chr: '#969696',
+  color_rev_missing_mate: '#1919D1',
+  color_rev_strand: '#8F8FD8',
+  color_rev_strand_not_proper: '#BEBED8',
   color_shortinsert: 'pink',
   color_unknown: 'grey',
 }
@@ -30,21 +30,21 @@ export const fillColor = {
 // }))
 // this avoids (expensive) use of Color module at runtime
 export const strokeColor = {
-  color_fwd_strand_not_proper: '#CA6767',
-  color_rev_strand_not_proper: '#7272AA',
-  color_fwd_strand: '#DC2A2A',
-  color_rev_strand: '#4141BA',
-  color_fwd_missing_mate: '#921111',
-  color_rev_missing_mate: '#111192',
   color_fwd_diff_chr: '#000000',
-  color_rev_diff_chr: '#696969',
-  color_pair_lr: '#8C8C8C',
-  color_pair_rr: '#00005A',
-  color_pair_rl: '#005A5A',
-  color_pair_ll: '#005A00',
-  color_nostrand: '#8C8C8C',
+  color_fwd_missing_mate: '#921111',
+  color_fwd_strand: '#DC2A2A',
+  color_fwd_strand_not_proper: '#CA6767',
   color_interchrom: '#5A005A',
   color_longinsert: '#B30000',
+  color_nostrand: '#8C8C8C',
+  color_pair_ll: '#005A00',
+  color_pair_lr: '#8C8C8C',
+  color_pair_rl: '#005A5A',
+  color_pair_rr: '#00005A',
+  color_rev_diff_chr: '#696969',
+  color_rev_missing_mate: '#111192',
+  color_rev_strand: '#4141BA',
+  color_rev_strand_not_proper: '#7272AA',
   color_shortinsert: '#FF3A5C',
   color_unknown: 'grey',
 }
@@ -93,9 +93,9 @@ export interface ExtraColorBy {
 
 export const ColorByModel = types.maybe(
   types.model({
-    type: types.string,
-    tag: types.maybe(types.string),
     extra: types.frozen(),
+    tag: types.maybe(types.string),
+    type: types.string,
   }),
 )
 

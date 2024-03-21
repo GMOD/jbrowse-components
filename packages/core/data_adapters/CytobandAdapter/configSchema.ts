@@ -12,8 +12,8 @@ const configSchema = ConfigurationSchema(
      * #slot
      */
     cytobandLocation: {
-      type: 'fileLocation',
       defaultValue: { uri: '/path/to/cytoband.txt.gz' },
+      type: 'fileLocation',
     },
   },
   { explicitlyTyped: true },

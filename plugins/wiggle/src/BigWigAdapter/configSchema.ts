@@ -12,20 +12,20 @@ const BigWigAdapter = ConfigurationSchema(
      * #slot
      */
     bigWigLocation: {
-      type: 'fileLocation',
       defaultValue: {
-        uri: '/path/to/my.bw',
         locationType: 'UriLocation',
+        uri: '/path/to/my.bw',
       },
+      type: 'fileLocation',
     },
 
     /**
      * #slot
      */
     source: {
-      type: 'string',
       defaultValue: '',
       description: 'Used for multiwiggle',
+      type: 'string',
     },
   },
   { explicitlyTyped: true },

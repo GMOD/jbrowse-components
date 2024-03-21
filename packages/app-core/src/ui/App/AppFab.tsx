@@ -9,16 +9,16 @@ import LaunchIcon from '@mui/icons-material/Launch'
 
 const useStyles = makeStyles()(theme => ({
   left: {
-    zIndex: 10000,
-    position: 'fixed',
     bottom: theme.spacing(2),
     left: theme.spacing(2),
+    position: 'fixed',
+    zIndex: 10000,
   },
   right: {
-    zIndex: 10000,
-    position: 'fixed',
     bottom: theme.spacing(2),
+    position: 'fixed',
     right: theme.spacing(2),
+    zIndex: 10000,
   },
 }))
 

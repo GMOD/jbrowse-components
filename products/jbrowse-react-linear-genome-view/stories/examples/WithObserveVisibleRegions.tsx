@@ -27,8 +27,8 @@ export const WithObserveVisibleRegions = () => {
   const { assembly, tracks } = getVolvoxConfig()
   const state = createViewState({
     assembly,
-    tracks,
     location: 'ctgA:1105..1221',
+    tracks,
   })
   return (
     <div>

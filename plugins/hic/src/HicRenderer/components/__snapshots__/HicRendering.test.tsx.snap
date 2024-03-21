@@ -3,12 +3,12 @@
 exports[`one 1`] = `
 <div>
   <div
-    style="position: relative; width: 500px; height: 500px;"
+    style="height: 500px; position: relative; width: 500px;"
   >
     <canvas
       data-testid="prerendered_canvas_test"
       height="500"
-      style="width: 500px; height: 500px; position: absolute; left: 0px; top: 0px;"
+      style="height: 500px; width: 500px; left: 0px; position: absolute; top: 0px;"
       width="500"
     />
   </div>

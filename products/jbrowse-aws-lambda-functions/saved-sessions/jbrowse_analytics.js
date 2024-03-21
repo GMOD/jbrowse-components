@@ -53,9 +53,9 @@ function recordStats(event, context, done) {
     stats.jb2 === 'true' ? 'JB2_Analytics_Events' : 'JB1_Analytics_Events'
   delete stats.jb2
   const params = {
-    TableName: tableName,
     Item: stats,
     ReturnConsumedCapacity: 'TOTAL',
+    TableName: tableName,
   }
   dynamo.put(params, done)
 }
@@ -64,14 +64,14 @@ exports.handler = (event, context, callback) => {
   // console.log('Received event:', JSON.stringify(event, null, 2));
   const done = err =>
     callback(null, {
-      statusCode: err ? '400' : '200',
       body: err
         ? err.message
         : '\u0047\u0049\u0046\u0038\u0039\u0061\u0001\u0000\u0001\u0000\u00f0\u0001\u0000\u00ff\u00ff\u00ff\u0000\u0000\u0000\u0021\u00f9\u0004\u0001\u000a\u0000\u0000\u0000\u002c\u0000\u0000\u0000\u0000\u0001\u0000\u0001\u0000\u0000\u0002\u0002\u0044\u0001\u0000\u003b',
       headers: {
-        'Content-Type': err ? 'application/json' : 'image/gif',
         'Access-Control-Allow-Origin': '*',
+        'Content-Type': err ? 'application/json' : 'image/gif',
       },
+      statusCode: err ? '400' : '200',
     })
 
   if (event.httpMethod !== 'GET') {

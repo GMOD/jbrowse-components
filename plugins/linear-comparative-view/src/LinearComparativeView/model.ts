@@ -49,44 +49,43 @@ function stateModelFactory(pluginManager: PluginManager) {
          * #property
          */
         id: ElementId,
-        /**
-         * #property
-         */
-        type: types.literal('LinearComparativeView'),
-        /**
-         * #property
-         */
-        trackSelectorType: 'hierarchical',
-        /**
-         * #property
-         */
-        showIntraviewLinks: true,
-        /**
-         * #property
-         */
-        linkViews: false,
+
         /**
          * #property
          */
         interactToggled: false,
+
+        /**
+         * #property
+         */
+        linkViews: false,
+
         /**
          * #property
          */
         middleComparativeHeight: 100,
+
+        /**
+         * #property
+         */
+        showIntraviewLinks: true,
+
+        /**
+         * #property
+         */
+        trackSelectorType: 'hierarchical',
+
         /**
          * #property
          */
         tracks: types.array(
           pluginManager.pluggableMstType('track', 'stateModel'),
         ),
+
         /**
          * #property
-         * currently this is limited to an array of two
          */
-        views: types.array(
-          pluginManager.getViewType('LinearGenomeView')
-            .stateModel as LinearGenomeViewStateModel,
-        ),
+        type: types.literal('LinearComparativeView'),
 
         /**
          * #property
@@ -97,6 +96,15 @@ function stateModelFactory(pluginManager: PluginManager) {
         viewTrackConfigs: types.array(
           pluginManager.pluggableConfigSchemaType('track'),
         ),
+
+        /**
+         * #property
+         * currently this is limited to an array of two
+         */
+        views: types.array(
+          pluginManager.getViewType('LinearGenomeView')
+            .stateModel as LinearGenomeViewStateModel,
+        ),
       }),
     )
     .volatile(() => ({
@@ -106,9 +114,17 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
+      get assemblyNames() {
+        return [...new Set(self.views.flatMap(v => v.assemblyNames))]
+      },
+
+      /**
+       * #getter
+       */
       get highResolutionScaling() {
         return 2
       },
+
       /**
        * #getter
        */
@@ -128,15 +144,28 @@ function stateModelFactory(pluginManager: PluginManager) {
           ...new Set(v.staticBlocks.map(m => m.refName)),
         ])
       },
-
-      /**
-       * #getter
-       */
-      get assemblyNames() {
-        return [...new Set(self.views.flatMap(v => v.assemblyNames))]
-      },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      activateTrackSelector() {
+        if (self.trackSelectorType === 'hierarchical') {
+          const session = getSession(self)
+          if (isSessionModelWithWidgets(session)) {
+            const selector = session.addWidget(
+              'HierarchicalTrackSelectorWidget',
+              'hierarchicalTrackSelector',
+              { view: self },
+            )
+            session.showWidget(selector)
+            return selector
+          }
+          return undefined
+        }
+        throw new Error(`invalid track selector type ${self.trackSelectorType}`)
+      },
+
       afterAttach() {
         addDisposer(
           self,
@@ -164,35 +193,12 @@ function stateModelFactory(pluginManager: PluginManager) {
         }
       },
 
-      onSubviewAction(actionName: string, path: string, args?: unknown[]) {
-        self.views.forEach(view => {
-          const ret = getPath(view)
-          if (!ret.endsWith(path)) {
-            // @ts-expect-error
-            view[actionName](args?.[0])
-          }
-        })
-      },
-
       /**
        * #action
        */
-      setWidth(newWidth: number) {
-        self.width = newWidth
-      },
-
-      /**
-       * #action
-       */
-      setViews(views: SnapshotIn<LinearGenomeViewModel>[]) {
-        self.views = cast(views)
-      },
-
-      /**
-       * #action
-       */
-      removeView(view: LinearGenomeViewModel) {
-        self.views.remove(view)
+      clearView() {
+        self.views = cast([])
+        self.tracks = cast([])
       },
 
       /**
@@ -208,6 +214,34 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
+      hideTrack(trackId: string) {
+        const schema = pluginManager.pluggableConfigSchemaType('track')
+        const config = resolveIdentifier(schema, getRoot(self), trackId)
+        const shownTracks = self.tracks.filter(t => t.configuration === config)
+        transaction(() => shownTracks.forEach(t => self.tracks.remove(t)))
+        return shownTracks.length
+      },
+
+      onSubviewAction(actionName: string, path: string, args?: unknown[]) {
+        self.views.forEach(view => {
+          const ret = getPath(view)
+          if (!ret.endsWith(path)) {
+            // @ts-expect-error
+            view[actionName](args?.[0])
+          }
+        })
+      },
+
+      /**
+       * #action
+       */
+      removeView(view: LinearGenomeViewModel) {
+        self.views.remove(view)
+      },
+
+      /**
+       * #action
+       */
       setMiddleComparativeHeight(n: number) {
         self.middleComparativeHeight = n
         return self.middleComparativeHeight
@@ -216,40 +250,15 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      toggleLinkViews() {
-        self.linkViews = !self.linkViews
+      setViews(views: SnapshotIn<LinearGenomeViewModel>[]) {
+        self.views = cast(views)
       },
 
       /**
        * #action
        */
-      activateTrackSelector() {
-        if (self.trackSelectorType === 'hierarchical') {
-          const session = getSession(self)
-          if (isSessionModelWithWidgets(session)) {
-            const selector = session.addWidget(
-              'HierarchicalTrackSelectorWidget',
-              'hierarchicalTrackSelector',
-              { view: self },
-            )
-            session.showWidget(selector)
-            return selector
-          }
-          return undefined
-        }
-        throw new Error(`invalid track selector type ${self.trackSelectorType}`)
-      },
-
-      /**
-       * #action
-       */
-      toggleTrack(trackId: string) {
-        const hiddenCount = this.hideTrack(trackId)
-        if (!hiddenCount) {
-          this.showTrack(trackId)
-          return true
-        }
-        return false
+      setWidth(newWidth: number) {
+        self.width = newWidth
       },
 
       /**
@@ -280,23 +289,13 @@ function stateModelFactory(pluginManager: PluginManager) {
         self.tracks.push(
           trackType.stateModel.create({
             ...initialSnapshot,
-            type: configuration.type,
             configuration,
-            displays: [{ type: displayConf.type, configuration: displayConf }],
+            displays: [{ configuration: displayConf, type: displayConf.type }],
+            type: configuration.type,
           }),
         )
       },
 
-      /**
-       * #action
-       */
-      hideTrack(trackId: string) {
-        const schema = pluginManager.pluggableConfigSchemaType('track')
-        const config = resolveIdentifier(schema, getRoot(self), trackId)
-        const shownTracks = self.tracks.filter(t => t.configuration === config)
-        transaction(() => shownTracks.forEach(t => self.tracks.remove(t)))
-        return shownTracks.length
-      },
       /**
        * #action
        */
@@ -311,12 +310,24 @@ function stateModelFactory(pluginManager: PluginManager) {
           view.centerAt(center.coord, center.refName, center.index)
         })
       },
+
       /**
        * #action
        */
-      clearView() {
-        self.views = cast([])
-        self.tracks = cast([])
+      toggleLinkViews() {
+        self.linkViews = !self.linkViews
+      },
+
+      /**
+       * #action
+       */
+      toggleTrack(trackId: string) {
+        const hiddenCount = this.hideTrack(trackId)
+        if (!hiddenCount) {
+          this.showTrack(trackId)
+          return true
+        }
+        return false
       },
     }))
     .views(() => ({
@@ -340,19 +351,19 @@ function stateModelFactory(pluginManager: PluginManager) {
             .filter(f => !!f[1])
             .map(f => ({ label: `View ${f[0] + 1} Menu`, subMenu: f[1] })),
           {
+            icon: FolderOpenIcon,
             label: 'Return to import form',
             onClick: () => {
               getSession(self).queueDialog(handleClose => [
                 ReturnToImportFormDialog,
-                { model: self, handleClose },
+                { handleClose, model: self },
               ])
             },
-            icon: FolderOpenIcon,
           },
           {
+            icon: TrackSelectorIcon,
             label: 'Open track selector',
             onClick: self.activateTrackSelector,
-            icon: TrackSelectorIcon,
           },
         ]
       },

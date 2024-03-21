@@ -13,7 +13,7 @@ test('no features', () => {
       displayModel={{ selectedFeatureId: 'none' }}
       config={r}
       regions={[
-        { refName: 'zonk', start: 0, end: 300, assemblyName: 'volvox' },
+        { assemblyName: 'volvox', end: 300, refName: 'zonk', start: 0 },
       ]}
       bpPerPx={3}
       features={new Map()}
@@ -32,13 +32,13 @@ test('one feature', () => {
       config={r}
       displayModel={{ selectedFeatureId: 'none' }}
       regions={[
-        { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
+        { assemblyName: 'volvox', end: 1000, refName: 'zonk', start: 0 },
       ]}
       features={
         new Map([
           [
             'one',
-            new SimpleFeature({ uniqueId: 'one', score: 10, start: 1, end: 3 }),
+            new SimpleFeature({ end: 3, score: 10, start: 1, uniqueId: 'one' }),
           ],
         ])
       }

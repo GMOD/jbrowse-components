@@ -13,13 +13,13 @@ import { observer } from 'mobx-react'
 import { AddTrackModel } from '../model'
 
 const useStyles = makeStyles()({
+  submit: {
+    display: 'block',
+    marginBottom: 100,
+    marginTop: 25,
+  },
   textbox: {
     width: '100%',
-  },
-  submit: {
-    marginTop: 25,
-    marginBottom: 100,
-    display: 'block',
   },
 })
 

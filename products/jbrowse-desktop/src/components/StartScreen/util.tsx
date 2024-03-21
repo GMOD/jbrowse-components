@@ -26,19 +26,19 @@ function uniqBy<T>(a: T[], key: (arg: T) => string) {
 
 const defaultInternetAccounts = [
   {
-    type: 'DropboxOAuthInternetAccount',
+    clientId: 'ykjqg1kr23pl1i7',
+    description: 'Account to access Dropbox files',
     internetAccountId: 'dropboxOAuth',
     name: 'Dropbox',
-    description: 'Account to access Dropbox files',
-    clientId: 'ykjqg1kr23pl1i7',
+    type: 'DropboxOAuthInternetAccount',
   },
   {
-    type: 'GoogleDriveOAuthInternetAccount',
-    internetAccountId: 'googleOAuth',
-    name: 'Google Drive',
-    description: 'Account to access Google Drive files',
     clientId:
       '109518325434-m86s8a5og8ijc5m6n7n8dk7e9586bg9i.apps.googleusercontent.com',
+    description: 'Account to access Google Drive files',
+    internetAccountId: 'googleOAuth',
+    name: 'Google Drive',
+    type: 'GoogleDriveOAuthInternetAccount',
   },
 ]
 
@@ -56,25 +56,25 @@ export async function createPluginManager(
   initialTimestamp = +Date.now(),
 ) {
   const pluginLoader = new PluginLoader(configSnapshot.plugins, {
-    fetchESM: url => import(/* webpackIgnore:true */ url),
     fetchCJS,
+    fetchESM: url => import(/* webpackIgnore:true */ url),
   })
   pluginLoader.installGlobalReExports(window)
   const runtimePlugins = await pluginLoader.load(window.location.href)
   const pluginManager = new PluginManager([
     ...corePlugins.map(P => ({
-      plugin: new P(),
       metadata: { isCore: true },
+      plugin: new P(),
     })),
     ...runtimePlugins.map(({ plugin: P, definition }) => ({
-      plugin: new P(),
       definition,
       metadata: {
-        url: definition.url,
+        cjsUrl: definition.cjsUrl,
         esmUrl: definition.esmUrl,
         umdUrl: definition.umdUrl,
-        cjsUrl: definition.cjsUrl,
+        url: definition.url,
       },
+      plugin: new P(),
     })),
   ])
   pluginManager.createPluggableElements()
@@ -85,8 +85,8 @@ export async function createPluginManager(
   })
 
   const jbrowse = deepmerge(configSnapshot, {
-    internetAccounts: defaultInternetAccounts,
     assemblies: [],
+    internetAccounts: defaultInternetAccounts,
     tracks: [],
   }) as {
     internetAccounts: { internetAccountId: string }[]

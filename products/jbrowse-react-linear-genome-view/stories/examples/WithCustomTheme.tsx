@@ -8,12 +8,20 @@ export const WithCustomTheme = () => {
   const { assembly, tracks } = getVolvoxConfig()
   const state = createViewState({
     assembly,
-    tracks,
     configuration: {
       theme: {
         palette: {
+          bases: {
+            A: { main: '#98FB98' },
+            C: { main: '#87CEEB' },
+            G: { main: '#DAA520' },
+            T: { main: '#DC143C' },
+          },
           primary: {
             main: '#311b92',
+          },
+          quaternary: {
+            main: '#d50000',
           },
           secondary: {
             main: '#0097a7',
@@ -21,18 +29,10 @@ export const WithCustomTheme = () => {
           tertiary: {
             main: '#f57c00',
           },
-          quaternary: {
-            main: '#d50000',
-          },
-          bases: {
-            A: { main: '#98FB98' },
-            C: { main: '#87CEEB' },
-            G: { main: '#DAA520' },
-            T: { main: '#DC143C' },
-          },
         },
       },
     },
+    tracks,
   })
   return (
     <div>

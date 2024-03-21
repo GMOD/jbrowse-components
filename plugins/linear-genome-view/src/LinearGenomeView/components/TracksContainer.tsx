@@ -19,8 +19,8 @@ import Highlight from './Highlight'
 
 const useStyles = makeStyles()({
   tracksContainer: {
-    position: 'relative',
     overflow: 'hidden',
+    position: 'relative',
   },
 })
 
@@ -104,7 +104,7 @@ const TracksContainer = observer(function TracksContainer({
         ControlComponent={
           <Scalebar
             model={model}
-            style={{ height: SCALE_BAR_HEIGHT, boxSizing: 'border-box' }}
+            style={{ boxSizing: 'border-box', height: SCALE_BAR_HEIGHT }}
           />
         }
       />

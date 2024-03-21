@@ -21,9 +21,9 @@ const defaultConfig = {
 
 const baseAssembly = { name: 'simple', sequence: {} }
 const baseSequence = {
-  type: 'ReferenceSequenceTrack',
-  trackId: 'simple-ReferenceSequenceTrack',
   adapter: {},
+  trackId: 'simple-ReferenceSequenceTrack',
+  type: 'ReferenceSequenceTrack',
 }
 
 // Cleaning up exitCode in Node.js 20, xref https://github.com/jestjs/jest/issues/14501
@@ -131,15 +131,15 @@ describe('add-assembly', () => {
             sequence: {
               ...baseSequence,
               adapter: {
-                type: 'IndexedFastaAdapter',
-                fastaLocation: {
-                  uri: 'simple.fasta',
-                  locationType: 'UriLocation',
-                },
                 faiLocation: {
-                  uri: 'simple.fasta.fai',
                   locationType: 'UriLocation',
+                  uri: 'simple.fasta.fai',
                 },
+                fastaLocation: {
+                  locationType: 'UriLocation',
+                  uri: 'simple.fasta',
+                },
+                type: 'IndexedFastaAdapter',
               },
             },
           },
@@ -162,15 +162,15 @@ describe('add-assembly', () => {
             sequence: {
               ...baseSequence,
               adapter: {
-                type: 'IndexedFastaAdapter',
-                fastaLocation: {
-                  uri: 'simple.fa',
-                  locationType: 'UriLocation',
-                },
                 faiLocation: {
-                  uri: 'simple.fa.fai',
                   locationType: 'UriLocation',
+                  uri: 'simple.fa.fai',
                 },
+                fastaLocation: {
+                  locationType: 'UriLocation',
+                  uri: 'simple.fa',
+                },
+                type: 'IndexedFastaAdapter',
               },
             },
           },
@@ -203,19 +203,19 @@ describe('add-assembly', () => {
             sequence: {
               ...baseSequence,
               adapter: {
-                type: 'BgzipFastaAdapter',
-                fastaLocation: {
-                  uri: 'simple.fasta.gz',
-                  locationType: 'UriLocation',
-                },
                 faiLocation: {
-                  uri: 'simple.fasta.gz.fai',
                   locationType: 'UriLocation',
+                  uri: 'simple.fasta.gz.fai',
+                },
+                fastaLocation: {
+                  locationType: 'UriLocation',
+                  uri: 'simple.fasta.gz',
                 },
                 gziLocation: {
-                  uri: 'simple.fasta.gz.gzi',
                   locationType: 'UriLocation',
+                  uri: 'simple.fasta.gz.gzi',
                 },
+                type: 'BgzipFastaAdapter',
               },
             },
           },
@@ -237,11 +237,11 @@ describe('add-assembly', () => {
             sequence: {
               ...baseSequence,
               adapter: {
-                type: 'TwoBitAdapter',
                 twoBitLocation: {
-                  uri: 'simple.2bit',
                   locationType: 'UriLocation',
+                  uri: 'simple.2bit',
                 },
+                type: 'TwoBitAdapter',
               },
             },
           },
@@ -266,11 +266,11 @@ describe('add-assembly', () => {
             sequence: {
               ...baseSequence,
               adapter: {
-                type: 'ChromSizesAdapter',
                 chromSizesLocation: {
-                  uri: 'simple.chrom.sizes',
                   locationType: 'UriLocation',
+                  uri: 'simple.chrom.sizes',
                 },
+                type: 'ChromSizesAdapter',
               },
             },
           },
@@ -292,23 +292,23 @@ describe('add-assembly', () => {
             sequence: {
               ...baseSequence,
               adapter: {
-                type: 'FromConfigSequenceAdapter',
                 features: [
                   {
-                    refName: 'SEQUENCE_1',
-                    uniqueId: 'firstId',
-                    start: 0,
                     end: 233,
+                    refName: 'SEQUENCE_1',
                     seq: 'CCAAGATCTAAGATGTCAACACCTATCTGCTCAAGGTGGTTTTTATAAGGAGTCGCATCGAGGTAAGACATTTTAGAAGTATTTCTCAAGCGTGGGGCAGTTCGCCAAGTTACATCGCTCAGCCCAGGTTCCCTGATTCGAGAACATATCGGTGCTGGGTATTTGTTGGGTTGGTTGATTTGCACCGTAGTTTACACCTTACGACACTACCTATCCAAACAATTGTGTGATAG',
+                    start: 0,
+                    uniqueId: 'firstId',
                   },
                   {
-                    refName: 'SEQUENCE_2',
-                    uniqueId: 'secondId',
-                    start: 0,
                     end: 120,
+                    refName: 'SEQUENCE_2',
                     seq: 'CCGAACCACAGGCCTATGTTACCATTGGAAAGCTCACCTTCCCGAAGGATTGGGACTCCACTAGTCGAAGCCTCAATTCGCCGCGATTAGATAGGGGGCAAGTGGAGATTGATGTTTGGT',
+                    start: 0,
+                    uniqueId: 'secondId',
                   },
                 ],
+                type: 'FromConfigSequenceAdapter',
               },
             },
           },
@@ -334,21 +334,21 @@ describe('add-assembly', () => {
             sequence: {
               ...baseSequence,
               adapter: {
-                type: 'FromConfigRegionsAdapter',
                 features: [
                   {
-                    refName: 'SEQUENCE_1',
-                    uniqueId: 'firstId',
-                    start: 0,
                     end: 233,
+                    refName: 'SEQUENCE_1',
+                    start: 0,
+                    uniqueId: 'firstId',
                   },
                   {
-                    refName: 'SEQUENCE_2',
-                    uniqueId: 'secondId',
-                    start: 0,
                     end: 120,
+                    refName: 'SEQUENCE_2',
+                    start: 0,
+                    uniqueId: 'secondId',
                   },
                 ],
+                type: 'FromConfigRegionsAdapter',
               },
             },
           },
@@ -379,14 +379,14 @@ describe('add-assembly', () => {
               name: 'simple.2bit.xyz',
               sequence: {
                 ...baseSequence,
-                trackId: 'simple.2bit.xyz-ReferenceSequenceTrack',
                 adapter: {
-                  type: 'TwoBitAdapter',
                   twoBitLocation: {
-                    uri: 'simple.2bit.xyz',
                     locationType: 'UriLocation',
+                    uri: 'simple.2bit.xyz',
                   },
+                  type: 'TwoBitAdapter',
                 },
+                trackId: 'simple.2bit.xyz-ReferenceSequenceTrack',
               },
             },
           ],
@@ -425,19 +425,19 @@ describe('add-assembly', () => {
             sequence: {
               ...baseSequence,
               adapter: {
-                type: 'BgzipFastaAdapter',
-                fastaLocation: {
-                  uri: 'simple.fasta.gz',
-                  locationType: 'UriLocation',
-                },
                 faiLocation: {
-                  uri: 'simple.fasta.gz.fai.abc',
                   locationType: 'UriLocation',
+                  uri: 'simple.fasta.gz.fai.abc',
+                },
+                fastaLocation: {
+                  locationType: 'UriLocation',
+                  uri: 'simple.fasta.gz',
                 },
                 gziLocation: {
-                  uri: 'simple.fasta.gz.gzi.def',
                   locationType: 'UriLocation',
+                  uri: 'simple.fasta.gz.gzi.def',
                 },
+                type: 'BgzipFastaAdapter',
               },
             },
           },
@@ -466,12 +466,12 @@ describe('add-assembly', () => {
         assemblies: [
           {
             ...baseAssembly,
-            name: 'customName',
             aliases: ['customAlias'],
+            name: 'customName',
             sequence: {
               ...baseSequence,
-              trackId: 'customName-ReferenceSequenceTrack',
               adapter: { type: 'CustomAdapter' },
+              trackId: 'customName-ReferenceSequenceTrack',
             },
           },
         ],
@@ -530,8 +530,8 @@ describe('add-assembly', () => {
             refNameAliases: {
               adapter: {
                 location: {
-                  uri: 'simple.aliases',
                   locationType: 'UriLocation',
+                  uri: 'simple.aliases',
                 },
                 type: 'RefNameAliasAdapter',
               },
@@ -678,11 +678,11 @@ describe('add-assembly', () => {
             sequence: {
               ...baseSequence,
               adapter: {
-                type: 'TwoBitAdapter',
                 twoBitLocation: {
-                  uri: 'https://mysite.com/data/simple.2bit',
                   locationType: 'UriLocation',
+                  uri: 'https://mysite.com/data/simple.2bit',
                 },
+                type: 'TwoBitAdapter',
               },
             },
           },

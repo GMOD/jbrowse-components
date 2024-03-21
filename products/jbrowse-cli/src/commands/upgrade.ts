@@ -31,32 +31,34 @@ export default class Upgrade extends JBrowseCommand {
 
   static args = {
     localPath: Args.string({
-      required: false,
-      description: `Location where JBrowse 2 is installed`,
       default: '.',
+      description: `Location where JBrowse 2 is installed`,
+      required: false,
     }),
   }
 
   static flags = {
+    branch: Flags.string({
+      description: 'Download a development build from a named git branch',
+    }),
+
+    clean: Flags.boolean({
+      description: 'Removes old js,map,and LICENSE files in the installation',
+    }),
+
     help: Flags.help({ char: 'h' }),
     // will need to account for pagenation once there is a lot of releases
     listVersions: Flags.boolean({
       char: 'l',
       description: 'Lists out all versions of JBrowse 2',
     }),
+    nightly: Flags.boolean({
+      description: 'Download the latest development build from the main branch',
+    }),
     tag: Flags.string({
       char: 't',
       description:
         'Version of JBrowse 2 to install. Format is v1.0.0.\nDefaults to latest',
-    }),
-    branch: Flags.string({
-      description: 'Download a development build from a named git branch',
-    }),
-    nightly: Flags.boolean({
-      description: 'Download the latest development build from the main branch',
-    }),
-    clean: Flags.boolean({
-      description: 'Removes old js,map,and LICENSE files in the installation',
     }),
     url: Flags.string({
       char: 'u',

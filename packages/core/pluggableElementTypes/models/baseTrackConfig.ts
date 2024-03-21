@@ -12,65 +12,135 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
       /**
        * #slot
        */
-      name: {
-        description: 'descriptive name of the track',
-        type: 'string',
-        defaultValue: 'Track',
-      },
+      adapter: pluginManager.pluggableConfigSchemaType('adapter'),
+
       /**
        * #slot
        */
       assemblyNames: {
+        defaultValue: ['assemblyName'],
         description: 'name of the assembly (or assemblies) track belongs to',
         type: 'stringArray',
-        defaultValue: ['assemblyName'],
       },
-      /**
-       * #slot
-       */
-      description: {
-        description: 'a description of the track',
-        type: 'string',
-        defaultValue: '',
-      },
+
       /**
        * #slot
        */
       category: {
+        defaultValue: [],
         description: 'the category and sub-categories of a track',
         type: 'stringArray',
-        defaultValue: [],
       },
+
+      /**
+       * #slot
+       */
+      description: {
+        defaultValue: '',
+        description: 'a description of the track',
+        type: 'string',
+      },
+
+      /**
+       * #slot
+       */
+      displays: types.array(pluginManager.pluggableConfigSchemaType('display')),
+
+      formatAbout: ConfigurationSchema('FormatAbout', {
+        /**
+         * #slot formatAbout.config
+         */
+        config: {
+          contextVariable: ['config'],
+          defaultValue: {},
+          description: 'formats configuration object in about dialog',
+          type: 'frozen',
+        },
+
+        /**
+         * #slot formatAbout.hideUris
+         */
+        hideUris: {
+          defaultValue: false,
+          type: 'boolean',
+        },
+      }),
+
+      formatDetails: ConfigurationSchema('FormatDetails', {
+        /**
+         * #slot formatDetails.depth
+         */
+        depth: {
+          defaultValue: 2,
+          description:
+            'depth of subfeatures to iterate the formatter on formatDetails.subfeatures (e.g. you may not want to format the exon/cds subfeatures, so limited to 2',
+          type: 'number',
+        },
+
+        /**
+         * #slot formatDetails.feature
+         */
+        feature: {
+          contextVariable: ['feature'],
+          defaultValue: {},
+          description: 'adds extra fields to the feature details',
+          type: 'frozen',
+        },
+
+        /**
+         * #slot formatDetails.maxDepth
+         */
+        maxDepth: {
+          defaultValue: 99999,
+          description: 'Maximum depth to render subfeatures',
+          type: 'number',
+        },
+
+        /**
+         * #slot formatDetails.subfeatures
+         */
+        subfeatures: {
+          contextVariable: ['feature'],
+          defaultValue: {},
+          description: 'adds extra fields to the subfeatures of a feature',
+          type: 'frozen',
+        },
+      }),
+
       /**
        * #slot
        */
       metadata: {
-        type: 'frozen',
-        description: 'anything to add about this track',
         defaultValue: {},
+        description: 'anything to add about this track',
+        type: 'frozen',
       },
+
       /**
        * #slot
        */
-      adapter: pluginManager.pluggableConfigSchemaType('adapter'),
-
+      name: {
+        defaultValue: 'Track',
+        description: 'descriptive name of the track',
+        type: 'string',
+      },
       textSearching: ConfigurationSchema('textSearching', {
         /**
          * #slot textSearching.indexedAttributes
          */
         indexingAttributes: {
-          type: 'stringArray',
+          defaultValue: ['Name', 'ID'],
           description:
             'list of which feature attributes to index for text searching',
-          defaultValue: ['Name', 'ID'],
+          type: 'stringArray',
         },
         /**
          * #slot textSearching.indexingFeatureTypesToExclude
          */
         indexingFeatureTypesToExclude: {
-          type: 'stringArray',
-          description: 'list of feature types to exclude in text search index',
           defaultValue: ['CDS', 'exon'],
+          description: 'list of feature types to exclude in text search index',
+          type: 'stringArray',
         },
 
         /**
@@ -80,70 +150,34 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
           'text search adapter',
         ),
       }),
-
-      /**
-       * #slot
-       */
-      displays: types.array(pluginManager.pluggableConfigSchemaType('display')),
-
-      formatDetails: ConfigurationSchema('FormatDetails', {
-        /**
-         * #slot formatDetails.feature
-         */
-        feature: {
-          type: 'frozen',
-          description: 'adds extra fields to the feature details',
-          defaultValue: {},
-          contextVariable: ['feature'],
-        },
-        /**
-         * #slot formatDetails.subfeatures
-         */
-        subfeatures: {
-          type: 'frozen',
-          description: 'adds extra fields to the subfeatures of a feature',
-          defaultValue: {},
-          contextVariable: ['feature'],
-        },
-        /**
-         * #slot formatDetails.depth
-         */
-        depth: {
-          type: 'number',
-          defaultValue: 2,
-          description:
-            'depth of subfeatures to iterate the formatter on formatDetails.subfeatures (e.g. you may not want to format the exon/cds subfeatures, so limited to 2',
-        },
-        /**
-         * #slot formatDetails.maxDepth
-         */
-        maxDepth: {
-          type: 'number',
-          defaultValue: 99999,
-          description: 'Maximum depth to render subfeatures',
-        },
-      }),
-      formatAbout: ConfigurationSchema('FormatAbout', {
-        /**
-         * #slot formatAbout.config
-         */
-        config: {
-          type: 'frozen',
-          description: 'formats configuration object in about dialog',
-          defaultValue: {},
-          contextVariable: ['config'],
-        },
-
-        /**
-         * #slot formatAbout.hideUris
-         */
-        hideUris: {
-          type: 'boolean',
-          defaultValue: false,
-        },
-      }),
     },
     {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      actions: (self: any) => ({
+        addDisplayConf(conf: { type: string; displayId: string }) {
+          const { type } = conf
+          if (!type) {
+            throw new Error(`unknown display type ${type}`)
+          }
+          const display = self.displays.find(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (d: any) => d?.displayId === conf.displayId,
+          )
+          if (display) {
+            return display
+          }
+          const length = self.displays.push(conf)
+          return self.displays[length - 1]
+        },
+      }),
+
+      /**
+       * #identifier
+       */
+      explicitIdentifier: 'trackId',
+
+      explicitlyTyped: true,
+
       preProcessSnapshot: s2 => {
         const snap = pluginManager.evaluateExtensionPoint(
           'Core-preProcessTrackConfig',
@@ -173,29 +207,6 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
         }
         return { ...snap, displays }
       },
-      /**
-       * #identifier
-       */
-      explicitIdentifier: 'trackId',
-      explicitlyTyped: true,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      actions: (self: any) => ({
-        addDisplayConf(conf: { type: string; displayId: string }) {
-          const { type } = conf
-          if (!type) {
-            throw new Error(`unknown display type ${type}`)
-          }
-          const display = self.displays.find(
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (d: any) => d?.displayId === conf.displayId,
-          )
-          if (display) {
-            return display
-          }
-          const length = self.displays.push(conf)
-          return self.displays[length - 1]
-        },
-      }),
     },
   )
 }

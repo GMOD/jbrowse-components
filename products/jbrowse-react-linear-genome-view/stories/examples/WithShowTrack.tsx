@@ -9,8 +9,8 @@ export const WithShowTrack = () => {
   const { assembly, tracks } = getVolvoxConfig()
   const state = createViewState({
     assembly,
-    tracks,
     location: 'ctgA:1105..1221',
+    tracks,
   })
   // this is the 'showTrack' method on the linear genome view
   // full reference https://jbrowse.org/jb2/docs/models/lineargenomeview/#action-showtrack

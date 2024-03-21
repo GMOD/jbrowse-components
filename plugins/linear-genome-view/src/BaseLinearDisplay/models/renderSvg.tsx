@@ -61,9 +61,9 @@ export async function renderBaseLinearDisplaySvg(
         await rendererType.renderInClient(rpcManager, {
           ...renderArgs,
           ...renderProps,
-          viewParams: getViewParams(self, true),
           exportSVG: opts,
           theme: opts.theme || renderProps.theme,
+          viewParams: getViewParams(self, true),
         }),
       ] as const
     }),

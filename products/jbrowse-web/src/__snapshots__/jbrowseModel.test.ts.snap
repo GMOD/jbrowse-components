@@ -101,12 +101,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       },
       "sequence": {
         "adapter": {
-          "chromSizesLocation": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "/path/to/default.chrom.sizes",
-          },
           "twoBitLocation": {
             "internetAccountId": undefined,
             "internetAccountPreAuthorization": undefined,
@@ -141,12 +135,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "name": "volvox2",
       "sequence": {
         "adapter": {
-          "chromSizesLocation": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "/path/to/default.chrom.sizes",
-          },
           "twoBitLocation": {
             "internetAccountId": undefined,
             "internetAccountPreAuthorization": undefined,
@@ -173,12 +161,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "name": "volvox404",
       "sequence": {
         "adapter": {
-          "chromSizesLocation": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "/path/to/default.chrom.sizes",
-          },
           "twoBitLocation": {
             "internetAccountId": undefined,
             "internetAccountPreAuthorization": undefined,
@@ -217,12 +199,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "locationType": "UriLocation",
             "uri": "misc.fa",
           },
-          "metadataLocation": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "/path/to/fa.metadata.yaml",
-          },
           "type": "IndexedFastaAdapter",
         },
         "displays": [
@@ -254,12 +230,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox_del.fa",
-          },
-          "metadataLocation": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "/path/to/fa.metadata.yaml",
           },
           "type": "IndexedFastaAdapter",
         },
@@ -293,12 +263,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "locationType": "UriLocation",
             "uri": "volvox_ins.fa",
           },
-          "metadataLocation": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "/path/to/fa.metadata.yaml",
-          },
           "type": "IndexedFastaAdapter",
         },
         "displays": [
@@ -330,12 +294,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-rev-del.fa",
-          },
-          "metadataLocation": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "/path/to/fa.metadata.yaml",
           },
           "type": "IndexedFastaAdapter",
         },
@@ -369,12 +327,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "locationType": "UriLocation",
             "uri": "volvox-simple-inv.fa",
           },
-          "metadataLocation": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "/path/to/fa.metadata.yaml",
-          },
           "type": "IndexedFastaAdapter",
         },
         "displays": [
@@ -406,12 +358,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "output_prefix3.simseq.genome.fa",
-          },
-          "metadataLocation": {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "/path/to/fa.metadata.yaml",
           },
           "type": "IndexedFastaAdapter",
         },
@@ -460,12 +406,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "Methylation",
         ],
       },
-    },
-    "logoPath": {
-      "internetAccountId": undefined,
-      "internetAccountPreAuthorization": undefined,
-      "locationType": "UriLocation",
-      "uri": "",
     },
   },
   "connections": [],

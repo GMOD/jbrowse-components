@@ -66,51 +66,51 @@ const Entries = {
   Button: lazy(() => import('@mui/material/Button')),
   ButtonGroup: lazy(() => import('@mui/material/ButtonGroup')),
   Card: lazy(() => import('@mui/material/Card')),
-  CardActions: lazy(() => import('@mui/material/CardActions')),
   CardActionArea: lazy(() => import('@mui/material/CardActionArea')),
+  CardActions: lazy(() => import('@mui/material/CardActions')),
   CardContent: lazy(() => import('@mui/material/CardContent')),
   CardHeader: lazy(() => import('@mui/material/CardHeader')),
   CardMedia: lazy(() => import('@mui/material/CardMedia')),
-  CircularProgress: lazy(() => import('@mui/material/CircularProgress')),
-  Collapse: lazy(() => import('@mui/material/Collapse')),
-  ClickAwayListener: lazy(() => import('@mui/material/ClickAwayListener')),
-  Chip: lazy(() => import('@mui/material/Chip')),
   Checkbox: lazy(() => import('@mui/material/Checkbox')),
+  Chip: lazy(() => import('@mui/material/Chip')),
+  CircularProgress: lazy(() => import('@mui/material/CircularProgress')),
+  ClickAwayListener: lazy(() => import('@mui/material/ClickAwayListener')),
+  Collapse: lazy(() => import('@mui/material/Collapse')),
   Container: lazy(() => import('@mui/material/Container')),
   Dialog: lazy(() => import('@mui/material/Dialog')),
   DialogActions: lazy(() => import('@mui/material/DialogActions')),
-  DialogTitle: lazy(() => import('@mui/material/DialogTitle')),
   DialogContent: lazy(() => import('@mui/material/DialogContent')),
   DialogContentText: lazy(() => import('@mui/material/DialogContentText')),
+  DialogTitle: lazy(() => import('@mui/material/DialogTitle')),
   Divider: lazy(() => import('@mui/material/Divider')),
   Drawer: lazy(() => import('@mui/material/Drawer')),
   Fab: lazy(() => import('@mui/material/Fab')),
   Fade: lazy(() => import('@mui/material/Fade')),
   FilledInput: lazy(() => import('@mui/material/FilledInput')),
-  FormLabel: lazy(() => import('@mui/material/FormLabel')),
   FormControl: lazy(() => import('@mui/material/FormControl')),
   FormControlLabel: lazy(() => import('@mui/material/FormControlLabel')),
-  FormHelperText: lazy(() => import('@mui/material/FormHelperText')),
   FormGroup: lazy(() => import('@mui/material/FormGroup')),
+  FormHelperText: lazy(() => import('@mui/material/FormHelperText')),
+  FormLabel: lazy(() => import('@mui/material/FormLabel')),
   Grid: lazy(() => import('@mui/material/Grid')),
   Grow: lazy(() => import('@mui/material/Grow')),
   Icon: lazy(() => import('@mui/material/Icon')),
   IconButton: lazy(() => import('@mui/material/IconButton')),
   Input: lazy(() => import('@mui/material/Input')),
+  InputAdornment: lazy(() => import('@mui/material/InputAdornment')),
   InputBase: lazy(() => import('@mui/material/InputBase')),
   InputLabel: lazy(() => import('@mui/material/InputLabel')),
-  InputAdornment: lazy(() => import('@mui/material/InputAdornment')),
-  Link: lazy(() => import('@mui/material/Link')),
   LinearProgress: lazy(() => import('@mui/material/LinearProgress')),
+  Link: lazy(() => import('@mui/material/Link')),
   List: lazy(() => import('@mui/material/List')),
   ListItem: lazy(() => import('@mui/material/ListItem')),
   ListItemAvatar: lazy(() => import('@mui/material/ListItemAvatar')),
+  ListItemIcon: lazy(() => import('@mui/material/ListItemIcon')),
   ListItemSecondaryAction: lazy(
     () => import('@mui/material/ListItemSecondaryAction'),
   ),
-  ListItemIcon: lazy(() => import('@mui/material/ListItemIcon')),
-  ListSubheader: lazy(() => import('@mui/material/ListSubheader')),
   ListItemText: lazy(() => import('@mui/material/ListItemText')),
+  ListSubheader: lazy(() => import('@mui/material/ListSubheader')),
   Menu: lazy(() => import('@mui/material/Menu')),
   MenuItem: lazy(() => import('@mui/material/MenuItem')),
   MenuList: lazy(() => import('@mui/material/MenuList')),
@@ -139,8 +139,8 @@ const Entries = {
   Step: lazy(() => import('@mui/material/Step')),
   StepButton: lazy(() => import('@mui/material/StepButton')),
   StepConnector: lazy(() => import('@mui/material/StepConnector')),
-  StepLabel: lazy(() => import('@mui/material/StepLabel')),
   StepIcon: lazy(() => import('@mui/material/StepIcon')),
+  StepLabel: lazy(() => import('@mui/material/StepLabel')),
   Stepper: lazy(() => import('@mui/material/Stepper')),
   SvgIcon: lazy(() => import('@mui/material/SvgIcon')),
   Switch: lazy(() => import('@mui/material/Switch')),
@@ -497,12 +497,33 @@ const LazyBaseCard = React.forwardRef((props: any, ref) => (
 LazyBaseCard.displayName = 'BaseCard'
 
 const libs = {
-  mobx,
-  'mobx-state-tree': mst,
-  react: React,
-  'react/jsx-runtime': ReactJSXRuntime,
-  'react-dom': ReactDom,
-  'mobx-react': mxreact,
+  '@material-ui/core': {
+    ...LazyMUICore,
+    alpha: MUIStyles.alpha,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    makeStyles: (args: any) => {
+      const useStyles = makeStyles()(args)
+      return () => useStyles().classes
+    },
+
+    useTheme,
+  },
+  '@material-ui/core/styles': MUIStyles,
+  '@material-ui/core/utils': MUIUtils,
+
+  '@mui/material': {
+    ...LazyMUICore,
+    alpha: MUIStyles.alpha,
+    useTheme: MUIStyles.useTheme,
+  },
+
+  // end special case
+  // material-ui subcomponents, should get rid of these
+  '@mui/material/styles': MUIStyles,
+
+  // special case so plugins can easily use @mui/icons-material; don't remove
+  '@mui/material/utils': MUIUtils,
+
   '@mui/x-data-grid': {
     useGridApiContext,
     useGridApiRef,
@@ -510,40 +531,83 @@ const libs = {
     ...LazyDataGridComponents,
   },
 
-  // special case so plugins can easily use @mui/icons-material; don't remove
-  '@mui/material/utils': MUIUtils,
-  '@material-ui/core/utils': MUIUtils,
-  'tss-react/mui': { makeStyles },
+  mobx,
 
-  '@material-ui/core': {
-    ...LazyMUICore,
-    useTheme,
-    alpha: MUIStyles.alpha,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    makeStyles: (args: any) => {
-      const useStyles = makeStyles()(args)
-      return () => useStyles().classes
-    },
-  },
-  '@mui/material': {
-    ...LazyMUICore,
-    alpha: MUIStyles.alpha,
-    useTheme: MUIStyles.useTheme,
-  },
+  'mobx-react': mxreact,
+
+  'mobx-state-tree': mst,
+
   'prop-types': PropTypes,
 
-  // end special case
-  // material-ui subcomponents, should get rid of these
-  '@mui/material/styles': MUIStyles,
-  '@material-ui/core/styles': MUIStyles,
+  react: React,
+
+  'react-dom': ReactDom,
+
+  'react/jsx-runtime': ReactJSXRuntime,
+  'tss-react/mui': { makeStyles },
   ...MaterialPrefixMUI,
   ...MuiPrefixMUI,
 
-  // these are core in @mui/material, but used to be in @material-ui/lab
-  '@material-ui/lab/ToggleButton': Entries.ToggleButton,
-  '@material-ui/lab/ToggleButtonGroup': Entries.ToggleButtonGroup,
-  '@material-ui/lab/Autocomplete': Entries.Autocomplete,
-  '@material-ui/lab/Alert': Entries.Alert,
+  '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail': {
+    Attributes: LazyAttributes,
+    BaseCard: LazyBaseCard,
+    FeatureDetails: LazyFeatureDetails,
+  },
+
+  '@jbrowse/core/Plugin': Plugin,
+
+  '@jbrowse/core/configuration': Configuration,
+
+  '@jbrowse/core/data_adapters/BaseAdapter': BaseAdapterExports,
+
+  '@jbrowse/core/pluggableElementTypes': pluggableElementTypes,
+
+  '@jbrowse/core/pluggableElementTypes/AdapterType': AdapterType,
+
+  '@jbrowse/core/pluggableElementTypes/DisplayType': DisplayType,
+
+  '@jbrowse/core/pluggableElementTypes/TrackType': TrackType,
+
+  '@jbrowse/core/pluggableElementTypes/ViewType': ViewType,
+
+  '@jbrowse/core/pluggableElementTypes/WidgetType': WidgetType,
+
+  '@jbrowse/core/pluggableElementTypes/models': pluggableElementTypeModels,
+
+  '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType':
+    BoxRendererType,
+
+  '@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType':
+    CircularChordRendererType,
+
+  '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType':
+    FeatureRendererType,
+
+  '@jbrowse/core/pluggableElementTypes/renderers/RendererType': RendererType,
+
+  '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType':
+    ServerSideRendererType,
+
+  '@jbrowse/core/ui': coreUi,
+
+  '@jbrowse/core/util': coreUtil,
+
+  '@jbrowse/core/util/Base1DViewModel': Base1DView,
+
+  '@jbrowse/core/util/color': coreColor,
+
+  '@jbrowse/core/util/io': coreIo,
+
+  '@jbrowse/core/util/layouts': coreLayouts,
+
+  '@jbrowse/core/util/mst-reflection': coreMstReflection,
+
+  '@jbrowse/core/util/rxjs': rxjs,
+
+  '@jbrowse/core/util/tracks': trackUtils,
+
+  '@jbrowse/core/util/types/mst': mstTypes,
+
   '@material-ui/lab': {
     Alert: Entries.Alert,
     Autocomplete: Entries.Autocomplete,
@@ -551,41 +615,13 @@ const libs = {
     ToggleButtonGroup: Entries.ToggleButtonGroup,
   },
 
-  '@jbrowse/core/Plugin': Plugin,
-  '@jbrowse/core/pluggableElementTypes': pluggableElementTypes,
-  '@jbrowse/core/pluggableElementTypes/ViewType': ViewType,
-  '@jbrowse/core/pluggableElementTypes/AdapterType': AdapterType,
-  '@jbrowse/core/pluggableElementTypes/DisplayType': DisplayType,
-  '@jbrowse/core/pluggableElementTypes/TrackType': TrackType,
-  '@jbrowse/core/pluggableElementTypes/WidgetType': WidgetType,
-  '@jbrowse/core/pluggableElementTypes/models': pluggableElementTypeModels,
-  '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType':
-    ServerSideRendererType,
-  '@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType':
-    CircularChordRendererType,
-  '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType':
-    BoxRendererType,
-  '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType':
-    FeatureRendererType,
-  '@jbrowse/core/pluggableElementTypes/renderers/RendererType': RendererType,
-  '@jbrowse/core/configuration': Configuration,
-  '@jbrowse/core/util/types/mst': mstTypes,
-  '@jbrowse/core/ui': coreUi,
-  '@jbrowse/core/util': coreUtil,
-  '@jbrowse/core/util/color': coreColor,
-  '@jbrowse/core/util/layouts': coreLayouts,
-  '@jbrowse/core/util/tracks': trackUtils,
-  '@jbrowse/core/util/Base1DViewModel': Base1DView,
-  '@jbrowse/core/util/io': coreIo,
-  '@jbrowse/core/util/mst-reflection': coreMstReflection,
-  '@jbrowse/core/util/rxjs': rxjs,
+  '@material-ui/lab/Alert': Entries.Alert,
 
-  '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail': {
-    Attributes: LazyAttributes,
-    FeatureDetails: LazyFeatureDetails,
-    BaseCard: LazyBaseCard,
-  },
-  '@jbrowse/core/data_adapters/BaseAdapter': BaseAdapterExports,
+  '@material-ui/lab/Autocomplete': Entries.Autocomplete,
+
+  // these are core in @mui/material, but used to be in @material-ui/lab
+  '@material-ui/lab/ToggleButton': Entries.ToggleButton,
+  '@material-ui/lab/ToggleButtonGroup': Entries.ToggleButtonGroup,
 }
 
 const libsList = Object.keys(libs)

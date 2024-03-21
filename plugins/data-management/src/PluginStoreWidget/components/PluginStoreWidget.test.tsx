@@ -15,14 +15,14 @@ jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 const plugins = {
   plugins: [
     {
-      name: 'MsaView',
       authors: ['Colin Diesh'],
       description: 'multiple sequence alignment browser plugin for JBrowse 2',
-      location: 'https://github.com/GMOD/jbrowse-plugin-msaview',
-      url: 'https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js',
-      license: 'Apache License 2.0',
       image:
         'https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/msaview-screenshot-fs8.png',
+      license: 'Apache License 2.0',
+      location: 'https://github.com/GMOD/jbrowse-plugin-msaview',
+      name: 'MsaView',
+      url: 'https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js',
     },
   ],
 }

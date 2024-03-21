@@ -21,9 +21,9 @@ const DotplotDisplay = observer(function DotplotDisplay(props: {
       <model.ReactComponent2
         {...props}
         style={{
+          left,
           position: 'absolute',
           top,
-          left,
         }}
       />
       {children}

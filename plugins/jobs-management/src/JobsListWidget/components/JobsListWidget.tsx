@@ -17,11 +17,11 @@ import CurrentJobCard from './CurrentJobCard'
 import { JobsListModel, NewJob } from '../model'
 
 const useStyles = makeStyles()(theme => ({
-  root: {
-    margin: theme.spacing(1),
-  },
   expandIcon: {
     color: theme.palette.tertiary.contrastText,
+  },
+  root: {
+    margin: theme.spacing(1),
   },
 }))
 

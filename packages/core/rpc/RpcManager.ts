@@ -16,8 +16,8 @@ interface BackendConfigurations {
   >
 }
 const DriverClasses = {
-  WebWorkerRpcDriver,
   MainThreadRpcDriver,
+  WebWorkerRpcDriver,
 }
 
 export default class RpcManager {

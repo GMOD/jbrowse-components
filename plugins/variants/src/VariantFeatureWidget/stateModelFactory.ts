@@ -7,8 +7,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
   return types.compose(
     baseModel,
     types.model('VariantFeatureWidget', {
-      type: types.literal('VariantFeatureWidget'),
       descriptions: types.frozen(),
+      type: types.literal('VariantFeatureWidget'),
     }),
   )
 }

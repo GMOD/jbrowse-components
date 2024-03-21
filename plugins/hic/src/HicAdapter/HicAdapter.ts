@@ -128,8 +128,8 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
 
       const records = await this.hic.getContactRecords(
         'KR',
-        { start, chr, end },
-        { start, chr, end },
+        { chr, end, start },
+        { chr, end, start },
         'BP',
         res,
       )

@@ -20,42 +20,11 @@ extends
 
 ```js
 autoscale: {
-        type: 'stringEnum',
         defaultValue: 'local',
-        model: types.enumeration('Autoscale type', ['local']),
         description:
           'performs local autoscaling (no other options for SNP Coverage available)',
-      }
-```
-
-#### slot: minScore
-
-```js
-minScore: {
-        type: 'number',
-        defaultValue: Number.MIN_VALUE,
-        description: 'minimum value for the y-scale',
-      }
-```
-
-#### slot: maxScore
-
-```js
-maxScore: {
-        type: 'number',
-        description: 'maximum value for the y-scale',
-        defaultValue: Number.MAX_VALUE,
-      }
-```
-
-#### slot: scaleType
-
-```js
-scaleType: {
+        model: types.enumeration('Autoscale type', ['local']),
         type: 'stringEnum',
-        model: types.enumeration('Scale type', ['linear', 'log']),
-        description: 'The type of scale to use',
-        defaultValue: 'linear',
       }
 ```
 
@@ -63,9 +32,29 @@ scaleType: {
 
 ```js
 inverted: {
-        type: 'boolean',
-        description: 'draw upside down',
         defaultValue: false,
+        description: 'draw upside down',
+        type: 'boolean',
+      }
+```
+
+#### slot: maxScore
+
+```js
+maxScore: {
+        defaultValue: Number.MAX_VALUE,
+        description: 'maximum value for the y-scale',
+        type: 'number',
+      }
+```
+
+#### slot: minScore
+
+```js
+minScore: {
+        defaultValue: Number.MIN_VALUE,
+        description: 'minimum value for the y-scale',
+        type: 'number',
       }
 ```
 
@@ -73,9 +62,9 @@ inverted: {
 
 ```js
 multiTicks: {
-        type: 'boolean',
-        description: 'Display multiple values for the ticks',
         defaultValue: false,
+        description: 'Display multiple values for the ticks',
+        type: 'boolean',
       }
 ```
 
@@ -86,6 +75,20 @@ renderers: ConfigurationSchema('RenderersConfiguration', {
   SNPCoverageRenderer: pluginManager.getRendererType('SNPCoverageRenderer')
     .configSchema,
 })
+```
+
+#### slot: scaleType
+
+```js
+scaleType: {
+        defaultValue: 'linear',
+
+        description: 'The type of scale to use',
+
+        model: types.enumeration('Scale type', ['linear', 'log']),
+
+        type: 'stringEnum',
+      }
 ```
 
 ### LinearSNPCoverageDisplay - Derives from

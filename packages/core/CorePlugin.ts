@@ -21,13 +21,13 @@ export default class CorePlugin extends Plugin {
 
     pluginManager.addWidgetType(() => {
       return new WidgetType({
-        name: 'BaseFeatureWidget',
-        heading: 'Feature details',
-        configSchema,
-        stateModel: stateModelFactory(pluginManager),
         ReactComponent: lazy(
           () => import('./BaseFeatureWidget/BaseFeatureDetail'),
         ),
+        configSchema,
+        heading: 'Feature details',
+        name: 'BaseFeatureWidget',
+        stateModel: stateModelFactory(pluginManager),
       })
     })
   }

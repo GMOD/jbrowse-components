@@ -14,6 +14,15 @@ info
 
 ### DrawerWidgetSessionMixin - Properties
 
+#### property: activeWidgets
+
+```js
+// type signature
+IMapType<IMaybe<IReferenceType<IAnyType>>>
+// code
+activeWidgets: types.map(types.safeReference(widgetStateModelType))
+```
+
 #### property: drawerPosition
 
 ```js
@@ -38,24 +47,6 @@ drawerWidth: types.optional(
       )
 ```
 
-#### property: widgets
-
-```js
-// type signature
-IMapType<IAnyType>
-// code
-widgets: types.map(widgetStateModelType)
-```
-
-#### property: activeWidgets
-
-```js
-// type signature
-IMapType<IMaybe<IReferenceType<IAnyType>>>
-// code
-activeWidgets: types.map(types.safeReference(widgetStateModelType))
-```
-
 #### property: minimized
 
 ```js
@@ -63,6 +54,15 @@ activeWidgets: types.map(types.safeReference(widgetStateModelType))
 IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 minimized: types.optional(types.boolean, false)
+```
+
+#### property: widgets
+
+```js
+// type signature
+IMapType<IAnyType>
+// code
+widgets: types.map(widgetStateModelType)
 ```
 
 ### DrawerWidgetSessionMixin - Getters
@@ -76,27 +76,6 @@ any
 
 ### DrawerWidgetSessionMixin - Actions
 
-#### action: setDrawerPosition
-
-```js
-// type signature
-setDrawerPosition: (arg: string) => void
-```
-
-#### action: updateDrawerWidth
-
-```js
-// type signature
-updateDrawerWidth: (drawerWidth: number) => number
-```
-
-#### action: resizeDrawer
-
-```js
-// type signature
-resizeDrawer: (distance: number) => number
-```
-
 #### action: addWidget
 
 ```js
@@ -104,11 +83,14 @@ resizeDrawer: (distance: number) => number
 addWidget: (typeName: string, id: string, initialState?: {}, conf?: unknown) => any
 ```
 
-#### action: showWidget
+#### action: editConfiguration
+
+opens a configuration editor to configure the given thing, and sets the current
+task to be configuring it
 
 ```js
 // type signature
-showWidget: (widget: any) => void
+editConfiguration: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
 ```
 
 #### action: hasWidget
@@ -116,6 +98,13 @@ showWidget: (widget: any) => void
 ```js
 // type signature
 hasWidget: (widget: any) => boolean
+```
+
+#### action: hideAllWidgets
+
+```js
+// type signature
+hideAllWidgets: () => void
 ```
 
 #### action: hideWidget
@@ -132,6 +121,27 @@ hideWidget: (widget: any) => void
 minimizeWidgetDrawer: () => void
 ```
 
+#### action: resizeDrawer
+
+```js
+// type signature
+resizeDrawer: (distance: number) => number
+```
+
+#### action: setDrawerPosition
+
+```js
+// type signature
+setDrawerPosition: (arg: string) => void
+```
+
+#### action: showWidget
+
+```js
+// type signature
+showWidget: (widget: any) => void
+```
+
 #### action: showWidgetDrawer
 
 ```js
@@ -139,19 +149,9 @@ minimizeWidgetDrawer: () => void
 showWidgetDrawer: () => void
 ```
 
-#### action: hideAllWidgets
+#### action: updateDrawerWidth
 
 ```js
 // type signature
-hideAllWidgets: () => void
-```
-
-#### action: editConfiguration
-
-opens a configuration editor to configure the given thing, and sets the current
-task to be configuring it
-
-```js
-// type signature
-editConfiguration: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
+updateDrawerWidth: (drawerWidth: number) => number
 ```

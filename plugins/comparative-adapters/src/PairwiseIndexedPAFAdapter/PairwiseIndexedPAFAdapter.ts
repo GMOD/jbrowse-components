@@ -36,10 +36,10 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     const pm = this.pluginManager
 
     this.pif = new TabixIndexedFile({
-      filehandle: openLocation(pifGzLoc, pm),
-      csiFilehandle: type === 'CSI' ? openLocation(loc, pm) : undefined,
-      tbiFilehandle: type !== 'CSI' ? openLocation(loc, pm) : undefined,
       chunkCacheSize: 50 * 2 ** 20,
+      csiFilehandle: type === 'CSI' ? openLocation(loc, pm) : undefined,
+      filehandle: openLocation(pifGzLoc, pm),
+      tbiFilehandle: type !== 'CSI' ? openLocation(loc, pm) : undefined,
     })
   }
   async getHeader() {
@@ -101,25 +101,25 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
 
           observer.next(
             new SyntenyFeature({
-              uniqueId: fileOffset + assemblyName,
               assemblyName,
-              start,
               end,
-              type: 'match',
               refName,
+              start,
               strand,
+              type: 'match',
+              uniqueId: fileOffset + assemblyName,
               ...rest,
               CIGAR: extra.cg,
-              syntenyId: fileOffset,
-              identity: numMatches / blockLen,
-              numMatches,
               blockLen,
+              identity: numMatches / blockLen,
               mate: {
-                start: mateStart,
+                assemblyName: assemblyNames[+flip],
                 end: mateEnd,
                 refName: mateName,
-                assemblyName: assemblyNames[+flip],
+                start: mateStart,
               },
+              numMatches,
+              syntenyId: fileOffset,
             }),
           )
         },

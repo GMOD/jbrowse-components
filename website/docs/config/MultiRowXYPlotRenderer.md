@@ -12,34 +12,22 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ### MultiRowXYPlotRenderer - Slots
 
-#### slot: filled
-
-```js
-filled: {
-      type: 'boolean',
-      defaultValue: true,
-    }
-```
-
 #### slot: displayCrossHatches
 
 ```js
 displayCrossHatches: {
-      type: 'boolean',
-      description: 'choose to draw cross hatches (sideways lines)',
       defaultValue: false,
+      description: 'choose to draw cross hatches (sideways lines)',
+      type: 'boolean',
     }
 ```
 
-#### slot: summaryScoreMode
+#### slot: filled
 
 ```js
-summaryScoreMode: {
-      type: 'stringEnum',
-      model: types.enumeration('Score type', ['max', 'min', 'avg', 'whiskers']),
-      description:
-        'choose whether to use max/min/average or whiskers which combines all three into the same rendering',
-      defaultValue: 'whiskers',
+filled: {
+      defaultValue: true,
+      type: 'boolean',
     }
 ```
 
@@ -47,8 +35,20 @@ summaryScoreMode: {
 
 ```js
 minSize: {
-      type: 'number',
       defaultValue: 0,
+      type: 'number',
+    }
+```
+
+#### slot: summaryScoreMode
+
+```js
+summaryScoreMode: {
+      defaultValue: 'whiskers',
+      description:
+        'choose whether to use max/min/average or whiskers which combines all three into the same rendering',
+      model: types.enumeration('Score type', ['max', 'min', 'avg', 'whiskers']),
+      type: 'stringEnum',
     }
 ```
 

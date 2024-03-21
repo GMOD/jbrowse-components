@@ -18,10 +18,10 @@ generally exists on the config.json or root config as configuration.formatAbout
 
 ```js
 config: {
-      type: 'frozen',
-      description: 'formats configuration object in about dialog',
-      defaultValue: {},
       contextVariable: ['config'],
+      defaultValue: {},
+      description: 'formats configuration object in about dialog',
+      type: 'frozen',
     }
 ```
 
@@ -29,7 +29,7 @@ config: {
 
 ```js
 hideUris: {
-      type: 'boolean',
       defaultValue: false,
+      type: 'boolean',
     }
 ```

@@ -9,11 +9,11 @@ const configSchema = ConfigurationSchema('AddConnectionWidget', {})
 export default (pluginManager: PluginManager) => {
   pluginManager.addWidgetType(() => {
     return new WidgetType({
-      name: 'AddConnectionWidget',
-      heading: 'Add a connection',
-      configSchema,
-      stateModel,
       ReactComponent: lazy(() => import('./components/AddConnectionWidget')),
+      configSchema,
+      heading: 'Add a connection',
+      name: 'AddConnectionWidget',
+      stateModel,
     })
   })
 }

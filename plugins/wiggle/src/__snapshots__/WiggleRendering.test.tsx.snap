@@ -4,12 +4,12 @@ exports[`one 1`] = `
 <div>
   <div
     data-testid="wiggle-rendering-test"
-    style="overflow: visible; position: relative; height: 500px;"
+    style="height: 500px; overflow: visible; position: relative;"
   >
     <canvas
       data-testid="prerendered_canvas_test"
       height="500"
-      style="width: 500px; height: 500px;"
+      style="height: 500px; width: 500px;"
       width="500"
     />
   </div>

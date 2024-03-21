@@ -55,8 +55,8 @@ const RowMenu = observer(function ({
       onClose={rowMenuClose}
       menuItems={menuItems}
       anchorOrigin={{
-        vertical: 'bottom',
         horizontal: 'right',
+        vertical: 'bottom',
       }}
     />
   )

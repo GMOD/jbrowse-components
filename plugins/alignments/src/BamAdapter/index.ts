@@ -5,10 +5,10 @@ import configSchema from './configSchema'
 export default (pluginManager: PluginManager) => {
   pluginManager.addAdapterType(() => {
     return new AdapterType({
-      name: 'BamAdapter',
-      displayName: 'BAM adapter',
       configSchema,
+      displayName: 'BAM adapter',
       getAdapterClass: () => import('./BamAdapter').then(r => r.default),
+      name: 'BamAdapter',
     })
   })
 }

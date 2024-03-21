@@ -29,5 +29,5 @@ getReferring: (object: IAnyStateTreeNode) => ReferringNode[]
 
 ```js
 // type signature
-removeReferring: (referring: ReferringNode[], track: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<ConfigurationSchemaType<{ name: { description: string; type: string; defaultValue: string; }; ... 8 more ...; formatAbout: ConfigurationSchemaType<...>; }, Configurati...
+removeReferring: (referring: ReferringNode[], track: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<ConfigurationSchemaType<{ adapter: IAnyModelType; ... 8 more ...; textSearching: ConfigurationSchemaType<...>; }, ConfigurationSchemaOptions<...>>>, callbacks: Functio...
 ```

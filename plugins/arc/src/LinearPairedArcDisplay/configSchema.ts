@@ -12,10 +12,10 @@ export function configSchemaFactory() {
        * #slot
        */
       color: {
-        type: 'color',
-        description: 'the color of the arcs',
-        defaultValue: 'jexl:defaultPairedArcColor(feature,alt)',
         contextVariable: ['feature', 'alt'],
+        defaultValue: 'jexl:defaultPairedArcColor(feature,alt)',
+        description: 'the color of the arcs',
+        type: 'color',
       },
     },
     {

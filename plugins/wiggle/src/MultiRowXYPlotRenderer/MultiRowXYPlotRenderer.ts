@@ -18,9 +18,9 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
     sources.forEach(source => {
       const { reducedFeatures } = drawXY(ctx, {
         ...props,
+        colorCallback: () => source.color || 'blue',
         features: groups[source.name] || [],
         height,
-        colorCallback: () => source.color || 'blue',
       })
       ctx.strokeStyle = 'rgba(200,200,200,0.8)'
       ctx.beginPath()

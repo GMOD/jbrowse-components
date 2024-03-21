@@ -130,29 +130,29 @@ export function readData({
     configData.assembly = {
       name: path.basename(fasta),
       sequence: {
-        type: 'ReferenceSequenceTrack',
-        trackId: 'refseq',
         adapter: {
-          type: bgzip ? 'BgzipFastaAdapter' : 'IndexedFastaAdapter',
-          fastaLocation: makeLocation(fasta),
           faiLocation: makeLocation(fasta + '.fai'),
+          fastaLocation: makeLocation(fasta),
           gziLocation: bgzip ? makeLocation(fasta + '.gzi') : undefined,
+          type: bgzip ? 'BgzipFastaAdapter' : 'IndexedFastaAdapter',
         },
+        trackId: 'refseq',
+        type: 'ReferenceSequenceTrack',
       },
     }
     if (aliases) {
       configData.assembly.refNameAliases = {
         adapter: {
-          type: 'RefNameAliasAdapter',
           location: makeLocation(aliases),
+          type: 'RefNameAliasAdapter',
         },
       }
     }
     if (cytobands) {
       configData.assembly.cytobands = {
         adapter: {
-          type: 'CytobandAdapter',
           location: makeLocation(cytobands),
+          type: 'CytobandAdapter',
         },
       }
     }
@@ -179,22 +179,22 @@ export function readData({
       configData.tracks = [
         ...configData.tracks,
         {
-          type: 'AlignmentsTrack',
-          trackId: path.basename(file),
-          name: path.basename(file),
-          assemblyNames: [configData.assembly.name],
           adapter: {
-            type: 'BamAdapter',
             bamLocation: makeLocation(file),
             index: { location: makeLocation(file + '.bai') },
             sequenceAdapter: configData.assembly.sequence.adapter,
+            type: 'BamAdapter',
           },
+          assemblyNames: [configData.assembly.name],
+          name: path.basename(file),
+          trackId: path.basename(file),
+          type: 'AlignmentsTrack',
           ...(opts.includes('snpcov')
             ? {
                 displays: [
                   {
-                    type: 'LinearSNPCoverageDisplay',
                     displayId: path.basename(file) + '-' + Math.random(),
+                    type: 'LinearSNPCoverageDisplay',
                   },
                 ],
               }
@@ -206,22 +206,22 @@ export function readData({
       configData.tracks = [
         ...configData.tracks,
         {
-          type: 'AlignmentsTrack',
-          trackId: path.basename(file),
-          name: path.basename(file),
-          assemblyNames: [configData.assembly.name],
           adapter: {
-            type: 'CramAdapter',
-            cramLocation: makeLocation(file),
             craiLocation: makeLocation(file + '.crai'),
+            cramLocation: makeLocation(file),
             sequenceAdapter: configData.assembly.sequence.adapter,
+            type: 'CramAdapter',
           },
+          assemblyNames: [configData.assembly.name],
+          name: path.basename(file),
+          trackId: path.basename(file),
+          type: 'AlignmentsTrack',
           ...(opts.includes('snpcov')
             ? {
                 displays: [
                   {
-                    type: 'LinearSNPCoverageDisplay',
                     displayId: path.basename(file) + '-' + Math.random(),
+                    type: 'LinearSNPCoverageDisplay',
                   },
                 ],
               }
@@ -233,14 +233,14 @@ export function readData({
       configData.tracks = [
         ...configData.tracks,
         {
-          type: 'QuantitativeTrack',
-          trackId: path.basename(file),
-          name: path.basename(file),
-          assemblyNames: [configData.assembly.name],
           adapter: {
-            type: 'BigWigAdapter',
             bigWigLocation: makeLocation(file),
+            type: 'BigWigAdapter',
           },
+          assemblyNames: [configData.assembly.name],
+          name: path.basename(file),
+          trackId: path.basename(file),
+          type: 'QuantitativeTrack',
         },
       ]
     }
@@ -249,17 +249,17 @@ export function readData({
       configData.tracks = [
         ...configData.tracks,
         {
-          type: 'VariantTrack',
-          trackId: path.basename(file),
-          name: path.basename(file),
-          assemblyNames: [configData.assembly.name],
           adapter: {
-            type: 'VcfTabixAdapter',
-            vcfGzLocation: makeLocation(file),
             index: {
               location: makeLocation(file + '.tbi'),
             },
+            type: 'VcfTabixAdapter',
+            vcfGzLocation: makeLocation(file),
           },
+          assemblyNames: [configData.assembly.name],
+          name: path.basename(file),
+          trackId: path.basename(file),
+          type: 'VariantTrack',
         },
       ]
     }
@@ -268,17 +268,17 @@ export function readData({
       configData.tracks = [
         ...configData.tracks,
         {
-          type: 'FeatureTrack',
-          trackId: path.basename(file),
-          name: path.basename(file),
-          assemblyNames: [configData.assembly.name],
           adapter: {
-            type: 'Gff3TabixAdapter',
             gffGzLocation: makeLocation(file),
             index: {
               location: makeLocation(file + '.tbi'),
             },
+            type: 'Gff3TabixAdapter',
           },
+          assemblyNames: [configData.assembly.name],
+          name: path.basename(file),
+          trackId: path.basename(file),
+          type: 'FeatureTrack',
         },
       ]
     }
@@ -287,14 +287,14 @@ export function readData({
       configData.tracks = [
         ...configData.tracks,
         {
-          type: 'HicTrack',
-          trackId: path.basename(file),
-          name: path.basename(file),
-          assemblyNames: [configData.assembly.name],
           adapter: {
-            type: 'HicAdapter',
             hicLocation: makeLocation(file),
+            type: 'HicAdapter',
           },
+          assemblyNames: [configData.assembly.name],
+          name: path.basename(file),
+          trackId: path.basename(file),
+          type: 'HicTrack',
         },
       ]
     }
@@ -302,14 +302,14 @@ export function readData({
       configData.tracks = [
         ...configData.tracks,
         {
-          type: 'FeatureTrack',
-          trackId: path.basename(file),
-          name: path.basename(file),
-          assemblyNames: [configData.assembly.name],
           adapter: {
-            type: 'BigBedAdapter',
             bigBedLocation: makeLocation(file),
+            type: 'BigBedAdapter',
           },
+          assemblyNames: [configData.assembly.name],
+          name: path.basename(file),
+          trackId: path.basename(file),
+          type: 'FeatureTrack',
         },
       ]
     }
@@ -317,17 +317,17 @@ export function readData({
       configData.tracks = [
         ...configData.tracks,
         {
-          type: 'FeatureTrack',
-          trackId: path.basename(file),
-          name: path.basename(file),
-          assemblyNames: [configData.assembly.name],
           adapter: {
-            type: 'BedTabixAdapter',
             bedGzLocation: makeLocation(file),
             index: {
               location: makeLocation(file + '.tbi'),
             },
+            type: 'BedTabixAdapter',
           },
+          assemblyNames: [configData.assembly.name],
+          name: path.basename(file),
+          trackId: path.basename(file),
+          type: 'FeatureTrack',
         },
       ]
     }
@@ -379,7 +379,7 @@ function process(
     else if (opt.startsWith('color:')) {
       const [, type, tag] = opt.split(':')
       if (display.PileupDisplay) {
-        display.PileupDisplay.setColorScheme({ type, tag })
+        display.PileupDisplay.setColorScheme({ tag, type })
       } else {
         display.setColor(type)
       }

@@ -9,9 +9,10 @@ describe('JBrowseWebSessionModel', () => {
     const pluginManager = new PluginManager()
     pluginManager.configure()
     const sessionModel = sessionModelFactory({
-      pluginManager,
       // @ts-expect-error
       assemblyConfigSchema: types.frozen(),
+
+      pluginManager,
     })
     const session = sessionModel.create(
       { name: 'testSession' },

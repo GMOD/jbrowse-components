@@ -14,14 +14,15 @@ used to configure CRAM adapter
 
 ### CramAdapter - Slots
 
-#### slot: fetchSizeLimit
+#### slot: craiLocation
 
 ```js
-fetchSizeLimit: {
-      type: 'number',
-      description:
-        'size in bytes over which to display a warning to the user that too much data will be fetched',
-      defaultValue: 3_000_000,
+craiLocation: {
+      defaultValue: {
+        locationType: 'UriLocation',
+        uri: '/path/to/my.cram.crai',
+      },
+      type: 'fileLocation',
     }
 ```
 
@@ -29,23 +30,22 @@ fetchSizeLimit: {
 
 ```js
 cramLocation: {
-      type: 'fileLocation',
       defaultValue: {
-        uri: '/path/to/my.cram',
         locationType: 'UriLocation',
+        uri: '/path/to/my.cram',
       },
+      type: 'fileLocation',
     }
 ```
 
-#### slot: craiLocation
+#### slot: fetchSizeLimit
 
 ```js
-craiLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/my.cram.crai',
-        locationType: 'UriLocation',
-      },
+fetchSizeLimit: {
+      defaultValue: 3_000_000,
+      description:
+        'size in bytes over which to display a warning to the user that too much data will be fetched',
+      type: 'number',
     }
 ```
 
@@ -56,8 +56,8 @@ needs to be manually added
 
 ```js
 sequenceAdapter: {
-      type: 'frozen',
-      description: 'sequence data adapter',
       defaultValue: null,
+      description: 'sequence data adapter',
+      type: 'frozen',
     }
 ```

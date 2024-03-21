@@ -12,22 +12,22 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ### SequenceSearchAdapter - Slots
 
+#### slot: caseInsensitive
+
+```js
+caseInsensitive: {
+      defaultValue: true,
+      type: 'boolean',
+    }
+```
+
 #### slot: search
 
 ```js
 search: {
-      type: 'string',
       defaultValue: '',
       description: 'Search string or regex to search for',
-    }
-```
-
-#### slot: sequenceAdapter
-
-```js
-sequenceAdapter: {
-      type: 'frozen',
-      defaultValue: null,
+      type: 'string',
     }
 ```
 
@@ -35,8 +35,8 @@ sequenceAdapter: {
 
 ```js
 searchForward: {
-      type: 'boolean',
       defaultValue: true,
+      type: 'boolean',
     }
 ```
 
@@ -44,16 +44,16 @@ searchForward: {
 
 ```js
 searchReverse: {
-      type: 'boolean',
       defaultValue: true,
+      type: 'boolean',
     }
 ```
 
-#### slot: caseInsensitive
+#### slot: sequenceAdapter
 
 ```js
-caseInsensitive: {
-      type: 'boolean',
-      defaultValue: true,
+sequenceAdapter: {
+      defaultValue: null,
+      type: 'frozen',
     }
 ```

@@ -43,12 +43,12 @@ const coreDetails = [
 ]
 
 const useStyles = makeStyles()(theme => ({
+  expandIcon: {
+    color: theme.palette.tertiary?.contrastText || '#fff',
+  },
   expansionPanelDetails: {
     display: 'block',
     padding: theme.spacing(1),
-  },
-  expandIcon: {
-    color: theme.palette.tertiary?.contrastText || '#fff',
   },
 }))
 
@@ -63,7 +63,7 @@ export function BaseCard({
     <Accordion
       expanded={expanded}
       onChange={() => setExpanded(s => !s)}
-      TransitionProps={{ unmountOnExit: true, timeout: 150 }}
+      TransitionProps={{ timeout: 150, unmountOnExit: true }}
     >
       <AccordionSummary
         expandIcon={<ExpandMore className={classes.expandIcon} />}
@@ -119,8 +119,8 @@ function CoreDetails(props: BaseProps) {
 
   const coreRenderedDetails = {
     description: 'Description',
-    name: 'Name',
     length: 'Length',
+    name: 'Name',
     type: 'Type',
   }
   return (
@@ -184,9 +184,9 @@ export function FeatureDetails(props: {
   const session = getSession(model)
 
   const ExtraPanel = pm.evaluateExtensionPoint('Core-extraFeaturePanel', null, {
-    session,
     feature,
     model,
+    session,
   }) as PanelDescriptor | undefined
   return (
     <BaseCard title={generateTitle(name, id, type)}>

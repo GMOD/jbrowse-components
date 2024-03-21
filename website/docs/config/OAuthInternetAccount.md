@@ -12,43 +12,13 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ### OAuthInternetAccount - Slots
 
-#### slot: tokenType
-
-```js
-tokenType: {
-      description: 'a custom name for a token to include in the header',
-      type: 'string',
-      defaultValue: 'Bearer',
-    }
-```
-
 #### slot: authEndpoint
 
 ```js
 authEndpoint: {
+      defaultValue: '',
       description: 'the authorization code endpoint of the internet account',
       type: 'string',
-      defaultValue: '',
-    }
-```
-
-#### slot: tokenEndpoint
-
-```js
-tokenEndpoint: {
-      description: 'the token endpoint of the internet account',
-      type: 'string',
-      defaultValue: '',
-    }
-```
-
-#### slot: needsPKCE
-
-```js
-needsPKCE: {
-      description: 'boolean to indicate if the endpoint needs a PKCE code',
-      type: 'boolean',
-      defaultValue: false,
     }
 ```
 
@@ -56,29 +26,19 @@ needsPKCE: {
 
 ```js
 clientId: {
+      defaultValue: '',
       description: 'id for the OAuth application',
       type: 'string',
-      defaultValue: '',
     }
 ```
 
-#### slot: scopes
+#### slot: needsPKCE
 
 ```js
-scopes: {
-      description: 'optional scopes for the authorization call',
-      type: 'string',
-      defaultValue: '',
-    }
-```
-
-#### slot: state
-
-```js
-state: {
-      description: 'optional state for the authorization call',
-      type: 'string',
-      defaultValue: '',
+needsPKCE: {
+      defaultValue: false,
+      description: 'boolean to indicate if the endpoint needs a PKCE code',
+      type: 'boolean',
     }
 ```
 
@@ -86,10 +46,50 @@ state: {
 
 ```js
 responseType: {
+      defaultValue: 'code',
       description:
         "the type of response from the authorization endpoint. can be 'token' or 'code'",
       type: 'string',
-      defaultValue: 'code',
+    }
+```
+
+#### slot: scopes
+
+```js
+scopes: {
+      defaultValue: '',
+      description: 'optional scopes for the authorization call',
+      type: 'string',
+    }
+```
+
+#### slot: state
+
+```js
+state: {
+      defaultValue: '',
+      description: 'optional state for the authorization call',
+      type: 'string',
+    }
+```
+
+#### slot: tokenEndpoint
+
+```js
+tokenEndpoint: {
+      defaultValue: '',
+      description: 'the token endpoint of the internet account',
+      type: 'string',
+    }
+```
+
+#### slot: tokenType
+
+```js
+tokenType: {
+      defaultValue: 'Bearer',
+      description: 'a custom name for a token to include in the header',
+      type: 'string',
     }
 ```
 

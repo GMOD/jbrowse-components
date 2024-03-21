@@ -7,9 +7,9 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addRendererType(
     () =>
       new LinePlotRenderer({
-        name: 'LinePlotRenderer',
         ReactComponent,
         configSchema,
+        name: 'LinePlotRenderer',
         pluginManager,
       }),
   )

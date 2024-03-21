@@ -34,14 +34,21 @@ composed of
 
 ```js
 // type
-ConfigurationSchemaType<{ aliases: { type: string; defaultValue: any[]; description: string; }; sequence: AnyConfigurationSchemaType; refNameColors: { type: string; defaultValue: any[]; description: string; }; refNameAliases: ConfigurationSchemaType<...>; cytobands: ConfigurationSchemaType<...>; displayName: { ...; ...
+ConfigurationSchemaType<{ aliases: { defaultValue: any[]; description: string; type: string; }; cytobands: ConfigurationSchemaType<{ adapter: IAnyModelType; }, ConfigurationSchemaOptions<undefined, undefined>>; displayName: { ...; }; refNameAliases: ConfigurationSchemaType<...>; refNameColors: { ...; }; sequence: An...
 ```
 
 #### getter: root
 
 ```js
 // type
-{ jbrowse: any; session: any; sessionPath: string; assemblyManager: { assemblies: IMSTArray<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { ...; } & ... 5 more ... & { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>; } & ... 5 more ... & IStateTreeNode<...>; internetAccounts: IMSTAr...
+{ assemblyManager: { assemblies: IMSTArray<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { cytobands: Feature[]; error: unknown; loaded: boolean; loadingP: Promise<...>; lowerCaseRefNameAliases: RefNameAliases; refNameAliases: RefNameAliases; volatileRegions: BasicRegion[]; } & ... 5 more ... & { ...
+```
+
+#### getter: assemblyManager
+
+```js
+// type
+{ assemblies: IMSTArray<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { cytobands: Feature[]; error: unknown; loaded: boolean; loadingP: Promise<void>; lowerCaseRefNameAliases: RefNameAliases; refNameAliases: RefNameAliases; volatileRegions: BasicRegion[]; } & ... 5 more ... & { ...; }, _NotCustom...
 ```
 
 #### getter: assemblyNames
@@ -51,18 +58,11 @@ ConfigurationSchemaType<{ aliases: { type: string; defaultValue: any[]; descript
 string[]
 ```
 
-#### getter: version
-
-```js
-// type
-any
-```
-
 #### getter: history
 
 ```js
 // type
-{ undoIdx: number; targetPath: string; } & NonEmptyObject & { history: unknown[]; notTrackingUndo: boolean; } & { readonly canUndo: boolean; readonly canRedo: boolean; } & { stopTrackingUndo(): void; ... 5 more ...; redo(): void; } & IStateTreeNode<...>
+{ targetPath: string; undoIdx: number; } & NonEmptyObject & { history: unknown[]; notTrackingUndo: boolean; } & { readonly canRedo: boolean; readonly canUndo: boolean; } & { addUndoState(todos: unknown): void; ... 5 more ...; undo(): void; } & IStateTreeNode<...>
 ```
 
 #### getter: menus
@@ -72,18 +72,18 @@ any
 Menu[]
 ```
 
-#### getter: assemblyManager
-
-```js
-// type
-{ assemblies: IMSTArray<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loaded: boolean; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; lowerCaseRefNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 5 more ... & { ...; }, _NotCustom...
-```
-
 #### getter: savedSessionNames
 
 ```js
 // type
 IMSTArray<ISimpleType<string>> & IStateTreeNode<IMaybe<IArrayType<ISimpleType<string>>>>
+```
+
+#### getter: version
+
+```js
+// type
+any
 ```
 
 ### JBrowseDesktopSessionModel - Methods
@@ -93,22 +93,23 @@ IMSTArray<ISimpleType<string>> & IStateTreeNode<IMaybe<IArrayType<ISimpleType<st
 ```js
 // type signature
 renderProps: () => {
+  highResolutionScaling: any
   theme: any
 }
 ```
 
 ### JBrowseDesktopSessionModel - Actions
 
+#### action: editTrackConfiguration
+
+```js
+// type signature
+editTrackConfiguration: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<ConfigurationSchemaType<{ adapter: IAnyModelType; assemblyNames: { defaultValue: string[]; description: string; type: string; }; ... 7 more ...; textSearching: ConfigurationSchemaType<......
+```
+
 #### action: renameCurrentSession
 
 ```js
 // type signature
 renameCurrentSession: (sessionName: string) => void
-```
-
-#### action: editTrackConfiguration
-
-```js
-// type signature
-editTrackConfiguration: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<ConfigurationSchemaType<{ name: { description: string; type: string; defaultValue: string; }; ... 8 more ...; formatAbout: ConfigurationSchemaType<...>; }, ConfigurationSchemaOptions<...>...
 ```

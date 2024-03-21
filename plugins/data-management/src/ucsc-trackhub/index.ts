@@ -8,11 +8,11 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addConnectionType(
     () =>
       new ConnectionType({
-        name: 'UCSCTrackHubConnection',
         configSchema,
-        stateModel: stateModelFactory(pluginManager),
-        displayName: 'UCSC Track Hub',
         description: 'A track or assembly hub in the Track Hub format',
+        displayName: 'UCSC Track Hub',
+        name: 'UCSCTrackHubConnection',
+        stateModel: stateModelFactory(pluginManager),
         url: '//genome.ucsc.edu/goldenPath/help/hgTrackHubHelp.html#Intro',
       }),
   )

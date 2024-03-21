@@ -16,22 +16,22 @@ export default class AddTrackJson extends JBrowseCommand {
 
   static args = {
     track: Args.string({
-      required: true,
       description: `track JSON file or command line arg blob`,
+      required: true,
     }),
   }
 
   static flags = {
-    update: Flags.boolean({
-      char: 'u',
-      description: `update the contents of an existing track, matched based on trackId`,
+    out: Flags.string({
+      description: 'synonym for target',
     }),
     target: Flags.string({
       description:
         'path to config file in JB2 installation directory to write out to.\nCreates ./config.json if nonexistent',
     }),
-    out: Flags.string({
-      description: 'synonym for target',
+    update: Flags.boolean({
+      char: 'u',
+      description: `update the contents of an existing track, matched based on trackId`,
     }),
   }
 

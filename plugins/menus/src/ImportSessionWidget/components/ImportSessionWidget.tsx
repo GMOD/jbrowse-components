@@ -20,36 +20,36 @@ function styledBy(property: string, mapping: Record<string, string>) {
 
 // @ts-expect-error
 const useStyles = makeStyles()(theme => ({
-  root: {
-    margin: theme.spacing(1),
+  dropZone: {
+    '&:focus': {
+      borderColor: theme.palette.secondary.light,
+    },
+    backgroundColor: styledBy('isDragActive', {
+      false: theme.palette.background.default,
+      true: alpha(
+        theme.palette.text.primary,
+        theme.palette.action.hoverOpacity,
+      ),
+    }),
+    borderColor: styledBy('isDragActive', {
+      false: theme.palette.divider,
+      true: theme.palette.secondary.light,
+    }),
+    borderRadius: 2,
+    borderStyle: 'dashed',
+    borderWidth: 2,
+    margin: theme.spacing(2),
+    outline: 'none',
+    padding: theme.spacing(2),
+    textAlign: 'center',
+    transition: 'border .24s ease-in-out',
   },
   paper: {
     display: 'flex',
     flexDirection: 'column',
   },
-  dropZone: {
-    textAlign: 'center',
-    margin: theme.spacing(2),
-    padding: theme.spacing(2),
-    borderWidth: 2,
-    borderRadius: 2,
-    borderColor: styledBy('isDragActive', {
-      true: theme.palette.secondary.light,
-      false: theme.palette.divider,
-    }),
-    borderStyle: 'dashed',
-    backgroundColor: styledBy('isDragActive', {
-      true: alpha(
-        theme.palette.text.primary,
-        theme.palette.action.hoverOpacity,
-      ),
-      false: theme.palette.background.default,
-    }),
-    outline: 'none',
-    transition: 'border .24s ease-in-out',
-    '&:focus': {
-      borderColor: theme.palette.secondary.light,
-    },
+  root: {
+    margin: theme.spacing(1),
   },
   uploadIcon: {
     color: theme.palette.text.secondary,

@@ -31,13 +31,13 @@ export function layoutFeats(
     featureMap.values(),
     feature =>
       layoutFeature({
-        feature,
-        layout,
         bpPerPx,
+        displayMode,
+        feature,
+        heightPx,
+        layout,
         region,
         showSoftClip,
-        heightPx,
-        displayMode,
       }),
     featureMap.size,
   )

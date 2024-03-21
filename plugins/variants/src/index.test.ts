@@ -24,9 +24,9 @@ test('plugin in a stock JBrowse', () => {
 
   const VariantTrack = pluginManager.getTrackType('VariantTrack')
   const config2 = VariantTrack.configSchema.create({
-    type: 'VariantTrack',
-    trackId: 'trackId0',
     adapter: { type: 'VcfTabixAdapter' },
+    trackId: 'trackId0',
+    type: 'VariantTrack',
   })
   expect(getSnapshot(config2)).toMatchSnapshot()
 })

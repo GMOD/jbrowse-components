@@ -6,9 +6,6 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addAdapterType(
     () =>
       new AdapterType({
-        name: 'MultiWiggleAdapter',
-        displayName: 'Multi-wiggle adapter',
-        configSchema,
         adapterCapabilities: [
           'hasResolution',
           'hasLocalStats',
@@ -17,8 +14,11 @@ export default (pluginManager: PluginManager) => {
         adapterMetadata: {
           hiddenFromGUI: true,
         },
+        configSchema,
+        displayName: 'Multi-wiggle adapter',
         getAdapterClass: () =>
           import('./MultiWiggleAdapter').then(r => r.default),
+        name: 'MultiWiggleAdapter',
       }),
   )
 }

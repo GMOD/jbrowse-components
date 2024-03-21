@@ -11,17 +11,17 @@ import { storeBlobLocation } from '@jbrowse/core/util/tracks'
 import { AddTrackModel } from '@jbrowse/plugin-data-management'
 
 const useStyles = makeStyles()(theme => ({
-  textbox: {
-    width: '100%',
-  },
   paper: {
     margin: theme.spacing(),
     padding: theme.spacing(),
   },
   submit: {
-    marginTop: 25,
-    marginBottom: 100,
     display: 'block',
+    marginBottom: 100,
+    marginTop: 25,
+  },
+  textbox: {
+    width: '100%',
   },
 }))
 
@@ -57,7 +57,6 @@ export default function MultiWiggleWidget({ model }: { model: AddTrackModel }) {
           multiple
           onChange={({ target }) => {
             const res = [...(target?.files || [])].map(file => ({
-              type: 'BigWigAdapter',
               bigWigLocation: isElectron
                 ? {
                     localPath: (file as File & { path: string }).path,
@@ -65,6 +64,7 @@ export default function MultiWiggleWidget({ model }: { model: AddTrackModel }) {
                   }
                 : storeBlobLocation({ blob: file }),
               source: file.name,
+              type: 'BigWigAdapter',
             }))
             setVal(JSON.stringify(res, null, 2))
           }}
@@ -100,14 +100,14 @@ export default function MultiWiggleWidget({ model }: { model: AddTrackModel }) {
 
           if (isSessionWithAddTracks(session)) {
             session.addTrackConf({
-              trackId,
-              type: 'MultiQuantitativeTrack',
-              name: trackName,
-              assemblyNames: [model.assembly],
               adapter: {
                 type: 'MultiWiggleAdapter',
                 ...obj,
               },
+              assemblyNames: [model.assembly],
+              name: trackName,
+              trackId,
+              type: 'MultiQuantitativeTrack',
             })
 
             model.view?.showTrack(trackId)

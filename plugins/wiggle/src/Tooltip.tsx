@@ -12,31 +12,31 @@ import {
 import { YSCALEBAR_LABEL_OFFSET, round } from './util'
 
 const useStyles = makeStyles()(theme => ({
+  hoverVertical: {
+    background: '#333',
+    border: 'none',
+    cursor: 'default',
+    height: '100%',
+    pointerEvents: 'none',
+    position: 'absolute',
+    top: YSCALEBAR_LABEL_OFFSET,
+    width: 1,
+  },
+
   // these styles come from
   // https://github.com/mui-org/material-ui/blob/master/packages/material-ui/src/Tooltip/Tooltip.js
   tooltip: {
-    position: 'absolute',
-    pointerEvents: 'none',
     backgroundColor: alpha(theme.palette.grey[700], 0.9),
     borderRadius: theme.shape.borderRadius,
     color: theme.palette.common.white,
     fontFamily: theme.typography.fontFamily,
-    padding: '4px 8px',
     fontSize: theme.typography.pxToRem(12),
     lineHeight: `${round(14 / 10)}em`,
     maxWidth: 300,
-    wordWrap: 'break-word',
-  },
-
-  hoverVertical: {
-    background: '#333',
-    border: 'none',
-    width: 1,
-    height: '100%',
-    top: YSCALEBAR_LABEL_OFFSET,
-    cursor: 'default',
-    position: 'absolute',
+    padding: '4px 8px',
     pointerEvents: 'none',
+    position: 'absolute',
+    wordWrap: 'break-word',
   },
 }))
 
@@ -88,8 +88,8 @@ const Tooltip = observer(function Tooltip({
           ref={refs.setFloating}
           style={{
             ...floatingStyles,
-            zIndex: 100000,
             pointerEvents: 'none',
+            zIndex: 100000,
           }}
           {...getFloatingProps()}
         >
@@ -100,8 +100,8 @@ const Tooltip = observer(function Tooltip({
       <div
         className={classes.hoverVertical}
         style={{
-          left: offsetMouseCoord[0],
           height: height - YSCALEBAR_LABEL_OFFSET * 2,
+          left: offsetMouseCoord[0],
         }}
       />
     </>

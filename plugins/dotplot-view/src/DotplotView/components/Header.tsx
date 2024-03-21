@@ -12,16 +12,16 @@ import DotplotControls from './DotplotControls'
 
 const useStyles = makeStyles()({
   bp: {
-    display: 'flex',
     alignItems: 'center',
+    display: 'flex',
     marginLeft: 10,
-  },
-  spacer: {
-    flexGrow: 1,
   },
   headerBar: {
     display: 'flex',
     position: 'relative',
+  },
+  spacer: {
+    flexGrow: 1,
   },
 })
 

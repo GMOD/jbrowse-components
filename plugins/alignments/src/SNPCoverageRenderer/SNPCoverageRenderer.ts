@@ -98,11 +98,11 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       C: bases.C.main,
       G: bases.G.main,
       T: bases.T.main,
-      insertion: 'purple',
-      softclip: 'blue',
       hardclip: 'red',
-      total: readConfObject(cfg, 'color'),
+      insertion: 'purple',
       meth: 'red',
+      softclip: 'blue',
+      total: readConfObject(cfg, 'color'),
       unmeth: 'blue',
     }
 

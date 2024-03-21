@@ -7,10 +7,10 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addAdapterType(
     () =>
       new AdapterType({
-        name: 'NCListAdapter',
-        displayName: 'NCList adapter',
         configSchema,
+        displayName: 'NCList adapter',
         getAdapterClass: () => import('./NCListAdapter').then(r => r.default),
+        name: 'NCListAdapter',
       }),
   )
 }

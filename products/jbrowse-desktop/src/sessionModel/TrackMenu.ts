@@ -36,6 +36,7 @@ export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
       const trackSnapshot = clone(getSnapshot(trackConfig))
       return [
         {
+          icon: InfoIcon,
           label: 'About track',
           onClick: () => {
             session.queueDialog(doneCallback => [
@@ -43,21 +44,21 @@ export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
               { config: trackConfig, handleClose: doneCallback },
             ])
           },
-          icon: InfoIcon,
         },
         {
+          icon: SettingsIcon,
           label: 'Settings',
           onClick: () => session.editConfiguration(trackConfig),
-          icon: SettingsIcon,
         },
         {
+          icon: DeleteIcon,
           label: 'Delete track',
           onClick: () => {
             session.deleteTrackConf(trackConfig)
           },
-          icon: DeleteIcon,
         },
         {
+          icon: CopyIcon,
           label: 'Copy track',
           onClick: () => {
             const now = Date.now()
@@ -69,11 +70,11 @@ export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
             trackSnapshot.category = undefined
             session.addTrackConf(trackSnapshot)
           },
-          icon: CopyIcon,
         },
         ...(isSupportedIndexingAdapter(trackSnapshot.adapter?.type)
           ? [
               {
+                icon: Indexing,
                 label: trackSnapshot.textSearching
                   ? 'Re-index track'
                   : 'Index track',
@@ -85,7 +86,9 @@ export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
                   const indexName = `${name}-index`
                   // TODO: open jobs list widget
                   jobsManager.queueJob({
+                    cancelCallback: () => jobsManager.abortJob(),
                     indexingParams: {
+                      assemblies: assemblyNames,
                       attributes: textSearching?.indexingAttributes || [
                         'Name',
                         'ID',
@@ -94,17 +97,14 @@ export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
                         'CDS',
                         'exon',
                       ],
-                      assemblies: assemblyNames,
-                      tracks: [trackId],
                       indexType: 'perTrack',
-                      timestamp: new Date().toISOString(),
                       name: indexName,
+                      timestamp: new Date().toISOString(),
+                      tracks: [trackId],
                     },
                     name: indexName,
-                    cancelCallback: () => jobsManager.abortJob(),
                   })
                 },
-                icon: Indexing,
               },
             ]
           : []),

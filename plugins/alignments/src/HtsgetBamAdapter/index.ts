@@ -5,13 +5,13 @@ import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 export default (pluginManager: PluginManager) => {
   pluginManager.addAdapterType(() => {
     return new AdapterType({
-      name: 'HtsgetBamAdapter',
-      displayName: 'Htsget BAM adapter',
       adapterMetadata: {
         hiddenFromGUI: true,
       },
       configSchema,
+      displayName: 'Htsget BAM adapter',
       getAdapterClass: () => import('./HtsgetBamAdapter').then(r => r.default),
+      name: 'HtsgetBamAdapter',
     })
   })
 }

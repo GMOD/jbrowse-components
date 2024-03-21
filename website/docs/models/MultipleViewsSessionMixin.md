@@ -30,18 +30,11 @@ views: types.array(pluginManager.pluggableMstType('view', 'stateModel'))
 
 ### MultipleViewsSessionMixin - Actions
 
-#### action: moveViewUp
+#### action: addLinearGenomeViewOfAssembly
 
 ```js
 // type signature
-moveViewUp: (id: string) => void
-```
-
-#### action: moveViewDown
-
-```js
-// type signature
-moveViewDown: (id: string) => void
+addLinearGenomeViewOfAssembly: (assemblyName: string, initialState?: {}) => any
 ```
 
 #### action: addView
@@ -51,18 +44,11 @@ moveViewDown: (id: string) => void
 addView: (typeName: string, initialState?: {}) => any
 ```
 
-#### action: removeView
+#### action: addViewFromAnotherView
 
 ```js
 // type signature
-removeView: (view: { id: string; displayName: string; minimized: boolean; } & NonEmptyObject & { width: number; } & { menuItems(): MenuItem[]; } & { setDisplayName(name: string): void; setWidth(newWidth: number): void; setMinimized(flag: boolean): void; } & IStateTreeNode<...>) => void
-```
-
-#### action: addLinearGenomeViewOfAssembly
-
-```js
-// type signature
-addLinearGenomeViewOfAssembly: (assemblyName: string, initialState?: {}) => any
+addViewFromAnotherView: (viewType: string, otherView: { displayName: string; id: string; minimized: boolean; displayedRegions: IMSTArray<IModelType<{ end: ISimpleType<number>; refName: ISimpleType<string>; reversed: IOptionalIType<...>; start: ISimpleType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>;...
 ```
 
 #### action: addViewOfAssembly
@@ -72,9 +58,23 @@ addLinearGenomeViewOfAssembly: (assemblyName: string, initialState?: {}) => any
 addViewOfAssembly: (viewType: string, assemblyName: string, initialState?: Record<string, unknown>) => any
 ```
 
-#### action: addViewFromAnotherView
+#### action: moveViewDown
 
 ```js
 // type signature
-addViewFromAnotherView: (viewType: string, otherView: { id: string; displayName: string; minimized: boolean; displayedRegions: IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<...>; reversed: IOptionalIType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>;...
+moveViewDown: (id: string) => void
+```
+
+#### action: moveViewUp
+
+```js
+// type signature
+moveViewUp: (id: string) => void
+```
+
+#### action: removeView
+
+```js
+// type signature
+removeView: (view: { displayName: string; id: string; minimized: boolean; } & NonEmptyObject & { width: number; } & { menuItems(): MenuItem[]; } & { setDisplayName(name: string): void; setMinimized(flag: boolean): void; setWidth(newWidth: number): void; } & IStateTreeNode<...>) => void
 ```

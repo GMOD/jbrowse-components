@@ -11,27 +11,28 @@ const IndexedFastaAdapter = ConfigurationSchema(
     /**
      * #slot
      */
-    fastaLocation: {
+    faiLocation: {
+      defaultValue: { locationType: 'UriLocation', uri: '/path/to/seq.fa.fai' },
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/seq.fa', locationType: 'UriLocation' },
     },
+
     /**
      * #slot
      */
-    faiLocation: {
+    fastaLocation: {
+      defaultValue: { locationType: 'UriLocation', uri: '/path/to/seq.fa' },
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/seq.fa.fai', locationType: 'UriLocation' },
     },
     /**
      * #slot
      */
     metadataLocation: {
+      defaultValue: {
+        locationType: 'UriLocation',
+        uri: '/path/to/fa.metadata.yaml',
+      },
       description: 'Optional metadata file',
       type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/fa.metadata.yaml',
-        locationType: 'UriLocation',
-      },
     },
   },
   { explicitlyTyped: true },

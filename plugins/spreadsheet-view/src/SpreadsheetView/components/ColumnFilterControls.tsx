@@ -9,16 +9,16 @@ import FilterIcon from '@mui/icons-material/FilterList'
 import CloseIcon from '@mui/icons-material/Close'
 
 const useStyles = makeStyles()(theme => ({
-  columnName: {
-    verticalAlign: 'middle',
-    paddingRight: '0.3em',
-  },
   columnFilter: {
-    overflow: 'hidden',
-    whiteSpace: 'nowrap',
     boxSizing: 'border-box',
-    width: '100%',
+    overflow: 'hidden',
     position: 'relative',
+    whiteSpace: 'nowrap',
+    width: '100%',
+  },
+  columnName: {
+    paddingRight: '0.3em',
+    verticalAlign: 'middle',
   },
   filterIcon: {
     position: 'relative',

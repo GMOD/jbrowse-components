@@ -22,7 +22,7 @@ module.exports = {
     tsconfigRootDir: __dirname,
     project: './tsconfig.json',
   },
-  plugins: ['eslint-plugin-tsdoc', 'react-refresh'],
+  plugins: ['eslint-plugin-tsdoc', 'react-refresh', 'sort-keys-fix'],
   settings: {
     react: {
       version: 'detect',
@@ -30,6 +30,7 @@ module.exports = {
   },
   rules: {
     'react-refresh/only-export-components': 'warn',
+    'sort-keys-fix/sort-keys-fix': 'warn',
 
     '@typescript-eslint/ban-ts-ignore': 'off',
     '@typescript-eslint/ban-ts-comment': 'off',

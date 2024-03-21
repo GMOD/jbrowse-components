@@ -12,10 +12,10 @@ type SpreadsheetModel = Instance<typeof SpreadsheetStateModel>
 
 const useStyles = makeStyles()(theme => ({
   root: {
-    position: 'relative',
-    marginBottom: theme.spacing(1),
     background: theme.palette.background.paper,
+    marginBottom: theme.spacing(1),
     overflow: 'auto',
+    position: 'relative',
   },
 }))
 

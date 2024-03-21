@@ -90,20 +90,20 @@ export default function RootModel({
 }) {
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
   const jbrowseModelType = jbrowseWebFactory({
-    pluginManager,
     assemblyConfigSchema,
+    pluginManager,
   })
   const sessionModelType = sessionModelFactory({
-    pluginManager,
     assemblyConfigSchema,
+    pluginManager,
   })
   return types
     .compose(
       BaseRootModelFactory({
-        pluginManager,
-        jbrowseModelType,
-        sessionModelType,
         assemblyConfigSchema,
+        jbrowseModelType,
+        pluginManager,
+        sessionModelType,
       }),
       InternetAccountsRootModelMixin(pluginManager),
       HistoryManagementMixin(),
@@ -116,16 +116,16 @@ export default function RootModel({
       configPath: types.maybe(types.string),
     })
     .volatile(self => ({
-      version: packageJSON.version,
-      hydrateFn: hydrateRoot,
       createRootFn: createRoot,
+      error: undefined as unknown,
+      hydrateFn: hydrateRoot,
       pluginsUpdated: false,
       rpcManager: new RpcManager(
         pluginManager,
         self.jbrowse.configuration.rpc,
         {
-          WebWorkerRpcDriver: { makeWorkerInstance },
           MainThreadRpcDriver: {},
+          WebWorkerRpcDriver: { makeWorkerInstance },
         },
       ),
       savedSessionsVolatile: observable.map<
@@ -133,41 +133,38 @@ export default function RootModel({
         { name: string; [key: string]: unknown }
       >({}),
       textSearchManager: new TextSearchManager(pluginManager),
-      error: undefined as unknown,
+      version: packageJSON.version,
     }))
     .views(self => ({
-      /**
-       * #getter
-       */
-      get savedSessions() {
-        return [...self.savedSessionsVolatile.values()]
-      },
-      /**
-       * #method
-       */
-      localStorageId(name: string) {
-        return `localSaved-${name}-${self.configPath}`
-      },
       /**
        * #getter
        */
       get autosaveId() {
         return `autosave-${self.configPath}`
       },
+
+      /**
+       * #method
+       */
+      localStorageId(name: string) {
+        return `localSaved-${name}-${self.configPath}`
+      },
+
       /**
        * #getter
        */
       get previousAutosaveId() {
         return `previousAutosave-${self.configPath}`
       },
-    }))
-    .views(self => ({
+
       /**
        * #getter
        */
-      get savedSessionNames() {
-        return self.savedSessions.map(session => session.name)
+      get savedSessions() {
+        return [...self.savedSessionsVolatile.values()]
       },
+    }))
+    .views(self => ({
       /**
        * #getter
        */
@@ -176,9 +173,39 @@ export default function RootModel({
         const params = new URLSearchParams(locationUrl.search)
         return params?.get('session')?.split('local-')[1]
       },
+
+      /**
+       * #getter
+       */
+      get savedSessionNames() {
+        return self.savedSessions.map(session => session.name)
+      },
     }))
 
     .actions(self => ({
+      /**
+       * #action
+       */
+      activateSession(name: string) {
+        const localId = self.localStorageId(name)
+        const newSessionSnapshot = localStorage.getItem(localId)
+        if (!newSessionSnapshot) {
+          throw new Error(
+            `Can't activate session ${name}, it is not in the savedSessions`,
+          )
+        }
+
+        this.setSession(JSON.parse(newSessionSnapshot).session)
+      },
+
+      /**
+       * #action
+       */
+      addSavedSession(session: { name: string }) {
+        const key = self.localStorageId(session.name)
+        self.savedSessionsVolatile.set(key, session)
+      },
+
       afterCreate() {
         for (const [key, val] of Object.entries(localStorage)
           .filter(([key, _val]) => key.startsWith('localSaved-'))
@@ -242,67 +269,7 @@ export default function RootModel({
           ),
         )
       },
-      /**
-       * #action
-       */
-      setSession(sessionSnapshot?: SnapshotIn<BaseSessionType>) {
-        const oldSession = self.session
-        self.session = cast(sessionSnapshot)
-        if (self.session) {
-          // validate all references in the session snapshot
-          try {
-            filterSessionInPlace(self.session, getType(self.session))
-          } catch (error) {
-            // throws error if session filtering failed
-            self.session = oldSession
-            throw error
-          }
-        }
-      },
 
-      /**
-       * #action
-       */
-      setPluginsUpdated(flag: boolean) {
-        self.pluginsUpdated = flag
-      },
-      /**
-       * #action
-       */
-      setDefaultSession() {
-        const { defaultSession } = self.jbrowse
-        const newSession = {
-          ...defaultSession,
-          name: `${defaultSession.name} ${new Date().toLocaleString()}`,
-        }
-
-        this.setSession(newSession)
-      },
-      /**
-       * #action
-       */
-      renameCurrentSession(sessionName: string) {
-        if (self.session) {
-          const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
-          snapshot.name = sessionName
-          this.setSession(snapshot)
-        }
-      },
-      /**
-       * #action
-       */
-      addSavedSession(session: { name: string }) {
-        const key = self.localStorageId(session.name)
-        self.savedSessionsVolatile.set(key, session)
-      },
-      /**
-       * #action
-       */
-      removeSavedSession(session: { name: string }) {
-        const key = self.localStorageId(session.name)
-        localStorage.removeItem(key)
-        self.savedSessionsVolatile.delete(key)
-      },
       /**
        * #action
        */
@@ -321,29 +288,7 @@ export default function RootModel({
           this.setSession(snapshot)
         }
       },
-      /**
-       * #action
-       */
-      activateSession(name: string) {
-        const localId = self.localStorageId(name)
-        const newSessionSnapshot = localStorage.getItem(localId)
-        if (!newSessionSnapshot) {
-          throw new Error(
-            `Can't activate session ${name}, it is not in the savedSessions`,
-          )
-        }
 
-        this.setSession(JSON.parse(newSessionSnapshot).session)
-      },
-      /**
-       * #action
-       */
-      saveSessionToLocalStorage() {
-        if (self.session) {
-          const key = self.localStorageId(self.session.name)
-          self.savedSessionsVolatile.set(key, getSnapshot(self.session))
-        }
-      },
       loadAutosaveSession() {
         const previousAutosave = localStorage.getItem(self.previousAutosaveId)
         const autosavedSession = previousAutosave
@@ -353,21 +298,91 @@ export default function RootModel({
         autosavedSession.name = `${name.replace('-autosaved', '')}-restored`
         this.setSession(autosavedSession)
       },
+
+      /**
+       * #action
+       */
+      removeSavedSession(session: { name: string }) {
+        const key = self.localStorageId(session.name)
+        localStorage.removeItem(key)
+        self.savedSessionsVolatile.delete(key)
+      },
+
+      /**
+       * #action
+       */
+      renameCurrentSession(sessionName: string) {
+        if (self.session) {
+          const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
+          snapshot.name = sessionName
+          this.setSession(snapshot)
+        }
+      },
+
+      /**
+       * #action
+       */
+      saveSessionToLocalStorage() {
+        if (self.session) {
+          const key = self.localStorageId(self.session.name)
+          self.savedSessionsVolatile.set(key, getSnapshot(self.session))
+        }
+      },
+
+      /**
+       * #action
+       */
+      setDefaultSession() {
+        const { defaultSession } = self.jbrowse
+        const newSession = {
+          ...defaultSession,
+          name: `${defaultSession.name} ${new Date().toLocaleString()}`,
+        }
+
+        this.setSession(newSession)
+      },
+
       /**
        * #action
        */
       setError(error?: unknown) {
         self.error = error
       },
+
+      /**
+       * #action
+       */
+      setPluginsUpdated(flag: boolean) {
+        self.pluginsUpdated = flag
+      },
+
+      /**
+       * #action
+       */
+      setSession(sessionSnapshot?: SnapshotIn<BaseSessionType>) {
+        const oldSession = self.session
+        self.session = cast(sessionSnapshot)
+        if (self.session) {
+          // validate all references in the session snapshot
+          try {
+            filterSessionInPlace(self.session, getType(self.session))
+          } catch (error) {
+            // throws error if session filtering failed
+            self.session = oldSession
+            throw error
+          }
+        }
+      },
     }))
     .volatile(self => ({
+      adminMode,
       menus: [
         {
           label: 'File',
           menuItems: [
             {
-              label: 'New session',
               icon: AddIcon,
+              label: 'New session',
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onClick: (session: any) => {
                 const lastAutosave = localStorage.getItem(self.autosaveId)
@@ -378,8 +393,8 @@ export default function RootModel({
               },
             },
             {
-              label: 'Import session…',
               icon: PublishIcon,
+              label: 'Import session…',
               onClick: (session: SessionWithWidgets) => {
                 const widget = session.addWidget(
                   'ImportSessionWidget',
@@ -389,8 +404,8 @@ export default function RootModel({
               },
             },
             {
-              label: 'Export session',
               icon: GetAppIcon,
+              label: 'Export session',
               onClick: (session: IAnyStateTreeNode) => {
                 const sessionBlob = new Blob(
                   [JSON.stringify({ session: getSnapshot(session) }, null, 2)],
@@ -400,8 +415,8 @@ export default function RootModel({
               },
             },
             {
-              label: 'Open session…',
               icon: FolderOpenIcon,
+              label: 'Open session…',
               onClick: (session: SessionWithWidgets) => {
                 const widget = session.addWidget(
                   'SessionManager',
@@ -411,16 +426,16 @@ export default function RootModel({
               },
             },
             {
-              label: 'Save session',
               icon: SaveIcon,
+              label: 'Save session',
               onClick: (session: SessionWithWidgets) => {
                 self.saveSessionToLocalStorage()
                 session.notify(`Saved session "${session.name}"`, 'success')
               },
             },
             {
-              label: 'Duplicate session',
               icon: FileCopyIcon,
+              label: 'Duplicate session',
               onClick: (session: AbstractSessionModel) => {
                 if (session.duplicateCurrentSession) {
                   session.duplicateCurrentSession()
@@ -429,8 +444,8 @@ export default function RootModel({
             },
             { type: 'divider' },
             {
-              label: 'Open track...',
               icon: StorageIcon,
+              label: 'Open track...',
               onClick: (session: SessionWithWidgets) => {
                 if (session.views.length === 0) {
                   session.notify('Please open a view to add a track first')
@@ -450,8 +465,8 @@ export default function RootModel({
               },
             },
             {
-              label: 'Open connection...',
               icon: Cable,
+              label: 'Open connection...',
               onClick: (session: SessionWithWidgets) => {
                 session.showWidget(
                   session.addWidget(
@@ -463,8 +478,8 @@ export default function RootModel({
             },
             { type: 'divider' },
             {
-              label: 'Return to splash screen',
               icon: AppsIcon,
+              label: 'Return to splash screen',
               onClick: () => self.setSession(undefined),
             },
           ],
@@ -487,7 +502,7 @@ export default function RootModel({
                     onClick: () =>
                       self.session.queueDialog((onClose: () => void) => [
                         SetDefaultSession,
-                        { rootModel: self, onClose },
+                        { onClose, rootModel: self },
                       ]),
                   },
                 ],
@@ -502,8 +517,8 @@ export default function RootModel({
           label: 'Tools',
           menuItems: [
             {
-              label: 'Undo',
               icon: UndoIcon,
+              label: 'Undo',
               onClick: () => {
                 if (self.history.canUndo) {
                   self.history.undo()
@@ -511,8 +526,8 @@ export default function RootModel({
               },
             },
             {
-              label: 'Redo',
               icon: RedoIcon,
+              label: 'Redo',
               onClick: () => {
                 if (self.history.canRedo) {
                   self.history.redo()
@@ -521,8 +536,8 @@ export default function RootModel({
             },
             { type: 'divider' },
             {
-              label: 'Plugin store',
               icon: ExtensionIcon,
+              label: 'Plugin store',
               onClick: () => {
                 if (self.session) {
                   self.session.showWidget(
@@ -535,16 +550,16 @@ export default function RootModel({
               },
             },
             {
-              label: 'Preferences',
               icon: SettingsIcon,
+              label: 'Preferences',
               onClick: () => {
                 if (self.session) {
                   ;(self.session as SessionWithDialogs).queueDialog(
                     handleClose => [
                       PreferencesDialog,
                       {
-                        session: self.session,
                         handleClose,
+                        session: self.session,
                       },
                     ],
                   )
@@ -554,7 +569,6 @@ export default function RootModel({
           ],
         },
       ] as Menu[],
-      adminMode,
     }))
 }
 

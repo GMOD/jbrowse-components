@@ -37,9 +37,9 @@ export function getPluginManager(initialState?: any, adminMode = true) {
   pluginManager.createPluggableElements()
 
   const rootModel = JBrowseRootModelFactory({
+    adminMode,
     pluginManager,
     sessionModelFactory,
-    adminMode,
   }).create(
     {
       jbrowse: initialState || configSnapshot,
@@ -70,8 +70,8 @@ export function generateReadBuffer(getFile: (s: string) => GenericFilehandle) {
         const { bytesRead } = await file.read(buf, 0, len, start)
         const stat = await file.stat()
         return new Response(buf.slice(0, bytesRead), {
-          status: 206,
           headers: [['content-range', `${start}-${end}/${stat.size}`]],
+          status: 206,
         })
       }
       const body = await file.readFile()
@@ -134,7 +134,7 @@ export function createViewNoWait(args?: any, adminMode?: boolean) {
   const rootModel = pluginManager.rootModel!
   const session = rootModel.session!
   const view = session.views[0] as LGV
-  return { view, rootModel, session, ...rest }
+  return { rootModel, session, view, ...rest }
 }
 
 export function doBeforeEach(
@@ -178,8 +178,8 @@ export async function doSetupForImportForm(val?: unknown) {
 
   return {
     autocomplete,
-    input,
     getInputValue,
+    input,
     ...args,
   }
 }

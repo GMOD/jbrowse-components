@@ -21,12 +21,12 @@ const getVolvoxSequenceSubAdapter: getSubAdapterType = async () => {
 test('adapter can fetch features from volvox-sorted.cram', async () => {
   const adapter = new Adapter(
     configSchema.create({
-      cramLocation: {
-        localPath: require.resolve('../../test_data/volvox-sorted.cram'),
-        locationType: 'LocalPathLocation',
-      },
       craiLocation: {
         localPath: require.resolve('../../test_data/volvox-sorted.cram.crai'),
+        locationType: 'LocalPathLocation',
+      },
+      cramLocation: {
+        localPath: require.resolve('../../test_data/volvox-sorted.cram'),
         locationType: 'LocalPathLocation',
       },
       sequenceAdapter: {},
@@ -37,9 +37,9 @@ test('adapter can fetch features from volvox-sorted.cram', async () => {
 
   const features = adapter.getFeatures({
     assemblyName: 'volvox',
+    end: 20000,
     refName: 'ctgA',
     start: 0,
-    end: 20000,
   })
 
   const featuresArray = await firstValueFrom(features.pipe(toArray()))
@@ -57,12 +57,12 @@ test('adapter can fetch features from volvox-sorted.cram', async () => {
 test('test usage of cramSlightlyLazyFeature toJSON (used in the widget)', async () => {
   const adapter = new Adapter(
     configSchema.create({
-      cramLocation: {
-        localPath: require.resolve('../../test_data/volvox-sorted.cram'),
-        locationType: 'LocalPathLocation',
-      },
       craiLocation: {
         localPath: require.resolve('../../test_data/volvox-sorted.cram.crai'),
+        locationType: 'LocalPathLocation',
+      },
+      cramLocation: {
+        localPath: require.resolve('../../test_data/volvox-sorted.cram'),
         locationType: 'LocalPathLocation',
       },
       sequenceAdapter: {},
@@ -73,9 +73,9 @@ test('test usage of cramSlightlyLazyFeature toJSON (used in the widget)', async 
 
   const features = adapter.getFeatures({
     assemblyName: 'volvox',
+    end: 100,
     refName: 'ctgA',
     start: 0,
-    end: 100,
   })
   const featuresArray = await firstValueFrom(features.pipe(toArray()))
   const f = featuresArray[0].toJSON()

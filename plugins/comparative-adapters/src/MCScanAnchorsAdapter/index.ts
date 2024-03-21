@@ -6,15 +6,15 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addAdapterType(
     () =>
       new AdapterType({
-        name: 'MCScanAnchorsAdapter',
-        displayName: 'MCScan anchors adapter',
-        configSchema,
         adapterMetadata: {
           hiddenFromGUI: true,
         },
-
+        configSchema,
+        displayName: 'MCScan anchors adapter',
         getAdapterClass: () =>
           import('./MCScanAnchorsAdapter').then(r => r.default),
+
+        name: 'MCScanAnchorsAdapter',
       }),
   )
 }

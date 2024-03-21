@@ -6,13 +6,13 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addAdapterType(
     () =>
       new AdapterType({
-        name: 'MashMapAdapter',
-        displayName: 'MashMap adapter',
-        configSchema,
         adapterMetadata: {
           hiddenFromGUI: true,
         },
+        configSchema,
+        displayName: 'MashMap adapter',
         getAdapterClass: () => import('./MashMapAdapter').then(r => r.default),
+        name: 'MashMapAdapter',
       }),
   )
 }

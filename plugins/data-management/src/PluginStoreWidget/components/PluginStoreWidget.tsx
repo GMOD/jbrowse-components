@@ -29,19 +29,19 @@ import { useFetchPlugins } from './util'
 const AddCustomPluginDialog = lazy(() => import('./AddCustomPluginDialog'))
 
 const useStyles = makeStyles()(theme => ({
-  expandIcon: {
-    color: theme.palette.tertiary.contrastText,
-  },
   adminBadge: {
-    borderRadius: 3,
-    backgroundColor: theme.palette.quaternary.main,
-    padding: '1em',
-    display: 'flex',
     alignContent: 'center',
+    backgroundColor: theme.palette.quaternary.main,
+    borderRadius: 3,
+    display: 'flex',
+    padding: '1em',
   },
   customPluginButton: {
-    margin: '1em auto',
     display: 'flex',
+    margin: '1em auto',
+  },
+  expandIcon: {
+    color: theme.palette.tertiary.contrastText,
   },
 }))
 

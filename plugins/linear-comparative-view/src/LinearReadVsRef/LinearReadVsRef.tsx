@@ -83,14 +83,14 @@ export default function ReadVsRefDialog({
 
           const feats = (await rpcManager.call(sessionId, 'CoreGetFeatures', {
             adapterConfig,
-            sessionId,
             regions: [
               {
+                end: +saStart,
                 refName: saRef,
                 start: +saStart - 1,
-                end: +saStart,
               },
             ],
+            sessionId,
           })) as Feature[]
 
           const result = feats.find(
@@ -151,9 +151,9 @@ export default function ReadVsRefDialog({
       feat.strand = 1
 
       feat.mate = {
+        end: clipPos + getLengthSansClipping(cigar),
         refName: readName,
         start: clipPos,
-        end: clipPos + getLengthSansClipping(cigar),
       }
 
       // if secondary alignment or supplementary, calculate length from SA[0]'s
@@ -185,120 +185,122 @@ export default function ReadVsRefDialog({
       const lgvRegions = gatherOverlaps(
         features.map(f => ({
           ...f,
-          start: Math.max(0, f.start - windowSize),
-          end: f.end + windowSize,
           assemblyName: trackAssembly,
+          end: f.end + windowSize,
+          start: Math.max(0, f.start - windowSize),
         })),
       )
 
       session.addTemporaryAssembly?.({
         name: `${readAssembly}`,
         sequence: {
-          type: 'ReferenceSequenceTrack',
-          name: `Read sequence`,
-          trackId: seqTrackId,
-          assemblyNames: [readAssembly],
           adapter: {
-            type: 'FromConfigSequenceAdapter',
-            noAssemblyManager: true,
             features: [
               {
-                start: 0,
                 end: totalLength,
-                seq: featSeq || '', // can be empty if user clicks secondary read
+                // can be empty if user clicks secondary read
                 refName: readName,
+
+                seq: featSeq || '',
+                start: 0,
                 uniqueId: `${Math.random()}`,
               },
             ],
+            noAssemblyManager: true,
+            type: 'FromConfigSequenceAdapter',
           },
+          assemblyNames: [readAssembly],
+          name: `Read sequence`,
+          trackId: seqTrackId,
+          type: 'ReferenceSequenceTrack',
         },
       })
 
       session.addView('LinearSyntenyView', {
+        displayName: `${readName} vs ${trackAssembly}`,
+        tracks: [
+          {
+            configuration: trackId,
+            displays: [
+              {
+                configuration: `${trackId}-LinearSyntenyDisplay`,
+                type: 'LinearSyntenyDisplay',
+              },
+            ],
+            type: 'SyntenyTrack',
+          },
+        ],
         type: 'LinearSyntenyView',
+        viewTrackConfigs: [
+          {
+            adapter: {
+              features: configFeatureStore,
+              type: 'FromConfigAdapter',
+            },
+            assemblyNames,
+            name: trackName,
+            trackId,
+            type: 'SyntenyTrack',
+          },
+        ],
         views: [
           {
-            type: 'LinearGenomeView',
-            hideHeader: true,
-            offsetPx: 0,
             bpPerPx: refLen / view.width,
             displayedRegions: lgvRegions,
+            hideHeader: true,
+            offsetPx: 0,
             tracks: [
               {
-                id: `${Math.random()}`,
-                type: 'ReferenceSequenceTrack',
                 assemblyNames: [trackAssembly],
                 configuration: sequenceTrackConf.trackId,
                 displays: [
                   {
+                    configuration: `${seqTrackId}-LinearReferenceSequenceDisplay`,
+                    height: 35,
                     id: `${Math.random()}`,
-                    type: 'LinearReferenceSequenceDisplay',
                     showReverse: true,
                     showTranslation: false,
-                    height: 35,
-                    configuration: `${seqTrackId}-LinearReferenceSequenceDisplay`,
+                    type: 'LinearReferenceSequenceDisplay',
                   },
                 ],
+                id: `${Math.random()}`,
+                type: 'ReferenceSequenceTrack',
               },
             ],
+            type: 'LinearGenomeView',
           },
           {
-            type: 'LinearGenomeView',
-            hideHeader: true,
-            offsetPx: 0,
             bpPerPx: totalLength / view.width,
             displayedRegions: [
               {
                 assemblyName: readAssembly,
-                start: 0,
                 end: totalLength,
                 refName: readName,
+                start: 0,
               },
             ],
+            hideHeader: true,
+            offsetPx: 0,
             tracks: [
               {
-                id: `${Math.random()}`,
-                type: 'ReferenceSequenceTrack',
                 configuration: seqTrackId,
                 displays: [
                   {
+                    configuration: `${seqTrackId}-LinearReferenceSequenceDisplay`,
+                    height: 35,
                     id: `${Math.random()}`,
-                    type: 'LinearReferenceSequenceDisplay',
                     showReverse: true,
                     showTranslation: false,
-                    height: 35,
-                    configuration: `${seqTrackId}-LinearReferenceSequenceDisplay`,
+                    type: 'LinearReferenceSequenceDisplay',
                   },
                 ],
+                id: `${Math.random()}`,
+                type: 'ReferenceSequenceTrack',
               },
             ],
+            type: 'LinearGenomeView',
           },
         ],
-        viewTrackConfigs: [
-          {
-            type: 'SyntenyTrack',
-            assemblyNames,
-            adapter: {
-              type: 'FromConfigAdapter',
-              features: configFeatureStore,
-            },
-            trackId,
-            name: trackName,
-          },
-        ],
-        tracks: [
-          {
-            configuration: trackId,
-            type: 'SyntenyTrack',
-            displays: [
-              {
-                type: 'LinearSyntenyDisplay',
-                configuration: `${trackId}-LinearSyntenyDisplay`,
-              },
-            ],
-          },
-        ],
-        displayName: `${readName} vs ${trackAssembly}`,
       })
       handleClose()
     } catch (e) {

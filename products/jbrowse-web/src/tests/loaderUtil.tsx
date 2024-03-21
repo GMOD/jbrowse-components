@@ -13,8 +13,8 @@ export function App({ search }: { search: string }) {
     search,
   }
   Object.defineProperty(window, 'location', {
-    writable: true,
     value: location,
+    writable: true,
   })
   return (
     <QueryParamProvider adapter={WindowHistoryAdapter}>

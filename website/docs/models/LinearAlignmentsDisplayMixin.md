@@ -38,24 +38,6 @@ SNPCoverageDisplay: types.maybe(
     )
 ```
 
-#### property: snpCovHeight
-
-```js
-// type signature
-number
-// code
-snpCovHeight: 45
-```
-
-#### property: type
-
-```js
-// type signature
-ISimpleType<"LinearAlignmentsDisplay">
-// code
-type: types.literal('LinearAlignmentsDisplay')
-```
-
 #### property: configuration
 
 ```js
@@ -74,15 +56,6 @@ IMaybe<ISimpleType<number>>
 heightPreConfig: types.maybe(types.number)
 ```
 
-#### property: userFeatureScreenDensity
-
-```js
-// type signature
-IMaybe<ISimpleType<number>>
-// code
-userFeatureScreenDensity: types.maybe(types.number)
-```
-
 #### property: lowerPanelType
 
 ```js
@@ -90,4 +63,31 @@ userFeatureScreenDensity: types.maybe(types.number)
 string
 // code
 lowerPanelType: 'LinearPileupDisplay'
+```
+
+#### property: snpCovHeight
+
+```js
+// type signature
+number
+// code
+snpCovHeight: 45
+```
+
+#### property: type
+
+```js
+// type signature
+ISimpleType<"LinearAlignmentsDisplay">
+// code
+type: types.literal('LinearAlignmentsDisplay')
+```
+
+#### property: userFeatureScreenDensity
+
+```js
+// type signature
+IMaybe<ISimpleType<number>>
+// code
+userFeatureScreenDensity: types.maybe(types.number)
 ```

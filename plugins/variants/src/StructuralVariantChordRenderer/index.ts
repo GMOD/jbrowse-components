@@ -7,10 +7,10 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addRendererType(
     () =>
       new ChordRendererType({
-        name: 'StructuralVariantChordRenderer',
-        displayName: 'SV chord renderer',
         ReactComponent,
         configSchema,
+        displayName: 'SV chord renderer',
+        name: 'StructuralVariantChordRenderer',
         pluginManager,
       }),
   )

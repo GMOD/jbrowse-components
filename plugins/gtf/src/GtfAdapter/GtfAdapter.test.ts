@@ -16,9 +16,9 @@ describe('adapter can fetch features from volvox.sorted.gtf', () => {
   })
   it('test getfeatures on gtf plain text adapter', async () => {
     const features = adapter.getFeatures({
+      end: 100000,
       refName: 'ctgA',
       start: 0,
-      end: 100000,
     })
     expect(await adapter.hasDataForRefName('ctgA')).toBe(true)
     expect(await adapter.hasDataForRefName('ctgB')).toBe(false)
@@ -43,9 +43,9 @@ test('can instantiate new GtfAdapter and check for demo data', async () => {
   expect(await demoAdapter.hasDataForRefName('GeneScaffold_11')).toBe(false)
 
   const features = demoAdapter.getFeatures({
+    end: 1100000,
     refName: 'GeneScaffold_1',
     start: 0,
-    end: 1100000,
   })
   const featuresArray = await firstValueFrom(features.pipe(toArray()))
   const featuresJsonArray = featuresArray.map(f => f.toJSON())

@@ -44,15 +44,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        type: types.literal('LinearPileupDisplay'),
-        /**
-         * #property
-         */
         configuration: ConfigurationReference(configSchema),
-        /**
-         * #property
-         */
-        showSoftClipping: false,
+
         /**
          * #property
          */
@@ -61,73 +54,72 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
+        showSoftClipping: false,
+
+        /**
+         * #property
+         */
         sortedBy: types.maybe(
           types.model({
-            type: types.string,
-            pos: types.number,
-            tag: types.maybe(types.string),
-            refName: types.string,
             assemblyName: types.string,
+            pos: types.number,
+            refName: types.string,
+            tag: types.maybe(types.string),
+            type: types.string,
           }),
         ),
+
+        /**
+         * #property
+         */
+        type: types.literal('LinearPileupDisplay'),
       }),
     )
     .volatile(() => ({
-      sortReady: false,
       currSortBpPerPx: 0,
       modificationTagMap: observable.map<string, string>({}),
       modificationsReady: false,
+      sortReady: false,
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      setCurrSortBpPerPx(n: number) {
-        self.currSortBpPerPx = n
-      },
-      /**
-       * #action
-       */
-      updateModificationColorMap(uniqueModifications: string[]) {
-        uniqueModifications.forEach(value => {
-          if (!self.modificationTagMap.has(value)) {
-            self.modificationTagMap.set(
-              value,
-              modificationColors[value] || randomColor(),
-            )
-          }
-        })
-      },
-      /**
-       * #action
-       */
-      setModificationsReady(flag: boolean) {
-        self.modificationsReady = flag
-      },
-      /**
-       * #action
-       */
-      setSortReady(flag: boolean) {
-        self.sortReady = flag
-      },
       /**
        * #action
        */
       clearSelected() {
         self.sortedBy = undefined
       },
+
       /**
        * #action
        */
-      toggleSoftClipping() {
-        self.showSoftClipping = !self.showSoftClipping
+      setCurrSortBpPerPx(n: number) {
+        self.currSortBpPerPx = n
       },
+
+      /**
+       * #action
+       * overrides base from SharedLinearPileupDisplay to make sortReady false
+       * since changing feature height destroys the sort-induced layout
+       */
+      setFeatureHeight(n?: number) {
+        self.sortReady = false
+        self.featureHeight = n
+      },
+
       /**
        * #action
        */
-      toggleMismatchAlpha() {
-        self.mismatchAlpha = !self.mismatchAlpha
+      setModificationsReady(flag: boolean) {
+        self.modificationsReady = flag
       },
+
+      /**
+       * #action
+       */
+      setSortReady(flag: boolean) {
+        self.sortReady = flag
+      },
+
       /**
        * #action
        */
@@ -145,21 +137,40 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
 
         self.sortReady = false
         self.sortedBy = {
-          type,
+          assemblyName,
           pos: centerBp,
           refName,
-          assemblyName,
           tag,
+          type,
         }
       },
+
       /**
        * #action
-       * overrides base from SharedLinearPileupDisplay to make sortReady false
-       * since changing feature height destroys the sort-induced layout
        */
-      setFeatureHeight(n?: number) {
-        self.sortReady = false
-        self.featureHeight = n
+      toggleMismatchAlpha() {
+        self.mismatchAlpha = !self.mismatchAlpha
+      },
+
+      /**
+       * #action
+       */
+      toggleSoftClipping() {
+        self.showSoftClipping = !self.showSoftClipping
+      },
+
+      /**
+       * #action
+       */
+      updateModificationColorMap(uniqueModifications: string[]) {
+        uniqueModifications.forEach(value => {
+          if (!self.modificationTagMap.has(value)) {
+            self.modificationTagMap.set(
+              value,
+              modificationColors[value] || randomColor(),
+            )
+          }
+        })
       },
     }))
     .actions(self => {
@@ -238,19 +249,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #method
          */
-        renderPropsPre() {
-          const { sortedBy, showSoftClipping, modificationTagMap } = self
-          const superProps = superRenderPropsPre()
-          return {
-            ...superProps,
-            showSoftClip: showSoftClipping,
-            sortedBy,
-            modificationTagMap: Object.fromEntries(modificationTagMap.toJSON()),
-          }
-        },
-        /**
-         * #method
-         */
         renderProps() {
           const { sortReady } = self
           const result = superRenderProps()
@@ -263,14 +261,27 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #method
          */
+        renderPropsPre() {
+          const { sortedBy, showSoftClipping, modificationTagMap } = self
+          const superProps = superRenderPropsPre()
+          return {
+            ...superProps,
+            modificationTagMap: Object.fromEntries(modificationTagMap.toJSON()),
+            showSoftClip: showSoftClipping,
+            sortedBy,
+          }
+        },
+
+        /**
+         * #method
+         */
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
             {
-              label: 'Show soft clipping',
-              icon: VisibilityIcon,
-              type: 'checkbox',
               checked: self.showSoftClipping,
+              icon: VisibilityIcon,
+              label: 'Show soft clipping',
               onClick: () => {
                 self.toggleSoftClipping()
                 // if toggling from off to on, will break sort for this track
@@ -279,11 +290,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   self.clearSelected()
                 }
               },
+              type: 'checkbox',
             },
             {
-              label: 'Sort by',
-              icon: SortIcon,
               disabled: self.showSoftClipping,
+              icon: SortIcon,
+              label: 'Sort by',
               subMenu: [
                 ...['Start location', 'Read strand', 'Base pair'].map(
                   option => ({
@@ -296,7 +308,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   onClick: () => {
                     getSession(self).queueDialog(handleClose => [
                       SortByTagDialog,
-                      { model: self, handleClose },
+                      { handleClose, model: self },
                     ])
                   },
                 },
@@ -319,7 +331,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   onClick: () => {
                     getSession(self).queueDialog(doneCallback => [
                       ModificationsDialog,
-                      { model: self, handleClose: doneCallback },
+                      { handleClose: doneCallback, model: self },
                     ])
                   },
                 },
@@ -331,10 +343,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               ],
             },
             {
-              label: 'Fade mismatches by quality',
-              type: 'checkbox',
               checked: self.mismatchAlphaSetting,
+              label: 'Fade mismatches by quality',
               onClick: () => self.toggleMismatchAlpha(),
+              type: 'checkbox',
             },
           ]
         },
@@ -376,19 +388,19 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               // render just the sorted region first
               // @ts-expect-error
               await self.rendererType.renderInClient(rpcManager, {
+                adapterConfig,
                 assemblyName,
+                layoutId: view.id,
                 regions: [
                   {
-                    start: pos,
+                    assemblyName,
                     end: pos + 1,
                     refName,
-                    assemblyName,
+                    start: pos,
                   },
                 ],
-                adapterConfig,
                 rendererType: rendererType.name,
                 sessionId: getRpcSessionId(self),
-                layoutId: view.id,
                 timeout: 1_000_000,
                 ...self.renderPropsPre(),
               })

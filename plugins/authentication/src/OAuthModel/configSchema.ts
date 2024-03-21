@@ -13,67 +13,74 @@ const OAuthConfigSchema = ConfigurationSchema(
     /**
      * #slot
      */
-    tokenType: {
-      description: 'a custom name for a token to include in the header',
-      type: 'string',
-      defaultValue: 'Bearer',
-    },
-    /**
-     * #slot
-     */
     authEndpoint: {
+      defaultValue: '',
       description: 'the authorization code endpoint of the internet account',
       type: 'string',
-      defaultValue: '',
     },
-    /**
-     * #slot
-     */
-    tokenEndpoint: {
-      description: 'the token endpoint of the internet account',
-      type: 'string',
-      defaultValue: '',
-    },
-    /**
-     * #slot
-     */
-    needsPKCE: {
-      description: 'boolean to indicate if the endpoint needs a PKCE code',
-      type: 'boolean',
-      defaultValue: false,
-    },
+
     /**
      * #slot
      */
     clientId: {
+      defaultValue: '',
       description: 'id for the OAuth application',
       type: 'string',
-      defaultValue: '',
     },
+
     /**
      * #slot
      */
-    scopes: {
-      description: 'optional scopes for the authorization call',
-      type: 'string',
-      defaultValue: '',
+    needsPKCE: {
+      defaultValue: false,
+      description: 'boolean to indicate if the endpoint needs a PKCE code',
+      type: 'boolean',
     },
-    /**
-     * #slot
-     */
-    state: {
-      description: 'optional state for the authorization call',
-      type: 'string',
-      defaultValue: '',
-    },
+
     /**
      * #slot
      */
     responseType: {
+      defaultValue: 'code',
       description:
         "the type of response from the authorization endpoint. can be 'token' or 'code'",
       type: 'string',
-      defaultValue: 'code',
+    },
+
+    /**
+     * #slot
+     */
+    scopes: {
+      defaultValue: '',
+      description: 'optional scopes for the authorization call',
+      type: 'string',
+    },
+
+    /**
+     * #slot
+     */
+    state: {
+      defaultValue: '',
+      description: 'optional state for the authorization call',
+      type: 'string',
+    },
+
+    /**
+     * #slot
+     */
+    tokenEndpoint: {
+      defaultValue: '',
+      description: 'the token endpoint of the internet account',
+      type: 'string',
+    },
+
+    /**
+     * #slot
+     */
+    tokenType: {
+      defaultValue: 'Bearer',
+      description: 'a custom name for a token to include in the header',
+      type: 'string',
     },
   },
   {

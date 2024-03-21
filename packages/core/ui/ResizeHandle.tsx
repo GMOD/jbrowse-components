@@ -2,6 +2,14 @@ import React, { useEffect, useState, useRef } from 'react'
 import { makeStyles } from 'tss-react/mui'
 
 const useStyles = makeStyles()({
+  flexbox_horizontalHandle: {
+    alignSelf: 'stretch',
+    cursor: 'row-resize', // similar to above
+  },
+  flexbox_verticalHandle: {
+    alignSelf: 'stretch',
+    cursor: 'col-resize', // the height: 100% is actually unable to function inside flexbox
+  },
   horizontalHandle: {
     cursor: 'row-resize',
     width: '100%',
@@ -9,14 +17,6 @@ const useStyles = makeStyles()({
   verticalHandle: {
     cursor: 'col-resize',
     height: '100%',
-  },
-  flexbox_verticalHandle: {
-    cursor: 'col-resize',
-    alignSelf: 'stretch', // the height: 100% is actually unable to function inside flexbox
-  },
-  flexbox_horizontalHandle: {
-    cursor: 'row-resize',
-    alignSelf: 'stretch', // similar to above
   },
 })
 

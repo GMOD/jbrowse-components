@@ -115,19 +115,6 @@ const startCodon = '#3e3'
 
 function stockTheme() {
   return {
-    palette: {
-      mode: undefined,
-      primary: { main: midnight },
-      secondary: { main: grape },
-      tertiary: refTheme.palette.augmentColor({ color: { main: forest } }),
-      quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
-      highlight: refTheme.palette.augmentColor({ color: { main: mandarin } }),
-      stopCodon,
-      startCodon,
-      bases,
-      frames,
-      framesCDS,
-    },
     components: {
       MuiLink: {
         styleOverrides: {
@@ -140,6 +127,19 @@ function stockTheme() {
           }),
         },
       },
+    },
+    palette: {
+      bases,
+      frames,
+      framesCDS,
+      highlight: refTheme.palette.augmentColor({ color: { main: mandarin } }),
+      mode: undefined,
+      primary: { main: midnight },
+      quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
+      secondary: { main: grape },
+      startCodon,
+      stopCodon,
+      tertiary: refTheme.palette.augmentColor({ color: { main: forest } }),
     },
   }
 }
@@ -160,20 +160,6 @@ function getLightStockTheme() {
 
 function getDarkStockTheme() {
   return {
-    name: 'Dark (stock)',
-    palette: {
-      mode: 'dark',
-      primary: { main: midnight },
-      secondary: { main: grape },
-      tertiary: refTheme.palette.augmentColor({ color: { main: forest } }),
-      quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
-      highlight: refTheme.palette.augmentColor({ color: { main: mandarin } }),
-      stopCodon,
-      startCodon,
-      bases,
-      frames,
-      framesCDS,
-    },
     components: {
       MuiAppBar: {
         defaultProps: {
@@ -187,6 +173,20 @@ function getDarkStockTheme() {
         },
       },
     },
+    name: 'Dark (stock)',
+    palette: {
+      bases,
+      frames,
+      framesCDS,
+      highlight: refTheme.palette.augmentColor({ color: { main: mandarin } }),
+      mode: 'dark',
+      primary: { main: midnight },
+      quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
+      secondary: { main: grape },
+      startCodon,
+      stopCodon,
+      tertiary: refTheme.palette.augmentColor({ color: { main: forest } }),
+    },
   }
 }
 
@@ -194,17 +194,17 @@ function getDarkMinimalTheme() {
   return {
     name: 'Dark (minimal)',
     palette: {
-      mode: 'dark' as const,
-      primary: { main: grey[700] },
-      secondary: { main: grey[800] },
-      tertiary: refTheme.palette.augmentColor({ color: { main: grey[900] } }),
-      quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
-      highlight: refTheme.palette.augmentColor({ color: { main: mandarin } }),
-      stopCodon,
-      startCodon,
       bases,
       frames,
       framesCDS,
+      highlight: refTheme.palette.augmentColor({ color: { main: mandarin } }),
+      mode: 'dark' as const,
+      primary: { main: grey[700] },
+      quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
+      secondary: { main: grey[800] },
+      startCodon,
+      stopCodon,
+      tertiary: refTheme.palette.augmentColor({ color: { main: grey[900] } }),
     },
   }
 }
@@ -213,31 +213,54 @@ function getMinimalTheme() {
   return {
     name: 'Light (minimal)',
     palette: {
-      primary: { main: grey[900] },
-      secondary: { main: grey[800] },
-      tertiary: refTheme.palette.augmentColor({ color: { main: grey[900] } }),
-      quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
-      highlight: refTheme.palette.augmentColor({ color: { main: mandarin } }),
-      stopCodon,
-      startCodon,
       bases,
       frames,
       framesCDS,
+      highlight: refTheme.palette.augmentColor({ color: { main: mandarin } }),
+      primary: { main: grey[900] },
+      quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
+      secondary: { main: grey[800] },
+      startCodon,
+      stopCodon,
+      tertiary: refTheme.palette.augmentColor({ color: { main: grey[900] } }),
     },
   }
 }
 
 export const defaultThemes = {
-  default: getDefaultTheme(),
-  lightStock: getLightStockTheme(),
-  lightMinimal: getMinimalTheme(),
   darkMinimal: getDarkMinimalTheme(),
   darkStock: getDarkStockTheme(),
+  default: getDefaultTheme(),
+  lightMinimal: getMinimalTheme(),
+  lightStock: getLightStockTheme(),
 } as ThemeMap
 
 function createDefaultProps(theme?: ThemeOptions): ThemeOptions {
   return {
     components: {
+      MuiAccordion: {
+        defaultProps: {
+          TransitionProps: { timeout: 150 },
+          disableGutters: true,
+        },
+      },
+      MuiAccordionSummary: {
+        styleOverrides: {
+          content: {
+            // @ts-expect-error
+            color: theme?.palette?.tertiary?.contrastText,
+          },
+          root: {
+            // @ts-expect-error
+            backgroundColor: theme?.palette?.tertiary?.main,
+          },
+        },
+      },
+      MuiAutocomplete: {
+        defaultProps: {
+          size: 'small' as const,
+        },
+      },
       MuiButton: {
         defaultProps: {
           size: 'small' as const,
@@ -262,10 +285,37 @@ function createDefaultProps(theme?: ThemeOptions): ThemeOptions {
           },
         },
       },
-      MuiAccordion: {
+      MuiCheckbox: {
+        styleOverrides: {
+          // the default checkbox-when-checked color uses
+          // theme.palette.primary.main which is very bad with dark
+          // mode+midnight primary
+          //
+          // keeps the forest-green checkbox by default but for darkmode, uses
+          // a text-like coloring to ensure contrast
+          // xref https://stackoverflow.com/a/72546130/2129219
+          root: ({ theme }) => {
+            return theme.palette.mode === 'dark'
+              ? {
+                  '&.Mui-checked': {
+                    color: theme.palette.text.secondary,
+                  },
+                  color: theme.palette.text.secondary,
+                }
+              : undefined
+          },
+        },
+      },
+
+      MuiFab: {
         defaultProps: {
-          disableGutters: true,
-          TransitionProps: { timeout: 150 },
+          size: 'small' as const,
+        },
+        styleOverrides: {
+          secondary: {
+            // @ts-expect-error
+            backgroundColor: theme?.palette?.quaternary?.main,
+          },
         },
       },
       MuiFilledInput: {
@@ -284,131 +334,6 @@ function createDefaultProps(theme?: ThemeOptions): ThemeOptions {
           margin: 'dense' as const,
         },
       },
-
-      MuiIconButton: {
-        defaultProps: {
-          size: 'small' as const,
-        },
-      },
-      MuiInputBase: {
-        defaultProps: {
-          margin: 'dense' as const,
-        },
-      },
-      MuiAutocomplete: {
-        defaultProps: {
-          size: 'small' as const,
-        },
-      },
-      MuiInputLabel: {
-        defaultProps: {
-          margin: 'dense' as const,
-        },
-      },
-      MuiToolbar: {
-        defaultProps: {
-          variant: 'dense' as const,
-        },
-      },
-      MuiListItem: {
-        defaultProps: {
-          dense: true,
-        },
-      },
-      MuiOutlinedInput: {
-        defaultProps: {
-          margin: 'dense' as const,
-        },
-      },
-      MuiFab: {
-        defaultProps: {
-          size: 'small' as const,
-        },
-        styleOverrides: {
-          secondary: {
-            // @ts-expect-error
-            backgroundColor: theme?.palette?.quaternary?.main,
-          },
-        },
-      },
-      MuiTable: {
-        defaultProps: {
-          size: 'small' as const,
-        },
-      },
-      MuiPopover: {
-        defaultProps: {
-          transitionDuration: 0,
-        },
-      },
-      MuiMenu: {
-        defaultProps: {
-          transitionDuration: 0,
-        },
-      },
-      MuiMenuItem: {
-        defaultProps: {
-          dense: true,
-        },
-      },
-
-      MuiTextField: {
-        defaultProps: {
-          margin: 'dense' as const,
-          variant: 'standard' as const,
-        },
-      },
-      MuiLink: {
-        styleOverrides: {
-          // the default link color uses theme.palette.primary.main which is
-          // very bad with dark mode+midnight primary
-          root: ({ theme }) => ({
-            color: theme.palette.text.secondary,
-          }),
-        },
-      },
-      MuiCheckbox: {
-        styleOverrides: {
-          // the default checkbox-when-checked color uses
-          // theme.palette.primary.main which is very bad with dark
-          // mode+midnight primary
-          //
-          // keeps the forest-green checkbox by default but for darkmode, uses
-          // a text-like coloring to ensure contrast
-          // xref https://stackoverflow.com/a/72546130/2129219
-          root: ({ theme }) => {
-            return theme.palette.mode === 'dark'
-              ? {
-                  color: theme.palette.text.secondary,
-                  '&.Mui-checked': {
-                    color: theme.palette.text.secondary,
-                  },
-                }
-              : undefined
-          },
-        },
-      },
-      MuiRadio: {
-        styleOverrides: {
-          // the default checkbox-when-checked color uses
-          // theme.palette.primary.main which is very bad with dark
-          // mode+midnight primary
-          //
-          // keeps the forest-green checkbox by default but for darkmode, uses
-          // a text-like coloring to ensure contrast
-          // xref https://stackoverflow.com/a/72546130/2129219
-          root: ({ theme }) => {
-            return theme.palette.mode === 'dark'
-              ? {
-                  color: theme.palette.text.secondary,
-                  '&.Mui-checked': {
-                    color: theme.palette.text.secondary,
-                  },
-                }
-              : undefined
-          },
-        },
-      },
       MuiFormLabel: {
         styleOverrides: {
           // the default checkbox-when-checked color uses
@@ -423,30 +348,105 @@ function createDefaultProps(theme?: ThemeOptions): ThemeOptions {
           root: ({ theme }) => {
             return theme.palette.mode === 'dark'
               ? {
-                  color: theme.palette.text.secondary,
                   '&.Mui-focused': {
                     color: theme.palette.text.secondary,
                   },
+                  color: theme.palette.text.secondary,
                 }
               : undefined
           },
         },
       },
-      MuiAccordionSummary: {
+      MuiIconButton: {
+        defaultProps: {
+          size: 'small' as const,
+        },
+      },
+      MuiInputBase: {
+        defaultProps: {
+          margin: 'dense' as const,
+        },
+      },
+      MuiInputLabel: {
+        defaultProps: {
+          margin: 'dense' as const,
+        },
+      },
+      MuiLink: {
         styleOverrides: {
-          root: {
-            // @ts-expect-error
-            backgroundColor: theme?.palette?.tertiary?.main,
+          // the default link color uses theme.palette.primary.main which is
+          // very bad with dark mode+midnight primary
+          root: ({ theme }) => ({
+            color: theme.palette.text.secondary,
+          }),
+        },
+      },
+      MuiListItem: {
+        defaultProps: {
+          dense: true,
+        },
+      },
+      MuiMenu: {
+        defaultProps: {
+          transitionDuration: 0,
+        },
+      },
+      MuiMenuItem: {
+        defaultProps: {
+          dense: true,
+        },
+      },
+
+      MuiOutlinedInput: {
+        defaultProps: {
+          margin: 'dense' as const,
+        },
+      },
+      MuiPopover: {
+        defaultProps: {
+          transitionDuration: 0,
+        },
+      },
+      MuiRadio: {
+        styleOverrides: {
+          // the default checkbox-when-checked color uses
+          // theme.palette.primary.main which is very bad with dark
+          // mode+midnight primary
+          //
+          // keeps the forest-green checkbox by default but for darkmode, uses
+          // a text-like coloring to ensure contrast
+          // xref https://stackoverflow.com/a/72546130/2129219
+          root: ({ theme }) => {
+            return theme.palette.mode === 'dark'
+              ? {
+                  '&.Mui-checked': {
+                    color: theme.palette.text.secondary,
+                  },
+                  color: theme.palette.text.secondary,
+                }
+              : undefined
           },
-          content: {
-            // @ts-expect-error
-            color: theme?.palette?.tertiary?.contrastText,
-          },
+        },
+      },
+      MuiTable: {
+        defaultProps: {
+          size: 'small' as const,
+        },
+      },
+      MuiTextField: {
+        defaultProps: {
+          margin: 'dense' as const,
+          variant: 'standard' as const,
         },
       },
       MuiToggleButtonGroup: {
         defaultProps: {
           size: 'small' as const,
+        },
+      },
+      MuiToolbar: {
+        defaultProps: {
+          variant: 'dense' as const,
         },
       },
     },
@@ -461,8 +461,8 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
   return deepmerge(
     {
       palette: theme?.palette,
-      typography: { fontSize: 12 },
       spacing: 4,
+      typography: { fontSize: 12 },
       ...createDefaultProps(theme),
     },
     theme || {},

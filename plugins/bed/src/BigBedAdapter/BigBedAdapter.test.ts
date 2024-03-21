@@ -15,9 +15,9 @@ test('adapter can fetch features from volvox.bb', async () => {
 
   const features = adapter.getFeatures({
     assemblyName: 'volvox',
+    end: 20000,
     refName: 'ctgA',
     start: 0,
-    end: 20000,
   })
   expect(await adapter.hasDataForRefName('ctgA')).toBe(true)
   expect(await adapter.hasDataForRefName('ctgB')).toBe(false)

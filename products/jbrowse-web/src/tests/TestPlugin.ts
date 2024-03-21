@@ -6,9 +6,9 @@ export default class TestPlugin extends Plugin {
 
   configurationSchema = ConfigurationSchema('TestPlugin', {
     topLevelTest: {
+      defaultValue: 'test works',
       description: 'Test for top level configuration',
       type: 'string',
-      defaultValue: 'test works',
     },
   })
 

@@ -9,10 +9,10 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addTextSearchAdapterType(
     () =>
       new TextSearchAdapterType({
-        name: 'JBrowse1TextSearchAdapter',
-        configSchema,
         AdapterClass,
+        configSchema,
         description: 'A JBrowse 1 text search adapter',
+        name: 'JBrowse1TextSearchAdapter',
       }),
   )
 }

@@ -21,13 +21,13 @@ import { GridBookmarkModel } from '../../model'
 import { downloadBookmarkFile } from '../../utils'
 
 const useStyles = makeStyles()({
-  flexItem: {
-    margin: 5,
-  },
   container: {
     display: 'flex',
     flexFlow: 'column',
     gap: '5px',
+  },
+  flexItem: {
+    margin: 5,
   },
 })
 
@@ -58,7 +58,7 @@ const ExportBookmarksDialog = observer(function ExportBookmarksDialog({
             'Only selected bookmarks will be exported.'
           )}
         </Alert>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div style={{ alignItems: 'center', display: 'flex' }}>
           <Typography>Format to download:</Typography>
           <Select
             size="small"

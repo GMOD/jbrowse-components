@@ -9,10 +9,10 @@ type LCV = LinearComparativeViewModel
 
 const useStyles = makeStyles()({
   guide: {
-    pointerEvents: 'none',
     height: '100%',
-    width: 1,
+    pointerEvents: 'none',
     position: 'absolute',
+    width: 1,
     zIndex: 10,
   },
   sm: {
@@ -47,8 +47,8 @@ const VerticalGuide = observer(function ({
       <div
         className={classes.guide}
         style={{
-          left: coordX,
           background: 'red',
+          left: coordX,
         }}
       />
     </Tooltip>

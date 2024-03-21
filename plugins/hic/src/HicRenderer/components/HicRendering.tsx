@@ -14,10 +14,10 @@ const HicRendering = observer(function HicRendering(props: {
   const canvasWidth = Math.ceil(width)
   // need to call this in render so we get the right observer behavior
   return (
-    <div style={{ position: 'relative', width: canvasWidth, height }}>
+    <div style={{ height, position: 'relative', width: canvasWidth }}>
       <PrerenderedCanvas
         {...props}
-        style={{ position: 'absolute', left: 0, top: 0 }}
+        style={{ left: 0, position: 'absolute', top: 0 }}
       />
     </div>
   )

@@ -27,10 +27,10 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
     }
 
     return {
-      subadapter: dataAdapter.dataAdapter as BaseFeatureDataAdapter,
       sequenceAdapter: sequenceAdapter?.dataAdapter as
         | BaseFeatureDataAdapter
         | undefined,
+      subadapter: dataAdapter.dataAdapter as BaseFeatureDataAdapter,
     }
   }
 
@@ -61,14 +61,14 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
         const start = region.start + index
         observer.next(
           new SimpleFeature({
-            id: `${this.id}-${start}`,
             data: {
+              end: start + 1,
+              refName: region.refName,
               score: bin.total,
               snpinfo: bin,
               start,
-              end: start + 1,
-              refName: region.refName,
             },
+            id: `${this.id}-${start}`,
           }),
         )
       })
@@ -77,15 +77,15 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
       Object.entries(skipmap).forEach(([key, skip]) => {
         observer.next(
           new SimpleFeature({
-            id: key,
             data: {
-              type: 'skip',
-              start: skip.start,
               end: skip.end,
-              strand: skip.strand,
               score: skip.score,
+              start: skip.start,
+              strand: skip.strand,
+              type: 'skip',
               xs: skip.xs,
             },
+            id: key,
           }),
         )
       })

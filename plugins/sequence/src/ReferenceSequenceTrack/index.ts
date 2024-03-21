@@ -9,9 +9,9 @@ export default (pluginManager: PluginManager) => {
     const configSchema = createReferenceSeqTrackConfig(pluginManager)
 
     return new TrackType({
-      name: 'ReferenceSequenceTrack',
-      displayName: 'Reference sequence track',
       configSchema,
+      displayName: 'Reference sequence track',
+      name: 'ReferenceSequenceTrack',
       stateModel: createBaseTrackModel(
         pluginManager,
         'ReferenceSequenceTrack',

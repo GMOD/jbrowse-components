@@ -27,22 +27,22 @@ import TypeSelector from './TypeSelector'
 import { AbstractSessionModel } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
+  accordion: {
+    border: `1px solid ${theme.palette.text.primary}`,
+  },
   expandIcon: {
     color: theme.palette.tertiary?.contrastText || '#fff',
-  },
-  root: {
-    padding: theme.spacing(1, 3, 1, 1),
   },
   expansionPanelDetails: {
     display: 'block',
     padding: theme.spacing(1),
   },
-  accordion: {
-    border: `1px solid ${theme.palette.text.primary}`,
-  },
   noOverflow: {
-    width: '100%',
     overflowX: 'auto',
+    width: '100%',
+  },
+  root: {
+    padding: theme.spacing(1, 3, 1, 1),
   },
 }))
 

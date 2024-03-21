@@ -30,7 +30,7 @@ export function JBrowseModelF({
   pluginManager: PluginManager
   assemblyConfigSchema: BaseAssemblyConfigSchema
 }) {
-  return JBrowseConfigF({ pluginManager, assemblyConfigSchema })
+  return JBrowseConfigF({ assemblyConfigSchema, pluginManager })
     .views(self => ({
       /**
        * #getter
@@ -63,33 +63,14 @@ export function JBrowseModelF({
         const length = self.assemblies.push({
           ...conf,
           sequence: {
-            type: 'ReferenceSequenceTrack',
             trackId: `${name}-${Date.now()}`,
+            type: 'ReferenceSequenceTrack',
             ...conf.sequence,
           },
         })
         return self.assemblies[length - 1]
       },
-      /**
-       * #action
-       */
-      removeAssemblyConf(assemblyName: string) {
-        const toRemove = self.assemblies.find(a => a.name === assemblyName)
-        if (toRemove) {
-          self.assemblies.remove(toRemove)
-        }
-      },
-      /**
-       * #action
-       */
-      addTrackConf(trackConf: AnyConfigurationModel) {
-        const { type } = trackConf
-        if (!type) {
-          throw new Error(`unknown track type ${type}`)
-        }
-        const length = self.tracks.push(trackConf)
-        return self.tracks[length - 1]
-      },
+
       /**
        * #action
        */
@@ -101,20 +82,19 @@ export function JBrowseModelF({
         const length = self.connections.push(connectionConf)
         return self.connections[length - 1]
       },
+
       /**
        * #action
        */
-      deleteConnectionConf(configuration: AnyConfigurationModel) {
-        const elt = self.connections.find(conn => conn.id === configuration.id)
-        return self.connections.remove(elt)
+      addInternetAccountConf(internetAccountConf: AnyConfigurationModel) {
+        const { type } = internetAccountConf
+        if (!type) {
+          throw new Error(`unknown internetAccount type ${type}`)
+        }
+        const length = self.internetAccounts.push(internetAccountConf)
+        return self.internetAccounts[length - 1]
       },
-      /**
-       * #action
-       */
-      deleteTrackConf(trackConf: AnyConfigurationModel) {
-        const elt = self.tracks.find(t => t.trackId === trackConf.trackId)
-        return self.tracks.remove(elt)
-      },
+
       /**
        * #action
        */
@@ -124,6 +104,53 @@ export function JBrowseModelF({
         const rootModel = getParent<any>(self)
         rootModel.setPluginsUpdated(true)
       },
+
+      /**
+       * #action
+       */
+      addTrackConf(trackConf: AnyConfigurationModel) {
+        const { type } = trackConf
+        if (!type) {
+          throw new Error(`unknown track type ${type}`)
+        }
+        const length = self.tracks.push(trackConf)
+        return self.tracks[length - 1]
+      },
+
+      /**
+       * #action
+       */
+      deleteConnectionConf(configuration: AnyConfigurationModel) {
+        const elt = self.connections.find(conn => conn.id === configuration.id)
+        return self.connections.remove(elt)
+      },
+
+      /**
+       * #action
+       */
+      deleteInternetAccountConf(configuration: AnyConfigurationModel) {
+        const elt = self.internetAccounts.find(a => a.id === configuration.id)
+        return self.internetAccounts.remove(elt)
+      },
+
+      /**
+       * #action
+       */
+      deleteTrackConf(trackConf: AnyConfigurationModel) {
+        const elt = self.tracks.find(t => t.trackId === trackConf.trackId)
+        return self.tracks.remove(elt)
+      },
+
+      /**
+       * #action
+       */
+      removeAssemblyConf(assemblyName: string) {
+        const toRemove = self.assemblies.find(a => a.name === assemblyName)
+        if (toRemove) {
+          self.assemblies.remove(toRemove)
+        }
+      },
+
       /**
        * #action
        */
@@ -156,24 +183,6 @@ export function JBrowseModelF({
         }
 
         self.defaultSession = cast(newDefault)
-      },
-      /**
-       * #action
-       */
-      addInternetAccountConf(internetAccountConf: AnyConfigurationModel) {
-        const { type } = internetAccountConf
-        if (!type) {
-          throw new Error(`unknown internetAccount type ${type}`)
-        }
-        const length = self.internetAccounts.push(internetAccountConf)
-        return self.internetAccounts[length - 1]
-      },
-      /**
-       * #action
-       */
-      deleteInternetAccountConf(configuration: AnyConfigurationModel) {
-        const elt = self.internetAccounts.find(a => a.id === configuration.id)
-        return self.internetAccounts.remove(elt)
       },
     }))
 }

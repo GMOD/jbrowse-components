@@ -47,11 +47,24 @@ sessionPlugins: types.array(types.frozen())
 
 ### BaseWebSession - Getters
 
-#### getter: tracks
+#### getter: assemblies
+
+list of sessionAssemblies and jbrowse config assemblies, does not include
+temporaryAssemblies. basically the list to be displayed in a AssemblySelector
+dropdown
 
 ```js
 // type
-({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]
+ConfigurationSchemaType<{ aliases: { defaultValue: any[]; description: string; type: string; }; cytobands: ConfigurationSchemaType<{ adapter: IAnyModelType; }, ConfigurationSchemaOptions<undefined, undefined>>; displayName: { ...; }; refNameAliases: ConfigurationSchemaType<...>; refNameColors: { ...; }; sequence: An...
+```
+
+#### getter: connections
+
+list of config connections and session connections
+
+```js
+// type
+({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<ConfigurationSchemaType<{ assemblyNames: { defaultValue: any[]; description: string; type: string; }; name: { ...; }; }, ConfigurationSchemaOptions<...>>>)[]
 ```
 
 #### getter: root
@@ -61,24 +74,18 @@ sessionPlugins: types.array(types.frozen())
 any
 ```
 
-#### getter: assemblies
-
-list of sessionAssemblies and jbrowse config assemblies, does not include
-temporaryAssemblies. basically the list to be displayed in a AssemblySelector
-dropdown
+#### getter: tracks
 
 ```js
 // type
-ConfigurationSchemaType<{ aliases: { type: string; defaultValue: any[]; description: string; }; sequence: AnyConfigurationSchemaType; refNameColors: { type: string; defaultValue: any[]; description: string; }; refNameAliases: ConfigurationSchemaType<...>; cytobands: ConfigurationSchemaType<...>; displayName: { ...; ...
+({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]
 ```
 
-#### getter: connections
-
-list of config connections and session connections
+#### getter: assemblyManager
 
 ```js
 // type
-({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<ConfigurationSchemaType<{ name: { type: string; defaultValue: string; description: string; }; assemblyNames: { ...; }; }, ConfigurationSchemaOptions<...>>>)[]
+{ assemblies: IMSTArray<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { cytobands: Feature[]; error: unknown; loaded: boolean; loadingP: Promise<void>; lowerCaseRefNameAliases: RefNameAliases; refNameAliases: RefNameAliases; volatileRegions: BasicRegion[]; } & ... 5 more ... & { ...; }, _NotCustom...
 ```
 
 #### getter: assemblyNames
@@ -92,35 +99,14 @@ dropdown
 string[]
 ```
 
-#### getter: version
+#### getter: history
 
 ```js
 // type
 any
 ```
 
-#### getter: shareURL
-
-```js
-// type
-any
-```
-
-#### getter: textSearchManager
-
-```js
-// type
-TextSearchManager
-```
-
-#### getter: assemblyManager
-
-```js
-// type
-{ assemblies: IMSTArray<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loaded: boolean; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; lowerCaseRefNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 5 more ... & { ...; }, _NotCustom...
-```
-
-#### getter: savedSessions
+#### getter: menus
 
 ```js
 // type
@@ -141,14 +127,28 @@ any
 any
 ```
 
-#### getter: history
+#### getter: savedSessions
 
 ```js
 // type
 any
 ```
 
-#### getter: menus
+#### getter: shareURL
+
+```js
+// type
+any
+```
+
+#### getter: textSearchManager
+
+```js
+// type
+TextSearchManager
+```
+
+#### getter: version
 
 ```js
 // type
@@ -162,6 +162,7 @@ any
 ```js
 // type signature
 renderProps: () => {
+  highResolutionScaling: any
   theme: Theme
 }
 ```
@@ -170,7 +171,7 @@ renderProps: () => {
 
 ```js
 // type signature
-getTrackActionMenuItems: (config: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<ConfigurationSchemaType<{ name: { description: string; type: string; defaultValue: string; }; ... 8 more ...; formatAbout: ConfigurationSchemaType<...>; }, ConfigurationSchemaOptions<...>>>) => ...
+getTrackActionMenuItems: (config: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<ConfigurationSchemaType<{ adapter: IAnyModelType; assemblyNames: { defaultValue: string[]; description: string; type: string; }; ... 7 more ...; textSearching: ConfigurationSchemaType<...>; }, C...
 ```
 
 ### BaseWebSession - Actions
@@ -182,11 +183,25 @@ getTrackActionMenuItems: (config: { [x: string]: any; } & NonEmptyObject & { set
 setName: (str: string) => void
 ```
 
+#### action: activateSession
+
+```js
+// type signature
+activateSession: (sessionName: string) => any
+```
+
 #### action: addAssemblyConf
 
 ```js
 // type signature
 addAssemblyConf: (conf: AnyConfiguration) => void
+```
+
+#### action: addSavedSession
+
+```js
+// type signature
+addSavedSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ activeWidgets: IMapType<IMaybe<IReferenceType<IAnyType>>>; drawerPosition: IOptionalIType<ISimpleType<string>, [undefined]>; drawerWidth: IOptionalIType<...>; minimized: IOptionalIType<...>; widgets: IMapType<...>; } & ... 8 more ... & { ...; }>>) => any
 ```
 
 #### action: addSessionPlugin
@@ -196,60 +211,11 @@ addAssemblyConf: (conf: AnyConfiguration) => void
 addSessionPlugin: (plugin: JBrowsePlugin) => void
 ```
 
-#### action: removeSessionPlugin
-
-```js
-// type signature
-removeSessionPlugin: (pluginDefinition: PluginDefinition) => void
-```
-
-#### action: addSavedSession
-
-```js
-// type signature
-addSavedSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ drawerPosition: IOptionalIType<ISimpleType<string>, [undefined]>; drawerWidth: IOptionalIType<ISimpleType<number>, [undefined]>; widgets: IMapType<...>; activeWidgets: IMapType<...>; minimized: IOptionalIType<...>; } & ... 8 more ... & { ...; }>>) => any
-```
-
-#### action: removeSavedSession
-
-```js
-// type signature
-removeSavedSession: (sessionSnapshot: { name: string; }) => any
-```
-
-#### action: renameCurrentSession
-
-```js
-// type signature
-renameCurrentSession: (sessionName: string) => any
-```
-
 #### action: duplicateCurrentSession
 
 ```js
 // type signature
 duplicateCurrentSession: () => any
-```
-
-#### action: activateSession
-
-```js
-// type signature
-activateSession: (sessionName: string) => any
-```
-
-#### action: setDefaultSession
-
-```js
-// type signature
-setDefaultSession: () => any
-```
-
-#### action: saveSessionToLocalStorage
-
-```js
-// type signature
-saveSessionToLocalStorage: () => any
 ```
 
 #### action: loadAutosaveSession
@@ -259,11 +225,46 @@ saveSessionToLocalStorage: () => any
 loadAutosaveSession: () => any
 ```
 
+#### action: removeSavedSession
+
+```js
+// type signature
+removeSavedSession: (sessionSnapshot: { name: string; }) => any
+```
+
+#### action: removeSessionPlugin
+
+```js
+// type signature
+removeSessionPlugin: (pluginDefinition: PluginDefinition) => void
+```
+
+#### action: renameCurrentSession
+
+```js
+// type signature
+renameCurrentSession: (sessionName: string) => any
+```
+
+#### action: saveSessionToLocalStorage
+
+```js
+// type signature
+saveSessionToLocalStorage: () => any
+```
+
+#### action: setDefaultSession
+
+```js
+// type signature
+setDefaultSession: () => any
+```
+
 #### action: setSession
 
 ```js
 // type signature
-setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ drawerPosition: IOptionalIType<ISimpleType<string>, [undefined]>; drawerWidth: IOptionalIType<ISimpleType<number>, [undefined]>; widgets: IMapType<...>; activeWidgets: IMapType<...>; minimized: IOptionalIType<...>; } & ... 8 more ... & { ...; }>>) => any
+setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ activeWidgets: IMapType<IMaybe<IReferenceType<IAnyType>>>; drawerPosition: IOptionalIType<ISimpleType<string>, [undefined]>; drawerWidth: IOptionalIType<...>; minimized: IOptionalIType<...>; widgets: IMapType<...>; } & ... 8 more ... & { ...; }>>) => any
 ```
 
 #### action: editTrackConfiguration

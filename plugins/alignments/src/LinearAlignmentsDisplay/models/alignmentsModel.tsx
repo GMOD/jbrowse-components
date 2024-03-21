@@ -32,29 +32,35 @@ export function LinearAlignmentsDisplayMixin(
     SNPCoverageDisplay: types.maybe(
       pluginManager.getDisplayType('LinearSNPCoverageDisplay').stateModel,
     ),
-    /**
-     * #property
-     */
-    snpCovHeight: 45,
-    /**
-     * #property
-     */
-    type: types.literal('LinearAlignmentsDisplay'),
+
     /**
      * #property
      */
     configuration: ConfigurationReference(configSchema),
+
     /**
      * #property
      */
     heightPreConfig: types.maybe(types.number),
-    /**
-     * #property
-     */
-    userFeatureScreenDensity: types.maybe(types.number),
+
     /**
      * #property
      */
     lowerPanelType: 'LinearPileupDisplay',
+
+    /**
+     * #property
+     */
+    snpCovHeight: 45,
+
+    /**
+     * #property
+     */
+    type: types.literal('LinearAlignmentsDisplay'),
+
+    /**
+     * #property
+     */
+    userFeatureScreenDensity: types.maybe(types.number),
   })
 }

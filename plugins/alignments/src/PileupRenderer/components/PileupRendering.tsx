@@ -176,17 +176,17 @@ const PileupRendering = observer(function (props: {
       ]
         .filter(f => !!f)
         .join('-')}`}
-      style={{ position: 'relative', width: canvasWidth, height }}
+      style={{ height, position: 'relative', width: canvasWidth }}
     >
       <PrerenderedCanvas
         {...props}
-        style={{ position: 'absolute', left: 0, top: 0 }}
+        style={{ left: 0, position: 'absolute', top: 0 }}
       />
       <canvas
         data-testid="pileup_overlay_canvas"
         width={canvasWidth}
         height={height + canvasPadding}
-        style={{ position: 'absolute', left: 0, top: 0 }}
+        style={{ left: 0, position: 'absolute', top: 0 }}
         className="highlightOverlayCanvas"
         ref={highlightOverlayCanvas}
         onMouseDown={event => onMouseDown(event)}

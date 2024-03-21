@@ -9,8 +9,8 @@ export const DisableAddTrack = () => {
   const { assembly, tracks } = getVolvoxConfig()
   const state = createViewState({
     assembly,
-    tracks,
     disableAddTracks: true,
+    tracks,
   })
   return (
     <div>

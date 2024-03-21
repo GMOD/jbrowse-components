@@ -11,15 +11,15 @@ import { useResizeBar } from '../../ui/useResizeBar'
 import { SanitizedHTML } from '../../ui'
 
 const useStyles = makeStyles()(theme => ({
+  cell: {
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  },
+
   margin: {
     margin: theme.spacing(1),
     width: '100%',
-  },
-
-  cell: {
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
   },
 }))
 

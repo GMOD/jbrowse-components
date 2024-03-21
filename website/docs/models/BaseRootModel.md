@@ -16,6 +16,18 @@ factory function for the Base-level root model shared by all products
 
 ### BaseRootModel - Properties
 
+#### property: assemblyManager
+
+```js
+// type signature
+IOptionalIType<IModelType<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { cytobands: Feature[]; error: unknown; loaded: boolean; loadingP: Promise<void>; lowerCaseRefNameAliases: RefNameAliases; refNameAliases: RefNameAliases; volatileRegions: BasicRegion[]; } & ... 5 more...
+// code
+assemblyManager: types.optional(
+        assemblyManagerFactory(assemblyConfigSchema, pluginManager),
+        {},
+      )
+```
+
 #### property: jbrowse
 
 `jbrowse` is a mapping of the config.json into the in-memory state tree
@@ -48,19 +60,21 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 sessionPath: types.optional(types.string, '')
 ```
 
-#### property: assemblyManager
+### BaseRootModel - Actions
+
+#### action: renameCurrentSession
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loaded: boolean; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; lowerCaseRefNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 5 more...
-// code
-assemblyManager: types.optional(
-        assemblyManagerFactory(assemblyConfigSchema, pluginManager),
-        {},
-      )
+renameCurrentSession: (newName: string) => void
 ```
 
-### BaseRootModel - Actions
+#### action: setDefaultSession
+
+```js
+// type signature
+setDefaultSession: () => void
+```
 
 #### action: setError
 
@@ -76,30 +90,9 @@ setError: (error: unknown) => void
 setSession: (sessionSnapshot?: any) => void
 ```
 
-#### action: setDefaultSession
-
-```js
-// type signature
-setDefaultSession: () => void
-```
-
 #### action: setSessionPath
 
 ```js
 // type signature
 setSessionPath: (path: string) => void
-```
-
-#### action: renameCurrentSession
-
-```js
-// type signature
-renameCurrentSession: (newName: string) => void
-```
-
-#### action: setAssemblyEditing
-
-```js
-// type signature
-setAssemblyEditing: (flag: boolean) => void
 ```

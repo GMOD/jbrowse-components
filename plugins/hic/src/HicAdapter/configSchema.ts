@@ -13,11 +13,11 @@ const HicAdapter = ConfigurationSchema(
      * #slot
      */
     hicLocation: {
-      type: 'fileLocation',
       defaultValue: {
-        uri: '/path/to/my.hic',
         locationType: 'UriLocation',
+        uri: '/path/to/my.hic',
       },
+      type: 'fileLocation',
     },
   },
   { explicitlyTyped: true },

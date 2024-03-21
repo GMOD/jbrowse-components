@@ -11,11 +11,11 @@ import { HierarchicalTrackSelectorModel } from '../../model'
 import DropdownTrackSelector from './DropdownTrackSelector'
 
 const useStyles = makeStyles()({
-  smallBadge: {
-    height: 14,
-  },
   margin: {
     marginRight: 10,
+  },
+  smallBadge: {
+    height: 14,
   },
 })
 const FavoriteTracks = observer(function ({
@@ -52,8 +52,8 @@ const FavoriteTracks = observer(function ({
           classes={{ badge: classes.smallBadge }}
           color="secondary"
           anchorOrigin={{
-            vertical: 'bottom',
             horizontal: 'right',
+            vertical: 'bottom',
           }}
           className={classes.margin}
           badgeContent={model.favoritesCounter}

@@ -12,10 +12,22 @@ const Gff3TabixAdapter = ConfigurationSchema(
   {
     /**
      * #slot
+     * the Gff3TabixAdapter has to "redispatch" if it fetches a region and
+     * features it finds inside that region extend outside the region we requested.
+     * you can disable this for certain feature types to avoid fetching e.g. the
+     * entire chromosome
+     */
+    dontRedispatch: {
+      defaultValue: ['chromosome', 'region'],
+      type: 'stringArray',
+    },
+
+    /**
+     * #slot
      */
     gffGzLocation: {
+      defaultValue: { locationType: 'UriLocation', uri: '/path/to/my.gff.gz' },
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.gff.gz', locationType: 'UriLocation' },
     },
 
     index: ConfigurationSchema('Gff3TabixIndex', {
@@ -23,32 +35,21 @@ const Gff3TabixAdapter = ConfigurationSchema(
        * #slot index.indexType
        */
       indexType: {
+        defaultValue: 'TBI',
         model: types.enumeration('IndexType', ['TBI', 'CSI']),
         type: 'stringEnum',
-        defaultValue: 'TBI',
       },
       /**
        * #slot index.indexType
        */
       location: {
-        type: 'fileLocation',
         defaultValue: {
-          uri: '/path/to/my.gff.gz.tbi',
           locationType: 'UriLocation',
+          uri: '/path/to/my.gff.gz.tbi',
         },
+        type: 'fileLocation',
       },
     }),
-    /**
-     * #slot
-     * the Gff3TabixAdapter has to "redispatch" if it fetches a region and
-     * features it finds inside that region extend outside the region we requested.
-     * you can disable this for certain feature types to avoid fetching e.g. the
-     * entire chromosome
-     */
-    dontRedispatch: {
-      type: 'stringArray',
-      defaultValue: ['chromosome', 'region'],
-    },
   },
   { explicitlyTyped: true },
 )

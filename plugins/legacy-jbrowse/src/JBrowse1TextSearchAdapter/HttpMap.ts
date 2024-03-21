@@ -19,7 +19,7 @@ export default class HttpMap {
     const meta = await this.loadFile('meta.json')
     const { compress, track_names: tracks } = meta
     const hashHexCharacters = Math.ceil(meta.hash_bits / 4)
-    return { hashHexCharacters, compress, tracks }
+    return { compress, hashHexCharacters, tracks }
   }
 
   async getHashHexCharacters() {

@@ -19,11 +19,11 @@ import DeleteSavedSessionDialog from './DeleteSavedSessionDialog'
 import SessionListItem from './SessionListItem'
 
 const useStyles = makeStyles()(theme => ({
-  root: {
-    margin: theme.spacing(1),
-  },
   message: {
     padding: theme.spacing(3),
+  },
+  root: {
+    margin: theme.spacing(1),
   },
 }))
 

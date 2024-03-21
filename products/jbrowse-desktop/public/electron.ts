@@ -67,11 +67,11 @@ autoUpdater.on('error', error => {
 
 autoUpdater.on('update-available', async () => {
   const result = await dialog.showMessageBox({
-    type: 'info',
-    title: 'Found updates',
+    buttons: ['Yes', 'No'],
     message:
       'Found updates, do you want update now? Note: the update will download in the background, and a dialog will appear once complete',
-    buttons: ['Yes', 'No'],
+    title: 'Found updates',
+    type: 'info',
   })
 
   if (result.response === 0) {
@@ -97,8 +97,8 @@ const jbrowseDocDir = path.join(app.getPath('documents'), 'JBrowse')
 const defaultSavePath = path.join(jbrowseDocDir, 'untitled.jbrowse')
 
 const fileFilters = [
-  { name: 'JBrowse Session', extensions: ['jbrowse'] },
-  { name: 'All Files', extensions: ['*'] },
+  { extensions: ['jbrowse'], name: 'JBrowse Session' },
+  { extensions: ['*'], name: 'All Files' },
 ]
 
 function getQuickstartPath(sessionName: string, ext = 'json') {
@@ -177,21 +177,21 @@ async function createWindow() {
   updatePreconfiguredSessions()
 
   const mainWindowState = windowStateKeeper({
-    defaultWidth: 1400,
     defaultHeight: 800,
+    defaultWidth: 1400,
   })
   const { x, y, width, height } = mainWindowState
   mainWindow = new BrowserWindow({
-    x,
-    y,
-    width,
     height,
     webPreferences: {
-      webSecurity: false,
+      contextIsolation: false,
       nodeIntegration: true,
       nodeIntegrationInWorker: true,
-      contextIsolation: false,
+      webSecurity: false,
     },
+    width,
+    x,
+    y,
   })
   mainWindowState.manage(mainWindow)
 
@@ -304,12 +304,12 @@ async function createWindow() {
       role: 'help',
       submenu: [
         {
-          label: 'Learn More',
           click: () => electron.shell.openExternal('https://jbrowse.org'),
+          label: 'Learn More',
         },
         {
-          label: 'Check for updates...',
           click: () => autoUpdater.checkForUpdates(),
+          label: 'Check for updates...',
         },
       ],
     },
@@ -433,12 +433,12 @@ ipcMain.handle(
   'openAuthWindow',
   (_event: unknown, { internetAccountId, data, url }) => {
     const win = new BrowserWindow({
-      width: 1000,
       height: 600,
       webPreferences: {
-        nodeIntegration: true,
         contextIsolation: false,
+        nodeIntegration: true,
       },
+      width: 1000,
     })
     win.title = `JBrowseAuthWindow-${internetAccountId}`
 
@@ -469,9 +469,9 @@ ipcMain.handle(
     const idx = rows.findIndex(r => r.path === path)
     const path = getAutosavePath(`${+Date.now()}`)
     const entry = {
+      name: snap.defaultSession?.name,
       path,
       updated: +Date.now(),
-      name: snap.defaultSession?.name,
     }
     if (idx === -1) {
       rows.unshift(entry)
@@ -498,9 +498,9 @@ ipcMain.handle(
     const idx = rows.findIndex(r => r.path === path)
     const png = page?.resize({ width: 500 }).toDataURL()
     const entry = {
+      name: snap.defaultSession?.name,
       path,
       updated: +Date.now(),
-      name: snap.defaultSession?.name,
     }
     if (idx === -1) {
       rows.unshift(entry)
@@ -600,10 +600,10 @@ autoUpdater.on('error', err => {
 autoUpdater.on('update-downloaded', () => {
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   dialog.showMessageBox({
-    type: 'info',
-    title: 'Update completed',
+    buttons: ['OK'],
     message:
       'Update downloaded, the update will take place when you restart the app. Once you close the app, wait a minute or so before re-launching because it will be doing a reinstall in the background',
-    buttons: ['OK'],
+    title: 'Update completed',
+    type: 'info',
   })
 })

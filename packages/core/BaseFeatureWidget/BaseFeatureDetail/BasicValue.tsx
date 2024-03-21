@@ -8,11 +8,11 @@ import { SanitizedHTML } from '../../ui'
 
 const useStyles = makeStyles()(theme => ({
   fieldValue: {
-    wordBreak: 'break-word',
-    maxHeight: 300,
     fontSize: 12,
-    padding: theme.spacing(0.5),
+    maxHeight: 300,
     overflow: 'auto',
+    padding: theme.spacing(0.5),
+    wordBreak: 'break-word',
   },
 }))
 

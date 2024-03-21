@@ -17,8 +17,8 @@ type LGV = IExtendedLGV
 const useStyles = makeStyles()({
   highlight: {
     height: '100%',
-    position: 'absolute',
     overflow: 'hidden',
+    position: 'absolute',
   },
 })
 
@@ -50,19 +50,19 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
         .filter(value => assemblyNames.has(value.assemblyName))
         .map(r => {
           const s = model.bpToPx({
-            refName: r.refName,
             coord: r.start,
+            refName: r.refName,
           })
           const e = model.bpToPx({
-            refName: r.refName,
             coord: r.end,
+            refName: r.refName,
           })
           return s && e
             ? {
-                width: Math.max(Math.abs(e.offsetPx - s.offsetPx), 3),
-                left: Math.min(s.offsetPx, e.offsetPx) - model.offsetPx,
                 highlight: r.highlight,
                 label: r.label,
+                left: Math.min(s.offsetPx, e.offsetPx) - model.offsetPx,
+                width: Math.max(Math.abs(e.offsetPx - s.offsetPx), 3),
               }
             : undefined
         })
@@ -72,9 +72,9 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
             key={`${left}_${width}_${idx}`}
             className={classes.highlight}
             style={{
+              background: highlight,
               left,
               width,
-              background: highlight,
             }}
           >
             {showBookmarkLabels ? (

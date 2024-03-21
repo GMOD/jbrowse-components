@@ -44,17 +44,17 @@ export function makeFeaturePair(feature: Feature, alt?: string) {
 
   return {
     k1: {
+      end,
+      mateDirection,
       refName,
       start,
-      end,
       strand,
-      mateDirection,
     },
     k2: mate ?? {
-      refName: mateRefName,
       end: mateEnd,
-      start: mateStart,
       mateDirection: joinDirection,
+      refName: mateRefName,
+      start: mateStart,
     },
   }
 }

@@ -22,8 +22,8 @@ const { ipcRenderer } = window.require('electron')
 
 const useStyles = makeStyles()({
   card: {
-    width: 250,
     cursor: 'pointer',
+    width: 250,
   },
   media: {
     height: 0,

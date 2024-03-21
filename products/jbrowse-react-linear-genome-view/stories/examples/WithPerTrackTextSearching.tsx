@@ -9,49 +9,50 @@ export const WithPerTrackTextSearching = () => {
   const { assembly } = getVolvoxConfig()
   const textSearchConfig = {
     assembly,
+    // use 1-based coordinates for locstring
+    location: 'ctgA:1..800',
+
     tracks: [
       {
-        type: 'FeatureTrack',
-        trackId: 'gff3tabix_genes',
-        assemblyNames: ['volvox'],
-        name: 'GFF3Tabix genes',
-        category: ['Miscellaneous'],
         adapter: {
-          type: 'Gff3TabixAdapter',
           gffGzLocation: {
-            uri: 'volvox.sort.gff3.gz',
             locationType: 'UriLocation',
+            uri: 'volvox.sort.gff3.gz',
           },
           index: {
             location: {
-              uri: 'volvox.sort.gff3.gz.tbi',
               locationType: 'UriLocation',
+              uri: 'volvox.sort.gff3.gz.tbi',
             },
           },
+          type: 'Gff3TabixAdapter',
         },
+        assemblyNames: ['volvox'],
+        category: ['Miscellaneous'],
+        name: 'GFF3Tabix genes',
         textSearching: {
           textSearchAdapter: {
-            type: 'TrixTextSearchAdapter',
-            textSearchAdapterId: 'gff3tabix_genes-index',
+            assemblyNames: ['volvox'],
             ixFilePath: {
-              uri: 'storybook_data/gff3tabix_genes.ix',
               locationType: 'UriLocation',
+              uri: 'storybook_data/gff3tabix_genes.ix',
             },
             ixxFilePath: {
-              uri: 'storybook_data/gff3tabix_genes.ixx',
               locationType: 'UriLocation',
+              uri: 'storybook_data/gff3tabix_genes.ixx',
             },
             metaFilePath: {
-              uri: 'storybook_data/gff3tabix_genes_meta.json',
               locationType: 'UriLocation',
+              uri: 'storybook_data/gff3tabix_genes_meta.json',
             },
-            assemblyNames: ['volvox'],
+            textSearchAdapterId: 'gff3tabix_genes-index',
+            type: 'TrixTextSearchAdapter',
           },
         },
+        trackId: 'gff3tabix_genes',
+        type: 'FeatureTrack',
       },
     ],
-    // use 1-based coordinates for locstring
-    location: 'ctgA:1..800',
   }
   const configPath = 'test_data/volvox/config.json'
   addRelativeUris(

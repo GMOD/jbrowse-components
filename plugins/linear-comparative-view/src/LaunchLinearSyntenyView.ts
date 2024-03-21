@@ -33,11 +33,11 @@ export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
                 throw new Error(`Assembly ${view.assembly} failed to load`)
               }
               return {
-                type: 'LinearGenomeView' as const,
                 bpPerPx: 1,
-                offsetPx: 0,
-                hideHeader: true,
                 displayedRegions: asm.regions,
+                hideHeader: true,
+                offsetPx: 0,
+                type: 'LinearGenomeView' as const,
               }
             }),
           ),
@@ -54,7 +54,7 @@ export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
             if (!asm) {
               throw new Error(`Assembly ${data.assembly} failed to load`)
             }
-            await view.navToSearchString({ input: loc, assembly: asm })
+            await view.navToSearchString({ assembly: asm, input: loc })
             tracks.forEach(track => tryTrack(view, track, idsNotFound))
           }),
         )

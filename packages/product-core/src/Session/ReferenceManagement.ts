@@ -51,7 +51,7 @@ export function ReferenceManagementSessionMixin(_pluginManager: PluginManager) {
             const members = getMembers(node)
             Object.entries(members.properties).forEach(([key, value]) => {
               if (isReferenceType(value) && node[key] === object) {
-                refs.push({ node, key })
+                refs.push({ key, node })
               }
             })
           }

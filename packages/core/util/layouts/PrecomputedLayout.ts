@@ -31,10 +31,10 @@ export default class PrecomputedLayout<T> implements BaseLayout<T> {
     this.rbush = new RBush()
     for (const [key, layout] of Object.entries(rectangles)) {
       this.rbush.insert({
-        minX: layout[0],
-        minY: layout[1],
         maxX: layout[2],
         maxY: layout[3],
+        minX: layout[0],
+        minY: layout[1],
         name: key,
       })
     }
@@ -65,7 +65,7 @@ export default class PrecomputedLayout<T> implements BaseLayout<T> {
   }
 
   getByCoord(x: number, y: number) {
-    const rect = { minX: x, minY: y, maxX: x + 1, maxY: y + 1 }
+    const rect = { maxX: x + 1, maxY: y + 1, minX: x, minY: y }
     return this.rbush.collides(rect)
       ? this.rbush.search(rect)[0].name
       : undefined
@@ -89,10 +89,10 @@ export default class PrecomputedLayout<T> implements BaseLayout<T> {
 
   toJSON(): SerializedLayout {
     return {
+      containsNoTransferables: true,
+      maxHeightReached: false,
       rectangles: Object.fromEntries(this.rectangles),
       totalHeight: this.totalHeight,
-      maxHeightReached: false,
-      containsNoTransferables: true,
     }
   }
 }

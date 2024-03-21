@@ -112,31 +112,31 @@ describe('add-track', () => {
       expect(exists(path.join(ctx.dir, 'simple.bam.bai'))).toBeTruthy()
       expect(readConf(ctx).tracks).toEqual([
         {
-          type: 'AlignmentsTrack',
-          trackId: 'simple',
-          name: 'simple',
-          assemblyNames: ['testAssembly'],
           adapter: {
-            type: 'BamAdapter',
             bamLocation: {
-              uri: 'simple.bam',
               locationType: 'UriLocation',
+              uri: 'simple.bam',
             },
             index: {
               indexType: 'BAI',
               location: {
-                uri: 'simple.bam.bai',
                 locationType: 'UriLocation',
+                uri: 'simple.bam.bai',
               },
             },
             sequenceAdapter: {
-              type: 'testSeqAdapter',
               twoBitLocation: {
-                uri: 'test.2bit',
                 locationType: 'UriLocation',
+                uri: 'test.2bit',
               },
+              type: 'testSeqAdapter',
             },
+            type: 'BamAdapter',
           },
+          assemblyNames: ['testAssembly'],
+          name: 'simple',
+          trackId: 'simple',
+          type: 'AlignmentsTrack',
         },
       ])
     })
@@ -156,31 +156,31 @@ describe('add-track', () => {
       expect(exists(ctxDir(ctx, 'simple.bam.csi'))).toBeTruthy()
       expect(readConf(ctx).tracks).toEqual([
         {
-          type: 'AlignmentsTrack',
-          trackId: 'simple',
-          name: 'simple',
-          assemblyNames: ['testAssembly'],
           adapter: {
-            type: 'BamAdapter',
             bamLocation: {
-              uri: 'simple.bam',
               locationType: 'UriLocation',
+              uri: 'simple.bam',
             },
             index: {
               indexType: 'CSI',
               location: {
-                uri: 'simple.bam.csi',
                 locationType: 'UriLocation',
+                uri: 'simple.bam.csi',
               },
             },
             sequenceAdapter: {
-              type: 'testSeqAdapter',
               twoBitLocation: {
-                uri: 'test.2bit',
                 locationType: 'UriLocation',
+                uri: 'test.2bit',
               },
+              type: 'testSeqAdapter',
             },
+            type: 'BamAdapter',
           },
+          assemblyNames: ['testAssembly'],
+          name: 'simple',
+          trackId: 'simple',
+          type: 'AlignmentsTrack',
         },
       ])
     })
@@ -190,31 +190,31 @@ describe('add-track', () => {
     .it('adds a bam track with load inPlace', async ctx => {
       expect(readConf(ctx).tracks).toEqual([
         {
-          type: 'AlignmentsTrack',
-          trackId: 'place',
-          name: 'place',
-          assemblyNames: ['testAssembly'],
           adapter: {
-            type: 'BamAdapter',
             bamLocation: {
-              uri: '/testing/in/place.bam',
               locationType: 'UriLocation',
+              uri: '/testing/in/place.bam',
             },
             index: {
               indexType: 'BAI',
               location: {
-                uri: '/testing/in/place.bam.bai',
                 locationType: 'UriLocation',
+                uri: '/testing/in/place.bam.bai',
               },
             },
             sequenceAdapter: {
-              type: 'testSeqAdapter',
               twoBitLocation: {
-                uri: 'test.2bit',
                 locationType: 'UriLocation',
+                uri: 'test.2bit',
               },
+              type: 'testSeqAdapter',
             },
+            type: 'BamAdapter',
           },
+          assemblyNames: ['testAssembly'],
+          name: 'place',
+          trackId: 'place',
+          type: 'AlignmentsTrack',
         },
       ])
     })
@@ -231,31 +231,31 @@ describe('add-track', () => {
     .it('adds a bam track with load inPlace', async ctx => {
       expect(readConf(ctx).tracks).toEqual([
         {
-          type: 'AlignmentsTrack',
-          trackId: 'place',
-          name: 'place',
-          assemblyNames: ['testAssembly'],
           adapter: {
-            type: 'BamAdapter',
             bamLocation: {
-              uri: '/testing/in/place.bam',
               locationType: 'UriLocation',
+              uri: '/testing/in/place.bam',
             },
             index: {
               indexType: 'BAI',
               location: {
-                uri: '/something/else/random.bai',
                 locationType: 'UriLocation',
+                uri: '/something/else/random.bai',
               },
             },
             sequenceAdapter: {
-              type: 'testSeqAdapter',
               twoBitLocation: {
-                uri: 'test.2bit',
                 locationType: 'UriLocation',
+                uri: 'test.2bit',
               },
+              type: 'testSeqAdapter',
             },
+            type: 'BamAdapter',
           },
+          assemblyNames: ['testAssembly'],
+          name: 'place',
+          trackId: 'place',
+          type: 'AlignmentsTrack',
         },
       ])
     })
@@ -275,31 +275,31 @@ describe('add-track', () => {
       expect(exists(ctxDir(ctx, 'simple.bai'))).toBeTruthy()
       expect(readConf(ctx).tracks).toEqual([
         {
-          type: 'AlignmentsTrack',
-          trackId: 'simple',
-          name: 'simple',
-          assemblyNames: ['testAssembly'],
           adapter: {
-            type: 'BamAdapter',
             bamLocation: {
-              uri: 'simple.bam',
               locationType: 'UriLocation',
+              uri: 'simple.bam',
             },
             index: {
               indexType: 'BAI',
               location: {
-                uri: 'simple.bai',
                 locationType: 'UriLocation',
+                uri: 'simple.bai',
               },
             },
             sequenceAdapter: {
-              type: 'testSeqAdapter',
               twoBitLocation: {
-                uri: 'test.2bit',
                 locationType: 'UriLocation',
+                uri: 'test.2bit',
               },
+              type: 'testSeqAdapter',
             },
+            type: 'BamAdapter',
           },
+          assemblyNames: ['testAssembly'],
+          name: 'simple',
+          trackId: 'simple',
+          type: 'AlignmentsTrack',
         },
       ])
     })
@@ -310,31 +310,31 @@ describe('add-track', () => {
     .it('adds a bam track with subDir', async ctx => {
       expect(readConf(ctx).tracks).toEqual([
         {
-          type: 'AlignmentsTrack',
-          trackId: 'simple',
-          name: 'simple',
-          assemblyNames: ['testAssembly'],
           adapter: {
-            type: 'BamAdapter',
             bamLocation: {
-              uri: 'bam/simple.bam',
               locationType: 'UriLocation',
+              uri: 'bam/simple.bam',
             },
             index: {
               indexType: 'BAI',
               location: {
-                uri: 'bam/simple.bam.bai',
                 locationType: 'UriLocation',
+                uri: 'bam/simple.bam.bai',
               },
             },
             sequenceAdapter: {
-              type: 'testSeqAdapter',
               twoBitLocation: {
-                uri: 'test.2bit',
                 locationType: 'UriLocation',
+                uri: 'test.2bit',
               },
+              type: 'testSeqAdapter',
             },
+            type: 'BamAdapter',
           },
+          assemblyNames: ['testAssembly'],
+          name: 'simple',
+          trackId: 'simple',
+          type: 'AlignmentsTrack',
         },
       ])
     })
@@ -354,12 +354,7 @@ describe('add-track', () => {
     .it('adds a bam track with subDir and localPath protocol', async ctx => {
       expect(readConf(ctx).tracks).toEqual([
         {
-          type: 'AlignmentsTrack',
-          trackId: 'simple',
-          name: 'simple',
-          assemblyNames: ['testAssembly'],
           adapter: {
-            type: 'BamAdapter',
             bamLocation: {
               localPath: 'bam/simple.bam',
               locationType: 'LocalPathLocation',
@@ -372,13 +367,18 @@ describe('add-track', () => {
               },
             },
             sequenceAdapter: {
-              type: 'testSeqAdapter',
               twoBitLocation: {
-                uri: 'test.2bit',
                 locationType: 'UriLocation',
+                uri: 'test.2bit',
               },
+              type: 'testSeqAdapter',
             },
+            type: 'BamAdapter',
           },
+          assemblyNames: ['testAssembly'],
+          name: 'simple',
+          trackId: 'simple',
+          type: 'AlignmentsTrack',
         },
       ])
     })
@@ -408,27 +408,27 @@ describe('add-track', () => {
     .it('adds a bam track with all the custom fields', async ctx => {
       expect(readConf(ctx).tracks).toEqual([
         {
-          type: 'CustomTrackType',
-          trackId: 'customTrackId',
-          name: 'customName',
-          description: 'new description',
-          category: ['newcategory'],
-          assemblyNames: ['customAssemblyName'],
           adapter: {
-            type: 'BamAdapter',
             bamLocation: {
-              uri: 'simple.bam',
               locationType: 'UriLocation',
+              uri: 'simple.bam',
             },
             index: {
               indexType: 'BAI',
               location: {
-                uri: 'simple.bam.bai',
                 locationType: 'UriLocation',
+                uri: 'simple.bam.bai',
               },
             },
+            type: 'BamAdapter',
           },
+          assemblyNames: ['customAssemblyName'],
+          category: ['newcategory'],
           defaultRendering: 'test',
+          description: 'new description',
+          name: 'customName',
+          trackId: 'customTrackId',
+          type: 'CustomTrackType',
         },
       ])
     })
@@ -439,31 +439,31 @@ describe('add-track', () => {
     .it('adds a bam track from a url', async ctx => {
       expect(readConf(ctx).tracks).toEqual([
         {
-          type: 'AlignmentsTrack',
-          trackId: 'simple',
-          name: 'simple',
-          assemblyNames: ['testAssembly'],
           adapter: {
-            type: 'BamAdapter',
             bamLocation: {
-              uri: 'https://mysite.com/data/simple.bam',
               locationType: 'UriLocation',
+              uri: 'https://mysite.com/data/simple.bam',
             },
             index: {
               indexType: 'BAI',
               location: {
-                uri: 'https://mysite.com/data/simple.bam.bai',
                 locationType: 'UriLocation',
+                uri: 'https://mysite.com/data/simple.bam.bai',
               },
             },
             sequenceAdapter: {
-              type: 'testSeqAdapter',
               twoBitLocation: {
-                uri: 'test.2bit',
                 locationType: 'UriLocation',
+                uri: 'test.2bit',
               },
+              type: 'testSeqAdapter',
             },
+            type: 'BamAdapter',
           },
+          assemblyNames: ['testAssembly'],
+          name: 'simple',
+          trackId: 'simple',
+          type: 'AlignmentsTrack',
         },
       ])
     })
@@ -496,32 +496,32 @@ describe('add-track', () => {
       const contents = readConf(ctx)
       expect(contents.tracks).toEqual([
         {
-          type: 'AlignmentsTrack',
-          trackId: 'simple',
-          name: 'simple',
-          assemblyNames: ['testAssembly'],
           adapter: {
-            type: 'BamAdapter',
             bamLocation: {
-              uri: 'simple.bam',
               locationType: 'UriLocation',
+              uri: 'simple.bam',
             },
             index: {
               indexType: 'BAI',
               location: {
-                uri: 'simple.bam.bai',
                 locationType: 'UriLocation',
+                uri: 'simple.bam.bai',
               },
             },
-
             sequenceAdapter: {
               twoBitLocation: {
-                uri: 'test.2bit',
                 locationType: 'UriLocation',
+                uri: 'test.2bit',
               },
               type: 'testSeqAdapter',
             },
+
+            type: 'BamAdapter',
           },
+          assemblyNames: ['testAssembly'],
+          name: 'simple',
+          trackId: 'simple',
+          type: 'AlignmentsTrack',
         },
       ])
     })
@@ -533,17 +533,17 @@ describe('add-track', () => {
       expect(exists(ctxDir(ctx, 'volvox.sort.gff3'))).toBeTruthy()
       expect(readConf(ctx).tracks).toEqual([
         {
-          type: 'FeatureTrack',
-          trackId: 'volvox.sort',
-          name: 'volvox.sort',
-          assemblyNames: ['testAssembly'],
           adapter: {
-            type: 'Gff3Adapter',
             gffLocation: {
-              uri: 'volvox.sort.gff3',
               locationType: 'UriLocation',
+              uri: 'volvox.sort.gff3',
             },
+            type: 'Gff3Adapter',
           },
+          assemblyNames: ['testAssembly'],
+          name: 'volvox.sort',
+          trackId: 'volvox.sort',
+          type: 'FeatureTrack',
         },
       ])
     })
@@ -555,17 +555,17 @@ describe('add-track', () => {
       expect(exists(ctxDir(ctx, 'volvox.filtered.vcf'))).toBeTruthy()
       expect(readConf(ctx).tracks).toEqual([
         {
-          type: 'VariantTrack',
-          trackId: 'volvox.filtered',
-          name: 'volvox.filtered',
-          assemblyNames: ['testAssembly'],
           adapter: {
             type: 'VcfAdapter',
             vcfLocation: {
-              uri: 'volvox.filtered.vcf',
               locationType: 'UriLocation',
+              uri: 'volvox.filtered.vcf',
             },
           },
+          assemblyNames: ['testAssembly'],
+          name: 'volvox.filtered',
+          trackId: 'volvox.filtered',
+          type: 'VariantTrack',
         },
       ])
     })
@@ -577,17 +577,17 @@ describe('add-track', () => {
       expect(exists(ctxDir(ctx, 'volvox.sorted.gtf'))).toBeTruthy()
       expect(readConf(ctx).tracks).toEqual([
         {
-          type: 'FeatureTrack',
-          trackId: 'volvox.sorted',
-          name: 'volvox.sorted',
-          assemblyNames: ['testAssembly'],
           adapter: {
-            type: 'GtfAdapter',
             gtfLocation: {
-              uri: 'volvox.sorted.gtf',
               locationType: 'UriLocation',
+              uri: 'volvox.sorted.gtf',
             },
+            type: 'GtfAdapter',
           },
+          assemblyNames: ['testAssembly'],
+          name: 'volvox.sorted',
+          trackId: 'volvox.sorted',
+          type: 'FeatureTrack',
         },
       ])
     })
@@ -607,24 +607,24 @@ describe('add-track', () => {
       expect(exists(ctxDir(ctx, 'volvox.sort.gff3.gz.csi'))).toBeTruthy()
       expect(readConf(ctx).tracks).toEqual([
         {
-          type: 'FeatureTrack',
-          trackId: 'volvox.sort.gff3',
-          name: 'volvox.sort.gff3',
-          assemblyNames: ['testAssembly'],
           adapter: {
-            type: 'Gff3TabixAdapter',
             gffGzLocation: {
-              uri: 'volvox.sort.gff3.gz',
               locationType: 'UriLocation',
+              uri: 'volvox.sort.gff3.gz',
             },
             index: {
-              location: {
-                uri: 'volvox.sort.gff3.gz.csi',
-                locationType: 'UriLocation',
-              },
               indexType: 'CSI',
+              location: {
+                locationType: 'UriLocation',
+                uri: 'volvox.sort.gff3.gz.csi',
+              },
             },
+            type: 'Gff3TabixAdapter',
           },
+          assemblyNames: ['testAssembly'],
+          name: 'volvox.sort.gff3',
+          trackId: 'volvox.sort.gff3',
+          type: 'FeatureTrack',
         },
       ])
     })
@@ -643,18 +643,18 @@ describe('add-track', () => {
       expect(exists(ctxDir(ctx, 'volvox_inv_indels.paf.gz'))).toBeTruthy()
       expect(readConf(ctx).tracks).toEqual([
         {
-          type: 'SyntenyTrack',
-          trackId: 'volvox_inv_indels.paf',
-          name: 'volvox_inv_indels.paf',
           adapter: {
-            type: 'PAFAdapter',
-            pafLocation: {
-              uri: 'volvox_inv_indels.paf.gz',
-              locationType: 'UriLocation',
-            },
             assemblyNames: ['volvox_random_inv', 'volvox'],
+            pafLocation: {
+              locationType: 'UriLocation',
+              uri: 'volvox_inv_indels.paf.gz',
+            },
+            type: 'PAFAdapter',
           },
           assemblyNames: ['volvox_random_inv', 'volvox'],
+          name: 'volvox_inv_indels.paf',
+          trackId: 'volvox_inv_indels.paf',
+          type: 'SyntenyTrack',
         },
       ])
     })
@@ -673,18 +673,18 @@ describe('add-track', () => {
       expect(exists(ctxDir(ctx, 'volvox_inv_indels.paf'))).toBeTruthy()
       expect(readConf(ctx).tracks).toEqual([
         {
-          type: 'SyntenyTrack',
-          trackId: 'volvox_inv_indels',
-          name: 'volvox_inv_indels',
           adapter: {
-            type: 'PAFAdapter',
-            pafLocation: {
-              uri: 'volvox_inv_indels.paf',
-              locationType: 'UriLocation',
-            },
             assemblyNames: ['volvox_random_inv', 'volvox'],
+            pafLocation: {
+              locationType: 'UriLocation',
+              uri: 'volvox_inv_indels.paf',
+            },
+            type: 'PAFAdapter',
           },
           assemblyNames: ['volvox_random_inv', 'volvox'],
+          name: 'volvox_inv_indels',
+          trackId: 'volvox_inv_indels',
+          type: 'SyntenyTrack',
         },
       ])
     })
@@ -703,18 +703,18 @@ describe('add-track', () => {
       expect(exists(ctxDir(ctx, 'volvox_inv_indels.delta'))).toBeTruthy()
       expect(readConf(ctx).tracks).toEqual([
         {
-          type: 'SyntenyTrack',
-          trackId: 'volvox_inv_indels',
-          name: 'volvox_inv_indels',
           adapter: {
-            type: 'DeltaAdapter',
             assemblyNames: ['volvox_random_inv', 'volvox'],
             deltaLocation: {
-              uri: 'volvox_inv_indels.delta',
               locationType: 'UriLocation',
+              uri: 'volvox_inv_indels.delta',
             },
+            type: 'DeltaAdapter',
           },
           assemblyNames: ['volvox_random_inv', 'volvox'],
+          name: 'volvox_inv_indels',
+          trackId: 'volvox_inv_indels',
+          type: 'SyntenyTrack',
         },
       ])
     })
@@ -733,18 +733,18 @@ describe('add-track', () => {
       expect(exists(ctxDir(ctx, 'volvox_inv_indels.out'))).toBeTruthy()
       expect(readConf(ctx).tracks).toEqual([
         {
-          type: 'SyntenyTrack',
-          trackId: 'volvox_inv_indels',
-          name: 'volvox_inv_indels',
           adapter: {
-            type: 'MashMapAdapter',
             assemblyNames: ['volvox_random_inv', 'volvox'],
             outLocation: {
-              uri: 'volvox_inv_indels.out',
               locationType: 'UriLocation',
+              uri: 'volvox_inv_indels.out',
             },
+            type: 'MashMapAdapter',
           },
           assemblyNames: ['volvox_random_inv', 'volvox'],
+          name: 'volvox_inv_indels',
+          trackId: 'volvox_inv_indels',
+          type: 'SyntenyTrack',
         },
       ])
     })
@@ -771,26 +771,26 @@ describe('add-track', () => {
       expect(exists(ctxDir(ctx, 'peach.bed'))).toBeTruthy()
       expect(readConf(ctx).tracks).toEqual([
         {
-          type: 'SyntenyTrack',
-          trackId: 'volvox_inv_indels.anchors',
-          name: 'volvox_inv_indels.anchors',
           adapter: {
-            type: 'MCScanSimpleAnchorsAdapter',
             assemblyNames: ['volvox_random_inv', 'volvox'],
-            mcscanSimpleAnchorsLocation: {
-              uri: 'volvox_inv_indels.anchors.simple',
-              locationType: 'UriLocation',
-            },
             bed1Location: {
-              uri: 'grape.bed',
               locationType: 'UriLocation',
+              uri: 'grape.bed',
             },
             bed2Location: {
-              uri: 'peach.bed',
               locationType: 'UriLocation',
+              uri: 'peach.bed',
             },
+            mcscanSimpleAnchorsLocation: {
+              locationType: 'UriLocation',
+              uri: 'volvox_inv_indels.anchors.simple',
+            },
+            type: 'MCScanSimpleAnchorsAdapter',
           },
           assemblyNames: ['volvox_random_inv', 'volvox'],
+          name: 'volvox_inv_indels.anchors',
+          trackId: 'volvox_inv_indels.anchors',
+          type: 'SyntenyTrack',
         },
       ])
     })
@@ -816,26 +816,26 @@ describe('add-track', () => {
 
       expect(readConf(ctx).tracks).toEqual([
         {
-          type: 'SyntenyTrack',
-          trackId: 'volvox_inv_indels',
-          name: 'volvox_inv_indels',
           adapter: {
-            type: 'MCScanAnchorsAdapter',
             assemblyNames: ['volvox_random_inv', 'volvox'],
-            mcscanAnchorsLocation: {
-              uri: 'volvox_inv_indels.anchors',
-              locationType: 'UriLocation',
-            },
             bed1Location: {
-              uri: 'grape.bed',
               locationType: 'UriLocation',
+              uri: 'grape.bed',
             },
             bed2Location: {
-              uri: 'peach.bed',
               locationType: 'UriLocation',
+              uri: 'peach.bed',
             },
+            mcscanAnchorsLocation: {
+              locationType: 'UriLocation',
+              uri: 'volvox_inv_indels.anchors',
+            },
+            type: 'MCScanAnchorsAdapter',
           },
           assemblyNames: ['volvox_random_inv', 'volvox'],
+          name: 'volvox_inv_indels',
+          trackId: 'volvox_inv_indels',
+          type: 'SyntenyTrack',
         },
       ])
     })
@@ -854,18 +854,18 @@ describe('add-track', () => {
       expect(exists(ctxDir(ctx, 'volvox_inv_indels.chain'))).toBeTruthy()
       expect(readConf(ctx).tracks).toEqual([
         {
-          type: 'SyntenyTrack',
-          trackId: 'volvox_inv_indels',
-          name: 'volvox_inv_indels',
           adapter: {
-            type: 'ChainAdapter',
             assemblyNames: ['volvox_random_inv', 'volvox'],
             chainLocation: {
-              uri: 'volvox_inv_indels.chain',
               locationType: 'UriLocation',
+              uri: 'volvox_inv_indels.chain',
             },
+            type: 'ChainAdapter',
           },
           assemblyNames: ['volvox_random_inv', 'volvox'],
+          name: 'volvox_inv_indels',
+          trackId: 'volvox_inv_indels',
+          type: 'SyntenyTrack',
         },
       ])
     })
@@ -878,24 +878,24 @@ describe('add-track', () => {
       expect(exists(ctxDir(ctx, 'volvox.sort.gff3.gz.tbi'))).toBeTruthy()
       expect(readConf(ctx).tracks).toEqual([
         {
-          type: 'FeatureTrack',
-          trackId: 'volvox.sort.gff3',
-          name: 'volvox.sort.gff3',
-          assemblyNames: ['testAssembly'],
           adapter: {
-            type: 'Gff3TabixAdapter',
             gffGzLocation: {
-              uri: 'volvox.sort.gff3.gz',
               locationType: 'UriLocation',
+              uri: 'volvox.sort.gff3.gz',
             },
             index: {
-              location: {
-                uri: 'volvox.sort.gff3.gz.tbi',
-                locationType: 'UriLocation',
-              },
               indexType: 'TBI',
+              location: {
+                locationType: 'UriLocation',
+                uri: 'volvox.sort.gff3.gz.tbi',
+              },
             },
+            type: 'Gff3TabixAdapter',
           },
+          assemblyNames: ['testAssembly'],
+          name: 'volvox.sort.gff3',
+          trackId: 'volvox.sort.gff3',
+          type: 'FeatureTrack',
         },
       ])
     })
@@ -907,17 +907,17 @@ describe('add-track', () => {
       expect(exists(ctxDir(ctx, 'volvox.bed'))).toBeTruthy()
       expect(readConf(ctx).tracks).toEqual([
         {
-          type: 'FeatureTrack',
-          trackId: 'volvox',
-          name: 'volvox',
-          assemblyNames: ['testAssembly'],
           adapter: {
-            type: 'BedAdapter',
             bedLocation: {
-              uri: 'volvox.bed',
               locationType: 'UriLocation',
+              uri: 'volvox.bed',
             },
+            type: 'BedAdapter',
           },
+          assemblyNames: ['testAssembly'],
+          name: 'volvox',
+          trackId: 'volvox',
+          type: 'FeatureTrack',
         },
       ])
     })
@@ -928,17 +928,17 @@ describe('add-track', () => {
       expect(exists(ctxDir(ctx, 'volvox.bedpe'))).toBeTruthy()
       expect(readConf(ctx).tracks).toEqual([
         {
-          type: 'VariantTrack',
-          trackId: 'volvox',
-          name: 'volvox',
-          assemblyNames: ['testAssembly'],
           adapter: {
-            type: 'BedpeAdapter',
             bedpeLocation: {
-              uri: 'volvox.bedpe',
               locationType: 'UriLocation',
+              uri: 'volvox.bedpe',
             },
+            type: 'BedpeAdapter',
           },
+          assemblyNames: ['testAssembly'],
+          name: 'volvox',
+          trackId: 'volvox',
+          type: 'VariantTrack',
         },
       ])
     })

@@ -7,9 +7,9 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addRendererType(
     () =>
       new MultiRowLineRenderer({
-        name: 'MultiRowLineRenderer',
         ReactComponent,
         configSchema,
+        name: 'MultiRowLineRenderer',
         pluginManager,
       }),
   )

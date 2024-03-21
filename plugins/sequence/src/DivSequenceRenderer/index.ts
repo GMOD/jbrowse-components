@@ -12,8 +12,8 @@ class DivSequenceRenderer extends FeatureRendererType {
   getExpandedRegion(region: Region) {
     return {
       ...region,
-      start: Math.max(region.start - 3, 0),
       end: region.end + 3,
+      start: Math.max(region.start - 3, 0),
     }
   }
 }
@@ -22,9 +22,9 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addRendererType(
     () =>
       new DivSequenceRenderer({
-        name: 'DivSequenceRenderer',
         ReactComponent,
         configSchema,
+        name: 'DivSequenceRenderer',
         pluginManager,
       }),
   )

@@ -5,8 +5,6 @@ import configSchema from './configSchema'
 
 test('adapter can fetch output files', async () => {
   const args = {
-    type: 'TrixTextSearchAdapter',
-    textSearchAdapterId: 'TrixTextSearchAdapterTest',
     ixFilePath: {
       localPath: path.resolve(__dirname, `test_data/volvox.ix`),
       locationType: 'LocalPathLocation',
@@ -19,6 +17,8 @@ test('adapter can fetch output files', async () => {
       localPath: path.resolve(__dirname, `test_data/volvox_meta.json`),
       locationType: 'LocalPathLocation',
     },
+    textSearchAdapterId: 'TrixTextSearchAdapterTest',
+    type: 'TrixTextSearchAdapter',
   }
   // create adapter
   const adapter = new Adapter(configSchema.create(args))

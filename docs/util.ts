@@ -52,13 +52,13 @@ export function extractWithComment(
 
     const fulltext = node.getFullText()
     const r = {
-      name: symbol.getName(),
       comment,
+      filename: node.getSourceFile().fileName,
+      name: symbol.getName(),
+      node: fulltext,
       signature: checker.typeToString(
         checker.getTypeOfSymbolAtLocation(symbol, symbol.valueDeclaration!),
       ),
-      node: fulltext,
-      filename: node.getSourceFile().fileName,
     }
 
     const list = [

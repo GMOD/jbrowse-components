@@ -8,7 +8,7 @@ test('renders with one, zoomed way out', () => {
   const { container } = render(
     <DivSequenceRendering
       regions={[
-        { assemblyName: 'volvox', refName: 'zonk', start: 0, end: 1000 },
+        { assemblyName: 'volvox', end: 1000, refName: 'zonk', start: 0 },
       ]}
       colorByCDS={false}
       features={
@@ -16,10 +16,10 @@ test('renders with one, zoomed way out', () => {
           [
             'one',
             new SimpleFeature({
-              uniqueId: 'one',
-              start: 1,
               end: 3,
               seq: 'AB',
+              start: 1,
+              uniqueId: 'one',
             }),
           ],
         ])
@@ -38,12 +38,12 @@ test('renders with one feature with no seq, zoomed in, should throw', () => {
   const { container } = render(
     <DivSequenceRendering
       regions={[
-        { assemblyName: 'volvox', refName: 'zonk', start: 0, end: 1000 },
+        { assemblyName: 'volvox', end: 1000, refName: 'zonk', start: 0 },
       ]}
       colorByCDS={false}
       features={
         new Map([
-          ['one', new SimpleFeature({ uniqueId: 'one', start: 1, end: 3 })],
+          ['one', new SimpleFeature({ end: 3, start: 1, uniqueId: 'one' })],
         ])
       }
       config={DivRenderingConfigSchema.create({})}
@@ -60,7 +60,7 @@ test('renders with one feature with an incorrect seq, zoomed in, should throw', 
   const { container } = render(
     <DivSequenceRendering
       regions={[
-        { assemblyName: 'volvox', refName: 'zonk', start: 0, end: 1000 },
+        { assemblyName: 'volvox', end: 1000, refName: 'zonk', start: 0 },
       ]}
       colorByCDS={false}
       features={
@@ -68,10 +68,10 @@ test('renders with one feature with an incorrect seq, zoomed in, should throw', 
           [
             'one',
             new SimpleFeature({
-              uniqueId: 'one',
-              start: 1,
               end: 3,
               seq: 'ABC',
+              start: 1,
+              uniqueId: 'one',
             }),
           ],
         ])
@@ -90,7 +90,7 @@ test('renders with one feature with a correct seq, zoomed in, should render nice
   const { container } = render(
     <DivSequenceRendering
       regions={[
-        { assemblyName: 'volvox', refName: 'zonk', start: 0, end: 1000 },
+        { assemblyName: 'volvox', end: 1000, refName: 'zonk', start: 0 },
       ]}
       colorByCDS={false}
       features={
@@ -98,10 +98,10 @@ test('renders with one feature with a correct seq, zoomed in, should render nice
           [
             'one',
             new SimpleFeature({
-              uniqueId: 'one',
-              start: 1,
               end: 10,
               seq: 'ABCDEFGHI',
+              start: 1,
+              uniqueId: 'one',
             }),
           ],
         ])
@@ -122,10 +122,10 @@ test('renders with one feature reversed with a correct seq, zoomed in, should re
       regions={[
         {
           assemblyName: 'volvox',
-          refName: 'zonk',
-          start: 0,
           end: 1000,
+          refName: 'zonk',
           reversed: true,
+          start: 0,
         },
       ]}
       colorByCDS={false}
@@ -134,10 +134,10 @@ test('renders with one feature reversed with a correct seq, zoomed in, should re
           [
             'one',
             new SimpleFeature({
-              uniqueId: 'one',
-              start: 1,
               end: 10,
               seq: 'ABCDEFGHI',
+              start: 1,
+              uniqueId: 'one',
             }),
           ],
         ])

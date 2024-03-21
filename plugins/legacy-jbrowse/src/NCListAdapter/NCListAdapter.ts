@@ -31,7 +31,6 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
 
     this.nclist = new NCListStore({
       baseUrl: '',
-      urlTemplate: rootUrlTemplate.uri,
       readFile: (url: string) =>
         new RemoteFile(
           String(
@@ -40,6 +39,7 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
               : url,
           ),
         ).readFile(),
+      urlTemplate: rootUrlTemplate.uri,
     })
   }
 

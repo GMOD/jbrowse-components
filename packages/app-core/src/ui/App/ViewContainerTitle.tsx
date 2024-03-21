@@ -15,14 +15,14 @@ const useStyles = makeStyles()(theme => ({
   inputBase: {
     color: theme.palette.secondary.contrastText,
   },
+  inputFocused: {
+    backgroundColor: theme.palette.secondary.light,
+    borderColor: theme.palette.primary.main,
+  },
   inputRoot: {
     '&:hover': {
       backgroundColor: theme.palette.secondary.light,
     },
-  },
-  inputFocused: {
-    borderColor: theme.palette.primary.main,
-    backgroundColor: theme.palette.secondary.light,
   },
 }))
 const ViewContainerTitle = observer(function ({
@@ -46,8 +46,8 @@ const ViewContainerTitle = observer(function ({
         classes={{
           input: classes.input,
           inputBase: classes.inputBase,
-          inputRoot: classes.inputRoot,
           inputFocused: classes.inputFocused,
+          inputRoot: classes.inputRoot,
         }}
       />
     </Tooltip>

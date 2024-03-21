@@ -21,8 +21,8 @@ export default class CircularViewPlugin extends Plugin {
   configure(pluginManager: PluginManager) {
     if (isAbstractMenuManager(pluginManager.rootModel)) {
       pluginManager.rootModel.appendToSubMenu(['Add'], {
-        label: 'Circular view',
         icon: DataUsageIcon,
+        label: 'Circular view',
         onClick: (session: AbstractSessionModel) => {
           session.addView('CircularView', {})
         },

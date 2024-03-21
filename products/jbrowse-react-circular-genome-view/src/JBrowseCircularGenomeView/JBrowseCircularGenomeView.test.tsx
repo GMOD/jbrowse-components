@@ -6,50 +6,50 @@ import JBrowseCircularGenomeView from './JBrowseCircularGenomeView'
 const assembly = {
   name: 'volvox',
   sequence: {
-    type: 'ReferenceSequenceTrack',
-    trackId: 'volvox_refseq',
     adapter: {
-      type: 'FromConfigSequenceAdapter',
       features: [
         {
-          refName: 'ctgA',
-          uniqueId: 'firstId',
-          start: 0,
           end: 120,
+          refName: 'ctgA',
           seq: 'cattgttgcggagttgaacaACGGCATTAGGAACACTTCCGTCTCtcacttttatacgattatgattggttctttagccttggtttagattggtagtagtagcggcgctaatgctacctg',
+          start: 0,
+          uniqueId: 'firstId',
         },
         {
-          refName: 'ctgB',
-          uniqueId: 'secondId',
-          start: 0,
           end: 65,
+          refName: 'ctgB',
           seq: 'ACATGCTAGCTACGTGCATGCTCGACATGCATCATCAGCCTGATGCTGATACATGCTAGCTACGT',
+          start: 0,
+          uniqueId: 'secondId',
         },
       ],
+      type: 'FromConfigSequenceAdapter',
     },
+    trackId: 'volvox_refseq',
+    type: 'ReferenceSequenceTrack',
   },
 }
 
 const defaultSession = {
   name: 'Test',
   view: {
-    id: 'test_view',
-    type: 'CircularView',
     displayedRegions: [
       {
+        assemblyName: 'volvox',
+        end: 120,
         refName: 'ctgA',
         start: 0,
-        end: 120,
-        assemblyName: 'volvox',
       },
       {
+        assemblyName: 'volvox',
+        end: 65,
         refName: 'ctgB',
         start: 0,
-        end: 65,
-        assemblyName: 'volvox',
       },
     ],
+    id: 'test_view',
     tracks: [],
+    type: 'CircularView',
   },
 }
 beforeEach(() => jest.useFakeTimers())
@@ -57,8 +57,8 @@ beforeEach(() => jest.useFakeTimers())
 test('<JBrowseCircularGenomeView />', async () => {
   const state = createViewState({
     assembly,
-    tracks: [],
     defaultSession,
+    tracks: [],
   })
   state.session.view.setWidth(800)
   const { container, findAllByText } = render(

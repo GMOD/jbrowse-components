@@ -25,10 +25,10 @@ function getOrientation(feature: Feature, config: AnyConfigurationModel) {
   const type = orientationTypes[orientationType]
   const orientation = type[feature.get('pair_orientation') as string]
   return {
-    LR: 'color_pair_lr' as const,
-    RR: 'color_pair_rr' as const,
-    RL: 'color_pair_rl' as const,
     LL: 'color_pair_ll' as const,
+    LR: 'color_pair_lr' as const,
+    RL: 'color_pair_rl' as const,
+    RR: 'color_pair_rr' as const,
   }[orientation]
 }
 

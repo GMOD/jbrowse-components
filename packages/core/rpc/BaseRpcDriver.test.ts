@@ -95,8 +95,8 @@ test('watch worker with long ping, generates timeout', async () => {
   try {
     const workerWatcher = watchWorker(worker, 200, 'MockRpcDriver')
     const result = worker.call('doWorkLongPingTime', undefined, {
-      timeout: 100,
       rpcDriverClassName: 'MockRpcDriver',
+      timeout: 100,
     })
     await Promise.race([result, workerWatcher])
   } catch (e) {
@@ -111,9 +111,9 @@ test('test worker abort', async () => {
   try {
     const controller = new AbortController()
     const resultP = worker.call('doWorkLongPingTime', undefined, {
+      rpcDriverClassName: 'MockRpcDriver',
       signal: controller.signal,
       timeout: 2000,
-      rpcDriverClassName: 'MockRpcDriver',
     })
     controller.abort()
     await resultP

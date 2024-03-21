@@ -8,10 +8,10 @@ export default function StartScreenErrorMessage({ error }: { error: unknown }) {
       <h1>It worked!</h1>
       <p
         style={{
-          margin: 8,
-          padding: 8,
           background: '#9f9',
           border: '1px solid green',
+          margin: 8,
+          padding: 8,
         }}
       >
         JBrowse 2 is installed. Your next step is to add and configure an

@@ -18,17 +18,19 @@ type Row = Instance<typeof RowModel>
 
 const ColumnDefinition = types
   .model('ColumnDefinition', {
-    name: types.maybe(types.string),
     dataType: types.optional(AnyColumnType, () => ({
       type: 'Text',
     })),
+    // if this cell is derived from other cells, execute this function to get
+    // the value
+    derivationFunctionText: types.maybe(types.string),
+
     // set to true if column is derived from other columns
     // if the column is derived, each cell will have a
     // `derivationFunction` that is called to get its value
     isDerived: false,
-    // if this cell is derived from other cells, execute this function to get
-    // the value
-    derivationFunctionText: types.maybe(types.string),
+
+    name: types.maybe(types.string),
   })
   .views(self => ({
     get expr() {
@@ -53,22 +55,28 @@ function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const Spreadsheet = types
   .model('Spreadsheet', {
-    /**
-     * #property
-     */
-    rowSet: types.optional(StaticRowSetModel, () => StaticRowSetModel.create()),
-    /**
-     * #property
-     */
-    columns: types.array(ColumnDefinition),
+    assemblyName: types.maybe(types.string),
+
     /**
      * #property
      */
     columnDisplayOrder: types.array(types.number),
+
+    /**
+     * #property
+     */
+    columns: types.array(ColumnDefinition),
+
     /**
      * #property
      */
     hasColumnNames: false,
+
+    /**
+     * #property
+     */
+    rowSet: types.optional(StaticRowSetModel, () => StaticRowSetModel.create()),
+
     /**
      * #property
      */
@@ -84,23 +92,27 @@ const Spreadsheet = types
           },
         })),
     ),
-
-    assemblyName: types.maybe(types.string),
   })
   .volatile(() => ({
     defaultDataType: ColumnTypes.Text,
-    rowMenuPosition: null as RowMenuPosition,
     isLoaded: false,
+    rowMenuPosition: null as RowMenuPosition,
   }))
   .views(self => ({
     /**
      * #getter
+     * list of data type names to be made available in the column
+     * dropdown menu
      */
-    get initialized() {
-      const session = getSession(self)
-      const name = self.assemblyName
-      return name ? session.assemblyManager.get(name)?.initialized : false
+    get dataTypeChoices() {
+      const typeNames = Object.keys(ColumnTypes) as (keyof typeof ColumnTypes)[]
+      return typeNames.map(typeName => {
+        const dataType = ColumnTypes[typeName].create({ type: typeName })
+        const { displayName, categoryName } = dataType
+        return { categoryName, displayName, typeName }
+      })
     },
+
     /**
      * #getter
      */
@@ -112,16 +124,11 @@ const Spreadsheet = types
 
     /**
      * #getter
-     * list of data type names to be made available in the column
-     * dropdown menu
      */
-    get dataTypeChoices() {
-      const typeNames = Object.keys(ColumnTypes) as (keyof typeof ColumnTypes)[]
-      return typeNames.map(typeName => {
-        const dataType = ColumnTypes[typeName].create({ type: typeName })
-        const { displayName, categoryName } = dataType
-        return { typeName, displayName, categoryName }
-      })
+    get initialized() {
+      const session = getSession(self)
+      const name = self.assemblyName
+      return name ? session.assemblyManager.get(name)?.initialized : false
     },
 
     /**
@@ -166,6 +173,13 @@ const Spreadsheet = types
     /**
      * #action
      */
+    setColumnType(columnNumber: number, newTypeName: string) {
+      self.columns[columnNumber].dataType = { type: newTypeName }
+    },
+
+    /**
+     * #action
+     */
     setLoaded(flag: boolean) {
       self.isLoaded = flag
     },
@@ -185,13 +199,6 @@ const Spreadsheet = types
         // @ts-expect-error
         self.sortColumns = newSort
       }
-    },
-
-    /**
-     * #action
-     */
-    setColumnType(columnNumber: number, newTypeName: string) {
-      self.columns[columnNumber].dataType = { type: newTypeName }
     },
 
     /**

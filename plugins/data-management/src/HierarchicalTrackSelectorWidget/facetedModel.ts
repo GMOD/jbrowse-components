@@ -26,12 +26,14 @@ export function facetedStateTreeF() {
        * #property
        */
       filterText: types.optional(types.string, ''),
+
       /**
        * #property
        */
-      showSparse: types.optional(types.boolean, () =>
-        JSON.parse(localStorageGetItem('facet-showSparse') || 'false'),
+      panelWidth: types.optional(types.number, () =>
+        JSON.parse(localStorageGetItem('facet-panelWidth') || '400'),
       ),
+
       /**
        * #property
        */
@@ -49,15 +51,15 @@ export function facetedStateTreeF() {
       /**
        * #property
        */
-      panelWidth: types.optional(types.number, () =>
-        JSON.parse(localStorageGetItem('facet-panelWidth') || '400'),
+      showSparse: types.optional(types.boolean, () =>
+        JSON.parse(localStorageGetItem('facet-showSparse') || 'false'),
       ),
     })
     .volatile(() => ({
+      filters: observable.map<string, string[]>(),
+      useShoppingCart: false,
       visible: {} as Record<string, boolean>,
       widths: {} as Record<string, number | undefined>,
-      useShoppingCart: false,
-      filters: observable.map<string, string[]>(),
     }))
     .actions(self => ({
       /**
@@ -66,41 +68,47 @@ export function facetedStateTreeF() {
       setFilter(key: string, value: string[]) {
         self.filters.set(key, value)
       },
-      /**
-       * #action
-       */
-      setPanelWidth(width: number) {
-        self.panelWidth = width
-      },
-      /**
-       * #action
-       */
-      setUseShoppingCart(f: boolean) {
-        self.useShoppingCart = f
-      },
+
       /**
        * #action
        */
       setFilterText(str: string) {
         self.filterText = str
       },
+
       /**
        * #action
        */
-      setShowSparse(f: boolean) {
-        self.showSparse = f
+      setPanelWidth(width: number) {
+        self.panelWidth = width
       },
+
+      /**
+       * #action
+       */
+      setShowFilters(f: boolean) {
+        self.showFilters = f
+      },
+
       /**
        * #action
        */
       setShowOptions(f: boolean) {
         self.showOptions = f
       },
+
       /**
        * #action
        */
-      setShowFilters(f: boolean) {
-        self.showFilters = f
+      setShowSparse(f: boolean) {
+        self.showSparse = f
+      },
+
+      /**
+       * #action
+       */
+      setUseShoppingCart(f: boolean) {
+        self.useShoppingCart = f
       },
     }))
     .views(self => ({
@@ -124,46 +132,22 @@ export function facetedStateTreeF() {
           .filter(conf => matches(filterText, conf, session))
           .map(track => {
             return {
-              id: track.trackId as string,
-              conf: track,
-              name: getTrackName(track, session),
-              category: readConfObject(track, 'category')?.join(', ') as string,
               adapter: readConfObject(track, 'adapter')?.type as string,
+              category: readConfObject(track, 'category')?.join(', ') as string,
+              conf: track,
               description: readConfObject(track, 'description') as string,
+              id: track.trackId as string,
               metadata: readConfObject(track, 'metadata') as Record<
                 string,
                 unknown
               >,
+              name: getTrackName(track, session),
             } as const
           })
       },
     }))
 
     .views(self => ({
-      /**
-       * #getter
-       */
-      get filteredNonMetadataKeys() {
-        return self.showSparse
-          ? nonMetadataKeys
-          : findNonSparseKeys(nonMetadataKeys, self.rows, (r, f) => r[f])
-      },
-      /**
-       * #getter
-       */
-      get metadataKeys() {
-        return [...new Set(self.rows.flatMap(row => getRootKeys(row.metadata)))]
-      },
-      get filteredMetadataKeys() {
-        return self.showSparse
-          ? this.metadataKeys
-          : findNonSparseKeys(
-              this.metadataKeys,
-              self.rows,
-              // @ts-expect-error
-              (r, f) => r.metadata[f],
-            )
-      },
       /**
        * #getter
        */
@@ -174,6 +158,27 @@ export function facetedStateTreeF() {
           ...this.filteredMetadataKeys.map(m => `metadata.${m}`),
         ]
       },
+
+      get filteredMetadataKeys() {
+        return self.showSparse
+          ? this.metadataKeys
+          : findNonSparseKeys(
+              this.metadataKeys,
+              self.rows,
+              // @ts-expect-error
+              (r, f) => r.metadata[f],
+            )
+      },
+
+      /**
+       * #getter
+       */
+      get filteredNonMetadataKeys() {
+        return self.showSparse
+          ? nonMetadataKeys
+          : findNonSparseKeys(nonMetadataKeys, self.rows, (r, f) => r[f])
+      },
+
       /**
        * #getter
        */
@@ -185,20 +190,15 @@ export function facetedStateTreeF() {
           arrFilters.every(([key, val]) => val.has(getRowStr(key, row))),
         )
       },
+
+      /**
+       * #getter
+       */
+      get metadataKeys() {
+        return [...new Set(self.rows.flatMap(row => getRootKeys(row.metadata)))]
+      },
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      setVisible(args: Record<string, boolean>) {
-        self.visible = args
-      },
-      /**
-       * #action
-       */
-      setWidths(args: Record<string, number | undefined>) {
-        self.widths = args
-      },
       afterAttach() {
         addDisposer(
           self,
@@ -243,6 +243,19 @@ export function facetedStateTreeF() {
             })
           }),
         )
+      },
+
+      /**
+       * #action
+       */
+      setVisible(args: Record<string, boolean>) {
+        self.visible = args
+      },
+      /**
+       * #action
+       */
+      setWidths(args: Record<string, number | undefined>) {
+        self.widths = args
       },
     }))
 }

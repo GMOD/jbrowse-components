@@ -52,9 +52,9 @@ export async function getSAFeatures({
   feat.strand = 1
 
   feat.mate = {
+    end: clipPos + getLengthSansClipping(cigar),
     refName: readName,
     start: clipPos,
-    end: clipPos + getLengthSansClipping(cigar),
   }
   const features = [feat, ...suppAlns] as ReducedFeature[]
 

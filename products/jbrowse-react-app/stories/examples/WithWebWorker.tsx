@@ -9,33 +9,33 @@ import makeWorkerInstance from '../../src/makeWorkerInstance'
 import volvoxConfig from '../../public/test_data/volvox/config.json'
 
 const defaultSession = {
+  activeWidgets: {
+    hierarchicalTrackSelector: 'hierarchicalTrackSelector',
+  },
   name: 'Integration test example',
   views: [
     {
-      id: 'integration_test',
-      type: 'LinearGenomeView',
-      offsetPx: 1200,
       bpPerPx: 1,
       displayedRegions: [
         {
+          assemblyName: 'volvox',
+          end: 50001,
           refName: 'ctgA',
           start: 0,
-          end: 50001,
-          assemblyName: 'volvox',
         },
       ],
+      id: 'integration_test',
+      offsetPx: 1200,
+      type: 'LinearGenomeView',
     },
   ],
   widgets: {
     hierarchicalTrackSelector: {
+      filterText: '',
       id: 'hierarchicalTrackSelector',
       type: 'HierarchicalTrackSelectorWidget',
-      filterText: '',
       view: 'integration_test',
     },
-  },
-  activeWidgets: {
-    hierarchicalTrackSelector: 'hierarchicalTrackSelector',
   },
 }
 

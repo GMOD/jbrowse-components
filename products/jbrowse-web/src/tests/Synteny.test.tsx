@@ -37,8 +37,8 @@ jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
       const { bytesRead } = await file.read(buf, 0, len, start)
       const stat = await file.stat()
       return new Response(buf.slice(0, bytesRead), {
-        status: 206,
         headers: [['content-range', `${start}-${end}/${stat.size}`]],
+        status: 206,
       })
     }
     const body = await file.readFile()
@@ -62,11 +62,11 @@ test('horizontally flipped inverted alignment', async () => {
     {
       views: [
         {
-          type: 'LinearSyntenyView',
           tracks: ['subset'],
+          type: 'LinearSyntenyView',
           views: [
-            { loc: 'Pp01:28,845,211..28,845,272[rev]', assembly: 'peach' },
-            { loc: 'chr1:316,306..316,364', assembly: 'grape' },
+            { assembly: 'peach', loc: 'Pp01:28,845,211..28,845,272[rev]' },
+            { assembly: 'grape', loc: 'chr1:316,306..316,364' },
           ],
         },
       ],
@@ -81,11 +81,11 @@ test('regular orientation inverted alignment', async () => {
     {
       views: [
         {
-          type: 'LinearSyntenyView',
           tracks: ['subset'],
+          type: 'LinearSyntenyView',
           views: [
-            { loc: 'Pp01:28,845,211..28,845,272', assembly: 'peach' },
-            { loc: 'chr1:316,306..316,364', assembly: 'grape' },
+            { assembly: 'peach', loc: 'Pp01:28,845,211..28,845,272' },
+            { assembly: 'grape', loc: 'chr1:316,306..316,364' },
           ],
         },
       ],
@@ -100,11 +100,11 @@ test('regular orientation inverted alignment bottom', async () => {
     {
       views: [
         {
-          type: 'LinearSyntenyView',
           tracks: ['subset'],
+          type: 'LinearSyntenyView',
           views: [
-            { loc: 'Pp01:28,845,211..28,845,272', assembly: 'peach' },
-            { loc: 'chr1:316,306..316,364[rev]', assembly: 'grape' },
+            { assembly: 'peach', loc: 'Pp01:28,845,211..28,845,272' },
+            { assembly: 'grape', loc: 'chr1:316,306..316,364[rev]' },
           ],
         },
       ],
@@ -119,11 +119,11 @@ test('regular orientation both horizontally flipped', async () => {
     {
       views: [
         {
-          type: 'LinearSyntenyView',
           tracks: ['subset'],
+          type: 'LinearSyntenyView',
           views: [
-            { loc: 'Pp01:28,845,211..28,845,272[rev]', assembly: 'peach' },
-            { loc: 'chr1:316,306..316,364[rev]', assembly: 'grape' },
+            { assembly: 'peach', loc: 'Pp01:28,845,211..28,845,272[rev]' },
+            { assembly: 'grape', loc: 'chr1:316,306..316,364[rev]' },
           ],
         },
       ],
@@ -138,11 +138,11 @@ test('switch rows regular orientation both horizontally flipped', async () => {
     {
       views: [
         {
-          type: 'LinearSyntenyView',
           tracks: ['subset'],
+          type: 'LinearSyntenyView',
           views: [
-            { loc: 'chr1:316,306..316,364', assembly: 'grape' },
-            { loc: 'Pp01:28,845,211..28,845,272', assembly: 'peach' },
+            { assembly: 'grape', loc: 'chr1:316,306..316,364' },
+            { assembly: 'peach', loc: 'Pp01:28,845,211..28,845,272' },
           ],
         },
       ],
@@ -157,11 +157,11 @@ test('switch rows regular orientation both horizontally flipped rev 1', async ()
     {
       views: [
         {
-          type: 'LinearSyntenyView',
           tracks: ['subset'],
+          type: 'LinearSyntenyView',
           views: [
-            { loc: 'chr1:316,306..316,364[rev]', assembly: 'grape' },
-            { loc: 'Pp01:28,845,211..28,845,272', assembly: 'peach' },
+            { assembly: 'grape', loc: 'chr1:316,306..316,364[rev]' },
+            { assembly: 'peach', loc: 'Pp01:28,845,211..28,845,272' },
           ],
         },
       ],
@@ -176,11 +176,11 @@ test('switch rows regular orientation both horizontally flipped rev2', async () 
     {
       views: [
         {
-          type: 'LinearSyntenyView',
           tracks: ['subset'],
+          type: 'LinearSyntenyView',
           views: [
-            { loc: 'chr1:316,306..316,364', assembly: 'grape' },
-            { loc: 'Pp01:28,845,211..28,845,272[rev]', assembly: 'peach' },
+            { assembly: 'grape', loc: 'chr1:316,306..316,364' },
+            { assembly: 'peach', loc: 'Pp01:28,845,211..28,845,272[rev]' },
           ],
         },
       ],
@@ -195,11 +195,11 @@ test('switch rows regular orientation both horizontally flipped both rev', async
     {
       views: [
         {
-          type: 'LinearSyntenyView',
           tracks: ['subset'],
+          type: 'LinearSyntenyView',
           views: [
-            { loc: 'chr1:316,306..316,364[rev]', assembly: 'grape' },
-            { loc: 'Pp01:28,845,211..28,845,272[rev]', assembly: 'peach' },
+            { assembly: 'grape', loc: 'chr1:316,306..316,364[rev]' },
+            { assembly: 'peach', loc: 'Pp01:28,845,211..28,845,272[rev]' },
           ],
         },
       ],

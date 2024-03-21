@@ -7,10 +7,10 @@ import configSchema from './configSchema'
 export default (pluginManager: PluginManager) => {
   pluginManager.addAdapterType(() => {
     return new AdapterType({
-      name: 'CramAdapter',
-      displayName: 'CRAM adapter',
       configSchema,
+      displayName: 'CRAM adapter',
       getAdapterClass: () => import('./CramAdapter').then(r => r.default),
+      name: 'CramAdapter',
     })
   })
 }

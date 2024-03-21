@@ -14,16 +14,16 @@ const useStyles = makeStyles()(theme => ({
   container: {
     display: 'grid',
   },
-  overlay: {
-    zIndex: 100,
-    gridArea: '1/1',
-  },
   content: {
     gridArea: '1/1',
     position: 'relative',
   },
   grid: {
     display: 'grid',
+  },
+  overlay: {
+    gridArea: '1/1',
+    zIndex: 100,
   },
   relative: {
     position: 'relative',
@@ -32,17 +32,17 @@ const useStyles = makeStyles()(theme => ({
   // this helps keep the vertical guide inside the parent view container,
   // similar style exists in the single LGV's trackscontainer
   rubberbandContainer: {
-    position: 'relative',
     overflow: 'hidden',
+    position: 'relative',
   },
 
   rubberbandDiv: {
-    width: '100%',
-    background: theme.palette.action.disabledBackground,
-    height: 15,
     '&:hover': {
       background: theme.palette.action.selected,
     },
+    background: theme.palette.action.disabledBackground,
+    height: 15,
+    width: '100%',
   },
 }))
 
@@ -97,8 +97,8 @@ const MiddleComparativeView = observer(({ model }: { model: LCV }) => {
             model.setMiddleComparativeHeight(model.middleComparativeHeight + n)
           }
           style={{
-            height: 4,
             background: '#ccc',
+            height: 4,
           }}
         />
         <ReactComponent model={views[1]} />

@@ -34,48 +34,51 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           /**
            * #property
            */
-          type: types.literal('DotplotDisplay'),
+          configuration: ConfigurationReference(configSchema),
+
           /**
            * #property
            */
-          configuration: ConfigurationReference(configSchema),
+          type: types.literal('DotplotDisplay'),
         })
         .volatile(() => ({
-          warnings: [] as { message: string; effect: string }[],
-          renderInProgress: undefined as AbortController | undefined,
-          filled: false,
-          data: undefined as any,
-          reactElement: undefined as React.ReactElement | undefined,
-          message: undefined as string | undefined,
-          renderingComponent: undefined as any,
           ReactComponent2:
             ServerSideRenderedBlockContent as unknown as React.FC<any>,
+          data: undefined as any,
+          filled: false,
+          message: undefined as string | undefined,
+          reactElement: undefined as React.ReactElement | undefined,
+          renderInProgress: undefined as AbortController | undefined,
+          renderingComponent: undefined as any,
+          warnings: [] as { message: string; effect: string }[],
         })),
     )
     .views(self => ({
-      get shouldDisplay() {
-        const { vview, hview } = getContainingView(self) as DotplotViewModel
-        return (
-          vview.bpPerPx === self.data.bpPerPxY &&
-          hview.bpPerPx === self.data.bpPerPxX
-        )
-      },
-      /**
-       * #getter
-       */
-      get rendererTypeName() {
-        return getConf(self, ['renderer', 'type'])
-      },
       /**
        * #method
        */
       renderProps() {
         return {
           ...getParentRenderProps(self),
-          rpcDriverName: self.rpcDriverName,
-          displayModel: self,
           config: self.configuration.renderer,
+          displayModel: self,
+          rpcDriverName: self.rpcDriverName,
         }
+      },
+
+      /**
+       * #getter
+       */
+      get rendererTypeName() {
+        return getConf(self, ['renderer', 'type'])
+      },
+
+      get shouldDisplay() {
+        const { vview, hview } = getContainingView(self) as DotplotViewModel
+        return (
+          vview.bpPerPx === self.data.bpPerPxY &&
+          hview.bpPerPx === self.data.bpPerPxX
+        )
       },
     }))
     .views(self => ({
@@ -114,15 +117,34 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             () => renderBlockData(self),
             blockData => renderBlockEffect(blockData),
             {
-              name: `${self.type} ${self.id} rendering`,
               delay: 500,
               fireImmediately: true,
+              name: `${self.type} ${self.id} rendering`,
             },
             this.setLoading,
             this.setRendered,
             this.setError,
           )
         },
+
+        /**
+         * #action
+         */
+        setError(error: unknown) {
+          console.error(error)
+          if (renderInProgress && !renderInProgress.signal.aborted) {
+            renderInProgress.abort()
+          }
+          // the rendering failed for some reason
+          self.filled = false
+          self.message = undefined
+          self.reactElement = undefined
+          self.data = undefined
+          self.error = error
+          self.renderingComponent = undefined
+          renderInProgress = undefined
+        },
+
         /**
          * #action
          */
@@ -135,6 +157,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           self.renderingComponent = undefined
           renderInProgress = abortController
         },
+
         /**
          * #action
          */
@@ -150,6 +173,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           self.renderingComponent = undefined
           renderInProgress = undefined
         },
+
         /**
          * #action
          */
@@ -169,23 +193,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           self.data = data
           self.error = undefined
           self.renderingComponent = renderingComponent
-          renderInProgress = undefined
-        },
-        /**
-         * #action
-         */
-        setError(error: unknown) {
-          console.error(error)
-          if (renderInProgress && !renderInProgress.signal.aborted) {
-            renderInProgress.abort()
-          }
-          // the rendering failed for some reason
-          self.filled = false
-          self.message = undefined
-          self.reactElement = undefined
-          self.data = undefined
-          self.error = error
-          self.renderingComponent = undefined
           renderInProgress = undefined
         },
       }

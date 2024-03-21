@@ -20,13 +20,19 @@ it is not a block based track, hence not BaseLinearDisplay extends
 
 ### LinearReadCloudDisplay - Properties
 
-#### property: type
+#### property: colorBy
 
 ```js
 // type signature
-ISimpleType<"LinearReadCloudDisplay">
+IMaybe<IModelType<{ extra: IType<any, any, any>; tag: IMaybe<ISimpleType<string>>; type: ISimpleType<string>; }, {}, _NotCustomized, _NotCustomized>>
 // code
-type: types.literal('LinearReadCloudDisplay')
+colorBy: types.maybe(
+          types.model({
+            extra: types.frozen(),
+            tag: types.maybe(types.string),
+            type: types.string,
+          }),
+        )
 ```
 
 #### property: configuration
@@ -38,30 +44,6 @@ AnyConfigurationSchemaType
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### property: filterBy
-
-```js
-// type signature
-IOptionalIType<IModelType<{ flagInclude: IOptionalIType<ISimpleType<number>, [undefined]>; flagExclude: IOptionalIType<ISimpleType<number>, [undefined]>; readName: IMaybe<...>; tagFilter: IMaybe<...>; }, {}, _NotCustomized, _NotCustomized>, [...]>
-// code
-filterBy: types.optional(FilterModel, {})
-```
-
-#### property: colorBy
-
-```js
-// type signature
-IMaybe<IModelType<{ type: ISimpleType<string>; tag: IMaybe<ISimpleType<string>>; extra: IType<any, any, any>; }, {}, _NotCustomized, _NotCustomized>>
-// code
-colorBy: types.maybe(
-          types.model({
-            type: types.string,
-            tag: types.maybe(types.string),
-            extra: types.frozen(),
-          }),
-        )
-```
-
 #### property: drawSingletons
 
 ```js
@@ -71,14 +53,25 @@ true
 drawSingletons: true
 ```
 
-### LinearReadCloudDisplay - Methods
-
-#### method: trackMenuItems
+#### property: filterBy
 
 ```js
 // type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
+IOptionalIType<IModelType<{ flagExclude: IOptionalIType<ISimpleType<number>, [undefined]>; flagInclude: IOptionalIType<ISimpleType<number>, [undefined]>; readName: IMaybe<...>; tagFilter: IMaybe<...>; }, {}, _NotCustomized, _NotCustomized>, [...]>
+// code
+filterBy: types.optional(FilterModel, {})
 ```
+
+#### property: type
+
+```js
+// type signature
+ISimpleType<"LinearReadCloudDisplay">
+// code
+type: types.literal('LinearReadCloudDisplay')
+```
+
+### LinearReadCloudDisplay - Methods
 
 #### method: renderSvg
 
@@ -87,7 +80,28 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 renderSvg: (opts: { rasterizeLayers?: boolean; }) => Promise<React.ReactNode>
 ```
 
+#### method: trackMenuItems
+
+```js
+// type signature
+trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
+```
+
 ### LinearReadCloudDisplay - Actions
+
+#### action: reload
+
+```js
+// type signature
+reload: () => void
+```
+
+#### action: setChainData
+
+```js
+// type signature
+setChainData: (args: ChainData) => void
+```
 
 #### action: setDrawSingletons
 
@@ -96,11 +110,11 @@ renderSvg: (opts: { rasterizeLayers?: boolean; }) => Promise<React.ReactNode>
 setDrawSingletons: (f: boolean) => void
 ```
 
-#### action: setLastDrawnOffsetPx
+#### action: setFilterBy
 
 ```js
 // type signature
-setLastDrawnOffsetPx: (n: number) => void
+setFilterBy: (filter: IFilter) => void
 ```
 
 #### action: setLastDrawnBpPerPx
@@ -110,18 +124,18 @@ setLastDrawnOffsetPx: (n: number) => void
 setLastDrawnBpPerPx: (n: number) => void
 ```
 
+#### action: setLastDrawnOffsetPx
+
+```js
+// type signature
+setLastDrawnOffsetPx: (n: number) => void
+```
+
 #### action: setLoading
 
 ```js
 // type signature
 setLoading: (f: boolean) => void
-```
-
-#### action: reload
-
-```js
-// type signature
-reload: () => void
 ```
 
 #### action: setRef
@@ -132,18 +146,4 @@ canvas
 ```js
 // type signature
 setRef: (ref: HTMLCanvasElement) => void
-```
-
-#### action: setChainData
-
-```js
-// type signature
-setChainData: (args: ChainData) => void
-```
-
-#### action: setFilterBy
-
-```js
-// type signature
-setFilterBy: (filter: IFilter) => void
 ```

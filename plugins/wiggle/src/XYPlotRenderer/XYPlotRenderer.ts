@@ -28,8 +28,8 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
               score < pivotValue ? negColor : posColor
           : (feature: Feature, _score: number) =>
               readConfObject(config, 'color', { feature }),
-      offset: YSCALEBAR_LABEL_OFFSET,
       features: [...features.values()],
+      offset: YSCALEBAR_LABEL_OFFSET,
     })
   }
 }

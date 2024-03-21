@@ -14,6 +14,15 @@ info
 
 ### GoogleDriveOAuthInternetAccount - Properties
 
+#### property: configuration
+
+```js
+// type signature
+ConfigurationSchemaType<{ authEndpoint: { defaultValue: string; description: string; type: string; }; domains: { defaultValue: string[]; description: string; type: string; }; responseType: { defaultValue: string; description: string; type: string; }; scopes: { ...; }; }, ConfigurationSchemaOptions<...>>
+// code
+configuration: ConfigurationReference(configSchema)
+```
+
 #### property: type
 
 ```js
@@ -23,16 +32,14 @@ ISimpleType<"GoogleDriveOAuthInternetAccount">
 type: types.literal('GoogleDriveOAuthInternetAccount')
 ```
 
-#### property: configuration
+### GoogleDriveOAuthInternetAccount - Getters
+
+#### getter: selectorLabel
 
 ```js
-// type signature
-ConfigurationSchemaType<{ authEndpoint: { description: string; type: string; defaultValue: string; }; scopes: { description: string; type: string; defaultValue: string; }; domains: { description: string; type: string; defaultValue: string[]; }; responseType: { ...; }; }, ConfigurationSchemaOptions<...>>
-// code
-configuration: ConfigurationReference(configSchema)
+// type
+string
 ```
-
-### GoogleDriveOAuthInternetAccount - Getters
 
 #### getter: toggleContents
 
@@ -41,13 +48,6 @@ The FileSelector icon for Google drive
 ```js
 // type
 Element
-```
-
-#### getter: selectorLabel
-
-```js
-// type
-string
 ```
 
 ### GoogleDriveOAuthInternetAccount - Methods

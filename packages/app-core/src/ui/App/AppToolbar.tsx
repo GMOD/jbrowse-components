@@ -16,14 +16,14 @@ const useStyles = makeStyles()(theme => ({
   inputBase: {
     color: theme.palette.primary.contrastText,
   },
+  inputFocused: {
+    backgroundColor: theme.palette.primary.light,
+    borderColor: theme.palette.secondary.main,
+  },
   inputRoot: {
     '&:hover': {
       backgroundColor: theme.palette.primary.light,
     },
-  },
-  inputFocused: {
-    borderColor: theme.palette.secondary.main,
-    backgroundColor: theme.palette.primary.light,
   },
 }))
 
@@ -72,14 +72,14 @@ const AppToolbar = observer(function ({
           variant="body1"
           classes={{
             inputBase: classes.inputBase,
-            inputRoot: classes.inputRoot,
             inputFocused: classes.inputFocused,
+            inputRoot: classes.inputRoot,
           }}
         />
       </Tooltip>
       {HeaderButtons}
       <div className={classes.grow} />
-      <div style={{ width: 150, maxHeight: 48 }}>
+      <div style={{ maxHeight: 48, width: 150 }}>
         <AppLogo session={session} />
       </div>
     </Toolbar>

@@ -50,7 +50,7 @@ function main() {
       const { signal, status } = spawn.sync(
         'yarn',
         ['pack', '--ignore-scripts'],
-        { stdio: 'inherit', cwd: location },
+        { cwd: location, stdio: 'inherit' },
       )
       if (signal || (status !== null && status > 0)) {
         process.exit(status || 1)

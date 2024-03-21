@@ -31,7 +31,7 @@ model (via e.g. getRoot) in plugin code
 
 ```js
 // type signature
-IOptionalIType<IModelType<{}, { running: boolean; statusMessage: string; progressPct: number; jobName: string; controller: AbortController; jobsQueue: IObservableArray<TextJobsEntry>; finishedJobs: IObservableArray<...>; } & { ...; } & { ...; } & { ...; }, _NotCustomized, _NotCustomized>, [...]>
+IOptionalIType<IModelType<{}, { controller: AbortController; finishedJobs: IObservableArray<TextJobsEntry>; jobName: string; jobsQueue: IObservableArray<TextJobsEntry>; progressPct: number; running: boolean; statusMessage: string; } & { ...; } & { ...; } & { ...; }, _NotCustomized, _NotCustomized>, [...]>
 // code
 jobsManager: types.optional(JobsManager, {})
 ```

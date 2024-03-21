@@ -35,18 +35,18 @@ view: pluginManager.getViewType('CircularView').stateModel
 
 ### JBrowseReactCircularGenomeViewSessionModel - Getters
 
-#### getter: version
-
-```js
-// type
-any
-```
-
 #### getter: assemblies
 
 ```js
 // type
 any[]
+```
+
+#### getter: assemblyManager
+
+```js
+// type
+any
 ```
 
 #### getter: assemblyNames
@@ -63,7 +63,7 @@ any[]
 any
 ```
 
-#### getter: assemblyManager
+#### getter: version
 
 ```js
 // type
@@ -84,6 +84,7 @@ any[]
 ```js
 // type signature
 renderProps: () => {
+  highResolutionScaling: any
   theme: any
 }
 ```
@@ -92,7 +93,7 @@ renderProps: () => {
 
 ```js
 // type signature
-getTrackActionMenuItems: (config: any) => { label: string; onClick: () => void; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; }[]
+getTrackActionMenuItems: (config: any) => { icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; label: string; onClick: () => void; }[]
 ```
 
 ### JBrowseReactCircularGenomeViewSessionModel - Actions

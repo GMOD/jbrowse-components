@@ -18,7 +18,7 @@ normally refers to a BAM or CRAM adapter
 
 ```js
 subadapter: {
-      type: 'frozen',
       defaultValue: null,
+      type: 'frozen',
     }
 ```

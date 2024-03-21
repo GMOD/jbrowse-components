@@ -10,8 +10,8 @@ export function booleanize(str: string) {
 function createTmp() {
   return tmp.fileSync({
     mode: 0o644,
-    prefix: 'prefix-',
     postfix: '.svg',
+    prefix: 'prefix-',
   })
 }
 

@@ -14,24 +14,6 @@ info
 
 ### SpreadsheetViewSpreadsheet - Properties
 
-#### property: rowSet
-
-```js
-// type signature
-IOptionalIType<IModelType<{ isLoaded: ISimpleType<true>; rows: IArrayType<IModelType<{ id: ISimpleType<string>; cells: IArrayType<IModelType<{ text: ISimpleType<string>; extendedData: IMaybe<IType<any, any, any>>; }, {}, _NotCustomized, _NotCustomized>>; extendedData: IMaybe<...>; isSelected: IType<...>; }, { ...; }...
-// code
-rowSet: types.optional(StaticRowSetModel, () => StaticRowSetModel.create())
-```
-
-#### property: columns
-
-```js
-// type signature
-IArrayType<IModelType<{ name: IMaybe<ISimpleType<string>>; dataType: IOptionalIType<IAnyType, [undefined]>; isDerived: IType<boolean, boolean, boolean>; derivationFunctionText: IMaybe<...>; }, { ...; }, _NotCustomized, _NotCustomized>>
-// code
-columns: types.array(ColumnDefinition)
-```
-
 #### property: columnDisplayOrder
 
 ```js
@@ -41,6 +23,15 @@ IArrayType<ISimpleType<number>>
 columnDisplayOrder: types.array(types.number)
 ```
 
+#### property: columns
+
+```js
+// type signature
+IArrayType<IModelType<{ dataType: IOptionalIType<IAnyType, [undefined]>; derivationFunctionText: IMaybe<ISimpleType<string>>; isDerived: IType<boolean, boolean, boolean>; name: IMaybe<...>; }, { ...; }, _NotCustomized, _NotCustomized>>
+// code
+columns: types.array(ColumnDefinition)
+```
+
 #### property: hasColumnNames
 
 ```js
@@ -48,6 +39,15 @@ columnDisplayOrder: types.array(types.number)
 false
 // code
 hasColumnNames: false
+```
+
+#### property: rowSet
+
+```js
+// type signature
+IOptionalIType<IModelType<{ isLoaded: ISimpleType<true>; rows: IArrayType<IModelType<{ cells: IArrayType<IModelType<{ extendedData: IMaybe<IType<any, any, any>>; text: ISimpleType<string>; }, {}, _NotCustomized, _NotCustomized>>; extendedData: IMaybe<...>; id: ISimpleType<...>; isSelected: IType<...>; }, { ...; } & ...
+// code
+rowSet: types.optional(StaticRowSetModel, () => StaticRowSetModel.create())
 ```
 
 #### property: sortColumns
@@ -72,11 +72,18 @@ sortColumns: types.array(
 
 ### SpreadsheetViewSpreadsheet - Getters
 
-#### getter: initialized
+#### getter: dataTypeChoices
+
+list of data type names to be made available in the column dropdown menu
 
 ```js
 // type
-boolean
+{
+  categoryName: string
+  displayName: string
+  typeName: 'Text' | 'LocRef' | 'Number' | 'LocStart' | 'LocEnd' | 'LocString'
+}
+;[]
 ```
 
 #### getter: hideRowSelection
@@ -86,18 +93,11 @@ boolean
 any
 ```
 
-#### getter: dataTypeChoices
-
-list of data type names to be made available in the column dropdown menu
+#### getter: initialized
 
 ```js
 // type
-{
-  typeName: 'Text' | 'LocRef' | 'Number' | 'LocStart' | 'LocEnd' | 'LocString'
-  displayName: string
-  categoryName: string
-}
-;[]
+boolean
 ```
 
 ### SpreadsheetViewSpreadsheet - Methods
@@ -106,10 +106,17 @@ list of data type names to be made available in the column dropdown menu
 
 ```js
 // type signature
-rowSortingComparisonFunction: (rowA: { id: string; cells: IMSTArray<IModelType<{ text: ISimpleType<string>; extendedData: IMaybe<IType<any, any, any>>; }, {}, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>; extendedData: any; isSelected: boolean; } & NonEmptyObject & { ...; } & { ...; } & IStateTreeNode<...>, rowB: { ...; } & ... 3 more ...
+rowSortingComparisonFunction: (rowA: { cells: IMSTArray<IModelType<{ extendedData: IMaybe<IType<any, any, any>>; text: ISimpleType<string>; }, {}, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>; extendedData: any; id: string; isSelected: boolean; } & NonEmptyObject & { ...; } & { ...; } & IStateTreeNode<...>, rowB: { ...; } & ... 3 more ...
 ```
 
 ### SpreadsheetViewSpreadsheet - Actions
+
+#### action: setColumnType
+
+```js
+// type signature
+setColumnType: (columnNumber: number, newTypeName: string) => void
+```
 
 #### action: setLoaded
 
@@ -130,13 +137,6 @@ setRowMenuPosition: (newPosition: { anchorEl: Element; rowNumber: string; }) => 
 ```js
 // type signature
 setSortColumns: (newSort: readonly ModelCreationType<ExtractCFromProps<{ columnNumber: ISimpleType<number>; descending: IType<boolean, boolean, boolean>; }>>[]) => void
-```
-
-#### action: setColumnType
-
-```js
-// type signature
-setColumnType: (columnNumber: number, newTypeName: string) => void
 ```
 
 #### action: unselectAll

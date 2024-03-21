@@ -19,9 +19,9 @@ type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles()(theme => ({
   note: {
-    textAlign: 'center',
-    paddingTop: theme.spacing(1),
     paddingBottom: theme.spacing(1),
+    paddingTop: theme.spacing(1),
+    textAlign: 'center',
   },
   rel: {
     position: 'relative',
@@ -102,7 +102,7 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
         const leftPx = event.clientX - c.getBoundingClientRect().left
         const hoverPosition = model.pxToBp(leftPx)
         const hoverFeature = tracks.find(t => t.displays[0].featureUnderMouse)
-        session.setHovered({ hoverPosition, hoverFeature })
+        session.setHovered({ hoverFeature, hoverPosition })
       }}
     >
       <HeaderComponent model={model} />

@@ -49,21 +49,21 @@ export async function handleSelectedRegion({
     const searchScope = model.searchScope(assemblyName)
     const { textSearchManager } = getSession(model)
     const results = await fetchResults({
-      queryString: input,
-      searchType: 'exact',
-      searchScope,
-      rankSearchResults: model.rankSearchResults,
-      textSearchManager,
       assembly,
+      queryString: input,
+      rankSearchResults: model.rankSearchResults,
+      searchScope,
+      searchType: 'exact',
+      textSearchManager,
     })
 
     if (results.length > 1) {
       model.setSearchResults(results, input.toLowerCase(), assemblyName)
     } else if (results.length === 1) {
       await navToOption({
-        option: results[0],
-        model,
         assemblyName,
+        model,
+        option: results[0],
       })
     } else {
       await model.navToLocString(input, assemblyName)

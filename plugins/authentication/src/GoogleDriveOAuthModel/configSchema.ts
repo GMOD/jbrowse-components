@@ -14,34 +14,37 @@ const GoogleDriveOAuthConfigSchema = ConfigurationSchema(
      * #slot
      */
     authEndpoint: {
+      defaultValue: 'https://accounts.google.com/o/oauth2/v2/auth',
       description: 'the authorization code endpoint of the internet account',
       type: 'string',
-      defaultValue: 'https://accounts.google.com/o/oauth2/v2/auth',
     },
-    /**
-     * #slot
-     */
-    scopes: {
-      description: 'optional scopes for the authorization call',
-      type: 'string',
-      defaultValue: 'https://www.googleapis.com/auth/drive.readonly',
-    },
+
     /**
      * #slot
      */
     domains: {
+      defaultValue: ['drive.google.com"'],
       description:
         'array of valid domains the url can contain to use this account',
       type: 'stringArray',
-      defaultValue: ['drive.google.com"'],
     },
+
     /**
      * #slot
      */
     responseType: {
+      defaultValue: 'token',
       description: 'the type of response from the authorization endpoint',
       type: 'string',
-      defaultValue: 'token',
+    },
+
+    /**
+     * #slot
+     */
+    scopes: {
+      defaultValue: 'https://www.googleapis.com/auth/drive.readonly',
+      description: 'optional scopes for the authorization call',
+      type: 'string',
     },
   },
   {

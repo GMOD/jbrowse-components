@@ -35,9 +35,9 @@ test('has a type attr', () => {
       .configure(),
   )
   const config = configSchema.create({
-    type: 'LinearSNPCoverageDisplay',
     displayId: 'display1',
     name: 'SNPZonker Display',
+    type: 'LinearSNPCoverageDisplay',
   })
   expect(config.type).toEqual('LinearSNPCoverageDisplay')
 })
@@ -52,9 +52,9 @@ test('set custom jexl filters on linear snp cov display', async () => {
   const configSchema = configSchemaFactory(pm)
 
   const config = {
-    type: 'LinearSNPCoverageDisplay',
     displayId: 'display1',
     name: 'SNPZonker Display',
+    type: 'LinearSNPCoverageDisplay',
   }
 
   const model = modelFactory(pm, configSchema)

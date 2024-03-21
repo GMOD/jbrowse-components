@@ -24,7 +24,7 @@ test('dialog with multiple results, searching seg02', async () => {
   const { input, findByText, autocomplete } = await doSetupForImportForm()
 
   fireEvent.change(input, { target: { value: 'seg02' } })
-  fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
+  fireEvent.keyDown(autocomplete, { code: 'Enter', key: 'Enter' })
   fireEvent.click(await findByText('Open'))
   await findByText('Search results', ...opts)
 }, 30000)
@@ -34,7 +34,7 @@ test('search eden.1 and hit enter', async () => {
     await doSetupForImportForm()
 
   fireEvent.change(input, { target: { value: 'eden.1' } })
-  fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
+  fireEvent.keyDown(autocomplete, { code: 'Enter', key: 'Enter' })
   fireEvent.click(await findByText('Open'))
   await waitFor(() => expect(getInputValue()).toBe('ctgA:1,055..9,005'), delay)
 }, 30000)
@@ -44,7 +44,7 @@ test('lower case refname, searching: contigb', async () => {
     await doSetupForImportForm()
 
   fireEvent.change(input, { target: { value: 'contigb' } })
-  fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
+  fireEvent.keyDown(autocomplete, { code: 'Enter', key: 'Enter' })
   fireEvent.click(await findByText('Open'))
 
   await waitFor(() => expect(getInputValue()).toBe('ctgB:1..6,079'), delay)
@@ -55,7 +55,7 @@ test('description of gene, searching: kinase', async () => {
     await doSetupForImportForm()
 
   fireEvent.change(input, { target: { value: 'kinase' } })
-  fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
+  fireEvent.keyDown(autocomplete, { code: 'Enter', key: 'Enter' })
 
   fireEvent.click(await findByText('EDEN (protein kinase)', ...opts))
   fireEvent.click(await findByText('Open'))
@@ -67,7 +67,7 @@ test('search matches description for feature in two places', async () => {
 
   fireEvent.change(input, { target: { value: 'fingerprint' } })
   fireEvent.click(await findByText(/b101.2/, ...opts))
-  fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
+  fireEvent.keyDown(autocomplete, { code: 'Enter', key: 'Enter' })
   fireEvent.click(await findByText('Open'))
   await findByText('Search results', ...opts)
 }, 30000)

@@ -6,10 +6,10 @@ import stateModel from './models/SpreadsheetView'
 export default (pluginManager: PluginManager) => {
   pluginManager.addViewType(() => {
     return new ViewType({
-      name: 'SpreadsheetView',
-      displayName: 'Spreadsheet view',
-      stateModel,
       ReactComponent: lazy(() => import('./components/SpreadsheetView')),
+      displayName: 'Spreadsheet view',
+      name: 'SpreadsheetView',
+      stateModel,
     })
   })
 }

@@ -5,15 +5,15 @@ function parseSTARFusionBreakpointString(str: string) {
   const refName = fields[0]
   const pos = Number.parseInt(fields[1], 10)
   const strand = fields[2] === '-' ? -1 : 1
-  return { refName, pos, strand }
+  return { pos, refName, strand }
 }
 
 const numericColumns: Record<string, boolean> = {
-  SpanningFragCount: true,
   FFPM: true,
+  JunctionReadCount: true,
   LeftBreakEntropy: true,
   RightBreakEntropy: true,
-  JunctionReadCount: true,
+  SpanningFragCount: true,
 }
 
 export async function parseSTARFusionBuffer(
@@ -21,10 +21,10 @@ export async function parseSTARFusionBuffer(
   options: ParseOptions,
 ) {
   const data = await parseTsvBuffer(buffer, {
-    hasColumnNameLine: true,
     columnNameLineNumber: 1,
-    selectedAssemblyName: options.selectedAssemblyName,
+    hasColumnNameLine: true,
     isValidRefName: () => false,
+    selectedAssemblyName: options.selectedAssemblyName,
   })
 
   // remove the # in #FusionName
@@ -51,9 +51,9 @@ export async function parseSTARFusionBuffer(
       } else if (column.name === 'RightBreakpoint' && text) {
         const { refName, pos, strand } = parseSTARFusionBreakpointString(text)
         featureData.mate = {
+          end: pos,
           refName,
           start: pos,
-          end: pos,
           strand,
         }
       } else if (text && numericColumns[column.name]) {

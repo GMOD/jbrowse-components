@@ -96,10 +96,10 @@ class LayoutRow<T> {
   initialize(left: number, right: number): RowState<T> {
     const rectWidth = right - left
     return {
-      offset: left - rectWidth,
-      min: left,
-      max: right,
       bits: Array.from({ length: 3 * rectWidth }),
+      max: right,
+      min: left,
+      offset: left - rectWidth,
     }
   }
 
@@ -360,13 +360,13 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     const pHeight = Math.ceil(height / this.pitchY)
 
     const rectangle: Rectangle<T> = {
+      data,
+      h: pHeight,
       id,
       l: pLeft,
+      originalHeight: height,
       r: pRight,
       top: null,
-      h: pHeight,
-      originalHeight: height,
-      data,
     }
 
     const maxTop = this.maxHeight - pHeight
@@ -539,20 +539,20 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
       }
     }
     return {
-      rectangles: regionRectangles,
       containsNoTransferables: true,
-      totalHeight: this.getTotalHeight(),
       maxHeightReached,
+      rectangles: regionRectangles,
+      totalHeight: this.getTotalHeight(),
     }
   }
 
   toJSON(): SerializedLayout {
     const rectangles = Object.fromEntries(this.getRectangles())
     return {
-      rectangles,
       containsNoTransferables: true,
-      totalHeight: this.getTotalHeight(),
       maxHeightReached: this.maxHeightReached,
+      rectangles,
+      totalHeight: this.getTotalHeight(),
     }
   }
 }

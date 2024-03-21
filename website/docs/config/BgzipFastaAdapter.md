@@ -12,37 +12,24 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ### BgzipFastaAdapter - Slots
 
-#### slot: fastaLocation
-
-```js
-fastaLocation: {
-      type: 'fileLocation',
-      defaultValue: { uri: '/path/to/seq.fa.gz', locationType: 'UriLocation' },
-    }
-```
-
 #### slot: faiLocation
 
 ```js
 faiLocation: {
-      type: 'fileLocation',
       defaultValue: {
-        uri: '/path/to/seq.fa.gz.fai',
         locationType: 'UriLocation',
+        uri: '/path/to/seq.fa.gz.fai',
       },
+      type: 'fileLocation',
     }
 ```
 
-#### slot: metadataLocation
+#### slot: fastaLocation
 
 ```js
-metadataLocation: {
-      description: 'Optional metadata file',
+fastaLocation: {
+      defaultValue: { locationType: 'UriLocation', uri: '/path/to/seq.fa.gz' },
       type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/fa.metadata.yaml',
-        locationType: 'UriLocation',
-      },
     }
 ```
 
@@ -50,10 +37,23 @@ metadataLocation: {
 
 ```js
 gziLocation: {
-      type: 'fileLocation',
       defaultValue: {
-        uri: '/path/to/seq.fa.gz.gzi',
         locationType: 'UriLocation',
+        uri: '/path/to/seq.fa.gz.gzi',
       },
+      type: 'fileLocation',
+    }
+```
+
+#### slot: metadataLocation
+
+```js
+metadataLocation: {
+      defaultValue: {
+        locationType: 'UriLocation',
+        uri: '/path/to/fa.metadata.yaml',
+      },
+      description: 'Optional metadata file',
+      type: 'fileLocation',
     }
 ```

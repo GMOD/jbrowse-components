@@ -53,8 +53,8 @@ export class LayoutSession implements LayoutSessionProps {
 
   makeLayout() {
     return new MultiLayout(GranularRectLayout, {
-      maxHeight: readConfObject(this.config, 'maxHeight'),
       displayMode: readConfObject(this.config, 'displayMode'),
+      maxHeight: readConfObject(this.config, 'maxHeight'),
       pitchX: this.bpPerPx,
       pitchY: readConfObject(this.config, 'noSpacing') ? 1 : 3,
     })
@@ -78,9 +78,9 @@ export class LayoutSession implements LayoutSessionProps {
   get layout(): MyMultiLayout {
     if (!this.cachedLayout || !this.cachedLayoutIsValid(this.cachedLayout)) {
       this.cachedLayout = {
-        layout: this.makeLayout(),
         config: readConfObject(this.config),
         filters: this.filters,
+        layout: this.makeLayout(),
       }
     }
     return this.cachedLayout.layout
@@ -145,8 +145,8 @@ export default class BoxRendererType extends FeatureRendererType {
     const bpExpansion = Math.round(maxFeatureGlyphExpansion * bpPerPx)
     return {
       ...region,
-      start: Math.floor(Math.max(region.start - bpExpansion, 0)),
       end: Math.ceil(region.end + bpExpansion),
+      start: Math.floor(Math.max(region.start - bpExpansion, 0)),
     }
   }
 

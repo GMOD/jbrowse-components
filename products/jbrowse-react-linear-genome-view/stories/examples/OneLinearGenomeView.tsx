@@ -10,12 +10,13 @@ export const OneLinearGenomeView = () => {
   const { assembly, tracks } = getVolvoxConfig()
   const state = createViewState({
     assembly,
-    tracks,
     // use 1-based coordinates for locstring
     location: 'ctgA:1105..1221',
+
     onChange: patch => {
       console.log('patch', patch)
     },
+    tracks,
   })
   return (
     <div>

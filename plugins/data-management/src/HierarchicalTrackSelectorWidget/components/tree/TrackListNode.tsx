@@ -15,23 +15,24 @@ const useStyles = makeStyles()(theme => ({
   },
 
   accordionCard: {
-    padding: 3,
     cursor: 'pointer',
     display: 'flex',
+    padding: 3,
   },
 
-  nestingLevelMarker: {
-    position: 'absolute',
-    borderLeft: '1.5px solid #555',
-  },
   // accordionColor set's display:flex so that the child accordionText use
   // vertically centered text
   accordionColor: {
     background: theme.palette.tertiary.main,
     color: theme.palette.tertiary.contrastText,
-    width: '100%',
     display: 'flex',
     paddingLeft: 5,
+    width: '100%',
+  },
+
+  nestingLevelMarker: {
+    borderLeft: '1.5px solid #555',
+    position: 'absolute',
   },
 }))
 
@@ -59,7 +60,7 @@ export default function Node({
       {new Array(nestingLevel).fill(0).map((_, idx) => (
         <div
           key={`mark-${idx}`}
-          style={{ left: idx * width + 4, height: style?.height }}
+          style={{ height: style?.height, left: idx * width + 4 }}
           className={classes.nestingLevelMarker}
         />
       ))}

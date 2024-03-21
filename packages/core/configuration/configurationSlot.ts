@@ -9,32 +9,32 @@ function isValidColorString(/* str */) {
   return true
 }
 const typeModels: Record<string, any> = {
-  stringArray: types.array(types.string),
-  stringArrayMap: types.map(types.array(types.string)),
-  numberMap: types.map(types.number),
   boolean: types.boolean,
   color: types.refinement('Color', types.string, isValidColorString),
-  integer: types.integer,
-  number: types.number,
-  string: types.string,
-  text: types.string,
   fileLocation: FileLocation,
   frozen: types.frozen(),
+  integer: types.integer,
+  number: types.number,
+  numberMap: types.map(types.number),
+  string: types.string,
+  stringArray: types.array(types.string),
+  stringArrayMap: types.map(types.array(types.string)),
+  text: types.string,
 }
 
 // default values we use if the defaultValue is malformed or does not work
 const fallbackDefaults: Record<string, any> = {
-  stringArray: [],
-  stringArrayMap: {},
-  numberMap: {},
   boolean: true,
   color: 'black',
+  fileLocation: { locationType: 'UriLocation', uri: '/path/to/resource.txt' },
+  frozen: {},
   integer: 1,
   number: 1,
+  numberMap: {},
   string: '',
+  stringArray: [],
+  stringArrayMap: {},
   text: '',
-  fileLocation: { uri: '/path/to/resource.txt', locationType: 'UriLocation' },
-  frozen: {},
 }
 
 const literalJSON = (self: { value: any }) => ({
@@ -55,18 +55,29 @@ const objectJSON = (self: { value: any }) => ({
 
 // custom actions for modifying the value models
 const typeModelExtensions: Record<string, (self: any) => any> = {
-  fileLocation: objectJSON,
-  number: literalJSON,
-  integer: literalJSON,
   boolean: literalJSON,
+  fileLocation: objectJSON,
   frozen: objectJSON,
-  // special actions for working with stringArray slots
-  stringArray: (self: { value: string[] }) => ({
+  integer: literalJSON,
+  number: literalJSON,
+
+  numberMap: (self: { value: Map<string, number> }) => ({
+    actions: {
+      add(key: string, val: number) {
+        self.value.set(key, val)
+      },
+      remove(key: string) {
+        self.value.delete(key)
+      },
+    },
     views: {
       get valueJSON() {
         return JSON.stringify(self.value)
       },
     },
+  }),
+  // special actions for working with stringArray slots
+  stringArray: (self: { value: string[] }) => ({
     actions: {
       add(val: string) {
         self.value.push(val)
@@ -78,19 +89,16 @@ const typeModelExtensions: Record<string, (self: any) => any> = {
         self.value[idx] = val
       },
     },
-  }),
-  stringArrayMap: (self: { value: Map<string, string[]> }) => ({
     views: {
       get valueJSON() {
         return JSON.stringify(self.value)
       },
     },
+  }),
+  stringArrayMap: (self: { value: Map<string, string[]> }) => ({
     actions: {
       add(key: string, val: any) {
         self.value.set(key, val)
-      },
-      remove(key: string) {
-        self.value.delete(key)
       },
       addToKey(key: string, val: string) {
         const ar = self.value.get(key)
@@ -98,6 +106,9 @@ const typeModelExtensions: Record<string, (self: any) => any> = {
           throw new Error(`${key} not found`)
         }
         ar.push(val)
+      },
+      remove(key: string) {
+        self.value.delete(key)
       },
       removeAtKeyIndex(key: string, idx: number) {
         const ar = self.value.get(key)
@@ -114,19 +125,9 @@ const typeModelExtensions: Record<string, (self: any) => any> = {
         ar[idx] = val
       },
     },
-  }),
-  numberMap: (self: { value: Map<string, number> }) => ({
     views: {
       get valueJSON() {
         return JSON.stringify(self.value)
-      },
-    },
-    actions: {
-      add(key: string, val: number) {
-        self.value.set(key, val)
-      },
-      remove(key: string) {
-        self.value.delete(key)
       },
     },
   }),
@@ -196,8 +197,8 @@ export default function ConfigSlot(
     .toUpperCase()}${slotName.slice(1)}ConfigSlot`
   let slot = types
     .model(configSlotModelName, {
-      name: types.literal(slotName),
       description: types.literal(description),
+      name: types.literal(slotName),
       type: types.literal(type),
       value: types.optional(types.union(JexlStringType, model), defaultValue),
     })
@@ -239,8 +240,8 @@ export default function ConfigSlot(
       typeof val === 'object' && val.name === slotName
         ? val
         : {
-            name: slotName,
             description,
+            name: slotName,
             type,
             value: val,
           },
@@ -254,12 +255,6 @@ export default function ConfigSlot(
       return snap.value !== defaultValue ? snap.value : undefined
     })
     .actions(self => ({
-      set(newVal: any) {
-        self.value = newVal
-      },
-      reset() {
-        self.value = defaultValue
-      },
       convertToCallback() {
         if (self.isCallback) {
           return
@@ -292,6 +287,12 @@ export default function ConfigSlot(
           self.value = fallbackDefaults[type]
         }
       },
+      reset() {
+        self.value = defaultValue
+      },
+      set(newVal: any) {
+        self.value = newVal
+      },
     }))
 
   // if there are any type-specific extensions (views or actions)
@@ -301,9 +302,9 @@ export default function ConfigSlot(
   }
 
   const completeModel = types.optional(slot, {
+    description,
     name: slotName,
     type,
-    description,
     value: defaultValue,
   })
   const m = completeModel

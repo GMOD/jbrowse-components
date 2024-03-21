@@ -10,19 +10,19 @@ import { observer } from 'mobx-react'
 const statusBarHeight = 40
 
 const useStyles = makeStyles()(theme => ({
+  spacer: {
+    flexGrow: 1,
+  },
   statusBar: {
-    height: statusBarHeight,
-    boxSizing: 'border-box',
     borderTop: '1px outset #b1b1b1',
+    boxSizing: 'border-box',
+    height: statusBarHeight,
     paddingLeft: theme.spacing(1),
   },
   verticallyCenter: {
     display: 'flex',
-    justifyContent: 'center',
     flexDirection: 'column',
-  },
-  spacer: {
-    flexGrow: 1,
+    justifyContent: 'center',
   },
 }))
 

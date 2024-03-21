@@ -48,17 +48,79 @@ export default class AddAssembly extends JBrowseCommand {
 
   static args = {
     sequence: Args.string({
-      required: true,
       description: `sequence file or URL
 
 If TYPE is indexedFasta or bgzipFasta, the index file defaults to <location>.fai
 and can be optionally specified with --faiLocation
 If TYPE is bgzipFasta, the gzip index file defaults to <location>.gzi and can be
 optionally specified with --gziLocation`,
+      required: true,
     }),
   }
 
   static flags = {
+    alias: Flags.string({
+      char: 'a',
+      description:
+        'An alias for the assembly name (e.g. "hg38" if the name of the assembly is "GRCh38");\ncan be specified multiple times',
+      multiple: true,
+    }),
+    displayName: Flags.string({
+      description:
+        'The display name to specify for the assembly, e.g. "Homo sapiens (hg38)" while the name can be a shorter identifier like "hg38"',
+    }),
+    faiLocation: Flags.string({
+      description: '[default: <fastaLocation>.fai] FASTA index file or URL',
+    }),
+    force: Flags.boolean({
+      char: 'f',
+      description: 'Equivalent to `--skipCheck --overwrite`',
+    }),
+    gziLocation: Flags.string({
+      description:
+        '[default: <fastaLocation>.gzi] FASTA gzip index file or URL',
+    }),
+    help: Flags.help({ char: 'h' }),
+    load: Flags.string({
+      char: 'l',
+      description:
+        'Required flag when using a local file. Choose how to manage the data directory. Copy, symlink, or move the data directory to the JBrowse directory. Or use inPlace to modify the config without doing any file operations',
+      options: ['copy', 'symlink', 'move', 'inPlace'],
+    }),
+    name: Flags.string({
+      char: 'n',
+      description:
+        'Name of the assembly; if not specified, will be guessed using the sequence file name',
+    }),
+    out: Flags.string({
+      description: 'synonym for target',
+    }),
+    overwrite: Flags.boolean({
+      description:
+        'Overwrite existing assembly if one with the same name exists',
+    }),
+    refNameAliases: Flags.string({
+      description:
+        'Reference sequence name aliases file or URL; assumed to be a tab-separated aliases\nfile unless --refNameAliasesType is specified',
+    }),
+    refNameAliasesType: Flags.string({
+      dependsOn: ['refNameAliases'],
+      description:
+        'Type of aliases defined by --refNameAliases; if "custom", --refNameAliases is either\na JSON file location or inline JSON that defines a custom sequence adapter',
+      options: ['aliases', 'custom'],
+    }),
+    refNameColors: Flags.string({
+      description:
+        'A comma-separated list of color strings for the reference sequence names; will cycle\nthrough colors if there are fewer colors than sequences',
+    }),
+    skipCheck: Flags.boolean({
+      description:
+        "Don't check whether or not the sequence file or URL exists or if you are in a JBrowse directory",
+    }),
+    target: Flags.string({
+      description:
+        'path to config file in JB2 installation directory to write out to.\nCreates ./config.json if nonexistent',
+    }),
     type: Flags.string({
       char: 't',
       description: `type of sequence, by default inferred from sequence file
@@ -77,68 +139,6 @@ custom         Either a JSON file location or inline JSON that defines a custom
                sequence adapter; must provide --name if using inline JSON`,
 
       options: ['indexedFasta', 'bgzipFasta', 'twoBit', 'chromSizes', 'custom'],
-    }),
-    name: Flags.string({
-      char: 'n',
-      description:
-        'Name of the assembly; if not specified, will be guessed using the sequence file name',
-    }),
-    alias: Flags.string({
-      char: 'a',
-      description:
-        'An alias for the assembly name (e.g. "hg38" if the name of the assembly is "GRCh38");\ncan be specified multiple times',
-      multiple: true,
-    }),
-    displayName: Flags.string({
-      description:
-        'The display name to specify for the assembly, e.g. "Homo sapiens (hg38)" while the name can be a shorter identifier like "hg38"',
-    }),
-    faiLocation: Flags.string({
-      description: '[default: <fastaLocation>.fai] FASTA index file or URL',
-    }),
-    gziLocation: Flags.string({
-      description:
-        '[default: <fastaLocation>.gzi] FASTA gzip index file or URL',
-    }),
-    refNameAliases: Flags.string({
-      description:
-        'Reference sequence name aliases file or URL; assumed to be a tab-separated aliases\nfile unless --refNameAliasesType is specified',
-    }),
-    refNameAliasesType: Flags.string({
-      description:
-        'Type of aliases defined by --refNameAliases; if "custom", --refNameAliases is either\na JSON file location or inline JSON that defines a custom sequence adapter',
-      options: ['aliases', 'custom'],
-      dependsOn: ['refNameAliases'],
-    }),
-    refNameColors: Flags.string({
-      description:
-        'A comma-separated list of color strings for the reference sequence names; will cycle\nthrough colors if there are fewer colors than sequences',
-    }),
-    target: Flags.string({
-      description:
-        'path to config file in JB2 installation directory to write out to.\nCreates ./config.json if nonexistent',
-    }),
-    out: Flags.string({
-      description: 'synonym for target',
-    }),
-    help: Flags.help({ char: 'h' }),
-    load: Flags.string({
-      char: 'l',
-      description:
-        'Required flag when using a local file. Choose how to manage the data directory. Copy, symlink, or move the data directory to the JBrowse directory. Or use inPlace to modify the config without doing any file operations',
-      options: ['copy', 'symlink', 'move', 'inPlace'],
-    }),
-    skipCheck: Flags.boolean({
-      description:
-        "Don't check whether or not the sequence file or URL exists or if you are in a JBrowse directory",
-    }),
-    overwrite: Flags.boolean({
-      description:
-        'Overwrite existing assembly if one with the same name exists',
-    }),
-    force: Flags.boolean({
-      char: 'f',
-      description: 'Equivalent to `--skipCheck --overwrite`',
     }),
   }
 
@@ -208,16 +208,16 @@ custom         Either a JSON file location or inline JSON that defines a custom
           indexLocation = path.basename(indexLocation)
         }
         sequence = {
-          type: 'ReferenceSequenceTrack',
-          trackId: `${name}-ReferenceSequenceTrack`,
           adapter: {
-            type: 'IndexedFastaAdapter',
+            faiLocation: { locationType: 'UriLocation', uri: indexLocation },
             fastaLocation: {
-              uri: sequenceLocation,
               locationType: 'UriLocation',
+              uri: sequenceLocation,
             },
-            faiLocation: { uri: indexLocation, locationType: 'UriLocation' },
+            type: 'IndexedFastaAdapter',
           },
+          trackId: `${name}-ReferenceSequenceTrack`,
+          type: 'ReferenceSequenceTrack',
         }
         break
       }
@@ -262,20 +262,20 @@ custom         Either a JSON file location or inline JSON that defines a custom
           bgzipIndexLocation = path.basename(bgzipIndexLocation)
         }
         sequence = {
-          type: 'ReferenceSequenceTrack',
-          trackId: `${name}-ReferenceSequenceTrack`,
           adapter: {
-            type: 'BgzipFastaAdapter',
+            faiLocation: { locationType: 'UriLocation', uri: indexLocation },
             fastaLocation: {
+              locationType: 'UriLocation',
               uri: sequenceLocation,
-              locationType: 'UriLocation',
             },
-            faiLocation: { uri: indexLocation, locationType: 'UriLocation' },
             gziLocation: {
-              uri: bgzipIndexLocation,
               locationType: 'UriLocation',
+              uri: bgzipIndexLocation,
             },
+            type: 'BgzipFastaAdapter',
           },
+          trackId: `${name}-ReferenceSequenceTrack`,
+          type: 'ReferenceSequenceTrack',
         }
         break
       }
@@ -297,15 +297,15 @@ custom         Either a JSON file location or inline JSON that defines a custom
           sequenceLocation = path.basename(sequenceLocation)
         }
         sequence = {
-          type: 'ReferenceSequenceTrack',
-          trackId: `${name}-ReferenceSequenceTrack`,
           adapter: {
-            type: 'TwoBitAdapter',
             twoBitLocation: {
-              uri: sequenceLocation,
               locationType: 'UriLocation',
+              uri: sequenceLocation,
             },
+            type: 'TwoBitAdapter',
           },
+          trackId: `${name}-ReferenceSequenceTrack`,
+          type: 'ReferenceSequenceTrack',
         }
         break
       }
@@ -327,15 +327,15 @@ custom         Either a JSON file location or inline JSON that defines a custom
           sequenceLocation = path.basename(sequenceLocation)
         }
         sequence = {
-          type: 'ReferenceSequenceTrack',
-          trackId: `${name}-ReferenceSequenceTrack`,
           adapter: {
-            type: 'ChromSizesAdapter',
             chromSizesLocation: {
-              uri: sequenceLocation,
               locationType: 'UriLocation',
+              uri: sequenceLocation,
             },
+            type: 'ChromSizesAdapter',
           },
+          trackId: `${name}-ReferenceSequenceTrack`,
+          type: 'ReferenceSequenceTrack',
         }
         break
       }
@@ -362,9 +362,9 @@ custom         Either a JSON file location or inline JSON that defines a custom
           )
         }
         sequence = {
-          type: 'ReferenceSequenceTrack',
-          trackId: `${name}-ReferenceSequenceTrack`,
           adapter,
+          trackId: `${name}-ReferenceSequenceTrack`,
+          type: 'ReferenceSequenceTrack',
         }
         break
       }
@@ -445,11 +445,11 @@ custom         Either a JSON file location or inline JSON that defines a custom
         )
         assembly.refNameAliases = {
           adapter: {
-            type: 'RefNameAliasAdapter',
             location: {
-              uri: refNameAliasesLocation,
               locationType: 'UriLocation',
+              uri: refNameAliasesLocation,
             },
+            type: 'RefNameAliasAdapter',
           },
         }
       }

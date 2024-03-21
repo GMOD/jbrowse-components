@@ -18,15 +18,6 @@ extends
 
 ### MultiLinearWiggleDisplay - Properties
 
-#### property: type
-
-```js
-// type signature
-ISimpleType<"MultiLinearWiggleDisplay">
-// code
-type: types.literal('MultiLinearWiggleDisplay')
-```
-
 #### property: layout
 
 ```js
@@ -36,14 +27,16 @@ IOptionalIType<IType<Source[], Source[], Source[]>, [undefined]>
 layout: types.optional(types.frozen<Source[]>(), [])
 ```
 
-### MultiLinearWiggleDisplay - Getters
-
-#### getter: featureUnderMouse
+#### property: type
 
 ```js
-// type
-Feature
+// type signature
+ISimpleType<"MultiLinearWiggleDisplay">
+// code
+type: types.literal('MultiLinearWiggleDisplay')
 ```
+
+### MultiLinearWiggleDisplay - Getters
 
 #### getter: TooltipComponent
 
@@ -52,25 +45,18 @@ Feature
 React.FC
 ```
 
+#### getter: featureUnderMouse
+
+```js
+// type
+Feature
+```
+
 #### getter: rendererTypeName
 
 ```js
 // type
 string
-```
-
-#### getter: needsScalebar
-
-```js
-// type
-boolean
-```
-
-#### getter: needsFullHeightScalebar
-
-```js
-// type
-boolean
 ```
 
 #### getter: isMultiRow
@@ -90,10 +76,14 @@ this yet but flag can be used for this
 boolean
 ```
 
-#### getter: renderColorBoxes
+#### getter: needsFullHeightScalebar
 
-the multirowxy and multiline don't need to use colors on the legend boxes since
-their track is drawn with the color. sort of a stylistic choice
+```js
+// type
+boolean
+```
+
+#### getter: needsScalebar
 
 ```js
 // type
@@ -108,6 +98,16 @@ everything else
 ```js
 // type
 any
+```
+
+#### getter: renderColorBoxes
+
+the multirowxy and multiline don't need to use colors on the legend boxes since
+their track is drawn with the color. sort of a stylistic choice
+
+```js
+// type
+boolean
 ```
 
 #### getter: sources
@@ -138,13 +138,6 @@ boolean
 any
 ```
 
-#### getter: ticks
-
-```js
-// type
-{ range: number[]; values: number[]; format: (d: NumberValue) => string; position: ScaleLinear<number, number, never> | ScaleQuantize<number, never>; }
-```
-
 #### getter: colors
 
 ```js
@@ -152,11 +145,18 @@ any
 string[]
 ```
 
-#### getter: hasResolution
+#### getter: ticks
 
 ```js
 // type
-boolean
+{ range: number[]; values: number[]; format: (d: NumberValue) => string; position: ScaleLinear<number, number, never> | ScaleQuantize<number, never>; }
+```
+
+#### getter: fillSetting
+
+```js
+// type
+;1 | 0 | 2
 ```
 
 #### getter: hasGlobalStats
@@ -166,11 +166,11 @@ boolean
 boolean
 ```
 
-#### getter: fillSetting
+#### getter: hasResolution
 
 ```js
 // type
-;1 | 0 | 2
+boolean
 ```
 
 ### MultiLinearWiggleDisplay - Methods
@@ -191,13 +191,6 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 
 ### MultiLinearWiggleDisplay - Actions
 
-#### action: setLayout
-
-```js
-// type signature
-setLayout: (layout: Source[]) => void
-```
-
 #### action: clearLayout
 
 ```js
@@ -205,18 +198,25 @@ setLayout: (layout: Source[]) => void
 clearLayout: () => void
 ```
 
-#### action: setSources
-
-```js
-// type signature
-setSources: (sources: Source[]) => void
-```
-
 #### action: setFeatureUnderMouse
 
 ```js
 // type signature
 setFeatureUnderMouse: (f?: Feature) => void
+```
+
+#### action: setLayout
+
+```js
+// type signature
+setLayout: (layout: Source[]) => void
+```
+
+#### action: setSources
+
+```js
+// type signature
+setSources: (sources: Source[]) => void
 ```
 
 #### action: renderSvg

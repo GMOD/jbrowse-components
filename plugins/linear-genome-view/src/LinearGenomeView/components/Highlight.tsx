@@ -23,12 +23,12 @@ type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles()(theme => ({
   highlight: {
-    height: '100%',
-    position: 'absolute',
-    overflow: 'hidden',
     background: `${colord(theme.palette.highlight?.main ?? 'goldenrod')
       .alpha(0.35)
       .toRgbString()}`,
+    height: '100%',
+    overflow: 'hidden',
+    position: 'absolute',
   },
 }))
 
@@ -47,13 +47,13 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
 
   const menuItems = [
     {
-      label: 'Dismiss highlight',
       icon: CloseIcon,
+      label: 'Dismiss highlight',
       onClick: () => dismissHighlight(),
     },
     {
-      label: 'Bookmark highlighted region',
       icon: BookmarkIcon,
+      label: 'Bookmark highlighted region',
       onClick: () => {
         let bookmarkWidget = session.widgets.get('GridBookmark')
         if (!bookmarkWidget) {
@@ -80,17 +80,17 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
   // coords
   const mapCoords = (r: Required<ParsedLocString>) => {
     const s = model.bpToPx({
-      refName: r.refName,
       coord: r.start,
+      refName: r.refName,
     })
     const e = model.bpToPx({
-      refName: r.refName,
       coord: r.end,
+      refName: r.refName,
     })
     return s && e
       ? {
-          width: Math.max(Math.abs(e.offsetPx - s.offsetPx), 3),
           left: Math.min(s.offsetPx, e.offsetPx) - model.offsetPx,
+          width: Math.max(Math.abs(e.offsetPx - s.offsetPx), 3),
         }
       : undefined
   }

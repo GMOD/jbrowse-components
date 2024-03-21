@@ -75,7 +75,7 @@ export default (pluginManager: PluginManager) => {
           }
         }
 
-        await handleSelectedRegion({ input: loc, model: view, assembly: asm })
+        await handleSelectedRegion({ assembly: asm, input: loc, model: view })
 
         const idsNotFound = [] as string[]
         tracks.forEach(track => tryTrack(view, track, idsNotFound))

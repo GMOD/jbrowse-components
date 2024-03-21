@@ -18,7 +18,7 @@ info
 
 ```js
 // type signature
-IArrayType<IModelType<{ name: ISimpleType<string>; tracks: IArrayType<IAnyModelType>; configuration: ConfigurationSchemaType<{ name: { type: string; defaultValue: string; description: string; }; assemblyNames: { ...; }; }, ConfigurationSchemaOptions<...>>; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>>
+IArrayType<IModelType<{ configuration: ConfigurationSchemaType<{ assemblyNames: { defaultValue: any[]; description: string; type: string; }; name: { defaultValue: string; description: string; type: string; }; }, ConfigurationSchemaOptions<undefined, "connectionId">>; name: ISimpleType<...>; tracks: IArrayType<...>; ...
 // code
 connectionInstances: types.array(
         pluginManager.pluggableMstType(
@@ -34,10 +34,38 @@ connectionInstances: types.array(
 
 ```js
 // type
-({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<ConfigurationSchemaType<{ name: { type: string; defaultValue: string; description: string; }; assemblyNames: { ...; }; }, ConfigurationSchemaOptions<...>>>)[]
+({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<ConfigurationSchemaType<{ assemblyNames: { defaultValue: any[]; description: string; type: string; }; name: { ...; }; }, ConfigurationSchemaOptions<...>>>)[]
 ```
 
 ### ConnectionManagementSessionMixin - Actions
+
+#### action: addConnectionConf
+
+```js
+// type signature
+addConnectionConf: (connectionConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => any
+```
+
+#### action: breakConnection
+
+```js
+// type signature
+breakConnection: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
+```
+
+#### action: clearConnections
+
+```js
+// type signature
+clearConnections: () => void
+```
+
+#### action: deleteConnection
+
+```js
+// type signature
+deleteConnection: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => any
+```
 
 #### action: makeConnection
 
@@ -51,32 +79,4 @@ makeConnection: (configuration: { [x: string]: any; } & NonEmptyObject & { setSu
 ```js
 // type signature
 prepareToBreakConnection: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => (Record<...> | (() => void))[]
-```
-
-#### action: breakConnection
-
-```js
-// type signature
-breakConnection: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
-```
-
-#### action: deleteConnection
-
-```js
-// type signature
-deleteConnection: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => any
-```
-
-#### action: addConnectionConf
-
-```js
-// type signature
-addConnectionConf: (connectionConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => any
-```
-
-#### action: clearConnections
-
-```js
-// type signature
-clearConnections: () => void
 ```

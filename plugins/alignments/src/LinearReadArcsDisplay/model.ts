@@ -43,37 +43,18 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        type: types.literal('LinearReadArcsDisplay'),
+        colorBy: types.maybe(
+          types.model({
+            extra: types.frozen(),
+            tag: types.maybe(types.string),
+            type: types.string,
+          }),
+        ),
+
         /**
          * #property
          */
         configuration: ConfigurationReference(configSchema),
-
-        /**
-         * #property
-         */
-        filterBy: types.optional(FilterModel, {}),
-
-        /**
-         * #property
-         */
-        lineWidth: types.maybe(types.number),
-
-        /**
-         * #property
-         */
-        jitter: types.maybe(types.number),
-
-        /**
-         * #property
-         */
-        colorBy: types.maybe(
-          types.model({
-            type: types.string,
-            tag: types.maybe(types.string),
-            extra: types.frozen(),
-          }),
-        ),
 
         /**
          * #property
@@ -84,55 +65,41 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         drawLongRange: true,
+
+        /**
+         * #property
+         */
+        filterBy: types.optional(FilterModel, {}),
+
+        /**
+         * #property
+         */
+        jitter: types.maybe(types.number),
+
+        /**
+         * #property
+         */
+        lineWidth: types.maybe(types.number),
+
+        /**
+         * #property
+         */
+        type: types.literal('LinearReadArcsDisplay'),
       }),
     )
     .volatile(() => ({
-      loading: false,
       chainData: undefined as ChainData | undefined,
-      lastDrawnOffsetPx: undefined as number | undefined,
       lastDrawnBpPerPx: 0,
+      lastDrawnOffsetPx: undefined as number | undefined,
+      loading: false,
       ref: null as HTMLCanvasElement | null,
     }))
     .actions(self => ({
       /**
        * #action
        */
-      setLastDrawnOffsetPx(n: number) {
-        self.lastDrawnOffsetPx = n
-      },
-      /**
-       * #action
-       */
-      setLastDrawnBpPerPx(n: number) {
-        self.lastDrawnBpPerPx = n
-      },
-      /**
-       * #action
-       */
-      setLoading(f: boolean) {
-        self.loading = f
-      },
-
-      /**
-       * #action
-       */
       reload() {
         self.error = undefined
-      },
-      /**
-       * #action
-       * internal, a reference to a HTMLCanvas because we use a autorun to draw
-       * the canvas
-       */
-      setRef(ref: HTMLCanvasElement | null) {
-        self.ref = ref
-      },
-
-      /**
-       * #action
-       */
-      setColorScheme(s: { type: string }) {
-        self.colorBy = cast(s)
       },
 
       /**
@@ -140,6 +107,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setChainData(args: ChainData) {
         self.chainData = args
+      },
+
+      /**
+       * #action
+       */
+      setColorScheme(s: { type: string }) {
+        self.colorBy = cast(s)
       },
 
       /**
@@ -165,6 +139,29 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
 
       /**
        * #action
+       * jitter val, helpful to jitter the x direction so you see better
+       * evidence when e.g. 100 long reads map to same x position
+       */
+      setJitter(n: number) {
+        self.jitter = n
+      },
+
+      /**
+       * #action
+       */
+      setLastDrawnBpPerPx(n: number) {
+        self.lastDrawnBpPerPx = n
+      },
+
+      /**
+       * #action
+       */
+      setLastDrawnOffsetPx(n: number) {
+        self.lastDrawnOffsetPx = n
+      },
+
+      /**
+       * #action
        * thin, bold, extrabold, etc
        */
       setLineWidth(n: number) {
@@ -173,11 +170,18 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
 
       /**
        * #action
-       * jitter val, helpful to jitter the x direction so you see better
-       * evidence when e.g. 100 long reads map to same x position
        */
-      setJitter(n: number) {
-        self.jitter = n
+      setLoading(f: boolean) {
+        self.loading = f
+      },
+
+      /**
+       * #action
+       * internal, a reference to a HTMLCanvas because we use a autorun to draw
+       * the canvas
+       */
+      setRef(ref: HTMLCanvasElement | null) {
+        self.ref = ref
       },
     }))
 
@@ -188,18 +192,19 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       get drawn() {
         return self.lastDrawnOffsetPx !== undefined
       },
-      /**
-       * #getter
-       */
-      get lineWidthSetting() {
-        return self.lineWidth ?? getConf(self, 'lineWidth')
-      },
 
       /**
        * #getter
        */
       get jitterVal(): number {
         return self.jitter ?? getConf(self, 'jitter')
+      },
+
+      /**
+       * #getter
+       */
+      get lineWidthSetting() {
+        return self.lineWidth ?? getConf(self, 'lineWidth')
       },
     }))
     .views(self => {
@@ -226,12 +231,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return [
             ...superTrackMenuItems(),
             {
-              label: 'Filter by',
               icon: FilterListIcon,
+              label: 'Filter by',
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   FilterByTagDialog,
-                  { model: self, handleClose },
+                  { handleClose, model: self },
                 ])
               },
             },
@@ -256,40 +261,40 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               label: 'Jitter x-positions',
               subMenu: [
                 {
-                  type: 'checkbox',
                   checked: self.jitterVal === 0,
                   label: 'None',
                   onClick: () => self.setJitter(0),
+                  type: 'checkbox',
                 },
                 {
-                  type: 'checkbox',
                   checked: self.jitterVal === 2,
                   label: 'Small',
                   onClick: () => self.setJitter(2),
+                  type: 'checkbox',
                 },
                 {
-                  type: 'checkbox',
                   checked: self.jitterVal === 10,
                   label: 'Large',
                   onClick: () => self.setJitter(10),
+                  type: 'checkbox',
                 },
               ],
             },
             {
-              label: 'Draw inter-region vertical lines',
-              type: 'checkbox',
               checked: self.drawInter,
+              label: 'Draw inter-region vertical lines',
               onClick: () => self.setDrawInter(!self.drawInter),
-            },
-            {
-              label: 'Draw long range connections',
               type: 'checkbox',
-              checked: self.drawLongRange,
-              onClick: () => self.setDrawLongRange(!self.drawLongRange),
             },
             {
-              label: 'Color scheme',
+              checked: self.drawLongRange,
+              label: 'Draw long range connections',
+              onClick: () => self.setDrawLongRange(!self.drawLongRange),
+              type: 'checkbox',
+            },
+            {
               icon: PaletteIcon,
+              label: 'Color scheme',
               subMenu: [
                 {
                   label: 'Insert size ± 3σ and orientation',

@@ -20,31 +20,31 @@ interface ColMenu {
 }
 
 const useStyles = makeStyles()(theme => ({
-  columnHead: {
-    fontWeight: 'normal',
-    background: theme.palette.mode === 'dark' ? '#333' : '#eee',
-    position: 'sticky',
-    top: 0,
-    zIndex: 2,
-    whiteSpace: 'nowrap',
-  },
-
   columnButtonContainer: {
+    background: theme.palette.background.paper,
     display: 'none',
+    height: '100%',
     position: 'absolute',
     right: 0,
     top: 0,
-    background: theme.palette.background.paper,
-    height: '100%',
+  },
+
+  columnHead: {
+    background: theme.palette.mode === 'dark' ? '#333' : '#eee',
+    fontWeight: 'normal',
+    position: 'sticky',
+    top: 0,
+    whiteSpace: 'nowrap',
+    zIndex: 2,
   },
 
   topLeftCorner: {
     background: theme.palette.mode === 'dark' ? '#333' : '#eee',
-    zIndex: 2,
-    position: 'sticky',
-    top: 0,
     minWidth: theme.spacing(2),
+    position: 'sticky',
     textAlign: 'left',
+    top: 0,
+    zIndex: 2,
   },
 }))
 
@@ -97,8 +97,8 @@ const DataTableHeader = observer(function ({
                 <IconButton
                   onClick={evt => {
                     setColumnMenu({
-                      colNumber,
                       anchorEl: evt.currentTarget,
+                      colNumber,
                     })
                   }}
                 >

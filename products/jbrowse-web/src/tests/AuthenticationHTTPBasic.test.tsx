@@ -23,18 +23,18 @@ test('opens a bigwig track that needs httpbasic authentication', async () => {
     ...config,
     tracks: [
       {
-        type: 'QuantitativeTrack',
-        trackId: 'volvox_microarray_httpbasic',
-        name: 'wiggle_track xyplot httpbasic',
-        assemblyNames: ['volvox'],
         adapter: {
-          type: 'BigWigAdapter',
           bigWigLocation: {
-            uri: 'volvox_microarray.bw',
-            locationType: 'UriLocation',
             internetAccountId: 'HTTPBasicInternetAccount-HTTPBasicTest',
+            locationType: 'UriLocation',
+            uri: 'volvox_microarray.bw',
           },
+          type: 'BigWigAdapter',
         },
+        assemblyNames: ['volvox'],
+        name: 'wiggle_track xyplot httpbasic',
+        trackId: 'volvox_microarray_httpbasic',
+        type: 'QuantitativeTrack',
       },
     ],
   })

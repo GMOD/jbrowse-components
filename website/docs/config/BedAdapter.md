@@ -12,62 +12,22 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ### BedAdapter - Slots
 
-#### slot: bedLocation
-
-```js
-bedLocation: {
-      type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.bed.gz', locationType: 'UriLocation' },
-    }
-```
-
-#### slot: columnNames
-
-```js
-columnNames: {
-      type: 'stringArray',
-      description: 'List of column names',
-      defaultValue: [],
-    }
-```
-
-#### slot: scoreColumn
-
-```js
-scoreColumn: {
-      type: 'string',
-      description: 'The column to use as a "score" attribute',
-      defaultValue: '',
-    }
-```
-
 #### slot: autoSql
 
 ```js
 autoSql: {
-      type: 'string',
-      description: 'The autoSql definition for the data fields in the file',
       defaultValue: '',
+      description: 'The autoSql definition for the data fields in the file',
+      type: 'string',
     }
 ```
 
-#### slot: colRef
+#### slot: bedLocation
 
 ```js
-colRef: {
-      type: 'number',
-      description: 'The column to use as a "refName" attribute',
-      defaultValue: 0,
-    }
-```
-
-#### slot: colStart
-
-```js
-colStart: {
-      type: 'number',
-      description: 'The column to use as a "start" attribute',
-      defaultValue: 1,
+bedLocation: {
+      defaultValue: { locationType: 'UriLocation', uri: '/path/to/my.bed.gz' },
+      type: 'fileLocation',
     }
 ```
 
@@ -75,8 +35,48 @@ colStart: {
 
 ```js
 colEnd: {
-      type: 'number',
-      description: 'The column to use as a "end" attribute',
       defaultValue: 2,
+      description: 'The column to use as a "end" attribute',
+      type: 'number',
+    }
+```
+
+#### slot: colRef
+
+```js
+colRef: {
+      defaultValue: 0,
+      description: 'The column to use as a "refName" attribute',
+      type: 'number',
+    }
+```
+
+#### slot: colStart
+
+```js
+colStart: {
+      defaultValue: 1,
+      description: 'The column to use as a "start" attribute',
+      type: 'number',
+    }
+```
+
+#### slot: columnNames
+
+```js
+columnNames: {
+      defaultValue: [],
+      description: 'List of column names',
+      type: 'stringArray',
+    }
+```
+
+#### slot: scoreColumn
+
+```js
+scoreColumn: {
+      defaultValue: '',
+      description: 'The column to use as a "score" attribute',
+      type: 'string',
     }
 ```

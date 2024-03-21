@@ -39,16 +39,17 @@ export function featureData(
   }
 
   return new SimpleFeature({
-    start: start1,
     end: end1,
     refName: ref1,
-    ...(ALT ? { ALT: [ALT] } : {}), // it's an array in VCF
-    strand: strand1,
+    start: start1,
+    ...(ALT ? { ALT: [ALT] } : {}),
     name,
+    // it's an array in VCF
+    strand: strand1,
     ...rest,
+    mate: { end: end2, refName: ref2, start: start2, strand: strand2 },
     score,
     uniqueId,
-    mate: { refName: ref2, start: start2, end: end2, strand: strand2 },
   })
 }
 
@@ -115,10 +116,10 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
     const columnNames = this.getConf('columnNames')
 
     return {
-      header,
+      columnNames,
       feats1,
       feats2,
-      columnNames,
+      header,
     }
   }
 

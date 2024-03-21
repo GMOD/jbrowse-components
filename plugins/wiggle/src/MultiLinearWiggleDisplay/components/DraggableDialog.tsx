@@ -18,10 +18,10 @@ import CloseIcon from '@mui/icons-material/Close'
 
 const useStyles = makeStyles()(theme => ({
   closeButton: {
+    color: theme.palette.grey[500],
     position: 'absolute',
     right: theme.spacing(1),
     top: theme.spacing(1),
-    color: theme.palette.grey[500],
   },
 }))
 

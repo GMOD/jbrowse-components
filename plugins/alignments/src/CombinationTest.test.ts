@@ -25,11 +25,11 @@ const getVolvoxSequenceSubAdapter: getSubAdapterType = async () => {
 async function getFeats(f1: string, f2: string) {
   const cramAdapter = new CramAdapter(
     cramConfigSchema.create({
-      cramLocation: {
-        localPath: require.resolve(f1),
-      },
       craiLocation: {
         localPath: require.resolve(f1 + '.crai'),
+      },
+      cramLocation: {
+        localPath: require.resolve(f1),
       },
       sequenceAdapter: {},
     }),
@@ -51,9 +51,9 @@ async function getFeats(f1: string, f2: string) {
   )
   const query = {
     assemblyName: 'volvox',
+    end: 10200,
     refName: 'ctgA',
     start: 1,
-    end: 10200,
   }
   const bamFeatures = bamAdapter.getFeatures(query)
   const cramFeatures = cramAdapter.getFeatures(query)

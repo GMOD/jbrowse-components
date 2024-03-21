@@ -34,18 +34,18 @@ import MakeSpreadsheetColumnType from './MakeSpreadsheetColumnType'
 type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles()({
-  textFilterControlAdornment: { marginRight: '-18px' },
   textFilterControl: {
     '& .MuiInput-formControl': {
       marginTop: 8,
     },
     '& .MuiInputLabel-formControl': {
-      top: '-7px',
       '&.MuiInputLabel-shrink': {
         top: '-3px',
       },
+      top: '-7px',
     },
   },
+  textFilterControlAdornment: { marginRight: '-18px' },
 })
 
 // React component for the column filter control
@@ -115,17 +115,6 @@ interface Loc {
 
 // NOTE: assembly names, if present, are ignored in all of these predicates
 const OPERATION_PREDICATES = {
-  'overlaps with': (cellLocation, specifiedLocation) => {
-    return (
-      cellLocation.refName === specifiedLocation.refName &&
-      doesIntersect2(
-        cellLocation.start,
-        cellLocation.end,
-        specifiedLocation.start,
-        specifiedLocation.end,
-      )
-    )
-  },
   'contained within': (cellLocation, specifiedLocation) => {
     return (
       cellLocation.refName === specifiedLocation.refName &&
@@ -145,6 +134,17 @@ const OPERATION_PREDICATES = {
         specifiedLocation.end,
         cellLocation.start,
         cellLocation.end,
+      )
+    )
+  },
+  'overlaps with': (cellLocation, specifiedLocation) => {
+    return (
+      cellLocation.refName === specifiedLocation.refName &&
+      doesIntersect2(
+        cellLocation.start,
+        cellLocation.end,
+        specifiedLocation.start,
+        specifiedLocation.end,
       )
     )
   },
@@ -178,10 +178,10 @@ OPERATION_PREDICATES['does not contain'] = (
 // MST model for the column filter control
 const FilterModelType = types
   .model('ColumnLocStringFilter', {
-    type: types.literal('LocString'),
     columnNumber: types.integer,
     locString: '',
     operation: types.optional(types.enumeration(OPERATIONS), OPERATIONS[0]),
+    type: types.literal('LocString'),
   })
   .views(self => ({
     get locStringIsInvalid() {
@@ -314,15 +314,16 @@ const DataCellReactComponent = observer(function ({
 })
 
 const LocStringColumnType = MakeSpreadsheetColumnType('LocString', {
-  categoryName: 'Location',
-  displayName: 'Full location',
+  DataCellReactComponent,
 
+  FilterModelType,
+
+  categoryName: 'Location',
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   compare(cellA: { extendedData: any }, cellB: { extendedData: any }) {
     return compareLocs(cellA.extendedData, cellB.extendedData)
   },
-  FilterModelType,
-  DataCellReactComponent,
+  displayName: 'Full location',
 })
 
 export default LocStringColumnType

@@ -70,14 +70,14 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
     const colEnd = this.getConf('colEnd')
 
     return {
-      header,
-      features,
-      parser,
-      columnNames,
-      scoreColumn,
+      colEnd,
       colRef,
       colStart,
-      colEnd,
+      columnNames,
+      features,
+      header,
+      parser,
+      scoreColumn,
     }
   }
 

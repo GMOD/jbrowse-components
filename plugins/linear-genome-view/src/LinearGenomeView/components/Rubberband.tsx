@@ -14,8 +14,8 @@ type LGV = LinearGenomeViewModel
 const useStyles = makeStyles()({
   rubberbandControl: {
     cursor: 'crosshair',
-    width: '100%',
     minHeight: 8,
+    width: '100%',
   },
 })
 

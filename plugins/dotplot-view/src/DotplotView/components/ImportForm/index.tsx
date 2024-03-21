@@ -25,13 +25,13 @@ import ImportCustomTrack from './ImportCustomTrack'
 import ImportSyntenyTrackSelector from './ImportSyntenyTrackSelector'
 
 const useStyles = makeStyles()(theme => ({
-  importFormContainer: {
-    padding: theme.spacing(4),
-    margin: '0 auto',
-  },
   assemblySelector: {
-    width: '75%',
     margin: '0 auto',
+    width: '75%',
+  },
+  importFormContainer: {
+    margin: '0 auto',
+    padding: theme.spacing(4),
   },
 }))
 

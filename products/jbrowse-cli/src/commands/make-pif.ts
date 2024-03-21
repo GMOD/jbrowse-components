@@ -87,19 +87,19 @@ export default class MakePIF extends JBrowseCommand {
   ]
 
   static flags = {
-    out: Flags.string({
-      description:
-        'Where to write the output file. will write ${file}.pif.gz and ${file}.pif.gz.tbi',
-    }),
     csi: Flags.boolean({
       description: 'Create a CSI index for the PIF file instead of TBI',
     }),
     help: Flags.help({ char: 'h' }),
+    out: Flags.string({
+      description:
+        'Where to write the output file. will write ${file}.pif.gz and ${file}.pif.gz.tbi',
+    }),
   }
   static args = {
     file: Args.string({
-      required: true,
       description: `PAF file as input`,
+      required: true,
     }),
   }
 

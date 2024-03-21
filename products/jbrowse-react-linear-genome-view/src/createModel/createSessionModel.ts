@@ -50,66 +50,74 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       /**
        * #property
        */
-      view: pluginManager.getViewType('LinearGenomeView')
-        .stateModel as LinearGenomeViewStateModel,
-      /**
-       * #property
-       */
       sessionTracks: types.array(
         pluginManager.pluggableConfigSchemaType('track'),
       ),
+
+      /**
+       * #property
+       */
+      view: pluginManager.getViewType('LinearGenomeView')
+        .stateModel as LinearGenomeViewStateModel,
     })
     .views(self => ({
-      /**
-       * #getter
-       */
-      get version() {
-        return getParent<any>(self).version
-      },
-      /**
-       * #getter
-       */
-      get disableAddTracks() {
-        return getParent<any>(self).disableAddTracks
-      },
       /**
        * #getter
        */
       get assemblies() {
         return [getParent<any>(self).config.assembly]
       },
-      /**
-       * #getter
-       */
-      get assemblyNames() {
-        return [getParent<any>(self).config.assemblyName]
-      },
-      /**
-       * #getter
-       */
-      get connections() {
-        return getParent<any>(self).config.connections
-      },
+
       /**
        * #getter
        */
       get assemblyManager() {
         return getParent<any>(self).assemblyManager
       },
+
       /**
        * #getter
        */
-      get views() {
-        return [self.view]
+      get assemblyNames() {
+        return [getParent<any>(self).config.assemblyName]
       },
+
+      /**
+       * #getter
+       */
+      get connections() {
+        return getParent<any>(self).config.connections
+      },
+
+      /**
+       * #getter
+       */
+      get disableAddTracks() {
+        return getParent<any>(self).disableAddTracks
+      },
+
       /**
        * #method
        */
       renderProps() {
         return {
-          theme: getConf(self, 'theme'),
           highResolutionScaling: getConf(self, 'highResolutionScaling'),
+          theme: getConf(self, 'theme'),
         }
+      },
+
+      /**
+       * #getter
+       */
+      get version() {
+        return getParent<any>(self).version
+      },
+
+      /**
+       * #getter
+       */
+      get views() {
+        return [self.view]
       },
     }))
     .actions(self => ({
@@ -138,6 +146,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       getTrackActionMenuItems(config: any) {
         return [
           {
+            icon: InfoIcon,
             label: 'About track',
             onClick: () => {
               self.queueDialog(doneCallback => [
@@ -145,7 +154,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
                 { config, handleClose: doneCallback },
               ])
             },
-            icon: InfoIcon,
           },
         ]
       },

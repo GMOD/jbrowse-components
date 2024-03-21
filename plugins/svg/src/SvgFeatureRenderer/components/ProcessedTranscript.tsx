@@ -87,9 +87,9 @@ function makeUTRs(parent: Feature, subs: Feature[]) {
       const type = strand >= 0 ? 'five_prime_UTR' : 'three_prime_UTR'
       subparts.unshift(
         new SimpleFeature({
-          parent,
+          data: { end, start, strand, type },
           id: `${parent.id()}_${type}_${i}`,
-          data: { start, end, strand, type },
+          parent,
         }),
       )
     }
@@ -107,9 +107,9 @@ function makeUTRs(parent: Feature, subs: Feature[]) {
       const type = strand >= 0 ? 'three_prime_UTR' : 'five_prime_UTR'
       subparts.push(
         new SimpleFeature({
-          parent,
+          data: { end, start, strand, type },
           id: `${parent.id()}_${type}_${i}`,
-          data: { start, end, strand, type },
+          parent,
         }),
       )
     }
@@ -169,21 +169,21 @@ ProcessedTranscript.layOut = ({
   extraGlyphs: ExtraGlyphValidator[]
 }) => {
   const subLayout = layOutFeature({
-    layout,
-    feature,
     bpPerPx,
-    reversed,
     config,
     extraGlyphs,
+    feature,
+    layout,
+    reversed,
   })
   const subfeatures = getSubparts(feature, config)
   layOutSubfeatures({
-    layout: subLayout,
-    subfeatures,
     bpPerPx,
-    reversed,
     config,
     extraGlyphs,
+    layout: subLayout,
+    reversed,
+    subfeatures,
   })
   return subLayout
 }

@@ -16,21 +16,10 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ```js
 strokeColor: {
-      type: 'color',
-      description: 'the line color of each arc',
+      contextVariable: ['feature'],
       defaultValue: 'rgba(255,133,0,0.32)',
-      contextVariable: ['feature'],
-    }
-```
-
-#### slot: strokeColorSelected
-
-```js
-strokeColorSelected: {
+      description: 'the line color of each arc',
       type: 'color',
-      description: 'the line color of an arc that has been selected',
-      defaultValue: 'black',
-      contextVariable: ['feature'],
     }
 ```
 
@@ -38,10 +27,21 @@ strokeColorSelected: {
 
 ```js
 strokeColorHover: {
-      type: 'color',
+      contextVariable: ['feature'],
+      defaultValue: '#555',
       description:
         'the line color of an arc that is being hovered over with the mouse',
-      defaultValue: '#555',
+      type: 'color',
+    }
+```
+
+#### slot: strokeColorSelected
+
+```js
+strokeColorSelected: {
       contextVariable: ['feature'],
+      defaultValue: 'black',
+      description: 'the line color of an arc that has been selected',
+      type: 'color',
     }
 ```

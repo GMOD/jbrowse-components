@@ -16,10 +16,10 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ```js
 color: {
-        type: 'color',
-        description: 'the color of the arcs',
-        defaultValue: 'jexl:defaultPairedArcColor(feature,alt)',
         contextVariable: ['feature', 'alt'],
+        defaultValue: 'jexl:defaultPairedArcColor(feature,alt)',
+        description: 'the color of the arcs',
+        type: 'color',
       }
 ```
 

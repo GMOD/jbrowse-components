@@ -56,12 +56,12 @@ Subfeatures.layOut = ({
   extraGlyphs: ExtraGlyphValidator[]
 }) => {
   const subLayout = layOutFeature({
-    layout,
-    feature,
     bpPerPx,
-    reversed,
     config,
     extraGlyphs,
+    feature,
+    layout,
+    reversed,
   })
   const displayMode = readConfObject(config, 'displayMode')
   if (displayMode !== 'reducedRepresentation') {
@@ -76,12 +76,12 @@ Subfeatures.layOut = ({
       }) as number
 
       const subSubLayout = (SubfeatureGlyphComponent.layOut || layOut)({
-        layout: subLayout,
-        feature: subfeature,
         bpPerPx,
-        reversed,
         config,
         extraGlyphs,
+        feature: subfeature,
+        layout: subLayout,
+        reversed,
       })
       subSubLayout.move(0, topOffset)
       topOffset +=

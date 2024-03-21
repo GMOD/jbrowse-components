@@ -8,11 +8,11 @@ export default function AlignmentFeatureDetailsF(pluginManager: PluginManager) {
   pluginManager.addWidgetType(
     () =>
       new WidgetType({
-        name: 'AlignmentsFeatureWidget',
-        heading: 'Feature details',
-        configSchema: configSchema,
-        stateModel: stateModelFactory(pluginManager),
         ReactComponent: lazy(() => import('./AlignmentsFeatureDetail')),
+        configSchema: configSchema,
+        heading: 'Feature details',
+        name: 'AlignmentsFeatureWidget',
+        stateModel: stateModelFactory(pluginManager),
       }),
   )
 }

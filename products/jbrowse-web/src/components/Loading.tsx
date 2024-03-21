@@ -6,11 +6,11 @@ export default function Loading() {
     <CircularProgress
       disableShrink
       style={{
+        left: '50%',
+        marginLeft: -25,
+        marginTop: -25,
         position: 'fixed',
         top: '50%',
-        left: '50%',
-        marginTop: -25,
-        marginLeft: -25,
       }}
       size={50}
     />

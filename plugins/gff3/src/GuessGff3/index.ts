@@ -22,13 +22,13 @@ export default (pluginManager: PluginManager) => {
         const indexName = index && getFileName(index)
         if (regexGuess.test(fileName) || adapterHint === adapterName) {
           return {
-            type: adapterName,
             bamLocation: file,
             gffGzLocation: file,
             index: {
-              location: index || makeIndex(file, '.tbi'),
               indexType: makeIndexType(indexName, 'CSI', 'TBI'),
+              location: index || makeIndex(file, '.tbi'),
             },
+            type: adapterName,
           }
         }
         return adapterGuesser(file, index, adapterHint)
@@ -48,8 +48,8 @@ export default (pluginManager: PluginManager) => {
         const adapterName = 'Gff3Adapter'
         const fileName = getFileName(file)
         const obj = {
-          type: adapterName,
           gffLocation: file,
+          type: adapterName,
         }
         if (regexGuess.test(fileName) && !adapterHint) {
           return obj

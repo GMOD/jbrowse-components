@@ -21,14 +21,14 @@ import { handleSelectedRegion, navToOption } from '../../searchUtils'
 import ImportFormRefNameAutocomplete from './ImportFormRefNameAutocomplete'
 
 const useStyles = makeStyles()(theme => ({
-  importFormContainer: {
-    padding: theme.spacing(2),
-  },
   button: {
     margin: theme.spacing(2),
   },
   container: {
     padding: theme.spacing(4),
+  },
+  importFormContainer: {
+    padding: theme.spacing(2),
   },
 }))
 
@@ -82,9 +82,9 @@ const LinearGenomeViewImportForm = observer(function ({
                   option.hasLocation()
                 ) {
                   await navToOption({
-                    option,
-                    model,
                     assemblyName: selectedAsm,
+                    model,
+                    option,
                   })
                 } else if (option?.results?.length) {
                   model.setSearchResults(
@@ -93,7 +93,7 @@ const LinearGenomeViewImportForm = observer(function ({
                     selectedAsm,
                   )
                 } else if (assembly) {
-                  await handleSelectedRegion({ input: value, assembly, model })
+                  await handleSelectedRegion({ assembly, input: value, model })
                 }
               } catch (e) {
                 console.error(e)

@@ -26,24 +26,31 @@ import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked'
 import { findLastIndex } from '../util'
 
 const useStyles = makeStyles()({
+  menuItemEndDecoration: {
+    height: 16,
+    margin: 0,
+    padding: 0,
+  },
   paper: {
-    position: 'fixed',
-    overflowY: 'auto',
-    overflowX: 'hidden',
+    left: 0,
+
+    maxHeight: 'calc(100% - 32px)',
+
+    maxWidth: 'calc(100% - 32px)',
+
+    minHeight: 16,
     // So we see the popover when it's empty.
     minWidth: 16,
-    minHeight: 16,
-    maxWidth: 'calc(100% - 32px)',
-    maxHeight: 'calc(100% - 32px)',
-    top: 0,
-    left: 0,
     // We disable the focus ring for mouse, touch and keyboard users.
     outline: 0,
-  },
-  menuItemEndDecoration: {
-    padding: 0,
-    margin: 0,
-    height: 16,
+
+    overflowX: 'hidden',
+
+    overflowY: 'auto',
+
+    position: 'fixed',
+
+    top: 0,
   },
 })
 
@@ -235,10 +242,10 @@ const MenuPage = React.forwardRef<HTMLDivElement, MenuPageProps>(
             rect.top !== position.top ||
             rect.left + rect.width !== position.left
           ) {
-            setPosition({ top: rect.top, left: rect.left + rect.width })
+            setPosition({ left: rect.left + rect.width, top: rect.top })
           }
         } else {
-          setPosition({ top: rect.top, left: rect.left + rect.width })
+          setPosition({ left: rect.left + rect.width, top: rect.top })
         }
       } else if (!position) {
         setPosition({})
@@ -423,13 +430,13 @@ function Menu(props: MenuProps) {
       onClose={onClose}
       BackdropProps={{ invisible: true }}
       anchorOrigin={{
-        vertical: 'bottom',
         horizontal: 'right',
+        vertical: 'bottom',
         ...other.anchorOrigin,
       }}
       transformOrigin={{
-        vertical: 'top',
         horizontal: 'left',
+        vertical: 'top',
         ...other.transformOrigin,
       }}
       {...other}

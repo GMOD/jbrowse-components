@@ -4,12 +4,12 @@ import { Dialog } from '@jbrowse/core/ui'
 import { makeStyles } from 'tss-react/mui'
 
 const useStyles = makeStyles()(theme => ({
+  dialogContent: {
+    width: '80em',
+  },
   formElt: {
     margin: theme.spacing(3),
     width: 400,
-  },
-  dialogContent: {
-    width: '80em',
   },
 }))
 
@@ -57,8 +57,8 @@ export default function SequenceFeatureSettingsDialog({
         <Button
           onClick={() =>
             handleClose({
-              upDownBp: +upDownBp,
               intronBp: +intronBp,
+              upDownBp: +upDownBp,
             })
           }
           disabled={!intronBpValid || !upDownBpValid}

@@ -7,8 +7,8 @@ export default function registerSyntenyTrack(pluginManager: PluginManager) {
   pluginManager.addTrackType(() => {
     const configSchema = configSchemaF(pluginManager)
     return new TrackType({
-      name: 'SyntenyTrack',
       configSchema,
+      name: 'SyntenyTrack',
       stateModel: createBaseTrackModel(
         pluginManager,
         'SyntenyTrack',

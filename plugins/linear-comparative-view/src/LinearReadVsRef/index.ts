@@ -33,15 +33,15 @@ export default function (pm: PluginManager) {
                 ...(feature
                   ? [
                       {
-                        label: 'Linear read vs ref',
                         icon: AddIcon,
+                        label: 'Linear read vs ref',
                         onClick: () => {
                           getSession(self).queueDialog(handleClose => [
                             ReadVsRefDialog,
                             {
-                              track,
                               feature,
                               handleClose,
+                              track,
                             },
                           ])
                         },

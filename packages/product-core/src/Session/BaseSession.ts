@@ -29,23 +29,18 @@ export function BaseSessionModel<
        * #property
        */
       id: ElementId,
-      /**
-       * #property
-       */
-      name: types.string,
+
       /**
        * #property
        */
       margin: 0,
+
+      /**
+       * #property
+       */
+      name: types.string,
     })
     .volatile(() => ({
-      /**
-       * #volatile
-       * this is the globally "selected" object. can be anything. code that
-       * wants to deal with this should examine it to see what kind of thing it
-       * is.
-       */
-      selection: undefined as unknown,
       /**
        * #volatile
        * this is the globally "hovered" object. can be anything. code that
@@ -53,6 +48,14 @@ export function BaseSessionModel<
        * is.
        */
       hovered: undefined as unknown,
+
+      /**
+       * #volatile
+       * this is the globally "selected" object. can be anything. code that
+       * wants to deal with this should examine it to see what kind of thing it
+       * is.
+       */
+      selection: undefined as unknown,
     }))
     .views(self => ({
       /**
@@ -66,26 +69,29 @@ export function BaseSessionModel<
       /**
        * #getter
        */
-      get jbrowse() {
-        return self.root.jbrowse
+      get adminMode() {
+        return self.root.adminMode
       },
-      /**
-       * #getter
-       */
-      get rpcManager() {
-        return self.root.rpcManager
-      },
+
       /**
        * #getter
        */
       get configuration(): Instance<JB_CONFIG_SCHEMA> {
         return this.jbrowse.configuration
       },
+
       /**
        * #getter
        */
-      get adminMode() {
-        return self.root.adminMode
+      get jbrowse() {
+        return self.root.jbrowse
+      },
+
+      /**
+       * #getter
+       */
+      get rpcManager() {
+        return self.root.rpcManager
       },
 
       /**
@@ -106,25 +112,26 @@ export function BaseSessionModel<
     .actions(self => ({
       /**
        * #action
-       * set the global selection, i.e. the globally-selected object. can be a
-       * feature, a view, just about anything
-       */
-      setSelection(thing: unknown) {
-        self.selection = thing
-      },
-
-      /**
-       * #action
        * clears the global selection
        */
       clearSelection() {
         self.selection = undefined
       },
+
       /**
        * #action
        */
       setHovered(thing: unknown) {
         self.hovered = thing
+      },
+
+      /**
+       * #action
+       * set the global selection, i.e. the globally-selected object. can be a
+       * feature, a view, just about anything
+       */
+      setSelection(thing: unknown) {
+        self.selection = thing
       },
     }))
 }

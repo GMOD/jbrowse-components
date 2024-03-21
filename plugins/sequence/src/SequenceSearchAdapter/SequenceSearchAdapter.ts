@@ -43,8 +43,8 @@ export default class extends BaseFeatureDataAdapter {
       const ret = sequenceAdapter.getFeatures(
         {
           ...query,
-          start: queryStart,
           end: queryEnd,
+          start: queryStart,
         },
         opts,
       )
@@ -65,12 +65,12 @@ export default class extends BaseFeatureDataAdapter {
             if (doesIntersect2(s, s + search.length, query.start, query.end)) {
               observer.next(
                 new SimpleFeature({
-                  uniqueId: `${this.id}-match-${s}-p`,
-                  refName: query.refName,
-                  start: s,
                   end: s + match[0].length,
                   name: match[0],
+                  refName: query.refName,
+                  start: s,
                   strand: 1,
+                  uniqueId: `${this.id}-match-${s}-p`,
                 }),
               )
             }
@@ -83,12 +83,12 @@ export default class extends BaseFeatureDataAdapter {
             if (doesIntersect2(s, s + search.length, query.start, query.end)) {
               observer.next(
                 new SimpleFeature({
-                  uniqueId: `${this.id}-match-${s}-n`,
+                  end: s,
+                  name: match[0],
                   refName: query.refName,
                   start: s - match[0].length,
-                  name: match[0],
-                  end: s,
                   strand: -1,
+                  uniqueId: `${this.id}-match-${s}-n`,
                 }),
               )
             }

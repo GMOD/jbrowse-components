@@ -6,10 +6,10 @@ import { readConfObject, AnyConfigurationModel } from '../configuration'
 
 const useStyles = makeStyles()({
   hoverLabel: {
-    border: '1px solid black',
-    position: 'absolute',
     background: '#fffa',
+    border: '1px solid black',
     pointerEvents: 'none',
+    position: 'absolute',
     zIndex: 10000,
   },
 })

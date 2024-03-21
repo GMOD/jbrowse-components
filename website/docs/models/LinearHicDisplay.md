@@ -16,15 +16,6 @@ extends `BaseLinearDisplay`
 
 ### LinearHicDisplay - Properties
 
-#### property: type
-
-```js
-// type signature
-ISimpleType<"LinearHicDisplay">
-// code
-type: types.literal('LinearHicDisplay')
-```
-
 #### property: configuration
 
 ```js
@@ -41,6 +32,15 @@ configuration: ConfigurationReference(configSchema)
 IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 resolution: types.optional(types.number, 1)
+```
+
+#### property: type
+
+```js
+// type signature
+ISimpleType<"LinearHicDisplay">
+// code
+type: types.literal('LinearHicDisplay')
 ```
 
 ### LinearHicDisplay - Getters

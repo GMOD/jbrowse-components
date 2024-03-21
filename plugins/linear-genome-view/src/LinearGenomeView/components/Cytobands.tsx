@@ -51,14 +51,14 @@ function rightTriangle(x: number, y: number, width: number, height: number) {
 }
 
 const colorMap: Record<string, string | undefined> = {
+  acen: '#800',
   gneg: 'rgb(227,227,227)',
+  gpos100: 'rgb(0,0,0)',
   gpos25: 'rgb(142,142,142)',
   gpos50: 'rgb(85,85,85)',
-  gpos100: 'rgb(0,0,0)',
   gpos75: 'rgb(57,57,57)',
   gvar: 'rgb(0,0,0)',
   stalk: 'rgb(127,127,127)',
-  acen: '#800',
 }
 
 const Cytobands = observer(function ({
@@ -82,8 +82,8 @@ const Cytobands = observer(function ({
       {cytobands.map((args, index) => {
         const k = JSON.stringify(args)
         const { refName, type, start, end } = args
-        const s = overview.bpToPx({ refName, coord: start }) || 0
-        const e = overview.bpToPx({ refName, coord: end }) || 0
+        const s = overview.bpToPx({ coord: start, refName }) || 0
+        const e = overview.bpToPx({ coord: end, refName }) || 0
         const l = Math.min(s, e)
         const w = Math.abs(e - s)
         const c = colorMap[type]

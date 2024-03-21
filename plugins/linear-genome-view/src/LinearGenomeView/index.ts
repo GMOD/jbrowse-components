@@ -6,10 +6,10 @@ import { stateModelFactory } from './model'
 export default function LinearGenomeViewF(pluginManager: PluginManager) {
   pluginManager.addViewType(() => {
     return new ViewType({
-      name: 'LinearGenomeView',
-      displayName: 'Linear genome view',
-      stateModel: stateModelFactory(pluginManager),
       ReactComponent: lazy(() => import('./components/LinearGenomeView')),
+      displayName: 'Linear genome view',
+      name: 'LinearGenomeView',
+      stateModel: stateModelFactory(pluginManager),
     })
   })
 }

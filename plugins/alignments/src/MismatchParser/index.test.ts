@@ -15,7 +15,7 @@ const seq =
 
 test('cigar to mismatches', () => {
   expect(cigarToMismatches(parseCigar('56M1D45M'), seq)).toEqual([
-    { start: 56, type: 'deletion', base: '*', length: 1 },
+    { base: '*', length: 1, start: 56, type: 'deletion' },
   ])
 })
 
@@ -24,7 +24,7 @@ test('md to mismatches', () => {
   expect(
     mdToMismatches('10A80', parseCigar('56M1D45M'), cigarMismatches, seq),
   ).toEqual([
-    { start: 10, type: 'mismatch', base: 'C', altbase: 'A', length: 1 },
+    { altbase: 'A', base: 'C', length: 1, start: 10, type: 'mismatch' },
   ])
 })
 
@@ -32,7 +32,7 @@ describe('get mismatches', () => {
   it('simple deletion', () => {
     // simple deletion
     expect(getMismatches('56M1D45M', '56^A45', seq)).toEqual([
-      { start: 56, type: 'deletion', base: '*', length: 1 },
+      { base: '*', length: 1, start: 56, type: 'deletion' },
     ])
   })
 
@@ -44,7 +44,7 @@ describe('get mismatches', () => {
         '100',
         'AAAAAAAAAACAAAAAAAAAAAAAACCCCCCCCCCCCCCCCCCCCCCCCCGGGGGGGGGGGGGGGGGGGGGGGGGTTTTTTTTTTTTTTTTTTTTTTTTTA',
       ),
-    ).toEqual([{ start: 89, type: 'insertion', base: '1', length: 0 }])
+    ).toEqual([{ base: '1', length: 0, start: 89, type: 'insertion' }])
   })
 
   it('deletion and a SNP', () => {
@@ -53,8 +53,8 @@ describe('get mismatches', () => {
     //      |||||   ||||||
     //      GGGGGACCTTTTTT
     expect(getMismatches('5M2D6M', '5^AC0C5', 'GGGGGATTTTTT')).toEqual([
-      { start: 5, type: 'deletion', base: '*', length: 2 },
-      { start: 7, type: 'mismatch', base: 'A', altbase: 'C', length: 1 },
+      { base: '*', length: 2, start: 5, type: 'deletion' },
+      { altbase: 'C', base: 'A', length: 1, start: 7, type: 'mismatch' },
     ])
   })
 
@@ -230,14 +230,14 @@ test('more skip', () => {
 
 test('clipping', () => {
   expect(getMismatches('200H10M200H', '9A', 'AAAAAAAAAC')).toEqual([
-    { cliplen: 200, base: 'H200', length: 1, start: 0, type: 'hardclip' },
-    { cliplen: 200, base: 'H200', length: 1, start: 10, type: 'hardclip' },
+    { base: 'H200', cliplen: 200, length: 1, start: 0, type: 'hardclip' },
+    { base: 'H200', cliplen: 200, length: 1, start: 10, type: 'hardclip' },
     { altbase: 'A', base: 'C', length: 1, start: 9, type: 'mismatch' },
   ])
 
   expect(getMismatches('10S10M10S', '9A', 'AAAAAAAAAAGGGGGGGGGC')).toEqual([
-    { cliplen: 10, base: 'S10', length: 1, start: 0, type: 'softclip' },
-    { cliplen: 10, base: 'S10', length: 1, start: 10, type: 'softclip' },
+    { base: 'S10', cliplen: 10, length: 1, start: 0, type: 'softclip' },
+    { base: 'S10', cliplen: 10, length: 1, start: 10, type: 'softclip' },
     { altbase: 'A', base: 'C', length: 1, start: 9, type: 'mismatch' },
   ])
 })
@@ -259,7 +259,7 @@ test('getModificationPositions', () => {
     'AGCTCTCCAGAGTCGNACGCCATYCGCGCGCCACCA',
     1,
   )
-  expect(positions[0]).toEqual({ type: 'm', positions: [6, 17, 20, 31, 34] })
+  expect(positions[0]).toEqual({ positions: [6, 17, 20, 31, 34], type: 'm' })
 })
 
 // ? means "modification status of the skipped bases provided."
@@ -269,7 +269,7 @@ test('getModificationPositions with unknown (?)', () => {
     'AGCTCTCCAGAGTCGNACGCCATYCGCGCGCCACCA',
     1,
   )
-  expect(positions[0]).toEqual({ type: 'm', positions: [6, 17, 20, 31, 34] })
+  expect(positions[0]).toEqual({ positions: [6, 17, 20, 31, 34], type: 'm' })
 })
 
 // . means "modification status of the skipped bases is low probability"
@@ -279,5 +279,5 @@ test('getModificationPositions with unknown (.)', () => {
     'AGCTCTCCAGAGTCGNACGCCATYCGCGCGCCACCA',
     1,
   )
-  expect(positions[0]).toEqual({ type: 'm', positions: [6, 17, 20, 31, 34] })
+  expect(positions[0]).toEqual({ positions: [6, 17, 20, 31, 34], type: 'm' })
 })

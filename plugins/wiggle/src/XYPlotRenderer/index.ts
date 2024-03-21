@@ -7,9 +7,9 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addRendererType(
     () =>
       new XYPlotRenderer({
-        name: 'XYPlotRenderer',
         ReactComponent,
         configSchema,
+        name: 'XYPlotRenderer',
         pluginManager,
       }),
   )

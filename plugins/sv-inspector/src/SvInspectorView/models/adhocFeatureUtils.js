@@ -26,15 +26,15 @@ export function makeAdHocFeature(
   // make the final feature data out of otherData + the parsed locations
   return {
     ...otherData,
-    uniqueId: `sv-inspector-adhoc-${rowNumber}`,
-    refName: loc1.refName,
-    start: loc1.start,
     end: loc1.end,
     mate: {
+      end: loc2.end,
       refName: loc2.refName,
       start: loc2.start,
-      end: loc2.end,
     },
+    refName: loc1.refName,
+    start: loc1.start,
+    uniqueId: `sv-inspector-adhoc-${rowNumber}`,
   }
 }
 
@@ -80,14 +80,14 @@ export function makeAdHocSvFeatureFromTwoRefStartEndSets(
 ) {
   const textOf = colno => row.cells[colno].text
   const loc1 = {
+    end: parseInt(textOf(locEndColumnNumbers[0]), 10),
     refName: textOf(locRefColumnNumbers[0]),
     start: parseInt(textOf(locStartColumnNumbers[0]), 10) - 1,
-    end: parseInt(textOf(locEndColumnNumbers[0]), 10),
   }
   const loc2 = {
+    end: parseInt(textOf(locEndColumnNumbers[1]), 10),
     refName: textOf(locRefColumnNumbers[1]),
     start: parseInt(textOf(locStartColumnNumbers[1]), 10) - 1,
-    end: parseInt(textOf(locEndColumnNumbers[1]), 10),
   }
   const columnsAlreadyUsedInLocations = [
     locRefColumnNumbers[0],

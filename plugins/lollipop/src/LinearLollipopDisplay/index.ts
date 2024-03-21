@@ -9,12 +9,12 @@ export default function LinearLollipopDisplayF(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaFactory(pluginManager)
     return new DisplayType({
-      name: 'LinearLollipopDisplay',
+      ReactComponent: BaseLinearDisplayComponent,
       configSchema,
+      name: 'LinearLollipopDisplay',
       stateModel: stateModelFactory(configSchema),
       trackType: 'LollipopTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: BaseLinearDisplayComponent,
     })
   })
 }

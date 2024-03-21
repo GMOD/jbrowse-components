@@ -6,23 +6,24 @@ import { emptyIcon, linearGenomeViewIcon, svInspectorIcon } from './img'
 
 const useStyles = makeStyles()({
   card: {
-    width: 200,
-    height: 150,
     cursor: 'pointer',
-  },
-  name: {
-    marginTop: 4, // theme.spacing(),
-    textAlign: 'center',
-    maxWidth: 200,
+    height: 150,
+    width: 200,
   },
   media: {
     height: 150,
   },
+  name: {
+    marginTop: 4,
+    maxWidth: 200,
+    // theme.spacing(),
+    textAlign: 'center',
+  },
 })
 
 const emptySessionSnapshot = {
-  name: `New session ${new Date().toLocaleString()}`,
   connections: {},
+  name: `New session ${new Date().toLocaleString()}`,
 }
 
 function NewSessionCard({

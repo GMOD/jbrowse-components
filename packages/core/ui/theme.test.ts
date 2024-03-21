@@ -21,8 +21,8 @@ test('allows overriding primary and secondary colors', () => {
 test('allows overriding tertiary and quaternary colors', () => {
   const theme = createJBrowseTheme({
     palette: {
-      tertiary: { 500: '#888' },
       quaternary: { main: 'hsl(0,0,54)' },
+      tertiary: { 500: '#888' },
     },
   })
   const { tertiary, quaternary } = theme.palette

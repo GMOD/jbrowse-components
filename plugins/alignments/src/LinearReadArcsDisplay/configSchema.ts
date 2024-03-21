@@ -13,36 +13,9 @@ function configSchemaF(pluginManager: PluginManager) {
       /**
        * #slot
        */
-      maxFeatureScreenDensity: {
-        type: 'number',
-        description: 'maximum features per pixel that is displayed in the view',
-        defaultValue: 5,
-      },
-
-      /**
-       * #slot
-       */
-      lineWidth: {
-        type: 'number',
-        description: 'set arc line width',
-        defaultValue: 1,
-      },
-
-      /**
-       * #slot
-       */
-      jitter: {
-        type: 'number',
-        description:
-          'jitters the x position so e.g. if many reads map to exact same x position, jittering makes it easy to see that there are many of them',
-        defaultValue: 0,
-      },
-
-      /**
-       * #slot
-       */
       colorScheme: {
-        type: 'stringEnum',
+        defaultValue: 'normal',
+        description: 'color scheme to use',
         model: types.enumeration('colorScheme', [
           'strand',
           'normal',
@@ -51,8 +24,35 @@ function configSchemaF(pluginManager: PluginManager) {
           'mappingQuality',
           'tag',
         ]),
-        description: 'color scheme to use',
-        defaultValue: 'normal',
+        type: 'stringEnum',
+      },
+
+      /**
+       * #slot
+       */
+      jitter: {
+        defaultValue: 0,
+        description:
+          'jitters the x position so e.g. if many reads map to exact same x position, jittering makes it easy to see that there are many of them',
+        type: 'number',
+      },
+
+      /**
+       * #slot
+       */
+      lineWidth: {
+        defaultValue: 1,
+        description: 'set arc line width',
+        type: 'number',
+      },
+
+      /**
+       * #slot
+       */
+      maxFeatureScreenDensity: {
+        defaultValue: 5,
+        description: 'maximum features per pixel that is displayed in the view',
+        type: 'number',
       },
     },
     {

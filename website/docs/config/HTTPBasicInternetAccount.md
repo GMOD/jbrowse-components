@@ -16,9 +16,9 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ```js
 tokenType: {
+      defaultValue: 'Basic',
       description: 'a custom name for a token to include in the header',
       type: 'string',
-      defaultValue: 'Basic',
     }
 ```
 
@@ -26,9 +26,9 @@ tokenType: {
 
 ```js
 validateWithHEAD: {
+      defaultValue: true,
       description: 'validate the token with a HEAD request before using it',
       type: 'boolean',
-      defaultValue: true,
     }
 ```
 

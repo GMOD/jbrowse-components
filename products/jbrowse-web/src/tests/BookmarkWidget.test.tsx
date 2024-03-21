@@ -62,8 +62,8 @@ test('Create a bookmark using the hotkey to bookmark the current region', async 
   document.dispatchEvent(
     new KeyboardEvent('keydown', {
       code: 'KeyD',
-      shiftKey: true,
       ctrlKey: true,
+      shiftKey: true,
     }),
   )
 
@@ -96,10 +96,10 @@ test('Navigate to a bookmark using the embedded link in the widget data grid', a
   // @ts-expect-error
   const bookmarkWidget = session.widgets.get('GridBookmark')
   bookmarkWidget.addBookmark({
-    start: 200,
+    assemblyName: 'volvox',
     end: 240,
     refName: 'ctgA',
-    assemblyName: 'volvox',
+    start: 200,
   })
 
   fireEvent.click(await findByText('ctgA:201..240', {}, delay))
@@ -117,17 +117,17 @@ test('Navigate to a bookmark using the hotkey to navigate to the most recently c
   // @ts-expect-error
   const bookmarkWidget = session.widgets.get('GridBookmark')
   bookmarkWidget.addBookmark({
-    start: 200,
+    assemblyName: 'volvox',
     end: 240,
     refName: 'ctgA',
-    assemblyName: 'volvox',
+    start: 200,
   })
 
   document.dispatchEvent(
     new KeyboardEvent('keydown', {
       code: 'KeyM',
-      shiftKey: true,
       ctrlKey: true,
+      shiftKey: true,
     }),
   )
 
@@ -144,10 +144,10 @@ test('Edit a bookmark label with a single click on the data grid', async () => {
   // @ts-expect-error
   const bookmarkWidget = session.widgets.get('GridBookmark')
   bookmarkWidget.addBookmark({
-    start: 200,
+    assemblyName: 'volvox',
     end: 240,
     refName: 'ctgA',
-    assemblyName: 'volvox',
+    start: 200,
   })
 
   const field = (await findAllByRole('cell'))[2]
@@ -168,10 +168,10 @@ test('Edit a bookmark label with a double click via the dialog', async () => {
   // @ts-expect-error
   const bookmarkWidget = session.widgets.get('GridBookmark')
   bookmarkWidget.addBookmark({
-    start: 200,
+    assemblyName: 'volvox',
     end: 240,
     refName: 'ctgA',
-    assemblyName: 'volvox',
+    start: 200,
   })
 
   const field = (await findAllByRole('cell'))[2]
@@ -190,9 +190,9 @@ test('Toggle highlight visibility across all views', async () => {
     displayedRegions: [
       {
         assemblyName: 'volvox',
+        end: 1000,
         refName: 'ctgA',
         start: 0,
-        end: 1000,
       },
     ],
   })
@@ -205,10 +205,10 @@ test('Toggle highlight visibility across all views', async () => {
   // @ts-expect-error
   const bookmarkWidget = session.widgets.get('GridBookmark')
   bookmarkWidget.addBookmark({
-    start: 200,
+    assemblyName: 'volvox',
     end: 240,
     refName: 'ctgA',
-    assemblyName: 'volvox',
+    start: 200,
   })
 
   const highlight = (await findAllByTestId('BookmarkIcon'))[0]
@@ -238,10 +238,10 @@ test('Toggle highlight label visibility across all views', async () => {
   // @ts-expect-error
   const bookmarkWidget = session.widgets.get('GridBookmark')
   bookmarkWidget.addBookmark({
-    start: 200,
+    assemblyName: 'volvox',
     end: 240,
     refName: 'ctgA',
-    assemblyName: 'volvox',
+    start: 200,
   })
 
   const highlight = (await findAllByTestId('BookmarkIcon'))[0]
@@ -271,10 +271,10 @@ test('Downloads a BED file correctly', async () => {
   session.showWidget('gridBookmarkWidget')
 
   bookmarkWidget.addBookmark({
+    assemblyName: 'volvox',
+    end: 8,
     refName: 'ctgA',
     start: 0,
-    end: 8,
-    assemblyName: 'volvox',
   })
 
   fireEvent.click(await findByTestId('grid_bookmark_menu', ...opts))
@@ -300,10 +300,10 @@ test('Downloads a TSV file correctly', async () => {
   session.showWidget('gridBookmarkWidget')
 
   bookmarkWidget.addBookmark({
+    assemblyName: 'volvox',
+    end: 8,
     refName: 'ctgA',
     start: 0,
-    end: 8,
-    assemblyName: 'volvox',
   })
   fireEvent.click(await findByTestId('grid_bookmark_menu'))
   fireEvent.click(await findByText('Export'))

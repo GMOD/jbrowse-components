@@ -45,32 +45,22 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       baseModel(pluginManager),
       types.model({
         /**
-         * #property
-         */
-        type: types.literal('LinearSyntenyView'),
-        /**
          * #property/
          */
         drawCIGAR: true,
+
         /**
          * #property
          */
         drawCurves: false,
+
+        /**
+         * #property
+         */
+        type: types.literal('LinearSyntenyView'),
       }),
     )
     .actions(self => ({
-      /**
-       * #action
-       */
-      toggleCurves() {
-        self.drawCurves = !self.drawCurves
-      },
-      /**
-       * #action
-       */
-      toggleCIGAR() {
-        self.drawCIGAR = !self.drawCIGAR
-      },
       /**
        * #action
        */
@@ -78,6 +68,20 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         transaction(() => {
           self.views.forEach(view => view.showAllRegionsInAssembly())
         })
+      },
+
+      /**
+       * #action
+       */
+      toggleCIGAR() {
+        self.drawCIGAR = !self.drawCIGAR
+      },
+
+      /**
+       * #action
+       */
+      toggleCurves() {
+        self.drawCurves = !self.drawCurves
       },
     }))
     .actions(self => ({
@@ -106,46 +110,46 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           return [
             ...superHeaderMenuItems(),
             {
-              label: 'Square view',
-              onClick: self.squareView,
               description:
                 'Makes both views use the same zoom level, adjusting to the average of each',
               icon: CropFreeIcon,
+              label: 'Square view',
+              onClick: self.squareView,
             },
             {
-              label: 'Show all regions',
-              onClick: self.showAllRegions,
               description: 'Show entire genome assemblies',
               icon: VisibilityIcon,
+              label: 'Show all regions',
+              onClick: self.showAllRegions,
             },
             {
+              checked: self.drawCIGAR,
+              description: 'Draws per-base CIGAR level alignments',
               label: 'Draw CIGAR',
               onClick: self.toggleCIGAR,
-              checked: self.drawCIGAR,
               type: 'checkbox',
-              description: 'Draws per-base CIGAR level alignments',
             },
             {
-              label: 'Link views',
-              type: 'checkbox',
               checked: self.linkViews,
-              onClick: self.toggleLinkViews,
               icon: LinkIcon,
-            },
-            {
-              label: 'Use curved lines',
+              label: 'Link views',
+              onClick: self.toggleLinkViews,
               type: 'checkbox',
-              checked: self.drawCurves,
-              onClick: self.toggleCurves,
-              icon: Curves,
             },
             {
-              label: 'Export SVG',
+              checked: self.drawCurves,
+              icon: Curves,
+              label: 'Use curved lines',
+              onClick: self.toggleCurves,
+              type: 'checkbox',
+            },
+            {
               icon: PhotoCameraIcon,
+              label: 'Export SVG',
               onClick: (): void => {
                 getSession(self).queueDialog(handleClose => [
                   ExportSvgDialog,
-                  { model: self, handleClose },
+                  { handleClose, model: self },
                 ])
               },
             },
@@ -158,12 +162,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           return [
             ...superMenuItems(),
             {
-              label: 'Export SVG',
               icon: PhotoCameraIcon,
+              label: 'Export SVG',
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   ExportSvgDialog,
-                  { model: self, handleClose },
+                  { handleClose, model: self },
                 ])
               },
             },

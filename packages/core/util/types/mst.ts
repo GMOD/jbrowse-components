@@ -8,24 +8,24 @@ export const ElementId = types.optional(types.identifier, () => nanoid())
 
 // PropTypes that are useful when working with instances of these in react components
 export const PropTypes = {
-  Region: propTypes.shape({
-    refName: propTypes.string.isRequired,
-    start: propTypes.number.isRequired,
-    end: propTypes.number.isRequired,
-  }),
   ConfigSchema: MxPropTypes.objectOrObservableObject,
   Feature: propTypes.shape({
     get: propTypes.func.isRequired,
     id: propTypes.func.isRequired,
   }),
+  Region: propTypes.shape({
+    end: propTypes.number.isRequired,
+    refName: propTypes.string.isRequired,
+    start: propTypes.number.isRequired,
+  }),
 }
 
 export const NoAssemblyRegion = types
   .model('NoAssemblyRegion', {
-    refName: types.string,
-    start: types.number,
     end: types.number,
+    refName: types.string,
     reversed: types.optional(types.boolean, false),
+    start: types.number,
   })
   .actions(self => ({
     setRefName(newRefName: string): void {
@@ -42,32 +42,32 @@ export const Region = types.compose(
 )
 
 export const LocalPathLocation = types.model('LocalPathLocation', {
-  locationType: types.literal('LocalPathLocation'),
   localPath: types.string,
+  locationType: types.literal('LocalPathLocation'),
 })
 
 // like how blobId is used to get a blob map
 export const BlobLocation = types.model('BlobLocation', {
+  blobId: types.string,
   locationType: types.literal('BlobLocation'),
   name: types.string,
-  blobId: types.string,
 })
 
 export const UriLocationRaw = types.model('UriLocation', {
-  locationType: types.literal('UriLocation'),
-  uri: types.string,
   baseUri: types.maybe(types.string),
-
   internetAccountId: types.maybe(types.string),
-
   // auths information (such as tokens) needed for using this resource.
   // if provided, these must be completely sufficient for using it
   internetAccountPreAuthorization: types.maybe(
     types.model('InternetAccountPreAuthorization', {
-      internetAccountType: types.string,
       authInfo: types.frozen(),
+      internetAccountType: types.string,
     }),
   ),
+
+  locationType: types.literal('UriLocation'),
+
+  uri: types.string,
 })
 
 export const UriLocation = types.snapshotProcessor(UriLocationRaw, {

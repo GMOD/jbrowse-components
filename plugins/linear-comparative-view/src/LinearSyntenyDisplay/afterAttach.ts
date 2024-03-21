@@ -88,10 +88,10 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         const view = getContainingView(self) as LSV
         const viewSnaps = view.views.map(view => ({
           ...getSnapshot(view),
-          width: view.width,
-          staticBlocks: view.staticBlocks,
           interRegionPaddingWidth: view.interRegionPaddingWidth,
           minimumBlockWidth: view.minimumBlockWidth,
+          staticBlocks: view.staticBlocks,
+          width: view.width,
         }))
 
         const map = [] as FeatPos[]
@@ -115,10 +115,10 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           const ref2 = a2?.getCanonicalRefName(r2) || r2
           const v1 = viewSnaps[0]
           const v2 = viewSnaps[1]
-          const p11 = bpToPx({ self: v1, refName: ref1, coord: f1s })
-          const p12 = bpToPx({ self: v1, refName: ref1, coord: f1e })
-          const p21 = bpToPx({ self: v2, refName: ref2, coord: f2s })
-          const p22 = bpToPx({ self: v2, refName: ref2, coord: f2e })
+          const p11 = bpToPx({ coord: f1s, refName: ref1, self: v1 })
+          const p12 = bpToPx({ coord: f1e, refName: ref1, self: v1 })
+          const p21 = bpToPx({ coord: f2s, refName: ref2, self: v2 })
+          const p22 = bpToPx({ coord: f2e, refName: ref2, self: v2 })
 
           if (
             p11 === undefined ||
@@ -131,12 +131,12 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
 
           const cigar = f.get('CIGAR') as string | undefined
           map.push({
+            cigar: MismatchParser.parseCigar(cigar),
+            f,
             p11,
             p12,
             p21,
             p22,
-            f,
-            cigar: MismatchParser.parseCigar(cigar),
           })
         }
 

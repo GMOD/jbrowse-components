@@ -157,12 +157,12 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     const basesCovered = sum(feats.map(a => a.basesCovered))
 
     return rectifyStats({
-      scoreMin,
-      scoreMax,
-      featureCount,
       basesCovered,
-      scoreSumSquares,
+      featureCount,
+      scoreMax,
+      scoreMin,
       scoreSum,
+      scoreSumSquares,
     })
   }
 
@@ -190,8 +190,8 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
         this.getFeatures(
           {
             ...region,
-            start: Math.max(0, Math.round(sampleCenter - length / 2)),
             end: Math.min(Math.round(sampleCenter + length / 2), end),
+            start: Math.max(0, Math.round(sampleCenter - length / 2)),
           },
           opts,
         ).pipe(toArray()),

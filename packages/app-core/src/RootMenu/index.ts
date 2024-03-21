@@ -15,12 +15,6 @@ export function RootAppMenuMixin() {
     return {
       /**
        * #action
-       */
-      setMenus(newMenus: Menu[]) {
-        self.menus = newMenus
-      },
-      /**
-       * #action
        * Add a top-level menu
        *
        * @param menuName - Name of the menu to insert.
@@ -30,29 +24,7 @@ export function RootAppMenuMixin() {
       appendMenu(menuName: string) {
         return self.menus.push({ label: menuName, menuItems: [] })
       },
-      /**
-       * #action
-       * Insert a top-level menu
-       *
-       * @param menuName - Name of the menu to insert.
-       *
-       * @param position - Position to insert menu. If negative, counts from th
-       * end, e.g. `insertMenu('My Menu', -1)` will insert the menu as the
-       * second-to-last one.
-       *
-       * @returns The new length of the top-level menus array
-       */
-      insertMenu(menuName: string, position: number) {
-        self.menus.splice(
-          (position < 0 ? self.menus.length : 0) + position,
-          0,
-          {
-            label: menuName,
-            menuItems: [],
-          },
-        )
-        return self.menus.length
-      },
+
       /**
        * #action
        * Add a menu item to a top-level menu
@@ -71,31 +43,7 @@ export function RootAppMenuMixin() {
         }
         return menu.menuItems.push(menuItem)
       },
-      /**
-       * #action
-       * Insert a menu item into a top-level menu
-       *
-       * @param menuName - Name of the top-level menu to insert into
-       *
-       * @param menuItem - Menu item to insert
-       *
-       * @param position - Position to insert menu item. If negative, counts
-       * from the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as
-       * the second-to-last one.
-       *
-       * @returns The new length of the menu
-       */
-      insertInMenu(menuName: string, menuItem: MenuItem, position: number) {
-        const menu = self.menus.find(m => m.label === menuName)
-        if (!menu) {
-          self.menus.push({ label: menuName, menuItems: [menuItem] })
-          return 1
-        }
-        const insertPosition =
-          position < 0 ? menu.menuItems.length + position : position
-        menu.menuItems.splice(insertPosition, 0, menuItem)
-        return menu.menuItems.length
-      },
+
       /**
        * #action
        * Add a menu item to a sub-menu
@@ -131,6 +79,33 @@ export function RootAppMenuMixin() {
         })
         return subMenu.push(menuItem)
       },
+
+      /**
+       * #action
+       * Insert a menu item into a top-level menu
+       *
+       * @param menuName - Name of the top-level menu to insert into
+       *
+       * @param menuItem - Menu item to insert
+       *
+       * @param position - Position to insert menu item. If negative, counts
+       * from the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as
+       * the second-to-last one.
+       *
+       * @returns The new length of the menu
+       */
+      insertInMenu(menuName: string, menuItem: MenuItem, position: number) {
+        const menu = self.menus.find(m => m.label === menuName)
+        if (!menu) {
+          self.menus.push({ label: menuName, menuItems: [menuItem] })
+          return 1
+        }
+        const insertPosition =
+          position < 0 ? menu.menuItems.length + position : position
+        menu.menuItems.splice(insertPosition, 0, menuItem)
+        return menu.menuItems.length
+      },
+
       /**
        * #action
        * Insert a menu item into a sub-menu
@@ -174,6 +149,37 @@ export function RootAppMenuMixin() {
         })
         subMenu.splice(position, 0, menuItem)
         return subMenu.length
+      },
+
+      /**
+       * #action
+       * Insert a top-level menu
+       *
+       * @param menuName - Name of the menu to insert.
+       *
+       * @param position - Position to insert menu. If negative, counts from th
+       * end, e.g. `insertMenu('My Menu', -1)` will insert the menu as the
+       * second-to-last one.
+       *
+       * @returns The new length of the top-level menus array
+       */
+      insertMenu(menuName: string, position: number) {
+        self.menus.splice(
+          (position < 0 ? self.menus.length : 0) + position,
+          0,
+          {
+            label: menuName,
+            menuItems: [],
+          },
+        )
+        return self.menus.length
+      },
+
+      /**
+       * #action
+       */
+      setMenus(newMenus: Menu[]) {
+        self.menus = newMenus
       },
     }
   })

@@ -14,8 +14,8 @@ export default class extends Plugin {
   configure(pluginManager: PluginManager) {
     if (isAbstractMenuManager(pluginManager.rootModel)) {
       pluginManager.rootModel.appendToMenu('Tools', {
-        label: 'Jobs list',
-        icon: Indexing, // TODO: pick a better icon
+        icon: Indexing,
+        label: 'Jobs list', // TODO: pick a better icon
         onClick: (session: SessionWithWidgets) => {
           if (isSessionModelWithWidgets(session)) {
             const { widgets } = session

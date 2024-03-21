@@ -24,18 +24,11 @@ model (via e.g. getRoot) in plugin code
 
 ### JBrowseReactAppRootModel - Actions
 
-#### action: setSession
+#### action: renameCurrentSession
 
 ```js
 // type signature
-setSession: (sessionSnapshot?: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number, number, number>; }>>) => void
-```
-
-#### action: setPluginsUpdated
-
-```js
-// type signature
-setPluginsUpdated: (flag: boolean) => void
+renameCurrentSession: (sessionName: string) => void
 ```
 
 #### action: setDefaultSession
@@ -45,16 +38,23 @@ setPluginsUpdated: (flag: boolean) => void
 setDefaultSession: () => void
 ```
 
-#### action: renameCurrentSession
-
-```js
-// type signature
-renameCurrentSession: (sessionName: string) => void
-```
-
 #### action: setError
 
 ```js
 // type signature
 setError: (error?: unknown) => void
+```
+
+#### action: setPluginsUpdated
+
+```js
+// type signature
+setPluginsUpdated: (flag: boolean) => void
+```
+
+#### action: setSession
+
+```js
+// type signature
+setSession: (sessionSnapshot?: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; margin: IType<number, number, number>; name: ISimpleType<string>; }>>) => void
 ```

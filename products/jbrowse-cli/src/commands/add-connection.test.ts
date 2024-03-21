@@ -14,15 +14,15 @@ const defaultConfig = {
     {
       name: 'testAssembly',
       sequence: {
-        type: 'testSequenceTrack',
-        trackId: '',
         adapter: {
-          type: 'testSeqAdapter',
           twoBitLocation: {
-            uri: 'test.2bit',
             locationType: 'UriLocation',
+            uri: 'test.2bit',
           },
+          type: 'testSeqAdapter',
         },
+        trackId: '',
+        type: 'testSequenceTrack',
       },
     },
   ],
@@ -90,13 +90,13 @@ describe('add-connection', () => {
         ...defaultConfig,
         connections: [
           {
-            type: 'UCSCTrackHubConnection',
             connectionId: 'UCSCTrackHubConnection-1',
             hubTxtLocation: {
-              uri: 'https://mysite.com/data/hub.txt',
               locationType: 'UriLocation',
+              uri: 'https://mysite.com/data/hub.txt',
             },
             name: 'UCSCTrackHubConnection-1',
+            type: 'UCSCTrackHubConnection',
           },
         ],
       })
@@ -111,13 +111,13 @@ describe('add-connection', () => {
         ...defaultConfig,
         connections: [
           {
-            type: 'JBrowse1Connection',
             connectionId: 'JBrowse1Connection-1',
             dataDirLocation: {
-              uri: 'https://mysite.com/jbrowse/data',
               locationType: 'UriLocation',
+              uri: 'https://mysite.com/jbrowse/data',
             },
             name: 'JBrowse1Connection-1',
+            type: 'JBrowse1Connection',
           },
         ],
       })
@@ -146,14 +146,14 @@ describe('add-connection', () => {
         ...defaultConfig,
         connections: [
           {
-            type: 'newType',
             assemblyNames: ['testAssembly'],
             connectionId: 'newConnectionId',
             locationType: 'UriLocation',
+            name: 'newName',
+            type: 'newType',
             url: {
               uri: 'https://mysite.com/custom',
             },
-            name: 'newName',
           },
         ],
       })
@@ -208,13 +208,13 @@ describe('add-connection', () => {
           ...defaultConfig,
           connections: [
             {
-              type: 'custom',
               connectionId: 'newConnectionId',
               locationType: 'UriLocation',
+              name: 'newConnectionId',
+              type: 'custom',
               url: {
                 uri: 'https://mysite.com/custom',
               },
-              name: 'newConnectionId',
             },
           ],
         })

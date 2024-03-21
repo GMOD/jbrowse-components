@@ -9,33 +9,33 @@ function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 const VcfTabixAdapter = ConfigurationSchema(
   'VcfTabixAdapter',
   {
-    /**
-     * #slot
-     */
-    vcfGzLocation: {
-      type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.vcf.gz', locationType: 'UriLocation' },
-    },
     index: ConfigurationSchema('VcfIndex', {
       /**
        * #slot index.indexType
        */
       indexType: {
+        defaultValue: 'TBI',
         model: types.enumeration('IndexType', ['TBI', 'CSI']),
         type: 'stringEnum',
-        defaultValue: 'TBI',
       },
       /**
        * #slot index.location
        */
       location: {
-        type: 'fileLocation',
         defaultValue: {
-          uri: '/path/to/my.vcf.gz.tbi',
           locationType: 'UriLocation',
+          uri: '/path/to/my.vcf.gz.tbi',
         },
+        type: 'fileLocation',
       },
     }),
+    /**
+     * #slot
+     */
+    vcfGzLocation: {
+      defaultValue: { locationType: 'UriLocation', uri: '/path/to/my.vcf.gz' },
+      type: 'fileLocation',
+    },
   },
   { explicitlyTyped: true },
 )

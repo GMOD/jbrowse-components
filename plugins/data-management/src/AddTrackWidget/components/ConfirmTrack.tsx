@@ -158,11 +158,11 @@ const ConfirmTrack = observer(function ConfirmTrack({
         selected={model.assembly}
         onChange={asm => model.setAssembly(asm)}
         TextFieldProps={{
-          fullWidth: true,
           SelectProps: {
             // @ts-expect-error
             SelectDisplayProps: { 'data-testid': 'assemblyNameSelect' },
           },
+          fullWidth: true,
         }}
       />
       {isElectron && supportedForIndexing && (

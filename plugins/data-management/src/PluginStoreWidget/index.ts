@@ -9,11 +9,11 @@ const configSchema = ConfigurationSchema('PluginStoreWidget', {})
 export default (pluginManager: PluginManager) => {
   pluginManager.addWidgetType(() => {
     return new WidgetType({
-      name: 'PluginStoreWidget',
-      heading: 'Plugin store',
-      configSchema,
-      stateModel: stateModelFactory(pluginManager),
       ReactComponent: lazy(() => import('./components/PluginStoreWidget')),
+      configSchema,
+      heading: 'Plugin store',
+      name: 'PluginStoreWidget',
+      stateModel: stateModelFactory(pluginManager),
     })
   })
 }

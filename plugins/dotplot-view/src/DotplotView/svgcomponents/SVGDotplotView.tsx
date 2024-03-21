@@ -28,7 +28,7 @@ export async function renderToSvg(
     tracks.map(async track => {
       const display = track.displays[0]
       await when(() => (display.ready !== undefined ? display.ready : true))
-      return { track, result: await display.renderSvg({ ...opts, theme }) }
+      return { result: await display.renderSvg({ ...opts, theme }), track }
     }),
   )
   const w = width + shift * 2

@@ -49,10 +49,10 @@ export function drawPairChains({
       const v1 = chain[1]
       const ra1 = asm.getCanonicalRefName(v0.refName) || v0.refName
       const ra2 = asm.getCanonicalRefName(v1.refName) || v1.refName
-      const r1s = view.bpToPx({ refName: ra1, coord: v0.start })?.offsetPx
-      const r1e = view.bpToPx({ refName: ra1, coord: v0.end })?.offsetPx
-      const r2s = view.bpToPx({ refName: ra2, coord: v1.start })?.offsetPx
-      const r2e = view.bpToPx({ refName: ra2, coord: v1.end })?.offsetPx
+      const r1s = view.bpToPx({ coord: v0.start, refName: ra1 })?.offsetPx
+      const r1e = view.bpToPx({ coord: v0.end, refName: ra1 })?.offsetPx
+      const r2s = view.bpToPx({ coord: v1.start, refName: ra2 })?.offsetPx
+      const r2e = view.bpToPx({ coord: v1.end, refName: ra2 })?.offsetPx
 
       let distance = 0
 
@@ -68,21 +68,21 @@ export function drawPairChains({
           distance = Math.abs(e - s)
         }
         coords.push({
-          r1s,
+          distance,
           r1e,
-          r2s,
+          r1s,
           r2e,
+          r2s,
           v0,
           v1,
-          distance,
         })
       }
     } else if (self.drawSingletons) {
       const v0 = chain[0]
 
       const ra1 = asm.getCanonicalRefName(v0.refName) || v0.refName
-      const r1s = view.bpToPx({ refName: ra1, coord: v0.start })?.offsetPx
-      const r1e = view.bpToPx({ refName: ra1, coord: v0.end })?.offsetPx
+      const r1s = view.bpToPx({ coord: v0.start, refName: ra1 })?.offsetPx
+      const r1e = view.bpToPx({ coord: v0.end, refName: ra1 })?.offsetPx
       if (r1s !== undefined && r1e !== undefined) {
         const w1 = Math.max(r1e - r1s, 2)
         fillRectCtx(r1s - view.offsetPx, 0, w1, featureHeight, ctx, '#f00')
@@ -97,7 +97,7 @@ export function drawPairChains({
   for (const { r1e, r1s, r2e, r2s, distance, v0, v1 } of coords) {
     const w1 = Math.max(r1e - r1s, 2)
     const w2 = Math.max(r2e - r2s, 2)
-    const [fill, stroke] = getPairedColor({ type, v0, v1, stats }) || []
+    const [fill, stroke] = getPairedColor({ stats, type, v0, v1 }) || []
     const top = (Math.log(distance) - minD) * scaler
     const halfHeight = featureHeight / 2 - 0.5
     const w = r2s - r1e

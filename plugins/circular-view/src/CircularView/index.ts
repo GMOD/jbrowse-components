@@ -8,9 +8,9 @@ export default (pluginManager: PluginManager) => {
     () =>
       new ViewType({
         ReactComponent: lazy(() => import('./components/CircularView')),
-        stateModel: stateModelFactory(pluginManager),
-        name: 'CircularView',
         displayName: 'Circular view',
+        name: 'CircularView',
+        stateModel: stateModelFactory(pluginManager),
       }),
   )
 }

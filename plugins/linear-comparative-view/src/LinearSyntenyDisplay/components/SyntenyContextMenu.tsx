@@ -30,22 +30,22 @@ export default function SyntenyContextMenu({
         onClose()
       }}
       anchorEl={{
-        nodeType: 1,
         getBoundingClientRect: () => {
           const x = clientX
           const y = clientY
           return {
-            top: y,
-            left: x,
             bottom: y,
-            right: x,
-            width: 0,
             height: 0,
+            left: x,
+            right: x,
+            toJSON() {},
+            top: y,
+            width: 0,
             x,
             y,
-            toJSON() {},
           }
         },
+        nodeType: 1,
       }}
       onClose={onClose}
       open={Boolean(anchorEl)}

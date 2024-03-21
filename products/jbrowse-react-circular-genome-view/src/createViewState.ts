@@ -65,12 +65,12 @@ export default function createViewState(opts: ViewStateOptions) {
   }
   const stateSnapshot = {
     config: {
-      configuration,
-      assembly,
-      tracks,
-      internetAccounts,
       aggregateTextSearchAdapters,
+      assembly,
+      configuration,
       defaultSession,
+      internetAccounts,
+      tracks,
     },
 
     session: defaultSession,
@@ -84,8 +84,8 @@ export default function createViewState(opts: ViewStateOptions) {
       throw new Error(`unknown internet account type ${account.type}`)
     }
     stateTree.addInternetAccount({
-      type: account.type,
       configuration: account,
+      type: account.type,
     })
   })
   pluginManager.setRootModel(stateTree)

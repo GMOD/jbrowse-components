@@ -31,10 +31,16 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
       /**
        * #property
        */
+      activeWidgets: types.map(types.safeReference(widgetStateModelType)),
+
+      /**
+       * #property
+       */
       drawerPosition: types.optional(
         types.string,
         () => localStorageGetItem('drawerPosition') || 'right',
       ),
+
       /**
        * #property
        */
@@ -42,19 +48,16 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
         types.refinement(types.integer, width => width >= minDrawerWidth),
         384,
       ),
-      /**
-       * #property
-       */
-      widgets: types.map(widgetStateModelType),
-      /**
-       * #property
-       */
-      activeWidgets: types.map(types.safeReference(widgetStateModelType)),
 
       /**
        * #property
        */
       minimized: types.optional(types.boolean, false),
+
+      /**
+       * #property
+       */
+      widgets: types.map(widgetStateModelType),
     })
     .views(self => ({
       /**
@@ -72,41 +75,6 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setDrawerPosition(arg: string) {
-        self.drawerPosition = arg
-        localStorage.setItem('drawerPosition', arg)
-      },
-
-      /**
-       * #action
-       */
-      updateDrawerWidth(drawerWidth: number) {
-        if (drawerWidth === self.drawerWidth) {
-          return self.drawerWidth
-        }
-        let newDrawerWidth = drawerWidth
-        if (newDrawerWidth < minDrawerWidth) {
-          newDrawerWidth = minDrawerWidth
-        }
-        self.drawerWidth = newDrawerWidth
-        return newDrawerWidth
-      },
-
-      /**
-       * #action
-       */
-      resizeDrawer(distance: number) {
-        if (self.drawerPosition === 'left') {
-          distance *= -1
-        }
-        const oldDrawerWidth = self.drawerWidth
-        const newDrawerWidth = this.updateDrawerWidth(oldDrawerWidth - distance)
-        return oldDrawerWidth - newDrawerWidth
-      },
-
-      /**
-       * #action
-       */
       addWidget(
         typeName: string,
         id: string,
@@ -119,56 +87,21 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
         }
         const data = {
           ...initialState,
+          configuration: conf || { type: typeName },
           id,
           type: typeName,
-          configuration: conf || { type: typeName },
         }
         self.widgets.set(id, data)
         return self.widgets.get(id)
       },
 
-      /**
-       * #action
-       */
-      showWidget(widget: WidgetStateModel) {
-        if (self.activeWidgets.has(widget.id)) {
-          self.activeWidgets.delete(widget.id)
-        }
-        self.activeWidgets.set(widget.id, widget)
-        self.minimized = false
-      },
-
-      /**
-       * #action
-       */
-      hasWidget(widget: WidgetStateModel) {
-        return self.activeWidgets.has(widget.id)
-      },
-
-      /**
-       * #action
-       */
-      hideWidget(widget: WidgetStateModel) {
-        self.activeWidgets.delete(widget.id)
-      },
-
-      /**
-       * #action
-       */
-      minimizeWidgetDrawer() {
-        self.minimized = true
-      },
-      /**
-       * #action
-       */
-      showWidgetDrawer() {
-        self.minimized = false
-      },
-      /**
-       * #action
-       */
-      hideAllWidgets() {
-        self.activeWidgets.clear()
+      afterAttach() {
+        addDisposer(
+          self,
+          autorun(() => {
+            localStorageSetItem('drawerPosition', self.drawerPosition)
+          }),
+        )
       },
 
       /**
@@ -191,13 +124,85 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
         this.showWidget(editor)
       },
 
-      afterAttach() {
-        addDisposer(
-          self,
-          autorun(() => {
-            localStorageSetItem('drawerPosition', self.drawerPosition)
-          }),
-        )
+      /**
+       * #action
+       */
+      hasWidget(widget: WidgetStateModel) {
+        return self.activeWidgets.has(widget.id)
+      },
+
+      /**
+       * #action
+       */
+      hideAllWidgets() {
+        self.activeWidgets.clear()
+      },
+
+      /**
+       * #action
+       */
+      hideWidget(widget: WidgetStateModel) {
+        self.activeWidgets.delete(widget.id)
+      },
+
+      /**
+       * #action
+       */
+      minimizeWidgetDrawer() {
+        self.minimized = true
+      },
+
+      /**
+       * #action
+       */
+      resizeDrawer(distance: number) {
+        if (self.drawerPosition === 'left') {
+          distance *= -1
+        }
+        const oldDrawerWidth = self.drawerWidth
+        const newDrawerWidth = this.updateDrawerWidth(oldDrawerWidth - distance)
+        return oldDrawerWidth - newDrawerWidth
+      },
+
+      /**
+       * #action
+       */
+      setDrawerPosition(arg: string) {
+        self.drawerPosition = arg
+        localStorage.setItem('drawerPosition', arg)
+      },
+
+      /**
+       * #action
+       */
+      showWidget(widget: WidgetStateModel) {
+        if (self.activeWidgets.has(widget.id)) {
+          self.activeWidgets.delete(widget.id)
+        }
+        self.activeWidgets.set(widget.id, widget)
+        self.minimized = false
+      },
+
+      /**
+       * #action
+       */
+      showWidgetDrawer() {
+        self.minimized = false
+      },
+
+      /**
+       * #action
+       */
+      updateDrawerWidth(drawerWidth: number) {
+        if (drawerWidth === self.drawerWidth) {
+          return self.drawerWidth
+        }
+        let newDrawerWidth = drawerWidth
+        if (newDrawerWidth < minDrawerWidth) {
+          newDrawerWidth = minDrawerWidth
+        }
+        self.drawerWidth = newDrawerWidth
+        return newDrawerWidth
       },
     }))
 }

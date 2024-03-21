@@ -71,9 +71,9 @@ function CascadingSubmenu({
 }) {
   const { parentPopupState } = useContext(CascadingContext)
   const popupState = usePopupState({
+    parentPopupState,
     popupId,
     variant: 'popover',
-    parentPopupState,
   })
   return (
     <>
@@ -88,8 +88,8 @@ function CascadingSubmenu({
       </MenuItem>
       <CascadingSubmenuHover
         {...props}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'top' }}
+        transformOrigin={{ horizontal: 'left', vertical: 'top' }}
         popupState={popupState}
       />
     </>
@@ -113,8 +113,8 @@ function CascadingSubmenuHover({
   const { rootPopupState } = useContext(CascadingContext)
   const context = useMemo(
     () => ({
-      rootPopupState: rootPopupState || popupState,
       parentPopupState: popupState,
+      rootPopupState: rootPopupState || popupState,
     }),
     [rootPopupState, popupState],
   )
@@ -139,8 +139,8 @@ function CascadingMenu({
   const { rootPopupState } = useContext(CascadingContext)
   const context = useMemo(
     () => ({
-      rootPopupState: rootPopupState || popupState,
       parentPopupState: popupState,
+      rootPopupState: rootPopupState || popupState,
     }),
     [rootPopupState, popupState],
   )

@@ -13,8 +13,8 @@ const GtfAdapter = ConfigurationSchema(
      * #slot
      */
     gtfLocation: {
+      defaultValue: { locationType: 'UriLocation', uri: '/path/to/my.gtf' },
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.gtf', locationType: 'UriLocation' },
     },
   },
   { explicitlyTyped: true },

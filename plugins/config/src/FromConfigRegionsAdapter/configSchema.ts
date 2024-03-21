@@ -12,8 +12,8 @@ const regionsConfigSchema = ConfigurationSchema(
      * #slot
      */
     features: {
-      type: 'frozen',
       defaultValue: [],
+      type: 'frozen',
     },
   },
   {

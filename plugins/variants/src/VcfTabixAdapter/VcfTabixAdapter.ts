@@ -27,17 +27,17 @@ export default class extends BaseFeatureDataAdapter {
     const filehandle = openLocation(vcfGzLocation, pm)
     const isCSI = indexType === 'CSI'
     const vcf = new TabixIndexedFile({
-      filehandle,
-      csiFilehandle: isCSI ? openLocation(location, pm) : undefined,
-      tbiFilehandle: !isCSI ? openLocation(location, pm) : undefined,
       chunkCacheSize: 50 * 2 ** 20,
       chunkSizeLimit: 1000000000,
+      csiFilehandle: isCSI ? openLocation(location, pm) : undefined,
+      filehandle,
+      tbiFilehandle: !isCSI ? openLocation(location, pm) : undefined,
     })
 
     const header = await vcf.getHeader()
     return {
-      vcf,
       parser: new VcfParser({ header }),
+      vcf,
     }
   }
 
@@ -74,9 +74,9 @@ export default class extends BaseFeatureDataAdapter {
         lineCallback: (line, fileOffset) => {
           observer.next(
             new VcfFeature({
-              variant: parser.parseLine(line),
-              parser,
               id: `${this.id}-vcf-${fileOffset}`,
+              parser,
+              variant: parser.parseLine(line),
             }),
           )
         },

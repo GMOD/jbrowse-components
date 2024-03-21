@@ -45,11 +45,11 @@ function generateConfigDocs(files: string[]) {
     const fn2 = fn.replace(cwd, '')
     if (!contents[fn]) {
       contents[fn] = {
+        config: undefined,
         derives: undefined,
+        filename: fn2,
         id: undefined,
         slots: [],
-        config: undefined,
-        filename: fn2,
       }
     }
     const current = contents[fn]
@@ -84,13 +84,13 @@ function generateConfigDocs(files: string[]) {
     }
 
     if (obj.type === 'baseConfiguration') {
-      current.derives = { ...obj, name, docs, code }
+      current.derives = { ...obj, code, docs, name }
     } else if (obj.type === 'identifier') {
-      current.id = { ...obj, name, docs, code }
+      current.id = { ...obj, code, docs, name }
     } else if (obj.type === 'slot') {
-      current.slots.push({ ...obj, name, docs, code })
+      current.slots.push({ ...obj, code, docs, name })
     } else if (obj.type === 'config') {
-      current.config = { ...obj, name, docs, id, category }
+      current.config = { ...obj, category, docs, id, name }
     }
   })
   return contents

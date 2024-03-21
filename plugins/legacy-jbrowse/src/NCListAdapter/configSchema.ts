@@ -11,20 +11,21 @@ const NCListAdapter = ConfigurationSchema(
     /**
      * #slot
      */
-    rootUrlTemplate: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/my/{refseq}/trackData.json',
-        locationType: 'UriLocation',
-      },
+    refNames: {
+      defaultValue: [],
+      description: 'List of refNames used by the NCList used for aliasing',
+      type: 'stringArray',
     },
+
     /**
      * #slot
      */
-    refNames: {
-      type: 'stringArray',
-      defaultValue: [],
-      description: 'List of refNames used by the NCList used for aliasing',
+    rootUrlTemplate: {
+      defaultValue: {
+        locationType: 'UriLocation',
+        uri: '/path/to/my/{refseq}/trackData.json',
+      },
+      type: 'fileLocation',
     },
   },
   { explicitlyTyped: true },

@@ -16,26 +16,26 @@ import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 type LCV = LinearComparativeViewModel
 
 const useStyles = makeStyles()(() => ({
-  headerBar: {
-    gridArea: '1/1/auto/span 2',
+  bp: {
+    alignItems: 'center',
     display: 'flex',
+    marginLeft: 10,
   },
-  spacer: {
-    flexGrow: 1,
+  headerBar: {
+    display: 'flex',
+    gridArea: '1/1/auto/span 2',
   },
   iconButton: {
     margin: 5,
   },
-  bp: {
+  searchBox: {
     display: 'flex',
-    alignItems: 'center',
-    marginLeft: 10,
   },
   searchContainer: {
     marginLeft: 5,
   },
-  searchBox: {
-    display: 'flex',
+  spacer: {
+    flexGrow: 1,
   },
 }))
 

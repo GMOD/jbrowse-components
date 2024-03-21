@@ -8,35 +8,35 @@ import {
 } from '../../src'
 
 const hg19Assembly = {
-  name: 'hg19',
   aliases: ['GRCh37'],
-  sequence: {
-    type: 'ReferenceSequenceTrack',
-    trackId: 'Pd8Wh30ei9R',
-    adapter: {
-      type: 'BgzipFastaAdapter',
-      fastaLocation: {
-        uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
-        locationType: 'UriLocation',
-      },
-      faiLocation: {
-        uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai',
-        locationType: 'UriLocation',
-      },
-      gziLocation: {
-        uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi',
-        locationType: 'UriLocation',
-      },
-    },
-  },
+  name: 'hg19',
   refNameAliases: {
     adapter: {
-      type: 'RefNameAliasAdapter',
       location: {
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt',
         locationType: 'UriLocation',
+        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt',
       },
+      type: 'RefNameAliasAdapter',
     },
+  },
+  sequence: {
+    adapter: {
+      faiLocation: {
+        locationType: 'UriLocation',
+        uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai',
+      },
+      fastaLocation: {
+        locationType: 'UriLocation',
+        uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
+      },
+      gziLocation: {
+        locationType: 'UriLocation',
+        uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi',
+      },
+      type: 'BgzipFastaAdapter',
+    },
+    trackId: 'Pd8Wh30ei9R',
+    type: 'ReferenceSequenceTrack',
   },
 }
 
@@ -58,21 +58,21 @@ export const WithExternalPlugin = () => {
         ])
         const state = createViewState({
           assembly: hg19Assembly,
+          location: '1:2,467,681..2,667,681',
           plugins: plugins.map(p => p.plugin),
           tracks: [
             {
-              type: 'FeatureTrack',
-              trackId: 'segdups_ucsc_hg19',
-              name: 'UCSC SegDups',
-              category: ['Annotation'],
-              assemblyNames: ['hg19'],
               adapter: {
-                type: 'UCSCAdapter',
                 track: 'genomicSuperDups',
+                type: 'UCSCAdapter',
               },
+              assemblyNames: ['hg19'],
+              category: ['Annotation'],
+              name: 'UCSC SegDups',
+              trackId: 'segdups_ucsc_hg19',
+              type: 'FeatureTrack',
             },
           ],
-          location: '1:2,467,681..2,667,681',
         })
         state.session.view.showTrack('segdups_ucsc_hg19')
         setViewState(state)

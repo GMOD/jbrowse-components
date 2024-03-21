@@ -8,9 +8,9 @@ export function createTestSession(snapshot = {}, adminMode = false) {
   pluginManager.createPluggableElements()
 
   const root = RootModel({
+    adminMode,
     pluginManager,
     sessionModelFactory,
-    adminMode,
   }).create(
     {
       jbrowse: {

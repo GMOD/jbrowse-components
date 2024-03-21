@@ -22,13 +22,13 @@ function isLocalPathLocation(
 
 export async function fetchJb1(
   // eslint-disable-next-line unicorn/no-object-as-default-parameter
-  dataRoot: JBLocation = { uri: '', locationType: 'UriLocation' },
+  dataRoot: JBLocation = { locationType: 'UriLocation', uri: '' },
   // eslint-disable-next-line unicorn/no-object-as-default-parameter
   baseConfig: Config = {
     include: ['{dataRoot}/trackList.json', '{dataRoot}/tracks.conf'],
   },
   // eslint-disable-next-line unicorn/no-object-as-default-parameter
-  baseConfigRoot: JBLocation = { uri: '', locationType: 'UriLocation' },
+  baseConfigRoot: JBLocation = { locationType: 'UriLocation', uri: '' },
 ): Promise<Config> {
   const protocol = 'uri' in dataRoot ? 'uri' : 'localPath'
   const dataRootReg = JSON.parse(JSON.stringify(dataRoot))
@@ -221,8 +221,8 @@ async function loadIncludes(inputConfig: Config): Promise<Config> {
     const loads = includes.map(async (include): Promise<Config> => {
       include.cacheBuster = inputConfig.cacheBuster
       const includedData = await fetchConfigFile({
-        uri: new URL(include.url, sourceUrl).href,
         locationType: 'UriLocation',
+        uri: new URL(include.url, sourceUrl).href,
       })
       return loadRecur(includedData, newUpstreamConf)
     })
@@ -297,34 +297,34 @@ function noRecursiveMerge(propName: string): boolean {
 }
 
 const configDefaults = {
-  tracks: [],
-
   containerID: 'GenomeBrowser',
+
   dataRoot: 'data',
-  show_tracklist: true,
-  show_nav: true,
-  show_menu: true,
-  show_overview: true,
-  show_fullviewlink: true,
-  update_browser_title: true,
-  updateBrowserURL: true,
-
-  refSeqs: '{dataRoot}/seq/refSeqs.json',
-  include: ['jbrowse.conf', 'jbrowse_conf.json'],
-  nameUrl: '{dataRoot}/names/root.json',
-
   datasets: {
     _DEFAULT_EXAMPLES: true,
-    volvox: { url: '?data=sample_data/json/volvox', name: 'Volvox Example' },
     modencode: {
-      url: '?data=sample_data/json/modencode',
       name: 'MODEncode Example',
+      url: '?data=sample_data/json/modencode',
     },
-    yeast: { url: '?data=sample_data/json/yeast', name: 'Yeast Example' },
+    volvox: { name: 'Volvox Example', url: '?data=sample_data/json/volvox' },
+    yeast: { name: 'Yeast Example', url: '?data=sample_data/json/yeast' },
   },
-
-  highlightSearchedRegions: false,
   highResolutionMode: 'auto',
+  highlightSearchedRegions: false,
+  include: ['jbrowse.conf', 'jbrowse_conf.json'],
+  nameUrl: '{dataRoot}/names/root.json',
+  refSeqs: '{dataRoot}/seq/refSeqs.json',
+  show_fullviewlink: true,
+  show_menu: true,
+
+  show_nav: true,
+  show_overview: true,
+  show_tracklist: true,
+
+  tracks: [],
+
+  updateBrowserURL: true,
+  update_browser_title: true,
 }
 
 /**

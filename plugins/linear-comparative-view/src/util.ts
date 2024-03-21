@@ -65,7 +65,7 @@ export function getPxFromCoordinate(
   refName: string,
   coord: number,
 ) {
-  return (bpToPx(view, { refName, coord })?.offsetPx || 0) - view.offsetPx
+  return (bpToPx(view, { coord, refName })?.offsetPx || 0) - view.offsetPx
 }
 
 // Retrieves the y-position of a layout record in a track

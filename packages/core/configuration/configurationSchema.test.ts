@@ -9,14 +9,14 @@ describe('configuration schemas', () => {
     const container = types.model({
       configuration: ConfigurationSchema('Track', {
         backgroundColor: {
+          defaultValue: '#eee',
           description: "the track's background color",
           type: 'color',
-          defaultValue: '#eee',
         },
         someInteger: {
+          defaultValue: 12,
           description: 'an integer slot',
           type: 'integer',
-          defaultValue: 12,
         },
       }),
     })
@@ -49,20 +49,20 @@ describe('configuration schemas', () => {
   test('can nest an array of configuration schemas', () => {
     const container = types.model({
       configuration: ConfigurationSchema('Foo', {
-        someInteger: {
-          description: 'an integer slot',
-          type: 'integer',
-          defaultValue: 12,
-        },
         myArrayOfSubConfigurations: types.array(
           ConfigurationSchema('SubObject', {
             someNumber: {
+              defaultValue: 4.3,
               description: 'some number in a subconfiguration',
               type: 'number',
-              defaultValue: 4.3,
             },
           }),
         ),
+        someInteger: {
+          defaultValue: 12,
+          description: 'an integer slot',
+          type: 'integer',
+        },
       }),
     })
 
@@ -74,18 +74,18 @@ describe('configuration schemas', () => {
   test('can nest a single subconfiguration schema', () => {
     const container = types.model({
       configuration: ConfigurationSchema('Foo', {
-        someInteger: {
-          description: 'an integer slot',
-          type: 'integer',
-          defaultValue: 12,
-        },
         mySubConfiguration: ConfigurationSchema('SubObject', {
           someNumber: {
+            defaultValue: 4.3,
             description: 'some number in a subconfiguration',
             type: 'number',
-            defaultValue: 4.3,
           },
         }),
+        someInteger: {
+          defaultValue: 12,
+          description: 'an integer slot',
+          type: 'integer',
+        },
       }),
     })
 
@@ -97,26 +97,26 @@ describe('configuration schemas', () => {
 
   test('a schema can inherit from another base schema', () => {
     const base = ConfigurationSchema('Foo', {
-      someInteger: {
-        description: 'an integer slot',
-        type: 'integer',
-        defaultValue: 12,
-      },
       mySubConfiguration: ConfigurationSchema('SubObject', {
         someNumber: {
+          defaultValue: 4.3,
           description: 'some number in a subconfiguration',
           type: 'number',
-          defaultValue: 4.3,
         },
       }),
+      someInteger: {
+        defaultValue: 12,
+        description: 'an integer slot',
+        type: 'integer',
+      },
     })
 
     const child = ConfigurationSchema(
       'Bar',
       {
         anotherInteger: {
-          type: 'integer',
           defaultValue: 4,
+          type: 'integer',
         },
       },
       {
@@ -140,9 +140,9 @@ describe('configuration schemas', () => {
     const container = types.model({
       configuration: ConfigurationSchema('Foo', {
         someInteger: {
+          defaultValue: 12,
           description: 'an integer slot',
           type: 'integer',
-          defaultValue: 12,
         },
       }),
     })
@@ -159,86 +159,87 @@ describe('configuration schemas', () => {
   test('can snapshot a nested schema 1', () => {
     const container = types.model({
       configuration: ConfigurationSchema('Foo', {
-        someInteger: {
-          description: 'an integer slot',
-          type: 'integer',
-          defaultValue: 12,
-        },
-        mySubConfiguration: ConfigurationSchema('SubObject1', {
-          someNumber: {
-            description: 'some number in a subconfiguration',
-            type: 'number',
-            defaultValue: 4.3,
-          },
-        }),
         myArrayOfSubConfigurations: types.array(
           ConfigurationSchema('SubObject2', {
             someNumber: {
+              defaultValue: 3.5,
               description: 'some number in a subconfiguration',
               type: 'number',
-              defaultValue: 3.5,
             },
           }),
         ),
+        mySubConfiguration: ConfigurationSchema('SubObject1', {
+          someNumber: {
+            defaultValue: 4.3,
+            description: 'some number in a subconfiguration',
+            type: 'number',
+          },
+        }),
+        someInteger: {
+          defaultValue: 12,
+          description: 'an integer slot',
+          type: 'integer',
+        },
       }),
     })
 
     const model = container.create({
       configuration: {
-        someInteger: 42,
-        mySubConfiguration: {},
         myArrayOfSubConfigurations: [{ someNumber: 3.5 }, { someNumber: 11.1 }],
+        mySubConfiguration: {},
+        someInteger: 42,
       },
     })
     expect(getSnapshot(model)).toEqual({
       configuration: {
-        someInteger: 42,
         // mySubConfiguration is set to the default, so doesn't appear in snapshot
         myArrayOfSubConfigurations: [{}, { someNumber: 11.1 }],
+
+        someInteger: 42,
       },
     })
   })
   test('can snapshot a nested schema 2', () => {
     const container = types.model({
       configuration: ConfigurationSchema('Foo', {
-        someInteger: {
-          description: 'an integer slot',
-          type: 'integer',
-          defaultValue: 12,
-        },
+        myArrayOfSubConfigurations: types.array(
+          ConfigurationSchema('SubObject2', {
+            someNumber: {
+              defaultValue: 3.5,
+              description: 'some number in a subconfiguration',
+              type: 'number',
+            },
+          }),
+        ),
         myConfigurationMap: types.map(
           ConfigurationSchema('MappedConfiguration', {
             mappedValue: {
+              defaultValue: 101,
               description: 'something in a mapped configuration',
               type: 'number',
-              defaultValue: 101,
             },
           }),
         ),
         mySubConfiguration: ConfigurationSchema('SubObject1', {
           someNumber: {
+            defaultValue: 4.3,
             description: 'some number in a subconfiguration',
             type: 'number',
-            defaultValue: 4.3,
           },
         }),
-        myArrayOfSubConfigurations: types.array(
-          ConfigurationSchema('SubObject2', {
-            someNumber: {
-              description: 'some number in a subconfiguration',
-              type: 'number',
-              defaultValue: 3.5,
-            },
-          }),
-        ),
+        someInteger: {
+          defaultValue: 12,
+          description: 'an integer slot',
+          type: 'integer',
+        },
       }),
     })
 
     const model = container.create({
       configuration: {
-        someInteger: 12,
         myConfigurationMap: { nog: {} },
         mySubConfiguration: { someNumber: 12 },
+        someInteger: 12,
       },
     })
     expect(getSnapshot(model)).toEqual({
@@ -255,34 +256,34 @@ describe('configuration schemas', () => {
     const configSchema = ConfigurationSchema(
       'Gff3TabixAdapter',
       {
+        dontRedispatch: {
+          defaultValue: ['chromosome', 'region'],
+          type: 'stringArray',
+        },
         gffGzLocation: {
-          type: 'fileLocation',
           defaultValue: {
-            uri: '/path/to/my.gff.gz',
             locationType: 'UriLocation',
+            uri: '/path/to/my.gff.gz',
           },
+          type: 'fileLocation',
         },
         index: ConfigurationSchema('Gff3TabixIndex', {
           indexType: {
+            defaultValue: 'TBI',
             model: types.enumeration('IndexType', ['TBI', 'CSI']),
             type: 'stringEnum',
-            defaultValue: 'TBI',
           },
           location: {
-            type: 'fileLocation',
             defaultValue: {
-              uri: '/path/to/my.gff.gz.tbi',
               locationType: 'UriLocation',
+              uri: '/path/to/my.gff.gz.tbi',
             },
+            type: 'fileLocation',
           },
         }),
-        dontRedispatch: {
-          type: 'stringArray',
-          defaultValue: ['chromosome', 'region'],
-        },
         thisShouldGetInstantiated: {
-          type: 'string',
           defaultValue: 'Not instantiated',
+          type: 'string',
         },
       },
       { explicitlyTyped: true },

@@ -72,16 +72,16 @@ const HamburgerMenu = observer(function ({
       if (Object.keys(dereferenceTypeCount).length > 0) {
         setModalInfo({
           connectionConf,
-          safelyBreakConnection,
           dereferenceTypeCount,
           name,
+          safelyBreakConnection,
         })
       } else {
         safelyBreakConnection()
       }
     }
     if (deletingConnection) {
-      setDeleteDialogDetails({ name, connectionConf })
+      setDeleteDialogDetails({ connectionConf, name })
     }
   }
 
@@ -147,27 +147,26 @@ const HamburgerMenu = observer(function ({
           },
           {
             label: 'Sort...',
-            type: 'subMenu',
             subMenu: [
               {
-                label: 'Sort tracks by name',
-                type: 'checkbox',
                 checked: model.activeSortTrackNames,
+                label: 'Sort tracks by name',
                 onClick: () =>
                   model.setSortTrackNames(!model.activeSortTrackNames),
+                type: 'checkbox',
               },
               {
-                label: 'Sort categories by name',
-                type: 'checkbox',
                 checked: model.activeSortCategories,
+                label: 'Sort categories by name',
                 onClick: () =>
                   model.setSortCategories(!model.activeSortCategories),
+                type: 'checkbox',
               },
             ],
+            type: 'subMenu',
           },
           {
             label: 'Collapse...',
-            type: 'subMenu',
             subMenu: [
               ...(model.hasAnySubcategories
                 ? [
@@ -186,6 +185,7 @@ const HamburgerMenu = observer(function ({
                 onClick: () => model.expandAllCategories(),
               },
             ],
+            type: 'subMenu',
           },
         ]}
       >

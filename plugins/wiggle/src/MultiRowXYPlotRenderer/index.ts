@@ -7,9 +7,9 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addRendererType(
     () =>
       new MultiRowXYPlotRenderer({
-        name: 'MultiRowXYPlotRenderer',
         ReactComponent,
         configSchema,
+        name: 'MultiRowXYPlotRenderer',
         pluginManager,
       }),
   )

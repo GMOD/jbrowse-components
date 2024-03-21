@@ -24,9 +24,9 @@ const vcfCoreColumns: { name: string; type: string }[] = [
 function vcfRecordToRow(vcfParser: any, line: string, lineNumber: number): Row {
   const vcfVariant = vcfParser.parseLine(line)
   const vcfFeature = new VcfFeature({
-    variant: vcfVariant,
-    parser: vcfParser,
     id: `vcf-${lineNumber}`,
+    parser: vcfParser,
+    variant: vcfVariant,
   })
 
   const data = line.split('\t').map(d => (d === '.' ? '' : d))
@@ -35,14 +35,14 @@ function vcfRecordToRow(vcfParser: any, line: string, lineNumber: number): Row {
     data.push('')
   }
   const row: Row = {
-    id: String(lineNumber + 1),
-    extendedData: { vcfFeature: vcfFeature.toJSON() },
     cells: data.map((text, columnNumber) => {
       return {
         columnNumber,
         text,
       }
     }),
+    extendedData: { vcfFeature: vcfFeature.toJSON() },
+    id: String(lineNumber + 1),
   }
   return row
 }
@@ -70,32 +70,32 @@ export function parseVcfBuffer(buffer: Buffer, options: ParseOptions = {}) {
   for (let i = 0; i < vcfCoreColumns.length; i += 1) {
     columnDisplayOrder.push(i)
     columns[i] = {
-      name: vcfCoreColumns[i].name,
       dataType: { type: vcfCoreColumns[i].type },
+      name: vcfCoreColumns[i].name,
     }
   }
   for (let i = 0; i < vcfParser.samples.length; i += 1) {
     const oi = vcfCoreColumns.length + i
     columnDisplayOrder.push(oi)
-    columns[oi] = { name: vcfParser.samples[i], dataType: { type: 'Text' } }
+    columns[oi] = { dataType: { type: 'Text' }, name: vcfParser.samples[i] }
   }
 
   columnDisplayOrder.push(columnDisplayOrder.length)
   columns.unshift({
-    name: 'Location',
     dataType: { type: 'LocString' },
-    isDerived: true,
     derivationFunctionText: `jexl:{text:row.extendedData.vcfFeature.refName+':'\n
     +row.extendedData.vcfFeature.start+'..'+row.extendedData.vcfFeature.end, extendedData:\n
     {refName:row.extendedData.vcfFeature.refName,start:row.extendedData.vcfFeature.start,end:row.extendedData.vcfFeature.end}}`,
+    isDerived: true,
+    name: 'Location',
   })
 
   return {
-    rowSet,
-    columnDisplayOrder,
-    hasColumnNames: true,
-    columns,
     assemblyName: selectedAssemblyName,
+    columnDisplayOrder,
+    columns,
+    hasColumnNames: true,
+    rowSet,
   }
 }
 
@@ -112,7 +112,7 @@ export function splitVcfFileHeaderAndBody(wholeFile: string) {
   }
 
   return {
-    header: wholeFile.slice(0, Math.max(0, headerEndIndex)),
     body: wholeFile.slice(headerEndIndex),
+    header: wholeFile.slice(0, Math.max(0, headerEndIndex)),
   }
 }

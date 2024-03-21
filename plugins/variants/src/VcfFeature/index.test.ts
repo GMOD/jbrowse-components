@@ -10,9 +10,9 @@ test('test usage of the VcfFeature', () => {
   const variant = parser.parseLine(line)
 
   const f = new VcfFeature({
+    id: 'myuniqueid',
     parser,
     variant,
-    id: 'myuniqueid',
   })
   expect(f.id()).toEqual('myuniqueid')
   expect(f.get('name')).toEqual('rs118266897')
@@ -27,9 +27,9 @@ test('try INS feature with END less than start', () => {
   const variant = parser.parseLine(line)
 
   const f = new VcfFeature({
+    id: 'myuniqueid',
     parser,
     variant,
-    id: 'myuniqueid',
   })
   expect(f.id()).toEqual('myuniqueid')
   expect(f.get('start')).toEqual(99)
@@ -45,9 +45,9 @@ test('try DEL feature with END info field valid', () => {
   const variant = parser.parseLine(line)
 
   const f = new VcfFeature({
+    id: 'myuniqueid',
     parser,
     variant,
-    id: 'myuniqueid',
   })
   expect(f.id()).toEqual('myuniqueid')
   expect(f.get('start')).toEqual(99)
@@ -63,9 +63,9 @@ test('multiple SVs', () => {
   const variant = parser.parseLine(line)
 
   const f = new VcfFeature({
+    id: 'myuniqueid',
     parser,
     variant,
-    id: 'myuniqueid',
   })
   expect(f.get('description')).toEqual('<INVDUP>,<INV>')
 })
@@ -78,9 +78,9 @@ test('BND', () => {
   const variant = parser.parseLine(line)
 
   const f = new VcfFeature({
+    id: 'myuniqueid',
     parser,
     variant,
-    id: 'myuniqueid',
   })
   expect(f.get('description')).toEqual('G[ctgA:34200[')
 })
@@ -93,9 +93,9 @@ test('multiple BND', () => {
   const variant = parser.parseLine(line)
 
   const f = new VcfFeature({
+    id: 'myuniqueid',
     parser,
     variant,
-    id: 'myuniqueid',
   })
   expect(f.get('description')).toEqual('G[ctgA:34200[,G[ctgA:44200[')
 })
@@ -108,9 +108,9 @@ test('multiple SNV', () => {
   const variant = parser.parseLine(line)
 
   const f = new VcfFeature({
+    id: 'myuniqueid',
     parser,
     variant,
-    id: 'myuniqueid',
   })
   expect(f.get('description')).toEqual('SNV G -> A,C')
 })
@@ -124,9 +124,9 @@ test('multiple SNV2', () => {
   const variant = parser.parseLine(line)
 
   const f = new VcfFeature({
+    id: 'myuniqueid',
     parser,
     variant,
-    id: 'myuniqueid',
   })
   expect(f.get('description')).toEqual('insertion G -> AT,<*>')
 })

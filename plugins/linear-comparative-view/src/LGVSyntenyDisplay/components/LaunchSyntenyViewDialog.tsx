@@ -14,8 +14,8 @@ import { makeStyles } from 'tss-react/mui'
 
 const useStyles = makeStyles()({
   padding: {
-    margin: 10,
     border: '1px solid #ccc',
+    margin: 10,
   },
 })
 
@@ -64,9 +64,9 @@ export default function LaunchSyntenyViewDialog({
               try {
                 await navToSynteny({
                   feature,
-                  windowSize: +windowSize,
                   horizontallyFlip,
                   model,
+                  windowSize: +windowSize,
                 })
               } catch (e) {
                 console.error(e)

@@ -8,15 +8,11 @@ const useStyles = makeStyles()(theme => {
 
   const { primary, secondary, tertiary, quaternary } = theme.palette
   return {
-    path: {
-      strokeDasharray: 187,
-      strokeDashoffset: 50,
-      animation: `$dash ${duration}s ease-in-out infinite, $colors ${
-        duration * 4
-      }s ease-in-out infinite`,
-    },
     '@keyframes colors': {
       '0%': {
+        stroke: primary.light,
+      },
+      '100%': {
         stroke: primary.light,
       },
       '25%': {
@@ -28,23 +24,27 @@ const useStyles = makeStyles()(theme => {
       '75%': {
         stroke: quaternary.light,
       },
-      '100%': {
-        stroke: primary.light,
-      },
     },
-
     '@keyframes dash': {
       '0%': {
         strokeDashoffset: offset,
-      },
-      '50%': {
-        strokeDashoffset: offset / 4,
-        transform: 'rotate(135deg)',
       },
       '100%': {
         strokeDashoffset: offset,
         transform: 'rotate(720deg)',
       },
+      '50%': {
+        strokeDashoffset: offset / 4,
+        transform: 'rotate(135deg)',
+      },
+    },
+
+    path: {
+      animation: `$dash ${duration}s ease-in-out infinite, $colors ${
+        duration * 4
+      }s ease-in-out infinite`,
+      strokeDasharray: 187,
+      strokeDashoffset: 50,
     },
   }
 })

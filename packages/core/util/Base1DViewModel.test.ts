@@ -6,8 +6,8 @@ test('create Base1DView and set displayedRegions', () => {
     offsetPx: 0,
   })
   model.setDisplayedRegions([
-    { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 40000 },
-    { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 3000 },
+    { assemblyName: 'volvox', end: 40000, refName: 'ctgA', start: 0 },
+    { assemblyName: 'volvox', end: 3000, refName: 'ctgB', start: 0 },
   ])
   model.setVolatileWidth(800)
   expect(model.width).toBe(800)
@@ -22,8 +22,8 @@ test('Able to set bpPerPx, width and calculate widths', () => {
     offsetPx: 0,
   })
   model.setDisplayedRegions([
-    { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 40000 },
-    { assemblyName: 'volvox', refName: 'ctgB', start: 600, end: 3000 },
+    { assemblyName: 'volvox', end: 40000, refName: 'ctgA', start: 0 },
+    { assemblyName: 'volvox', end: 3000, refName: 'ctgB', start: 600 },
   ])
   model.setVolatileWidth(800)
   expect(model.width).toBe(800)
@@ -43,8 +43,8 @@ test('Able to set and showAll Regions', () => {
     offsetPx: 0,
   })
   model.setDisplayedRegions([
-    { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 40000 },
-    { assemblyName: 'volvox', refName: 'ctgB', start: 600, end: 3000 },
+    { assemblyName: 'volvox', end: 40000, refName: 'ctgA', start: 0 },
+    { assemblyName: 'volvox', end: 3000, refName: 'ctgB', start: 600 },
   ])
   model.setVolatileWidth(800)
   expect(model.width).toBe(800)
@@ -66,7 +66,7 @@ test('Navigate to displayedRegions', () => {
     offsetPx: 0,
   })
   model.setDisplayedRegions([
-    { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 40000 },
+    { assemblyName: 'volvox', end: 40000, refName: 'ctgA', start: 0 },
   ])
   model.setVolatileWidth(800)
   expect(model.width).toBe(800)
@@ -75,8 +75,8 @@ test('Navigate to displayedRegions', () => {
   expect(model.bpPerPx).toBe(50)
 
   model.moveTo(
-    { start: 0, end: 40000, offset: 5000, index: 0 },
-    { start: 0, end: 40000, offset: 15000, index: 0 },
+    { end: 40000, index: 0, offset: 5000, start: 0 },
+    { end: 40000, index: 0, offset: 15000, start: 0 },
   )
   // 15000 - 5000 = 1000 / 800
   // zooming To newBpPerPx 12.5

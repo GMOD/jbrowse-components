@@ -19,24 +19,24 @@ import { LinearGenomeViewModel } from '../../LinearGenomeView'
 type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles()({
-  linearBlocks: {
-    whiteSpace: 'nowrap',
-    textAlign: 'left',
-    position: 'absolute',
-    minHeight: '100%',
-    display: 'flex',
-  },
   heightOverflowed: {
-    position: 'absolute',
-    color: 'rgb(77,77,77)',
     borderBottom: '2px solid rgb(77,77,77)',
+    boxSizing: 'border-box',
+    color: 'rgb(77,77,77)',
+    fontWeight: 'bold',
+    position: 'absolute',
+    textAlign: 'center',
     textShadow: 'white 0px 0px 1px',
     whiteSpace: 'nowrap',
     width: '100%',
-    fontWeight: 'bold',
-    textAlign: 'center',
     zIndex: 2000,
-    boxSizing: 'border-box',
+  },
+  linearBlocks: {
+    display: 'flex',
+    minHeight: '100%',
+    position: 'absolute',
+    textAlign: 'left',
+    whiteSpace: 'nowrap',
   },
 })
 
@@ -65,9 +65,9 @@ const RenderedBlocks = observer(function ({
                 <div
                   className={classes.heightOverflowed}
                   style={{
-                    top: state.layout.getTotalHeight() - 16,
-                    pointerEvents: 'none',
                     height: 16,
+                    pointerEvents: 'none',
+                    top: state.layout.getTotalHeight() - 16,
                   }}
                 >
                   Max height reached

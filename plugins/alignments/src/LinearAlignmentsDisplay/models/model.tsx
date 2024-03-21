@@ -90,25 +90,18 @@ function stateModelFactory(
       /**
        * #action
        */
-      setScrollTop(scrollTop: number) {
-        self.scrollTop = scrollTop
+      setSNPCoverageHeight(n: number) {
+        self.snpCovHeight = n
       },
 
       /**
        * #action
        */
-      setSNPCoverageHeight(n: number) {
-        self.snpCovHeight = n
+      setScrollTop(scrollTop: number) {
+        self.scrollTop = scrollTop
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       */
-      get height() {
-        return self.heightPreConfig ?? getConf(self, 'height')
-      },
-
       /**
        * #getter
        */
@@ -118,52 +111,20 @@ function stateModelFactory(
           self.SNPCoverageDisplay.featureIdUnderMouse
         )
       },
+
+      /**
+       * #getter
+       */
+      get height() {
+        return self.heightPreConfig ?? getConf(self, 'height')
+      },
     }))
     .views(self => ({
       /**
        * #getter
        */
-      get pileupConf() {
-        const conf = getConf(self, 'pileupDisplay')
-        return {
-          ...conf,
-          type: self.lowerPanelType,
-          displayId: `${self.configuration.displayId}_${self.lowerPanelType}_xyz`, // xyz to avoid someone accidentally naming the displayId similar to this
-        }
-      },
-
-      /**
-       * #method
-       */
-      getFeatureByID(blockKey: string, id: string) {
-        return self.PileupDisplay.getFeatureByID(blockKey, id)
-      },
-      /**
-       * #method
-       */
-      searchFeatureByID(id: string) {
-        return self.PileupDisplay.searchFeatureByID?.(id)
-      },
-
-      /**
-       * #getter
-       */
-      get features() {
-        return self.PileupDisplay.features
-      },
-
-      /**
-       * #getter
-       */
       get DisplayBlurb() {
         return self.PileupDisplay?.DisplayBlurb
-      },
-
-      /**
-       * #getter
-       */
-      get sortedBy() {
-        return self.PileupDisplay.sortedBy
       },
 
       /**
@@ -176,18 +137,57 @@ function stateModelFactory(
           displayId: `${self.configuration.displayId}_snpcoverage_xyz`, // xyz to avoid someone accidentally naming the displayId similar to this
         }
       },
+
+      /**
+       * #getter
+       */
+      get features() {
+        return self.PileupDisplay.features
+      },
+
+      /**
+       * #method
+       */
+      getFeatureByID(blockKey: string, id: string) {
+        return self.PileupDisplay.getFeatureByID(blockKey, id)
+      },
+
+      /**
+       * #getter
+       */
+      get pileupConf() {
+        const conf = getConf(self, 'pileupDisplay')
+        return {
+          ...conf,
+          displayId: `${self.configuration.displayId}_${self.lowerPanelType}_xyz`,
+          type: self.lowerPanelType, // xyz to avoid someone accidentally naming the displayId similar to this
+        }
+      },
+
+      /**
+       * #method
+       */
+      searchFeatureByID(id: string) {
+        return self.PileupDisplay.searchFeatureByID?.(id)
+      },
+
+      /**
+       * #getter
+       */
+      get sortedBy() {
+        return self.PileupDisplay.sortedBy
+      },
     }))
     .actions(self => ({
       /**
        * #action
        */
-      setSNPCoverageDisplay(configuration: AnyConfigurationModel) {
-        self.SNPCoverageDisplay = {
-          type: 'LinearSNPCoverageDisplay',
-          configuration,
-          height: self.snpCovHeight,
-        }
+      resizeHeight(distance: number) {
+        const oldHeight = self.height
+        const newHeight = this.setHeight(self.height + distance)
+        return newHeight - oldHeight
       },
+
       /**
        * #action
        */
@@ -199,32 +199,37 @@ function stateModelFactory(
       /**
        * #action
        */
-      setPileupDisplay(configuration: AnyConfigurationModel) {
-        self.PileupDisplay = {
-          type: configuration.type || 'LinearPileupDisplay',
-          configuration,
-        }
-      },
-      /**
-       * #action
-       */
       setHeight(n: number) {
         self.heightPreConfig = Math.max(n, minDisplayHeight)
         return self.heightPreConfig
       },
+
       /**
        * #action
        */
       setLowerPanelType(type: string) {
         self.lowerPanelType = type
       },
+
       /**
        * #action
        */
-      resizeHeight(distance: number) {
-        const oldHeight = self.height
-        const newHeight = this.setHeight(self.height + distance)
-        return newHeight - oldHeight
+      setPileupDisplay(configuration: AnyConfigurationModel) {
+        self.PileupDisplay = {
+          configuration,
+          type: configuration.type || 'LinearPileupDisplay',
+        }
+      },
+
+      /**
+       * #action
+       */
+      setSNPCoverageDisplay(configuration: AnyConfigurationModel) {
+        self.SNPCoverageDisplay = {
+          configuration,
+          height: self.snpCovHeight,
+          type: 'LinearSNPCoverageDisplay',
+        }
       },
     }))
     .actions(self => ({
@@ -314,27 +319,27 @@ function stateModelFactory(
             return []
           }
           const extra = getLowerPanelDisplays(pluginManager).map(d => ({
-            type: 'radio',
-            label: d.displayName,
             checked: d.name === self.PileupDisplay.type,
+            label: d.displayName,
             onClick: () => self.setLowerPanelType(d.name),
+            type: 'radio',
           }))
           return [
             ...superTrackMenuItems(),
             {
-              type: 'subMenu',
               label: 'Pileup settings',
               subMenu: self.PileupDisplay.trackMenuItems(),
+              type: 'subMenu',
             },
             {
-              type: 'subMenu',
               label: 'SNPCoverage settings',
               subMenu: self.SNPCoverageDisplay.trackMenuItems(),
+              type: 'subMenu',
             },
             {
-              type: 'subMenu',
               label: `Replace lower panel with...`,
               subMenu: extra,
+              type: 'subMenu',
             },
           ]
         },

@@ -80,9 +80,9 @@ export default class extends BaseFeatureDataAdapter {
       return undefined
     }
     const data = gtf.parseStringSync(lines.join('\n'), {
-      parseFeatures: true,
       parseComments: false,
       parseDirectives: false,
+      parseFeatures: true,
       parseSequences: false,
     }) as FeatureLoc[][]
 

@@ -24,21 +24,15 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
         /**
          * #property
          */
-        type: types.literal('ChordVariantDisplay'),
+        configuration: ConfigurationReference(configSchema),
+
         /**
          * #property
          */
-        configuration: ConfigurationReference(configSchema),
+        type: types.literal('ChordVariantDisplay'),
       }),
     )
     .views(self => ({
-      /**
-       * #getter
-       */
-      get rendererTypeName() {
-        return self.configuration.renderer.type
-      },
-
       /**
        * #method
        */
@@ -46,14 +40,21 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
         const view = getContainingView(self) as CircularViewModel
         return {
           ...getParentRenderProps(self),
-          rpcDriverName: self.rpcDriverName,
-          displayModel: self,
           bezierRadius: view.radiusPx * self.bezierRadiusRatio,
-          radius: view.radiusPx,
           blockDefinitions: self.blockDefinitions,
           config: self.configuration.renderer,
+          displayModel: self,
           onChordClick: (arg: Feature) => self.onChordClick(arg),
+          radius: view.radiusPx,
+          rpcDriverName: self.rpcDriverName,
         }
+      },
+
+      /**
+       * #getter
+       */
+      get rendererTypeName() {
+        return self.configuration.renderer.type
       },
     }))
 }

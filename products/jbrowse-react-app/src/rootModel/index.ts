@@ -85,38 +85,38 @@ export default function RootModel({
   return types
     .compose(
       BaseRootModelFactory({
-        pluginManager,
-        jbrowseModelType: jbrowseWebFactory({
-          pluginManager,
-          assemblyConfigSchema,
-        }),
-        sessionModelType: sessionModelFactory({
-          pluginManager,
-          assemblyConfigSchema,
-        }),
         assemblyConfigSchema,
+        jbrowseModelType: jbrowseWebFactory({
+          assemblyConfigSchema,
+          pluginManager,
+        }),
+        pluginManager,
+        sessionModelType: sessionModelFactory({
+          assemblyConfigSchema,
+          pluginManager,
+        }),
       }),
       InternetAccountsRootModelMixin(pluginManager),
       RootAppMenuMixin(),
     )
 
     .volatile(self => ({
-      version,
+      createRootFn,
+      error: undefined as unknown,
+      hydrateFn,
       pluginsUpdated: false,
       rpcManager: new RpcManager(
         pluginManager,
         self.jbrowse.configuration.rpc,
         {
+          MainThreadRpcDriver: {},
           WebWorkerRpcDriver: {
             makeWorkerInstance,
           },
-          MainThreadRpcDriver: {},
         },
       ),
-      hydrateFn,
-      createRootFn,
       textSearchManager: new TextSearchManager(pluginManager),
-      error: undefined as unknown,
+      version,
     }))
 
     .actions(self => {
@@ -132,6 +132,47 @@ export default function RootModel({
             }),
           )
         },
+
+        /**
+         * #action
+         */
+        renameCurrentSession(sessionName: string) {
+          if (self.session) {
+            const snapshot = JSON.parse(
+              JSON.stringify(getSnapshot(self.session)),
+            )
+            snapshot.name = sessionName
+            this.setSession(snapshot)
+          }
+        },
+
+        /**
+         * #action
+         */
+        setDefaultSession() {
+          const { defaultSession } = self.jbrowse
+          const newSession = {
+            ...defaultSession,
+            name: `${defaultSession.name} ${new Date().toLocaleString()}`,
+          }
+
+          this.setSession(newSession)
+        },
+
+        /**
+         * #action
+         */
+        setError(error?: unknown) {
+          self.error = error
+        },
+
+        /**
+         * #action
+         */
+        setPluginsUpdated(flag: boolean) {
+          self.pluginsUpdated = flag
+        },
+
         /**
          * #action
          */
@@ -149,44 +190,6 @@ export default function RootModel({
             }
           }
         },
-
-        /**
-         * #action
-         */
-        setPluginsUpdated(flag: boolean) {
-          self.pluginsUpdated = flag
-        },
-        /**
-         * #action
-         */
-        setDefaultSession() {
-          const { defaultSession } = self.jbrowse
-          const newSession = {
-            ...defaultSession,
-            name: `${defaultSession.name} ${new Date().toLocaleString()}`,
-          }
-
-          this.setSession(newSession)
-        },
-        /**
-         * #action
-         */
-        renameCurrentSession(sessionName: string) {
-          if (self.session) {
-            const snapshot = JSON.parse(
-              JSON.stringify(getSnapshot(self.session)),
-            )
-            snapshot.name = sessionName
-            this.setSession(snapshot)
-          }
-        },
-
-        /**
-         * #action
-         */
-        setError(error?: unknown) {
-          self.error = error
-        },
       }
     })
     .volatile(() => ({
@@ -195,16 +198,16 @@ export default function RootModel({
           label: 'File',
           menuItems: [
             {
-              label: 'New session',
               icon: AddIcon,
+              label: 'New session',
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onClick: (session: any) => {
                 session.setDefaultSession()
               },
             },
             {
-              label: 'Import session…',
               icon: PublishIcon,
+              label: 'Import session…',
               onClick: (session: SessionWithWidgets) => {
                 const widget = session.addWidget(
                   'ImportSessionWidget',
@@ -214,8 +217,8 @@ export default function RootModel({
               },
             },
             {
-              label: 'Export session',
               icon: GetAppIcon,
+              label: 'Export session',
               onClick: (session: IAnyStateTreeNode) => {
                 const sessionBlob = new Blob(
                   [JSON.stringify({ session: getSnapshot(session) }, null, 2)],
@@ -227,8 +230,8 @@ export default function RootModel({
 
             { type: 'divider' },
             {
-              label: 'Open track...',
               icon: StorageIcon,
+              label: 'Open track...',
               onClick: (session: SessionWithWidgets) => {
                 if (session.views.length === 0) {
                   session.notify('Please open a view to add a track first')
@@ -248,8 +251,8 @@ export default function RootModel({
               },
             },
             {
-              label: 'Open connection...',
               icon: Cable,
+              label: 'Open connection...',
               onClick: (session: SessionWithWidgets) => {
                 const widget = session.addWidget(
                   'AddConnectionWidget',

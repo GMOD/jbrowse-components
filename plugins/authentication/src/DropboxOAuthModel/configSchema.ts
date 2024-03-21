@@ -14,33 +14,15 @@ const DropboxOAuthConfigSchema = ConfigurationSchema(
      * #slot
      */
     authEndpoint: {
+      defaultValue: 'https://www.dropbox.com/oauth2/authorize',
       description: 'the authorization code endpoint of the internet account',
       type: 'string',
-      defaultValue: 'https://www.dropbox.com/oauth2/authorize',
     },
-    /**
-     * #slot
-     */
-    tokenEndpoint: {
-      description: 'the token endpoint of the internet account',
-      type: 'string',
-      defaultValue: 'https://api.dropbox.com/oauth2/token',
-    },
-    /**
-     * #slot
-     */
-    needsPKCE: {
-      description: 'boolean to indicate if the endpoint needs a PKCE code',
-      type: 'boolean',
-      defaultValue: true,
-    },
+
     /**
      * #slot
      */
     domains: {
-      description:
-        'array of valid domains the url can contain to use this account',
-      type: 'stringArray',
       defaultValue: [
         'addtodropbox.com',
         'db.tt',
@@ -50,6 +32,27 @@ const DropboxOAuthConfigSchema = ConfigurationSchema(
         'dropbox.tech',
         'getdropbox.com',
       ],
+      description:
+        'array of valid domains the url can contain to use this account',
+      type: 'stringArray',
+    },
+
+    /**
+     * #slot
+     */
+    needsPKCE: {
+      defaultValue: true,
+      description: 'boolean to indicate if the endpoint needs a PKCE code',
+      type: 'boolean',
+    },
+
+    /**
+     * #slot
+     */
+    tokenEndpoint: {
+      defaultValue: 'https://api.dropbox.com/oauth2/token',
+      description: 'the token endpoint of the internet account',
+      type: 'string',
     },
   },
   {

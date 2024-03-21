@@ -18,15 +18,6 @@ extends
 
 ### LinearLollipopDisplay - Properties
 
-#### property: type
-
-```js
-// type signature
-ISimpleType<"LinearLollipopDisplay">
-// code
-type: types.literal('LinearLollipopDisplay')
-```
-
 #### property: configuration
 
 ```js
@@ -34,6 +25,15 @@ type: types.literal('LinearLollipopDisplay')
 AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
+```
+
+#### property: type
+
+```js
+// type signature
+ISimpleType<"LinearLollipopDisplay">
+// code
+type: types.literal('LinearLollipopDisplay')
 ```
 
 ### LinearLollipopDisplay - Getters

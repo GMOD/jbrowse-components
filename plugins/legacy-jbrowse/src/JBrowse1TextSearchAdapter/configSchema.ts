@@ -12,33 +12,36 @@ export default ConfigurationSchema(
     /**
      * #slot
      */
-    namesIndexLocation: {
-      type: 'fileLocation',
-      defaultValue: { uri: '/volvox/names', locationType: 'UriLocation' },
-      description: 'the location of the JBrowse1 names index data directory',
+    assemblyNames: {
+      defaultValue: [],
+      description: 'List of assemblies covered by text search adapter',
+      type: 'stringArray',
     },
+
+    /**
+     * #slot
+     */
+    namesIndexLocation: {
+      defaultValue: { locationType: 'UriLocation', uri: '/volvox/names' },
+      description: 'the location of the JBrowse1 names index data directory',
+      type: 'fileLocation',
+    },
+
     /**
      * #slot
      */
     tracks: {
-      type: 'stringArray',
       defaultValue: [],
       description: 'List of tracks covered by text search adapter',
-    },
-    /**
-     * #slot
-     */
-    assemblyNames: {
       type: 'stringArray',
-      defaultValue: [],
-      description: 'List of assemblies covered by text search adapter',
     },
   },
   {
-    explicitlyTyped: true,
     /**
      * #identifier
      */
     explicitIdentifier: 'textSearchAdapterId',
+
+    explicitlyTyped: true,
   },
 )

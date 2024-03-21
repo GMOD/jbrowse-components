@@ -13,25 +13,25 @@ export function createPluginManager(self: SessionLoaderModel) {
   // self.sessionSnapshot or self.blankSession
   const pluginManager = new PluginManager([
     ...corePlugins.map(P => ({
-      plugin: new P(),
       metadata: { isCore: true },
+      plugin: new P(),
     })),
     ...self.runtimePlugins.map(({ plugin: P, definition }) => ({
-      plugin: new P(),
       definition,
       metadata: { url: definition.url },
+      plugin: new P(),
     })),
     ...self.sessionPlugins.map(({ plugin: P, definition }) => ({
-      plugin: new P(),
       definition,
       metadata: { url: definition.url },
+      plugin: new P(),
     })),
   ])
   pluginManager.createPluggableElements()
   const RootModel = JBrowseRootModelFactory({
+    adminMode: !!self.adminKey,
     pluginManager,
     sessionModelFactory,
-    adminMode: !!self.adminKey,
   })
 
   if (!self.configSnapshot) {
@@ -39,8 +39,8 @@ export function createPluginManager(self: SessionLoaderModel) {
   }
   const rootModel = RootModel.create(
     {
-      jbrowse: self.configSnapshot,
       configPath: self.configPath,
+      jbrowse: self.configSnapshot,
     },
     { pluginManager },
   )

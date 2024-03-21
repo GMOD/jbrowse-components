@@ -37,11 +37,6 @@ const TextFilter = observer(function ({
         onChange={evt => setTextFilterValue(evt.target.value)}
         variant="outlined"
         InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <FilterIcon />
-            </InputAdornment>
-          ),
           endAdornment: (
             <InputAdornment
               className={classes.textFilterControlEndAdornment}
@@ -53,6 +48,11 @@ const TextFilter = observer(function ({
               >
                 <ClearIcon />
               </IconButton>
+            </InputAdornment>
+          ),
+          startAdornment: (
+            <InputAdornment position="start">
+              <FilterIcon />
             </InputAdornment>
           ),
         }}

@@ -19,16 +19,16 @@ const useStyles = makeStyles()(theme => ({
   // these styles come from
   // https://github.com/mui-org/material-ui/blob/master/packages/material-ui/src/Tooltip/Tooltip.js
   tooltip: {
-    position: 'absolute',
-    pointerEvents: 'none',
     backgroundColor: alpha(theme.palette.grey[700], 0.9),
     borderRadius: theme.shape.borderRadius,
     color: theme.palette.common.white,
     fontFamily: theme.typography.fontFamily,
-    padding: '4px 8px',
     fontSize: theme.typography.pxToRem(12),
     lineHeight: `${round(14 / 10)}em`,
     maxWidth: 300,
+    padding: '4px 8px',
+    pointerEvents: 'none',
+    position: 'absolute',
     wordWrap: 'break-word',
   },
 }))
@@ -74,8 +74,8 @@ export const TooltipWhereMouseovered = observer(function ({
         ref={refs.setFloating}
         style={{
           ...floatingStyles,
-          zIndex: 100000,
           pointerEvents: 'none',
+          zIndex: 100000,
         }}
         {...getFloatingProps()}
       >
@@ -122,8 +122,8 @@ export const TooltipWhereClicked = observer(function ({
         ref={refs.setFloating}
         style={{
           ...floatingStyles,
-          zIndex: 100000,
           pointerEvents: 'none',
+          zIndex: 100000,
         }}
         {...getFloatingProps()}
       >

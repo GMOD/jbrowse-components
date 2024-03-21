@@ -9,78 +9,78 @@ function getSession() {
   session.addAssemblyConf({
     name: 'volMyt1',
     sequence: {
-      trackId: 'ref0',
-      type: 'ReferenceSequenceTrack',
       adapter: {
-        type: 'FromConfigSequenceAdapter',
         features: [
           {
-            refName: 'ctgA',
-            uniqueId: 'firstId',
-            start: 0,
             end: 1000,
+            refName: 'ctgA',
             seq: 'cattgttgcggagttgaacaACGGCATTAGGAACACTTCCGTCTCtcacttttatacgattatgattggttctttagccttggtttagattggtagtagtagcggcgctaatgctacctgaattgagaactcgagcgggggctaggcaaattctgattcagcctgacttctcttggaaccctgcccataaatcaaagggttagtgcggccaaaacgttggacaacggtattagaagaccaacctgaccaccaaaccgtcaattaaccggtatcttctcggaaacggcggttctctcctagatagcgatctgtggtctcaccatgcaatttaaacaggtgagtaaagattgctacaaatacgagactagctgtcaccagatgctgttcatctgttggctccttggtcgctccgttgtacccaggctactttgaaagagcgcagaatacttagacggtatcgatcatggtagcatagcattctgataacatgtatggagttcgaacatccgtctggggccggacggtccgtttgaggttggttgatctgggtgatagtcagcaagatagacgttagataacaaattaaaggattttaccttagattgcgactagtacaacggtacatcggtgattcgcgctctactagatcacgctatgggtaccataaacaaacggtggaccttctcaagctggttgacgcctcagcaacataggcttcctcctccacgcatctcagcataaaaggcttataaactgcttctttgtgccagagcaactcaattaagcccttggtaccgtgggcacgcattctgtcacggtgaccaactgttcatcctgaatcgccgaatgggactatttggtacaggaatcaagcggatggcactactgcagcttatttacgacggtattcttaaagtttttaagacaatgtatttcatgggtagttcggtttgttttattgctacacaggctcttgtagacgacctacttagcactacgg',
+            start: 0,
+            uniqueId: 'firstId',
           },
         ],
+        type: 'FromConfigSequenceAdapter',
       },
+      trackId: 'ref0',
+      type: 'ReferenceSequenceTrack',
     },
   })
   session.addTrackConf({
-    trackId: 'i3jUPmrgMOS',
-    type: 'FeatureTrack',
-    name: 'Filter Test',
-    assemblyNames: ['volMyt1'],
     adapter: {
-      type: 'FromConfigAdapter',
       features: [
         {
-          uniqueId: 'one',
-          refName: 'ctgA',
-          start: 100,
           end: 101,
-          type: 'foo',
           name: 'Boris',
           note: 'note for boris',
+          refName: 'ctgA',
+          start: 100,
+          type: 'foo',
+          uniqueId: 'one',
         },
         {
-          uniqueId: 'two',
-          refName: 'ctgA',
-          start: 110,
           end: 111,
-          type: 'bar',
           name: 'Theresa',
           note: 'note for theresa',
+          refName: 'ctgA',
+          start: 110,
+          type: 'bar',
+          uniqueId: 'two',
         },
         {
-          uniqueId: 'three',
-          refName: 'ctgA',
-          start: 120,
           end: 121,
-          type: 'baz',
           name: 'Nigel',
           note: 'note for nigel',
+          refName: 'ctgA',
+          start: 120,
+          type: 'baz',
+          uniqueId: 'three',
         },
         {
-          uniqueId: 'four',
-          refName: 'ctgA',
-          start: 130,
           end: 131,
-          type: 'quux',
           name: 'Geoffray',
           note: 'note for geoffray',
+          refName: 'ctgA',
+          start: 130,
+          type: 'quux',
+          uniqueId: 'four',
         },
       ],
+      type: 'FromConfigAdapter',
     },
+    assemblyNames: ['volMyt1'],
     filterAttributes: ['type', 'start', 'end'],
+    name: 'Filter Test',
+    trackId: 'i3jUPmrgMOS',
+    type: 'FeatureTrack',
   })
 
   const view = session.addView('LinearGenomeView', {
     displayedRegions: [
       {
         assemblyName: 'volMyt1',
+        end: 1000,
         refName: 'ctgA',
         start: 0,
-        end: 1000,
       },
     ],
   })
@@ -88,7 +88,7 @@ function getSession() {
   const model = session.addWidget('AddTrackWidget', 'addTrackWidget', {
     view: view.id,
   })
-  return { session, model }
+  return { model, session }
 }
 
 describe('<AddTrackWidget />', () => {

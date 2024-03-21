@@ -9,9 +9,10 @@ export const UsingLocObject = () => {
   const { assembly, tracks } = getVolvoxConfig()
   const state = createViewState({
     assembly,
-    tracks,
     // use 0-based coordinates for "location object" here
-    location: { refName: 'ctgA', start: 10000, end: 20000 },
+    location: { end: 20000, refName: 'ctgA', start: 10000 },
+
+    tracks,
   })
   return (
     <div>

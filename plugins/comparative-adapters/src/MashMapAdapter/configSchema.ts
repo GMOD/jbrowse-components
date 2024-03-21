@@ -12,37 +12,39 @@ const MashMapAdapter = ConfigurationSchema(
      * #slot
      */
     assemblyNames: {
-      type: 'stringArray',
       defaultValue: [],
       description:
         'Target is the first value in the array, query is the second',
+      type: 'stringArray',
+    },
+
+    /**
+     * #slot
+     */
+    outLocation: {
+      defaultValue: {
+        locationType: 'UriLocation',
+        uri: '/path/to/mashmap.out',
+      },
+      type: 'fileLocation',
+    },
+
+    /**
+     * #slot
+     */
+    queryAssembly: {
+      defaultValue: '',
+      description: 'Alternative to assemblyNames array: the query assembly',
+      type: 'string',
     },
 
     /**
      * #slot
      */
     targetAssembly: {
-      type: 'string',
       defaultValue: '',
       description: 'Alternative to assemblyNames array: the target assembly',
-    },
-    /**
-     * #slot
-     */
-    queryAssembly: {
       type: 'string',
-      defaultValue: '',
-      description: 'Alternative to assemblyNames array: the query assembly',
-    },
-    /**
-     * #slot
-     */
-    outLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/mashmap.out',
-        locationType: 'UriLocation',
-      },
     },
   },
   { explicitlyTyped: true },

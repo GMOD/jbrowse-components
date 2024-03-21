@@ -18,13 +18,23 @@ note: metadata about tracks and assemblies covered by text search adapter
 
 ### JBrowse1TextSearchAdapter - Slots
 
+#### slot: assemblyNames
+
+```js
+assemblyNames: {
+      defaultValue: [],
+      description: 'List of assemblies covered by text search adapter',
+      type: 'stringArray',
+    }
+```
+
 #### slot: namesIndexLocation
 
 ```js
 namesIndexLocation: {
-      type: 'fileLocation',
-      defaultValue: { uri: '/volvox/names', locationType: 'UriLocation' },
+      defaultValue: { locationType: 'UriLocation', uri: '/volvox/names' },
       description: 'the location of the JBrowse1 names index data directory',
+      type: 'fileLocation',
     }
 ```
 
@@ -32,18 +42,8 @@ namesIndexLocation: {
 
 ```js
 tracks: {
-      type: 'stringArray',
       defaultValue: [],
       description: 'List of tracks covered by text search adapter',
-    }
-```
-
-#### slot: assemblyNames
-
-```js
-assemblyNames: {
       type: 'stringArray',
-      defaultValue: [],
-      description: 'List of assemblies covered by text search adapter',
     }
 ```

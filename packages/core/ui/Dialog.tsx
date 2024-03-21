@@ -21,16 +21,16 @@ import ErrorMessage from './ErrorMessage'
 
 const useStyles = makeStyles()(theme => ({
   closeButton: {
+    color: theme.palette.grey[500],
     position: 'absolute',
     right: theme.spacing(1),
     top: theme.spacing(1),
-    color: theme.palette.grey[500],
   },
 }))
 
 function DialogError({ error }: { error: unknown }) {
   return (
-    <div style={{ width: 800, margin: 40 }}>
+    <div style={{ margin: 40, width: 800 }}>
       <ErrorMessage error={error} />
     </div>
   )

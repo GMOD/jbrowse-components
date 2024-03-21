@@ -51,11 +51,14 @@ function SvInspectorViewF(pluginManager: PluginManager) {
         /**
          * #property
          */
-        id: ElementId,
-        /**
-         * #property
-         */
-        type: types.literal('SvInspectorView'),
+        circularView: types.optional(CircularModel, () =>
+          CircularModel.create({
+            disableImportForm: true,
+            hideTrackSelectorButton: true,
+            hideVerticalResizeHandle: true,
+            type: 'CircularView',
+          }),
+        ),
 
         /**
          * #property
@@ -68,10 +71,12 @@ function SvInspectorViewF(pluginManager: PluginManager) {
           ),
           defaultHeight,
         ),
+
         /**
          * #property
          */
-        onlyDisplayRelevantRegionsInCircularView: false,
+        id: ElementId,
+
         /**
          * #property
          * switch specifying whether we are showing the import wizard or the
@@ -81,26 +86,26 @@ function SvInspectorViewF(pluginManager: PluginManager) {
           types.enumeration('SvInspectorViewMode', ['import', 'display']),
           'import',
         ),
+
+        /**
+         * #property
+         */
+        onlyDisplayRelevantRegionsInCircularView: false,
+
         /**
          * #property
          */
         spreadsheetView: types.optional(SpreadsheetModel, () =>
           SpreadsheetModel.create({
-            type: 'SpreadsheetView',
             hideVerticalResizeHandle: true,
+            type: 'SpreadsheetView',
           }),
         ),
+
         /**
          * #property
          */
-        circularView: types.optional(CircularModel, () =>
-          CircularModel.create({
-            type: 'CircularView',
-            hideVerticalResizeHandle: true,
-            hideTrackSelectorButton: true,
-            disableImportForm: true,
-          }),
-        ),
+        type: types.literal('SvInspectorView'),
       }),
     )
     .volatile(() => ({
@@ -110,22 +115,18 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get selectedRows() {
-        // @ts-expect-error
-        return self.spreadsheetView.rowSet.selectedRows
-      },
-      /**
-       * #getter
-       */
       get assemblyName() {
         const { assembly } = self.spreadsheetView
         return assembly ? readConfObject(assembly, 'name') : undefined
       },
+
       /**
        * #getter
        */
-      get showCircularView() {
-        return self.spreadsheetView.mode === 'display'
+      get featureRefNames() {
+        const refs = this.features.map(r => r.refName)
+        const CHR2 = this.features.flatMap(r => r.INFO?.CHR2).filter(f => !!f)
+        return [...refs, ...CHR2]
       },
 
       /**
@@ -139,75 +140,59 @@ function SvInspectorViewF(pluginManager: PluginManager) {
           .map((r, i) => getFeatureForRow(session, spreadsheetView, r, i))
           .filter(f => !!f)
       },
+
       /**
        * #getter
        */
       get featuresAdapterConfigSnapshot() {
         return {
-          type: 'FromConfigAdapter',
           features: this.features,
+          type: 'FromConfigAdapter',
         }
       },
-      /**
-       * #getter
-       */
-      get featureRefNames() {
-        const refs = this.features.map(r => r.refName)
-        const CHR2 = this.features.flatMap(r => r.INFO?.CHR2).filter(f => !!f)
-        return [...refs, ...CHR2]
-      },
+
       /**
        * #getter
        */
       get featuresCircularTrackConfiguration() {
         return {
-          type: 'VariantTrack',
-          trackId: `sv-inspector-variant-track-${self.id}`,
-          name: 'features from tabular data',
           adapter: this.featuresAdapterConfigSnapshot,
           assemblyNames: [this.assemblyName],
           displays: [
             {
-              type: 'ChordVariantDisplay',
               displayId: `sv-inspector-variant-track-chord-display-${self.id}`,
               onChordClick: `jexl:defaultOnChordClick(feature, track, pluginManager)`,
               renderer: { type: 'StructuralVariantChordRenderer' },
+              type: 'ChordVariantDisplay',
             },
           ],
+          name: 'features from tabular data',
+          trackId: `sv-inspector-variant-track-${self.id}`,
+          type: 'VariantTrack',
         }
+      },
+
+      /**
+       * #getter
+       */
+      get selectedRows() {
+        // @ts-expect-error
+        return self.spreadsheetView.rowSet.selectedRows
+      },
+
+      /**
+       * #getter
+       */
+      get showCircularView() {
+        return self.spreadsheetView.mode === 'display'
       },
     }))
     .volatile(() => ({
-      SpreadsheetViewReactComponent: SpreadsheetViewType.ReactComponent,
       CircularViewReactComponent: CircularViewType.ReactComponent,
+      SpreadsheetViewReactComponent: SpreadsheetViewType.ReactComponent,
       circularViewOptionsBarHeight,
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      setWidth(newWidth: number) {
-        self.width = newWidth
-      },
-      /**
-       * #action
-       */
-      setHeight(newHeight: number) {
-        self.height = newHeight > minHeight ? newHeight : minHeight
-        return self.height
-      },
-      /**
-       * #action
-       */
-      setImportMode() {
-        self.spreadsheetView.setImportMode()
-      },
-      /**
-       * #action
-       */
-      setDisplayMode() {
-        self.spreadsheetView.setDisplayMode()
-      },
       /**
        * #action
        */
@@ -215,17 +200,48 @@ function SvInspectorViewF(pluginManager: PluginManager) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         getParent<any>(self, 2).removeView(self)
       },
+
+      /**
+       * #action
+       */
+      setDisplayMode() {
+        self.spreadsheetView.setDisplayMode()
+      },
+
       /**
        * #action
        */
       setDisplayedRegions(regions: Region[]) {
         self.circularView.setDisplayedRegions(regions)
       },
+
+      /**
+       * #action
+       */
+      setHeight(newHeight: number) {
+        self.height = newHeight > minHeight ? newHeight : minHeight
+        return self.height
+      },
+
+      /**
+       * #action
+       */
+      setImportMode() {
+        self.spreadsheetView.setImportMode()
+      },
+
       /**
        * #action
        */
       setOnlyDisplayRelevantRegionsInCircularView(val: boolean) {
         self.onlyDisplayRelevantRegionsInCircularView = Boolean(val)
+      },
+
+      /**
+       * #action
+       */
+      setWidth(newWidth: number) {
+        self.width = newWidth
       },
     }))
     .views(self => ({
@@ -235,22 +251,14 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       menuItems() {
         return [
           {
+            icon: FolderOpenIcon,
             label: 'Return to import form',
             onClick: () => self.setImportMode(),
-            icon: FolderOpenIcon,
           },
         ]
       },
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      resizeHeight(distance: number) {
-        const oldHeight = self.height
-        const newHeight = self.setHeight(self.height + distance)
-        return newHeight - oldHeight
-      },
       afterAttach() {
         // synchronize subview widths
         addDisposer(
@@ -335,8 +343,8 @@ function SvInspectorViewF(pluginManager: PluginManager) {
           self,
           reaction(
             () => ({
-              generatedTrackConf: self?.featuresCircularTrackConfiguration,
               assemblyName: self?.assemblyName,
+              generatedTrackConf: self?.featuresCircularTrackConfiguration,
             }),
             data => {
               if (!data) {
@@ -358,8 +366,8 @@ function SvInspectorViewF(pluginManager: PluginManager) {
               }
             },
             {
-              name: 'SvInspectorView track configuration binding',
               fireImmediately: true,
+              name: 'SvInspectorView track configuration binding',
             },
           ),
         )
@@ -374,8 +382,6 @@ function SvInspectorViewF(pluginManager: PluginManager) {
               // SpreadsheetView using an autorun below
               [
                 {
-                  label: 'Open split detail view',
-                  icon: OpenInNewIcon,
                   // @ts-expect-error
                   disabled(spreadsheetView, spreadsheet, rowNumber, row) {
                     return !canOpenBreakpointSplitViewFromTableRow(
@@ -386,6 +392,10 @@ function SvInspectorViewF(pluginManager: PluginManager) {
                       rowNumber,
                     )
                   },
+
+                  icon: OpenInNewIcon,
+
+                  label: 'Open split detail view',
 
                   // @ts-expect-error
                   onClick(spreadsheetView, spreadsheet, rowNumber, row) {
@@ -402,6 +412,14 @@ function SvInspectorViewF(pluginManager: PluginManager) {
             )
           }),
         )
+      },
+      /**
+       * #action
+       */
+      resizeHeight(distance: number) {
+        const oldHeight = self.height
+        const newHeight = self.setHeight(self.height + distance)
+        return newHeight - oldHeight
       },
     }))
 }

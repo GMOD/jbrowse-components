@@ -57,7 +57,7 @@ function getHttpsConfig() {
       key: readEnvFile(keyFile, 'SSL_KEY_FILE'),
     }
 
-    validateKeyAndCerts({ ...config, keyFile, crtFile })
+    validateKeyAndCerts({ ...config, crtFile, keyFile })
     return config
   }
   return isHttps

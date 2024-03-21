@@ -184,8 +184,8 @@ const FileSelector = observer(function (props: {
             open={Boolean(anchorEl)}
             anchorEl={anchorEl}
             onClose={() => setAnchorEl(null)}
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-            transformOrigin={{ vertical: 'top', horizontal: 'center' }}
+            anchorOrigin={{ horizontal: 'center', vertical: 'bottom' }}
+            transformOrigin={{ horizontal: 'center', vertical: 'top' }}
           >
             {hiddenAccounts?.map(id => {
               const { internetAccountId, name } = map[id]

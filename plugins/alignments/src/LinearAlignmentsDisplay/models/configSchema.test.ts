@@ -31,9 +31,9 @@ class AlignmentsPlugin extends Plugin {
     pluginManager.addRendererType(
       () =>
         new BoxRendererType({
-          name: 'SvgFeatureRenderer',
           ReactComponent: SvgFeatureRendererReactComponent,
           configSchema: svgFeatureRendererConfigSchema,
+          name: 'SvgFeatureRenderer',
           pluginManager,
         }),
     )
@@ -51,9 +51,9 @@ test('has a type attr', () => {
       .configure(),
   )
   const config = configSchema.create({
-    type: 'LinearAlignmentsDisplay',
     displayId: 'display0',
     name: 'Zonker Display',
+    type: 'LinearAlignmentsDisplay',
   })
 
   expect(config.type).toEqual('LinearAlignmentsDisplay')

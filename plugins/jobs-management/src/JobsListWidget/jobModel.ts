@@ -9,14 +9,16 @@ export const Job = types
      * #property
      */
     name: types.string,
-    /**
-     * #property
-     */
-    statusMessage: types.maybe(types.string),
+
     /**
      * #property
      */
     progressPct: types.number,
+
+    /**
+     * #property
+     */
+    statusMessage: types.maybe(types.string),
   })
   .volatile(() => ({
     cancelCallback() {},
@@ -32,14 +34,14 @@ export const Job = types
     /**
      * #action
      */
-    setStatusMessage(message?: string) {
-      self.statusMessage = message
+    setProgressPct(pct: number) {
+      self.progressPct = pct
     },
 
     /**
      * #action
      */
-    setProgressPct(pct: number) {
-      self.progressPct = pct
+    setStatusMessage(message?: string) {
+      self.statusMessage = message
     },
   }))

@@ -36,15 +36,15 @@ class AuthenticationPlugin extends Plugin {
   install(pluginManager) {
     pluginManager.addInternetAccountType(() => {
       return new InternetAccountType({
-        name: 'OAuthInternetAccount',
         configSchema: OAuthConfigSchema,
+        name: 'OAuthInternetAccount',
         stateModel: OAuthInternetAccountModelFactory(OAuthConfigSchema),
       })
     })
     pluginManager.addInternetAccountType(() => {
       return new InternetAccountType({
-        name: 'ExternalTokenInternetAccount',
         configSchema: ExternalTokenConfigSchema,
+        name: 'ExternalTokenInternetAccount',
         stateModel: ExternalTokenInternetAccountModelFactory(
           ExternalTokenConfigSchema,
         ),
@@ -52,15 +52,15 @@ class AuthenticationPlugin extends Plugin {
     })
     pluginManager.addInternetAccountType(() => {
       return new InternetAccountType({
-        name: 'HTTPBasicInternetAccount',
         configSchema: HTTPBasicConfigSchema,
+        name: 'HTTPBasicInternetAccount',
         stateModel: HTTPBasicInternetAccountModelFactory(HTTPBasicConfigSchema),
       })
     })
     pluginManager.addInternetAccountType(() => {
       return new InternetAccountType({
-        name: 'DropboxOAuthInternetAccount',
         configSchema: DropboxOAuthConfigSchema,
+        name: 'DropboxOAuthInternetAccount',
         stateModel: DropboxOAuthInternetAccountModelFactory(
           DropboxOAuthConfigSchema,
         ),
@@ -68,8 +68,8 @@ class AuthenticationPlugin extends Plugin {
     })
     pluginManager.addInternetAccountType(() => {
       return new InternetAccountType({
-        name: 'GoogleDriveOAuthInternetAccount',
         configSchema: GoogleDriveOAuthConfigSchema,
+        name: 'GoogleDriveOAuthInternetAccount',
         stateModel: GoogleDriveOAuthInternetAccountModelFactory(
           GoogleDriveOAuthConfigSchema,
         ),
@@ -89,8 +89,8 @@ test('initialized correctly', () => {
 
   const HTTPBasic = pm.getInternetAccountType('HTTPBasicInternetAccount')
   const config = HTTPBasic.configSchema.create({
-    type: 'HTTPBasicInternetAccount',
     internetAccountId: 'HTTPBasicTest',
+    type: 'HTTPBasicInternetAccount',
   })
   expect(getSnapshot(config)).toMatchSnapshot()
 })

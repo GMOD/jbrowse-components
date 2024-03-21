@@ -34,6 +34,14 @@ export function BaseRootModelFactory({
     .model('BaseRootModel', {
       /**
        * #property
+       */
+      assemblyManager: types.optional(
+        assemblyManagerFactory(assemblyConfigSchema, pluginManager),
+        {},
+      ),
+
+      /**
+       * #property
        * `jbrowse` is a mapping of the config.json into the in-memory state
        * tree
        */
@@ -45,20 +53,17 @@ export function BaseRootModelFactory({
        * views open, tracks open in those views, etc.
        */
       session: types.maybe(sessionModelType),
-      /**
-       * #property
-       */
-      sessionPath: types.optional(types.string, ''),
 
       /**
        * #property
        */
-      assemblyManager: types.optional(
-        assemblyManagerFactory(assemblyConfigSchema, pluginManager),
-        {},
-      ),
+      sessionPath: types.optional(types.string, ''),
     })
     .volatile(self => ({
+      adminMode: false,
+
+      error: undefined as unknown,
+      pluginManager,
       rpcManager: new RpcManager(
         pluginManager,
         self.jbrowse.configuration.rpc,
@@ -66,37 +71,9 @@ export function BaseRootModelFactory({
           MainThreadRpcDriver: {},
         },
       ),
-
-      adminMode: false,
-      error: undefined as unknown,
       textSearchManager: new TextSearchManager(pluginManager),
-      pluginManager,
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      setError(error: unknown) {
-        self.error = error
-      },
-      /**
-       * #action
-       */
-      setSession(sessionSnapshot?: SnapshotIn<IAnyType>) {
-        self.session = cast(sessionSnapshot)
-      },
-      /**
-       * #action
-       */
-      setDefaultSession() {
-        this.setSession(self.jbrowse.defaultSession)
-      },
-      /**
-       * #action
-       */
-      setSessionPath(path: string) {
-        self.sessionPath = path
-      },
       /**
        * #action
        */
@@ -106,6 +83,34 @@ export function BaseRootModelFactory({
           snapshot.name = newName
           this.setSession(snapshot)
         }
+      },
+
+      /**
+       * #action
+       */
+      setDefaultSession() {
+        this.setSession(self.jbrowse.defaultSession)
+      },
+
+      /**
+       * #action
+       */
+      setError(error: unknown) {
+        self.error = error
+      },
+
+      /**
+       * #action
+       */
+      setSession(sessionSnapshot?: SnapshotIn<IAnyType>) {
+        self.session = cast(sessionSnapshot)
+      },
+
+      /**
+       * #action
+       */
+      setSessionPath(path: string) {
+        self.sessionPath = path
       },
     }))
 }

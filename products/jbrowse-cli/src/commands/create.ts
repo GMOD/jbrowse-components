@@ -28,37 +28,38 @@ export default class Create extends JBrowseCommand {
 
   static args = {
     localPath: Args.string({
-      required: true,
       description: `Location where JBrowse 2 will be installed`,
+      required: true,
     }),
   }
 
   static flags = {
-    help: Flags.help({ char: 'h' }),
+    branch: Flags.string({
+      description: 'Download a development build from a named git branch',
+    }),
     force: Flags.boolean({
       char: 'f',
       description:
         'Overwrites existing JBrowse 2 installation if present in path',
     }),
+
+    help: Flags.help({ char: 'h' }),
     // will need to account for pagenation once there is a lot of releases
     listVersions: Flags.boolean({
       char: 'l',
       description: 'Lists out all versions of JBrowse 2',
     }),
-    branch: Flags.string({
-      description: 'Download a development build from a named git branch',
-    }),
     nightly: Flags.boolean({
       description: 'Download the latest development build from the main branch',
-    }),
-    url: Flags.string({
-      char: 'u',
-      description: 'A direct URL to a JBrowse 2 release',
     }),
     tag: Flags.string({
       char: 't',
       description:
         'Version of JBrowse 2 to install. Format is v1.0.0.\nDefaults to latest',
+    }),
+    url: Flags.string({
+      char: 'u',
+      description: 'A direct URL to a JBrowse 2 release',
     }),
   }
 

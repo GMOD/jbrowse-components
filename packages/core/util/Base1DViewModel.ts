@@ -19,27 +19,32 @@ const Base1DView = types
     /**
      * #property
      */
-    id: ElementId,
+    bpPerPx: 0,
+
     /**
      * #property
      */
     displayedRegions: types.array(Region),
+
     /**
      * #property
      */
-    bpPerPx: 0,
-    /**
-     * #property
-     */
-    offsetPx: 0,
+    id: ElementId,
+
     /**
      * #property
      */
     interRegionPaddingWidth: types.optional(types.number, 0),
+
     /**
      * #property
      */
     minimumBlockWidth: types.optional(types.number, 0),
+
+    /**
+     * #property
+     */
+    offsetPx: 0,
   })
   .volatile(() => ({
     features: undefined as undefined | Feature[],
@@ -49,14 +54,15 @@ const Base1DView = types
     /**
      * #action
      */
-    setDisplayedRegions(regions: IRegion[]) {
-      self.displayedRegions = cast(regions)
+    setBpPerPx(val: number) {
+      self.bpPerPx = val
     },
+
     /**
      * #action
      */
-    setBpPerPx(val: number) {
-      self.bpPerPx = val
+    setDisplayedRegions(regions: IRegion[]) {
+      self.displayedRegions = cast(regions)
     },
     /**
      * #action
@@ -69,17 +75,12 @@ const Base1DView = types
     /**
      * #getter
      */
-    get width() {
-      return self.volatileWidth
-    },
-    /**
-     * #getter
-     */
     get assemblyNames() {
       return [
         ...new Set(self.displayedRegions.map(region => region.assemblyName)),
       ]
     },
+
     /**
      * #getter
      */
@@ -113,8 +114,24 @@ const Base1DView = types
         .map(a => a.end - a.start)
         .reduce((a, b) => a + b, 0)
     },
+
+    /**
+     * #getter
+     */
+    get width() {
+      return self.volatileWidth
+    },
   }))
   .views(self => ({
+    /**
+     * #getter
+     */
+    get currBp() {
+      return this.dynamicBlocks
+        .map(a => a.end - a.start)
+        .reduce((a, b) => a + b, 0)
+    },
+
     /**
      * #getter
      */
@@ -128,24 +145,8 @@ const Base1DView = types
     get staticBlocks() {
       return calculateStaticBlocks(self)
     },
-
-    /**
-     * #getter
-     */
-    get currBp() {
-      return this.dynamicBlocks
-        .map(a => a.end - a.start)
-        .reduce((a, b) => a + b, 0)
-    },
   }))
   .views(self => ({
-    /**
-     * #method
-     */
-    pxToBp(px: number) {
-      return pxToBp(self, px)
-    },
-
     /**
      * #method
      */
@@ -158,10 +159,58 @@ const Base1DView = types
       coord: number
       regionNumber?: number
     }) {
-      return bpToPx({ refName, coord, regionNumber, self })?.offsetPx
+      return bpToPx({ coord, refName, regionNumber, self })?.offsetPx
+    },
+
+    /**
+     * #method
+     */
+    pxToBp(px: number) {
+      return pxToBp(self, px)
     },
   }))
   .actions(self => ({
+    /**
+     * #action
+     */
+    centerAt(coord: number, refName: string | undefined, regionNumber: number) {
+      if (!refName) {
+        return
+      }
+      const centerPx = self.bpToPx({
+        coord,
+        refName,
+        regionNumber,
+      })
+      if (centerPx) {
+        this.scrollTo(Math.round(centerPx - self.width / 2))
+      }
+    },
+
+    /**
+     * #action
+     * note: the scroll is clamped to keep the view on the main screen
+     */
+    scroll(distance: number) {
+      const oldOffsetPx = self.offsetPx
+      const newOffsetPx = clamp(
+        self.offsetPx + distance,
+        self.minOffset,
+        self.maxOffset,
+      )
+      self.offsetPx = newOffsetPx
+      return newOffsetPx - oldOffsetPx
+    },
+
+    /**
+     * #action
+     */
+    scrollTo(offsetPx: number) {
+      const newOffsetPx = clamp(offsetPx, self.minOffset, self.maxOffset)
+      self.offsetPx = newOffsetPx
+      return newOffsetPx
+    },
+
     /**
      * #action
      */
@@ -182,15 +231,15 @@ const Base1DView = types
     /**
      * #action
      */
-    zoomOut() {
-      this.zoomTo(self.bpPerPx * 2)
+    zoomIn() {
+      this.zoomTo(self.bpPerPx / 2)
     },
 
     /**
      * #action
      */
-    zoomIn() {
-      this.zoomTo(self.bpPerPx / 2)
+    zoomOut() {
+      this.zoomTo(self.bpPerPx * 2)
     },
 
     /**
@@ -220,46 +269,6 @@ const Base1DView = types
         self.maxOffset,
       )
       return self.bpPerPx
-    },
-
-    /**
-     * #action
-     */
-    scrollTo(offsetPx: number) {
-      const newOffsetPx = clamp(offsetPx, self.minOffset, self.maxOffset)
-      self.offsetPx = newOffsetPx
-      return newOffsetPx
-    },
-    /**
-     * #action
-     */
-    centerAt(coord: number, refName: string | undefined, regionNumber: number) {
-      if (!refName) {
-        return
-      }
-      const centerPx = self.bpToPx({
-        refName,
-        coord,
-        regionNumber,
-      })
-      if (centerPx) {
-        this.scrollTo(Math.round(centerPx - self.width / 2))
-      }
-    },
-
-    /**
-     * #action
-     * note: the scroll is clamped to keep the view on the main screen
-     */
-    scroll(distance: number) {
-      const oldOffsetPx = self.offsetPx
-      const newOffsetPx = clamp(
-        self.offsetPx + distance,
-        self.minOffset,
-        self.maxOffset,
-      )
-      self.offsetPx = newOffsetPx
-      return newOffsetPx - oldOffsetPx
     },
   }))
   .actions(self => ({

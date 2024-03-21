@@ -7,10 +7,10 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addAdapterType(
     () =>
       new AdapterType({
-        name: 'BigBedAdapter',
-        displayName: 'BigBed adapter',
         configSchema,
+        displayName: 'BigBed adapter',
         getAdapterClass: () => import('./BigBedAdapter').then(r => r.default),
+        name: 'BigBedAdapter',
       }),
   )
 }

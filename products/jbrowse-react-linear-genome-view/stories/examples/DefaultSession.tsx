@@ -8,41 +8,41 @@ export const DefaultSession = () => {
     id: 'wBejr9mPa',
     name: 'Integration test example 2/25/2021, 9:11:35 AM',
     view: {
-      id: 'integration_test',
-      type: 'LinearGenomeView',
-      offsetPx: 2000,
       bpPerPx: 0.05,
       displayedRegions: [
         {
-          refName: 'ctgA',
-          start: 0,
-          end: 50001,
-          reversed: false,
           assemblyName: 'volvox',
+          end: 50001,
+          refName: 'ctgA',
+          reversed: false,
+          start: 0,
         },
       ],
+      id: 'integration_test',
+      offsetPx: 2000,
       tracks: [
         {
-          id: 'mCKjn5ta9',
-          type: 'AlignmentsTrack',
           configuration: 'volvox-long-reads-sv-bam',
           displays: [
             {
+              configuration: 'volvox-long-reads-sv-bam-LinearAlignmentsDisplay',
               id: 'CGblPB7sB0',
               type: 'LinearAlignmentsDisplay',
-              configuration: 'volvox-long-reads-sv-bam-LinearAlignmentsDisplay',
             },
           ],
+          id: 'mCKjn5ta9',
+          type: 'AlignmentsTrack',
         },
       ],
+      type: 'LinearGenomeView',
     },
   }
   const { assembly, tracks } = getVolvoxConfig()
   const state = createViewState({
     assembly,
-    tracks,
     defaultSession,
     location: 'ctgA:1105..1221',
+    tracks,
   })
 
   return (

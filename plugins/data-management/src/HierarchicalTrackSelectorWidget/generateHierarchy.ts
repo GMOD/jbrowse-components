@@ -127,10 +127,10 @@ export function generateHierarchy({
         if (!ret) {
           const n = {
             children: [],
-            name: category,
             id,
             isOpenByDefault: !collapsed.get(id),
             menuItems,
+            name: category,
             type: 'category' as const,
           }
           currLevel.children.push(n)
@@ -147,12 +147,12 @@ export function generateHierarchy({
     const r = currLevel.children.findIndex(elt => elt.children.length)
     const idx = r === -1 ? currLevel.children.length : r
     currLevel.children.splice(idx, 0, {
-      id: [extra, conf.trackId].filter(f => !!f).join(','),
-      trackId: conf.trackId,
-      name: getTrackName(conf, session),
-      conf,
       checked: viewTracks.some(f => f.configuration === conf),
       children: [],
+      conf,
+      id: [extra, conf.trackId].filter(f => !!f).join(','),
+      name: getTrackName(conf, session),
+      trackId: conf.trackId,
       type: 'track' as const,
     })
   }

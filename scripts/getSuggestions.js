@@ -50,18 +50,18 @@ async function getFiles(dir) {
   files.forEach((file, idx) => {
     child.stdin.write(
       `${JSON.stringify({
+        arguments: { file },
+        command: 'open',
         seq: idx * 2,
         type: 'request',
-        command: 'open',
-        arguments: { file },
       })}\n`,
     )
     child.stdin.write(
       `${JSON.stringify({
+        arguments: { file },
+        command: 'suggestionDiagnosticsSync',
         seq: idx * 2 + 1,
         type: 'request',
-        command: 'suggestionDiagnosticsSync',
-        arguments: { file },
       })}\n`,
     )
   })

@@ -45,8 +45,8 @@ export default class extends BaseFeatureDataAdapter {
       const ret = sequenceAdapter.getFeatures(
         {
           ...query,
-          start: queryStart,
           end: queryEnd,
+          start: queryStart,
         },
         opts,
       )
@@ -78,10 +78,10 @@ export default class extends BaseFeatureDataAdapter {
 
         observer.next(
           new SimpleFeature({
-            uniqueId: `${this.id}_${pos + i}`,
-            start: pos + i,
             end: pos + i + windowDelta,
             score,
+            start: pos + i,
+            uniqueId: `${this.id}_${pos + i}`,
           }),
         )
       }

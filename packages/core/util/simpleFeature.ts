@@ -134,12 +134,12 @@ export default class SimpleFeature implements Feature {
         (f: any, i: number) =>
           typeof f.get !== 'function'
             ? new SimpleFeature({
-                id: f.uniqueId || `${id}-${i}`,
                 data: {
                   strand: this.data.strand,
                   ...f,
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 } as Record<string, any>,
+                id: f.uniqueId || `${id}-${i}`,
                 parent: this,
               })
             : f,

@@ -14,22 +14,15 @@ info
 
 ### SpreadsheetView - Properties
 
-#### property: type
+#### property: filterControls
 
 ```js
 // type signature
-ISimpleType<"SpreadsheetView">
+IOptionalIType<IModelType<{ columnFilters: IArrayType<IAnyType>; rowFullText: IOptionalIType<IModelType<{ stringToFind: IType<string, string, string>; type: ISimpleType<"RowFullText">; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>, [...]>; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>, [...]>
 // code
-type: types.literal('SpreadsheetView')
-```
-
-#### property: offsetPx
-
-```js
-// type signature
-number
-// code
-offsetPx: 0
+filterControls: types.optional(FilterControlsModel, () =>
+      FilterControlsModel.create({}),
+    )
 ```
 
 #### property: height
@@ -48,15 +41,6 @@ height: types.optional(
     )
 ```
 
-#### property: hideVerticalResizeHandle
-
-```js
-// type signature
-false
-// code
-hideVerticalResizeHandle: false
-```
-
 #### property: hideFilterControls
 
 ```js
@@ -66,14 +50,23 @@ false
 hideFilterControls: false
 ```
 
-#### property: filterControls
+#### property: hideVerticalResizeHandle
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ rowFullText: IOptionalIType<IModelType<{ type: ISimpleType<"RowFullText">; stringToFind: IType<string, string, string>; }, { readonly predicate: (_sheet: unknown, row: { cellsWithDerived: { text: string; }[]; }) => boolean; } & { ...; }, _NotCustomized, _NotCustomized>, [...]>; columnFilt...
+false
 // code
-filterControls: types.optional(FilterControlsModel, () =>
-      FilterControlsModel.create({}),
+hideVerticalResizeHandle: false
+```
+
+#### property: importWizard
+
+```js
+// type signature
+IOptionalIType<IModelType<{ columnNameLineNumber: IType<number, number, number>; fileType: IOptionalIType<ISimpleType<string>, [undefined]>; hasColumnNameLine: IType<...>; selectedAssemblyName: IMaybe<...>; }, { ...; } & ... 1 more ... & { ...; }, _NotCustomized, _NotCustomized>, [...]>
+// code
+importWizard: types.optional(ImportWizardModel, () =>
+      ImportWizardModel.create(),
     )
 ```
 
@@ -92,33 +85,40 @@ mode: types.optional(
     )
 ```
 
-#### property: importWizard
+#### property: offsetPx
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ fileType: IOptionalIType<ISimpleType<string>, [undefined]>; hasColumnNameLine: IType<boolean, boolean, boolean>; columnNameLineNumber: IType<...>; selectedAssemblyName: IMaybe<...>; }, { ...; } & ... 1 more ... & { ...; }, _NotCustomized, _NotCustomized>, [...]>
+number
 // code
-importWizard: types.optional(ImportWizardModel, () =>
-      ImportWizardModel.create(),
-    )
+offsetPx: 0
 ```
 
 #### property: spreadsheet
 
 ```js
 // type signature
-IMaybe<IModelType<{ rowSet: IOptionalIType<IModelType<{ isLoaded: ISimpleType<true>; rows: IArrayType<IModelType<{ id: ISimpleType<string>; cells: IArrayType<IModelType<{ text: ISimpleType<string>; extendedData: IMaybe<IType<any, any, any>>; }, {}, _NotCustomized, _NotCustomized>>; extendedData: IMaybe<...>; isSelec...
+IMaybe<IModelType<{ assemblyName: IMaybe<ISimpleType<string>>; columnDisplayOrder: IArrayType<ISimpleType<number>>; columns: IArrayType<IModelType<{ dataType: IOptionalIType<...>; derivationFunctionText: IMaybe<...>; isDerived: IType<...>; name: IMaybe<...>; }, { ...; }, _NotCustomized, _NotCustomized>>; hasColumnNa...
 // code
 spreadsheet: types.maybe(SpreadsheetModel)
 ```
 
+#### property: type
+
+```js
+// type signature
+ISimpleType<"SpreadsheetView">
+// code
+type: types.literal('SpreadsheetView')
+```
+
 ### SpreadsheetView - Getters
 
-#### getter: readyToDisplay
+#### getter: assembly
 
 ```js
 // type
-boolean
+{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>
 ```
 
 #### getter: hideRowSelection
@@ -135,11 +135,11 @@ boolean
 any
 ```
 
-#### getter: assembly
+#### getter: readyToDisplay
 
 ```js
 // type
-{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>
+boolean
 ```
 
 ### SpreadsheetView - Methods
@@ -148,30 +148,25 @@ any
 
 ```js
 // type signature
-menuItems: () => { label: string; onClick: () => void; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; }[]
+menuItems: () => { icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; label: string; onClick: () => void; }[]
 ```
 
 ### SpreadsheetView - Actions
 
-#### action: setRowMenuItems
+#### action: closeView
 
 ```js
 // type signature
-setRowMenuItems: (newItems: MenuItem[]) => void
+closeView: () => void
 ```
 
-#### action: setWidth
+#### action: displaySpreadsheet
+
+load a new spreadsheet and set our mode to display it
 
 ```js
 // type signature
-setWidth: (newWidth: number) => number
-```
-
-#### action: setHeight
-
-```js
-// type signature
-setHeight: (newHeight: number) => number
+displaySpreadsheet: (spreadsheet: ModelCreationType<ExtractCFromProps<{ assemblyName: IMaybe<ISimpleType<string>>; columnDisplayOrder: IArrayType<ISimpleType<number>>; columns: IArrayType<IModelType<{ dataType: IOptionalIType<...>; derivationFunctionText: IMaybe<...>; isDerived: IType<...>; name: IMaybe<...>; }, { ...; }, _NotCustomize...
 ```
 
 #### action: resizeHeight
@@ -188,13 +183,18 @@ resizeHeight: (distance: number) => number
 resizeWidth: (distance: number) => number
 ```
 
-#### action: displaySpreadsheet
-
-load a new spreadsheet and set our mode to display it
+#### action: setDisplayMode
 
 ```js
 // type signature
-displaySpreadsheet: (spreadsheet: ModelCreationType<ExtractCFromProps<{ rowSet: IOptionalIType<IModelType<{ isLoaded: ISimpleType<true>; rows: IArrayType<IModelType<{ id: ISimpleType<string>; cells: IArrayType<IModelType<{ text: ISimpleType<string>; extendedData: IMaybe<...>; }, {}, _NotCustomized, _NotCustomized>>; extendedData: IMayb...
+setDisplayMode: () => void
+```
+
+#### action: setHeight
+
+```js
+// type signature
+setHeight: (newHeight: number) => number
 ```
 
 #### action: setImportMode
@@ -204,16 +204,16 @@ displaySpreadsheet: (spreadsheet: ModelCreationType<ExtractCFromProps<{ rowSet: 
 setImportMode: () => void
 ```
 
-#### action: setDisplayMode
+#### action: setRowMenuItems
 
 ```js
 // type signature
-setDisplayMode: () => void
+setRowMenuItems: (newItems: MenuItem[]) => void
 ```
 
-#### action: closeView
+#### action: setWidth
 
 ```js
 // type signature
-closeView: () => void
+setWidth: (newWidth: number) => number
 ```

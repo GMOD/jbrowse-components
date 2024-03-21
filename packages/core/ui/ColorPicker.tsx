@@ -15,19 +15,19 @@ import { RgbaStringColorPicker } from './react-colorful'
 const useStyles = makeStyles()({
   picker: { position: 'relative' },
 
-  swatches: {
-    display: 'flex',
-    padding: 12,
-    flexWrap: 'wrap',
-  },
   swatch: {
-    width: 24,
+    border: 'none',
+    cursor: 'pointer',
     height: 24,
     margin: 4,
-    border: 'none',
-    padding: 0,
-    cursor: 'pointer',
     outline: 'none',
+    padding: 0,
+    width: 24,
+  },
+  swatches: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    padding: 12,
   },
 })
 
@@ -101,10 +101,10 @@ export function ColorPicker({
   }
   return (
     <div style={{ display: 'flex', padding: 10 }}>
-      <div style={{ width: 200, margin: 5 }}>
+      <div style={{ margin: 5, width: 200 }}>
         <RgbaStringColorPicker color={rgbDebounced} onChange={handleChange} />
       </div>
-      <div style={{ width: 200, margin: 5 }}>
+      <div style={{ margin: 5, width: 200 }}>
         <Select
           value={val}
           onChange={event => {

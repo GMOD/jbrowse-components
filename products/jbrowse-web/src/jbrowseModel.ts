@@ -26,7 +26,7 @@ export default function JBrowseWeb({
   assemblyConfigSchema: AnyConfigurationSchemaType
 }) {
   return types.snapshotProcessor(
-    JBrowseModelF({ pluginManager, assemblyConfigSchema }),
+    JBrowseModelF({ assemblyConfigSchema, pluginManager }),
     {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       postProcessor(snapshot: Record<string, any>) {

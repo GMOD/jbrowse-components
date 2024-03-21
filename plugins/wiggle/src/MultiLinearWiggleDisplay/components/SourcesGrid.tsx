@@ -18,9 +18,9 @@ import { SanitizedHTML } from '@jbrowse/core/ui'
 
 const useStyles = makeStyles()({
   cell: {
-    whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
   },
 })
 interface SortField {
@@ -45,8 +45,8 @@ function SourcesGrid({
   const { name: _name, color: _color, baseUri: _baseUri, ...rest } = rows[0]
   const [widgetColor, setWidgetColor] = useState('blue')
   const [currSort, setCurrSort] = useState<SortField>({
-    idx: 0,
     field: null,
+    idx: 0,
   })
 
   return (
@@ -132,13 +132,12 @@ function SourcesGrid({
             },
             {
               field: 'name',
-              sortingOrder: [null],
               headerName: 'Name',
+              sortingOrder: [null],
               width: measureGridWidth(rows.map(r => r.name)),
             },
             ...Object.keys(rest).map(val => ({
               field: val,
-              sortingOrder: [null],
               renderCell: (params: GridCellParams) => {
                 const { value } = params
                 return (
@@ -147,6 +146,7 @@ function SourcesGrid({
                   </div>
                 )
               },
+              sortingOrder: [null],
               // @ts-ignore
               width: measureGridWidth(rows.map(r => r[val])),
             })),
@@ -160,7 +160,7 @@ function SourcesGrid({
             const sort = args[0]
             const idx = (currSort.idx + 1) % 2
             const field = sort?.field || currSort.field
-            setCurrSort({ idx, field })
+            setCurrSort({ field, idx })
             onChange(
               field
                 ? [...rows].sort((a, b) => {

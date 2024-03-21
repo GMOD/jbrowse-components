@@ -22,10 +22,10 @@ import ExportSvgDialog from './ExportSvgDialog'
 
 const useStyles = makeStyles()(theme => ({
   controls: {
-    position: 'absolute',
-    borderRight: `1px solid ${theme.palette.divider}`,
     borderBottom: `1px solid ${theme.palette.divider}`,
+    borderRight: `1px solid ${theme.palette.divider}`,
     left: 0,
+    position: 'absolute',
     top: 0,
   },
 }))
@@ -96,12 +96,12 @@ const Controls = observer(function ({ model }: { model: CircularViewModel }) {
           anchorEl={anchorEl}
           menuItems={[
             {
-              label: 'Export SVG',
               icon: PhotoCamera,
+              label: 'Export SVG',
               onClick: () => {
                 getSession(model).queueDialog(handleClose => [
                   ExportSvgDialog,
-                  { model, handleClose },
+                  { handleClose, model },
                 ])
               },
             },

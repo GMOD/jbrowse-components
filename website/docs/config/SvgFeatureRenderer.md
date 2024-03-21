@@ -16,10 +16,10 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ```js
 color1: {
-      type: 'color',
-      description: 'the main color of each feature',
-      defaultValue: 'goldenrod',
       contextVariable: ['feature'],
+      defaultValue: 'goldenrod',
+      description: 'the main color of each feature',
+      type: 'color',
     }
 ```
 
@@ -27,11 +27,11 @@ color1: {
 
 ```js
 color2: {
-      type: 'color',
+      contextVariable: ['feature'],
+      defaultValue: '#f0f',
       description:
         'the secondary color of each feature, used for connecting lines, etc',
-      defaultValue: '#f0f',
-      contextVariable: ['feature'],
+      type: 'color',
     }
 ```
 
@@ -39,22 +39,27 @@ color2: {
 
 ```js
 color3: {
-      type: 'color',
+      contextVariable: ['feature'],
+      defaultValue: '#357089',
       description:
         'the tertiary color of each feature, often used for contrasting fills, like on UTRs',
-      defaultValue: '#357089',
-      contextVariable: ['feature'],
+      type: 'color',
     }
 ```
 
-#### slot: outline
+#### slot: displayMode
 
 ```js
-outline: {
-      type: 'color',
-      description: 'the outline for features',
-      defaultValue: '',
-      contextVariable: ['feature'],
+displayMode: {
+      defaultValue: 'normal',
+      description: 'Alternative display modes',
+      model: types.enumeration('displayMode', [
+        'normal',
+        'compact',
+        'reducedRepresentation',
+        'collapse',
+      ]),
+      type: 'stringEnum',
     }
 ```
 
@@ -62,132 +67,10 @@ outline: {
 
 ```js
 height: {
-      type: 'number',
-      description: 'height in pixels of the main body of each feature',
-      defaultValue: 10,
       contextVariable: ['feature'],
-    }
-```
-
-#### slot: showLabels
-
-```js
-showLabels: {
-      type: 'boolean',
-      defaultValue: true,
-    }
-```
-
-#### slot: showDescriptions
-
-```js
-showDescriptions: {
-      type: 'boolean',
-      defaultValue: true,
-    }
-```
-
-#### slot: labels.name
-
-```js
-name: {
-        type: 'string',
-        description:
-          'the primary name of the feature to show, if space is available',
-        defaultValue: `jexl:get(feature,'name') || get(feature,'id')`,
-        contextVariable: ['feature'],
-      }
-```
-
-#### slot: labels.nameColor
-
-```js
-nameColor: {
-        type: 'color',
-        description: 'the color of the name label, if shown',
-        defaultValue: '#f0f',
-        contextVariable: ['feature'],
-      }
-```
-
-#### slot: labels.description
-
-```js
-description: {
-        type: 'string',
-        description: 'the text description to show, if space is available',
-        defaultValue: `jexl:get(feature,'note') || get(feature,'description')`,
-        contextVariable: ['feature'],
-      }
-```
-
-#### slot: labels.descriptionColor
-
-```js
-descriptionColor: {
-        type: 'color',
-        description: 'the color of the description, if shown',
-        defaultValue: 'blue',
-        contextVariable: ['feature'],
-      }
-```
-
-#### slot: labels.fontSize
-
-```js
-fontSize: {
-        type: 'number',
-        description:
-          'height in pixels of the text to use for names and descriptions',
-        defaultValue: 12,
-        contextVariable: ['feature'],
-      }
-```
-
-#### slot: displayMode
-
-```js
-displayMode: {
-      type: 'stringEnum',
-      model: types.enumeration('displayMode', [
-        'normal',
-        'compact',
-        'reducedRepresentation',
-        'collapse',
-      ]),
-      description: 'Alternative display modes',
-      defaultValue: 'normal',
-    }
-```
-
-#### slot: maxFeatureGlyphExpansion
-
-```js
-maxFeatureGlyphExpansion: {
+      defaultValue: 10,
+      description: 'height in pixels of the main body of each feature',
       type: 'number',
-      description:
-        "maximum number of pixels on each side of a feature's bounding coordinates that a glyph is allowed to use",
-      defaultValue: 500,
-    }
-```
-
-#### slot: maxHeight
-
-```js
-maxHeight: {
-      type: 'integer',
-      description: 'the maximum height to be used in a svg rendering',
-      defaultValue: 1200,
-    }
-```
-
-#### slot: subParts
-
-```js
-subParts: {
-      type: 'string',
-      description: 'subparts for a glyph',
-      defaultValue: 'CDS,UTR,five_prime_UTR,three_prime_UTR',
     }
 ```
 
@@ -195,8 +78,125 @@ subParts: {
 
 ```js
 impliedUTRs: {
-      type: 'boolean',
-      description: 'imply UTR from the exon and CDS differences',
       defaultValue: false,
+      description: 'imply UTR from the exon and CDS differences',
+      type: 'boolean',
+    }
+```
+
+#### slot: labels.description
+
+```js
+description: {
+        contextVariable: ['feature'],
+        defaultValue: `jexl:get(feature,'note') || get(feature,'description')`,
+        description: 'the text description to show, if space is available',
+        type: 'string',
+      }
+```
+
+#### slot: labels.descriptionColor
+
+```js
+descriptionColor: {
+        contextVariable: ['feature'],
+        defaultValue: 'blue',
+        description: 'the color of the description, if shown',
+        type: 'color',
+      }
+```
+
+#### slot: labels.fontSize
+
+```js
+fontSize: {
+        contextVariable: ['feature'],
+        defaultValue: 12,
+        description:
+          'height in pixels of the text to use for names and descriptions',
+        type: 'number',
+      }
+```
+
+#### slot: labels.name
+
+```js
+name: {
+        contextVariable: ['feature'],
+        defaultValue: `jexl:get(feature,'name') || get(feature,'id')`,
+        description:
+          'the primary name of the feature to show, if space is available',
+        type: 'string',
+      }
+```
+
+#### slot: labels.nameColor
+
+```js
+nameColor: {
+        contextVariable: ['feature'],
+        defaultValue: '#f0f',
+        description: 'the color of the name label, if shown',
+        type: 'color',
+      }
+```
+
+#### slot: maxFeatureGlyphExpansion
+
+```js
+maxFeatureGlyphExpansion: {
+      defaultValue: 500,
+      description:
+        "maximum number of pixels on each side of a feature's bounding coordinates that a glyph is allowed to use",
+      type: 'number',
+    }
+```
+
+#### slot: maxHeight
+
+```js
+maxHeight: {
+      defaultValue: 1200,
+      description: 'the maximum height to be used in a svg rendering',
+      type: 'integer',
+    }
+```
+
+#### slot: outline
+
+```js
+outline: {
+      contextVariable: ['feature'],
+      defaultValue: '',
+      description: 'the outline for features',
+      type: 'color',
+    }
+```
+
+#### slot: showDescriptions
+
+```js
+showDescriptions: {
+      defaultValue: true,
+      type: 'boolean',
+    }
+```
+
+#### slot: showLabels
+
+```js
+showLabels: {
+      defaultValue: true,
+      type: 'boolean',
+    }
+```
+
+#### slot: subParts
+
+```js
+subParts: {
+      defaultValue: 'CDS,UTR,five_prime_UTR,three_prime_UTR',
+      description: 'subparts for a glyph',
+      type: 'string',
     }
 ```

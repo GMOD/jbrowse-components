@@ -16,17 +16,8 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ```js
 sequenceAdapter: {
-        type: 'frozen',
         defaultValue: null,
-      }
-```
-
-#### slot: windowSize
-
-```js
-windowSize: {
-        type: 'number',
-        defaultValue: 100,
+        type: 'frozen',
       }
 ```
 
@@ -34,7 +25,16 @@ windowSize: {
 
 ```js
 windowDelta: {
-        type: 'number',
         defaultValue: 100,
+        type: 'number',
+      }
+```
+
+#### slot: windowSize
+
+```js
+windowSize: {
+        defaultValue: 100,
+        type: 'number',
       }
 ```

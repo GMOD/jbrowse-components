@@ -48,7 +48,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
     tracks.map(async track => {
       const display = track.displays[0]
       await when(() => !display.renderProps().notReady)
-      return { track, result: await display.renderSvg({ ...opts, theme }) }
+      return { result: await display.renderSvg({ ...opts, theme }), track }
     }),
   )
   const trackLabelMaxLen =

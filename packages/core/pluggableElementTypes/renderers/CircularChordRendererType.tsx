@@ -26,8 +26,8 @@ export default class CircularChordRendererType extends FeatureRenderer {
       // document
       return {
         ...res,
-        features: deserializedFeatures,
         blockKey: 'circularChord',
+        features: deserializedFeatures,
         html: this.supportsSVG
           ? res.html
           : '<text y="12" fill="black">SVG export not supported for this track</text>',
@@ -37,8 +37,8 @@ export default class CircularChordRendererType extends FeatureRenderer {
     // hydrate res using ServerSideRenderedContent
     return {
       ...res,
-      features: deserializedFeatures,
       blockKey: 'circularChord',
+      features: deserializedFeatures,
       reactElement: (
         <RpcRenderedSvgGroup
           {...args}

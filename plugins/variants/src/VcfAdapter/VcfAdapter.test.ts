@@ -15,9 +15,9 @@ test('adapter can fetch variants from volvox.vcf', async () => {
 
   const feat = adapter.getFeatures({
     assemblyName: 'volvox',
+    end: 20000,
     refName: 'ctgA',
     start: 0,
-    end: 20000,
   })
 
   const names = await adapter.getRefNames()

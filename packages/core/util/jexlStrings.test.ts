@@ -21,10 +21,10 @@ describe('function string parsing', () => {
   })
   it('can use the loaded core helper functions to access feature info', () => {
     const feature = new SimpleFeature({
-      uniqueId: 'jexlFeature',
+      end: 9,
       score: 10,
       start: 1,
-      end: 9,
+      uniqueId: 'jexlFeature',
     })
     expect(
       stringToJexlExpression(`jexl:get(feature,'score')`).evalSync({

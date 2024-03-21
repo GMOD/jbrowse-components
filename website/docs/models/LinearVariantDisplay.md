@@ -18,15 +18,6 @@ similar to basic display, but provides custom widget on feature click extends
 
 ### LinearVariantDisplay - Properties
 
-#### property: type
-
-```js
-// type signature
-ISimpleType<"LinearVariantDisplay">
-// code
-type: types.literal('LinearVariantDisplay')
-```
-
 #### property: configuration
 
 ```js
@@ -34,6 +25,15 @@ type: types.literal('LinearVariantDisplay')
 AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
+```
+
+#### property: type
+
+```js
+// type signature
+ISimpleType<"LinearVariantDisplay">
+// code
+type: types.literal('LinearVariantDisplay')
 ```
 
 ### LinearVariantDisplay - Actions

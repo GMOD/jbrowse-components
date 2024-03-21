@@ -16,18 +16,18 @@ import ViewContainerTitle from './ViewContainerTitle'
 import { getSession } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
-  icon: {
-    color: theme.palette.secondary.contrastText,
-  },
   grow: {
     flexGrow: 1,
+  },
+  icon: {
+    color: theme.palette.secondary.contrastText,
   },
   viewHeader: {
     display: 'flex',
   },
   viewTitle: {
-    display: 'flex',
     alignItems: 'center',
+    display: 'flex',
   },
 }))
 

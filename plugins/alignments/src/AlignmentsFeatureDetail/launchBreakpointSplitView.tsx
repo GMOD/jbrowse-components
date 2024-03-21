@@ -42,23 +42,23 @@ export function getBreakpointSplitView({
   bottomMarkedRegion[1].start = e + 1
   const bpPerPx = 10
   return {
+    displayName: `breakend split detail`,
     type: 'BreakpointSplitView',
     views: [
       {
-        type: 'LinearGenomeView',
+        bpPerPx,
         displayedRegions: topMarkedRegion,
         hideHeader: true,
-        bpPerPx,
         offsetPx: (topRegion.start + s) / bpPerPx,
+        type: 'LinearGenomeView',
       },
       {
-        type: 'LinearGenomeView',
+        bpPerPx,
         displayedRegions: bottomMarkedRegion,
         hideHeader: true,
-        bpPerPx,
         offsetPx: (bottomRegion.start + e) / bpPerPx,
+        type: 'LinearGenomeView',
       },
     ],
-    displayName: `breakend split detail`,
   }
 }

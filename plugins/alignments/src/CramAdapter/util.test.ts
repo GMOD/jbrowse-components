@@ -18,8 +18,8 @@ test('cram read features to CIGAR', () => {
       15140,
       100,
       {
-        start: 14998,
         seq: 'agaccacattcagctctcggtaacatgggaggcttgtggttgcaccgtaaaagggggatagcccatccatcctgtaaacctacaatcgcgcgtagcttaatacgctcacattagacattcgatcgagagacctggtttcaagagccttcccttttgctttagtgggccaaatcgcaaccctgctcccctcccttacgccttatacacttcagtgcaaattcatgcgttcagcgaacaactggacttctgttgtacgtagtccacgggggcttattcattatagaaagccccctactgtcaccgttatatggttcacacatgagctgatcacctagagagtcgtcatgcacattcgcctaacaaggacatatgagtaaccg',
+        start: 14998,
       },
     ),
   ).toMatchSnapshot()

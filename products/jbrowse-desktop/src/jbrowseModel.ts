@@ -18,5 +18,5 @@ export default function JBrowseDesktop(
   pluginManager: PluginManager,
   assemblyConfigSchema: BaseAssemblyConfigSchema,
 ) {
-  return JBrowseModelF({ pluginManager, assemblyConfigSchema })
+  return JBrowseModelF({ assemblyConfigSchema, pluginManager })
 }

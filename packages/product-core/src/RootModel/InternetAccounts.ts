@@ -23,30 +23,6 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
       /**
        * #action
        */
-      initializeInternetAccount(
-        internetAccountConfig: AnyConfigurationModel,
-        initialSnapshot = {},
-      ) {
-        const internetAccountType = pluginManager.getInternetAccountType(
-          internetAccountConfig.type,
-        )
-        if (!internetAccountType) {
-          throw new Error(
-            `unknown internet account type ${internetAccountConfig.type}`,
-          )
-        }
-
-        const length = self.internetAccounts.push({
-          ...initialSnapshot,
-          type: internetAccountConfig.type,
-          configuration: internetAccountConfig,
-        })
-        return self.internetAccounts[length - 1]
-      },
-
-      /**
-       * #action
-       */
       createEphemeralInternetAccount(
         internetAccountId: string,
         initialSnapshot = {},
@@ -62,21 +38,22 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
         // id of a custom new internaccount is `${type}-${name}`
         const internetAccountSplit = internetAccountId.split('-')
         const configuration = {
-          type: internetAccountSplit[0],
-          internetAccountId: internetAccountId,
-          name: internetAccountSplit.slice(1).join('-'),
           description: '',
           domains: hostUri ? [hostUri] : [],
+          internetAccountId: internetAccountId,
+          name: internetAccountSplit.slice(1).join('-'),
+          type: internetAccountSplit[0],
         }
         const type = pluginManager.getInternetAccountType(configuration.type)
         const internetAccount = type.stateModel.create({
           ...initialSnapshot,
-          type: configuration.type,
           configuration,
+          type: configuration.type,
         })
         self.internetAccounts.push(internetAccount)
         return internetAccount
       },
+
       /**
        * #action
        */
@@ -104,6 +81,30 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
         return selectedId
           ? this.createEphemeralInternetAccount(selectedId, {}, location.uri)
           : null
+      },
+
+      /**
+       * #action
+       */
+      initializeInternetAccount(
+        internetAccountConfig: AnyConfigurationModel,
+        initialSnapshot = {},
+      ) {
+        const internetAccountType = pluginManager.getInternetAccountType(
+          internetAccountConfig.type,
+        )
+        if (!internetAccountType) {
+          throw new Error(
+            `unknown internet account type ${internetAccountConfig.type}`,
+          )
+        }
+
+        const length = self.internetAccounts.push({
+          ...initialSnapshot,
+          configuration: internetAccountConfig,
+          type: internetAccountConfig.type,
+        })
+        return self.internetAccounts[length - 1]
       },
     }))
     .actions(self => ({

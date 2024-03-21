@@ -33,18 +33,18 @@ const OPERATION_PREDICATES = {
   contains: (textInCell, stringToFind) => {
     return textInCell.toLowerCase().includes(stringToFind)
   },
-  equals: (textInCell, stringToFind) => {
-    return textInCell.toLowerCase() === stringToFind
-  },
-  'starts with': (textInCell, stringToFind) => {
-    return textInCell.toLowerCase().startsWith(stringToFind)
-  },
   'ends with': (textInCell, stringToFind) => {
     const index = textInCell.toLowerCase().indexOf(stringToFind)
     if (index === -1) {
       return false
     }
     return index === textInCell.length - stringToFind.length
+  },
+  equals: (textInCell, stringToFind) => {
+    return textInCell.toLowerCase() === stringToFind
+  },
+  'starts with': (textInCell, stringToFind) => {
+    return textInCell.toLowerCase().startsWith(stringToFind)
   },
 } as Record<string, (a: string, b: string) => boolean>
 
@@ -56,19 +56,19 @@ OPERATION_PREDICATES['does not equal'] = (textInCell, stringToFind) => {
 }
 
 const useStyles = makeStyles()({
-  textFilterControlAdornment: { marginRight: '-18px' },
   textFilterControl: {
-    margin: 0,
     '& .MuiInput-formControl': {
       marginTop: 8,
     },
     '& .MuiInputLabel-formControl': {
-      top: '-7px',
       '&.MuiInputLabel-shrink': {
         top: '-3px',
       },
+      top: '-7px',
     },
+    margin: 0,
   },
+  textFilterControlAdornment: { marginRight: '-18px' },
 })
 
 // React component for the column filter control
@@ -122,10 +122,10 @@ const FilterReactComponent = observer(
 // MST model for the column filter control
 const ColumnTextFilter = types
   .model('ColumnTextFilter', {
-    type: types.literal('Text'),
     columnNumber: types.integer,
-    stringToFind: '',
     operation: types.optional(types.enumeration(OPERATIONS), OPERATIONS[0]),
+    stringToFind: '',
+    type: types.literal('Text'),
   })
   .views(self => ({
     // returns a function that tests the given row
@@ -154,20 +154,20 @@ const ColumnTextFilter = types
     },
   }))
   .actions(self => ({
-    setString(s: string) {
-      self.stringToFind = s
-    },
     setOperation(op: string) {
       self.operation = op
+    },
+    setString(s: string) {
+      self.stringToFind = s
     },
   }))
   .volatile(() => ({ ReactComponent: FilterReactComponent }))
 
 const TextColumnType = MakeSpreadsheetColumnType('Text', {
+  FilterModelType: ColumnTextFilter,
   compare(cellA: { text: string }, cellB: { text: string }) {
     return cellA.text.localeCompare(cellB.text)
   },
-  FilterModelType: ColumnTextFilter,
 })
 
 export { TextColumnType as TextColumn, ColumnTextFilter as FilterModelType }

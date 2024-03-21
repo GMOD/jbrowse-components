@@ -16,11 +16,11 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ```js
 bigWigLocation: {
-      type: 'fileLocation',
       defaultValue: {
-        uri: '/path/to/my.bw',
         locationType: 'UriLocation',
+        uri: '/path/to/my.bw',
       },
+      type: 'fileLocation',
     }
 ```
 
@@ -28,8 +28,8 @@ bigWigLocation: {
 
 ```js
 source: {
-      type: 'string',
       defaultValue: '',
       description: 'Used for multiwiggle',
+      type: 'string',
     }
 ```

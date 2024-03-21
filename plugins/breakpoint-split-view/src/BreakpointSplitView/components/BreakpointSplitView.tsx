@@ -8,16 +8,16 @@ import { BreakpointViewModel } from '../model'
 import BreakpointSplitViewOverlay from './BreakpointSplitViewOverlay'
 
 const useStyles = makeStyles()(theme => ({
-  viewDivider: {
-    background: theme.palette.secondary.main,
-    height: 3,
-  },
   container: {
     display: 'grid',
   },
-
   content: {
     gridArea: '1/1',
+  },
+
+  viewDivider: {
+    background: theme.palette.secondary.main,
+    height: 3,
   },
 }))
 

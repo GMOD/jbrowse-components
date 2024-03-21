@@ -12,25 +12,12 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ### JBrowseReactCircularGenomeViewConfig - Slots
 
-#### slot: configuration.rpc
+#### slot: aggregateTextSearchAdapters
 
 ```js
-rpc: RpcManager.configSchema
-```
-
-#### slot: configuration.highResolutionScaling
-
-```js
-highResolutionScaling: {
-          type: 'number',
-          defaultValue: 2,
-        }
-```
-
-#### slot: configuration.theme
-
-```js
-theme: { type: 'frozen', defaultValue: {} }
+aggregateTextSearchAdapters: types.array(
+  pluginManager.pluggableConfigSchemaType('text search adapter'),
+)
 ```
 
 #### slot: assembly
@@ -39,18 +26,25 @@ theme: { type: 'frozen', defaultValue: {} }
 assembly: assemblyConfigSchemasType
 ```
 
-#### slot: tracks
+#### slot: configuration.highResolutionScaling
 
 ```js
-tracks: types.array(pluginManager.pluggableConfigSchemaType('track'))
+highResolutionScaling: {
+          defaultValue: 2,
+          type: 'number',
+        }
 ```
 
-#### slot: internetAccounts
+#### slot: configuration.rpc
 
 ```js
-internetAccounts: types.array(
-  pluginManager.pluggableConfigSchemaType('internet account'),
-)
+rpc: RpcManager.configSchema
+```
+
+#### slot: configuration.theme
+
+```js
+theme: { defaultValue: {}, type: 'frozen' }
 ```
 
 #### slot: connections
@@ -59,11 +53,11 @@ internetAccounts: types.array(
 connections: types.array(pluginManager.pluggableConfigSchemaType('connection'))
 ```
 
-#### slot: aggregateTextSearchAdapters
+#### slot: internetAccounts
 
 ```js
-aggregateTextSearchAdapters: types.array(
-  pluginManager.pluggableConfigSchemaType('text search adapter'),
+internetAccounts: types.array(
+  pluginManager.pluggableConfigSchemaType('internet account'),
 )
 ```
 
@@ -83,4 +77,10 @@ type PluginDefinition=
 
 ```js
 plugins: types.frozen()
+```
+
+#### slot: tracks
+
+```js
+tracks: types.array(pluginManager.pluggableConfigSchemaType('track'))
 ```

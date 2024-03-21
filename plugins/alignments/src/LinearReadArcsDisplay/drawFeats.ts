@@ -82,8 +82,8 @@ export function drawFeats(
     const p2 = hasPaired ? (f2 ? k2.start : k2.end) : f2 ? k2.end : k2.start
     const ra1 = assembly.getCanonicalRefName(k1.refName) || k1.refName
     const ra2 = assembly.getCanonicalRefName(k2.refName) || k2.refName
-    const r1 = view.bpToPx({ refName: ra1, coord: p1 })?.offsetPx
-    const r2 = view.bpToPx({ refName: ra2, coord: p2 })?.offsetPx
+    const r1 = view.bpToPx({ coord: p1, refName: ra1 })?.offsetPx
+    const r2 = view.bpToPx({ coord: p2, refName: ra2 })?.offsetPx
 
     if (r1 !== undefined && r2 !== undefined) {
       const radius = (r2 - r1) / 2
@@ -180,9 +180,9 @@ export function drawFeats(
       const f = chain[0]
       if (hasPaired && !(f.flags & 8)) {
         const mate = {
+          end: f.next_pos || 0,
           refName: f.next_ref || '',
           start: f.next_pos || 0,
-          end: f.next_pos || 0,
           strand: f.strand,
         }
         draw(f, mate, asm, true)

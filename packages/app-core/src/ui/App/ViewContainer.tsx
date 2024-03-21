@@ -10,16 +10,16 @@ import { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util'
 import ViewHeader from './ViewHeader'
 
 const useStyles = makeStyles()(theme => ({
-  viewContainer: {
-    overflow: 'hidden',
-    margin: theme.spacing(0.5),
-    padding: `0 ${theme.spacing(1)} ${theme.spacing(1)}`,
-  },
   focusedView: {
     background: theme.palette.secondary.main,
   },
   unfocusedView: {
     background: theme.palette.secondary.dark,
+  },
+  viewContainer: {
+    margin: theme.spacing(0.5),
+    overflow: 'hidden',
+    padding: `0 ${theme.spacing(1)} ${theme.spacing(1)}`,
   },
 }))
 

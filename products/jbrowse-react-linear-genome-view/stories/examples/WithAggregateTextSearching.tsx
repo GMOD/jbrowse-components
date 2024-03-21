@@ -8,91 +8,92 @@ import { addRelativeUris, getVolvoxConfig } from './util'
 export const WithAggregateTextSearching = () => {
   const { assembly } = getVolvoxConfig()
   const textSearchConfig = {
-    assembly,
     aggregateTextSearchAdapters: [
       {
-        type: 'TrixTextSearchAdapter',
-        textSearchAdapterId: 'volvox-index',
+        assemblyNames: ['volvox'],
         ixFilePath: {
-          uri: 'storybook_data/volvox.ix',
           locationType: 'UriLocation',
+          uri: 'storybook_data/volvox.ix',
         },
         ixxFilePath: {
-          uri: 'storybook_data/volvox.ixx',
           locationType: 'UriLocation',
+          uri: 'storybook_data/volvox.ixx',
         },
         metaFilePath: {
-          uri: 'storybook_data/volvox_meta.json',
           locationType: 'UriLocation',
+          uri: 'storybook_data/volvox_meta.json',
         },
-        assemblyNames: ['volvox'],
+        textSearchAdapterId: 'volvox-index',
+        type: 'TrixTextSearchAdapter',
       },
     ],
-    tracks: [
-      {
-        type: 'FeatureTrack',
-        trackId: 'gff3tabix_genes',
-        assemblyNames: ['volvox'],
-        name: 'GFF3Tabix genes',
-        category: ['Miscellaneous'],
-        adapter: {
-          type: 'Gff3TabixAdapter',
-          gffGzLocation: {
-            uri: 'volvox.sort.gff3.gz',
-            locationType: 'UriLocation',
-          },
-          index: {
-            location: {
-              uri: 'volvox.sort.gff3.gz.tbi',
-              locationType: 'UriLocation',
-            },
-          },
-        },
-      },
-      {
-        type: 'FeatureTrack',
-        trackId: 'single_exon_gene',
-        category: ['Miscellaneous'],
-        name: 'Single exon gene',
-        assemblyNames: ['volvox'],
-        adapter: {
-          type: 'Gff3TabixAdapter',
-          gffGzLocation: {
-            uri: 'single_exon_gene.sorted.gff.gz',
-            locationType: 'UriLocation',
-          },
-          index: {
-            location: {
-              uri: 'single_exon_gene.sorted.gff.gz.tbi',
-              locationType: 'UriLocation',
-            },
-          },
-        },
-      },
-      {
-        type: 'VariantTrack',
-        trackId: 'volvox.inv.vcf',
-        name: 'volvox inversions',
-        category: ['VCF'],
-        assemblyNames: ['volvox'],
-        adapter: {
-          type: 'VcfTabixAdapter',
-          vcfGzLocation: {
-            uri: 'volvox.inv.vcf.gz',
-            locationType: 'UriLocation',
-          },
-          index: {
-            location: {
-              uri: 'volvox.inv.vcf.gz.tbi',
-              locationType: 'UriLocation',
-            },
-            indexType: 'TBI',
-          },
-        },
-      },
-    ],
+    assembly,
     // use 1-based coordinates for locstring
     location: 'ctgA:1..800',
+
+    tracks: [
+      {
+        adapter: {
+          gffGzLocation: {
+            locationType: 'UriLocation',
+            uri: 'volvox.sort.gff3.gz',
+          },
+          index: {
+            location: {
+              locationType: 'UriLocation',
+              uri: 'volvox.sort.gff3.gz.tbi',
+            },
+          },
+          type: 'Gff3TabixAdapter',
+        },
+        assemblyNames: ['volvox'],
+        category: ['Miscellaneous'],
+        name: 'GFF3Tabix genes',
+        trackId: 'gff3tabix_genes',
+        type: 'FeatureTrack',
+      },
+      {
+        adapter: {
+          gffGzLocation: {
+            locationType: 'UriLocation',
+            uri: 'single_exon_gene.sorted.gff.gz',
+          },
+          index: {
+            location: {
+              locationType: 'UriLocation',
+              uri: 'single_exon_gene.sorted.gff.gz.tbi',
+            },
+          },
+          type: 'Gff3TabixAdapter',
+        },
+        assemblyNames: ['volvox'],
+        category: ['Miscellaneous'],
+        name: 'Single exon gene',
+        trackId: 'single_exon_gene',
+        type: 'FeatureTrack',
+      },
+      {
+        adapter: {
+          index: {
+            indexType: 'TBI',
+            location: {
+              locationType: 'UriLocation',
+              uri: 'volvox.inv.vcf.gz.tbi',
+            },
+          },
+          type: 'VcfTabixAdapter',
+          vcfGzLocation: {
+            locationType: 'UriLocation',
+            uri: 'volvox.inv.vcf.gz',
+          },
+        },
+        assemblyNames: ['volvox'],
+        category: ['VCF'],
+        name: 'volvox inversions',
+        trackId: 'volvox.inv.vcf',
+        type: 'VariantTrack',
+      },
+    ],
   }
   const configPath = 'test_data/volvox/config.json'
   addRelativeUris(

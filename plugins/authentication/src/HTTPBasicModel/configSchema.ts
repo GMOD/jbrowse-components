@@ -14,17 +14,17 @@ const HTTPBasicConfigSchema = ConfigurationSchema(
      * #slot
      */
     tokenType: {
+      defaultValue: 'Basic',
       description: 'a custom name for a token to include in the header',
       type: 'string',
-      defaultValue: 'Basic',
     },
     /**
      * #slot
      */
     validateWithHEAD: {
+      defaultValue: true,
       description: 'validate the token with a HEAD request before using it',
       type: 'boolean',
-      defaultValue: true,
     },
   },
   {

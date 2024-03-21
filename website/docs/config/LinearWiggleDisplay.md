@@ -20,9 +20,9 @@ extends
 
 ```js
 defaultRendering: {
-        type: 'stringEnum',
-        model: types.enumeration('Rendering', ['density', 'xyplot', 'line']),
         defaultValue: 'xyplot',
+        model: types.enumeration('Rendering', ['density', 'xyplot', 'line']),
+        type: 'stringEnum',
       }
 ```
 
@@ -31,8 +31,8 @@ defaultRendering: {
 ```js
 renderers: ConfigurationSchema('RenderersConfiguration', {
   DensityRenderer: DensityRendererConfigSchema,
-  XYPlotRenderer: XYPlotRendererConfigSchema,
   LinePlotRenderer: LinePlotRendererConfigSchema,
+  XYPlotRenderer: XYPlotRendererConfigSchema,
 })
 ```
 

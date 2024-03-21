@@ -81,8 +81,8 @@ async function mapStackTrace(stack: string) {
     const consumer = await getSourceMapFromUri(uri)
 
     const originalPosition = consumer.originalPositionFor({
-      line: parseInt(match[3]),
       column: parseInt(match[4]),
+      line: parseInt(match[3]),
     })
 
     if (
@@ -141,9 +141,9 @@ function Contents({ text, extra }: { text: string; extra?: unknown }) {
         style={{
           background: 'lightgrey',
           border: '1px solid black',
-          overflow: 'auto',
           margin: 20,
           maxHeight: 300,
+          overflow: 'auto',
         }}
       >
         {text}

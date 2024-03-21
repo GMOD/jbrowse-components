@@ -24,6 +24,15 @@ import OverviewHighlight from './OverviewHighlight'
 const wholeSeqSpacer = 2
 
 const useStyles = makeStyles()(theme => ({
+  overview: {
+    height: HEADER_BAR_HEIGHT,
+    position: 'relative',
+  },
+  overviewSvg: {
+    pointerEvents: 'none',
+    position: 'absolute',
+    width: '100%',
+  },
   scalebar: {
     height: HEADER_OVERVIEW_HEIGHT,
   },
@@ -32,11 +41,12 @@ const useStyles = makeStyles()(theme => ({
   },
   scalebarContig: {
     backgroundColor: theme.palette.background.default,
-    position: 'absolute',
-    top: 0,
     height: HEADER_OVERVIEW_HEIGHT,
     overflow: 'hidden',
+    position: 'absolute',
+    top: 0,
   },
+
   scalebarContigForward: {
     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 15 9'%3E%3Cpath d='M-.1 0L6 4.5L-.1 9' fill='none' stroke='${theme.palette.divider}'/%3E%3C/svg%3E")`,
     backgroundRepeat: 'repeat',
@@ -45,35 +55,25 @@ const useStyles = makeStyles()(theme => ({
     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 15 9'%3E%3Cpath d='M6 0L0 4.5L6 9' fill='none' stroke='${theme.palette.divider}'/%3E%3C/svg%3E")`,
     backgroundRepeat: 'repeat',
   },
-
-  scalebarRefName: {
-    position: 'absolute',
-    fontWeight: 'bold',
-    pointerEvents: 'none',
-    zIndex: 100,
-  },
   scalebarLabel: {
-    height: HEADER_OVERVIEW_HEIGHT,
-    position: 'absolute',
     display: 'flex',
+    height: HEADER_OVERVIEW_HEIGHT,
     justifyContent: 'center',
     pointerEvents: 'none',
+    position: 'absolute',
+  },
+  scalebarRefName: {
+    fontWeight: 'bold',
+    pointerEvents: 'none',
+    position: 'absolute',
+    zIndex: 100,
   },
   scalebarVisibleRegion: {
-    position: 'absolute',
+    border: '1px solid',
     height: HEADER_OVERVIEW_HEIGHT,
     pointerEvents: 'none',
-    zIndex: 100,
-    border: '1px solid',
-  },
-  overview: {
-    height: HEADER_BAR_HEIGHT,
-    position: 'relative',
-  },
-  overviewSvg: {
-    pointerEvents: 'none',
-    width: '100%',
     position: 'absolute',
+    zIndex: 100,
   },
 }))
 
@@ -106,10 +106,10 @@ const OverviewBox = observer(function ({
       {/* name of sequence */}
       <Typography
         style={{
-          left: block.offsetPx + 3,
           color: canDisplayCytobands
             ? theme.palette.text.primary
             : refNameColor,
+          left: block.offsetPx + 3,
         }}
         className={classes.scalebarRefName}
       >
@@ -126,9 +126,9 @@ const OverviewBox = observer(function ({
           !canDisplayCytobands ? classes.scalebarBorder : undefined,
         )}
         style={{
+          borderColor: refNameColor,
           left: block.offsetPx + cytobandOffset,
           width: block.widthPx,
-          borderColor: refNameColor,
         }}
       >
         {!canDisplayCytobands ? (
@@ -179,9 +179,9 @@ const TickLabels = observer(function ({
       className={classes.scalebarLabel}
       variant="body2"
       style={{
+        color: refNameColor,
         left: ((labelIdx + 1) * majorPitch) / scale,
         pointerEvents: 'none',
-        color: refNameColor,
       }}
     >
       {getTickDisplayStr(tickLabel, overview.bpPerPx)}
@@ -241,10 +241,10 @@ const Scalebar = observer(function ({
       <div
         className={classes.scalebarVisibleRegion}
         style={{
-          width: lastOverviewPx - firstOverviewPx,
-          left: firstOverviewPx + cytobandOffset,
           background: alpha(color, transparency),
           borderColor: color,
+          left: firstOverviewPx + cytobandOffset,
+          width: lastOverviewPx - firstOverviewPx,
         }}
       />
       {/* this is the entire scale bar */}
@@ -254,11 +254,11 @@ const Scalebar = observer(function ({
             key={`${JSON.stringify(block)}-${idx}`}
             className={classes.scalebarContig}
             style={{
-              width: block.widthPx,
-              left: block.offsetPx,
               backgroundColor: '#999',
               backgroundImage:
                 'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px)',
+              left: block.offsetPx,
+              width: block.widthPx,
             }}
           />
         ) : (

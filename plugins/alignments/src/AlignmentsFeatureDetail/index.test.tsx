@@ -12,8 +12,8 @@ test('open up a widget', () => {
   const pluginManager = new PluginManager([])
 
   const Session = types.model({
-    rpcManager: types.optional(types.frozen(), {}),
     configuration: ConfigurationSchema('test', {}),
+    rpcManager: types.optional(types.frozen(), {}),
     widget: stateModelFactory(pluginManager),
   })
   const session = Session.create(
@@ -24,19 +24,19 @@ test('open up a widget', () => {
     { pluginManager },
   )
   session.widget.setFeatureData({
-    seq: 'TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG',
-    start: 2,
-    end: 102,
-    strand: 1,
-    score: 37,
-    qual: '17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17',
-    MQ: 37,
     CIGAR: '100M',
+    MQ: 37,
+    end: 102,
     length_on_ref: 100,
-    template_length: 0,
-    seq_length: 100,
     name: 'ctgA_3_555_0:0:0_2:0:0_102d',
+    qual: '17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17',
     refName: 'ctgA',
+    score: 37,
+    seq: 'TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG',
+    seq_length: 100,
+    start: 2,
+    strand: 1,
+    template_length: 0,
     type: 'match',
   })
   const { container, getByText } = render(

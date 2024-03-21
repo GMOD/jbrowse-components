@@ -31,8 +31,8 @@ export default (pluginManager: PluginManager) => {
       view.importWizard.setFileType(fileType || ext || '')
       view.importWizard.setSelectedAssemblyName(assembly)
       view.importWizard.setFileSource({
-        uri,
         locationType: 'UriLocation',
+        uri,
       })
       await view.importWizard.import(assembly)
     },

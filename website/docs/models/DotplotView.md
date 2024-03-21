@@ -18,31 +18,13 @@ extends
 
 ### DotplotView - Properties
 
-#### property: id
+#### property: assemblyNames
 
 ```js
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+IArrayType<ISimpleType<string>>
 // code
-id: ElementId
-```
-
-#### property: type
-
-```js
-// type signature
-ISimpleType<"DotplotView">
-// code
-type: types.literal('DotplotView')
-```
-
-#### property: height
-
-```js
-// type signature
-number
-// code
-height: 600
+assemblyNames: types.array(types.string)
 ```
 
 #### property: borderSize
@@ -54,31 +36,13 @@ number
 borderSize: 20
 ```
 
-#### property: tickSize
+#### property: drawCigar
 
 ```js
 // type signature
-number
+true
 // code
-tickSize: 5
-```
-
-#### property: vtextRotation
-
-```js
-// type signature
-number
-// code
-vtextRotation: 0
-```
-
-#### property: htextRotation
-
-```js
-// type signature
-number
-// code
-htextRotation: -90
+drawCigar: true
 ```
 
 #### property: fontSize
@@ -90,6 +54,51 @@ number
 fontSize: 15
 ```
 
+#### property: height
+
+```js
+// type signature
+number
+// code
+height: 600
+```
+
+#### property: htextRotation
+
+```js
+// type signature
+number
+// code
+htextRotation: -90
+```
+
+#### property: hview
+
+```js
+// type signature
+IOptionalIType<IModelType<{ bpPerPx: IType<number, number, number>; displayedRegions: IArrayType<IModelType<{ end: ISimpleType<number>; refName: ISimpleType<string>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; start: ISimpleType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>>; id: IOptional...
+// code
+hview: types.optional(DotplotHView, {})
+```
+
+#### property: id
+
+```js
+// type signature
+IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+id: ElementId
+```
+
+#### property: tickSize
+
+```js
+// type signature
+number
+// code
+tickSize: 5
+```
+
 #### property: trackSelectorType
 
 ```js
@@ -99,51 +108,24 @@ string
 trackSelectorType: 'hierarchical'
 ```
 
-#### property: assemblyNames
-
-```js
-// type signature
-IArrayType<ISimpleType<string>>
-// code
-assemblyNames: types.array(types.string)
-```
-
-#### property: drawCigar
-
-```js
-// type signature
-true
-// code
-drawCigar: true
-```
-
-#### property: hview
-
-```js
-// type signature
-IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IArrayType<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<...>; reversed: IOptionalIType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>>; bpPerPx: IType<...>; of...
-// code
-hview: types.optional(DotplotHView, {})
-```
-
-#### property: vview
-
-```js
-// type signature
-IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IArrayType<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<...>; reversed: IOptionalIType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>>; bpPerPx: IType<...>; of...
-// code
-vview: types.optional(DotplotVView, {})
-```
-
 #### property: tracks
 
 ```js
 // type signature
-IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; configuration: AnyConfigurationSchemaType; minimized: IType<...>; displays: IArrayType<...>; }, { ...; } & ... 1 more ... & { ...; }, _NotCustomized, _NotCustomized>>
+IArrayType<IModelType<{ configuration: AnyConfigurationSchemaType; displays: IArrayType<IAnyType>; id: IOptionalIType<ISimpleType<string>, [...]>; minimized: IType<...>; type: ISimpleType<...>; }, { ...; } & ... 1 more ... & { ...; }, _NotCustomized, _NotCustomized>>
 // code
 tracks: types.array(
           pm.pluggableMstType('track', 'stateModel') as BaseTrackStateModel,
         )
+```
+
+#### property: type
+
+```js
+// type signature
+ISimpleType<"DotplotView">
+// code
+type: types.literal('DotplotView')
 ```
 
 #### property: viewTrackConfigs
@@ -158,6 +140,24 @@ IArrayType<IAnyModelType>
 viewTrackConfigs: types.array(pm.pluggableConfigSchemaType('track'))
 ```
 
+#### property: vtextRotation
+
+```js
+// type signature
+number
+// code
+vtextRotation: 0
+```
+
+#### property: vview
+
+```js
+// type signature
+IOptionalIType<IModelType<{ bpPerPx: IType<number, number, number>; displayedRegions: IArrayType<IModelType<{ end: ISimpleType<number>; refName: ISimpleType<string>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; start: ISimpleType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>>; id: IOptional...
+// code
+vview: types.optional(DotplotVView, {})
+```
+
 ### DotplotView - Getters
 
 #### getter: width
@@ -167,13 +167,6 @@ viewTrackConfigs: types.array(pm.pluggableConfigSchemaType('track'))
 number
 ```
 
-#### getter: assemblyErrors
-
-```js
-// type
-string
-```
-
 #### getter: assembliesInitialized
 
 ```js
@@ -181,11 +174,11 @@ string
 boolean
 ```
 
-#### getter: initialized
+#### getter: assemblyErrors
 
 ```js
 // type
-boolean
+string
 ```
 
 #### getter: hticks
@@ -195,11 +188,11 @@ boolean
 any[]
 ```
 
-#### getter: vticks
+#### getter: initialized
 
 ```js
 // type
-any[]
+boolean
 ```
 
 #### getter: loading
@@ -209,14 +202,14 @@ any[]
 boolean
 ```
 
-#### getter: viewWidth
+#### getter: viewHeight
 
 ```js
 // type
 number
 ```
 
-#### getter: viewHeight
+#### getter: viewWidth
 
 ```js
 // type
@@ -227,7 +220,14 @@ number
 
 ```js
 // type
-({ id: string; displayedRegions: IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<...>, [...]>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>; bpPerPx: number; offsetPx: number; interRegion...
+({ bpPerPx: number; displayedRegions: IMSTArray<IModelType<{ end: ISimpleType<number>; refName: ISimpleType<string>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; start: ISimpleType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>; id: string; interRegionPaddingWidth: num...
+```
+
+#### getter: vticks
+
+```js
+// type
+any[]
 ```
 
 #### getter: error
@@ -250,37 +250,16 @@ renderProps: () => any
 
 ```js
 // type signature
-menuItems: () => ({ label: string; onClick: () => void; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; } | { label: string; onClick: () => void; icon?: undefined; } | { ...; })[]
+menuItems: () => ({ icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; label: string; onClick: () => void; } | { label: string; onClick: () => void; icon?: undefined; } | { ...; })[]
 ```
 
 ### DotplotView - Actions
 
-#### action: setShowPanButtons
+#### action: activateTrackSelector
 
 ```js
 // type signature
-setShowPanButtons: (flag: boolean) => void
-```
-
-#### action: setWheelMode
-
-```js
-// type signature
-setWheelMode: (str: string) => void
-```
-
-#### action: setCursorMode
-
-```js
-// type signature
-setCursorMode: (str: string) => void
-```
-
-#### action: setDrawCigar
-
-```js
-// type signature
-setDrawCigar: (flag: boolean) => void
+activateTrackSelector: () => Widget
 ```
 
 #### action: clearView
@@ -290,41 +269,6 @@ returns to the import form
 ```js
 // type signature
 clearView: () => void
-```
-
-#### action: setBorderX
-
-```js
-// type signature
-setBorderX: (n: number) => void
-```
-
-#### action: setBorderY
-
-```js
-// type signature
-setBorderY: (n: number) => void
-```
-
-#### action: setWidth
-
-```js
-// type signature
-setWidth: (newWidth: number) => number
-```
-
-#### action: setHeight
-
-```js
-// type signature
-setHeight: (newHeight: number) => number
-```
-
-#### action: setError
-
-```js
-// type signature
-setError: (e: unknown) => void
 ```
 
 #### action: closeView
@@ -337,32 +281,11 @@ removeView
 closeView: () => void
 ```
 
-#### action: zoomOutButton
+#### action: getCoords
 
 ```js
 // type signature
-zoomOutButton: () => void
-```
-
-#### action: zoomInButton
-
-```js
-// type signature
-zoomInButton: () => void
-```
-
-#### action: activateTrackSelector
-
-```js
-// type signature
-activateTrackSelector: () => Widget
-```
-
-#### action: showTrack
-
-```js
-// type signature
-showTrack: (trackId: string, initialSnapshot?: {}) => void
+getCoords: (mousedown: Coord, mouseup: Coord) => { coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed: boolean; }[]
 ```
 
 #### action: hideTrack
@@ -372,11 +295,11 @@ showTrack: (trackId: string, initialSnapshot?: {}) => void
 hideTrack: (trackId: string) => number
 ```
 
-#### action: toggleTrack
+#### action: setBorderX
 
 ```js
 // type signature
-toggleTrack: (trackId: string) => boolean
+setBorderX: (n: number) => void
 ```
 
 #### action: setAssemblyNames
@@ -386,18 +309,97 @@ toggleTrack: (trackId: string) => boolean
 setAssemblyNames: (target: string, query: string) => void
 ```
 
+#### action: setBorderY
+
+```js
+// type signature
+setBorderY: (n: number) => void
+```
+
+#### action: setCursorMode
+
+```js
+// type signature
+setCursorMode: (str: string) => void
+```
+
+#### action: onDotplotView
+
+creates a linear synteny view from the clicked and dragged region
+
+```js
+// type signature
+onDotplotView: (mousedown: Coord, mouseup: Coord) => void
+```
+
+#### action: setShowPanButtons
+
+```js
+// type signature
+setShowPanButtons: (flag: boolean) => void
+```
+
+#### action: setDrawCigar
+
+```js
+// type signature
+setDrawCigar: (flag: boolean) => void
+```
+
+#### action: setWheelMode
+
+```js
+// type signature
+setWheelMode: (str: string) => void
+```
+
+#### action: setError
+
+```js
+// type signature
+setError: (e: unknown) => void
+```
+
+#### action: setHeight
+
+```js
+// type signature
+setHeight: (newHeight: number) => number
+```
+
 #### action: setViews
 
 ```js
 // type signature
-setViews: (arr: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IArrayType<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<...>; reversed: IOptionalIType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>>; bpPerPx...
+setViews: (arr: ModelCreationType<ExtractCFromProps<{ bpPerPx: IType<number, number, number>; displayedRegions: IArrayType<IModelType<{ end: ISimpleType<number>; refName: ISimpleType<string>; reversed: IOptionalIType<ISimpleType<...>, [...]>; start: ISimpleType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>>; i...
 ```
 
-#### action: getCoords
+#### action: setWidth
 
 ```js
 // type signature
-getCoords: (mousedown: Coord, mouseup: Coord) => { coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed: boolean; }[]
+setWidth: (newWidth: number) => number
+```
+
+#### action: showAllRegions
+
+```js
+// type signature
+showAllRegions: () => void
+```
+
+#### action: showTrack
+
+```js
+// type signature
+showTrack: (trackId: string, initialSnapshot?: {}) => void
+```
+
+#### action: toggleTrack
+
+```js
+// type signature
+toggleTrack: (trackId: string) => boolean
 ```
 
 #### action: zoomIn
@@ -409,20 +411,18 @@ zooms into clicked and dragged region
 zoomIn: (mousedown: Coord, mouseup: Coord) => void
 ```
 
-#### action: showAllRegions
+#### action: zoomInButton
 
 ```js
 // type signature
-showAllRegions: () => void
+zoomInButton: () => void
 ```
 
-#### action: onDotplotView
-
-creates a linear synteny view from the clicked and dragged region
+#### action: zoomOutButton
 
 ```js
 // type signature
-onDotplotView: (mousedown: Coord, mouseup: Coord) => void
+zoomOutButton: () => void
 ```
 
 #### action: exportSvg

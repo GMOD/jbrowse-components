@@ -15,10 +15,10 @@ import { LinearGenomeViewModel } from '..'
 
 const useStyles = makeStyles()(theme => ({
   background: {
+    background: theme.palette.background.paper,
     position: 'absolute',
     right: 0,
     zIndex: 1001,
-    background: theme.palette.background.paper,
   },
   focusedBackground: {
     background: alpha(theme.palette.secondary.light, 0.2),

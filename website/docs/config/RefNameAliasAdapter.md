@@ -19,11 +19,11 @@ refName aliases
 
 ```js
 location: {
-      type: 'fileLocation',
       defaultValue: {
-        uri: '/path/to/my/aliases.txt',
         locationType: 'UriLocation',
+        uri: '/path/to/my/aliases.txt',
       },
+      type: 'fileLocation',
     }
 ```
 
@@ -34,7 +34,7 @@ column (0), change this variable if needed
 
 ```js
 refNameColumn: {
-      type: 'number',
       defaultValue: 0,
+      type: 'number',
     }
 ```

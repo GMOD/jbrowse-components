@@ -13,8 +13,8 @@ const Gff3Adapter = ConfigurationSchema(
      * #slot
      */
     gffLocation: {
+      defaultValue: { locationType: 'UriLocation', uri: '/path/to/my.gff' },
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.gff', locationType: 'UriLocation' },
     },
   },
   { explicitlyTyped: true },

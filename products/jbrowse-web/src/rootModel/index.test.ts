@@ -62,43 +62,43 @@ describe('Root MST model', () => {
   it('adds track and connection configs to an assembly', () => {
     const root = getRootModel().create({
       jbrowse: {
-        configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
         assemblies: [
           {
-            name: 'assembly1',
             aliases: ['assemblyA'],
+            name: 'assembly1',
             sequence: {
-              trackId: 'sequenceConfigId',
-              type: 'ReferenceSequenceTrack',
               adapter: {
-                type: 'FromConfigSequenceAdapter',
                 adapterId: 'sequenceConfigAdapterId',
                 features: [
                   {
-                    refName: 'ctgA',
-                    uniqueId: 'firstId',
-                    start: 0,
                     end: 10,
+                    refName: 'ctgA',
                     seq: 'cattgttgcg',
+                    start: 0,
+                    uniqueId: 'firstId',
                   },
                 ],
+                type: 'FromConfigSequenceAdapter',
               },
+              trackId: 'sequenceConfigId',
+              type: 'ReferenceSequenceTrack',
             },
           },
         ],
+        configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
       },
     })
     expect(root.jbrowse.assemblies.length).toBe(1)
     expect(getSnapshot(root.jbrowse.assemblies[0])).toMatchSnapshot()
     const newTrackConf = root.jbrowse.addTrackConf({
-      type: 'FeatureTrack',
       trackId: 'trackId0',
+      type: 'FeatureTrack',
     })
     expect(getSnapshot(newTrackConf)).toMatchSnapshot()
     expect(root.jbrowse.tracks.length).toBe(1)
     const newConnectionConf = root.jbrowse.addConnectionConf({
-      type: 'JBrowse1Connection',
       connectionId: 'connectionId0',
+      type: 'JBrowse1Connection',
     })
     expect(getSnapshot(newConnectionConf)).toMatchSnapshot()
     expect(root.jbrowse.connections.length).toBe(1)

@@ -100,20 +100,20 @@ export function paf_delta2paf(buffer: Buffer) {
           }
 
           records.push({
+            extra: {
+              NM,
+              blockLen: blen,
+              cg: cigar_str.join(''),
+              mappingQual: 0,
+              numMatches: blen - NM,
+            },
+            qend: qe,
             qname,
             qstart: qs,
-            qend: qe,
+            strand,
+            tend: re,
             tname: rname,
             tstart: rs,
-            tend: re,
-            strand,
-            extra: {
-              numMatches: blen - NM,
-              blockLen: blen,
-              mappingQual: 0,
-              NM,
-              cg: cigar_str.join(''),
-            },
           })
         } else if (d > 0) {
           const l = d - 1

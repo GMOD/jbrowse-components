@@ -30,11 +30,11 @@ import { fromUrlSafeB64 } from '../../utils'
 import { readSessionFromDynamo } from '../../sessionSharing'
 
 const useStyles = makeStyles()(theme => ({
-  flexItem: {
-    margin: 5,
-  },
   expandIcon: {
     color: theme.palette.tertiary?.contrastText || '#fff',
+  },
+  flexItem: {
+    margin: 5,
   },
 }))
 
@@ -72,10 +72,10 @@ async function getBookmarksFromFile(
       const [refName, start, end, label, assembly] = line.split('\t')
       return {
         assemblyName: assembly ?? selectedAsm,
-        refName,
-        start: +start,
         end: +end,
         label: label === '.' ? undefined : label,
+        refName,
+        start: +start,
       }
     })
 }
@@ -107,7 +107,7 @@ const ImportBookmarksDialog = observer(function ({
             expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
           >
             <Typography
-              style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
+              style={{ alignItems: 'center', display: 'flex', gap: '5px' }}
             >
               Import from share link{' '}
               <Tooltip title="The appropriate share link for sharing bookmarks is one generated via the 'Share' button in the 'Bookmarked regions' drawer. Paste it below to import shared bookmarks.">

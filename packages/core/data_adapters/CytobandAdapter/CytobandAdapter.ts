@@ -25,12 +25,12 @@ export default class CytobandAdapter extends BaseAdapter {
       .map((line, i) => {
         const [refName, start, end, name, type] = line.split('\t')
         return new SimpleFeature({
-          uniqueId: `${i}`,
-          refName,
-          start: +start,
           end: +end,
           name,
+          refName,
+          start: +start,
           type,
+          uniqueId: `${i}`,
         })
       })
   }

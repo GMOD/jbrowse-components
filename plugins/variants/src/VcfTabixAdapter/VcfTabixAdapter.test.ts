@@ -6,10 +6,6 @@ import configSchema from './configSchema'
 test('adapter can fetch variants from volvox.vcf.gz', async () => {
   const adapter = new Adapter(
     configSchema.create({
-      vcfGzLocation: {
-        localPath: require.resolve('./test_data/volvox.filtered.vcf.gz'),
-        locationType: 'LocalPathLocation',
-      },
       index: {
         indexType: 'TBI',
         location: {
@@ -17,15 +13,15 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
           locationType: 'LocalPathLocation',
         },
       },
+      vcfGzLocation: {
+        localPath: require.resolve('./test_data/volvox.filtered.vcf.gz'),
+        locationType: 'LocalPathLocation',
+      },
     }),
   )
 
   const csiAdapter = new Adapter(
     configSchema.create({
-      vcfGzLocation: {
-        localPath: require.resolve('./test_data/volvox.filtered.vcf.gz'),
-        locationType: 'LocalPathLocation',
-      },
       index: {
         indexType: 'CSI',
         location: {
@@ -33,13 +29,17 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
           locationType: 'LocalPathLocation',
         },
       },
+      vcfGzLocation: {
+        localPath: require.resolve('./test_data/volvox.filtered.vcf.gz'),
+        locationType: 'LocalPathLocation',
+      },
     }),
   )
 
   const csiFeatures = csiAdapter.getFeatures({
+    end: 20000,
     refName: 'ctgA',
     start: 0,
-    end: 20000,
   })
 
   const names = await adapter.getRefNames()
@@ -48,9 +48,9 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
   expect(names).toMatchSnapshot()
 
   const feat = adapter.getFeatures({
+    end: 20000,
     refName: 'ctgA',
     start: 0,
-    end: 20000,
   })
 
   const featArray = await firstValueFrom(feat.pipe(toArray()))
@@ -59,9 +59,9 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
   expect(csiFeaturesArray.slice(0, 5)).toEqual(featArray.slice(0, 5))
 
   const featNonExist = adapter.getFeatures({
+    end: 20000,
     refName: 'ctgC',
     start: 0,
-    end: 20000,
   })
 
   const featArrayNonExist = await firstValueFrom(featNonExist.pipe(toArray()))

@@ -11,40 +11,42 @@ const MCScanSimpleAnchorsAdapter = ConfigurationSchema(
     /**
      * #slot
      */
-    mcscanSimpleAnchorsLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/mcscan.anchors.simple',
-        locationType: 'UriLocation',
-      },
-    },
-    /**
-     * #slot
-     */
-    bed1Location: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/file.bed',
-        locationType: 'UriLocation',
-      },
-    },
-    /**
-     * #slot
-     */
-    bed2Location: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/file.bed',
-        locationType: 'UriLocation',
-      },
+    assemblyNames: {
+      defaultValue: [],
+      type: 'stringArray',
     },
 
     /**
      * #slot
      */
-    assemblyNames: {
-      type: 'stringArray',
-      defaultValue: [],
+    bed1Location: {
+      defaultValue: {
+        locationType: 'UriLocation',
+        uri: '/path/to/file.bed',
+      },
+      type: 'fileLocation',
+    },
+
+    /**
+     * #slot
+     */
+    bed2Location: {
+      defaultValue: {
+        locationType: 'UriLocation',
+        uri: '/path/to/file.bed',
+      },
+      type: 'fileLocation',
+    },
+
+    /**
+     * #slot
+     */
+    mcscanSimpleAnchorsLocation: {
+      defaultValue: {
+        locationType: 'UriLocation',
+        uri: '/path/to/mcscan.anchors.simple',
+      },
+      type: 'fileLocation',
     },
   },
   { explicitlyTyped: true },

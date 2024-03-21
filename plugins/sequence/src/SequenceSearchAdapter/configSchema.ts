@@ -11,38 +11,42 @@ const configSchema = ConfigurationSchema(
     /**
      * #slot
      */
-    search: {
-      type: 'string',
-      defaultValue: '',
-      description: 'Search string or regex to search for',
+    caseInsensitive: {
+      defaultValue: true,
+      type: 'boolean',
     },
+
     /**
      * #slot
      */
-    sequenceAdapter: {
-      type: 'frozen',
-      defaultValue: null,
+    search: {
+      defaultValue: '',
+      description: 'Search string or regex to search for',
+      type: 'string',
     },
+
     /**
      * #slot
      */
     searchForward: {
-      type: 'boolean',
       defaultValue: true,
+      type: 'boolean',
     },
+
     /**
      * #slot
      */
     searchReverse: {
-      type: 'boolean',
       defaultValue: true,
+      type: 'boolean',
     },
+
     /**
      * #slot
      */
-    caseInsensitive: {
-      type: 'boolean',
-      defaultValue: true,
+    sequenceAdapter: {
+      defaultValue: null,
+      type: 'frozen',
     },
   },
   { explicitlyTyped: true },

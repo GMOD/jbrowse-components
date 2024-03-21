@@ -35,32 +35,29 @@ import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBloc
 // the MST state of a single server-side-rendered block in a display
 const blockState = types
   .model('BlockState', {
+    isLeftEndOfDisplayedRegion: false,
+    isRightEndOfDisplayedRegion: false,
     key: types.string,
     region: Region,
     reloadFlag: 0,
-    isLeftEndOfDisplayedRegion: false,
-    isRightEndOfDisplayedRegion: false,
   })
   // NOTE: all this volatile stuff has to be filled in at once, so that it stays consistent
   .volatile(() => ({
-    renderInProgress: undefined as AbortController | undefined,
-    filled: false,
-    reactElement: undefined as React.ReactElement | undefined,
-    features: undefined as Map<string, Feature> | undefined,
-    layout: undefined as any,
-    status: '',
-    error: undefined as unknown,
-    message: undefined as string | undefined,
-    maxHeightReached: false,
     ReactComponent: ServerSideRenderedBlockContent,
+    error: undefined as unknown,
+    features: undefined as Map<string, Feature> | undefined,
+    filled: false,
+    layout: undefined as any,
+    maxHeightReached: false,
+    message: undefined as string | undefined,
+    reactElement: undefined as React.ReactElement | undefined,
+    renderInProgress: undefined as AbortController | undefined,
     renderProps: undefined as any,
+    status: '',
   }))
   .actions(self => {
     let renderInProgress: undefined | AbortController
     return {
-      doReload() {
-        self.reloadFlag = self.reloadFlag + 1
-      },
       afterAttach() {
         const display = getContainingDisplay(self)
         setTimeout(() => {
@@ -70,11 +67,11 @@ const blockState = types
               renderBlockData,
               renderBlockEffect, // reaction doesn't expect async here
               {
+                delay: display.renderDelay,
+                fireImmediately: true,
                 name: `${display.id}/${assembleLocString(
                   self.region,
                 )} rendering`,
-                delay: display.renderDelay,
-                fireImmediately: true,
               },
               this.setLoading,
               this.setRendered,
@@ -83,8 +80,63 @@ const blockState = types
           }
         }, display.renderDelay)
       },
-      setStatus(message: string) {
-        self.status = message
+      beforeDestroy() {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        ;(async () => {
+          try {
+            if (renderInProgress && !renderInProgress.signal.aborted) {
+              renderInProgress.abort()
+            }
+            const display = getContainingDisplay(self)
+            const { rpcManager } = getSession(self)
+            const { rendererType } = display
+            const { renderArgs } = renderBlockData(cast(self))
+            // renderArgs can be undefined if an error occurred in this block
+            if (renderArgs) {
+              await rendererType.freeResourcesInClient(
+                rpcManager,
+                JSON.parse(JSON.stringify(renderArgs)),
+              )
+            }
+          } catch (e) {
+            console.error('Error while destroying block', e)
+          }
+        })()
+      },
+      doReload() {
+        self.reloadFlag = self.reloadFlag + 1
+      },
+      reload() {
+        self.renderInProgress = undefined
+        self.filled = false
+        self.reactElement = undefined
+        self.features = undefined
+        self.layout = undefined
+        self.error = undefined
+        self.message = undefined
+        self.maxHeightReached = false
+        self.ReactComponent = ServerSideRenderedBlockContent
+        self.renderProps = undefined
+        getParent<any>(self, 2).reload()
+      },
+      setError(error: unknown) {
+        console.error(error)
+        if (renderInProgress && !renderInProgress.signal.aborted) {
+          renderInProgress.abort()
+        }
+        // the rendering failed for some reason
+        self.filled = false
+        self.message = undefined
+        self.reactElement = undefined
+        self.features = undefined
+        self.layout = undefined
+        self.maxHeightReached = false
+        self.error = error
+        self.renderProps = undefined
+        renderInProgress = undefined
+        if (isRetryException(error as Error)) {
+          this.reload()
+        }
       },
       setLoading(abortController: AbortController) {
         if (
@@ -148,60 +200,8 @@ const blockState = types
         self.renderProps = renderProps
         renderInProgress = undefined
       },
-      setError(error: unknown) {
-        console.error(error)
-        if (renderInProgress && !renderInProgress.signal.aborted) {
-          renderInProgress.abort()
-        }
-        // the rendering failed for some reason
-        self.filled = false
-        self.message = undefined
-        self.reactElement = undefined
-        self.features = undefined
-        self.layout = undefined
-        self.maxHeightReached = false
-        self.error = error
-        self.renderProps = undefined
-        renderInProgress = undefined
-        if (isRetryException(error as Error)) {
-          this.reload()
-        }
-      },
-      reload() {
-        self.renderInProgress = undefined
-        self.filled = false
-        self.reactElement = undefined
-        self.features = undefined
-        self.layout = undefined
-        self.error = undefined
-        self.message = undefined
-        self.maxHeightReached = false
-        self.ReactComponent = ServerSideRenderedBlockContent
-        self.renderProps = undefined
-        getParent<any>(self, 2).reload()
-      },
-      beforeDestroy() {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        ;(async () => {
-          try {
-            if (renderInProgress && !renderInProgress.signal.aborted) {
-              renderInProgress.abort()
-            }
-            const display = getContainingDisplay(self)
-            const { rpcManager } = getSession(self)
-            const { rendererType } = display
-            const { renderArgs } = renderBlockData(cast(self))
-            // renderArgs can be undefined if an error occurred in this block
-            if (renderArgs) {
-              await rendererType.freeResourcesInClient(
-                rpcManager,
-                JSON.parse(JSON.stringify(renderArgs)),
-              )
-            }
-          } catch (e) {
-            console.error('Error while destroying block', e)
-          }
-        })()
+      setStatus(message: string) {
+        self.status = message
       },
     }
   })
@@ -243,27 +243,27 @@ export function renderBlockData(
     const cannotBeRenderedReason = display.regionCannotBeRendered(self.region)
 
     return {
-      rendererType,
-      rpcManager,
-      renderProps,
       cannotBeRenderedReason,
       displayError: error,
       renderArgs: {
+        adapterConfig,
+        assemblyName: self.region.assemblyName,
+        blockKey: self.key,
+        layoutId,
+        regions: [getSnapshot(self.region)],
+        reloadFlag: self.reloadFlag,
+        rendererType: rendererType.name,
+        sessionId,
         statusCallback: (message: string) => {
           if (isAlive(self)) {
             self.setStatus(message)
           }
         },
-        assemblyName: self.region.assemblyName,
-        regions: [getSnapshot(self.region)],
-        adapterConfig,
-        rendererType: rendererType.name,
-        sessionId,
-        layoutId,
-        blockKey: self.key,
-        reloadFlag: self.reloadFlag,
         timeout: 1000000, // 10000,
       },
+      renderProps,
+      rendererType,
+      rpcManager,
     }
   } catch (e) {
     return { displayError: e }
@@ -307,14 +307,14 @@ async function renderBlockEffect(
     await rendererType.renderInClient(rpcManager, {
       ...renderArgs,
       ...renderProps,
-      viewParams: getViewParams(self),
       signal,
+      viewParams: getViewParams(self),
     })
   return {
-    reactElement,
     features,
     layout,
     maxHeightReached,
+    reactElement,
     renderProps,
   }
 }

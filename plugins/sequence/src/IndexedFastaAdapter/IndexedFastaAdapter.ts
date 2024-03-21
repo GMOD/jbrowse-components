@@ -37,9 +37,9 @@ export default class extends BaseSequenceAdapter {
     const { fasta } = await this.setup()
     const seqSizes = await fasta.getSequenceSizes(opts)
     return Object.keys(seqSizes).map(refName => ({
+      end: seqSizes[refName],
       refName,
       start: 0,
-      end: seqSizes[refName],
     }))
   }
 
@@ -49,8 +49,8 @@ export default class extends BaseSequenceAdapter {
 
     return {
       fasta: new IndexedFasta({
-        fasta: openLocation(fastaLocation, this.pluginManager),
         fai: openLocation(faiLocation, this.pluginManager),
+        fasta: openLocation(fastaLocation, this.pluginManager),
       }),
     }
   }
@@ -85,9 +85,9 @@ export default class extends BaseSequenceAdapter {
       const e = end + (chunkSize - (end % chunkSize))
       for (let chunkStart = s; chunkStart < e; chunkStart += chunkSize) {
         const r = {
+          end: chunkStart + chunkSize,
           refName,
           start: chunkStart,
-          end: chunkStart + chunkSize,
         }
         chunks.push(
           this.seqCache.get(JSON.stringify(r), { ...r, fasta }, opts?.signal),
@@ -100,8 +100,8 @@ export default class extends BaseSequenceAdapter {
       if (seq) {
         observer.next(
           new SimpleFeature({
+            data: { end: regionEnd, refName, seq, start },
             id: `${refName} ${start}-${regionEnd}`,
-            data: { refName, start, end: regionEnd, seq },
           }),
         )
       }

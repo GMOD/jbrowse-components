@@ -8,19 +8,24 @@ type LGV = LinearGenomeViewModel
 const useStyles = makeStyles()(theme => ({
   centerLineContainer: {
     background: 'transparent',
-    height: '100%',
-    zIndex: 5, // above the track but under menu
-    position: 'absolute',
     border: `1px ${theme.palette.action.active} dashed`,
-    borderTop: 'none',
+
     borderBottom: 'none',
+
+    borderTop: 'none',
+
+    height: '100%',
+
     pointerEvents: 'none',
+    // above the track but under menu
+    position: 'absolute',
+    zIndex: 5,
   },
   centerLineText: {
-    position: 'absolute',
-    pointerEvents: 'none',
-    whiteSpace: 'nowrap',
     fontWeight: 'bold',
+    pointerEvents: 'none',
+    position: 'absolute',
+    whiteSpace: 'nowrap',
   },
 }))
 

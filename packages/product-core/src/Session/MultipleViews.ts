@@ -37,29 +37,12 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
       /**
        * #action
        */
-      moveViewUp(id: string) {
-        const idx = self.views.findIndex(v => v.id === id)
-
-        if (idx === -1) {
-          return
-        }
-        if (idx > 0) {
-          self.views.splice(idx - 1, 2, self.views[idx], self.views[idx - 1])
-        }
-      },
-      /**
-       * #action
-       */
-      moveViewDown(id: string) {
-        const idx = self.views.findIndex(v => v.id === id)
-
-        if (idx === -1) {
-          return
-        }
-
-        if (idx < self.views.length - 1) {
-          self.views.splice(idx, 2, self.views[idx + 1], self.views[idx])
-        }
+      addLinearGenomeViewOfAssembly(assemblyName: string, initialState = {}) {
+        return this.addViewOfAssembly(
+          'LinearGenomeView',
+          assemblyName,
+          initialState,
+        )
       },
 
       /**
@@ -81,24 +64,14 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
       /**
        * #action
        */
-      removeView(view: IBaseViewModel) {
-        for (const [, widget] of self.activeWidgets) {
-          if (widget.view && widget.view.id === view.id) {
-            self.hideWidget(widget)
-          }
-        }
-        self.views.remove(view)
-      },
-
-      /**
-       * #action
-       */
-      addLinearGenomeViewOfAssembly(assemblyName: string, initialState = {}) {
-        return this.addViewOfAssembly(
-          'LinearGenomeView',
-          assemblyName,
-          initialState,
-        )
+      addViewFromAnotherView(
+        viewType: string,
+        otherView: IBaseViewModelWithDisplayedRegions,
+        initialState: { displayedRegions?: Region[] } = {},
+      ) {
+        const state = { ...initialState }
+        state.displayedRegions = getSnapshot(otherView.displayedRegions)
+        return this.addView(viewType, state)
       },
 
       /**
@@ -126,14 +99,42 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
       /**
        * #action
        */
-      addViewFromAnotherView(
-        viewType: string,
-        otherView: IBaseViewModelWithDisplayedRegions,
-        initialState: { displayedRegions?: Region[] } = {},
-      ) {
-        const state = { ...initialState }
-        state.displayedRegions = getSnapshot(otherView.displayedRegions)
-        return this.addView(viewType, state)
+      moveViewDown(id: string) {
+        const idx = self.views.findIndex(v => v.id === id)
+
+        if (idx === -1) {
+          return
+        }
+
+        if (idx < self.views.length - 1) {
+          self.views.splice(idx, 2, self.views[idx + 1], self.views[idx])
+        }
+      },
+
+      /**
+       * #action
+       */
+      moveViewUp(id: string) {
+        const idx = self.views.findIndex(v => v.id === id)
+
+        if (idx === -1) {
+          return
+        }
+        if (idx > 0) {
+          self.views.splice(idx - 1, 2, self.views[idx], self.views[idx - 1])
+        }
+      },
+
+      /**
+       * #action
+       */
+      removeView(view: IBaseViewModel) {
+        for (const [, widget] of self.activeWidgets) {
+          if (widget.view && widget.view.id === view.id) {
+            self.hideWidget(widget)
+          }
+        }
+        self.views.remove(view)
       },
     }))
 }

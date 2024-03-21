@@ -29,12 +29,12 @@ export default class LinearGenomeViewPlugin extends Plugin {
   name = 'LinearGenomeViewPlugin'
 
   exports = {
-    BaseLinearDisplayComponent,
     BaseLinearDisplay,
-    baseLinearDisplayConfigSchema,
+    BaseLinearDisplayComponent,
+    LinearGenomeView,
     SearchBox,
     ZoomControls,
-    LinearGenomeView,
+    baseLinearDisplayConfigSchema,
   }
 
   /**
@@ -45,13 +45,13 @@ export default class LinearGenomeViewPlugin extends Plugin {
      * #slot configuration.LinearGenomeViewPlugin.trackLabels
      */
     trackLabels: {
-      type: 'string',
       defaultValue: 'overlapping',
       model: types.enumeration('trackLabelOptions', [
         'offset',
         'overlapping',
         'hidden',
       ]),
+      type: 'string',
     },
   })
 
@@ -67,8 +67,8 @@ export default class LinearGenomeViewPlugin extends Plugin {
   configure(pluginManager: PluginManager) {
     if (isAbstractMenuManager(pluginManager.rootModel)) {
       pluginManager.rootModel.appendToSubMenu(['Add'], {
-        label: 'Linear genome view',
         icon: LineStyleIcon,
+        label: 'Linear genome view',
         onClick: (session: AbstractSessionModel) => {
           session.addView('LinearGenomeView', {})
         },

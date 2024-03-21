@@ -4,7 +4,7 @@ test('linear scale', () => {
   const scaleType = 'linear'
   const domain = [0, 100]
   const range = [0, 100]
-  const scale = getScale({ scaleType, domain, range })
+  const scale = getScale({ domain, range, scaleType })
   expect(scale.domain()).toEqual(domain)
 })
 
@@ -12,7 +12,7 @@ test('log scale', () => {
   const scaleType = 'log'
   const domain = [1, 100]
   const range = [0, 100]
-  const scale = getScale({ scaleType, domain, range })
+  const scale = getScale({ domain, range, scaleType })
   expect(scale.domain()).toEqual([1, 128])
 })
 
@@ -21,7 +21,7 @@ test('test inverted', () => {
   const inverted = true
   const domain = [1, 100]
   const range = [0, 100]
-  const scale = getScale({ scaleType, domain, range, inverted })
+  const scale = getScale({ domain, inverted, range, scaleType })
   expect(scale.domain()).toEqual([1, 128])
   expect(scale.range()).toEqual(range.reverse())
 })
@@ -30,7 +30,7 @@ test('test minScore', () => {
   const scaleType = 'linear'
   const domain = [0, 100] as const
   const bounds = [50, undefined] as const
-  const ret = getNiceDomain({ scaleType, domain, bounds })
+  const ret = getNiceDomain({ bounds, domain, scaleType })
   expect(ret).toEqual([50, 100])
 })
 
@@ -38,6 +38,6 @@ test('test min and max score', () => {
   const scaleType = 'linear'
   const domain = [1, 100] as const
   const bounds = [undefined, 70] as const
-  const ret = getNiceDomain({ scaleType, domain, bounds })
+  const ret = getNiceDomain({ bounds, domain, scaleType })
   expect(ret).toEqual([0, 70])
 })

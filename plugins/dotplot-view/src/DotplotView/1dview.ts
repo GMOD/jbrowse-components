@@ -12,6 +12,23 @@ function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 const Dotplot1DView = Base1DView.extend(self => {
   const scaleFactor = observable.box(1)
   return {
+    actions: {
+      /**
+       * #action
+       */
+      center() {
+        const centerBp = self.totalBp / 2
+        const centerPx = centerBp / self.bpPerPx
+        self.scrollTo(centerPx - self.width / 2)
+      },
+
+      /**
+       * #action
+       */
+      setScaleFactor(n: number) {
+        scaleFactor.set(n)
+      },
+    },
     views: {
       /**
        * #getter
@@ -19,13 +36,6 @@ const Dotplot1DView = Base1DView.extend(self => {
        */
       get dynamicBlocks() {
         return calculateDynamicBlocks(self, false, false)
-      },
-      /**
-       * #getter
-       */
-
-      get scaleFactor() {
-        return scaleFactor.get()
       },
 
       /**
@@ -38,15 +48,15 @@ const Dotplot1DView = Base1DView.extend(self => {
       /**
        * #getter
        */
-      get minBpPerPx() {
-        return 1 / 50
+      get maxOffset() {
+        return self.displayedRegionsTotalPx - self.width * 0.2
       },
 
       /**
        * #getter
        */
-      get maxOffset() {
-        return self.displayedRegionsTotalPx - self.width * 0.2
+      get minBpPerPx() {
+        return 1 / 50
       },
 
       /**
@@ -55,22 +65,12 @@ const Dotplot1DView = Base1DView.extend(self => {
       get minOffset() {
         return -self.width * 0.8
       },
-    },
-    actions: {
-      /**
-       * #action
-       */
-      setScaleFactor(n: number) {
-        scaleFactor.set(n)
-      },
 
       /**
-       * #action
+       * #getter
        */
-      center() {
-        const centerBp = self.totalBp / 2
-        const centerPx = centerBp / self.bpPerPx
-        self.scrollTo(centerPx - self.width / 2)
+      get scaleFactor() {
+        return scaleFactor.get()
       },
     },
   }

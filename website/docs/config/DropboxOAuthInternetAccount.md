@@ -16,29 +16,9 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ```js
 authEndpoint: {
+      defaultValue: 'https:
       description: 'the authorization code endpoint of the internet account',
       type: 'string',
-      defaultValue: 'https:
-    }
-```
-
-#### slot: tokenEndpoint
-
-```js
-tokenEndpoint: {
-      description: 'the token endpoint of the internet account',
-      type: 'string',
-      defaultValue: 'https:
-    }
-```
-
-#### slot: needsPKCE
-
-```js
-needsPKCE: {
-      description: 'boolean to indicate if the endpoint needs a PKCE code',
-      type: 'boolean',
-      defaultValue: true,
     }
 ```
 
@@ -46,9 +26,6 @@ needsPKCE: {
 
 ```js
 domains: {
-      description:
-        'array of valid domains the url can contain to use this account',
-      type: 'stringArray',
       defaultValue: [
         'addtodropbox.com',
         'db.tt',
@@ -58,6 +35,29 @@ domains: {
         'dropbox.tech',
         'getdropbox.com',
       ],
+      description:
+        'array of valid domains the url can contain to use this account',
+      type: 'stringArray',
+    }
+```
+
+#### slot: needsPKCE
+
+```js
+needsPKCE: {
+      defaultValue: true,
+      description: 'boolean to indicate if the endpoint needs a PKCE code',
+      type: 'boolean',
+    }
+```
+
+#### slot: tokenEndpoint
+
+```js
+tokenEndpoint: {
+      defaultValue: 'https:
+      description: 'the token endpoint of the internet account',
+      type: 'string',
     }
 ```
 

@@ -9,12 +9,12 @@ function configSchemaFactory(_pluginManager: any) {
     'LinearComparativeDisplay',
     {},
     {
-      explicitlyTyped: true,
-
       /**
        * #identifier
        */
       explicitIdentifier: 'displayId',
+
+      explicitlyTyped: true,
     },
   )
 }

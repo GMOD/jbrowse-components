@@ -30,8 +30,8 @@ export default class DotplotPlugin extends Plugin {
   configure(pluginManager: PluginManager) {
     if (isAbstractMenuManager(pluginManager.rootModel)) {
       pluginManager.rootModel.appendToSubMenu(['Add'], {
-        label: 'Dotplot view',
         icon: TimelineIcon,
+        label: 'Dotplot view',
         onClick: (session: AbstractSessionModel) => {
           session.addView('DotplotView', {})
         },

@@ -17,13 +17,13 @@ const useStyles = makeStyles()(theme => ({
   loading: {
     backgroundColor: theme.palette.background.default,
     backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 5px, ${theme.palette.action.disabledBackground} 5px, ${theme.palette.action.disabledBackground} 10px)`,
-    position: 'absolute',
     bottom: 0,
     height: 50,
-    width: 300,
-    right: 0,
     pointerEvents: 'none',
+    position: 'absolute',
+    right: 0,
     textAlign: 'center',
+    width: 300,
   },
 }))
 
@@ -68,7 +68,7 @@ const DataDisplay = observer(function ({
     // this data-testid is located here because changing props on the canvas
     // itself is very sensitive to triggering ref invalidation
     <div data-testid={`drawn-${drawn}`}>
-      <div style={{ position: 'absolute', left }}>{children}</div>
+      <div style={{ left, position: 'absolute' }}>{children}</div>
       {left !== 0 || loading ? <LoadingBar model={model} /> : null}
     </div>
   )

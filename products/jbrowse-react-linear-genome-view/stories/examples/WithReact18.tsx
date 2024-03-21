@@ -10,16 +10,16 @@ export const WithReact18 = () => {
   const { assembly, tracks } = getVolvoxConfig()
   const state = createViewState({
     assembly,
-    tracks,
     configuration: {
       rpc: {
         defaultDriver: 'WebWorkerRpcDriver',
       },
     },
-    makeWorkerInstance,
-
-    hydrateFn: hydrateRoot,
     createRootFn: createRoot,
+    hydrateFn: hydrateRoot,
+
+    makeWorkerInstance,
+    tracks,
   })
   return (
     <div>

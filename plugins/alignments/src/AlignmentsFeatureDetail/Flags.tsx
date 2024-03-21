@@ -6,9 +6,9 @@ import SimpleField from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Simpl
 
 const useStyles = makeStyles()({
   compact: {
+    paddingBottom: 0,
     paddingRight: 0,
     paddingTop: 0,
-    paddingBottom: 0,
   },
 })
 

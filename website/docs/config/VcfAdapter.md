@@ -16,7 +16,7 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ```js
 vcfLocation: {
+      defaultValue: { locationType: 'UriLocation', uri: '/path/to/my.vcf' },
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.vcf', locationType: 'UriLocation' },
     }
 ```

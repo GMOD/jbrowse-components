@@ -27,21 +27,21 @@ import TrackSourceSelect from './TrackSourceSelect'
 import { AddTrackModel } from '../model'
 
 const useStyles = makeStyles()(theme => ({
+  actionsContainer: {
+    marginBottom: theme.spacing(2),
+    marginTop: theme.spacing(10),
+  },
+  alertContainer: {
+    padding: `${theme.spacing(2)}px 0px ${theme.spacing(2)}px 0px`,
+  },
+  button: {
+    marginRight: theme.spacing(1),
+  },
   root: {
     marginTop: theme.spacing(1),
   },
   stepper: {
     backgroundColor: theme.palette.background.default,
-  },
-  button: {
-    marginRight: theme.spacing(1),
-  },
-  actionsContainer: {
-    marginTop: theme.spacing(10),
-    marginBottom: theme.spacing(2),
-  },
-  alertContainer: {
-    padding: `${theme.spacing(2)}px 0px ${theme.spacing(2)}px 0px`,
   },
 }))
 
@@ -98,14 +98,14 @@ const DefaultAddTrackWorkflow = observer(function ({
     }
     if (assemblyInstance && trackAdapter && trackAdapter.type !== 'UNKNOWN') {
       session.addTrackConf({
-        trackId,
-        type: trackType,
-        name: trackName,
-        assemblyNames: [assembly],
         adapter: {
           ...trackAdapter,
           sequenceAdapter: getConf(assemblyInstance, ['sequence', 'adapter']),
         },
+        assemblyNames: [assembly],
+        name: trackName,
+        trackId,
+        type: trackType,
       })
       model.view.showTrack?.(trackId)
       if (
@@ -119,16 +119,16 @@ const DefaultAddTrackWorkflow = observer(function ({
         }
         const indexName = trackName + '-index'
         const newEntry = {
+          cancelCallback: () => jobsManager.abortJob(),
           indexingParams: {
             ...attr,
             assemblies: [assembly],
-            tracks: [trackId],
             indexType: 'perTrack',
             name: indexName,
             timestamp: new Date().toISOString(),
+            tracks: [trackId],
           },
           name: indexName,
-          cancelCallback: () => jobsManager.abortJob(),
         }
         jobsManager.queueJob(newEntry)
       }

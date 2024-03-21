@@ -11,19 +11,20 @@ const MultiWiggleAdapter = ConfigurationSchema(
     /**
      * #slot
      */
-    subadapters: {
-      type: 'frozen',
+    bigWigs: {
       defaultValue: [],
-      description: 'array of subadapter JSON objects',
+      description:
+        'array of bigwig filenames, alternative to the subadapters slot',
+      type: 'frozen',
     },
+
     /**
      * #slot
      */
-    bigWigs: {
-      type: 'frozen',
-      description:
-        'array of bigwig filenames, alternative to the subadapters slot',
+    subadapters: {
       defaultValue: [],
+      description: 'array of subadapter JSON objects',
+      type: 'frozen',
     },
   },
   { explicitlyTyped: true },

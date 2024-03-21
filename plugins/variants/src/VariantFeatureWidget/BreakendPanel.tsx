@@ -83,7 +83,7 @@ function LaunchBreakpointSplitViewPanel({
                 event.preventDefault()
                 session.queueDialog(handleClose => [
                   BreakendOptionDialog,
-                  { handleClose, model, feature: simpleFeature, viewType },
+                  { feature: simpleFeature, handleClose, model, viewType },
                 ])
               }}
             >

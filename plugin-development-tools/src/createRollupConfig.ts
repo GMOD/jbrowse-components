@@ -52,8 +52,8 @@ function getPlugins(
 ): Plugin[] {
   const plugins = [
     resolve({
-      mainFields: ['module', 'main', 'browser'],
       extensions: [...RESOLVE_DEFAULTS.extensions, '.jsx'],
+      mainFields: ['module', 'main', 'browser'],
       preferBuiltins: false,
     }),
     // all bundled external modules need to be converted from CJS to ESM
@@ -65,9 +65,9 @@ function getPlugins(
         '**/*.{spec,test}.ts{x,}',
       ],
       moduleResolution: 'node',
-      tsconfig: './tsconfig.json',
       outDir: distPath,
       target: 'esnext',
+      tsconfig: './tsconfig.json',
       ...(tsDeclarationGenerated
         ? { declarationDir: './' }
         : { declaration: false, declarationMap: false }),
@@ -75,13 +75,14 @@ function getPlugins(
     (mode === 'cjs' || mode === 'esmBundle') &&
       externalGlobals(createGlobalMap(jbrowseGlobals)),
     babelPluginJBrowse({
-      exclude: ['node_modules/**', '__virtual__/**'],
+      babelHelpers: 'bundled',
+
       // @ts-expect-error
       custom: {
         extractErrors: false,
         format: mode === 'esmBundle' || mode === 'npm' ? 'esm' : mode,
       },
-      babelHelpers: 'bundled',
+      exclude: ['node_modules/**', '__virtual__/**'],
     }),
     mode === 'npm' && sourceMaps(),
     mode === 'npm' && writeIndex(packageName, distPath),
@@ -114,49 +115,48 @@ export function createRollupConfig(
   const npmConfig =
     includeNPM &&
     defineConfig({
-      input: path.join(srcPath, 'index.ts'),
       external,
-      treeshake: { propertyReadSideEffects: false },
-      plugins: getPlugins('npm', jbrowseGlobals),
+      input: path.join(srcPath, 'index.ts'),
       output: [
         {
+          esModule: true,
+          exports: 'named',
           file: path.join(distPath, 'index.esm.js'),
           format: 'esm',
           freeze: false,
-          esModule: true,
           sourcemap: true,
-          exports: 'named',
         },
         {
+          esModule: true,
+          exports: 'named',
           file: path.join(distPath, `${packageName}.cjs.development.js`),
           format: 'cjs',
           freeze: false,
-          esModule: true,
           sourcemap: true,
-          exports: 'named',
         },
         nodeEnv === 'production' && {
+          esModule: true,
+          exports: 'named',
           file: path.join(distPath, `${packageName}.cjs.production.min.js`),
           format: 'cjs',
           freeze: false,
-          esModule: true,
-          sourcemap: true,
-          exports: 'named',
           plugins: [
             terser({
-              output: { comments: false },
-              compress: { keep_infinity: true, pure_getters: true, passes: 10 },
+              compress: { keep_infinity: true, passes: 10, pure_getters: true },
               ecma: 5,
+              output: { comments: false },
               toplevel: true,
             }),
           ],
+          sourcemap: true,
         },
       ].filter(Boolean) as OutputOptions[],
+      plugins: getPlugins('npm', jbrowseGlobals),
+      treeshake: { propertyReadSideEffects: false },
     })
   const umdConfig =
     includeUMD &&
     defineConfig({
-      input: path.join(srcPath, 'index.ts'),
       external: (id: string) => {
         const isExternal = external(id)
         if (isExternal && !jbrowseGlobals.includes(id)) {
@@ -164,46 +164,46 @@ export function createRollupConfig(
         }
         return isExternal
       },
-      treeshake: { propertyReadSideEffects: false },
-      plugins: getPlugins('umd', jbrowseGlobals),
+      input: path.join(srcPath, 'index.ts'),
       output: [
         {
+          esModule: true,
+          exports: 'named',
           file: path.join(distPath, `${packageName}.umd.development.js`),
           format: 'umd',
-          name: umdName,
           freeze: false,
-          esModule: true,
-          sourcemap: true,
-          exports: 'named',
-          inlineDynamicImports: true,
           globals: createGlobalMap(jbrowseGlobals, true),
+          inlineDynamicImports: true,
+          name: umdName,
+          sourcemap: true,
         },
         nodeEnv === 'production' && {
+          esModule: true,
+          exports: 'named',
           file: path.join(distPath, `${packageName}.umd.production.min.js`),
           format: 'umd',
-          name: umdName,
           freeze: false,
-          esModule: true,
-          sourcemap: true,
-          exports: 'named',
-          inlineDynamicImports: true,
           globals: createGlobalMap(jbrowseGlobals, true),
+          inlineDynamicImports: true,
+          name: umdName,
           plugins: [
             terser({
-              output: { comments: false },
-              compress: { keep_infinity: true, pure_getters: true, passes: 10 },
+              compress: { keep_infinity: true, passes: 10, pure_getters: true },
               ecma: 5,
+              output: { comments: false },
               toplevel: true,
             }),
           ],
+          sourcemap: true,
         },
       ].filter(Boolean) as OutputOptions[],
+      plugins: getPlugins('umd', jbrowseGlobals),
+      treeshake: { propertyReadSideEffects: false },
       watch: { clearScreen: false },
     })
   const esmBundleConfig =
     includeESMBundle &&
     defineConfig({
-      input: path.join(srcPath, 'index.ts'),
       external: (id: string) => {
         const isExternal = external(id)
         if (isExternal && !jbrowseGlobals.includes(id)) {
@@ -211,25 +211,25 @@ export function createRollupConfig(
         }
         return isExternal
       },
-      treeshake: { propertyReadSideEffects: false, moduleSideEffects: false },
-      plugins: getPlugins('esmBundle', jbrowseGlobals),
+      input: path.join(srcPath, 'index.ts'),
       output: [
         {
+          esModule: true,
+          exports: 'named',
           file: path.join(distPath, `${packageName}.esm.js`),
           format: 'esm',
           freeze: false,
-          esModule: true,
-          sourcemap: true,
-          exports: 'named',
           inlineDynamicImports: true,
+          sourcemap: true,
         },
       ],
+      plugins: getPlugins('esmBundle', jbrowseGlobals),
+      treeshake: { moduleSideEffects: false, propertyReadSideEffects: false },
       watch: { clearScreen: false },
     })
   const cjsConfig =
     includeCJS &&
     defineConfig({
-      input: path.join(srcPath, 'index.ts'),
       external: (id: string) => {
         if (nodeBuiltins.includes(id)) {
           return true
@@ -240,19 +240,20 @@ export function createRollupConfig(
         }
         return isExternal
       },
-      treeshake: { propertyReadSideEffects: false, moduleSideEffects: false },
-      plugins: getPlugins('cjs', jbrowseGlobals),
+      input: path.join(srcPath, 'index.ts'),
       output: [
         {
+          esModule: true,
+          exports: 'named',
           file: path.join(distPath, `${packageName}.cjs.js`),
           format: 'cjs',
           freeze: false,
-          esModule: true,
-          sourcemap: true,
-          exports: 'named',
           inlineDynamicImports: true,
+          sourcemap: true,
         },
       ],
+      plugins: getPlugins('cjs', jbrowseGlobals),
+      treeshake: { moduleSideEffects: false, propertyReadSideEffects: false },
       watch: { clearScreen: false },
     })
   const configs: RollupOptions[] = []

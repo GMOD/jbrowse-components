@@ -8,9 +8,9 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addRendererType(
     () =>
       new MultiLineRenderer({
-        name: 'MultiLineRenderer',
         ReactComponent,
         configSchema,
+        name: 'MultiLineRenderer',
         pluginManager,
       }),
   )

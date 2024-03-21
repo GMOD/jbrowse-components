@@ -10,10 +10,10 @@ export const useSlotEditorStyles = makeStyles()(theme => ({
     width: '100%',
   },
   slotModeSwitch: {
-    width: 24,
+    alignItems: 'center',
     background: theme.palette.secondary.light,
     display: 'flex',
     justifyContent: 'center',
-    alignItems: 'center',
+    width: 24,
   },
 }))

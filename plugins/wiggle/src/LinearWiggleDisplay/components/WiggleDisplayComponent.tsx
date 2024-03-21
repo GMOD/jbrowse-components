@@ -33,11 +33,11 @@ const LinearWiggleDisplay = observer((props: { model: WiggleDisplayModel }) => {
       {stats && needsScalebar ? (
         <svg
           style={{
-            position: 'absolute',
-            top: 0,
+            height,
             left,
             pointerEvents: 'none',
-            height,
+            position: 'absolute',
+            top: 0,
             width: 50,
           }}
         >

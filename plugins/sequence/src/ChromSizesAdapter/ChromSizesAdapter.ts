@@ -37,9 +37,9 @@ export default class extends BaseAdapter implements RegionsAdapter {
   public async getRegions() {
     const refSeqs = await this.setup()
     return Object.keys(refSeqs).map(refName => ({
+      end: refSeqs[refName],
       refName,
       start: 0,
-      end: refSeqs[refName],
     }))
   }
 

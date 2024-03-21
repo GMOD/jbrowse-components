@@ -35,8 +35,8 @@ export function drawLongReadChains({
     let maxX = Number.MIN_VALUE
     for (const elt of chain) {
       const refName = asm.getCanonicalRefName(elt.refName) || elt.refName
-      const rs = view.bpToPx({ refName, coord: elt.start })?.offsetPx
-      const re = view.bpToPx({ refName, coord: elt.end })?.offsetPx
+      const rs = view.bpToPx({ coord: elt.start, refName })?.offsetPx
+      const re = view.bpToPx({ coord: elt.end, refName })?.offsetPx
       if (rs !== undefined && re !== undefined) {
         minX = Math.min(minX, rs)
         maxX = Math.max(maxX, re)
@@ -69,8 +69,8 @@ export function drawLongReadChains({
     }
     for (const v0 of chain) {
       const ra = asm.getCanonicalRefName(v0.refName) || v0.refName
-      const rs = view.bpToPx({ refName: ra, coord: v0.start })?.offsetPx
-      const re = view.bpToPx({ refName: ra, coord: v0.end })?.offsetPx
+      const rs = view.bpToPx({ coord: v0.start, refName: ra })?.offsetPx
+      const re = view.bpToPx({ coord: v0.end, refName: ra })?.offsetPx
       if (rs !== undefined && re !== undefined) {
         const w = Math.max(re - rs, 2)
         const l = rs - view.offsetPx

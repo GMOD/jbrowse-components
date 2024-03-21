@@ -11,14 +11,14 @@ import { loadPluginManager } from './util'
 const { ipcRenderer } = window.require('electron')
 
 const useStyles = makeStyles()(theme => ({
-  form: {
-    marginTop: theme.spacing(4),
-  },
   button: {
     display: 'block',
     marginBottom: theme.spacing(3),
-    width: 200,
     padding: theme.spacing(1),
+    width: 200,
+  },
+  form: {
+    marginTop: theme.spacing(4),
   },
 }))
 
@@ -42,7 +42,7 @@ export default function LauncherPanel({
       >
         Open sequence file(s)
       </Button>
-      <Typography style={{ width: '50%', textAlign: 'center' }} variant="h6">
+      <Typography style={{ textAlign: 'center', width: '50%' }} variant="h6">
         -or-
       </Typography>
       <QuickstartPanel setPluginManager={setPluginManager} />

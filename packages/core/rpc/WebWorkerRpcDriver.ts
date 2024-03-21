@@ -84,8 +84,8 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
           }
           case 'readyForConfig': {
             worker.workers[0].postMessage({
-              message: 'config',
               config: this.workerBootConfiguration,
+              message: 'config',
             })
             break
           }

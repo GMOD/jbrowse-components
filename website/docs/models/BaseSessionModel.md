@@ -26,15 +26,6 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 id: ElementId
 ```
 
-#### property: name
-
-```js
-// type signature
-ISimpleType<string>
-// code
-name: types.string
-```
-
 #### property: margin
 
 ```js
@@ -44,6 +35,15 @@ number
 margin: 0
 ```
 
+#### property: name
+
+```js
+// type signature
+ISimpleType<string>
+// code
+name: types.string
+```
+
 ### BaseSessionModel - Getters
 
 #### getter: root
@@ -51,6 +51,20 @@ margin: 0
 ```js
 // type
 TypeOrStateTreeNodeToStateTreeNode<ROOT_MODEL_TYPE>
+```
+
+#### getter: adminMode
+
+```js
+// type
+boolean
+```
+
+#### getter: configuration
+
+```js
+// type
+Instance<JB_CONFIG_SCHEMA>
 ```
 
 #### getter: jbrowse
@@ -67,20 +81,6 @@ any
 RpcManager
 ```
 
-#### getter: configuration
-
-```js
-// type
-Instance<JB_CONFIG_SCHEMA>
-```
-
-#### getter: adminMode
-
-```js
-// type
-boolean
-```
-
 #### getter: textSearchManager
 
 ```js
@@ -92,20 +92,10 @@ TextSearchManager
 
 ```js
 // type
-({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<ConfigurationSchemaType<{ aliases: { type: string; defaultValue: any[]; description: string; }; sequence: AnyConfigurationSchemaType; refNameColors: { ...; }; refNameAliases: ConfigurationSchemaType<......
+({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<ConfigurationSchemaType<{ aliases: { defaultValue: any[]; description: string; type: string; }; cytobands: ConfigurationSchemaType<...>; displayName: { ...; }; refNameAliases: ConfigurationSchemaType<.....
 ```
 
 ### BaseSessionModel - Actions
-
-#### action: setSelection
-
-set the global selection, i.e. the globally-selected object. can be a feature, a
-view, just about anything
-
-```js
-// type signature
-setSelection: (thing: unknown) => void
-```
 
 #### action: clearSelection
 
@@ -121,4 +111,14 @@ clearSelection: () => void
 ```js
 // type signature
 setHovered: (thing: unknown) => void
+```
+
+#### action: setSelection
+
+set the global selection, i.e. the globally-selected object. can be a feature, a
+view, just about anything
+
+```js
+// type signature
+setSelection: (thing: unknown) => void
 ```

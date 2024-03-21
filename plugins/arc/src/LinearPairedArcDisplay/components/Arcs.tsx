@@ -35,13 +35,13 @@ const Arc = observer(function ({
   const { height } = model
   const { k1, k2 } = makeFeaturePair(feature, alt)
   const ref = useRef<SVGPathElement>(null)
-  const c = getConf(model, 'color', { feature, alt })
+  const c = getConf(model, 'color', { alt, feature })
   const ra1 = assembly.getCanonicalRefName(k1.refName) || k1.refName
   const ra2 = assembly.getCanonicalRefName(k2.refName) || k2.refName
   const p1 = k1.start
   const p2 = k2.start
-  const r1 = view.bpToPx({ refName: ra1, coord: p1 })?.offsetPx
-  const r2 = view.bpToPx({ refName: ra2, coord: p2 })?.offsetPx
+  const r1 = view.bpToPx({ coord: p1, refName: ra1 })?.offsetPx
+  const r2 = view.bpToPx({ coord: p2, refName: ra2 })?.offsetPx
 
   if (r1 !== undefined && r2 !== undefined) {
     const radius = (r2 - r1) / 2

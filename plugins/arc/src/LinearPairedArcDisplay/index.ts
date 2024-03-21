@@ -9,13 +9,13 @@ export default function LinearPairedArcDisplayF(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaFactory()
     return new DisplayType({
-      name: 'LinearPairedArcDisplay',
-      displayName: 'Arc display',
+      ReactComponent: lazy(() => import('./components/ReactComponent')),
       configSchema,
+      displayName: 'Arc display',
+      name: 'LinearPairedArcDisplay',
       stateModel: stateModelFactory(configSchema),
       trackType: 'VariantTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: lazy(() => import('./components/ReactComponent')),
     })
   })
 }

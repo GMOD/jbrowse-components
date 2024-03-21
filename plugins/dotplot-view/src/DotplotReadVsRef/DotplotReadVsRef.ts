@@ -31,9 +31,9 @@ export function onClick(feature: Feature, self: LinearPileupDisplayModel) {
     const feat = feature.toJSON()
     feat.strand = 1
     feat.mate = {
+      end: clipPos + getLengthSansClipping(cigar),
       refName: readName,
       start: clipPos,
-      end: clipPos + getLengthSansClipping(cigar),
     }
 
     // if secondary alignment or supplementary, calculate length from SA[0]'s
@@ -48,65 +48,65 @@ export function onClick(feature: Feature, self: LinearPileupDisplayModel) {
     const refLength = features.reduce((a, f) => a + f.end - f.start, 0)
 
     session.addView('DotplotView', {
-      type: 'DotplotView',
+      assemblyNames,
+      displayName: `${readName} vs ${trackAssembly}`,
       hview: {
-        offsetPx: 0,
         bpPerPx: refLength / 800,
         displayedRegions: gatherOverlaps(
           features.map((f, index) => {
             const { start, end, refName } = f
             return {
-              start,
-              end,
-              refName,
-              index,
               assemblyName: trackAssembly,
+              end,
+              index,
+              refName,
+              start,
             }
           }),
         ),
-      },
-      vview: {
         offsetPx: 0,
-        bpPerPx: totalLength / 400,
-        minimumBlockWidth: 0,
-        interRegionPaddingWidth: 0,
-        displayedRegions: [
-          {
-            assemblyName: readAssembly,
-            start: 0,
-            end: totalLength,
-            refName: readName,
-          },
-        ],
       },
 
-      viewTrackConfigs: [
-        {
-          type: 'SyntenyTrack',
-          assemblyNames,
-          adapter: {
-            type: 'FromConfigAdapter',
-            features,
-          },
-          trackId,
-          name: trackName,
-        },
-      ],
-      assemblyNames,
       tracks: [
         {
           configuration: trackId,
-          type: 'SyntenyTrack',
           displays: [
             {
-              type: 'DotplotDisplay',
               configuration: `${trackId}-DotplotDisplay`,
+              type: 'DotplotDisplay',
             },
           ],
+          type: 'SyntenyTrack',
+        },
+      ],
+      type: 'DotplotView',
+      viewTrackConfigs: [
+        {
+          adapter: {
+            features,
+            type: 'FromConfigAdapter',
+          },
+          assemblyNames,
+          name: trackName,
+          trackId,
+          type: 'SyntenyTrack',
         },
       ],
 
-      displayName: `${readName} vs ${trackAssembly}`,
+      vview: {
+        bpPerPx: totalLength / 400,
+        displayedRegions: [
+          {
+            assemblyName: readAssembly,
+            end: totalLength,
+            refName: readName,
+            start: 0,
+          },
+        ],
+        interRegionPaddingWidth: 0,
+        minimumBlockWidth: 0,
+        offsetPx: 0,
+      },
     })
   } catch (e) {
     console.error(e)

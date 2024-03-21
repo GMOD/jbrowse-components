@@ -9,13 +9,13 @@ const useStyles = makeStyles()(theme => ({
     },
   },
   fieldName: {
-    wordBreak: 'break-all',
-    minWidth: 90,
+    background: theme.palette.action.disabledBackground,
     borderBottom: '1px solid #0003',
     fontSize: 12,
-    background: theme.palette.action.disabledBackground,
     marginRight: theme.spacing(1),
+    minWidth: 90,
     padding: theme.spacing(0.5),
+    wordBreak: 'break-all',
   },
 }))
 

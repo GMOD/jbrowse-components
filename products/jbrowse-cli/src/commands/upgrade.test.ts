@@ -11,24 +11,24 @@ const { stat, readdir } = fs.promises
 
 const releaseArray = [
   {
-    tag_name: 'v0.0.2',
-    prerelease: false,
     assets: [
       {
         browser_download_url: 'https://example.com/JBrowse2-0.0.2.zip',
         name: 'jbrowse-web-v0.0.2.zip',
       },
     ],
+    prerelease: false,
+    tag_name: 'v0.0.2',
   },
   {
-    tag_name: 'v0.0.1',
-    prerelease: false,
     assets: [
       {
         browser_download_url: 'https://example.com/JBrowse2-0.0.1.zip',
         name: 'jbrowse-web-v0.0.1.zip',
       },
     ],
+    prerelease: false,
+    tag_name: 'v0.0.1',
   },
 ]
 

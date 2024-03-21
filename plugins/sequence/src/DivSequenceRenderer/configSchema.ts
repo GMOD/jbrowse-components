@@ -12,9 +12,9 @@ const DivSequenceRenderer = ConfigurationSchema(
      * #slot
      */
     height: {
-      type: 'number',
-      description: 'height in pixels of each line of sequence',
       defaultValue: 16,
+      description: 'height in pixels of each line of sequence',
+      type: 'number',
     },
   },
   { explicitlyTyped: true },

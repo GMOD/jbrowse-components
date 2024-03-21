@@ -23,17 +23,17 @@ export default function createModel(
   },
 ) {
   const pluginManager = new PluginManager([
-    ...corePlugins.map(P => ({ plugin: new P(), metadata: { isCore: true } })),
+    ...corePlugins.map(P => ({ metadata: { isCore: true }, plugin: new P() })),
     ...runtimePlugins.map(P => new P()),
   ]).createPluggableElements()
 
   return {
     model: createRootModel({
+      createRootFn,
+      hydrateFn,
+      makeWorkerInstance,
       pluginManager,
       sessionModelFactory,
-      makeWorkerInstance,
-      hydrateFn,
-      createRootFn,
     }),
     pluginManager,
   }

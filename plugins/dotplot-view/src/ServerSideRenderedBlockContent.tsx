@@ -7,21 +7,21 @@ import { observer } from 'mobx-react'
 const useStyles = makeStyles()(theme => {
   const bg = theme.palette.action.disabledBackground
   return {
-    loading: {
-      paddingLeft: '0.6em',
-      backgroundColor: theme.palette.background.default,
-      backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 5px, ${bg} 5px, ${bg} 10px)`,
-      textAlign: 'center',
+    blockError: {
+      backgroundColor: bg,
+      color: 'red',
+      padding: '10px',
     },
 
     blockMessage: {
       backgroundColor: bg,
       padding: '10px',
     },
-    blockError: {
-      backgroundColor: bg,
-      padding: '10px',
-      color: 'red',
+    loading: {
+      backgroundColor: theme.palette.background.default,
+      backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 5px, ${bg} 5px, ${bg} 10px)`,
+      paddingLeft: '0.6em',
+      textAlign: 'center',
     },
   }
 })

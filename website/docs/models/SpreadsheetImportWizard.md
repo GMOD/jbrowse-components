@@ -14,6 +14,15 @@ info
 
 ### SpreadsheetImportWizard - Properties
 
+#### property: columnNameLineNumber
+
+```js
+// type signature
+number
+// code
+columnNameLineNumber: 1
+```
+
 #### property: fileType
 
 ```js
@@ -30,15 +39,6 @@ fileType: types.optional(types.enumeration(fileTypes), 'CSV')
 true
 // code
 hasColumnNameLine: true
-```
-
-#### property: columnNameLineNumber
-
-```js
-// type signature
-number
-// code
-columnNameLineNumber: 1
 ```
 
 #### property: selectedAssemblyName

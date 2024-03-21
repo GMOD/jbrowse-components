@@ -77,8 +77,8 @@ export default function VariantSamples(props: {
           ...Object.fromEntries(
             Object.entries(row[1]).map(e => [e[0], `${e[1]}`]),
           ),
-          sample: row[0],
           id: row[0],
+          sample: row[0],
         } as Entry
       })
       .filter(row =>
@@ -101,8 +101,8 @@ export default function VariantSamples(props: {
     keys.map(e => measureGridWidth(rows.map(r => r[e]))),
   )
   const columns = keys.map((field, index) => ({
-    field,
     description: descriptions?.FORMAT?.[field]?.Description,
+    field,
     width: widths[index],
   }))
 

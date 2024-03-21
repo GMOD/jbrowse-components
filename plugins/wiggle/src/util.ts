@@ -185,8 +185,8 @@ export async function getQuantitativeStats(
   const { adapterConfig, autoscaleType } = self
   const sessionId = getRpcSessionId(self)
   const params = {
-    sessionId,
     adapterConfig,
+    sessionId,
     statusCallback: (message: string) => {
       if (isAlive(self)) {
         self.setMessage(message)
@@ -208,8 +208,8 @@ export async function getQuantitativeStats(
     return autoscaleType === 'globalsd'
       ? {
           ...results,
-          scoreMin: scoreMin >= 0 ? 0 : scoreMean - nd * scoreStdDev,
           scoreMax: scoreMean + nd * scoreStdDev,
+          scoreMin: scoreMin >= 0 ? 0 : scoreMean - nd * scoreStdDev,
         }
       : results
   }
@@ -220,15 +220,15 @@ export async function getQuantitativeStats(
       'WiggleGetMultiRegionQuantitativeStats',
       {
         ...params,
+        bpPerPx,
         regions: dynamicBlocks.contentBlocks.map(region => {
           const { start, end } = region
           return {
             ...JSON.parse(JSON.stringify(region)),
-            start: Math.floor(start),
             end: Math.ceil(end),
+            start: Math.floor(start),
           }
         }),
-        bpPerPx,
       },
     )) as QuantitativeStats
     const { scoreMin, scoreMean, scoreStdDev } = results
@@ -239,8 +239,8 @@ export async function getQuantitativeStats(
     return autoscaleType === 'localsd'
       ? {
           ...results,
-          scoreMin: scoreMin >= 0 ? 0 : scoreMean - nd * scoreStdDev,
           scoreMax: scoreMean + nd * scoreStdDev,
+          scoreMin: scoreMin >= 0 ? 0 : scoreMean - nd * scoreStdDev,
         }
       : results
   }

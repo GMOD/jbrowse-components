@@ -4,27 +4,27 @@ import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 
 const useStyles = makeStyles()(theme => ({
-  contentBlock: {
-    position: 'relative',
+  boundaryPaddingBlock: {
+    backgroundColor: theme.palette.action.disabledBackground,
     minHeight: '100%',
+  },
+  contentBlock: {
     boxSizing: 'border-box',
-    whiteSpace: 'nowrap',
+    minHeight: '100%',
     overflow: 'hidden',
+    position: 'relative',
+    whiteSpace: 'nowrap',
   },
   elidedBlock: {
-    minHeight: '100%',
-    boxSizing: 'border-box',
     backgroundColor: '#999',
     backgroundImage:
       'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px)',
+    boxSizing: 'border-box',
+    minHeight: '100%',
   },
   interRegionPaddingBlock: {
-    minHeight: '100%',
     backgroundColor: theme.palette.text.disabled,
-  },
-  boundaryPaddingBlock: {
     minHeight: '100%',
-    backgroundColor: theme.palette.action.disabledBackground,
   },
 }))
 

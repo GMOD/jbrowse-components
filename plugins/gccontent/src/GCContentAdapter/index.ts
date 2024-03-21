@@ -7,14 +7,14 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addAdapterType(
     () =>
       new AdapterType({
-        name: 'GCContentAdapter',
-        displayName: 'GC content adapter',
         adapterMetadata: {
           hiddenFromGUI: true,
         },
         configSchema: configSchemaF(pluginManager),
+        displayName: 'GC content adapter',
         getAdapterClass: () =>
           import('./GCContentAdapter').then(r => r.default),
+        name: 'GCContentAdapter',
       }),
   )
 }

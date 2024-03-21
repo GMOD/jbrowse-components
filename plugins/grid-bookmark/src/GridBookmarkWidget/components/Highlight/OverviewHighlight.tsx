@@ -57,10 +57,10 @@ const OverviewHighlight = observer(function OverviewHighlight({
           const e = overview.bpToPx({ ...r, coord: rev ? r.start : r.end })
           return s !== undefined && e !== undefined
             ? {
-                width: Math.abs(e - s),
-                left: s + cytobandOffset,
                 highlight: r.highlight,
                 label: r.label,
+                left: s + cytobandOffset,
+                width: Math.abs(e - s),
               }
             : undefined
         })
@@ -76,11 +76,11 @@ const OverviewHighlight = observer(function OverviewHighlight({
               <div
                 className={classes.highlight}
                 style={{
-                  left,
-                  width,
                   background: highlight,
                   borderLeft: `1px solid ${highlight}`,
                   borderRight: `1px solid ${highlight}`,
+                  left,
+                  width,
                 }}
               />
             </Tooltip>

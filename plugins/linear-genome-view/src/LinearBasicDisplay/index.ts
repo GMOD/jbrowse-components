@@ -10,13 +10,13 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addDisplayType(() => {
     const config = configSchema(pluginManager)
     return new DisplayType({
-      name: 'LinearBasicDisplay',
-      displayName: 'Basic feature display',
+      ReactComponent: BaseLinearDisplayComponent,
       configSchema: config,
+      displayName: 'Basic feature display',
+      name: 'LinearBasicDisplay',
       stateModel: modelFactory(config),
       trackType: 'FeatureTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: BaseLinearDisplayComponent,
     })
   })
 }

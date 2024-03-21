@@ -34,11 +34,11 @@ sessionPath: types.optional(types.string, '')
 
 ### DesktopSessionManagementMixin - Actions
 
-#### action: saveSession
+#### action: activateSession
 
 ```js
 // type signature
-saveSession: (val: unknown) => Promise<void>
+activateSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; margin: IType<number, number, number>; name: ISimpleType<string>; }>>) => void
 ```
 
 #### action: duplicateCurrentSession
@@ -48,9 +48,9 @@ saveSession: (val: unknown) => Promise<void>
 duplicateCurrentSession: () => void
 ```
 
-#### action: activateSession
+#### action: saveSession
 
 ```js
 // type signature
-activateSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number, number, number>; }>>) => void
+saveSession: (val: unknown) => Promise<void>
 ```

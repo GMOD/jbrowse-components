@@ -33,8 +33,8 @@ export default class BedPlugin extends Plugin {
           const adapterName = 'BigBedAdapter'
           const fileName = getFileName(file)
           const obj = {
-            type: adapterName,
             bigBedLocation: file,
+            type: adapterName,
           }
 
           if (regexGuess.test(fileName) && !adapterHint) {
@@ -60,8 +60,8 @@ export default class BedPlugin extends Plugin {
           const fileName = getFileName(file)
           if (regexGuess.test(fileName) || adapterHint === adapterName) {
             return {
-              type: adapterName,
               bedpeLocation: file,
+              type: adapterName,
             }
           }
           return adapterGuesser(file, index, adapterHint)
@@ -83,12 +83,12 @@ export default class BedPlugin extends Plugin {
           const indexName = index && getFileName(index)
           if (regexGuess.test(fileName) || adapterHint === adapterName) {
             return {
-              type: adapterName,
               bedGzLocation: file,
               index: {
-                location: index || makeIndex(file, '.tbi'),
                 indexType: makeIndexType(indexName, 'CSI', 'TBI'),
+                location: index || makeIndex(file, '.tbi'),
               },
+              type: adapterName,
             }
           }
           return adapterGuesser(file, index, adapterHint)
@@ -109,8 +109,8 @@ export default class BedPlugin extends Plugin {
           const fileName = getFileName(file)
           if (regexGuess.test(fileName) || adapterHint === adapterName) {
             return {
-              type: adapterName,
               bedLocation: file,
+              type: adapterName,
             }
           }
           return adapterGuesser(file, index, adapterHint)

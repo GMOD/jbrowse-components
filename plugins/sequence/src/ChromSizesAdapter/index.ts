@@ -7,14 +7,14 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addAdapterType(
     () =>
       new AdapterType({
-        name: 'ChromSizesAdapter',
-        displayName: 'Chrom sizes adapter',
-        configSchema,
         adapterMetadata: {
           hiddenFromGUI: true,
         },
+        configSchema,
+        displayName: 'Chrom sizes adapter',
         getAdapterClass: () =>
           import('./ChromSizesAdapter').then(r => r.default),
+        name: 'ChromSizesAdapter',
       }),
   )
 }

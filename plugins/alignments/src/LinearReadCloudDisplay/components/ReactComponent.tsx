@@ -28,7 +28,7 @@ const Cloud = observer(function ({
     <canvas
       data-testid="cloud-canvas"
       ref={cb}
-      style={{ width, height, position: 'absolute' }}
+      style={{ height, position: 'absolute', width }}
       width={width * 2}
       height={height * 2}
     />

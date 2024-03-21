@@ -16,9 +16,9 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
       const features = groups[source.name] || []
       const { reducedFeatures } = drawXY(ctx, {
         ...props,
+        colorCallback: () => source.color || 'blue',
         features,
         offset: YSCALEBAR_LABEL_OFFSET,
-        colorCallback: () => source.color || 'blue',
       })
       feats = feats.concat(reducedFeatures)
     }

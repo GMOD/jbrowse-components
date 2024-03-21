@@ -5,7 +5,7 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
   <svg
     data-testid="sequence_track"
     height="160"
-    style="display: block; width: 20000px; height: 160px; user-select: none;"
+    style="display: block; height: 160px; user-select: none; width: 20000px;"
     width="20000"
   >
     <rect
@@ -593,7 +593,7 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
   <svg
     data-testid="sequence_track"
     height="160"
-    style="display: block; width: 20000px; height: 160px; user-select: none;"
+    style="display: block; height: 160px; user-select: none; width: 20000px;"
     width="20000"
   >
     <rect
@@ -1181,7 +1181,7 @@ exports[`renders with one feature with an incorrect seq, zoomed in, should throw
   <svg
     data-testid="sequence_track"
     height="160"
-    style="display: block; width: 20000px; height: 160px; user-select: none;"
+    style="display: block; height: 160px; user-select: none; width: 20000px;"
     width="20000"
   >
     <rect
@@ -1373,7 +1373,7 @@ exports[`renders with one feature with no seq, zoomed in, should throw 1`] = `
   <svg
     data-testid="sequence_track"
     height="160"
-    style="display: block; width: 20000px; height: 160px; user-select: none;"
+    style="display: block; height: 160px; user-select: none; width: 20000px;"
     width="20000"
   />
 </div>
@@ -1384,7 +1384,7 @@ exports[`renders with one, zoomed way out 1`] = `
   <svg
     data-testid="sequence_track"
     height="160"
-    style="display: block; width: 333.3333333333333px; height: 160px; user-select: none;"
+    style="display: block; height: 160px; user-select: none; width: 333.3333333333333px;"
     width="333.3333333333333"
   >
     <rect

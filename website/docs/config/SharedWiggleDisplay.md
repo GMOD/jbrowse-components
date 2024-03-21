@@ -20,8 +20,9 @@ extends
 
 ```js
 autoscale: {
-        type: 'stringEnum',
         defaultValue: 'local',
+        description:
+          'global/local using their min/max values or w/ standard deviations (globalsd/localsd)',
         model: types.enumeration('Autoscale type', [
           'global',
           'local',
@@ -29,60 +30,7 @@ autoscale: {
           'localsd',
           'zscore',
         ]),
-        description:
-          'global/local using their min/max values or w/ standard deviations (globalsd/localsd)',
-      }
-```
-
-#### slot: minimalTicks
-
-```js
-minimalTicks: {
-        type: 'boolean',
-        defaultValue: false,
-        description: 'use the minimal amount of ticks',
-      }
-```
-
-#### slot: minScore
-
-```js
-minScore: {
-        type: 'number',
-        defaultValue: Number.MIN_VALUE,
-        description: 'minimum value for the y-scale',
-      }
-```
-
-#### slot: maxScore
-
-```js
-maxScore: {
-        type: 'number',
-        description: 'maximum value for the y-scale',
-        defaultValue: Number.MAX_VALUE,
-      }
-```
-
-#### slot: numStdDev
-
-```js
-numStdDev: {
-        type: 'number',
-        description:
-          'number of standard deviations to use for autoscale types globalsd or localsd',
-        defaultValue: 3,
-      }
-```
-
-#### slot: scaleType
-
-```js
-scaleType: {
         type: 'stringEnum',
-        model: types.enumeration('Scale type', ['linear', 'log']),
-        description: 'The type of scale to use',
-        defaultValue: 'linear',
       }
 ```
 
@@ -90,9 +38,64 @@ scaleType: {
 
 ```js
 inverted: {
-        type: 'boolean',
-        description: 'draw upside down',
         defaultValue: false,
+        description: 'draw upside down',
+        type: 'boolean',
+      }
+```
+
+#### slot: maxScore
+
+```js
+maxScore: {
+        defaultValue: Number.MAX_VALUE,
+        description: 'maximum value for the y-scale',
+        type: 'number',
+      }
+```
+
+#### slot: minScore
+
+```js
+minScore: {
+        defaultValue: Number.MIN_VALUE,
+        description: 'minimum value for the y-scale',
+        type: 'number',
+      }
+```
+
+#### slot: minimalTicks
+
+```js
+minimalTicks: {
+        defaultValue: false,
+        description: 'use the minimal amount of ticks',
+        type: 'boolean',
+      }
+```
+
+#### slot: numStdDev
+
+```js
+numStdDev: {
+        defaultValue: 3,
+        description:
+          'number of standard deviations to use for autoscale types globalsd or localsd',
+        type: 'number',
+      }
+```
+
+#### slot: scaleType
+
+```js
+scaleType: {
+        defaultValue: 'linear',
+
+        description: 'The type of scale to use',
+
+        model: types.enumeration('Scale type', ['linear', 'log']),
+
+        type: 'stringEnum',
       }
 ```
 

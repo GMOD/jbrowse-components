@@ -16,9 +16,9 @@ describe('adapter can fetch features from volvox.gff3', () => {
   })
   it('test getfeatures on gff plain text adapter', async () => {
     const features = adapter.getFeatures({
+      end: 200000,
       refName: 'ctgB',
       start: 0,
-      end: 200000,
     })
     expect(await adapter.hasDataForRefName('ctgA')).toBe(true)
     expect(await adapter.hasDataForRefName('ctgB')).toBe(true)

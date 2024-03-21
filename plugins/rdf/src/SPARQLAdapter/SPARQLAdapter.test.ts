@@ -27,14 +27,14 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
   spy.mockImplementation(mockFetch)
   const adapter = new Adapter(
     configSchema.create({
+      additionalQueryParams: ['format=json'],
       endpoint: {
-        uri: 'http://somesite.com/sparql',
         locationType: 'UriLocation',
+        uri: 'http://somesite.com/sparql',
       },
       queryTemplate: 'fakeSPARQLQuery-start{start}-end{end}-{refName}',
-      refNamesQueryTemplate: 'fakeRefNamesQuery',
-      additionalQueryParams: ['format=json'],
       refNames: [],
+      refNamesQueryTemplate: 'fakeRefNamesQuery',
     }),
   )
 
@@ -50,9 +50,9 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
   expect(refNames[0]).toBe('NC_004353.4')
 
   const features = adapter.getFeatures({
+    end: 20000,
     refName: 'chr1',
     start: 0,
-    end: 20000,
   })
   const featuresArray = await features.pipe(toArray()).toPromise()
   expect(featuresArray).toMatchSnapshot()
@@ -65,9 +65,9 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
   )
 
   const featuresNonExist = adapter.getFeatures({
+    end: 20000,
     refName: 'chr80',
     start: 0,
-    end: 20000,
   })
   const featuresArrayNonExist = await featuresNonExist
     .pipe(toArray())

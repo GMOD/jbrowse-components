@@ -48,13 +48,6 @@ number
 number
 ```
 
-#### getter: maxFeatureScreenDensity
-
-```js
-// type
-any
-```
-
 #### getter: featureDensityStatsReady
 
 ```js
@@ -67,6 +60,13 @@ boolean
 ```js
 // type
 number
+```
+
+#### getter: maxFeatureScreenDensity
+
+```js
+// type
+any
 ```
 
 #### getter: regionTooLarge
@@ -95,13 +95,6 @@ string
 
 ### FeatureDensityMixin - Methods
 
-#### method: regionCannotBeRenderedText
-
-```js
-// type signature
-regionCannotBeRenderedText: (_region: Region) => "" | "Force load to see features"
-```
-
 #### method: regionCannotBeRendered
 
 ```js
@@ -109,20 +102,20 @@ regionCannotBeRenderedText: (_region: Region) => "" | "Force load to see feature
 regionCannotBeRendered: (_region: Region) => Element
 ```
 
-### FeatureDensityMixin - Actions
-
-#### action: setCurrStatsBpPerPx
+#### method: regionCannotBeRenderedText
 
 ```js
 // type signature
-setCurrStatsBpPerPx: (n: number) => void
+regionCannotBeRenderedText: (_region: Region) => "" | "Force load to see features"
 ```
 
-#### action: setFeatureDensityStatsLimit
+### FeatureDensityMixin - Actions
+
+#### action: clearFeatureDensityStats
 
 ```js
 // type signature
-setFeatureDensityStatsLimit: (stats?: FeatureDensityStats) => void
+clearFeatureDensityStats: () => void
 ```
 
 #### action: getFeatureDensityStats
@@ -132,11 +125,11 @@ setFeatureDensityStatsLimit: (stats?: FeatureDensityStats) => void
 getFeatureDensityStats: () => Promise<FeatureDensityStats>
 ```
 
-#### action: setFeatureDensityStatsP
+#### action: setCurrStatsBpPerPx
 
 ```js
 // type signature
-setFeatureDensityStatsP: (arg: any) => void
+setCurrStatsBpPerPx: (n: number) => void
 ```
 
 #### action: setFeatureDensityStats
@@ -146,9 +139,16 @@ setFeatureDensityStatsP: (arg: any) => void
 setFeatureDensityStats: (featureDensityStats?: FeatureDensityStats) => void
 ```
 
-#### action: clearFeatureDensityStats
+#### action: setFeatureDensityStatsLimit
 
 ```js
 // type signature
-clearFeatureDensityStats: () => void
+setFeatureDensityStatsLimit: (stats?: FeatureDensityStats) => void
+```
+
+#### action: setFeatureDensityStatsP
+
+```js
+// type signature
+setFeatureDensityStatsP: (arg: any) => void
 ```

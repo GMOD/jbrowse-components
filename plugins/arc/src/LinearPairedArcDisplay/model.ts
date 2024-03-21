@@ -40,22 +40,24 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        type: types.literal('LinearPairedArcDisplay'),
-        /**
-         * #property
-         */
         configuration: ConfigurationReference(configSchema),
+
         /**
          * #property
          */
         displayMode: types.maybe(types.string),
+
+        /**
+         * #property
+         */
+        type: types.literal('LinearPairedArcDisplay'),
       }),
     )
     .volatile(() => ({
-      lastDrawnOffsetPx: 0,
-      features: undefined as Feature[] | undefined,
-      loading: false,
       drawn: true,
+      features: undefined as Feature[] | undefined,
+      lastDrawnOffsetPx: 0,
+      loading: false,
     }))
 
     .views(self => ({
@@ -78,9 +80,9 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             'VariantFeatureWidget',
             'variantFeature',
             {
-              view: getContainingView(self),
-              track: getContainingTrack(self),
               featureData: feature.toJSON(),
+              track: getContainingTrack(self),
+              view: getContainingView(self),
             },
           )
 
@@ -90,23 +92,26 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           session.setSelection(feature)
         }
       },
+
       /**
        * #action
        */
-      setLoading(flag: boolean) {
-        self.loading = flag
+      setDisplayMode(flag: string) {
+        self.displayMode = flag
       },
+
       /**
        * #action
        */
       setFeatures(f: Feature[]) {
         self.features = f
       },
+
       /**
        * #action
        */
-      setDisplayMode(flag: string) {
-        self.displayMode = flag
+      setLoading(flag: boolean) {
+        self.loading = flag
       },
     }))
 

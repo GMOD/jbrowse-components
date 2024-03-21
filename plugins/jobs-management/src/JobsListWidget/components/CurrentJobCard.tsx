@@ -30,11 +30,11 @@ const CurrentJobCard = observer(function CurrentJobCard({
         </Typography>
         <Box
           sx={{
-            display: 'flex',
             alignItems: 'center',
-            marginTop: 10,
+            display: 'flex',
             marginBottom: 10,
             marginLeft: 10,
+            marginTop: 10,
           }}
         >
           {job.progressPct === 0 || job.progressPct === 100 ? (

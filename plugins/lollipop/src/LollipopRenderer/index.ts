@@ -7,9 +7,9 @@ export default function LollipopRendererF(pluginManager: PluginManager) {
   pluginManager.addRendererType(
     () =>
       new LollipopRenderer({
-        name: 'LollipopRenderer',
         ReactComponent: lazy(() => import('./components/LollipopRendering')),
         configSchema,
+        name: 'LollipopRenderer',
         pluginManager,
       }),
   )

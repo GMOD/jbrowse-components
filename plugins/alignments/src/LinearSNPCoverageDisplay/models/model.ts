@@ -42,36 +42,42 @@ function stateModelFactory(
         /**
          * #property
          */
-        type: types.literal('LinearSNPCoverageDisplay'),
-        /**
-         * #property
-         */
-        drawInterbaseCounts: types.maybe(types.boolean),
-        /**
-         * #property
-         */
-        drawIndicators: types.maybe(types.boolean),
+        colorBy: types.maybe(
+          types.model({
+            tag: types.maybe(types.string),
+            type: types.string,
+          }),
+        ),
+
         /**
          * #property
          */
         drawArcs: types.maybe(types.boolean),
+
+        /**
+         * #property
+         */
+        drawIndicators: types.maybe(types.boolean),
+
+        /**
+         * #property
+         */
+        drawInterbaseCounts: types.maybe(types.boolean),
+
         /**
          * #property
          */
         filterBy: types.optional(FilterModel, {}),
-        /**
-         * #property
-         */
-        colorBy: types.maybe(
-          types.model({
-            type: types.string,
-            tag: types.maybe(types.string),
-          }),
-        ),
+
         /**
          * #property
          */
         jexlFilters: types.optional(types.array(types.string), []),
+
+        /**
+         * #property
+         */
+        type: types.literal('LinearSNPCoverageDisplay'),
       }),
     )
     .volatile(() => ({
@@ -82,20 +88,22 @@ function stateModelFactory(
       /**
        * #action
        */
+      setColorBy(colorBy?: { type: string; tag?: string }) {
+        self.colorBy = cast(colorBy)
+      },
+
+      /**
+       * #action
+       */
       setConfig(configuration: AnyConfigurationModel) {
         self.configuration = configuration
       },
+
       /**
        * #action
        */
       setFilterBy(filter: IFilter) {
         self.filterBy = cast(filter)
-      },
-      /**
-       * #action
-       */
-      setColorBy(colorBy?: { type: string; tag?: string }) {
-        self.colorBy = cast(colorBy)
       },
       /**
        * #action
@@ -124,21 +132,16 @@ function stateModelFactory(
         /**
          * #getter
          */
-        get rendererConfig() {
-          const configBlob =
-            getConf(self, ['renderers', self.rendererTypeName]) || {}
-
-          return self.rendererType.configSchema.create(
-            {
-              ...configBlob,
-              drawInterbaseCounts:
-                self.drawInterbaseCounts ?? configBlob.drawInterbaseCounts,
-              drawIndicators: self.drawIndicators ?? configBlob.drawIndicators,
-              drawArcs: self.drawArcs ?? configBlob.drawArcs,
-            },
-            getEnv(self),
+        get autorunReady() {
+          const view = getContainingView(self) as LGV
+          return (
+            view.initialized &&
+            self.featureDensityStatsReady &&
+            !self.regionTooLarge &&
+            !self.error
           )
         },
+
         /**
          * #getter
          */
@@ -147,15 +150,7 @@ function stateModelFactory(
             self.drawArcs ?? readConfObject(this.rendererConfig, 'drawArcs')
           )
         },
-        /**
-         * #getter
-         */
-        get drawInterbaseCountsSetting() {
-          return (
-            self.drawInterbaseCounts ??
-            readConfObject(this.rendererConfig, 'drawInterbaseCounts')
-          )
-        },
+
         /**
          * #getter
          */
@@ -169,19 +164,11 @@ function stateModelFactory(
         /**
          * #getter
          */
-        get autorunReady() {
-          const view = getContainingView(self) as LGV
+        get drawInterbaseCountsSetting() {
           return (
-            view.initialized &&
-            self.featureDensityStatsReady &&
-            !self.regionTooLarge &&
-            !self.error
+            self.drawInterbaseCounts ??
+            readConfObject(this.rendererConfig, 'drawInterbaseCounts')
           )
-        },
-
-        get renderReady() {
-          const superProps = superRenderProps()
-          return !superProps.notReady && self.modificationsReady
         },
 
         get ready() {
@@ -196,15 +183,41 @@ function stateModelFactory(
           const { colorBy, filterBy, modificationTagMap } = self
           return {
             ...superProps,
-            notReady: !this.ready,
-            filters: self.filters,
-            modificationTagMap: Object.fromEntries(modificationTagMap.toJSON()),
-
             // must use getSnapshot because otherwise changes to e.g. just the
             // colorBy.type are not read
             colorBy: colorBy ? getSnapshot(colorBy) : undefined,
+
             filterBy: filterBy ? getSnapshot(filterBy) : undefined,
+
+            filters: self.filters,
+
+            modificationTagMap: Object.fromEntries(modificationTagMap.toJSON()),
+            notReady: !this.ready,
           }
+        },
+
+        get renderReady() {
+          const superProps = superRenderProps()
+          return !superProps.notReady && self.modificationsReady
+        },
+
+        /**
+         * #getter
+         */
+        get rendererConfig() {
+          const configBlob =
+            getConf(self, ['renderers', self.rendererTypeName]) || {}
+
+          return self.rendererType.configSchema.create(
+            {
+              ...configBlob,
+              drawArcs: self.drawArcs ?? configBlob.drawArcs,
+              drawIndicators: self.drawIndicators ?? configBlob.drawIndicators,
+              drawInterbaseCounts:
+                self.drawInterbaseCounts ?? configBlob.drawInterbaseCounts,
+            },
+            getEnv(self),
+          )
         },
       }
     })
@@ -215,23 +228,26 @@ function stateModelFactory(
       setModificationsReady(flag: boolean) {
         self.modificationsReady = flag
       },
+
+      /**
+       * #action
+       */
+      toggleDrawArcs() {
+        self.drawArcs = !self.drawArcsSetting
+      },
+
       /**
        * #action
        */
       toggleDrawIndicators() {
         self.drawIndicators = !self.drawIndicatorsSetting
       },
+
       /**
        * #action
        */
       toggleDrawInterbaseCounts() {
         self.drawInterbaseCounts = !self.drawInterbaseCountsSetting
-      },
-      /**
-       * #action
-       */
-      toggleDrawArcs() {
-        self.drawArcs = !self.drawArcsSetting
       },
     }))
     .actions(self => ({
@@ -283,23 +299,9 @@ function stateModelFactory(
         get adapterConfig() {
           const subadapter = getConf(self.parentTrack, 'adapter')
           return {
-            type: 'SNPCoverageAdapter',
             subadapter,
+            type: 'SNPCoverageAdapter',
           }
-        },
-
-        /**
-         * #getter
-         */
-        get rendererTypeName() {
-          return rendererTypes.get('snpcoverage')
-        },
-
-        /**
-         * #getter
-         */
-        get needsScalebar() {
-          return true
         },
 
         /**
@@ -310,37 +312,51 @@ function stateModelFactory(
         },
 
         /**
+         * #getter
+         */
+        get filters() {
+          return new SerializableFilterChain({ filters: self.jexlFilters })
+        },
+
+        /**
+         * #getter
+         */
+        get needsScalebar() {
+          return true
+        },
+
+        /**
+         * #getter
+         */
+        get rendererTypeName() {
+          return rendererTypes.get('snpcoverage')
+        },
+
+        /**
          * #method
          */
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
             {
-              label: 'Draw insertion/clipping indicators',
-              type: 'checkbox',
               checked: self.drawIndicatorsSetting,
+              label: 'Draw insertion/clipping indicators',
               onClick: () => self.toggleDrawIndicators(),
+              type: 'checkbox',
             },
             {
-              label: 'Draw insertion/clipping counts',
-              type: 'checkbox',
               checked: self.drawInterbaseCountsSetting,
+              label: 'Draw insertion/clipping counts',
               onClick: () => self.toggleDrawInterbaseCounts(),
+              type: 'checkbox',
             },
             {
-              label: 'Draw arcs',
-              type: 'checkbox',
               checked: self.drawArcsSetting,
+              label: 'Draw arcs',
               onClick: () => self.toggleDrawArcs(),
+              type: 'checkbox',
             },
           ]
-        },
-
-        /**
-         * #getter
-         */
-        get filters() {
-          return new SerializableFilterChain({ filters: self.jexlFilters })
         },
       }
     })

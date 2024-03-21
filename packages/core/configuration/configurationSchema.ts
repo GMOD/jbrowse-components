@@ -85,7 +85,7 @@ function preprocessConfigurationSchemaArguments(
     }
     delete options.baseConfiguration
   }
-  return { schemaDefinition, options }
+  return { options, schemaDefinition }
 }
 
 function makeConfigurationSchemaModel<
@@ -126,8 +126,8 @@ function makeConfigurationSchemaModel<
   const volatileConstants: Record<string, any> = {
     isJBrowseConfigurationSchema: true,
     jbrowseSchema: {
-      modelName,
       definition: schemaDefinition,
+      modelName,
       options,
     },
   }

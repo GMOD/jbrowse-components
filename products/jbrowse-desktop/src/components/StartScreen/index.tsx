@@ -11,19 +11,19 @@ import RecentSessionPanel from './RecentSessionsPanel'
 import packageJSON from '../../../package.json'
 
 const useStyles = makeStyles()(theme => ({
-  root: {
-    marginLeft: 100,
-    marginRight: 100,
-    flexGrow: 1,
+  logo: {
+    margin: '0 auto',
+    width: 500,
   },
 
   panel: {
     margin: theme.spacing(1),
     padding: theme.spacing(4),
   },
-  logo: {
-    margin: '0 auto',
-    width: 500,
+  root: {
+    flexGrow: 1,
+    marginLeft: 100,
+    marginRight: 100,
   },
 }))
 

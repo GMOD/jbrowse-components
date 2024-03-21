@@ -15,16 +15,20 @@ test('several features', async () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const pluginManager = {} as any
   const renderer = new XYPlotRenderer({
-    name: 'XYPlotRenderer',
     ReactComponent,
     configSchema,
+    name: 'XYPlotRenderer',
     pluginManager,
   })
   const renderProps = {
+    bpPerPx: 3,
+    config: {},
     features: [
-      new SimpleFeature({ id: 't1', data: { start: 1, end: 100, score: 1 } }),
-      new SimpleFeature({ id: 't2', data: { start: 101, end: 200, score: 2 } }),
+      new SimpleFeature({ data: { end: 100, score: 1, start: 1 }, id: 't1' }),
+      new SimpleFeature({ data: { end: 200, score: 2, start: 101 }, id: 't2' }),
     ],
+    height: 100,
+    highResolutionScaling: 1,
     regions: [
       {
         end: 100,
@@ -35,10 +39,6 @@ test('several features', async () => {
       domain: [0, 100],
       scaleType: 'linear',
     },
-    config: {},
-    bpPerPx: 3,
-    highResolutionScaling: 1,
-    height: 100,
     ticks: { values: [0, 100] },
   }
 

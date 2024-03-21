@@ -14,6 +14,14 @@ export default function configModelFactory(pm: PluginManager) {
       /**
        * #slot
        */
+      height: {
+        defaultValue: 250,
+        type: 'number',
+      },
+
+      /**
+       * #slot
+       */
       pileupDisplay: pm.getDisplayType('LinearPileupDisplay').configSchema,
 
       /**
@@ -21,14 +29,6 @@ export default function configModelFactory(pm: PluginManager) {
        */
       snpCoverageDisplay: pm.getDisplayType('LinearSNPCoverageDisplay')
         .configSchema,
-
-      /**
-       * #slot
-       */
-      height: {
-        type: 'number',
-        defaultValue: 250,
-      },
     },
     {
       /**

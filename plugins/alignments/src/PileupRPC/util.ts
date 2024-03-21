@@ -9,7 +9,7 @@ export function getInsertSizeStats(features: ReducedFeature[]) {
   const sd = Math.sqrt((total * sum2 - sum * sum) / (total * total))
   const upper = avg + 4 * sd
   const lower = avg - 3 * sd
-  return { upper, lower, avg, sd }
+  return { avg, lower, sd, upper }
 }
 
 export function filterForPairs(features: ReducedFeature[]) {

@@ -79,9 +79,9 @@ const RefNameAutocomplete = observer(function ({
     () =>
       regions?.map(option => ({
         result: new RefSequenceResult({
-          refName: option.refName,
           label: option.refName,
           matchedAttribute: 'refName',
+          refName: option.refName,
         }),
       })) || [],
     [regions],

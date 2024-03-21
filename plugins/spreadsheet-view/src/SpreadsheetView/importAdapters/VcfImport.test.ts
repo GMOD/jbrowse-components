@@ -7,13 +7,13 @@ describe('vcf file splitter', () => {
   const cases: [string, {}][] = [
     [
       '##fileformat=VCFv4.3\nfogbat\n',
-      { header: '##fileformat=VCFv4.3\n', body: 'fogbat\n' },
+      { body: 'fogbat\n', header: '##fileformat=VCFv4.3\n' },
     ],
     [
       '##fileformat=VCFv4.3\n##zonker\n##deek\n##donk\nfogbat\n',
       {
-        header: '##fileformat=VCFv4.3\n##zonker\n##deek\n##donk\n',
         body: 'fogbat\n',
+        header: '##fileformat=VCFv4.3\n##zonker\n##deek\n##donk\n',
       },
     ],
   ]

@@ -13,11 +13,11 @@ export default class extends Plugin {
     pluginManager.addTextSearchAdapterType(
       () =>
         new TextSearchAdapterType({
-          name: 'TrixTextSearchAdapter',
-          displayName: 'Trix text search adapter',
-          configSchema: trixAdapterConfigSchema,
           AdapterClass: TrixTextSearchAdapterClass,
+          configSchema: trixAdapterConfigSchema,
           description: 'Trix adapter',
+          displayName: 'Trix text search adapter',
+          name: 'TrixTextSearchAdapter',
         }),
     )
   }

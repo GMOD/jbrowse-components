@@ -8,11 +8,11 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addWidgetType(
     () =>
       new WidgetType({
-        name: 'VariantFeatureWidget',
-        heading: 'Feature details',
-        configSchema: configSchema,
-        stateModel: stateModelFactory(pluginManager),
         ReactComponent: lazy(() => import('./VariantFeatureWidget')),
+        configSchema: configSchema,
+        heading: 'Feature details',
+        name: 'VariantFeatureWidget',
+        stateModel: stateModelFactory(pluginManager),
       }),
   )
 }

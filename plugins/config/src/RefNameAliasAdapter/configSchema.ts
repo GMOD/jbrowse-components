@@ -14,11 +14,11 @@ const RefNameAliasAdapter = ConfigurationSchema(
      * #slot
      */
     location: {
-      type: 'fileLocation',
       defaultValue: {
-        uri: '/path/to/my/aliases.txt',
         locationType: 'UriLocation',
+        uri: '/path/to/my/aliases.txt',
       },
+      type: 'fileLocation',
     },
     /**
      * #slot
@@ -26,8 +26,8 @@ const RefNameAliasAdapter = ConfigurationSchema(
      * first column (0), change this variable if needed
      */
     refNameColumn: {
-      type: 'number',
       defaultValue: 0,
+      type: 'number',
     },
   },
   { explicitlyTyped: true },

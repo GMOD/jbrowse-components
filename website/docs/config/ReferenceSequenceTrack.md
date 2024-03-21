@@ -34,35 +34,14 @@ configuration for the displays e.g. LinearReferenceSequenceDisplay
 displays: types.array(pluginManager.pluggableConfigSchemaType('display'))
 ```
 
-#### slot: name
-
-```js
-name: {
-        type: 'string',
-        description:
-          'optional track name, otherwise uses the "Reference sequence (assemblyName)"',
-        defaultValue: '',
-      }
-```
-
-#### slot: metadata
-
-```js
-metadata: {
-        type: 'frozen',
-        description: 'anything to add about this track',
-        defaultValue: {},
-      }
-```
-
 #### slot: formatAbout.config
 
 ```js
 config: {
-          type: 'frozen',
-          description: 'formats configuration in about dialog',
-          defaultValue: {},
           contextVariable: ['config'],
+          defaultValue: {},
+          description: 'formats configuration in about dialog',
+          type: 'frozen',
         }
 ```
 
@@ -70,7 +49,28 @@ config: {
 
 ```js
 hideUris: {
-          type: 'boolean',
           defaultValue: false,
+          type: 'boolean',
         }
+```
+
+#### slot: metadata
+
+```js
+metadata: {
+        defaultValue: {},
+        description: 'anything to add about this track',
+        type: 'frozen',
+      }
+```
+
+#### slot: name
+
+```js
+name: {
+        defaultValue: '',
+        description:
+          'optional track name, otherwise uses the "Reference sequence (assemblyName)"',
+        type: 'string',
+      }
 ```

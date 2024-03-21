@@ -14,19 +14,20 @@ const useStyles = makeStyles()({
   // aligns with block boundaries. check for example the breakpoint split view
   // demo to see if features align if wanting to change things
   renderingComponentContainer: {
-    position: 'absolute',
+    height: '100%',
+
     // -1 offset because of the 1px border of the Paper
     left: -1,
-    height: '100%',
+    position: 'absolute',
     width: '100%',
   },
 
   trackRenderingContainer: {
-    overflowY: 'auto',
-    overflowX: 'hidden',
-    whiteSpace: 'nowrap',
-    position: 'relative',
     background: 'none',
+    overflowX: 'hidden',
+    overflowY: 'auto',
+    position: 'relative',
+    whiteSpace: 'nowrap',
     zIndex: 2,
   },
 })
@@ -84,8 +85,8 @@ const TrackRenderingContainer = observer(function ({
           {DisplayBlurb ? (
             <div
               style={{
-                position: 'absolute',
                 left: 0,
+                position: 'absolute',
                 top: display.height - 20,
               }}
             >

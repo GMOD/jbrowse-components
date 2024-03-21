@@ -16,43 +16,10 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ```js
 assemblyNames: {
-      type: 'stringArray',
       defaultValue: [],
       description:
         'Array of assembly names to use for this file. The target assembly name is the first value in the array, query assembly name is the second',
-    }
-```
-
-#### slot: targetAssembly
-
-```js
-targetAssembly: {
-      type: 'string',
-      defaultValue: '',
-      description: 'Alternative to assemblyNames: the target assembly name',
-    }
-```
-
-#### slot: queryAssembly
-
-```js
-queryAssembly: {
-      type: 'string',
-      defaultValue: '',
-      description: 'Alternative to assemblyNames: the query assembly name',
-    }
-```
-
-#### slot: pifGzLocation
-
-```js
-pifGzLocation: {
-      type: 'fileLocation',
-      description: 'location of pairwise tabix indexed PAF (pif)',
-      defaultValue: {
-        uri: '/path/to/data/file.pif.gz',
-        locationType: 'UriLocation',
-      },
+      type: 'stringArray',
     }
 ```
 
@@ -61,17 +28,17 @@ pifGzLocation: {
 ```js
 index: ConfigurationSchema('TabixIndex', {
   indexType: {
+    defaultValue: 'TBI',
     model: types.enumeration('IndexType', ['TBI', 'CSI']),
     type: 'stringEnum',
-    defaultValue: 'TBI',
   },
 
   location: {
-    type: 'fileLocation',
     defaultValue: {
-      uri: '/path/to/my.paf.gz.tbi',
       locationType: 'UriLocation',
+      uri: '/path/to/my.paf.gz.tbi',
     },
+    type: 'fileLocation',
   },
 })
 ```
@@ -80,9 +47,9 @@ index: ConfigurationSchema('TabixIndex', {
 
 ```js
 indexType: {
+        defaultValue: 'TBI',
         model: types.enumeration('IndexType', ['TBI', 'CSI']),
         type: 'stringEnum',
-        defaultValue: 'TBI',
       }
 ```
 
@@ -90,10 +57,43 @@ indexType: {
 
 ```js
 location: {
-        type: 'fileLocation',
         defaultValue: {
-          uri: '/path/to/my.paf.gz.tbi',
           locationType: 'UriLocation',
+          uri: '/path/to/my.paf.gz.tbi',
         },
+        type: 'fileLocation',
       }
+```
+
+#### slot: pifGzLocation
+
+```js
+pifGzLocation: {
+      defaultValue: {
+        locationType: 'UriLocation',
+        uri: '/path/to/data/file.pif.gz',
+      },
+      description: 'location of pairwise tabix indexed PAF (pif)',
+      type: 'fileLocation',
+    }
+```
+
+#### slot: queryAssembly
+
+```js
+queryAssembly: {
+      defaultValue: '',
+      description: 'Alternative to assemblyNames: the query assembly name',
+      type: 'string',
+    }
+```
+
+#### slot: targetAssembly
+
+```js
+targetAssembly: {
+      defaultValue: '',
+      description: 'Alternative to assemblyNames: the target assembly name',
+      type: 'string',
+    }
 ```

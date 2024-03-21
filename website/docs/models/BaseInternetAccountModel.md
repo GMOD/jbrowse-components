@@ -14,6 +14,15 @@ info
 
 ### BaseInternetAccountModel - Properties
 
+#### property: configuration
+
+```js
+// type signature
+ConfigurationSchemaType<{ authHeader: { defaultValue: string; description: string; type: string; }; description: { defaultValue: string; description: string; type: string; }; domains: { defaultValue: any[]; description: string; type: string; }; name: { ...; }; tokenType: { ...; }; }, ConfigurationSchemaOptions<...>>
+// code
+configuration: ConfigurationReference(BaseInternetAccountConfig)
+```
+
 #### property: id
 
 ```js
@@ -32,18 +41,19 @@ ISimpleType<string>
 type: types.string
 ```
 
-#### property: configuration
-
-```js
-// type signature
-ConfigurationSchemaType<{ name: { description: string; type: string; defaultValue: string; }; description: { description: string; type: string; defaultValue: string; }; authHeader: { description: string; type: string; defaultValue: string; }; tokenType: { ...; }; domains: { ...; }; }, ConfigurationSchemaOptions<...>>
-// code
-configuration: ConfigurationReference(BaseInternetAccountConfig)
-```
-
 ### BaseInternetAccountModel - Getters
 
-#### getter: name
+#### getter: SelectorComponent
+
+Can use this to customize what the fileSelector. It takes a prop called
+`setLocation` that should be used to set a UriLocation
+
+```js
+// type
+any
+```
+
+#### getter: authHeader
 
 ```js
 // type
@@ -57,6 +67,13 @@ string
 string
 ```
 
+#### getter: domains
+
+```js
+// type
+string[]
+```
+
 #### getter: internetAccountId
 
 ```js
@@ -64,25 +81,21 @@ string
 string
 ```
 
-#### getter: authHeader
+#### getter: name
 
 ```js
 // type
 string
 ```
 
-#### getter: tokenType
+#### getter: selectorLabel
+
+Can use this to add a label to the UrlChooser. Has no effect if a custom
+SelectorComponent is supplied
 
 ```js
 // type
 string
-```
-
-#### getter: domains
-
-```js
-// type
-string[]
 ```
 
 #### getter: toggleContents
@@ -94,20 +107,7 @@ Can use this to customize what is displayed in fileSelector's toggle box
 React.ReactNode
 ```
 
-#### getter: SelectorComponent
-
-Can use this to customize what the fileSelector. It takes a prop called
-`setLocation` that should be used to set a UriLocation
-
-```js
-// type
-any
-```
-
-#### getter: selectorLabel
-
-Can use this to add a label to the UrlChooser. Has no effect if a custom
-SelectorComponent is supplied
+#### getter: tokenType
 
 ```js
 // type
@@ -146,13 +146,6 @@ token to `resolve`.
 getTokenFromUser: (_resolve: (token: string) => void, _reject: (error: Error) => void) => void
 ```
 
-#### action: storeToken
-
-```js
-// type signature
-storeToken: (token: string) => void
-```
-
 #### action: removeToken
 
 ```js
@@ -165,6 +158,13 @@ removeToken: () => void
 ```js
 // type signature
 retrieveToken: () => string
+```
+
+#### action: storeToken
+
+```js
+// type signature
+storeToken: (token: string) => void
 ```
 
 #### action: validateToken
@@ -195,7 +195,7 @@ getToken: (location?: UriLocation) => Promise<string>
 
 ```js
 // type signature
-addAuthHeaderToInit: (init: RequestInit, token: string) => { headers: Headers; body?: BodyInit; cache?: RequestCache; credentials?: RequestCredentials; ... 8 more ...; window?: null; }
+addAuthHeaderToInit: (init: RequestInit, token: string) => { headers: Headers; body?: BodyInit; cache?: RequestCache; credentials?: RequestCredentials; ... 9 more ...; window?: null; }
 ```
 
 #### action: getPreAuthorizationInformation
@@ -205,7 +205,7 @@ internetAccount.
 
 ```js
 // type signature
-getPreAuthorizationInformation: (location: UriLocation) => Promise<{ internetAccountType: string; authInfo: { token: string; configuration: any; }; }>
+getPreAuthorizationInformation: (location: UriLocation) => Promise<{ authInfo: { configuration: any; token: string; }; internetAccountType: string; }>
 ```
 
 #### action: getFetcher

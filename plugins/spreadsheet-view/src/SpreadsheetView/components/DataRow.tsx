@@ -17,44 +17,44 @@ type SpreadsheetModel = Instance<typeof SpreadsheetStateModel>
 type RowModel = Instance<typeof RowStateModel>
 
 const useStyles = makeStyles()(theme => ({
-  rowNumCell: {
-    textAlign: 'left',
-    border: `1px solid ${theme.palette.action.disabledBackground}`,
-    position: 'relative',
-    padding: '0 2px 0 0',
-    whiteSpace: 'nowrap',
-    userSelect: 'none',
-  },
-  rowNumber: {
-    fontWeight: 'normal',
-    display: 'inline-block',
-    flex: 'none',
-    paddingRight: '20px',
-    margin: 0,
-    whiteSpace: 'nowrap',
-  },
-  rowMenuButton: {
-    padding: 0,
-    margin: 0,
-    position: 'absolute',
-    right: 0,
-    display: 'inline-block',
-    whiteSpace: 'nowrap',
-    flex: 'none',
-  },
-  rowMenuButtonIcon: {},
-  rowSelector: {
-    position: 'relative',
-    top: '-2px',
-    margin: 0,
-    padding: '0 0.2rem',
-  },
-
   dataRowSelected: {
-    background: indigo[100],
     '& th': {
       background: indigo[100],
     },
+    background: indigo[100],
+  },
+  rowMenuButton: {
+    display: 'inline-block',
+    flex: 'none',
+    margin: 0,
+    padding: 0,
+    position: 'absolute',
+    right: 0,
+    whiteSpace: 'nowrap',
+  },
+  rowMenuButtonIcon: {},
+  rowNumCell: {
+    border: `1px solid ${theme.palette.action.disabledBackground}`,
+    padding: '0 2px 0 0',
+    position: 'relative',
+    textAlign: 'left',
+    userSelect: 'none',
+    whiteSpace: 'nowrap',
+  },
+  rowNumber: {
+    display: 'inline-block',
+    flex: 'none',
+    fontWeight: 'normal',
+    margin: 0,
+    paddingRight: '20px',
+    whiteSpace: 'nowrap',
+  },
+
+  rowSelector: {
+    margin: 0,
+    padding: '0 0.2rem',
+    position: 'relative',
+    top: '-2px',
   },
 }))
 

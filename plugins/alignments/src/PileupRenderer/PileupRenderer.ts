@@ -66,8 +66,8 @@ export default class PileupRenderer extends BoxRendererType {
     return {
       // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
       ...(region as Omit<typeof region, symbol>),
-      start: Math.floor(Math.max(start - bpExpansion, 0)),
       end: Math.ceil(end + bpExpansion),
+      start: Math.floor(Math.max(start - bpExpansion, 0)),
     }
   }
 
@@ -95,13 +95,13 @@ export default class PileupRenderer extends BoxRendererType {
     const { makeImageData } = await import('./makeImageData')
     const res = await renderToAbstractCanvas(width, height, renderProps, ctx =>
       makeImageData({
+        canvasWidth: width,
         ctx,
         layoutRecords: layoutRecords.filter(notEmpty),
-        canvasWidth: width,
         renderArgs: {
           ...renderProps,
-          layout,
           features,
+          layout,
           regionSequence,
         },
       }),
@@ -111,8 +111,8 @@ export default class PileupRenderer extends BoxRendererType {
       ...renderProps,
       ...res,
       features,
-      layout,
       height,
+      layout,
       width,
     })
 
@@ -120,10 +120,10 @@ export default class PileupRenderer extends BoxRendererType {
       ...results,
       ...res,
       features: new Map(),
-      layout,
       height,
-      width,
+      layout,
       maxHeightReached: layout.maxHeightReached,
+      width,
     }
   }
 

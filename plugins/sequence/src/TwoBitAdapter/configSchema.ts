@@ -11,21 +11,22 @@ const TwoBitAdapter = ConfigurationSchema(
     /**
      * #slot
      */
-    twoBitLocation: {
-      type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.2bit', locationType: 'UriLocation' },
-    },
-    /**
-     * #slot
-     */
     chromSizesLocation: {
-      type: 'fileLocation',
       defaultValue: {
-        uri: '/path/to/default.chrom.sizes',
         locationType: 'UriLocation',
+        uri: '/path/to/default.chrom.sizes',
       },
       description:
         'An optional chrom.sizes file can be supplied to speed up loading since parsing the twobit file can take time',
+      type: 'fileLocation',
+    },
+
+    /**
+     * #slot
+     */
+    twoBitLocation: {
+      defaultValue: { locationType: 'UriLocation', uri: '/path/to/my.2bit' },
+      type: 'fileLocation',
     },
   },
   { explicitlyTyped: true },

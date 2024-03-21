@@ -63,9 +63,9 @@ const WiggleRendering = observer(function (props: {
       }
       onMouseLeave={event => onMouseLeave(event)}
       style={{
+        height,
         overflow: 'visible',
         position: 'relative',
-        height,
       }}
     >
       <PrerenderedCanvas {...props} />

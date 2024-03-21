@@ -29,46 +29,69 @@ export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
        */
       displays: types.array(pluginManager.pluggableConfigSchemaType('display')),
 
-      /**
-       * #slot
-       */
-      name: {
-        type: 'string',
-        description:
-          'optional track name, otherwise uses the "Reference sequence (assemblyName)"',
-        defaultValue: '',
-      },
-
-      /**
-       * #slot
-       */
-      metadata: {
-        type: 'frozen',
-        description: 'anything to add about this track',
-        defaultValue: {},
-      },
-
       formatAbout: ConfigurationSchema('FormatAbout', {
         /**
          * #slot formatAbout.config
          */
         config: {
-          type: 'frozen',
-          description: 'formats configuration in about dialog',
-          defaultValue: {},
           contextVariable: ['config'],
+          defaultValue: {},
+          description: 'formats configuration in about dialog',
+          type: 'frozen',
         },
 
         /**
          * #slot formatAbout.hideUris
          */
         hideUris: {
-          type: 'boolean',
           defaultValue: false,
+          type: 'boolean',
         },
       }),
+
+      /**
+       * #slot
+       */
+      metadata: {
+        defaultValue: {},
+        description: 'anything to add about this track',
+        type: 'frozen',
+      },
+
+      /**
+       * #slot
+       */
+      name: {
+        defaultValue: '',
+        description:
+          'optional track name, otherwise uses the "Reference sequence (assemblyName)"',
+        type: 'string',
+      },
     },
     {
+      actions: (self: any) => ({
+        addDisplayConf(displayConf: { type: string; displayId: string }) {
+          const { type } = displayConf
+          if (!type) {
+            throw new Error(`unknown display type ${type}`)
+          }
+          const display = self.displays.find(
+            (d: any) => d && d.displayId === displayConf.displayId,
+          )
+          if (display) {
+            return display
+          }
+          const length = self.displays.push(displayConf)
+          return self.displays[length - 1]
+        },
+      }),
+
+      /**
+       * #identifier
+       * all tracks have a globally unique 'trackId'
+       */
+      explicitIdentifier: 'trackId',
+      explicitlyTyped: true,
       preProcessSnapshot: s => {
         const snap = JSON.parse(JSON.stringify(s))
         const displayTypes = new Set()
@@ -90,28 +113,6 @@ export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
         }
         return { ...snap, displays }
       },
-      /**
-       * #identifier
-       * all tracks have a globally unique 'trackId'
-       */
-      explicitIdentifier: 'trackId',
-      explicitlyTyped: true,
-      actions: (self: any) => ({
-        addDisplayConf(displayConf: { type: string; displayId: string }) {
-          const { type } = displayConf
-          if (!type) {
-            throw new Error(`unknown display type ${type}`)
-          }
-          const display = self.displays.find(
-            (d: any) => d && d.displayId === displayConf.displayId,
-          )
-          if (display) {
-            return display
-          }
-          const length = self.displays.push(displayConf)
-          return self.displays[length - 1]
-        },
-      }),
     },
   )
 }

@@ -14,12 +14,12 @@ function makeColor(idx: number) {
 }
 
 const colorMap = {
-  I: '#ff03',
-  N: '#0a03',
-  D: '#00f3',
-  X: 'brown',
-  M: '#f003',
   '=': '#f003',
+  D: '#00f3',
+  I: '#ff03',
+  M: '#f003',
+  N: '#0a03',
+  X: 'brown',
 }
 
 const lineLimit = 3
@@ -205,14 +205,14 @@ export function drawRef(
     // too many click map false positives with colored stroked lines
     drawMatchSimple({
       cb: ctx => ctx.fill(),
-      feature,
       ctx: ctx2,
       drawCurves,
+      feature,
+      height,
+      hideTiny: true,
       offsets,
       oobLimit,
       viewWidth: view.width,
-      hideTiny: true,
-      height,
     })
   }
 }
@@ -238,13 +238,13 @@ export function drawMouseoverSynteny(model: LinearSyntenyDisplayModel) {
     ctx.fillStyle = 'rgb(0,0,0,0.1)'
     drawMatchSimple({
       cb: ctx => ctx.fill(),
-      feature: feature1,
       ctx,
+      drawCurves,
+      feature: feature1,
+      height,
+      offsets,
       oobLimit,
       viewWidth: view.width,
-      drawCurves,
-      offsets,
-      height,
     })
   }
   const feature2 = model.featMap[clickId || '']
@@ -253,13 +253,13 @@ export function drawMouseoverSynteny(model: LinearSyntenyDisplayModel) {
 
     drawMatchSimple({
       cb: ctx => ctx.stroke(),
-      feature: feature2,
       ctx,
+      drawCurves,
+      feature: feature2,
+      height,
+      offsets,
       oobLimit,
       viewWidth: view.width,
-      drawCurves,
-      offsets,
-      height,
     })
   }
 }

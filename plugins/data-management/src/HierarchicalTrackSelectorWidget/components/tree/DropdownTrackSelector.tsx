@@ -33,7 +33,10 @@ const DropdownTrackSelector = observer(function ({
       onClick={onClick}
       menuItems={[
         ...tracks.map(t => ({
-          type: 'checkbox' as const,
+          checked: view.tracks.some(
+            (f: { configuration: AnyConfigurationModel }) =>
+              f.configuration === t,
+          ),
           label: (
             <>
               <SanitizedHTML html={getTrackName(t, session)} />{' '}
@@ -47,10 +50,6 @@ const DropdownTrackSelector = observer(function ({
               />
             </>
           ),
-          checked: view.tracks.some(
-            (f: { configuration: AnyConfigurationModel }) =>
-              f.configuration === t,
-          ),
           onClick: () => {
             if (!open) {
               if (model.view.toggleTrack(t.trackId)) {
@@ -58,6 +57,7 @@ const DropdownTrackSelector = observer(function ({
               }
             }
           },
+          type: 'checkbox' as const,
         })),
         ...extraMenuItems,
       ]}

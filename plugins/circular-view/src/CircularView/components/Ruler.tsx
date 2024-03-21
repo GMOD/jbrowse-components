@@ -22,8 +22,8 @@ const useStyles = makeStyles()({
   rulerLabel: {
     fontSize: '0.8rem',
     fontWeight: 500,
-    lineHeight: 1.6,
     letterSpacing: '0.0075em',
+    lineHeight: 1.6,
   },
 })
 

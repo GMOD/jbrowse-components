@@ -8,7 +8,7 @@ test('one', () => {
     <HicRendering
       width={500}
       height={500}
-      regions={[{ assemblyName: 'volvox', refName: 'zonk', start: 1, end: 3 }]}
+      regions={[{ assemblyName: 'volvox', end: 3, refName: 'zonk', start: 1 }]}
       bpPerPx={3}
       blockKey="test"
       /*

@@ -25,46 +25,11 @@ configuration: types.safeReference(assemblyConfigType)
 
 ### Assembly - Getters
 
-#### getter: initialized
-
-```js
-// type
-boolean
-```
-
-#### getter: name
-
-```js
-// type
-string
-```
-
-#### getter: regions
-
-```js
-// type
-BasicRegion[]
-```
-
 #### getter: aliases
 
 ```js
 // type
 string[]
-```
-
-#### getter: displayName
-
-```js
-// type
-string
-```
-
-#### getter: hasName
-
-```js
-// type
-(name: string) => any
 ```
 
 #### getter: allAliases
@@ -85,13 +50,6 @@ resolve a lower-case name if needed
 string[]
 ```
 
-#### getter: lowerCaseRefNames
-
-```js
-// type
-string[]
-```
-
 #### getter: allRefNamesWithLowerCase
 
 ```js
@@ -99,11 +57,39 @@ string[]
 any[]
 ```
 
-#### getter: rpcManager
+#### getter: displayName
 
 ```js
 // type
-RpcManager
+string
+```
+
+#### getter: hasName
+
+```js
+// type
+(name: string) => any
+```
+
+#### getter: initialized
+
+```js
+// type
+boolean
+```
+
+#### getter: lowerCaseRefNames
+
+```js
+// type
+string[]
+```
+
+#### getter: name
+
+```js
+// type
+string
 ```
 
 #### getter: refNameColors
@@ -111,6 +97,20 @@ RpcManager
 ```js
 // type
 string[]
+```
+
+#### getter: regions
+
+```js
+// type
+BasicRegion[]
+```
+
+#### getter: rpcManager
+
+```js
+// type
+RpcManager
 ```
 
 #### getter: refNames
@@ -170,48 +170,6 @@ getReverseRefNameMapForAdapter: (adapterConf: AdapterConf, opts: BaseOptions) =>
 
 ### Assembly - Actions
 
-#### action: setLoaded
-
-```js
-// type signature
-setLoaded: ({ adapterRegionsWithAssembly, refNameAliases, lowerCaseRefNameAliases, cytobands, }: Loading) => void
-```
-
-#### action: setError
-
-```js
-// type signature
-setError: (e: unknown) => void
-```
-
-#### action: setRegions
-
-```js
-// type signature
-setRegions: (regions: Region[]) => void
-```
-
-#### action: setRefNameAliases
-
-```js
-// type signature
-setRefNameAliases: (aliases: RefNameAliases, lcAliases: RefNameAliases) => void
-```
-
-#### action: setCytobands
-
-```js
-// type signature
-setCytobands: (cytobands: Feature[]) => void
-```
-
-#### action: setLoadingP
-
-```js
-// type signature
-setLoadingP: (p?: Promise<void>) => void
-```
-
 #### action: load
 
 ```js
@@ -224,4 +182,46 @@ load: () => Promise<void>
 ```js
 // type signature
 loadPre: () => Promise<void>
+```
+
+#### action: setCytobands
+
+```js
+// type signature
+setCytobands: (cytobands: Feature[]) => void
+```
+
+#### action: setError
+
+```js
+// type signature
+setError: (e: unknown) => void
+```
+
+#### action: setLoaded
+
+```js
+// type signature
+setLoaded: ({ adapterRegionsWithAssembly, refNameAliases, lowerCaseRefNameAliases, cytobands, }: Loading) => void
+```
+
+#### action: setLoadingP
+
+```js
+// type signature
+setLoadingP: (p?: Promise<void>) => void
+```
+
+#### action: setRefNameAliases
+
+```js
+// type signature
+setRefNameAliases: (aliases: RefNameAliases, lcAliases: RefNameAliases) => void
+```
+
+#### action: setRegions
+
+```js
+// type signature
+setRegions: (regions: Region[]) => void
 ```

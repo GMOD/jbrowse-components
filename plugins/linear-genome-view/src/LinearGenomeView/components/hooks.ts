@@ -128,9 +128,9 @@ export function useRangeSelect(
         // as stated above, store both clientX/Y and offsetX for different
         // purposes
         setAnchorPosition({
-          offsetX,
           clientX,
           clientY,
+          offsetX,
         })
         const args = computeOffsets(offsetX)
         if (args) {
@@ -204,12 +204,12 @@ export function useRangeSelect(
   const open = Boolean(anchorPosition)
   if (startX === undefined) {
     return {
-      open,
       guideX,
+      handleMenuItemClick,
       mouseDown,
       mouseMove,
       mouseOut,
-      handleMenuItemClick,
+      open,
     }
   } else {
     const right = anchorPosition ? anchorPosition.offsetX : currentX || 0
@@ -220,19 +220,19 @@ export function useRangeSelect(
     const numOfBpSelected = Math.ceil(width * model.bpPerPx)
 
     return {
-      open,
-      rubberbandOn: true,
+      anchorPosition,
+      handleClose,
+      handleMenuItemClick,
+      left,
+      leftBpOffset,
       mouseDown,
       mouseMove,
       mouseOut,
-      handleClose,
-      handleMenuItemClick,
-      leftBpOffset,
-      rightBpOffset,
-      anchorPosition,
       numOfBpSelected,
+      open,
+      rightBpOffset,
+      rubberbandOn: true,
       width,
-      left,
     }
   }
 }

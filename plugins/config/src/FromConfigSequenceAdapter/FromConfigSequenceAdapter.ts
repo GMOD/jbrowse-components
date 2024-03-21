@@ -26,15 +26,15 @@ export default class FromConfigSequenceAdapter
       observer.next(
         new SimpleFeature({
           ...feat.toJSON(),
-          uniqueId: `${feat.id()}:${region.start}-${region.end}`,
           end: region.end,
-          start: region.start,
           seq: feat
             .get('seq')
             .slice(
               Math.max(region.start - feat.get('start'), 0),
               Math.max(region.end - feat.get('start'), 0),
             ),
+          start: region.start,
+          uniqueId: `${feat.id()}:${region.start}-${region.end}`,
         }),
       )
 
@@ -63,9 +63,9 @@ export default class FromConfigSequenceAdapter
             regions.push(currentRegion)
           }
           currentRegion = {
+            end: feature.get('end'),
             refName,
             start: feature.get('start'),
-            end: feature.get('end'),
           }
         }
       }

@@ -23,8 +23,8 @@ export default class SvInspectorViewPlugin extends Plugin {
   configure(pluginManager: PluginManager) {
     if (isAbstractMenuManager(pluginManager.rootModel)) {
       pluginManager.rootModel.appendToSubMenu(['Add'], {
-        label: 'SV inspector',
         icon: TableChartIcon,
+        label: 'SV inspector',
         onClick: (session: AbstractSessionModel) => {
           session.addView('SvInspectorView', {})
         },

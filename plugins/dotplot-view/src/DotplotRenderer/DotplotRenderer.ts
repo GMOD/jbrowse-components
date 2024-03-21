@@ -66,9 +66,9 @@ export default class DotplotRenderer extends ComparativeRenderer {
         throw new Error('No assembly manager provided')
       }
       const result = await renameRegionsIfNeeded(assemblyManager, {
-        sessionId,
         adapterConfig,
         regions,
+        sessionId,
       })
       return result.regions
     }
@@ -122,8 +122,8 @@ export default class DotplotRenderer extends ComparativeRenderer {
         }
 
         warnings.push({
-          message: `feature at (X ${refName}:${start}-${end}) ${r} ${lt}`,
           effect: 'clipped the feature',
+          message: `feature at (X ${refName}:${start}-${end}) ${r} ${lt}`,
         })
         return min
       }
@@ -134,8 +134,8 @@ export default class DotplotRenderer extends ComparativeRenderer {
         const refName = feature.get('refName')
 
         warnings.push({
-          message: `feature at (X ${refName}:${start}-${end}) ${r} ${gt}`,
           effect: 'clipped the feature',
+          message: `feature at (X ${refName}:${start}-${end}) ${r} ${gt}`,
         })
         return max
       }
@@ -152,8 +152,8 @@ export default class DotplotRenderer extends ComparativeRenderer {
         const mate = feature.get('mate')
         const { refName, start, end } = mate
         warnings.push({
-          message: `feature at (Y ${refName}:${start}-${end}) ${r} ${lt}`,
           effect: 'clipped the feature',
+          message: `feature at (Y ${refName}:${start}-${end}) ${r} ${lt}`,
         })
         return min
       }
@@ -162,8 +162,8 @@ export default class DotplotRenderer extends ComparativeRenderer {
         const { refName, start, end } = mate
 
         warnings.push({
-          message: `feature at (Y ${refName}:${start}-${end}) ${r} ${gt}`,
           effect: 'clipped the feature',
+          message: `feature at (Y ${refName}:${start}-${end}) ${r} ${gt}`,
         })
         return max
       }
@@ -214,10 +214,10 @@ export default class DotplotRenderer extends ComparativeRenderer {
       ctx.fillStyle = r
       ctx.strokeStyle = r
 
-      const b10 = bpToPx({ self: hsnap, refName, coord: start })
-      const b20 = bpToPx({ self: hsnap, refName, coord: end })
-      const e10 = bpToPx({ self: vsnap, refName: mateRef, coord: mate.start })
-      const e20 = bpToPx({ self: vsnap, refName: mateRef, coord: mate.end })
+      const b10 = bpToPx({ coord: start, refName, self: hsnap })
+      const b20 = bpToPx({ coord: end, refName, self: hsnap })
+      const e10 = bpToPx({ coord: mate.start, refName: mateRef, self: vsnap })
+      const e20 = bpToPx({ coord: mate.end, refName: mateRef, self: vsnap })
       if (
         b10 !== undefined &&
         b20 !== undefined &&
@@ -279,13 +279,13 @@ export default class DotplotRenderer extends ComparativeRenderer {
         if (warnings.length <= 5) {
           if (b10 === undefined || b20 === undefined) {
             warnings.push({
-              message: `feature at (X ${refName}:${start}-${end}) not plotted, fell outside of range`,
               effect: 'feature not rendered',
+              message: `feature at (X ${refName}:${start}-${end}) not plotted, fell outside of range`,
             })
           } else {
             warnings.push({
-              message: `feature at (Y ${mateRef}:${mate.start}-${mate.end}) not plotted, fell outside of range`,
               effect: 'feature not rendered',
+              message: `feature at (Y ${mateRef}:${mate.start}-${mate.end}) not plotted, fell outside of range`,
             })
           }
         }
@@ -328,12 +328,12 @@ export default class DotplotRenderer extends ComparativeRenderer {
     return {
       ...results,
       ...ret,
-      height,
-      width,
-      offsetX: views[0].dynamicBlocks.blocks[0]?.offsetPx || 0,
-      offsetY: views[1].dynamicBlocks.blocks[0]?.offsetPx || 0,
       bpPerPxX: views[0].bpPerPx,
       bpPerPxY: views[1].bpPerPx,
+      height,
+      offsetX: views[0].dynamicBlocks.blocks[0]?.offsetPx || 0,
+      offsetY: views[1].dynamicBlocks.blocks[0]?.offsetPx || 0,
+      width,
     }
   }
 }

@@ -6,13 +6,13 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addAdapterType(
     () =>
       new AdapterType({
-        name: 'ChainAdapter',
-        displayName: 'Liftover chain adapter',
-        configSchema,
         adapterMetadata: {
           hiddenFromGUI: true,
         },
+        configSchema,
+        displayName: 'Liftover chain adapter',
         getAdapterClass: () => import('./ChainAdapter').then(r => r.default),
+        name: 'ChainAdapter',
       }),
   )
 }

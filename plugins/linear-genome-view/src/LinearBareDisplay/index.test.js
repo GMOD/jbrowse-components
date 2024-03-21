@@ -26,9 +26,9 @@ test('config schema renderer type', () => {
 
   const configSchema = configSchemaFactory(stubPluginManager)
   const instance = configSchema.create({
-    type: 'LinearBareDisplay',
     displayId: 'displayId0',
     renderer: { type: 'renderer_TypeTwo' },
+    type: 'LinearBareDisplay',
   })
   expect(instance.renderer.type).toBe('renderer_TypeTwo')
 })

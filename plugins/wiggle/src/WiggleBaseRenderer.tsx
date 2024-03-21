@@ -62,6 +62,7 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
     return {
       ...results,
       ...rest,
+      containsNoTransferables: true,
       features: reducedFeatures
         ? new Map<string, Feature>(
             reducedFeatures.map((r: Feature) => [r.id(), r]),
@@ -69,7 +70,6 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
         : results.features,
       height,
       width,
-      containsNoTransferables: true,
     }
   }
 

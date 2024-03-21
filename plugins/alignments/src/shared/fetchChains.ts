@@ -52,10 +52,10 @@ export async function fetchChains(
 
   self.setLoading(true)
   const ret = (await rpcManager.call(sessionId, 'PileupGetReducedFeatures', {
-    sessionId,
-    regions: view.staticBlocks.contentBlocks,
-    filterBy: getSnapshot(self.filterBy),
     adapterConfig: self.adapterConfig,
+    filterBy: getSnapshot(self.filterBy),
+    regions: view.staticBlocks.contentBlocks,
+    sessionId,
   })) as ChainData
 
   self.setChainData(ret)

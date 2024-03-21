@@ -103,15 +103,15 @@ test('single exon cDNA should not have duplicate sequences', () => {
       sequence={{ seq }}
       mode="cdna"
       feature={{
-        start: 1200,
         end: 1500,
         refName: 'chr1',
+        start: 1200,
+        subfeatures: [
+          { end: 1500, start: 1200, type: 'exon' },
+          { end: 1500, start: 1200, type: 'CDS' },
+        ],
         type: 'mRNA',
         uniqueId: 'unique',
-        subfeatures: [
-          { start: 1200, end: 1500, type: 'exon' },
-          { start: 1200, end: 1500, type: 'CDS' },
-        ],
       }}
     />,
   )

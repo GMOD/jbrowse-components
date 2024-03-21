@@ -32,8 +32,8 @@ const SeqPanel = React.forwardRef<HTMLDivElement, SeqPanelProps>(
       .sort((a, b) => a.start - b.start)
       .map(sub => ({
         ...sub,
-        start: sub.start - feature.start,
         end: sub.end - feature.start,
+        start: sub.start - feature.start,
       }))
 
     // we filter duplicate entries in cds and exon lists duplicate entries may be
@@ -55,8 +55,8 @@ const SeqPanel = React.forwardRef<HTMLDivElement, SeqPanelProps>(
     }
     if (!utr.length && cds.length && !exons.length) {
       utr = calculateUTRs2(cds, {
-        start: 0,
         end: feature.end - feature.start,
+        start: 0,
         type: 'gene',
       })
     }
@@ -79,14 +79,14 @@ const SeqPanel = React.forwardRef<HTMLDivElement, SeqPanelProps>(
       <div ref={ref} data-testid="sequence_panel">
         <div
           style={{
+            color: 'black',
             /* raw styles instead of className so that html copy works */
             fontFamily: 'monospace',
-            wordWrap: 'break-word',
-            overflow: 'auto',
-            color: 'black',
             fontSize: 12,
-            maxWidth: 600,
             maxHeight: 300,
+            maxWidth: 600,
+            overflow: 'auto',
+            wordWrap: 'break-word',
           }}
         >
           <span style={{ background: 'white' }}>

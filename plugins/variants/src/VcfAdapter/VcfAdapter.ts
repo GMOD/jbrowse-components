@@ -70,9 +70,9 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
     let idx = 0
     for (const line of lines) {
       const f = new VcfFeature({
-        variant: parser.parseLine(line),
-        parser,
         id: `${this.id}-${idx++}`,
+        parser,
+        variant: parser.parseLine(line),
       })
       const key = f.get('refName')
       if (!intervalTree[key]) {

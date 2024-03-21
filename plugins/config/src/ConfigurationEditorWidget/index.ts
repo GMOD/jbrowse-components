@@ -16,11 +16,11 @@ export default function registerConfigurationEditorWidget(
 ) {
   pluginManager.addWidgetType(() => {
     return new WidgetType({
-      name: 'ConfigurationEditorWidget',
       HeadingComponent,
-      configSchema,
-      stateModel: stateModelFactory(pluginManager),
       ReactComponent: LazyConfigurationEditorComponent,
+      configSchema,
+      name: 'ConfigurationEditorWidget',
+      stateModel: stateModelFactory(pluginManager),
     })
   })
 }

@@ -32,25 +32,27 @@ export default function stateModelFactory(
       /**
        * #property
        */
-      type: types.literal('GoogleDriveOAuthInternetAccount'),
+      configuration: ConfigurationReference(configSchema),
+
       /**
        * #property
        */
-      configuration: ConfigurationReference(configSchema),
+      type: types.literal('GoogleDriveOAuthInternetAccount'),
     })
     .views(() => ({
+      /**
+       * #getter
+       */
+      get selectorLabel() {
+        return 'Enter Google Drive share link'
+      },
+
       /**
        * #getter
        * The FileSelector icon for Google drive
        */
       get toggleContents() {
         return <GoogleDriveIcon />
-      },
-      /**
-       * #getter
-       */
-      get selectorLabel() {
-        return 'Enter Google Drive share link'
       },
     }))
     .actions(self => ({
@@ -71,7 +73,7 @@ export default function stateModelFactory(
           const response = await fetch(
             driveUrl,
             self.addAuthHeaderToInit(
-              { ...init, method: 'GET', credentials: 'same-origin' },
+              { ...init, credentials: 'same-origin', method: 'GET' },
               authToken,
             ),
           )

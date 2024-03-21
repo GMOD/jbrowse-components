@@ -7,16 +7,16 @@ import { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types
 
 const useStyles = makeStyles()(theme => ({
   paper: {
-    overflowY: 'auto',
-    height: '100%',
-    zIndex: theme.zIndex.drawer,
-    outline: 'none',
     background: theme.palette.background.default,
+    height: '100%',
+    outline: 'none',
+    overflowY: 'auto',
+    zIndex: theme.zIndex.drawer,
   },
   resizeHandle: {
-    width: 4,
     position: 'fixed',
     top: 0,
+    width: 4,
     zIndex: theme.zIndex.drawer + 1,
   },
 }))

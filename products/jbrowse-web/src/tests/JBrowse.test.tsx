@@ -41,9 +41,9 @@ test('toplevel configuration', () => {
   const plugins = [...corePlugins, TestPlugin].map(P => new P())
   const pluginManager = new PluginManager(plugins).createPluggableElements()
   const rootModel = JBrowseRootModelFactory({
+    adminMode: true,
     pluginManager,
     sessionModelFactory,
-    adminMode: true,
   }).create(
     {
       jbrowse: volvoxConfigSnapshot,

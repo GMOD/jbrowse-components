@@ -38,19 +38,19 @@ function generate_record(
   numMatches: number,
 ) {
   return {
+    extra: {
+      blockLen: Math.max(qend - qstart, tend - tstart),
+      cg: cigar,
+      mappingQual: 0,
+      numMatches,
+    },
+    qend,
     qname,
     qstart,
-    qend,
+    strand: qstrand === '-' ? -1 : 1,
+    tend,
     tname,
     tstart,
-    tend,
-    strand: qstrand === '-' ? -1 : 1,
-    extra: {
-      numMatches,
-      blockLen: Math.max(qend - qstart, tend - tstart),
-      mappingQual: 0,
-      cg: cigar,
-    },
   }
 }
 

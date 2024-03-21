@@ -37,9 +37,9 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     const pm = this.pluginManager
     const csi = indexType === 'CSI'
     const bam = new BamFile({
+      baiFilehandle: !csi ? openLocation(location, pm) : undefined,
       bamFilehandle: openLocation(bamLocation, pm),
       csiFilehandle: csi ? openLocation(location, pm) : undefined,
-      baiFilehandle: !csi ? openLocation(location, pm) : undefined,
 
       // chunkSizeLimit and fetchSizeLimit are more troublesome than
       // helpful, and have given overly large values on the ultra long
@@ -131,10 +131,10 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     }
 
     const features = refSeqStore.getFeatures({
+      assemblyName: '',
+      end,
       refName,
       start,
-      end,
-      assemblyName: '',
     })
 
     const seqChunks = await firstValueFrom(features.pipe(toArray()))

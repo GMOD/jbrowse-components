@@ -16,16 +16,17 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #property
        */
-      name: types.identifier,
-      /**
-       * #property
-       */
-      tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
+      configuration: ConfigurationReference(configSchema),
 
       /**
        * #property
        */
-      configuration: ConfigurationReference(configSchema),
+      name: types.identifier,
+
+      /**
+       * #property
+       */
+      tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
     })
     .actions(() => ({
       /**
@@ -34,11 +35,6 @@ function stateModelFactory(pluginManager: PluginManager) {
       connect(_arg: AnyConfigurationModel) {},
     }))
     .actions(self => ({
-      afterAttach() {
-        if (self.tracks.length === 0) {
-          self.connect(self.configuration)
-        }
-      },
       /**
        * #action
        */
@@ -46,6 +42,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         const length = self.tracks.push(trackConf)
         return self.tracks[length - 1]
       },
+
       /**
        * #action
        */
@@ -53,6 +50,18 @@ function stateModelFactory(pluginManager: PluginManager) {
         const length = self.tracks.push(...trackConfs)
         return self.tracks.slice(length - 1 - trackConfs.length, length - 1)
       },
+
+      afterAttach() {
+        if (self.tracks.length === 0) {
+          self.connect(self.configuration)
+        }
+      },
+
+      /**
+       * #action
+       */
+      clear() {},
+
       /**
        * #action
        */
@@ -60,10 +69,6 @@ function stateModelFactory(pluginManager: PluginManager) {
         self.tracks = cast(trackConfs)
         return self.tracks
       },
-      /**
-       * #action
-       */
-      clear() {},
     }))
 }
 

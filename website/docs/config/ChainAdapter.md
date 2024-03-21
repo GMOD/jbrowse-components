@@ -16,22 +16,19 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ```js
 assemblyNames: {
-      type: 'stringArray',
       defaultValue: [],
       description:
         'Target is the first value in the array, query is the second',
+      type: 'stringArray',
     }
 ```
 
-#### slot: targetAssembly
-
-can be specified as alternative to assemblyNames
+#### slot: chainLocation
 
 ```js
-targetAssembly: {
-      type: 'string',
-      defaultValue: '',
-      description: 'Alternative to assemblyNames array: the target assembly',
+chainLocation: {
+      defaultValue: { locationType: 'UriLocation', uri: '/path/to/file.chain' },
+      type: 'fileLocation',
     }
 ```
 
@@ -41,17 +38,20 @@ can be specified as alternative to assemblyNames
 
 ```js
 queryAssembly: {
-      type: 'string',
       defaultValue: '',
       description: 'Alternative to assemblyNames array: the query assembly',
+      type: 'string',
     }
 ```
 
-#### slot: chainLocation
+#### slot: targetAssembly
+
+can be specified as alternative to assemblyNames
 
 ```js
-chainLocation: {
-      type: 'fileLocation',
-      defaultValue: { uri: '/path/to/file.chain', locationType: 'UriLocation' },
+targetAssembly: {
+      defaultValue: '',
+      description: 'Alternative to assemblyNames array: the target assembly',
+      type: 'string',
     }
 ```

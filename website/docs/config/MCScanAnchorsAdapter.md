@@ -12,15 +12,12 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ### MCScanAnchorsAdapter - Slots
 
-#### slot: mcscanAnchorsLocation
+#### slot: assemblyNames
 
 ```js
-mcscanAnchorsLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/mcscan.anchors',
-        locationType: 'UriLocation',
-      },
+assemblyNames: {
+      defaultValue: [],
+      type: 'stringArray',
     }
 ```
 
@@ -28,11 +25,11 @@ mcscanAnchorsLocation: {
 
 ```js
 bed1Location: {
-      type: 'fileLocation',
       defaultValue: {
-        uri: '/path/to/file.bed',
         locationType: 'UriLocation',
+        uri: '/path/to/file.bed',
       },
+      type: 'fileLocation',
     }
 ```
 
@@ -40,19 +37,22 @@ bed1Location: {
 
 ```js
 bed2Location: {
-      type: 'fileLocation',
       defaultValue: {
-        uri: '/path/to/file.bed',
         locationType: 'UriLocation',
+        uri: '/path/to/file.bed',
       },
+      type: 'fileLocation',
     }
 ```
 
-#### slot: assemblyNames
+#### slot: mcscanAnchorsLocation
 
 ```js
-assemblyNames: {
-      type: 'stringArray',
-      defaultValue: [],
+mcscanAnchorsLocation: {
+      defaultValue: {
+        locationType: 'UriLocation',
+        uri: '/path/to/mcscan.anchors',
+      },
+      type: 'fileLocation',
     }
 ```

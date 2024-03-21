@@ -18,15 +18,6 @@ extends
 
 ### LinearBareDisplay - Properties
 
-#### property: type
-
-```js
-// type signature
-ISimpleType<"LinearBareDisplay">
-// code
-type: types.literal('LinearBareDisplay')
-```
-
 #### property: configuration
 
 ```js
@@ -34,6 +25,15 @@ type: types.literal('LinearBareDisplay')
 AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
+```
+
+#### property: type
+
+```js
+// type signature
+ISimpleType<"LinearBareDisplay">
+// code
+type: types.literal('LinearBareDisplay')
 ```
 
 ### LinearBareDisplay - Getters

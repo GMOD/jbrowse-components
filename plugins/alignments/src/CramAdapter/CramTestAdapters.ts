@@ -14,7 +14,7 @@ export function parseSmallFasta(text: string) {
       const [id, ...descriptionLines] = defLine.split(' ')
       const description = descriptionLines.join(' ')
       const sequence = seqLines.join('').replaceAll(/\s/g, '')
-      return { id, description, sequence }
+      return { description, id, sequence }
     })
 }
 
@@ -81,10 +81,10 @@ export class SequenceAdapter extends BaseFeatureDataAdapter {
         .then(ret => {
           observer.next(
             new SimpleFeature({
-              uniqueId: `${refName}-${start}-${end}`,
+              end,
               seq: ret,
               start,
-              end,
+              uniqueId: `${refName}-${start}-${end}`,
             }),
           )
           observer.complete()

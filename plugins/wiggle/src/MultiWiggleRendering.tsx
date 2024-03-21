@@ -75,7 +75,6 @@ const MultiWiggleRendering = observer(function (props: {
       if (featuresUnderMouse.length) {
         const pos = Math.floor(mouseoverBp)
         featureUnderMouse = new SimpleFeature({
-          uniqueId: 'mouseoverfeat',
           sources: Object.fromEntries(
             featuresUnderMouse
               .map(f => f.toJSON())
@@ -84,9 +83,10 @@ const MultiWiggleRendering = observer(function (props: {
                 return [source, rest]
               }),
           ),
+          uniqueId: 'mouseoverfeat',
           ...region,
-          start: pos,
           end: pos + 1,
+          start: pos,
         })
       }
     }
@@ -108,9 +108,9 @@ const MultiWiggleRendering = observer(function (props: {
       }}
       onMouseLeave={event => onMouseLeave(event)}
       style={{
+        height,
         overflow: 'visible',
         position: 'relative',
-        height,
       }}
     >
       <PrerenderedCanvas {...props} />

@@ -18,15 +18,6 @@ extends
 
 ### LinearArcDisplay - Properties
 
-#### property: type
-
-```js
-// type signature
-ISimpleType<"LinearArcDisplay">
-// code
-type: types.literal('LinearArcDisplay')
-```
-
 #### property: configuration
 
 ```js
@@ -43,6 +34,15 @@ configuration: ConfigurationReference(configSchema)
 IMaybe<ISimpleType<string>>
 // code
 displayMode: types.maybe(types.string)
+```
+
+#### property: type
+
+```js
+// type signature
+ISimpleType<"LinearArcDisplay">
+// code
+type: types.literal('LinearArcDisplay')
 ```
 
 ### LinearArcDisplay - Getters

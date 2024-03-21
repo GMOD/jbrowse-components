@@ -12,11 +12,11 @@ export default class GtfPlugin extends Plugin {
     pluginManager.addAdapterType(
       () =>
         new AdapterType({
-          name: 'GtfAdapter',
-          displayName: 'GTF adapter',
           configSchema: gtfAdapterConfigSchema,
+          displayName: 'GTF adapter',
           getAdapterClass: () =>
             import('./GtfAdapter/GtfAdapter').then(r => r.default),
+          name: 'GtfAdapter',
         }),
     )
     pluginManager.addToExtensionPoint(
@@ -32,8 +32,8 @@ export default class GtfPlugin extends Plugin {
           const fileName = getFileName(file)
 
           const obj = {
-            type: adapterName,
             gtfLocation: file,
+            type: adapterName,
           }
           if (regexGuess.test(fileName) && !adapterHint) {
             return obj

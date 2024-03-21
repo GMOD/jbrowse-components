@@ -32,11 +32,15 @@ function binaryRangeFetch(
 }
 
 const globalRangeCache = new HttpRangeFetcher({
+  // 500MiB
+  chunkSize: 128 * 1024,
+
   fetch: binaryRangeFetch,
-  size: 500 * 1024 ** 2, // 500MiB
-  chunkSize: 128 * 1024, // 128KiB
-  maxFetchSize: 100 * 1024 ** 2, // 100MiB
-  minimumTTL: 24 * 60 * 60 * 1000, // 1 day
+  // 128KiB
+  maxFetchSize: 100 * 1024 ** 2,
+  // 100MiB
+  minimumTTL: 24 * 60 * 60 * 1000,
+  size: 500 * 1024 ** 2, // 1 day
 })
 
 export function clearCache() {
@@ -76,7 +80,7 @@ export class RemoteFileWithRangeCache extends RemoteFile {
           signal: init?.signal,
         })) as BinaryRangeResponse
         const { headers } = response
-        return new Response(response.buffer, { status: 206, headers })
+        return new Response(response.buffer, { headers, status: 206 })
       }
     }
     return super.fetch(url, init)
@@ -115,10 +119,10 @@ export class RemoteFileWithRangeCache extends RemoteFile {
     // return the response headers, and the data buffer
     const arrayBuffer = await res.arrayBuffer()
     return {
+      buffer: Buffer.from(arrayBuffer),
       headers,
       requestDate,
       responseDate,
-      buffer: Buffer.from(arrayBuffer),
     }
   }
 }

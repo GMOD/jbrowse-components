@@ -39,7 +39,7 @@ export class FloatingLayout {
     height: number,
     data: { score: number },
   ) {
-    this.items.push({ uniqueId, anchorLocation, width, height, data })
+    this.items.push({ anchorLocation, data, height, uniqueId, width })
     this.layoutDirty = true
   }
 

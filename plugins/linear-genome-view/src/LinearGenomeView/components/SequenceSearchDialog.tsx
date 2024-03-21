@@ -99,21 +99,21 @@ const SequenceSearchDialog = observer(function ({
               const assemblyName = model.assemblyNames[0]
               if (isSessionWithAddTracks(session)) {
                 session.addTrackConf({
-                  trackId,
-                  name: `Sequence search ${value}`,
-                  assemblyNames: [assemblyName],
-                  type: 'FeatureTrack',
                   adapter: {
-                    type: 'SequenceSearchAdapter',
+                    caseInsensitive,
                     search: value,
                     searchForward,
                     searchReverse,
-                    caseInsensitive,
                     sequenceAdapter: getSnapshot(
                       assemblyManager.get(assemblyName)?.configuration.sequence
                         .adapter,
                     ),
+                    type: 'SequenceSearchAdapter',
                   },
+                  assemblyNames: [assemblyName],
+                  name: `Sequence search ${value}`,
+                  trackId,
+                  type: 'FeatureTrack',
                 })
                 model.showTrack(trackId)
               }

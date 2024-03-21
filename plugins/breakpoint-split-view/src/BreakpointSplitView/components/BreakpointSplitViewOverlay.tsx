@@ -8,13 +8,13 @@ import { observer } from 'mobx-react'
 
 const useStyles = makeStyles()({
   overlay: {
-    display: 'flex',
-    width: '100%',
-    gridArea: '1/1',
     '& path': {
       cursor: 'crosshair',
       fill: 'none',
     },
+    display: 'flex',
+    gridArea: '1/1',
+    width: '100%',
   },
 })
 
@@ -31,9 +31,9 @@ const BreakpointSplitViewOverlay = observer(function ({
       <svg
         ref={ref}
         style={{
+          pointerEvents: interactToggled ? undefined : 'none',
           width: '100%',
           zIndex: 10,
-          pointerEvents: interactToggled ? undefined : 'none',
         }}
       >
         {matchedTracks.map(track => (

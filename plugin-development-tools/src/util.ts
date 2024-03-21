@@ -18,7 +18,6 @@ export function external(id: string) {
 
 export function writeIndex(packageName: string, distPath: string): Plugin {
   return {
-    name: 'write-index-file',
     generateBundle() {
       const baseLine = `module.exports = require('./${packageName}`
       const contents = `'use strict'
@@ -34,23 +33,13 @@ ${baseLine}.cjs.development.js')
       }
       return fs.writeFileSync(path.join(distPath, 'index.js'), contents)
     },
+    name: 'write-index-file',
   }
 }
 
 export function omitUnresolved(): Plugin {
   const suffix = '?unresolved'
   return {
-    name: 'logger',
-    async resolveId(source, importer, options) {
-      const resolution = await this.resolve(source, importer, {
-        skipSelf: true,
-        ...options,
-      })
-      if (!resolution) {
-        return `${source}${suffix}`
-      }
-      return null
-    },
     load(id) {
       if (id.endsWith(suffix)) {
         const importee = id.slice(0, -suffix.length)
@@ -60,6 +49,17 @@ export function omitUnresolved(): Plugin {
           ),
         )
         return `export default {};`
+      }
+      return null
+    },
+    name: 'logger',
+    async resolveId(source, importer, options) {
+      const resolution = await this.resolve(source, importer, {
+        skipSelf: true,
+        ...options,
+      })
+      if (!resolution) {
+        return `${source}${suffix}`
       }
       return null
     },

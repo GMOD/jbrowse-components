@@ -32,12 +32,6 @@ export function DialogQueueSessionMixin(_pluginManager: PluginManager) {
       /**
        * #action
        */
-      removeActiveDialog() {
-        self.queueOfDialogs = self.queueOfDialogs.slice(1)
-      },
-      /**
-       * #action
-       */
       queueDialog(
         cb: (doneCallback: () => void) => [DialogComponentType, unknown],
       ) {
@@ -45,6 +39,13 @@ export function DialogQueueSessionMixin(_pluginManager: PluginManager) {
           this.removeActiveDialog()
         })
         self.queueOfDialogs = [...self.queueOfDialogs, [component, props]]
+      },
+
+      /**
+       * #action
+       */
+      removeActiveDialog() {
+        self.queueOfDialogs = self.queueOfDialogs.slice(1)
       },
     }))
 }

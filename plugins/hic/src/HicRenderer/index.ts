@@ -8,9 +8,9 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addRendererType(
     () =>
       new HicRenderer({
-        name: 'HicRenderer',
         ReactComponent,
         configSchema,
+        name: 'HicRenderer',
         pluginManager,
       }),
   )

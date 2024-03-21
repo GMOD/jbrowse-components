@@ -4,8 +4,8 @@ import { AnyFilterModelType as AnyColumnFilter } from './ColumnDataTypes'
 // filter that finds a simple string in any of the cells of a row
 const RowFullTextFilter = types
   .model('RowFullTextFilter', {
-    type: types.literal('RowFullText'),
     stringToFind: '',
+    type: types.literal('RowFullText'),
   })
   .views(self => ({
     // returns a function that tests the given row
@@ -33,36 +33,29 @@ const RowFullTextFilter = types
     },
   }))
   .actions(self => ({
-    setString(s: string) {
-      self.stringToFind = s
-    },
     clear() {
       self.stringToFind = ''
+    },
+    setString(s: string) {
+      self.stringToFind = s
     },
   }))
 
 const model = types
   .model('SpreadsheetFilterControls', {
+    columnFilters: types.array(AnyColumnFilter),
     rowFullText: types.optional(
       RowFullTextFilter,
       () =>
         ({
-          type: 'RowFullText',
           stringToFind: '',
+          type: 'RowFullText',
         }) as SnapshotIn<typeof RowFullTextFilter>,
     ),
-    columnFilters: types.array(AnyColumnFilter),
   })
   .views(self => ({
     get filters() {
       return [self.rowFullText, ...self.columnFilters].filter(f => !!f)
-    },
-    setRowFullTextFilter(stringToFind: string) {
-      // @ts-expect-error
-      self.rowFullText = {
-        type: 'RowFullText',
-        stringToFind,
-      }
     },
     rowPassesFilters(sheet: unknown, row: unknown) {
       for (const filter of this.filters) {
@@ -72,6 +65,13 @@ const model = types
       }
       return true
     },
+    setRowFullTextFilter(stringToFind: string) {
+      // @ts-expect-error
+      self.rowFullText = {
+        stringToFind,
+        type: 'RowFullText',
+      }
+    },
   }))
   .actions(self => ({
     addBlankColumnFilter(columnNumber: number) {
@@ -79,16 +79,16 @@ const model = types
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         getParent<any>(self).spreadsheet.columns[columnNumber]
       self.columnFilters.push({
-        type: dataType.type,
         columnNumber,
+        type: dataType.type,
       })
-    },
-    removeColumnFilter(filter: typeof AnyColumnFilter) {
-      return self.columnFilters.remove(filter)
     },
     clearAllFilters() {
       self.columnFilters.clear()
       self.rowFullText.clear()
+    },
+    removeColumnFilter(filter: typeof AnyColumnFilter) {
+      return self.columnFilters.remove(filter)
     },
   }))
 

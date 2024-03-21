@@ -7,14 +7,14 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addAdapterType(
     () =>
       new AdapterType({
-        name: 'BgzipFastaAdapter',
-        displayName: 'Bgzip-indexed FASTA adapter',
-        configSchema,
         adapterMetadata: {
           hiddenFromGUI: true,
         },
+        configSchema,
+        displayName: 'Bgzip-indexed FASTA adapter',
         getAdapterClass: () =>
           import('./BgzipFastaAdapter').then(r => r.default),
+        name: 'BgzipFastaAdapter',
       }),
   )
 }

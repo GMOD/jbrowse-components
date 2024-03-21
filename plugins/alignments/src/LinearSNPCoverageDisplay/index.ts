@@ -8,13 +8,13 @@ export default function register(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaFactory(pluginManager)
     return new DisplayType({
-      name: 'LinearSNPCoverageDisplay',
-      displayName: 'SNPCoverage display',
+      ReactComponent: LinearWiggleDisplayReactComponent,
       configSchema,
+      displayName: 'SNPCoverage display',
+      name: 'LinearSNPCoverageDisplay',
       stateModel: modelFactory(pluginManager, configSchema),
       trackType: 'AlignmentsTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: LinearWiggleDisplayReactComponent,
     })
   })
 }

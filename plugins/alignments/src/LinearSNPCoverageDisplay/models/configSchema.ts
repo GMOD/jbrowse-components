@@ -19,52 +19,49 @@ export default function SNPCoverageConfigFactory(pluginManager: PluginManager) {
        * #slot
        */
       autoscale: {
-        type: 'stringEnum',
         defaultValue: 'local',
-        model: types.enumeration('Autoscale type', ['local']),
         description:
           'performs local autoscaling (no other options for SNP Coverage available)',
+        model: types.enumeration('Autoscale type', ['local']),
+        type: 'stringEnum',
       },
+
       /**
        * #slot
        */
-      minScore: {
-        type: 'number',
-        defaultValue: Number.MIN_VALUE,
-        description: 'minimum value for the y-scale',
+      inverted: {
+        defaultValue: false,
+        description: 'draw upside down',
+        type: 'boolean',
       },
+
       /**
        * #slot
        */
       maxScore: {
-        type: 'number',
-        description: 'maximum value for the y-scale',
         defaultValue: Number.MAX_VALUE,
+        description: 'maximum value for the y-scale',
+        type: 'number',
       },
+
       /**
        * #slot
        */
-      scaleType: {
-        type: 'stringEnum',
-        model: types.enumeration('Scale type', ['linear', 'log']), // todo zscale
-        description: 'The type of scale to use',
-        defaultValue: 'linear',
+      minScore: {
+        defaultValue: Number.MIN_VALUE,
+        description: 'minimum value for the y-scale',
+        type: 'number',
       },
-      /**
-       * #slot
-       */ inverted: {
-        type: 'boolean',
-        description: 'draw upside down',
-        defaultValue: false,
-      },
+
       /**
        * #slot
        */
       multiTicks: {
-        type: 'boolean',
-        description: 'Display multiple values for the ticks',
         defaultValue: false,
+        description: 'Display multiple values for the ticks',
+        type: 'boolean',
       },
+
       /**
        * #slot
        */
@@ -73,6 +70,19 @@ export default function SNPCoverageConfigFactory(pluginManager: PluginManager) {
           'SNPCoverageRenderer',
         ).configSchema,
       }),
+
+      /**
+       * #slot
+       */
+      scaleType: {
+        defaultValue: 'linear',
+        // todo zscale
+        description: 'The type of scale to use',
+
+        model: types.enumeration('Scale type', ['linear', 'log']),
+
+        type: 'stringEnum',
+      },
     },
     {
       /**

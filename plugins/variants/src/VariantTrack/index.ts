@@ -7,9 +7,9 @@ export default (pm: PluginManager) => {
   pm.addTrackType(() => {
     const configSchema = configSchemaF(pm)
     return new TrackType({
-      name: 'VariantTrack',
-      displayName: 'Variant track',
       configSchema,
+      displayName: 'Variant track',
+      name: 'VariantTrack',
       stateModel: createBaseTrackModel(pm, 'VariantTrack', configSchema),
     })
   })

@@ -95,29 +95,29 @@ export async function navToSynteny({
   const trackId = track.configuration.trackId
 
   const view2 = session.addView('LinearSyntenyView', {
-    type: 'LinearSyntenyView',
-    views: [
-      {
-        id: `${Math.random()}`,
-        type: 'LinearGenomeView',
-        hideHeader: true,
-      },
-      {
-        id: `${Math.random()}`,
-        type: 'LinearGenomeView',
-        hideHeader: true,
-      },
-    ],
     tracks: [
       {
         configuration: trackId,
-        type: 'SyntenyTrack',
         displays: [
           {
-            type: 'LinearSyntenyDisplay',
             configuration: `${trackId}-LinearSyntenyDisplay`,
+            type: 'LinearSyntenyDisplay',
           },
         ],
+        type: 'SyntenyTrack',
+      },
+    ],
+    type: 'LinearSyntenyView',
+    views: [
+      {
+        hideHeader: true,
+        id: `${Math.random()}`,
+        type: 'LinearGenomeView',
+      },
+      {
+        hideHeader: true,
+        id: `${Math.random()}`,
+        type: 'LinearGenomeView',
       },
     ],
   }) as LSV

@@ -14,22 +14,55 @@ info
 
 ### SharedWiggleMixin - Properties
 
-#### property: selectedRendering
+#### property: autoscale
 
 ```js
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+IMaybe<ISimpleType<string>>
 // code
-selectedRendering: types.optional(types.string, '')
+autoscale: types.maybe(types.string)
 ```
 
-#### property: resolution
+#### property: color
 
 ```js
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+IMaybe<ISimpleType<string>>
 // code
-resolution: types.optional(types.number, 1)
+color: types.maybe(types.string)
+```
+
+#### property: configuration
+
+```js
+// type signature
+AnyConfigurationSchemaType
+// code
+configuration: ConfigurationReference(configSchema)
+```
+
+#### property: constraints
+
+```js
+// type signature
+IOptionalIType<IModelType<{ max: IMaybe<ISimpleType<number>>; min: IMaybe<ISimpleType<number>>; }, {}, _NotCustomized, _NotCustomized>, [...]>
+// code
+constraints: types.optional(
+          types.model({
+            max: types.maybe(types.number),
+            min: types.maybe(types.number),
+          }),
+          {},
+        )
+```
+
+#### property: displayCrossHatches
+
+```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
+displayCrossHatches: types.maybe(types.boolean)
 ```
 
 #### property: fill
@@ -50,13 +83,13 @@ IMaybe<ISimpleType<number>>
 minSize: types.maybe(types.number)
 ```
 
-#### property: color
+#### property: negColor
 
 ```js
 // type signature
 IMaybe<ISimpleType<string>>
 // code
-color: types.maybe(types.string)
+negColor: types.maybe(types.string)
 ```
 
 #### property: posColor
@@ -68,22 +101,13 @@ IMaybe<ISimpleType<string>>
 posColor: types.maybe(types.string)
 ```
 
-#### property: negColor
+#### property: resolution
 
 ```js
 // type signature
-IMaybe<ISimpleType<string>>
+IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-negColor: types.maybe(types.string)
-```
-
-#### property: summaryScoreMode
-
-```js
-// type signature
-IMaybe<ISimpleType<string>>
-// code
-summaryScoreMode: types.maybe(types.string)
+resolution: types.optional(types.number, 1)
 ```
 
 #### property: rendererTypeNameState
@@ -95,6 +119,15 @@ IMaybe<ISimpleType<string>>
 rendererTypeNameState: types.maybe(types.string)
 ```
 
+#### property: selectedRendering
+
+```js
+// type signature
+IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+selectedRendering: types.optional(types.string, '')
+```
+
 #### property: scale
 
 ```js
@@ -104,46 +137,13 @@ IMaybe<ISimpleType<string>>
 scale: types.maybe(types.string)
 ```
 
-#### property: autoscale
+#### property: summaryScoreMode
 
 ```js
 // type signature
 IMaybe<ISimpleType<string>>
 // code
-autoscale: types.maybe(types.string)
-```
-
-#### property: displayCrossHatches
-
-```js
-// type signature
-IMaybe<ISimpleType<boolean>>
-// code
-displayCrossHatches: types.maybe(types.boolean)
-```
-
-#### property: constraints
-
-```js
-// type signature
-IOptionalIType<IModelType<{ max: IMaybe<ISimpleType<number>>; min: IMaybe<ISimpleType<number>>; }, {}, _NotCustomized, _NotCustomized>, [...]>
-// code
-constraints: types.optional(
-          types.model({
-            max: types.maybe(types.number),
-            min: types.maybe(types.number),
-          }),
-          {},
-        )
-```
-
-#### property: configuration
-
-```js
-// type signature
-AnyConfigurationSchemaType
-// code
-configuration: ConfigurationReference(configSchema)
+summaryScoreMode: types.maybe(types.string)
 ```
 
 ### SharedWiggleMixin - Getters
@@ -155,23 +155,9 @@ configuration: ConfigurationReference(configSchema)
 any
 ```
 
-#### getter: rendererTypeNameSimple
-
-```js
-// type
-any
-```
-
 #### getter: filters
 
 subclasses can define these, as snpcoverage track does
-
-```js
-// type
-any
-```
-
-#### getter: scaleType
 
 ```js
 // type
@@ -192,18 +178,25 @@ any
 any
 ```
 
+#### getter: rendererTypeNameSimple
+
+```js
+// type
+any
+```
+
+#### getter: scaleType
+
+```js
+// type
+any
+```
+
 #### getter: adapterCapabilities
 
 ```js
 // type
 string[]
-```
-
-#### getter: rendererConfig
-
-```js
-// type
-{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>
 ```
 
 #### getter: autoscaleType
@@ -213,32 +206,18 @@ string[]
 any
 ```
 
+#### getter: rendererConfig
+
+```js
+// type
+{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>
+```
+
 #### getter: domain
 
 ```js
 // type
 number[]
-```
-
-#### getter: filled
-
-```js
-// type
-boolean
-```
-
-#### getter: summaryScoreModeSetting
-
-```js
-// type
-string
-```
-
-#### getter: scaleOpts
-
-```js
-// type
-{ domain: number[]; stats: { scoreMin: number; scoreMax: number; }; autoscaleType: any; scaleType: any; inverted: any; }
 ```
 
 #### getter: canHaveFill
@@ -255,7 +234,7 @@ boolean
 boolean
 ```
 
-#### getter: hasResolution
+#### getter: filled
 
 ```js
 // type
@@ -269,51 +248,37 @@ boolean
 boolean
 ```
 
+#### getter: hasResolution
+
+```js
+// type
+boolean
+```
+
+#### getter: scaleOpts
+
+```js
+// type
+{ autoscaleType: any; domain: number[]; inverted: any; scaleType: any; stats: { scoreMin: number; scoreMax: number; }; }
+```
+
+#### getter: summaryScoreModeSetting
+
+```js
+// type
+string
+```
+
 ### SharedWiggleMixin - Methods
 
 #### method: scoreTrackMenuItems
 
 ```js
 // type signature
-scoreTrackMenuItems: () => ({ label: string; subMenu: { label: string; onClick: () => void; }[]; onClick?: undefined; } | { label: string; subMenu: { label: string; type: string; checked: boolean; onClick: () => void; }[]; onClick?: undefined; } | { ...; })[]
+scoreTrackMenuItems: () => ({ label: string; subMenu: { label: string; onClick: () => void; }[]; onClick?: undefined; } | { label: string; subMenu: { checked: boolean; label: string; onClick: () => void; type: string; }[]; onClick?: undefined; } | { ...; })[]
 ```
 
 ### SharedWiggleMixin - Actions
-
-#### action: updateQuantitativeStats
-
-```js
-// type signature
-updateQuantitativeStats: (stats: { scoreMin: number; scoreMax: number; }) => void
-```
-
-#### action: setColor
-
-```js
-// type signature
-setColor: (color?: string) => void
-```
-
-#### action: setPosColor
-
-```js
-// type signature
-setPosColor: (color?: string) => void
-```
-
-#### action: setNegColor
-
-```js
-// type signature
-setNegColor: (color?: string) => void
-```
-
-#### action: setLoading
-
-```js
-// type signature
-setLoading: (aborter: AbortController) => void
-```
 
 #### action: selectFeature
 
@@ -326,11 +291,25 @@ detect a click
 selectFeature: (feature: Feature) => void
 ```
 
-#### action: setResolution
+#### action: setAutoscale
 
 ```js
 // type signature
-setResolution: (res: number) => void
+setAutoscale: (val: string) => void
+```
+
+#### action: setColor
+
+```js
+// type signature
+setColor: (color?: string) => void
+```
+
+#### action: setCrossHatches
+
+```js
+// type signature
+setCrossHatches: (cross: boolean) => void
 ```
 
 #### action: setFill
@@ -340,11 +319,60 @@ setResolution: (res: number) => void
 setFill: (fill: number) => void
 ```
 
-#### action: toggleLogScale
+#### action: setLoading
 
 ```js
 // type signature
-toggleLogScale: () => void
+setLoading: (aborter: AbortController) => void
+```
+
+#### action: setMaxScore
+
+```js
+// type signature
+setMaxScore: (val?: number) => void
+```
+
+#### action: setMinScore
+
+```js
+// type signature
+setMinScore: (val?: number) => void
+```
+
+#### action: setNegColor
+
+```js
+// type signature
+setNegColor: (color?: string) => void
+```
+
+#### action: setPosColor
+
+```js
+// type signature
+setPosColor: (color?: string) => void
+```
+
+#### action: setRendererType
+
+```js
+// type signature
+setRendererType: (val: string) => void
+```
+
+#### action: updateQuantitativeStats
+
+```js
+// type signature
+updateQuantitativeStats: (stats: { scoreMin: number; scoreMax: number; }) => void
+```
+
+#### action: setResolution
+
+```js
+// type signature
+setResolution: (res: number) => void
 ```
 
 #### action: setScaleType
@@ -361,34 +389,6 @@ setScaleType: (scale?: string) => void
 setSummaryScoreMode: (val: string) => void
 ```
 
-#### action: setAutoscale
-
-```js
-// type signature
-setAutoscale: (val: string) => void
-```
-
-#### action: setMaxScore
-
-```js
-// type signature
-setMaxScore: (val?: number) => void
-```
-
-#### action: setRendererType
-
-```js
-// type signature
-setRendererType: (val: string) => void
-```
-
-#### action: setMinScore
-
-```js
-// type signature
-setMinScore: (val?: number) => void
-```
-
 #### action: toggleCrossHatches
 
 ```js
@@ -396,11 +396,11 @@ setMinScore: (val?: number) => void
 toggleCrossHatches: () => void
 ```
 
-#### action: setCrossHatches
+#### action: toggleLogScale
 
 ```js
 // type signature
-setCrossHatches: (cross: boolean) => void
+toggleLogScale: () => void
 ```
 
 #### action: reload

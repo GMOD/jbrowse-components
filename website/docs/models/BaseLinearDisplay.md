@@ -29,7 +29,7 @@ updated via autorun
 
 ```js
 // type signature
-IMapType<IModelType<{ key: ISimpleType<string>; region: IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>; reloadFlag: IType<...>; isLeftEndOfDisplayedRegion: IType<...>; isRightEndOf...
+IMapType<IModelType<{ isLeftEndOfDisplayedRegion: IType<boolean, boolean, boolean>; isRightEndOfDisplayedRegion: IType<boolean, boolean, boolean>; key: ISimpleType<string>; region: IModelType<...>; reloadFlag: IType<...>; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>>
 // code
 blockState: types.map(BlockState)
 ```
@@ -38,25 +38,42 @@ blockState: types.map(BlockState)
 
 ```js
 // type signature
-ConfigurationSchemaType<{ maxFeatureScreenDensity: { type: string; description: string; defaultValue: number; }; fetchSizeLimit: { type: string; defaultValue: number; description: string; }; height: { type: string; defaultValue: number; description: string; }; mouseover: { ...; }; }, ConfigurationSchemaOptions<...>>
+ConfigurationSchemaType<{ fetchSizeLimit: { defaultValue: number; description: string; type: string; }; height: { defaultValue: number; description: string; type: string; }; maxFeatureScreenDensity: { defaultValue: number; description: string; type: string; }; mouseover: { ...; }; }, ConfigurationSchemaOptions<...>>
 // code
 configuration: ConfigurationReference(configSchema)
 ```
 
 ### BaseLinearDisplay - Getters
 
-#### getter: blockType
-
-```js
-// type
-'staticBlocks' | 'dynamicBlocks'
-```
-
 #### getter: blockDefinitions
 
 ```js
 // type
 any
+```
+
+#### getter: blockType
+
+```js
+// type
+'dynamicBlocks' | 'staticBlocks'
+```
+
+#### getter: DisplayMessageComponent
+
+if a display-level message should be displayed instead of the blocks, make this
+return a react component
+
+```js
+// type
+any
+```
+
+#### getter: TooltipComponent
+
+```js
+// type
+React.FC<any>
 ```
 
 #### getter: renderDelay
@@ -69,13 +86,6 @@ block
 number
 ```
 
-#### getter: TooltipComponent
-
-```js
-// type
-React.FC<any>
-```
-
 #### getter: selectedFeatureId
 
 returns a string feature ID if the globally-selected object is probably a
@@ -86,10 +96,7 @@ feature
 string
 ```
 
-#### getter: DisplayMessageComponent
-
-if a display-level message should be displayed instead of the blocks, make this
-return a react component
+#### getter: featureUnderMouse
 
 ```js
 // type
@@ -106,11 +113,11 @@ data for that feature
 CompositeMap<unknown, unknown>
 ```
 
-#### getter: featureUnderMouse
+#### getter: getFeatureByID
 
 ```js
 // type
-any
+(blockKey: string, id: string) => LayoutRecord
 ```
 
 #### getter: getFeatureOverlapping
@@ -118,13 +125,6 @@ any
 ```js
 // type
 (blockKey: string, x: number, y: number) => string
-```
-
-#### getter: getFeatureByID
-
-```js
-// type
-(blockKey: string, id: string) => LayoutRecord
 ```
 
 #### getter: searchFeatureByID
@@ -135,13 +135,6 @@ any
 ```
 
 ### BaseLinearDisplay - Methods
-
-#### method: trackMenuItems
-
-```js
-// type signature
-trackMenuItems: () => MenuItem[]
-```
 
 #### method: contextMenuItems
 
@@ -155,6 +148,13 @@ contextMenuItems: () => MenuItem[]
 ```js
 // type signature
 renderProps: () => any
+```
+
+#### method: trackMenuItems
+
+```js
+// type signature
+trackMenuItems: () => MenuItem[]
 ```
 
 #### method: renderSvg
@@ -173,6 +173,13 @@ renderSvg: (opts: ExportSvgDisplayOptions) => Promise<Element>
 addBlock: (key: string, block: BaseBlock) => void
 ```
 
+#### action: clearFeatureSelection
+
+```js
+// type signature
+clearFeatureSelection: () => void
+```
+
 #### action: deleteBlock
 
 ```js
@@ -187,11 +194,11 @@ deleteBlock: (key: string) => void
 selectFeature: (feature: Feature) => void
 ```
 
-#### action: clearFeatureSelection
+#### action: setContextMenuFeature
 
 ```js
 // type signature
-clearFeatureSelection: () => void
+setContextMenuFeature: (feature?: Feature) => void
 ```
 
 #### action: setFeatureIdUnderMouse
@@ -199,13 +206,6 @@ clearFeatureSelection: () => void
 ```js
 // type signature
 setFeatureIdUnderMouse: (feature?: string) => void
-```
-
-#### action: setContextMenuFeature
-
-```js
-// type signature
-setContextMenuFeature: (feature?: Feature) => void
 ```
 
 #### action: reload

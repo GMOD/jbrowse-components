@@ -10,21 +10,21 @@ const fontFamily =
   'Consolas, "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Liberation Mono", "Nimbus Mono L", Monaco, "Courier New", Courier, monospace'
 
 const useStyles = makeStyles()(theme => ({
+  callbackContainer: {
+    overflowX: 'auto',
+    width: '100%',
+  },
+  callbackEditor: {
+    background: theme.palette.background.default,
+    border: '1px solid rgba(0,0,0,0.42)',
+    fontFamily,
+    fontSize,
+    marginTop: '16px',
+    width: 800,
+  },
   error: {
     color: 'red',
     fontSize: '0.8em',
-  },
-  callbackEditor: {
-    fontFamily,
-    fontSize,
-    background: theme.palette.background.default,
-    width: 800,
-    marginTop: '16px',
-    border: '1px solid rgba(0,0,0,0.42)',
-  },
-  callbackContainer: {
-    width: '100%',
-    overflowX: 'auto',
   },
   textAreaFont: {
     fontFamily,

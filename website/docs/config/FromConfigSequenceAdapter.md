@@ -16,7 +16,7 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ```js
 features: {
-      type: 'frozen',
       defaultValue: [],
+      type: 'frozen',
     }
 ```

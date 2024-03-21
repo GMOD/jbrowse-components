@@ -35,20 +35,20 @@ const FactoryResetDialog = lazy(
 )
 
 const useStyles = makeStyles()(theme => ({
-  newSession: {
-    backgroundColor: theme.palette?.grey['300'],
-    padding: 8,
-    marginTop: 8,
-  },
   header: {
     margin: 8, // theme.spacing(2),
   },
+  list: {
+    maxHeight: 200,
+    overflow: 'auto',
+  },
+  newSession: {
+    backgroundColor: theme.palette?.grey['300'],
+    marginTop: 8,
+    padding: 8,
+  },
   settings: {
     float: 'right',
-  },
-  list: {
-    overflow: 'auto',
-    maxHeight: 200,
   },
 }))
 
@@ -103,11 +103,11 @@ export default function StartScreen({
   return !sessionNames ? (
     <CircularProgress
       style={{
+        left: '50%',
+        marginLeft: -25,
+        marginTop: -25,
         position: 'fixed',
         top: '50%',
-        left: '50%',
-        marginTop: -25,
-        marginLeft: -25,
       }}
       size={50}
     />

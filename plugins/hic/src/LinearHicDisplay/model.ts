@@ -19,15 +19,17 @@ export default (configSchema: AnyConfigurationSchemaType) =>
         /**
          * #property
          */
-        type: types.literal('LinearHicDisplay'),
-        /**
-         * #property
-         */
         configuration: ConfigurationReference(configSchema),
+
         /**
          * #property
          */
         resolution: types.optional(types.number, 1),
+
+        /**
+         * #property
+         */
+        type: types.literal('LinearHicDisplay'),
       }),
     )
     .views(self => {
@@ -39,12 +41,7 @@ export default (configSchema: AnyConfigurationSchemaType) =>
         get blockType() {
           return 'dynamicBlocks'
         },
-        /**
-         * #getter
-         */
-        get rendererTypeName() {
-          return 'HicRenderer'
-        },
+
         /**
          * #method
          */
@@ -57,10 +54,17 @@ export default (configSchema: AnyConfigurationSchemaType) =>
           return {
             ...superRenderProps(),
             config,
-            rpcDriverName: self.rpcDriverName,
             displayModel: self,
             resolution: self.resolution,
+            rpcDriverName: self.rpcDriverName,
           }
+        },
+
+        /**
+         * #getter
+         */
+        get rendererTypeName() {
+          return 'HicRenderer'
         },
       }
     })

@@ -22,9 +22,9 @@ export async function getUniqueTagValues(
     'PileupGetGlobalValueForTag',
     {
       adapterConfig,
-      tag: colorScheme.tag,
-      sessionId,
       regions: blocks.contentBlocks,
+      sessionId,
+      tag: colorScheme.tag,
       ...opts,
     },
   )
@@ -53,9 +53,9 @@ export async function getUniqueModificationValues(
     'PileupGetVisibleModifications',
     {
       adapterConfig,
-      tag: colorScheme.tag,
-      sessionId,
       regions: blocks.contentBlocks,
+      sessionId,
+      tag: colorScheme.tag,
       ...opts,
     },
   )
@@ -63,8 +63,8 @@ export async function getUniqueModificationValues(
 }
 
 export const FilterModel = types.model({
-  flagInclude: types.optional(types.number, 0),
   flagExclude: types.optional(types.number, 1540),
+  flagInclude: types.optional(types.number, 0),
   readName: types.maybe(types.string),
   tagFilter: types.maybe(
     types.model({

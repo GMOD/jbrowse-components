@@ -11,13 +11,13 @@ export default (pluginManager: PluginManager) => {
     const configSchema = configSchemaF(pluginManager)
     const stateModel = stateModelF(configSchema)
     return new DisplayType({
-      name: 'ChordVariantDisplay',
-      displayName: 'Chord variant display',
+      ReactComponent: BaseChordDisplayComponent,
       configSchema,
+      displayName: 'Chord variant display',
+      name: 'ChordVariantDisplay',
       stateModel,
       trackType: 'VariantTrack',
       viewType: 'CircularView',
-      ReactComponent: BaseChordDisplayComponent,
     })
   })
 }

@@ -14,15 +14,6 @@ info
 
 ### DotplotDisplay - Properties
 
-#### property: type
-
-```js
-// type signature
-ISimpleType<"DotplotDisplay">
-// code
-type: types.literal('DotplotDisplay')
-```
-
 #### property: configuration
 
 ```js
@@ -30,6 +21,15 @@ type: types.literal('DotplotDisplay')
 AnyConfigurationSchemaType
 // code
 configuration: ConfigurationReference(configSchema)
+```
+
+#### property: type
+
+```js
+// type signature
+ISimpleType<"DotplotDisplay">
+// code
+type: types.literal('DotplotDisplay')
 ```
 
 ### DotplotDisplay - Getters
@@ -59,6 +59,13 @@ renderSvg: (opts: ExportSvgOptions & { theme: ThemeOptions; }) => Promise<Elemen
 
 ### DotplotDisplay - Actions
 
+#### action: setError
+
+```js
+// type signature
+setError: (error: unknown) => void
+```
+
 #### action: setLoading
 
 ```js
@@ -78,11 +85,4 @@ setMessage: (messageText: string) => void
 ```js
 // type signature
 setRendered: (args?: { data: any; reactElement: React.ReactElement; renderingComponent: React.Component; }) => void
-```
-
-#### action: setError
-
-```js
-// type signature
-setError: (error: unknown) => void
 ```

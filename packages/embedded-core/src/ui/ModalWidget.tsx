@@ -32,8 +32,8 @@ const ModalWidget = observer(function ({
         'Core-replaceWidget',
         ReactComponent,
         {
-          session,
           model: visibleWidget,
+          session,
         },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ) as React.FC<any>)

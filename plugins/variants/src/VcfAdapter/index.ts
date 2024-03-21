@@ -6,10 +6,10 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addAdapterType(
     () =>
       new AdapterType({
-        name: 'VcfAdapter',
-        displayName: 'VCF adapter',
         configSchema,
+        displayName: 'VCF adapter',
         getAdapterClass: () => import('./VcfAdapter').then(r => r.default),
+        name: 'VcfAdapter',
       }),
   )
 }

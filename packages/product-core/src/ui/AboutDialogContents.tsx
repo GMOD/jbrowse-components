@@ -57,13 +57,13 @@ export default function AboutContents({
         ...readConfObject(config, ['formatAbout', 'config'], { config: conf }),
       },
     },
-    { session, config },
+    { config, session },
   ) as Record<string, unknown>
 
   const ExtraPanel = pluginManager.evaluateExtensionPoint(
     'Core-extraAboutPanel',
     null,
-    { session, config },
+    { config, session },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ) as { name: string; Component: React.FC<any> }
 

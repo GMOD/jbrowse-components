@@ -18,15 +18,6 @@ extends
 
 ### LinearComparativeDisplay - Properties
 
-#### property: type
-
-```js
-// type signature
-ISimpleType<"LinearComparativeDisplay">
-// code
-type: types.literal('LinearComparativeDisplay')
-```
-
 #### property: configuration
 
 ```js
@@ -45,16 +36,34 @@ number
 height: 100
 ```
 
+#### property: type
+
+```js
+// type signature
+ISimpleType<"LinearComparativeDisplay">
+// code
+type: types.literal('LinearComparativeDisplay')
+```
+
 ### LinearComparativeDisplay - Getters
 
 #### getter: renderProps
 
 ```js
 // type
-() => { rpcDriverName: string; displayModel: { id: string; type: "LinearComparativeDisplay"; rpcDriverName: string; configuration: { [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>; height: number; } & ... 5 more ... & IStateTreeNode<...>; highResolutionScaling: number; }
+() => { displayModel: { id: string; rpcDriverName: string; type: "LinearComparativeDisplay"; configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<...>; height: number; } & ... 5 more ... & IStateTreeNode<...>; highResolutionScaling: number; ...
 ```
 
 ### LinearComparativeDisplay - Actions
+
+#### action: setError
+
+controlled by a reaction
+
+```js
+// type signature
+setError: (error: unknown) => void
+```
 
 #### action: setLoading
 
@@ -81,13 +90,4 @@ controlled by a reaction
 ```js
 // type signature
 setRendered: (args?: { features: Feature[]; }) => void
-```
-
-#### action: setError
-
-controlled by a reaction
-
-```js
-// type signature
-setError: (error: unknown) => void
 ```

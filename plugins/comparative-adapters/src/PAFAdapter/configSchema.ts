@@ -12,36 +12,39 @@ const PAFAdapter = ConfigurationSchema(
      * #slot
      */
     assemblyNames: {
-      type: 'stringArray',
       defaultValue: [],
       description:
         'Array of assembly names to use for this file. The target assembly name is the first value in the array, query assembly name is the second',
+      type: 'stringArray',
     },
-    /**
-     * #slot
-     */
-    targetAssembly: {
-      type: 'string',
-      defaultValue: '',
-      description: 'Alternative to assemblyNames: the target assembly name',
-    },
-    /**
-     * #slot
-     */
-    queryAssembly: {
-      type: 'string',
-      defaultValue: '',
-      description: 'Alternative to assemblyNames: the query assembly name',
-    },
+
     /**
      * #slot
      */
     pafLocation: {
-      type: 'fileLocation',
       defaultValue: {
-        uri: '/path/to/file.paf',
         locationType: 'UriLocation',
+        uri: '/path/to/file.paf',
       },
+      type: 'fileLocation',
+    },
+
+    /**
+     * #slot
+     */
+    queryAssembly: {
+      defaultValue: '',
+      description: 'Alternative to assemblyNames: the query assembly name',
+      type: 'string',
+    },
+
+    /**
+     * #slot
+     */
+    targetAssembly: {
+      defaultValue: '',
+      description: 'Alternative to assemblyNames: the target assembly name',
+      type: 'string',
     },
   },
   { explicitlyTyped: true },

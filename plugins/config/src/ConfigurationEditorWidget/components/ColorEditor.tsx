@@ -49,8 +49,8 @@ const ColorEditor = observer(function (props: {
       value={slot.value}
       onChange={color => slot.set(color)}
       TextFieldProps={{
-        helperText: slot.description,
         fullWidth: true,
+        helperText: slot.description,
       }}
     />
   )

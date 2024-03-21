@@ -13,38 +13,12 @@ const PairwiseIndexedPAFAdapter = ConfigurationSchema(
      * #slot
      */
     assemblyNames: {
-      type: 'stringArray',
       defaultValue: [],
       description:
         'Array of assembly names to use for this file. The target assembly name is the first value in the array, query assembly name is the second',
+      type: 'stringArray',
     },
-    /**
-     * #slot
-     */
-    targetAssembly: {
-      type: 'string',
-      defaultValue: '',
-      description: 'Alternative to assemblyNames: the target assembly name',
-    },
-    /**
-     * #slot
-     */
-    queryAssembly: {
-      type: 'string',
-      defaultValue: '',
-      description: 'Alternative to assemblyNames: the query assembly name',
-    },
-    /**
-     * #slot
-     */
-    pifGzLocation: {
-      type: 'fileLocation',
-      description: 'location of pairwise tabix indexed PAF (pif)',
-      defaultValue: {
-        uri: '/path/to/data/file.pif.gz',
-        locationType: 'UriLocation',
-      },
-    },
+
     /**
      * #slot
      */
@@ -53,21 +27,51 @@ const PairwiseIndexedPAFAdapter = ConfigurationSchema(
        * #slot index.indexType
        */
       indexType: {
+        defaultValue: 'TBI',
         model: types.enumeration('IndexType', ['TBI', 'CSI']),
         type: 'stringEnum',
-        defaultValue: 'TBI',
       },
       /**
        * #slot index.location
        */
       location: {
-        type: 'fileLocation',
         defaultValue: {
-          uri: '/path/to/my.paf.gz.tbi',
           locationType: 'UriLocation',
+          uri: '/path/to/my.paf.gz.tbi',
         },
+        type: 'fileLocation',
       },
     }),
+
+    /**
+     * #slot
+     */
+    pifGzLocation: {
+      defaultValue: {
+        locationType: 'UriLocation',
+        uri: '/path/to/data/file.pif.gz',
+      },
+      description: 'location of pairwise tabix indexed PAF (pif)',
+      type: 'fileLocation',
+    },
+
+    /**
+     * #slot
+     */
+    queryAssembly: {
+      defaultValue: '',
+      description: 'Alternative to assemblyNames: the query assembly name',
+      type: 'string',
+    },
+
+    /**
+     * #slot
+     */
+    targetAssembly: {
+      defaultValue: '',
+      description: 'Alternative to assemblyNames: the target assembly name',
+      type: 'string',
+    },
   },
   { explicitlyTyped: true },
 )

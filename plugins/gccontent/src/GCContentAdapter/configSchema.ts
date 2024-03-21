@@ -15,22 +15,24 @@ const GCContentAdapterF = (_pluginManager: PluginManager) => {
        * #slot
        */
       sequenceAdapter: {
-        type: 'frozen',
         defaultValue: null,
+        type: 'frozen',
       },
-      /**
-       * #slot
-       */
-      windowSize: {
-        type: 'number',
-        defaultValue: 100,
-      },
+
       /**
        * #slot
        */
       windowDelta: {
-        type: 'number',
         defaultValue: 100,
+        type: 'number',
+      },
+
+      /**
+       * #slot
+       */
+      windowSize: {
+        defaultValue: 100,
+        type: 'number',
       },
     },
     { explicitlyTyped: true },

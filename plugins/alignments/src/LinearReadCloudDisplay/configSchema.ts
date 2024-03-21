@@ -13,25 +13,9 @@ function configSchemaF(pluginManager: PluginManager) {
       /**
        * #slot
        */
-      maxFeatureScreenDensity: {
-        type: 'number',
-        description: 'maximum features per pixel that is displayed in the view',
-        defaultValue: 5,
-      },
-
-      /**
-       * #slot
-       */
-      featureHeight: {
-        type: 'number',
-        defaultValue: 7,
-      },
-
-      /**
-       * #slot
-       */
       colorScheme: {
-        type: 'stringEnum',
+        defaultValue: 'normal',
+        description: 'color scheme to use',
         model: types.enumeration('colorScheme', [
           'strand',
           'normal',
@@ -40,8 +24,24 @@ function configSchemaF(pluginManager: PluginManager) {
           'mappingQuality',
           'tag',
         ]),
-        description: 'color scheme to use',
-        defaultValue: 'normal',
+        type: 'stringEnum',
+      },
+
+      /**
+       * #slot
+       */
+      featureHeight: {
+        defaultValue: 7,
+        type: 'number',
+      },
+
+      /**
+       * #slot
+       */
+      maxFeatureScreenDensity: {
+        defaultValue: 5,
+        description: 'maximum features per pixel that is displayed in the view',
+        type: 'number',
       },
     },
     {

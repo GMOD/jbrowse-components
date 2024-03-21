@@ -30,16 +30,16 @@ unknown
 
 ### DialogQueueSessionMixin - Actions
 
-#### action: removeActiveDialog
-
-```js
-// type signature
-removeActiveDialog: () => void
-```
-
 #### action: queueDialog
 
 ```js
 // type signature
 queueDialog: (cb: (doneCallback: () => void) => [any, unknown]) => void
+```
+
+#### action: removeActiveDialog
+
+```js
+// type signature
+removeActiveDialog: () => void
 ```

@@ -14,19 +14,19 @@ const BedpeAdapter = ConfigurationSchema(
      * can be plaintext or gzipped, not indexed so loaded into memory on startup
      */
     bedpeLocation: {
-      type: 'fileLocation',
       defaultValue: {
-        uri: '/path/to/my.bedpe.gz',
         locationType: 'UriLocation',
+        uri: '/path/to/my.bedpe.gz',
       },
+      type: 'fileLocation',
     },
     /**
      * #slot
      */
     columnNames: {
-      type: 'stringArray',
-      description: 'List of column names',
       defaultValue: [],
+      description: 'List of column names',
+      type: 'stringArray',
     },
   },
   { explicitlyTyped: true },

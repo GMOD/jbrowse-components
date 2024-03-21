@@ -14,6 +14,15 @@ info
 
 ### BaseConnectionModel - Properties
 
+#### property: configuration
+
+```js
+// type signature
+ConfigurationSchemaType<{ assemblyNames: { defaultValue: any[]; description: string; type: string; }; name: { defaultValue: string; description: string; type: string; }; }, ConfigurationSchemaOptions<undefined, "connectionId">>
+// code
+configuration: ConfigurationReference(configSchema)
+```
+
 #### property: name
 
 ```js
@@ -30,15 +39,6 @@ name: types.identifier
 IArrayType<IAnyModelType>
 // code
 tracks: types.array(pluginManager.pluggableConfigSchemaType('track'))
-```
-
-#### property: configuration
-
-```js
-// type signature
-ConfigurationSchemaType<{ name: { type: string; defaultValue: string; description: string; }; assemblyNames: { type: string; defaultValue: any[]; description: string; }; }, ConfigurationSchemaOptions<undefined, "connectionId">>
-// code
-configuration: ConfigurationReference(configSchema)
 ```
 
 ### BaseConnectionModel - Actions
@@ -64,16 +64,16 @@ addTrackConf: (trackConf: { [x: string]: any; } & NonEmptyObject & { setSubschem
 addTrackConfs: (trackConfs: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]) => any[]
 ```
 
-#### action: setTrackConfs
-
-```js
-// type signature
-setTrackConfs: (trackConfs: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]) => IMSTArray<...> & IStateTreeNode<...>
-```
-
 #### action: clear
 
 ```js
 // type signature
 clear: () => void
+```
+
+#### action: setTrackConfs
+
+```js
+// type signature
+setTrackConfs: (trackConfs: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]) => IMSTArray<...> & IStateTreeNode<...>
 ```

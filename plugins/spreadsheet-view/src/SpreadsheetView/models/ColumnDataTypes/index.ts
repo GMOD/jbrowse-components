@@ -7,12 +7,12 @@ import { TextColumn as Text } from './Text'
 import { types, IAnyModelType } from 'mobx-state-tree'
 
 const ColumnTypes = {
-  Number,
-  Text,
-  LocString,
+  LocEnd,
   LocRef,
   LocStart,
-  LocEnd,
+  LocString,
+  Number,
+  Text,
 }
 
 const allColumnTypes = Object.values(ColumnTypes)

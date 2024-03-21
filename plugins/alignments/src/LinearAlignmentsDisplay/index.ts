@@ -9,13 +9,13 @@ export default function (pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaFactory(pluginManager)
     return new DisplayType({
-      name: 'LinearAlignmentsDisplay',
-      displayName: 'Alignments display (combination)',
+      ReactComponent,
       configSchema,
+      displayName: 'Alignments display (combination)',
+      name: 'LinearAlignmentsDisplay',
       stateModel: modelFactory(pluginManager, configSchema),
       trackType: 'AlignmentsTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent,
     })
   })
 }

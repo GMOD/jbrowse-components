@@ -42,12 +42,12 @@ export async function getLocalOrRemoteStream(uri: string, out: string) {
     totalBytes = fs.statSync(filename).size
     stream = fs.createReadStream(filename)
   }
-  return { totalBytes, stream }
+  return { stream, totalBytes }
 }
 
 export function makeLocation(location: string, protocol: string) {
   if (protocol === 'uri') {
-    return { uri: location, locationType: 'UriLocation' } as UriLocation
+    return { locationType: 'UriLocation', uri: location } as UriLocation
   }
   if (protocol === 'localPath') {
     return {
@@ -64,53 +64,53 @@ export function guessAdapterFromFileName(filePath: string): Track {
   const name = path.basename(filePath)
   if (/\.vcf\.b?gz$/i.test(filePath)) {
     return {
-      trackId: name,
-      name: name,
-      assemblyNames: [],
       adapter: {
         type: 'VcfTabixAdapter',
         vcfGzLocation: makeLocation(filePath, protocol),
       },
+      assemblyNames: [],
+      name: name,
+      trackId: name,
     }
   } else if (/\.gff3?\.b?gz$/i.test(filePath)) {
     return {
-      trackId: name,
-      name,
-      assemblyNames: [],
       adapter: {
-        type: 'Gff3TabixAdapter',
         gffGzLocation: makeLocation(filePath, protocol),
+        type: 'Gff3TabixAdapter',
       },
+      assemblyNames: [],
+      name,
+      trackId: name,
     }
   } else if (/\.gtf?$/i.test(filePath)) {
     return {
-      trackId: name,
-      name,
-      assemblyNames: [],
       adapter: {
-        type: 'GtfAdapter',
         gtfLocation: makeLocation(filePath, protocol),
+        type: 'GtfAdapter',
       },
+      assemblyNames: [],
+      name,
+      trackId: name,
     }
   } else if (/\.vcf$/i.test(filePath)) {
     return {
-      trackId: name,
-      name,
-      assemblyNames: [],
       adapter: {
         type: 'VcfAdapter',
         vcfLocation: makeLocation(filePath, protocol),
       },
+      assemblyNames: [],
+      name,
+      trackId: name,
     }
   } else if (/\.gff3?$/i.test(filePath)) {
     return {
-      trackId: name,
-      name,
-      assemblyNames: [],
       adapter: {
-        type: 'Gff3Adapter',
         gffLocation: makeLocation(filePath, protocol),
+        type: 'Gff3Adapter',
       },
+      assemblyNames: [],
+      name,
+      trackId: name,
     }
   } else {
     throw new Error(`Unsupported file type ${filePath}`)
@@ -149,19 +149,19 @@ export async function generateMeta({
     const metaAttrs = textSearching?.indexingAttributes || attributes
 
     return {
-      trackId: trackId,
+      adapterConf: adapter,
       attributesIndexed: metaAttrs,
       excludedTypes: includeExclude,
-      adapterConf: adapter,
+      trackId: trackId,
     }
   })
   fs.writeFileSync(
     path.join(outDir, 'trix', `${name}_meta.json`),
     JSON.stringify(
       {
+        assemblyNames,
         dateCreated: new Date().toISOString(),
         tracks,
-        assemblyNames,
       },
       null,
       2,

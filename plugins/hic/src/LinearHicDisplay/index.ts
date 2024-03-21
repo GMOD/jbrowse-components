@@ -9,13 +9,13 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaFactory(pluginManager)
     return new DisplayType({
-      name: 'LinearHicDisplay',
-      displayName: 'Hi-C contact matrix display',
+      ReactComponent: BaseLinearDisplayComponent,
       configSchema,
+      displayName: 'Hi-C contact matrix display',
+      name: 'LinearHicDisplay',
       stateModel: stateModelFactory(configSchema),
       trackType: 'HicTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: BaseLinearDisplayComponent,
     })
   })
 }

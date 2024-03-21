@@ -9,13 +9,13 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addDisplayType(() => {
     const stateModel = modelFactory(configSchema)
     return new DisplayType({
-      name: 'LinearReferenceSequenceDisplay',
+      ReactComponent: BaseLinearDisplayComponent,
       configSchema,
-      stateModel,
       displayName: 'Reference sequence display',
+      name: 'LinearReferenceSequenceDisplay',
+      stateModel,
       trackType: 'ReferenceSequenceTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: BaseLinearDisplayComponent,
     })
   })
 }

@@ -42,12 +42,12 @@ export async function parseBedBuffer(buffer: Buffer, options: ParseOptions) {
   const b = removeBedHeaders(buffer)
   const data = await parseTsvBuffer(b)
   const bedColumns = [
-    { name: 'chrom', dataType: { type: 'LocRef' } },
-    { name: 'chromStart', dataType: { type: 'LocStart' } },
-    { name: 'chromEnd', dataType: { type: 'LocEnd' } },
-    { name: 'name', dataType: { type: 'Text' } },
-    { name: 'score', dataType: { type: 'Number' } },
-    { name: 'strand', dataType: { type: 'Text' } },
+    { dataType: { type: 'LocRef' }, name: 'chrom' },
+    { dataType: { type: 'LocStart' }, name: 'chromStart' },
+    { dataType: { type: 'LocEnd' }, name: 'chromEnd' },
+    { dataType: { type: 'Text' }, name: 'name' },
+    { dataType: { type: 'Number' }, name: 'score' },
+    { dataType: { type: 'Text' }, name: 'strand' },
   ]
   data.columns.forEach((col, colNumber) => {
     const bedColumn = bedColumns[colNumber]
@@ -61,11 +61,11 @@ export async function parseBedBuffer(buffer: Buffer, options: ParseOptions) {
 
   data.columnDisplayOrder.push(data.columnDisplayOrder.length)
   data.columns.unshift({
-    name: 'Location',
     dataType: { type: 'LocString' },
-    isDerived: true,
     derivationFunctionText: `jexl:{text:row.cells[0].text+':'+row.cells[1].text+'..'+row.cells[2].text,\n
     extendedData: {refName: row.cells.ref.text, start: parseInt(row.cells.start.text,10), end: parseInt(row.cells.end.text,10)}}`,
+    isDerived: true,
+    name: 'Location',
   })
   return data
 }
@@ -81,31 +81,31 @@ export async function parseBedPEBuffer(buffer: Buffer, options: ParseOptions) {
     featureField: string[]
   }
   const bedColumns: BedColumn[] = [
-    { name: 'chrom1', dataType: { type: 'Text' }, featureField: ['refName'] },
-    { name: 'start1', dataType: { type: 'Number' }, featureField: ['start'] },
-    { name: 'end1', dataType: { type: 'Number' }, featureField: ['end'] },
+    { dataType: { type: 'Text' }, featureField: ['refName'], name: 'chrom1' },
+    { dataType: { type: 'Number' }, featureField: ['start'], name: 'start1' },
+    { dataType: { type: 'Number' }, featureField: ['end'], name: 'end1' },
     {
-      name: 'chrom2',
       dataType: { type: 'Text' },
       featureField: ['mate', 'refName'],
+      name: 'chrom2',
     },
     {
-      name: 'start2',
       dataType: { type: 'Number' },
       featureField: ['mate', 'start'],
+      name: 'start2',
     },
     {
-      name: 'end2',
       dataType: { type: 'Number' },
       featureField: ['mate', 'end'],
+      name: 'end2',
     },
-    { name: 'name', dataType: { type: 'Text' }, featureField: ['name'] },
-    { name: 'score', dataType: { type: 'Number' }, featureField: ['score'] },
-    { name: 'strand1', dataType: { type: 'Text' }, featureField: ['strand'] },
+    { dataType: { type: 'Text' }, featureField: ['name'], name: 'name' },
+    { dataType: { type: 'Number' }, featureField: ['score'], name: 'score' },
+    { dataType: { type: 'Text' }, featureField: ['strand'], name: 'strand1' },
     {
-      name: 'strand2',
       dataType: { type: 'Text' },
       featureField: ['mate', 'strand'],
+      name: 'strand2',
     },
   ]
   data.columns.forEach((col, colNumber) => {

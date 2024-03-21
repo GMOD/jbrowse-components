@@ -29,41 +29,41 @@ test('renders with a couple of uncategorized tracks', async () => {
   session.addAssemblyConf({
     name: 'volMyt1',
     sequence: {
-      trackId: 'sequenceConfigId',
-      type: 'ReferenceSequenceTrack',
       adapter: {
-        type: 'FromConfigSequenceAdapter',
         features: [
           {
-            refName: 'ctgA',
-            uniqueId: 'firstId',
-            start: 0,
             end: 10,
+            refName: 'ctgA',
             seq: 'cattgttgcg',
+            start: 0,
+            uniqueId: 'firstId',
           },
         ],
+        type: 'FromConfigSequenceAdapter',
       },
+      trackId: 'sequenceConfigId',
+      type: 'ReferenceSequenceTrack',
     },
   })
   session.addTrackConf({
-    trackId: 'fooC',
+    adapter: { features: [], type: 'FromConfigAdapter' },
     assemblyNames: ['volMyt1'],
+    trackId: 'fooC',
     type: 'FeatureTrack',
-    adapter: { type: 'FromConfigAdapter', features: [] },
   })
   session.addTrackConf({
-    trackId: 'barC',
+    adapter: { features: [], type: 'FromConfigAdapter' },
     assemblyNames: ['volMyt1'],
+    trackId: 'barC',
     type: 'FeatureTrack',
-    adapter: { type: 'FromConfigAdapter', features: [] },
   })
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
       {
         assemblyName: 'volMyt1',
+        end: 1000,
         refName: 'ctgA',
         start: 0,
-        end: 1000,
       },
     ],
   })
@@ -85,42 +85,42 @@ test('renders with a couple of categorized tracks', async () => {
   session.addAssemblyConf({
     name: 'volMyt1',
     sequence: {
-      trackId: 'sequenceConfigId',
-      type: 'ReferenceSequenceTrack',
       adapter: {
-        type: 'FromConfigSequenceAdapter',
         features: [
           {
-            refName: 'ctgA',
-            uniqueId: 'firstId',
-            start: 0,
             end: 10,
+            refName: 'ctgA',
             seq: 'cattgttgcg',
+            start: 0,
+            uniqueId: 'firstId',
           },
         ],
+        type: 'FromConfigSequenceAdapter',
       },
+      trackId: 'sequenceConfigId',
+      type: 'ReferenceSequenceTrack',
     },
   })
 
   session.addTrackConf({
-    trackId: 'fooC',
+    adapter: { features: [], type: 'FromConfigAdapter' },
     assemblyNames: ['volMyt1'],
+    trackId: 'fooC',
     type: 'FeatureTrack',
-    adapter: { type: 'FromConfigAdapter', features: [] },
   })
   session.addTrackConf({
-    trackId: 'barC',
+    adapter: { features: [], type: 'FromConfigAdapter' },
     assemblyNames: ['volMyt1'],
+    trackId: 'barC',
     type: 'FeatureTrack',
-    adapter: { type: 'FromConfigAdapter', features: [] },
   })
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
       {
         assemblyName: 'volMyt1',
+        end: 1000,
         refName: 'ctgA',
         start: 0,
-        end: 1000,
       },
     ],
   })
@@ -147,20 +147,20 @@ test('right order when using multiple categories', async () => {
   session.addAssemblyConf({
     name: 'volvox',
     sequence: {
-      trackId: 'sequenceConfigId',
-      type: 'ReferenceSequenceTrack',
       adapter: {
-        type: 'FromConfigSequenceAdapter',
         features: [
           {
-            refName: 'ctgA',
-            uniqueId: 'firstId',
-            start: 0,
             end: 10,
+            refName: 'ctgA',
             seq: 'cattgttgcg',
+            start: 0,
+            uniqueId: 'firstId',
           },
         ],
+        type: 'FromConfigSequenceAdapter',
       },
+      trackId: 'sequenceConfigId',
+      type: 'ReferenceSequenceTrack',
     },
   })
 
@@ -172,9 +172,9 @@ test('right order when using multiple categories', async () => {
     displayedRegions: [
       {
         assemblyName: 'volMyt1',
+        end: 1000,
         refName: 'ctgA',
         start: 0,
-        end: 1000,
       },
     ],
   })

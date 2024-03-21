@@ -37,9 +37,12 @@ export default function TrackHeightMixin() {
       /**
        * #action
        */
-      setScrollTop(scrollTop: number) {
-        self.scrollTop = scrollTop
+      resizeHeight(distance: number) {
+        const oldHeight = self.height
+        const newHeight = this.setHeight(self.height + distance)
+        return newHeight - oldHeight
       },
+
       /**
        * #action
        */
@@ -47,13 +50,12 @@ export default function TrackHeightMixin() {
         self.heightPreConfig = Math.max(displayHeight, minDisplayHeight)
         return self.height
       },
+
       /**
        * #action
        */
-      resizeHeight(distance: number) {
-        const oldHeight = self.height
-        const newHeight = this.setHeight(self.height + distance)
-        return newHeight - oldHeight
+      setScrollTop(scrollTop: number) {
+        self.scrollTop = scrollTop
       },
     }))
 }

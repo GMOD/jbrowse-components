@@ -46,11 +46,25 @@ RpcManager
 addAssemblyConf: (conf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => { ...; } & ... 2 more ... & IStateTreeNode<...>
 ```
 
-#### action: removeAssemblyConf
+#### action: addConnectionConf
 
 ```js
 // type signature
-removeAssemblyConf: (assemblyName: string) => void
+addConnectionConf: (connectionConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => any
+```
+
+#### action: addInternetAccountConf
+
+```js
+// type signature
+addInternetAccountConf: (internetAccountConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => any
+```
+
+#### action: addPlugin
+
+```js
+// type signature
+addPlugin: (pluginDefinition: PluginDefinition) => void
 ```
 
 #### action: addTrackConf
@@ -60,18 +74,18 @@ removeAssemblyConf: (assemblyName: string) => void
 addTrackConf: (trackConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => any
 ```
 
-#### action: addConnectionConf
-
-```js
-// type signature
-addConnectionConf: (connectionConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => any
-```
-
 #### action: deleteConnectionConf
 
 ```js
 // type signature
 deleteConnectionConf: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => boolean
+```
+
+#### action: deleteInternetAccountConf
+
+```js
+// type signature
+deleteInternetAccountConf: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => boolean
 ```
 
 #### action: deleteTrackConf
@@ -81,11 +95,11 @@ deleteConnectionConf: (configuration: { [x: string]: any; } & NonEmptyObject & {
 deleteTrackConf: (trackConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => boolean
 ```
 
-#### action: addPlugin
+#### action: removeAssemblyConf
 
 ```js
 // type signature
-addPlugin: (pluginDefinition: PluginDefinition) => void
+removeAssemblyConf: (assemblyName: string) => void
 ```
 
 #### action: removePlugin
@@ -100,18 +114,4 @@ removePlugin: (pluginDefinition: PluginDefinition) => void
 ```js
 // type signature
 setDefaultSessionConf: (sessionConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
-```
-
-#### action: addInternetAccountConf
-
-```js
-// type signature
-addInternetAccountConf: (internetAccountConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => any
-```
-
-#### action: deleteInternetAccountConf
-
-```js
-// type signature
-deleteInternetAccountConf: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => boolean
 ```

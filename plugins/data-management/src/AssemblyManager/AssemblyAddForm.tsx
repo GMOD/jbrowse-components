@@ -151,38 +151,38 @@ const AssemblyAddForm = observer(function ({
       let newAssembly
       if (adapterSelection === 'IndexedFastaAdapter') {
         newAssembly = {
-          name: assemblyName,
           displayName: assemblyDisplayName,
+          name: assemblyName,
           sequence: {
             adapter: {
-              type: 'IndexedFastaAdapter',
-              fastaLocation,
               faiLocation,
+              fastaLocation,
+              type: 'IndexedFastaAdapter',
             },
           },
         }
       } else if (adapterSelection === 'BgzipFastaAdapter') {
         newAssembly = {
-          name: assemblyName,
           displayName: assemblyDisplayName,
+          name: assemblyName,
           sequence: {
             adapter: {
-              type: 'BgzipFastaAdapter',
-              fastaLocation,
               faiLocation,
+              fastaLocation,
               gziLocation,
+              type: 'BgzipFastaAdapter',
             },
           },
         }
       } else if (adapterSelection === 'TwoBitAdapter') {
         newAssembly = {
-          name: assemblyName,
           displayName: assemblyDisplayName,
+          name: assemblyName,
           sequence: {
             adapter: {
-              type: 'TwoBitAdapter',
-              twoBitLocation,
               chromSizesLocation,
+              twoBitLocation,
+              type: 'TwoBitAdapter',
             },
           },
         }

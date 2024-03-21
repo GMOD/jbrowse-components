@@ -20,25 +20,14 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ### BaseLinearDisplay - Slots
 
-#### slot: maxFeatureScreenDensity
-
-```js
-maxFeatureScreenDensity: {
-      type: 'number',
-      description:
-        'maximum features per pixel that is displayed in the view, used if byte size estimates not available',
-      defaultValue: 0.3,
-    }
-```
-
 #### slot: fetchSizeLimit
 
 ```js
 fetchSizeLimit: {
-      type: 'number',
       defaultValue: 1_000_000,
       description:
         "maximum data to attempt to download for a given track, used if adapter doesn't specify one",
+      type: 'number',
     }
 ```
 
@@ -46,9 +35,20 @@ fetchSizeLimit: {
 
 ```js
 height: {
-      type: 'number',
       defaultValue: 100,
       description: 'default height for the track',
+      type: 'number',
+    }
+```
+
+#### slot: maxFeatureScreenDensity
+
+```js
+maxFeatureScreenDensity: {
+      defaultValue: 0.3,
+      description:
+        'maximum features per pixel that is displayed in the view, used if byte size estimates not available',
+      type: 'number',
     }
 ```
 
@@ -56,10 +56,10 @@ height: {
 
 ```js
 mouseover: {
-      type: 'string',
-      description: 'text to display when the cursor hovers over a feature',
-      defaultValue: `jexl:get(feature,'name')`,
-
       contextVariable: ['feature'],
+      defaultValue: `jexl:get(feature,'name')`,
+      description: 'text to display when the cursor hovers over a feature',
+
+      type: 'string',
     }
 ```

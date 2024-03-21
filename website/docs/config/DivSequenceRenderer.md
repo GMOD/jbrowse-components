@@ -16,8 +16,8 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ```js
 height: {
-      type: 'number',
-      description: 'height in pixels of each line of sequence',
       defaultValue: 16,
+      description: 'height in pixels of each line of sequence',
+      type: 'number',
     }
 ```

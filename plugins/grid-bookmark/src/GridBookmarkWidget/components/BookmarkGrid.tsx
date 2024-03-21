@@ -22,13 +22,13 @@ const EditBookmarkLabelDialog = lazy(
 )
 
 const useStyles = makeStyles()(() => ({
-  link: {
-    cursor: 'pointer',
-  },
   cell: {
-    whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  },
+  link: {
+    cursor: 'pointer',
   },
 }))
 
@@ -54,10 +54,10 @@ const BookmarkGrid = observer(function ({
       const { assemblyName, ...rest } = region
       return {
         ...region,
-        id: index,
         assemblyName,
-        locString: assembleLocString(rest),
         correspondingObj: region,
+        id: index,
+        locString: assembleLocString(rest),
       }
     })
 
@@ -97,7 +97,6 @@ const BookmarkGrid = observer(function ({
           {
             field: 'locString',
             headerName: 'Bookmark link',
-            width: widths[1],
             renderCell: ({ value, row }) => (
               <Link
                 className={cx(classes.link, classes.cell)}
@@ -111,12 +110,13 @@ const BookmarkGrid = observer(function ({
                 {value}
               </Link>
             ),
+            width: widths[1],
           },
           {
+            editable: true,
             field: 'label',
             headerName: 'Label',
             width: widths[2],
-            editable: true,
           },
           {
             field: 'assemblyName',
@@ -126,7 +126,6 @@ const BookmarkGrid = observer(function ({
           {
             field: 'highlight',
             headerName: 'Highlight',
-            width: widths[4],
             renderCell: ({ value, row }) => (
               <ColorPicker
                 color={value || 'black'}
@@ -135,12 +134,13 @@ const BookmarkGrid = observer(function ({
                 }}
               />
             ),
+            width: widths[4],
           },
         ]}
         onCellDoubleClick={({ row }) => {
           getSession(model).queueDialog(onClose => [
             EditBookmarkLabelDialog,
-            { onClose, model, dialogRow: row },
+            { dialogRow: row, model, onClose },
           ])
         }}
         processRowUpdate={row => {

@@ -26,23 +26,27 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        type: types.literal('LinearReferenceSequenceDisplay'),
-        /**
-         * #property
-         */
         configuration: ConfigurationReference(configSchema),
+
         /**
          * #property
          */
         showForward: true,
+
         /**
          * #property
          */
         showReverse: true,
+
         /**
          * #property
          */
         showTranslation: true,
+
+        /**
+         * #property
+         */
+        type: types.literal('LinearReferenceSequenceDisplay'),
       }),
     )
     .volatile(() => ({
@@ -84,12 +88,12 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
             ...superRenderProps(),
             ...getParentRenderProps(self),
             config: self.configuration.renderer,
+            rowHeight,
             rpcDriverName,
+            sequenceHeight,
             showForward,
             showReverse,
             showTranslation,
-            rowHeight,
-            sequenceHeight,
           }
         },
       }
@@ -110,24 +114,6 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       },
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      toggleShowForward() {
-        self.showForward = !self.showForward
-      },
-      /**
-       * #action
-       */
-      toggleShowReverse() {
-        self.showReverse = !self.showReverse
-      },
-      /**
-       * #action
-       */
-      toggleShowTranslation() {
-        self.showTranslation = !self.showTranslation
-      },
       afterAttach() {
         addDisposer(
           self,
@@ -141,6 +127,26 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
           }),
         )
       },
+
+      /**
+       * #action
+       */
+      toggleShowForward() {
+        self.showForward = !self.showForward
+      },
+
+      /**
+       * #action
+       */
+      toggleShowReverse() {
+        self.showReverse = !self.showReverse
+      },
+      /**
+       * #action
+       */
+      toggleShowTranslation() {
+        self.showTranslation = !self.showTranslation
+      },
     }))
     .views(self => ({
       /**
@@ -149,22 +155,22 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       trackMenuItems() {
         return [
           {
-            label: 'Show forward',
-            type: 'checkbox',
             checked: self.showForward,
+            label: 'Show forward',
             onClick: () => self.toggleShowForward(),
+            type: 'checkbox',
           },
           {
-            label: 'Show reverse',
-            type: 'checkbox',
             checked: self.showReverse,
+            label: 'Show reverse',
             onClick: () => self.toggleShowReverse(),
+            type: 'checkbox',
           },
           {
-            label: 'Show translation',
-            type: 'checkbox',
             checked: self.showTranslation,
+            label: 'Show translation',
             onClick: () => self.toggleShowTranslation(),
+            type: 'checkbox',
           },
         ]
       },

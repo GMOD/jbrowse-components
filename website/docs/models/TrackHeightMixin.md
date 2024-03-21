@@ -40,11 +40,11 @@ scrollTop: 0
 
 ### TrackHeightMixin - Actions
 
-#### action: setScrollTop
+#### action: resizeHeight
 
 ```js
 // type signature
-setScrollTop: (scrollTop: number) => void
+resizeHeight: (distance: number) => number
 ```
 
 #### action: setHeight
@@ -54,9 +54,9 @@ setScrollTop: (scrollTop: number) => void
 setHeight: (displayHeight: number) => number
 ```
 
-#### action: resizeHeight
+#### action: setScrollTop
 
 ```js
 // type signature
-resizeHeight: (distance: number) => number
+setScrollTop: (scrollTop: number) => void
 ```

@@ -10,18 +10,18 @@ export function renderReactionData(self: any) {
   const { rpcManager } = getSession(view)
 
   return {
-    rendererType,
-    rpcManager,
-    renderProps: self.renderProps(),
     renderArgs: {
-      assemblyName: view.displayedRegions[0]?.assemblyName,
       adapterConfig: clone(self.adapterConfig),
-      rendererType: rendererType.name,
-      regions: clone(view.displayedRegions),
+      assemblyName: view.displayedRegions[0]?.assemblyName,
       blockDefinitions: self.blockDefinitions,
+      regions: clone(view.displayedRegions),
+      rendererType: rendererType.name,
       sessionId: getRpcSessionId(self),
       timeout: 1000000,
     },
+    renderProps: self.renderProps(),
+    rendererType,
+    rpcManager,
   }
 }
 
@@ -68,8 +68,8 @@ export async function renderReactionEffect(
   })
 
   return {
-    html,
     data,
+    html,
     reactElement: data.reactElement,
     renderingComponent: rendererType.ReactComponent,
   }

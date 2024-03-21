@@ -27,11 +27,11 @@ const Wrapper = observer(function ({
   ) : (
     <svg
       style={{
-        position: 'absolute',
-        top: 0,
+        height,
         left: 0,
         pointerEvents: 'none',
-        height,
+        position: 'absolute',
+        top: 0,
         width: getContainingView(model).width,
       }}
     >

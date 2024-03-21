@@ -68,18 +68,18 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
           data-testid="grid_bookmark_menu"
           menuItems={[
             {
-              label: 'Export',
               icon: GetApp,
+              label: 'Export',
               onClick: () => {
                 getSession(model).queueDialog(onClose => [
                   ExportBookmarksDialog,
-                  { onClose, model },
+                  { model, onClose },
                 ])
               },
             },
             {
-              label: 'Import',
               icon: Publish,
+              label: 'Import',
               onClick: () => {
                 getSession(model).queueDialog(onClose => [
                   ImportBookmarksDialog,
@@ -88,8 +88,8 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
               },
             },
             {
-              label: 'Delete',
               icon: Delete,
+              label: 'Delete',
               onClick: () => {
                 getSession(model).queueDialog(onClose => [
                   DeleteBookmarksDialog,
@@ -98,8 +98,8 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
               },
             },
             {
-              label: 'Share',
               icon: Share,
+              label: 'Share',
               onClick: () => {
                 getSession(model).queueDialog(onClose => [
                   ShareBookmarksDialog,
@@ -108,8 +108,8 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
               },
             },
             {
-              label: 'Edit colors',
               icon: Palette,
+              label: 'Edit colors',
               onClick: () => {
                 getSession(model).queueDialog(onClose => [
                   EditHighlightColorDialog,
@@ -118,8 +118,8 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
               },
             },
             {
-              label: 'Settings',
               icon: Settings,
+              label: 'Settings',
               onClick: () => {
                 getSession(model).queueDialog(onClose => [
                   HighlightSettingsDialog,

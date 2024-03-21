@@ -3,11 +3,11 @@ import { makeStyles } from 'tss-react/mui'
 
 const useStyles = makeStyles()(theme => ({
   table: {
-    border: '1px solid #888',
-    margin: theme.spacing(4),
     '& td': {
       padding: theme.spacing(1),
     },
+    border: '1px solid #888',
+    margin: theme.spacing(4),
   },
 }))
 
@@ -26,8 +26,8 @@ export default function ModificationTable({
             <td>{value}</td>
             <td
               style={{
-                width: '1em',
                 background: value,
+                width: '1em',
               }}
             />
           </tr>

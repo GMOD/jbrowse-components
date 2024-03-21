@@ -32,11 +32,11 @@ const ImportFormRefNameAutocomplete = observer(function ({
     <RefNameAutocomplete
       fetchResults={queryString =>
         fetchResults({
-          queryString,
           assembly,
-          textSearchManager,
+          queryString,
           rankSearchResults,
           searchScope,
+          textSearchManager,
         })
       }
       model={model}
@@ -46,8 +46,8 @@ const ImportFormRefNameAutocomplete = observer(function ({
       onChange={str => setValue(str)}
       onSelect={val => setOption(val)}
       TextFieldProps={{
-        variant: 'outlined',
         helperText: 'Enter sequence name, feature name, or location',
+        variant: 'outlined',
       }}
     />
   )
