@@ -364,11 +364,6 @@ const DataGridEntries: Record<string, LazyExoticComponent<any>> = {
       default: module.GridPanelWrapper,
     })),
   ),
-  GridPreferencesPanel: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridPreferencesPanel,
-    })),
-  ),
   GridRemoveIcon: lazy(() =>
     import('@mui/x-data-grid').then(module => ({
       default: module.GridRemoveIcon,
