@@ -63,7 +63,12 @@ export function BaseCard({
     <Accordion
       expanded={expanded}
       onChange={() => setExpanded(s => !s)}
-      TransitionProps={{ unmountOnExit: true, timeout: 150 }}
+      slotProps={{
+        transition: {
+          unmountOnExit: true,
+          timeout: 0,
+        },
+      }}
     >
       <AccordionSummary
         expandIcon={<ExpandMore className={classes.expandIcon} />}
@@ -87,7 +92,8 @@ function Position(props: BaseProps) {
   }
   const str = strandMap[strand] ? `(${strandMap[strand]})` : ''
   // @ts-expect-error
-  const loc = assembleLocString(feature as ParsedLocString)
+  const f = feature as ParsedLocString
+  const loc = assembleLocString(f)
   return <>{`${loc} ${str}`}</>
 }
 

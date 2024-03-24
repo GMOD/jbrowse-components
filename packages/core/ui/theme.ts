@@ -265,7 +265,9 @@ function createDefaultProps(theme?: ThemeOptions): ThemeOptions {
       MuiAccordion: {
         defaultProps: {
           disableGutters: true,
-          TransitionProps: { timeout: 150 },
+          slotProps: {
+            transition: { timeout: 0 },
+          },
         },
       },
       MuiFilledInput: {
