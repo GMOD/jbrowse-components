@@ -137,7 +137,25 @@ export function ucscProcessedTranscript(feature: Feature) {
 }
 
 function defaultParser(fields: string[], line: string) {
-  return Object.fromEntries(line.split('\t').map((f, i) => [fields[i], f]))
+  const {
+    blockStarts,
+    blockCount,
+    chromStarts,
+    thickEnd,
+    thickStart,
+    blockSizes,
+    ...rest
+  } = Object.fromEntries(line.split('\t').map((f, i) => [fields[i], f]))
+
+  return {
+    ...rest,
+    blockStarts: blockStarts?.split(',').map(r => +r),
+    chromStarts: chromStarts?.split(',').map(r => +r),
+    blockSizes: blockSizes?.split(',').map(r => +r),
+    thickStart: +thickStart,
+    thickEnd: +thickEnd,
+    blockCount: +blockCount,
+  }
 }
 
 export function featureData(
@@ -160,17 +178,27 @@ export function featureData(
     ? defaultParser(names, line)
     : parser.parseLine(line, { uniqueId })
 
-  const { blockCount, blockSizes, blockStarts, chromStarts } = data
+  const {
+    blockCount,
+    blockSizes,
+    blockStarts,
+    chromStarts,
+    thickStart,
+    thickEnd,
+  } = data
 
   if (blockCount) {
-    const starts = chromStarts || blockStarts || []
-    const sizes = blockSizes
+    let starts = chromStarts || blockStarts || []
+    data.thickStart = +thickStart
+    data.thickEnd = +thickEnd
     const blocksOffset = start
+    // @ts-expect-error
     data.subfeatures = []
 
     for (let b = 0; b < blockCount; b += 1) {
       const bmin = (starts[b] || 0) + blocksOffset
-      const bmax = bmin + (sizes[b] || 0)
+      const bmax = bmin + (blockSizes[b] || 0)
+      // @ts-expect-error
       data.subfeatures.push({
         uniqueId: `${uniqueId}-${b}`,
         start: bmin,
@@ -182,11 +210,10 @@ export function featureData(
   }
 
   if (scoreColumn) {
+    // @ts-expect-error
     data.score = +data[scoreColumn]
   }
-  delete data.chrom
-  delete data.chromStart
-  delete data.chromEnd
+
   const f = new SimpleFeature({
     ...data,
     start,
