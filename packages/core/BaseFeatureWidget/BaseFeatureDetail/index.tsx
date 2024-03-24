@@ -80,6 +80,8 @@ export function BaseCard({
 function Position(props: BaseProps) {
   const { feature } = props
   const strand = feature.strand as number
+  const end = feature.end as number
+  const start = feature.start as number
   const strandMap: Record<string, string> = {
     '-1': '-',
     '0': '',
@@ -88,7 +90,7 @@ function Position(props: BaseProps) {
   const str = strandMap[strand] ? `(${strandMap[strand]})` : ''
   // @ts-expect-error
   const loc = assembleLocString(feature as ParsedLocString)
-  return <>{`${loc} ${str}`}</>
+  return <>{`${loc} ${str} (${toLocale(end - start)}bp)`}</>
 }
 
 function CoreDetails(props: BaseProps) {
@@ -110,27 +112,19 @@ function CoreDetails(props: BaseProps) {
 
   // eslint-disable-next-line no-underscore-dangle
   const formattedFeat = { ...obj, ...obj.__jbrowsefmt }
-  const { start, end } = formattedFeat
-
-  const displayedDetails: Record<string, any> = {
-    ...formattedFeat,
-    length: toLocale(end - start),
-  }
-
-  const coreRenderedDetails = {
-    description: 'Description',
-    name: 'Name',
-    length: 'Length',
-    type: 'Type',
-  }
   return (
     <>
       <SimpleField
         name="Position"
         value={<Position {...props} feature={formattedFeat} />}
       />
-      {Object.entries(coreRenderedDetails)
-        .map(([key, name]) => [name, displayedDetails[key]])
+      {Object.entries({
+        description: 'Description',
+        name: 'Name',
+        type: 'Type',
+      })
+        // @ts-expect-error
+        .map(([key, name]) => [name, formattedFeat[key]])
         .filter(([, value]) => value != null)
         .map(([name, value]) => (
           <SimpleField key={name} name={name} value={value} />
