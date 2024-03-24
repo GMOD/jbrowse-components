@@ -155,7 +155,7 @@ function defaultParser(fields: string[], line: string) {
     thickStart: +thickStart,
     thickEnd: +thickEnd,
     blockCount: +blockCount,
-  }
+  } as Record<string, unknown>
 }
 
 export function featureData(
@@ -172,7 +172,7 @@ export function featureData(
   const refName = l[colRef]
   const start = +l[colStart]
   const colSame = colStart === colEnd ? 1 : 0
-
+  const subfeatures = []
   const end = +l[colEnd] + colSame
   const data = names
     ? defaultParser(names, line)
@@ -185,21 +185,21 @@ export function featureData(
     chromStarts,
     thickStart,
     thickEnd,
+    score,
+    chrom: _1,
+    chromStart: _2,
+    chromEnd: _3,
+    ...rest
   } = data
 
   if (blockCount) {
-    let starts = chromStarts || blockStarts || []
-    data.thickStart = +thickStart
-    data.thickEnd = +thickEnd
+    const starts = chromStarts || blockStarts || []
     const blocksOffset = start
-    // @ts-expect-error
-    data.subfeatures = []
 
     for (let b = 0; b < blockCount; b += 1) {
       const bmin = (starts[b] || 0) + blocksOffset
       const bmax = bmin + (blockSizes[b] || 0)
-      // @ts-expect-error
-      data.subfeatures.push({
+      subfeatures.push({
         uniqueId: `${uniqueId}-${b}`,
         start: bmin,
         end: bmax,
@@ -209,17 +209,14 @@ export function featureData(
     }
   }
 
-  if (scoreColumn) {
-    // @ts-expect-error
-    data.score = +data[scoreColumn]
-  }
-
   const f = new SimpleFeature({
-    ...data,
+    ...rest,
+    score: scoreColumn ? +data[scoreColumn] : score,
     start,
     end,
     refName,
     uniqueId,
+    subfeatures,
   })
-  return f.get('thickStart') ? ucscProcessedTranscript(f) : f
+  return thickStart ? ucscProcessedTranscript(f) : f
 }
