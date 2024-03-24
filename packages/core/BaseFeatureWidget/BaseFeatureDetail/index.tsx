@@ -87,8 +87,11 @@ function Position(props: BaseProps) {
   }
   const str = strandMap[strand] ? `(${strandMap[strand]})` : ''
   // @ts-expect-error
-  const loc = assembleLocString(feature as ParsedLocString)
-  return <>{`${loc} ${str}`}</>
+  const f = feature as ParsedLocString
+  const loc = assembleLocString(f)
+  return (
+    <>{`${loc} ${str} (length ${((f.end || 0) - (f.start || 0)).toLocaleString('en-US')})`}</>
+  )
 }
 
 function CoreDetails(props: BaseProps) {
@@ -120,7 +123,6 @@ function CoreDetails(props: BaseProps) {
   const coreRenderedDetails = {
     description: 'Description',
     name: 'Name',
-    length: 'Length',
     type: 'Type',
   }
   return (
