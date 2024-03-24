@@ -133,28 +133,26 @@ function stockTheme() {
         styleOverrides: {
           // the default link color uses theme.palette.primary.main which is
           // very bad with dark mode+midnight primary
-          //
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          root: ({ theme }: any) => ({
+          root: ({ theme }) => ({
             color: theme.palette.tertiary.main,
           }),
         },
       },
     },
-  }
+  } satisfies ThemeOptions
 }
 
 function getDefaultTheme() {
   return {
-    name: 'Default (from config)',
     ...stockTheme(),
+    name: 'Default (from config)',
   }
 }
 
 function getLightStockTheme() {
   return {
-    name: 'Light (stock)',
     ...stockTheme(),
+    name: 'Light (stock)',
   }
 }
 
@@ -180,14 +178,13 @@ function getDarkStockTheme() {
           enableColorOnDark: true,
         },
         styleOverrides: {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          primary: (props: any) => {
-            return props.theme.palette.primary.main
+          root: ({ theme }) => {
+            return theme.palette.primary.main
           },
         },
       },
     },
-  }
+  } satisfies ThemeOptions & { name: string }
 }
 
 function getDarkMinimalTheme() {
@@ -206,7 +203,7 @@ function getDarkMinimalTheme() {
       frames,
       framesCDS,
     },
-  }
+  } satisfies ThemeOptions & { name: string }
 }
 
 function getMinimalTheme() {
@@ -224,7 +221,7 @@ function getMinimalTheme() {
       frames,
       framesCDS,
     },
-  }
+  } satisfies ThemeOptions & { name: string }
 }
 
 export const defaultThemes = {
@@ -259,21 +256,20 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
           // keeps text secondary for darkmode, uses
           // a text-like coloring to ensure contrast
           // xref https://stackoverflow.com/a/72546130/2129219
-          //
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          root: ({ theme }) => {
-            return theme.palette.mode === 'dark'
+          root: ({ theme }) =>
+            theme.palette.mode === 'dark'
               ? {
                   color: theme.palette.text.primary,
                 }
-              : undefined
-          },
+              : undefined,
         },
       },
       MuiAccordion: {
         defaultProps: {
           disableGutters: true,
-          TransitionProps: { timeout: 150 },
+          TransitionProps: {
+            timeout: 150,
+          },
         },
       },
       MuiFilledInput: {
@@ -384,16 +380,15 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
           // keeps the forest-green checkbox by default but for darkmode, uses
           // a text-like coloring to ensure contrast xref
           // https://stackoverflow.com/a/72546130/2129219
-          root: ({ theme }) => {
-            return theme.palette.mode === 'dark'
+          root: ({ theme }) =>
+            theme.palette.mode === 'dark'
               ? {
                   color: theme.palette.text.secondary,
                   '&.Mui-checked': {
                     color: theme.palette.text.secondary,
                   },
                 }
-              : undefined
-          },
+              : undefined,
         },
       },
       MuiRadio: {
@@ -405,16 +400,15 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
           // keeps the forest-green checkbox by default but for darkmode, uses
           // a text-like coloring to ensure contrast
           // xref https://stackoverflow.com/a/72546130/2129219
-          root: ({ theme }) => {
-            return theme.palette.mode === 'dark'
+          root: ({ theme }) =>
+            theme.palette.mode === 'dark'
               ? {
                   color: theme.palette.text.secondary,
                   '&.Mui-checked': {
                     color: theme.palette.text.secondary,
                   },
                 }
-              : undefined
-          },
+              : undefined,
         },
       },
       MuiFormLabel: {
@@ -428,16 +422,15 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
           // xref https://stackoverflow.com/a/72546130/2129219
           //
 
-          root: ({ theme }) => {
-            return theme.palette.mode === 'dark'
+          root: ({ theme }) =>
+            theme.palette.mode === 'dark'
               ? {
                   color: theme.palette.text.secondary,
                   '&.Mui-focused': {
                     color: theme.palette.text.secondary,
                   },
                 }
-              : undefined
-          },
+              : undefined,
         },
       },
       MuiAccordionSummary: {
