@@ -81,11 +81,11 @@ type Frames = [
   PaletteColor,
 ]
 
+const refTheme = createTheme()
 const midnight = '#0D233F'
 const grape = '#721E63'
-const forest = '#135560'
-const mandarin = '#FFB11D'
-const refTheme = createTheme()
+const forest = refTheme.palette.augmentColor({ color: { main: '#135560' } })
+const mandarin = refTheme.palette.augmentColor({ color: { main: '#FFB11D' } })
 const bases = {
   A: refTheme.palette.augmentColor({ color: green }),
   C: refTheme.palette.augmentColor({ color: blue }),
@@ -119,9 +119,9 @@ function stockTheme() {
       mode: undefined,
       primary: { main: midnight },
       secondary: { main: grape },
-      tertiary: refTheme.palette.augmentColor({ color: { main: forest } }),
-      quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
-      highlight: refTheme.palette.augmentColor({ color: { main: mandarin } }),
+      tertiary: forest,
+      quaternary: mandarin,
+      highlight: mandarin,
       stopCodon,
       startCodon,
       bases,
@@ -165,9 +165,9 @@ function getDarkStockTheme() {
       mode: 'dark',
       primary: { main: midnight },
       secondary: { main: grape },
-      tertiary: refTheme.palette.augmentColor({ color: { main: forest } }),
-      quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
-      highlight: refTheme.palette.augmentColor({ color: { main: mandarin } }),
+      tertiary: forest,
+      quaternary: mandarin,
+      highlight: mandarin,
       stopCodon,
       startCodon,
       bases,
@@ -198,8 +198,8 @@ function getDarkMinimalTheme() {
       primary: { main: grey[700] },
       secondary: { main: grey[800] },
       tertiary: refTheme.palette.augmentColor({ color: { main: grey[900] } }),
-      quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
-      highlight: refTheme.palette.augmentColor({ color: { main: mandarin } }),
+      quaternary: mandarin,
+      highlight: mandarin,
       stopCodon,
       startCodon,
       bases,
@@ -216,8 +216,8 @@ function getMinimalTheme() {
       primary: { main: grey[900] },
       secondary: { main: grey[800] },
       tertiary: refTheme.palette.augmentColor({ color: { main: grey[900] } }),
-      quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
-      highlight: refTheme.palette.augmentColor({ color: { main: mandarin } }),
+      quaternary: mandarin,
+      highlight: mandarin,
       stopCodon,
       startCodon,
       bases,
@@ -235,25 +235,33 @@ export const defaultThemes = {
   darkStock: getDarkStockTheme(),
 } as ThemeMap
 
-function createDefaultProps(theme?: ThemeOptions): ThemeOptions {
-  return {
+function overwriteArrayMerge(_: unknown, sourceArray: unknown[]) {
+  return sourceArray
+}
+
+export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
+  const themeP: ThemeOptions = {
+    palette: theme?.palette,
+    typography: {
+      fontSize: 12,
+    },
+    spacing: 4,
     components: {
       MuiButton: {
         defaultProps: {
           size: 'small' as const,
         },
         styleOverrides: {
-          // the default button, especially when not using variant=contained, uses
-          // theme.palette.primary.main for text which is very bad with dark
-          // mode+midnight primary
+          // the default button, especially when not using variant=contained,
+          // uses theme.palette.primary.main for text which is very bad with
+          // dark mode+midnight primary
           //
           // keeps text secondary for darkmode, uses
           // a text-like coloring to ensure contrast
           // xref https://stackoverflow.com/a/72546130/2129219
           //
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          root: (props: any) => {
-            const { theme } = props
+          root: ({ theme }) => {
             return theme.palette.mode === 'dark'
               ? {
                   color: theme.palette.text.primary,
@@ -374,8 +382,8 @@ function createDefaultProps(theme?: ThemeOptions): ThemeOptions {
           // mode+midnight primary
           //
           // keeps the forest-green checkbox by default but for darkmode, uses
-          // a text-like coloring to ensure contrast
-          // xref https://stackoverflow.com/a/72546130/2129219
+          // a text-like coloring to ensure contrast xref
+          // https://stackoverflow.com/a/72546130/2129219
           root: ({ theme }) => {
             return theme.palette.mode === 'dark'
               ? {
@@ -451,23 +459,7 @@ function createDefaultProps(theme?: ThemeOptions): ThemeOptions {
       },
     },
   }
-}
-
-function overwriteArrayMerge(_: unknown, sourceArray: unknown[]) {
-  return sourceArray
-}
-
-export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
-  return deepmerge(
-    {
-      palette: theme?.palette,
-      typography: { fontSize: 12 },
-      spacing: 4,
-      ...createDefaultProps(theme),
-    },
-    theme || {},
-    { arrayMerge: overwriteArrayMerge },
-  )
+  return deepmerge(themeP, theme || {}, { arrayMerge: overwriteArrayMerge })
 }
 
 type ThemeMap = Record<string, ThemeOptions>
