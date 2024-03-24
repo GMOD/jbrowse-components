@@ -34,6 +34,6 @@ test('open up a widget', async () => {
     score: 37,
     refName: 'ctgA',
   })
-  expect(await findByText('ctgA:3..102 (+)')).toBeTruthy()
+  expect(await findByText(/ctgA:3..102/)).toBeTruthy()
   expect(container).toMatchSnapshot()
 })

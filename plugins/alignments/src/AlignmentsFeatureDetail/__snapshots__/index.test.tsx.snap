@@ -74,7 +74,7 @@ exports[`open up a widget 1`] = `
                   <div
                     class="css-1omt041-fieldValue"
                   >
-                    ctgA:3..102 (+)
+                    ctgA:3..102 (+) (100bp)
                   </div>
                 </div>
                 <div
@@ -90,22 +90,6 @@ exports[`open up a widget 1`] = `
                   >
                     <span>
                       ctgA_3_555_0:0:0_2:0:0_102d
-                    </span>
-                  </div>
-                </div>
-                <div
-                  class="css-1m8nxnb-field"
-                >
-                  <div
-                    class="css-1q83rf3-fieldName"
-                  >
-                    Length
-                  </div>
-                  <div
-                    class="css-1omt041-fieldValue"
-                  >
-                    <span>
-                      100
                     </span>
                   </div>
                 </div>

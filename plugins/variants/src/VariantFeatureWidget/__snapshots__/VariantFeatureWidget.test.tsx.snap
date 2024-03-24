@@ -74,7 +74,7 @@ exports[`renders with just the required model elements 1`] = `
                   <div
                     class="css-1omt041-fieldValue"
                   >
-                    ctgA:177 
+                    ctgA:177  (1bp)
                   </div>
                 </div>
                 <div
@@ -90,22 +90,6 @@ exports[`renders with just the required model elements 1`] = `
                   >
                     <span>
                       rs123
-                    </span>
-                  </div>
-                </div>
-                <div
-                  class="css-1m8nxnb-field"
-                >
-                  <div
-                    class="css-1q83rf3-fieldName"
-                  >
-                    Length
-                  </div>
-                  <div
-                    class="css-1omt041-fieldValue"
-                  >
-                    <span>
-                      1
                     </span>
                   </div>
                 </div>
