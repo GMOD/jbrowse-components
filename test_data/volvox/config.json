@@ -249,6 +249,19 @@
   },
   "tracks": [
     {
+      "type": "GCContentTrack",
+      "trackId": "volvox_gc",
+      "assemblyNames": ["volvox"],
+      "name": "GCContent",
+      "adapter": {
+        "type": "TwoBitAdapter",
+        "twoBitLocation": {
+          "uri": "volvox.2bit",
+          "locationType": "UriLocation"
+        }
+      }
+    },
+    {
       "type": "VariantTrack",
       "trackId": "volvox_sv_test",
       "description": "A uniquely interesting track",

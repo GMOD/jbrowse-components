@@ -26,6 +26,10 @@ const ConfigWarningDialog = lazy(() => import('./ConfigWarningDialog'))
 const SessionWarningDialog = lazy(() => import('./SessionWarningDialog'))
 const StartScreen = lazy(() => import('./StartScreen'))
 
+function normalize<T>(param: T | null | undefined) {
+  return param === null ? undefined : param
+}
+
 export function Loader({
   initialTimestamp = Date.now(),
 }: {
@@ -33,8 +37,6 @@ export function Loader({
 }) {
   // return value if defined, else convert null to undefined for use with
   // types.maybe
-  const load = (param: string | null | undefined) =>
-    param === null ? undefined : param
 
   const Str = StringParam
 
@@ -46,16 +48,22 @@ export function Loader({
   const [sessionTracks, setSessionTracks] = useQueryParam('sessionTracks', Str)
   const [assembly, setAssembly] = useQueryParam('assembly', Str)
   const [tracks, setTracks] = useQueryParam('tracks', Str)
+  const [highlight, setHighlight] = useQueryParam('highlight', Str)
+  const [nav, setNav] = useQueryParam('nav', Str)
+  const [tracklist, setTrackList] = useQueryParam('tracklist', Str)
 
   const loader = SessionLoader.create({
-    configPath: load(config),
-    sessionQuery: load(session),
-    password: load(password),
-    adminKey: load(adminKey),
-    loc: load(loc),
-    assembly: load(assembly),
-    tracks: load(tracks),
-    sessionTracks: load(sessionTracks),
+    configPath: normalize(config),
+    sessionQuery: normalize(session),
+    password: normalize(password),
+    adminKey: normalize(adminKey),
+    loc: normalize(loc),
+    assembly: normalize(assembly),
+    tracks: normalize(tracks),
+    sessionTracks: normalize(sessionTracks),
+    tracklist: JSON.parse(normalize(tracklist) || 'false'),
+    highlight: normalize(highlight),
+    nav: JSON.parse(normalize(nav) || 'true'),
     initialTimestamp,
   })
 
@@ -65,7 +73,19 @@ export function Loader({
     setAssembly(undefined, 'replaceIn')
     setPassword(undefined, 'replaceIn')
     setSessionTracks(undefined, 'replaceIn')
-  }, [setAssembly, setLoc, setTracks, setPassword, setSessionTracks])
+    setTrackList(undefined, 'replaceIn')
+    setNav(undefined, 'replaceIn')
+    setHighlight(undefined, 'replaceIn')
+  }, [
+    setAssembly,
+    setLoc,
+    setNav,
+    setTrackList,
+    setTracks,
+    setPassword,
+    setSessionTracks,
+    setHighlight,
+  ])
 
   return <Renderer loader={loader} />
 }
@@ -78,7 +98,7 @@ const SessionTriaged = observer(function ({
   sessionTriaged: SessionTriagedInfo
 }) {
   return (
-    <Suspense fallback={<React.Fragment />}>
+    <Suspense fallback={null}>
       {sessionTriaged?.origin === 'session' ? (
         <SessionWarningDialog
           loader={loader}

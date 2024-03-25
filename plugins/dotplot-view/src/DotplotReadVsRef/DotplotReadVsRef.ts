@@ -110,6 +110,6 @@ export function onClick(feature: Feature, self: LinearPileupDisplayModel) {
     })
   } catch (e) {
     console.error(e)
-    session.notify(`${e}`, 'error')
+    session.notifyError(`${e}`, e)
   }
 }

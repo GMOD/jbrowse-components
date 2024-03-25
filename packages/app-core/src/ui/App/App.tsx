@@ -53,7 +53,7 @@ interface Props {
 const LazyDrawerWidget = observer(function (props: Props) {
   const { session } = props
   return (
-    <Suspense fallback={<React.Fragment />}>
+    <Suspense fallback={null}>
       <DrawerWidget session={session} />
     </Suspense>
   )

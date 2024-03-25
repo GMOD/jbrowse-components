@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { observer } from 'mobx-react'
 import { getSession, useDebounce, measureText } from '@jbrowse/core/util'
 import BaseResult, {
@@ -48,8 +48,6 @@ const RefNameAutocomplete = observer(function ({
   const { coarseVisibleLocStrings, hasDisplayedRegions } = model
 
   useEffect(() => {
-    let active = true
-
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
@@ -59,21 +57,13 @@ const RefNameAutocomplete = observer(function ({
 
         setLoaded(false)
         const results = await fetchResults(debouncedSearch)
-        if (active) {
-          setLoaded(true)
-          setSearchOptions(getDeduplicatedResult(results))
-        }
+        setLoaded(true)
+        setSearchOptions(getDeduplicatedResult(results))
       } catch (e) {
         console.error(e)
-        if (active) {
-          session.notify(`${e}`, 'error')
-        }
+        session.notifyError(`${e}`, e)
       }
     })()
-
-    return () => {
-      active = false
-    }
   }, [assemblyName, fetchResults, debouncedSearch, session, model])
 
   const inputBoxVal = coarseVisibleLocStrings || value || ''
@@ -84,78 +74,79 @@ const RefNameAutocomplete = observer(function ({
     maxWidth,
   )
 
+  const regions = assembly?.regions
+  const regionOptions = useMemo(
+    () =>
+      regions?.map(option => ({
+        result: new RefSequenceResult({
+          refName: option.refName,
+          label: option.refName,
+          matchedAttribute: 'refName',
+        }),
+      })) || [],
+    [regions],
+  )
+
   // notes on implementation:
   // The selectOnFocus setting helps highlight the field when clicked
   return (
-    <>
-      <Autocomplete
-        data-testid="autocomplete"
-        disableListWrap
-        disableClearable
-        disabled={!assemblyName}
-        freeSolo
-        includeInputInList
-        selectOnFocus
-        style={{ ...style, width }}
-        value={inputBoxVal}
-        loading={!loaded}
-        inputValue={inputValue}
-        onInputChange={(_event, newInputValue) => {
-          setInputValue(newInputValue)
-          onChange?.(newInputValue)
-        }}
-        loadingText="loading results"
-        open={open}
-        onOpen={() => setOpen(true)}
-        onClose={() => {
-          setOpen(false)
-          setLoaded(true)
-          if (hasDisplayedRegions) {
-            setCurrentSearch('')
-            setSearchOptions(undefined)
-          }
-        }}
-        onChange={(_event, selectedOption) => {
-          if (!selectedOption || !assemblyName) {
-            return
-          }
+    <Autocomplete
+      data-testid="autocomplete"
+      disableListWrap
+      disableClearable
+      disabled={!assemblyName}
+      freeSolo
+      includeInputInList
+      selectOnFocus
+      style={{ ...style, width }}
+      value={inputBoxVal}
+      loading={!loaded}
+      inputValue={inputValue}
+      onInputChange={(_event, newInputValue) => {
+        setInputValue(newInputValue)
+        onChange?.(newInputValue)
+      }}
+      loadingText="loading results"
+      open={open}
+      onOpen={() => setOpen(true)}
+      onClose={() => {
+        setOpen(false)
+        setLoaded(true)
+        if (hasDisplayedRegions) {
+          setCurrentSearch('')
+          setSearchOptions(undefined)
+        }
+      }}
+      onChange={(_event, selectedOption) => {
+        if (!selectedOption || !assemblyName) {
+          return
+        }
 
-          if (typeof selectedOption === 'string') {
-            // handles string inputs on keyPress enter
-            onSelect?.(new BaseResult({ label: selectedOption }))
-          } else {
-            onSelect?.(selectedOption.result)
-          }
-          setInputValue(inputBoxVal)
-        }}
-        options={
-          !searchOptions?.length
-            ? assembly?.regions?.map(option => ({
-                result: new RefSequenceResult({
-                  refName: option.refName,
-                  label: option.refName,
-                  matchedAttribute: 'refName',
-                }),
-              })) || []
-            : searchOptions
+        if (typeof selectedOption === 'string') {
+          // handles string inputs on keyPress enter
+          onSelect?.(new BaseResult({ label: selectedOption }))
+        } else {
+          onSelect?.(selectedOption.result)
         }
-        getOptionDisabled={option => option.group === 'limitOption'}
-        filterOptions={(opts, { inputValue }) => getFiltered(opts, inputValue)}
-        renderInput={params => (
-          <AutocompleteTextField
-            showHelp={showHelp}
-            params={params}
-            inputBoxVal={inputBoxVal}
-            TextFieldProps={TextFieldProps}
-            setCurrentSearch={setCurrentSearch}
-            setInputValue={setInputValue}
-          />
-        )}
-        getOptionLabel={opt =>
-          typeof opt === 'string' ? opt : opt.result.getDisplayString()
-        }
-      />
-    </>
+        setInputValue(inputBoxVal)
+      }}
+      options={searchOptions?.length ? searchOptions : regionOptions}
+      getOptionDisabled={option => option.group === 'limitOption'}
+      filterOptions={(opts, { inputValue }) => getFiltered(opts, inputValue)}
+      renderInput={params => (
+        <AutocompleteTextField
+          showHelp={showHelp}
+          params={params}
+          inputBoxVal={inputBoxVal}
+          TextFieldProps={TextFieldProps}
+          setCurrentSearch={setCurrentSearch}
+          setInputValue={setInputValue}
+        />
+      )}
+      getOptionLabel={opt =>
+        typeof opt === 'string' ? opt : opt.result.getDisplayString()
+      }
+    />
   )
 })
 

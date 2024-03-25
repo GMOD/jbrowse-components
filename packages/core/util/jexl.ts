@@ -75,6 +75,7 @@ export default function (/* config?: any*/): JexlNonBuildable {
   )
   j.addFunction('toLowerCase', (s: string) => s.toLowerCase())
   j.addFunction('toUpperCase', (s: string) => s.toUpperCase())
+  j.addFunction('jsonParse', (s: string) => JSON.parse(s))
   j.addFunction('trim', (s: string) => s.trim())
   j.addFunction('trimEnd', (s: string) => s.trimEnd())
   j.addFunction('trimStart', (s: string) => s.trimStart())

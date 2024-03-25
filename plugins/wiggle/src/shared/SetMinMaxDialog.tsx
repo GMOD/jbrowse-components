@@ -8,7 +8,7 @@ import {
 } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
 
-export default function SetMinMaxDlg(props: {
+export default function SetMinMaxDialog(props: {
   model: {
     minScore: number
     maxScore: number

@@ -46,11 +46,8 @@ function Arc({
 
   const t = 0.5
   // formula: https://en.wikipedia.org/wiki/B%C3%A9zier_curve#Cubic_B%C3%A9zier_curves
-  const textYCoord =
-    (1 - t) * (1 - t) * (1 - t) * 0 +
-    3 * ((1 - t) * (1 - t)) * (t * height) +
-    3 * (1 - t) * (t * t) * height +
-    t * t * t * 0
+  const t1 = 1 - t
+  const textYCoord = 3 * (t1 * t1) * (t * height) + 3 * t1 * (t * t) * height
 
   return (
     <g>
@@ -257,7 +254,7 @@ function Wrapper({
   children: React.ReactNode
 }) {
   return exportSVG ? (
-    <>{children}</>
+    children
   ) : (
     <svg width={width} height={height}>
       {children}

@@ -21,9 +21,11 @@ import SortIcon from '@mui/icons-material/Sort'
 import { SharedLinearPileupDisplayMixin } from './SharedLinearPileupDisplayMixin'
 import { observable } from 'mobx'
 
-// async
-const SortByTagDlg = lazy(() => import('./components/SortByTag'))
-const ModificationsDlg = lazy(() => import('./components/ColorByModifications'))
+// lzies
+const SortByTagDialog = lazy(() => import('./components/SortByTag'))
+const ModificationsDialog = lazy(
+  () => import('./components/ColorByModifications'),
+)
 
 type LGV = LinearGenomeViewModel
 
@@ -31,7 +33,7 @@ type LGV = LinearGenomeViewModel
  * #stateModel LinearPileupDisplay
  * #category display
  * extends
- *- [SharedLinearPileupDisplayMixin](../sharedlinearpileupdisplaymixin)
+ * - [SharedLinearPileupDisplayMixin](../sharedlinearpileupdisplaymixin)
  */
 function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
@@ -149,6 +151,15 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           assemblyName,
           tag,
         }
+      },
+      /**
+       * #action
+       * overrides base from SharedLinearPileupDisplay to make sortReady false
+       * since changing feature height destroys the sort-induced layout
+       */
+      setFeatureHeight(n?: number) {
+        self.sortReady = false
+        self.featureHeight = n
       },
     }))
     .actions(self => {
@@ -284,7 +295,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   label: 'Sort by tag...',
                   onClick: () => {
                     getSession(self).queueDialog(handleClose => [
-                      SortByTagDlg,
+                      SortByTagDialog,
                       { model: self, handleClose },
                     ])
                   },
@@ -307,7 +318,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   label: 'Modifications or methylation',
                   onClick: () => {
                     getSession(self).queueDialog(doneCallback => [
-                      ModificationsDlg,
+                      ModificationsDialog,
                       { model: self, handleClose: doneCallback },
                     ])
                   },

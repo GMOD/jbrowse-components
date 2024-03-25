@@ -1,4 +1,17 @@
-import React from 'react'
+import React, { Suspense, lazy, useState } from 'react'
+import { IconButton, Tooltip } from '@mui/material'
+
+// locals
+import RedErrorMessageBox from './RedErrorMessageBox'
+
+// icons
+import RefreshIcon from '@mui/icons-material/Refresh'
+import ReportIcon from '@mui/icons-material/Report'
+
+// lazies
+const ErrorMessageStackTraceDialog = lazy(
+  () => import('./ErrorMessageStackTraceDialog'),
+)
 
 function parseError(str: string) {
   let snapshotError = ''
@@ -28,21 +41,38 @@ function parseError(str: string) {
   return snapshotError
 }
 
-const ErrorMessage = ({ error }: { error: unknown }) => {
+const ErrorMessage = ({
+  error,
+  onReset,
+}: {
+  error: unknown
+  onReset?: () => void
+}) => {
   const str = `${error}`
+  const str2 = str.indexOf('expected an instance of')
+  const str3 = str2 !== -1 ? str.slice(0, str2) : str
   const snapshotError = parseError(str)
+  const [showStack, setShowStack] = useState(false)
   return (
-    <div
-      style={{
-        padding: 4,
-        margin: 4,
-        overflow: 'auto',
-        maxHeight: 200,
-        background: '#f88',
-        border: '1px solid black',
-      }}
-    >
-      {str.slice(0, 10000)}
+    <RedErrorMessageBox>
+      {str3.slice(0, 10000)}
+
+      <div style={{ float: 'right', marginLeft: 100 }}>
+        {typeof error === 'object' && error && 'stack' in error ? (
+          <Tooltip title="Get stack trace">
+            <IconButton onClick={() => setShowStack(true)} color="primary">
+              <ReportIcon />
+            </IconButton>
+          </Tooltip>
+        ) : null}
+        {onReset ? (
+          <Tooltip title="Retry">
+            <IconButton onClick={onReset} color="primary">
+              <RefreshIcon />
+            </IconButton>
+          </Tooltip>
+        ) : null}
+      </div>
       {snapshotError ? (
         <pre
           style={{
@@ -54,7 +84,15 @@ const ErrorMessage = ({ error }: { error: unknown }) => {
           {JSON.stringify(JSON.parse(snapshotError), null, 2)}
         </pre>
       ) : null}
-    </div>
+      {showStack ? (
+        <Suspense fallback={null}>
+          <ErrorMessageStackTraceDialog
+            error={error}
+            onClose={() => setShowStack(false)}
+          />
+        </Suspense>
+      ) : null}
+    </RedErrorMessageBox>
   )
 }
 

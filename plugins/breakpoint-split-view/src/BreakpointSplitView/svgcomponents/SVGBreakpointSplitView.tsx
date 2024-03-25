@@ -26,7 +26,7 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
     rulerHeight = 30,
     fontSize = 13,
     trackLabels = 'offset',
-    Wrapper = ({ children }) => <>{children}</>,
+    Wrapper = ({ children }) => children,
     themeName = 'default',
   } = opts
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

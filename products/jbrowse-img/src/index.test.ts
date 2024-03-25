@@ -1,4 +1,3 @@
-/* eslint-disable tsdoc/syntax */
 /**
  * @jest-environment node
  */
@@ -9,29 +8,16 @@
 import { renderRegion } from './renderRegion'
 import path from 'path'
 import fs from 'fs'
-import { JSDOM } from 'jsdom'
-import { Image, createCanvas } from 'canvas'
-import fetch, { Headers, Response, Request } from 'node-fetch'
+import setupEnv from './setupEnv'
 
-// @ts-expect-error
-global.fetch = fetch
-// @ts-expect-error
-global.Headers = Headers
-// @ts-expect-error
-global.Response = Response
-// @ts-expect-error
-global.Request = Request
-
-const { document } = new JSDOM(`...`).window
-global.document = document
-
-// @ts-expect-error
-global.nodeImage = Image
-// @ts-expect-error
-global.nodeCreateCanvas = createCanvas
+setupEnv()
 
 function pa(s: string) {
   return path.join(__dirname, s)
+}
+
+function fp(f: string) {
+  return pa('../data/volvox/' + f)
 }
 
 xtest('renders a region with --session and --config args', async () => {
@@ -54,7 +40,6 @@ xtest('renders a region with --session, --tracks, and --assembly args', async ()
 }, 40000)
 
 test('renders volvox with variety of args', async () => {
-  const fp = (f: string) => pa('../data/volvox/' + f)
   const result = await renderRegion({
     fasta: fp('volvox.fa'),
     trackList: [
@@ -69,6 +54,16 @@ test('renders volvox with variety of args', async () => {
     loc: 'ctgA:1000-2000',
   })
   fs.writeFileSync(pa('../test/svg_from_volvox_fasta_and_bam.svg'), result)
+  expect(result).toBeTruthy()
+}, 40000)
+
+test('renders volvox alignments as snpcov', async () => {
+  const result = await renderRegion({
+    fasta: fp('volvox.fa'),
+    trackList: [['bam', [fp('volvox-sorted.bam'), 'snpcov', 'height:1000']]],
+    loc: 'ctgA:1000-2000',
+  })
+  fs.writeFileSync(pa('../test/volvox-snpcov.svg'), result)
   expect(result).toBeTruthy()
 }, 40000)
 
@@ -108,7 +103,6 @@ xtest('renders volvox with remote urls', async () => {
 }, 20000)
 
 test('renders volvox with variety of args (noRasterize)', async () => {
-  const fp = (f: string) => pa('../data/volvox/' + f)
   const result = await renderRegion({
     fasta: fp('volvox.fa'),
     trackList: [

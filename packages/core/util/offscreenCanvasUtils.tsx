@@ -99,16 +99,12 @@ export function ReactRendering({
     html?: string
   }
 }) {
-  return (
-    <>
-      {React.isValidElement(rendering.reactElement) ? (
-        rendering.reactElement
-      ) : (
-        <g
-          /* eslint-disable-next-line react/no-danger */
-          dangerouslySetInnerHTML={{ __html: rendering.html || '' }}
-        />
-      )}
-    </>
+  return React.isValidElement(rendering.reactElement) ? (
+    rendering.reactElement
+  ) : (
+    <g
+      /* eslint-disable-next-line react/no-danger */
+      dangerouslySetInnerHTML={{ __html: rendering.html || '' }}
+    />
   )
 }

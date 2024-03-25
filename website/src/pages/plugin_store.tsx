@@ -179,7 +179,7 @@ function PluginCard(props) {
           </Typography>
           <GitHub className={pluginStyles.icon} />
           <Link href={plugin.location} target="_blank" rel="noopener">
-            <Typography>{plugin.location}</Typography>
+            {plugin.location}
           </Link>
         </div>
         <Typography variant="h6">Description:</Typography>

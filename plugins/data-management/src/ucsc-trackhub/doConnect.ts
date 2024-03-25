@@ -132,7 +132,7 @@ export async function doConnect(self: any) {
     }
   } catch (e) {
     console.error(e)
-    session.notify(`${getConf(self, 'name')}: "${e}"`, 'error')
+    session.notifyError(`${getConf(self, 'name')}: "${e}"`, e)
     session.breakConnection?.(self.configuration)
   }
 }

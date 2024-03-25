@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import React from 'react'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
@@ -37,7 +38,7 @@ const RowCountMessage = observer(function ({
         rowMessage += `, ${selectedCount} selected`
       }
     }
-    return <>{rowMessage}</>
+    return rowMessage
   }
   return null
 })

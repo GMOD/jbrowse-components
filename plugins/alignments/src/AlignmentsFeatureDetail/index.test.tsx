@@ -5,7 +5,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 // locals
-import { stateModelFactory } from '.'
+import { stateModelFactory } from './stateModelFactory'
 import ReactComponent from './AlignmentsFeatureDetail'
 
 test('open up a widget', () => {
@@ -42,6 +42,6 @@ test('open up a widget', () => {
   const { container, getByText } = render(
     <ReactComponent model={session.widget} />,
   )
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
   expect(getByText('ctgA:3..102 (+)')).toBeTruthy()
 })

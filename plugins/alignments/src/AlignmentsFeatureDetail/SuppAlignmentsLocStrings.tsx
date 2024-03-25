@@ -1,17 +1,19 @@
 import React from 'react'
 import { Typography, Link } from '@mui/material'
-import { BaseCard } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
+// locals
 import { getLengthOnRef } from '../MismatchParser'
-import { IAnyStateTreeNode } from 'mobx-state-tree'
 import { navToLoc } from './util'
+import { AlignmentFeatureWidgetModel } from './stateModelFactory'
 
-export default function SupplementaryAlignments(props: {
+export default function SuppAlignmentsLocStrings({
+  tag,
+  model,
+}: {
   tag: string
-  model: IAnyStateTreeNode
+  model: AlignmentFeatureWidgetModel
 }) {
-  const { tag, model } = props
   return (
-    <BaseCard {...props} title="Supplementary alignments">
+    <div>
       <Typography>List of supplementary alignment locations</Typography>
       <ul>
         {tag
@@ -23,9 +25,9 @@ export default function SupplementaryAlignments(props: {
             const extra = Math.floor(saLength / 5)
             const start = +saStart
             const end = +saStart + saLength
-            const locString = `${saRef}:${Math.max(1, start - extra)}-${
-              end + extra
-            }`
+            const sp = start - extra
+            const ep = end + extra
+            const locString = `${saRef}:${Math.max(1, sp)}-${ep}`
             const displayStart = start.toLocaleString('en-US')
             const displayEnd = end.toLocaleString('en-US')
             const displayString = `${saRef}:${displayStart}-${displayEnd} (${saStrand}) [${saLength}bp]`
@@ -38,7 +40,6 @@ export default function SupplementaryAlignments(props: {
                     // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     navToLoc(locString, model)
                   }}
-                  href="#"
                 >
                   {displayString}
                 </Link>
@@ -46,6 +47,6 @@ export default function SupplementaryAlignments(props: {
             )
           })}
       </ul>
-    </BaseCard>
+    </div>
   )
 }

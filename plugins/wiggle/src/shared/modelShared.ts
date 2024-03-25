@@ -18,7 +18,7 @@ import { getNiceDomain } from '../util'
 import { lazy } from 'react'
 
 // lazies
-const SetMinMaxDlg = lazy(() => import('./SetMinMaxDialog'))
+const SetMinMaxDialog = lazy(() => import('./SetMinMaxDialog'))
 
 /**
  * #stateModel SharedWiggleMixin
@@ -487,7 +487,7 @@ export default function SharedWiggleMixin(
             label: 'Set min/max score',
             onClick: () => {
               getSession(self).queueDialog(handleClose => [
-                SetMinMaxDlg,
+                SetMinMaxDialog,
                 { model: self, handleClose },
               ])
             },

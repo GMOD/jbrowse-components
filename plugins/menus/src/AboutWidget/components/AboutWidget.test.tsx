@@ -30,6 +30,6 @@ describe('<AboutWidget />', () => {
         },
       )
     const { container } = render(<AboutWidget model={session.widgetModel} />)
-    expect(container.firstChild).toMatchSnapshot()
+    expect(container).toMatchSnapshot()
   })
 })

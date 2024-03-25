@@ -15,6 +15,7 @@ import Gridlines from './Gridlines'
 import CenterLine from './CenterLine'
 import VerticalGuide from './VerticalGuide'
 import RubberbandSpan from './RubberbandSpan'
+import Highlight from './Highlight'
 
 const useStyles = makeStyles()({
   tracksContainer: {
@@ -107,6 +108,7 @@ const TracksContainer = observer(function TracksContainer({
           />
         }
       />
+      <Highlight model={model} />
       {additional}
       {children}
     </div>

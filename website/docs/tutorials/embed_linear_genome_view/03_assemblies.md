@@ -81,9 +81,9 @@ tab-separated list of aliases for that name.
 
 ### Running the `jbrowse` command
 
-We can create a JBrowse CLI to create a JBrowse Web config file, which we can
-use to get the assembly for JBrowse Linear Genome View. We create a config file
-with an assembly (or add an assembly to an existing config file) with the
+We can use JBrowse CLI to create a JBrowse Web config file, which we can use to
+get the assembly for JBrowse Linear Genome View. We create a config file with an
+assembly (or add an assembly to an existing config file) with the
 `jbrowse add-assembly` command. Go ahead and run `jbrowse add-assembly --help`
 to see all the options available.
 
@@ -99,7 +99,7 @@ jbrowse add-assembly https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/G
 --skipCheck
 ```
 
-This will create a file called "config.json". Go ahead and open that file up. In
+This will create a file called `config.json`. Go ahead and open that file up. In
 it, you will see an entry called "assemblies". The first (and only) entry in
 that list is our assembly. You can see the name, alias, sequence, and reference
 name aliases we specified in our command. If for some reason the index files
@@ -172,4 +172,4 @@ Then add an import to your "index.html" adding this data:
 </html>
 ```
 
-Keep the config.json around for now, as we'll use it in the next step as well.
+Keep the `config.json` around for now, as we'll use it in the next step as well.

@@ -56,7 +56,7 @@ const InstalledPlugin = observer(function ({
   return (
     <>
       {dialogPlugin ? (
-        <Suspense fallback={<React.Fragment />}>
+        <Suspense fallback={null}>
           <DeletePluginDialog
             plugin={dialogPlugin}
             onClose={name => {

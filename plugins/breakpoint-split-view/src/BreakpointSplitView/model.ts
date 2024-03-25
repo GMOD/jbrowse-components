@@ -351,7 +351,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               )
             } catch (e) {
               console.error(e)
-              getSession(self).notify(`${e}`, 'error')
+              getSession(self).notifyError(`${e}`, e)
             }
           }),
         )

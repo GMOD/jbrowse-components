@@ -7,8 +7,8 @@ import { readConfObject, AnyConfigurationModel } from '../configuration'
 export interface WorkerHandle {
   status?: string
   error?: Error
-  on?: (channel: string, callback: (message: string) => void) => void
-  off?: (channel: string, callback: (message: string) => void) => void
+  on?: (channel: string, callback: (message: unknown) => void) => void
+  off?: (channel: string, callback: (message: unknown) => void) => void
   destroy(): void
   call(
     functionName: string,
@@ -37,6 +37,7 @@ export async function watchWorker(
   rpcDriverClassName: string,
 ) {
   // after first ping succeeds, apply wait for timeout
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     await worker.call('ping', [], {
       timeout: pingTime * 2,
@@ -194,7 +195,9 @@ export default abstract class BaseRpcDriver {
     pluginManager: PluginManager,
     sessionId: string,
     functionName: string,
-    args: { statusCallback?: (message: string) => void },
+    args: {
+      statusCallback?: (message: unknown) => void
+    },
     options = {},
   ) {
     if (!sessionId) {

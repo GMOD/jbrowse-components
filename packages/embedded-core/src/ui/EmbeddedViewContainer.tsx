@@ -35,7 +35,7 @@ const ViewContainer = observer(function ({
   return (
     <Paper elevation={12} ref={ref} className={classes.viewContainer}>
       {session.DialogComponent ? (
-        <Suspense fallback={<div />}>
+        <Suspense fallback={null}>
           <session.DialogComponent {...session.DialogProps} />
         </Suspense>
       ) : null}

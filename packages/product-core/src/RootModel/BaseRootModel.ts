@@ -68,7 +68,6 @@ export function BaseRootModelFactory({
       ),
 
       adminMode: false,
-      isAssemblyEditing: false,
       error: undefined as unknown,
       textSearchManager: new TextSearchManager(pluginManager),
       pluginManager,
@@ -107,12 +106,6 @@ export function BaseRootModelFactory({
           snapshot.name = newName
           this.setSession(snapshot)
         }
-      },
-      /**
-       * #action
-       */
-      setAssemblyEditing(flag: boolean) {
-        self.isAssemblyEditing = flag
       },
     }))
 }

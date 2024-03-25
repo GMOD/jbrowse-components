@@ -59,15 +59,11 @@ const CircularView = observer(({ model }: { model: CircularViewModel }) => {
   const showImportForm = !initialized && !model.disableImportForm
   const showFigure = initialized && !showImportForm
 
-  return (
-    <>
-      {showImportForm || model.error ? (
-        <ImportForm model={model} />
-      ) : showFigure ? (
-        <CircularViewLoaded model={model} />
-      ) : null}
-    </>
-  )
+  return showImportForm || model.error ? (
+    <ImportForm model={model} />
+  ) : showFigure ? (
+    <CircularViewLoaded model={model} />
+  ) : null
 })
 
 const CircularViewLoaded = observer(function ({

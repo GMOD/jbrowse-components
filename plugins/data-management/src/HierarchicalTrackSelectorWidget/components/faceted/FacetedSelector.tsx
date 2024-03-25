@@ -2,7 +2,7 @@ import React from 'react'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 import { getRoot, resolveIdentifier } from 'mobx-state-tree'
-import { DataGrid, GridCellParams, GridToolbar } from '@mui/x-data-grid'
+import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid'
 
 // jbrowse
 import { ResizeHandle } from '@jbrowse/core/ui'
@@ -63,11 +63,13 @@ const FacetedSelector = observer(function FacetedSelector({
   const { ref, scrollLeft } = useResizeBar()
   const widthsDebounced = useDebounce(widths, 200)
 
-  const columns = [
+  type T = GridColDef<(typeof filteredRows)[0]>
+
+  const columns: T[] = [
     {
       field: 'name',
       hideable: false,
-      renderCell: (params: GridCellParams) => {
+      renderCell: params => {
         const { value, row } = params
         const { id, conf } = row
         return (
@@ -79,26 +81,38 @@ const FacetedSelector = observer(function FacetedSelector({
       },
       width: widthsDebounced.name ?? 100,
     },
-    ...filteredNonMetadataKeys.map(e => ({
-      field: e,
-      width: widthsDebounced[e] ?? 100,
-      renderCell: (params: GridCellParams) => {
-        const val = params.value as string
-        return val ? <SanitizedHTML className={classes.cell} html={val} /> : ''
-      },
-    })),
-    ...filteredMetadataKeys.map(e => ({
-      field: `metadata.${e}`,
-      headerName: ['name', ...filteredNonMetadataKeys].includes(e)
-        ? `${e} (from metadata)`
-        : e,
-      width: widthsDebounced['metadata.' + e] ?? 100,
-      valueGetter: (params: GridCellParams) => params.row.metadata[e],
-      renderCell: (params: GridCellParams) => {
-        const val = params.row.metadata[e] as string
-        return val ? <SanitizedHTML className={classes.cell} html={val} /> : ''
-      },
-    })),
+    ...filteredNonMetadataKeys.map(e => {
+      return {
+        field: e,
+        width: widthsDebounced[e] ?? 100,
+        renderCell: params => {
+          const val = params.value
+          return val ? (
+            <SanitizedHTML className={classes.cell} html={val} />
+          ) : (
+            ''
+          )
+        },
+      } satisfies T
+    }),
+    ...filteredMetadataKeys.map(e => {
+      return {
+        field: `metadata.${e}`,
+        headerName: ['name', ...filteredNonMetadataKeys].includes(e)
+          ? `${e} (from metadata)`
+          : e,
+        width: widthsDebounced['metadata.' + e] ?? 100,
+        valueGetter: (_, row) => `${row.metadata[e]}`,
+        renderCell: params => {
+          const val = params.value
+          return val ? (
+            <SanitizedHTML className={classes.cell} html={val} />
+          ) : (
+            ''
+          )
+        },
+      } satisfies T
+    }),
   ]
 
   return (

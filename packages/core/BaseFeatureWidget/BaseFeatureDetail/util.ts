@@ -20,10 +20,6 @@ export function generateMaxWidth(array: unknown[][], prefix: string[]) {
   )
 }
 
-export function toLocale(n: number) {
-  return n.toLocaleString('en-US')
-}
-
 // pick using a path from an object, similar to _.get from lodash with special
 // logic for Descriptions from e.g. VCF headers
 //

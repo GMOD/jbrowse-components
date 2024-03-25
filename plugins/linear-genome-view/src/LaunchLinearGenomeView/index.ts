@@ -1,7 +1,13 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { AbstractSessionModel, when } from '@jbrowse/core/util'
+import {
+  AbstractSessionModel,
+  when,
+  parseLocString,
+  ParsedLocString,
+} from '@jbrowse/core/util'
+// locals
 import { LinearGenomeViewModel } from '../LinearGenomeView'
-import { handleSelectedRegion } from '..//searchUtils'
+import { handleSelectedRegion } from '../searchUtils'
 
 type LGV = LinearGenomeViewModel
 
@@ -14,14 +20,23 @@ export default (pluginManager: PluginManager) => {
       assembly,
       loc,
       tracks = [],
+      tracklist,
+      nav,
+      highlight,
     }: {
       session: AbstractSessionModel
       assembly?: string
       loc: string
       tracks?: string[]
+      tracklist?: boolean
+      nav?: boolean
+      highlight?: string
     }) => {
       try {
         const { assemblyManager } = session
+
+        const { isValidRefName } = assemblyManager
+
         const view = session.addView('LinearGenomeView', {}) as LGV
 
         await when(() => !!view.volatileWidth)
@@ -39,6 +54,27 @@ export default (pluginManager: PluginManager) => {
           )
         }
 
+        if (tracklist) {
+          view.activateTrackSelector()
+        }
+        if (nav !== undefined) {
+          view.setHideHeader(!nav)
+        }
+        if (highlight !== undefined) {
+          const parsedLocString = parseLocString(highlight, refName =>
+            isValidRefName(refName, assembly),
+          ) as Required<ParsedLocString>
+
+          const location = {
+            ...parsedLocString,
+            assemblyName: assembly,
+          }
+
+          if (location?.start !== undefined && location?.end !== undefined) {
+            view.setHighlight(location)
+          }
+        }
+
         await handleSelectedRegion({ input: loc, model: view, assembly: asm })
 
         const idsNotFound = [] as string[]
@@ -49,7 +85,7 @@ export default (pluginManager: PluginManager) => {
           )
         }
       } catch (e) {
-        session.notify(`${e}`, 'error')
+        session.notifyError(`${e}`, e)
         throw e
       }
     },
@@ -57,7 +93,9 @@ export default (pluginManager: PluginManager) => {
 }
 
 function tryTrack(
-  model: { showTrack: (arg: string) => void },
+  model: {
+    showTrack: (arg: string) => void
+  },
   trackId: string,
   idsNotFound: string[],
 ) {

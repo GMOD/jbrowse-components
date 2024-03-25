@@ -8,28 +8,25 @@ import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import { types } from 'mobx-state-tree'
 import { lazy } from 'react'
 
-const EditGCContentParamsDlg = lazy(
+const EditGCContentParamsDialog = lazy(
   () => import('./components/EditGCContentParams'),
 )
 
 /**
- * #stateModel LinearGCContentDisplay
+ * #stateModel SharedGCContentModel
  * #category display
- * base model `BaseWiggleDisplayModel`
+ * extends
+ * - [BaseWiggleDisplayModel](../basewiggledisplaymodel)
  */
-export default function stateModelFactory(
+export default function SharedModelF(
   pluginManager: PluginManager,
   configSchema: AnyConfigurationSchemaType,
 ) {
   return types
     .compose(
-      'LinearGCContentDisplay',
+      'SharedGCContentModel',
       linearWiggleDisplayModelFactory(pluginManager, configSchema),
       types.model({
-        /**
-         * #property
-         */
-        type: types.literal('LinearGCContentDisplay'),
         /**
          * #property
          */
@@ -73,7 +70,7 @@ export default function stateModelFactory(
               label: 'Change GC parameters',
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
-                  EditGCContentParamsDlg,
+                  EditGCContentParamsDialog,
                   { model: self, handleClose },
                 ])
               },

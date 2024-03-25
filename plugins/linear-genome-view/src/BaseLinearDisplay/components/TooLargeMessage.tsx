@@ -3,6 +3,7 @@ import { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 // locals
 import BlockMsg from '../components/BlockMsg'
+import { Button } from '@mui/material'
 
 function TooLargeMessage({
   model,
@@ -18,11 +19,16 @@ function TooLargeMessage({
   return (
     <BlockMsg
       severity="warning"
-      action={() => {
-        model.setFeatureDensityStatsLimit(model.featureDensityStats)
-        model.reload()
-      }}
-      buttonText="Force load"
+      action={
+        <Button
+          onClick={() => {
+            model.setFeatureDensityStatsLimit(model.featureDensityStats)
+            model.reload()
+          }}
+        >
+          Force load
+        </Button>
+      }
       message={[
         regionTooLargeReason,
         'Zoom in to see features or force load (may be slow)',

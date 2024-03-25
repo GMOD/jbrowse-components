@@ -150,7 +150,7 @@ test('Edit a bookmark label with a single click on the data grid', async () => {
     assemblyName: 'volvox',
   })
 
-  const field = (await findAllByRole('cell'))[2]
+  const field = (await findAllByRole('gridcell'))[2]
   await user.type(field, 'new label')
   // get the focus away from the field
   fireEvent.click(document)
@@ -174,7 +174,7 @@ test('Edit a bookmark label with a double click via the dialog', async () => {
     assemblyName: 'volvox',
   })
 
-  const field = (await findAllByRole('cell'))[2]
+  const field = (await findAllByRole('gridcell'))[2]
 
   await user.dblClick(field)
   await user.type(await findByTestId('edit-bookmark-label-field'), 'new label')

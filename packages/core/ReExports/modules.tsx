@@ -168,7 +168,7 @@ const LazyMUICore = Object.fromEntries(
   Object.entries(Entries).map(([key, ReactComponent]) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const Component = React.forwardRef((props: any, ref) => (
-      <Suspense fallback={<div />}>
+      <Suspense fallback={null}>
         <ReactComponent {...props} ref={ref} />
       </Suspense>
     ))
@@ -364,11 +364,6 @@ const DataGridEntries: Record<string, LazyExoticComponent<any>> = {
       default: module.GridPanelWrapper,
     })),
   ),
-  GridPreferencesPanel: lazy(() =>
-    import('@mui/x-data-grid').then(module => ({
-      default: module.GridPreferencesPanel,
-    })),
-  ),
   GridRemoveIcon: lazy(() =>
     import('@mui/x-data-grid').then(module => ({
       default: module.GridRemoveIcon,
@@ -463,7 +458,7 @@ const LazyDataGridComponents = Object.fromEntries(
   Object.entries(DataGridEntries).map(([key, ReactComponent]) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const Component = React.forwardRef((props: any, ref) => (
-      <Suspense fallback={<div />}>
+      <Suspense fallback={null}>
         <ReactComponent {...props} ref={ref} />
       </Suspense>
     ))
@@ -474,7 +469,7 @@ const LazyDataGridComponents = Object.fromEntries(
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const LazyAttributes = React.forwardRef((props: any, ref) => (
-  <Suspense fallback={<div />}>
+  <Suspense fallback={null}>
     <Attributes {...props} ref={ref} />
   </Suspense>
 ))
@@ -482,7 +477,7 @@ LazyAttributes.displayName = 'Attributes'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const LazyFeatureDetails = React.forwardRef((props: any, ref) => (
-  <Suspense fallback={<div />}>
+  <Suspense fallback={null}>
     <FeatureDetails {...props} ref={ref} />
   </Suspense>
 ))
@@ -490,7 +485,7 @@ LazyFeatureDetails.displayName = 'FeatureDetails'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const LazyBaseCard = React.forwardRef((props: any, ref) => (
-  <Suspense fallback={<div />}>
+  <Suspense fallback={null}>
     <BaseCard {...props} ref={ref} />
   </Suspense>
 ))
@@ -534,8 +529,22 @@ const libs = {
 
   // end special case
   // material-ui subcomponents, should get rid of these
-  '@mui/material/styles': MUIStyles,
-  '@material-ui/core/styles': MUIStyles,
+  '@mui/material/styles': {
+    MUIStyles,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    makeStyles: (args: any) => {
+      const useStyles = makeStyles()(args)
+      return () => useStyles().classes
+    },
+  },
+  '@material-ui/core/styles': {
+    MUIStyles,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    makeStyles: (args: any) => {
+      const useStyles = makeStyles()(args)
+      return () => useStyles().classes
+    },
+  },
   ...MaterialPrefixMUI,
   ...MuiPrefixMUI,
 

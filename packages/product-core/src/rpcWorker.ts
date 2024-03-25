@@ -89,7 +89,7 @@ export async function initializeWorker(
     self.rpcServer = new RpcServer.Server({
       ...rpcConfig,
       ...remoteAbortRpcHandler(),
-      ping: () => {
+      ping: async () => {
         // the ping method is required by the worker driver for checking the
         // health of the worker
       },

@@ -16,7 +16,7 @@ import Tooltip from '../components/Tooltip'
 import SharedWiggleMixin from '../../shared/modelShared'
 
 // lazies
-const SetColorDlg = lazy(() => import('../components/SetColorDialog'))
+const SetColorDialog = lazy(() => import('../components/SetColorDialog'))
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -196,7 +196,7 @@ function stateModelFactory(
               label: 'Set color',
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
-                  SetColorDlg,
+                  SetColorDialog,
                   { model: self, handleClose },
                 ])
               },

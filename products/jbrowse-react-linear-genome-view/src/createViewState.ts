@@ -112,7 +112,7 @@ export default function createViewState(opts: ViewStateOptions) {
           assembly.name,
         )
       } catch (e) {
-        session.notify(`${e}`, 'error')
+        session.notifyError(`${e}`, e)
       }
     })()
   }

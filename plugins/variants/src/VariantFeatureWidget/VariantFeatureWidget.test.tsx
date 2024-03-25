@@ -5,7 +5,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 // locals
-import { stateModelFactory } from '.'
+import { stateModelFactory } from './stateModelFactory'
 import VariantFeatureDetails from './VariantFeatureWidget'
 
 test('renders with just the required model elements', () => {
@@ -38,5 +38,5 @@ test('renders with just the required model elements', () => {
   })
 
   const { container } = render(<VariantFeatureDetails model={model.widget} />)
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
 })

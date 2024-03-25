@@ -21,8 +21,8 @@ function main() {
   const levels = getLevels(graph)
   levels.forEach(level => {
     const scopes = []
-    level.forEach(package => {
-      scopes.push('--scope', package)
+    level.forEach(pkg => {
+      scopes.push('--scope', pkg)
     })
     const { signal, status } = spawn.sync(
       'yarn',

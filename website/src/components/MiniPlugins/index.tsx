@@ -112,11 +112,11 @@ export const PluginCard = ({ plugin }) => {
         <div className={pluginStyles.dataField}>
           <GitHub style={{ marginRight: '0.5em' }} />
           <Link href={plugin.location} target="_blank" rel="noopener">
-            <Typography>{plugin.repoName}</Typography>
+            {plugin.repoName}
           </Link>
           <Outbound className={pluginStyles.icon} />
           <Link href={plugin.resourceURL} target="_blank" rel="noopener">
-            <Typography>{plugin.name} website</Typography>
+            {plugin.name} website
           </Link>
         </div>
         <Typography variant="h6">Description:</Typography>

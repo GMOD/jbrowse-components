@@ -4,7 +4,7 @@ import readline from 'readline'
 
 // locals
 import { Track } from '../base'
-import { getLocalOrRemoteStream } from '../util'
+import { decodeURIComponentNoThrow, getLocalOrRemoteStream } from '../util'
 
 export async function* indexGff3({
   config,
@@ -75,7 +75,7 @@ export async function* indexGff3({
           .map(f => f.split('='))
           .map(([key, val]) => [
             key.trim(),
-            decodeURIComponent(val).trim().split(',').join(' '),
+            decodeURIComponentNoThrow(val).trim().split(',').join(' '),
           ]),
       )
       const attrs = attributesToIndex

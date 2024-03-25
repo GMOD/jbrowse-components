@@ -90,14 +90,13 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
         samHeader
           ?.filter(l => l.tag === 'SQ')
           .forEach((sqLine, refId) => {
-            sqLine.data.forEach(item => {
-              if (item.tag === 'SN') {
-                // this is the ref name
-                const refName = item.value
-                nameToId[refName] = refId
-                idToName[refId] = refName
-              }
-            })
+            const SN = sqLine.data.find(item => item.tag === 'SN')
+            if (SN) {
+              // this is the ref name
+              const refName = SN.value
+              nameToId[refName] = refId
+              idToName[refId] = refName
+            }
           })
 
         return { idToName, nameToId }
@@ -207,7 +206,11 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
           if (tagFilter) {
             const v = record.get(tagFilter.tag)
-            if (!(v === '*' ? v !== undefined : `${v}` === tagFilter.value)) {
+            if (
+              !(tagFilter.value === '*'
+                ? v !== undefined
+                : `${v}` === tagFilter.value)
+            ) {
               continue
             }
           }

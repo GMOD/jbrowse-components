@@ -37,60 +37,56 @@ const HierarchicalFab = observer(function ({
   }
   const hasConnections = isSessionModelWithConnections(session)
   const hasAddTrack = isSessionWithAddTracks(session)
-  return (
+  return hasAddTrack || hasConnections ? (
     <>
-      {hasAddTrack || hasConnections ? (
-        <>
-          <Fab
-            color="secondary"
-            className={classes.fab}
-            onClick={event => setAnchorEl(event.currentTarget)}
+      <Fab
+        color="secondary"
+        className={classes.fab}
+        onClick={event => setAnchorEl(event.currentTarget)}
+      >
+        <AddIcon />
+      </Fab>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={() => setAnchorEl(null)}
+      >
+        {hasConnections ? (
+          <MenuItem
+            onClick={() => {
+              handleFabClose()
+              if (isSessionModelWithWidgets(session)) {
+                session.showWidget(
+                  session.addWidget(
+                    'AddConnectionWidget',
+                    'addConnectionWidget',
+                  ),
+                )
+              }
+            }}
           >
-            <AddIcon />
-          </Fab>
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={() => setAnchorEl(null)}
+            Add connection
+          </MenuItem>
+        ) : null}
+        {hasAddTrack ? (
+          <MenuItem
+            onClick={() => {
+              handleFabClose()
+              if (isSessionModelWithWidgets(session)) {
+                session.showWidget(
+                  session.addWidget('AddTrackWidget', 'addTrackWidget', {
+                    view: model.view.id,
+                  }),
+                )
+              }
+            }}
           >
-            {hasConnections ? (
-              <MenuItem
-                onClick={() => {
-                  handleFabClose()
-                  if (isSessionModelWithWidgets(session)) {
-                    session.showWidget(
-                      session.addWidget(
-                        'AddConnectionWidget',
-                        'addConnectionWidget',
-                      ),
-                    )
-                  }
-                }}
-              >
-                Add connection
-              </MenuItem>
-            ) : null}
-            {hasAddTrack ? (
-              <MenuItem
-                onClick={() => {
-                  handleFabClose()
-                  if (isSessionModelWithWidgets(session)) {
-                    session.showWidget(
-                      session.addWidget('AddTrackWidget', 'addTrackWidget', {
-                        view: model.view.id,
-                      }),
-                    )
-                  }
-                }}
-              >
-                Add track
-              </MenuItem>
-            ) : null}
-          </Menu>
-        </>
-      ) : null}
+            Add track
+          </MenuItem>
+        ) : null}
+      </Menu>
     </>
-  )
+  ) : null
 })
 
 export default HierarchicalFab

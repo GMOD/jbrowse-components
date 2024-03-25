@@ -26,9 +26,6 @@ your path
 npm install -g @jbrowse/img
 ```
 
-If you are using npm version 7+ (released 2021) you may also need to add
-`--legacy-peer-deps`
-
 If you are a developer and want to modify the code, see
 [developer guide](DEVELOPER.md) for details
 
@@ -115,6 +112,14 @@ zoomed too far out. Add force:true to make it render
 
 ```bash
 jb2export --bam file.bam force:true --loc 1:1,100,000-1,200,000 --fasta hg19.fa
+```
+
+### Render only the SNPCoverage track of an alignments track
+
+Renders only the snpcov subtrack at height 600 for file.bam
+
+```bash
+jb2export --bam file.bam snpcov height:600
 ```
 
 ### Render the sequence track

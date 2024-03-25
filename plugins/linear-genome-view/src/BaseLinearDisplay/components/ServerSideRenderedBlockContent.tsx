@@ -1,14 +1,21 @@
-import React from 'react'
+import React, { lazy } from 'react'
+import { Tooltip, IconButton } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
 import { LoadingEllipses } from '@jbrowse/core/ui'
+import { getSession } from '@jbrowse/core/util'
 
 // icons
 import RefreshIcon from '@mui/icons-material/Refresh'
+import ReportIcon from '@mui/icons-material/Report'
 
 // locals
 import BlockMsg from './BlockMsg'
+
+const ErrorMessageStackTraceDialog = lazy(
+  () => import('@jbrowse/core/ui/ErrorMessageStackTraceDialog'),
+)
 
 const useStyles = makeStyles()(theme => {
   const bg = theme.palette.action.disabledBackground
@@ -22,12 +29,10 @@ const useStyles = makeStyles()(theme => {
   }
 })
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const LoadingMessage = observer(({ model }: { model: any }) => {
+const LoadingMessage = observer(({ model }: { model: { status?: string } }) => {
   const { classes } = useStyles()
   const { status: blockStatus } = model
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { message: displayStatus } = getParent<any>(model, 2)
+  const { message: displayStatus } = getParent<{ message?: string }>(model, 2)
   const status = displayStatus || blockStatus
   return (
     <div className={classes.loading}>
@@ -39,17 +44,44 @@ const LoadingMessage = observer(({ model }: { model: any }) => {
 const ServerSideRenderedBlockContent = observer(function ({
   model,
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  model: any
+  model: {
+    error?: unknown
+    reload: () => void
+    message: React.ReactNode
+    filled?: boolean
+    status?: string
+    reactElement?: React.ReactElement
+  }
 }) {
   if (model.error) {
     return (
       <BlockMsg
         message={`${model.error}`}
         severity="error"
-        buttonText="reload"
-        icon={<RefreshIcon />}
-        action={model.reload}
+        action={
+          <>
+            <Tooltip title="Reload track">
+              <IconButton
+                data-testid="reload_button"
+                onClick={() => model.reload()}
+              >
+                <RefreshIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Show stack trace">
+              <IconButton
+                onClick={() => {
+                  getSession(model).queueDialog(onClose => [
+                    ErrorMessageStackTraceDialog,
+                    { onClose, error: model.error as Error },
+                  ])
+                }}
+              >
+                <ReportIcon />
+              </IconButton>
+            </Tooltip>
+          </>
+        }
       />
     )
   } else if (model.message) {

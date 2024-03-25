@@ -4,7 +4,7 @@ import readline from 'readline'
 
 // locals
 import { Track } from '../base'
-import { getLocalOrRemoteStream } from '../util'
+import { decodeURIComponentNoThrow, getLocalOrRemoteStream } from '../util'
 
 export async function* indexVcf({
   config,
@@ -73,7 +73,9 @@ export async function* indexVcf({
         .map(f => f.split('='))
         .map(([key, val]) => [
           key.trim(),
-          val ? decodeURIComponent(val).trim().split(',').join(' ') : undefined,
+          val
+            ? decodeURIComponentNoThrow(val).trim().split(',').join(' ')
+            : undefined,
         ]),
     )
 

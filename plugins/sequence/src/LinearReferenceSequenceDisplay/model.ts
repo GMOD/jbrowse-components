@@ -7,6 +7,7 @@ import {
   AnyConfigurationSchemaType,
   ConfigurationReference,
 } from '@jbrowse/core/configuration'
+import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { getContainingView } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
 
@@ -44,6 +45,26 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
         showTranslation: true,
       }),
     )
+    .volatile(() => ({
+      /**
+       * #property
+       */
+      rowHeight: 15,
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get sequenceHeight() {
+        const { showTranslation, showReverse, showForward } = self
+        const r1 = showReverse && showTranslation ? self.rowHeight * 3 : 0
+        const r2 = showForward && showTranslation ? self.rowHeight * 3 : 0
+        const t = r1 + r2
+        const r = showReverse ? self.rowHeight : 0
+        const s = showForward ? self.rowHeight : 0
+        return t + r + s
+      },
+    }))
     .views(self => {
       const { renderProps: superRenderProps } = self
       return {
@@ -51,15 +72,24 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
          * #method
          */
         renderProps() {
-          const { showForward, rpcDriverName, showReverse, showTranslation } =
-            self
+          const {
+            showForward,
+            rpcDriverName,
+            showReverse,
+            showTranslation,
+            rowHeight,
+            sequenceHeight,
+          } = self
           return {
             ...superRenderProps(),
+            ...getParentRenderProps(self),
             config: self.configuration.renderer,
             rpcDriverName,
             showForward,
             showReverse,
             showTranslation,
+            rowHeight,
+            sequenceHeight,
           }
         },
       }
@@ -70,7 +100,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       regionCannotBeRendered(/* region */) {
         const view = getContainingView(self) as LGV
-        return view?.bpPerPx >= 1 ? 'Zoom in to see sequence' : undefined
+        return view?.bpPerPx > 3 ? 'Zoom in to see sequence' : undefined
       },
       /**
        * #getter
@@ -103,16 +133,10 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
           self,
           autorun(() => {
             const view = getContainingView(self) as LGV
-            if (view?.bpPerPx >= 1) {
+            if (view?.bpPerPx > 3) {
               self.setHeight(50)
             } else {
-              const { showTranslation, showReverse, showForward } = self
-              const r1 = showReverse && showTranslation ? 60 : 0
-              const r2 = showForward && showTranslation ? 60 : 0
-              const t = r1 + r2
-              const r = showReverse ? 20 : 0
-              const s = showForward ? 20 : 0
-              self.setHeight(t + r + s)
+              self.setHeight(self.sequenceHeight)
             }
           }),
         )

@@ -20,7 +20,7 @@ import { FilterModel, IFilter } from '../shared'
 import { ChainData } from '../shared/fetchChains'
 
 // async
-const FilterByTagDlg = lazy(() => import('../shared/FilterByTag'))
+const FilterByTagDialog = lazy(() => import('../shared/FilterByTag'))
 
 /**
  * #stateModel LinearReadCloudDisplay
@@ -173,7 +173,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               icon: FilterListIcon,
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
-                  FilterByTagDlg,
+                  FilterByTagDialog,
                   { model: self, handleClose },
                 ])
               },

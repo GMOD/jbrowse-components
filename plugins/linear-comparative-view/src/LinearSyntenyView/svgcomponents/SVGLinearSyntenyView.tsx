@@ -36,7 +36,7 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
     rulerHeight = 30,
     fontSize = 13,
     trackLabels = 'offset',
-    Wrapper = ({ children }) => <>{children}</>,
+    Wrapper = ({ children }) => children,
     themeName = 'default',
   } = opts
   const session = getSession(model)

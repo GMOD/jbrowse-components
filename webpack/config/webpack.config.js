@@ -127,22 +127,7 @@ module.exports = function (webpackEnv) {
         : isEnvDevelopment &&
           (info => path.resolve(info.absoluteResourcePath).replace(/\\/g, '/')),
     },
-    cache: {
-      type: 'filesystem',
-      version: createEnvironmentHash(env.raw),
-      cacheDirectory: paths.appWebpackCache,
-      store: 'pack',
-      buildDependencies: {
-        defaultWebpack: ['webpack/lib/'],
-        config: [__filename],
-        tsconfig: [paths.appTsConfig, paths.appJsConfig].filter(f =>
-          fs.existsSync(f),
-        ),
-      },
-    },
-    infrastructureLogging: {
-      level: 'none',
-    },
+
     resolve: {
       // This allows you to set a fallback for where webpack should look for
       // modules. We placed these paths second because we want `node_modules`

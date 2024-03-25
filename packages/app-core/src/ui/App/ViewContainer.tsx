@@ -42,7 +42,7 @@ const ViewContainer = observer(function ({
   useEffect(() => {
     function handleSelectView(e: Event) {
       if (e.target instanceof Element) {
-        if (ref?.current && ref.current.contains(e.target)) {
+        if (ref?.current?.contains(e.target)) {
           session.setFocusedViewId(view.id)
         }
       }

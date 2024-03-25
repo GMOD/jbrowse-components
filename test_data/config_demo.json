@@ -1344,6 +1344,41 @@
     },
     {
       "type": "VariantTrack",
+      "trackId": "breast_cancer_sniffles_hg19_traonly",
+      "name": "SKBR3 pacbio (sniffles VCF, TRA only)",
+      "adapter": {
+        "type": "VcfAdapter",
+        "vcfLocation": {
+          "uri": "https://jbrowse.org/genomes/hg19/SKBR3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.filtered.vcf",
+          "locationType": "UriLocation"
+        }
+      },
+      "category": ["SKBR3"],
+      "assemblyNames": ["hg19"]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "breast_cancer_sniffles_hg19_traonly_tabix",
+      "name": "SKBR3 pacbio (sniffles VCF, TRA only tabix)",
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "https://jbrowse.org/genomes/hg19/SKBR3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.filtered.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/genomes/hg19/SKBR3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.filtered.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "category": ["SKBR3"],
+      "assemblyNames": ["hg19"]
+    },
+    {
+      "type": "VariantTrack",
       "trackId": "1000genomes_indels",
       "name": "InDels",
       "assemblyNames": ["hg19"],

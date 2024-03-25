@@ -1,3 +1,109 @@
+yarn run v1.22.19 $ lerna-changelog --silent --silent --next-version 2.10.3
+
+## 2.10.3 (2024-03-06)
+
+#### :rocket: Enhancement
+
+- Other
+  - [#4257](https://github.com/GMOD/jbrowse-components/pull/4257) Smaller
+    sequence track size ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4256](https://github.com/GMOD/jbrowse-components/pull/4256) Update deps
+    including electron 28->29 ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4234](https://github.com/GMOD/jbrowse-components/pull/4234) Adds URL query
+    param for highlight on LGV
+    ([@carolinebridge-oicr](https://github.com/carolinebridge-oicr))
+- `core`, `product-core`
+  - [#4255](https://github.com/GMOD/jbrowse-components/pull/4255) Allow getting
+    stack trace from track errors ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- [#4254](https://github.com/GMOD/jbrowse-components/pull/4254) Throw if no
+  sequenceAdapter supplied to CramAdapter
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#4250](https://github.com/GMOD/jbrowse-components/pull/4250) Fix the viewport
+  calculations for when URL params includes &tracklist=true
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#4232](https://github.com/GMOD/jbrowse-components/pull/4232) Fix for missing
+  INFO.STRANDS tag for TRA features in breakpoint split view
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#4224](https://github.com/GMOD/jbrowse-components/pull/4224) Fix parsing of
+  BAM and CRAM refNames that contain a colon
+  ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :memo: Documentation
+
+- [#4240](https://github.com/GMOD/jbrowse-components/pull/4240) Small fixes to
+  embedding tutorial docs ([@kwentine](https://github.com/kwentine))
+- [#4223](https://github.com/GMOD/jbrowse-components/pull/4223) Add FAQ section
+  about faceted track selector
+  ([@Maarten-vd-Sande](https://github.com/Maarten-vd-Sande))
+
+#### Committers: 5
+
+- Caroline Bridge
+  ([@carolinebridge-oicr](https://github.com/carolinebridge-oicr))
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens))
+- Quentin Agren ([@kwentine](https://github.com/kwentine))
+- [@Maarten-vd-Sande](https://github.com/Maarten-vd-Sande) Done in 1.56s.
+
+yarn run v1.22.19 $ lerna-changelog --silent --silent --next-version 2.10.2
+
+## 2.10.2 (2024-02-19)
+
+#### :rocket: Enhancement
+
+- Other
+  - [#4219](https://github.com/GMOD/jbrowse-components/pull/4219) Add ability to
+    render only snpcoverage in jbrowse-img
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4196](https://github.com/GMOD/jbrowse-components/pull/4196) Allow adding
+    &tracklist=true to URL bar to open the track selector, &nav=false to hide
+    linear genome view header ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#4215](https://github.com/GMOD/jbrowse-components/pull/4215) Launch
+    breakpoint split view directly from alignments feature details
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4184](https://github.com/GMOD/jbrowse-components/pull/4184) Add ability to
+    get stack trace for error messages in the UI
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- Other
+  - [#4220](https://github.com/GMOD/jbrowse-components/pull/4220) Fix hydration
+    error from translocation features in plaintext VCF adapter
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4217](https://github.com/GMOD/jbrowse-components/pull/4217) Fix breakpoint
+    split view SVG export occasionally having wrong clipping
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4213](https://github.com/GMOD/jbrowse-components/pull/4213) Fix issue with
+    tagFilter \* in alignments track ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4208](https://github.com/GMOD/jbrowse-components/pull/4208) Fix
+    @jbrowse/img under node environment
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4146](https://github.com/GMOD/jbrowse-components/pull/4146) Remove
+    --tracks and --view options from set-default-session CLI
+    ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#4190](https://github.com/GMOD/jbrowse-components/pull/4190) Remove text
+    selection on sequence track with user-select: none
+    ([@cmdcolin](https://github.com/cmdcolin))
+- `core`, `product-core`
+  - [#4177](https://github.com/GMOD/jbrowse-components/pull/4177) Fix session
+    tracks being displayed in the tracklist on @jbrowse/react-linear-genome-view
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :memo: Documentation
+
+- [#4166](https://github.com/GMOD/jbrowse-components/pull/4166) Year in review
+  blog post ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 1
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin)) Done in 1.42s.
+
 yarn run v1.22.19 $ lerna-changelog --silent --silent --next-version 2.10.1
 
 ## 2.10.1 (2024-01-09)

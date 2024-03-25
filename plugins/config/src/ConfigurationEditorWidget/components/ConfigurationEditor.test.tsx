@@ -20,7 +20,7 @@ describe('ConfigurationEditor widget', () => {
     const { container } = render(
       <ConfigurationEditor model={{ target: TestSchema.create() }} />,
     )
-    expect(container.firstChild).toMatchSnapshot()
+    expect(container).toMatchSnapshot()
   })
 
   it('renders all the different types of built-in slots', () => {
@@ -78,7 +78,7 @@ describe('ConfigurationEditor widget', () => {
     const { container } = render(
       <ConfigurationEditor model={{ target: TestSchema.create() }} />,
     )
-    expect(container.firstChild).toMatchSnapshot()
+    expect(container).toMatchSnapshot()
   })
 
   it('renders with defaults of the PileupTrack schema', () => {
@@ -90,6 +90,6 @@ describe('ConfigurationEditor widget', () => {
     const { container } = render(
       <ConfigurationEditor model={{ target: PileupDisplaySchema.create() }} />,
     )
-    expect(container.firstChild).toMatchSnapshot()
+    expect(container).toMatchSnapshot()
   })
 })

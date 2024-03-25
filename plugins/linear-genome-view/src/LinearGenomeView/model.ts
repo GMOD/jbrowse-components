@@ -14,6 +14,7 @@ import {
   isSessionModelWithWidgets,
   isSessionWithAddTracks,
   localStorageGetItem,
+  localStorageSetItem,
   measureText,
   springAnimate,
   sum,
@@ -55,6 +56,7 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import PaletteIcon from '@mui/icons-material/Palette'
 
 import MiniControls from './components/MiniControls'
 import Header from './components/Header'
@@ -248,6 +250,20 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * show the "gridlines" in the track area
          */
         showGridlines: true,
+
+        /**
+         * #property
+         * highlights on the LGV from the URL parameters
+         */
+        highlight: types.maybe(types.frozen<Required<ParsedLocString>>()),
+
+        /**
+         * #property
+         * color by CDS
+         */
+        colorByCDS: types.optional(types.boolean, () =>
+          Boolean(JSON.parse(localStorageGetItem('lgv-colorByCDS') || 'false')),
+        ),
       }),
     )
     .volatile(() => ({
@@ -463,10 +479,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return {
           ...getParentRenderProps(self),
           bpPerPx: self.bpPerPx,
-          highResolutionScaling: getConf(
-            getSession(self),
-            'highResolutionScaling',
-          ),
+          colorByCDS: self.colorByCDS,
         }
       },
 
@@ -547,6 +560,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
+      setColorByCDS(flag: boolean) {
+        self.colorByCDS = flag
+      },
+      /**
+       * #action
+       */
       setShowCytobands(flag: boolean) {
         self.showCytobandsSetting = flag
       },
@@ -565,26 +584,32 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      toggleHeader() {
-        self.hideHeader = !self.hideHeader
+      setHideHeader(b: boolean) {
+        self.hideHeader = b
       },
       /**
        * #action
        */
-      toggleHeaderOverview() {
-        self.hideHeaderOverview = !self.hideHeaderOverview
+      setHideHeaderOverview(b: boolean) {
+        self.hideHeaderOverview = b
       },
       /**
        * #action
        */
-      toggleNoTracksActive() {
-        self.hideNoTracksActive = !self.hideNoTracksActive
+      setHideNoTracksActive(b: boolean) {
+        self.hideNoTracksActive = b
       },
       /**
        * #action
        */
-      toggleShowGridlines() {
-        self.showGridlines = !self.showGridlines
+      setShowGridlines(b: boolean) {
+        self.showGridlines = b
+      },
+      /**
+       * #action
+       */
+      setHighlight(highlight: Required<ParsedLocString> | undefined) {
+        self.highlight = highlight
       },
       /**
        * #action
@@ -747,8 +772,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      toggleCenterLine() {
-        self.showCenterLine = !self.showCenterLine
+      setShowCenterLine(b: boolean) {
+        self.showCenterLine = b
       },
 
       /**
@@ -1051,6 +1076,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
             onClick: self.horizontallyFlip,
           },
           {
+            label: 'Color by CDS',
+            type: 'checkbox',
+            checked: self.colorByCDS,
+            icon: PaletteIcon,
+            onClick: () => self.setColorByCDS(!self.colorByCDS),
+          },
+          {
             label: 'Show...',
             icon: VisibilityIcon,
             subMenu: [
@@ -1062,32 +1094,35 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 label: 'Show center line',
                 type: 'checkbox',
                 checked: self.showCenterLine,
-                onClick: self.toggleCenterLine,
+                onClick: () => self.setShowCenterLine(!self.showCenterLine),
               },
               {
                 label: 'Show header',
                 type: 'checkbox',
                 checked: !self.hideHeader,
-                onClick: self.toggleHeader,
+                onClick: () => self.setHideHeader(!self.hideHeader),
               },
+
               {
                 label: 'Show header overview',
                 type: 'checkbox',
                 checked: !self.hideHeaderOverview,
-                onClick: self.toggleHeaderOverview,
+                onClick: () =>
+                  self.setHideHeaderOverview(!self.hideHeaderOverview),
                 disabled: self.hideHeader,
               },
               {
                 label: 'Show no tracks active button',
                 type: 'checkbox',
                 checked: !self.hideNoTracksActive,
-                onClick: self.toggleNoTracksActive,
+                onClick: () =>
+                  self.setHideNoTracksActive(!self.hideNoTracksActive),
               },
               {
                 label: 'Show guidelines',
                 type: 'checkbox',
                 checked: self.showGridlines,
-                onClick: self.toggleShowGridlines,
+                onClick: () => self.setShowGridlines(!self.showGridlines),
               },
               ...(canShowCytobands
                 ? [
@@ -1234,11 +1269,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
           self,
           autorun(() => {
             const s = (s: unknown) => JSON.stringify(s)
-            const { showCytobandsSetting, showCenterLine } = self
-            if (typeof localStorage !== 'undefined') {
-              localStorage.setItem('lgv-showCytobands', s(showCytobandsSetting))
-              localStorage.setItem('lgv-showCenterLine', s(showCenterLine))
-            }
+            const { showCytobandsSetting, showCenterLine, colorByCDS } = self
+            localStorageSetItem('lgv-showCytobands', s(showCytobandsSetting))
+            localStorageSetItem('lgv-showCenterLine', s(showCenterLine))
+            localStorageSetItem('lgv-colorByCDS', s(colorByCDS))
           }),
         )
       },
@@ -1483,13 +1517,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #method
-       * scrolls the view to center on the given bp. if that is not in any
-       * of the displayed regions, does nothing
+       * scrolls the view to center on the given bp. if that is not in any of
+       * the displayed regions, does nothing
+       *
        * @param coord - basepair at which you want to center the view
        * @param refName - refName of the displayedRegion you are centering at
        * @param regionNumber - index of the displayedRegion
        */
-      centerAt(coord: number, refName: string, regionNumber: number) {
+      centerAt(coord: number, refName: string, regionNumber?: number) {
         const centerPx = this.bpToPx({
           refName,
           coord,

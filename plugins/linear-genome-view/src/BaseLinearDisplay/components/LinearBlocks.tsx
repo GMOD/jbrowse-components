@@ -58,10 +58,10 @@ const RenderedBlocks = observer(function ({
               block={block}
               key={`${model.id}-${block.key}`}
             >
-              {state && state.ReactComponent ? (
+              {state?.ReactComponent ? (
                 <state.ReactComponent model={state} />
               ) : null}
-              {state && state.maxHeightReached ? (
+              {state?.maxHeightReached ? (
                 <div
                   className={classes.heightOverflowed}
                   style={{

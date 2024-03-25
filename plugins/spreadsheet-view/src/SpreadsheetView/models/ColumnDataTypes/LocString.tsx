@@ -302,7 +302,7 @@ const DataCellReactComponent = observer(function ({
           await locationLinkClick(spreadsheet, columnNumber, cell)
         } catch (e) {
           console.error(e)
-          session.notify(`${e}`, 'error')
+          session.notifyError(`${e}`, e)
         }
       }}
       title="open a new linear genome view here"

@@ -61,7 +61,6 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
   const ref = useRef<HTMLDivElement>(null)
   const session = getSession(model)
   const { classes } = useStyles()
-
   useEffect(() => {
     // sets the focused view id based on a click within the LGV;
     // necessary for subviews to be focused properly

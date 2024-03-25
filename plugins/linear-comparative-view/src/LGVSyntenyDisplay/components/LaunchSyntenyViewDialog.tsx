@@ -69,7 +69,8 @@ export default function LaunchSyntenyViewDialog({
                   model,
                 })
               } catch (e) {
-                getSession(model).notify(`${e}`, 'error')
+                console.error(e)
+                getSession(model).notifyError(`${e}`, e)
               }
             })()
             handleClose()

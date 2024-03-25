@@ -78,7 +78,7 @@ const PluginStoreWidget = observer(function ({
             Add custom plugin
           </Button>
           {open ? (
-            <Suspense fallback={<React.Fragment />}>
+            <Suspense fallback={null}>
               <AddCustomPluginDialog
                 onClose={() => setOpen(false)}
                 model={model}

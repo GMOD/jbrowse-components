@@ -102,7 +102,7 @@ export default function SearchResultsTable({
                       }
                     } catch (e) {
                       console.error(e)
-                      session.notify(`${e}`, 'error')
+                      session.notifyError(`${e}`, e)
                     }
                     handleClose()
                   }}

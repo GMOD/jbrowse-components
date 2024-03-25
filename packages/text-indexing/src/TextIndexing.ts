@@ -176,22 +176,18 @@ async function indexDriver(
     ),
   )
   statusCallback('Indexing files.')
-  try {
-    const ixIxxStream = await runIxIxx(readable, idxLocation, name)
-    checkAbortSignal(signal)
-    await generateMeta({
-      configs: tracks,
-      attributes,
-      outDir: idxLocation,
-      name,
-      exclude,
-      assemblyNames,
-    })
-    checkAbortSignal(signal)
-    return ixIxxStream
-  } catch (e) {
-    throw e
-  }
+  const ixIxxStream = await runIxIxx(readable, idxLocation, name)
+  checkAbortSignal(signal)
+  await generateMeta({
+    configs: tracks,
+    attributes,
+    outDir: idxLocation,
+    name,
+    exclude,
+    assemblyNames,
+  })
+  checkAbortSignal(signal)
+  return ixIxxStream
 }
 
 async function* indexFiles(

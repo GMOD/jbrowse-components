@@ -14,7 +14,7 @@ import Subfeatures from './Subfeatures'
 
 export interface Glyph
   extends React.FC<{
-    children: React.ReactNode
+    colorByCDS: boolean
     feature: Feature
     featureLayout: SceneGraph
     selected?: boolean
@@ -53,7 +53,7 @@ export function chooseGlyphComponent(
   const type = feature.get('type')
   const subfeatures = feature.get('subfeatures')
 
-  if (subfeatures && type !== 'CDS') {
+  if (subfeatures?.length && type !== 'CDS') {
     const hasSubSub = subfeatures.find(sub => !!sub.get('subfeatures'))
     if (
       ['mRNA', 'transcript', 'primary_transcript'].includes(type) &&
@@ -118,7 +118,7 @@ export function layOut({
   return subLayout
 }
 
-export function layOutFeature(args: FeatureLayOutArgs): SceneGraph {
+export function layOutFeature(args: FeatureLayOutArgs) {
   const { layout, feature, bpPerPx, reversed, config, extraGlyphs } = args
   const displayMode = readConfObject(config, 'displayMode') as string
   const GlyphComponent =

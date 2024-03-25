@@ -28,7 +28,7 @@ const Snackbar = observer(function ({ session }: { session: SnackbarSession }) {
       session.popSnackbarMessage()
     }
   }
-  return !!latestMessage ? (
+  return latestMessage ? (
     <MUISnackbar
       open
       onClose={handleClose}

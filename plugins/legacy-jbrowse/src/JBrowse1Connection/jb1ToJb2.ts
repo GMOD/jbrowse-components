@@ -78,7 +78,7 @@ export function convertTrackConfig(
 
   const { storeClass } = jb1TrackConfig
   if (!jb1TrackConfig.urlTemplate) {
-    if (!(storeClass && storeClass.endsWith('FromConfig'))) {
+    if (!storeClass?.endsWith('FromConfig')) {
       const trackIdentifier = jb1TrackConfig.key || jb1TrackConfig.label
       console.warn(
         `Could not import JBrowse1 track "${trackIdentifier}" because it does not have a "urlTemplate" or is not a "FromConfig" track`,
@@ -166,12 +166,9 @@ export function convertTrackConfig(
       storeClass === 'JBrowse/Store/SeqFeature/BigWig' ||
       storeClass === 'JBrowse/Store/BigWig'
     ) {
-      if (jb1TrackConfig.type && jb1TrackConfig.type.endsWith('XYPlot')) {
+      if (jb1TrackConfig.type?.endsWith('XYPlot')) {
         jb2TrackConfig.defaultRendering = 'xyplot'
-      } else if (
-        jb1TrackConfig.type &&
-        jb1TrackConfig.type.endsWith('Density')
-      ) {
+      } else if (jb1TrackConfig.type?.endsWith('Density')) {
         jb2TrackConfig.defaultRendering = 'density'
       }
       return {
@@ -426,9 +423,9 @@ export function convertTrackConfig(
   jb2TrackConfig.type = guessTrackType(jb2TrackConfig.adapter.type)
 
   if (jb2TrackConfig.type === 'QuantitativeTrack') {
-    if (jb1TrackConfig.type && jb1TrackConfig.type.endsWith('XYPlot')) {
+    if (jb1TrackConfig.type?.endsWith('XYPlot')) {
       jb2TrackConfig.defaultRendering = 'xyplot'
-    } else if (jb1TrackConfig.type && jb1TrackConfig.type.endsWith('Density')) {
+    } else if (jb1TrackConfig.type?.endsWith('Density')) {
       jb2TrackConfig.defaultRendering = 'density'
     }
   }
