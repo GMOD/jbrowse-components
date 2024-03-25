@@ -2,7 +2,7 @@ import { parseBreakend } from '@gmod/vcf'
 import { Feature, assembleLocString } from '@jbrowse/core/util'
 export function makeFeaturePair(feature: Feature, alt?: string) {
   const bnd = alt ? parseBreakend(alt) : undefined
-  let start = feature.get('start')
+  const start = feature.get('start')
   let end = feature.get('end')
   const strand = feature.get('strand')
   const mate = feature.get('mate') as {
@@ -32,7 +32,6 @@ export function makeFeaturePair(feature: Feature, alt?: string) {
     mateStart = e - 1
     // re-adjust the arc to be from start to end of feature by re-assigning end
     // to the 'mate'
-    start = start
     end = start + 1
   } else if (bnd?.MatePosition) {
     const matePosition = bnd.MatePosition.split(':')

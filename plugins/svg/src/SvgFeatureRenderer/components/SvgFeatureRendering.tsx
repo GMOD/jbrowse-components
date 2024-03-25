@@ -30,6 +30,7 @@ function RenderedFeatureGlyph(props: {
   bpPerPx: number
   region: Region
   config: AnyConfigurationModel
+  colorByCDS: boolean
   layout: BaseLayout<unknown>
   extraGlyphs?: ExtraGlyphValidator[]
   displayMode: string
@@ -157,6 +158,7 @@ const RenderedFeatures = observer(
     bpPerPx: number
     config: AnyConfigurationModel
     displayMode: string
+    colorByCDS: boolean
     displayModel?: DisplayModel
     region: Region
     exportSVG?: unknown
@@ -196,6 +198,7 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
   bpPerPx: number
   detectRerender?: () => void
   config: AnyConfigurationModel
+  colorByCDS: boolean
   features: Map<string, Feature>
   displayModel?: DisplayModel
   exportSVG?: boolean

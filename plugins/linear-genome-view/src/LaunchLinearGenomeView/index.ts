@@ -61,11 +61,16 @@ export default (pluginManager: PluginManager) => {
           view.setHideHeader(!nav)
         }
         if (highlight !== undefined) {
-          const location = parseLocString(highlight, refName =>
+          const parsedLocString = parseLocString(highlight, refName =>
             isValidRefName(refName, assembly),
           ) as Required<ParsedLocString>
+
+          const location = {
+            ...parsedLocString,
+            assemblyName: assembly,
+          }
+
           if (location?.start !== undefined && location?.end !== undefined) {
-            location.assemblyName = assembly
             view.setHighlight(location)
           }
         }
@@ -80,7 +85,7 @@ export default (pluginManager: PluginManager) => {
           )
         }
       } catch (e) {
-        session.notify(`${e}`, 'error')
+        session.notifyError(`${e}`, e)
         throw e
       }
     },

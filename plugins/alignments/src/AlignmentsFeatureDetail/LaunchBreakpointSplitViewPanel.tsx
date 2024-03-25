@@ -58,43 +58,38 @@ export default function LaunchBreakpointSplitViewPanel({
       ret.push([res[i], res[i + 1]] as const)
     }
   }
-  return (
-    <>
-      {ret.length ? (
-        <div>
-          <Typography>
-            Launch split views with breakend source and target
-          </Typography>
-          {error ? <ErrorMessage error={error} /> : null}
-          <ul>
-            {ret.map((arg, index) => {
-              const [f1, f2] = arg
-              return (
-                <li key={`${JSON.stringify(arg)}-${index}`}>
-                  <Tooltip title="Top panel->Bottom panel">
-                    <Link
-                      href="#"
-                      className={classes.cursor}
-                      onClick={event => {
-                        event.preventDefault()
-                        session.queueDialog(handleClose => [
-                          BreakendOptionDialog,
-                          { handleClose, f1, f2, model, viewType },
-                        ])
-                      }}
-                    >
-                      {f1.refName}:
-                      {toLocale(f1.strand === 1 ? f1.end : f1.start)} -&gt;{' '}
-                      {f2.refName}:
-                      {toLocale(f2.strand === 1 ? f2.start : f2.end)}
-                    </Link>
-                  </Tooltip>
-                </li>
-              )
-            })}
-          </ul>
-        </div>
-      ) : null}
-    </>
-  )
+  return ret.length ? (
+    <div>
+      <Typography>
+        Launch split views with breakend source and target
+      </Typography>
+      {error ? <ErrorMessage error={error} /> : null}
+      <ul>
+        {ret.map((arg, index) => {
+          const [f1, f2] = arg
+          return (
+            <li key={`${JSON.stringify(arg)}-${index}`}>
+              <Tooltip title="Top panel->Bottom panel">
+                <Link
+                  href="#"
+                  className={classes.cursor}
+                  onClick={event => {
+                    event.preventDefault()
+                    session.queueDialog(handleClose => [
+                      BreakendOptionDialog,
+                      { handleClose, f1, f2, model, viewType },
+                    ])
+                  }}
+                >
+                  {f1.refName}:{toLocale(f1.strand === 1 ? f1.end : f1.start)}{' '}
+                  -&gt; {f2.refName}:
+                  {toLocale(f2.strand === 1 ? f2.start : f2.end)}
+                </Link>
+              </Tooltip>
+            </li>
+          )
+        })}
+      </ul>
+    </div>
+  ) : null
 }

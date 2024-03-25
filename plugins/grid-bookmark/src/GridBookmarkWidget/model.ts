@@ -66,7 +66,7 @@ export interface IExtendedLabeledRegionModel extends ILabeledRegionModel {
 }
 
 const localStorageKeyF = () =>
-  typeof window !== undefined
+  typeof window !== 'undefined'
     ? `bookmarks-${[window.location.host + window.location.pathname].join('-')}`
     : 'empty'
 

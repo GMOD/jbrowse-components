@@ -20,7 +20,7 @@ test('no features', () => {
     />,
   )
 
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
 })
 
 test('one feature', () => {
@@ -43,5 +43,5 @@ test('one feature', () => {
     />,
   )
 
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
 })

@@ -52,15 +52,11 @@ export function createPluginManager(self: SessionLoaderModel) {
 
   let afterInitializedCb = () => {}
 
-  // in order: saves the previous autosave for recovery, tries to
-  // load the local session if session in query, or loads the default
-  // session
+  // in order: saves the previous autosave for recovery, tries to load the
+  // local session if session in query, or loads the default session
   try {
     if (self.sessionError) {
-      rootModel.setDefaultSession()
-      rootModel.session.notify(
-        `Error loading session: ${self.sessionError}. If you received this URL from another user, request that they send you a session generated with the "Share" button instead of copying and pasting their URL`,
-      )
+      throw self.sessionError
     } else if (self.sessionSnapshot) {
       rootModel.setSession(self.sessionSnapshot)
     } else if (self.sessionSpec) {
@@ -72,15 +68,13 @@ export function createPluginManager(self: SessionLoaderModel) {
   } catch (e) {
     rootModel.setDefaultSession()
     const str = `${e}`
-    const errorMessage = str
-      .replace('[mobx-state-tree] ', '')
-      .replace(/\(.+/, '')
-    rootModel.session?.notify(
-      `Session could not be loaded. ${
-        errorMessage.length > 1000
-          ? `${errorMessage.slice(0, 1000)}...see more in console`
-          : errorMessage
-      }`,
+    const m = str.replace('[mobx-state-tree] ', '').replace(/\(.+/, '')
+    const r = m.length > 1000 ? `${m.slice(0, 1000)}...see more in console` : m
+    const s = r.startsWith('Error:') ? r : `Error: ${r}`
+    rootModel.session?.notifyError(
+      `${s}. If you received this URL from another user, request that they send you a session generated with the "Share" button instead of copying and pasting their URL`,
+      self.sessionError,
+      self.sessionSnapshot,
     )
     console.error(e)
   }

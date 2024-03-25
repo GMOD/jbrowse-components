@@ -3,9 +3,9 @@ import { lazy } from 'react'
 import { AbstractSessionModel } from '@jbrowse/core/util/types'
 import { getParent, types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { readConfObject } from '@jbrowse/core/configuration'
+import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
+import { getConf } from '@jbrowse/core/configuration'
 import InfoIcon from '@mui/icons-material/Info'
-import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
 import {
   BaseSessionModel,
   ConnectionManagementSessionMixin,
@@ -29,7 +29,7 @@ const AboutDialog = lazy(() => import('./AboutDialog'))
  * - [SnackbarModel](../snackbarmodel)
  */
 export default function sessionModelFactory(pluginManager: PluginManager) {
-  const model = types
+  return types
     .compose(
       'ReactCircularGenomeViewSession',
       BaseSessionModel(pluginManager),
@@ -38,6 +38,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       DialogQueueSessionMixin(pluginManager),
       TracksManagerSessionMixin(pluginManager),
       ReferenceManagementSessionMixin(pluginManager),
+      SnackbarModel(),
     )
     .props({
       /**
@@ -94,7 +95,10 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
        * #method
        */
       renderProps() {
-        return { theme: readConfObject(self.configuration, 'theme') }
+        return {
+          theme: getConf(self, 'theme'),
+          highResolutionScaling: getConf(self, 'highResolutionScaling'),
+        }
       },
     }))
     .actions(self => ({
@@ -140,8 +144,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         ]
       },
     }))
-
-  return addSnackbarToModel(model)
 }
 
 export type SessionStateModel = ReturnType<typeof sessionModelFactory>

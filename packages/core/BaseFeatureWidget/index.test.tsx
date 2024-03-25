@@ -18,7 +18,9 @@ test('open up a widget', async () => {
   })
   const model = Session.create(
     {
-      widget: { type: 'BaseFeatureWidget' },
+      widget: {
+        type: 'BaseFeatureWidget',
+      },
     },
     { pluginManager },
   )
@@ -33,5 +35,5 @@ test('open up a widget', async () => {
     refName: 'ctgA',
   })
   expect(await findByText('ctgA:3..102 (+)')).toBeTruthy()
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
 })

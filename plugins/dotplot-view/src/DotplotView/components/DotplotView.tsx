@@ -194,14 +194,14 @@ const DotplotViewInternal = observer(function ({
   // detect a mouseup after a mousedown was submitted, autoremoves mouseup once
   // that single mouseup is set
   useEffect(() => {
-    if (mousedown && !mouseup) {
-      function globalMouseUp(event: MouseEvent) {
-        if (Math.abs(xdistance) > 3 && Math.abs(ydistance) > 3 && validSelect) {
-          setMouseUpClient([event.clientX, event.clientY])
-        } else {
-          setMouseDownClient(undefined)
-        }
+    function globalMouseUp(event: MouseEvent) {
+      if (Math.abs(xdistance) > 3 && Math.abs(ydistance) > 3 && validSelect) {
+        setMouseUpClient([event.clientX, event.clientY])
+      } else {
+        setMouseDownClient(undefined)
       }
+    }
+    if (mousedown && !mouseup) {
       window.addEventListener('mouseup', globalMouseUp, true)
       return () => {
         window.removeEventListener('mouseup', globalMouseUp, true)

@@ -157,7 +157,7 @@ export function getFileName(track: FileLocation) {
   return (
     blob?.name ||
     uri?.slice(uri.lastIndexOf('/') + 1) ||
-    localPath?.slice(localPath.lastIndexOf('/') + 1) ||
+    localPath?.slice(localPath?.replace(/\\/g, '/').lastIndexOf('/') + 1) ||
     ''
   )
 }

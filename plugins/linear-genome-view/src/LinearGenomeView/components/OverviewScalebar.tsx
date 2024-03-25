@@ -5,7 +5,7 @@ import { observer } from 'mobx-react'
 
 // core
 import Base1DView, { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
-import { getSession, getTickDisplayStr } from '@jbrowse/core/util'
+import { getEnv, getSession, getTickDisplayStr } from '@jbrowse/core/util'
 import { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 // locals
@@ -201,6 +201,7 @@ const Scalebar = observer(function ({
   const { classes } = useStyles()
   const theme = useTheme()
   const { dynamicBlocks, showCytobands, cytobandOffset } = model
+  const { pluginManager } = getEnv(model)
   const visibleRegions = dynamicBlocks.contentBlocks
   const overviewVisibleRegions = overview.dynamicBlocks
 
@@ -228,6 +229,12 @@ const Scalebar = observer(function ({
 
   const color = showCytobands ? '#f00' : scalebarColor
   const transparency = showCytobands ? 0.1 : 0.3
+
+  const additional = pluginManager.evaluateExtensionPoint(
+    'LinearGenomeView-OverviewScalebarComponent',
+    undefined,
+    { model, overview },
+  ) as React.ReactNode
 
   return (
     <div className={classes.scalebar}>
@@ -265,6 +272,7 @@ const Scalebar = observer(function ({
         )
       })}
       <OverviewHighlight model={model} overview={overview} />
+      {additional}
     </div>
   )
 })

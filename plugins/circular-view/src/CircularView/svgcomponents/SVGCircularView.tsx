@@ -14,8 +14,7 @@ type CGV = CircularViewModel
 
 export async function renderToSvg(model: CGV, opts: ExportSvgOptions) {
   await when(() => model.initialized)
-  const { themeName = 'default', Wrapper = ({ children }) => <>{children}</> } =
-    opts
+  const { themeName = 'default', Wrapper = ({ children }) => children } = opts
   const session = getSession(model)
   const theme = session.allThemes?.()[themeName]
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

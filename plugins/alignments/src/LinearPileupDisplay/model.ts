@@ -21,7 +21,7 @@ import SortIcon from '@mui/icons-material/Sort'
 import { SharedLinearPileupDisplayMixin } from './SharedLinearPileupDisplayMixin'
 import { observable } from 'mobx'
 
-// async
+// lzies
 const SortByTagDialog = lazy(() => import('./components/SortByTag'))
 const ModificationsDialog = lazy(
   () => import('./components/ColorByModifications'),
@@ -151,6 +151,15 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           assemblyName,
           tag,
         }
+      },
+      /**
+       * #action
+       * overrides base from SharedLinearPileupDisplay to make sortReady false
+       * since changing feature height destroys the sort-induced layout
+       */
+      setFeatureHeight(n?: number) {
+        self.sortReady = false
+        self.featureHeight = n
       },
     }))
     .actions(self => {

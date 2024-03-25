@@ -62,13 +62,13 @@ export default function SyntenyContextMenu({
               .navToLocString(`${refName}:${start}-${end}`)
               .catch(e => {
                 console.error(e)
-                getSession(model).notify(`${e}`, 'error')
+                getSession(model).notifyError(`${e}`, e)
               })
             view.views[1]
               .navToLocString(`${mate.refName}:${mate.start}-${mate.end}`)
               .catch(e => {
                 console.error(e)
-                getSession(model).notify(`${e}`, 'error')
+                getSession(model).notifyError(`${e}`, e)
               })
           },
         },

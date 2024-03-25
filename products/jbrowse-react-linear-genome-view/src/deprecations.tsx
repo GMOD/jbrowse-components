@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react'
+import React from 'react'
 import { createJBrowseTheme as coreCreateJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeOptions } from '@mui/material/styles'
 
@@ -16,7 +16,7 @@ export function ThemeProvider({
   children,
 }: {
   _theme: unknown
-  children: ReactNode
+  children: React.ReactNode
 }) {
   console.warn(
     'Deprecation warning: `ThemeProvider` is no longer supported as a way to ' +
@@ -24,5 +24,5 @@ export function ThemeProvider({
       'please pass the theme in to the "configuration" of `createViewState` ' +
       'instead.',
   )
-  return <>{children}</>
+  return children
 }

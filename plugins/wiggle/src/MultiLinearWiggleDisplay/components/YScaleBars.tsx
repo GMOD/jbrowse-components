@@ -21,25 +21,23 @@ const Wrapper = observer(function ({
   children: React.ReactNode
   exportSVG?: boolean
 }) {
-  if (exportSVG) {
-    return <>{children}</>
-  } else {
-    const { height } = model
-    return (
-      <svg
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          pointerEvents: 'none',
-          height,
-          width: getContainingView(model).width,
-        }}
-      >
-        {children}
-      </svg>
-    )
-  }
+  const { height } = model
+  return exportSVG ? (
+    children
+  ) : (
+    <svg
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        pointerEvents: 'none',
+        height,
+        width: getContainingView(model).width,
+      }}
+    >
+      {children}
+    </svg>
+  )
 })
 
 export const YScaleBars = observer(function (props: {

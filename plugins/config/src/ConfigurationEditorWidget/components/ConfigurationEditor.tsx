@@ -66,7 +66,7 @@ const Member = observer(function (props: {
     if (slot.length) {
       return slot.map((subslot: AnyConfigurationModel, slotIndex: number) => {
         const key = `${singular(slotName)} ${slotIndex + 1}`
-        return <Member {...props} key={key} slot={subslot} slotName={key} />
+        return <Member key={key} {...props} slot={subslot} slotName={key} />
       })
     }
     // if this is an explicitly typed schema, make a type-selecting dropdown

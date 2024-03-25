@@ -15,6 +15,7 @@ test('no features', () => {
   const { container } = render(
     <Rendering
       blockKey="hello"
+      colorByCDS={false}
       features={new Map()}
       regions={[
         { refName: 'zonk', start: 0, end: 300, assemblyName: 'volvox' },
@@ -33,13 +34,14 @@ test('no features', () => {
     />,
   )
 
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
 })
 
 test('one feature', () => {
   const { container } = render(
     <Rendering
       blockKey="hello"
+      colorByCDS={false}
       regions={[
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
@@ -55,7 +57,7 @@ test('one feature', () => {
     />,
   )
 
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
 })
 
 test('click on one feature, and do not re-render', () => {
@@ -63,6 +65,7 @@ test('click on one feature, and do not re-render', () => {
   const { container, getByTestId } = render(
     <Rendering
       blockKey="hello"
+      colorByCDS={false}
       regions={[
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
@@ -83,7 +86,7 @@ test('click on one feature, and do not re-render', () => {
   fireEvent.click(getByTestId('box-one'))
   expect(counter).toBe(3)
 
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
 })
 
 test('one feature (compact mode)', () => {
@@ -92,6 +95,7 @@ test('one feature (compact mode)', () => {
   const { container } = render(
     <Rendering
       blockKey="hello"
+      colorByCDS={false}
       regions={[
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
@@ -245,7 +249,7 @@ test('one feature (compact mode)', () => {
   )
 
   // reducedRepresentation of the transcript is just a box
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
 })
 
 test('processed transcript (reducedRepresentation mode)', () => {
@@ -255,6 +259,7 @@ test('processed transcript (reducedRepresentation mode)', () => {
   const { container } = render(
     <Rendering
       blockKey="hello"
+      colorByCDS={false}
       regions={[
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
@@ -270,13 +275,14 @@ test('processed transcript (reducedRepresentation mode)', () => {
     />,
   )
 
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
 })
 
 test('processed transcript', () => {
   const { container } = render(
     <Rendering
       blockKey="hello"
+      colorByCDS={false}
       regions={[
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
@@ -429,13 +435,14 @@ test('processed transcript', () => {
     />,
   )
 
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
 })
 
 test('processed transcript (exons + impliedUTR)', () => {
   const { container } = render(
     <Rendering
       blockKey="hello"
+      colorByCDS={false}
       regions={[
         { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
       ]}
@@ -1062,7 +1069,7 @@ test('processed transcript (exons + impliedUTR)', () => {
   // finds that the color3 is outputted for impliedUTRs
   expect(container).toContainHTML('#357089')
 
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
 })
 
 // hacks existence of getFeatureByID
@@ -1078,9 +1085,7 @@ test('svg selected', () => {
           assemblyName: 'volvox',
         }}
         displayModel={{
-          getFeatureByID: () => {
-            return [0, 0, 10, 10]
-          },
+          getFeatureByID: () => [0, 0, 10, 10],
           featureIdUnderMouse: 'one',
           selectedFeatureId: 'one',
         }}
@@ -1089,5 +1094,5 @@ test('svg selected', () => {
     </svg>,
   )
 
-  expect(container.firstChild).toMatchSnapshot()
+  expect(container).toMatchSnapshot()
 })

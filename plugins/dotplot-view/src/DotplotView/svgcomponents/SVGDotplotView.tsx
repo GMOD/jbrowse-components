@@ -17,8 +17,7 @@ export async function renderToSvg(
   opts: ExportSvgOptions,
 ) {
   await when(() => model.initialized)
-  const { themeName = 'default', Wrapper = ({ children }) => <>{children}</> } =
-    opts
+  const { themeName = 'default', Wrapper = ({ children }) => children } = opts
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { createRootFn } = getRoot<any>(model)
   const session = getSession(model)

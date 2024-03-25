@@ -2,7 +2,11 @@ import React from 'react'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 import { colord } from '@jbrowse/core/util/colord'
-import { ParsedLocString } from '@jbrowse/core/util'
+import {
+  ParsedLocString,
+  SessionWithWidgets,
+  getSession,
+} from '@jbrowse/core/util'
 import { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 
 // locals
@@ -14,11 +18,11 @@ const useStyles = makeStyles()(theme => ({
   highlight: {
     height: '100%',
     position: 'absolute',
-    background: `${colord(theme.palette.quaternary?.main ?? 'goldenrod')
+    background: `${colord(theme.palette.highlight?.main ?? 'goldenrod')
       .alpha(0.35)
       .toRgbString()}`,
-    borderLeft: `1px solid ${theme.palette.quaternary?.main ?? 'goldenrod'}`,
-    borderRight: `1px solid ${theme.palette.quaternary?.main ?? 'goldenrod'}`,
+    borderLeft: `1px solid ${theme.palette.highlight?.main ?? 'goldenrod'}`,
+    borderRight: `1px solid ${theme.palette.highlight?.main ?? 'goldenrod'}`,
   },
 }))
 
@@ -31,6 +35,9 @@ const OverviewHighlight = observer(function OverviewHighlight({
 }) {
   const { classes } = useStyles()
   const { cytobandOffset } = model
+
+  const session = getSession(model) as SessionWithWidgets
+  const { assemblyManager } = session
 
   // coords
   const mapCoords = (r: Required<ParsedLocString>) => {
@@ -56,21 +63,24 @@ const OverviewHighlight = observer(function OverviewHighlight({
     return null
   }
 
-  const h = mapCoords(model.highlight)
+  const asm = assemblyManager.get(model.highlight?.assemblyName)
 
-  return (
-    <>
-      {h ? (
-        <div
-          className={classes.highlight}
-          style={{
-            width: h.width,
-            left: h.left,
-          }}
-        />
-      ) : null}
-    </>
-  )
+  const h = mapCoords({
+    ...model.highlight,
+    refName:
+      asm?.getCanonicalRefName(model.highlight.refName) ??
+      model.highlight.refName,
+  })
+
+  return h ? (
+    <div
+      className={classes.highlight}
+      style={{
+        width: h.width,
+        left: h.left,
+      }}
+    />
+  ) : null
 })
 
 export default OverviewHighlight

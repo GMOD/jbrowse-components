@@ -16,15 +16,11 @@ function makeSubpartsFilter(
   confKey = 'subParts',
   config: AnyConfigurationModel,
 ) {
-  let filter = readConfObject(config, confKey) as string[] | string
-
-  if (typeof filter == 'string') {
-    // convert to array
-    filter = filter.split(/\s*,\s*/)
-  }
+  const filter = readConfObject(config, confKey) as string[] | string
+  const ret = typeof filter == 'string' ? filter.split(/\s*,\s*/) : filter
 
   return (feature: Feature) =>
-    (filter as string[])
+    ret
       .map(typeName => typeName.toLowerCase())
       .includes(feature.get('type').toLowerCase())
 }

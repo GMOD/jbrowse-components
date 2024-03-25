@@ -1,4 +1,6 @@
 import { isSupportedIndexingAdapter } from '@jbrowse/core/util'
+import sanitize from 'sanitize-filename'
+import path from 'path'
 
 export interface UriLocation {
   uri: string
@@ -123,23 +125,21 @@ export function createTextSearchConf(
   assemblyNames: string[],
   locationPath: string,
 ) {
-  // const locationPath = self.sessionPath.substring(
-  //   0,
-  //   self.sessionPath.lastIndexOf('/'),
-  // )
+  const base = path.join(locationPath, 'trix')
+  const n = sanitize(name)
   return {
     type: 'TrixTextSearchAdapter',
     textSearchAdapterId: name,
     ixFilePath: {
-      localPath: locationPath + `/trix/${name}.ix`,
+      localPath: path.join(base, `${n}.ix`),
       locationType: 'LocalPathLocation',
     },
     ixxFilePath: {
-      localPath: locationPath + `/trix/${name}.ixx`,
+      localPath: path.join(base, `${n}.ixx`),
       locationType: 'LocalPathLocation',
     },
     metaFilePath: {
-      localPath: locationPath + `/trix/${name}.json`,
+      localPath: path.join(base, `${n}.json`),
       locationType: 'LocalPathLocation',
     },
     tracks: trackIds,
@@ -164,4 +164,13 @@ export function findTrackConfigsToIndex(
       assemblyName ? track.assemblyNames.includes(assemblyName) : true,
     )
     .filter(track => isSupportedIndexingAdapter(track.adapter?.type))
+}
+
+export function decodeURIComponentNoThrow(uri: string) {
+  try {
+    return decodeURIComponent(uri)
+  } catch (e) {
+    // avoid throwing exception on a failure to decode URI component
+    return uri
+  }
 }

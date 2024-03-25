@@ -67,24 +67,25 @@ const ShareDialog = observer(function ({
   const snap = getSnapshot(session)
 
   useEffect(() => {
-    let cancelled = false
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
+      // checking !error allows retry when error state is cleared
+      if (error) {
+        return
+      }
       try {
         if (currentSetting === 'short') {
           setLoading(true)
           const locationUrl = new URL(window.location.href)
           const result = await shareSessionToDynamo(snap, url, locationUrl.href)
-          if (!cancelled) {
-            const params = new URLSearchParams(locationUrl.search)
-            params.set('session', `share-${result.json.sessionId}`)
-            params.set('password', result.password)
-            locationUrl.search = params.toString()
-            setShortUrl(locationUrl.href)
+          const params = new URLSearchParams(locationUrl.search)
+          params.set('session', `share-${result.json.sessionId}`)
+          params.set('password', result.password)
+          locationUrl.search = params.toString()
+          setShortUrl(locationUrl.href)
 
-            setSessionParam(`share-${result.json.sessionId}`)
-            setPasswordParam(result.password)
-          }
+          setSessionParam(`share-${result.json.sessionId}`)
+          setPasswordParam(result.password)
         } else {
           const sess = await toUrlSafeB64(JSON.stringify(getSnapshot(session)))
           const longUrl = new URL(window.location.href)
@@ -92,9 +93,7 @@ const ShareDialog = observer(function ({
           longParams.set('session', `encoded-${sess}`)
           setSessionParam(`encoded-${sess}`)
           longUrl.search = longParams.toString()
-          if (!cancelled) {
-            setLongUrl(longUrl.toString())
-          }
+          setLongUrl(longUrl.toString())
         }
       } catch (e) {
         setError(e)
@@ -102,12 +101,9 @@ const ShareDialog = observer(function ({
         setLoading(false)
       }
     })()
+  }, [currentSetting, error, session, url, snap])
 
-    return () => {
-      cancelled = true
-    }
-  }, [currentSetting, session, url, snap])
-
+  const disabled = (currentSetting === 'short' && loading) || !!error
   return (
     <>
       <Dialog
@@ -126,7 +122,7 @@ const ShareDialog = observer(function ({
 
           {currentSetting === 'short' ? (
             error ? (
-              <ErrorMessage error={error} />
+              <ErrorMessage error={error} onReset={() => setError(undefined)} />
             ) : loading ? (
               <Typography>Generating short URL...</Typography>
             ) : (
@@ -139,7 +135,7 @@ const ShareDialog = observer(function ({
         <DialogActions>
           <Button
             startIcon={<BookmarkAddIcon />}
-            disabled={currentSetting === 'short' && loading}
+            disabled={disabled}
             onClick={event => {
               event.preventDefault()
               setPassword(passwordParam, 'replaceIn')
@@ -156,7 +152,7 @@ const ShareDialog = observer(function ({
               session.notify('Copied to clipboard', 'success')
             }}
             startIcon={<ContentCopyIcon />}
-            disabled={currentSetting === 'short' && loading}
+            disabled={disabled}
           >
             Copy to Clipboard
           </Button>
