@@ -49,11 +49,13 @@ const ErrorMessage = ({
   onReset?: () => void
 }) => {
   const str = `${error}`
+  const str2 = str.indexOf('expected an instance of')
+  const str3 = str2 !== -1 ? str.slice(0, str2) : str
   const snapshotError = parseError(str)
   const [showStack, setShowStack] = useState(false)
   return (
     <RedErrorMessageBox>
-      {str.slice(0, 10000)}
+      {str3.slice(0, 10000)}
 
       <div style={{ float: 'right', marginLeft: 100 }}>
         {typeof error === 'object' && error && 'stack' in error ? (
