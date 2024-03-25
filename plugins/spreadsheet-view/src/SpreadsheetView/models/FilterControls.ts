@@ -24,7 +24,7 @@ const RowFullTextFilter = types
         const { cellsWithDerived } = row
         for (const cell of cellsWithDerived) {
           // note: case insensitive
-          if (cell.text && cell.text.toLowerCase().includes(s)) {
+          if (cell.text?.toLowerCase().includes(s)) {
             return true
           }
         }

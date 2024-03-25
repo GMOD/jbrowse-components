@@ -325,7 +325,7 @@ function guessStoreClass(
   if (!trackConfig) {
     return ''
   }
-  if (trackConfig.type && trackConfig.type.includes('/FixedImage')) {
+  if (trackConfig.type?.includes('/FixedImage')) {
     return `JBrowse/Store/TiledImage/Fixed${
       trackConfig.backendVersion === 0 ? '_v0' : ''
     }`
@@ -371,7 +371,7 @@ function guessStoreClass(
   if (/\.2bit$/i.test(urlTemplate)) {
     return 'JBrowse/Store/SeqFeature/TwoBit'
   }
-  if (trackConfig.type && trackConfig.type.endsWith('/Sequence')) {
+  if (trackConfig.type?.endsWith('/Sequence')) {
     return 'JBrowse/Store/Sequence/StaticChunked'
   }
   return ''
