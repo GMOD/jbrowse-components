@@ -29,9 +29,6 @@ const useStyles = makeStyles()(theme => ({
     }),
   },
   trackName: {
-    margin: '0 auto',
-    width: '90%',
-    fontSize: '0.8rem',
     pointerEvents: 'none',
   },
 
