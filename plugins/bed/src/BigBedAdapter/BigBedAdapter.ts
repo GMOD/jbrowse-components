@@ -57,26 +57,30 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
   }
 
   public getFeatures(region: Region, opts: BaseOptions = {}) {
-    const { refName, start, end } = region
     const { signal } = opts
     return ObservableCreate<Feature>(async observer => {
       try {
         const { parser, bigbed } = await this.configure(opts)
-        const ob = await bigbed.getFeatureStream(refName, start, end, {
-          signal,
-          basesPerSpan: end - start,
-        })
+        const ob = await bigbed.getFeatureStream(
+          region.refName,
+          region.start,
+          region.end,
+          {
+            signal,
+            basesPerSpan: region.end - region.start,
+          },
+        )
         ob.pipe(
           mergeAll(),
-          map(r => {
+          map(feat => {
             const data = parser.parseLine(
-              `${refName}\t${r.start}\t${r.end}\t${r.rest}`,
+              `${region.refName}\t${feat.start}\t${feat.end}\t${feat.rest}`,
               {
-                uniqueId: r.uniqueId!,
+                uniqueId: feat.uniqueId!,
               },
             )
 
-            if (r.uniqueId === undefined) {
+            if (feat.uniqueId === undefined) {
               throw new Error('invalid bbi feature')
             }
             const {
@@ -94,23 +98,15 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
               ...rest
             } = data
 
-            const f = {
-              ...rest,
-              uniqueId,
-              type,
-              start: r.start,
-              end: r.end,
-              refName,
-            }
             const subfeatures = blockCount
               ? makeBlocks({
                   chromStarts,
                   blockStarts,
                   blockCount,
                   blockSizes,
-                  start,
                   uniqueId,
-                  refName,
+                  refName: region.refName,
+                  start: feat.start,
                 })
               : []
 
@@ -119,10 +115,14 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
             // including thickStart and blockCount but no strand
             return new SimpleFeature({
               id: `${this.id}-${uniqueId}`,
-              // @ts-expect-error
-              data: isUCSC(f)
+              data: isUCSC(data)
                 ? ucscProcessedTranscript({
-                    ...f,
+                    ...rest,
+                    uniqueId,
+                    type,
+                    start: feat.start,
+                    end: feat.end,
+                    refName: region.refName,
                     chromStarts,
                     blockCount,
                     blockSizes,
@@ -130,7 +130,15 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
                     thickEnd,
                     subfeatures,
                   })
-                : { ...f, subfeatures },
+                : {
+                    ...rest,
+                    uniqueId,
+                    type,
+                    start: feat.start,
+                    end: feat.end,
+                    refName: region.refName,
+                    subfeatures,
+                  },
             })
           }),
         ).subscribe(observer)

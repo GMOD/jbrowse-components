@@ -7,18 +7,6 @@ interface MinimalFeature {
   end: number
   refName: string
 }
-
-interface Feat extends MinimalFeature {
-  uniqueId: string
-  thickStart?: number
-  thickEnd?: number
-  strand?: number
-  chromStarts?: number[]
-  blockCount?: number
-  blockSizes?: number[]
-  blockStarts?: number[]
-  subfeatures?: Feat[]
-}
 interface TranscriptFeat {
   thickStart: number
   thickEnd: number
@@ -186,10 +174,8 @@ export function makeBlocks({
 }) {
   const subfeatures = []
   const starts = chromStarts || blockStarts || []
-  const blocksOffset = start
-
-  for (let b = 0; b < blockCount; b += 1) {
-    const bmin = (starts[b] || 0) + blocksOffset
+  for (let b = 0; b < blockCount; b++) {
+    const bmin = (starts[b] || 0) + start
     const bmax = bmin + (blockSizes?.[b] || 0)
     subfeatures.push({
       uniqueId: `${uniqueId}-${b}`,
