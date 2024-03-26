@@ -1,27 +1,29 @@
-import { isURL, createRemoteStream } from './types/common'
 import fs from 'fs'
-import path from 'path'
+const { readFile, writeFile } = fs.promises
 
-export async function getLocalOrRemoteStream(uri: string, out: string) {
-  let stream
-  let totalBytes = 0
-  if (isURL(uri)) {
-    const result = await createRemoteStream(uri)
-    totalBytes = +(result.headers.get('Content-Length') || 0)
-    stream = result.body
-  } else {
-    const filename = path.isAbsolute(uri) ? uri : path.join(out, uri)
-    totalBytes = fs.statSync(filename).size
-    stream = fs.createReadStream(filename)
-  }
-  return { totalBytes, stream }
+export async function writeJsonFile(location: string, contents: unknown) {
+  return writeFile(location, JSON.stringify(contents, null, 2))
 }
 
-export function decodeURIComponentNoThrow(uri: string) {
+export async function readJsonFile<T>(location: string): Promise<T> {
+  let contents
   try {
-    return decodeURIComponent(uri)
-  } catch (e) {
-    // avoid throwing exception on a failure to decode URI component
-    return uri
+    contents = await readFile(location, { encoding: 'utf8' })
+  } catch (error) {
+    console.error(
+      `Make sure the file "${location}" exists or use --out to point to a directory with a config.json`,
+      'Run `jbrowse add-assembly` to create a config file',
+    )
+    throw error
   }
+  try {
+    return JSON.parse(contents)
+  } catch (error) {
+    console.error(`Make sure "${location}" is a valid JSON file`)
+    throw error
+  }
+}
+
+export function isUrl(loc?: string) {
+  return loc?.match(/^https?:\/\//)
 }
