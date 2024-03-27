@@ -997,35 +997,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
       return { slide }
     })
     .actions(self => {
-      let cancelLastAnimation = () => {}
-
       /**
        * #action
-       * perform animated zoom
+       * perform zoom
        */
       function zoom(targetBpPerPx: number) {
-        self.zoomTo(self.bpPerPx)
-        if (
-          // already zoomed all the way in
-          (targetBpPerPx < self.bpPerPx && self.bpPerPx === self.minBpPerPx) ||
-          // already zoomed all the way out
-          (targetBpPerPx > self.bpPerPx && self.bpPerPx === self.maxBpPerPx)
-        ) {
-          return
-        }
-        const factor = self.bpPerPx / targetBpPerPx
-        const [animate, cancelAnimation] = springAnimate(
-          1,
-          factor,
-          self.setScaleFactor,
-          () => {
-            self.zoomTo(targetBpPerPx)
-            self.setScaleFactor(1)
-          },
-        )
-        cancelLastAnimation()
-        cancelLastAnimation = cancelAnimation
-        animate()
+        self.zoomTo(targetBpPerPx)
       }
 
       return { zoom }
