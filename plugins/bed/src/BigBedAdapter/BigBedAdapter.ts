@@ -58,6 +58,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
 
   public getFeatures(region: Region, opts: BaseOptions = {}) {
     const { signal } = opts
+    const scoreColumn = this.getConf('scoreColumn')
     return ObservableCreate<Feature>(async observer => {
       try {
         const { parser, bigbed } = await this.configure(opts)
@@ -95,6 +96,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
               thickStart,
               thickEnd,
               chrom,
+              score,
               ...rest
             } = data
 
@@ -123,6 +125,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
                     start: feat.start,
                     end: feat.end,
                     refName: region.refName,
+                    score: scoreColumn ? +data[scoreColumn] : score,
                     chromStarts,
                     blockCount,
                     blockSizes,
@@ -135,6 +138,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
                     uniqueId,
                     type,
                     start: feat.start,
+                    score: scoreColumn ? +data[scoreColumn] : score,
                     end: feat.end,
                     refName: region.refName,
                     subfeatures,

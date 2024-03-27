@@ -15,6 +15,15 @@ const BigBedAdapter = ConfigurationSchema(
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/my.bb', locationType: 'UriLocation' },
     },
+
+    /**
+     * #slot
+     */
+    scoreColumn: {
+      type: 'string',
+      description: 'The column to use as a "score" attribute',
+      defaultValue: '',
+    },
   },
   { explicitlyTyped: true },
 )
