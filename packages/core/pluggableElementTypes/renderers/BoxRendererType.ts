@@ -226,7 +226,7 @@ export default class BoxRendererType extends FeatureRendererType {
       this.createLayoutInWorker(props)
     const result = await super.render({ ...props, layout })
 
-    const rects = [...layout.getRectangles?.()]
+    const rects = [...layout.getRectangles?.()] || []
 
     const blockHeight = rects
       ? max(
