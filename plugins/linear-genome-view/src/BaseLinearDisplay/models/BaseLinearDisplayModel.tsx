@@ -103,6 +103,22 @@ function stateModelFactory() {
     .views(self => ({
       /**
        * #getter
+       * array of the current block heights rendered
+       */
+      get currentBlockHeights() {
+        try {
+          const { blockDefinitions, blockState } = self
+          return blockDefinitions.map(block => {
+            const state = blockState.get(block.key)
+            return state?.blockHeight ? state.blockHeight + 100 : 100
+          })
+        } catch (e) {
+          return [undefined]
+        }
+      },
+
+      /**
+       * #getter
        * how many milliseconds to wait for the display to
        * "settle" before re-rendering a block
        */

@@ -53,6 +53,18 @@ export default class LinearGenomeViewPlugin extends Plugin {
         'hidden',
       ]),
     },
+    /**
+     * #slot configuration.LinearGenomeViewPlugin.adjustTrackLayoutHeight
+     */
+    adjustTrackLayoutHeight: {
+      type: 'string',
+      defaultValue: 'static',
+      model: types.enumeration('adjustTrackLayoutHeightOptions', [
+        'static',
+        'dynamic',
+        'bound',
+      ]),
+    },
   })
 
   install(pluginManager: PluginManager) {

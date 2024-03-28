@@ -1,5 +1,9 @@
+import { addDisposer, types } from 'mobx-state-tree'
 import { getConf } from '@jbrowse/core/configuration'
-import { types } from 'mobx-state-tree'
+import { getContainingView, getSession, max, min } from '@jbrowse/core/util'
+
+import { LinearGenomeViewModel } from '../../LinearGenomeView'
+import { autorun } from 'mobx'
 
 const minDisplayHeight = 20
 
@@ -28,12 +32,55 @@ export default function TrackHeightMixin() {
       scrollTop: 0,
     }))
     .views(self => ({
+      /**
+       * #getter
+       * returns the value of the track height setting from the view model
+       */
+      get adjustTrackLayoutHeightSetting() {
+        const { adjustTrackLayoutHeightSetting } = getContainingView(
+          self,
+        ) as LinearGenomeViewModel
+
+        return adjustTrackLayoutHeightSetting
+      },
+      /**
+       * #getter
+       * the bound height between the rendered blocks and the configured height
+       */
+      get boundLayoutBlockHeight() {
+        // @ts-expect-error
+        const confHeight = getConf(self, 'height') as number
+        // @ts-expect-error
+        return min(self.currentBlockHeights, confHeight)
+      },
+      /**
+       * #getter
+       * the max height between the rendered blocks and the configured height
+       */
+      get maxLayoutBlockHeight() {
+        // @ts-expect-error
+        const confHeight = getConf(self, 'height') as number
+        // @ts-expect-error
+        return max(self.currentBlockHeights, confHeight)
+      },
+      /**
+       * #getter
+       * returns the height of the track as a combination of the config and the settings
+       */
       get height() {
         // @ts-expect-error
         return self.heightPreConfig ?? (getConf(self, 'height') as number)
       },
     }))
     .actions(self => ({
+      setViewTrackLayoutHeightSetting(setting: 'static' | 'dynamic' | 'bound') {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        getSession(self).notify(
+          'LGV track height setting has changed to Static to use your manually set height.',
+          'info',
+        )
+        view.setAdjustTrackLayoutHeight(setting)
+      },
       /**
        * #action
        */
@@ -51,9 +98,32 @@ export default function TrackHeightMixin() {
        * #action
        */
       resizeHeight(distance: number) {
+        // if the user resizes their height, we want the setting to turn off and maintain their set height
+        if (self.adjustTrackLayoutHeightSetting !== 'static') {
+          this.setViewTrackLayoutHeightSetting('static')
+        }
         const oldHeight = self.height
         const newHeight = this.setHeight(self.height + distance)
         return newHeight - oldHeight
+      },
+    }))
+    .actions(self => ({
+      afterAttach() {
+        addDisposer(
+          self,
+          autorun(() => {
+            switch (self.adjustTrackLayoutHeightSetting) {
+              case 'bound':
+                self.setHeight(self.boundLayoutBlockHeight)
+                break
+              case 'dynamic':
+                self.setHeight(self.maxLayoutBlockHeight)
+                break
+              default:
+                break
+            }
+          }),
+        )
       },
     }))
 }
