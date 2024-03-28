@@ -185,6 +185,7 @@ export default class AddConnection extends JBrowseCommand {
       let response
       try {
         if (check) {
+          // @ts-expect-error
           response = await fetch(locationUrl, { method: 'HEAD' })
         }
         if (!response || response.ok) {

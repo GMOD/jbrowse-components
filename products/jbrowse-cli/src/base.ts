@@ -192,6 +192,7 @@ export default abstract class JBrowseCommand extends Command {
     }
     if (locationUrl) {
       if (check) {
+        // @ts-expect-error
         const response = await fetch(locationUrl, { method: 'HEAD' })
         if (!response.ok) {
           throw new Error(`${locationUrl} result ${response.statusText}`)
