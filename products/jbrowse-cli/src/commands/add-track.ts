@@ -459,7 +459,8 @@ export default class AddTrack extends JBrowseCommand {
       /\.vcf$/i.test(location) ||
       /\.gtf?$/i.test(location) ||
       /\.gff3?$/i.test(location) ||
-      /\.chain(\.gz)?$/i.test(location)
+      /\.chain(\.gz)?$/i.test(location) ||
+      /\.hic$/i.test(location)
     ) {
       return {
         file: location,
