@@ -226,11 +226,11 @@ export default class BoxRendererType extends FeatureRendererType {
       this.createLayoutInWorker(props)
     const result = await super.render({ ...props, layout })
 
-    const rects = [...layout.getRectangles?.()] || []
+    const rects = layout?.getRectangles?.() || undefined
 
     const blockHeight = rects
       ? max(
-          rects
+          [...rects]
             .filter(([key]) => [...result.features.keys()].includes(key))
             .flatMap(rect => rect[1][3]), // only interested in the 'bottom' value
           0,
