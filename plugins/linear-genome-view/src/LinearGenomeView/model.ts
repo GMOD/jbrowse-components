@@ -246,7 +246,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
          */
         adjustTrackLayoutHeight: types.optional(
           types.string,
-          () => localStorageGetItem('lgv-adjustTrackLayoutHeight') || 'off',
+          () => localStorageGetItem('lgv-adjustTrackLayoutHeight') || 'static',
         ),
 
         /**
@@ -831,7 +831,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setAdjustTrackLayoutHeight(setting: 'on' | 'off' | 'first_render') {
+      setAdjustTrackLayoutHeight(setting: 'static' | 'dynamic' | 'bound') {
         localStorage.setItem('lgv-adjustTrackLayoutHeight', setting)
         self.adjustTrackLayoutHeight = setting
       },
@@ -1234,22 +1234,22 @@ export function stateModelFactory(pluginManager: PluginManager) {
             label: 'Track height',
             subMenu: [
               {
-                label: 'Use manually resized height, or default (from config)',
+                label: 'Static (manually resized, or configured height)',
                 type: 'radio',
-                checked: self.adjustTrackLayoutHeightSetting === 'off',
-                onClick: () => self.setAdjustTrackLayoutHeight('off'),
+                checked: self.adjustTrackLayoutHeightSetting === 'static',
+                onClick: () => self.setAdjustTrackLayoutHeight('static'),
               },
               {
-                label: 'Auto-adjust to show all features on track',
+                label: 'Dynamic (auto-adjust to show all features)',
                 type: 'radio',
-                checked: self.adjustTrackLayoutHeightSetting === 'on',
-                onClick: () => self.setAdjustTrackLayoutHeight('on'),
+                checked: self.adjustTrackLayoutHeightSetting === 'dynamic',
+                onClick: () => self.setAdjustTrackLayoutHeight('dynamic'),
               },
               {
-                label: 'Auto-adjust to show height of initial features',
+                label: 'Bound (auto-adjust up to configured height)',
                 type: 'radio',
-                checked: self.adjustTrackLayoutHeightSetting === 'first_render',
-                onClick: () => self.setAdjustTrackLayoutHeight('first_render'),
+                checked: self.adjustTrackLayoutHeightSetting === 'bound',
+                onClick: () => self.setAdjustTrackLayoutHeight('bound'),
               },
             ],
           },

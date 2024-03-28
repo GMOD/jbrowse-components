@@ -350,11 +350,11 @@ function stateModelFactory(
 
             const setting = PileupDisplay.adjustTrackLayoutHeightSetting
 
-            if (setting === 'on' || setting === 'first_render') {
+            if (setting === 'dynamic' || setting === 'bound') {
               self.setHeight(PileupDisplay.height + SNPCoverageDisplay.height)
             }
 
-            if (setting === 'off') {
+            if (setting === 'static') {
               self.PileupDisplay.setHeight(
                 self.height - self.SNPCoverageDisplay.height,
               )

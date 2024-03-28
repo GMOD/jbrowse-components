@@ -103,26 +103,18 @@ function stateModelFactory() {
     .views(self => ({
       /**
        * #getter
-       * array of all block heights
+       * array of the current block heights rendered
        */
-      get layoutBlockHeights() {
+      get currentBlockHeights() {
         try {
           const { blockDefinitions, blockState } = self
           return blockDefinitions.map(block => {
             const state = blockState.get(block.key)
-            return state?.layout?.getTotalHeight() + 100
+            return state?.blockHeight ? state.blockHeight + 100 : 100
           })
         } catch (e) {
           return [undefined]
         }
-      },
-
-      /**
-       * #getter
-       * returns true if all blocks are defined
-       */
-      get allLayoutBlocksRendered() {
-        return this.layoutBlockHeights.every(b => b !== undefined)
       },
 
       /**

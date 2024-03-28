@@ -58,11 +58,11 @@ export default class LinearGenomeViewPlugin extends Plugin {
      */
     adjustTrackLayoutHeight: {
       type: 'string',
-      defaultValue: 'off',
+      defaultValue: 'static',
       model: types.enumeration('adjustTrackLayoutHeightOptions', [
-        'off',
-        'on',
-        'first_render',
+        'static',
+        'dynamic',
+        'bound',
       ]),
     },
   })

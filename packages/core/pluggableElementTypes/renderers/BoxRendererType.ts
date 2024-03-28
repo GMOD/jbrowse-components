@@ -15,7 +15,7 @@ import FeatureRendererType, {
   ResultsSerialized as FeatureResultsSerialized,
   ResultsDeserialized as FeatureResultsDeserialized,
 } from './FeatureRendererType'
-import { getLayoutId, Region, Feature } from '../../util'
+import { getLayoutId, Region, Feature, max } from '../../util'
 import { readConfObject, AnyConfigurationModel } from '../../configuration'
 import SerializableFilterChain from './util/serializableFilterChain'
 import RpcManager from '../../rpc/RpcManager'
@@ -102,6 +102,7 @@ export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
 
 export interface RenderResults extends FeatureRenderResults {
   layout: BaseLayout<Feature>
+  blockHeight: number
 }
 
 export interface ResultsSerialized extends FeatureResultsSerialized {
@@ -224,6 +225,14 @@ export default class BoxRendererType extends FeatureRendererType {
       (props.layout as undefined | BaseLayout<unknown>) ||
       this.createLayoutInWorker(props)
     const result = await super.render({ ...props, layout })
-    return { ...result, layout }
+
+    const blockHeight = max(
+      [...layout.getRectangles()]
+        .filter(([key]) => [...result.features.keys()].includes(key))
+        .flatMap(rect => rect[1][3]), // only interested in the 'bottom' value
+      0,
+    )
+
+    return { ...result, layout, blockHeight }
   }
 }
