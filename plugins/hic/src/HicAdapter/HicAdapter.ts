@@ -36,21 +36,23 @@ interface HicOptions extends BaseOptions {
   bpPerPx?: number
 }
 
-// wraps generic-filehandle so the read function only takes a position and length
-// in some ways, generic-filehandle wishes it was just this but it has
+// wraps generic-filehandle so the read function only takes a position and
+// length in some ways, generic-filehandle wishes it was just this but it has
 // to adapt to the node.js fs promises API
 class GenericFilehandleWrapper {
   constructor(private filehandle: GenericFilehandle) {}
 
   async read(position: number, length: number) {
-    const { buffer: b, bytesRead } = await this.filehandle.read(
-      Buffer.allocUnsafe(length),
+    const { buffer } = await this.filehandle.read(
+      Buffer.alloc(length),
       0,
       length,
       position,
     )
-    // xref https://stackoverflow.com/a/31394257/2129219
-    return b.buffer.slice(b.byteOffset, b.byteOffset + bytesRead)
+    return buffer.buffer.slice(
+      buffer.byteOffset,
+      buffer.byteOffset + buffer.byteLength,
+    )
   }
 }
 export function openFilehandleWrapper(

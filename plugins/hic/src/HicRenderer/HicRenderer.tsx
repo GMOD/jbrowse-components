@@ -81,8 +81,8 @@ export default class HicRenderer extends ServerSideRendererType {
 
     const w = res / (bpPerPx * Math.sqrt(2))
     const baseColor = colord(readConfObject(config, 'baseColor'))
+    const offset = region.start
     if (features.length) {
-      const offset = features[0].bin1
       let maxScore = 0
       let minBin = 0
       let maxBin = 0
