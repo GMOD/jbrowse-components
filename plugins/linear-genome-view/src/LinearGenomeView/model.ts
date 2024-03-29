@@ -1234,7 +1234,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             label: 'Track height',
             subMenu: [
               {
-                label: 'Static (manually resized, or configured height)',
+                label: 'Static (resized, or configured height)',
                 type: 'radio',
                 checked: self.adjustTrackLayoutHeightSetting === 'static',
                 onClick: () => self.setAdjustTrackLayoutHeight('static'),

@@ -51,7 +51,7 @@ export default function TrackHeightMixin() {
         // @ts-expect-error
         const confHeight = getConf(self, 'height') as number
         // @ts-expect-error
-        return min(self.currentBlockHeights, confHeight)
+        return min(self.currentLayoutBlockHeights, confHeight)
       },
       /**
        * #getter
@@ -61,7 +61,7 @@ export default function TrackHeightMixin() {
         // @ts-expect-error
         const confHeight = getConf(self, 'height') as number
         // @ts-expect-error
-        return max(self.currentBlockHeights, confHeight)
+        return max(self.currentLayoutBlockHeights, confHeight)
       },
       /**
        * #getter
@@ -75,11 +75,13 @@ export default function TrackHeightMixin() {
     .actions(self => ({
       setViewTrackLayoutHeightSetting(setting: 'static' | 'dynamic' | 'bound') {
         const view = getContainingView(self) as LinearGenomeViewModel
+        view.setAdjustTrackLayoutHeight(setting)
+      },
+      notifyStaticSettingChange() {
         getSession(self).notify(
           'LGV track height setting has changed to Static to use your manually set height.',
           'info',
         )
-        view.setAdjustTrackLayoutHeight(setting)
       },
       /**
        * #action
@@ -101,6 +103,7 @@ export default function TrackHeightMixin() {
         // if the user resizes their height, we want the setting to turn off and maintain their set height
         if (self.adjustTrackLayoutHeightSetting !== 'static') {
           this.setViewTrackLayoutHeightSetting('static')
+          this.notifyStaticSettingChange()
         }
         const oldHeight = self.height
         const newHeight = this.setHeight(self.height + distance)
@@ -114,7 +117,10 @@ export default function TrackHeightMixin() {
           autorun(() => {
             switch (self.adjustTrackLayoutHeightSetting) {
               case 'bound':
-                self.setHeight(self.boundLayoutBlockHeight)
+                // @ts-expect-error
+                if (self.allLayoutBlocksRendered) {
+                  self.setHeight(self.boundLayoutBlockHeight)
+                }
                 break
               case 'dynamic':
                 self.setHeight(self.maxLayoutBlockHeight)
