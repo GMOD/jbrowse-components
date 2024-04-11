@@ -14,18 +14,9 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { colord } from '@jbrowse/core/util/colord'
 import { firstValueFrom } from 'rxjs'
-import {
-  scaleLinear,
-  scaleLog,
-  scaleSequential,
-  scaleSequentialLog,
-} from 'd3-scale'
+import { scaleSequential, scaleSequentialLog } from 'd3-scale'
 import { interpolateViridis } from 'd3-scale-chromatic'
 import { interpolateRgbBasis } from 'd3-interpolate'
-
-export function toP(s = 0) {
-  return +(+s).toPrecision(6)
-}
 
 interface HicFeature {
   bin1: number
@@ -151,27 +142,6 @@ export default class HicRenderer extends ServerSideRendererType {
         }
       }
       ctx.restore()
-
-      // wip legend code
-      //const l2 = useLogScale
-      // ? scaleLog().domain([1, m])
-      // : scaleLinear().domain([0, m])
-      // const ticks = l2.ticks(100)
-      // const ticks2 = l2.ticks(4)
-      //       const w2 = 30
-      //       const h = ticks.length
-      //       const yoff = 200
-      //       const x = width - w2
-      //       for (let i = 0; i < ticks.length; i++) {
-      //         // @ts-expect-error
-      //         ctx.fillStyle = scale(ticks[i])
-      //         ctx.fillRect(x, i + yoff, w2, 1)
-      //       }
-      //       ctx.textAlign = 'right'
-      //       ctx.fillStyle = 'black'
-      //       for (const tick of ticks2) {
-      //         ctx.fillText(`${tick}`, x, l2.range([0, ticks.length])(tick) + yoff)
-      //       }
     }
   }
 

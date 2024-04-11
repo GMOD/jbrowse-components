@@ -36,8 +36,8 @@
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
-    "d3-interpolate": "^3.0.1",
-    "d3-scale-chromatic": "^3.0.0",
+    "d3-interpolate": "^2.0.1",
+    "d3-scale-chromatic": "^2.0.0",
     "hic-straw": "^2.0.3"
   },
   "peerDependencies": {
