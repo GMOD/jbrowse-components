@@ -120,10 +120,10 @@ export default function createViewState(opts: ViewStateOptions) {
           assembly.name,
         )
         if (highlight) {
-          highlight.forEach(async h => {
+          highlight.forEach(h => {
             if (h) {
               const parsedLocString = parseLocString(h, refName =>
-                isValidRefName(refName, assembly),
+                isValidRefName(refName, assembly.name),
               ) as Required<ParsedLocString>
 
               const location = {
