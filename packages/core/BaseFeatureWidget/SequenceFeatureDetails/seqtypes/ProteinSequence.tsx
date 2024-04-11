@@ -1,6 +1,6 @@
 import React from 'react'
-import { Feat, stitch } from '../util'
-import { proteinColor } from './util'
+import { Feat, stitch } from '../../util'
+import { proteinColor } from '../util'
 
 export default function ProteinSequence({
   cds,

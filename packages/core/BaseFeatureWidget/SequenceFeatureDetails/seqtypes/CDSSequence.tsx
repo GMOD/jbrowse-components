@@ -1,6 +1,6 @@
 import React from 'react'
-import { cdsColor } from './util'
-import { Feat, stitch } from '../util'
+import { cdsColor } from '../util'
+import { Feat, stitch } from '../../util'
 
 export default function CDSSequence({
   cds,

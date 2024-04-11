@@ -19,11 +19,12 @@ import CascadingMenuButton from '../../ui/CascadingMenuButton'
 
 // icons
 import MoreVert from '@mui/icons-material/MoreVert'
+import AdvancedSequenceDialog from './dialogs/AdvancedSequenceDialog'
 
 // lazies
 const SequencePanel = lazy(() => import('./SequencePanel'))
-const SettingsDialog = lazy(() => import('./SettingsDialog'))
-const HelpDialog = lazy(() => import('./HelpDialog'))
+const SettingsDialog = lazy(() => import('./dialogs/SettingsDialog'))
+const HelpDialog = lazy(() => import('./dialogs/HelpDialog'))
 
 const useStyles = makeStyles()({
   formControl: {
@@ -201,7 +202,9 @@ export default function SequenceFeatureDetails({
       ) : null}
       {advancedDialogOpen ? (
         <Suspense fallback={null}>
-          <HelpDialog handleClose={() => setHelpDialogOpen(false)} />
+          <AdvancedSequenceDialog
+            handleClose={() => setHelpDialogOpen(false)}
+          />
         </Suspense>
       ) : null}
     </div>

@@ -9,10 +9,10 @@ import {
   dedupe,
   revlist,
 } from '../util'
-import CDNASequence from './CDNASequence'
-import ProteinSequence from './ProteinSequence'
-import GenomicSequence from './GenomicSequence'
-import CDSSequence from './CDSSequence'
+import CDNASequence from './seqtypes/CDNASequence'
+import ProteinSequence from './seqtypes/ProteinSequence'
+import GenomicSequence from './seqtypes/GenomicSequence'
+import CDSSequence from './seqtypes/CDSSequence'
 
 interface SeqPanelProps {
   sequence: SeqState

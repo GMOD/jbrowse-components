@@ -1,6 +1,6 @@
 import React from 'react'
-import { Feat } from '../util'
-import { cdsColor, intronColor, updownstreamColor, utrColor } from './util'
+import { Feat } from '../../util'
+import { cdsColor, intronColor, updownstreamColor, utrColor } from '../util'
 
 export default function CDNASequence({
   utr,
