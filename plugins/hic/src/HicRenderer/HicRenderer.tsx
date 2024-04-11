@@ -73,16 +73,12 @@ export default class HicRenderer extends ServerSideRendererType {
     const res = await (dataAdapter as HicDataAdapter).getResolution(
       bpPerPx / resolution,
     )
-    function horizontallyFlip() {
-      ctx.scale(-1, 1)
-      const width = (region.end - region.start) / bpPerPx
-      ctx.translate(-width, 0)
-    }
 
+    const width = (region.end - region.start) / bpPerPx
     const w = res / (bpPerPx * Math.sqrt(2))
     const baseColor = colord(readConfObject(config, 'baseColor'))
-    const offset = region.start
     if (features.length) {
+      const offset = features[0].bin1
       let maxScore = 0
       let minBin = 0
       let maxBin = 0
@@ -95,7 +91,8 @@ export default class HicRenderer extends ServerSideRendererType {
       await abortBreakPoint(signal)
 
       if (region.reversed === true) {
-        horizontallyFlip()
+        ctx.scale(-1, 1)
+        ctx.translate(-width, 0)
       }
       ctx.rotate(-Math.PI / 4)
       let start = Date.now()
