@@ -2,40 +2,38 @@ import React, { lazy, useRef, useState, Suspense } from 'react'
 import {
   Button,
   FormControl,
-  IconButton,
   MenuItem,
   Select,
   Typography,
-  Tooltip,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import copy from 'copy-to-clipboard'
 
 // locals
 import { useLocalStorage } from '../../util'
+import { useFeatureSequence } from './hooks'
 import { BaseProps } from './../types'
 import { ParentFeat } from '../util'
 import { LoadingEllipses } from '../../ui'
+import CascadingMenuButton from '../../ui/CascadingMenuButton'
 
 // icons
-import SettingsIcon from '@mui/icons-material/Settings'
-import { useFeatureSequence } from './hooks'
+import MoreVert from '@mui/icons-material/MoreVert'
 
 // lazies
-const SettingsDialog = lazy(() => import('./SequenceFeatureSettingsDialog'))
 const SequencePanel = lazy(() => import('./SequencePanel'))
+const SettingsDialog = lazy(() => import('./SettingsDialog'))
+const HelpDialog = lazy(() => import('./HelpDialog'))
 
-const useStyles = makeStyles()(theme => ({
-  button: {
-    margin: theme.spacing(1),
-  },
+const useStyles = makeStyles()({
   formControl: {
     margin: 0,
+    marginLeft: 8,
   },
   container2: {
-    marginTop: theme.spacing(1),
+    display: 'inline',
   },
-}))
+})
 
 // set the key on this component to feature.id to clear state after new feature
 // is selected
@@ -48,8 +46,9 @@ export default function SequenceFeatureDetails({
   const seqPanelRef = useRef<HTMLDivElement>(null)
   const [intronBp, setIntronBp] = useLocalStorage('intronBp', 10)
   const [upDownBp, setUpDownBp] = useLocalStorage('upDownBp', 500)
-  const [copied, setCopied] = useState(false)
-  const [copiedHtml, setCopiedHtml] = useState(false)
+  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false)
+  const [advancedDialogOpen, setAdvancedDialogOpen] = useState(false)
+  const [helpDialogOpen, setHelpDialogOpen] = useState(false)
   const [force, setForce] = useState(false)
   const hasCDS = feature.subfeatures?.some(sub => sub.type === 'CDS')
   const hasExon = feature.subfeatures?.some(sub => sub.type === 'exon')
@@ -105,46 +104,44 @@ export default function SequenceFeatureDetails({
       </FormControl>
 
       <FormControl className={classes.formControl}>
-        <Button
-          className={classes.button}
-          variant="contained"
-          onClick={() => {
-            const ref = seqPanelRef.current
-            if (ref) {
-              copy(ref.textContent || '', { format: 'text/plain' })
-              setCopied(true)
-              setTimeout(() => setCopied(false), 1000)
-            }
-          }}
+        <CascadingMenuButton
+          menuItems={[
+            {
+              label: 'Copy plaintext',
+              onClick: () => {
+                const ref = seqPanelRef.current
+                if (ref) {
+                  copy(ref.textContent || '', { format: 'text/plain' })
+                }
+              },
+            },
+            {
+              label: 'Copy HTML',
+              onClick: () => {
+                const ref = seqPanelRef.current
+                if (ref) {
+                  copy(ref.innerHTML, { format: 'text/html' })
+                }
+              },
+            },
+            {
+              label: 'Advanced view',
+              onClick: () => setAdvancedDialogOpen(true),
+            },
+            {
+              label: 'Settings',
+              onClick: () => setSettingsDialogOpen(true),
+            },
+            {
+              label: 'Help',
+              onClick: () => setHelpDialogOpen(true),
+            },
+          ]}
         >
-          {copied ? 'Copied to clipboard!' : 'Copy plaintext'}
-        </Button>
+          <MoreVert />
+        </CascadingMenuButton>
       </FormControl>
-      <FormControl className={classes.formControl}>
-        <Tooltip title="The 'Copy HTML' function retains the colors from the sequence panel but cannot be pasted into some programs like notepad that only expect plain text">
-          <Button
-            className={classes.button}
-            variant="contained"
-            onClick={() => {
-              const ref = seqPanelRef.current
-              if (!ref) {
-                return
-              }
-              copy(ref.innerHTML, { format: 'text/html' })
-              setCopiedHtml(true)
-              setTimeout(() => setCopiedHtml(false), 1000)
-            }}
-          >
-            {copiedHtml ? 'Copied to clipboard!' : 'Copy HTML'}
-          </Button>
-        </Tooltip>
-      </FormControl>
-      <Settings
-        upDownBp={upDownBp}
-        intronBp={intronBp}
-        setIntronBp={setIntronBp}
-        setUpDownBp={setUpDownBp}
-      />
+
       <br />
       {feature.type === 'gene' ? (
         <Typography>
@@ -181,30 +178,6 @@ export default function SequenceFeatureDetails({
       ) : (
         <Typography>No sequence found</Typography>
       )}
-    </div>
-  )
-}
-
-function Settings({
-  intronBp,
-  upDownBp,
-  setIntronBp,
-  setUpDownBp,
-}: {
-  intronBp: number
-  upDownBp: number
-  setIntronBp: (arg: number) => void
-  setUpDownBp: (arg: number) => void
-}) {
-  const { classes } = useStyles()
-  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false)
-  return (
-    <>
-      <FormControl className={classes.formControl}>
-        <IconButton onClick={() => setSettingsDialogOpen(true)}>
-          <SettingsIcon />
-        </IconButton>
-      </FormControl>
       {settingsDialogOpen ? (
         <Suspense fallback={null}>
           <SettingsDialog
@@ -221,6 +194,16 @@ function Settings({
           />
         </Suspense>
       ) : null}
-    </>
+      {helpDialogOpen ? (
+        <Suspense fallback={null}>
+          <HelpDialog handleClose={() => setHelpDialogOpen(false)} />
+        </Suspense>
+      ) : null}
+      {advancedDialogOpen ? (
+        <Suspense fallback={null}>
+          <HelpDialog handleClose={() => setHelpDialogOpen(false)} />
+        </Suspense>
+      ) : null}
+    </div>
   )
 }
