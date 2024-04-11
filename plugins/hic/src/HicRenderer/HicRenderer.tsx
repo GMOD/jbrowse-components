@@ -14,6 +14,18 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { colord } from '@jbrowse/core/util/colord'
 import { firstValueFrom } from 'rxjs'
+import {
+  scaleLinear,
+  scaleLog,
+  scaleSequential,
+  scaleSequentialLog,
+} from 'd3-scale'
+import { interpolateViridis } from 'd3-scale-chromatic'
+import { interpolateRgbBasis } from 'd3-interpolate'
+
+export function toP(s = 0) {
+  return +(+s).toPrecision(6)
+}
 
 interface HicFeature {
   bin1: number
@@ -63,6 +75,8 @@ export default class HicRenderer extends ServerSideRendererType {
       resolution,
       sessionId,
       adapterConfig,
+      useLogScale,
+      colorScheme,
       regions,
     } = props
     const [region] = regions
@@ -90,6 +104,31 @@ export default class HicRenderer extends ServerSideRendererType {
         maxBin = Math.max(Math.max(bin1, bin2), maxBin)
       }
       await abortBreakPoint(signal)
+      const colorSchemes = {
+        juicebox: ['rgba(0,0,0,0)', 'red'],
+        fall: interpolateRgbBasis([
+          'rgb(255, 255, 255)',
+          'rgb(255, 255, 204)',
+          'rgb(255, 237, 160)',
+          'rgb(254, 217, 118)',
+          'rgb(254, 178, 76)',
+          'rgb(253, 141, 60)',
+          'rgb(252, 78, 42)',
+          'rgb(227, 26, 28)',
+          'rgb(189, 0, 38)',
+          'rgb(128, 0, 38)',
+          'rgb(0, 0, 0)',
+        ]),
+        viridis: interpolateViridis,
+      }
+      const m = useLogScale ? maxScore : maxScore / 20
+
+      // @ts-expect-error
+      const x1 = colorSchemes[colorScheme] || colorSchemes.juicebox
+      const scale = useLogScale
+        ? scaleSequentialLog(x1).domain([1, m])
+        : scaleSequential(x1).domain([0, m])
+      ctx.save()
 
       if (region.reversed === true) {
         ctx.scale(-1, 1)
@@ -102,6 +141,8 @@ export default class HicRenderer extends ServerSideRendererType {
           count: counts,
           maxScore,
           baseColor,
+          scale,
+          useLogScale,
         })
         ctx.fillRect((bin1 - offset) * w, (bin2 - offset) * w, w, w)
         if (+Date.now() - start > 400) {
@@ -109,6 +150,28 @@ export default class HicRenderer extends ServerSideRendererType {
           start = +Date.now()
         }
       }
+      ctx.restore()
+
+      // wip legend code
+      //const l2 = useLogScale
+      // ? scaleLog().domain([1, m])
+      // : scaleLinear().domain([0, m])
+      // const ticks = l2.ticks(100)
+      // const ticks2 = l2.ticks(4)
+      //       const w2 = 30
+      //       const h = ticks.length
+      //       const yoff = 200
+      //       const x = width - w2
+      //       for (let i = 0; i < ticks.length; i++) {
+      //         // @ts-expect-error
+      //         ctx.fillStyle = scale(ticks[i])
+      //         ctx.fillRect(x, i + yoff, w2, 1)
+      //       }
+      //       ctx.textAlign = 'right'
+      //       ctx.fillStyle = 'black'
+      //       for (const tick of ticks2) {
+      //         ctx.fillText(`${tick}`, x, l2.range([0, ticks.length])(tick) + yoff)
+      //       }
     }
   }
 
