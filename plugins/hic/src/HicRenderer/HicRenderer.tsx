@@ -13,6 +13,7 @@ import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { colord } from '@jbrowse/core/util/colord'
+import { firstValueFrom } from 'rxjs'
 
 interface HicFeature {
   bin1: number
@@ -148,10 +149,11 @@ export default class HicRenderer extends ServerSideRendererType {
       sessionId,
       adapterConfig,
     )
-    const features = await (dataAdapter as BaseFeatureDataAdapter)
-      .getFeatures(regions[0], args)
-      .pipe(toArray())
-      .toPromise()
+    const features = await firstValueFrom(
+      (dataAdapter as BaseFeatureDataAdapter)
+        .getFeatures(regions[0], args)
+        .pipe(toArray()),
+    )
     // cast to any to avoid return-type conflict, because the
     // types of features returned by our getFeatures are quite
     // different from the base interface
