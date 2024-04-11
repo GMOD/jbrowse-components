@@ -6,6 +6,7 @@ import {
   ParsedLocString,
   SessionWithWidgets,
   getSession,
+  notEmpty,
 } from '@jbrowse/core/util'
 import { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 
@@ -63,24 +64,28 @@ const OverviewHighlight = observer(function OverviewHighlight({
     return null
   }
 
-  const asm = assemblyManager.get(model.highlight?.assemblyName)
+  return model.highlight
+    ? model.highlight
+        .map(h => {
+          const asm = assemblyManager.get(h?.assemblyName)
 
-  const h = mapCoords({
-    ...model.highlight,
-    refName:
-      asm?.getCanonicalRefName(model.highlight.refName) ??
-      model.highlight.refName,
-  })
-
-  return h ? (
-    <div
-      className={classes.highlight}
-      style={{
-        width: h.width,
-        left: h.left,
-      }}
-    />
-  ) : null
+          return mapCoords({
+            ...h,
+            refName: asm?.getCanonicalRefName(h.refName) ?? h.refName,
+          })
+        })
+        .filter(notEmpty)
+        .map(({ left, width }, idx) => (
+          <div
+            key={`${left}_${width}_${idx}`}
+            className={classes.highlight}
+            style={{
+              width: width,
+              left: left,
+            }}
+          />
+        ))
+    : null
 })
 
 export default OverviewHighlight

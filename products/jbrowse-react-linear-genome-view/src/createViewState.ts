@@ -1,6 +1,10 @@
 import React from 'react'
 import { PluginConstructor } from '@jbrowse/core/Plugin'
-import { assembleLocString } from '@jbrowse/core/util'
+import {
+  ParsedLocString,
+  assembleLocString,
+  parseLocString,
+} from '@jbrowse/core/util'
 import { SnapshotIn, onPatch, IJsonPatch } from 'mobx-state-tree'
 import createModel, {
   createSessionModel,
@@ -29,6 +33,7 @@ interface ViewStateOptions {
   configuration?: Record<string, unknown>
   plugins?: PluginConstructor[]
   location?: string | Location
+  highlight?: string[]
   defaultSession?: SessionSnapshot
   disableAddTracks?: boolean
   onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
@@ -52,6 +57,7 @@ export default function createViewState(opts: ViewStateOptions) {
     aggregateTextSearchAdapters,
     plugins,
     location,
+    highlight,
     onChange,
     disableAddTracks = false,
     makeWorkerInstance,
@@ -106,11 +112,34 @@ export default function createViewState(opts: ViewStateOptions) {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       const { session } = stateTree
+      const { isValidRefName } = session.assemblyManager
+
       try {
         await session.view.navToLocString(
           typeof location === 'string' ? location : assembleLocString(location),
           assembly.name,
         )
+        if (highlight) {
+          highlight.forEach(async h => {
+            if (h) {
+              const parsedLocString = parseLocString(h, refName =>
+                isValidRefName(refName, assembly),
+              ) as Required<ParsedLocString>
+
+              const location = {
+                ...parsedLocString,
+                assemblyName: assembly,
+              }
+
+              if (
+                location?.start !== undefined &&
+                location?.end !== undefined
+              ) {
+                session.view.setHighlight(location)
+              }
+            }
+          })
+        }
       } catch (e) {
         session.notifyError(`${e}`, e)
       }
