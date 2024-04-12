@@ -61,7 +61,8 @@ async function getSourceMapFromUri(uri: string) {
     ''
   mapUri = new URL(mapUri, uri).href + uriQuery
 
-  const map = new SourceMapConsumer(await myfetchjson(mapUri))
+  const data = await myfetchjson(mapUri)
+  const map = new SourceMapConsumer(data)
   sourceMaps[uri] = map
   return map
 }
@@ -71,7 +72,7 @@ async function mapStackTrace(stack: string) {
   const mappedStack = []
 
   for (const line of stackLines) {
-    const match = new RegExp(/(.*)(http:\/\/.*):(\d+):(\d+)/).exec(line)
+    const match = new RegExp(/(.*)(https?:\/\/.*):(\d+):(\d+)/).exec(line)
     if (match === null) {
       mappedStack.push(line)
       continue
@@ -125,9 +126,15 @@ function Contents({ text, extra }: { text: string; extra?: unknown }) {
       '```',
       text,
       '```',
-      extra ? `supporting data: ${extra}` : '',
+      extra ? `supporting data: ${JSON.stringify(extra, null, 2)}` : '',
     ].join('\n') + '\n',
   )
+
+  const err2 = [
+    text,
+    extra ? `supporting data: ${JSON.stringify(extra, null, 2)}` : '',
+  ].join('\n')
+
   const email = 'jbrowse2@berkeley.edu'
   const githubLink = `https://github.com/GMOD/jbrowse-components/issues/new?labels=bug&title=JBrowse+issue&body=${err}`
   const emailLink = `mailto:${email}?subject=JBrowse%202%20error&body=${err}`
@@ -147,8 +154,7 @@ function Contents({ text, extra }: { text: string; extra?: unknown }) {
           maxHeight: 300,
         }}
       >
-        {text}
-        {extra ? `extra: ${extra}` : ''}
+        {err2}
       </pre>
     </>
   )
@@ -167,7 +173,7 @@ export default function ErrorMessageStackTraceDialog({
   const [secondaryError, setSecondaryError] = useState<unknown>()
   const [clicked, setClicked] = useState(false)
   const stackTracePreProcessed = `${typeof error === 'object' && error !== null && 'stack' in error ? error.stack : ''}`
-  const errorText = `${error}`
+  const errorText = error ? `${error}` : ''
   const stackTrace = stripMessage(stackTracePreProcessed, errorText)
 
   useEffect(() => {
@@ -194,7 +200,9 @@ export default function ErrorMessageStackTraceDialog({
     mappedStackTrace || 'No stack trace available',
     // @ts-expect-error add version info at bottom if we are in jbrowse-web
     window.JBrowseSession ? `JBrowse ${window.JBrowseSession.version}` : '',
-  ].join('\n')
+  ]
+    .filter(f => !!f)
+    .join('\n')
 
   return (
     <Dialog open onClose={onClose} title="Stack trace" maxWidth="xl">
