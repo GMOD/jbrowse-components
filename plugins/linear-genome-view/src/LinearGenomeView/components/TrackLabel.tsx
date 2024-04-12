@@ -70,24 +70,25 @@ const TrackLabel = observer(
             onClick: () => track.setMinimized(!minimized),
           },
           {
-            label: 'Move to top',
+            label: 'Move track to top',
             icon: KeyboardDoubleArrowUpIcon,
             onClick: () => view.moveTrackToTop(track.id),
           },
+
           {
-            label: 'Move to bottom',
-            icon: KeyboardDoubleArrowDownIcon,
-            onClick: () => view.moveTrackToBottom(track.id),
-          },
-          {
-            label: 'Move up',
+            label: 'Move track up',
             icon: KeyboardArrowUpIcon,
             onClick: () => view.moveTrackUp(track.id),
           },
           {
-            label: 'Move down',
+            label: 'Move track down',
             icon: KeyboardArrowDownIcon,
             onClick: () => view.moveTrackDown(track.id),
+          },
+          {
+            label: 'Move track to bottom',
+            icon: KeyboardDoubleArrowDownIcon,
+            onClick: () => view.moveTrackToBottom(track.id),
           },
         ],
       },

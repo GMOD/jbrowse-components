@@ -52,6 +52,7 @@ import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import PaletteIcon from '@mui/icons-material/Palette'
+import SearchIcon from '@mui/icons-material/Search'
 
 import MiniControls from './components/MiniControls'
 import Header from './components/Header'
@@ -1129,6 +1130,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             ? [
                 {
                   label: 'Sequence search',
+                  icon: SearchIcon,
                   onClick: () => {
                     getSession(self).queueDialog(handleClose => [
                       SequenceSearchDialog,

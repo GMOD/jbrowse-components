@@ -37,12 +37,17 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
       /**
        * #action
        */
-      moveViewUp(id: string) {
+      moveViewDown(id: string) {
         const idx = self.views.findIndex(v => v.id === id)
-
-        if (idx === -1) {
-          return
+        if (idx !== -1 && idx < self.views.length - 1) {
+          self.views.splice(idx, 2, self.views[idx + 1], self.views[idx])
         }
+      },
+      /**
+       * #action
+       */
+      moveViewUp(id: string) {
+        const idx = self.views.findIndex(view => view.id === id)
         if (idx > 0) {
           self.views.splice(idx - 1, 2, self.views[idx], self.views[idx - 1])
         }
@@ -50,16 +55,20 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
       /**
        * #action
        */
-      moveViewDown(id: string) {
-        const idx = self.views.findIndex(v => v.id === id)
-
-        if (idx === -1) {
-          return
-        }
-
-        if (idx < self.views.length - 1) {
-          self.views.splice(idx, 2, self.views[idx + 1], self.views[idx])
-        }
+      moveViewToTop(id: string) {
+        const idx = self.views.findIndex(view => view.id === id)
+        const view = getSnapshot(self.views[idx])
+        self.views.splice(idx, 1)
+        self.views.splice(0, 0, view)
+      },
+      /**
+       * #action
+       */
+      moveViewToBottom(id: string) {
+        const idx = self.views.findIndex(view => view.id === id)
+        const view = getSnapshot(self.views[idx])
+        self.views.splice(idx, 1)
+        self.views.splice(self.views.length, 0, view)
       },
 
       /**
