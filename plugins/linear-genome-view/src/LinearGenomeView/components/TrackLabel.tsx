@@ -102,7 +102,7 @@ const TrackLabel = observer(
         <IconButton
           onClick={() => view.hideTrack(trackId)}
           className={classes.iconButton}
-          title="close track"
+          title="close this track"
         >
           <CloseIcon fontSize="small" />
         </IconButton>

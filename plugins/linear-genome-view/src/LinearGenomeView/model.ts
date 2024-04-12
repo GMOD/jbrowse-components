@@ -808,9 +808,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
         if (newIndex === -1) {
           throw new Error(`Track ID ${targetId} not found`)
         }
-        const track = getSnapshot(self.tracks[oldIndex])
-        self.tracks.splice(oldIndex, 1)
-        self.tracks.splice(newIndex, 0, track)
+
+        const tracks = self.tracks.filter((_, idx) => idx !== oldIndex)
+        tracks.splice(newIndex, 0, self.tracks[oldIndex])
+        self.tracks = cast(tracks)
       },
 
       /**
