@@ -1633,9 +1633,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .preProcessSnapshot(snap => {
+      if (!snap) {
+        return snap
+      }
       const { highlight, ...rest } = snap
       return {
-        highlight: highlight ? [...highlight] : [],
+        highlight:
+          Array.isArray(highlight) || highlight === undefined
+            ? highlight
+            : [...highlight],
         ...rest,
       }
     })
