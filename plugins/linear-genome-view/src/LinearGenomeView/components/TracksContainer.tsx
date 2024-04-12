@@ -20,7 +20,6 @@ import HighlightGroup from './Highlight'
 const useStyles = makeStyles()({
   tracksContainer: {
     position: 'relative',
-    overflow: 'visible',
   },
 })
 
