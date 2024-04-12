@@ -128,14 +128,15 @@ function Contents({ text, extra }: { text: string; extra?: unknown }) {
       extra ? `supporting data: ${extra}` : '',
     ].join('\n') + '\n',
   )
+  const email = 'jbrowse2@berkeley.edu'
   const githubLink = `https://github.com/GMOD/jbrowse-components/issues/new?labels=bug&title=JBrowse+issue&body=${err}`
-  const emailLink = `mailto:jbrowse2dev@gmail.com?subject=JBrowse%202%20error&body=${err}`
+  const emailLink = `mailto:${email}?subject=JBrowse%202%20error&body=${err}`
 
   return (
     <>
       <Typography>
         Post a new issue at <Link2 href={githubLink}>GitHub</Link2> or send an
-        email to <Link2 href={emailLink}>jbrowse2dev@gmail.com</Link2>{' '}
+        email to <Link2 href={emailLink}>{email}</Link2>{' '}
       </Typography>
       <pre
         style={{
