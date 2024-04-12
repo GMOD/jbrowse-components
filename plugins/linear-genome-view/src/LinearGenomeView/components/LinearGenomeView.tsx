@@ -44,7 +44,13 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 const LinearGenomeView = observer(({ model }: { model: LGV }) => {
-  const { tracks, error, initialized, hasDisplayedRegions } = model
+  const {
+    pinnedTracks,
+    unpinnedTracks,
+    error,
+    initialized,
+    hasDisplayedRegions,
+  } = model
   const ref = useRef<HTMLDivElement>(null)
   const session = getSession(model)
   const { classes } = useStyles()
@@ -82,11 +88,6 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
       pinnedTracksTop += HEADER_OVERVIEW_HEIGHT
     }
   }
-
-  const [pinnedTracks, unpinnedTracks] = partition(
-    tracks,
-    track => track.pinned,
-  )
 
   return (
     <div
