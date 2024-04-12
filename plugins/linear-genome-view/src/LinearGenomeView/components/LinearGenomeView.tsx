@@ -40,7 +40,6 @@ const useStyles = makeStyles()(theme => ({
   },
   rel: {
     position: 'relative',
-    overflow: 'visible',
   },
   top: {
     zIndex: 1000,

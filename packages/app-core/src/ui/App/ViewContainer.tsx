@@ -16,10 +16,6 @@ const useStyles = makeStyles()(theme => ({
   viewContainer: {
     margin: theme.spacing(0.5),
     padding: `0 ${theme.spacing(1)} ${theme.spacing(1)}`,
-    overflow: 'visible',
-  },
-  viewContentsContainer: {
-    overflow: 'visible',
   },
   focusedView: {
     background: theme.palette.secondary.main,
@@ -75,7 +71,7 @@ const ViewContainer = observer(function ({
           onMinimize={() => view.setMinimized(!view.minimized)}
           className={backgroundColorClassName}
         />
-        <Paper elevation={0} className={classes.viewContentsContainer}>
+        <Paper elevation={0}>
           <ViewWrapper view={view} session={session} />
         </Paper>
       </Paper>
