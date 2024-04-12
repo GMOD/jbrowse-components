@@ -145,15 +145,13 @@ const HighlightGroup = observer(function HighlightGroup({
 }: {
   model: LGV
 }) {
-  if (!model.highlight) {
-    return null
-  }
-
-  return model.highlight
-    ? model.highlight.map(h => {
-        return <Highlight key={JSON.stringify(h)} model={model} highlight={h} />
-      })
-    : null
+  return model.highlight.map((highlight, idx) => (
+    <Highlight
+      key={JSON.stringify(highlight) + '-' + idx}
+      model={model}
+      highlight={highlight}
+    />
+  ))
 })
 
 export default HighlightGroup

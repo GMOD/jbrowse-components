@@ -1641,7 +1641,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         highlight:
           Array.isArray(highlight) || highlight === undefined
             ? highlight
-            : [...highlight],
+            : [highlight],
         ...rest,
       }
     })
