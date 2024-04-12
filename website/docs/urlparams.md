@@ -81,9 +81,9 @@ This will create a highlight over the specified region when combined with
 [&assembly=](#assembly) and [&loc=](#loc).
 
 Multiple highlight locations can be specified by delimiting locations with a
-semi-colon:
+space:
 
-`&highlight=chr1:6000-7000;chr1:7100-7200`
+`&highlight=chr1:6000-7000 chr1:7100-7200`
 
 ### &tracklist=
 
@@ -97,9 +97,9 @@ This opens the track selector by default. Default false
 
 Example
 
-`&nav=`
+`&nav=false`
 
-Turns of the navigation bar of the linear genome view
+Turns off the navigation bar of the linear genome view
 
 ### &tracks=
 

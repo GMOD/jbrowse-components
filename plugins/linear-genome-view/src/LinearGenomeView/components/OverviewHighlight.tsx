@@ -60,32 +60,26 @@ const OverviewHighlight = observer(function OverviewHighlight({
       : undefined
   }
 
-  if (!model.highlight) {
-    return null
-  }
-
   return model.highlight
-    ? model.highlight
-        .map(h => {
-          const asm = assemblyManager.get(h?.assemblyName)
+    .map(h => {
+      const asm = assemblyManager.get(h?.assemblyName)
 
-          return mapCoords({
-            ...h,
-            refName: asm?.getCanonicalRefName(h.refName) ?? h.refName,
-          })
-        })
-        .filter(notEmpty)
-        .map(({ left, width }, idx) => (
-          <div
-            key={`${left}_${width}_${idx}`}
-            className={classes.highlight}
-            style={{
-              width: width,
-              left: left,
-            }}
-          />
-        ))
-    : null
+      return mapCoords({
+        ...h,
+        refName: asm?.getCanonicalRefName(h.refName) ?? h.refName,
+      })
+    })
+    .filter(notEmpty)
+    .map(({ left, width }, idx) => (
+      <div
+        key={`${left}_${width}_${idx}`}
+        className={classes.highlight}
+        style={{
+          width: width,
+          left: left,
+        }}
+      />
+    ))
 })
 
 export default OverviewHighlight

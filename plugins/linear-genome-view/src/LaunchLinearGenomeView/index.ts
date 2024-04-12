@@ -76,7 +76,7 @@ export default (pluginManager: PluginManager) => {
                 location?.start !== undefined &&
                 location?.end !== undefined
               ) {
-                view.setHighlight(location)
+                view.addToHighlights(location)
               }
             }
           })

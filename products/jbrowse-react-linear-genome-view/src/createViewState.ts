@@ -135,7 +135,7 @@ export default function createViewState(opts: ViewStateOptions) {
                 location?.start !== undefined &&
                 location?.end !== undefined
               ) {
-                session.view.setHighlight(location)
+                session.view.addToHighlights(location)
               }
             }
           })

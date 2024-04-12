@@ -606,14 +606,20 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setHighlight(highlight: Required<ParsedLocString>) {
+      addToHighlights(highlight: Required<ParsedLocString>) {
         self.highlight?.push(highlight)
       },
       /**
        * #action
        */
+      setHighlight(highlight: Required<ParsedLocString>[] | undefined) {
+        self.highlight = cast(highlight)
+      },
+      /**
+       * #action
+       */
       removeHighlight(highlight: Required<ParsedLocString>) {
-        self.highlight.splice(self.highlight.indexOf(highlight), 1)
+        self.highlight.remove(highlight)
       },
       /**
        * #action
@@ -1626,6 +1632,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
         })
       },
     }))
+    .preProcessSnapshot(snap => {
+      const { highlight, ...rest } = snap
+      return {
+        highlight: highlight ? [...highlight] : [],
+        ...rest,
+      }
+    })
 }
 
 export type LinearGenomeViewStateModel = ReturnType<typeof stateModelFactory>

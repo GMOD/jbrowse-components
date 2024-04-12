@@ -79,10 +79,6 @@ const Highlight = observer(function Highlight({
     setOpen(false)
   }
 
-  if (!highlight) {
-    return null
-  }
-
   // coords
   const mapCoords = (r: Required<ParsedLocString>) => {
     const s = model.bpToPx({
@@ -154,8 +150,8 @@ const HighlightGroup = observer(function HighlightGroup({
   }
 
   return model.highlight
-    ? model.highlight.map((h, idx) => {
-        return <Highlight key={idx} model={model} highlight={h} />
+    ? model.highlight.map(h => {
+        return <Highlight key={JSON.stringify(h)} model={model} highlight={h} />
       })
     : null
 })
