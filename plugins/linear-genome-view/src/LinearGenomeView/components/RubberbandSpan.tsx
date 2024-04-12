@@ -15,7 +15,6 @@ const useStyles = makeStyles()(theme => {
       position: 'absolute',
       zIndex: 4,
       textAlign: 'center',
-      overflow: 'visible',
     },
     rubberbandControl: {
       cursor: 'crosshair',
