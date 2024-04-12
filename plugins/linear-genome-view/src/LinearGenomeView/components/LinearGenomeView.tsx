@@ -34,6 +34,7 @@ const useStyles = makeStyles()(theme => ({
 function NoTracksActive({ model }: { model: LinearGenomeViewModel }) {
   const { classes } = useStyles()
   const { hideNoTracksActive } = model
+  throw new Error('wow')
   return (
     <Paper className={classes.note}>
       {!hideNoTracksActive ? (
