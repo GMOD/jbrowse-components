@@ -1,13 +1,18 @@
 import { Suspense, lazy, useEffect, useRef } from 'react'
 
 import { LoadingEllipses, VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
-import { getSession, partition } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
+import Paper from '@mui/material/Paper'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 import TrackContainer from './TrackContainer'
 import TracksContainer from './TracksContainer'
-import { HEADER_BAR_HEIGHT, HEADER_OVERVIEW_HEIGHT, SCALE_BAR_HEIGHT } from '../consts'
+import {
+  HEADER_BAR_HEIGHT,
+  HEADER_OVERVIEW_HEIGHT,
+  SCALE_BAR_HEIGHT,
+} from '../consts'
 
 import type { LinearGenomeViewModel } from '..'
 
@@ -55,7 +60,7 @@ const LinearGenomeViewContainer = observer(function ({
 }: {
   model: LinearGenomeViewModel
 }) {
-  const { tracks } = model
+  const { pinnedTracks, tracks, unpinnedTracks } = model
   const { classes } = useStyles()
   const session = getSession(model)
   const ref = useRef<HTMLDivElement>(null)
@@ -85,11 +90,6 @@ const LinearGenomeViewContainer = observer(function ({
       pinnedTracksTop += HEADER_OVERVIEW_HEIGHT
     }
   }
-
-  const [pinnedTracks, unpinnedTracks] = partition(
-    tracks,
-    track => track.pinned,
-  )
 
   return (
     <div
