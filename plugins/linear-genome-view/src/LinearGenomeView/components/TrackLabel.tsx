@@ -61,7 +61,7 @@ const TrackLabel = observer(
     const trackName = getTrackName(trackConf, session)
     const items = [
       {
-        label: 'Options',
+        label: 'Track order',
         type: 'subMenu',
         subMenu: [
           {

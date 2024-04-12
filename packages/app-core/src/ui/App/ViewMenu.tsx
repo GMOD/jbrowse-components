@@ -65,7 +65,7 @@ const ViewMenu = observer(function ({
           ...(session.views.length > 1
             ? [
                 {
-                  label: 'Options',
+                  label: 'View order',
                   type: 'subMenu' as const,
                   subMenu: [
                     {
