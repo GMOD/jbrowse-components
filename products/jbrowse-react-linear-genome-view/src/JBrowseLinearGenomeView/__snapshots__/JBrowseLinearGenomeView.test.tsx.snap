@@ -7223,10 +7223,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   </div>
                 </div>
                 <div
-                  class="css-1hk9st0-overlay"
-                  style="height: 120px;"
-                />
-                <div
                   class="css-14zcv15-horizontalHandle-resizeHandle"
                   data-resizer="true"
                 />
