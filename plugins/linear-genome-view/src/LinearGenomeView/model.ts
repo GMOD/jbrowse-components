@@ -186,7 +186,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
-         * array of currently displayed tracks state model's
          */
         hideHeader: false,
 
@@ -754,6 +753,50 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      moveTrackDown(id: string) {
+        const idx = self.tracks.findIndex(v => v.id === id)
+        if (idx === -1) {
+          return
+        }
+
+        const track = getSnapshot(self.tracks[idx])
+        self.tracks.splice(idx, 1)
+        self.tracks.splice(idx + 1, 0, track)
+      },
+      /**
+       * #action
+       */
+      moveTrackUp(id: string) {
+        const idx = self.tracks.findIndex(track => track.id === id)
+        if (idx === -1) {
+          return
+        }
+
+        const track = getSnapshot(self.tracks[idx])
+        self.tracks.splice(idx, 1)
+        self.tracks.splice(idx - 1, 0, track)
+      },
+      /**
+       * #action
+       */
+      moveTrackToTop(id: string) {
+        const idx = self.tracks.findIndex(track => track.id === id)
+        const track = getSnapshot(self.tracks[idx])
+        self.tracks.splice(idx, 1)
+        self.tracks.splice(0, 0, track)
+      },
+      /**
+       * #action
+       */
+      moveTrackToBottom(id: string) {
+        const idx = self.tracks.findIndex(track => track.id === id)
+        const track = getSnapshot(self.tracks[idx])
+        self.tracks.splice(idx, 1)
+        self.tracks.splice(self.tracks.length, 0, track)
+      },
       /**
        * #action
        */
