@@ -23,7 +23,6 @@ const RubberbandSpan = lazy(() => import('./RubberbandSpan'))
 const useStyles = makeStyles()({
   tracksContainer: {
     position: 'relative',
-    overflow: 'visible',
   },
 })
 

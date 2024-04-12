@@ -80,7 +80,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
           style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
         >
           <div
-            class="css-12nbmo-rel"
+            class="css-1v4ghfe-rel"
           >
             <div
               class="css-1qdjf66-header"
@@ -429,7 +429,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
               </div>
             </div>
             <div
-              class="css-6g5kqy-tracksContainer"
+              class="css-1x918n3-tracksContainer"
               data-testid="tracksContainer"
             >
               <div

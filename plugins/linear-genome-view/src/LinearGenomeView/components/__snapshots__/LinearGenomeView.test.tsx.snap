@@ -3,7 +3,7 @@
 exports[`renders one track, one region 1`] = `
 <div>
   <div
-    class="css-12nbmo-rel"
+    class="css-1v4ghfe-rel"
   >
     <div
       class="css-1qdjf66-header"
@@ -347,7 +347,7 @@ exports[`renders one track, one region 1`] = `
       </div>
     </div>
     <div
-      class="css-6g5kqy-tracksContainer"
+      class="css-1x918n3-tracksContainer"
       data-testid="tracksContainer"
     >
       <div
@@ -631,7 +631,7 @@ exports[`renders one track, one region 1`] = `
 exports[`renders two tracks, two regions 1`] = `
 <div>
   <div
-    class="css-12nbmo-rel"
+    class="css-1v4ghfe-rel"
   >
     <div
       class="css-1qdjf66-header"
@@ -990,7 +990,7 @@ exports[`renders two tracks, two regions 1`] = `
       </div>
     </div>
     <div
-      class="css-6g5kqy-tracksContainer"
+      class="css-1x918n3-tracksContainer"
       data-testid="tracksContainer"
     >
       <div
