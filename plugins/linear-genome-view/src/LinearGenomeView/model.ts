@@ -283,6 +283,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
     .views(self => ({
       /**
        * #getter
+       */
+      get pinnedTracks() {
+        return self.tracks.filter(t => t.pinned)
+      },
+      /**
+       * #getter
+       */
+      get unpinnedTracks() {
+        return self.tracks.filter(t => !t.pinned)
+      },
+      /**
+       * #getter
        * this is the effective value of the track labels setting, incorporating
        * both the config and view state. use this instead of view.trackLabels
        */

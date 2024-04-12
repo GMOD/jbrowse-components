@@ -2,7 +2,7 @@ import React, { lazy, useEffect, useRef } from 'react'
 import { Button, Paper, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { LoadingEllipses, VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
-import { getSession, partition } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 // icons
@@ -72,7 +72,13 @@ function NoTracksActive({ model }: { model: LinearGenomeViewModel }) {
 }
 
 const LinearGenomeView = observer(({ model }: { model: LGV }) => {
-  const { tracks, error, initialized, hasDisplayedRegions } = model
+  const {
+    pinnedTracks,
+    unpinnedTracks,
+    error,
+    initialized,
+    hasDisplayedRegions,
+  } = model
   const ref = useRef<HTMLDivElement>(null)
   const session = getSession(model)
   const { classes } = useStyles()
@@ -111,11 +117,6 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
     }
   }
 
-  const [pinnedTracks, unpinnedTracks] = partition(
-    tracks,
-    track => track.pinned,
-  )
-
   return (
     <div
       className={classes.rel}
@@ -138,7 +139,7 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
         <MiniControlsComponent model={model} />
       </div>
       <TracksContainer model={model}>
-        {!tracks.length ? (
+        {!(pinnedTracks.length + unpinnedTracks.length) ? (
           <NoTracksActive model={model} />
         ) : (
           <>

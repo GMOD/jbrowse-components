@@ -1321,24 +1321,6 @@ export function groupBy<T>(array: Iterable<T>, predicate: (v: T) => string) {
   return result
 }
 
-/**
- * Partition an array into two arrays based on a condition. See
- * {@link https://www.30secondsofcode.org/js/s/partition-array/}
- */
-export function partition<T>(
-  array: T[],
-  callback: (value: T, currentIndex: number, originalArray: T[]) => boolean,
-) {
-  // eslint-disable-next-line unicorn/no-array-reduce
-  return array.reduce(
-    (acc, val, i, arr) => {
-      acc[callback(val, i, arr) ? 0 : 1].push(val)
-      return acc
-    },
-    [[] as T[], [] as T[]],
-  )
-}
-
 export function notEmpty<T>(value: T | null | undefined): value is T {
   return value !== null && value !== undefined
 }
