@@ -27,6 +27,7 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
 
   const session = getSession(model) as SessionWithWidgets
   const { showBookmarkHighlights, showBookmarkLabels } = model
+  const { assemblyManager } = session
   const assemblyNames = new Set(session.assemblyNames)
 
   const bookmarkWidget = session.widgets.get(
@@ -49,12 +50,14 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
     ? bookmarks.current
         .filter(value => assemblyNames.has(value.assemblyName))
         .map(r => {
+          const asm = assemblyManager.get(r.assemblyName)
+          const refName = asm?.getCanonicalRefName(r.refName) ?? r.refName
           const s = model.bpToPx({
-            refName: r.refName,
+            refName: refName,
             coord: r.start,
           })
           const e = model.bpToPx({
-            refName: r.refName,
+            refName: refName,
             coord: r.end,
           })
           return s && e

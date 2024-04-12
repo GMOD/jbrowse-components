@@ -250,7 +250,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * #property
          * highlights on the LGV from the URL parameters
          */
-        highlight: types.maybe(types.frozen<Required<ParsedLocString>>()),
+        highlight: types.optional(
+          types.array(types.frozen<Required<ParsedLocString>>()),
+          [],
+        ),
 
         /**
          * #property
@@ -603,8 +606,20 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setHighlight(highlight: Required<ParsedLocString> | undefined) {
-        self.highlight = highlight
+      addToHighlights(highlight: Required<ParsedLocString>) {
+        self.highlight?.push(highlight)
+      },
+      /**
+       * #action
+       */
+      setHighlight(highlight: Required<ParsedLocString>[] | undefined) {
+        self.highlight = cast(highlight)
+      },
+      /**
+       * #action
+       */
+      removeHighlight(highlight: Required<ParsedLocString>) {
+        self.highlight.remove(highlight)
       },
       /**
        * #action
@@ -1661,6 +1676,19 @@ export function stateModelFactory(pluginManager: PluginManager) {
         })
       },
     }))
+    .preProcessSnapshot(snap => {
+      if (!snap) {
+        return snap
+      }
+      const { highlight, ...rest } = snap
+      return {
+        highlight:
+          Array.isArray(highlight) || highlight === undefined
+            ? highlight
+            : [highlight],
+        ...rest,
+      }
+    })
 }
 
 export type LinearGenomeViewStateModel = ReturnType<typeof stateModelFactory>
