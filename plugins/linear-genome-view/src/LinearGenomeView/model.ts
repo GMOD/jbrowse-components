@@ -52,6 +52,7 @@ import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import PaletteIcon from '@mui/icons-material/Palette'
+import SearchIcon from '@mui/icons-material/Search'
 
 import MiniControls from './components/MiniControls'
 import Header from './components/Header'
@@ -186,7 +187,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
-         * array of currently displayed tracks state model's
          */
         hideHeader: false,
 
@@ -757,6 +757,48 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
+      moveTrackDown(id: string) {
+        const idx = self.tracks.findIndex(v => v.id === id)
+        if (idx === -1) {
+          return
+        }
+
+        if (idx !== -1 && idx < self.tracks.length - 1) {
+          self.tracks.splice(idx, 2, self.tracks[idx + 1], self.tracks[idx])
+        }
+      },
+      /**
+       * #action
+       */
+      moveTrackUp(id: string) {
+        const idx = self.tracks.findIndex(track => track.id === id)
+        if (idx > 0) {
+          self.tracks.splice(idx - 1, 2, self.tracks[idx], self.tracks[idx - 1])
+        }
+      },
+      /**
+       * #action
+       */
+      moveTrackToTop(id: string) {
+        const idx = self.tracks.findIndex(track => track.id === id)
+        self.tracks = cast([
+          self.tracks[idx],
+          ...self.tracks.filter(track => track.id !== id),
+        ])
+      },
+      /**
+       * #action
+       */
+      moveTrackToBottom(id: string) {
+        const idx = self.tracks.findIndex(track => track.id === id)
+        self.tracks = cast([
+          ...self.tracks.filter(track => track.id !== id),
+          self.tracks[idx],
+        ])
+      },
+      /**
+       * #action
+       */
       moveTrack(movingId: string, targetId: string) {
         const oldIndex = self.tracks.findIndex(track => track.id === movingId)
         if (oldIndex === -1) {
@@ -766,9 +808,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
         if (newIndex === -1) {
           throw new Error(`Track ID ${targetId} not found`)
         }
-        const track = getSnapshot(self.tracks[oldIndex])
-        self.tracks.splice(oldIndex, 1)
-        self.tracks.splice(newIndex, 0, track)
+
+        const tracks = self.tracks.filter((_, idx) => idx !== oldIndex)
+        tracks.splice(newIndex, 0, self.tracks[oldIndex])
+        self.tracks = cast(tracks)
       },
 
       /**
@@ -1086,6 +1129,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             ? [
                 {
                   label: 'Sequence search',
+                  icon: SearchIcon,
                   onClick: () => {
                     getSession(self).queueDialog(handleClose => [
                       SequenceSearchDialog,

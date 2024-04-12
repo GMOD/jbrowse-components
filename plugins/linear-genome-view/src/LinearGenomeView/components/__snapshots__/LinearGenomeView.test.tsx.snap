@@ -435,7 +435,7 @@ exports[`renders one track, one region 1`] = `
         class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-dewezf-MuiPaper-root-root"
       >
         <div
-          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-lv7b0o-MuiPaper-root-trackLabel-trackLabelOverlap-root"
+          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1q1f5r0-MuiPaper-root-trackLabel-trackLabelOverlap-root"
         >
           <span
             class="css-k4omgw-dragHandle"
@@ -544,10 +544,6 @@ exports[`renders one track, one region 1`] = `
             </div>
           </div>
         </div>
-        <div
-          class="css-1hk9st0-overlay"
-          style="height: 100px;"
-        />
         <div
           class="css-14zcv15-horizontalHandle-resizeHandle"
           data-resizer="true"
@@ -1254,7 +1250,7 @@ exports[`renders two tracks, two regions 1`] = `
         class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-dewezf-MuiPaper-root-root"
       >
         <div
-          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-lv7b0o-MuiPaper-root-trackLabel-trackLabelOverlap-root"
+          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1q1f5r0-MuiPaper-root-trackLabel-trackLabelOverlap-root"
         >
           <span
             class="css-k4omgw-dragHandle"
@@ -1375,10 +1371,6 @@ exports[`renders two tracks, two regions 1`] = `
           </div>
         </div>
         <div
-          class="css-1hk9st0-overlay"
-          style="height: 100px;"
-        />
-        <div
           class="css-14zcv15-horizontalHandle-resizeHandle"
           data-resizer="true"
         />
@@ -1387,7 +1379,7 @@ exports[`renders two tracks, two regions 1`] = `
         class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-dewezf-MuiPaper-root-root"
       >
         <div
-          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-lv7b0o-MuiPaper-root-trackLabel-trackLabelOverlap-root"
+          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1q1f5r0-MuiPaper-root-trackLabel-trackLabelOverlap-root"
         >
           <span
             class="css-k4omgw-dragHandle"
@@ -1507,10 +1499,6 @@ exports[`renders two tracks, two regions 1`] = `
             </div>
           </div>
         </div>
-        <div
-          class="css-1hk9st0-overlay"
-          style="height: 100px;"
-        />
         <div
           class="css-14zcv15-horizontalHandle-resizeHandle"
           data-resizer="true"

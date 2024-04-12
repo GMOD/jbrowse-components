@@ -14,6 +14,10 @@ import MoreVertIcon from '@mui/icons-material/MoreVert'
 import CloseIcon from '@mui/icons-material/Close'
 import MinimizeIcon from '@mui/icons-material/Minimize'
 import AddIcon from '@mui/icons-material/Add'
+import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown'
+import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp'
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 
 import { LinearGenomeViewModel } from '..'
 import TrackLabelDragHandle from './TrackLabelDragHandle'
@@ -24,9 +28,6 @@ const useStyles = makeStyles()(theme => ({
     '&:hover': {
       background: theme.palette.background.paper,
     },
-    transition: theme.transitions.create(['background'], {
-      duration: theme.transitions.duration.shortest,
-    }),
   },
   trackName: {
     margin: '0 auto',
@@ -34,7 +35,6 @@ const useStyles = makeStyles()(theme => ({
     fontSize: '0.8rem',
     pointerEvents: 'none',
   },
-
   iconButton: {
     padding: theme.spacing(1),
   },
@@ -61,9 +61,36 @@ const TrackLabel = observer(
     const trackName = getTrackName(trackConf, session)
     const items = [
       {
-        label: minimized ? 'Restore track' : 'Minimize track',
-        icon: minimized ? AddIcon : MinimizeIcon,
-        onClick: () => track.setMinimized(!minimized),
+        label: 'Track order',
+        type: 'subMenu',
+        subMenu: [
+          {
+            label: minimized ? 'Restore track' : 'Minimize track',
+            icon: minimized ? AddIcon : MinimizeIcon,
+            onClick: () => track.setMinimized(!minimized),
+          },
+          {
+            label: 'Move track to top',
+            icon: KeyboardDoubleArrowUpIcon,
+            onClick: () => view.moveTrackToTop(track.id),
+          },
+
+          {
+            label: 'Move track up',
+            icon: KeyboardArrowUpIcon,
+            onClick: () => view.moveTrackUp(track.id),
+          },
+          {
+            label: 'Move track down',
+            icon: KeyboardArrowDownIcon,
+            onClick: () => view.moveTrackDown(track.id),
+          },
+          {
+            label: 'Move track to bottom',
+            icon: KeyboardDoubleArrowDownIcon,
+            onClick: () => view.moveTrackToBottom(track.id),
+          },
+        ],
       },
       ...(session.getTrackActionMenuItems?.(trackConf) || []),
       ...track.trackMenuItems(),

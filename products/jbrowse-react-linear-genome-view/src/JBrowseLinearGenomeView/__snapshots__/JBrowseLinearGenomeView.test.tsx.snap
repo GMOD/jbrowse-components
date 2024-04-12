@@ -926,7 +926,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-dewezf-MuiPaper-root-root"
               >
                 <div
-                  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-80j8um-MuiPaper-root-trackLabel-trackLabelOffset-root"
+                  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1vp43vu-MuiPaper-root-trackLabel-trackLabelOffset-root"
                 >
                   <span
                     class="css-k4omgw-dragHandle"
@@ -7222,10 +7222,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     </div>
                   </div>
                 </div>
-                <div
-                  class="css-1hk9st0-overlay"
-                  style="height: 120px;"
-                />
                 <div
                   class="css-14zcv15-horizontalHandle-resizeHandle"
                   data-resizer="true"

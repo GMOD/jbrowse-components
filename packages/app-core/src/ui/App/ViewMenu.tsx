@@ -16,8 +16,10 @@ import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
 
 // icons
 import MenuIcon from '@mui/icons-material/Menu'
-import ArrowDownward from '@mui/icons-material/ArrowDownward'
-import ArrowUpward from '@mui/icons-material/ArrowUpward'
+import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown'
+import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp'
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 
 const ViewMenu = observer(function ({
   model,
@@ -32,6 +34,8 @@ const ViewMenu = observer(function ({
   const session = getSession(model) as AbstractSessionModel & {
     moveViewDown: (arg: string) => void
     moveViewUp: (arg: string) => void
+    moveViewToBottom: (arg: string) => void
+    moveViewToTop: (arg: string) => void
   }
 
   const popupState = usePopupState({
@@ -39,30 +43,12 @@ const ViewMenu = observer(function ({
     variant: 'popover',
   })
 
-  const items = [
-    ...(session.views.length > 1
-      ? [
-          {
-            label: 'Move view up',
-            icon: ArrowUpward,
-            onClick: () => session.moveViewUp(model.id),
-          },
-          {
-            label: 'Move view down',
-            icon: ArrowDownward,
-            onClick: () => session.moveViewDown(model.id),
-          },
-        ]
-      : []),
-
-    // <=1.3.3 didn't use a function, so check as value also
-    ...((typeof menuItems === 'function' ? menuItems() : menuItems) || []),
-  ]
-
-  // note: This does not use CascadingMenuButton on purpose, because there was a confusing bug related to it!
-  // see https://github.com/GMOD/jbrowse-components/issues/4115
+  // note: This does not use CascadingMenuButton on purpose, because there was
+  // a confusing bug related to it! see
+  // https://github.com/GMOD/jbrowse-components/issues/4115
   //
-  // Make sure to test the Breakpoint split view menu checkboxes if you intend to change this
+  // Make sure to test the Breakpoint split view menu checkboxes if you
+  // intend to change this
   return (
     <>
       <IconButton
@@ -74,10 +60,43 @@ const ViewMenu = observer(function ({
       </IconButton>
       <CascadingMenu
         {...bindPopover(popupState)}
-        onMenuItemClick={(_event: unknown, callback: () => void) => {
-          callback()
-        }}
-        menuItems={items}
+        onMenuItemClick={(_event: unknown, callback: () => void) => callback()}
+        menuItems={[
+          ...(session.views.length > 1
+            ? [
+                {
+                  label: 'View order',
+                  type: 'subMenu' as const,
+                  subMenu: [
+                    {
+                      label: 'Move view to top',
+                      icon: KeyboardDoubleArrowUpIcon,
+                      onClick: () => session.moveViewToTop(model.id),
+                    },
+                    {
+                      label: 'Move view up',
+                      icon: KeyboardArrowUpIcon,
+                      onClick: () => session.moveViewUp(model.id),
+                    },
+                    {
+                      label: 'Move view down',
+                      icon: KeyboardArrowDownIcon,
+                      onClick: () => session.moveViewDown(model.id),
+                    },
+                    {
+                      label: 'Move view to bottom',
+                      icon: KeyboardDoubleArrowDownIcon,
+                      onClick: () => session.moveViewToBottom(model.id),
+                    },
+                  ],
+                },
+              ]
+            : []),
+
+          // <=1.3.3 didn't use a function, so check as value also
+          ...((typeof menuItems === 'function' ? menuItems() : menuItems) ||
+            []),
+        ]}
         popupState={popupState}
       />
     </>
