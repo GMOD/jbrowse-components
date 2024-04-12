@@ -1046,6 +1046,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
           self.offsetPx,
           self.offsetPx + self.width * viewWidths,
           self.scrollTo,
+          undefined,
+          undefined,
+          200,
         )
         cancelLastAnimation()
         cancelLastAnimation = cancelAnimation

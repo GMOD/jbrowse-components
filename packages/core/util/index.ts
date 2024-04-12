@@ -150,8 +150,9 @@ export function springAnimate(
   setValue: (value: number) => void,
   onFinish = () => {},
   precision = 0,
-  tension = 170,
-  friction = 26,
+  tension = 400,
+  friction = 20,
+  clamp = true,
 ) {
   const mass = 1
   if (!precision) {
@@ -181,7 +182,13 @@ export function springAnimate(
     const isVelocity = Math.abs(velocity) <= precision
     const isDisplacement =
       tension !== 0 ? Math.abs(toValue - position) <= precision : true
-    const endOfAnimation = isVelocity && isDisplacement
+    const isOvershooting =
+      clamp && tension !== 0
+        ? fromValue < toValue
+          ? position > toValue
+          : position < toValue
+        : false
+    const endOfAnimation = isOvershooting || (isVelocity && isDisplacement)
     if (endOfAnimation) {
       setValue(toValue)
       onFinish()

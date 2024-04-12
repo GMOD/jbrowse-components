@@ -24,7 +24,7 @@ const ZoomControls = observer(function ({
   model: LinearGenomeViewModel
 }) {
   const { classes } = useStyles()
-  const { maxBpPerPx, minBpPerPx, bpPerPx, scaleFactor } = model
+  const { maxBpPerPx, minBpPerPx, bpPerPx } = model
   const [value, setValue] = useState(-Math.log2(bpPerPx) * 100)
   useEffect(() => {
     setValue(-Math.log2(bpPerPx) * 100)
@@ -35,7 +35,7 @@ const ZoomControls = observer(function ({
       <IconButton
         data-testid="zoom_out"
         onClick={() => model.zoom(bpPerPx * 2)}
-        disabled={bpPerPx >= maxBpPerPx - 0.0001 || scaleFactor !== 1}
+        disabled={bpPerPx >= maxBpPerPx - 0.0001}
         size="large"
       >
         <ZoomOut />
@@ -49,12 +49,11 @@ const ZoomControls = observer(function ({
         max={-Math.log2(minBpPerPx) * 100}
         onChange={(_, val) => setValue(val as number)}
         onChangeCommitted={() => model.zoomTo(2 ** (-value / 100))}
-        disabled={scaleFactor !== 1}
       />
       <IconButton
         data-testid="zoom_in"
         onClick={() => model.zoom(model.bpPerPx / 2)}
-        disabled={bpPerPx <= minBpPerPx + 0.0001 || scaleFactor !== 1}
+        disabled={bpPerPx <= minBpPerPx + 0.0001}
         size="large"
       >
         <ZoomIn />
