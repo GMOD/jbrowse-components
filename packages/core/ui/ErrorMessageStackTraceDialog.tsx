@@ -61,7 +61,8 @@ async function getSourceMapFromUri(uri: string) {
     ''
   mapUri = new URL(mapUri, uri).href + uriQuery
 
-  const map = new SourceMapConsumer(await myfetchjson(mapUri))
+  const data = await myfetchjson(mapUri)
+  const map = new SourceMapConsumer(data)
   sourceMaps[uri] = map
   return map
 }
@@ -71,7 +72,7 @@ async function mapStackTrace(stack: string) {
   const mappedStack = []
 
   for (const line of stackLines) {
-    const match = new RegExp(/(.*)(http:\/\/.*):(\d+):(\d+)/).exec(line)
+    const match = new RegExp(/(.*)(https?:\/\/.*):(\d+):(\d+)/).exec(line)
     if (match === null) {
       mappedStack.push(line)
       continue
