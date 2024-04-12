@@ -28,6 +28,14 @@ export default (configSchema: AnyConfigurationSchemaType) =>
          * #property
          */
         resolution: types.optional(types.number, 1),
+        /**
+         * #property
+         */
+        useLogScale: false,
+        /**
+         * #property
+         */
+        colorScheme: types.maybe(types.string),
       }),
     )
     .views(self => {
@@ -60,6 +68,8 @@ export default (configSchema: AnyConfigurationSchemaType) =>
             rpcDriverName: self.rpcDriverName,
             displayModel: self,
             resolution: self.resolution,
+            useLogScale: self.useLogScale,
+            colorScheme: self.colorScheme,
           }
         },
       }
@@ -70,6 +80,18 @@ export default (configSchema: AnyConfigurationSchemaType) =>
        */
       setResolution(n: number) {
         self.resolution = n
+      },
+      /**
+       * #action
+       */
+      setUseLogScale(f: boolean) {
+        self.useLogScale = f
+      },
+      /**
+       * #action
+       */
+      setColorScheme(f?: string) {
+        self.colorScheme = f
       },
     }))
     .views(self => {
@@ -82,19 +104,43 @@ export default (configSchema: AnyConfigurationSchemaType) =>
           return [
             ...superTrackMenuItems(),
             {
+              label: 'Use log scale',
+              type: 'checkbox',
+              checked: self.useLogScale,
+              onClick: () => self.setUseLogScale(!self.useLogScale),
+            },
+            {
+              label: 'Color scheme',
+              type: 'subMenu',
+              subMenu: [
+                {
+                  label: 'Fall',
+                  onClick: () => self.setColorScheme('fall'),
+                },
+                {
+                  label: 'Viridis',
+                  onClick: () => self.setColorScheme('viridis'),
+                },
+                {
+                  label: 'Juicebox',
+                  onClick: () => self.setColorScheme('juicebox'),
+                },
+                {
+                  label: 'Clear',
+                  onClick: () => self.setColorScheme(undefined),
+                },
+              ],
+            },
+            {
               label: 'Resolution',
               subMenu: [
                 {
                   label: 'Finer resolution',
-                  onClick: () => {
-                    self.setResolution(self.resolution * 2)
-                  },
+                  onClick: () => self.setResolution(self.resolution * 2),
                 },
                 {
                   label: 'Coarser resolution',
-                  onClick: () => {
-                    self.setResolution(self.resolution / 2)
-                  },
+                  onClick: () => self.setResolution(self.resolution / 2),
                 },
               ],
             },

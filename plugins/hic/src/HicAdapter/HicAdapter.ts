@@ -135,9 +135,9 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
         'BP',
         res,
       )
-      records.forEach(record => {
+      for (const record of records) {
         observer.next(record)
-      })
+      }
       statusCallback('')
       observer.complete()
     }, opts.signal) as any // eslint-disable-line @typescript-eslint/no-explicit-any
