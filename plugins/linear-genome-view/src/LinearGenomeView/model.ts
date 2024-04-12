@@ -763,40 +763,38 @@ export function stateModelFactory(pluginManager: PluginManager) {
           return
         }
 
-        const track = getSnapshot(self.tracks[idx])
-        self.tracks.splice(idx, 1)
-        self.tracks.splice(idx + 1, 0, track)
+        if (idx !== -1 && idx < self.tracks.length - 1) {
+          self.tracks.splice(idx, 2, self.tracks[idx + 1], self.tracks[idx])
+        }
       },
       /**
        * #action
        */
       moveTrackUp(id: string) {
         const idx = self.tracks.findIndex(track => track.id === id)
-        if (idx === -1) {
-          return
+        if (idx > 0) {
+          self.tracks.splice(idx - 1, 2, self.tracks[idx], self.tracks[idx - 1])
         }
-
-        const track = getSnapshot(self.tracks[idx])
-        self.tracks.splice(idx, 1)
-        self.tracks.splice(idx - 1, 0, track)
       },
       /**
        * #action
        */
       moveTrackToTop(id: string) {
         const idx = self.tracks.findIndex(track => track.id === id)
-        const track = getSnapshot(self.tracks[idx])
-        self.tracks.splice(idx, 1)
-        self.tracks.splice(0, 0, track)
+        self.tracks = cast([
+          self.tracks[idx],
+          ...self.tracks.filter(track => track.id !== id),
+        ])
       },
       /**
        * #action
        */
       moveTrackToBottom(id: string) {
         const idx = self.tracks.findIndex(track => track.id === id)
-        const track = getSnapshot(self.tracks[idx])
-        self.tracks.splice(idx, 1)
-        self.tracks.splice(self.tracks.length, 0, track)
+        self.tracks = cast([
+          ...self.tracks.filter(track => track.id !== id),
+          self.tracks[idx],
+        ])
       },
       /**
        * #action

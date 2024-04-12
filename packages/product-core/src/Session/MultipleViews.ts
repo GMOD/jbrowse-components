@@ -1,6 +1,7 @@
 import {
   IAnyStateTreeNode,
   Instance,
+  cast,
   getSnapshot,
   types,
 } from 'mobx-state-tree'
@@ -57,18 +58,21 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
        */
       moveViewToTop(id: string) {
         const idx = self.views.findIndex(view => view.id === id)
-        const view = getSnapshot(self.views[idx])
-        self.views.splice(idx, 1)
-        self.views.splice(0, 0, view)
+        self.views = cast([
+          self.views[idx],
+          ...self.views.filter(view => view.id !== id),
+        ])
       },
+
       /**
        * #action
        */
       moveViewToBottom(id: string) {
         const idx = self.views.findIndex(view => view.id === id)
-        const view = getSnapshot(self.views[idx])
-        self.views.splice(idx, 1)
-        self.views.splice(self.views.length, 0, view)
+        self.views = cast([
+          ...self.views.filter(view => view.id !== id),
+          self.views[idx],
+        ])
       },
 
       /**
