@@ -23,15 +23,26 @@ const TrackLabelMenu = observer(function ({
   const trackConf = track.configuration
   const minimized = track.minimized
   const pinned = track.pinned
+  let lgvHasParentView: boolean
+  try {
+    getContainingView(view)
+    lgvHasParentView = true
+  } catch (error) {
+    lgvHasParentView = false
+  }
 
   const items = [
-    {
-      label: pinned ? 'Unpin track' : 'Pin track',
-      icon: PushPinIcon,
-      onClick: () => {
-        track.setPinned(!pinned)
-      },
-    },
+    ...(lgvHasParentView
+      ? []
+      : [
+          {
+            label: pinned ? 'Unpin track' : 'Pin track',
+            icon: PushPinIcon,
+            onClick: () => {
+              track.setPinned(!pinned)
+            },
+          },
+        ]),
     {
       label: 'Track order',
       type: 'subMenu',
