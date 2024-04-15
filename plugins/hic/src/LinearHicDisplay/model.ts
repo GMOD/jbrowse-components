@@ -58,7 +58,14 @@ export default (configSchema: AnyConfigurationSchemaType) =>
          */
         renderProps() {
           const config = self.rendererType.configSchema.create(
-            getConf(self, 'renderer') || {},
+            {
+              ...getConf(self, 'renderer'),
+
+              // add specific jexl color callback when using pre-defined color schemes
+              ...(self.colorScheme
+                ? { color: 'jexl:interpolate(count,scale)' }
+                : {}),
+            },
             getEnv(self),
           )
 
