@@ -16,6 +16,9 @@ const useStyles = makeStyles()(theme => ({
   viewContainer: {
     margin: theme.spacing(0.5),
     padding: `0 ${theme.spacing(1)} ${theme.spacing(1)}`,
+    overflow: 'clip',
+    // xref https://stackoverflow.com/questions/43909940/why-does-overflowhidden-prevent-positionsticky-from-working
+    // note that contain:paint also seems to work
   },
   focusedView: {
     background: theme.palette.secondary.main,
