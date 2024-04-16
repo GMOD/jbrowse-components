@@ -534,8 +534,8 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "displayId": "volvox_gc-LinearGCContentDisplay2",
-          "type": "LinearGCContentDisplay2",
+          "displayId": "volvox_gc-LinearGCContentTrackDisplay",
+          "type": "LinearGCContentTrackDisplay",
         },
       ],
       "name": "GCContent",
