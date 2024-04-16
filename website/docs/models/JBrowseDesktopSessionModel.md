@@ -94,6 +94,7 @@ IMSTArray<ISimpleType<string>> & IStateTreeNode<IMaybe<IArrayType<ISimpleType<st
 // type signature
 renderProps: () => {
   theme: any
+  highResolutionScaling: any
 }
 ```
 

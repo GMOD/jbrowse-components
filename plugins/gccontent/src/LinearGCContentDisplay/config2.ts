@@ -2,13 +2,15 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 /**
- * #config LinearGCContentDisplay2
+ * #config LinearGCContentTrackDisplay
  * #category display
  * extends LinearWiggleDisplay, used specifically for GCContentTrack
  */
-export default function LinearGCContentDisplay2(pluginManager: PluginManager) {
+export default function LinearGCContentTrackDisplayF(
+  pluginManager: PluginManager,
+) {
   return ConfigurationSchema(
-    'LinearGCContentDisplay2',
+    'LinearGCContentTrackDisplay',
     {
       windowSize: {
         type: 'number',

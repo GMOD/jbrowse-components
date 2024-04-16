@@ -85,6 +85,7 @@ any[]
 // type signature
 renderProps: () => {
   theme: any
+  highResolutionScaling: any
 }
 ```
 

@@ -96,10 +96,3 @@ setSessionPath: (path: string) => void
 // type signature
 renameCurrentSession: (newName: string) => void
 ```
-
-#### action: setAssemblyEditing
-
-```js
-// type signature
-setAssemblyEditing: (flag: boolean) => void
-```

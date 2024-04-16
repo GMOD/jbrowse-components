@@ -26,7 +26,7 @@ export default (pluginManager: PluginManager) => {
     const configSchema = configSchemaFactory2(pluginManager)
     const stateModel = stateModelF2(pluginManager, configSchema)
     return new DisplayType({
-      name: 'LinearGCContentDisplay2',
+      name: 'LinearGCContentTrackDisplay',
       configSchema,
       stateModel,
       displayName: 'GC content display',

@@ -5,8 +5,12 @@ import { types } from 'mobx-state-tree'
 import SharedModelF from './shared'
 
 /**
- * #stateModel LinearGCContentDisplay2
+ * #stateModel LinearGCContentTrackDisplay
  * #category display
+ *
+ * used on GCContentTrack, separately from the display type on the
+ * ReferenceSequenceTrack
+ *
  * extends
  * - [SharedGCContentModel](../sharedgccontentmodel)
  */
@@ -15,10 +19,10 @@ export default function stateModelF(
   configSchema: AnyConfigurationSchemaType,
 ) {
   return types.compose(
-    'LinearGCContentDisplay2',
+    'LinearGCContentTrackDisplay',
     SharedModelF(pluginManager, configSchema),
     types.model({
-      type: types.literal('LinearGCContentDisplay2'),
+      type: types.literal('LinearGCContentTrackDisplay'),
     }),
   )
 }

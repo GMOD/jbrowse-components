@@ -163,6 +163,7 @@ any
 // type signature
 renderProps: () => {
   theme: Theme
+  highResolutionScaling: any
 }
 ```
 

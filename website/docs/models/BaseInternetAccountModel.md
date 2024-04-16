@@ -195,7 +195,7 @@ getToken: (location?: UriLocation) => Promise<string>
 
 ```js
 // type signature
-addAuthHeaderToInit: (init: RequestInit, token: string) => { headers: Headers; body?: BodyInit; cache?: RequestCache; credentials?: RequestCredentials; ... 8 more ...; window?: null; }
+addAuthHeaderToInit: (init: RequestInit, token: string) => { headers: Headers; body?: BodyInit; cache?: RequestCache; credentials?: RequestCredentials; ... 9 more ...; window?: null; }
 ```
 
 #### action: getPreAuthorizationInformation
