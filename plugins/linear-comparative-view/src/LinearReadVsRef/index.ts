@@ -14,7 +14,7 @@ function isDisplay(elt: { name: string }): elt is DisplayType {
   return elt.name === 'LinearPileupDisplay'
 }
 
-export default function (pm: PluginManager) {
+export default function LinearReadVsRefMenuItemF(pm: PluginManager) {
   pm.addToExtensionPoint(
     'Core-extendPluggableElement',
     (pluggableElement: PluggableElementType) => {

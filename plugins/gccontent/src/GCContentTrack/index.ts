@@ -3,7 +3,7 @@ import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import { createBaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import configSchemaF from './configSchema'
 
-export default (pm: PluginManager) => {
+export default function GCContentTrackF(pm: PluginManager) {
   pm.addTrackType(() => {
     const configSchema = configSchemaF(pm)
     return new TrackType({

@@ -2,7 +2,7 @@ import { AdapterType } from '@jbrowse/core/pluggableElementTypes'
 import PluginManager from '@jbrowse/core/PluginManager'
 import configSchema from './configSchema'
 
-export default (pluginManager: PluginManager) => {
+export default function Gff3AdapterF(pluginManager: PluginManager) {
   pluginManager.addAdapterType(
     () =>
       new AdapterType({

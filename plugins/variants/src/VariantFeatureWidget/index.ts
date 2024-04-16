@@ -4,7 +4,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { stateModelFactory } from './stateModelFactory'
 import { configSchema } from './configSchema'
 
-export default (pluginManager: PluginManager) => {
+export default function VariantFeatureWidgetF(pluginManager: PluginManager) {
   pluginManager.addWidgetType(
     () =>
       new WidgetType({

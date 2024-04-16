@@ -3,7 +3,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import XYPlotRenderer from './XYPlotRenderer'
 import configSchema from './configSchema'
 
-export default (pluginManager: PluginManager) => {
+export default function XYPlotRendererF(pluginManager: PluginManager) {
   pluginManager.addRendererType(
     () =>
       new XYPlotRenderer({

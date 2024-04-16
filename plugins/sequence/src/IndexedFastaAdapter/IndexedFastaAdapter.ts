@@ -17,7 +17,7 @@ interface T {
   fasta: IndexedFasta
 }
 
-export default class extends BaseSequenceAdapter {
+export default class IndexedFastaAdapter extends BaseSequenceAdapter {
   protected setupP?: Promise<{ fasta: IndexedFasta }>
 
   private seqCache = new AbortablePromiseCache<T, string | undefined>({

@@ -2,7 +2,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { AbstractSessionModel } from '@jbrowse/core/util'
 import { SpreadsheetViewModel } from '../SpreadsheetView'
 
-export default (pluginManager: PluginManager) => {
+export default function LaunchSpreadsheetViewF(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(
     'LaunchView-SpreadsheetView',
     // @ts-expect-error

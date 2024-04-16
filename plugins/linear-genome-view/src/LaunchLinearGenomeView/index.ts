@@ -11,7 +11,7 @@ import { handleSelectedRegion } from '../searchUtils'
 
 type LGV = LinearGenomeViewModel
 
-export default (pluginManager: PluginManager) => {
+export default function LaunchLinearGenomeViewF(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(
     'LaunchView-LinearGenomeView',
     // @ts-expect-error

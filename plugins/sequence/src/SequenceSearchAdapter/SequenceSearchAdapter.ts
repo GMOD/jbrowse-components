@@ -13,7 +13,7 @@ import {
 import { toArray } from 'rxjs/operators'
 import { firstValueFrom } from 'rxjs'
 
-export default class extends BaseFeatureDataAdapter {
+export default class SequenceSearchAdapter extends BaseFeatureDataAdapter {
   public async configure() {
     const adapter = await this.getSubAdapter?.(this.getConf('sequenceAdapter'))
     if (!adapter) {

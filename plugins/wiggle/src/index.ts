@@ -25,7 +25,7 @@ import MultiDensityRendererF from './MultiDensityRenderer'
 import MultiLineRendererF from './MultiLineRenderer'
 import MultiRowLineRendererF from './MultiRowLineRenderer'
 import CreateMultiWiggleExtensionF from './CreateMultiWiggleExtension'
-import MultiWiggleAddTrackWidgetF from './MultiWiggleAddTrackWidget'
+import MultiWiggleAddTrackWorkflowF from './MultiWiggleAddTrackWorkflow'
 
 import * as utils from './util'
 
@@ -64,7 +64,7 @@ export default class WigglePlugin extends Plugin {
     MultiDensityRendererF(pm)
     MultiLineRendererF(pm)
     MultiRowLineRendererF(pm)
-    MultiWiggleAddTrackWidgetF(pm)
+    MultiWiggleAddTrackWorkflowF(pm)
     CreateMultiWiggleExtensionF(pm)
 
     pm.addToExtensionPoint(

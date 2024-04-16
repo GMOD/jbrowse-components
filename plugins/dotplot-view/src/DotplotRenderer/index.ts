@@ -3,7 +3,7 @@ import ReactComponent from './components/DotplotRendering'
 import DotplotRenderer from './DotplotRenderer'
 import configSchema from './configSchema'
 
-export default (pluginManager: PluginManager) => {
+export default function DotplotRendererF(pluginManager: PluginManager) {
   pluginManager.addRendererType(
     () =>
       new DotplotRenderer({

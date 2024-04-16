@@ -6,7 +6,7 @@ import { lazy } from 'react'
 import stateModelFactory from './model'
 const configSchema = ConfigurationSchema('PluginStoreWidget', {})
 
-export default (pluginManager: PluginManager) => {
+export default function PluginStoreWidgetF(pluginManager: PluginManager) {
   pluginManager.addWidgetType(() => {
     return new WidgetType({
       name: 'PluginStoreWidget',

@@ -35,6 +35,7 @@ test('selects a sort, sort by base pair', async () => {
   await screen.findAllByTestId('pileup-Base pair', ...opts)
   const f1 = within(await screen.findByTestId('Blockset-pileup'))
   expectCanvasMatch(await f1.findByTestId(pv('13196..13230-0'), ...opts))
+  await new Promise(resolve => setTimeout(resolve, 1000))
   await user.click(await screen.findByTestId('zoom_out'))
   await screen.findAllByTestId('pileup-Base pair', ...opts)
   const f2 = within(await screen.findByTestId('Blockset-pileup'))
