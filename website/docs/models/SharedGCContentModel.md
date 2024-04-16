@@ -14,7 +14,7 @@ info
 
 extends
 
-- [BaseWiggleDisplayModel](../basewiggledisplaymodel)
+- [LinearWiggleDisplay](../linearwiggledisplay)
 
 ### SharedGCContentModel - Properties
 
