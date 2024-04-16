@@ -65,23 +65,21 @@ const ViewContainer = observer(function ({
   )
 
   return (
-    <>
-      <Paper ref={ref} elevation={12} className={viewContainerClassName}>
-        <ViewHeader
-          view={view}
-          onClose={() => {
-            session.removeView(view)
-          }}
-          onMinimize={() => {
-            view.setMinimized(!view.minimized)
-          }}
-          className={backgroundColorClassName}
-        />
-        <Paper elevation={0}>
-          <ViewWrapper view={view} session={session} />
-        </Paper>
+    <Paper ref={ref} elevation={12} className={viewContainerClassName}>
+      <ViewHeader
+        view={view}
+        onClose={() => {
+          session.removeView(view)
+        }}
+        onMinimize={() => {
+          view.setMinimized(!view.minimized)
+        }}
+        className={backgroundColorClassName}
+      />
+      <Paper elevation={0}>
+        <ViewWrapper view={view} session={session} />
       </Paper>
-    </>
+    </Paper>
   )
 })
 
