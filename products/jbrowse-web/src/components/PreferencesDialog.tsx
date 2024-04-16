@@ -1,8 +1,10 @@
 import React from 'react'
 import {
   Button,
+  Checkbox,
   DialogActions,
   DialogContent,
+  FormControlLabel,
   MenuItem,
   TextField,
   ThemeOptions,
@@ -22,9 +24,11 @@ export default function PreferencesDialog({
 }: {
   handleClose: () => void
   session: {
+    stickyMode?: boolean
     allThemes: () => Record<string, ThemeOptions & { name?: string }>
     themeName?: string
     setThemeName: (arg: string) => void
+    setStickyModel: (arg: boolean) => void
   }
 }) {
   const { classes } = useStyles()
@@ -43,6 +47,15 @@ export default function PreferencesDialog({
             </MenuItem>
           ))}
         </TextField>
+        <FormControlLabel
+          control={
+            <Checkbox
+              value={session.stickyMode}
+              onChange={event => session.setStickyMode(event.target.checked)}
+            />
+          }
+          label="Sticky view headers"
+        />
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose}>Close</Button>

@@ -10,7 +10,7 @@ import { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
  * #category root
  */
 export function SessionAssembliesMixin(
-  pluginManager: PluginManager,
+  _pluginManager: PluginManager,
   assemblyConfigSchemasType: BaseAssemblyConfigSchema,
 ) {
   return types

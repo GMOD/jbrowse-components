@@ -95,8 +95,10 @@ export function JBrowseConfigF({
         type: 'fileLocation',
         defaultValue: { uri: '', locationType: 'UriLocation' },
       },
+
       ...pluginManager.pluginConfigurationSchemas(),
     }),
+
     /**
      * #slot
      * defines plugins of the format

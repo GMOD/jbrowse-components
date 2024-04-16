@@ -19,24 +19,24 @@ export function HistoryManagementMixin() {
     .actions(self => ({
       afterCreate() {
         document.addEventListener('keydown', e => {
+          const { canRedo, canUndo } = self.history
+
+          // return if input is focused
+          if (document.activeElement?.tagName.toUpperCase() === 'INPUT') {
+            return
+          }
+          const b1 = e.ctrlKey || e.metaKey
+
+          // ctrl+shift+z or cmd+shift+z or  ctrl+y
           if (
-            self.history.canRedo &&
-            // ctrl+shift+z or cmd+shift+z
-            (((e.ctrlKey || e.metaKey) && e.shiftKey && e.code === 'KeyZ') ||
-              // ctrl+y
-              (e.ctrlKey && !e.shiftKey && e.code === 'KeyY')) &&
-            document.activeElement?.tagName.toUpperCase() !== 'INPUT'
+            canRedo &&
+            ((b1 && e.shiftKey && e.code === 'KeyZ') ||
+              (e.ctrlKey && !e.shiftKey && e.code === 'KeyY'))
           ) {
             self.history.redo()
           }
-          if (
-            self.history.canUndo &&
-            // ctrl+z or cmd+z
-            (e.ctrlKey || e.metaKey) &&
-            !e.shiftKey &&
-            e.code === 'KeyZ' &&
-            document.activeElement?.tagName.toUpperCase() !== 'INPUT'
-          ) {
+          // ctrl+z or cmd+z
+          if (canUndo && b1 && !e.shiftKey && e.code === 'KeyZ') {
             self.history.undo()
           }
         })

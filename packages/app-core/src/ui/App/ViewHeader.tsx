@@ -1,20 +1,17 @@
 import React, { useEffect, useRef } from 'react'
-import { IconButton } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
+import { getSession } from '@jbrowse/core/util'
 import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
 
 // icons
-import CloseIcon from '@mui/icons-material/Close'
-import MinimizeIcon from '@mui/icons-material/Minimize'
-import AddIcon from '@mui/icons-material/Add'
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
 
 // locals
 import ViewMenu from './ViewMenu'
 import ViewContainerTitle from './ViewContainerTitle'
-import { getSession } from '@jbrowse/core/util'
+import ViewHeaderButtons from './ViewHeaderButtons'
 
 const useStyles = makeStyles()(theme => ({
   icon: {
@@ -26,7 +23,6 @@ const useStyles = makeStyles()(theme => ({
   viewHeader: {
     display: 'flex',
     height: VIEW_HEADER_HEIGHT,
-    position: 'sticky',
     top: 0,
     zIndex: 7,
     background: theme.palette.secondary.main,
@@ -37,31 +33,10 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const ViewButtons = observer(function ({
-  view,
-  onClose,
-  onMinimize,
-}: {
-  view: IBaseViewModel
-  onClose: () => void
-  onMinimize: () => void
-}) {
+function Spacer() {
   const { classes } = useStyles()
-  return (
-    <>
-      <IconButton data-testid="minimize_view" onClick={onMinimize}>
-        {view.minimized ? (
-          <AddIcon className={classes.icon} fontSize="small" />
-        ) : (
-          <MinimizeIcon className={classes.icon} fontSize="small" />
-        )}
-      </IconButton>
-      <IconButton data-testid="close_view" onClick={onClose}>
-        <CloseIcon className={classes.icon} fontSize="small" />
-      </IconButton>
-    </>
-  )
-})
+  return <div className={classes.grow} />
+}
 
 const ViewHeader = observer(function ({
   view,
@@ -86,15 +61,19 @@ const ViewHeader = observer(function ({
   return (
     <div ref={scrollRef} className={cx(classes.viewHeader, className)}>
       <ViewMenu model={view} IconProps={{ className: classes.icon }} />
-      <div className={classes.grow} />
+      <Spacer />
       <div className={classes.viewTitle}>
         {session.focusedViewId === view.id ? (
           <KeyboardArrowRightIcon className={classes.icon} fontSize="small" />
         ) : null}
         <ViewContainerTitle view={view} />
       </div>
-      <div className={classes.grow} />
-      <ViewButtons onClose={onClose} onMinimize={onMinimize} view={view} />
+      <Spacer />
+      <ViewHeaderButtons
+        onClose={onClose}
+        onMinimize={onMinimize}
+        view={view}
+      />
     </div>
   )
 })
