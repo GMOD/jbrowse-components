@@ -21,7 +21,7 @@ import LabelIcon from '@mui/icons-material/Label'
 import GridBookmarkWidgetF from './GridBookmarkWidget'
 import { GridBookmarkModel } from './GridBookmarkWidget/model'
 
-export default class extends Plugin {
+export default class GridBookmarkPlugin extends Plugin {
   name = 'GridBookmarkPlugin'
 
   install(pluginManager: PluginManager) {

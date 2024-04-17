@@ -11,7 +11,7 @@ const LazyConfigurationEditorComponent = lazy(
   () => import('./ConfigurationEditorWidget/components/ConfigurationEditor'),
 )
 
-export default class extends Plugin {
+export default class ConfigurationPlugin extends Plugin {
   name = 'ConfigurationPlugin'
 
   install(pluginManager: PluginManager) {

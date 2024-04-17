@@ -6,7 +6,7 @@ import { HierarchicalTrackSelectorModel } from '@jbrowse/plugin-data-management'
 
 const ConfirmDialog = lazy(() => import('./ConfirmDialog'))
 
-export default function (pm: PluginManager) {
+export default function CreateMultiWiggleExtensionF(pm: PluginManager) {
   pm.addToExtensionPoint(
     'TrackSelector-multiTrackMenuItems',
     (items: unknown[], props: Record<string, unknown>) => {

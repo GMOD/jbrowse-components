@@ -3,7 +3,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import LinearLollipopDisplayF from './LinearLollipopDisplay'
 import LollipopRendererF from './LollipopRenderer'
 
-export default class extends Plugin {
+export default class LollipopPlugin extends Plugin {
   name = 'LollipopPlugin'
 
   install(pluginManager: PluginManager) {

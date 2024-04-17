@@ -7,7 +7,7 @@ import { CircularViewModel } from '../CircularView/models/model'
 
 type CGV = CircularViewModel
 
-export default (pluginManager: PluginManager) => {
+export default function LaunchCircularViewF(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(
     'LaunchView-CircularView',
     // @ts-expect-error

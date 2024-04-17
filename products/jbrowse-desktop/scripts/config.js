@@ -1,7 +1,7 @@
 const webpack = require('webpack')
 const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
 
-module.exports = function (config) {
+module.exports = function webpackConfigF(config) {
   config.plugins.push(
     new NodePolyfillPlugin({
       excludeAliases: ['console'],

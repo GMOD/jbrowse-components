@@ -29,7 +29,7 @@ function defaultOnChordClick(
   session.addView('BreakpointSplitView', viewSnapshot)
 }
 
-export default (pluginManager: PluginManager) => {
+export default function SvInspectorViewF(pluginManager: PluginManager) {
   pluginManager.jexl.addFunction('defaultOnChordClick', defaultOnChordClick)
 
   pluginManager.addViewType(() => {

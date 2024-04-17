@@ -2,8 +2,8 @@ import { types } from 'mobx-state-tree'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import PluginManager from '@jbrowse/core/PluginManager'
 
-export default (pluginManager: PluginManager) =>
-  types
+export default function stateModelFactory(pluginManager: PluginManager) {
+  return types
     .model('ConfigurationEditorWidget', {
       id: ElementId,
       type: types.literal('ConfigurationEditorWidget'),
@@ -19,3 +19,4 @@ export default (pluginManager: PluginManager) =>
         self.target = newTarget
       },
     }))
+}

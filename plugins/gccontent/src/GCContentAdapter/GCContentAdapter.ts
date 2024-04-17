@@ -7,7 +7,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { SimpleFeature, Feature, Region } from '@jbrowse/core/util'
 import { toArray } from 'rxjs/operators'
 
-export default class extends BaseFeatureDataAdapter {
+export default class GCContentAdapter extends BaseFeatureDataAdapter {
   private gcMode = 'content'
 
   public static capabilities = ['hasLocalStats']

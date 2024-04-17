@@ -10,8 +10,10 @@ import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
-export default (configSchema: AnyConfigurationSchemaType) =>
-  types
+export default function stateModelFactory(
+  configSchema: AnyConfigurationSchemaType,
+) {
+  return types
     .compose(
       'LinearHicDisplay',
       BaseLinearDisplay,
@@ -155,3 +157,4 @@ export default (configSchema: AnyConfigurationSchemaType) =>
         },
       }
     })
+}

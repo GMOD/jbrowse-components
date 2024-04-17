@@ -22,7 +22,9 @@ const stateModel = types
     },
   }))
 
-export default (pluginManager: PluginManager) => {
+export default function BreakpointAlignmentsFeatureDetailF(
+  pluginManager: PluginManager,
+) {
   pluginManager.addWidgetType(() => {
     return new WidgetType({
       name: 'BreakpointAlignmentsWidget',

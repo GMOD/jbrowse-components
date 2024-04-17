@@ -8,7 +8,7 @@ import {
   TrackTypeGuesser,
 } from '@jbrowse/core/util/tracks'
 
-export default (pluginManager: PluginManager) => {
+export default function ExtensionPointsF(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(
     'Core-guessAdapterForLocation',
     (adapterGuesser: AdapterGuesser) => {

@@ -5,7 +5,7 @@ import {
 import PluginManager from '@jbrowse/core/PluginManager'
 import configSchemaF from './configSchema'
 
-export default (pm: PluginManager) => {
+export default function BasicTrackF(pm: PluginManager) {
   pm.addTrackType(() => {
     const configSchema = configSchemaF(pm)
 

@@ -7,7 +7,7 @@ import configSchemaFactory2 from './config2'
 import stateModelF1 from './stateModel1'
 import stateModelF2 from './stateModel2'
 
-export default (pluginManager: PluginManager) => {
+export default function LinearGCContentDisplayF(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaFactory1(pluginManager)
     const stateModel = stateModelF1(pluginManager, configSchema)

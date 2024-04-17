@@ -12,7 +12,7 @@ import VcfParser from '@gmod/vcf'
 // local
 import VcfFeature from '../VcfFeature'
 
-export default class extends BaseFeatureDataAdapter {
+export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
   private configured?: Promise<{
     vcf: TabixIndexedFile
     parser: VcfParser
