@@ -9,6 +9,7 @@ const useStyles = makeStyles()(theme => ({
   paper: {
     overflowY: 'auto',
     height: '100%',
+    position: 'relative',
     zIndex: theme.zIndex.drawer,
     outline: 'none',
     background: theme.palette.background.default,
