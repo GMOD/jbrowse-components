@@ -110,7 +110,7 @@ function stateModelFactory() {
           const { blockDefinitions, blockState } = self
           return blockDefinitions.map(block => {
             const state = blockState.get(block.key)
-            return state?.blockHeight ? state.blockHeight + 100 : undefined
+            return state?.blockHeight ?? undefined
           })
         } catch (e) {
           return [undefined]
