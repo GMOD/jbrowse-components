@@ -32,7 +32,13 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const Highlight = observer(function Highlight({ model }: { model: LGV }) {
+const Highlight = observer(function Highlight({
+  model,
+  highlight,
+}: {
+  model: LGV
+  highlight: Required<ParsedLocString>
+}) {
   const { classes } = useStyles()
   const [open, setOpen] = useState(false)
   const anchorEl = useRef(null)
@@ -42,7 +48,7 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
   const { assemblyManager } = session
 
   const dismissHighlight = () => {
-    model.setHighlight(undefined)
+    model.removeHighlight(highlight)
   }
 
   const menuItems = [
@@ -63,7 +69,7 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
           )
         }
         // @ts-ignore
-        bookmarkWidget.addBookmark(model.highlight as Region)
+        bookmarkWidget.addBookmark(highlight as Region)
         dismissHighlight()
       },
     },
@@ -71,10 +77,6 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
 
   function handleClose() {
     setOpen(false)
-  }
-
-  if (!model.highlight) {
-    return null
   }
 
   // coords
@@ -95,13 +97,11 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
       : undefined
   }
 
-  const asm = assemblyManager.get(model.highlight?.assemblyName)
+  const asm = assemblyManager.get(highlight?.assemblyName)
 
   const h = mapCoords({
-    ...model.highlight,
-    refName:
-      asm?.getCanonicalRefName(model.highlight.refName) ??
-      model.highlight.refName,
+    ...highlight,
+    refName: asm?.getCanonicalRefName(highlight.refName) ?? highlight.refName,
   })
 
   return h ? (
@@ -116,7 +116,7 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
         <IconButton
           ref={anchorEl}
           onClick={() => setOpen(true)}
-          style={{ zIndex: 4 }}
+          style={{ zIndex: 3 }}
         >
           <LinkIcon
             fontSize="small"
@@ -140,4 +140,18 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
   ) : null
 })
 
-export default Highlight
+const HighlightGroup = observer(function HighlightGroup({
+  model,
+}: {
+  model: LGV
+}) {
+  return model.highlight.map((highlight, idx) => (
+    <Highlight
+      key={JSON.stringify(highlight) + '-' + idx}
+      model={model}
+      highlight={highlight}
+    />
+  ))
+})
+
+export default HighlightGroup

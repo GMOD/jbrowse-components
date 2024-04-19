@@ -6,7 +6,7 @@ import { configSchemaFactory } from './configSchema'
 import { stateModelFactory } from './model'
 import { BaseLinearDisplayComponent } from '../BaseLinearDisplay/'
 
-export default (pluginManager: PluginManager) => {
+export default function LinearBareDisplayF(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaFactory(pluginManager)
     return new DisplayType({

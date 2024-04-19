@@ -4,7 +4,10 @@ import {
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 
-export default class extends BaseAdapter implements RegionsAdapter {
+export default class ChromSizesAdapter
+  extends BaseAdapter
+  implements RegionsAdapter
+{
   // the map of refSeq to length
   protected setupP?: Promise<Record<string, number>>
 

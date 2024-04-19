@@ -51,7 +51,7 @@ if (process.env.HOST) {
 // browserslist defaults.
 const { checkBrowsers } = require('react-dev-utils/browsersHelper')
 
-module.exports = function (config) {
+module.exports = function startWebpack(config) {
   return checkBrowsers(paths.appPath, isInteractive)
     .then(() => {
       // We attempt to use the default port but if it is busy, we offer the user to

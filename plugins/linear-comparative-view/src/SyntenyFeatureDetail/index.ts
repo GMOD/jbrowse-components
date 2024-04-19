@@ -22,7 +22,7 @@ const stateModel = types
     },
   }))
 
-export default (pluginManager: PluginManager) => {
+export default function SyntenyFeatureWidgetF(pluginManager: PluginManager) {
   pluginManager.addWidgetType(
     () =>
       new WidgetType({

@@ -3,7 +3,7 @@ import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
 import configSchemaF from './configSchema'
 
-export default (pluginManager: PluginManager) => {
+export default function GCContentAdapterF(pluginManager: PluginManager) {
   pluginManager.addAdapterType(
     () =>
       new AdapterType({

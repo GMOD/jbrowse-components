@@ -5,7 +5,9 @@ import TextSearchAdapterType from '@jbrowse/core/pluggableElementTypes/TextSearc
 import AdapterClass from './JBrowse1TextSearchAdapter'
 import configSchema from './configSchema'
 
-export default (pluginManager: PluginManager) => {
+export default function JBrowse1TextSearchAdapterF(
+  pluginManager: PluginManager,
+) {
   pluginManager.addTextSearchAdapterType(
     () =>
       new TextSearchAdapterType({

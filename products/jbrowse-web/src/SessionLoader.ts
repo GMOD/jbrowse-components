@@ -301,7 +301,7 @@ const SessionLoader = types
               assembly,
               tracklist,
               nav,
-              highlight,
+              highlight: highlight?.split(' '),
             },
           ],
         }

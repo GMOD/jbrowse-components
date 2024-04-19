@@ -6,7 +6,7 @@ type JexlWithAddFunction = typeof jexl & {
 }
 type JexlNonBuildable = Omit<typeof jexl, 'Jexl'>
 
-export default function (/* config?: any*/): JexlNonBuildable {
+export default function JexlF(/* config?: any*/): JexlNonBuildable {
   const j = new jexl.Jexl() as JexlWithAddFunction
   // someday will make sure all of configs callbacks are added in, including
   // ones passed in

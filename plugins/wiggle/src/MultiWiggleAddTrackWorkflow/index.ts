@@ -5,7 +5,7 @@ import { types } from 'mobx-state-tree'
 // locals
 import { lazy } from 'react'
 
-export default (pm: PluginManager) => {
+export default function MultiWiggleAddTrackWorkflowF(pm: PluginManager) {
   pm.addAddTrackWorkflowType(
     () =>
       new AddTrackWorkflowType({

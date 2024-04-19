@@ -8,7 +8,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { stateModelFactory } from './stateModelFactory'
 import ReactComponent from './components/DotplotDisplay'
 
-export default (pm: PluginManager) => {
+export default function DotplotDisplayF(pm: PluginManager) {
   pm.addDisplayType(() => {
     const configSchema = configSchemaFactory(pm)
     return new DisplayType({

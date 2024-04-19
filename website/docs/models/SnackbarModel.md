@@ -10,16 +10,7 @@ info
 
 ### Source file
 
-[packages/core/ui/SnackbarModel.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/ui/SnackbarModel.ts)
-
-### SnackbarModel - Getters
-
-#### getter: snackbarMessages
-
-```js
-// type
-IObservableArray<SnackbarMessage>
-```
+[packages/core/ui/SnackbarModel.tsx](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/ui/SnackbarModel.tsx)
 
 ### SnackbarModel - Actions
 

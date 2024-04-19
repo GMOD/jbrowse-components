@@ -10,7 +10,7 @@ info
 
 ### Source file
 
-[packages/core/BaseFeatureWidget/index.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/BaseFeatureWidget/index.ts)
+[packages/core/BaseFeatureWidget/stateModelFactory.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/BaseFeatureWidget/stateModelFactory.ts)
 
 displays data about features, allowing configuration callbacks to modify the
 contents of what is displayed

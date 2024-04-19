@@ -11,7 +11,7 @@ import { types } from 'mobx-state-tree'
 // locals
 import configSchema from './configSchema'
 
-export default function (pluginManager: PluginManager) {
+export default function stateModelFactory(pluginManager: PluginManager) {
   return types
     .compose(
       'JBrowse1Connection',

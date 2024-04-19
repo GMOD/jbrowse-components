@@ -43,12 +43,14 @@ export async function* indexGff3({
     progressBar.start(totalBytes, 0)
   }
 
+  // @ts-expect-error
   stream.on('data', chunk => {
     receivedBytes += chunk.length
     progressBar.update(receivedBytes)
   })
 
   const rl = readline.createInterface({
+    // @ts-expect-error
     input: inLocation.match(/.b?gz$/) ? stream.pipe(createGunzip()) : stream,
   })
 

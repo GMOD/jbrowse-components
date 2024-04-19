@@ -5,7 +5,7 @@ import { Indexing } from '@jbrowse/core/ui/Icons'
 import { isSessionModelWithWidgets } from '@jbrowse/core/util'
 import JobsListWidgetF from './JobsListWidget'
 
-export default class extends Plugin {
+export default class JobsManagementPlugin extends Plugin {
   name = 'JobsManagementPlugin'
 
   install(pluginManager: PluginManager) {

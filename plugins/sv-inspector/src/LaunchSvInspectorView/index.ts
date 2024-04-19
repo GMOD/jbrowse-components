@@ -2,7 +2,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { AbstractSessionModel } from '@jbrowse/core/util'
 import { SvInspectorViewModel } from '../SvInspectorView/models/SvInspectorView'
 
-export default (pluginManager: PluginManager) => {
+export default function LaunchSvInspectorViewF(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(
     'LaunchView-SvInspectorView',
     // @ts-expect-error

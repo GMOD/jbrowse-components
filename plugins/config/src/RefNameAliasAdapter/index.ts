@@ -3,7 +3,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 
 import configSchema from './configSchema'
 
-export default (pluginManager: PluginManager) => {
+export default function RefNameAliasAdapterF(pluginManager: PluginManager) {
   pluginManager.addAdapterType(
     () =>
       new AdapterType({

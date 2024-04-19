@@ -515,6 +515,35 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
   "tracks": [
     {
       "adapter": {
+        "chromSizesLocation": {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "/path/to/default.chrom.sizes",
+        },
+        "twoBitLocation": {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "volvox.2bit",
+        },
+        "type": "TwoBitAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox_gc-LinearGCContentTrackDisplay",
+          "type": "LinearGCContentTrackDisplay",
+        },
+      ],
+      "name": "GCContent",
+      "trackId": "volvox_gc",
+      "type": "GCContentTrack",
+    },
+    {
+      "adapter": {
         "index": {
           "location": {
             "internetAccountId": undefined,

@@ -90,6 +90,13 @@ faceted: types.optional(facetedStateTreeF(), {})
 
 ### HierarchicalTrackSelectorWidget - Getters
 
+#### getter: shownTrackIds
+
+```js
+// type
+Set<string>
+```
+
 #### getter: selectionSet
 
 ```js

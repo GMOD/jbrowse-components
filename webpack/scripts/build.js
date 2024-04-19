@@ -43,7 +43,7 @@ const writeStatsJson = argv.includes('--stats')
 // browserslist defaults.
 const { checkBrowsers } = require('react-dev-utils/browsersHelper')
 
-module.exports = function (config) {
+module.exports = function buildWebpack(config) {
   return checkBrowsers(paths.appPath, isInteractive)
     .then(() => {
       // First, read the current file sizes in build directory.

@@ -15,7 +15,7 @@ function isGzip(buf: Buffer) {
   return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
 }
 
-export default class extends BaseFeatureDataAdapter {
+export default class Gff3Adapter extends BaseFeatureDataAdapter {
   protected gffFeatures?: Promise<{
     header: string
     intervalTree: Record<string, IntervalTree>

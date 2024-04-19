@@ -257,6 +257,7 @@ export default class PluginLoader {
         return [moduleName, module]
       }),
     )
+    return this
   }
 
   async load(baseUri?: string) {

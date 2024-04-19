@@ -25,7 +25,7 @@ interface LineFeature {
   fields: string[]
 }
 
-export default class extends BaseFeatureDataAdapter {
+export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
   protected gff: TabixIndexedFile
 
   protected dontRedispatch: string[]

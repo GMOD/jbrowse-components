@@ -175,6 +175,16 @@ toggleMismatchAlpha: () => void
 setSortedBy: (type: string, tag?: string) => void
 ```
 
+#### action: setFeatureHeight
+
+overrides base from SharedLinearPileupDisplay to make sortReady false since
+changing feature height destroys the sort-induced layout
+
+```js
+// type signature
+setFeatureHeight: (n?: number) => void
+```
+
 #### action: reload
 
 ```js

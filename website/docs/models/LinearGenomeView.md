@@ -90,8 +90,6 @@ tracks: types.array(
 
 #### property: hideHeader
 
-array of currently displayed tracks state model's
-
 ```js
 // type signature
 false
@@ -185,6 +183,33 @@ show the "gridlines" in the track area
 true
 // code
 showGridlines: true
+```
+
+#### property: highlight
+
+highlights on the LGV from the URL parameters
+
+```js
+// type signature
+IOptionalIType<IArrayType<IType<Required<ParsedLocString>, Required<ParsedLocString>, Required<ParsedLocString>>>, [...]>
+// code
+highlight: types.optional(
+          types.array(types.frozen<Required<ParsedLocString>>()),
+          [],
+        )
+```
+
+#### property: colorByCDS
+
+color by CDS
+
+```js
+// type signature
+IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+colorByCDS: types.optional(types.boolean, () =>
+          Boolean(JSON.parse(localStorageGetItem('lgv-colorByCDS') || 'false')),
+        )
 ```
 
 ### LinearGenomeView - Getters
@@ -530,7 +555,7 @@ displayed regions, does nothing
 
 ```js
 // type signature
-centerAt: (coord: number, refName: string, regionNumber: number) => void
+centerAt: (coord: number, refName: string, regionNumber?: number) => void
 ```
 
 #### method: pxToBp
@@ -541,6 +566,13 @@ pxToBp: (px: number) => { coord: number; index: number; refName: string; oob: bo
 ```
 
 ### LinearGenomeView - Actions
+
+#### action: setColorByCDS
+
+```js
+// type signature
+setColorByCDS: (flag: boolean) => void
+```
 
 #### action: setShowCytobands
 
@@ -563,32 +595,53 @@ setWidth: (newWidth: number) => void
 setError: (error: unknown) => void
 ```
 
-#### action: toggleHeader
+#### action: setHideHeader
 
 ```js
 // type signature
-toggleHeader: () => void
+setHideHeader: (b: boolean) => void
 ```
 
-#### action: toggleHeaderOverview
+#### action: setHideHeaderOverview
 
 ```js
 // type signature
-toggleHeaderOverview: () => void
+setHideHeaderOverview: (b: boolean) => void
 ```
 
-#### action: toggleNoTracksActive
+#### action: setHideNoTracksActive
 
 ```js
 // type signature
-toggleNoTracksActive: () => void
+setHideNoTracksActive: (b: boolean) => void
 ```
 
-#### action: toggleShowGridlines
+#### action: setShowGridlines
 
 ```js
 // type signature
-toggleShowGridlines: () => void
+setShowGridlines: (b: boolean) => void
+```
+
+#### action: addToHighlights
+
+```js
+// type signature
+addToHighlights: (highlight: Required<ParsedLocString>) => void
+```
+
+#### action: setHighlight
+
+```js
+// type signature
+setHighlight: (highlight: Required<ParsedLocString>[]) => void
+```
+
+#### action: removeHighlight
+
+```js
+// type signature
+removeHighlight: (highlight: Required<ParsedLocString>) => void
 ```
 
 #### action: scrollTo
@@ -651,6 +704,34 @@ showTrack: (trackId: string, initialSnapshot?: {}, displayInitialSnapshot?: {}) 
 hideTrack: (trackId: string) => number
 ```
 
+#### action: moveTrackDown
+
+```js
+// type signature
+moveTrackDown: (id: string) => void
+```
+
+#### action: moveTrackUp
+
+```js
+// type signature
+moveTrackUp: (id: string) => void
+```
+
+#### action: moveTrackToTop
+
+```js
+// type signature
+moveTrackToTop: (id: string) => void
+```
+
+#### action: moveTrackToBottom
+
+```js
+// type signature
+moveTrackToBottom: (id: string) => void
+```
+
 #### action: moveTrack
 
 ```js
@@ -679,11 +760,11 @@ toggleTrack: (trackId: string) => boolean
 setTrackLabels: (setting: "offset" | "hidden" | "overlapping") => void
 ```
 
-#### action: toggleCenterLine
+#### action: setShowCenterLine
 
 ```js
 // type signature
-toggleCenterLine: () => void
+setShowCenterLine: (b: boolean) => void
 ```
 
 #### action: setDisplayedRegions

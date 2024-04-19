@@ -529,8 +529,22 @@ const libs = {
 
   // end special case
   // material-ui subcomponents, should get rid of these
-  '@mui/material/styles': MUIStyles,
-  '@material-ui/core/styles': MUIStyles,
+  '@mui/material/styles': {
+    MUIStyles,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    makeStyles: (args: any) => {
+      const useStyles = makeStyles()(args)
+      return () => useStyles().classes
+    },
+  },
+  '@material-ui/core/styles': {
+    MUIStyles,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    makeStyles: (args: any) => {
+      const useStyles = makeStyles()(args)
+      return () => useStyles().classes
+    },
+  },
   ...MaterialPrefixMUI,
   ...MuiPrefixMUI,
 

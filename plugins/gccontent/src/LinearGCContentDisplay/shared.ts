@@ -13,23 +13,20 @@ const EditGCContentParamsDialog = lazy(
 )
 
 /**
- * #stateModel LinearGCContentDisplay
+ * #stateModel SharedGCContentModel
  * #category display
- * base model `BaseWiggleDisplayModel`
+ * extends
+ * - [LinearWiggleDisplay](../linearwiggledisplay)
  */
-export default function stateModelFactory(
+export default function SharedModelF(
   pluginManager: PluginManager,
   configSchema: AnyConfigurationSchemaType,
 ) {
   return types
     .compose(
-      'LinearGCContentDisplay',
+      'SharedGCContentModel',
       linearWiggleDisplayModelFactory(pluginManager, configSchema),
       types.model({
-        /**
-         * #property
-         */
-        type: types.literal('LinearGCContentDisplay'),
         /**
          * #property
          */

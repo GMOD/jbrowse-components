@@ -42,13 +42,15 @@ export async function* indexVcf({
     progressBar.start(totalBytes, 0)
   }
 
+  // @ts-expect-error
   stream.on('data', chunk => {
     receivedBytes += chunk.length
     progressBar.update(receivedBytes)
   })
 
   const gzStream = inLocation.match(/.b?gz$/)
-    ? stream.pipe(createGunzip())
+    ? // @ts-expect-error
+      stream.pipe(createGunzip())
     : stream
 
   const rl = readline.createInterface({

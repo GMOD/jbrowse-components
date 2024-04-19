@@ -43,6 +43,24 @@ IOptionalIType<ISimpleType<number>, [undefined]>
 resolution: types.optional(types.number, 1)
 ```
 
+#### property: useLogScale
+
+```js
+// type signature
+false
+// code
+useLogScale: false
+```
+
+#### property: colorScheme
+
+```js
+// type signature
+IMaybe<ISimpleType<string>>
+// code
+colorScheme: types.maybe(types.string)
+```
+
 ### LinearHicDisplay - Getters
 
 #### getter: blockType
@@ -63,7 +81,7 @@ string
 
 ```js
 // type
-() => MenuItem[]
+() => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; })[]
 ```
 
 ### LinearHicDisplay - Methods
@@ -82,4 +100,18 @@ renderProps: () => any
 ```js
 // type signature
 setResolution: (n: number) => void
+```
+
+#### action: setUseLogScale
+
+```js
+// type signature
+setUseLogScale: (f: boolean) => void
+```
+
+#### action: setColorScheme
+
+```js
+// type signature
+setColorScheme: (f?: string) => void
 ```

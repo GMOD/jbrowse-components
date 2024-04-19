@@ -4,7 +4,7 @@ import ReactComponent from './components/HicRendering'
 import configSchema from './configSchema'
 import HicRenderer from './HicRenderer'
 
-export default (pluginManager: PluginManager) => {
+export default function HicRendererF(pluginManager: PluginManager) {
   pluginManager.addRendererType(
     () =>
       new HicRenderer({

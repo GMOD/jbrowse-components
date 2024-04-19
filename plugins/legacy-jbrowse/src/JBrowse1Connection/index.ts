@@ -5,7 +5,7 @@ import ConnectionType from '@jbrowse/core/pluggableElementTypes/ConnectionType'
 import modelFactory from './model'
 import configSchema from './configSchema'
 
-export default (pluginManager: PluginManager) => {
+export default function JBrowse1ConnectionF(pluginManager: PluginManager) {
   pluginManager.addConnectionType(
     () =>
       new ConnectionType({

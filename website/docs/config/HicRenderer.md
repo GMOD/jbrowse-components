@@ -28,8 +28,8 @@ baseColor: {
 color: {
       type: 'color',
       description: 'the color of each feature in a hic alignment',
-      defaultValue: `jexl:colorString(hsl(alpha(baseColor,min(1,count/(maxScore/20)))))`,
-      contextVariable: ['count', 'maxScore', 'baseColor'],
+      defaultValue: `jexl:interpolate(count,scale)`,
+      contextVariable: ['count', 'maxScore', 'baseColor', 'scale'],
     }
 ```
 

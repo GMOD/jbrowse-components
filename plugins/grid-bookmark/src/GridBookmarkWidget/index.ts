@@ -9,7 +9,7 @@ import AddHighlightModelF from './components/Highlight'
 
 const configSchema = ConfigurationSchema('GridBookmarkWidget', {})
 
-export default (pluginManager: PluginManager) => {
+export default function GridBookmarkWidgetF(pluginManager: PluginManager) {
   pluginManager.addWidgetType(() => {
     return new WidgetType({
       name: 'GridBookmarkWidget',

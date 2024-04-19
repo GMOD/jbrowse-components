@@ -8,7 +8,7 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ### Source file
 
-[plugins/gccontent/src/LinearGCContentDisplay/config.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gccontent/src/LinearGCContentDisplay/config.ts)
+[plugins/gccontent/src/LinearGCContentDisplay/config1.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gccontent/src/LinearGCContentDisplay/config1.ts)
 
 extends LinearWiggleDisplay
 

@@ -11,7 +11,7 @@ import { handleSelectedRegion } from '../searchUtils'
 
 type LGV = LinearGenomeViewModel
 
-export default (pluginManager: PluginManager) => {
+export default function LaunchLinearGenomeViewF(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(
     'LaunchView-LinearGenomeView',
     // @ts-expect-error
@@ -30,7 +30,7 @@ export default (pluginManager: PluginManager) => {
       tracks?: string[]
       tracklist?: boolean
       nav?: boolean
-      highlight?: string
+      highlight?: string[]
     }) => {
       try {
         const { assemblyManager } = session
@@ -61,18 +61,25 @@ export default (pluginManager: PluginManager) => {
           view.setHideHeader(!nav)
         }
         if (highlight !== undefined) {
-          const parsedLocString = parseLocString(highlight, refName =>
-            isValidRefName(refName, assembly),
-          ) as Required<ParsedLocString>
+          highlight.forEach(async h => {
+            if (h) {
+              const parsedLocString = parseLocString(h, refName =>
+                isValidRefName(refName, assembly),
+              ) as Required<ParsedLocString>
 
-          const location = {
-            ...parsedLocString,
-            assemblyName: assembly,
-          }
+              const location = {
+                ...parsedLocString,
+                assemblyName: assembly,
+              }
 
-          if (location?.start !== undefined && location?.end !== undefined) {
-            view.setHighlight(location)
-          }
+              if (
+                location?.start !== undefined &&
+                location?.end !== undefined
+              ) {
+                view.addToHighlights(location)
+              }
+            }
+          })
         }
 
         await handleSelectedRegion({ input: loc, model: view, assembly: asm })

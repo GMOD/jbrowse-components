@@ -6,6 +6,7 @@ module.exports = {
     jest: true,
   },
   extends: [
+    'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:@typescript-eslint/recommended-type-checked',
     'plugin:@typescript-eslint/stylistic-type-checked',
@@ -29,6 +30,7 @@ module.exports = {
     },
   },
   rules: {
+    'no-empty': 'off',
     'react-refresh/only-export-components': 'warn',
 
     '@typescript-eslint/ban-ts-ignore': 'off',
