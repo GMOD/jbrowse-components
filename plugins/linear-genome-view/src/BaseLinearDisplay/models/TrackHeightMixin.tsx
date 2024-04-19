@@ -115,18 +115,18 @@ export default function TrackHeightMixin() {
         addDisposer(
           self,
           autorun(() => {
-            switch (self.adjustTrackLayoutHeightSetting) {
-              case 'bound':
-                // @ts-expect-error
-                if (self.allLayoutBlocksRendered) {
+            // @ts-expect-error
+            if (self.allLayoutBlocksRendered) {
+              switch (self.adjustTrackLayoutHeightSetting) {
+                case 'bound':
                   self.setHeight(self.boundLayoutBlockHeight)
-                }
-                break
-              case 'dynamic':
-                self.setHeight(self.maxLayoutBlockHeight)
-                break
-              default:
-                break
+                  break
+                case 'dynamic':
+                  self.setHeight(self.maxLayoutBlockHeight)
+                  break
+                default:
+                  break
+              }
             }
           }),
         )

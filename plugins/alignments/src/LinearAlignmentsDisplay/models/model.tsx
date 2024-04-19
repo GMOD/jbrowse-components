@@ -356,7 +356,7 @@ function stateModelFactory(
 
             if (setting === 'static') {
               self.PileupDisplay.setHeight(
-                self.height - self.SNPCoverageDisplay.height,
+                self.height - SNPCoverageDisplay.height,
               )
             }
           }),
