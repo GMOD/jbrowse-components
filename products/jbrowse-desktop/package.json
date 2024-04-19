@@ -130,12 +130,6 @@
       "target": [
         {
           "target": "AppImage"
-        },
-        {
-          "target": "snap"
-        },
-        {
-          "target": "deb"
         }
       ],
       "executableName": "jbrowse-desktop",
