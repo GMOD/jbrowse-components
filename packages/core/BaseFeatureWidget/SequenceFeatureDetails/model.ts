@@ -4,15 +4,17 @@ import { autorun } from 'mobx'
 // locals
 import { localStorageGetItem, localStorageSetItem } from '../../util'
 
-export function SequenceFeaturePanelF() {
+export function SequenceFeatureDetailsF() {
   return types
-    .model('SequenceFeaturePanel', {})
+    .model('SequenceFeatureDetails', {})
     .volatile(() => ({
-      intronBp: +(localStorageGetItem('sequenceFeaturePanel-intronBp') ?? 10),
-      upDownBp: +(localStorageGetItem('sequenceFeaturePanel-upDownBp') ?? 100),
+      intronBp: +(localStorageGetItem('sequenceFeatureDetails-intronBp') ?? 10),
+      upDownBp: +(
+        localStorageGetItem('sequenceFeatureDetails-upDownBp') ?? 100
+      ),
       upperCaseCDS: Boolean(
         JSON.parse(
-          localStorageGetItem('sequenceFeaturePanel-upperCaseCDS') || 'true',
+          localStorageGetItem('sequenceFeatureDetails-upperCaseCDS') || 'true',
         ),
       ),
     }))
@@ -51,7 +53,7 @@ export function SequenceFeaturePanelF() {
 }
 
 export type SequenceFeatureDetailsStateModel = ReturnType<
-  typeof SequenceFeaturePanelF
+  typeof SequenceFeatureDetailsF
 >
 export type SequenceFeatureDetailsModel =
   Instance<SequenceFeatureDetailsStateModel>

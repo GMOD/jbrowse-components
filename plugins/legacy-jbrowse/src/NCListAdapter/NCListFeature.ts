@@ -80,7 +80,9 @@ export default class NCListFeature implements Feature {
   }
 
   toJSON(): SimpleFeatureSerialized {
+    // @ts-expect-error
     const data: SimpleFeatureSerialized = { uniqueId: this.id() }
+
     this.ncFeature.tags().forEach((tag: string) => {
       const mappedTag = this.jb1TagToJb2Tag(tag)
       const value = this.ncFeature.get(tag)

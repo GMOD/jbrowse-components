@@ -86,8 +86,7 @@ function Position(props: BaseProps) {
     '1': '+',
   }
   const str = strandMap[strand] ? `(${strandMap[strand]})` : ''
-  // @ts-expect-error
-  const loc = assembleLocString(feature as ParsedLocString)
+  const loc = assembleLocString(feature)
   return <>{`${loc} ${str}`}</>
 }
 
@@ -198,7 +197,16 @@ export function FeatureDetails(props: {
           <Typography>Mate details</Typography>
           <CoreDetails
             {...props}
-            feature={{ ...mate, uniqueId: uniqueId + '-mate' }}
+            feature={{
+              ...mate,
+              // @ts-expect-error
+              start: mate.start,
+              // @ts-expect-error
+              end: mate.end,
+              // @ts-expect-error
+              refName: mate.refName,
+              uniqueId: uniqueId + '-mate',
+            }}
           />
         </>
       ) : null}

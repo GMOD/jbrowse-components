@@ -22,6 +22,7 @@ describe('function string parsing', () => {
   it('can use the loaded core helper functions to access feature info', () => {
     const feature = new SimpleFeature({
       uniqueId: 'jexlFeature',
+      refName: 't1',
       score: 10,
       start: 1,
       end: 9,

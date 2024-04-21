@@ -17,6 +17,7 @@ test('renders with one, zoomed way out', () => {
             'one',
             new SimpleFeature({
               uniqueId: 'one',
+              refName: 't1',
               start: 1,
               end: 3,
               seq: 'AB',
@@ -43,7 +44,15 @@ test('renders with one feature with no seq, zoomed in, should throw', () => {
       colorByCDS={false}
       features={
         new Map([
-          ['one', new SimpleFeature({ uniqueId: 'one', start: 1, end: 3 })],
+          [
+            'one',
+            new SimpleFeature({
+              uniqueId: 'one',
+              refName: 't1',
+              start: 1,
+              end: 3,
+            }),
+          ],
         ])
       }
       config={DivRenderingConfigSchema.create({})}
@@ -68,6 +77,7 @@ test('renders with one feature with an incorrect seq, zoomed in, should throw', 
           [
             'one',
             new SimpleFeature({
+              refName: 't1',
               uniqueId: 'one',
               start: 1,
               end: 3,
@@ -98,6 +108,7 @@ test('renders with one feature with a correct seq, zoomed in, should render nice
           [
             'one',
             new SimpleFeature({
+              refName: 't1',
               uniqueId: 'one',
               start: 1,
               end: 10,
@@ -134,6 +145,7 @@ test('renders with one feature reversed with a correct seq, zoomed in, should re
           [
             'one',
             new SimpleFeature({
+              refName: 't1',
               uniqueId: 'one',
               start: 1,
               end: 10,

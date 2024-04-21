@@ -7,7 +7,7 @@ import PluginManager from '../PluginManager'
 import { getConf } from '../configuration'
 import { getSession } from '../util'
 import { ElementId } from '../util/types/mst'
-import { SequenceFeaturePanelF } from './SequenceFeatureDetails/model'
+import { SequenceFeatureDetailsF } from './SequenceFeatureDetails/model'
 
 interface Feat {
   subfeatures?: Record<string, unknown>[]
@@ -87,7 +87,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #property
        */
-      sequenceFeaturePanel: types.optional(SequenceFeaturePanelF(), {}),
+      sequenceFeatureDetails: types.optional(SequenceFeatureDetailsF(), {}),
     })
     .volatile(() => ({
       error: undefined as unknown,

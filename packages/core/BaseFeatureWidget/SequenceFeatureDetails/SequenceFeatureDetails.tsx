@@ -7,25 +7,26 @@ import {
   Typography,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+import { observer } from 'mobx-react'
 import copy from 'copy-to-clipboard'
 
 // locals
 import { useFeatureSequence } from './hooks'
-import { BaseProps } from './../types'
-import { ParentFeat } from '../util'
-import { LoadingEllipses } from '../../ui'
+import { ErrorMessage, LoadingEllipses } from '../../ui'
+import { SimpleFeatureSerialized, getSession } from '../../util'
+import { BaseFeatureWidgetModel } from '../stateModelFactory'
 import CascadingMenuButton from '../../ui/CascadingMenuButton'
 
 // icons
 import MoreVert from '@mui/icons-material/MoreVert'
-import AdvancedSequenceDialog from './dialogs/AdvancedSequenceDialog'
-import { BaseFeatureWidgetModel } from '../stateModelFactory'
-import { SimpleFeatureSerialized } from '../../util'
 
 // lazies
 const SequencePanel = lazy(() => import('./SequencePanel'))
 const SettingsDialog = lazy(() => import('./dialogs/SettingsDialog'))
 const HelpDialog = lazy(() => import('./dialogs/HelpDialog'))
+const AdvancedSequenceDialog = lazy(
+  () => import('./dialogs/AdvancedSequenceDialog'),
+)
 
 const useStyles = makeStyles()({
   formControl: {
@@ -36,21 +37,19 @@ const useStyles = makeStyles()({
 
 // set the key on this component to feature.id to clear state after new feature
 // is selected
-export default function SequenceFeatureDetails({
+const SequenceFeatureDetails = observer(function ({
   model,
   feature,
 }: {
   model: BaseFeatureWidgetModel
   feature: SimpleFeatureSerialized
 }) {
-  const { sequenceFeaturePanel } = model
-  const { intronBp, upDownBp, upperCaseCDS } = sequenceFeaturePanel
+  const { sequenceFeatureDetails } = model
+  const { intronBp, upDownBp } = sequenceFeatureDetails
   const { classes } = useStyles()
   const seqPanelRef = useRef<HTMLDivElement>(null)
 
-  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false)
   const [advancedDialogOpen, setAdvancedDialogOpen] = useState(false)
-  const [helpDialogOpen, setHelpDialogOpen] = useState(false)
   const [force, setForce] = useState(false)
   const hasCDS = feature.subfeatures?.some(sub => sub.type === 'CDS')
   const hasExon = feature.subfeatures?.some(sub => sub.type === 'exon')
@@ -67,7 +66,7 @@ export default function SequenceFeatureDetails({
   )
 
   return (
-    <>
+    <span>
       <span>
         <FormControl className={classes.formControl}>
           <Select value={mode} onChange={event => setMode(event.target.value)}>
@@ -147,23 +146,22 @@ export default function SequenceFeatureDetails({
                   }
                 },
               },
-              {
-                label: 'Upper case CDS and lower case everything else',
-                checked: sequenceFeaturePanel.upperCaseCDS,
-                onClick: () =>
-                  sequenceFeaturePanel.setUpperCaseCDS(!upperCaseCDS),
-              },
-              {
-                label: 'Advanced view',
-                onClick: () => setAdvancedDialogOpen(true),
-              },
+
               {
                 label: 'Settings',
-                onClick: () => setSettingsDialogOpen(true),
+                onClick: () =>
+                  getSession(model).queueDialog(handleClose => [
+                    SettingsDialog,
+                    { model: sequenceFeatureDetails, handleClose },
+                  ]),
               },
               {
                 label: 'Help',
-                onClick: () => setHelpDialogOpen(true),
+                onClick: () =>
+                  getSession(model).queueDialog(handleClose => [
+                    HelpDialog,
+                    { handleClose },
+                  ]),
               },
             ]}
           >
@@ -178,7 +176,7 @@ export default function SequenceFeatureDetails({
           </Typography>
         ) : null}
         {error ? (
-          <Typography color="error">{`${error}`}</Typography>
+          <ErrorMessage error={error} />
         ) : !sequence ? (
           <LoadingEllipses />
         ) : sequence ? (
@@ -207,35 +205,16 @@ export default function SequenceFeatureDetails({
         ) : (
           <Typography>No sequence found</Typography>
         )}
-        {settingsDialogOpen ? (
-          <Suspense fallback={null}>
-            <SettingsDialog
-              handleClose={arg => {
-                if (arg) {
-                  const { upDownBp, intronBp } = arg
-                  sequenceFeaturePanel.setIntronBp(intronBp)
-                  sequenceFeaturePanel.setUpDownBp(upDownBp)
-                }
-                setSettingsDialogOpen(false)
-              }}
-              upDownBp={upDownBp}
-              intronBp={intronBp}
-            />
-          </Suspense>
-        ) : null}
-        {helpDialogOpen ? (
-          <Suspense fallback={null}>
-            <HelpDialog handleClose={() => setHelpDialogOpen(false)} />
-          </Suspense>
-        ) : null}
         {advancedDialogOpen ? (
           <Suspense fallback={null}>
             <AdvancedSequenceDialog
-              handleClose={() => setHelpDialogOpen(false)}
+              handleClose={() => setAdvancedDialogOpen(false)}
             />
           </Suspense>
         ) : null}
       </div>
-    </>
+    </span>
   )
-}
+})
+
+export default SequenceFeatureDetails

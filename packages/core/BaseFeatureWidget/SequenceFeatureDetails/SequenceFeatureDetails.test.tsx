@@ -109,8 +109,8 @@ test('single exon cDNA should not have duplicate sequences', () => {
         type: 'mRNA',
         uniqueId: 'unique',
         subfeatures: [
-          { start: 1200, end: 1500, type: 'exon' },
-          { start: 1200, end: 1500, type: 'CDS' },
+          { refName: 'chr1', start: 1200, end: 1500, type: 'exon' },
+          { refName: 'chr1', start: 1200, end: 1500, type: 'CDS' },
         ],
       }}
     />,

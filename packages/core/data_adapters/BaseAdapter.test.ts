@@ -45,6 +45,7 @@ describe('base data adapter', () => {
             observer.next(
               new SimpleFeature({
                 uniqueId: 'testFeature',
+                refName: region.refName,
                 start: 100,
                 end: 200,
               }),

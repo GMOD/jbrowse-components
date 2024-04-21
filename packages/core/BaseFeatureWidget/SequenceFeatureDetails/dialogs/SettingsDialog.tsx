@@ -1,7 +1,18 @@
 import React, { useState } from 'react'
-import { Button, DialogContent, DialogActions, TextField } from '@mui/material'
+import {
+  Button,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Checkbox,
+  FormControlLabel,
+} from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
 import { makeStyles } from 'tss-react/mui'
+import { observer } from 'mobx-react'
+
+// locals
+import { SequenceFeatureDetailsModel } from '../model'
 
 const useStyles = makeStyles()(theme => ({
   formElt: {
@@ -13,18 +24,16 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default function SequenceFeatureSettingsDialog({
+const SequenceFeatureSettingsDialog = observer(function ({
   handleClose,
-  intronBp: intronBpArg,
-  upDownBp: upDownBpArg,
+  model,
 }: {
-  handleClose: (arg?: { intronBp: number; upDownBp: number }) => void
-  intronBp: number
-  upDownBp: number
+  handleClose: () => void
+  model: SequenceFeatureDetailsModel
 }) {
   const { classes } = useStyles()
-  const [intronBp, setIntronBp] = useState(`${intronBpArg}`)
-  const [upDownBp, setUpDownBp] = useState(`${upDownBpArg}`)
+  const [intronBp, setIntronBp] = useState(`${model.intronBp}`)
+  const [upDownBp, setUpDownBp] = useState(`${model.upDownBp}`)
   const intronBpValid = !Number.isNaN(+intronBp)
   const upDownBpValid = !Number.isNaN(+upDownBp)
   return (
@@ -35,32 +44,46 @@ export default function SequenceFeatureSettingsDialog({
       title="Feature sequence settings"
     >
       <DialogContent className={classes.dialogContent}>
-        <TextField
-          label="Number of intronic bases around splice site to display"
-          className={classes.formElt}
-          value={intronBp}
-          helperText={!intronBpValid ? 'Not a number' : ''}
-          error={!intronBpValid}
-          onChange={event => setIntronBp(event.target.value)}
-        />
-        <TextField
-          label="Number of bases up/down stream of feature to display"
-          className={classes.formElt}
-          value={upDownBp}
-          helperText={!upDownBpValid ? 'Not a number' : ''}
-          error={!upDownBpValid}
-          onChange={event => setUpDownBp(event.target.value)}
-        />
+        <div>
+          <TextField
+            label="Number of intronic bases around splice site to display"
+            className={classes.formElt}
+            value={intronBp}
+            helperText={!intronBpValid ? 'Not a number' : ''}
+            error={!intronBpValid}
+            onChange={event => setIntronBp(event.target.value)}
+          />
+        </div>
+        <div>
+          <TextField
+            label="Number of bases up/down stream of feature to display"
+            className={classes.formElt}
+            value={upDownBp}
+            helperText={!upDownBpValid ? 'Not a number' : ''}
+            error={!upDownBpValid}
+            onChange={event => setUpDownBp(event.target.value)}
+          />
+        </div>
+        <div>
+          <FormControlLabel
+            control={
+              <Checkbox
+                onChange={event => model.setUpperCaseCDS(event.target.checked)}
+                checked={model.upperCaseCDS}
+              />
+            }
+            label="Upper case CDS, lower case everything else?"
+          />
+        </div>
       </DialogContent>
 
       <DialogActions>
         <Button
-          onClick={() =>
-            handleClose({
-              upDownBp: +upDownBp,
-              intronBp: +intronBp,
-            })
-          }
+          onClick={() => {
+            model.setIntronBp(+intronBp)
+            model.setUpDownBp(+upDownBp)
+            handleClose()
+          }}
           disabled={!intronBpValid || !upDownBpValid}
           color="primary"
           variant="contained"
@@ -78,4 +101,6 @@ export default function SequenceFeatureSettingsDialog({
       </DialogActions>
     </Dialog>
   )
-}
+})
+
+export default SequenceFeatureSettingsDialog
