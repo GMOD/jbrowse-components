@@ -1,4 +1,4 @@
-import { types, addDisposer } from 'mobx-state-tree'
+import { types, addDisposer, Instance } from 'mobx-state-tree'
 import { autorun } from 'mobx'
 import clone from 'clone'
 
@@ -7,6 +7,7 @@ import PluginManager from '../PluginManager'
 import { getConf } from '../configuration'
 import { getSession } from '../util'
 import { ElementId } from '../util/types/mst'
+import { SequenceFeaturePanelF } from './SequenceFeatureDetails/model'
 
 interface Feat {
   subfeatures?: Record<string, unknown>[]
@@ -82,6 +83,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #property
        */
       maxDepth: types.maybe(types.number),
+
+      /**
+       * #property
+       */
+      sequenceFeaturePanel: types.optional(SequenceFeaturePanelF(), {}),
     })
     .volatile(() => ({
       error: undefined as unknown,
@@ -200,3 +206,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       }
     })
 }
+
+export type BaseFeatureWidgetStateModel = ReturnType<typeof stateModelFactory>
+export type BaseFeatureWidgetModel = Instance<BaseFeatureWidgetStateModel>
