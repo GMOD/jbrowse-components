@@ -67,6 +67,10 @@ export interface SimpleFeatureArgs {
 export interface SimpleFeatureSerializedNoId {
   [key: string]: unknown
   parentId?: string
+  start: number
+  end: number
+  refName: string
+  type?: string
   subfeatures?: SimpleFeatureSerializedNoId[]
 }
 

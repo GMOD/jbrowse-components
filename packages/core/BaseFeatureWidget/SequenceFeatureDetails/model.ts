@@ -51,7 +51,7 @@ export function SequenceFeaturePanelF() {
 }
 
 export type SequenceFeatureDetailsStateModel = ReturnType<
-  typeof stateModelFactory
+  typeof SequenceFeaturePanelF
 >
 export type SequenceFeatureDetailsModel =
   Instance<SequenceFeatureDetailsStateModel>

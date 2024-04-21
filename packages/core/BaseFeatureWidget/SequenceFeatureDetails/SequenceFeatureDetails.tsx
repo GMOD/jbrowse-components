@@ -19,6 +19,8 @@ import CascadingMenuButton from '../../ui/CascadingMenuButton'
 // icons
 import MoreVert from '@mui/icons-material/MoreVert'
 import AdvancedSequenceDialog from './dialogs/AdvancedSequenceDialog'
+import { BaseFeatureWidgetModel } from '../stateModelFactory'
+import { SimpleFeatureSerialized } from '../../util'
 
 // lazies
 const SequencePanel = lazy(() => import('./SequencePanel'))
@@ -36,12 +38,14 @@ const useStyles = makeStyles()({
 // is selected
 export default function SequenceFeatureDetails({
   model,
-  feature: prefeature,
-}: BaseProps) {
+  feature,
+}: {
+  model: BaseFeatureWidgetModel
+  feature: SimpleFeatureSerialized
+}) {
   const { sequenceFeaturePanel } = model
-  const { intronBp, upDownBp, upperCaseCDS } = model2
+  const { intronBp, upDownBp, upperCaseCDS } = sequenceFeaturePanel
   const { classes } = useStyles()
-  const feature = prefeature as unknown as ParentFeat
   const seqPanelRef = useRef<HTMLDivElement>(null)
 
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false)
@@ -53,7 +57,7 @@ export default function SequenceFeatureDetails({
   const hasExonOrCDS = hasExon || hasCDS
   const { sequence, error } = useFeatureSequence(
     model,
-    prefeature,
+    feature,
     upDownBp,
     force,
   )
@@ -145,8 +149,9 @@ export default function SequenceFeatureDetails({
               },
               {
                 label: 'Upper case CDS and lower case everything else',
-                checked: upperCaseCDS,
-                onClick: () => model2.setUpperCaseCDS(!upperCaseCDS),
+                checked: sequenceFeaturePanel.upperCaseCDS,
+                onClick: () =>
+                  sequenceFeaturePanel.setUpperCaseCDS(!upperCaseCDS),
               },
               {
                 label: 'Advanced view',
@@ -208,8 +213,8 @@ export default function SequenceFeatureDetails({
               handleClose={arg => {
                 if (arg) {
                   const { upDownBp, intronBp } = arg
-                  model2.setIntronBp(intronBp)
-                  model2.setUpDownBp(upDownBp)
+                  sequenceFeaturePanel.setIntronBp(intronBp)
+                  sequenceFeaturePanel.setUpDownBp(upDownBp)
                 }
                 setSettingsDialogOpen(false)
               }}
