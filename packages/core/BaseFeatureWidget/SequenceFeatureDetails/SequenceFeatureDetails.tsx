@@ -31,7 +31,8 @@ const AdvancedSequenceDialog = lazy(
 const useStyles = makeStyles()({
   formControl: {
     margin: 0,
-    marginLeft: 8,
+    marginLeft: 4,
+    maxWidth: 180,
   },
 })
 
@@ -69,7 +70,11 @@ const SequenceFeatureDetails = observer(function ({
     <span>
       <span>
         <FormControl className={classes.formControl}>
-          <Select value={mode} onChange={event => setMode(event.target.value)}>
+          <Select
+            size="small"
+            value={mode}
+            onChange={event => setMode(event.target.value)}
+          >
             {Object.entries({
               ...(hasCDS
                 ? {
@@ -125,49 +130,47 @@ const SequenceFeatureDetails = observer(function ({
           </Select>
         </FormControl>
 
-        <FormControl className={classes.formControl}>
-          <CascadingMenuButton
-            menuItems={[
-              {
-                label: 'Copy plaintext',
-                onClick: () => {
-                  const ref = seqPanelRef.current
-                  if (ref) {
-                    copy(ref.textContent || '', { format: 'text/plain' })
-                  }
-                },
+        <CascadingMenuButton
+          menuItems={[
+            {
+              label: 'Copy plaintext',
+              onClick: () => {
+                const ref = seqPanelRef.current
+                if (ref) {
+                  copy(ref.textContent || '', { format: 'text/plain' })
+                }
               },
-              {
-                label: 'Copy HTML',
-                onClick: () => {
-                  const ref = seqPanelRef.current
-                  if (ref) {
-                    copy(ref.innerHTML, { format: 'text/html' })
-                  }
-                },
+            },
+            {
+              label: 'Copy HTML',
+              onClick: () => {
+                const ref = seqPanelRef.current
+                if (ref) {
+                  copy(ref.innerHTML, { format: 'text/html' })
+                }
               },
+            },
 
-              {
-                label: 'Settings',
-                onClick: () =>
-                  getSession(model).queueDialog(handleClose => [
-                    SettingsDialog,
-                    { model: sequenceFeatureDetails, handleClose },
-                  ]),
-              },
-              {
-                label: 'Help',
-                onClick: () =>
-                  getSession(model).queueDialog(handleClose => [
-                    HelpDialog,
-                    { handleClose },
-                  ]),
-              },
-            ]}
-          >
-            <MoreVert />
-          </CascadingMenuButton>
-        </FormControl>
+            {
+              label: 'Settings',
+              onClick: () =>
+                getSession(model).queueDialog(handleClose => [
+                  SettingsDialog,
+                  { model: sequenceFeatureDetails, handleClose },
+                ]),
+            },
+            {
+              label: 'Help',
+              onClick: () =>
+                getSession(model).queueDialog(handleClose => [
+                  HelpDialog,
+                  { handleClose },
+                ]),
+            },
+          ]}
+        >
+          <MoreVert />
+        </CascadingMenuButton>
       </span>
       <div>
         {feature.type === 'gene' ? (
@@ -198,7 +201,7 @@ const SequenceFeatureDetails = observer(function ({
                 feature={feature}
                 mode={mode}
                 sequence={sequence}
-                intronBp={intronBp}
+                model={sequenceFeatureDetails}
               />
             </Suspense>
           )

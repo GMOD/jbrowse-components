@@ -65,15 +65,8 @@ describe('base data adapter', () => {
       end: 20000,
     })
     const featuresArray = await features.pipe(toArray()).toPromise()
-    expect(featuresArray).toMatchInlineSnapshot(`
-      [
-        {
-          "end": 200,
-          "start": 100,
-          "uniqueId": "testFeature",
-        },
-      ]
-    `)
+    expect(featuresArray).toMatchSnapshot()
+
     const features2 = adapter.getFeatures({
       assemblyName: 'volvox',
       refName: 'ctgC',
@@ -81,6 +74,6 @@ describe('base data adapter', () => {
       end: 20000,
     })
     const featuresArray2 = await features2.pipe(toArray()).toPromise()
-    expect(featuresArray2).toMatchInlineSnapshot(`[]`)
+    expect(featuresArray2).toMatchSnapshot()
   })
 })

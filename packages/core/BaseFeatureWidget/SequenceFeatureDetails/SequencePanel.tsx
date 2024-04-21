@@ -17,17 +17,18 @@ import CDNASequence from './seqtypes/CDNASequence'
 import ProteinSequence from './seqtypes/ProteinSequence'
 import GenomicSequence from './seqtypes/GenomicSequence'
 import CDSSequence from './seqtypes/CDSSequence'
+import { SequenceFeatureDetailsModel } from './model'
 
 interface SeqPanelProps {
   sequence: SeqState
   feature: SimpleFeatureSerialized
   mode: string
-  intronBp?: number
+  model: SequenceFeatureDetailsModel
 }
 
 const SeqPanel = React.forwardRef<HTMLDivElement, SeqPanelProps>(
   function SeqPanel2(props, ref) {
-    const { feature, mode, intronBp = 10 } = props
+    const { model, feature, mode } = props
     let {
       sequence: { seq, upstream = '', downstream = '' },
     } = props
@@ -114,35 +115,36 @@ const SeqPanel = React.forwardRef<HTMLDivElement, SeqPanelProps>(
             <CDSSequence cds={cds} sequence={seq} />
           ) : mode === 'cdna' ? (
             <CDNASequence
+              model={model}
               exons={exons}
               cds={cds}
               utr={utr}
               sequence={seq}
-              intronBp={intronBp}
             />
           ) : mode === 'protein' ? (
             <ProteinSequence cds={cds} codonTable={codonTable} sequence={seq} />
           ) : mode === 'gene' ? (
             <CDNASequence
+              model={model}
               exons={exons}
               cds={cds}
               utr={utr}
               sequence={seq}
               includeIntrons
-              intronBp={intronBp}
             />
           ) : mode === 'gene_collapsed_intron' ? (
             <CDNASequence
+              model={model}
               exons={exons}
               cds={cds}
               sequence={seq}
               utr={utr}
               includeIntrons
               collapseIntron
-              intronBp={intronBp}
             />
           ) : mode === 'gene_updownstream' ? (
             <CDNASequence
+              model={model}
               exons={exons}
               cds={cds}
               sequence={seq}
@@ -150,10 +152,10 @@ const SeqPanel = React.forwardRef<HTMLDivElement, SeqPanelProps>(
               upstream={upstream}
               downstream={downstream}
               includeIntrons
-              intronBp={intronBp}
             />
           ) : mode === 'gene_updownstream_collapsed_intron' ? (
             <CDNASequence
+              model={model}
               exons={exons}
               cds={cds}
               sequence={seq}
@@ -162,7 +164,6 @@ const SeqPanel = React.forwardRef<HTMLDivElement, SeqPanelProps>(
               downstream={downstream}
               includeIntrons
               collapseIntron
-              intronBp={intronBp}
             />
           ) : (
             <div>Unknown type</div>

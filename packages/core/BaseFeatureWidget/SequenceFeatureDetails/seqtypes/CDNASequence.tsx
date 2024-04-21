@@ -1,8 +1,12 @@
 import React from 'react'
+import { observer } from 'mobx-react'
+
+// locals
 import { Feat } from '../../util'
 import { cdsColor, intronColor, updownstreamColor, utrColor } from '../util'
+import { SequenceFeatureDetailsModel } from '../model'
 
-export default function CDNASequence({
+const CDNASequence = observer(function ({
   utr,
   cds,
   exons,
@@ -11,7 +15,7 @@ export default function CDNASequence({
   downstream,
   includeIntrons,
   collapseIntron,
-  intronBp,
+  model,
 }: {
   utr: Feat[]
   cds: Feat[]
@@ -21,15 +25,20 @@ export default function CDNASequence({
   downstream?: string
   includeIntrons?: boolean
   collapseIntron?: boolean
-  intronBp: number
+  model: SequenceFeatureDetailsModel
 }) {
+  const { upperCaseCDS, intronBp } = model
   const chunks = (
     cds.length ? [...cds, ...utr].sort((a, b) => a.start - b.start) : exons
   ).filter(f => f.start !== f.end)
+  const toLower = (s: string) => (upperCaseCDS ? s.toLowerCase() : s)
+  const toUpper = (s: string) => (upperCaseCDS ? s.toUpperCase() : s)
   return (
     <>
       {upstream ? (
-        <span style={{ background: updownstreamColor }}>{upstream}</span>
+        <span style={{ background: updownstreamColor }}>
+          {toLower(upstream)}
+        </span>
       ) : null}
 
       {chunks.map((chunk, idx) => {
@@ -42,13 +51,17 @@ export default function CDNASequence({
                 background: chunk.type === 'CDS' ? cdsColor : utrColor,
               }}
             >
-              {sequence.slice(chunk.start, chunk.end)}
+              {chunk.type === 'CDS'
+                ? toUpper(sequence.slice(chunk.start, chunk.end))
+                : toLower(sequence.slice(chunk.start, chunk.end))}
             </span>
             {includeIntrons && idx < chunks.length - 1 ? (
               <span style={{ background: intronColor }}>
-                {collapseIntron && intron.length > intronBp * 2
-                  ? `${intron.slice(0, intronBp)}...${intron.slice(-intronBp)}`
-                  : intron}
+                {toLower(
+                  collapseIntron && intron.length > intronBp * 2
+                    ? `${intron.slice(0, intronBp)}...${intron.slice(-intronBp)}`
+                    : intron,
+                )}
               </span>
             ) : null}
           </React.Fragment>
@@ -56,8 +69,12 @@ export default function CDNASequence({
       })}
 
       {downstream ? (
-        <span style={{ background: updownstreamColor }}>{downstream}</span>
+        <span style={{ background: updownstreamColor }}>
+          {toLower(downstream)}
+        </span>
       ) : null}
     </>
   )
-}
+})
+
+export default CDNASequence
