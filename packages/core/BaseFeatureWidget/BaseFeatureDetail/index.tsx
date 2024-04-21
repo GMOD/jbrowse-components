@@ -21,7 +21,6 @@ import {
   getSession,
   assembleLocString,
   toLocale,
-  ParsedLocString,
   SimpleFeatureSerialized,
 } from '../../util'
 import { ErrorMessage } from '../../ui'

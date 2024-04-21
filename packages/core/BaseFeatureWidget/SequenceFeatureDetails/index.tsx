@@ -1,3 +1,1 @@
-import SequenceFeaturePanel from './SequenceFeaturePanel'
-
-export { SequenceFeaturePanel as default }
+export { default } from './SequenceFeaturePanel'

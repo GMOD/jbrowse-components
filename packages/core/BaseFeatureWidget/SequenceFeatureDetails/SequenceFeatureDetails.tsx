@@ -32,7 +32,6 @@ const useStyles = makeStyles()({
   formControl: {
     margin: 0,
     marginLeft: 4,
-    maxWidth: 180,
   },
 })
 
@@ -67,7 +66,7 @@ const SequenceFeatureDetails = observer(function ({
   )
 
   return (
-    <span>
+    <>
       <span>
         <FormControl className={classes.formControl}>
           <Select
@@ -216,7 +215,7 @@ const SequenceFeatureDetails = observer(function ({
           </Suspense>
         ) : null}
       </div>
-    </span>
+    </>
   )
 })
 

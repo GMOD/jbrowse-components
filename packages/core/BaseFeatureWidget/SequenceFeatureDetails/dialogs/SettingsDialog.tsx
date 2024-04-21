@@ -3,9 +3,12 @@ import {
   Button,
   DialogContent,
   DialogActions,
-  TextField,
-  Checkbox,
   FormControlLabel,
+  FormControl,
+  FormLabel,
+  Radio,
+  RadioGroup,
+  TextField,
 } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
 import { makeStyles } from 'tss-react/mui'
@@ -65,15 +68,24 @@ const SequenceFeatureSettingsDialog = observer(function ({
           />
         </div>
         <div>
-          <FormControlLabel
-            control={
-              <Checkbox
-                onChange={event => model.setUpperCaseCDS(event.target.checked)}
-                checked={model.upperCaseCDS}
+          <FormControl>
+            <FormLabel>Sequence capitalization</FormLabel>
+            <RadioGroup
+              value={model.upperCaseCDS ? 'cds' : 'unchanged'}
+              onChange={e => model.setUpperCaseCDS(e.target.value === 'cds')}
+            >
+              <FormControlLabel
+                value="cds"
+                control={<Radio />}
+                label="Capitalize CDS and lower case everything else"
               />
-            }
-            label="Upper case CDS, lower case everything else?"
-          />
+              <FormControlLabel
+                value="unchanged"
+                control={<Radio />}
+                label="Capitalization from reference genome sequence"
+              />
+            </RadioGroup>
+          </FormControl>
         </div>
       </DialogContent>
 
