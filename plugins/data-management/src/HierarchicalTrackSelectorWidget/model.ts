@@ -1,5 +1,5 @@
 import { types, addDisposer, Instance } from 'mobx-state-tree'
-import { autorun } from 'mobx'
+import { autorun, observable } from 'mobx'
 import {
   getConf,
   readConfObject,
@@ -23,21 +23,55 @@ import { facetedStateTreeF } from './facetedModel'
 
 type MaybeAnyConfigurationModel = AnyConfigurationModel | undefined
 
-// for settings that are config dependent
-function postNoConfigF() {
+// for settings that are not config dependent
+function keyNoConfigPostFix() {
   return typeof window !== 'undefined'
     ? [window.location.host, window.location.pathname].join('-')
     : 'empty'
 }
 
-// for settings that are not config dependent
-function postF() {
+// for settings that are config dependent
+function keyConfigPostFix() {
   return typeof window !== 'undefined'
     ? [
-        postNoConfigF(),
+        keyNoConfigPostFix(),
         new URLSearchParams(window.location.search).get('config'),
       ].join('-')
     : 'empty'
+}
+
+function recentlyUsedK(assemblyNames: string[]) {
+  return ['recentlyUsedTracks', keyConfigPostFix(), assemblyNames.join(',')]
+    .filter(f => !!f)
+    .join('-')
+}
+
+// this has a extra } at the end because that's how it was initially
+// released
+function favoritesK() {
+  return `favoriteTracks-${keyConfigPostFix()}}`
+}
+
+function collapsedK(assemblyNames: string[]) {
+  return [
+    'collapsedCategories',
+    keyConfigPostFix(),
+    assemblyNames.join(','),
+  ].join('-')
+}
+
+function sortTrackNamesK() {
+  return 'sortTrackNames'
+}
+function sortCategoriesK() {
+  return 'sortCategories'
+}
+
+function localStorageGetJSON<T>(key: string, defaultValue: string) {
+  return JSON.parse(localStorageGetItem(key) ?? defaultValue) as T
+}
+function localStorageSetJSON(key: string, val: unknown) {
+  localStorageSetItem(key, JSON.stringify(val))
 }
 
 const MAX_RECENTLY_USED = 10
@@ -63,18 +97,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #property
        */
-      collapsed: types.map(types.boolean),
-      /**
-       * #property
-       */
-      sortTrackNames: types.maybe(types.boolean),
-      /**
-       * #property
-       */
-      sortCategories: types.maybe(types.boolean),
-      /**
-       * #property
-       */
       view: types.safeReference(
         pluginManager.pluggableMstType('view', 'stateModel'),
       ),
@@ -84,9 +106,18 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       faceted: types.optional(facetedStateTreeF(), {}),
     })
     .volatile(() => ({
-      favorites: [] as string[],
+      favorites: localStorageGetJSON<string[]>(favoritesK(), '[]'),
       recentlyUsed: [] as string[],
       selection: [] as AnyConfigurationModel[],
+      sortTrackNames: !!localStorageGetJSON<Boolean>(
+        sortTrackNamesK(),
+        'false',
+      ),
+      sortCategories: !!localStorageGetJSON<Boolean>(
+        sortCategoriesK(),
+        'false',
+      ),
+      collapsed: observable.map<string, boolean>(),
       filterText: '',
       recentlyUsedCounter: 0,
       favoritesCounter: 0,
@@ -120,6 +151,12 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       get recentlyUsedSet() {
         return new Set(self.recentlyUsed)
+      },
+      /**
+       * #getter
+       */
+      get assemblyNames(): string[] {
+        return self.view?.assemblyNames || []
       },
     }))
     .actions(self => ({
@@ -253,6 +290,12 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
+      setCollapsedCategories(str: string[]) {
+        self.collapsed.replace(new Map(str.map(s => [s, true])))
+      },
+      /**
+       * #action
+       */
       clearFilterText() {
         self.filterText = ''
       },
@@ -290,42 +333,18 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         const assembly = assemblyManager.get(assemblyName)
         const trackConf = assembly?.configuration.sequence
         const viewType = pluginManager.getViewType(self.view.type)
-        if (!trackConf) {
-          return undefined
-        }
-        for (const display of trackConf.displays) {
-          if (viewType.displayTypes.some(d => d.name === display.type)) {
-            return trackConf
+        if (trackConf) {
+          for (const display of trackConf.displays) {
+            if (viewType.displayTypes.some(d => d.name === display.type)) {
+              return trackConf
+            }
           }
         }
         return undefined
       },
     }))
+
     .views(self => ({
-      /**
-       * #getter
-       */
-      get assemblyNames(): string[] {
-        return self.view?.assemblyNames || []
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get recentlyUsedLocalStorageKey() {
-        return `recentlyUsedTracks-${[postF(), self.assemblyNames.join(',')]
-          .filter(f => !!f)
-          .join('-')}`
-      },
-      /**
-       * #getter
-       */
-      get favoritesLocalStorageKey() {
-        // this has a extra } at the end because that's how it was initially
-        // released
-        return `favoriteTracks-${postF()}}`
-      },
       /**
        * #getter
        */
@@ -517,15 +536,12 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         addDisposer(
           self,
           autorun(() => {
+            const { assemblyNames } = self
             self.setRecentlyUsed(
-              JSON.parse(
-                localStorageGetItem(self.recentlyUsedLocalStorageKey) || '[]',
-              ),
+              localStorageGetJSON<string[]>(recentlyUsedK(assemblyNames), '[]'),
             )
-            self.setFavorites(
-              JSON.parse(
-                localStorageGetItem(self.favoritesLocalStorageKey) || '[]',
-              ),
+            self.setCollapsedCategories(
+              localStorageGetJSON<string[]>(collapsedK(assemblyNames), '[]'),
             )
           }),
         )
@@ -533,14 +549,12 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         addDisposer(
           self,
           autorun(() => {
-            localStorageSetItem(
-              self.favoritesLocalStorageKey,
-              JSON.stringify(self.favorites),
-            )
-            localStorageSetItem(
-              self.recentlyUsedLocalStorageKey,
-              JSON.stringify(self.recentlyUsed),
-            )
+            const { assemblyNames } = self
+            localStorageSetJSON(recentlyUsedK(assemblyNames), self.recentlyUsed)
+            localStorageSetJSON(collapsedK(assemblyNames), self.collapsed)
+            localStorageSetJSON(favoritesK(), self.favorites)
+            localStorageSetJSON(sortTrackNamesK(), self.sortTrackNames)
+            localStorageSetJSON(sortCategoriesK(), self.sortCategories)
           }),
         )
       },
