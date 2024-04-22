@@ -23,7 +23,6 @@ const useStyles = makeStyles()({
 })
 
 const Highlight = observer(function Highlight({ model }: { model: LGV }) {
-  return null
   const { classes } = useStyles()
 
   const session = getSession(model) as SessionWithWidgets
