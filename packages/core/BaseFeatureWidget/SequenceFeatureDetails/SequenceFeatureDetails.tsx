@@ -2,6 +2,7 @@ import React, { lazy, useRef, useState, Suspense } from 'react'
 import {
   Button,
   FormControl,
+  IconButton,
   MenuItem,
   Select,
   Typography,
@@ -15,18 +16,13 @@ import { useFeatureSequence } from './hooks'
 import { ErrorMessage, LoadingEllipses } from '../../ui'
 import { SimpleFeatureSerialized, getSession } from '../../util'
 import { BaseFeatureWidgetModel } from '../stateModelFactory'
-import CascadingMenuButton from '../../ui/CascadingMenuButton'
 
 // icons
-import MoreVert from '@mui/icons-material/MoreVert'
+import Settings from '@mui/icons-material/Settings'
 
 // lazies
 const SequencePanel = lazy(() => import('./SequencePanel'))
 const SettingsDialog = lazy(() => import('./dialogs/SettingsDialog'))
-const HelpDialog = lazy(() => import('./dialogs/HelpDialog'))
-const AdvancedSequenceDialog = lazy(
-  () => import('./dialogs/AdvancedSequenceDialog'),
-)
 
 const useStyles = makeStyles()({
   formControl: {
@@ -49,7 +45,6 @@ const SequenceFeatureDetails = observer(function ({
   const { classes } = useStyles()
   const seqPanelRef = useRef<HTMLDivElement>(null)
 
-  const [advancedDialogOpen, setAdvancedDialogOpen] = useState(false)
   const [force, setForce] = useState(false)
   const hasCDS = feature.subfeatures?.some(sub => sub.type === 'CDS')
   const hasExon = feature.subfeatures?.some(sub => sub.type === 'exon')
@@ -67,7 +62,7 @@ const SequenceFeatureDetails = observer(function ({
 
   return (
     <>
-      <span>
+      <div>
         <FormControl className={classes.formControl}>
           <Select
             size="small"
@@ -128,49 +123,43 @@ const SequenceFeatureDetails = observer(function ({
             ))}
           </Select>
         </FormControl>
-
-        <CascadingMenuButton
-          menuItems={[
-            {
-              label: 'Copy plaintext',
-              onClick: () => {
-                const ref = seqPanelRef.current
-                if (ref) {
-                  copy(ref.textContent || '', { format: 'text/plain' })
-                }
-              },
-            },
-            {
-              label: 'Copy HTML',
-              onClick: () => {
-                const ref = seqPanelRef.current
-                if (ref) {
-                  copy(ref.innerHTML, { format: 'text/html' })
-                }
-              },
-            },
-
-            {
-              label: 'Settings',
-              onClick: () =>
-                getSession(model).queueDialog(handleClose => [
-                  SettingsDialog,
-                  { model: sequenceFeatureDetails, handleClose },
-                ]),
-            },
-            {
-              label: 'Help',
-              onClick: () =>
-                getSession(model).queueDialog(handleClose => [
-                  HelpDialog,
-                  { handleClose },
-                ]),
-            },
-          ]}
+        <Button
+          className={classes.formControl}
+          variant="contained"
+          onClick={() => {
+            const ref = seqPanelRef.current
+            if (ref) {
+              copy(ref.textContent || '', { format: 'text/plain' })
+            }
+          }}
         >
-          <MoreVert />
-        </CascadingMenuButton>
-      </span>
+          Copy plaintext
+        </Button>
+        <Button
+          className={classes.formControl}
+          variant="contained"
+          onClick={() => {
+            const ref = seqPanelRef.current
+            if (ref) {
+              copy(ref.innerHTML, { format: 'text/html' })
+            }
+          }}
+        >
+          Copy HTML
+        </Button>
+
+        <IconButton
+          className={classes.formControl}
+          onClick={() =>
+            getSession(model).queueDialog(handleClose => [
+              SettingsDialog,
+              { model: sequenceFeatureDetails, handleClose },
+            ])
+          }
+        >
+          <Settings />
+        </IconButton>
+      </div>
       <div>
         {feature.type === 'gene' ? (
           <Typography>
@@ -207,13 +196,6 @@ const SequenceFeatureDetails = observer(function ({
         ) : (
           <Typography>No sequence found</Typography>
         )}
-        {advancedDialogOpen ? (
-          <Suspense fallback={null}>
-            <AdvancedSequenceDialog
-              handleClose={() => setAdvancedDialogOpen(false)}
-            />
-          </Suspense>
-        ) : null}
       </div>
     </>
   )

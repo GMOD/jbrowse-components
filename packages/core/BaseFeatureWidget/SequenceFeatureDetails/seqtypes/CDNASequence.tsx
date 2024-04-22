@@ -28,6 +28,7 @@ const CDNASequence = observer(function ({
   model: SequenceFeatureDetailsModel
 }) {
   const { upperCaseCDS, intronBp } = model
+  const hasCds = cds.length > 0
   const chunks = (
     cds.length ? [...cds, ...utr].sort((a, b) => a.start - b.start) : exons
   ).filter(f => f.start !== f.end)
@@ -51,9 +52,11 @@ const CDNASequence = observer(function ({
                 background: chunk.type === 'CDS' ? cdsColor : utrColor,
               }}
             >
-              {chunk.type === 'CDS'
-                ? toUpper(sequence.slice(chunk.start, chunk.end))
-                : toLower(sequence.slice(chunk.start, chunk.end))}
+              {hasCds
+                ? chunk.type === 'CDS'
+                  ? toUpper(sequence.slice(chunk.start, chunk.end))
+                  : toLower(sequence.slice(chunk.start, chunk.end))
+                : toUpper(sequence.slice(chunk.start, chunk.end))}
             </span>
             {includeIntrons && idx < chunks.length - 1 ? (
               <span style={{ background: intronColor }}>

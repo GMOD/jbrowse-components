@@ -1,15 +1,19 @@
 import React, { lazy, useState, Suspense } from 'react'
-import { Button, FormControl } from '@mui/material'
+import { Button, FormControl, IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 // locals
 import { LoadingEllipses } from '../../ui'
 import { BaseFeatureWidgetModel } from '../stateModelFactory'
-import { SimpleFeatureSerialized } from '../../util'
+import { SimpleFeatureSerialized, getSession } from '../../util'
+
+// icons
+import Help from '@mui/icons-material/Help'
 
 // lazies
 const SequenceFeatureDetails = lazy(() => import('./SequenceFeatureDetails'))
+const HelpDialog = lazy(() => import('./dialogs/HelpDialog'))
 
 const useStyles = makeStyles()(theme => ({
   formControl: {
@@ -39,9 +43,20 @@ const SequenceFeaturePanel = observer(function ({
     <div className={classes.container}>
       <FormControl className={classes.formControl}>
         <Button variant="contained" onClick={() => setShown(!shown)}>
-          {shown ? 'Hide sequence' : 'Show sequence'}
+          {shown ? 'Hide feature sequence' : 'Show feature sequence'}
         </Button>
       </FormControl>
+
+      <IconButton
+        onClick={() =>
+          getSession(model).queueDialog(handleClose => [
+            HelpDialog,
+            { handleClose },
+          ])
+        }
+      >
+        <Help />
+      </IconButton>
       {shown ? (
         <Suspense fallback={<LoadingEllipses />}>
           <SequenceFeatureDetails
