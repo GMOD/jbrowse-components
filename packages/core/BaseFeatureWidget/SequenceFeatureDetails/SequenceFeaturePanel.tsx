@@ -45,8 +45,7 @@ const SequenceFeaturePanel = observer(function ({
       {shown ? (
         <Suspense fallback={<LoadingEllipses />}>
           <SequenceFeatureDetails
-            /* eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion */
-            key={feature.uniqueId as string}
+            key={feature.uniqueId}
             model={model}
             feature={feature}
           />
