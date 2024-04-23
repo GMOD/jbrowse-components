@@ -46,12 +46,10 @@ const OverviewHighlight = observer(function OverviewHighlight({
       ...r,
       coord: r.reversed ? r.end : r.start,
     })
-
     const e = overview.bpToPx({
       ...r,
       coord: r.reversed ? r.start : r.end,
     })
-
     return s !== undefined && e != undefined
       ? {
           width: Math.abs(e - s),
@@ -63,7 +61,6 @@ const OverviewHighlight = observer(function OverviewHighlight({
   return model.highlight
     .map(h => {
       const asm = assemblyManager.get(h?.assemblyName)
-
       return mapCoords({
         ...h,
         refName: asm?.getCanonicalRefName(h.refName) ?? h.refName,

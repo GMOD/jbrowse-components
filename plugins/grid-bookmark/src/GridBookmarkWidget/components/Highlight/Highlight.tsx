@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect } from 'react'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 import { SessionWithWidgets, getSession, notEmpty } from '@jbrowse/core/util'
@@ -24,32 +24,30 @@ const useStyles = makeStyles()({
 
 const Highlight = observer(function Highlight({ model }: { model: LGV }) {
   const { classes } = useStyles()
-
   const session = getSession(model) as SessionWithWidgets
+  const { assemblyManager } = session
   const { showBookmarkHighlights, showBookmarkLabels } = model
 
   const bookmarkWidget = session.widgets.get(
     'GridBookmark',
   ) as GridBookmarkModel
 
-  const bookmarks = useRef(bookmarkWidget?.bookmarks ?? [])
-
   useEffect(() => {
     if (!bookmarkWidget) {
-      const newBookmarkWidget = session.addWidget(
+      session.addWidget(
         'GridBookmarkWidget',
         'GridBookmark',
       ) as GridBookmarkModel
-      bookmarks.current = newBookmarkWidget.bookmarks
     }
   }, [session, bookmarkWidget])
 
   const set = new Set(model.assemblyNames)
+
   return showBookmarkHighlights
-    ? bookmarks.current
+    ? bookmarkWidget?.bookmarks
         ?.filter(value => set.has(value.assemblyName))
         .map(r => {
-          const asm = session.assemblyManager.get(r.assemblyName)
+          const asm = assemblyManager.get(r.assemblyName)
           const refName = asm?.getCanonicalRefName(r.refName) ?? r.refName
           const s = model.bpToPx({ refName, coord: r.start })
           const e = model.bpToPx({ refName, coord: r.end })
