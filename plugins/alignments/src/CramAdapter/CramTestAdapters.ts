@@ -82,6 +82,7 @@ export class SequenceAdapter extends BaseFeatureDataAdapter {
           observer.next(
             new SimpleFeature({
               uniqueId: `${refName}-${start}-${end}`,
+              refName,
               seq: ret,
               start,
               end,

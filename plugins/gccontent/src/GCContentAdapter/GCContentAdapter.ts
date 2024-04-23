@@ -79,6 +79,7 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter {
         observer.next(
           new SimpleFeature({
             uniqueId: `${this.id}_${pos + i}`,
+            refName: query.refName,
             start: pos + i,
             end: pos + i + windowDelta,
             score,
