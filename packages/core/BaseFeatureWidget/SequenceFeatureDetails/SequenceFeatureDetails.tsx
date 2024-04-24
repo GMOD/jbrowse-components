@@ -6,19 +6,27 @@ import {
   MenuItem,
   Select,
   Typography,
+  ButtonGroup,
+  Tooltip,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import copy from 'copy-to-clipboard'
+import { saveAs } from 'file-saver'
+import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
 
 // locals
 import { useFeatureSequence } from './hooks'
-import { ErrorMessage, LoadingEllipses } from '../../ui'
+import { ErrorMessage, LoadingEllipses, Menu } from '../../ui'
 import { SimpleFeatureSerialized, getSession } from '../../util'
 import { BaseFeatureWidgetModel } from '../stateModelFactory'
 
 // icons
 import Settings from '@mui/icons-material/Settings'
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
+import CopyAllIcon from '@mui/icons-material/CopyAll'
+import HtmlIcon from '@mui/icons-material/Html'
+import DownloadIcon from '@mui/icons-material/Download'
 
 // lazies
 const SequencePanel = lazy(() => import('./SequencePanel'))
@@ -44,21 +52,89 @@ const SequenceFeatureDetails = observer(function ({
   const { intronBp, upDownBp } = sequenceFeatureDetails
   const { classes } = useStyles()
   const seqPanelRef = useRef<HTMLDivElement>(null)
-
+  const [open, setOpen] = useState(false)
+  const anchorRef = useRef<HTMLDivElement>(null)
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const [force, setForce] = useState(false)
   const hasCDS = feature.subfeatures?.some(sub => sub.type === 'CDS')
   const hasExon = feature.subfeatures?.some(sub => sub.type === 'exon')
   const hasExonOrCDS = hasExon || hasCDS
+
+  const [mode, setMode] = useState(
+    hasCDS ? 'cds' : hasExon ? 'cdna' : 'genomic',
+  )
+
   const { sequence, error } = useFeatureSequence(
     model,
+    mode,
     feature,
     upDownBp,
     force,
   )
 
-  const [mode, setMode] = useState(
-    hasCDS ? 'cds' : hasExon ? 'cdna' : 'genomic',
-  )
+  const options = [
+    {
+      icon: CopyAllIcon,
+      label: 'Copy plaintext',
+      onClick: () => {
+        setSelectedMenuItem(options[0])
+
+        const ref = seqPanelRef.current
+        if (ref) {
+          copy(ref.textContent || '', { format: 'text/plain' })
+          getSession(model).notify('Copied to clipboard!', 'info')
+        }
+      },
+    },
+    {
+      icon: HtmlIcon,
+      label: 'Copy HTML',
+      onClick: () => {
+        setSelectedMenuItem(options[1])
+
+        const ref = seqPanelRef.current
+        if (!ref) {
+          return
+        }
+        copy(ref.innerHTML, { format: 'text/html' })
+        getSession(model).notify('Copied to clipboard!', 'info')
+      },
+    },
+    {
+      icon: DownloadIcon,
+      label: 'Download FASTA',
+      onClick: () => {
+        setSelectedMenuItem(options[2])
+
+        if (sequence && !('error' in sequence)) {
+          saveAs(
+            new Blob([formatSeqFasta([{ ...sequence }]) || ''], {
+              type: 'text/x-fasta;charset=utf-8',
+            }),
+            'jbrowse_ref_seq.fa',
+          )
+        }
+      },
+    },
+  ]
+
+  const [selectedMenuItem, setSelectedMenuItem] = useState(options[0])
+
+  const handleToggle = (event: any) => {
+    setAnchorEl(event?.currentTarget)
+    setOpen(prevOpen => !prevOpen)
+  }
+
+  const handleClose = (event: Event) => {
+    if (
+      anchorRef.current &&
+      anchorRef.current.contains(event.target as HTMLElement)
+    ) {
+      return
+    }
+
+    setOpen(false)
+  }
 
   return (
     <>
@@ -123,30 +199,27 @@ const SequenceFeatureDetails = observer(function ({
             ))}
           </Select>
         </FormControl>
-        <Button
-          className={classes.formControl}
-          variant="contained"
-          onClick={() => {
-            const ref = seqPanelRef.current
-            if (ref) {
-              copy(ref.textContent || '', { format: 'text/plain' })
-            }
+        <ButtonGroup variant="contained" ref={anchorRef}>
+          <Tooltip title={selectedMenuItem.label}>
+            <Button onClick={selectedMenuItem.onClick}>
+              <selectedMenuItem.icon />
+            </Button>
+          </Tooltip>
+          <Button size="small" onClick={handleToggle}>
+            <ArrowDropDownIcon />
+          </Button>
+        </ButtonGroup>
+        <Menu
+          menuItems={options}
+          onMenuItemClick={(event, callback) => {
+            callback(event)
+            setAnchorEl(null)
+            setOpen(false)
           }}
-        >
-          Copy plaintext
-        </Button>
-        <Button
-          className={classes.formControl}
-          variant="contained"
-          onClick={() => {
-            const ref = seqPanelRef.current
-            if (ref) {
-              copy(ref.innerHTML, { format: 'text/html' })
-            }
-          }}
-        >
-          Copy HTML
-        </Button>
+          open={open}
+          onClose={handleClose}
+          anchorEl={anchorEl}
+        />
 
         <IconButton
           className={classes.formControl}

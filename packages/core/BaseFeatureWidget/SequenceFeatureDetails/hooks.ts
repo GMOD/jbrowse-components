@@ -14,6 +14,7 @@ interface CoordFeat extends SimpleFeatureSerialized {
 
 export function useFeatureSequence(
   model: { view?: { assemblyNames?: string[] } } | undefined,
+  mode: string,
   feature: SimpleFeatureSerialized,
   upDownBp: number,
   forceLoad: boolean,
@@ -53,7 +54,7 @@ export function useFeatureSequence(
     ;(async () => {
       try {
         setError(undefined)
-        const { start, end, refName } = feature as CoordFeat
+        const { start, end, refName, name, id } = feature as CoordFeat
 
         if (!forceLoad && end - start > BPLIMIT) {
           setSequence({
@@ -65,13 +66,14 @@ export function useFeatureSequence(
           const seq = await fetchSeq(start, end, refName)
           const up = await fetchSeq(Math.max(0, b), start, refName)
           const down = await fetchSeq(end, e, refName)
-          setSequence({ seq, upstream: up, downstream: down })
+          const header = `${name || id} ${mode} ${refName}:${start + 1}-${end}`
+          setSequence({ seq, header, upstream: up, downstream: down })
         }
       } catch (e) {
         console.error(e)
         setError(e)
       }
     })()
-  }, [feature, model, upDownBp, forceLoad])
+  }, [feature, model, mode, upDownBp, forceLoad])
   return { sequence, error }
 }

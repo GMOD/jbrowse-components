@@ -14,6 +14,7 @@ export interface ParentFeat extends Feat {
 }
 export interface SeqState {
   seq: string
+  header: string
   upstream?: string
   downstream?: string
 }

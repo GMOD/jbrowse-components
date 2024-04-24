@@ -30,7 +30,7 @@ const SeqPanel = React.forwardRef<HTMLDivElement, SeqPanelProps>(
   function SeqPanel2(props, ref) {
     const { model, feature, mode } = props
     let {
-      sequence: { seq, upstream = '', downstream = '' },
+      sequence: { seq, header, upstream = '', downstream = '' },
     } = props
     const { subfeatures = [] } = feature
 
@@ -95,13 +95,7 @@ const SeqPanel = React.forwardRef<HTMLDivElement, SeqPanelProps>(
             maxHeight: 300,
           }}
         >
-          <span style={{ background: 'white' }}>
-            {`>${
-              feature.name ||
-              feature.id ||
-              `${feature.refName}:${feature.start + 1}-${feature.end}`
-            }-${mode}\n`}
-          </span>
+          <span style={{ background: 'white' }}>{`>${header}`}</span>
           <br />
           {mode === 'genomic' ? (
             <GenomicSequence sequence={seq} />
