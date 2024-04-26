@@ -140,11 +140,11 @@ const ImportBookmarksDialog = observer(function ({
               location={location}
               setLocation={setLocation}
               name="File"
-              description="Choose a BED or TSV format file to import."
+              description="Choose a BED file to import."
             />
             <AssemblySelector
               onChange={val => setSelectedAsm(val)}
-              helperText={`Select the assembly your bookmarks belong to (BED or TSV without assembly column).`}
+              helperText={`Select the assembly your bookmarks belong to (BED format).`}
               session={session}
               selected={selectedAsm}
             />

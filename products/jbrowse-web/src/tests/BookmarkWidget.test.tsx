@@ -1,4 +1,4 @@
-import { waitFor, fireEvent, within } from '@testing-library/react'
+import { waitFor, fireEvent } from '@testing-library/react'
 import { saveAs } from 'file-saver'
 import userEvent from '@testing-library/user-event'
 import { createView, setup, doBeforeEach } from './util'
@@ -287,34 +287,3 @@ test('Downloads a BED file correctly', async () => {
 
   expect(saveAs).toHaveBeenCalledWith(blob, 'jbrowse_bookmarks_volvox.bed')
 }, 20000)
-
-test('Downloads a TSV file correctly', async () => {
-  const { session, findByText, findByTestId, getByRole } = await createView()
-
-  // @ts-expect-error
-  const bookmarkWidget = session.addWidget(
-    'GridBookmarkWidget',
-    'gridBookmarkWidget',
-  )
-  // @ts-expect-error
-  session.showWidget('gridBookmarkWidget')
-
-  bookmarkWidget.addBookmark({
-    refName: 'ctgA',
-    start: 0,
-    end: 8,
-    assemblyName: 'volvox',
-  })
-  fireEvent.click(await findByTestId('grid_bookmark_menu'))
-  fireEvent.click(await findByText('Export'))
-  fireEvent.mouseDown(await findByText('BED'))
-  const listbox = within(getByRole('listbox'))
-  fireEvent.click(listbox.getByText('TSV'))
-  fireEvent.click(await findByText(/Download/))
-
-  const blob = new Blob([''], {
-    type: 'text/tab-separated-values;charset=utf-8',
-  })
-
-  expect(saveAs).toHaveBeenCalledWith(blob, 'jbrowse_bookmarks.tsv')
-})

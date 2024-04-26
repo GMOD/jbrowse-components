@@ -1,15 +1,7 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { observer } from 'mobx-react'
 
-import {
-  Button,
-  DialogContent,
-  DialogActions,
-  MenuItem,
-  Select,
-  Typography,
-  Alert,
-} from '@mui/material'
+import { Button, DialogContent, DialogActions, Alert } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { Dialog } from '@jbrowse/core/ui'
 
@@ -21,9 +13,6 @@ import { GridBookmarkModel } from '../../model'
 import { downloadBookmarkFile } from '../../utils'
 
 const useStyles = makeStyles()({
-  flexItem: {
-    margin: 5,
-  },
   container: {
     display: 'flex',
     flexFlow: 'column',
@@ -39,7 +28,6 @@ const ExportBookmarksDialog = observer(function ExportBookmarksDialog({
   onClose: (arg: boolean) => void
 }) {
   const { classes } = useStyles()
-  const [fileType, setFileType] = useState('BED')
   const { selectedBookmarks } = model
   const exportAll = selectedBookmarks.length === 0
   return (
@@ -57,20 +45,11 @@ const ExportBookmarksDialog = observer(function ExportBookmarksDialog({
           ) : (
             'Only selected bookmarks will be exported.'
           )}
+          <br />
+          <span>
+            The file will be in <strong>BED</strong> format.
+          </span>
         </Alert>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <Typography>Format to download:</Typography>
-          <Select
-            size="small"
-            className={classes.flexItem}
-            data-testid="selectFileType"
-            value={fileType}
-            onChange={event => setFileType(event.target.value)}
-          >
-            <MenuItem value="BED">BED</MenuItem>
-            <MenuItem value="TSV">TSV</MenuItem>
-          </Select>
-        </div>
       </DialogContent>
       <DialogActions>
         <Button
@@ -78,7 +57,7 @@ const ExportBookmarksDialog = observer(function ExportBookmarksDialog({
           color="primary"
           startIcon={<GetAppIcon />}
           onClick={() => {
-            downloadBookmarkFile(fileType, model)
+            downloadBookmarkFile(model)
             onClose(false)
           }}
         >

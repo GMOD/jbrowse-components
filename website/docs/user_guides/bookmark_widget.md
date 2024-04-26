@@ -89,13 +89,11 @@ be pasted within the appropriate filed in the "Import" form
 
 ### Exporting bookmarks
 
-You can export bookmarks into a list of regions as a BED or TSV file.
-
-<Figure caption="Exporting a list of regions to a TSV file." src="/img/bookmark_widget_export_dialog.png"/>
+You can export bookmarks into a list of regions as a BED file.
 
 ### Importing bookmarks
 
-You can import bookmarks from a list of regions in a BED or TSV file.
+You can import bookmarks from a list of regions in a BED file.
 
 <Figure caption="Importing a list of regions from a BED file." src="/img/bookmark_widget_import_dialog.png"/>
 

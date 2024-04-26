@@ -1,5 +1,5 @@
 import { saveAs } from 'file-saver'
-import { getSession, assembleLocString } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import { AbstractViewModel } from '@jbrowse/core/util/types'
 
@@ -45,59 +45,34 @@ export async function navToBookmark(
   }
 }
 
-export function downloadBookmarkFile(
-  fileFormat: string,
-  model: GridBookmarkModel,
-) {
+export function downloadBookmarkFile(model: GridBookmarkModel) {
   const { selectedBookmarks, bookmarksWithValidAssemblies } = model
   const bookmarksToDownload =
     selectedBookmarks.length === 0
       ? bookmarksWithValidAssemblies
       : selectedBookmarks
 
-  if (fileFormat === 'BED') {
-    const fileHeader = ''
-    const fileContents: Record<string, string[]> = {}
-    bookmarksToDownload.forEach(bookmark => {
-      const { label } = bookmark
-      const labelVal = label === '' ? '.' : label
-      const line = `${bookmark.refName}\t${bookmark.start}\t${bookmark.end}\t${labelVal}\n`
+  const fileHeader = ''
+  const fileContents: Record<string, string[]> = {}
+  bookmarksToDownload.forEach(bookmark => {
+    const { label } = bookmark
+    const labelVal = label === '' ? '.' : label
+    const line = `${bookmark.refName}\t${bookmark.start}\t${bookmark.end}\t${labelVal}\n`
 
-      fileContents[bookmark.assemblyName]
-        ? fileContents[bookmark.assemblyName].push(line)
-        : (fileContents[bookmark.assemblyName] = [line])
+    fileContents[bookmark.assemblyName]
+      ? fileContents[bookmark.assemblyName].push(line)
+      : (fileContents[bookmark.assemblyName] = [line])
+  })
+
+  for (const assembly in fileContents) {
+    const fileContent = fileContents[assembly].reduce(
+      (a, b) => a + b,
+      fileHeader,
+    )
+    const blob = new Blob([fileContent || ''], {
+      type: 'text/x-bed;charset=utf-8',
     })
-
-    for (const assembly in fileContents) {
-      const fileContent = fileContents[assembly].reduce(
-        (a, b) => a + b,
-        fileHeader,
-      )
-      const blob = new Blob([fileContent || ''], {
-        type: 'text/x-bed;charset=utf-8',
-      })
-      const fileName = `jbrowse_bookmarks_${assembly}.bed`
-      saveAs(blob, fileName)
-    }
-  } else {
-    // TSV
-    const fileHeader = 'chrom\tstart\tend\tlabel\tassembly_name\tcoord_range\n'
-
-    const fileContents = bookmarksToDownload
-      .map(bookmark => {
-        const { label } = bookmark
-        const labelVal = label === '' ? '.' : label
-        const locString = assembleLocString(bookmark)
-        return `${bookmark.refName}\t${bookmark.start + 1}\t${
-          bookmark.end
-        }\t${labelVal}\t${bookmark.assemblyName}\t${locString}\n`
-      })
-      .reduce((a, b) => a + b, fileHeader)
-
-    const blob = new Blob([fileContents || ''], {
-      type: 'text/tab-separated-values;charset=utf-8',
-    })
-    const fileName = 'jbrowse_bookmarks.tsv'
+    const fileName = `jbrowse_bookmarks_${assembly}.bed`
     saveAs(blob, fileName)
   }
 }
