@@ -8,7 +8,7 @@ import {
 } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { Region } from '@jbrowse/core/util/types'
-import { Region as RegionModel, ElementId } from '@jbrowse/core/util/types/mst'
+import { ElementId } from '@jbrowse/core/util/types/mst'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 import {
@@ -17,26 +17,10 @@ import {
   localStorageSetItem,
 } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
-
-const LabeledRegionModel = types
-  .compose(
-    RegionModel,
-    types.model('Label', {
-      label: types.optional(types.string, ''),
-      highlight: types.optional(types.string, 'rgba(247, 129, 192, 0.35)'),
-    }),
-  )
-  .actions(self => ({
-    setLabel(label: string) {
-      self.label = label
-    },
-    setHighlight(color: string) {
-      self.highlight = color
-    },
-  }))
+import { LabeledRegionModel } from './labeledRegionModel'
 
 const SharedBookmarksModel = types.model('SharedBookmarksModel', {
-  sharedBookmarks: types.maybe(types.array(LabeledRegionModel)),
+  sharedBookmarks: types.array(LabeledRegionModel),
 })
 
 export interface IExtendedLGV extends LinearGenomeViewModel {
@@ -146,9 +130,9 @@ export default function f(_pluginManager: PluginManager) {
        * #getter
        */
       get sharedBookmarksModel() {
-        // requires cloning bookmarks with JSON.stringify/parse to avoid duplicate
-        // reference to same object in the same state tree, will otherwise error
-        // when performing share
+        // requires cloning bookmarks with JSON.stringify/parse to avoid
+        // duplicate reference to same object in the same state tree, will
+        // otherwise error when performing share
         return SharedBookmarksModel.create({
           sharedBookmarks: JSON.parse(JSON.stringify(self.selectedBookmarks)),
         })
@@ -157,9 +141,9 @@ export default function f(_pluginManager: PluginManager) {
        * #getter
        */
       get allBookmarksModel() {
-        // requires cloning bookmarks with JSON.stringify/parse to avoid duplicate
-        // reference to same object in the same state tree, will otherwise error
-        // when performing share
+        // requires cloning bookmarks with JSON.stringify/parse to avoid
+        // duplicate reference to same object in the same state tree, will
+        // otherwise error when performing share
         return SharedBookmarksModel.create({
           sharedBookmarks: JSON.parse(
             JSON.stringify(self.bookmarksWithValidAssemblies),

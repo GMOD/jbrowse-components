@@ -4,16 +4,12 @@ import { stringToJexlExpression } from '../util/jexlStrings'
 import { FileLocation } from '../util/types/mst'
 import { getEnv } from '../util'
 
-function isValidColorString(/* str */) {
-  // TODO: check all the crazy cases for whether it's a valid HTML/CSS color string
-  return true
-}
 const typeModels: Record<string, any> = {
   stringArray: types.array(types.string),
   stringArrayMap: types.map(types.array(types.string)),
   numberMap: types.map(types.number),
   boolean: types.boolean,
-  color: types.refinement('Color', types.string, isValidColorString),
+  color: types.string,
   integer: types.integer,
   number: types.number,
   string: types.string,
@@ -132,12 +128,6 @@ const typeModelExtensions: Record<string, (self: any) => any> = {
   }),
 }
 
-// const FunctionStringType = types.refinement(
-//   'FunctionString',
-//   types.string,
-//   str => functionRegexp.test(str),
-// )
-
 const JexlStringType = types.refinement('JexlString', types.string, str =>
   str.startsWith('jexl:'),
 )
@@ -189,8 +179,8 @@ export default function ConfigSlot(
     throw new Error("no 'defaultValue' provided")
   }
 
-  // if the `type` is something like `color`, then the model name
-  // here will be `ColorConfigSlot`
+  // if the `type` is something like `color`, then the model name here will be
+  // `ColorConfigSlot`
   const configSlotModelName = `${slotName
     .charAt(0)
     .toUpperCase()}${slotName.slice(1)}ConfigSlot`
@@ -224,9 +214,9 @@ export default function ConfigSlot(
         return { evalSync: () => self.value }
       },
 
-      // JS representation of the value of this slot, suitable
-      // for embedding in either JSON or a JS function string.
-      // many of the data types override this in typeModelExtensions
+      // JS representation of the value of this slot, suitable for embedding in
+      // either JSON or a JS function string. many of the data types override
+      // this in typeModelExtensions
       get valueJSON(): any[] | Record<string, any> | string | undefined {
         if (self.isCallback) {
           return undefined
@@ -281,8 +271,6 @@ export default function ConfigSlot(
           /* ignore */
         }
         self.value = defaultValue
-        // if it is still a callback (happens if the defaultValue is a callback),
-        // then use the last-resort fallback default
 
         // if defaultValue has jexl: string, run this part
         if (self.isCallback) {
@@ -294,8 +282,8 @@ export default function ConfigSlot(
       },
     }))
 
-  // if there are any type-specific extensions (views or actions)
-  //  to the slot, add those in
+  // if there are any type-specific extensions (views or actions) to the slot,
+  // add those in
   if (typeModelExtensions[type]) {
     slot = slot.extend(typeModelExtensions[type])
   }

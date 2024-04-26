@@ -67,14 +67,7 @@ const model = types
     /**
      * #property
      */
-    height: types.optional(
-      types.refinement(
-        'SpreadsheetViewHeight',
-        types.number,
-        n => n >= minHeight,
-      ),
-      defaultHeight,
-    ),
+    height: types.optional(types.number, defaultHeight),
     /**
      * #property
      */

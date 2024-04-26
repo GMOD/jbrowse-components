@@ -28,6 +28,7 @@ export default function SharedWiggleMixin(
 ) {
   return types
     .compose(
+      'SharedWiggleMixin',
       BaseLinearDisplay,
       types.model({
         /**

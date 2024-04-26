@@ -13,13 +13,7 @@ export default function TrackHeightMixin() {
       /**
        * #property
        */
-      heightPreConfig: types.maybe(
-        types.refinement(
-          'displayHeight',
-          types.number,
-          n => n >= minDisplayHeight,
-        ),
-      ),
+      heightPreConfig: types.maybe(types.number),
     })
     .volatile(() => ({
       /**

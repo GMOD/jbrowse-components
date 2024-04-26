@@ -98,7 +98,6 @@ async function getBlockFeatures(
  * - [BaseViewModel](../baseviewmodel)
  */
 export default function stateModelFactory(pluginManager: PluginManager) {
-  const minHeight = 40
   const defaultHeight = 400
   return types
     .compose(
@@ -112,14 +111,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        height: types.optional(
-          types.refinement(
-            'viewHeight',
-            types.number,
-            (n: number) => n >= minHeight,
-          ),
-          defaultHeight,
-        ),
+        height: types.optional(types.number, defaultHeight),
         /**
          * #property
          */

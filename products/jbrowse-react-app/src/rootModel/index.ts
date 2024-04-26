@@ -84,6 +84,7 @@ export default function RootModel({
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
   return types
     .compose(
+      'JBrowseReactAppRootModel',
       BaseRootModelFactory({
         pluginManager,
         jbrowseModelType: jbrowseWebFactory({

@@ -63,6 +63,7 @@ export function SharedLinearPileupDisplayMixin(
 ) {
   return types
     .compose(
+      'SharedLinearPileupDisplayMixin',
       BaseLinearDisplay,
       types.model({
         /**

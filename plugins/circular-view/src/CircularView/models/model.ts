@@ -97,10 +97,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        height: types.optional(
-          types.refinement('trackHeight', types.number, n => n >= minHeight),
-          defaultHeight,
-        ),
+        height: types.optional(types.number, defaultHeight),
         /**
          * #property
          */

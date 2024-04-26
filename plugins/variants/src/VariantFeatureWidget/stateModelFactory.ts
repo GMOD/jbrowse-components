@@ -5,6 +5,7 @@ import { stateModelFactory as baseModelFactory } from '@jbrowse/core/BaseFeature
 export function stateModelFactory(pluginManager: PluginManager) {
   const baseModel = baseModelFactory(pluginManager)
   return types.compose(
+    'VariantFeatureWidget',
     baseModel,
     types.model('VariantFeatureWidget', {
       type: types.literal('VariantFeatureWidget'),

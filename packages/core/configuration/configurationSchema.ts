@@ -175,7 +175,8 @@ function makeConfigurationSchemaModel<
         }
         const newSchema = isStateTreeNode(data)
           ? data
-          : modelDefinition[slotName].create(data)
+          : // @ts-expect-error
+            modelDefinition[slotName].create(data)
         self[slotName] = newSchema
         return newSchema
       },

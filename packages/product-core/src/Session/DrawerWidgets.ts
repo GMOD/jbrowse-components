@@ -38,10 +38,7 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
       /**
        * #property
        */
-      drawerWidth: types.optional(
-        types.refinement(types.integer, width => width >= minDrawerWidth),
-        384,
-      ),
+      drawerWidth: types.optional(types.integer, 384),
       /**
        * #property
        */

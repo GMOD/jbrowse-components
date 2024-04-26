@@ -99,6 +99,7 @@ export default function RootModel({
   })
   return types
     .compose(
+      'JBrowseWebRootModel',
       BaseRootModelFactory({
         pluginManager,
         jbrowseModelType,

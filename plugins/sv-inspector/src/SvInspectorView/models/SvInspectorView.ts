@@ -60,14 +60,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
         /**
          * #property
          */
-        height: types.optional(
-          types.refinement(
-            'SvInspectorViewHeight',
-            types.number,
-            n => n >= minHeight,
-          ),
-          defaultHeight,
-        ),
+        height: types.optional(types.number, defaultHeight),
         /**
          * #property
          */
