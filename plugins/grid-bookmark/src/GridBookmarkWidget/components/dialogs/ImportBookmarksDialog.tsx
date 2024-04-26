@@ -66,6 +66,7 @@ async function getBookmarksFromFile(
       f =>
         !f.startsWith('#') &&
         !f.startsWith('track') &&
+        !f.startsWith('chrom') &&
         !f.startsWith('browser'),
     )
     .map(line => {
