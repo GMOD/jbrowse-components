@@ -69,7 +69,7 @@
     "@jbrowse/product-core": "^2.11.1",
     "@mui/icons-material": "^5.0.0",
     "@mui/material": "^5.10.17",
-    "buffer": "^6.0.3",
+    "@mui/x-data-grid": "^7.0.0",
     "mobx": "^6.6.0",
     "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",
