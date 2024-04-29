@@ -10,11 +10,6 @@ import {
   Button,
   DialogContent,
   DialogActions,
-  FormLabel,
-  FormControl,
-  FormControlLabel,
-  RadioGroup,
-  Radio,
   TextField,
   Typography,
 } from '@mui/material'
@@ -55,18 +50,23 @@ async function getBookmarksFromShareLink(shareLink: string, shareURL: string) {
   return sharedSession.sharedBookmarks
 }
 
-async function getBookmarksFromTSVFile(location: FileLocation) {
-  const data = await openLocation(location).readFile('utf8')
-  let lines = data.split(/\n|\r\n|\r/).filter(f => !!f.trim())
+function guessFileType(header: string) {
+  return header.startsWith('chrom') && header.includes('assembly_name')
+    ? 'TSV'
+    : 'BED'
+}
+
+async function getBookmarksFromTSVFile(lines: string[]) {
   if (lines[0].startsWith('chrom')) {
     lines = lines.slice(1)
   }
+
   return lines
     .filter(f => !f.startsWith('#'))
     .map(line => {
       const [refName, start, end, label, assemblyName] = line.split('\t')
       return {
-        assemblyName,
+        assemblyName: assemblyName,
         refName,
         start: +start,
         end: +end,
@@ -75,22 +75,13 @@ async function getBookmarksFromTSVFile(location: FileLocation) {
     })
 }
 
-async function getBookmarksFromBEDFile(
-  location: FileLocation,
-  selectedAsm?: string,
-) {
-  const data = await openLocation(location).readFile('utf8')
-  let lines = data.split(/\n|\r\n|\r/).filter(f => !!f.trim())
-  if (lines[0].startsWith('chrom')) {
-    lines = lines.slice(1)
-  }
-
+async function getBookmarksFromBEDFile(lines: string[], selectedAsm: string) {
   return lines
     .filter(f => !f.startsWith('#'))
     .map(line => {
-      const [refName, start, end, label, assembly] = line.split('\t')
+      const [refName, start, end, label] = line.split('\t')
       return {
-        assemblyName: assembly ?? selectedAsm,
+        assemblyName: selectedAsm,
         refName,
         start: +start,
         end: +end,
@@ -109,7 +100,6 @@ const ImportBookmarksDialog = observer(function ({
   const { classes } = useStyles()
   const [location, setLocation] = useState<FileLocation>()
   const [error, setError] = useState<unknown>()
-  const [fileType, setFileType] = useState('tsv')
   const [shareLink, setShareLink] = useState('')
   const session = getSession(model)
   const { assemblyNames } = session
@@ -158,30 +148,18 @@ const ImportBookmarksDialog = observer(function ({
             <Typography>Import from file</Typography>
           </AccordionSummary>
           <AccordionDetails>
-            <FormControl>
-              <FormLabel>File type</FormLabel>
-              <RadioGroup
-                value={fileType}
-                onChange={event => setFileType(event.target.value)}
-              >
-                <FormControlLabel value="bed" control={<Radio />} label="BED" />
-                <FormControlLabel value="tsv" control={<Radio />} label="TSV" />
-              </RadioGroup>
-            </FormControl>
             <FileSelector
               location={location}
               setLocation={setLocation}
               name="File"
-              description={`Select ${fileType} file to import. ${fileType === 'tsv' ? 'Columns are chrom, start, end, label, assemblyName' : ''}`}
+              description={`Choose a BED or TSV format file to import. Required TSV column headers are "chrom, start, end, label, assembly_name".`}
             />
-            {fileType === 'bed' ? (
-              <AssemblySelector
-                onChange={val => setSelectedAsm(val)}
-                helperText={`Select the assembly for BED file`}
-                session={session}
-                selected={selectedAsm}
-              />
-            ) : null}
+            <AssemblySelector
+              onChange={val => setSelectedAsm(val)}
+              helperText={`Select the assembly for BED file.`}
+              session={session}
+              selected={selectedAsm}
+            />
           </AccordionDetails>
         </Accordion>
         {error ? <ErrorMessage error={error} /> : null}
@@ -199,12 +177,16 @@ const ImportBookmarksDialog = observer(function ({
           onClick={async () => {
             try {
               if (expanded === 'fileAccordion' && location) {
+                const data = await openLocation(location).readFile('utf8')
+                const lines = data.split(/\n|\r\n|\r/).filter(f => !!f.trim())
+                const fileType = guessFileType(lines[0])
                 if (fileType === 'BED') {
                   model.importBookmarks(
-                    await getBookmarksFromBEDFile(location, selectedAsm),
+                    await getBookmarksFromBEDFile(lines, selectedAsm),
                   )
-                } else if (fileType === 'TSV') {
-                  model.importBookmarks(await getBookmarksFromTSVFile(location))
+                } else {
+                  // TSV
+                  model.importBookmarks(await getBookmarksFromTSVFile(lines))
                 }
               } else if (
                 expanded === 'shareLinkAccordion' &&

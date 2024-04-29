@@ -22,7 +22,9 @@ import { downloadBookmarkFile } from '../../utils'
 
 const useStyles = makeStyles()({
   flexItem: {
-    margin: 5,
+    display: 'flex',
+    alignItems: 'center',
+    gap: '5px',
   },
   container: {
     display: 'flex',
@@ -58,11 +60,10 @@ const ExportBookmarksDialog = observer(function ExportBookmarksDialog({
             'Only selected bookmarks will be exported.'
           )}
         </Alert>
-        <div>
+        <div className={classes.flexItem}>
           <Typography>Format to download:</Typography>
           <Select
             size="small"
-            className={classes.flexItem}
             value={fileType}
             onChange={event => setFileType(event.target.value)}
           >
