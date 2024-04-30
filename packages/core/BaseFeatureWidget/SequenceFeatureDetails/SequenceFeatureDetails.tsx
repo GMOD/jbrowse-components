@@ -19,11 +19,11 @@ import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
 import { useFeatureSequence } from './hooks'
 import { ErrorMessage, LoadingEllipses, Menu } from '../../ui'
 import { SimpleFeatureSerialized, getSession } from '../../util'
+import { SeqState } from '../util'
 import { BaseFeatureWidgetModel } from '../stateModelFactory'
 
 // icons
 import Settings from '@mui/icons-material/Settings'
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import CopyAllIcon from '@mui/icons-material/CopyAll'
 import HtmlIcon from '@mui/icons-material/Html'
 import DownloadIcon from '@mui/icons-material/Download'
@@ -33,6 +33,11 @@ const SequencePanel = lazy(() => import('./SequencePanel'))
 const SettingsDialog = lazy(() => import('./dialogs/SettingsDialog'))
 
 const useStyles = makeStyles()({
+  seqPanelOptions: {
+    display: 'flex',
+    alignContent: 'center',
+    gap: 5,
+  },
   formControl: {
     margin: 0,
     marginLeft: 4,
@@ -52,9 +57,6 @@ const SequenceFeatureDetails = observer(function ({
   const { intronBp, upDownBp } = sequenceFeatureDetails
   const { classes } = useStyles()
   const seqPanelRef = useRef<HTMLDivElement>(null)
-  const [open, setOpen] = useState(false)
-  const anchorRef = useRef<HTMLDivElement>(null)
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const [force, setForce] = useState(false)
   const hasCDS = feature.subfeatures?.some(sub => sub.type === 'CDS')
   const hasExon = feature.subfeatures?.some(sub => sub.type === 'exon')
@@ -77,12 +79,10 @@ const SequenceFeatureDetails = observer(function ({
       icon: CopyAllIcon,
       label: 'Copy plaintext',
       onClick: () => {
-        setSelectedMenuItem(options[0])
-
         const ref = seqPanelRef.current
         if (ref) {
           copy(ref.textContent || '', { format: 'text/plain' })
-          getSession(model).notify('Copied to clipboard!', 'info')
+          getSession(model).notify('Copied plaintext to clipboard!', 'info')
         }
       },
     },
@@ -90,25 +90,27 @@ const SequenceFeatureDetails = observer(function ({
       icon: HtmlIcon,
       label: 'Copy HTML',
       onClick: () => {
-        setSelectedMenuItem(options[1])
-
         const ref = seqPanelRef.current
         if (!ref) {
           return
         }
         copy(ref.innerHTML, { format: 'text/html' })
-        getSession(model).notify('Copied to clipboard!', 'info')
+        getSession(model).notify('Copied HTML to clipboard!', 'info')
       },
     },
     {
       icon: DownloadIcon,
       label: 'Download FASTA',
       onClick: () => {
-        setSelectedMenuItem(options[2])
+        const ref = seqPanelRef.current
+        if (ref?.textContent && sequence && !('error' in sequence)) {
+          const dispSeq = {
+            seq: ref?.textContent?.slice(sequence.header.length + 1),
+            header: sequence.header,
+          } as SeqState
 
-        if (sequence && !('error' in sequence)) {
           saveAs(
-            new Blob([formatSeqFasta([{ ...sequence }]) || ''], {
+            new Blob([formatSeqFasta([{ ...dispSeq }]) || ''], {
               type: 'text/x-fasta;charset=utf-8',
             }),
             'jbrowse_ref_seq.fa',
@@ -118,27 +120,9 @@ const SequenceFeatureDetails = observer(function ({
     },
   ]
 
-  const [selectedMenuItem, setSelectedMenuItem] = useState(options[0])
-
-  const handleToggle = (event: any) => {
-    setAnchorEl(event?.currentTarget)
-    setOpen(prevOpen => !prevOpen)
-  }
-
-  const handleClose = (event: Event) => {
-    if (
-      anchorRef.current &&
-      anchorRef.current.contains(event.target as HTMLElement)
-    ) {
-      return
-    }
-
-    setOpen(false)
-  }
-
   return (
     <>
-      <div>
+      <div className={classes.seqPanelOptions}>
         <FormControl className={classes.formControl}>
           <Select
             size="small"
@@ -199,28 +183,19 @@ const SequenceFeatureDetails = observer(function ({
             ))}
           </Select>
         </FormControl>
-        <ButtonGroup variant="contained" ref={anchorRef}>
-          <Tooltip title={selectedMenuItem.label}>
-            <Button onClick={selectedMenuItem.onClick}>
-              <selectedMenuItem.icon />
-            </Button>
-          </Tooltip>
-          <Button size="small" onClick={handleToggle}>
-            <ArrowDropDownIcon />
-          </Button>
+        <ButtonGroup variant="contained">
+          {options.map(option => {
+            return (
+              <>
+                <Tooltip title={option.label}>
+                  <Button size="small" onClick={option.onClick}>
+                    <option.icon />
+                  </Button>
+                </Tooltip>
+              </>
+            )
+          })}
         </ButtonGroup>
-        <Menu
-          menuItems={options}
-          onMenuItemClick={(event, callback) => {
-            callback(event)
-            setAnchorEl(null)
-            setOpen(false)
-          }}
-          open={open}
-          onClose={handleClose}
-          anchorEl={anchorEl}
-        />
-
         <IconButton
           className={classes.formControl}
           onClick={() =>
