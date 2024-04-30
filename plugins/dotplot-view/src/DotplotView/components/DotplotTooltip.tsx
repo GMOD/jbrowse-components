@@ -52,6 +52,7 @@ export const TooltipWhereMouseovered = observer(function ({
 
   const { refs, floatingStyles, context } = useFloating({
     placement: xdistance < 0 ? 'left' : 'right',
+    strategy: 'fixed',
   })
 
   const clientPoint = useClientPoint(

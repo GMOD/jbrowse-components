@@ -66,6 +66,7 @@ const Tooltip = observer(function ({
 
   const { refs, floatingStyles, context } = useFloating({
     placement: 'right',
+    strategy: 'fixed',
   })
 
   const clientPoint = useClientPoint(context, { x, y })
