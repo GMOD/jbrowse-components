@@ -51,6 +51,7 @@ const ArcTooltip = observer(function ({ contents }: { contents?: string }) {
 
   const { refs, floatingStyles, context } = useFloating({
     placement: 'right',
+    strategy: 'fixed',
   })
 
   const clientPoint = useClientPoint(context)
