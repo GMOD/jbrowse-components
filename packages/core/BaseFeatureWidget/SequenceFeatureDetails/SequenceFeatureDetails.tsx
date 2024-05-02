@@ -17,7 +17,7 @@ import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
 
 // locals
 import { useFeatureSequence } from './hooks'
-import { ErrorMessage, LoadingEllipses, Menu } from '../../ui'
+import { ErrorMessage, LoadingEllipses } from '../../ui'
 import { SimpleFeatureSerialized, getSession } from '../../util'
 import { SeqState } from '../util'
 import { BaseFeatureWidgetModel } from '../stateModelFactory'

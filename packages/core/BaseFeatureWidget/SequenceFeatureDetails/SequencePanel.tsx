@@ -30,7 +30,10 @@ const SeqPanel = React.forwardRef<HTMLDivElement, SeqPanelProps>(
   function SeqPanel2(props, ref) {
     const { model, feature, mode } = props
     let {
-      sequence: { seq, header, upstream = '', downstream = '' },
+      sequence: { seq, upstream = '', downstream = '' },
+    } = props
+    const {
+      sequence: { header },
     } = props
     const { subfeatures = [] } = feature
 
