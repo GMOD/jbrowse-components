@@ -186,13 +186,11 @@ const SequenceFeatureDetails = observer(function ({
         <ButtonGroup variant="contained">
           {options.map(option => {
             return (
-              <>
-                <Tooltip title={option.label}>
-                  <Button size="small" onClick={option.onClick}>
-                    <option.icon />
-                  </Button>
-                </Tooltip>
-              </>
+              <Tooltip title={option.label} key={JSON.stringify(option)}>
+                <Button size="small" onClick={option.onClick}>
+                  <option.icon />
+                </Button>
+              </Tooltip>
             )
           })}
         </ButtonGroup>
