@@ -40,13 +40,13 @@ const TrackContainer = observer(function ({
   const { draggingTrackId } = model
   const ref = useRef<HTMLDivElement>(null)
 
-  return (
+  return display ? (
     <Paper
       ref={ref}
       className={classes.root}
       variant="outlined"
       onClick={event => {
-        if (event.detail === 2 && !track.displays[0].featureIdUnderMouse) {
+        if (event.detail === 2 && !display.featureIdUnderMouse) {
           const left = ref.current?.getBoundingClientRect().left || 0
           model.zoomTo(model.bpPerPx / 2, event.clientX - left, true)
         }
@@ -73,7 +73,7 @@ const TrackContainer = observer(function ({
         className={classes.resizeHandle}
       />
     </Paper>
-  )
+  ) : null
 })
 
 export default TrackContainer
