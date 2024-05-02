@@ -91,11 +91,10 @@ const SequenceFeatureDetails = observer(function ({
       label: 'Copy HTML',
       onClick: () => {
         const ref = seqPanelRef.current
-        if (!ref) {
-          return
+        if (ref) {
+          copy(ref.innerHTML, { format: 'text/html' })
+          getSession(model).notify('Copied HTML to clipboard!', 'info')
         }
-        copy(ref.innerHTML, { format: 'text/html' })
-        getSession(model).notify('Copied HTML to clipboard!', 'info')
       },
     },
     {

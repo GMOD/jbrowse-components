@@ -95,7 +95,7 @@ const SeqPanel = React.forwardRef<HTMLDivElement, SeqPanelProps>(
             maxHeight: 300,
           }}
         >
-          <span style={{ background: 'white' }}>{`>${header}`}</span>
+          <span style={{ background: 'white' }}>{`>${header}\n`}</span>
           <br />
           {mode === 'genomic' ? (
             <GenomicSequence sequence={seq} />
