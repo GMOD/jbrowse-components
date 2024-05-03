@@ -21,7 +21,7 @@ test('test using the sequence feature panel', () => {
   const { getByTestId } = render(
     <SequencePanel
       model={SequenceFeatureDetailsF().create()}
-      sequence={{ seq: dna }}
+      sequence={{ seq: dna, header: 'NM_001080418.3 protein' }}
       mode="protein"
       feature={feature.subfeatures[0]}
     />,
@@ -31,7 +31,7 @@ test('test using the sequence feature panel', () => {
 
   // http://m.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g=ENSG00000116544;r=1:34865436-34929650
   // with stop codon on the end
-  expect(element.textContent).toEqual(`>NM_001080418.3-protein\n${pep}*`)
+  expect(element.textContent).toEqual(`>NM_001080418.3 protein\n${pep}*`)
 })
 
 const readFasta = (filename: string) => {
@@ -51,7 +51,7 @@ test('NCDN collapsed intron', () => {
   const { getByTestId } = render(
     <SequencePanel
       model={SequenceFeatureDetailsF().create()}
-      sequence={{ seq: dna }}
+      sequence={{ seq: dna, header: '1:36,023,400-36,032,380' }}
       mode="gene_collapsed_intron"
       feature={feature.subfeatures[0]}
     />,
@@ -71,12 +71,14 @@ test('NCDN updownstream', () => {
   // samtools faidx 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz' 1:36,023,400-36,032,380 > out.fa
   const seq = readFasta('./test_data/NCDN_dna.fa')
 
+  const header = '1:36,023,400-36,032,380'
+
   // http://localhost:3000/?config=test_data%2Fconfig_demo.json&session=share-zMPjiv36k0&password=ddxCy
   const feature = NCDN
   const { getByTestId } = render(
     <SequencePanel
       model={SequenceFeatureDetailsF().create()}
-      sequence={{ seq, upstream }}
+      sequence={{ seq, upstream, header }}
       mode="gene_updownstream"
       feature={feature.subfeatures[0]}
     />,
@@ -99,10 +101,11 @@ test('NCDN updownstream', () => {
 
 test('single exon cDNA should not have duplicate sequences', () => {
   const seq = readFasta('./test_data/volvox.fa')
+  const header = 'chr1:1201-1500 cdna'
   const { getByTestId } = render(
     <SequencePanel
       model={SequenceFeatureDetailsF().create()}
-      sequence={{ seq }}
+      sequence={{ seq, header }}
       mode="cdna"
       feature={{
         start: 1200,
@@ -121,6 +124,6 @@ test('single exon cDNA should not have duplicate sequences', () => {
   const element = getByTestId('sequence_panel')
 
   expect(element.children[0].textContent).toEqual(
-    '>chr1:1201-1500-cdna\nATGTCACCTCGGGTACTGCCTCTATTACAGAGGTATCTTAATGGCGCATCCAGCCTTGTGGCTGGGTCTACGTACGCGTGGGCACCATACGTATGTTGGCAGGAAAGGTCAATCATGCTTGTTTCCTCGTCGCAGAAACGTTCACACTATTGGCTCGCGGGATCGAACGGGCCTGATTATTTTTCCAGCTCCTGCGTTCCTATCACGCCAACTGTCGCTAATAAAATGTTATATAGAGATAACCCATTGCTATGCAAGGATGGAGAAACCGCTTCACAACACCCTAGAATTACTTCAGCA',
+    '>chr1:1201-1500 cdna\nATGTCACCTCGGGTACTGCCTCTATTACAGAGGTATCTTAATGGCGCATCCAGCCTTGTGGCTGGGTCTACGTACGCGTGGGCACCATACGTATGTTGGCAGGAAAGGTCAATCATGCTTGTTTCCTCGTCGCAGAAACGTTCACACTATTGGCTCGCGGGATCGAACGGGCCTGATTATTTTTCCAGCTCCTGCGTTCCTATCACGCCAACTGTCGCTAATAAAATGTTATATAGAGATAACCCATTGCTATGCAAGGATGGAGAAACCGCTTCACAACACCCTAGAATTACTTCAGCA',
   )
 })
