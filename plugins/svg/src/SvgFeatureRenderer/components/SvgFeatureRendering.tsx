@@ -319,10 +319,14 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
   // }, [displayModel.height, displayModel.adjustTrackLayoutHeight])
 
   useEffect(() => {
-    // @ts-ignore
-    const { height, adjustTrackLayoutHeight } = displayModel
-    if (height && adjustTrackLayoutHeight !== 'static') {
-      setHeight(height)
+    if (
+      // @ts-ignore
+      displayModel.height &&
+      // @ts-ignore
+      displayModel.adjustTrackLayoutHeight !== 'static'
+    ) {
+      // @ts-ignore
+      setHeight(displayModel.height)
     } else {
       setHeight(layout.getTotalHeight())
     }
