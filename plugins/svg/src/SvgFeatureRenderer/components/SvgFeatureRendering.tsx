@@ -216,6 +216,7 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
   onClick?: React.MouseEventHandler
 }) {
   const {
+    layout,
     blockKey,
     regions = [],
     bpPerPx,
@@ -307,14 +308,26 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
     [movedDuringLastMouseDown, onClick],
   )
 
-  useEffect(() => {
-    // @ts-expect-error
-    const { height } = displayModel
+  // useEffect(() => {
+  //   // @ts-expect-error
+  //   const { height } = displayModel
+  //   console.log(height, displayModel.adjustTrackLayoutHeight)
+  //   if (height) {
+  //     setHeight(height)
+  //   }
+  //   // @ts-ignore
+  // }, [displayModel.height, displayModel.adjustTrackLayoutHeight])
 
-    if (height) {
+  useEffect(() => {
+    // @ts-ignore
+    const { height, adjustTrackLayoutHeight } = displayModel
+    if (height && adjustTrackLayoutHeight !== 'static') {
       setHeight(height)
+    } else {
+      setHeight(layout.getTotalHeight())
     }
-  }, [displayModel])
+    // @ts-ignore
+  }, [layout, displayModel.height, displayModel.adjustTrackLayoutHeight])
 
   return exportSVG ? (
     <RenderedFeatures

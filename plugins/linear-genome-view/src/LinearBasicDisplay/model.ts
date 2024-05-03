@@ -53,6 +53,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         trackMaxHeight: types.maybe(types.number),
         /**
          * #property
+         * setting to auto-adjust the layout height of tracks
+         */
+        adjustTrackLayoutHeight: types.optional(types.string, 'static'),
+        /**
+         * #property
          */
         configuration: ConfigurationReference(configSchema),
       }),
@@ -95,6 +100,15 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       get displayMode() {
         return (
           self.trackDisplayMode ?? getConf(self, ['renderer', 'displayMode'])
+        )
+      },
+      /**
+       * #getter
+       */
+      get adjustTrackLayoutHeightSetting() {
+        return (
+          self.adjustTrackLayoutHeight ||
+          getConf(self, ['renderer', 'adjustTrackLayoutHeight'])
         )
       },
     }))
@@ -143,6 +157,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setMaxHeight(val?: number) {
         self.trackMaxHeight = val
+      },
+      /**
+       * #action
+       */
+      setAdjustTrackLayoutHeightSetting(
+        setting: 'static' | 'dynamic' | 'bound',
+      ) {
+        self.adjustTrackLayoutHeight = setting
       },
     }))
     .views(self => {
@@ -205,6 +227,32 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   { model: self, handleClose },
                 ])
               },
+            },
+            {
+              label: 'Track height adjustment',
+              subMenu: [
+                {
+                  label: 'Static (resized, or configured height)',
+                  type: 'radio',
+                  checked: self.adjustTrackLayoutHeightSetting === 'static',
+                  onClick: () =>
+                    self.setAdjustTrackLayoutHeightSetting('static'),
+                },
+                {
+                  label: 'Dynamic (auto-adjust to show all features)',
+                  type: 'radio',
+                  checked: self.adjustTrackLayoutHeightSetting === 'dynamic',
+                  onClick: () =>
+                    self.setAdjustTrackLayoutHeightSetting('dynamic'),
+                },
+                {
+                  label: 'Bound (auto-adjust up to configured height)',
+                  type: 'radio',
+                  checked: self.adjustTrackLayoutHeightSetting === 'bound',
+                  onClick: () =>
+                    self.setAdjustTrackLayoutHeightSetting('bound'),
+                },
+              ],
             },
           ]
         },

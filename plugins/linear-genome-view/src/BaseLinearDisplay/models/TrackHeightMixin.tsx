@@ -1,8 +1,6 @@
 import { addDisposer, types } from 'mobx-state-tree'
 import { getConf } from '@jbrowse/core/configuration'
-import { getContainingView, getSession, max, min } from '@jbrowse/core/util'
-
-import { LinearGenomeViewModel } from '../../LinearGenomeView'
+import { getSession, max, min } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
 
 const minDisplayHeight = 20
@@ -37,9 +35,8 @@ export default function TrackHeightMixin() {
        * returns the value of the track height setting from the view model
        */
       get adjustTrackLayoutHeightSetting() {
-        const { adjustTrackLayoutHeightSetting } = getContainingView(
-          self,
-        ) as LinearGenomeViewModel
+        // @ts-ignore
+        const { adjustTrackLayoutHeightSetting } = self
 
         return adjustTrackLayoutHeightSetting
       },
@@ -73,10 +70,6 @@ export default function TrackHeightMixin() {
       },
     }))
     .actions(self => ({
-      setViewTrackLayoutHeightSetting(setting: 'static' | 'dynamic' | 'bound') {
-        const view = getContainingView(self) as LinearGenomeViewModel
-        view.setAdjustTrackLayoutHeight(setting)
-      },
       notifyStaticSettingChange() {
         getSession(self).notify(
           'LGV track height setting has changed to Static to use your manually set height.',
@@ -102,7 +95,8 @@ export default function TrackHeightMixin() {
       resizeHeight(distance: number) {
         // if the user resizes their height, we want the setting to turn off and maintain their set height
         if (self.adjustTrackLayoutHeightSetting !== 'static') {
-          this.setViewTrackLayoutHeightSetting('static')
+          // @ts-ignore
+          self.setAdjustTrackLayoutHeightSetting('static')
           this.notifyStaticSettingChange()
         }
         const oldHeight = self.height

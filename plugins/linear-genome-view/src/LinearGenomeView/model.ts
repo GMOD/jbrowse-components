@@ -242,15 +242,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
-         * setting to auto-adjust the layout height of tracks
-         */
-        adjustTrackLayoutHeight: types.optional(
-          types.string,
-          () => localStorageGetItem('lgv-adjustTrackLayoutHeight') || 'static',
-        ),
-
-        /**
-         * #property
          * show the "gridlines" in the track area
          */
         showGridlines: true,
@@ -301,16 +292,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
           'trackLabels',
         ])
         return self.trackLabels || sessionSetting
-      },
-      /**
-       * #getter
-       */
-      get adjustTrackLayoutHeightSetting() {
-        const sessionSetting = getConf(getSession(self), [
-          'LinearGenomeViewPlugin',
-          'trackHeight',
-        ])
-        return self.adjustTrackLayoutHeight || sessionSetting
       },
       /**
        * #getter
@@ -889,14 +870,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setAdjustTrackLayoutHeight(setting: 'static' | 'dynamic' | 'bound') {
-        localStorage.setItem('lgv-adjustTrackLayoutHeight', setting)
-        self.adjustTrackLayoutHeight = setting
-      },
-
-      /**
-       * #action
-       */
       setShowCenterLine(b: boolean) {
         self.showCenterLine = b
       },
@@ -1289,29 +1262,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 type: 'radio',
                 checked: self.trackLabelsSetting === 'hidden',
                 onClick: () => self.setTrackLabels('hidden'),
-              },
-            ],
-          },
-          {
-            label: 'Track height',
-            subMenu: [
-              {
-                label: 'Static (resized, or configured height)',
-                type: 'radio',
-                checked: self.adjustTrackLayoutHeightSetting === 'static',
-                onClick: () => self.setAdjustTrackLayoutHeight('static'),
-              },
-              {
-                label: 'Dynamic (auto-adjust to show all features)',
-                type: 'radio',
-                checked: self.adjustTrackLayoutHeightSetting === 'dynamic',
-                onClick: () => self.setAdjustTrackLayoutHeight('dynamic'),
-              },
-              {
-                label: 'Bound (auto-adjust up to configured height)',
-                type: 'radio',
-                checked: self.adjustTrackLayoutHeightSetting === 'bound',
-                onClick: () => self.setAdjustTrackLayoutHeight('bound'),
               },
             ],
           },
