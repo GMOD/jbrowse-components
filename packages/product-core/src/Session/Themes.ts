@@ -25,15 +25,89 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
     .model({})
     .volatile(() => ({
       sessionThemeName: localStorageGetItem('themeName') || 'default',
+      prefersDarkMode: localStorageGetItem('prefersDarkMode') || 'false',
     }))
     .views(s => ({
+      /**
+       * #getter
+       */
+      get configTheme() {
+        const self = s as typeof s & BaseSession
+        const configTheme = getConf(self.jbrowse, 'theme')
+        // placeholder structure to identify the default config theme
+        return {
+          config: {
+            palette: {
+              ...defaultThemes.default.palette,
+              ...configTheme.palette,
+            },
+            name: 'config',
+          },
+        } as ThemeOptions
+      },
+      /**
+       * #getter
+       */
+      get extraThemes() {
+        const self = s as typeof s & BaseSession
+        const extraThemes = getConf(self.jbrowse, 'extraThemes')
+        return extraThemes
+      },
+      /**
+       * #getter
+       */
+      get lightTheme() {
+        const theme = Object.entries({
+          ...this.configTheme,
+          ...this.extraThemes,
+          ...defaultThemes,
+        } as ThemeMap).find(
+          ([_, theme]) =>
+            theme.palette?.mode === 'light' ||
+            theme.palette?.mode === undefined,
+        ) ?? [undefined, undefined]
+
+        return theme ?? undefined
+      },
+      /**
+       * #getter
+       */
+      get darkTheme() {
+        const theme = Object.entries({
+          ...this.configTheme,
+          ...this.extraThemes,
+          ...defaultThemes,
+        } as ThemeMap).find(([_, theme]) => theme.palette?.mode === 'dark') ?? [
+          undefined,
+          undefined,
+        ]
+
+        return theme ?? undefined
+      },
+      /**
+       * #getter
+       */
+      get systemTheme() {
+        const [name, theme] =
+          s.prefersDarkMode === 'true' && this.darkTheme[1]
+            ? this.darkTheme
+            : this.lightTheme
+
+        const sysTheme = {
+          ...theme,
+          name: `Use system setting (${name})`,
+        }
+        return sysTheme as ThemeOptions
+      },
       /**
        * #method
        */
       allThemes(): ThemeMap {
-        const self = s as typeof s & BaseSession
-        const extraThemes = getConf(self.jbrowse, 'extraThemes')
-        return { ...defaultThemes, ...extraThemes }
+        return {
+          ...defaultThemes,
+          ...this.extraThemes,
+          system: { ...this.systemTheme },
+        }
       },
       /**
        * #getter
@@ -60,11 +134,18 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
       setThemeName(name: string) {
         self.sessionThemeName = name
       },
+      /**
+       * #action
+       */
+      setPrefersDarkMode(preference: string) {
+        self.prefersDarkMode = preference
+      },
       afterAttach() {
         addDisposer(
           self,
           autorun(() => {
             localStorageSetItem('themeName', self.themeName)
+            localStorageSetItem('prefersDarkMode', self.prefersDarkMode)
           }),
         )
       },

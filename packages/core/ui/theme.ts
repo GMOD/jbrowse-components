@@ -228,8 +228,8 @@ export const defaultThemes = {
   default: getDefaultTheme(),
   lightStock: getLightStockTheme(),
   lightMinimal: getMinimalTheme(),
-  darkMinimal: getDarkMinimalTheme(),
   darkStock: getDarkStockTheme(),
+  darkMinimal: getDarkMinimalTheme(),
 } as ThemeMap
 
 function overwriteArrayMerge(_: unknown, sourceArray: unknown[]) {

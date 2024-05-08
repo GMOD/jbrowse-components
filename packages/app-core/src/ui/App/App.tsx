@@ -1,5 +1,5 @@
-import React, { Suspense, lazy } from 'react'
-import { AppBar } from '@mui/material'
+import React, { Suspense, lazy, useEffect } from 'react'
+import { AppBar, useMediaQuery } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util'
@@ -87,6 +87,12 @@ const App = observer(function (props: Props) {
   const d = drawerVisible ? `[drawer] ${drawerWidth}px` : undefined
   const grid =
     drawerPosition === 'right' ? ['[main] 1fr', d] : [d, '[main] 1fr']
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)')
+
+  useEffect(() => {
+    // @ts-expect-error
+    session.setPrefersDarkMode(`${prefersDarkMode}`)
+  }, [prefersDarkMode, session])
 
   return (
     <div
