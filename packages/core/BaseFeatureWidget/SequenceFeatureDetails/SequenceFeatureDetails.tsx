@@ -2,7 +2,6 @@ import React, { lazy, useRef, useState, Suspense } from 'react'
 import {
   Button,
   FormControl,
-  IconButton,
   MenuItem,
   Select,
   Typography,
@@ -16,13 +15,18 @@ import { useFeatureSequence } from './hooks'
 import { ErrorMessage, LoadingEllipses } from '../../ui'
 import { SimpleFeatureSerialized, getSession } from '../../util'
 import { BaseFeatureWidgetModel } from '../stateModelFactory'
+import CascadingMenuButton from '../../ui/CascadingMenuButton'
 
 // icons
+import MoreVert from '@mui/icons-material/MoreVert'
 import Settings from '@mui/icons-material/Settings'
 
 // lazies
 const SequencePanel = lazy(() => import('./SequencePanel'))
 const SettingsDialog = lazy(() => import('./dialogs/SettingsDialog'))
+const AdvancedSequenceDialog = lazy(
+  () => import('./dialogs/AdvancedSequenceDialog'),
+)
 
 const useStyles = makeStyles()({
   formControl: {
@@ -123,42 +127,49 @@ const SequenceFeatureDetails = observer(function ({
             ))}
           </Select>
         </FormControl>
-        <Button
-          className={classes.formControl}
-          variant="contained"
-          onClick={() => {
-            const ref = seqPanelRef.current
-            if (ref) {
-              copy(ref.textContent || '', { format: 'text/plain' })
-            }
-          }}
+        <CascadingMenuButton
+          menuItems={[
+            {
+              label: 'Copy plaintext',
+              onClick: () => {
+                const ref = seqPanelRef.current
+                if (ref) {
+                  copy(ref.textContent || '', { format: 'text/plain' })
+                }
+              },
+            },
+            {
+              label: 'Copy HTML',
+              onClick: () => {
+                const ref = seqPanelRef.current
+                if (ref) {
+                  copy(ref.innerHTML, { format: 'text/html' })
+                }
+              },
+            },
+            {
+              label: 'Launch advanced view...',
+              onClick: () => {
+                getSession(model).queueDialog(handleClose => [
+                  AdvancedSequenceDialog,
+                  { model, feature, handleClose },
+                ])
+              },
+            },
+            {
+              label: 'Settings',
+              icon: Settings,
+              onClick: () => {
+                getSession(model).queueDialog(handleClose => [
+                  SettingsDialog,
+                  { model: sequenceFeatureDetails, handleClose },
+                ])
+              },
+            },
+          ]}
         >
-          Copy plaintext
-        </Button>
-        <Button
-          className={classes.formControl}
-          variant="contained"
-          onClick={() => {
-            const ref = seqPanelRef.current
-            if (ref) {
-              copy(ref.innerHTML, { format: 'text/html' })
-            }
-          }}
-        >
-          Copy HTML
-        </Button>
-
-        <IconButton
-          className={classes.formControl}
-          onClick={() =>
-            getSession(model).queueDialog(handleClose => [
-              SettingsDialog,
-              { model: sequenceFeatureDetails, handleClose },
-            ])
-          }
-        >
-          <Settings />
-        </IconButton>
+          <MoreVert />
+        </CascadingMenuButton>
       </div>
       <div>
         {feature.type === 'gene' ? (

@@ -8,6 +8,12 @@ export function SequenceFeatureDetailsF() {
   return types
     .model('SequenceFeatureDetails', {})
     .volatile(() => ({
+      showCoordinates: Boolean(
+        JSON.parse(
+          localStorageGetItem('sequenceFeatureDetails-showCoordinates') ||
+            'true',
+        ),
+      ),
       intronBp: +(localStorageGetItem('sequenceFeatureDetails-intronBp') ?? 10),
       upDownBp: +(
         localStorageGetItem('sequenceFeatureDetails-upDownBp') ?? 100
@@ -28,6 +34,9 @@ export function SequenceFeatureDetailsF() {
       setUpperCaseCDS(f: boolean) {
         self.upperCaseCDS = f
       },
+      setShowCoordinates(f: boolean) {
+        self.showCoordinates = f
+      },
     }))
     .actions(self => ({
       afterAttach() {
@@ -45,6 +54,10 @@ export function SequenceFeatureDetailsF() {
             localStorageSetItem(
               'sequenceFeatureDetails-upperCaseCDS',
               JSON.stringify(self.upperCaseCDS),
+            )
+            localStorageSetItem(
+              'sequenceFeatureDetails-showCoordinates',
+              JSON.stringify(self.showCoordinates),
             )
           }),
         )
