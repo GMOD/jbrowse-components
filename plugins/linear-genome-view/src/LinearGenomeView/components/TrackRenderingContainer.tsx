@@ -22,7 +22,7 @@ const useStyles = makeStyles()({
   },
 
   trackRenderingContainer: {
-    overflowY: 'auto',
+    overflowY: 'hidden',
     overflowX: 'hidden',
     whiteSpace: 'nowrap',
     position: 'relative',
