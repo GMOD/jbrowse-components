@@ -9,6 +9,7 @@ import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 // locals
 import { HEADER_OVERVIEW_HEIGHT } from '..'
 import { getCytobands } from './util'
+import { getFillProps } from '@jbrowse/core/util'
 
 // rounded rect from https://stackoverflow.com/a/45889603/2129219
 // prettier-ignore
@@ -86,24 +87,59 @@ const Cytobands = observer(function ({
         const e = overview.bpToPx({ refName, coord: end }) || 0
         const l = Math.min(s, e)
         const w = Math.abs(e - s)
-        const c = colorMap[type]
+        const c = colorMap[type] || 'black'
         if (type === 'acen' && !centromereSeen) {
           centromereSeen = true // the next acen entry is drawn with different right triangle
-          const tri = reversed
-            ? rightTriangle(s - w, 0, w, h)
-            : leftTriangle(s, 0, w, h)
-          return <polygon key={k} points={tri} fill={c} />
+          return (
+            <polygon
+              key={k}
+              points={
+                reversed
+                  ? rightTriangle(s - w, 0, w, h)
+                  : leftTriangle(s, 0, w, h)
+              }
+              {...getFillProps(c)}
+            />
+          )
         } else if (type === 'acen' && centromereSeen) {
-          const tri = reversed
-            ? leftTriangle(s - w, 0, w, h)
-            : rightTriangle(s, 0, w, h)
-          return <polygon key={k} points={tri} fill={c} />
+          return (
+            <polygon
+              key={k}
+              points={
+                reversed
+                  ? leftTriangle(s - w, 0, w, h)
+                  : rightTriangle(s, 0, w, h)
+              }
+              {...getFillProps(c)}
+            />
+          )
         } else if (lcap === index) {
-          return <path key={k} d={leftRoundedRect(l, 0, w, h, 8)} fill={c} />
+          return (
+            <path
+              key={k}
+              d={leftRoundedRect(l, 0, w, h, 8)}
+              {...getFillProps(c)}
+            />
+          )
         } else if (rcap === index) {
-          return <path key={k} d={rightRoundedRect(l, 0, w, h, 8)} fill={c} />
+          return (
+            <path
+              key={k}
+              d={rightRoundedRect(l, 0, w, h, 8)}
+              {...getFillProps(c)}
+            />
+          )
         } else {
-          return <rect key={k} x={l} y={0} width={w} height={h} fill={c} />
+          return (
+            <rect
+              key={k}
+              x={l}
+              y={0}
+              width={w}
+              height={h}
+              {...getFillProps(c)}
+            />
+          )
         }
       })}
     </g>

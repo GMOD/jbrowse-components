@@ -1403,7 +1403,7 @@ export function stripAlpha(str: string) {
 
 export function getStrokeProps(str: string) {
   const c = colord(str)
-  return { strokeAlpha: c.alpha(), stroke: c.alpha(1).toHex() }
+  return { strokeOpacity: c.alpha(), stroke: c.alpha(1).toHex() }
 }
 
 export function getFillProps(str: string) {
