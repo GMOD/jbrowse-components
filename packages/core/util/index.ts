@@ -1416,7 +1416,7 @@ export function renderToStaticMarkup(
       render(node, div)
     }
   })
-  return div.innerHTML
+  return div.innerHTML.replaceAll(/\brgba\((.+?),[^,]+?\)/g, 'rgb($1)')
 }
 
 export {

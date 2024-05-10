@@ -366,7 +366,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         style="left: 0%; width: 56.78411120929245%;"
                       />
                       <span
-                        class="MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary css-1j77ekx-MuiSlider-thumb"
+                        class="MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary css-1nqyqyn-MuiSlider-thumb"
                         data-index="0"
                         style="left: 56.78411120929245%;"
                       >
