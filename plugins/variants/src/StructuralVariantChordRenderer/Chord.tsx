@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import { polarToCartesian, Feature } from '@jbrowse/core/util'
+import { polarToCartesian, Feature, getStrokeProps } from '@jbrowse/core/util'
 import {
   AnyConfigurationModel,
   readConfObject,
@@ -111,7 +111,7 @@ const Chord = observer(function Chord({
         cursor="crosshair"
         fill="none"
         d={['M', ...startXY, 'Q', ...controlXY, ...endXY].join(' ')}
-        stroke={hovered ? hoverStrokeColor : strokeColor}
+        {...getStrokeProps(hovered ? hoverStrokeColor : strokeColor)}
         strokeWidth={hovered ? 3 : 1}
         onClick={evt => {
           if (endBlock && startBlock) {

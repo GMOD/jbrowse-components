@@ -4,7 +4,7 @@ exports[`breakpoint split view 1`] = `
 <g
   data-testid="pacbio_hg002_breakpoints-loaded"
   fill="none"
-  stroke="rgb(0,0,0)"
+  stroke="#000000"
   stroke-opacity="0.38"
 >
   <path

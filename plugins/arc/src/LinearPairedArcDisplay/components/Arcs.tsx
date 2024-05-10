@@ -5,6 +5,7 @@ import {
   Feature,
   getContainingView,
   getSession,
+  getStrokeProps,
 } from '@jbrowse/core/util'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
@@ -59,7 +60,7 @@ const Arc = observer(function ({
         <path
           d={`M ${left} 0 C ${left} ${destY}, ${right} ${destY}, ${right} 0`}
           ref={ref}
-          stroke={col}
+          {...getStrokeProps(col)}
           strokeWidth={sw}
           onMouseOut={() => setMouseOvered(false)}
           onMouseOver={() => setMouseOvered(true)}
@@ -69,7 +70,7 @@ const Arc = observer(function ({
         />
         {k1.mateDirection !== undefined ? (
           <line
-            stroke={col}
+            {...getStrokeProps(col)}
             strokeWidth={sw}
             onMouseOut={() => setMouseOvered(false)}
             onMouseOver={() => setMouseOvered(true)}
@@ -82,7 +83,7 @@ const Arc = observer(function ({
         ) : null}
         {k2.mateDirection !== undefined ? (
           <line
-            stroke={col}
+            {...getStrokeProps(col)}
             strokeWidth={sw}
             onMouseOut={() => setMouseOvered(false)}
             onMouseOver={() => setMouseOvered(true)}

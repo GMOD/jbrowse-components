@@ -7,6 +7,7 @@ import { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 
 // locals
 import { HEADER_BAR_HEIGHT, LinearGenomeViewModel } from '..'
+import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
 
 const OverviewScalebarPolygon = observer(function ({
   model,
@@ -61,8 +62,8 @@ const OverviewScalebarPolygon = observer(function ({
   return (
     <polygon
       points={points.toString()}
-      fill={alpha(polygonColor, 0.3)}
-      stroke={alpha(polygonColor, 0.8)}
+      {...getFillProps(alpha(polygonColor, 0.3))}
+      {...getStrokeProps(alpha(polygonColor, 0.8))}
     />
   )
 })
