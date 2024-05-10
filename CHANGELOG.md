@@ -1,3 +1,47 @@
+yarn run v1.22.19 $ lerna-changelog --silent --silent --next-version 2.11.1
+
+## 2.11.1 (2024-05-10)
+
+#### :rocket: Enhancement
+
+- `core`
+  - [#4354](https://github.com/GMOD/jbrowse-components/pull/4354) Allow
+    capitalizing CDS sequences and lowercasing introns in sequence feature panel
+    ([@cmdcolin](https://github.com/cmdcolin))
+- Other
+  - [#4351](https://github.com/GMOD/jbrowse-components/pull/4351) Store and
+    retrieve user track selector settings in local storage
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- `core`
+  - [#4381](https://github.com/GMOD/jbrowse-components/pull/4381) Replace all
+    rgba(...) color strings with rgb(...) in SVG exports to fix usage in
+    illustrator/inkscape ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4364](https://github.com/GMOD/jbrowse-components/pull/4364) Fix tooltips
+    creating a scrollbar when overflowing off the screen in Chrome
+    ([@cmdcolin](https://github.com/cmdcolin))
+- Other
+  - [#4366](https://github.com/GMOD/jbrowse-components/pull/4366) Fix for regex
+    sequence search on reverse strand features
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4362](https://github.com/GMOD/jbrowse-components/pull/4362) Auto-detect
+    file format better when importing BED or TSV bookmarks
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4357](https://github.com/GMOD/jbrowse-components/pull/4357) Fix bookmark
+    showing up on wrong assembly/crashing
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4353](https://github.com/GMOD/jbrowse-components/pull/4353) Remove snap
+    package ([@cmdcolin](https://github.com/cmdcolin))
+- `app-core`
+  - [#4350](https://github.com/GMOD/jbrowse-components/pull/4350) Fix Fab
+    positioning on @jbrowse/react-app ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 1
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin)) Done in 1.13s.
+
 yarn run v1.22.19 $ lerna-changelog --silent --silent --next-version 2.11.0
 
 ## 2.11.0 (2024-04-16)
