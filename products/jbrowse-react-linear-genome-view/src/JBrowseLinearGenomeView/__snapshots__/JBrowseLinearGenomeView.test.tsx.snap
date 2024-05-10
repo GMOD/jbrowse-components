@@ -170,9 +170,11 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   height="48"
                 >
                   <polygon
-                    fill="rgba(66, 119, 127, 0.3)"
+                    fill="#42777f"
+                    fill-opacity="0.3"
                     points="0,48,801,48,267,0,0,0"
-                    stroke="rgba(66, 119, 127, 0.8)"
+                    stroke="#42777f"
+                    stroke-opacity="0.8"
                   />
                 </svg>
                 <div

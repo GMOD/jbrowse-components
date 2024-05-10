@@ -20,7 +20,7 @@ function Arc({
   selectedFeatureId: string
   region: Region
   config: AnyConfigurationModel
-  onFeatureClick?: (event: React.MouseEvent, featureId: string) => void
+  onFeatureClick: (event: React.MouseEvent, featureId: string) => void
   bpPerPx: number
   feature: Feature
 }) {
@@ -133,7 +133,7 @@ function SemiCircles({
   selectedFeatureId: string
   region: Region
   config: AnyConfigurationModel
-  onFeatureClick?: (event: React.MouseEvent, featureId: string) => void
+  onFeatureClick: (event: React.MouseEvent, featureId: string) => void
   bpPerPx: number
   feature: Feature
 }) {
@@ -167,7 +167,7 @@ function SemiCircles({
           90,
           270,
         )}
-        stroke={stroke}
+        {...getStrokeProps(stroke)}
         strokeWidth={strokeWidth}
         fill="transparent"
         onClick={e => onFeatureClick?.(e, featureId)}
@@ -180,14 +180,15 @@ function SemiCircles({
       <text
         x={left + (right - left) / 2}
         y={textYCoord + 3}
-        style={{ stroke: 'white', strokeWidth: '0.6em' }}
+        stroke="white"
+        strokeWidth="0.6em"
       >
         {label}
       </text>
       <text
         x={left + (right - left) / 2}
         y={textYCoord + 3}
-        style={{ stroke: textStroke }}
+        stroke={textStroke}
       >
         {label}
       </text>
@@ -201,6 +202,7 @@ const ArcRendering = observer(function ({
   bpPerPx,
   height,
   exportSVG,
+  onFeatureClick,
   displayModel: { selectedFeatureId },
 }: {
   features: Map<string, Feature>
@@ -209,6 +211,7 @@ const ArcRendering = observer(function ({
   bpPerPx: number
   height: number
   displayModel: { selectedFeatureId: string }
+  onFeatureClick: (event: React.MouseEvent, featureId: string) => void
   exportSVG: boolean
 }) {
   const [region] = regions
@@ -225,6 +228,7 @@ const ArcRendering = observer(function ({
             region={region}
             bpPerPx={bpPerPx}
             selectedFeatureId={selectedFeatureId}
+            onFeatureClick={onFeatureClick}
             feature={f}
           />
         ) : (
@@ -234,6 +238,7 @@ const ArcRendering = observer(function ({
             region={region}
             bpPerPx={bpPerPx}
             selectedFeatureId={selectedFeatureId}
+            onFeatureClick={onFeatureClick}
             feature={f}
           />
         ),

@@ -2,8 +2,7 @@ import React, { useMemo, useState } from 'react'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 import { useTheme } from '@mui/material'
-import { getSession } from '@jbrowse/core/util'
-import { colord } from '@jbrowse/core/util/colord'
+import { getSession, getStrokeProps } from '@jbrowse/core/util'
 
 // locals
 import {
@@ -36,7 +35,6 @@ const AlignmentConnections = observer(function ({
   useNextFrame(snap)
   const allFeatures = model.getTrackFeatures(trackId)
   const hasPaired = useMemo(() => hasPairedReads(allFeatures), [allFeatures])
-  const { r, g, b, a } = colord(theme.palette.text.disabled).rgba
   const layoutMatches = useMemo(() => {
     const layoutMatches = model.getMatchedFeaturesInLayout(
       trackId,
@@ -63,8 +61,7 @@ const AlignmentConnections = observer(function ({
   return assembly ? (
     <g
       fill="none"
-      stroke={`rgb(${r},${g},${b})`}
-      strokeOpacity={a}
+      {...getStrokeProps(theme.palette.text.disabled)}
       data-testid={layoutMatches.length ? `${trackId}-loaded` : trackId}
     >
       {layoutMatches.map(chunk => {

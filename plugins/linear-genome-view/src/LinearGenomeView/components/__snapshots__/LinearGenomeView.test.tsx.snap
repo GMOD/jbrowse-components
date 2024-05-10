@@ -81,9 +81,11 @@ exports[`renders one track, one region 1`] = `
           height="48"
         >
           <polygon
-            fill="rgba(66, 165, 245, 0.3)"
+            fill="#42a5f5"
+            fill-opacity="0.3"
             points="0,48,101,48,800,0,0,0"
-            stroke="rgba(66, 165, 245, 0.8)"
+            stroke="#42a5f5"
+            stroke-opacity="0.8"
           />
         </svg>
         <div
@@ -651,9 +653,11 @@ exports[`renders two tracks, two regions 1`] = `
           height="48"
         >
           <polygon
-            fill="rgba(66, 165, 245, 0.3)"
+            fill="#42a5f5"
+            fill-opacity="0.3"
             points="0,48,802,48,580,0,0,0"
-            stroke="rgba(66, 165, 245, 0.8)"
+            stroke="#42a5f5"
+            stroke-opacity="0.8"
           />
         </svg>
         <div
