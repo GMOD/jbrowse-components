@@ -90,10 +90,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * #property
        */
       type: types.literal('HierarchicalTrackSelectorWidget'),
-      /**
-       * #property
-       */
-      initialized: types.maybe(types.boolean),
+
       /**
        * #property
        */
@@ -290,8 +287,8 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setCollapsedCategories(str: string[]) {
-        self.collapsed.replace(new Map(str.map(s => [s, true])))
+      setCollapsedCategories(str: [string, boolean][]) {
+        self.collapsed.replace(str)
       },
       /**
        * #action
@@ -487,39 +484,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         }
       },
     }))
-    .actions(self => ({
-      afterCreate() {
-        if (!self.initialized) {
-          const session = getSession(self)
-          if (
-            getConf(session, [
-              'hierarchical',
-              'defaultCollapsed',
-              'topLevelCategories',
-            ])
-          ) {
-            self.collapseTopLevelCategories()
-          }
-          if (
-            getConf(session, [
-              'hierarchical',
-              'defaultCollapsed',
-              'subCategories',
-            ])
-          ) {
-            self.collapseSubCategories()
-          }
-          for (const entry of getConf(session, [
-            'hierarchical',
-            'defaultCollapsed',
-            'categoryNames',
-          ])) {
-            self.collapsed.set(entry, true)
-          }
-          self.initialized = true
-        }
-      },
-    }))
     .views(self => ({
       /**
        * #getter
@@ -540,9 +504,38 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
             self.setRecentlyUsed(
               localStorageGetJSON<string[]>(recentlyUsedK(assemblyNames), '[]'),
             )
-            self.setCollapsedCategories(
-              localStorageGetJSON<string[]>(collapsedK(assemblyNames), '[]'),
-            )
+            const val = localStorageGetItem(collapsedK(assemblyNames))
+            if (!val) {
+              self.collapsed.clear()
+              const session = getSession(self)
+              if (
+                getConf(session, [
+                  'hierarchical',
+                  'defaultCollapsed',
+                  'topLevelCategories',
+                ])
+              ) {
+                self.collapseTopLevelCategories()
+              }
+              if (
+                getConf(session, [
+                  'hierarchical',
+                  'defaultCollapsed',
+                  'subCategories',
+                ])
+              ) {
+                self.collapseSubCategories()
+              }
+              for (const entry of getConf(session, [
+                'hierarchical',
+                'defaultCollapsed',
+                'categoryNames',
+              ])) {
+                self.collapsed.set(`Tracks-${entry}`, true)
+              }
+            } else {
+              self.setCollapsedCategories(JSON.parse(val))
+            }
           }),
         )
         // this should be the second autorun
@@ -551,7 +544,10 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           autorun(() => {
             const { assemblyNames } = self
             localStorageSetJSON(recentlyUsedK(assemblyNames), self.recentlyUsed)
-            localStorageSetJSON(collapsedK(assemblyNames), self.collapsed)
+            localStorageSetJSON(
+              collapsedK(assemblyNames),
+              self.collapsed.toJSON(),
+            )
             localStorageSetJSON(favoritesK(), self.favorites)
             localStorageSetJSON(sortTrackNamesK(), self.sortTrackNames)
             localStorageSetJSON(sortCategoriesK(), self.sortCategories)
