@@ -14,11 +14,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Install deps (with cache)
-        uses: bahmutov/npm-install@v1
       - name: Install build deps
         run: |
           brew install pkg-config cairo pango libpng jpeg giflib librsvg
+      - name: Install deps (with cache)
+        uses: bahmutov/npm-install@v1
       - name: Build app
         env:
           CSC_LINK: ${{ secrets.CSC_LINK }}
