@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-config",
-  "version": "2.11.1",
+  "version": "2.11.0",
   "description": "JBrowse 2 config utilities",
   "keywords": [
     "jbrowse",
