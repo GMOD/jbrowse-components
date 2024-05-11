@@ -506,7 +506,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
             )
             const val = localStorageGetItem(collapsedK(assemblyNames))
             if (!val) {
-              self.collapsed.clear()
+              self.expandAllCategories()
               const session = getSession(self)
               if (
                 getConf(session, [
@@ -531,7 +531,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
                 'defaultCollapsed',
                 'categoryNames',
               ])) {
-                self.collapsed.set(`Tracks-${entry}`, true)
+                self.setCategoryCollapsed(`Tracks-${entry}`, true)
               }
             } else {
               self.setCollapsedCategories(JSON.parse(val))
