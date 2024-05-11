@@ -52,11 +52,12 @@ function favoritesK() {
   return `favoriteTracks-${keyConfigPostFix()}}`
 }
 
-function collapsedK(assemblyNames: string[]) {
+function collapsedK(assemblyNames: string[], viewType: string) {
   return [
     'collapsedCategories',
     keyConfigPostFix(),
     assemblyNames.join(','),
+    viewType,
   ].join('-')
 }
 
@@ -500,11 +501,13 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         addDisposer(
           self,
           autorun(() => {
-            const { assemblyNames } = self
+            const { assemblyNames, view } = self
             self.setRecentlyUsed(
               localStorageGetJSON<string[]>(recentlyUsedK(assemblyNames), '[]'),
             )
-            const val = localStorageGetItem(collapsedK(assemblyNames))
+            const val = localStorageGetItem(
+              collapsedK(assemblyNames, view.type),
+            )
             if (!val) {
               self.expandAllCategories()
               const session = getSession(self)
@@ -542,12 +545,9 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         addDisposer(
           self,
           autorun(() => {
-            const { assemblyNames } = self
+            const { assemblyNames, collapsed, view } = self
             localStorageSetJSON(recentlyUsedK(assemblyNames), self.recentlyUsed)
-            localStorageSetJSON(
-              collapsedK(assemblyNames),
-              self.collapsed.toJSON(),
-            )
+            localStorageSetJSON(collapsedK(assemblyNames, view.type), collapsed)
             localStorageSetJSON(favoritesK(), self.favorites)
             localStorageSetJSON(sortTrackNamesK(), self.sortTrackNames)
             localStorageSetJSON(sortCategoriesK(), self.sortCategories)
