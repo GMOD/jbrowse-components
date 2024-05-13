@@ -131,7 +131,7 @@ export function filterSessionInPlace(node: IAnyStateTreeNode, type: IAnyType) {
 type Config = SnapshotOut<AnyConfigurationModel>
 
 export function addRelativeUris(config: Config, base: URL) {
-  if (typeof config === 'object') {
+  if (typeof config === 'object' && config !== null) {
     for (const key of Object.keys(config)) {
       if (typeof config[key] === 'object') {
         addRelativeUris(config[key], base)
