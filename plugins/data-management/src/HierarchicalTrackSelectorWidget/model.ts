@@ -502,42 +502,45 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           self,
           autorun(() => {
             const { assemblyNames, view } = self
+
             self.setRecentlyUsed(
               localStorageGetJSON<string[]>(recentlyUsedK(assemblyNames), '[]'),
             )
-            const val = localStorageGetItem(
-              collapsedK(assemblyNames, view.type),
-            )
-            if (!val) {
-              self.expandAllCategories()
-              const session = getSession(self)
-              if (
-                getConf(session, [
+            if (view) {
+              const val = localStorageGetItem(
+                collapsedK(assemblyNames, view.type),
+              )
+              if (!val) {
+                self.expandAllCategories()
+                const session = getSession(self)
+                if (
+                  getConf(session, [
+                    'hierarchical',
+                    'defaultCollapsed',
+                    'topLevelCategories',
+                  ])
+                ) {
+                  self.collapseTopLevelCategories()
+                }
+                if (
+                  getConf(session, [
+                    'hierarchical',
+                    'defaultCollapsed',
+                    'subCategories',
+                  ])
+                ) {
+                  self.collapseSubCategories()
+                }
+                for (const entry of getConf(session, [
                   'hierarchical',
                   'defaultCollapsed',
-                  'topLevelCategories',
-                ])
-              ) {
-                self.collapseTopLevelCategories()
+                  'categoryNames',
+                ])) {
+                  self.setCategoryCollapsed(`Tracks-${entry}`, true)
+                }
+              } else {
+                self.setCollapsedCategories(JSON.parse(val))
               }
-              if (
-                getConf(session, [
-                  'hierarchical',
-                  'defaultCollapsed',
-                  'subCategories',
-                ])
-              ) {
-                self.collapseSubCategories()
-              }
-              for (const entry of getConf(session, [
-                'hierarchical',
-                'defaultCollapsed',
-                'categoryNames',
-              ])) {
-                self.setCategoryCollapsed(`Tracks-${entry}`, true)
-              }
-            } else {
-              self.setCollapsedCategories(JSON.parse(val))
             }
           }),
         )
@@ -547,10 +550,15 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           autorun(() => {
             const { assemblyNames, collapsed, view } = self
             localStorageSetJSON(recentlyUsedK(assemblyNames), self.recentlyUsed)
-            localStorageSetJSON(collapsedK(assemblyNames, view.type), collapsed)
             localStorageSetJSON(favoritesK(), self.favorites)
             localStorageSetJSON(sortTrackNamesK(), self.sortTrackNames)
             localStorageSetJSON(sortCategoriesK(), self.sortCategories)
+            if (view) {
+              localStorageSetJSON(
+                collapsedK(assemblyNames, view.type),
+                collapsed,
+              )
+            }
           }),
         )
       },
