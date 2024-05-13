@@ -4,6 +4,8 @@ import FeatureRendererType, {
 } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import { renderToAbstractCanvas, Feature } from '@jbrowse/core/util'
 import { ThemeOptions } from '@mui/material'
+
+// locals
 import { ScaleOpts, Source } from './util'
 
 export interface RenderArgs extends FeatureRenderArgs {

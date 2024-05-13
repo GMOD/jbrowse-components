@@ -39,13 +39,13 @@ const SetColorDialog = observer(function SetColorDialog({
           checked={!posneg}
           onClick={() => setPosNeg(false)}
           control={<Radio />}
-          label={'Overall color'}
+          label="Overall color"
         />
         <FormControlLabel
           checked={posneg}
           onClick={() => setPosNeg(true)}
           control={<Radio />}
-          label={'Positive/negative color'}
+          label="Positive/negative color"
         />
 
         {posneg ? (
