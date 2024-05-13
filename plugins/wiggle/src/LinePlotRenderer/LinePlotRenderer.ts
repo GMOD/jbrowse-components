@@ -1,3 +1,5 @@
+import { readConfObject } from '@jbrowse/core/configuration'
+import { Feature } from '@jbrowse/core/util'
 import WiggleBaseRenderer, {
   RenderArgsDeserializedWithFeatures,
 } from '../WiggleBaseRenderer'
@@ -10,10 +12,15 @@ export default class LinePlotRenderer extends WiggleBaseRenderer {
     ctx: CanvasRenderingContext2D,
     props: RenderArgsDeserializedWithFeatures,
   ) {
+    const { config } = props
+    const c = readConfObject(config, 'color')
     return drawLine(ctx, {
       ...props,
       offset: YSCALEBAR_LABEL_OFFSET,
-      colorCallback: () => 'grey',
+      colorCallback:
+        c === '#f0f'
+          ? () => 'grey'
+          : (feature: Feature) => readConfObject(config, 'color', { feature }),
     })
   }
 }
