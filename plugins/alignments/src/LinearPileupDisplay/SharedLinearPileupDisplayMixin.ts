@@ -93,10 +93,6 @@ export function SharedLinearPileupDisplayMixin(
          * #property
          */
         filterBy: types.optional(FilterModel, {}),
-        /**
-         * #property
-         */
-        jexlFilters: types.optional(types.array(types.string), []),
       }),
     )
     .volatile(() => ({
@@ -105,6 +101,9 @@ export function SharedLinearPileupDisplayMixin(
       tagsReady: false,
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
       get autorunReady() {
         const view = getContainingView(self) as LGV
         return (

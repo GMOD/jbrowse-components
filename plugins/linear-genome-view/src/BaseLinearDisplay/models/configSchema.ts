@@ -3,9 +3,11 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 /**
  * #config BaseLinearDisplay
  * #category display
- * `BaseLinearDisplay` is a "base" config that is extended by classes like
- * `LinearBasicDisplay` (used for feature tracks, etc) and `LinearBareDisplay`
- * (more stripped down than even the basic display, not commonly used)
+ *
+ * `BaseLinearDisplay` is a "base" config that is extended by other configs including
+ * - `LinearBasicDisplay` (used for feature tracks, etc)
+ * - `LinearBareDisplay` (more stripped down than even the basic display, not
+ *   commonly used)
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
@@ -47,6 +49,15 @@ const baseLinearDisplayConfigSchema = ConfigurationSchema(
       defaultValue: `jexl:get(feature,'name')`,
 
       contextVariable: ['feature'],
+    },
+    /**
+     * #slot
+     */
+    filter: {
+      type: 'string',
+      description: 'default filter to apply to a track',
+      contextVariable: ['feature'],
+      defaultValue: '',
     },
   },
   {

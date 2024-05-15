@@ -14,7 +14,8 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 // locals
 import { BaseLinearDisplay } from '../BaseLinearDisplay'
 
-const SetMaxHeightDialog = lazy(() => import('./components/SetMaxHeight'))
+const SetMaxHeightDialog = lazy(() => import('./components/SetMaxHeightDialog'))
+const AddFiltersDialog = lazy(() => import('./components/AddFiltersDialog'))
 
 /**
  * #stateModel LinearBasicDisplay
@@ -202,6 +203,15 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   SetMaxHeightDialog,
+                  { model: self, handleClose },
+                ])
+              },
+            },
+            {
+              label: 'Add filters',
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  AddFiltersDialog,
                   { model: self, handleClose },
                 ])
               },
