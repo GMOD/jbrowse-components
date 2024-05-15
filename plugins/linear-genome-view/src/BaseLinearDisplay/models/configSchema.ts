@@ -53,10 +53,9 @@ const baseLinearDisplayConfigSchema = ConfigurationSchema(
     /**
      * #slot
      */
-    filter: {
+    jexlFilters: {
       type: 'string',
-      description: 'default filter to apply to a track',
-      contextVariable: ['feature'],
+      description: 'default set of jexl filters to apply to a track',
       defaultValue: '',
     },
   },

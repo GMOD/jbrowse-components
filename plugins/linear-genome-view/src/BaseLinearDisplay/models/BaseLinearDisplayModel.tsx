@@ -17,7 +17,14 @@ import { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { autorun } from 'mobx'
-import { addDisposer, isAlive, types, Instance } from 'mobx-state-tree'
+import {
+  addDisposer,
+  isAlive,
+  types,
+  Instance,
+  cast,
+  getSnapshot,
+} from 'mobx-state-tree'
 
 // icons
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
@@ -29,7 +36,6 @@ import BlockState from './serverSideRenderedBlock'
 import configSchema from './configSchema'
 import TrackHeightMixin from './TrackHeightMixin'
 import FeatureDensityMixin from './FeatureDensityMixin'
-import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 
 type LGV = LinearGenomeViewModel
 
@@ -77,10 +83,6 @@ function stateModelFactory() {
          * #property
          */
         configuration: ConfigurationReference(configSchema),
-        /**
-         * #property
-         */
-        jexlFilters: types.optional(types.array(types.string), []),
       }),
     )
     .volatile(() => ({
@@ -319,9 +321,7 @@ function stateModelFactory() {
           ...getParentRenderProps(self),
           notReady: !self.featureDensityStatsReady,
           rpcDriverName: self.rpcDriverName,
-          filters: new SerializableFilterChain({
-            filters: ["jexl:get(feature,'score')>400"],
-          }),
+
           displayModel: self,
           onFeatureClick(_: unknown, featureId?: string) {
             const f = featureId || self.featureIdUnderMouse
@@ -394,15 +394,6 @@ function stateModelFactory() {
                 self.deleteBlock(key as string)
               }
             })
-          }),
-        )
-
-        addDisposer(
-          self,
-          autorun(() => {
-            if (!self.jexlFilters) {
-              self.jexlFilters = getConf(self, 'jexlFilters')
-            }
           }),
         )
       },

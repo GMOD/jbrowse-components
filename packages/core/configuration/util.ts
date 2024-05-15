@@ -72,17 +72,10 @@ export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
       // )
     }
 
-    if (slot.expr) {
-      const appliedFunc = slot.expr.evalSync(args)
-      if (isStateTreeNode(appliedFunc)) {
-        return JSON.parse(JSON.stringify(getSnapshot(appliedFunc)))
-      }
-      return appliedFunc
-    }
-    if (isStateTreeNode(slot)) {
-      return JSON.parse(JSON.stringify(getSnapshot(slot)))
-    }
-    return slot
+    const val = slot.expr ? slot.expr.evalSync(args) : slot
+    return isStateTreeNode(val)
+      ? JSON.parse(JSON.stringify(getSnapshot(val)))
+      : val
   }
 
   if (Array.isArray(slotPath)) {

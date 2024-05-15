@@ -6,13 +6,14 @@ import {
 } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { MenuItem } from '@jbrowse/core/ui'
-import { types, getEnv, Instance } from 'mobx-state-tree'
+import { types, getEnv, Instance, cast } from 'mobx-state-tree'
 
 // icons
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
 // locals
 import { BaseLinearDisplay } from '../BaseLinearDisplay'
+import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 
 const SetMaxHeightDialog = lazy(() => import('./components/SetMaxHeightDialog'))
 const AddFiltersDialog = lazy(() => import('./components/AddFiltersDialog'))
@@ -56,9 +57,20 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         configuration: ConfigurationReference(configSchema),
+        /**
+         * #property
+         */
+        jexlFilters: types.maybe(types.array(types.string)),
       }),
     )
     .views(self => ({
+      /**
+       * #getter
+       */
+      get activeFilters() {
+        const ret = getConf(self, 'jexlFilters')
+        return self.jexlFilters ?? ret ? [`jexl:${ret}`] : undefined
+      },
       /**
        * #getter
        */
@@ -124,6 +136,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
+      setJexlFilters(f: string[]) {
+        self.jexlFilters = cast(f)
+      },
+      /**
+       * #action
+       */
       toggleShowLabels() {
         self.trackShowLabels = !self.showLabels
       },
@@ -156,12 +174,15 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #method
          */
         renderProps() {
-          const config = self.rendererConfig
           const superProps = superRenderProps()
-          const superPropsOmit = superProps as Omit<typeof superProps, symbol>
           return {
-            ...superPropsOmit,
-            config,
+            ...(superProps as Omit<typeof superProps, symbol>),
+            config: self.rendererConfig,
+            filters: self.activeFilters
+              ? new SerializableFilterChain({
+                  filters: self.activeFilters,
+                })
+              : undefined,
           }
         },
 
