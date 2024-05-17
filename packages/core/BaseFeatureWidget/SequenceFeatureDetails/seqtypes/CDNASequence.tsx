@@ -10,17 +10,32 @@ function splitString(str: string, size: number, initial: number) {
   const numChunks = Math.ceil(str.length / size)
   const chunks = new Array(numChunks)
 
-  for (let i = 0, o = 0; i < numChunks; ++i, o += size) {
+  let counter = 0
+  for (let i = 0, o = 0; i < numChunks; ++i, o += size, counter++) {
     chunks[i] = str.slice(o, o + (i === 0 ? size - initial : size))
   }
 
-  return { segments: chunks, remainder: chunks.at(-1)?.length || 0 }
+  return {
+    segments: chunks,
+    remainder:
+      (chunks.at(-1)?.length % size || 0) + (counter < 2 ? initial : 0),
+  }
 }
-function SplitString({ chunks }: { chunks: string[] }) {
+function SplitString({
+  chunks,
+  size,
+  start,
+}: {
+  chunks: string[]
+  size: number
+  start: number
+}) {
   return chunks.map((s, idx) => (
     <React.Fragment key={s + '-' + idx}>
-      {s}
-      {idx === chunks.length - 1 ? null : <br />}
+      {`${start + idx * size}`.padStart(4)} {s}
+      {idx === chunks.length - 1 && chunks.at(-1)?.length !== size ? null : (
+        <br />
+      )}
     </React.Fragment>
   ))
 }
@@ -53,6 +68,7 @@ const CDNASequence = observer(function ({
   ).filter(f => f.start !== f.end)
   const toLower = (s: string) => (upperCaseCDS ? s.toLowerCase() : s)
   const toUpper = (s: string) => (upperCaseCDS ? s.toUpperCase() : s)
+  let currStart = 0
   const width = 100
   let upstreamChunk = null as React.ReactNode
   let currRemainder = 0
@@ -64,21 +80,25 @@ const CDNASequence = observer(function ({
     )
     upstreamChunk = (
       <span style={{ background: updownstreamColor }}>
-        <SplitString chunks={upstreamSegments} />
+        <SplitString start={currStart} chunks={upstreamSegments} size={width} />
       </span>
     )
     currRemainder = remainder
+    currStart += upstream.length
   }
+
+  console.log({ chunks })
   const middleChunks = [] as React.ReactNode[]
   for (let idx = 0; idx < chunks.length; idx++) {
     const chunk = chunks[idx]
     const intron = sequence.slice(chunk.end, chunks[idx + 1]?.start)
+    const cseq = sequence.slice(chunk.start, chunk.end)
     const { segments, remainder } = splitString(
       hasCds
         ? chunk.type === 'CDS'
-          ? toUpper(sequence.slice(chunk.start, chunk.end))
-          : toLower(sequence.slice(chunk.start, chunk.end))
-        : toUpper(sequence.slice(chunk.start, chunk.end)),
+          ? toUpper(cseq)
+          : toLower(cseq)
+        : toUpper(cseq),
       width,
       currRemainder,
     )
@@ -89,10 +109,11 @@ const CDNASequence = observer(function ({
         key={JSON.stringify(chunk) + '-mid'}
         style={{ background: chunk.type === 'CDS' ? cdsColor : utrColor }}
       >
-        <SplitString chunks={segments} />
+        <SplitString start={currStart} chunks={segments} size={width} />
       </span>,
     )
-    if (includeIntrons && idx < chunks.length - 1) {
+    currStart += cseq.length
+    if (intron && includeIntrons && idx < chunks.length - 1) {
       const { segments: intronSegments, remainder } = splitString(
         toLower(
           collapseIntron && intron.length > intronBp * 2
@@ -110,9 +131,14 @@ const CDNASequence = observer(function ({
             key={JSON.stringify(chunk) + '-intron'}
             style={{ background: intronColor }}
           >
-            <SplitString chunks={intronSegments} />
+            <SplitString
+              start={currStart}
+              chunks={intronSegments}
+              size={width}
+            />
           </span>,
         )
+        currStart += intron.length
       }
     }
   }
@@ -126,17 +152,20 @@ const CDNASequence = observer(function ({
     )
     downstreamChunk = (
       <span style={{ background: updownstreamColor }}>
-        <SplitString chunks={downstreamSegments} />
+        <SplitString
+          start={currStart}
+          chunks={downstreamSegments}
+          size={width}
+        />
       </span>
     )
     currRemainder = remainder
+    currStart += downstream.length
   }
   return (
     <>
       {upstreamChunk}
-
       {middleChunks}
-
       {downstreamChunk}
     </>
   )
