@@ -3,8 +3,10 @@ import { createTheme, ThemeOptions } from '@mui/material/styles'
 import type {
   PaletteAugmentColorOptions,
   PaletteColor,
+  SimplePaletteColorOptions,
 } from '@mui/material/styles/createPalette'
 import deepmerge from 'deepmerge'
+import { makeContrasting } from '../util/color'
 
 declare module '@mui/material/styles/createPalette' {
   interface Palette {
@@ -113,6 +115,10 @@ const frames = [
 const stopCodon = '#e22'
 const startCodon = '#3e3'
 
+interface JBrowseThemeOptions extends ThemeOptions {
+  alternate?: ThemeOptions
+}
+
 function stockTheme() {
   return {
     palette: {
@@ -139,7 +145,8 @@ function stockTheme() {
         },
       },
     },
-  } satisfies ThemeOptions
+    alternate: getDarkStockTheme(),
+  } satisfies JBrowseThemeOptions
 }
 
 function getDefaultTheme() {
@@ -149,10 +156,10 @@ function getDefaultTheme() {
   }
 }
 
-function getLightStockTheme() {
+function getStockTheme() {
   return {
     ...stockTheme(),
-    name: 'Light (stock)',
+    name: 'Stock',
   }
 }
 
@@ -208,7 +215,7 @@ function getDarkMinimalTheme() {
 
 function getMinimalTheme() {
   return {
-    name: 'Light (minimal)',
+    name: 'Minimal',
     palette: {
       primary: { main: grey[900] },
       secondary: { main: grey[800] },
@@ -221,15 +228,14 @@ function getMinimalTheme() {
       frames,
       framesCDS,
     },
-  } satisfies ThemeOptions & { name: string }
+    alternate: getDarkMinimalTheme(),
+  } satisfies JBrowseThemeOptions & { name: string }
 }
 
 export const defaultThemes = {
   default: getDefaultTheme(),
-  lightStock: getLightStockTheme(),
-  lightMinimal: getMinimalTheme(),
-  darkStock: getDarkStockTheme(),
-  darkMinimal: getDarkMinimalTheme(),
+  stock: getStockTheme(),
+  minimal: getMinimalTheme(),
 } as ThemeMap
 
 function overwriteArrayMerge(_: unknown, sourceArray: unknown[]) {
@@ -455,22 +461,119 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
   return deepmerge(themeP, theme || {}, { arrayMerge: overwriteArrayMerge })
 }
 
-type ThemeMap = Record<string, ThemeOptions>
+type ThemeMap = Record<string, JBrowseThemeOptions>
 
 export function createJBrowseTheme(
   configTheme: ThemeOptions = {},
   themes = defaultThemes,
   themeName = 'default',
+  mode = 'light',
 ) {
+  const themeMode = configTheme?.palette?.mode ?? 'light'
+  if (themeMode !== mode) {
+    configTheme = getAlternateTheme(configTheme)
+  }
   return createTheme(
     createJBrowseBaseTheme(
       themeName === 'default'
         ? deepmerge(themes.default, augmentTheme(configTheme), {
             arrayMerge: overwriteArrayMerge,
           })
-        : augmentThemePlus(themes[themeName]) || themes.default,
+        : augmentThemePlus(configTheme) || themes.default,
     ),
   )
+}
+
+function getAlternateTheme(theme: JBrowseThemeOptions = {}) {
+  const alternate = theme?.alternate ?? undefined
+  const themeMode = theme?.palette?.mode ?? 'light'
+  const altMode = alternate?.palette?.mode
+
+  // no alternate theme has been defined, or both themes are the same mode
+  if (!alternate || themeMode === altMode) {
+    return generateAltTheme(theme)
+  }
+
+  if (themeMode !== altMode) {
+    return {
+      ...alternate,
+    }
+  }
+
+  return theme
+}
+
+function generateAltTheme(theme: ThemeOptions = {}) {
+  const altMode = theme.palette?.mode === 'dark' ? 'light' : 'dark'
+  const background = altMode === 'dark' ? 'black' : 'white'
+  const contrast = 4.5
+
+  if (theme?.palette) {
+    theme = deepmerge(theme, {
+      palette: {
+        mode: altMode,
+      },
+    })
+  }
+
+  if (theme?.palette?.primary) {
+    const contrastColor = {
+      main: makeContrasting(
+        (theme.palette.primary as SimplePaletteColorOptions).main,
+        background,
+        contrast,
+      ),
+    }
+    theme = deepmerge(theme, {
+      palette: {
+        primary: refTheme.palette.augmentColor({ color: contrastColor }),
+      },
+    })
+  }
+  if (theme?.palette?.secondary) {
+    const contrastColor = {
+      main: makeContrasting(
+        (theme.palette.secondary as SimplePaletteColorOptions).main,
+        background,
+        contrast,
+      ),
+    }
+    theme = deepmerge(theme, {
+      palette: {
+        secondary: refTheme.palette.augmentColor({ color: contrastColor }),
+      },
+    })
+  }
+  if (theme?.palette?.tertiary) {
+    const contrastColor = {
+      main: makeContrasting(
+        (theme.palette.tertiary as SimplePaletteColorOptions).main,
+        background,
+        contrast,
+      ),
+    }
+    theme = deepmerge(theme, {
+      palette: {
+        tertiary: refTheme.palette.augmentColor({ color: contrastColor }),
+      },
+    })
+  }
+  if (theme?.palette?.quaternary) {
+    const contrastColor = {
+      main: makeContrasting(
+        (theme.palette.quaternary as SimplePaletteColorOptions).main,
+        background,
+        contrast,
+      ),
+    }
+    theme = deepmerge(theme, {
+      palette: {
+        quaternary: refTheme.palette.augmentColor({ color: contrastColor }),
+      },
+    })
+  }
+
+  return theme
 }
 
 function augmentTheme(theme: ThemeOptions = {}) {

@@ -13,6 +13,8 @@ import { Dialog } from '@jbrowse/core/ui'
 const useStyles = makeStyles()(() => ({
   container: {
     width: 800,
+    display: 'flex',
+    gap: '5px',
   },
 }))
 
@@ -25,6 +27,8 @@ export default function PreferencesDialog({
     allThemes: () => Record<string, ThemeOptions & { name?: string }>
     themeName?: string
     setThemeName: (arg: string) => void
+    themeMode: string
+    setThemeMode: (arg: string) => void
   }
 }) {
   const { classes } = useStyles()
@@ -42,6 +46,16 @@ export default function PreferencesDialog({
               {val.name || '(Unknown name)'}
             </MenuItem>
           ))}
+        </TextField>
+        <TextField
+          select
+          label="Mode"
+          value={session.themeMode}
+          onChange={event => session.setThemeMode(event.target.value)}
+        >
+          <MenuItem value={'light'}>Light</MenuItem>
+          <MenuItem value={'dark'}>Dark</MenuItem>
+          <MenuItem value={'system'}>System</MenuItem>
         </TextField>
       </DialogContent>
       <DialogActions>
