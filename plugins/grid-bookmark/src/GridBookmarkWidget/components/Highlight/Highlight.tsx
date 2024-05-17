@@ -43,9 +43,9 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
 
   const set = new Set(model.assemblyNames)
 
-  return showBookmarkHighlights
-    ? bookmarkWidget?.bookmarks
-        ?.filter(value => set.has(value.assemblyName))
+  return showBookmarkHighlights && bookmarkWidget?.bookmarks
+    ? bookmarkWidget.bookmarks
+        .filter(value => set.has(value.assemblyName))
         .map(r => {
           const asm = assemblyManager.get(r.assemblyName)
           const refName = asm?.getCanonicalRefName(r.refName) ?? r.refName

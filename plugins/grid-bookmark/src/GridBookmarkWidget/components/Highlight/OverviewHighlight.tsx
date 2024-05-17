@@ -44,8 +44,8 @@ const OverviewHighlight = observer(function OverviewHighlight({
   }, [session, bookmarkWidget])
 
   const assemblyNames = new Set(model.assemblyNames)
-  return showBookmarkHighlights
-    ? bookmarkWidget?.bookmarks
+  return showBookmarkHighlights && bookmarkWidget?.bookmarks
+    ? bookmarkWidget.bookmarks
         .filter(r => assemblyNames.has(r.assemblyName))
         .map(r => {
           const asm = assemblyManager.get(r.assemblyName)
