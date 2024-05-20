@@ -103,7 +103,7 @@ export function filter(str1: string, str2: string) {
 
 export async function getAllFiles() {
   const files = await exec2(
-    'git ls-files | grep "\\(plugins\\|products\\|packages\\).*.\\(t\\|j\\)sx\\?$"',
+    String.raw`git ls-files | grep "\(plugins\|products\|packages\).*.\(t\|j\)sx\?$"`,
   )
   return files.stdout.split('\n').filter(f => !!f)
 }
