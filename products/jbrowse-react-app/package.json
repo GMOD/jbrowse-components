@@ -82,7 +82,6 @@
     "@jbrowse/web-core": "^2.11.1",
     "@mui/icons-material": "^5.0.0",
     "@mui/material": "^5.10.17",
-    "@mui/x-data-grid": "^7.0.0",
     "base64-js": "^1.0.0",
     "clone": "^2.1.2",
     "copy-to-clipboard": "^3.3.1",

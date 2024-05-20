@@ -104,7 +104,7 @@
     "use-query-params": "^2.0.0"
   },
   "devDependencies": {
-    "electron": "30.0.0"
+    "electron": "30.0.6"
   },
   "browserslist": [
     "last 1 chrome version"
