@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { observer } from 'mobx-react'
 import clone from 'clone'
 import copy from 'copy-to-clipboard'
 import { Button } from '@mui/material'
@@ -14,7 +15,7 @@ import {
   Attributes,
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import FileInfoPanel from './FileInfoPanel'
-import RefNamePanel from './RefNameInfoPanel'
+import RefNameInfoDialog from './RefNameInfoDialog'
 
 const useStyles = makeStyles()({
   content: {
@@ -36,7 +37,7 @@ function removeAttr(obj: Record<string, unknown>, attr: string) {
   return obj
 }
 
-export default function AboutContents({
+const AboutDialogContents = observer(function ({
   config,
 }: {
   config: AnyConfigurationModel
@@ -45,6 +46,7 @@ export default function AboutContents({
   const conf = readConfObject(config)
   const session = getSession(config)
   const { classes } = useStyles()
+  const [showRefNames, setShowRefNames] = useState(false)
 
   const hideUris =
     getConf(session, ['formatAbout', 'hideUris']) ||
@@ -75,18 +77,26 @@ export default function AboutContents({
     <div className={classes.content}>
       <BaseCard title="Configuration">
         {!hideUris ? (
-          <Button
-            variant="contained"
-            className={classes.button}
-            onClick={() => {
-              const snap = removeAttr(clone(conf), 'baseUri')
-              copy(JSON.stringify(snap, null, 2))
-              setCopied(true)
-              setTimeout(() => setCopied(false), 1000)
-            }}
-          >
-            {copied ? 'Copied to clipboard!' : 'Copy config'}
-          </Button>
+          <span className={classes.button}>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={() => setShowRefNames(true)}
+            >
+              Show ref names
+            </Button>
+            <Button
+              variant="contained"
+              onClick={() => {
+                const snap = removeAttr(clone(conf), 'baseUri')
+                copy(JSON.stringify(snap, null, 2))
+                setCopied(true)
+                setTimeout(() => setCopied(false), 1000)
+              }}
+            >
+              {copied ? 'Copied to clipboard!' : 'Copy config'}
+            </Button>
+          </span>
         ) : null}
         <Attributes
           attributes={confPostExt}
@@ -100,7 +110,14 @@ export default function AboutContents({
         </BaseCard>
       ) : null}
       <FileInfoPanel config={config} />
-      <RefNamePanel config={config} />
+      {showRefNames ? (
+        <RefNameInfoDialog
+          config={config}
+          onClose={() => setShowRefNames(false)}
+        />
+      ) : null}
     </div>
   )
-}
+})
+
+export default AboutDialogContents
