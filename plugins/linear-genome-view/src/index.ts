@@ -3,6 +3,10 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { AbstractSessionModel, isAbstractMenuManager } from '@jbrowse/core/util'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from 'mobx-state-tree'
+import {
+  configSchema as linearBasicDisplayConfigSchemaFactory,
+  modelFactory as linearBasicDisplayModelFactory,
+} from './LinearBasicDisplay'
 
 // icons
 import LineStyleIcon from '@mui/icons-material/LineStyle'
@@ -32,6 +36,8 @@ export default class LinearGenomeViewPlugin extends Plugin {
     BaseLinearDisplayComponent,
     BaseLinearDisplay,
     baseLinearDisplayConfigSchema,
+    linearBasicDisplayModelFactory,
+    linearBasicDisplayConfigSchemaFactory,
     SearchBox,
     ZoomControls,
     LinearGenomeView,
@@ -105,7 +111,4 @@ export {
   SVGRuler,
 } from './LinearGenomeView/svgcomponents/SVGLinearGenomeView'
 export { totalHeight } from './LinearGenomeView/svgcomponents/util'
-export {
-  configSchema as linearBasicDisplayConfigSchemaFactory,
-  modelFactory as linearBasicDisplayModelFactory,
-} from './LinearBasicDisplay'
+export { linearBasicDisplayConfigSchemaFactory, linearBasicDisplayModelFactory }
