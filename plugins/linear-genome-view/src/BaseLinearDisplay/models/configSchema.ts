@@ -52,11 +52,14 @@ const baseLinearDisplayConfigSchema = ConfigurationSchema(
     },
     /**
      * #slot
+     * config jexlFilters are deferred evaluated so they are prepended with
+     * jexl at runtime rather than being stored with jexl in the config
      */
     jexlFilters: {
-      type: 'string',
-      description: 'default set of jexl filters to apply to a track',
-      defaultValue: '',
+      type: 'stringArray',
+      description:
+        'default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system',
+      defaultValue: [],
     },
   },
   {

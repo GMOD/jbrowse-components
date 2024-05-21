@@ -68,8 +68,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #getter
        */
       get activeFilters() {
-        const ret = getConf(self, 'jexlFilters')
-        return self.jexlFilters ?? ret ? [`jexl:${ret}`] : undefined
+        // config jexlFilters are deferred evaluated so they are prepended with
+        // jexl at runtime rather than being stored with jexl in the config
+        return (
+          self.jexlFilters ??
+          getConf(self, 'jexlFilters').map((r: string) => `jexl:${r}`)
+        )
       },
       /**
        * #getter
@@ -136,7 +140,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setJexlFilters(f: string[]) {
+      setJexlFilters(f?: string[]) {
         self.jexlFilters = cast(f)
       },
       /**
@@ -178,11 +182,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return {
             ...(superProps as Omit<typeof superProps, symbol>),
             config: self.rendererConfig,
-            filters: self.activeFilters
-              ? new SerializableFilterChain({
-                  filters: self.activeFilters,
-                })
-              : undefined,
+            filters: new SerializableFilterChain({
+              filters: self.activeFilters,
+            }),
           }
         },
 

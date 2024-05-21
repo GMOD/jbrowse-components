@@ -17,14 +17,7 @@ import { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { autorun } from 'mobx'
-import {
-  addDisposer,
-  isAlive,
-  types,
-  Instance,
-  cast,
-  getSnapshot,
-} from 'mobx-state-tree'
+import { addDisposer, isAlive, types, Instance } from 'mobx-state-tree'
 
 // icons
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
