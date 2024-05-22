@@ -15,12 +15,7 @@ import { autorun } from 'mobx'
 // locals
 import { BaseSession } from './BaseSession'
 
-interface JBrowseThemeOptions extends ThemeOptions {
-  name?: string
-  alternate?: ThemeOptions
-}
-
-type ThemeMap = Record<string, JBrowseThemeOptions>
+type ThemeMap = Record<string, ThemeOptions>
 
 /**
  * #stateModel ThemeManagerSessionMixin
