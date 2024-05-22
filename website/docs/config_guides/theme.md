@@ -43,7 +43,7 @@ The customized theme screenshot uses the below configuration:
 ```json
 {
   "configuration": {
-    "theme" :{
+    "theme": {
       "palette": {
         "primary": {
           "main": "#311b92"
@@ -62,13 +62,18 @@ The customized theme screenshot uses the below configuration:
   }
 ```
 
-### Extra themes and dark mode
+### Extra themes, system themes, and dark mode
 
-In v2.4.0 we introduced the ability to add extra themes via the config. In
-jbrowse-web and jbrowse-desktop, these show up in a "Preferences" dialog that
-the user can select from. We also added better support for dark mode themes.
-Adding "mode": "dark" to your theme will use MUI's dark mode
-https://mui.com/material-ui/customization/dark-mode/
+Extra themes can be defined via the config. In jbrowse-web and jbrowse-desktop,
+the user can select these themes from the Tools>Preferences menu.
+
+From this dialog, you can also select whether you would like to use light, dark,
+or system mode for the theme. Selecting "system" will adopt your desktop's
+system-level theming preference.
+
+An administrator can define a dark mode theme by adding the `"mode": "dark"`
+option to their theme. Some more information about MUI's dark mode can be found
+here: https://mui.com/material-ui/customization/dark-mode/.
 
 Example
 
@@ -92,6 +97,55 @@ Example
           "quaternary": {
             "main": "#d50000"
           }
+        }
+      }
+    }
+  }
+}
+```
+
+An administrator can define an "alternate" theme for a given theme using the
+`"alternate":` slot, which will be prioritized when the user is selecting a mode
+for their theme. This is particularly useful for defining a dark mode alternate
+for a given theme, and can be used with the default theme defined in the config.
+Without an explicitly defined alternate, JBrowse will generate an acceptable
+light or dark mode theme for the user.
+
+Example
+
+```json
+{
+  "configuration": {
+    "theme": {
+      "palette": {
+        "primary": {
+          "main": "#311b92"
+        },
+        "secondary": {
+          "main": "#0097a7"
+        },
+        "tertiary": {
+          "main": "#f57c00"
+        },
+        "quaternary": {
+          "main": "#d50000"
+        }
+      }
+    },
+    "alternate": {
+      "mode": "dark",
+      "palette": {
+        "primary": {
+          "main": "#311b92"
+        },
+        "secondary": {
+          "main": "#0097a7"
+        },
+        "tertiary": {
+          "main": "#f57c00"
+        },
+        "quaternary": {
+          "main": "#d50000"
         }
       }
     }
