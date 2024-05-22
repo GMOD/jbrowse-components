@@ -104,9 +104,6 @@ const SeqPanel = observer(
               `${feature.refName}:${feature.start + 1}-${feature.end}`
             }-${mode}\n`}
           </span>
-          {showCoordinates
-            ? `               |10       |20       |30       |40       |50       |60       |70       |80       |90\n`
-            : null}
           {mode === 'genomic' ? (
             <GenomicSequence model={model} sequence={seq} />
           ) : mode === 'genomic_sequence_updownstream' ? (

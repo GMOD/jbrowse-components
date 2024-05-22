@@ -28,7 +28,7 @@ const CDNASequence = observer(function ({
   collapseIntron?: boolean
   model: SequenceFeatureDetailsModel
 }) {
-  const { upperCaseCDS, intronBp, width } = model
+  const { upperCaseCDS, intronBp, width, showCoordinates } = model
   const hasCds = cds.length > 0
   const chunks = (
     cds.length ? [...cds, ...utr].sort((a, b) => a.start - b.start) : exons
@@ -39,7 +39,11 @@ const CDNASequence = observer(function ({
   let upstreamChunk = null as React.ReactNode
   let currRemainder = 0
   if (upstream) {
-    const { segments, remainder } = splitString(toLower(upstream), width, 0)
+    const { segments, remainder } = splitString({
+      str: toLower(upstream),
+      width,
+      showCoordinates,
+    })
     currRemainder = remainder
     upstreamChunk = (
       <SequenceDisplay
@@ -57,12 +61,16 @@ const CDNASequence = observer(function ({
     const chunk = chunks[idx]
     const intron = sequence.slice(chunk.end, chunks[idx + 1]?.start)
     const s = sequence.slice(chunk.start, chunk.end)
-    const str0 = hasCds
-      ? chunk.type === 'CDS'
-        ? toUpper(s)
-        : toLower(s)
-      : toUpper(s)
-    const { segments, remainder } = splitString(str0, width, currRemainder)
+    const { segments, remainder } = splitString({
+      str: hasCds
+        ? chunk.type === 'CDS'
+          ? toUpper(s)
+          : toLower(s)
+        : toUpper(s),
+      width,
+      currRemainder,
+      showCoordinates,
+    })
     currRemainder = remainder
 
     middleChunks.push(
@@ -74,7 +82,7 @@ const CDNASequence = observer(function ({
         chunks={segments}
       />,
     )
-    currStart += str0.length
+    currStart += s.length
 
     if (intron && includeIntrons && idx < chunks.length - 1) {
       const str = toLower(
@@ -82,7 +90,12 @@ const CDNASequence = observer(function ({
           ? `${intron.slice(0, intronBp)}...${intron.slice(-intronBp)}`
           : intron,
       )
-      const { segments, remainder } = splitString(str, width, currRemainder)
+      const { segments, remainder } = splitString({
+        str,
+        width,
+        currRemainder,
+        showCoordinates,
+      })
 
       if (segments.length) {
         currRemainder = remainder
@@ -101,11 +114,12 @@ const CDNASequence = observer(function ({
 
   let downstreamChunk = null as React.ReactNode
   if (downstream) {
-    const { segments, remainder } = splitString(
-      toLower(downstream),
+    const { segments, remainder } = splitString({
+      str: toLower(downstream),
       width,
       currRemainder,
-    )
+      showCoordinates,
+    })
     downstreamChunk = (
       <SequenceDisplay
         start={currStart}

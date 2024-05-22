@@ -14,7 +14,7 @@ const SequenceDisplay = observer(function ({
   model: SequenceFeatureDetailsModel
 }) {
   const { width, showCoordinates } = model
-  return chunks.map((s, idx) => {
+  return chunks.map((chunk, idx) => {
     const f = Math.floor(start / 100) * 100
     const prefix =
       (idx == 0 && start % width == 0) || idx > 0
@@ -22,13 +22,15 @@ const SequenceDisplay = observer(function ({
         : ''
     const postfix =
       idx === chunks.length - 1 &&
-      (chunks.at(-1)?.length || 0) + (idx === 0 ? start % 100 : 0) !== width
+      (chunks.at(-1)?.replaceAll(' ', '').length || 0) +
+        (idx === 0 ? start % 100 : 0) !==
+        width
         ? null
-        : '\n'
+        : ' \n'
     return (
-      <React.Fragment key={s + '-' + idx}>
+      <React.Fragment key={`${chunk}-${idx}`}>
         {showCoordinates ? prefix : null}
-        <span style={{ background: color }}>{s}</span>
+        <span style={{ background: color }}>{chunk}</span>
         {postfix}
       </React.Fragment>
     )

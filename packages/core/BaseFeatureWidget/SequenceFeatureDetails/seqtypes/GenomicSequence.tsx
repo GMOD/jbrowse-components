@@ -17,13 +17,17 @@ const GenomicSequence = observer(function ({
   downstream?: string
   model: SequenceFeatureDetailsModel
 }) {
-  const { width } = model
+  const { width, showCoordinates } = model
   let currStart = 0
   let upstreamChunk = null as React.ReactNode
   let currRemainder = 0
 
   if (upstream) {
-    const { segments, remainder } = splitString(upstream, width, 0)
+    const { segments, remainder } = splitString({
+      str: upstream,
+      width,
+      showCoordinates,
+    })
     currRemainder = remainder
     upstreamChunk = (
       <SequenceDisplay
@@ -36,7 +40,12 @@ const GenomicSequence = observer(function ({
     currStart += upstream.length
   }
 
-  const { segments, remainder } = splitString(sequence, width, 0)
+  const { segments, remainder } = splitString({
+    str: sequence,
+    width,
+    showCoordinates,
+    currRemainder,
+  })
   currRemainder = remainder
   const middleChunk = (
     <SequenceDisplay
@@ -50,11 +59,12 @@ const GenomicSequence = observer(function ({
 
   let downstreamChunk = null as React.ReactNode
   if (downstream) {
-    const { segments, remainder } = splitString(
-      downstream,
+    const { segments, remainder } = splitString({
+      str: downstream,
       width,
       currRemainder,
-    )
+      showCoordinates,
+    })
     downstreamChunk = (
       <SequenceDisplay
         start={currStart}

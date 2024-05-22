@@ -16,8 +16,12 @@ const CDSSequence = observer(function ({
   sequence: string
   model: SequenceFeatureDetailsModel
 }) {
-  const { width } = model
-  const { segments } = splitString(stitch(cds, sequence), width, 0)
+  const { width, showCoordinates } = model
+  const { segments } = splitString({
+    str: stitch(cds, sequence),
+    width,
+    showCoordinates,
+  })
   return (
     <SequenceDisplay
       model={model}

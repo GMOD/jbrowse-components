@@ -18,14 +18,18 @@ const ProteinSequence = observer(function ({
   codonTable: Record<string, string>
   model: SequenceFeatureDetailsModel
 }) {
-  const { width } = model
+  const { width, showCoordinates } = model
   const str = stitch(cds, sequence)
   let protein = ''
   for (let i = 0; i < str.length; i += 3) {
     // use & symbol for undefined codon, or partial slice
     protein += codonTable[str.slice(i, i + 3)] || '&'
   }
-  const { segments } = splitString(protein, width, 0)
+  const { segments } = splitString({
+    str: protein,
+    width,
+    showCoordinates,
+  })
   return (
     <SequenceDisplay
       model={model}
