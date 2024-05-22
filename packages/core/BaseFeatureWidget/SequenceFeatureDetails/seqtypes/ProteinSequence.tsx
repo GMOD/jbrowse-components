@@ -3,9 +3,9 @@ import { observer } from 'mobx-react'
 
 // locals
 import { Feat, stitch } from '../../util'
-import { proteinColor } from '../util'
-import SequenceDisplay, { splitString } from './util'
+import { proteinColor, splitString } from '../util'
 import { SequenceFeatureDetailsModel } from '../model'
+import SequenceDisplay from './SequenceDisplay'
 
 const ProteinSequence = observer(function ({
   cds,
@@ -27,14 +27,12 @@ const ProteinSequence = observer(function ({
   }
   const { segments } = splitString(protein, width, 0)
   return (
-    <pre>
-      <SequenceDisplay
-        model={model}
-        color={proteinColor}
-        chunks={segments}
-        start={0}
-      />
-    </pre>
+    <SequenceDisplay
+      model={model}
+      color={proteinColor}
+      chunks={segments}
+      start={0}
+    />
   )
 })
 

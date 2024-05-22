@@ -24,9 +24,7 @@ import Settings from '@mui/icons-material/Settings'
 // lazies
 const SequencePanel = lazy(() => import('./SequencePanel'))
 const SettingsDialog = lazy(() => import('./dialogs/SettingsDialog'))
-const AdvancedSequenceDialog = lazy(
-  () => import('./dialogs/AdvancedSequenceDialog'),
-)
+const SequenceDialog = lazy(() => import('./dialogs/SequenceDialog'))
 
 const useStyles = makeStyles()({
   formControl: {
@@ -143,15 +141,15 @@ const SequenceFeatureDetails = observer(function ({
               onClick: () => {
                 const ref = seqPanelRef.current
                 if (ref) {
-                  copy(ref.innerHTML, { format: 'text/html' })
+                  copy(ref.outerHTML, { format: 'text/html' })
                 }
               },
             },
             {
-              label: 'Launch advanced view...',
+              label: 'Open in dialog',
               onClick: () => {
                 getSession(model).queueDialog(handleClose => [
-                  AdvancedSequenceDialog,
+                  SequenceDialog,
                   { model, feature, handleClose },
                 ])
               },

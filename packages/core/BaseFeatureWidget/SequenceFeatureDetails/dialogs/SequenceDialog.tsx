@@ -18,7 +18,7 @@ import { observer } from 'mobx-react'
 import { useFeatureSequence } from '../hooks'
 import { SimpleFeatureSerialized } from '../../../util'
 import { BaseFeatureWidgetModel } from '../../stateModelFactory'
-import AdvancedSequencePanel from './AdvancedSequencePanel'
+import SequencePanel from '../SequencePanel'
 
 const useStyles = makeStyles()({
   dialogContent: {
@@ -30,7 +30,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const AdvancedSequenceDialog = observer(function ({
+const SequenceDialog = observer(function ({
   handleClose,
   model,
   feature,
@@ -63,7 +63,7 @@ const AdvancedSequenceDialog = observer(function ({
       maxWidth="xl"
       open
       onClose={() => handleClose()}
-      title="Advanced sequence view dialog"
+      title="Sequence view"
     >
       <DialogContent className={classes.dialogContent}>
         <div>
@@ -166,7 +166,7 @@ const AdvancedSequenceDialog = observer(function ({
               </>
             ) : (
               <Suspense fallback={<LoadingEllipses />}>
-                <AdvancedSequencePanel
+                <SequencePanel
                   ref={seqPanelRef}
                   showCoords={showCoordinates}
                   feature={feature}
@@ -191,4 +191,4 @@ const AdvancedSequenceDialog = observer(function ({
   )
 })
 
-export default AdvancedSequenceDialog
+export default SequenceDialog
