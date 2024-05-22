@@ -1,6 +1,7 @@
 import React from 'react'
 import { Feat, stitch } from '../../util'
 import { proteinColor } from '../util'
+import { SplitString, splitString } from './util'
 
 export default function ProteinSequence({
   cds,
@@ -18,5 +19,16 @@ export default function ProteinSequence({
     protein += codonTable[str.slice(i, i + 3)] || '&'
   }
 
-  return <span style={{ background: proteinColor }}>{protein}</span>
+  const width = 50
+  const { segments } = splitString(protein, width, 0)
+  return (
+    <pre>
+      <SplitString
+        color={proteinColor}
+        chunks={segments}
+        size={width}
+        start={0}
+      />
+    </pre>
+  )
 }

@@ -3,42 +3,9 @@ import { observer } from 'mobx-react'
 
 // locals
 import { Feat } from '../../util'
-import { cdsColor, intronColor, updownstreamColor, utrColor } from '../util'
+import { cdsColor, updownstreamColor, utrColor } from '../util'
 import { SequenceFeatureDetailsModel } from '../model'
-
-function splitString(str: string, size: number, initial: number) {
-  const numChunks = Math.ceil(str.length / size)
-  const chunks = new Array(numChunks)
-
-  let counter = 0
-  for (let i = 0, o = 0; i < numChunks; ++i, o += size, counter++) {
-    chunks[i] = str.slice(o, o + (i === 0 ? size - initial : size))
-  }
-
-  return {
-    segments: chunks,
-    remainder:
-      (chunks.at(-1)?.length % size || 0) + (counter < 2 ? initial : 0),
-  }
-}
-function SplitString({
-  chunks,
-  size,
-  start,
-}: {
-  chunks: string[]
-  size: number
-  start: number
-}) {
-  return chunks.map((s, idx) => (
-    <React.Fragment key={s + '-' + idx}>
-      {`${start + idx * size}`.padStart(4)} {s}
-      {idx === chunks.length - 1 && chunks.at(-1)?.length !== size ? null : (
-        <br />
-      )}
-    </React.Fragment>
-  ))
-}
+import { SplitString, splitString } from './util'
 
 const CDNASequence = observer(function ({
   utr,
@@ -73,101 +40,90 @@ const CDNASequence = observer(function ({
   let upstreamChunk = null as React.ReactNode
   let currRemainder = 0
   if (upstream) {
-    const { segments: upstreamSegments, remainder } = splitString(
-      toLower(upstream),
-      width,
-      0,
-    )
-    upstreamChunk = (
-      <span style={{ background: updownstreamColor }}>
-        <SplitString start={currStart} chunks={upstreamSegments} size={width} />
-      </span>
-    )
+    const { segments, remainder } = splitString(toLower(upstream), width, 0)
     currRemainder = remainder
+    upstreamChunk = (
+      <SplitString
+        color={updownstreamColor}
+        start={currStart}
+        chunks={segments}
+        size={width}
+      />
+    )
     currStart += upstream.length
   }
 
-  console.log({ chunks })
   const middleChunks = [] as React.ReactNode[]
   for (let idx = 0; idx < chunks.length; idx++) {
     const chunk = chunks[idx]
     const intron = sequence.slice(chunk.end, chunks[idx + 1]?.start)
-    const cseq = sequence.slice(chunk.start, chunk.end)
-    const { segments, remainder } = splitString(
-      hasCds
-        ? chunk.type === 'CDS'
-          ? toUpper(cseq)
-          : toLower(cseq)
-        : toUpper(cseq),
-      width,
-      currRemainder,
-    )
+    const s = sequence.slice(chunk.start, chunk.end)
+    const str0 = hasCds
+      ? chunk.type === 'CDS'
+        ? toUpper(s)
+        : toLower(s)
+      : toUpper(s)
+    const { segments, remainder } = splitString(str0, width, currRemainder)
     currRemainder = remainder
 
     middleChunks.push(
-      <span
+      <SplitString
         key={JSON.stringify(chunk) + '-mid'}
-        style={{ background: chunk.type === 'CDS' ? cdsColor : utrColor }}
-      >
-        <SplitString start={currStart} chunks={segments} size={width} />
-      </span>,
+        color={chunk.type === 'CDS' ? cdsColor : utrColor}
+        start={currStart}
+        chunks={segments}
+        size={width}
+      />,
     )
-    currStart += cseq.length
-    if (intron && includeIntrons && idx < chunks.length - 1) {
-      const { segments: intronSegments, remainder } = splitString(
-        toLower(
-          collapseIntron && intron.length > intronBp * 2
-            ? `${intron.slice(0, intronBp)}...${intron.slice(-intronBp)}`
-            : intron,
-        ),
-        width,
-        currRemainder,
-      )
+    currStart += str0.length
 
-      if (intronSegments.length) {
+    if (intron && includeIntrons && idx < chunks.length - 1) {
+      const str = toLower(
+        collapseIntron && intron.length > intronBp * 2
+          ? `${intron.slice(0, intronBp)}...${intron.slice(-intronBp)}`
+          : intron,
+      )
+      const { segments, remainder } = splitString(str, width, currRemainder)
+
+      if (segments.length) {
         currRemainder = remainder
         middleChunks.push(
-          <span
+          <SplitString
             key={JSON.stringify(chunk) + '-intron'}
-            style={{ background: intronColor }}
-          >
-            <SplitString
-              start={currStart}
-              chunks={intronSegments}
-              size={width}
-            />
-          </span>,
+            start={currStart}
+            chunks={segments}
+            size={width}
+          />,
         )
-        currStart += intron.length
+        currStart += str.length
       }
     }
   }
 
   let downstreamChunk = null as React.ReactNode
   if (downstream) {
-    const { segments: downstreamSegments, remainder } = splitString(
+    const { segments, remainder } = splitString(
       toLower(downstream),
       width,
       currRemainder,
     )
     downstreamChunk = (
-      <span style={{ background: updownstreamColor }}>
-        <SplitString
-          start={currStart}
-          chunks={downstreamSegments}
-          size={width}
-        />
-      </span>
+      <SplitString
+        start={currStart}
+        chunks={segments}
+        size={width}
+        color={updownstreamColor}
+      />
     )
     currRemainder = remainder
     currStart += downstream.length
   }
   return (
-    <>
+    <pre>
       {upstreamChunk}
       {middleChunks}
       {downstreamChunk}
-    </>
+    </pre>
   )
 })
 
