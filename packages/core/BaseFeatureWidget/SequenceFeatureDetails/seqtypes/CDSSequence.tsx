@@ -1,20 +1,33 @@
 import React from 'react'
+import { observer } from 'mobx-react'
+
+// locals
 import { cdsColor } from '../util'
 import { Feat, stitch } from '../../util'
-import { SplitString, splitString } from './util'
+import SequenceDisplay, { splitString } from './util'
+import { SequenceFeatureDetailsModel } from '../model'
 
-export default function CDSSequence({
+const CDSSequence = observer(function ({
   cds,
   sequence,
+  model,
 }: {
   cds: Feat[]
   sequence: string
+  model: SequenceFeatureDetailsModel
 }) {
-  const width = 50
+  const { width } = model
   const { segments } = splitString(stitch(cds, sequence), width, 0)
   return (
     <pre>
-      <SplitString color={cdsColor} chunks={segments} size={width} start={0} />
+      <SequenceDisplay
+        model={model}
+        color={cdsColor}
+        chunks={segments}
+        start={0}
+      />
     </pre>
   )
-}
+})
+
+export default CDSSequence

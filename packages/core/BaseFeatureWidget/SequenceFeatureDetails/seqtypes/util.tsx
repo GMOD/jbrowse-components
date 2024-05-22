@@ -1,4 +1,6 @@
 import React from 'react'
+import { SequenceFeatureDetailsModel } from '../model'
+import { observer } from 'mobx-react'
 
 export function splitString(str: string, size: number, initial: number) {
   const numChunks = Math.ceil(str.length / size)
@@ -21,34 +23,37 @@ export function splitString(str: string, size: number, initial: number) {
     remainder: ((chunks.at(-1)?.length || 0) + (iter < 2 ? initial : 0)) % size,
   }
 }
-export function SplitString({
+const SequenceDisplay = observer(function ({
   chunks,
-  size,
   start,
   color,
+  model,
 }: {
   chunks: string[]
-  size: number
   start: number
   color?: string
+  model: SequenceFeatureDetailsModel
 }) {
+  const { width, showCoordinates } = model
   return chunks.map((s, idx) => {
     const f = Math.floor(start / 100) * 100
     const prefix =
-      (idx == 0 && start % size == 0) || idx > 0
-        ? `${f + idx * size}`.padStart(4) + '   '
+      (idx == 0 && start % width == 0) || idx > 0
+        ? `${f + idx * width}`.padStart(4) + '   '
         : ''
     const postfix =
       idx === chunks.length - 1 &&
-      (chunks.at(-1)?.length || 0) + (idx === 0 ? start % 100 : 0) !== size
+      (chunks.at(-1)?.length || 0) + (idx === 0 ? start % 100 : 0) !== width
         ? null
         : '\n'
     return (
       <React.Fragment key={s + '-' + idx}>
-        {prefix}
+        {showCoordinates ? prefix : null}
         <span style={{ background: color }}>{s}</span>
         {postfix}
       </React.Fragment>
     )
   })
-}
+})
+
+export default SequenceDisplay

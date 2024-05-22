@@ -166,6 +166,15 @@ const SequenceFeatureDetails = observer(function ({
                 ])
               },
             },
+            {
+              label: 'Show coordinates',
+              onClick: () =>
+                sequenceFeatureDetails.setShowCoordinates(
+                  !sequenceFeatureDetails.showCoordinates,
+                ),
+              checked: sequenceFeatureDetails.showCoordinates,
+              type: 'checkbox',
+            },
           ]}
         >
           <MoreVert />

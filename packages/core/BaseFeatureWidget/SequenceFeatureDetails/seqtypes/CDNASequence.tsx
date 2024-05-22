@@ -5,7 +5,7 @@ import { observer } from 'mobx-react'
 import { Feat } from '../../util'
 import { cdsColor, updownstreamColor, utrColor } from '../util'
 import { SequenceFeatureDetailsModel } from '../model'
-import { SplitString, splitString } from './util'
+import SequenceDisplay, { splitString } from './util'
 
 const CDNASequence = observer(function ({
   utr,
@@ -28,7 +28,7 @@ const CDNASequence = observer(function ({
   collapseIntron?: boolean
   model: SequenceFeatureDetailsModel
 }) {
-  const { upperCaseCDS, intronBp } = model
+  const { upperCaseCDS, intronBp, width } = model
   const hasCds = cds.length > 0
   const chunks = (
     cds.length ? [...cds, ...utr].sort((a, b) => a.start - b.start) : exons
@@ -36,18 +36,17 @@ const CDNASequence = observer(function ({
   const toLower = (s: string) => (upperCaseCDS ? s.toLowerCase() : s)
   const toUpper = (s: string) => (upperCaseCDS ? s.toUpperCase() : s)
   let currStart = 0
-  const width = 100
   let upstreamChunk = null as React.ReactNode
   let currRemainder = 0
   if (upstream) {
     const { segments, remainder } = splitString(toLower(upstream), width, 0)
     currRemainder = remainder
     upstreamChunk = (
-      <SplitString
+      <SequenceDisplay
+        model={model}
         color={updownstreamColor}
         start={currStart}
         chunks={segments}
-        size={width}
       />
     )
     currStart += upstream.length
@@ -67,12 +66,12 @@ const CDNASequence = observer(function ({
     currRemainder = remainder
 
     middleChunks.push(
-      <SplitString
+      <SequenceDisplay
         key={JSON.stringify(chunk) + '-mid'}
+        model={model}
         color={chunk.type === 'CDS' ? cdsColor : utrColor}
         start={currStart}
         chunks={segments}
-        size={width}
       />,
     )
     currStart += str0.length
@@ -88,11 +87,11 @@ const CDNASequence = observer(function ({
       if (segments.length) {
         currRemainder = remainder
         middleChunks.push(
-          <SplitString
+          <SequenceDisplay
             key={JSON.stringify(chunk) + '-intron'}
+            model={model}
             start={currStart}
             chunks={segments}
-            size={width}
           />,
         )
         currStart += str.length
@@ -108,10 +107,10 @@ const CDNASequence = observer(function ({
       currRemainder,
     )
     downstreamChunk = (
-      <SplitString
+      <SequenceDisplay
         start={currStart}
+        model={model}
         chunks={segments}
-        size={width}
         color={updownstreamColor}
       />
     )

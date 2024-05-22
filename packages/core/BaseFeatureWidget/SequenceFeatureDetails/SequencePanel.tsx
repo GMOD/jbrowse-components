@@ -112,7 +112,7 @@ const SeqPanel = React.forwardRef<HTMLDivElement, SeqPanelProps>(
               downstream={downstream}
             />
           ) : mode === 'cds' ? (
-            <CDSSequence cds={cds} sequence={seq} />
+            <CDSSequence model={model} cds={cds} sequence={seq} />
           ) : mode === 'cdna' ? (
             <CDNASequence
               model={model}
@@ -122,7 +122,12 @@ const SeqPanel = React.forwardRef<HTMLDivElement, SeqPanelProps>(
               sequence={seq}
             />
           ) : mode === 'protein' ? (
-            <ProteinSequence cds={cds} codonTable={codonTable} sequence={seq} />
+            <ProteinSequence
+              model={model}
+              cds={cds}
+              codonTable={codonTable}
+              sequence={seq}
+            />
           ) : mode === 'gene' ? (
             <CDNASequence
               model={model}

@@ -23,6 +23,7 @@ export function SequenceFeatureDetailsF() {
           localStorageGetItem('sequenceFeatureDetails-upperCaseCDS') || 'true',
         ),
       ),
+      width: 100,
     }))
     .actions(self => ({
       setUpDownBp(f: number) {
