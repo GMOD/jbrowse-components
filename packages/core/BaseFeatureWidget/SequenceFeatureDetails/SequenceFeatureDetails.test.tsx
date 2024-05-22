@@ -31,7 +31,13 @@ test('test using the sequence feature panel', () => {
 
   // http://m.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g=ENSG00000116544;r=1:34865436-34929650
   // with stop codon on the end
-  expect(element.textContent).toEqual(`>NM_001080418.3-protein\n${pep}*`)
+  expect(
+    element.textContent
+      ?.split('\n')
+      .slice(1)
+      .map(s => s.trim())
+      .join(''),
+  ).toEqual(`${pep}*`)
 })
 
 const readFasta = (filename: string) => {
@@ -60,7 +66,7 @@ test('NCDN collapsed intron', () => {
   const element = getByTestId('sequence_panel')
 
   // UTR
-  expect(element.children[0].textContent).toMatchSnapshot()
+  expect(element.textContent).toMatchSnapshot()
 })
 
 test('NCDN updownstream', () => {
@@ -84,7 +90,7 @@ test('NCDN updownstream', () => {
 
   const element = getByTestId('sequence_panel')
 
-  expect(element.children[0].textContent).toMatchSnapshot()
+  expect(element.textContent).toMatchSnapshot()
 
   // expect(element.children[1].textContent).toEqual(
   //   'AGTGGGCAACGCGGCGTGAGCAGCGGCCCGAGGCTCCCGGAGCATCGCGCTGGGAGAAGACTTCGCCGCTCGGGGCCGCAGCCTGGTGAGCTCAGCCCCCTTCGGGCCCTCCCCTGCATCCCAGCCGGGGCCTCTCCGAGCCGGCGCTGATCGATGCCGACACACCCCGGGGACCCTATCGCGACTCCATCGCGCCATATCGCGACACCATCGTGCCCTGTCGAGACTCCATTTTGTCACAGCCCTTTTCAATATATATCTTTTTTTTTTTTAATTTGCCCTGTCATCTTTGGGGGCTGTCTCCCATGTCGTGATTTTGACGTGATCTCTCCGTGACATCACCGCGCCATCGTGAAGTGTGATCTCATCGCCGCCCTGTCGTGACTTCATCA',
@@ -120,7 +126,13 @@ test('single exon cDNA should not have duplicate sequences', () => {
 
   const element = getByTestId('sequence_panel')
 
-  expect(element.children[0].textContent).toEqual(
-    '>chr1:1201-1500-cdna\nATGTCACCTCGGGTACTGCCTCTATTACAGAGGTATCTTAATGGCGCATCCAGCCTTGTGGCTGGGTCTACGTACGCGTGGGCACCATACGTATGTTGGCAGGAAAGGTCAATCATGCTTGTTTCCTCGTCGCAGAAACGTTCACACTATTGGCTCGCGGGATCGAACGGGCCTGATTATTTTTCCAGCTCCTGCGTTCCTATCACGCCAACTGTCGCTAATAAAATGTTATATAGAGATAACCCATTGCTATGCAAGGATGGAGAAACCGCTTCACAACACCCTAGAATTACTTCAGCA',
+  expect(
+    element.textContent
+      ?.split('\n')
+      .slice(1)
+      .map(s => s.trim())
+      .join(''),
+  ).toEqual(
+    'ATGTCACCTCGGGTACTGCCTCTATTACAGAGGTATCTTAATGGCGCATCCAGCCTTGTGGCTGGGTCTACGTACGCGTGGGCACCATACGTATGTTGGCAGGAAAGGTCAATCATGCTTGTTTCCTCGTCGCAGAAACGTTCACACTATTGGCTCGCGGGATCGAACGGGCCTGATTATTTTTCCAGCTCCTGCGTTCCTATCACGCCAACTGTCGCTAATAAAATGTTATATAGAGATAACCCATTGCTATGCAAGGATGGAGAAACCGCTTCACAACACCCTAGAATTACTTCAGCA',
   )
 })

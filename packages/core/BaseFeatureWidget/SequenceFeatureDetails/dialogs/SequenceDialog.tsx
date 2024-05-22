@@ -42,7 +42,7 @@ const SequenceDialog = observer(function ({
   const { sequenceFeatureDetails } = model
   const { intronBp, upDownBp, showCoordinates } = sequenceFeatureDetails
   const { classes } = useStyles()
-  const seqPanelRef = useRef<HTMLDivElement>(null)
+  const seqPanelRef = useRef<HTMLPreElement>(null)
 
   const [force, setForce] = useState(false)
   const hasCDS = feature.subfeatures?.some(sub => sub.type === 'CDS')
@@ -168,7 +168,6 @@ const SequenceDialog = observer(function ({
               <Suspense fallback={<LoadingEllipses />}>
                 <SequencePanel
                   ref={seqPanelRef}
-                  showCoords={showCoordinates}
                   feature={feature}
                   mode={mode}
                   sequence={sequence}

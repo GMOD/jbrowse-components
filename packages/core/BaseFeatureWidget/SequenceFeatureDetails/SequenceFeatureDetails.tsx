@@ -45,7 +45,7 @@ const SequenceFeatureDetails = observer(function ({
   const { sequenceFeatureDetails } = model
   const { intronBp, upDownBp } = sequenceFeatureDetails
   const { classes } = useStyles()
-  const seqPanelRef = useRef<HTMLDivElement>(null)
+  const seqPanelRef = useRef<HTMLPreElement>(null)
 
   const [force, setForce] = useState(false)
   const hasCDS = feature.subfeatures?.some(sub => sub.type === 'CDS')

@@ -11,7 +11,7 @@ export function SequenceFeatureDetailsF() {
       showCoordinates: Boolean(
         JSON.parse(
           localStorageGetItem('sequenceFeatureDetails-showCoordinates') ||
-            'true',
+            'false',
         ),
       ),
       intronBp: +(localStorageGetItem('sequenceFeatureDetails-intronBp') ?? 10),
