@@ -5,11 +5,7 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { getTrackName } from '@jbrowse/core/util/tracks'
-import {
-  getSession,
-  localStorageGetItem,
-  measureGridWidth,
-} from '@jbrowse/core/util'
+import { getSession, localStorageGetItem } from '@jbrowse/core/util'
 import { autorun, observable } from 'mobx'
 import { getRootKeys, findNonSparseKeys } from './facetedUtil'
 import { getRowStr } from './components/faceted/util'
@@ -55,7 +51,6 @@ export function facetedStateTreeF() {
     })
     .volatile(() => ({
       visible: {} as Record<string, boolean>,
-      widths: {} as Record<string, number | undefined>,
       useShoppingCart: false,
       filters: observable.map<string, string[]>(),
     }))
@@ -193,54 +188,12 @@ export function facetedStateTreeF() {
       setVisible(args: Record<string, boolean>) {
         self.visible = args
       },
-      /**
-       * #action
-       */
-      setWidths(args: Record<string, number | undefined>) {
-        self.widths = args
-      },
+
       afterAttach() {
         addDisposer(
           self,
           autorun(() => {
             this.setVisible(Object.fromEntries(self.fields.map(c => [c, true])))
-          }),
-        )
-
-        addDisposer(
-          self,
-          autorun(() => {
-            this.setWidths({
-              name:
-                measureGridWidth(
-                  self.rows.map(r => r.name),
-                  { maxWidth: 500, stripHTML: true },
-                ) + 15,
-              ...Object.fromEntries(
-                self.filteredNonMetadataKeys
-                  .filter(f => self.visible[f])
-                  .map(e => [
-                    e,
-                    measureGridWidth(
-                      self.rows.map(r => r[e as keyof typeof r] as string),
-                      { maxWidth: 400, stripHTML: true },
-                    ),
-                  ]),
-              ),
-              ...Object.fromEntries(
-                self.filteredMetadataKeys
-                  .filter(f => self.visible['metadata.' + f])
-                  .map(e => {
-                    return [
-                      'metadata.' + e,
-                      measureGridWidth(
-                        self.rows.map(r => r.metadata[e]),
-                        { maxWidth: 400, stripHTML: true },
-                      ),
-                    ]
-                  }),
-              ),
-            })
           }),
         )
       },
