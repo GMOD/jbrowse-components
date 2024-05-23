@@ -45,7 +45,7 @@ const SequenceFeatureDetails = observer(function ({
   const { sequenceFeatureDetails } = model
   const { intronBp, upDownBp } = sequenceFeatureDetails
   const { classes } = useStyles()
-  const seqPanelRef = useRef<HTMLPreElement>(null)
+  const seqPanelRef = useRef<HTMLDivElement>(null)
 
   const [force, setForce] = useState(false)
   const hasCDS = feature.subfeatures?.some(sub => sub.type === 'CDS')
@@ -163,15 +163,6 @@ const SequenceFeatureDetails = observer(function ({
                   { model: sequenceFeatureDetails, handleClose },
                 ])
               },
-            },
-            {
-              label: 'Show coordinates',
-              onClick: () =>
-                sequenceFeatureDetails.setShowCoordinates(
-                  !sequenceFeatureDetails.showCoordinates,
-                ),
-              checked: sequenceFeatureDetails.showCoordinates,
-              type: 'checkbox',
             },
           ]}
         >

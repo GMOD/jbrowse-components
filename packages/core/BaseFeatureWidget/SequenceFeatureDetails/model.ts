@@ -6,14 +6,11 @@ import { localStorageGetItem, localStorageSetItem } from '../../util'
 
 export function SequenceFeatureDetailsF() {
   return types
-    .model('SequenceFeatureDetails', {})
+    .model('SequenceFeatureDetails')
     .volatile(() => ({
-      showCoordinates: Boolean(
-        JSON.parse(
-          localStorageGetItem('sequenceFeatureDetails-showCoordinates') ||
-            'false',
-        ),
-      ),
+      showCoordinates2:
+        localStorageGetItem('sequenceFeatureDetails-showCoordinates2') ||
+        'none',
       intronBp: +(localStorageGetItem('sequenceFeatureDetails-intronBp') ?? 10),
       upDownBp: +(
         localStorageGetItem('sequenceFeatureDetails-upDownBp') ?? 100
@@ -25,6 +22,11 @@ export function SequenceFeatureDetailsF() {
       ),
       width: 100,
     }))
+    .views(self => ({
+      get showCoordinates() {
+        return self.showCoordinates2 !== 'none'
+      },
+    }))
     .actions(self => ({
       setUpDownBp(f: number) {
         self.upDownBp = f
@@ -35,8 +37,8 @@ export function SequenceFeatureDetailsF() {
       setUpperCaseCDS(f: boolean) {
         self.upperCaseCDS = f
       },
-      setShowCoordinates(f: boolean) {
-        self.showCoordinates = f
+      setShowCoordinates(f: string) {
+        self.showCoordinates2 = f
       },
     }))
     .actions(self => ({
@@ -57,7 +59,7 @@ export function SequenceFeatureDetailsF() {
               JSON.stringify(self.upperCaseCDS),
             )
             localStorageSetItem(
-              'sequenceFeatureDetails-showCoordinates',
+              'sequenceFeatureDetails-showCoordinates2',
               JSON.stringify(self.showCoordinates),
             )
           }),

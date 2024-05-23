@@ -9,6 +9,7 @@ import {
   Radio,
   RadioGroup,
   TextField,
+  TextFieldProps,
 } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
 import { makeStyles } from 'tss-react/mui'
@@ -25,7 +26,31 @@ const useStyles = makeStyles()(theme => ({
   dialogContent: {
     width: '80em',
   },
+  root: {
+    padding: 4,
+  },
 }))
+
+function Radio2() {
+  const { classes } = useStyles()
+  return <Radio className={classes.root} size="small" />
+}
+
+function TextField2(props: TextFieldProps) {
+  return (
+    <div>
+      <TextField {...props} />
+    </div>
+  )
+}
+
+function FormControl2({ children }: { children: React.ReactNode }) {
+  return (
+    <div>
+      <FormControl>{children}</FormControl>
+    </div>
+  )
+}
 
 const SequenceFeatureSettingsDialog = observer(function ({
   handleClose,
@@ -47,46 +72,63 @@ const SequenceFeatureSettingsDialog = observer(function ({
       title="Feature sequence settings"
     >
       <DialogContent className={classes.dialogContent}>
-        <div>
-          <TextField
-            label="Number of intronic bases around splice site to display"
-            className={classes.formElt}
-            value={intronBp}
-            helperText={!intronBpValid ? 'Not a number' : ''}
-            error={!intronBpValid}
-            onChange={event => setIntronBp(event.target.value)}
-          />
-        </div>
-        <div>
-          <TextField
-            label="Number of bases up/down stream of feature to display"
-            className={classes.formElt}
-            value={upDownBp}
-            helperText={!upDownBpValid ? 'Not a number' : ''}
-            error={!upDownBpValid}
-            onChange={event => setUpDownBp(event.target.value)}
-          />
-        </div>
-        <div>
-          <FormControl>
-            <FormLabel>Sequence capitalization</FormLabel>
-            <RadioGroup
-              value={model.upperCaseCDS ? 'cds' : 'unchanged'}
-              onChange={e => model.setUpperCaseCDS(e.target.value === 'cds')}
-            >
-              <FormControlLabel
-                value="cds"
-                control={<Radio />}
-                label="Capitalize CDS and lower case everything else"
-              />
-              <FormControlLabel
-                value="unchanged"
-                control={<Radio />}
-                label="Capitalization from reference genome sequence"
-              />
-            </RadioGroup>
-          </FormControl>
-        </div>
+        <TextField2
+          label="Number of intronic bases around splice site to display"
+          className={classes.formElt}
+          value={intronBp}
+          helperText={!intronBpValid ? 'Not a number' : ''}
+          error={!intronBpValid}
+          onChange={event => setIntronBp(event.target.value)}
+        />
+        <TextField2
+          label="Number of bases up/down stream of feature to display"
+          className={classes.formElt}
+          value={upDownBp}
+          helperText={!upDownBpValid ? 'Not a number' : ''}
+          error={!upDownBpValid}
+          onChange={event => setUpDownBp(event.target.value)}
+        />
+        <FormControl2>
+          <FormLabel>Sequence capitalization</FormLabel>
+          <RadioGroup
+            value={model.upperCaseCDS ? 'cds' : 'unchanged'}
+            onChange={e => model.setUpperCaseCDS(e.target.value === 'cds')}
+          >
+            <FormControlLabel
+              value="cds"
+              control={<Radio2 />}
+              label="Capitalize CDS and lower case everything else"
+            />
+            <FormControlLabel
+              value="unchanged"
+              control={<Radio2 />}
+              label="Capitalization from reference genome sequence"
+            />
+          </RadioGroup>
+        </FormControl2>
+        <FormControl2>
+          <FormLabel>Show coordinates?</FormLabel>
+          <RadioGroup
+            value={model.showCoordinates}
+            onChange={e => model.setShowCoordinates(e.target.value)}
+          >
+            <FormControlLabel
+              value="none"
+              control={<Radio2 />}
+              label="Do not show coordinates"
+            />
+            <FormControlLabel
+              value="relative"
+              control={<Radio2 />}
+              label="Coordinates relative to start of feature"
+            />
+            <FormControlLabel
+              value="genomic"
+              control={<Radio2 />}
+              label="Coordinates relative to genome"
+            />
+          </RadioGroup>
+        </FormControl2>
       </DialogContent>
 
       <DialogActions>

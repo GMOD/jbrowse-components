@@ -26,7 +26,9 @@ const SequenceDisplay = observer(function ({
         (idx === 0 ? start % 100 : 0) !==
         width
         ? null
-        : ' \n'
+        : showCoordinates
+          ? ' \n'
+          : ''
     return (
       <React.Fragment key={`${chunk}-${idx}`}>
         {showCoordinates ? prefix : null}
