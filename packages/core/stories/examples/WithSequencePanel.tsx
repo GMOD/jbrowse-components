@@ -5,11 +5,11 @@ import { sequence, feature } from './util'
 
 function GeneCollapsedIntronCoords() {
   const model = SequenceFeatureDetailsF().create()
-  model.setShowCoordinates(true)
+  model.setShowCoordinates('relative')
   return (
     <SequencePanel
       model={model}
-      mode={'gene_collapsed_intron'}
+      mode="gene_collapsed_intron"
       sequence={sequence}
       feature={feature}
     />
@@ -21,7 +21,7 @@ function GeneCollapsedIntronNoCoords() {
   return (
     <SequencePanel
       model={model}
-      mode={'gene_collapsed_intron'}
+      mode="gene_collapsed_intron"
       sequence={sequence}
       feature={feature}
     />
@@ -34,20 +34,20 @@ function CDSCoords() {
   return (
     <SequencePanel
       model={model}
-      mode={'cds'}
+      mode="cds"
       sequence={sequence}
       feature={feature}
     />
   )
 }
 
-function CDSCoordsGenomic() {
+function GeneCoordsGenomic() {
   const model = SequenceFeatureDetailsF().create()
   model.setShowCoordinates('genomic')
   return (
     <SequencePanel
       model={model}
-      mode={'cds'}
+      mode="gene"
       sequence={sequence}
       feature={feature}
     />
@@ -59,7 +59,7 @@ function CDSNoCoords() {
   return (
     <SequencePanel
       model={model}
-      mode={'cds'}
+      mode="cds"
       sequence={sequence}
       feature={feature}
     />
@@ -69,7 +69,7 @@ function CDSNoCoords() {
 export {
   CDSNoCoords,
   CDSCoords,
-  CDSCoordsGenomic,
+  GeneCoordsGenomic,
   GeneCollapsedIntronCoords,
   GeneCollapsedIntronNoCoords,
 }

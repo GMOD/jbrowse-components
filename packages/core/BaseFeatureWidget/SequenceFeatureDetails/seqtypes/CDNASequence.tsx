@@ -6,6 +6,7 @@ import { Feat } from '../../util'
 import { splitString, cdsColor, updownstreamColor, utrColor } from '../util'
 import { SequenceFeatureDetailsModel } from '../model'
 import SequenceDisplay from './SequenceDisplay'
+import { SimpleFeatureSerialized } from '../../../util'
 
 const CDNASequence = observer(function ({
   utr,
@@ -14,6 +15,7 @@ const CDNASequence = observer(function ({
   sequence,
   upstream,
   downstream,
+  feature,
   includeIntrons,
   collapseIntron,
   model,
@@ -22,20 +24,23 @@ const CDNASequence = observer(function ({
   cds: Feat[]
   exons: Feat[]
   sequence: string
+  feature: SimpleFeatureSerialized
   upstream?: string
   downstream?: string
   includeIntrons?: boolean
   collapseIntron?: boolean
   model: SequenceFeatureDetailsModel
 }) {
-  const { upperCaseCDS, intronBp, width, showCoordinates } = model
+  const { upperCaseCDS, intronBp, width, showCoordinates2, showCoordinates } =
+    model
   const hasCds = cds.length > 0
   const chunks = (
     cds.length ? [...cds, ...utr].sort((a, b) => a.start - b.start) : exons
   ).filter(f => f.start !== f.end)
   const toLower = (s: string) => (upperCaseCDS ? s.toLowerCase() : s)
   const toUpper = (s: string) => (upperCaseCDS ? s.toUpperCase() : s)
-  let currStart = 0
+  let currStart =
+    showCoordinates2 === 'genomic' ? feature.start - (upstream?.length || 0) : 0
   let upstreamChunk = null as React.ReactNode
   let currRemainder = 0
   if (upstream) {

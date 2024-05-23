@@ -7,8 +7,6 @@ import {
   MenuItem,
   Select,
   Typography,
-  Checkbox,
-  FormControlLabel,
 } from '@mui/material'
 import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import { makeStyles } from 'tss-react/mui'
@@ -40,9 +38,9 @@ const SequenceDialog = observer(function ({
   model: BaseFeatureWidgetModel
 }) {
   const { sequenceFeatureDetails } = model
-  const { intronBp, upDownBp, showCoordinates } = sequenceFeatureDetails
+  const { intronBp, upDownBp } = sequenceFeatureDetails
   const { classes } = useStyles()
-  const seqPanelRef = useRef<HTMLPreElement>(null)
+  const seqPanelRef = useRef<HTMLDivElement>(null)
 
   const [force, setForce] = useState(false)
   const hasCDS = feature.subfeatures?.some(sub => sub.type === 'CDS')
@@ -67,19 +65,6 @@ const SequenceDialog = observer(function ({
     >
       <DialogContent className={classes.dialogContent}>
         <div>
-          <FormControlLabel
-            label="Show coordinates"
-            control={
-              <Checkbox
-                checked={sequenceFeatureDetails.showCoordinates}
-                onChange={() =>
-                  sequenceFeatureDetails.setShowCoordinates(
-                    !sequenceFeatureDetails.showCoordinates,
-                  )
-                }
-              />
-            }
-          />
           <FormControl className={classes.formControl}>
             <Select
               size="small"

@@ -1,7 +1,7 @@
 export {
   CDSNoCoords,
   CDSCoords,
-  CDSCoordsGenomic,
+  GeneCoordsGenomic,
   GeneCollapsedIntronCoords,
   GeneCollapsedIntronNoCoords,
 } from './examples'
