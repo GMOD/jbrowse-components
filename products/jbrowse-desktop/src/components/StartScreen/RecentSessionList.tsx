@@ -1,12 +1,9 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { IconButton, Link, Tooltip } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { DataGrid } from '@mui/x-data-grid'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { format } from 'timeago.js'
-
-import { useResizeBar } from '@jbrowse/core/ui/useResizeBar'
-import ResizeBar from '@jbrowse/core/ui/ResizeBar'
 
 // icons
 import EditIcon from '@mui/icons-material/Edit'
@@ -57,7 +54,6 @@ export default function RecentSessionsList({
   sessions: RecentSessionData[]
 }) {
   const { classes, cx } = useStyles()
-  const { ref, scrollLeft } = useResizeBar()
 
   const now = Date.now()
   const oneDayLength = 24 * 60 * 60 * 1000
@@ -79,7 +75,7 @@ export default function RecentSessionsList({
   })
   const arr = ['name', 'path', 'lastModified']
 
-  const [widths, setWidths] = useState({
+  const widths = {
     rename: 40,
     ...Object.fromEntries(
       arr.map(e => [
@@ -90,25 +86,10 @@ export default function RecentSessionsList({
         ) + 20,
       ]),
     ),
-  } as Record<string, number | undefined>)
+  } as Record<string, number | undefined>
 
   return (
-    <div ref={ref} style={{ height: 400, width: '100%' }}>
-      <ResizeBar
-        checkbox
-        widths={Object.values(widths).map(f => f ?? 100)}
-        setWidths={newWidths =>
-          setWidths(
-            Object.fromEntries(
-              Object.entries(widths).map((entry, idx) => [
-                entry[0],
-                newWidths[idx],
-              ]),
-            ),
-          )
-        }
-        scrollLeft={scrollLeft}
-      />
+    <div style={{ height: 400, width: '100%' }}>
       <DataGrid
         checkboxSelection
         disableRowSelectionOnClick

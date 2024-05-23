@@ -10,8 +10,6 @@ import {
 import { DataGrid, GridToolbar } from '@mui/x-data-grid'
 import { BaseCard } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import { measureGridWidth, SimpleFeatureSerialized } from '@jbrowse/core/util'
-import ResizeBar from '@jbrowse/core/ui/ResizeBar'
-import { useResizeBar } from '@jbrowse/core/ui/useResizeBar'
 
 interface Entry {
   sample: string
@@ -58,7 +56,6 @@ export default function VariantSamples(props: {
   descriptions?: { FORMAT?: Record<string, { Description?: string }> } | null
 }) {
   const { feature, descriptions = {} } = props
-  const { ref, scrollLeft } = useResizeBar()
   const [filter, setFilter] = useState<Filters>({})
   const samples = (feature.samples || {}) as Record<string, InfoFields>
   const preFilteredRows = Object.entries(samples)
@@ -97,9 +94,7 @@ export default function VariantSamples(props: {
 
   const keys = ['sample', ...Object.keys(preFilteredRows[0]?.[1] || {})]
   const [checked, setChecked] = useState(false)
-  const [widths, setWidths] = useState(
-    keys.map(e => measureGridWidth(rows.map(r => r[e]))),
-  )
+  const widths = keys.map(e => measureGridWidth(rows.map(r => r[e])))
   const columns = keys.map((field, index) => ({
     field,
     description: descriptions?.FORMAT?.[field]?.Description,
@@ -127,26 +122,20 @@ export default function VariantSamples(props: {
           filter={filter}
         />
       ) : null}
-      <div ref={ref}>
-        <ResizeBar
-          widths={widths}
-          setWidths={setWidths}
-          scrollLeft={scrollLeft}
-        />
-        <DataGrid
-          rows={rows}
-          hideFooter={rows.length < 100}
-          columns={columns}
-          disableRowSelectionOnClick
-          rowHeight={25}
-          columnHeaderHeight={35}
-          disableColumnMenu
-          slots={{ toolbar: checked ? GridToolbar : null }}
-          slotProps={{
-            toolbar: { printOptions: { disableToolbarButton: true } },
-          }}
-        />
-      </div>
+
+      <DataGrid
+        rows={rows}
+        hideFooter={rows.length < 100}
+        columns={columns}
+        disableRowSelectionOnClick
+        rowHeight={25}
+        columnHeaderHeight={35}
+        disableColumnMenu
+        slots={{ toolbar: checked ? GridToolbar : null }}
+        slotProps={{
+          toolbar: { printOptions: { disableToolbarButton: true } },
+        }}
+      />
     </BaseCard>
   )
 }
