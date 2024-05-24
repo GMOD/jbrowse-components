@@ -436,22 +436,24 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     },
     "extraThemes": {
       "darkForest": {
-        "name": "Dark (forest, from config file)",
-        "palette": {
-          "mode": "dark",
-          "primary": {
-            "main": "#464",
-          },
-          "quaternary": {
-            "main": "#6a4",
-          },
-          "secondary": {
-            "main": "#376",
-          },
-          "tertiary": {
-            "main": "#253",
+        "dark": {
+          "palette": {
+            "mode": "dark",
+            "primary": {
+              "main": "#464",
+            },
+            "quaternary": {
+              "main": "#6a4",
+            },
+            "secondary": {
+              "main": "#376",
+            },
+            "tertiary": {
+              "main": "#253",
+            },
           },
         },
+        "name": "Forest",
       },
     },
     "hierarchical": {

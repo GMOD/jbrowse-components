@@ -10,9 +10,11 @@ test('can create a default theme', () => {
 })
 test('allows overriding primary and secondary colors', () => {
   const theme = createJBrowseTheme({
-    palette: {
-      primary: { main: '#888888' },
-      secondary: { main: 'rgb(137,137,137)' },
+    light: {
+      palette: {
+        primary: { main: '#888888' },
+        secondary: { main: 'rgb(137,137,137)' },
+      },
     },
   })
   expect(theme.palette.primary.main).toEqual('#888888')
@@ -20,9 +22,11 @@ test('allows overriding primary and secondary colors', () => {
 })
 test('allows overriding tertiary and quaternary colors', () => {
   const theme = createJBrowseTheme({
-    palette: {
-      tertiary: { 500: '#888' },
-      quaternary: { main: 'hsl(0,0,54)' },
+    light: {
+      palette: {
+        tertiary: { 500: '#888' },
+        quaternary: { main: 'hsl(0,0,54)' },
+      },
     },
   })
   const { tertiary, quaternary } = theme.palette
