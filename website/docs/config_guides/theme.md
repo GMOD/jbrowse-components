@@ -60,29 +60,39 @@ The customized theme screenshot uses the below configuration:
       }
     }
   }
+}
 ```
 
-### Extra themes, system themes, and dark mode
+### Dark themes, extra themes, and system settings
 
-Extra themes can be defined via the config. In jbrowse-web and jbrowse-desktop,
-the user can select these themes from the Tools>Preferences menu.
-
-From this dialog, you can also select whether you would like to use light, dark,
-or system mode for the theme. Selecting "system" will adopt your desktop's
-system-level theming preference.
-
-An administrator can define a dark mode theme by adding the `"mode": "dark"`
-option to their theme. Some more information about MUI's dark mode can be found
-here: https://mui.com/material-ui/customization/dark-mode/.
+JBrowse themes can be defined as either a `"light":` or `"dark":` theme, should
+the administrator wish to define both. Without an explicitly defined light or
+dark theme, JBrowse will generate an acceptable light or dark mode theme for the
+user should their preference setting require it.
 
 Example
 
 ```json
 {
   "configuration": {
-    "extraThemes": {
-      "myTheme": {
-        "name": "My theme",
+    "theme": {
+      "light": {
+        "palette": {
+          "primary": {
+            "main": "#311b92"
+          },
+          "secondary": {
+            "main": "#0097a7"
+          },
+          "tertiary": {
+            "main": "#f57c00"
+          },
+          "quaternary": {
+            "main": "#d50000"
+          }
+        }
+      },
+      "dark": {
         "mode": "dark",
         "palette": {
           "primary": {
@@ -104,48 +114,41 @@ Example
 }
 ```
 
-An administrator can define an "alternate" theme for a given theme using the
-`"alternate":` slot, which will be prioritized when the user is selecting a mode
-for their theme. This is particularly useful for defining a dark mode alternate
-for a given theme, and can be used with the default theme defined in the config.
-Without an explicitly defined alternate, JBrowse will generate an acceptable
-light or dark mode theme for the user.
+Extra themes can be defined via the config. In jbrowse-web and jbrowse-desktop,
+the user can select these themes from the Tools>Preferences menu.
+
+From this dialog, you can also select whether you would like to use light, dark,
+or system mode for the theme. Selecting "system" will adopt your desktop's
+system-level theming preference.
+
+An administrator can use MUI's built-in dark mode themeing by adding the
+`"mode": "dark"` option to their theme. Some more information about MUI's dark
+mode can be found here: https://mui.com/material-ui/customization/dark-mode/.
 
 Example
 
 ```json
 {
   "configuration": {
-    "theme": {
-      "palette": {
-        "primary": {
-          "main": "#311b92"
-        },
-        "secondary": {
-          "main": "#0097a7"
-        },
-        "tertiary": {
-          "main": "#f57c00"
-        },
-        "quaternary": {
-          "main": "#d50000"
-        }
-      }
-    },
-    "alternate": {
-      "mode": "dark",
-      "palette": {
-        "primary": {
-          "main": "#311b92"
-        },
-        "secondary": {
-          "main": "#0097a7"
-        },
-        "tertiary": {
-          "main": "#f57c00"
-        },
-        "quaternary": {
-          "main": "#d50000"
+    "extraThemes": {
+      "myTheme": {
+        "name": "My theme",
+        "dark": {
+          "mode": "dark",
+          "palette": {
+            "primary": {
+              "main": "#311b92"
+            },
+            "secondary": {
+              "main": "#0097a7"
+            },
+            "tertiary": {
+              "main": "#f57c00"
+            },
+            "quaternary": {
+              "main": "#d50000"
+            }
+          }
         }
       }
     }
