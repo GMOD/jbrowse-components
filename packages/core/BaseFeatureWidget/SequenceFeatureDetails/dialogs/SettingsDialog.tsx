@@ -31,11 +31,6 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function Radio2() {
-  const { classes } = useStyles()
-  return <Radio className={classes.root} size="small" />
-}
-
 function TextField2(props: TextFieldProps) {
   return (
     <div>
@@ -60,6 +55,7 @@ const SequenceFeatureSettingsDialog = observer(function ({
   model: SequenceFeatureDetailsModel
 }) {
   const { classes } = useStyles()
+  const { upperCaseCDS, showCoordinates2 } = model
   const [intronBp, setIntronBp] = useState(`${model.intronBp}`)
   const [upDownBp, setUpDownBp] = useState(`${model.upDownBp}`)
   const intronBpValid = !Number.isNaN(+intronBp)
@@ -91,17 +87,17 @@ const SequenceFeatureSettingsDialog = observer(function ({
         <FormControl2>
           <FormLabel>Sequence capitalization</FormLabel>
           <RadioGroup
-            value={model.upperCaseCDS ? 'cds' : 'unchanged'}
+            value={upperCaseCDS ? 'cds' : 'unchanged'}
             onChange={e => model.setUpperCaseCDS(e.target.value === 'cds')}
           >
             <FormControlLabel
               value="cds"
-              control={<Radio2 />}
+              control={<Radio className={classes.root} size="small" />}
               label="Capitalize CDS and lower case everything else"
             />
             <FormControlLabel
               value="unchanged"
-              control={<Radio2 />}
+              control={<Radio className={classes.root} size="small" />}
               label="Capitalization from reference genome sequence"
             />
           </RadioGroup>
@@ -109,22 +105,22 @@ const SequenceFeatureSettingsDialog = observer(function ({
         <FormControl2>
           <FormLabel>Show coordinates?</FormLabel>
           <RadioGroup
-            value={model.showCoordinates}
+            value={showCoordinates2}
             onChange={e => model.setShowCoordinates(e.target.value)}
           >
             <FormControlLabel
               value="none"
-              control={<Radio2 />}
+              control={<Radio className={classes.root} size="small" />}
               label="Do not show coordinates"
             />
             <FormControlLabel
               value="relative"
-              control={<Radio2 />}
+              control={<Radio className={classes.root} size="small" />}
               label="Coordinates relative to start of feature"
             />
             <FormControlLabel
               value="genomic"
-              control={<Radio2 />}
+              control={<Radio className={classes.root} size="small" />}
               label="Coordinates relative to genome"
             />
           </RadioGroup>

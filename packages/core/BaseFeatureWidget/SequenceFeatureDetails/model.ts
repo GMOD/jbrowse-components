@@ -60,7 +60,7 @@ export function SequenceFeatureDetailsF() {
             )
             localStorageSetItem(
               'sequenceFeatureDetails-showCoordinates2',
-              JSON.stringify(self.showCoordinates),
+              JSON.stringify(self.showCoordinates2),
             )
           }),
         )
