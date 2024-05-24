@@ -115,37 +115,40 @@ const frames = [
 const stopCodon = '#e22'
 const startCodon = '#3e3'
 
-interface JBrowseThemeOptions extends ThemeOptions {
-  alternate?: ThemeOptions
+export interface JBrowseThemeOptions extends ThemeOptions {
+  light?: ThemeOptions
+  dark?: ThemeOptions
 }
 
 function stockTheme() {
   return {
-    palette: {
-      mode: undefined,
-      primary: { main: midnight },
-      secondary: { main: grape },
-      tertiary: forest,
-      quaternary: mandarin,
-      highlight: mandarin,
-      stopCodon,
-      startCodon,
-      bases,
-      frames,
-      framesCDS,
-    },
-    components: {
-      MuiLink: {
-        styleOverrides: {
-          // the default link color uses theme.palette.primary.main which is
-          // very bad with dark mode+midnight primary
-          root: ({ theme }) => ({
-            color: theme.palette.tertiary.main,
-          }),
+    light: {
+      palette: {
+        mode: undefined,
+        primary: { main: midnight },
+        secondary: { main: grape },
+        tertiary: forest,
+        quaternary: mandarin,
+        highlight: mandarin,
+        stopCodon,
+        startCodon,
+        bases,
+        frames,
+        framesCDS,
+      },
+      components: {
+        MuiLink: {
+          styleOverrides: {
+            // the default link color uses theme.palette.primary.main which is
+            // very bad with dark mode+midnight primary
+            root: ({ theme }) => ({
+              color: theme.palette.tertiary.main,
+            }),
+          },
         },
       },
     },
-    alternate: getDarkStockTheme(),
+    dark: getDarkStockTheme(),
   } satisfies JBrowseThemeOptions
 }
 
@@ -216,19 +219,21 @@ function getDarkMinimalTheme() {
 function getMinimalTheme() {
   return {
     name: 'Minimal',
-    palette: {
-      primary: { main: grey[900] },
-      secondary: { main: grey[800] },
-      tertiary: refTheme.palette.augmentColor({ color: { main: grey[900] } }),
-      quaternary: mandarin,
-      highlight: mandarin,
-      stopCodon,
-      startCodon,
-      bases,
-      frames,
-      framesCDS,
+    light: {
+      palette: {
+        primary: { main: grey[900] },
+        secondary: { main: grey[800] },
+        tertiary: refTheme.palette.augmentColor({ color: { main: grey[900] } }),
+        quaternary: mandarin,
+        highlight: mandarin,
+        stopCodon,
+        startCodon,
+        bases,
+        frames,
+        framesCDS,
+      },
     },
-    alternate: getDarkMinimalTheme(),
+    dark: getDarkMinimalTheme(),
   } satisfies JBrowseThemeOptions & { name: string }
 }
 
@@ -464,57 +469,49 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
 type ThemeMap = Record<string, JBrowseThemeOptions>
 
 export function createJBrowseTheme(
-  configTheme: ThemeOptions = {},
+  configTheme: JBrowseThemeOptions = defaultThemes['default'],
   themes = defaultThemes,
   themeName = 'default',
   mode = 'light',
 ) {
-  if (Object.keys(configTheme).length === 0) {
-    configTheme = themes[themeName]
-  }
-  const themeMode = configTheme?.palette?.mode ?? 'light'
-  if (themeMode !== mode) {
-    configTheme = getAlternateTheme(configTheme)
+  let theme =
+    mode === 'light'
+      ? configTheme?.light
+      : mode === 'dark'
+        ? configTheme?.dark
+        : undefined
+  if (!theme) {
+    theme = generateAltTheme(
+      configTheme.light ?? configTheme.dark ?? (configTheme as ThemeOptions),
+      mode,
+    )
   }
   return createTheme(
     createJBrowseBaseTheme(
       themeName === 'default'
-        ? deepmerge(themes.default, augmentTheme(configTheme), {
-            arrayMerge: overwriteArrayMerge,
-          })
-        : augmentThemePlus(configTheme) || themes.default,
+        ? deepmerge(
+            themes.default.light ?? themes.default,
+            augmentTheme(theme),
+            {
+              arrayMerge: overwriteArrayMerge,
+            },
+          )
+        : (augmentThemePlus(theme) || themes.default.light) ?? themes.default,
     ),
   )
 }
 
-function getAlternateTheme(theme: JBrowseThemeOptions = {}) {
-  const alternate = theme?.alternate ?? undefined
-  const themeMode = theme?.palette?.mode ?? 'light'
-  const altMode = alternate?.palette?.mode
-
-  // no alternate theme has been defined, or both themes are the same mode
-  if (!alternate || themeMode === altMode) {
-    return generateAltTheme(theme)
+function generateAltTheme(theme: ThemeOptions = {}, mode: string) {
+  if (theme?.palette?.mode === 'dark' && mode === 'dark') {
+    return theme
   }
-
-  if (themeMode !== altMode) {
-    return {
-      ...alternate,
-    }
-  }
-
-  return theme
-}
-
-function generateAltTheme(theme: ThemeOptions = {}) {
-  const altMode = theme.palette?.mode === 'dark' ? 'light' : 'dark'
-  const background = altMode === 'dark' ? 'black' : 'white'
+  const background = mode === 'dark' ? 'black' : 'white'
   const contrast = 4.5
 
   if (theme?.palette) {
     theme = deepmerge(theme, {
       palette: {
-        mode: altMode,
+        mode: mode,
       },
     })
   }

@@ -7,15 +7,18 @@ import {
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getConf } from '@jbrowse/core/configuration'
-import { createJBrowseTheme, defaultThemes } from '@jbrowse/core/ui'
+import {
+  JBrowseThemeOptions,
+  createJBrowseTheme,
+  defaultThemes,
+} from '@jbrowse/core/ui'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
-import { ThemeOptions } from '@mui/material'
 import { autorun } from 'mobx'
 
 // locals
 import { BaseSession } from './BaseSession'
 
-type ThemeMap = Record<string, ThemeOptions>
+type ThemeMap = Record<string, JBrowseThemeOptions>
 
 /**
  * #stateModel ThemeManagerSessionMixin
