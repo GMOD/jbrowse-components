@@ -469,6 +469,9 @@ export function createJBrowseTheme(
   themeName = 'default',
   mode = 'light',
 ) {
+  if (Object.keys(configTheme).length === 0) {
+    configTheme = themes[themeName]
+  }
   const themeMode = configTheme?.palette?.mode ?? 'light'
   if (themeMode !== mode) {
     configTheme = getAlternateTheme(configTheme)
