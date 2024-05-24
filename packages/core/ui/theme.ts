@@ -469,7 +469,7 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
 type ThemeMap = Record<string, JBrowseThemeOptions>
 
 export function createJBrowseTheme(
-  configTheme: JBrowseThemeOptions = defaultThemes['default'],
+  configTheme: JBrowseThemeOptions = defaultThemes.default,
   themes = defaultThemes,
   themeName = 'default',
   mode = 'light',
