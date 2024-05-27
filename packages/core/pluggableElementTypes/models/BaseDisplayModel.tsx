@@ -140,9 +140,9 @@ function stateModelFactory() {
        * #method
        * @param region -
        * @returns falsy if the region is fine to try rendering. Otherwise,
-       *  return a react node + string of text.
-       *  string of text describes why it cannot be rendered
-       *  react node allows user to force load at current setting
+       * return a react node + string of text. string of text describes why it
+       * cannot be rendered react node allows user to force load at current
+       * setting
        */
       regionCannotBeRendered(/* region */) {
         return null

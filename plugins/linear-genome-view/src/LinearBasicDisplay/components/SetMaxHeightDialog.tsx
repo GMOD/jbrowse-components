@@ -42,30 +42,30 @@ const SetMaxHeightDialog = observer(function ({
           onChange={event => setMax(event.target.value)}
           placeholder="Enter max score"
         />
-        <DialogActions>
-          <Button
-            variant="contained"
-            color="primary"
-            type="submit"
-            autoFocus
-            onClick={() => {
-              model.setMaxHeight(
-                max !== '' && !Number.isNaN(+max) ? +max : undefined,
-              )
-              handleClose()
-            }}
-          >
-            Submit
-          </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => handleClose()}
-          >
-            Cancel
-          </Button>
-        </DialogActions>
       </DialogContent>
+      <DialogActions>
+        <Button
+          variant="contained"
+          color="primary"
+          type="submit"
+          autoFocus
+          onClick={() => {
+            model.setMaxHeight(
+              max !== '' && !Number.isNaN(+max) ? +max : undefined,
+            )
+            handleClose()
+          }}
+        >
+          Submit
+        </Button>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => handleClose()}
+        >
+          Cancel
+        </Button>
+      </DialogActions>
     </Dialog>
   )
 })

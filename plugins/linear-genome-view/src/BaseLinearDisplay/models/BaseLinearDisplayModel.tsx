@@ -314,6 +314,7 @@ function stateModelFactory() {
           ...getParentRenderProps(self),
           notReady: !self.featureDensityStatsReady,
           rpcDriverName: self.rpcDriverName,
+
           displayModel: self,
           onFeatureClick(_: unknown, featureId?: string) {
             const f = featureId || self.featureIdUnderMouse

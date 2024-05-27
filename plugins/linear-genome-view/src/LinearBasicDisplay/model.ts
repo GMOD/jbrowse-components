@@ -6,15 +6,17 @@ import {
 } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { MenuItem } from '@jbrowse/core/ui'
-import { types, getEnv, Instance } from 'mobx-state-tree'
+import { types, getEnv, Instance, cast } from 'mobx-state-tree'
 
 // icons
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
 // locals
 import { BaseLinearDisplay } from '../BaseLinearDisplay'
+import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 
-const SetMaxHeightDialog = lazy(() => import('./components/SetMaxHeight'))
+const SetMaxHeightDialog = lazy(() => import('./components/SetMaxHeightDialog'))
+const AddFiltersDialog = lazy(() => import('./components/AddFiltersDialog'))
 
 /**
  * #stateModel LinearBasicDisplay
@@ -55,9 +57,24 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         configuration: ConfigurationReference(configSchema),
+        /**
+         * #property
+         */
+        jexlFilters: types.maybe(types.array(types.string)),
       }),
     )
     .views(self => ({
+      /**
+       * #getter
+       */
+      get activeFilters() {
+        // config jexlFilters are deferred evaluated so they are prepended with
+        // jexl at runtime rather than being stored with jexl in the config
+        return (
+          self.jexlFilters ??
+          getConf(self, 'jexlFilters').map((r: string) => `jexl:${r}`)
+        )
+      },
       /**
        * #getter
        */
@@ -123,6 +140,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
+      setJexlFilters(f?: string[]) {
+        self.jexlFilters = cast(f)
+      },
+      /**
+       * #action
+       */
       toggleShowLabels() {
         self.trackShowLabels = !self.showLabels
       },
@@ -155,12 +178,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #method
          */
         renderProps() {
-          const config = self.rendererConfig
           const superProps = superRenderProps()
-          const superPropsOmit = superProps as Omit<typeof superProps, symbol>
           return {
-            ...superPropsOmit,
-            config,
+            ...(superProps as Omit<typeof superProps, symbol>),
+            config: self.rendererConfig,
+            filters: new SerializableFilterChain({
+              filters: self.activeFilters,
+            }),
           }
         },
 
@@ -202,6 +226,15 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   SetMaxHeightDialog,
+                  { model: self, handleClose },
+                ])
+              },
+            },
+            {
+              label: 'Edit filters',
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  AddFiltersDialog,
                   { model: self, handleClose },
                 ])
               },
