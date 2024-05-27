@@ -59,7 +59,7 @@ const AddFiltersDialog = observer(function ({
         <div>
           Add filters, in jexl format, one per line, starting with the string
           jexl:. Example: <pre>jexl:get(feature,'name')=='BRCA1'</pre> to only
-          show the feature where the name attrivute is "BRCA1" in view
+          show the feature where the name attribute is "BRCA1" in view
         </div>
 
         {error ? <p className={classes.error}>{`${error}`}</p> : null}
@@ -85,7 +85,7 @@ const AddFiltersDialog = observer(function ({
           color="primary"
           type="submit"
           autoFocus
-          disabled={!!error || !data.trim()}
+          disabled={!!error}
           onClick={() => {
             model.setJexlFilters(data.split('\n'))
             handleClose()

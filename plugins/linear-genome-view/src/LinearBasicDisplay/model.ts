@@ -231,7 +231,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               },
             },
             {
-              label: 'Add filters',
+              label: 'Edit filters',
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   AddFiltersDialog,
