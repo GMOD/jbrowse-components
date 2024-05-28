@@ -1,5 +1,4 @@
 const path = require('path')
-const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
 const webpack = require('webpack')
 
 const buildDir = path.resolve('.')
@@ -30,15 +29,11 @@ module.exports = {
     },
   },
   plugins: [
-    new NodePolyfillPlugin({
-      excludeAliases: ['console'],
-    }),
     new webpack.optimize.LimitChunkCountPlugin({
       maxChunks: 1,
     }),
   ],
   resolve: {
-    fallback: { fs: false, http: false },
     extensions: [
       '.mjs',
       '.web.js',

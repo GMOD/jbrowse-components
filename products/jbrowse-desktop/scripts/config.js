@@ -1,12 +1,7 @@
 const webpack = require('webpack')
-const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
 
 module.exports = function webpackConfigF(config) {
   config.plugins.push(
-    new NodePolyfillPlugin({
-      excludeAliases: ['console'],
-    }),
-
     // this is needed to properly polyfill buffer in desktop, after the CRA5
     // conversion it was observed cram, twobit, etc that use
     // @gmod/binary-parser complained of buffers not being real buffers
