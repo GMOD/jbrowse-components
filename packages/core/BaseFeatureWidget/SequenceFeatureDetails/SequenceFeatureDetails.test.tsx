@@ -1,10 +1,22 @@
 import React from 'react'
 import { render } from '@testing-library/react'
 import fs from 'fs'
+
+// locals
 import SequencePanel from './SequencePanel'
+import { SequenceFeatureDetailsF } from './model'
+
+// test data
 import DLGAP3 from './test_data/DLGAP3'
 import NCDN from './test_data/NCDN'
-import { SequenceFeatureDetailsF } from './model'
+
+const readFasta = (filename: string) => {
+  return fs
+    .readFileSync(require.resolve(filename), 'utf8')
+    .split(/\n|\r\n|\r/)
+    .slice(1)
+    .join('')
+}
 
 test('test using the sequence feature panel', () => {
   // produced from uniprot
@@ -40,13 +52,38 @@ test('test using the sequence feature panel', () => {
   ).toEqual(`${pep}*`)
 })
 
-const readFasta = (filename: string) => {
-  return fs
-    .readFileSync(require.resolve(filename), 'utf8')
-    .split(/\n|\r\n|\r/)
-    .slice(1)
-    .join('')
-}
+test('test using the sequence feature panel with show coords', () => {
+  // produced from uniprot
+  // https://www.uniprot.org/uniprot/O95886.fasta
+  const pep = readFasta('./test_data/DLGAP3_pep.fa')
+
+  // produced with samtools faidx
+  // 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz'
+  // 1:35331037..35395251
+  const dna = readFasta('./test_data/DLGAP3_dna.fa')
+
+  const model = SequenceFeatureDetailsF().create()
+  const feature = DLGAP3
+  model.setShowCoordinates('genomic')
+  const { getByTestId } = render(
+    <SequencePanel
+      model={model}
+      sequence={{ seq: dna }}
+      mode="protein"
+      feature={feature.subfeatures[0]}
+    />,
+  )
+
+  const element = getByTestId('sequence_panel')
+  // make sure show coords shows the expected sequence as well
+  expect(
+    element.textContent
+      ?.split('\n')
+      .slice(1)
+      .map(s => s.trim().split(/\s+/).slice(1).join(''))
+      .join(''),
+  ).toEqual(`${pep}*`)
+})
 
 test('NCDN collapsed intron', () => {
   // samtools faidx 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz' 1:36,023,400-36,032,380 > out.fa

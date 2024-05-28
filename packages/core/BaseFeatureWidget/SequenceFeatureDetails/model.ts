@@ -4,6 +4,10 @@ import { autorun } from 'mobx'
 // locals
 import { localStorageGetItem, localStorageSetItem } from '../../util'
 
+function localStorageGetNumber(key: string, defaultVal: number) {
+  return +(localStorageGetItem(key) ?? defaultVal)
+}
+
 export function SequenceFeatureDetailsF() {
   return types
     .model('SequenceFeatureDetails')
@@ -11,10 +15,8 @@ export function SequenceFeatureDetailsF() {
       showCoordinates2:
         localStorageGetItem('sequenceFeatureDetails-showCoordinates2') ||
         'none',
-      intronBp: +(localStorageGetItem('sequenceFeatureDetails-intronBp') ?? 10),
-      upDownBp: +(
-        localStorageGetItem('sequenceFeatureDetails-upDownBp') ?? 100
-      ),
+      intronBp: localStorageGetNumber('sequenceFeatureDetails-intronBp', 10),
+      upDownBp: localStorageGetNumber('sequenceFeatureDetails-upDownBp', 100),
       upperCaseCDS: Boolean(
         JSON.parse(
           localStorageGetItem('sequenceFeatureDetails-upperCaseCDS') || 'true',
@@ -60,7 +62,7 @@ export function SequenceFeatureDetailsF() {
             )
             localStorageSetItem(
               'sequenceFeatureDetails-showCoordinates2',
-              JSON.stringify(self.showCoordinates2),
+              self.showCoordinates2,
             )
           }),
         )

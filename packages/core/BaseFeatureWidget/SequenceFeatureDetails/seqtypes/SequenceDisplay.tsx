@@ -6,16 +6,18 @@ const SequenceDisplay = observer(function ({
   chunks,
   start,
   color,
+  coordStart = start,
   model,
 }: {
   chunks: string[]
   start: number
+  coordStart?: number
   color?: string
   model: SequenceFeatureDetailsModel
 }) {
   const { width, showCoordinates } = model
   return chunks.map((chunk, idx) => {
-    const f = Math.floor(start / 100) * 100
+    const f = coordStart - (start % 100)
     const prefix =
       (idx == 0 && start % width == 0) || idx > 0
         ? `${f + idx * width}`.padStart(4) + '   '

@@ -27,17 +27,24 @@ interface SequencePanelProps {
   model: SequenceFeatureDetailsModel
 }
 
+function getStrand(strand: number) {
+  if (strand === -1) {
+    return '-'
+  } else if (strand === 1) {
+    return '+'
+  } else {
+    return '.'
+  }
+}
+
 function WordWrap({ children }: { children: React.ReactNode }) {
   return (
     <pre
-      data-testid="sequence_panel"
       style={{
         /* raw styles instead of className so that html copy works */
         fontFamily: 'monospace',
         color: 'black',
         fontSize: 11,
-        maxHeight: 300,
-        overflow: 'auto',
       }}
     >
       {children}
@@ -48,17 +55,14 @@ function WordWrap({ children }: { children: React.ReactNode }) {
 function NoWordWrap({ children }: { children: React.ReactNode }) {
   return (
     <div
-      data-testid="sequence_panel"
       style={{
         /* raw styles instead of className so that html copy works */
         fontFamily: 'monospace',
         color: 'black',
         fontSize: 11,
-        maxHeight: 300,
         maxWidth: 600,
         whiteSpace: 'wrap',
         wordBreak: 'break-all',
-        overflow: 'auto',
       }}
     >
       {children}
@@ -125,14 +129,22 @@ const SequencePanel = observer(
 
       const Container = showCoordinates ? WordWrap : NoWordWrap
       return (
-        <div ref={ref}>
+        <div
+          data-testid="sequence_panel"
+          ref={ref}
+          style={{ maxHeight: 300, overflow: 'auto' }}
+        >
           <Container>
             <div style={{ background: 'white' }}>
-              {`>${
-                feature.name ||
-                feature.id ||
-                `${feature.refName}:${feature.start + 1}-${feature.end}`
-              }-${mode}\n`}
+              {`>${[
+                (feature.name || feature.id) + '-' + mode,
+                `${feature.refName}:${feature.start + 1}-${feature.end}(${getStrand(feature.strand as number)})`,
+                mode.endsWith('updownstream')
+                  ? `+/- ${model.upDownBp} up/downstream bp`
+                  : '',
+              ]
+                .filter(f => !!f)
+                .join(' ')}\n`}
             </div>
             {mode === 'genomic' ? (
               <GenomicSequence model={model} sequence={seq} />

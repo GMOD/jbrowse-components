@@ -39,10 +39,15 @@ const CDNASequence = observer(function ({
   ).filter(f => f.start !== f.end)
   const toLower = (s: string) => (upperCaseCDS ? s.toLowerCase() : s)
   const toUpper = (s: string) => (upperCaseCDS ? s.toUpperCase() : s)
-  let currStart =
-    showCoordinates2 === 'genomic' ? feature.start - (upstream?.length || 0) : 0
-  let upstreamChunk = null as React.ReactNode
+
+  let coordStart =
+    showCoordinates2 === 'genomic' && includeIntrons && !collapseIntron
+      ? feature.start - (upstream?.length || 0)
+      : 0
+  let currStart = 0
   let currRemainder = 0
+
+  let upstreamChunk = null as React.ReactNode
   if (upstream) {
     const { segments, remainder } = splitString({
       str: toLower(upstream),
@@ -55,10 +60,12 @@ const CDNASequence = observer(function ({
         model={model}
         color={updownstreamColor}
         start={currStart}
+        coordStart={coordStart}
         chunks={segments}
       />
     )
     currStart += upstream.length
+    coordStart += upstream.length
   }
 
   const middleChunks = [] as React.ReactNode[]
@@ -84,10 +91,12 @@ const CDNASequence = observer(function ({
         model={model}
         color={chunk.type === 'CDS' ? cdsColor : utrColor}
         start={currStart}
+        coordStart={coordStart}
         chunks={segments}
       />,
     )
     currStart += s.length
+    coordStart += s.length
 
     if (intron && includeIntrons && idx < chunks.length - 1) {
       const str = toLower(
@@ -108,11 +117,13 @@ const CDNASequence = observer(function ({
           <SequenceDisplay
             key={JSON.stringify(chunk) + '-intron'}
             model={model}
+            coordStart={coordStart}
             start={currStart}
             chunks={segments}
           />,
         )
         currStart += str.length
+        coordStart += str.length
       }
     }
   }
@@ -130,11 +141,13 @@ const CDNASequence = observer(function ({
         start={currStart}
         model={model}
         chunks={segments}
+        coordStart={coordStart}
         color={updownstreamColor}
       />
     )
     currRemainder = remainder
     currStart += downstream.length
+    coordStart += downstream.length
   }
   return (
     <>

@@ -116,12 +116,12 @@ const SequenceFeatureSettingsDialog = observer(function ({
             <FormControlLabel
               value="relative"
               control={<Radio className={classes.root} size="small" />}
-              label="Coordinates relative to start of feature"
+              label="Show coordinates relative to start of feature"
             />
             <FormControlLabel
               value="genomic"
               control={<Radio className={classes.root} size="small" />}
-              label="Coordinates relative to genome"
+              label="Show coordinates relative to genome (only works for using the continuous genomic feature displays, otherwise is relative to start of feature)"
             />
           </RadioGroup>
         </FormControl2>
