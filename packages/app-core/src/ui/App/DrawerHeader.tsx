@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { ReactNode, useState } from 'react'
 import {
   AppBar,
   FormControl,
@@ -20,6 +20,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import CloseIcon from '@mui/icons-material/Close'
 import MinimizeIcon from '@mui/icons-material/Minimize'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 
 const useStyles = makeStyles()(theme => ({
   formControl: {
@@ -44,6 +45,12 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+interface ExtraInfoSpec {
+  title: string | undefined
+  onClick: () => {}
+  Icon: ReactNode
+}
+
 const DrawerHeader = observer(function ({
   session,
   setToolbarHeight,
@@ -52,9 +59,24 @@ const DrawerHeader = observer(function ({
   setToolbarHeight: (arg: number) => void
 }) {
   const { classes } = useStyles()
+  const { visibleWidget } = session
+  const { pluginManager } = getEnv(session)
+
   const focusedViewId = session.focusedViewId
   // @ts-ignore
   const viewWidgetId = session.visibleWidget?.view?.id
+
+  const ExtraInfo = visibleWidget
+    ? (pluginManager.evaluateExtensionPoint(
+        'Core-addExtraInfoToWidget',
+        pluginManager.getWidgetType(visibleWidget.type).ReactComponent,
+        {
+          title: undefined,
+          onClick: () => {},
+          Icon: <InfoOutlinedIcon />,
+        },
+      ) as ExtraInfoSpec)
+    : null
 
   return (
     <AppBar
@@ -68,6 +90,15 @@ const DrawerHeader = observer(function ({
     >
       <Toolbar disableGutters>
         <DrawerWidgetSelector session={session} />
+        {ExtraInfo ? (
+          <>
+            <Tooltip title={ExtraInfo.title}>
+              <IconButton color="inherit" onClick={ExtraInfo.onClick}>
+                {ExtraInfo.Icon ?? <InfoOutlinedIcon />}
+              </IconButton>
+            </Tooltip>
+          </>
+        ) : null}
         <div className={classes.spacer} />
         <DrawerControls session={session} />
       </Toolbar>
