@@ -98,7 +98,7 @@ async function mapStackTrace(stack: string) {
     mappedStack.push(
       `${originalPosition.source}:${originalPosition.line}:${
         originalPosition.column + 1
-      }`,
+      } (${match[1]})`,
     )
   }
 
