@@ -6,7 +6,7 @@ import { bpSpanPx } from '@jbrowse/core/util'
 import { Theme } from '@mui/material'
 
 // locals
-import { Mismatch } from '../MismatchParser'
+import { Mismatch, parseCigar } from '../MismatchParser'
 import { RenderArgsDeserializedWithFeaturesAndLayout } from './PileupRenderer'
 import { fillRect, getCharWidthHeight, LayoutFeature } from './util'
 
@@ -41,22 +41,16 @@ export function renderSoftClipping({
   }
 
   const heightLim = charHeight - 2
-  for (const mismatch of mismatches) {
-    if (mismatch.type === 'softclip') {
-      const len = mismatch.cliplen || 0
-      const s = feature.get('start')
-      const start = mismatch.start === 0 ? s - len : s + mismatch.start
-
-      for (let k = 0; k < len; k += 1) {
-        const base = seq.charAt(k + mismatch.start)
-
-        // If softclip length+start is longer than sequence, no need to
-        // continue showing base
-        if (!base) {
-          return
-        }
-
-        const s0 = start + k
+  const CIGAR = parseCigar(feature.get('CIGAR'))
+  let seqOffset = 0
+  let refOffset = 0
+  for (let i = 0; i < CIGAR.length; i += 2) {
+    const op = CIGAR[i + 1]
+    const len = +CIGAR[i]
+    if (op === 'S') {
+      for (let k = 0; k < len; k++) {
+        const base = seq[seqOffset + k]
+        const s0 = feature.get('start') - (i === 0 ? len : 0) + refOffset + k
         const [leftPx, rightPx] = bpSpanPx(s0, s0 + 1, region, bpPerPx)
         const widthPx = Math.max(minFeatWidth, rightPx - leftPx)
 
@@ -75,6 +69,23 @@ export function renderSoftClipping({
           )
         }
       }
+      seqOffset += len
+    }
+    if (op === 'N') {
+      refOffset += len
+    }
+    if (op === 'M' || op === '=' || op === 'X') {
+      refOffset += len
+      seqOffset += len
+    }
+    if (op === 'H') {
+      // do nothing
+    }
+    if (op === 'D') {
+      refOffset += len
+    }
+    if (op === 'I') {
+      seqOffset += len
     }
   }
 }
