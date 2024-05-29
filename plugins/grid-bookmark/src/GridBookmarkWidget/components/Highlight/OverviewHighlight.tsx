@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect } from 'react'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 import { SessionWithWidgets, getSession, notEmpty } from '@jbrowse/core/util'
@@ -28,33 +28,31 @@ const OverviewHighlight = observer(function OverviewHighlight({
   const { cytobandOffset } = model
   const session = getSession(model) as SessionWithWidgets
   const { classes } = useStyles()
-
+  const { assemblyManager } = session
   const { showBookmarkHighlights, showBookmarkLabels } = model
-  const assemblyNames = new Set(session.assemblyNames)
-
   const bookmarkWidget = session.widgets.get(
     'GridBookmark',
   ) as GridBookmarkModel
 
-  const bookmarks = useRef(bookmarkWidget?.bookmarks ?? [])
-
   useEffect(() => {
     if (!bookmarkWidget) {
-      const newBookmarkWidget = session.addWidget(
+      session.addWidget(
         'GridBookmarkWidget',
         'GridBookmark',
       ) as GridBookmarkModel
-      bookmarks.current = newBookmarkWidget.bookmarks
     }
   }, [session, bookmarkWidget])
 
-  return showBookmarkHighlights && bookmarks.current
-    ? bookmarks.current
-        .filter(value => assemblyNames.has(value.assemblyName))
+  const assemblyNames = new Set(model.assemblyNames)
+  return showBookmarkHighlights && bookmarkWidget?.bookmarks
+    ? bookmarkWidget.bookmarks
+        .filter(r => assemblyNames.has(r.assemblyName))
         .map(r => {
+          const asm = assemblyManager.get(r.assemblyName)
+          const refName = asm?.getCanonicalRefName(r.refName) ?? r.refName
           const rev = r.reversed
-          const s = overview.bpToPx({ ...r, coord: rev ? r.end : r.start })
-          const e = overview.bpToPx({ ...r, coord: rev ? r.start : r.end })
+          const s = overview.bpToPx({ refName, coord: rev ? r.end : r.start })
+          const e = overview.bpToPx({ refName, coord: rev ? r.start : r.end })
           return s !== undefined && e !== undefined
             ? {
                 width: Math.abs(e - s),

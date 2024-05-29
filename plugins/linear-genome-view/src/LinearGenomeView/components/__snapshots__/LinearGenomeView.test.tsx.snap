@@ -81,9 +81,11 @@ exports[`renders one track, one region 1`] = `
           height="48"
         >
           <polygon
-            fill="rgba(66, 165, 245, 0.3)"
+            fill="#42a5f5"
+            fill-opacity="0.3"
             points="0,48,101,48,800,0,0,0"
-            stroke="rgba(66, 165, 245, 0.8)"
+            stroke="#42a5f5"
+            stroke-opacity="0.8"
           />
         </svg>
         <div
@@ -157,7 +159,7 @@ exports[`renders one track, one region 1`] = `
               />
             </button>
             <div
-              class="MuiAutocomplete-root css-clttge-MuiAutocomplete-root"
+              class="MuiAutocomplete-root css-1j0qgw8-MuiAutocomplete-root"
               data-testid="autocomplete"
               style="width: 175px;"
             >
@@ -275,7 +277,7 @@ exports[`renders one track, one region 1`] = `
                 style="left: 0%; width: 0%;"
               />
               <span
-                class="MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary css-14eyfr9-MuiSlider-thumb"
+                class="MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary css-l29f8w-MuiSlider-thumb"
                 data-index="0"
                 style="left: 0%;"
               >
@@ -651,9 +653,11 @@ exports[`renders two tracks, two regions 1`] = `
           height="48"
         >
           <polygon
-            fill="rgba(66, 165, 245, 0.3)"
+            fill="#42a5f5"
+            fill-opacity="0.3"
             points="0,48,802,48,580,0,0,0"
-            stroke="rgba(66, 165, 245, 0.8)"
+            stroke="#42a5f5"
+            stroke-opacity="0.8"
           />
         </svg>
         <div
@@ -727,7 +731,7 @@ exports[`renders two tracks, two regions 1`] = `
               />
             </button>
             <div
-              class="MuiAutocomplete-root css-clttge-MuiAutocomplete-root"
+              class="MuiAutocomplete-root css-1j0qgw8-MuiAutocomplete-root"
               data-testid="autocomplete"
               style="width: 283.990625px;"
             >
@@ -847,7 +851,7 @@ exports[`renders two tracks, two regions 1`] = `
                 style="left: 0%; width: 9.774680693120512%;"
               />
               <span
-                class="MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary css-14eyfr9-MuiSlider-thumb"
+                class="MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary css-l29f8w-MuiSlider-thumb"
                 data-index="0"
                 style="left: 9.774680693120512%;"
               >

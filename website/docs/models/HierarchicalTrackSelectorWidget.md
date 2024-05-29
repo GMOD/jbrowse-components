@@ -32,42 +32,6 @@ ISimpleType<"HierarchicalTrackSelectorWidget">
 type: types.literal('HierarchicalTrackSelectorWidget')
 ```
 
-#### property: initialized
-
-```js
-// type signature
-IMaybe<ISimpleType<boolean>>
-// code
-initialized: types.maybe(types.boolean)
-```
-
-#### property: collapsed
-
-```js
-// type signature
-IMapType<ISimpleType<boolean>>
-// code
-collapsed: types.map(types.boolean)
-```
-
-#### property: sortTrackNames
-
-```js
-// type signature
-IMaybe<ISimpleType<boolean>>
-// code
-sortTrackNames: types.maybe(types.boolean)
-```
-
-#### property: sortCategories
-
-```js
-// type signature
-IMaybe<ISimpleType<boolean>>
-// code
-sortCategories: types.maybe(types.boolean)
-```
-
 #### property: view
 
 ```js
@@ -123,20 +87,6 @@ Set<string>
 ```js
 // type
 string[]
-```
-
-#### getter: recentlyUsedLocalStorageKey
-
-```js
-// type
-string
-```
-
-#### getter: favoritesLocalStorageKey
-
-```js
-// type
-string
 ```
 
 #### getter: activeSortTrackNames
@@ -378,6 +328,13 @@ setCategoryCollapsed: (pathName: string, status: boolean) => void
 ```js
 // type signature
 expandAllCategories: () => void
+```
+
+#### action: setCollapsedCategories
+
+```js
+// type signature
+setCollapsedCategories: (str: [string, boolean][]) => void
 ```
 
 #### action: clearFilterText

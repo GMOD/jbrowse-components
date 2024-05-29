@@ -4,6 +4,7 @@ import { useTheme } from '@mui/material'
 
 // locals
 import { DotplotViewModel } from '../model'
+import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
 
 export const GridRaw = observer(function ({
   model,
@@ -41,7 +42,7 @@ export const GridRaw = observer(function ({
         y={ry}
         width={w}
         height={h}
-        fill={theme.palette.background.default}
+        {...getFillProps(theme.palette.background.default)}
       />
       <g>
         {hblocks.map(region => {
@@ -57,7 +58,7 @@ export const GridRaw = observer(function ({
               y1={0}
               x2={x}
               y2={viewHeight}
-              stroke={stroke}
+              {...getStrokeProps(stroke)}
             />
           ) : null
         })}
@@ -74,17 +75,23 @@ export const GridRaw = observer(function ({
               y1={y}
               x2={viewWidth}
               y2={y}
-              stroke={stroke}
+              {...getStrokeProps(stroke)}
             />
           ) : null
         })}
-        <line x1={htop} y1={0} x2={htop} y2={viewHeight} stroke={stroke} />
+        <line
+          x1={htop}
+          y1={0}
+          x2={htop}
+          y2={viewHeight}
+          {...getStrokeProps(stroke)}
+        />
         <line
           x1={0}
           y1={viewHeight - vtop}
           x2={viewWidth}
           y2={viewHeight - vtop}
-          stroke={stroke}
+          {...getStrokeProps(stroke)}
         />
       </g>
       {children}

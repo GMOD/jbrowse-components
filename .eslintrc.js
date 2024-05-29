@@ -67,6 +67,7 @@ module.exports = {
     'unicorn/no-empty-file': 'off',
     'unicorn/prefer-type-error': 'off',
     'unicorn/prefer-modern-math-apis': 'off',
+    'unicorn/prefer-structured-clone': 'off',
     'unicorn/prefer-node-protocol': 'off',
     'unicorn/no-unreadable-array-destructuring': 'off',
     'unicorn/no-abusive-eslint-disable': 'off',

@@ -1179,6 +1179,42 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                 </div>
               </div>
               <div
+                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1w5ulfy-MuiPaper-root-paper"
+              >
+                <div
+                  class="css-1962tgi-paperContent"
+                >
+                  <label
+                    class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-animated MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-animated css-9npbnl-MuiFormLabel-root-MuiInputLabel-root"
+                  >
+                    jexlFilters
+                  </label>
+                  <ul
+                    class="MuiList-root css-1mk9mw3-MuiList-root"
+                  >
+                    <button
+                      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary css-sghohy-MuiButtonBase-root-MuiButton-root"
+                      style="margin: 4px;"
+                      tabindex="0"
+                      type="button"
+                    >
+                      Add item
+                      <span
+                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                      />
+                    </button>
+                  </ul>
+                  <p
+                    class="MuiFormHelperText-root css-1d1r5q-MuiFormHelperText-root"
+                  >
+                    default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system
+                  </p>
+                </div>
+                <div
+                  class="css-8lz2mt-slotModeSwitch"
+                />
+              </div>
+              <div
                 class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded MuiAccordion-gutters css-cczqch-MuiPaper-root-MuiAccordion-root-accordion"
               >
                 <div

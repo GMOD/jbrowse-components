@@ -11,6 +11,7 @@ import {
   renderToAbstractCanvas,
   renderToStaticMarkup,
   sum,
+  getFillProps,
 } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
@@ -40,7 +41,7 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
     themeName = 'default',
   } = opts
   const session = getSession(model)
-  const theme = session.allThemes?.()[themeName]
+  const themeVar = session.allThemes?.()[themeName]
   const { width, views, middleComparativeHeight: synH, tracks } = model
   const shift = 50
   const offset = headerHeight + rulerHeight
@@ -59,7 +60,10 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
             view.tracks.map(async track => {
               const d = track.displays[0]
               await when(() => (d.ready !== undefined ? d.ready : true))
-              return { track, result: await d.renderSvg({ ...opts, theme }) }
+              return {
+                track,
+                result: await d.renderSvg({ ...opts, theme: themeVar }),
+              }
             }),
           ),
         }) as const,
@@ -104,12 +108,11 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
     ) + 40
   const trackLabelOffset = trackLabels === 'left' ? trackLabelMaxLen : 0
   const w = width + trackLabelOffset
-
-  const t = createJBrowseTheme(theme)
+  const theme = createJBrowseTheme(themeVar)
 
   // the xlink namespace is used for rendering <image> tag
   return renderToStaticMarkup(
-    <ThemeProvider theme={createJBrowseTheme(theme)}>
+    <ThemeProvider theme={theme}>
       <Wrapper>
         <svg
           width={width}
@@ -121,7 +124,11 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
           <SVGBackground width={w} height={totalHeightSvg} shift={shift} />
           <g transform={`translate(${shift} ${fontSize})`}>
             <g transform={`translate(${trackLabelOffset})`}>
-              <text x={0} fontSize={fontSize} fill={t.palette.text.primary}>
+              <text
+                x={0}
+                fontSize={fontSize}
+                {...getFillProps(theme.palette.text.primary)}
+              >
                 {views[0].assemblyNames.join(', ')}
               </text>
 
@@ -155,7 +162,11 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
           </g>
           <g transform={`translate(${shift} ${fontSize + heights[0] + synH})`}>
             <g transform={`translate(${trackLabelOffset})`}>
-              <text x={0} fontSize={fontSize} fill={t.palette.text.primary}>
+              <text
+                x={0}
+                fontSize={fontSize}
+                {...getFillProps(theme.palette.text.primary)}
+              >
                 {views[1].assemblyNames.join(', ')}
               </text>
               <SVGRuler model={displayResults[1].view} fontSize={fontSize} />

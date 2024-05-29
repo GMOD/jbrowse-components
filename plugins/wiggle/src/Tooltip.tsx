@@ -71,6 +71,7 @@ const Tooltip = observer(function Tooltip({
   const { classes } = useStyles()
   const { refs, floatingStyles, context } = useFloating({
     placement: 'right',
+    strategy: 'fixed',
   })
 
   const x = clientMouseCoord[0] + 5

@@ -1,3 +1,4 @@
+import { getFillProps } from '@jbrowse/core/util'
 import React from 'react'
 
 const RectBg = (props: {
@@ -8,7 +9,7 @@ const RectBg = (props: {
   color?: string
 }) => {
   const { color = 'rgb(255,255,255,0.8)' } = props
-  return <rect {...props} fill={color} />
+  return <rect {...props} {...getFillProps(color)} />
 }
 
 export default RectBg

@@ -1401,6 +1401,16 @@ export function stripAlpha(str: string) {
   return c.alpha(1).toHex()
 }
 
+export function getStrokeProps(str: string) {
+  const c = colord(str)
+  return { strokeOpacity: c.alpha(), stroke: c.alpha(1).toHex() }
+}
+
+export function getFillProps(str: string) {
+  const c = colord(str)
+  return { fillOpacity: c.alpha(), fill: c.alpha(1).toHex() }
+}
+
 // https://react.dev/reference/react-dom/server/renderToString#removing-rendertostring-from-the-client-code
 export function renderToStaticMarkup(
   node: React.ReactElement,
@@ -1416,7 +1426,7 @@ export function renderToStaticMarkup(
       render(node, div)
     }
   })
-  return div.innerHTML
+  return div.innerHTML.replaceAll(/\brgba\((.+?),[^,]+?\)/g, 'rgb($1)')
 }
 
 export {

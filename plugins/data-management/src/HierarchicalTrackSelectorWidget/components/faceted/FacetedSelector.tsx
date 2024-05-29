@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 import { getRoot, resolveIdentifier } from 'mobx-state-tree'
@@ -7,10 +7,8 @@ import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid'
 // jbrowse
 import { ResizeHandle } from '@jbrowse/core/ui'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
-import ResizeBar from '@jbrowse/core/ui/ResizeBar'
-import { getEnv, useDebounce } from '@jbrowse/core/util'
+import { getEnv, measureGridWidth } from '@jbrowse/core/util'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { useResizeBar } from '@jbrowse/core/ui/useResizeBar'
 import { makeStyles } from 'tss-react/mui'
 
 // locals
@@ -57,14 +55,42 @@ const FacetedSelector = observer(function FacetedSelector({
     filteredNonMetadataKeys,
     filteredMetadataKeys,
     visible,
-    widths,
   } = faceted
   const { pluginManager } = getEnv(model)
-  const { ref, scrollLeft } = useResizeBar()
-  const widthsDebounced = useDebounce(widths, 200)
 
   type T = GridColDef<(typeof filteredRows)[0]>
 
+  const [widths, setWidths] = useState<Record<string, number | undefined>>({
+    name:
+      measureGridWidth(
+        rows.map(r => r.name),
+        { maxWidth: 500, stripHTML: true },
+      ) + 15,
+    ...Object.fromEntries(
+      filteredNonMetadataKeys
+        .filter(f => visible[f])
+        .map(e => [
+          e,
+          measureGridWidth(
+            rows.map(r => r[e as keyof typeof r] as string),
+            { maxWidth: 400, stripHTML: true },
+          ),
+        ]),
+    ),
+    ...Object.fromEntries(
+      filteredMetadataKeys
+        .filter(f => visible['metadata.' + f])
+        .map(e => {
+          return [
+            'metadata.' + e,
+            measureGridWidth(
+              rows.map(r => r.metadata[e]),
+              { maxWidth: 400, stripHTML: true },
+            ),
+          ]
+        }),
+    ),
+  })
   const columns: T[] = [
     {
       field: 'name',
@@ -79,12 +105,12 @@ const FacetedSelector = observer(function FacetedSelector({
           </div>
         )
       },
-      width: widthsDebounced.name ?? 100,
+      width: widths.name ?? 100,
     },
     ...filteredNonMetadataKeys.map(e => {
       return {
         field: e,
-        width: widthsDebounced[e] ?? 100,
+        width: widths[e] ?? 100,
         renderCell: params => {
           const val = params.value
           return val ? (
@@ -101,8 +127,8 @@ const FacetedSelector = observer(function FacetedSelector({
         headerName: ['name', ...filteredNonMetadataKeys].includes(e)
           ? `${e} (from metadata)`
           : e,
-        width: widthsDebounced['metadata.' + e] ?? 100,
-        valueGetter: (_, row) => `${row.metadata[e]}`,
+        width: widths['metadata.' + e] ?? 100,
+        valueGetter: (_, row) => `${row.metadata[e] ?? ''}`,
         renderCell: params => {
           const val = params.value
           return val ? (
@@ -119,7 +145,6 @@ const FacetedSelector = observer(function FacetedSelector({
     <>
       <FacetedHeader model={model} />
       <div
-        ref={ref}
         style={{
           display: 'flex',
           overflow: 'hidden',
@@ -133,23 +158,11 @@ const FacetedSelector = observer(function FacetedSelector({
             width: window.innerWidth * frac - (showFilters ? panelWidth : 0),
           }}
         >
-          <ResizeBar
-            checkbox
-            widths={Object.values(widths).map(f => f ?? 100)}
-            setWidths={newWidths =>
-              faceted.setWidths(
-                Object.fromEntries(
-                  Object.entries(widths).map((entry, idx) => [
-                    entry[0],
-                    newWidths[idx],
-                  ]),
-                ),
-              )
-            }
-            scrollLeft={scrollLeft}
-          />
           <DataGrid
             rows={filteredRows}
+            onColumnWidthChange={arg =>
+              setWidths({ ...widths, [arg.colDef.field]: arg.width })
+            }
             columnVisibilityModel={visible}
             onColumnVisibilityModelChange={n => faceted.setVisible(n)}
             columnHeaderHeight={35}

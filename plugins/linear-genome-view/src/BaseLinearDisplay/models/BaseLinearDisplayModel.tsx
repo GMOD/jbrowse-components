@@ -21,6 +21,7 @@ import { addDisposer, isAlive, types, Instance } from 'mobx-state-tree'
 
 // icons
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 
 // locals
 import { LinearGenomeViewModel, ExportSvgOptions } from '../../LinearGenomeView'
@@ -267,6 +268,17 @@ function stateModelFactory() {
       /**
        * #action
        */
+      navToFeature(feature: Feature) {
+        const view = getContainingView(self) as LGV
+        view.navTo({
+          refName: feature.get('refName'),
+          start: feature.get('start'),
+          end: feature.get('end'),
+        })
+      },
+      /**
+       * #action
+       */
       clearFeatureSelection() {
         getSession(self).clearSelection()
       },
@@ -326,6 +338,15 @@ function stateModelFactory() {
                     }
                   },
                 },
+                {
+                  label: 'Zoom to feature',
+                  icon: CenterFocusStrongIcon,
+                  onClick: () => {
+                    if (self.contextMenuFeature) {
+                      self.navToFeature(self.contextMenuFeature)
+                    }
+                  },
+                },
               ]
             : []),
         ]
@@ -338,6 +359,7 @@ function stateModelFactory() {
           ...getParentRenderProps(self),
           notReady: !self.featureDensityStatsReady,
           rpcDriverName: self.rpcDriverName,
+
           displayModel: self,
           onFeatureClick(_: unknown, featureId?: string) {
             const f = featureId || self.featureIdUnderMouse

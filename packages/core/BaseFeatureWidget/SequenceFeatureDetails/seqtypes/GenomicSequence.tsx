@@ -1,5 +1,5 @@
 import React from 'react'
-import { genomeColor, updownstreamColor } from './util'
+import { genomeColor, updownstreamColor } from '../util'
 
 export default function GenomicSequence({
   sequence,

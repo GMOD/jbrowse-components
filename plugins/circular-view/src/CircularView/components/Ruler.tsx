@@ -5,6 +5,8 @@ import {
   polarToCartesian,
   radToDeg,
   assembleLocString,
+  getStrokeProps,
+  getFillProps,
 } from '@jbrowse/core/util'
 import { makeContrasting } from '@jbrowse/core/util/color'
 import { useTheme } from '@mui/material/styles'
@@ -98,7 +100,7 @@ const ElisionRulerArc = observer(function ({
           '1',
           ...endXY,
         ].join(' ')}
-        stroke={theme.palette.text.secondary}
+        {...getStrokeProps(theme.palette.text.secondary)}
         strokeWidth={2}
         strokeDasharray="2,2"
         fill="none"
@@ -140,7 +142,7 @@ const RulerLabel = observer(function ({
         textAnchor="middle"
         dominantBaseline="baseline"
         transform={`translate(${textXY}) rotate(${radToDeg(radians) + 90})`}
-        style={{ fill: color }}
+        {...getFillProps(color)}
       >
         {text}
         <title>{title || text}</title>
@@ -159,7 +161,7 @@ const RulerLabel = observer(function ({
           textAnchor="start"
           dominantBaseline="middle"
           transform={`translate(${textXY}) rotate(${radToDeg(radians)})`}
-          style={{ fill: color }}
+          fill={color}
         >
           {text}
           <title>{title || text}</title>
@@ -174,7 +176,7 @@ const RulerLabel = observer(function ({
         textAnchor="end"
         dominantBaseline="middle"
         transform={`translate(${textXY}) rotate(${radToDeg(radians) + 180})`}
-        style={{ fill: color }}
+        fill={color}
       >
         {text}
         <title>{title || text}</title>
@@ -244,17 +246,14 @@ const Ruler = observer(function ({
   model: CircularViewModel
   slice: Slice
 }) {
-  if (slice.region.elided) {
-    return (
-      <ElisionRulerArc
-        key={assembleLocString(slice.region.regions[0])}
-        model={model}
-        region={slice.region}
-        slice={slice}
-      />
-    )
-  }
-  return (
+  return slice.region.elided ? (
+    <ElisionRulerArc
+      key={assembleLocString(slice.region.regions[0])}
+      model={model}
+      region={slice.region}
+      slice={slice}
+    />
+  ) : (
     <RegionRulerArc
       key={assembleLocString(slice.region)}
       region={slice.region}

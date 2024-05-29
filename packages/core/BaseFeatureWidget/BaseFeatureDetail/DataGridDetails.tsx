@@ -5,9 +5,7 @@ import { Checkbox, FormControlLabel, Typography } from '@mui/material'
 
 // locals
 import { measureGridWidth, getStr } from '../../util'
-import ResizeBar from '../../ui/ResizeBar'
 import FieldName from './FieldName'
-import { useResizeBar } from '../../ui/useResizeBar'
 import { SanitizedHTML } from '../../ui'
 
 const useStyles = makeStyles()(theme => ({
@@ -38,7 +36,6 @@ export default function DataGridDetails({
   value: Record<string, unknown>[]
 }) {
   const { classes } = useStyles()
-  const { ref, scrollLeft } = useResizeBar()
   const [checked, setChecked] = useState(false)
   const keys = Object.keys(value[0]).sort()
   const unionKeys = new Set(keys)
@@ -67,9 +64,7 @@ export default function DataGridDetails({
   } else {
     colNames = [...unionKeys]
   }
-  const [widths, setWidths] = useState(
-    colNames.map(e => measureGridWidth(rows.map(r => r[e]))),
-  )
+  const widths = colNames.map(e => measureGridWidth(rows.map(r => r[e])))
 
   if (unionKeys.size < keys.length + 5) {
     return (
@@ -84,12 +79,7 @@ export default function DataGridDetails({
           }
           label={<Typography variant="body2">Show options</Typography>}
         />
-        <div className={classes.margin} ref={ref}>
-          <ResizeBar
-            widths={widths}
-            setWidths={setWidths}
-            scrollLeft={scrollLeft}
-          />
+        <div className={classes.margin}>
           <DataGrid
             disableRowSelectionOnClick
             // @ts-expect-error the rows gets confused by the renderCell of the

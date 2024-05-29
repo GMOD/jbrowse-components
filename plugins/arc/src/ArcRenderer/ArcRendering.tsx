@@ -3,7 +3,7 @@ import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import { Feature, Region, bpSpanPx } from '@jbrowse/core/util'
+import { Feature, Region, bpSpanPx, getStrokeProps } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 // locals
@@ -20,7 +20,7 @@ function Arc({
   selectedFeatureId: string
   region: Region
   config: AnyConfigurationModel
-  onFeatureClick?: (event: React.MouseEvent, featureId: string) => void
+  onFeatureClick: (event: React.MouseEvent, featureId: string) => void
   bpPerPx: number
   feature: Feature
 }) {
@@ -31,7 +31,6 @@ function Arc({
     region,
     bpPerPx,
   )
-
   const featureId = feature.id()
   let stroke = readConfObject(config, 'color', { feature })
   let textStroke = 'black'
@@ -44,36 +43,37 @@ function Arc({
   const height = readConfObject(config, 'height', { feature }) || 100
   const ref = React.createRef<SVGPathElement>()
 
-  const t = 0.5
   // formula: https://en.wikipedia.org/wiki/B%C3%A9zier_curve#Cubic_B%C3%A9zier_curves
+  const t = 0.5
   const t1 = 1 - t
   const textYCoord = 3 * (t1 * t1) * (t * height) + 3 * t1 * (t * t) * height
 
   return (
     <g>
       <path
+        ref={ref}
+        {...getStrokeProps(stroke)}
         d={`M ${left} 0 C ${left} ${height}, ${right} ${height}, ${right} 0`}
-        stroke={stroke}
         strokeWidth={strokeWidth}
         fill="transparent"
         onClick={e => onFeatureClick?.(e, featureId)}
         onMouseOver={() => setIsMouseOvered(true)}
         onMouseLeave={() => setIsMouseOvered(false)}
-        ref={ref}
         pointerEvents="stroke"
       />
       {isMouseOvered ? <ArcTooltip contents={caption} /> : null}
       <text
         x={left + (right - left) / 2}
         y={textYCoord + 3}
-        style={{ stroke: 'white', strokeWidth: '0.6em' }}
+        stroke="white"
+        strokeWidth="0.6em"
       >
         {label}
       </text>
       <text
         x={left + (right - left) / 2}
         y={textYCoord + 3}
-        style={{ stroke: textStroke }}
+        stroke={textStroke}
       >
         {label}
       </text>
@@ -133,7 +133,7 @@ function SemiCircles({
   selectedFeatureId: string
   region: Region
   config: AnyConfigurationModel
-  onFeatureClick?: (event: React.MouseEvent, featureId: string) => void
+  onFeatureClick: (event: React.MouseEvent, featureId: string) => void
   bpPerPx: number
   feature: Feature
 }) {
@@ -167,7 +167,7 @@ function SemiCircles({
           90,
           270,
         )}
-        stroke={stroke}
+        {...getStrokeProps(stroke)}
         strokeWidth={strokeWidth}
         fill="transparent"
         onClick={e => onFeatureClick?.(e, featureId)}
@@ -180,14 +180,15 @@ function SemiCircles({
       <text
         x={left + (right - left) / 2}
         y={textYCoord + 3}
-        style={{ stroke: 'white', strokeWidth: '0.6em' }}
+        stroke="white"
+        strokeWidth="0.6em"
       >
         {label}
       </text>
       <text
         x={left + (right - left) / 2}
         y={textYCoord + 3}
-        style={{ stroke: textStroke }}
+        stroke={textStroke}
       >
         {label}
       </text>
@@ -201,6 +202,7 @@ const ArcRendering = observer(function ({
   bpPerPx,
   height,
   exportSVG,
+  onFeatureClick,
   displayModel: { selectedFeatureId },
 }: {
   features: Map<string, Feature>
@@ -209,6 +211,7 @@ const ArcRendering = observer(function ({
   bpPerPx: number
   height: number
   displayModel: { selectedFeatureId: string }
+  onFeatureClick: (event: React.MouseEvent, featureId: string) => void
   exportSVG: boolean
 }) {
   const [region] = regions
@@ -225,6 +228,7 @@ const ArcRendering = observer(function ({
             region={region}
             bpPerPx={bpPerPx}
             selectedFeatureId={selectedFeatureId}
+            onFeatureClick={onFeatureClick}
             feature={f}
           />
         ) : (
@@ -234,6 +238,7 @@ const ArcRendering = observer(function ({
             region={region}
             bpPerPx={bpPerPx}
             selectedFeatureId={selectedFeatureId}
+            onFeatureClick={onFeatureClick}
             feature={f}
           />
         ),

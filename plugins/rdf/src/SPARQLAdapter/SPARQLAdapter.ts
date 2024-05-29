@@ -38,6 +38,7 @@ interface SPARQLFeatureData {
   start: number
   end: number
   strand: number
+  refName: string
   subfeatures?: SPARQLFeatureData[]
   uniqueId: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

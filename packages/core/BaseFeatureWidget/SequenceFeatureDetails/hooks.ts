@@ -21,9 +21,8 @@ export function useFeatureSequence(
   const [sequence, setSequence] = useState<SeqState | ErrorState>()
   const [error, setError] = useState<unknown>()
   useEffect(() => {
-    let finished = false
     if (!model) {
-      return () => {}
+      return
     }
     const { assemblyManager, rpcManager } = getSession(model)
     const [assemblyName] = model.view?.assemblyNames || []
@@ -66,19 +65,13 @@ export function useFeatureSequence(
           const seq = await fetchSeq(start, end, refName)
           const up = await fetchSeq(Math.max(0, b), start, refName)
           const down = await fetchSeq(end, e, refName)
-          if (!finished) {
-            setSequence({ seq, upstream: up, downstream: down })
-          }
+          setSequence({ seq, upstream: up, downstream: down })
         }
       } catch (e) {
         console.error(e)
         setError(e)
       }
     })()
-
-    return () => {
-      finished = true
-    }
   }, [feature, model, upDownBp, forceLoad])
   return { sequence, error }
 }

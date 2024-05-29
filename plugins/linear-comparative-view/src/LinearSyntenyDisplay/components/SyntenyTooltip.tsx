@@ -37,6 +37,7 @@ const SyntenyTooltip = observer(function ({ title }: { title: string }) {
 
   const { refs, floatingStyles, context } = useFloating({
     placement: 'right',
+    strategy: 'fixed',
   })
 
   const clientPoint = useClientPoint(context)

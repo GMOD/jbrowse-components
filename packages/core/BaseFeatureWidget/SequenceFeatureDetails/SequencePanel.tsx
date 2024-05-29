@@ -1,28 +1,34 @@
 import React from 'react'
 
-import { defaultCodonTable, generateCodonTable, revcom } from '../../util'
 import {
-  ParentFeat,
+  SimpleFeatureSerialized,
+  defaultCodonTable,
+  generateCodonTable,
+  revcom,
+} from '../../util'
+import {
   SeqState,
   calculateUTRs,
   calculateUTRs2,
   dedupe,
   revlist,
 } from '../util'
-import CDNASequence from './CDNASequence'
-import ProteinSequence from './ProteinSequence'
-import GenomicSequence from './GenomicSequence'
-import CDSSequence from './CDSSequence'
+import CDNASequence from './seqtypes/CDNASequence'
+import ProteinSequence from './seqtypes/ProteinSequence'
+import GenomicSequence from './seqtypes/GenomicSequence'
+import CDSSequence from './seqtypes/CDSSequence'
+import { SequenceFeatureDetailsModel } from './model'
 
 interface SeqPanelProps {
   sequence: SeqState
-  feature: ParentFeat
+  feature: SimpleFeatureSerialized
   mode: string
-  intronBp?: number
+  model: SequenceFeatureDetailsModel
 }
+
 const SeqPanel = React.forwardRef<HTMLDivElement, SeqPanelProps>(
   function SeqPanel2(props, ref) {
-    const { feature, mode, intronBp = 10 } = props
+    const { model, feature, mode } = props
     let {
       sequence: { seq, upstream = '', downstream = '' },
     } = props
@@ -47,7 +53,7 @@ const SeqPanel = React.forwardRef<HTMLDivElement, SeqPanelProps>(
     // http://localhost:3000/?config=test_data%2Fconfig.json&session=share-FUl7G1isvF&password=HXh5Y
 
     let cds = dedupe(children.filter(sub => sub.type === 'CDS'))
-    let utr = dedupe(children.filter(sub => sub.type.match(/utr/i)))
+    let utr = dedupe(children.filter(sub => sub.type?.match(/utr/i)))
     let exons = dedupe(children.filter(sub => sub.type === 'exon'))
 
     if (!utr.length && cds.length && exons.length) {
@@ -109,35 +115,36 @@ const SeqPanel = React.forwardRef<HTMLDivElement, SeqPanelProps>(
             <CDSSequence cds={cds} sequence={seq} />
           ) : mode === 'cdna' ? (
             <CDNASequence
+              model={model}
               exons={exons}
               cds={cds}
               utr={utr}
               sequence={seq}
-              intronBp={intronBp}
             />
           ) : mode === 'protein' ? (
             <ProteinSequence cds={cds} codonTable={codonTable} sequence={seq} />
           ) : mode === 'gene' ? (
             <CDNASequence
+              model={model}
               exons={exons}
               cds={cds}
               utr={utr}
               sequence={seq}
               includeIntrons
-              intronBp={intronBp}
             />
           ) : mode === 'gene_collapsed_intron' ? (
             <CDNASequence
+              model={model}
               exons={exons}
               cds={cds}
               sequence={seq}
               utr={utr}
               includeIntrons
               collapseIntron
-              intronBp={intronBp}
             />
           ) : mode === 'gene_updownstream' ? (
             <CDNASequence
+              model={model}
               exons={exons}
               cds={cds}
               sequence={seq}
@@ -145,10 +152,10 @@ const SeqPanel = React.forwardRef<HTMLDivElement, SeqPanelProps>(
               upstream={upstream}
               downstream={downstream}
               includeIntrons
-              intronBp={intronBp}
             />
           ) : mode === 'gene_updownstream_collapsed_intron' ? (
             <CDNASequence
+              model={model}
               exons={exons}
               cds={cds}
               sequence={seq}
@@ -157,7 +164,6 @@ const SeqPanel = React.forwardRef<HTMLDivElement, SeqPanelProps>(
               downstream={downstream}
               includeIntrons
               collapseIntron
-              intronBp={intronBp}
             />
           ) : (
             <div>Unknown type</div>

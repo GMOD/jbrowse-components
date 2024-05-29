@@ -113,6 +113,15 @@ IMaybe<ISimpleType<number>>
 maxDepth: types.maybe(types.number)
 ```
 
+#### property: sequenceFeatureDetails
+
+```js
+// type signature
+IOptionalIType<IModelType<{}, { intronBp: number; upDownBp: number; upperCaseCDS: boolean; } & { setUpDownBp(f: number): void; setIntronBp(f: number): void; setUpperCaseCDS(f: boolean): void; } & { afterAttach(): void; }, _NotCustomized, _NotCustomized>, [...]>
+// code
+sequenceFeatureDetails: types.optional(SequenceFeatureDetailsF(), {})
+```
+
 ### BaseFeatureWidget - Actions
 
 #### action: setFeatureData
