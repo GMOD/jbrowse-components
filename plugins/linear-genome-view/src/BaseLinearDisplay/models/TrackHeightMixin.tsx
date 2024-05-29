@@ -48,7 +48,7 @@ export default function TrackHeightMixin() {
         // @ts-expect-error
         const confHeight = getConf(self, 'height') as number
         // @ts-expect-error
-        return min(self.currentLayoutBlockHeights, confHeight)
+        return min([max(self.currentLayoutBlockHeights)], confHeight)
       },
       /**
        * #getter
