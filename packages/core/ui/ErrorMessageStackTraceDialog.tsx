@@ -5,7 +5,9 @@ import {
   DialogContent,
   Link,
   Typography,
+  alpha,
 } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 
 import { SourceMapConsumer } from 'source-map-js'
 import copy from 'copy-to-clipboard'
@@ -98,7 +100,7 @@ async function mapStackTrace(stack: string) {
     mappedStack.push(
       `${originalPosition.source}:${originalPosition.line}:${
         originalPosition.column + 1
-      } (${match[1]})`,
+      } (${match[1].trim()})`,
     )
   }
 
@@ -119,7 +121,18 @@ function stripMessage(trace: string, error: unknown) {
   }
 }
 
+const useStyles = makeStyles()(theme => ({
+  pre: {
+    background: alpha(theme.palette.error.main, 0.2),
+    border: `1px solid ${theme.palette.divider}`,
+    overflow: 'auto',
+    margin: 20,
+    maxHeight: 300,
+  },
+}))
+
 function Contents({ text, extra }: { text: string; extra?: unknown }) {
+  const { classes } = useStyles()
   const err = encodeURIComponent(
     [
       'I got this error from JBrowse, here is the stack trace:\n',
@@ -145,17 +158,7 @@ function Contents({ text, extra }: { text: string; extra?: unknown }) {
         Post a new issue at <Link2 href={githubLink}>GitHub</Link2> or send an
         email to <Link2 href={emailLink}>{email}</Link2>{' '}
       </Typography>
-      <pre
-        style={{
-          background: 'lightgrey',
-          border: '1px solid black',
-          overflow: 'auto',
-          margin: 20,
-          maxHeight: 300,
-        }}
-      >
-        {err2}
-      </pre>
+      <pre className={classes.pre}>{err2}</pre>
     </>
   )
 }
