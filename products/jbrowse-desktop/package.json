@@ -99,7 +99,7 @@
     "rxjs": "^7.0.0",
     "sanitize-filename": "^1.6.3",
     "semver": "^7.3.5",
-    "timeago.js": "^4.0.2",
+    "date-fns": "^3.6.0",
     "tss-react": "^4.4.1",
     "use-query-params": "^2.0.0"
   },
