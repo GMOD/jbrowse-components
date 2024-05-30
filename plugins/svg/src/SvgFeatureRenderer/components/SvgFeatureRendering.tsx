@@ -308,22 +308,12 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
     [movedDuringLastMouseDown, onClick],
   )
 
-  // useEffect(() => {
-  //   // @ts-expect-error
-  //   const { height } = displayModel
-  //   console.log(height, displayModel.adjustTrackLayoutHeight)
-  //   if (height) {
-  //     setHeight(height)
-  //   }
-  //   // @ts-ignore
-  // }, [displayModel.height, displayModel.adjustTrackLayoutHeight])
-
   useEffect(() => {
     if (
       // @ts-ignore
       displayModel.height &&
       // @ts-ignore
-      displayModel.adjustTrackLayoutHeight !== 'static'
+      displayModel.adjustTrackLayoutHeight === 'dynamic'
     ) {
       // @ts-ignore
       setHeight(displayModel.height)
