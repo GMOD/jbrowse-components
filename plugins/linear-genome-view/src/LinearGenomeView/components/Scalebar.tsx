@@ -72,7 +72,7 @@ const RenderedRefNameLabels = observer(({ model }: { model: LGV }) => {
   return (
     <>
       {model.staticBlocks.map((block, index) => {
-        return block instanceof ContentBlock &&
+        return block.type === 'ContentBlock' &&
           (block.isLeftEndOfDisplayedRegion || index === lastLeftBlock) ? (
           <Typography
             key={`refLabel-${block.key}-${index}`}
@@ -135,11 +135,11 @@ const RenderedScalebarLabels = observer(({ model }: { model: LGV }) => {
       {staticBlocks.map((block, idx) => {
         const { key, widthPx } = block
         const k = `${key}-${idx}`
-        if (block instanceof ContentBlock) {
+        if (block.type === 'ContentBlock') {
           return <RenderedBlockTicks key={k} block={block} bpPerPx={bpPerPx} />
-        } else if (block instanceof ElidedBlock) {
+        } else if (block.type === 'ElidedBlock') {
           return <ElidedBlockComponent key={k} width={widthPx} />
-        } else if (block instanceof InterRegionPaddingBlock) {
+        } else if (block.type === 'InterRegionPaddingBlock') {
           return (
             <InterRegionPaddingBlockComponent
               key={k}
