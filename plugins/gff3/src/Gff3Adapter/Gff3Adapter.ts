@@ -23,45 +23,46 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
 
   protected gffFeatures?: Promise<{
     header: string
-    intervalTreeMap: Record<string, () => IntervalTree>
+    intervalTreeMap: Record<
+      string,
+      (sc?: (arg: string) => void) => IntervalTree
+    >
   }>
 
-  private async loadDataP() {
+  private async loadDataP(opts: BaseOptions) {
+    const { statusCallback = () => {} } = opts || {}
     const pm = this.pluginManager
     const buf = await openLocation(this.getConf('gffLocation'), pm).readFile()
     const buffer = isGzip(buf) ? await unzip(buf) : buf
     const headerLines = []
-    const featureMap = {} as Record<string, string[]>
-
+    const featureMap = {} as Record<string, string>
     let blockStart = 0
+
+    let i = 0
     while (blockStart < buffer.length) {
-      for (let i = 0; i < buffer.length; i++) {
-        let tabOffset = -1
-        let newlineOffset = -1
-        if (buffer[i] === 9 && tabOffset !== -1) {
-          tabOffset = i
-        } else if (buffer[i] === 10) {
-          newlineOffset = i
-          const b = buffer.slice(blockStart, i)
-          const line = (decoder?.decode(b) || b.toString()).trim()
-          if (line.startsWith('#')) {
-            if (line !== '###') {
-              headerLines.push(line)
-            }
-          } else if (line && !line.startsWith('>')) {
-            const l = line.length
-            for (let i = 0; i < l; i++) {
-              if (line[i] === '\t') {
-                const refName = line.slice(0, i)
-                if (!featureMap[refName]) {
-                  featureMap[refName] = []
-                }
-                featureMap[refName].push(line)
-                break
-              }
-            }
+      const n = buffer.indexOf('\n', blockStart)
+      // could be a non-newline ended file, so slice to end of file if n===-1
+      const b =
+        n === -1 ? buffer.slice(blockStart) : buffer.slice(blockStart, n)
+      const line = (decoder?.decode(b) || b.toString()).trim()
+      if (line) {
+        if (line.startsWith('#')) {
+          headerLines.push(line)
+        } else if (line.startsWith('>')) {
+          break
+        } else {
+          const ret = line.indexOf('\t')
+          const refName = line.slice(0, ret)
+          if (!featureMap[refName]) {
+            featureMap[refName] = ''
           }
+          featureMap[refName] += line + '\n'
         }
+      }
+      if (i++ % 10_000 === 0) {
+        statusCallback(
+          `Loading ${Math.floor(blockStart / 1_000_000).toLocaleString('en-US')}/${Math.floor(buffer.length / 1_000_000).toLocaleString('en-US')} MB`,
+        )
       }
 
       blockStart = n + 1
@@ -71,11 +72,12 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
       Object.entries(featureMap).map(([refName, lines]) => {
         return [
           refName,
-          () => {
+          (sc?: (arg: string) => void) => {
+            sc?.(`Parsing GFF data`)
             if (!this.calculatedIntervalTreeMap[refName]) {
               const intervalTree = new IntervalTree()
               gff
-                .parseStringSync(lines.join('\n'), {
+                .parseStringSync(lines, {
                   parseFeatures: true,
                   parseComments: false,
                   parseDirectives: false,
@@ -87,7 +89,7 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
                   (f, i) =>
                     new SimpleFeature({
                       data: this.featureData(f),
-                      id: `${this.id}-offset-${i}`,
+                      id: `${this.id}-${refName}-${i}`,
                     }),
                 )
                 .forEach(obj =>
@@ -104,9 +106,9 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
     return { header: headerLines.join('\n'), intervalTreeMap }
   }
 
-  private async loadData() {
+  private async loadData(opts: BaseOptions) {
     if (!this.gffFeatures) {
-      this.gffFeatures = this.loadDataP().catch(e => {
+      this.gffFeatures = this.loadDataP(opts).catch(e => {
         this.gffFeatures = undefined
         throw e
       })
@@ -115,13 +117,13 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
     return this.gffFeatures
   }
 
-  public async getRefNames(_opts: BaseOptions = {}) {
-    const { intervalTreeMap } = await this.loadData()
+  public async getRefNames(opts: BaseOptions = {}) {
+    const { intervalTreeMap } = await this.loadData(opts)
     return Object.keys(intervalTreeMap)
   }
 
-  public async getHeader() {
-    const { header } = await this.loadData()
+  public async getHeader(opts: BaseOptions = {}) {
+    const { header } = await this.loadData(opts)
     return header
   }
 
@@ -129,8 +131,8 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
     return ObservableCreate<Feature>(async observer => {
       try {
         const { start, end, refName } = query
-        const { intervalTreeMap } = await this.loadData()
-        intervalTreeMap[refName]()
+        const { intervalTreeMap } = await this.loadData(opts)
+        intervalTreeMap[refName](opts.statusCallback)
           ?.search([start, end])
           .forEach(f => observer.next(f))
         observer.complete()
