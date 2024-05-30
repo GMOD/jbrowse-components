@@ -81,10 +81,12 @@ export default function RecentSessionsList({
     ...Object.fromEntries(
       arr.map(e => [
         e,
-        measureGridWidth(
-          rows.map(r => r[e as keyof (typeof rows)[0]]),
-          { stripHTML: true },
-        ) + 20,
+        e === 'path'
+          ? 200
+          : measureGridWidth(
+              rows.map(r => r[e as keyof (typeof rows)[0]]),
+              { stripHTML: true },
+            ) + 20,
       ]),
     ),
   } as Record<string, number | undefined>
