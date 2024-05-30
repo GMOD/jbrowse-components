@@ -142,7 +142,7 @@ export default function sessionModelFactory({
        */
       renderProps() {
         return {
-          theme: getConf(self, 'theme'),
+          theme: self.theme,
           highResolutionScaling: getConf(self, 'highResolutionScaling'),
         }
       },
