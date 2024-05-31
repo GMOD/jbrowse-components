@@ -1,4 +1,4 @@
-import ServerSideRendererType, {
+import {
   RenderArgs as ServerSideRenderArgs,
   RenderArgsSerialized as ServerSideRenderArgsSerialized,
 } from '../../pluggableElementTypes/renderers/ServerSideRendererType'
@@ -27,11 +27,6 @@ export function validateRendererType<T>(rendererType: string, RendererType: T) {
     )
   }
 
-  if (!(RendererType instanceof ServerSideRendererType)) {
-    throw new TypeError(
-      'CoreRender requires a renderer that is a subclass of ServerSideRendererType',
-    )
-  }
   return RendererType
 }
 

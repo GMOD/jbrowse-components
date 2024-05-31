@@ -2,11 +2,6 @@ import React from 'react'
 import { makeStyles } from 'tss-react/mui'
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
-import {
-  ContentBlock,
-  ElidedBlock,
-  InterRegionPaddingBlock,
-} from '@jbrowse/core/util/blockTypes'
 import { BaseLinearDisplayModel } from '../models/BaseLinearDisplayModel'
 
 import {

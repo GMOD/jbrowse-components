@@ -1,9 +1,5 @@
 import React from 'react'
-import {
-  ContentBlock,
-  ElidedBlock,
-  InterRegionPaddingBlock,
-} from '@jbrowse/core/util/blockTypes'
+import { ContentBlock } from '@jbrowse/core/util/blockTypes'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { LinearGenomeViewModel } from '..'

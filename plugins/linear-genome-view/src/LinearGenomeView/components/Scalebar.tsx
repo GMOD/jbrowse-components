@@ -1,10 +1,6 @@
 import { Paper, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import {
-  ContentBlock,
-  ElidedBlock,
-  InterRegionPaddingBlock,
-} from '@jbrowse/core/util/blockTypes'
+import { ContentBlock } from '@jbrowse/core/util/blockTypes'
 import { observer } from 'mobx-react'
 import React from 'react'
 import { LinearGenomeViewModel } from '..'

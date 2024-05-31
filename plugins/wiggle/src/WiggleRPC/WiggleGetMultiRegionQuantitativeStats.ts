@@ -4,7 +4,6 @@ import { RenderArgs } from '@jbrowse/core/rpc/coreRpcMethods'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
 import { Region, renameRegionsIfNeeded } from '@jbrowse/core/util'
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 export class WiggleGetMultiRegionQuantitativeStats extends RpcMethodType {
   name = 'WiggleGetMultiRegionQuantitativeStats'
