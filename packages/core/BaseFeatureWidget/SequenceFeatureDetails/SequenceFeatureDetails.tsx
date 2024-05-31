@@ -1,12 +1,5 @@
 import React, { lazy, useRef, useState, Suspense } from 'react'
-import {
-  Button,
-  FormControl,
-  MenuItem,
-  Select,
-  Typography,
-} from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
+import { Button, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 // locals
@@ -17,17 +10,11 @@ import { BaseFeatureWidgetModel } from '../stateModelFactory'
 
 // icons
 import SequenceFeatureMenu from './dialogs/SequenceFeatureMenu'
+import SequenceTypeSelector from './dialogs/SequenceTypeSelector'
 
 // lazies
 const SequencePanel = lazy(() => import('./SequencePanel'))
 const SequenceDialog = lazy(() => import('./dialogs/SequenceDialog'))
-
-const useStyles = makeStyles()({
-  formControl: {
-    margin: 0,
-    marginLeft: 4,
-  },
-})
 
 // set the key on this component to feature.id to clear state after new feature
 // is selected
@@ -39,14 +26,10 @@ const SequenceFeatureDetails = observer(function ({
   feature: SimpleFeatureSerialized
 }) {
   const { sequenceFeatureDetails } = model
-  const { intronBp, upDownBp } = sequenceFeatureDetails
-  const { classes } = useStyles()
+  const { upDownBp } = sequenceFeatureDetails
   const seqPanelRef = useRef<HTMLDivElement>(null)
 
   const [force, setForce] = useState(false)
-  const hasCDS = feature.subfeatures?.some(sub => sub.type === 'CDS')
-  const hasExon = feature.subfeatures?.some(sub => sub.type === 'exon')
-  const hasExonOrCDS = hasExon || hasCDS
   const { sequence, error } = useFeatureSequence(
     model,
     feature,
@@ -54,73 +37,18 @@ const SequenceFeatureDetails = observer(function ({
     force,
   )
 
-  const [mode, setMode] = useState(
-    hasCDS ? 'cds' : hasExon ? 'cdna' : 'genomic',
-  )
+  const [mode, setMode] = useState('cds')
 
   return (
     <>
       <div>
-        <FormControl className={classes.formControl}>
-          <Select
-            size="small"
-            value={mode}
-            onChange={event => setMode(event.target.value)}
-          >
-            {Object.entries({
-              ...(hasCDS
-                ? {
-                    cds: 'CDS',
-                  }
-                : {}),
-              ...(hasCDS
-                ? {
-                    protein: 'Protein',
-                  }
-                : {}),
-              ...(hasExonOrCDS
-                ? {
-                    cdna: 'cDNA',
-                  }
-                : {}),
-              ...(hasExonOrCDS
-                ? {
-                    gene: `Genomic w/ full introns`,
-                  }
-                : {}),
-              ...(hasExonOrCDS
-                ? {
-                    gene_updownstream: `Genomic w/ full introns +/- ${upDownBp}bp up+down stream`,
-                  }
-                : {}),
-              ...(hasExonOrCDS
-                ? {
-                    gene_collapsed_intron: `Genomic w/ ${intronBp}bp intron`,
-                  }
-                : {}),
-              ...(hasExonOrCDS
-                ? {
-                    gene_updownstream_collapsed_intron: `Genomic w/ ${intronBp}bp intron +/- ${upDownBp}bp up+down stream `,
-                  }
-                : {}),
+        <SequenceTypeSelector
+          mode={mode}
+          setMode={setMode}
+          feature={feature}
+          model={sequenceFeatureDetails}
+        />
 
-              ...(!hasExonOrCDS
-                ? {
-                    genomic: 'Genomic',
-                  }
-                : {}),
-              ...(!hasExonOrCDS
-                ? {
-                    genomic_sequence_updownstream: `Genomic +/- ${upDownBp}bp up+down stream`,
-                  }
-                : {}),
-            }).map(([key, val]) => (
-              <MenuItem key={key} value={key}>
-                {val}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
         <SequenceFeatureMenu
           ref={seqPanelRef}
           model={sequenceFeatureDetails}

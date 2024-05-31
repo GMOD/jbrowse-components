@@ -55,7 +55,7 @@ const SequenceFeatureSettingsDialog = observer(function ({
   model: SequenceFeatureDetailsModel
 }) {
   const { classes } = useStyles()
-  const { upperCaseCDS, showCoordinates2 } = model
+  const { upperCaseCDS } = model
   const [intronBp, setIntronBp] = useState(`${model.intronBp}`)
   const [upDownBp, setUpDownBp] = useState(`${model.upDownBp}`)
   const intronBpValid = !Number.isNaN(+intronBp)

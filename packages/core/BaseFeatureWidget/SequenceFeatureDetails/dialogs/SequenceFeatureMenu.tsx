@@ -20,7 +20,7 @@ interface Props {
   mode: string
 }
 const SequenceFeatureMenu = observer(
-  React.forwardRef<HTMLDivElement, Props>(function (
+  React.forwardRef<HTMLDivElement, Props>(function SequenceFeatureMenu2(
     { model, extraItems = [], mode },
     ref,
   ) {
