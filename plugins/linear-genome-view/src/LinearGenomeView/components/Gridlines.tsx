@@ -1,9 +1,5 @@
 import React from 'react'
-import {
-  ContentBlock,
-  ElidedBlock,
-  InterRegionPaddingBlock,
-} from '@jbrowse/core/util/blockTypes'
+import { ContentBlock } from '@jbrowse/core/util/blockTypes'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { LinearGenomeViewModel } from '..'
@@ -81,11 +77,11 @@ const RenderedVerticalGuides = observer(({ model }: { model: LGV }) => {
     <>
       {staticBlocks.map((block, index) => {
         const k = `${block.key}-${index}`
-        if (block instanceof ContentBlock) {
+        if (block.type === 'ContentBlock') {
           return <RenderedBlockLines key={k} block={block} bpPerPx={bpPerPx} />
-        } else if (block instanceof ElidedBlock) {
+        } else if (block.type === 'ElidedBlock') {
           return <ElidedBlockComponent key={k} width={block.widthPx} />
-        } else if (block instanceof InterRegionPaddingBlock) {
+        } else if (block.type === 'InterRegionPaddingBlock') {
           return (
             <InterRegionPaddingBlockComponent
               key={k}

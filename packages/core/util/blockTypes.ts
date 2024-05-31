@@ -6,10 +6,10 @@ export class BlockSet {
   constructor(public blocks: BaseBlock[] = []) {}
 
   push(block: BaseBlock) {
-    if (block instanceof ElidedBlock && this.blocks.length > 0) {
+    if (block.type === 'ElidedBlock' && this.blocks.length > 0) {
       const lastBlock = this.blocks.at(-1)
-      if (lastBlock instanceof ElidedBlock) {
-        lastBlock.push(block)
+      if (lastBlock?.type === 'ElidedBlock') {
+        ;(lastBlock as ElidedBlock).push(block as ElidedBlock)
         return
       }
     }
@@ -60,7 +60,7 @@ export class BlockSet {
   }
 
   get contentBlocks() {
-    return this.blocks.filter(block => block instanceof ContentBlock)
+    return this.blocks.filter(block => block.type === 'ContentBlock')
   }
 
   get totalBp() {
@@ -69,6 +69,8 @@ export class BlockSet {
 }
 
 export class BaseBlock {
+  type = 'BaseBlock'
+
   public regionNumber?: number
 
   public reversed?: boolean
@@ -116,13 +118,17 @@ export class BaseBlock {
   }
 }
 
-export class ContentBlock extends BaseBlock {}
+export class ContentBlock extends BaseBlock {
+  type = 'ContentBlock'
+}
 
 /**
  * marker block representing one or more blocks that are
  * too small to be shown at the current zoom level
  */
 export class ElidedBlock extends BaseBlock {
+  type = 'ElidedBlock'
+
   public widthPx: number
 
   public elidedBlockCount = 0
@@ -149,4 +155,6 @@ export class ElidedBlock extends BaseBlock {
  * marker block that sits between two different displayed regions
  * and provides a thick border between them
  */
-export class InterRegionPaddingBlock extends BaseBlock {}
+export class InterRegionPaddingBlock extends BaseBlock {
+  type = 'InterRegionPaddingBlock'
+}

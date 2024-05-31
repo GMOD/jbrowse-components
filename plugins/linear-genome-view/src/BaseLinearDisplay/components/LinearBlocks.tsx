@@ -2,11 +2,6 @@ import React from 'react'
 import { makeStyles } from 'tss-react/mui'
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
-import {
-  ContentBlock,
-  ElidedBlock,
-  InterRegionPaddingBlock,
-} from '@jbrowse/core/util/blockTypes'
 import { BaseLinearDisplayModel } from '../models/BaseLinearDisplayModel'
 
 import {
@@ -50,14 +45,11 @@ const RenderedBlocks = observer(function ({
   return (
     <>
       {blockDefinitions.map(block => {
-        if (block instanceof ContentBlock) {
+        const key = `${model.id}-${block.key}`
+        if (block.type === 'ContentBlock') {
           const state = blockState.get(block.key)
-
           return (
-            <ContentBlockComponent
-              block={block}
-              key={`${model.id}-${block.key}`}
-            >
+            <ContentBlockComponent block={block} key={key}>
               {state?.ReactComponent ? (
                 <state.ReactComponent model={state} />
               ) : null}
@@ -75,19 +67,12 @@ const RenderedBlocks = observer(function ({
               ) : null}
             </ContentBlockComponent>
           )
-        }
-        if (block instanceof ElidedBlock) {
-          return (
-            <ElidedBlockComponent
-              key={`${model.id}-${block.key}`}
-              width={block.widthPx}
-            />
-          )
-        }
-        if (block instanceof InterRegionPaddingBlock) {
+        } else if (block.type === 'ElidedBlock') {
+          return <ElidedBlockComponent key={key} width={block.widthPx} />
+        } else if (block.type === 'InterRegionPaddingBlock') {
           return (
             <InterRegionPaddingBlockComponent
-              key={block.key}
+              key={key}
               width={block.widthPx}
               style={{ background: 'none' }}
               boundary={block.variant === 'boundary'}
