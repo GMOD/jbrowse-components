@@ -102,29 +102,6 @@ const SequenceFeatureSettingsDialog = observer(function ({
             />
           </RadioGroup>
         </FormControl2>
-        <FormControl2>
-          <FormLabel>Show coordinates?</FormLabel>
-          <RadioGroup
-            value={showCoordinates2}
-            onChange={e => model.setShowCoordinates(e.target.value)}
-          >
-            <FormControlLabel
-              value="none"
-              control={<Radio className={classes.root} size="small" />}
-              label="Do not show coordinates"
-            />
-            <FormControlLabel
-              value="relative"
-              control={<Radio className={classes.root} size="small" />}
-              label="Show coordinates relative to start of feature"
-            />
-            <FormControlLabel
-              value="genomic"
-              control={<Radio className={classes.root} size="small" />}
-              label="Show coordinates relative to genome (only works for using the continuous genomic feature displays, otherwise is relative to start of feature)"
-            />
-          </RadioGroup>
-        </FormControl2>
       </DialogContent>
 
       <DialogActions>

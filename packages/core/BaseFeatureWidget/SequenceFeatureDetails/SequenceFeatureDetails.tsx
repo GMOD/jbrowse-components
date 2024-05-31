@@ -8,23 +8,18 @@ import {
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import copy from 'copy-to-clipboard'
 
 // locals
 import { useFeatureSequence } from './hooks'
 import { ErrorMessage, LoadingEllipses } from '../../ui'
 import { SimpleFeatureSerialized, getSession } from '../../util'
 import { BaseFeatureWidgetModel } from '../stateModelFactory'
-import CascadingMenuButton from '../../ui/CascadingMenuButton'
 
 // icons
-import MoreVert from '@mui/icons-material/MoreVert'
-import Settings from '@mui/icons-material/Settings'
 import SequenceFeatureMenu from './dialogs/SequenceFeatureMenu'
 
 // lazies
 const SequencePanel = lazy(() => import('./SequencePanel'))
-const SettingsDialog = lazy(() => import('./dialogs/SettingsDialog'))
 const SequenceDialog = lazy(() => import('./dialogs/SequenceDialog'))
 
 const useStyles = makeStyles()({
@@ -129,6 +124,7 @@ const SequenceFeatureDetails = observer(function ({
         <SequenceFeatureMenu
           ref={seqPanelRef}
           model={sequenceFeatureDetails}
+          mode={mode}
           extraItems={[
             {
               label: 'Open in dialog',
