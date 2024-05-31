@@ -44,11 +44,12 @@ const RenderedBlocks = observer(function ({
   const { blockDefinitions, blockState } = model
   return (
     <>
-      {blockDefinitions.map(b => {
-        if (b.type === 'ContentBlock') {
-          const state = blockState.get(b.key)
+      {blockDefinitions.map(block => {
+        const key = `${model.id}-${block.key}`
+        if (block.type === 'ContentBlock') {
+          const state = blockState.get(block.key)
           return (
-            <ContentBlockComponent block={b} key={`${model.id}-${b.key}`}>
+            <ContentBlockComponent block={block} key={key}>
               {state?.ReactComponent ? (
                 <state.ReactComponent model={state} />
               ) : null}
@@ -66,24 +67,19 @@ const RenderedBlocks = observer(function ({
               ) : null}
             </ContentBlockComponent>
           )
-        } else if (b.type === 'ElidedBlock') {
-          return (
-            <ElidedBlockComponent
-              key={`${model.id}-${b.key}`}
-              width={b.widthPx}
-            />
-          )
-        } else if (b.type === 'InterRegionPaddingBlock') {
+        } else if (block.type === 'ElidedBlock') {
+          return <ElidedBlockComponent key={key} width={block.widthPx} />
+        } else if (block.type === 'InterRegionPaddingBlock') {
           return (
             <InterRegionPaddingBlockComponent
-              key={b.key}
-              width={b.widthPx}
+              key={key}
+              width={block.widthPx}
               style={{ background: 'none' }}
-              boundary={b.variant === 'boundary'}
+              boundary={block.variant === 'boundary'}
             />
           )
         }
-        throw new Error(`invalid block type ${JSON.stringify(b)}`)
+        throw new Error(`invalid block type ${JSON.stringify(block)}`)
       })}
     </>
   )
