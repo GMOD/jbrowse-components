@@ -28,6 +28,7 @@ const useStyles = makeStyles()({
     position: 'relative',
     background: 'none',
     zIndex: 2,
+    transition: 'height 0.5s',
   },
 })
 
