@@ -58,8 +58,21 @@ const AddFiltersDialog = observer(function ({
       <DialogContent>
         <div>
           Add filters, in jexl format, one per line, starting with the string
-          jexl:. Example: <pre>jexl:get(feature,'name')=='BRCA1'</pre> to only
-          show the feature where the name attribute is "BRCA1" in view
+          jexl:. Examples:{' '}
+          <ul>
+            <li>
+              <code>jexl:get(feature,'name')=='BRCA1'</code> - show only feature
+              where the name attribute is BRCA1
+            </li>
+            <li>
+              <code>jexl:get(feature,'type')=='gene'</code> - show only gene
+              type features in a GFF that has many other feature types
+            </li>
+            <li>
+              <code>jexl:get(feature,'score') &gt; 400</code> - show only
+              features that have a score greater than 400
+            </li>
+          </ul>
         </div>
 
         {error ? <p className={classes.error}>{`${error}`}</p> : null}
