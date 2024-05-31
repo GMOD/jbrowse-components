@@ -20,6 +20,7 @@ import CascadingMenuButton from '../../ui/CascadingMenuButton'
 // icons
 import MoreVert from '@mui/icons-material/MoreVert'
 import Settings from '@mui/icons-material/Settings'
+import SequenceFeatureMenu from './dialogs/SequenceFeatureMenu'
 
 // lazies
 const SequencePanel = lazy(() => import('./SequencePanel'))
@@ -125,26 +126,10 @@ const SequenceFeatureDetails = observer(function ({
             ))}
           </Select>
         </FormControl>
-        <CascadingMenuButton
-          menuItems={[
-            {
-              label: 'Copy plaintext',
-              onClick: () => {
-                const ref = seqPanelRef.current
-                if (ref) {
-                  copy(ref.textContent || '', { format: 'text/plain' })
-                }
-              },
-            },
-            {
-              label: 'Copy HTML',
-              onClick: () => {
-                const ref = seqPanelRef.current
-                if (ref) {
-                  copy(ref.outerHTML, { format: 'text/html' })
-                }
-              },
-            },
+        <SequenceFeatureMenu
+          ref={seqPanelRef}
+          model={sequenceFeatureDetails}
+          extraItems={[
             {
               label: 'Open in dialog',
               onClick: () => {
@@ -154,20 +139,8 @@ const SequenceFeatureDetails = observer(function ({
                 ])
               },
             },
-            {
-              label: 'Settings',
-              icon: Settings,
-              onClick: () => {
-                getSession(model).queueDialog(handleClose => [
-                  SettingsDialog,
-                  { model: sequenceFeatureDetails, handleClose },
-                ])
-              },
-            },
           ]}
-        >
-          <MoreVert />
-        </CascadingMenuButton>
+        />
       </div>
       <div>
         {feature.type === 'gene' ? (

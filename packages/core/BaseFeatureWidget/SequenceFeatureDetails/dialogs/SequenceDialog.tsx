@@ -17,6 +17,7 @@ import { useFeatureSequence } from '../hooks'
 import { SimpleFeatureSerialized } from '../../../util'
 import { BaseFeatureWidgetModel } from '../../stateModelFactory'
 import SequencePanel from '../SequencePanel'
+import SequenceFeatureMenu from './SequenceFeatureMenu'
 
 const useStyles = makeStyles()({
   dialogContent: {
@@ -125,6 +126,10 @@ const SequenceDialog = observer(function ({
               ))}
             </Select>
           </FormControl>
+          <SequenceFeatureMenu
+            ref={seqPanelRef}
+            model={sequenceFeatureDetails}
+          />
         </div>
 
         <div>
