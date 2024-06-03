@@ -46,7 +46,6 @@
   },
   "peerDependencies": {
     "@jbrowse/core": "^2.0.0",
-    "@jbrowse/plugin-alignments": "^2.0.0",
     "@jbrowse/plugin-circular-view": "^2.0.0",
     "@jbrowse/plugin-linear-genome-view": "^2.0.0",
     "@mui/material": "^5.0.0",
