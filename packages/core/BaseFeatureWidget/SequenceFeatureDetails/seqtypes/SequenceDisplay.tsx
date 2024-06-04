@@ -7,11 +7,13 @@ const SequenceDisplay = observer(function ({
   start,
   color,
   coordStart = start,
+  coordMultipler = 1,
   model,
 }: {
   chunks: string[]
   start: number
   coordStart?: number
+  coordMultipler?: number
   color?: string
   model: SequenceFeatureDetailsModel
 }) {
@@ -20,7 +22,7 @@ const SequenceDisplay = observer(function ({
     const f = coordStart - (start % 100)
     const prefix =
       (idx == 0 && start % width == 0) || idx > 0
-        ? `${f + idx * width}`.padStart(4) + '   '
+        ? `${f + idx * width * coordMultipler}`.padStart(4) + '   '
         : ''
     const postfix =
       idx === chunks.length - 1 &&

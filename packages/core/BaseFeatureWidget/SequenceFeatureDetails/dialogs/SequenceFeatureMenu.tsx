@@ -99,24 +99,9 @@ const SequenceFeatureMenu = observer(
                 {
                   label: 'Coordinates relative to feature start',
                   type: 'radio',
-                  checked:
-                    // make relative selected if the user selected genomic but
-                    // that option isn't available
-                    showCoordinates2 === 'relative' ||
-                    (showCoordinates2 == 'genomic' && !showGenomicCoordsOption),
+                  checked: showCoordinates2 === 'relative',
                   onClick: () => model.setShowCoordinates('relative'),
                 },
-                ...(showGenomicCoordsOption
-                  ? [
-                      {
-                        label:
-                          'Coordinates relative to genome (only available for continuous genome based sequence types)',
-                        type: 'radio' as const,
-                        checked: showCoordinates2 === 'genomic',
-                        onClick: () => model.setShowCoordinates('genomic'),
-                      },
-                    ]
-                  : []),
               ],
             },
             {

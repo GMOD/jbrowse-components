@@ -31,8 +31,7 @@ const CDNASequence = observer(function ({
   collapseIntron?: boolean
   model: SequenceFeatureDetailsModel
 }) {
-  const { upperCaseCDS, intronBp, width, showCoordinates2, showCoordinates } =
-    model
+  const { upperCaseCDS, intronBp, width, showCoordinates } = model
   const hasCds = cds.length > 0
   const chunks = (
     cds.length ? [...cds, ...utr].sort((a, b) => a.start - b.start) : exons
@@ -40,10 +39,7 @@ const CDNASequence = observer(function ({
   const toLower = (s: string) => (upperCaseCDS ? s.toLowerCase() : s)
   const toUpper = (s: string) => (upperCaseCDS ? s.toUpperCase() : s)
 
-  let coordStart =
-    showCoordinates2 === 'genomic' && includeIntrons && !collapseIntron
-      ? feature.start - (upstream?.length || 0)
-      : 0
+  let coordStart = 0
   let currStart = 0
   let currRemainder = 0
 
