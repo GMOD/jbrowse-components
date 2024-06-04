@@ -4,19 +4,30 @@ import { autorun } from 'mobx'
 // locals
 import { localStorageGetItem, localStorageSetItem } from '../../util'
 
+function localStorageGetNumber(key: string, defaultVal: number) {
+  return +(localStorageGetItem(key) ?? defaultVal)
+}
+
 export function SequenceFeatureDetailsF() {
   return types
-    .model('SequenceFeatureDetails', {})
+    .model('SequenceFeatureDetails')
     .volatile(() => ({
-      intronBp: +(localStorageGetItem('sequenceFeatureDetails-intronBp') ?? 10),
-      upDownBp: +(
-        localStorageGetItem('sequenceFeatureDetails-upDownBp') ?? 100
-      ),
+      showCoordinates2:
+        localStorageGetItem('sequenceFeatureDetails-showCoordinates2') ||
+        'none',
+      intronBp: localStorageGetNumber('sequenceFeatureDetails-intronBp', 10),
+      upDownBp: localStorageGetNumber('sequenceFeatureDetails-upDownBp', 100),
       upperCaseCDS: Boolean(
         JSON.parse(
           localStorageGetItem('sequenceFeatureDetails-upperCaseCDS') || 'true',
         ),
       ),
+      width: 100,
+    }))
+    .views(self => ({
+      get showCoordinates() {
+        return self.showCoordinates2 !== 'none'
+      },
     }))
     .actions(self => ({
       setUpDownBp(f: number) {
@@ -27,6 +38,9 @@ export function SequenceFeatureDetailsF() {
       },
       setUpperCaseCDS(f: boolean) {
         self.upperCaseCDS = f
+      },
+      setShowCoordinates(f: string) {
+        self.showCoordinates2 = f
       },
     }))
     .actions(self => ({
@@ -45,6 +59,10 @@ export function SequenceFeatureDetailsF() {
             localStorageSetItem(
               'sequenceFeatureDetails-upperCaseCDS',
               JSON.stringify(self.upperCaseCDS),
+            )
+            localStorageSetItem(
+              'sequenceFeatureDetails-showCoordinates2',
+              self.showCoordinates2,
             )
           }),
         )
