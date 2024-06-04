@@ -28,6 +28,15 @@ const useStyles = makeStyles()({
     position: 'relative',
     background: 'none',
     zIndex: 2,
+  },
+
+  dynamicResize: {
+    overflowY: 'auto',
+    overflowX: 'hidden',
+    whiteSpace: 'nowrap',
+    position: 'relative',
+    background: 'none',
+    zIndex: 2,
     transition: 'height 0.5s',
   },
 })
@@ -61,7 +70,11 @@ const TrackRenderingContainer = observer(function ({
 
   return (
     <div
-      className={classes.trackRenderingContainer}
+      className={
+        display.adjustTrackLayoutHeight !== 'static'
+          ? classes.dynamicResize
+          : classes.trackRenderingContainer
+      }
       style={{ height: minimized ? 20 : height }}
       onScroll={evt => display.setScrollTop(evt.currentTarget.scrollTop)}
       onDragEnter={onDragEnter}
