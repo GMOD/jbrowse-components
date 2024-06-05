@@ -18,11 +18,10 @@ const SequenceFeatureSettingsDialog = lazy(() => import('./SettingsDialog'))
 interface Props {
   model: SequenceFeatureDetailsModel
   extraItems?: MenuItem[]
-  mode: string
 }
 const SequenceFeatureMenu = observer(
   React.forwardRef<HTMLDivElement, Props>(function SequenceFeatureMenu2(
-    { model, extraItems = [], mode },
+    { model, extraItems = [] },
     ref,
   ) {
     if (typeof ref === 'function') {
@@ -30,8 +29,6 @@ const SequenceFeatureMenu = observer(
     }
     const [showSettings, setShowSettings] = useState(false)
     const { showCoordinates2 } = model
-    const showGenomicCoordsOption =
-      mode === 'gene' || mode === 'gene_updownstream'
 
     return (
       <>

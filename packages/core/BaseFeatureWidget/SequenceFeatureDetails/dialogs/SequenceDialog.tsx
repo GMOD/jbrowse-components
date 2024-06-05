@@ -60,7 +60,6 @@ const SequenceDialog = observer(function ({
             model={sequenceFeatureDetails}
           />
           <SequenceFeatureMenu
-            mode={mode}
             ref={seqPanelRef}
             model={sequenceFeatureDetails}
           />

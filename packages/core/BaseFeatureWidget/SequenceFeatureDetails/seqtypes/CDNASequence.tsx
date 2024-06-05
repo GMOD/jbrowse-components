@@ -6,7 +6,6 @@ import { Feat } from '../../util'
 import { splitString, cdsColor, updownstreamColor, utrColor } from '../util'
 import { SequenceFeatureDetailsModel } from '../model'
 import SequenceDisplay from './SequenceDisplay'
-import { SimpleFeatureSerialized } from '../../../util'
 
 const CDNASequence = observer(function ({
   utr,
@@ -15,7 +14,6 @@ const CDNASequence = observer(function ({
   sequence,
   upstream,
   downstream,
-  feature,
   includeIntrons,
   collapseIntron,
   model,
@@ -24,7 +22,6 @@ const CDNASequence = observer(function ({
   cds: Feat[]
   exons: Feat[]
   sequence: string
-  feature: SimpleFeatureSerialized
   upstream?: string
   downstream?: string
   includeIntrons?: boolean

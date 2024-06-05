@@ -52,7 +52,6 @@ const SequenceFeatureDetails = observer(function ({
         <SequenceFeatureMenu
           ref={seqPanelRef}
           model={sequenceFeatureDetails}
-          mode={mode}
           extraItems={[
             {
               label: 'Open in dialog',
