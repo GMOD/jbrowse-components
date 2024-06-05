@@ -507,7 +507,7 @@ exports[`renders one track, one region 1`] = `
           </button>
         </div>
         <div
-          class="css-1ql7uaq-trackRenderingContainer"
+          class="css-v8p4u0-dynamicResize"
           data-testid="trackRenderingContainer-lgv-testConfig"
           style="height: 100px;"
         >
@@ -1324,7 +1324,7 @@ exports[`renders two tracks, two regions 1`] = `
           </button>
         </div>
         <div
-          class="css-1ql7uaq-trackRenderingContainer"
+          class="css-v8p4u0-dynamicResize"
           data-testid="trackRenderingContainer-lgv-testConfig"
           style="height: 100px;"
         >
@@ -1453,7 +1453,7 @@ exports[`renders two tracks, two regions 1`] = `
           </button>
         </div>
         <div
-          class="css-1ql7uaq-trackRenderingContainer"
+          class="css-v8p4u0-dynamicResize"
           data-testid="trackRenderingContainer-lgv-testConfig2"
           style="height: 100px;"
         >
