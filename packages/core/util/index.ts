@@ -1126,7 +1126,7 @@ export interface ViewSnap {
     start: number
     end: number
     refName: string
-    reversed: boolean
+    reversed?: boolean
     assemblyName: string
   })[]
 }

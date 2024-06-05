@@ -1,4 +1,3 @@
-import { getSnapshot } from 'mobx-state-tree'
 import { Region, ViewSnap } from './index'
 
 export interface BpOffset {
@@ -100,7 +99,7 @@ export function pxToBp(
   offset: number
   start: number
   end: number
-  reversed: boolean
+  reversed?: boolean
 } {
   let bpSoFar = 0
   const {
@@ -114,8 +113,7 @@ export function pxToBp(
   const bp = (offsetPx + px) * bpPerPx
   if (bp < 0) {
     const r = displayedRegions[0]
-    const snap = getSnapshot(r)
-    // @ts-expect-error
+    const snap = r
     return {
       // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
       ...(snap as Omit<typeof snap, symbol>),
@@ -133,8 +131,7 @@ export function pxToBp(
     const len = r.end - r.start
     const offset = bp - bpSoFar
     if (len + bpSoFar > bp && bpSoFar <= bp) {
-      const snap = getSnapshot(r)
-      // @ts-expect-error
+      const snap = r
       return {
         // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
         ...(snap as Omit<typeof snap, symbol>),
@@ -160,8 +157,7 @@ export function pxToBp(
     const len = r.end - r.start
     const offset = bp - bpSoFar + len
 
-    const snap = getSnapshot(r)
-    // @ts-expect-error
+    const snap = r
     return {
       // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
       ...(snap as Omit<typeof snap, symbol>),
