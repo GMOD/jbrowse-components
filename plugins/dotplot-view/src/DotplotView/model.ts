@@ -38,7 +38,7 @@ import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 // locals
 import { Dotplot1DView, DotplotHView, DotplotVView } from './1dview'
 import { getBlockLabelKeysToHide, makeTicks } from './components/util'
-import { BaseBlock } from './blockTypes'
+import { BaseBlock } from '@jbrowse/core/util/blockTypes'
 
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))

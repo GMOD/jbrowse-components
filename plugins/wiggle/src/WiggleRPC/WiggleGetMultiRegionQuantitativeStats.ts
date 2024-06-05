@@ -4,7 +4,6 @@ import { RenderArgs } from '@jbrowse/core/rpc/coreRpcMethods'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
 import { Region, renameRegionsIfNeeded } from '@jbrowse/core/util'
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 export class WiggleGetMultiRegionQuantitativeStats extends RpcMethodType {
   name = 'WiggleGetMultiRegionQuantitativeStats'
@@ -62,12 +61,10 @@ export class WiggleGetMultiRegionQuantitativeStats extends RpcMethodType {
     const { regions, adapterConfig, sessionId } = deserializedArgs
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
 
-    if (dataAdapter instanceof BaseFeatureDataAdapter) {
-      return dataAdapter.getMultiRegionQuantitativeStats(
-        regions,
-        deserializedArgs,
-      )
-    }
-    throw new Error('Data adapter not found')
+    // @ts-expect-error
+    return dataAdapter.getMultiRegionQuantitativeStats(
+      regions,
+      deserializedArgs,
+    )
   }
 }

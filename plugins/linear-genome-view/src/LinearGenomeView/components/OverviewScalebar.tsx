@@ -249,7 +249,7 @@ const Scalebar = observer(function ({
       />
       {/* this is the entire scale bar */}
       {overviewVisibleRegions.map((block, idx) => {
-        return !(block instanceof ContentBlock) ? (
+        return !(block.type === 'ContentBlock') ? (
           <div
             key={`${JSON.stringify(block)}-${idx}`}
             className={classes.scalebarContig}

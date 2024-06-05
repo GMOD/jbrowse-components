@@ -1,4 +1,5 @@
-import ServerSideRendererType, {
+import { ServerSideRendererType } from '../../pluggableElementTypes'
+import {
   RenderArgs as ServerSideRenderArgs,
   RenderArgsSerialized as ServerSideRenderArgsSerialized,
 } from '../../pluggableElementTypes/renderers/ServerSideRendererType'
@@ -16,7 +17,10 @@ export interface RenderArgsSerialized extends ServerSideRenderArgsSerialized {
   rendererType: string
 }
 
-export function validateRendererType<T>(rendererType: string, RendererType: T) {
+export function validateRendererType<T>(
+  rendererType: string,
+  RendererType: T,
+): ServerSideRendererType {
   if (!RendererType) {
     throw new Error(`renderer "${rendererType}" not found`)
   }
@@ -26,13 +30,7 @@ export function validateRendererType<T>(rendererType: string, RendererType: T) {
       `renderer ${rendererType} has no ReactComponent, it may not be completely implemented yet`,
     )
   }
-
-  if (!(RendererType instanceof ServerSideRendererType)) {
-    throw new TypeError(
-      'CoreRender requires a renderer that is a subclass of ServerSideRendererType',
-    )
-  }
-  return RendererType
+  return RendererType as unknown as ServerSideRendererType
 }
 
 export {

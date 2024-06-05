@@ -15,57 +15,100 @@ function isGzip(buf: Buffer) {
   return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
 }
 
+const decoder =
+  typeof TextDecoder !== 'undefined' ? new TextDecoder('utf8') : undefined
+
 export default class Gff3Adapter extends BaseFeatureDataAdapter {
+  calculatedIntervalTreeMap: Record<string, IntervalTree> = {}
+
   protected gffFeatures?: Promise<{
     header: string
-    intervalTree: Record<string, IntervalTree>
+    intervalTreeMap: Record<
+      string,
+      ((sc?: (arg: string) => void) => IntervalTree) | undefined
+    >
   }>
 
-  private async loadDataP() {
+  private async loadDataP(opts: BaseOptions) {
+    const { statusCallback = () => {} } = opts || {}
     const pm = this.pluginManager
     const buf = await openLocation(this.getConf('gffLocation'), pm).readFile()
     const buffer = isGzip(buf) ? await unzip(buf) : buf
-    // 512MB  max chrome string length is 512MB
-    if (buffer.length > 536_870_888) {
-      throw new Error('Data exceeds maximum string length (512MB)')
-    }
-    const data = new TextDecoder('utf8', { fatal: true }).decode(buffer)
-    const lines = data.split(/\n|\r\n|\r/)
     const headerLines = []
-    for (let i = 0; i < lines.length && lines[i].startsWith('#'); i++) {
-      headerLines.push(lines[i])
-    }
-    const header = headerLines.join('\n')
+    const featureMap = {} as Record<string, string>
+    let blockStart = 0
 
-    const feats = gff.parseStringSync(data, {
-      parseFeatures: true,
-      parseComments: false,
-      parseDirectives: false,
-      parseSequences: false,
-      disableDerivesFromReferences: true,
-    })
-
-    const intervalTree = {} as Record<string, IntervalTree>
-    for (const obj of feats.flat().map(
-      (f, i) =>
-        new SimpleFeature({
-          data: this.featureData(f),
-          id: `${this.id}-offset-${i}`,
-        }),
-    )) {
-      const key = obj.get('refName')
-      if (!intervalTree[key]) {
-        intervalTree[key] = new IntervalTree()
+    let i = 0
+    while (blockStart < buffer.length) {
+      const n = buffer.indexOf('\n', blockStart)
+      // could be a non-newline ended file, so slice to end of file if n===-1
+      const b =
+        n === -1 ? buffer.slice(blockStart) : buffer.slice(blockStart, n)
+      const line = (decoder?.decode(b) || b.toString()).trim()
+      if (line) {
+        if (line.startsWith('#')) {
+          headerLines.push(line)
+        } else if (line.startsWith('>')) {
+          break
+        } else {
+          const ret = line.indexOf('\t')
+          const refName = line.slice(0, ret)
+          if (!featureMap[refName]) {
+            featureMap[refName] = ''
+          }
+          featureMap[refName] += line + '\n'
+        }
       }
-      intervalTree[key].insert([obj.get('start'), obj.get('end')], obj)
+      if (i++ % 10_000 === 0) {
+        statusCallback(
+          `Loading ${Math.floor(blockStart / 1_000_000).toLocaleString('en-US')}/${Math.floor(buffer.length / 1_000_000).toLocaleString('en-US')} MB`,
+        )
+      }
+
+      blockStart = n + 1
     }
 
-    return { header, intervalTree }
+    const intervalTreeMap = Object.fromEntries(
+      Object.entries(featureMap).map(([refName, lines]) => {
+        return [
+          refName,
+          (sc?: (arg: string) => void) => {
+            sc?.(`Parsing GFF data`)
+            if (!this.calculatedIntervalTreeMap[refName]) {
+              const intervalTree = new IntervalTree()
+              gff
+                .parseStringSync(lines, {
+                  parseFeatures: true,
+                  parseComments: false,
+                  parseDirectives: false,
+                  parseSequences: false,
+                  disableDerivesFromReferences: true,
+                })
+                .flat()
+                .map(
+                  (f, i) =>
+                    new SimpleFeature({
+                      data: this.featureData(f),
+                      id: `${this.id}-${refName}-${i}`,
+                    }),
+                )
+                .forEach(obj =>
+                  intervalTree.insert([obj.get('start'), obj.get('end')], obj),
+                )
+              this.calculatedIntervalTreeMap[refName] = intervalTree
+            }
+            return this.calculatedIntervalTreeMap[refName]
+          },
+        ]
+      }),
+    )
+
+    return { header: headerLines.join('\n'), intervalTreeMap }
   }
 
-  private async loadData() {
+  private async loadData(opts: BaseOptions) {
     if (!this.gffFeatures) {
-      this.gffFeatures = this.loadDataP().catch(e => {
+      this.gffFeatures = this.loadDataP(opts).catch(e => {
         this.gffFeatures = undefined
         throw e
       })
@@ -74,13 +117,13 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
     return this.gffFeatures
   }
 
-  public async getRefNames(_opts: BaseOptions = {}) {
-    const { intervalTree } = await this.loadData()
-    return Object.keys(intervalTree)
+  public async getRefNames(opts: BaseOptions = {}) {
+    const { intervalTreeMap } = await this.loadData(opts)
+    return Object.keys(intervalTreeMap)
   }
 
-  public async getHeader() {
-    const { header } = await this.loadData()
+  public async getHeader(opts: BaseOptions = {}) {
+    const { header } = await this.loadData(opts)
     return header
   }
 
@@ -88,8 +131,8 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
     return ObservableCreate<Feature>(async observer => {
       try {
         const { start, end, refName } = query
-        const { intervalTree } = await this.loadData()
-        intervalTree[refName]
+        const { intervalTreeMap } = await this.loadData(opts)
+        intervalTreeMap[refName]?.(opts.statusCallback)
           ?.search([start, end])
           .forEach(f => observer.next(f))
         observer.complete()

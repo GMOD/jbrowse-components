@@ -105,6 +105,7 @@ const DotplotViewInternal = observer(function ({
   const distanceY = useRef(0)
   const scheduled = useRef(false)
   const [ctrlKeyWasUsed, setCtrlKeyWasUsed] = useState(false)
+  const [ctrlKeyDown, setCtrlKeyDown] = useState(false)
   const svg = ref.current?.getBoundingClientRect() || blank
   const rootRect = ref.current?.getBoundingClientRect() || blank
   const mousedown = getOffset(mousedownClient, svg)
@@ -190,6 +191,24 @@ const DotplotViewInternal = observer(function ({
     hview,
     vview,
   ])
+  useEffect(() => {
+    function globalCtrlKeyDown(event: KeyboardEvent) {
+      if (event.metaKey || event.ctrlKey) {
+        setCtrlKeyDown(true)
+      }
+    }
+    function globalCtrlKeyUp(event: KeyboardEvent) {
+      if (!event.metaKey && !event.ctrlKey) {
+        setCtrlKeyDown(false)
+      }
+    }
+    window.addEventListener('keydown', globalCtrlKeyDown)
+    window.addEventListener('keyup', globalCtrlKeyUp)
+    return () => {
+      window.removeEventListener('keydown', globalCtrlKeyDown)
+      window.addEventListener('keyup', globalCtrlKeyUp)
+    }
+  }, [])
 
   // detect a mouseup after a mousedown was submitted, autoremoves mouseup once
   // that single mouseup is set
@@ -261,13 +280,13 @@ const DotplotViewInternal = observer(function ({
               />
             ) : null}
             <div
-              style={{ cursor: ctrlKeyWasUsed ? 'pointer' : cursorMode }}
+              style={{ cursor: ctrlKeyDown ? 'pointer' : cursorMode }}
               onMouseDown={event => {
                 if (event.button === 0) {
                   const { clientX, clientY } = event
                   setMouseDownClient([clientX, clientY])
                   setMouseCurrClient([clientX, clientY])
-                  setCtrlKeyWasUsed(event.ctrlKey)
+                  setCtrlKeyWasUsed(ctrlKeyDown)
                 }
               }}
             >

@@ -1,3 +1,50 @@
+yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 2.11.2
+
+## 2.11.2 (2024-06-03)
+
+#### :rocket: Enhancement
+
+- Other
+  - [#4406](https://github.com/GMOD/jbrowse-components/pull/4406) Allow loading
+    plaintext GFF3 files larger than 512Mb
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4398](https://github.com/GMOD/jbrowse-components/pull/4398) Adds a context
+    menu option to zoom to a feature
+    ([@carolinebridge](https://github.com/carolinebridge))
+- `core`
+  - [#4405](https://github.com/GMOD/jbrowse-components/pull/4405) Include a raw
+    version of function names in error message stack traces
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4393](https://github.com/GMOD/jbrowse-components/pull/4393) Allow users to
+    configure filters and set them at runtime via a editable dialog
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4395](https://github.com/GMOD/jbrowse-components/pull/4395) Remove
+    x-data-grid resize bar workaround ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4389](https://github.com/GMOD/jbrowse-components/pull/4389) Improve return
+    type of `intersection2`
+    ([@garrettjstevens](https://github.com/garrettjstevens))
+
+#### :bug: Bug Fix
+
+- [#4407](https://github.com/GMOD/jbrowse-components/pull/4407) Fix custom theme
+  being applied in renderings in desktop
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#4402](https://github.com/GMOD/jbrowse-components/pull/4402) Fix for
+  rendering of softclipping when there are insertions in the sequence
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#4385](https://github.com/GMOD/jbrowse-components/pull/4385) Fix ability to
+  choose line plot bigwig coloring ([@cmdcolin](https://github.com/cmdcolin))
+- [#4386](https://github.com/GMOD/jbrowse-components/pull/4386) Fix ability to
+  add custom frame colors
+  ([@garrettjstevens](https://github.com/garrettjstevens))
+
+#### Committers: 3
+
+- Caroline Bridge ([@carolinebridge](https://github.com/carolinebridge))
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens)) Done
+  in 1.23s.
+
 yarn run v1.22.19 $ lerna-changelog --silent --silent --next-version 2.11.1
 
 ## 2.11.1 (2024-05-11)
@@ -2831,8 +2878,7 @@ yarn run v1.22.18 $ lerna-changelog 2.6.1
     link in new tab by default in feature details
     ([@cmdcolin](https://github.com/cmdcolin))
   - [#3053](https://github.com/GMOD/jbrowse-components/pull/3053) Avoid
-    displaying [object Object] on deeply nested data in base feature details
-    ([@cmdcolin](https://github.com/cmdcolin))
+    displaying [object Object] on deeply nested data in base feature details ([@cmdcolin](https://github.com/cmdcolin))
 
 #### :house: Internal
 
@@ -4720,8 +4766,7 @@ yarn run v1.22.18 $ lerna-changelog 2.6.1
     search for tracks with parentheses in tracklist
     ([@cmdcolin](https://github.com/cmdcolin))
   - [#2512](https://github.com/GMOD/jbrowse-components/pull/2512) Fix [object
-    Window] issue in alignment read vs reference dialog
-    ([@cmdcolin](https://github.com/cmdcolin))
+    Window] issue in alignment read vs reference dialog ([@cmdcolin](https://github.com/cmdcolin))
   - [#2499](https://github.com/GMOD/jbrowse-components/pull/2499) Add missing
     dependency to CLI ([@garrettjstevens](https://github.com/garrettjstevens))
 - `core`

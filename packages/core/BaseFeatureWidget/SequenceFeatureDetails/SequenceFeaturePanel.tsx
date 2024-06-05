@@ -39,7 +39,7 @@ const SequenceFeaturePanel = observer(function ({
   const { classes } = useStyles()
   const [shown, setShown] = useState(false)
 
-  return !model ? null : (
+  return model ? (
     <div className={classes.container}>
       <FormControl className={classes.formControl}>
         <Button variant="contained" onClick={() => setShown(!shown)}>
@@ -67,7 +67,7 @@ const SequenceFeaturePanel = observer(function ({
         </Suspense>
       ) : null}
     </div>
-  )
+  ) : null
 })
 
 export default SequenceFeaturePanel

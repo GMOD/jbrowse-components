@@ -3,7 +3,7 @@ import { IconButton, Link, Tooltip } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { DataGrid } from '@mui/x-data-grid'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { format } from 'timeago.js'
+import { formatDistance } from 'date-fns'
 
 // icons
 import EditIcon from '@mui/icons-material/Edit'
@@ -61,13 +61,14 @@ export default function RecentSessionsList({
     const { updated = 0 } = session
     const date = new Date(updated)
     const showDateTooltip = now - date.getTime() < oneDayLength
+
     return {
       id: session.path,
       name: session.name,
       rename: session.name,
       showDateTooltip,
       lastModified: showDateTooltip
-        ? format(updated)
+        ? formatDistance(date, now, { addSuffix: true })
         : date.toLocaleString('en-US'),
       updated: session.updated,
       path: session.path,
@@ -80,10 +81,12 @@ export default function RecentSessionsList({
     ...Object.fromEntries(
       arr.map(e => [
         e,
-        measureGridWidth(
-          rows.map(r => r[e as keyof (typeof rows)[0]]),
-          { stripHTML: true },
-        ) + 20,
+        e === 'path'
+          ? 200
+          : measureGridWidth(
+              rows.map(r => r[e as keyof (typeof rows)[0]]),
+              { stripHTML: true },
+            ) + 20,
       ]),
     ),
   } as Record<string, number | undefined>

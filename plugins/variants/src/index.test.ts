@@ -1,15 +1,10 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import Alignments from '@jbrowse/plugin-alignments'
 import SVG from '@jbrowse/plugin-svg'
 import { getSnapshot } from 'mobx-state-tree'
 import ThisPlugin from '.'
 
 test('plugin in a stock JBrowse', () => {
-  const pluginManager = new PluginManager([
-    new ThisPlugin(),
-    new Alignments(),
-    new SVG(),
-  ])
+  const pluginManager = new PluginManager([new ThisPlugin(), new SVG()])
   pluginManager.createPluggableElements()
   pluginManager.configure()
   expect(() => pluginManager.addPlugin(new ThisPlugin())).toThrow(
