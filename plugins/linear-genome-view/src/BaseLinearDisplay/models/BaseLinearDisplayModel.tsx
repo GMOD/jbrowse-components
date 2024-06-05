@@ -107,15 +107,14 @@ function stateModelFactory() {
        * array of the current block heights rendered
        */
       get currentLayoutBlockHeights() {
-        try {
-          const { blockDefinitions, blockState } = self
-          return blockDefinitions.map(block => {
-            const state = blockState.get(block.key)
-            return state?.blockHeight ?? undefined
-          })
-        } catch (e) {
-          return [undefined]
-        }
+        const { blockDefinitions, blockState } = self
+        const view = getContainingView(self) as LinearGenomeViewModel
+        return view.initialized
+          ? blockDefinitions.contentBlocks.map(block => {
+              const state = blockState.get(block.key)
+              return state?.blockHeight
+            })
+          : []
       },
 
       /**
