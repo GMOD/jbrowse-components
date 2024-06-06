@@ -1,5 +1,4 @@
 import React, { useRef, useEffect, useState } from 'react'
-import normalizeWheel from 'normalize-wheel'
 
 // locals
 import { LinearGenomeViewModel } from '..'
@@ -254,11 +253,10 @@ export function useWheelScroll(
 
     // if ctrl is held down, zoom in with y-scroll
     // else scroll horizontally with x-scroll
-    function onWheel(origEvent: WheelEvent) {
-      const event = normalizeWheel(origEvent)
-      if (origEvent.ctrlKey === true) {
-        origEvent.preventDefault()
-        delta.current += event.pixelY / 500
+    function onWheel(event: WheelEvent) {
+      if (event.ctrlKey === true) {
+        event.preventDefault()
+        delta.current += event.deltaY / 500
         model.setScaleFactor(
           delta.current < 0 ? 1 - delta.current : 1 / (1 + delta.current),
         )
@@ -271,7 +269,7 @@ export function useWheelScroll(
             delta.current > 0
               ? model.bpPerPx * (1 + delta.current)
               : model.bpPerPx / (1 - delta.current),
-            origEvent.clientX - (curr?.getBoundingClientRect().left || 0),
+            event.clientX - (curr?.getBoundingClientRect().left || 0),
           )
           delta.current = 0
         }, 300)
@@ -279,10 +277,10 @@ export function useWheelScroll(
         // this is needed to stop the event from triggering "back button
         // action" on MacOSX etc.  but is a heuristic to avoid preventing the
         // inner-track scroll behavior
-        if (Math.abs(event.pixelX) > Math.abs(2 * event.pixelY)) {
-          origEvent.preventDefault()
+        if (Math.abs(event.deltaX) > Math.abs(2 * event.deltaY)) {
+          event.preventDefault()
         }
-        delta.current += event.pixelX
+        delta.current += event.deltaX
         if (!scheduled.current) {
           // use rAF to make it so multiple event handlers aren't fired per-frame
           // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
