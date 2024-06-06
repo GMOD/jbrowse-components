@@ -46,19 +46,20 @@ function CustomFeatureDetails(props: { feature: SimpleFeatureSerialized }) {
   )
 }
 
-const BreakpointAlignmentsFeatureDetail = observer(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ({ model }: { model: any }) => {
-    const { feature1, feature2 } = JSON.parse(JSON.stringify(model.featureData))
-    return (
-      <Paper data-testid="alignment-side-drawer">
-        <BaseCoreDetails title="Feature 1" feature={feature1} />
-        <BaseCoreDetails title="Feature 2" feature={feature2} />
-        <CustomFeatureDetails feature={feature1} />
-        <CustomFeatureDetails feature={feature2} />
-      </Paper>
-    )
-  },
-)
+const SyntenyFeatureDetail = observer(function ({
+  model,
+}: {
+  model: { featureData: unknown }
+}) {
+  const { feature1, feature2 } = JSON.parse(JSON.stringify(model.featureData))
+  return (
+    <Paper data-testid="alignment-side-drawer">
+      <BaseCoreDetails title="Feature 1" feature={feature1} />
+      <BaseCoreDetails title="Feature 2" feature={feature2} />
+      <CustomFeatureDetails feature={feature1} />
+      <CustomFeatureDetails feature={feature2} />
+    </Paper>
+  )
+})
 
-export default BreakpointAlignmentsFeatureDetail
+export default SyntenyFeatureDetail
