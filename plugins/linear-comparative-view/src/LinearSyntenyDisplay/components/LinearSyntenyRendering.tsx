@@ -66,7 +66,35 @@ const LinearSyntenyRendering = observer(function ({
     [model, height, width],
   )
   const k2 = useCallback(
-    (ref: HTMLCanvasElement) => model.setMainCanvasRef(ref),
+    (ref: HTMLCanvasElement) => {
+      model.setMainCanvasRef(ref)
+      function onWheel(event: WheelEvent) {
+        event.preventDefault()
+        if (Math.abs(event.deltaY) < Math.abs(event.deltaX)) {
+          xOffset.current += event.deltaX
+        }
+        if (currScrollFrame.current === undefined) {
+          currScrollFrame.current = requestAnimationFrame(() => {
+            transaction(() => {
+              for (const v of view.views) {
+                v.horizontalScroll(xOffset.current)
+              }
+              xOffset.current = 0
+              currScrollFrame.current = undefined
+            })
+          })
+        }
+      }
+      if (ref) {
+        ref.addEventListener('wheel', onWheel)
+
+        // this is a react 19-ism to have a cleanup in the ref callback
+        // https://react.dev/blog/2024/04/25/react-19#cleanup-functions-for-refs
+        // note: it warns in earlier versions of react
+        return () => ref.removeEventListener('wheel', onWheel)
+      }
+      return () => {}
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [model, height, width],
   )
@@ -91,22 +119,6 @@ const LinearSyntenyRendering = observer(function ({
       />
       <canvas
         ref={k2}
-        onWheel={event => {
-          if (Math.abs(event.deltaY) < Math.abs(event.deltaX)) {
-            xOffset.current += event.deltaX
-          }
-          if (currScrollFrame.current === undefined) {
-            currScrollFrame.current = requestAnimationFrame(() => {
-              transaction(() => {
-                for (const v of view.views) {
-                  v.horizontalScroll(xOffset.current)
-                }
-                xOffset.current = 0
-                currScrollFrame.current = undefined
-              })
-            })
-          }
-        }}
         onMouseMove={event => {
           if (mouseCurrDownX !== undefined) {
             xOffset.current += mouseCurrDownX - event.clientX
