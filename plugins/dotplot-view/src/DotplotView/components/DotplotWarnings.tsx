@@ -4,7 +4,6 @@ import { observer } from 'mobx-react'
 
 // locals
 import { DotplotViewModel } from '../model'
-
 // lazy components
 const WarningDialog = lazy(() => import('./WarningDialog'))
 
@@ -15,7 +14,8 @@ const DotplotWarnings = observer(function ({
 }) {
   const trackWarnings = model.tracks.filter(t => t.displays[0].warnings?.length)
   const [shown, setShown] = useState(false)
-  return trackWarnings.length ? (
+  const [hide, setHide] = useState(false)
+  return trackWarnings.length && !hide ? (
     <Alert severity="warning">
       Warnings during render{' '}
       <Button onClick={() => setShown(true)}>More info</Button>
@@ -25,6 +25,9 @@ const DotplotWarnings = observer(function ({
           handleClose={() => setShown(false)}
         />
       ) : null}
+      <Button variant="contained" onClick={() => setHide(true)}>
+        Dismiss
+      </Button>
     </Alert>
   ) : null
 })
