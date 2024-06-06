@@ -90,7 +90,7 @@ const LinearSyntenyRendering = observer(function ({
           }, 300)
         } else {
           if (Math.abs(event.pixelY) < Math.abs(event.pixelX)) {
-            xOffset.current += origEvent.deltaX
+            xOffset.current += origEvent.deltaX / 2
           }
           if (currScrollFrame.current === undefined) {
             currScrollFrame.current = requestAnimationFrame(() => {
