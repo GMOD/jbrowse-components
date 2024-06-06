@@ -6,10 +6,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { Dialog, LoadingEllipses } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
-import {
-  getConfAssemblyNames,
-  getTrackAssemblyNames,
-} from '@jbrowse/core/util/tracks'
+import { getConfAssemblyNames } from '@jbrowse/core/util/tracks'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 import copy from 'copy-to-clipboard'

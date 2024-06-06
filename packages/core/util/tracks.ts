@@ -46,8 +46,8 @@ export function getRpcSessionId(thisNode: IAnyStateTreeNode) {
 }
 
 /**
- * given an MST node, get the renderprops of the first parent container that has
- * renderProps
+ * given an MST node, get the renderprops of the first parent container that
+ * has renderProps
  * @param node -
  * @returns renderprops, or empty object if none found
  */
