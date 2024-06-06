@@ -1,7 +1,24 @@
-import { doesIntersect2, Feature } from '@jbrowse/core/util'
+import React from 'react'
+import {
+  assembleLocString,
+  doesIntersect2,
+  getSession,
+  isSessionModelWithWidgets,
+  Feature,
+} from '@jbrowse/core/util'
+
+// locals
+import { getId, MAX_COLOR_RANGE } from '../drawSynteny'
+import { LinearSyntenyDisplayModel } from '../model'
 
 interface Pos {
   offsetPx: number
+}
+
+export interface ClickCoord {
+  clientX: number
+  clientY: number
+  feature: any // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 interface FeatPos {
@@ -139,4 +156,111 @@ export function drawBezierBox(
   ctx.bezierCurveTo(x4, mid, x1, mid, x1, y1)
   ctx.closePath()
   ctx.fill()
+}
+
+export function onSynClick(
+  event: React.MouseEvent,
+  model: LinearSyntenyDisplayModel,
+) {
+  const ref1 = model.clickMapCanvas
+  const ref2 = model.cigarClickMapCanvas
+  if (!ref1 || !ref2) {
+    return
+  }
+  const rect = ref1.getBoundingClientRect()
+  const ctx1 = ref1.getContext('2d')
+  const ctx2 = ref2.getContext('2d')
+  if (!ctx1 || !ctx2) {
+    return
+  }
+  const x = event.clientX - rect.left
+  const y = event.clientY - rect.top
+  const [r1, g1, b1] = ctx1.getImageData(x, y, 1, 1).data
+  const unitMultiplier = Math.floor(MAX_COLOR_RANGE / model.numFeats)
+  const id = getId(r1, g1, b1, unitMultiplier)
+  const feat = model.featPositions[id]
+  if (feat) {
+    const { f } = feat
+    model.setClickId(f.id())
+    const session = getSession(model)
+    if (isSessionModelWithWidgets(session)) {
+      session.showWidget(
+        session.addWidget('SyntenyFeatureWidget', 'syntenyFeature', {
+          featureData: {
+            feature1: f.toJSON(),
+            feature2: f.get('mate'),
+          },
+        }),
+      )
+    }
+  }
+  return feat
+}
+
+export function onSynContextClick(
+  event: React.MouseEvent,
+  model: LinearSyntenyDisplayModel,
+  setAnchorEl: (arg: ClickCoord) => void,
+) {
+  event.preventDefault()
+  const ref1 = model.clickMapCanvas
+  const ref2 = model.cigarClickMapCanvas
+  if (!ref1 || !ref2) {
+    return
+  }
+  const rect = ref1.getBoundingClientRect()
+  const ctx1 = ref1.getContext('2d')
+  const ctx2 = ref2.getContext('2d')
+  if (!ctx1 || !ctx2) {
+    return
+  }
+  const { clientX, clientY } = event
+  const x = clientX - rect.left
+  const y = clientY - rect.top
+  const [r1, g1, b1] = ctx1.getImageData(x, y, 1, 1).data
+  const unitMultiplier = Math.floor(MAX_COLOR_RANGE / model.numFeats)
+  const id = getId(r1, g1, b1, unitMultiplier)
+  const f = model.featPositions[id]
+  if (f) {
+    model.setClickId(f.f.id())
+    setAnchorEl({ clientX, clientY, feature: f })
+  }
+}
+
+export function getTooltip(f: Feature, cigarOp?: string, cigarOpLen?: string) {
+  // @ts-expect-error
+  const f1 = f.toJSON() as {
+    refName: string
+    start: number
+    end: number
+    strand?: number
+    assemblyName: string
+    identity?: number
+    name?: string
+    mate: {
+      start: number
+      end: number
+      refName: string
+      name: string
+    }
+  }
+  const f2 = f1.mate
+  const l1 = f1.end - f1.start
+  const l2 = f2.end - f2.start
+  const identity = f1.identity
+  const n1 = f1.name
+  const n2 = f2.name
+  return [
+    `Loc1: ${assembleLocString(f1)}`,
+    `Loc2: ${assembleLocString(f2)}`,
+    `Inverted: ${f1.strand === -1}`,
+    `Query len: ${l1.toLocaleString('en-US')}`,
+    `Target len: ${l2.toLocaleString('en-US')}`,
+    identity ? `Identity: ${identity.toPrecision(2)}` : '',
+    cigarOp ? `CIGAR operator: ${cigarOp}${cigarOpLen}` : '',
+    n1 ? `Name 1: ${n1}` : '',
+    n2 ? `Name 1: ${n2}` : '',
+  ]
+    .filter(f => !!f)
+    .join('<br/>')
 }
