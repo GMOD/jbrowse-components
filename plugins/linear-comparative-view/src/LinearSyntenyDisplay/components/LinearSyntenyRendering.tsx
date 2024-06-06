@@ -1,5 +1,4 @@
 import React, { useState, useCallback, useRef } from 'react'
-import normalizeWheel from 'normalize-wheel'
 import { observer } from 'mobx-react'
 import { getContainingView } from '@jbrowse/core/util'
 import { transaction } from 'mobx'
@@ -63,11 +62,10 @@ const LinearSyntenyRendering = observer(function ({
   const k2 = useCallback(
     (ref: HTMLCanvasElement) => {
       model.setMainCanvasRef(ref)
-      function onWheel(origEvent: WheelEvent) {
-        const event = normalizeWheel(origEvent)
-        origEvent.preventDefault()
-        if (origEvent.ctrlKey === true) {
-          delta.current += event.pixelY / 500
+      function onWheel(event: WheelEvent) {
+        event.preventDefault()
+        if (event.ctrlKey === true) {
+          delta.current += event.deltaY / 500
           for (const v of view.views) {
             v.setScaleFactor(
               delta.current < 0 ? 1 - delta.current : 1 / (1 + delta.current),
@@ -83,14 +81,14 @@ const LinearSyntenyRendering = observer(function ({
                 delta.current > 0
                   ? v.bpPerPx * (1 + delta.current)
                   : v.bpPerPx / (1 - delta.current),
-                origEvent.clientX - (ref?.getBoundingClientRect().left || 0),
+                event.clientX - (ref?.getBoundingClientRect().left || 0),
               )
             }
             delta.current = 0
           }, 300)
         } else {
-          if (Math.abs(event.pixelY) < Math.abs(event.pixelX)) {
-            xOffset.current += origEvent.deltaX / 2
+          if (Math.abs(event.deltaY) < Math.abs(event.deltaX)) {
+            xOffset.current += event.deltaX / 2
           }
           if (currScrollFrame.current === undefined) {
             currScrollFrame.current = requestAnimationFrame(() => {
