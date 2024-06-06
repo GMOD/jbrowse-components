@@ -25,11 +25,12 @@ const useStyles = makeStyles()({
   rel: {
     position: 'relative',
   },
-  abs: {
+  mouseoverCanvas: {
     position: 'absolute',
-  },
-  none: {
     pointEvents: 'none',
+  },
+  mainCanvas: {
+    position: 'absolute',
   },
 })
 
@@ -38,11 +39,10 @@ const LinearSyntenyRendering = observer(function ({
 }: {
   model: LinearSyntenyDisplayModel
 }) {
-  const { classes, cx } = useStyles()
-  const xOffset = useRef<number>(0)
+  const { classes } = useStyles()
+  const xOffset = useRef(0)
   const currScrollFrame = useRef<number>()
   const view = getContainingView(model) as LinearSyntenyViewModel
-  const height = view.middleComparativeHeight
   const width = view.width
   const delta = useRef(0)
   const timeout = useRef<Timer>()
@@ -52,7 +52,7 @@ const LinearSyntenyRendering = observer(function ({
   const [mouseCurrDownX, setMouseCurrDownX] = useState<number>()
   const [mouseInitialDownX, setMouseInitialDownX] = useState<number>()
   const [currY, setCurrY] = useState<number>()
-  const { mouseoverId } = model
+  const { mouseoverId, height } = model
 
   // these useCallbacks avoid new refs from being created on any mouseover,
   // etc.
@@ -144,7 +144,7 @@ const LinearSyntenyRendering = observer(function ({
         ref={k1}
         width={width}
         height={height}
-        className={cx(classes.abs, classes.none)}
+        className={classes.mouseoverCanvas}
       />
       <canvas
         ref={k2}
@@ -217,7 +217,7 @@ const LinearSyntenyRendering = observer(function ({
           onSynContextClick(evt, model, setAnchorEl)
         }}
         data-testid="synteny_canvas"
-        className={classes.abs}
+        className={classes.mainCanvas}
         width={width}
         height={height}
       />

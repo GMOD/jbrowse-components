@@ -1,4 +1,4 @@
-import { addDisposer, getSnapshot } from 'mobx-state-tree'
+import { addDisposer, getParent, getSnapshot } from 'mobx-state-tree'
 
 import { Feature, getContainingView, getSession } from '@jbrowse/core/util'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
@@ -39,7 +39,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         return
       }
 
-      const height = view.middleComparativeHeight
+      const height = self.height
       const width = view.width
       ctx1.clearRect(0, 0, width, height)
       ctx3.clearRect(0, 0, width, height)
@@ -86,6 +86,8 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         }
         const { assemblyManager } = getSession(self)
         const view = getContainingView(self) as LSV
+        // @ts-expect-error
+        const level = getParent(self, 4).level
         const viewSnaps = view.views.map(view => ({
           ...getSnapshot(view),
           width: view.width,
@@ -113,8 +115,8 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           const r2 = mate.refName
           const ref1 = a1?.getCanonicalRefName(r1) || r1
           const ref2 = a2?.getCanonicalRefName(r2) || r2
-          const v1 = viewSnaps[0]!
-          const v2 = viewSnaps[1]!
+          const v1 = viewSnaps[level]!
+          const v2 = viewSnaps[level + 1]!
           const p11 = bpToPx({ self: v1, refName: ref1, coord: f1s })
           const p12 = bpToPx({ self: v1, refName: ref1, coord: f1e })
           const p21 = bpToPx({ self: v2, refName: ref2, coord: f2s })

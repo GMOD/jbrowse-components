@@ -53,7 +53,7 @@ const ScalebarRefNameLabels = observer(function ({ model }: { model: LGV }) {
           type,
           refName,
         } = block
-        const last = (index = lastLeftBlock)
+        const last = index === lastLeftBlock
         return type === 'ContentBlock' &&
           (isLeftEndOfDisplayedRegion || last) ? (
           <Typography

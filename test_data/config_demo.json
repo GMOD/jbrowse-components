@@ -4327,6 +4327,26 @@
       "assemblyNames": ["chm13v2.0"]
     },
     {
+      "type": "FeatureTrack",
+      "trackId": "hprc-v1.0-minigraph-grch38.bb.bed",
+      "name": "hprc-v1.0-minigraph-grch38.bb.bed",
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": {
+          "uri": "hprc-v1.0-minigraph-grch38.bb.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "hprc-v1.0-minigraph-grch38.bb.bed.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["hg38"]
+    },
+    {
       "type": "VariantTrack",
       "trackId": "NA12878_LINE1",
       "name": "NA12878_LINE1",
