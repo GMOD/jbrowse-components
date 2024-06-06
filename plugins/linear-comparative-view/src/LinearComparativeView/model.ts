@@ -77,7 +77,7 @@ function stateModelFactory(pluginManager: PluginManager) {
          * #property
          */
         tracks: types.array(
-          pluginManager.pluggableMstType('track', 'stateModel'),
+          types.array(pluginManager.pluggableMstType('track', 'stateModel')),
         ),
         /**
          * #property
@@ -90,8 +90,8 @@ function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
-         * this represents tracks specific to this view specifically used
-         * for read vs ref dotplots where this track would not really apply
+         * this represents tracks specific to this view specifically used for
+         * read vs ref dotplots where this track would not really apply
          * elsewhere
          */
         viewTrackConfigs: types.array(
@@ -243,10 +243,10 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      toggleTrack(trackId: string) {
-        const hiddenCount = this.hideTrack(trackId)
+      toggleTrack(trackId: string, level = 0) {
+        const hiddenCount = this.hideTrack(trackId, level)
         if (!hiddenCount) {
-          this.showTrack(trackId)
+          this.showTrack(trackId, level)
           return true
         }
         return false
@@ -255,7 +255,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      showTrack(trackId: string, initialSnapshot = {}) {
+      showTrack(trackId: string, level = 0, initialSnapshot = {}) {
         const schema = pluginManager.pluggableConfigSchemaType('track')
         const configuration = resolveIdentifier(schema, getRoot(self), trackId)
         if (!configuration) {
@@ -277,7 +277,7 @@ function stateModelFactory(pluginManager: PluginManager) {
             `could not find a compatible display for view type ${self.type}`,
           )
         }
-        self.tracks.push(
+        self.tracks[level].push(
           trackType.stateModel.create({
             ...initialSnapshot,
             type: configuration.type,
@@ -290,11 +290,15 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      hideTrack(trackId: string) {
+      hideTrack(trackId: string, level = 0) {
         const schema = pluginManager.pluggableConfigSchemaType('track')
         const config = resolveIdentifier(schema, getRoot(self), trackId)
-        const shownTracks = self.tracks.filter(t => t.configuration === config)
-        transaction(() => shownTracks.forEach(t => self.tracks.remove(t)))
+        const shownTracks = self.tracks[level].filter(
+          t => t.configuration === config,
+        )
+        transaction(() =>
+          shownTracks.forEach(t => self.tracks[level].remove(t)),
+        )
         return shownTracks.length
       },
       /**
