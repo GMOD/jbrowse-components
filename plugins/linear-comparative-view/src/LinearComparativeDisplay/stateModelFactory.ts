@@ -3,7 +3,7 @@ import {
   ConfigurationReference,
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
-import { types, getSnapshot, Instance } from 'mobx-state-tree'
+import { types, getSnapshot, Instance, getParent } from 'mobx-state-tree'
 import {
   dedupe,
   Feature,
@@ -34,10 +34,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         configuration: ConfigurationReference(configSchema),
-        /**
-         * #property
-         */
-        height: 100,
       }),
     )
     .volatile((/* self */) => ({
@@ -165,20 +161,22 @@ function renderBlockData(self: LinearComparativeDisplay) {
   const { rpcManager } = getSession(self)
   const display = self
 
-  // Alternative to readConfObject(config) is below used because renderProps is
-  // something under our control.  Compare to serverSideRenderedBlock
+  // Alternative to readConfObject(config) is below used because
+  // renderProps is something under our control.  Compare to
+  // serverSideRenderedBlock
   readConfObject(self.configuration)
 
   const { adapterConfig } = self
   const parent = getContainingView(self) as LinearComparativeViewModel
   const sessionId = getRpcSessionId(self)
   getSnapshot(parent)
-
   return parent.initialized
     ? {
         rpcManager,
         renderProps: {
           ...display.renderProps(),
+          // @ts-expect-error
+          level: getParent(self, 4).level as number,
           view: parent,
           adapterConfig,
           sessionId,
@@ -195,11 +193,10 @@ async function renderBlockEffect(props: ReturnType<typeof renderBlockData>) {
   }
 
   const { rpcManager, renderProps } = props
-  const { adapterConfig } = renderProps
-  const view0 = renderProps.view.views[0]
-
+  const { adapterConfig, level } = renderProps
+  const view = renderProps.view.views[level]
   const features = (await rpcManager.call('getFeats', 'CoreGetFeatures', {
-    regions: view0.staticBlocks.contentBlocks,
+    regions: view.staticBlocks.contentBlocks,
     sessionId: 'getFeats',
     adapterConfig,
   })) as Feature[]

@@ -64,15 +64,24 @@ function stateModelFactory(pluginManager: PluginManager) {
          * #property
          */
         interactToggled: false,
+
         /**
          * #property
          */
-        middleComparativeHeight: 100,
-        /**
-         * #property
-         */
-        tracks: types.array(
-          pluginManager.pluggableMstType('track', 'stateModel'),
+        levels: types.array(
+          types
+            .model({
+              tracks: types.array(
+                pluginManager.pluggableMstType('track', 'stateModel'),
+              ),
+              height: 100,
+              level: types.number,
+            })
+            .actions(self => ({
+              setHeight(n: number) {
+                self.height = n
+              },
+            })),
         ),
         /**
          * #property
@@ -101,12 +110,6 @@ function stateModelFactory(pluginManager: PluginManager) {
       width: undefined as number | undefined,
     }))
     .views(self => ({
-      /**
-       * #getter
-       */
-      get highResolutionScaling() {
-        return 2
-      },
       /**
        * #getter
        */
@@ -188,9 +191,9 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setMiddleComparativeHeight(n: number) {
-        self.middleComparativeHeight = n
-        return self.middleComparativeHeight
+      setLevelHeight(n: number, level = 0) {
+        self.levels[level].setHeight(n)
+        return self.levels[level].height
       },
 
       /**
@@ -216,10 +219,10 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      toggleTrack(trackId: string) {
-        const hiddenCount = this.hideTrack(trackId)
+      toggleTrack(trackId: string, level = 0) {
+        const hiddenCount = this.hideTrack(trackId, level)
         if (!hiddenCount) {
-          this.showTrack(trackId)
+          this.showTrack(trackId, level)
           return true
         }
         return false
@@ -228,7 +231,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      showTrack(trackId: string, initialSnapshot = {}) {
+      showTrack(trackId: string, level = 0, initialSnapshot = {}) {
         const schema = pluginManager.pluggableConfigSchemaType('track')
         const configuration = resolveIdentifier(schema, getRoot(self), trackId)
         if (!configuration) {
@@ -250,12 +253,20 @@ function stateModelFactory(pluginManager: PluginManager) {
             `could not find a compatible display for view type ${self.type}`,
           )
         }
-        self.tracks.push(
+        if (!self.levels[level]) {
+          self.levels[level] = cast({ level })
+        }
+        self.levels[level].tracks.push(
           trackType.stateModel.create({
             ...initialSnapshot,
             type: configuration.type,
             configuration,
-            displays: [{ type: displayConf.type, configuration: displayConf }],
+            displays: [
+              {
+                type: displayConf.type,
+                configuration: displayConf,
+              },
+            ],
           }),
         )
       },
@@ -263,11 +274,15 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      hideTrack(trackId: string) {
+      hideTrack(trackId: string, level = 0) {
         const schema = pluginManager.pluggableConfigSchemaType('track')
         const config = resolveIdentifier(schema, getRoot(self), trackId)
-        const shownTracks = self.tracks.filter(t => t.configuration === config)
-        transaction(() => shownTracks.forEach(t => self.tracks.remove(t)))
+        const shownTracks = self.levels[level].tracks.filter(
+          t => t.configuration === config,
+        )
+        transaction(() =>
+          shownTracks.forEach(t => self.levels[level].tracks.remove(t)),
+        )
         return shownTracks.length
       },
       /**
@@ -289,7 +304,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       clearView() {
         self.views = cast([])
-        self.tracks = cast([])
+        self.levels = cast([])
       },
     }))
     .views(() => ({
@@ -360,6 +375,14 @@ function stateModelFactory(pluginManager: PluginManager) {
         )
       },
     }))
+    .preProcessSnapshot(snap => {
+      // @ts-expect-error
+      const { tracks, levels = [{ tracks, level: 0 }], ...rest } = snap || {}
+      return {
+        ...rest,
+        levels,
+      }
+    })
 }
 
 export type LinearComparativeViewStateModel = ReturnType<

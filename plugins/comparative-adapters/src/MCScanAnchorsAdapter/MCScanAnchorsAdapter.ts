@@ -73,14 +73,31 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
   }
 
   async hasDataForRefName() {
-    // determining this properly is basically a call to getFeatures
-    // so is not really that important, and has to be true or else
-    // getFeatures is never called (BaseFeatureDataAdapter filters it out)
+    // determining this properly is basically a call to getFeatures so is not
+    // really that important, and has to be true or else getFeatures is never
+    // called (BaseFeatureDataAdapter filters it out)
     return true
   }
 
-  async getRefNames() {
-    // we cannot determine this accurately
+  getAssemblyNames() {
+    const assemblyNames = this.getConf('assemblyNames') as string[]
+    return assemblyNames
+  }
+
+  async getRefNames(opts: BaseOptions = {}) {
+    // @ts-expect-error
+    const r1 = opts.regions?.[0].assemblyName
+    const { feats } = await this.setup(opts)
+
+    const idx = this.getAssemblyNames().indexOf(r1)
+    if (idx !== -1) {
+      const set = new Set<string>()
+      for (const feat of feats) {
+        set.add(idx === 0 ? feat[0].refName : feat[1].refName)
+      }
+      return [...set]
+    }
+    console.warn('Unable to do ref renaming on adapter')
     return []
   }
 
