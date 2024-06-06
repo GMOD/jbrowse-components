@@ -12,11 +12,15 @@ import {
 export function getTrackAssemblyNames(
   track: IAnyStateTreeNode & { configuration: AnyConfigurationModel },
 ) {
-  const trackAssemblyNames = getConf(track, 'assemblyNames') as string[]
+  return getConfAssemblyNames(track.configuration)
+}
+
+export function getConfAssemblyNames(conf: AnyConfigurationModel) {
+  const trackAssemblyNames = readConfObject(conf, 'assemblyNames') as string[]
   if (!trackAssemblyNames) {
     // Check if it's an assembly sequence track
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const parent = getParent<any>(track.configuration)
+    const parent = getParent<any>(conf)
     if ('sequence' in parent) {
       return [readConfObject(parent, 'name') as string]
     }
