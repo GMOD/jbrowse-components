@@ -184,9 +184,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setAdjustTrackLayoutHeightSetting(
-        setting: 'static' | 'dynamic' | 'bound',
-      ) {
+      setAdjustTrackLayoutHeightSetting(setting: 'static' | 'dynamic') {
         self.adjustTrackLayoutHeight = setting
       },
     }))
@@ -268,13 +266,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   checked: self.adjustTrackLayoutHeightSetting === 'dynamic',
                   onClick: () =>
                     self.setAdjustTrackLayoutHeightSetting('dynamic'),
-                },
-                {
-                  label: 'Bound (auto-adjust up to configured height)',
-                  type: 'radio',
-                  checked: self.adjustTrackLayoutHeightSetting === 'bound',
-                  onClick: () =>
-                    self.setAdjustTrackLayoutHeightSetting('bound'),
                 },
               ],
             },

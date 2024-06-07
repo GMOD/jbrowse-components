@@ -167,7 +167,6 @@ const SvgFeatureRenderer = ConfigurationSchema(
       model: types.enumeration('adjustTrackLayoutHeight', [
         'static',
         'dynamic',
-        'bound',
       ]),
     },
 

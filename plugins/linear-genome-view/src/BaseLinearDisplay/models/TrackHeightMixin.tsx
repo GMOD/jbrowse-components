@@ -1,6 +1,6 @@
 import { addDisposer, types } from 'mobx-state-tree'
 import { getConf } from '@jbrowse/core/configuration'
-import { getSession, max, min } from '@jbrowse/core/util'
+import { getSession, max } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
 
 const minDisplayHeight = 20
@@ -39,16 +39,6 @@ export default function TrackHeightMixin() {
         const { adjustTrackLayoutHeightSetting } = self
 
         return adjustTrackLayoutHeightSetting
-      },
-      /**
-       * #getter
-       * the bound height between the rendered blocks and the configured height
-       */
-      get boundLayoutBlockHeight() {
-        // @ts-expect-error
-        const confHeight = getConf(self, 'height') as number
-        // @ts-expect-error
-        return min([max(self.currentLayoutBlockHeights)], confHeight)
       },
       /**
        * #getter
@@ -112,9 +102,6 @@ export default function TrackHeightMixin() {
             // @ts-expect-error
             if (self.allLayoutBlocksRendered) {
               switch (self.adjustTrackLayoutHeightSetting) {
-                case 'bound':
-                  self.setHeight(self.boundLayoutBlockHeight)
-                  break
                 case 'dynamic':
                   self.setHeight(self.maxLayoutBlockHeight)
                   break
