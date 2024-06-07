@@ -58,6 +58,12 @@ const TrackRenderingContainer = observer(function ({
   const trackId = getConf(track, 'trackId')
   const ref = useRef<HTMLDivElement>(null)
   const minimized = track.minimized
+  const dynamicResize =
+    display.adjustTrackLayoutHeightSetting === 'static'
+      ? false
+      : display?.PileupDisplay.adjustTrackLayoutHeightSetting === 'static'
+        ? false
+        : true
 
   useEffect(() => {
     if (ref.current) {
@@ -71,9 +77,7 @@ const TrackRenderingContainer = observer(function ({
   return (
     <div
       className={
-        display.adjustTrackLayoutHeight !== 'static'
-          ? classes.dynamicResize
-          : classes.trackRenderingContainer
+        dynamicResize ? classes.dynamicResize : classes.trackRenderingContainer
       }
       style={{ height: minimized ? 20 : height }}
       onScroll={evt => display.setScrollTop(evt.currentTarget.scrollTop)}

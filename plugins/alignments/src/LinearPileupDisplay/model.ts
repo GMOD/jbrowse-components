@@ -57,7 +57,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         mismatchAlpha: types.maybe(types.boolean),
-
+        /**
+         * #property
+         * setting to auto-adjust the layout height of tracks
+         */
+        adjustTrackLayoutHeight: types.optional(types.string, 'static'),
         /**
          * #property
          */
@@ -160,6 +164,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       setFeatureHeight(n?: number) {
         self.sortReady = false
         self.featureHeight = n
+      },
+      /**
+       * #action
+       */
+      setAdjustTrackLayoutHeightSetting(setting: 'static' | 'dynamic') {
+        self.adjustTrackLayoutHeight = setting
       },
     }))
     .actions(self => {

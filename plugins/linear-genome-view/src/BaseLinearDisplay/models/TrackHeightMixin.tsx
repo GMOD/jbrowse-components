@@ -36,9 +36,9 @@ export default function TrackHeightMixin() {
        */
       get adjustTrackLayoutHeightSetting() {
         // @ts-ignore
-        const { adjustTrackLayoutHeightSetting } = self
+        const { adjustTrackLayoutHeight } = self
 
-        return adjustTrackLayoutHeightSetting
+        return adjustTrackLayoutHeight
       },
       /**
        * #getter
