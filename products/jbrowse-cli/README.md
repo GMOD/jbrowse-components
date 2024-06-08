@@ -46,20 +46,19 @@ It is likely preferable in most cases to install the tools globally with
 ## Commands
 
 <!-- commands -->
-
-- [`jbrowse add-assembly SEQUENCE`](#jbrowse-add-assembly-sequence)
-- [`jbrowse add-connection CONNECTIONURLORPATH`](#jbrowse-add-connection-connectionurlorpath)
-- [`jbrowse add-track TRACK`](#jbrowse-add-track-track)
-- [`jbrowse add-track-json TRACK`](#jbrowse-add-track-json-track)
-- [`jbrowse admin-server`](#jbrowse-admin-server)
-- [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
-- [`jbrowse help [COMMAND]`](#jbrowse-help-command)
-- [`jbrowse make-pif FILE`](#jbrowse-make-pif-file)
-- [`jbrowse remove-track TRACK`](#jbrowse-remove-track-track)
-- [`jbrowse set-default-session`](#jbrowse-set-default-session)
-- [`jbrowse sort-gff FILE`](#jbrowse-sort-gff-file)
-- [`jbrowse text-index`](#jbrowse-text-index)
-- [`jbrowse upgrade [LOCALPATH]`](#jbrowse-upgrade-localpath)
+* [`jbrowse add-assembly SEQUENCE`](#jbrowse-add-assembly-sequence)
+* [`jbrowse add-connection CONNECTIONURLORPATH`](#jbrowse-add-connection-connectionurlorpath)
+* [`jbrowse add-track TRACK`](#jbrowse-add-track-track)
+* [`jbrowse add-track-json TRACK`](#jbrowse-add-track-json-track)
+* [`jbrowse admin-server`](#jbrowse-admin-server)
+* [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
+* [`jbrowse help [COMMAND]`](#jbrowse-help-command)
+* [`jbrowse make-pif FILE`](#jbrowse-make-pif-file)
+* [`jbrowse remove-track TRACK`](#jbrowse-remove-track-track)
+* [`jbrowse set-default-session`](#jbrowse-set-default-session)
+* [`jbrowse sort-gff FILE`](#jbrowse-sort-gff-file)
+* [`jbrowse text-index`](#jbrowse-text-index)
+* [`jbrowse upgrade [LOCALPATH]`](#jbrowse-upgrade-localpath)
 
 ## `jbrowse add-assembly SEQUENCE`
 
@@ -67,9 +66,9 @@ Add an assembly to a JBrowse 2 configuration
 
 ```
 USAGE
-  $ jbrowse add-assembly SEQUENCE [-t indexedFasta|bgzipFasta|twoBit|chromSizes|custom] [-n <value>] [-a <value>]
-    [--displayName <value>] [--faiLocation <value>] [--gziLocation <value>] [--refNameAliasesType aliases|custom
-    --refNameAliases <value>] [--refNameColors <value>] [--target <value>] [--out <value>] [-h] [-l
+  $ jbrowse add-assembly SEQUENCE [-t indexedFasta|bgzipFasta|twoBit|chromSizes|custom] [-n <value>] [-a
+    <value>...] [--displayName <value>] [--faiLocation <value>] [--gziLocation <value>] [--refNameAliasesType
+    aliases|custom --refNameAliases <value>] [--refNameColors <value>] [--target <value>] [--out <value>] [-h] [-l
     copy|symlink|move|inPlace] [--skipCheck] [--overwrite] [-f]
 
 ARGUMENTS
@@ -204,8 +203,7 @@ EXAMPLES
   $ jbrowse add-assembly myfile.fa.gz --load copy
 ```
 
-_See code:
-[src/commands/add-assembly.ts](https://github.com/GMOD/jbrowse-components/blob/v2.11.2/products/jbrowse-cli/src/commands/add-assembly.ts)_
+_See code: [src/commands/add-assembly.ts](https://github.com/GMOD/jbrowse-components/blob/v2.11.2/products/jbrowse-cli/src/commands/add-assembly.ts)_
 
 ## `jbrowse add-connection CONNECTIONURLORPATH`
 
@@ -255,8 +253,7 @@ EXAMPLES
   $ jbrowse add-connection https://mysite.com/path/to/hub.txt --connectionId newId --name newName --target /path/to/jb2/installation/config.json
 ```
 
-_See code:
-[src/commands/add-connection.ts](https://github.com/GMOD/jbrowse-components/blob/v2.11.2/products/jbrowse-cli/src/commands/add-connection.ts)_
+_See code: [src/commands/add-connection.ts](https://github.com/GMOD/jbrowse-components/blob/v2.11.2/products/jbrowse-cli/src/commands/add-connection.ts)_
 
 ## `jbrowse add-track TRACK`
 
@@ -336,13 +333,11 @@ EXAMPLES
   $ jbrowse add-track /url/relative/path.bam --load inPlace
 ```
 
-_See code:
-[src/commands/add-track.ts](https://github.com/GMOD/jbrowse-components/blob/v2.11.2/products/jbrowse-cli/src/commands/add-track.ts)_
+_See code: [src/commands/add-track.ts](https://github.com/GMOD/jbrowse-components/blob/v2.11.2/products/jbrowse-cli/src/commands/add-track.ts)_
 
 ## `jbrowse add-track-json TRACK`
 
-Add a track configuration directly from a JSON hunk to the JBrowse 2
-configuration
+Add a track configuration directly from a JSON hunk to the JBrowse 2 configuration
 
 ```
 USAGE
@@ -366,8 +361,7 @@ EXAMPLES
   $ jbrowse add-track-json track.json --update
 ```
 
-_See code:
-[src/commands/add-track-json.ts](https://github.com/GMOD/jbrowse-components/blob/v2.11.2/products/jbrowse-cli/src/commands/add-track-json.ts)_
+_See code: [src/commands/add-track-json.ts](https://github.com/GMOD/jbrowse-components/blob/v2.11.2/products/jbrowse-cli/src/commands/add-track-json.ts)_
 
 ## `jbrowse admin-server`
 
@@ -398,8 +392,7 @@ EXAMPLES
   $ jbrowse admin-server -p 8888
 ```
 
-_See code:
-[src/commands/admin-server.ts](https://github.com/GMOD/jbrowse-components/blob/v2.11.2/products/jbrowse-cli/src/commands/admin-server.ts)_
+_See code: [src/commands/admin-server.ts](https://github.com/GMOD/jbrowse-components/blob/v2.11.2/products/jbrowse-cli/src/commands/admin-server.ts)_
 
 ## `jbrowse create LOCALPATH`
 
@@ -455,8 +448,7 @@ EXAMPLES
   $ jbrowse create --listVersions
 ```
 
-_See code:
-[src/commands/create.ts](https://github.com/GMOD/jbrowse-components/blob/v2.11.2/products/jbrowse-cli/src/commands/create.ts)_
+_See code: [src/commands/create.ts](https://github.com/GMOD/jbrowse-components/blob/v2.11.2/products/jbrowse-cli/src/commands/create.ts)_
 
 ## `jbrowse help [COMMAND]`
 
@@ -476,8 +468,7 @@ DESCRIPTION
   Display help for jbrowse.
 ```
 
-_See code:
-[@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.0.22/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.2.0/src/commands/help.ts)_
 
 ## `jbrowse make-pif FILE`
 
@@ -506,13 +497,11 @@ EXAMPLES
   $ jbrowse pif input.paf --out output.pif.gz # specify output file, creates output.pif.gz.tbi also
 ```
 
-_See code:
-[src/commands/make-pif.ts](https://github.com/GMOD/jbrowse-components/blob/v2.11.2/products/jbrowse-cli/src/commands/make-pif.ts)_
+_See code: [src/commands/make-pif.ts](https://github.com/GMOD/jbrowse-components/blob/v2.11.2/products/jbrowse-cli/src/commands/make-pif.ts)_
 
 ## `jbrowse remove-track TRACK`
 
-Remove a track configuration from a JBrowse 2 configuration. Be aware that this
-can cause crashes in saved sessions that refer to this track!
+Remove a track configuration from a JBrowse 2 configuration. Be aware that this can cause crashes in saved sessions that refer to this track!
 
 ```
 USAGE
@@ -534,8 +523,7 @@ EXAMPLES
   $ jbrowse remove-track-json trackId
 ```
 
-_See code:
-[src/commands/remove-track.ts](https://github.com/GMOD/jbrowse-components/blob/v2.11.2/products/jbrowse-cli/src/commands/remove-track.ts)_
+_See code: [src/commands/remove-track.ts](https://github.com/GMOD/jbrowse-components/blob/v2.11.2/products/jbrowse-cli/src/commands/remove-track.ts)_
 
 ## `jbrowse set-default-session`
 
@@ -567,14 +555,11 @@ EXAMPLES
   $ jbrowse set-default-session --currentSession # Prints out current default session
 ```
 
-_See code:
-[src/commands/set-default-session.ts](https://github.com/GMOD/jbrowse-components/blob/v2.11.2/products/jbrowse-cli/src/commands/set-default-session.ts)_
+_See code: [src/commands/set-default-session.ts](https://github.com/GMOD/jbrowse-components/blob/v2.11.2/products/jbrowse-cli/src/commands/set-default-session.ts)_
 
 ## `jbrowse sort-gff FILE`
 
-Helper utility to sort GFF files for tabix. Moves all lines starting with # to
-the top of the file, and sort by refname and start position using unix utilities
-sort and grep
+Helper utility to sort GFF files for tabix. Moves all lines starting with # to the top of the file, and sort by refname and start position using unix utilities sort and grep
 
 ```
 USAGE
@@ -598,8 +583,7 @@ EXAMPLES
   $ tabix sorted.gff.gz
 ```
 
-_See code:
-[src/commands/sort-gff.ts](https://github.com/GMOD/jbrowse-components/blob/v2.11.2/products/jbrowse-cli/src/commands/sort-gff.ts)_
+_See code: [src/commands/sort-gff.ts](https://github.com/GMOD/jbrowse-components/blob/v2.11.2/products/jbrowse-cli/src/commands/sort-gff.ts)_
 
 ## `jbrowse text-index`
 
@@ -608,8 +592,8 @@ Make a text-indexing file for any given track(s).
 ```
 USAGE
   $ jbrowse text-index [-h] [--tracks <value>] [--target <value>] [--out <value>] [--attributes <value>] [-a
-    <value>] [--force] [-q] [--perTrack] [--exclude <value>] [--prefixSize <value>] [--file <value>] [--fileId <value>]
-    [--dryrun]
+    <value>] [--force] [-q] [--perTrack] [--exclude <value>] [--prefixSize <value>] [--file <value>...] [--fileId
+    <value>...] [--dryrun]
 
 FLAGS
   -a, --assemblies=<value>  Specify the assembl(ies) to create an index for. If unspecified, creates an index for each
@@ -665,8 +649,7 @@ EXAMPLES
   $ jbrowse text-index --file myfile.gff3.gz --file myfile.vcfgz --out indexes
 ```
 
-_See code:
-[src/commands/text-index.ts](https://github.com/GMOD/jbrowse-components/blob/v2.11.2/products/jbrowse-cli/src/commands/text-index.ts)_
+_See code: [src/commands/text-index.ts](https://github.com/GMOD/jbrowse-components/blob/v2.11.2/products/jbrowse-cli/src/commands/text-index.ts)_
 
 ## `jbrowse upgrade [LOCALPATH]`
 
@@ -728,9 +711,7 @@ EXAMPLES
   $ jbrowse upgrade --nightly
 ```
 
-_See code:
-[src/commands/upgrade.ts](https://github.com/GMOD/jbrowse-components/blob/v2.11.2/products/jbrowse-cli/src/commands/upgrade.ts)_
-
+_See code: [src/commands/upgrade.ts](https://github.com/GMOD/jbrowse-components/blob/v2.11.2/products/jbrowse-cli/src/commands/upgrade.ts)_
 <!-- commandsstop -->
 
 ## Debugging

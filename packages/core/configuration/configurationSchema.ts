@@ -175,14 +175,15 @@ function makeConfigurationSchemaModel<
         }
         const newSchema = isStateTreeNode(data)
           ? data
-          : modelDefinition[slotName].create(data)
+          : // @ts-expect-error
+            modelDefinition[slotName].create(data)
         self[slotName] = newSchema
         return newSchema
       },
     }))
 
   if (Object.keys(volatileConstants).length) {
-    completeModel = completeModel.volatile((/* self */) => volatileConstants)
+    completeModel = completeModel.volatile(() => volatileConstants)
   }
   if (options.actions) {
     completeModel = completeModel.actions(options.actions)

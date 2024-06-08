@@ -4,7 +4,7 @@ import {
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { SimpleFeature, Feature, min, max } from '@jbrowse/core/util'
+import { SimpleFeature, Feature, min, max, notEmpty } from '@jbrowse/core/util'
 import { merge } from 'rxjs'
 import { map } from 'rxjs/operators'
 
@@ -77,7 +77,7 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
         // @ts-expect-error
         adapters.map(adp => adp.dataAdapter.getGlobalStats?.(opts)),
       )
-    ).filter(f => !!f)
+    ).filter(notEmpty) as { scoreMin: number; scoreMax: number }[]
     const scoreMin = min(stats.map(s => s.scoreMin))
     const scoreMax = max(stats.map(s => s.scoreMax))
     return { scoreMin, scoreMax }
