@@ -4,6 +4,7 @@ import { TreeNode } from '../generateHierarchy'
 import { MenuItem } from '@jbrowse/core/ui'
 
 export interface NodeData {
+  defaultHeight: number
   nestingLevel: number
   checked: boolean
   conf: AnyConfigurationModel
