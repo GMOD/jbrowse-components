@@ -59,9 +59,9 @@ const TrackRenderingContainer = observer(function ({
   const ref = useRef<HTMLDivElement>(null)
   const minimized = track.minimized
   const dynamicResize =
-    display.adjustTrackLayoutHeightSetting === 'static'
+    display?.adjustTrackLayoutHeightSetting === 'static'
       ? false
-      : display?.PileupDisplay.adjustTrackLayoutHeightSetting === 'static'
+      : display?.PileupDisplay?.adjustTrackLayoutHeightSetting === 'static'
         ? false
         : true
 
