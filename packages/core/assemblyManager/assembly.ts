@@ -60,10 +60,19 @@ async function loadRefNameMap(
   signal?: AbortSignal,
 ) {
   const { sessionId } = options
-  await when(() => !!(assembly.regions && assembly.refNameAliases), {
-    signal,
-    name: 'when assembly ready',
-  })
+
+  await when(
+    () =>
+      !!(
+        assembly.regions &&
+        assembly.refNameAliases &&
+        adapterConfig.sequenceAdapter
+      ),
+    {
+      signal,
+      name: 'when assembly ready',
+    },
+  )
 
   const refNames = (await assembly.rpcManager.call(
     sessionId || 'assemblyRpc',
@@ -82,10 +91,9 @@ async function loadRefNameMap(
   }
 
   const refNameMap = Object.fromEntries(
-    refNames.map(name => {
-      checkRefName(name)
-      return [assembly.getCanonicalRefName(name), name]
-    }),
+    refNames
+      .map(name => checkRefName(name))
+      .map(name => [assembly.getCanonicalRefName(name), name]),
   )
 
   // make the reversed map too
@@ -107,6 +115,7 @@ function checkRefName(refName: string) {
   if (!refNameRegex.test(refName)) {
     throw new Error(`Encountered invalid refName: "${refName}"`)
   }
+  return refName
 }
 
 type RefNameAliases = Record<string, string | undefined>

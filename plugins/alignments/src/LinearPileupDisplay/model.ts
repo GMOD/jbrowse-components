@@ -188,9 +188,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           trackMaxHeight,
           mismatchAlpha,
           rendererTypeName,
+          rendererType,
         } = self
         const configBlob = getConf(self, ['renderers', rendererTypeName]) || {}
-        return self.rendererType.configSchema.create(
+        return rendererType.configSchema.create(
           {
             ...configBlob,
             ...(featureHeight !== undefined ? { height: featureHeight } : {}),
@@ -349,10 +350,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             if (!self.autorunReady) {
               return
             }
-
-            const { bpPerPx } = view
-
-            self.setCurrSortBpPerPx(bpPerPx)
+            self.setCurrSortBpPerPx(view.bpPerPx)
           },
           { delay: 1000 },
         )

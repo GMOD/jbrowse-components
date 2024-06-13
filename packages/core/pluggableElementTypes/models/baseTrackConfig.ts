@@ -1,6 +1,14 @@
-import { types, Instance } from 'mobx-state-tree'
-import { ConfigurationSchema } from '../../configuration'
+import {
+  types,
+  Instance,
+  getSnapshot,
+  getRoot,
+  addDisposer,
+} from 'mobx-state-tree'
+import { ConfigurationSchema, readConfObject } from '../../configuration'
 import PluginManager from '../../PluginManager'
+import { AssemblyManager, notEmpty } from '../../util'
+import { autorun } from 'mobx'
 
 /**
  * #config BaseTrack
@@ -80,6 +88,14 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
           'text search adapter',
         ),
       }),
+
+      /**
+       * #slot
+       */
+      sequenceAdapters: {
+        type: 'frozen',
+        defaultValue: {},
+      },
 
       /**
        * #slot
@@ -180,20 +196,51 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
       explicitlyTyped: true,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       actions: (self: any) => ({
-        addDisplayConf(conf: { type: string; displayId: string }) {
-          const { type } = conf
+        forceAddDisplay(c: { type: string; displayId: string }) {
+          self.displays.push(c)
+          return self.displays.at(-1)
+        },
+        addDisplayConf(c: { type: string; displayId: string }) {
+          const { type } = c
           if (!type) {
             throw new Error(`unknown display type ${type}`)
           }
-          const display = self.displays.find(
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (d: any) => d?.displayId === conf.displayId,
+          return (
+            self.displays.find(
+              (d: { displayId: string }) => d?.displayId === c.displayId,
+            ) ?? self.forceAddDisplay(c)
           )
-          if (display) {
-            return display
-          }
-          const length = self.displays.push(conf)
-          return self.displays[length - 1]
+        },
+        setSequenceAdapters(a: Record<string, unknown>) {
+          self.sequenceAdapters = a
+        },
+        afterAttach() {
+          addDisposer(
+            self,
+            autorun(() => {
+              const { assemblyManager } = getRoot<{
+                assemblyManager: AssemblyManager
+              }>(self)
+              const assemblyNames = readConfObject(
+                self,
+                'assemblyNames',
+              ) as string[]
+              self.setSequenceAdapters(
+                assemblyNames
+                  .map(a => {
+                    const conf = assemblyManager.get(a)?.configuration
+                    return conf ? ([a, getSnapshot(conf)] as const) : undefined
+                  })
+                  .filter(notEmpty),
+              )
+              const c = assemblyManager.get(assemblyNames[0])?.configuration
+              if (c) {
+                self.adapter.setSequenceAdapter?.(
+                  readConfObject(c.sequence.adapter),
+                )
+              }
+            }),
+          )
         },
       }),
     },
