@@ -20,9 +20,6 @@ const EditBookmarkLabelDialog = lazy(
 )
 
 const useStyles = makeStyles()(() => ({
-  link: {
-    cursor: 'pointer',
-  },
   cell: {
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -35,7 +32,7 @@ const BookmarkGrid = observer(function ({
 }: {
   model: GridBookmarkModel
 }) {
-  const { classes, cx } = useStyles()
+  const { classes } = useStyles()
   const {
     bookmarks,
     bookmarksWithValidAssemblies,
@@ -91,7 +88,7 @@ const BookmarkGrid = observer(function ({
           width: widths[1],
           renderCell: ({ value, row }) => (
             <Link
-              className={cx(classes.link, classes.cell)}
+              className={classes.cell}
               href="#"
               onClick={async event => {
                 event.preventDefault()
