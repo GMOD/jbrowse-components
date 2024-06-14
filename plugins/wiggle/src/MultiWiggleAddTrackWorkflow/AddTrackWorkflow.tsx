@@ -91,7 +91,10 @@ export default function MultiWiggleWidget({ model }: { model: AddTrackModel }) {
           try {
             bigWigs = JSON.parse(val)
           } catch (e) {
-            bigWigs = val.split(/\n|\r\n|\r/)
+            bigWigs = val
+              .split(/\n|\r\n|\r/)
+              .map(f => f.trim())
+              .filter(f => !!f)
           }
           const obj =
             typeof bigWigs[0] === 'string'
