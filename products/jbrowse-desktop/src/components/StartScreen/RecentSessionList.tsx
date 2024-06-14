@@ -13,9 +13,6 @@ import { loadPluginManager, RecentSessionData } from './util'
 import { measureGridWidth } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
-  pointer: {
-    cursor: 'pointer',
-  },
   cell: {
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -53,7 +50,7 @@ export default function RecentSessionsList({
   setSelectedSessions: (arg: RecentSessionData[]) => void
   sessions: RecentSessionData[]
 }) {
-  const { classes, cx } = useStyles()
+  const { classes } = useStyles()
 
   const now = Date.now()
   const oneDayLength = 24 * 60 * 60 * 1000
@@ -135,8 +132,10 @@ export default function RecentSessionsList({
               const { value } = params
               return (
                 <Link
-                  className={cx(classes.pointer, classes.cell)}
-                  onClick={async () => {
+                  href="#"
+                  className={classes.cell}
+                  onClick={async event => {
+                    event.preventDefault()
                     try {
                       setPluginManager(await loadPluginManager(params.row.path))
                     } catch (e) {

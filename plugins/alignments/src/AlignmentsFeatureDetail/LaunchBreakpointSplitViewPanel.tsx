@@ -6,7 +6,6 @@ import {
   getSession,
   toLocale,
 } from '@jbrowse/core/util'
-import { makeStyles } from 'tss-react/mui'
 import { ErrorMessage } from '@jbrowse/core/ui'
 import { ViewType } from '@jbrowse/core/pluggableElementTypes'
 
@@ -17,11 +16,6 @@ import { ReducedFeature, getSAFeatures } from './getSAFeatures'
 // lazies
 const BreakendOptionDialog = lazy(() => import('./BreakendOptionDialog'))
 
-const useStyles = makeStyles()({
-  cursor: {
-    cursor: 'pointer',
-  },
-})
 export default function LaunchBreakpointSplitViewPanel({
   model,
   feature,
@@ -31,7 +25,6 @@ export default function LaunchBreakpointSplitViewPanel({
   feature: SimpleFeatureSerialized
   viewType: ViewType
 }) {
-  const { classes } = useStyles()
   const session = getSession(model)
   const { view } = model
   const [res, setRes] = useState<ReducedFeature[]>()
@@ -72,7 +65,6 @@ export default function LaunchBreakpointSplitViewPanel({
               <Tooltip title="Top panel->Bottom panel">
                 <Link
                   href="#"
-                  className={classes.cursor}
                   onClick={event => {
                     event.preventDefault()
                     session.queueDialog(handleClose => [
