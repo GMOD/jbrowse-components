@@ -108,6 +108,15 @@
             "uri": "https://jbrowse.org/genomes/CHM13/fasta/chm13v2.0.fa.gz.gzi"
           }
         }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "location": {
+            "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/hs1.chromAlias.txt",
+            "locationType": "UriLocation"
+          }
+        }
       }
     }
   ],
@@ -3948,27 +3957,7 @@
         }
       ]
     },
-    {
-      "type": "FeatureTrack",
-      "trackId": "genes",
-      "name": "Gene annotation v4",
-      "category": ["Annotation"],
-      "assemblyNames": ["t2t-chm13-v1.1"],
-      "adapter": {
-        "type": "Gff3TabixAdapter",
-        "gffGzLocation": {
-          "uri": "https://jbrowse.org/genomes/CHM13/genes/chm13.draft_v1.1.gene_annotation.v4.sorted.gff.gz",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "https://jbrowse.org/genomes/CHM13/genes/chm13.draft_v1.1.gene_annotation.v4.sorted.gff.gz.tbi",
-            "locationType": "UriLocation"
-          },
-          "indexType": "TBI"
-        }
-      }
-    },
+
     {
       "type": "SyntenyTrack",
       "trackId": "hg19ToHg38.over.chain.gz-1645073157673",
@@ -4313,6 +4302,30 @@
         }
       },
       "assemblyNames": ["hg38"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "ncbi_genes",
+      "name": "NCBI genes",
+      "metadata": {
+        "accessed_date": "2024/06/14",
+        "url": "https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_009914755.1/"
+      },
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/genomes/CHM13/genes/ncbi_genes.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/genomes/CHM13/genes/ncbi_genes.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["chm13v2.0"]
     }
   ],
   "connections": [],
