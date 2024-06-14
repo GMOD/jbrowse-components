@@ -66,7 +66,12 @@ const DrawerWidget = observer(function ({
         </ErrorBoundary>
       </Suspense>
       {popoutDrawer ? (
-        <Dialog title={''} open maxWidth="xl">
+        <Dialog
+          title=""
+          open
+          maxWidth="xl"
+          onClose={() => setPopoutDrawer(false)}
+        >
           {DrawerComponent ? (
             <>
               <DrawerComponent
