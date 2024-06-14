@@ -1,10 +1,11 @@
-import { transaction } from 'mobx'
+import { autorun, transaction } from 'mobx'
 import {
   getRoot,
   resolveIdentifier,
   types,
   Instance,
   IAnyStateTreeNode,
+  addDisposer,
 } from 'mobx-state-tree'
 
 // locals
@@ -209,6 +210,19 @@ export function createBaseTrackModel(
               ]
             : []),
         ]
+      },
+      afterAttach() {
+        addDisposer(
+          self,
+          autorun(() => {
+            if (!self.displays.length) {
+              const compatDisp = getCompatibleDisplays(self)
+              self.showDisplay(
+                self.configuration.trackId + '-' + compatDisp[0].type,
+              )
+            }
+          }),
+        )
       },
     }))
 }
