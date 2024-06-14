@@ -129,6 +129,9 @@ function SourcesGrid({
             },
             ...Object.keys(rest).map(val => ({
               field: val,
+              getSortComparator: (...args) => {
+                console.log(args)
+              },
               renderCell: (params: GridCellParams) => {
                 const { value } = params
                 return (
@@ -137,8 +140,9 @@ function SourcesGrid({
                   </div>
                 )
               },
-              // @ts-ignore
-              width: measureGridWidth(rows.map(r => r[val])),
+              width: measureGridWidth(
+                rows.map(r => `${r[val as keyof Source]}`),
+              ),
             })),
           ]}
         />
