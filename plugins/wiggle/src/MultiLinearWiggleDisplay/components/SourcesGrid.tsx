@@ -23,10 +23,6 @@ const useStyles = makeStyles()({
     textOverflow: 'ellipsis',
   },
 })
-interface SortField {
-  idx: number
-  field: string | null
-}
 
 function SourcesGrid({
   rows,
@@ -44,10 +40,6 @@ function SourcesGrid({
   // @ts-expect-error
   const { name: _name, color: _color, baseUri: _baseUri, ...rest } = rows[0]
   const [widgetColor, setWidgetColor] = useState('blue')
-  const [currSort, setCurrSort] = useState<SortField>({
-    idx: 0,
-    field: null,
-  })
 
   return (
     <div>
@@ -132,13 +124,11 @@ function SourcesGrid({
             },
             {
               field: 'name',
-              sortingOrder: [null],
               headerName: 'Name',
               width: measureGridWidth(rows.map(r => r.name)),
             },
             ...Object.keys(rest).map(val => ({
               field: val,
-              sortingOrder: [null],
               renderCell: (params: GridCellParams) => {
                 const { value } = params
                 return (
@@ -151,30 +141,6 @@ function SourcesGrid({
               width: measureGridWidth(rows.map(r => r[val])),
             })),
           ]}
-          sortModel={
-            [
-              /* we control the sort as a controlled component using onSortModelChange */
-            ]
-          }
-          onSortModelChange={args => {
-            const sort = args[0]
-            const idx = (currSort.idx + 1) % 2
-            const field = sort?.field || currSort.field
-            setCurrSort({ idx, field })
-            onChange(
-              field
-                ? [...rows].sort((a, b) => {
-                    // @ts-expect-error
-                    const aa = getStr(a[field])
-                    // @ts-expect-error
-                    const bb = getStr(b[field])
-                    return idx === 1
-                      ? aa.localeCompare(bb)
-                      : bb.localeCompare(aa)
-                  })
-                : rows,
-            )
-          }}
         />
       </div>
     </div>
