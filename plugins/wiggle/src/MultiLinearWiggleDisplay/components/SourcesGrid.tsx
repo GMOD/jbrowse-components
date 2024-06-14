@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Button } from '@mui/material'
 import { getStr, measureGridWidth } from '@jbrowse/core/util'
-import { DataGrid, GridCellParams } from '@mui/x-data-grid'
+import { DataGrid, GridCellParams, GridColDef } from '@mui/x-data-grid'
 import { makeStyles } from 'tss-react/mui'
 
 // locals
@@ -23,6 +23,7 @@ const useStyles = makeStyles()({
     textOverflow: 'ellipsis',
   },
 })
+
 interface SortField {
   idx: number
   field: string | null
@@ -40,8 +41,6 @@ function SourcesGrid({
   const { classes } = useStyles()
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const [selected, setSelected] = useState([] as string[])
-
-  // @ts-expect-error
   const { name: _name, color: _color, baseUri: _baseUri, ...rest } = rows[0]
   const [widgetColor, setWidgetColor] = useState('blue')
   const [currSort, setCurrSort] = useState<SortField>({
@@ -132,24 +131,23 @@ function SourcesGrid({
             },
             {
               field: 'name',
-              sortingOrder: [null],
               headerName: 'Name',
               width: measureGridWidth(rows.map(r => r.name)),
             },
-            ...Object.keys(rest).map(val => ({
-              field: val,
-              sortingOrder: [null],
-              renderCell: (params: GridCellParams) => {
-                const { value } = params
-                return (
-                  <div className={classes.cell}>
-                    <SanitizedHTML html={getStr(value)} />
-                  </div>
-                )
-              },
-              // @ts-ignore
-              width: measureGridWidth(rows.map(r => r[val])),
-            })),
+            ...Object.keys(rest).map(
+              val =>
+                ({
+                  field: val,
+                  renderCell: ({ value }) => (
+                    <div className={classes.cell}>
+                      <SanitizedHTML html={getStr(value)} />
+                    </div>
+                  ),
+                  width: measureGridWidth(
+                    rows.map(r => `${r[val as keyof Source]}`),
+                  ),
+                }) satisfies GridColDef<(typeof rows)[0]>,
+            ),
           ]}
           sortModel={
             [
@@ -158,16 +156,18 @@ function SourcesGrid({
           }
           onSortModelChange={args => {
             const sort = args[0]
+            // this idx%2 flip flops the sorting order, we could inspect args
+            // for sort direction asc or desc but this is just a simplified
+            // thing since we are controlling sort instead of the default data
+            // grid sort anyways
             const idx = (currSort.idx + 1) % 2
             const field = sort?.field || currSort.field
             setCurrSort({ idx, field })
             onChange(
               field
                 ? [...rows].sort((a, b) => {
-                    // @ts-expect-error
-                    const aa = getStr(a[field])
-                    // @ts-expect-error
-                    const bb = getStr(b[field])
+                    const aa = getStr(a[field as keyof Source])
+                    const bb = getStr(b[field as keyof Source])
                     return idx === 1
                       ? aa.localeCompare(bb)
                       : bb.localeCompare(aa)
