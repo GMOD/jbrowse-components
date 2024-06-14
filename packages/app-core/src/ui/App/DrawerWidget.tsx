@@ -10,6 +10,7 @@ import { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types
 // locals
 import Drawer from './Drawer'
 import DrawerHeader from './DrawerHeader'
+import { Dialog } from '@jbrowse/core/ui'
 
 const DrawerWidget = observer(function ({
   session,
@@ -35,14 +36,37 @@ const DrawerWidget = observer(function ({
   // height want to be able to fill the contained, minus the toolbar height
   // (the position static/sticky is included in AutoSizer estimates)
   const [toolbarHeight, setToolbarHeight] = useState(0)
+  const [popoutDrawer, setPopoutDrawer] = useState(false)
 
   return (
     <Drawer session={session}>
-      <DrawerHeader session={session} setToolbarHeight={setToolbarHeight} />
+      <DrawerHeader
+        onPopoutDrawer={() => setPopoutDrawer(true)}
+        session={session}
+        setToolbarHeight={setToolbarHeight}
+      />
       <Suspense fallback={<LoadingEllipses />}>
         <ErrorBoundary
           FallbackComponent={({ error }) => <ErrorMessage error={error} />}
         >
+          {DrawerComponent ? (
+            popoutDrawer ? (
+              <div>Opened in dialog...</div>
+            ) : (
+              <>
+                <DrawerComponent
+                  model={visibleWidget}
+                  session={session}
+                  toolbarHeight={toolbarHeight}
+                />
+                <div style={{ height: 300 }} />
+              </>
+            )
+          ) : null}
+        </ErrorBoundary>
+      </Suspense>
+      {popoutDrawer ? (
+        <Dialog title={''} open maxWidth="xl">
           {DrawerComponent ? (
             <>
               <DrawerComponent
@@ -53,8 +77,8 @@ const DrawerWidget = observer(function ({
               <div style={{ height: 300 }} />
             </>
           ) : null}
-        </ErrorBoundary>
-      </Suspense>
+        </Dialog>
+      ) : null}
     </Drawer>
   )
 })
