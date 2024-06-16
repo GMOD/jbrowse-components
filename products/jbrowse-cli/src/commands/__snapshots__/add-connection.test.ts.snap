@@ -1,0 +1,204 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`adds JBrowse1 connection from a url 1`] = `
+{
+  "assemblies": [
+    {
+      "name": "testAssembly",
+      "sequence": {
+        "adapter": {
+          "twoBitLocation": {
+            "locationType": "UriLocation",
+            "uri": "test.2bit",
+          },
+          "type": "testSeqAdapter",
+        },
+        "trackId": "",
+        "type": "testSequenceTrack",
+      },
+    },
+  ],
+  "configuration": {},
+  "connections": [
+    {
+      "connectionId": "JBrowse1Connection-1",
+      "dataDirLocation": {
+        "locationType": "UriLocation",
+        "uri": "https://mysite.com/jbrowse/data",
+      },
+      "name": "JBrowse1Connection-1",
+      "type": "JBrowse1Connection",
+    },
+  ],
+  "defaultSession": {
+    "name": "New Session",
+  },
+  "tracks": [],
+}
+`;
+
+exports[`adds a custom connection with user set fields 1`] = `
+{
+  "assemblies": [
+    {
+      "name": "testAssembly",
+      "sequence": {
+        "adapter": {
+          "twoBitLocation": {
+            "locationType": "UriLocation",
+            "uri": "test.2bit",
+          },
+          "type": "testSeqAdapter",
+        },
+        "trackId": "",
+        "type": "testSequenceTrack",
+      },
+    },
+  ],
+  "configuration": {},
+  "connections": [
+    {
+      "assemblyNames": [
+        "testAssembly",
+      ],
+      "connectionId": "newConnectionId",
+      "locationType": "UriLocation",
+      "name": "newName",
+      "type": "newType",
+      "url": {
+        "uri": "https://mysite.com/custom",
+      },
+    },
+  ],
+  "defaultSession": {
+    "name": "New Session",
+  },
+  "tracks": [],
+}
+`;
+
+exports[`adds an UCSCTrackHubConnection connection from a url 1`] = `
+{
+  "assemblies": [
+    {
+      "name": "testAssembly",
+      "sequence": {
+        "adapter": {
+          "twoBitLocation": {
+            "locationType": "UriLocation",
+            "uri": "test.2bit",
+          },
+          "type": "testSeqAdapter",
+        },
+        "trackId": "",
+        "type": "testSequenceTrack",
+      },
+    },
+  ],
+  "configuration": {},
+  "connections": [
+    {
+      "connectionId": "UCSCTrackHubConnection-1",
+      "hubTxtLocation": {
+        "locationType": "UriLocation",
+        "uri": "https://mysite.com/data/hub.txt",
+      },
+      "name": "UCSCTrackHubConnection-1",
+      "type": "UCSCTrackHubConnection",
+    },
+  ],
+  "defaultSession": {
+    "name": "New Session",
+  },
+  "tracks": [],
+}
+`;
+
+exports[`fails if data directory is not an url 1`] = `
+{
+  "code": undefined,
+  "message": "The location provided is not a valid URL",
+  "oclif": {
+    "exit": 160,
+  },
+  "skipOclifErrorHandling": undefined,
+  "suggestions": undefined,
+}
+`;
+
+exports[`fails if no config file 1`] = `
+{
+  "code": undefined,
+  "message": "Error: ENOENT: no such file or directory, open './config.json'",
+  "oclif": {
+    "exit": 40,
+  },
+  "skipOclifErrorHandling": undefined,
+  "suggestions": [
+    "Make sure the file "./config.json" exists or use --out to point to a directory with a config.json",
+    "Run \`jbrowse add-assembly\` to create a config file",
+  ],
+}
+`;
+
+exports[`fails to add a duplicate connection 1`] = `
+{
+  "code": undefined,
+  "message": "Cannot add connection with id newConnectionId, a connection with that id already exists.
+Use --overwrite if you would like to replace the existing connection",
+  "oclif": {
+    "exit": 150,
+  },
+  "skipOclifErrorHandling": undefined,
+  "suggestions": undefined,
+}
+`;
+
+exports[`fails when fetching from url fails 1`] = `
+{
+  "code": undefined,
+  "message": "Unable to fetch from URL, Error: Response returned with code 500",
+  "oclif": {
+    "exit": 170,
+  },
+  "skipOclifErrorHandling": undefined,
+  "suggestions": undefined,
+}
+`;
+
+exports[`overwrites an existing custom connection and does not check URL 1`] = `
+{
+  "assemblies": [
+    {
+      "name": "testAssembly",
+      "sequence": {
+        "adapter": {
+          "twoBitLocation": {
+            "locationType": "UriLocation",
+            "uri": "test.2bit",
+          },
+          "type": "testSeqAdapter",
+        },
+        "trackId": "",
+        "type": "testSequenceTrack",
+      },
+    },
+  ],
+  "configuration": {},
+  "connections": [
+    {
+      "connectionId": "newConnectionId",
+      "locationType": "UriLocation",
+      "name": "newConnectionId",
+      "type": "custom",
+      "url": {
+        "uri": "https://mysite.com/custom",
+      },
+    },
+  ],
+  "defaultSession": {
+    "name": "New Session",
+  },
+  "tracks": [],
+}
+`;

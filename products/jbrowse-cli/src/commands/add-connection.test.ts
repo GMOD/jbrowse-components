@@ -5,7 +5,9 @@
 import fs from 'fs'
 import path from 'path'
 
-import { setup, readConf } from '../testUtil'
+import { setup, readConf, runInTmpDir } from '../testUtil'
+import nock from 'nock'
+import { runCommand } from '@oclif/test'
 
 const { copyFile, rename } = fs.promises
 
@@ -51,82 +53,64 @@ async function copyConf(ctx: { dir: string }) {
     path.join(ctx.dir, 'config.json'),
   )
 }
-const originalDateNow = Date.now
+// const originalDateNow = Date.now
 
-const setupWithDateMock = setup
-  .do(() => {
-    Date.now = jest.fn(() => 1)
-  })
-  .finally(() => {
-    Date.now = originalDateNow
-  })
+// const setupWithDateMock = setup
+//   .do(() => {
+//     Date.now = jest.fn(() => 1)
+//   })
+//   .finally(() => {
+//     Date.now = originalDateNow
+//   })
 
 // Cleaning up exitCode in Node.js 20, xref https://github.com/jestjs/jest/issues/14501
 afterAll(() => (process.exitCode = 0))
+beforeAll(() => (Date.now = jest.fn(() => 1)))
 
-describe('add-connection', () => {
-  setup
-    .nock('https://example.com', site => site.head('/hub.txt').reply(200))
-    .command(['add-connection', 'https://example.com/hub.txt'])
-    .catch(/no such file or directory/)
-    .it('fails if no config file')
-  setup
-    .command(['add-connection', '.'])
-    .exit(160)
-    .it('fails if data directory is not an url')
-  setup
-    .nock('https://mysite.com', site => site.head('/notafile.txt').reply(500))
-    .command(['add-connection', 'https://mysite.com/notafile.txt'])
-    .exit(170)
-    .it('fails when fetching from url fails')
+test('fails if no config file', async () => {
+  nock('https://example.com').head('/hub.txt').reply(200)
 
-  setupWithDateMock
-    .nock('https://mysite.com', site => site.head('/data/hub.txt').reply(200))
-    .do(ctx => copyConf(ctx))
-    .command(['add-connection', 'https://mysite.com/data/hub.txt'])
-    .it('adds an UCSCTrackHubConnection connection from a url', async ctx => {
-      const contents = readConf(ctx)
-      expect(contents).toEqual({
-        ...defaultConfig,
-        connections: [
-          {
-            type: 'UCSCTrackHubConnection',
-            connectionId: 'UCSCTrackHubConnection-1',
-            hubTxtLocation: {
-              uri: 'https://mysite.com/data/hub.txt',
-              locationType: 'UriLocation',
-            },
-            name: 'UCSCTrackHubConnection-1',
-          },
-        ],
-      })
-    })
-  setupWithDateMock
-    .nock('https://mysite.com', site => site.head('/jbrowse/data').reply(200))
-    .do(ctx => copyConf(ctx))
-    .command(['add-connection', 'https://mysite.com/jbrowse/data'])
-    .it('adds JBrowse1 connection from a url', async ctx => {
-      const contents = readConf(ctx)
-      expect(contents).toEqual({
-        ...defaultConfig,
-        connections: [
-          {
-            type: 'JBrowse1Connection',
-            connectionId: 'JBrowse1Connection-1',
-            dataDirLocation: {
-              uri: 'https://mysite.com/jbrowse/data',
-              locationType: 'UriLocation',
-            },
-            name: 'JBrowse1Connection-1',
-          },
-        ],
-      })
-    })
+  const { error } = await runCommand([
+    'add-connection https://example.com/hub.txt',
+  ])
+  expect(error).toMatchSnapshot()
+})
 
-  setup
-    .nock('https://mysite.com', site => site.head('/custom').reply(200))
-    .do(ctx => copyConf(ctx))
-    .command([
+test('fails if data directory is not an url', async () => {
+  const { error } = await runCommand(['add-connection .'])
+  expect(error).toMatchSnapshot()
+})
+
+test('fails when fetching from url fails', async () => {
+  nock('https://mysite.com').head('/notafile.txt').reply(500)
+  const { error } = await runCommand([
+    'add-connection https://mysite.com/notafile.txt',
+  ])
+  expect(error).toMatchSnapshot()
+})
+
+test('adds an UCSCTrackHubConnection connection from a url', async () => {
+  await runInTmpDir(async ctx => {
+    nock('https://mysite.com').head('/data/hub.txt').reply(200)
+    await copyConf(ctx)
+    await runCommand(['add-connection', 'https://mysite.com/data/hub.txt'])
+    expect(readConf(ctx)).toMatchSnapshot()
+  })
+})
+
+test('adds JBrowse1 connection from a url', async () => {
+  await runInTmpDir(async ctx => {
+    nock('https://mysite.com').head('/jbrowse/data').reply(200)
+    await copyConf(ctx)
+    await runCommand(['add-connection', 'https://mysite.com/jbrowse/data'])
+    expect(readConf(ctx)).toMatchSnapshot()
+  })
+})
+test('adds a custom connection with user set fields', async () => {
+  await runInTmpDir(async ctx => {
+    nock('https://mysite.com').head('/custom').reply(200)
+    await copyConf(ctx)
+    await runCommand([
       'add-connection',
       'https://mysite.com/custom',
       '--type',
@@ -138,86 +122,58 @@ describe('add-connection', () => {
       '--assemblyNames',
       'testAssembly',
       '--config',
-      '{"url":{"uri":"https://mysite.com/custom"}, "locationType": "UriLocation"}',
+      '{"url":{"uri":"https://mysite.com/custom"},"locationType":"UriLocation"}',
     ])
-    .it('adds a custom connection with user set fields', async ctx => {
-      const contents = readConf(ctx)
-      expect(contents).toEqual({
-        ...defaultConfig,
-        connections: [
-          {
-            type: 'newType',
-            assemblyNames: ['testAssembly'],
-            connectionId: 'newConnectionId',
-            locationType: 'UriLocation',
-            url: {
-              uri: 'https://mysite.com/custom',
-            },
-            name: 'newName',
-          },
-        ],
-      })
-    })
-  setup
-    .nock('https://mysite.com', site => site.head('/custom').reply(200))
-    .do(ctx => copyConf(ctx))
-    .command([
+    expect(readConf(ctx)).toMatchSnapshot()
+  })
+})
+test('fails to add a duplicate connection', async () => {
+  await runInTmpDir(async ctx => {
+    nock('https://mysite.com').head('/custom').reply(200)
+    await copyConf(ctx)
+    await runCommand([
       'add-connection',
       'https://mysite.com/custom',
       '--connectionId',
       'newConnectionId',
       '--config',
-      '{"url":{"uri":"https://mysite.com/custom"}, "locationType": "UriLocation"}',
+      '{"url":{"uri":"https://mysite.com/custom"},"locationType":"UriLocation"}',
     ])
-    .nock('https://mysite.com', site => site.head('/custom').reply(200))
-    .command([
+    nock('https://mysite.com').head('/custom').reply(200)
+    const { error } = await runCommand([
       'add-connection',
       'https://mysite.com/custom',
       '--connectionId',
       'newConnectionId',
       '--config',
-      '{"url":{"uri":"https://mysite.com/custom"}, "locationType": "UriLocation"}',
+      '{"url":{"uri":"https://mysite.com/custom"},"locationType":"UriLocation"}',
     ])
-    .exit(150)
-    .it('Fails to add a duplicate connection Id')
-  setup
-    .do(ctx => copyConf(ctx))
-    .command([
+    expect(error).toMatchSnapshot()
+  })
+})
+test('overwrites an existing custom connection and does not check URL', async () => {
+  await runInTmpDir(async ctx => {
+    nock('https://mysite.com').head('/custom').reply(200)
+    await copyConf(ctx)
+    await runCommand([
       'add-connection',
       'https://mysite.com/custom',
       '--connectionId',
       'newConnectionId',
       '--config',
-      '{"url":{"uri":"https://mysite.com/custom"}, "locationType": "UriLocation"}',
+      '{"url":{"uri":"https://mysite.com/custom"},"locationType":"UriLocation"}',
       '--force',
     ])
-    .command([
+    nock('https://mysite.com').head('/custom').reply(200)
+    await runCommand([
       'add-connection',
       'https://mysite.com/custom',
       '--connectionId',
       'newConnectionId',
       '--config',
-      '{"url":{"uri":"https://mysite.com/custom"}, "locationType": "UriLocation"}',
+      '{"url":{"uri":"https://mysite.com/custom"},"locationType":"UriLocation"}',
       '--force',
     ])
-    .it(
-      'overwrites an existing custom connection and does not check URL',
-      async ctx => {
-        const contents = readConf(ctx)
-        expect(contents).toEqual({
-          ...defaultConfig,
-          connections: [
-            {
-              type: 'custom',
-              connectionId: 'newConnectionId',
-              locationType: 'UriLocation',
-              url: {
-                uri: 'https://mysite.com/custom',
-              },
-              name: 'newConnectionId',
-            },
-          ],
-        })
-      },
-    )
+    expect(readConf(ctx)).toMatchSnapshot()
+  })
 })
