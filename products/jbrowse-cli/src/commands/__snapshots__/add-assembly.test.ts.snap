@@ -136,6 +136,33 @@ exports[`adds an assembly from a FASTA 1`] = `
 }
 `;
 
+exports[`adds an assembly from a URL 1`] = `
+{
+  "assemblies": [
+    {
+      "name": "simple",
+      "sequence": {
+        "adapter": {
+          "twoBitLocation": {
+            "locationType": "UriLocation",
+            "uri": "https://mysite.com/data/simple.2bit",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "trackId": "simple-ReferenceSequenceTrack",
+        "type": "ReferenceSequenceTrack",
+      },
+    },
+  ],
+  "configuration": {},
+  "connections": [],
+  "defaultSession": {
+    "name": "New Session",
+  },
+  "tracks": [],
+}
+`;
+
 exports[`adds an assembly from a custom adapter JSON file 1`] = `
 {
   "assemblies": [

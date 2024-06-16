@@ -4,6 +4,7 @@
 
 import fs from 'fs'
 import path from 'path'
+import nock from 'nock'
 
 import {
   runInTmpDir,
@@ -14,24 +15,7 @@ import {
 } from '../testUtil'
 import { runCommand } from '@oclif/test'
 
-const { rename, copyFile, writeFile, mkdir } = fs.promises
-
-const defaultConfig = {
-  assemblies: [],
-  configuration: {},
-  connections: [],
-  defaultSession: {
-    name: 'New Session',
-  },
-  tracks: [],
-}
-
-const baseAssembly = { name: 'simple', sequence: {} }
-const baseSequence = {
-  type: 'ReferenceSequenceTrack',
-  trackId: 'simple-ReferenceSequenceTrack',
-  adapter: {},
-}
+const { copyFile, writeFile, mkdir } = fs.promises
 
 // Cleaning up exitCode in Node.js 20, xref https://github.com/jestjs/jest/issues/14501
 afterAll(() => (process.exitCode = 0))
@@ -395,62 +379,39 @@ test('relative path', async () => {
     expect(readConf(ctx, 'jbrowse')).toMatchSnapshot()
   })
 })
-//
-// setup
-//   .nock('https://mysite.com', site =>
-//     site.head('/data/simple.2bit').reply(200),
-//   )
-//   const {error}=await runCommand(['add-assembly', 'https://mysite.com/data/simple.2bit'])
-//   .it('adds an assembly from a URL', async ctx => {
-//     expect(readConf(ctx)).toEqual({
-//       ...defaultConfig,
-//       assemblies: [
-//         {
-//           ...baseAssembly,
-//           sequence: {
-//             ...baseSequence,
-//             adapter: {
-//               type: 'TwoBitAdapter',
-//               twoBitLocation: {
-//                 uri: 'https://mysite.com/data/simple.2bit',
-//                 locationType: 'UriLocation',
-//               },
-//             },
-//           },
-//         },
-//       ],
-//     })
-//   })
-//
-// setup
-//   .do(ctx =>
-//     fs.copyFileSync(dataDir('simple.2bit'), ctxDir(ctx, 'simple.2bit')),
-//   )
-//   const {error}=await runCommand([
-//     'add-assembly',
-//     'simple.2bit',
-//     '--load',
-//     'copy',
-//     '--out',
-//     'testing',
-//   ])
-//   .it('can use --out to make a new directory', async ctx => {
-//     expect(readConf(ctx, 'testing').assemblies.length).toBe(1)
-//   })
-//
-// setup
-//   .do(ctx => {
-//     fs.copyFileSync(dataDir('simple.2bit'), ctxDir(ctx, 'simple.2bit'))
-//   })
-//   const {error}=await runCommand([
-//     'add-assembly',
-//     'simple.2bit',
-//     '--load',
-//     'copy',
-//     '--out',
-//     'out/testing.json',
-//   ])
-//   .it('can use --out to write to a file', async ctx => {
-//     expect(readConfAlt(ctx, 'out', 'testing.json').assemblies.length).toBe(1)
-//   })
-// })
+
+test('adds an assembly from a URL', async () => {
+  await runInTmpDir(async ctx => {
+    nock('https://mysite.com').head('/data/simple.2bit').reply(200)
+    await runCommand(['add-assembly', 'https://mysite.com/data/simple.2bit'])
+    expect(readConf(ctx)).toMatchSnapshot()
+  })
+})
+test('can use --out to make a new directory', async () => {
+  await runInTmpDir(async ctx => {
+    fs.copyFileSync(dataDir('simple.2bit'), ctxDir(ctx, 'simple.2bit'))
+    await runCommand([
+      'add-assembly',
+      'simple.2bit',
+      '--load',
+      'copy',
+      '--out',
+      'testing',
+    ])
+    expect(readConf(ctx, 'testing').assemblies.length).toBe(1)
+  })
+})
+test('can use --out to write to a file', async () => {
+  await runInTmpDir(async ctx => {
+    fs.copyFileSync(dataDir('simple.2bit'), ctxDir(ctx, 'simple.2bit'))
+    await runCommand([
+      'add-assembly',
+      'simple.2bit',
+      '--load',
+      'copy',
+      '--out',
+      'out/testing.json',
+    ])
+    expect(readConfAlt(ctx, 'out', 'testing.json').assemblies.length).toBe(1)
+  })
+})
