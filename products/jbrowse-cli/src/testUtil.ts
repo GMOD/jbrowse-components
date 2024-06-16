@@ -1,10 +1,10 @@
-import { test as oclifTest } from '@oclif/test'
+import { runCommand } from '@oclif/test'
 import { rimrafSync } from 'rimraf'
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
 
-const { mkdir, mkdtemp, writeFile } = fs.promises
+const { mkdir, mkdtemp } = fs.promises
 
 // increase test timeout for all tests
 jest.setTimeout(20000)
@@ -13,22 +13,27 @@ jest.setTimeout(20000)
 // https://github.com/nodejs/node/issues/11422
 const tmpDir = fs.realpathSync(os.tmpdir())
 
-export const setup = oclifTest
-  .stdout()
-  .add('originalDir', () => process.cwd())
-  .add('dir', async () => {
+export async function runInTmpDir(
+  callbackFn: (args: { dir: string; originalDir: string }) => Promise<void>,
+) {
+  const originalDir = process.cwd()
+  let dir: string | undefined
+  try {
     const jbrowseTmpDir = path.join(tmpDir, 'jbrowse')
     await mkdir(jbrowseTmpDir, { recursive: true })
-    return mkdtemp(path.join(jbrowseTmpDir, path.sep))
-  })
-  .finally(ctx => {
-    rimrafSync(ctx.dir)
-    process.chdir(ctx.originalDir)
-  })
-  .do(async ctx => {
-    process.chdir(ctx.dir)
-    await writeFile('manifest.json', '{"name":"JBrowse"}')
-  })
+    dir = await mkdtemp(path.join(jbrowseTmpDir, path.sep))
+    process.chdir(dir)
+    await callbackFn({ dir, originalDir })
+  } finally {
+    if (dir) {
+      rimrafSync(dir)
+    }
+    process.chdir(originalDir)
+  }
+}
+export async function setup(str: string | string[]) {
+  return runCommand(str)
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Conf = Record<string, any>
