@@ -1,16 +1,59 @@
 import React, { Suspense } from 'react'
-import { AppBar, Paper, Toolbar, Typography } from '@mui/material'
+import { AppBar, IconButton, Paper, Toolbar, Typography } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import { SessionWithWidgets } from '@jbrowse/core/util'
 
-const useStyles = makeStyles()({
+// icons
+import CloseIcon from '@mui/icons-material/Close'
+
+const useStyles = makeStyles()(theme => ({
   paper: {
     overflow: 'auto',
     minWidth: 800,
   },
+  closeButton: {
+    position: 'absolute',
+    right: theme.spacing(1),
+    top: theme.spacing(1),
+    color: theme.palette.grey[500],
+  },
+}))
+
+const DrawerAppBar = observer(function DrawerAppBar({
+  session,
+  onClose,
+}: {
+  session: SessionWithWidgets
+  onClose: () => void
+}) {
+  const { classes } = useStyles()
+  const { visibleWidget } = session
+  const { pluginManager } = getEnv(session)
+
+  if (!visibleWidget) {
+    return null
+  }
+  const { HeadingComponent, heading } = pluginManager.getWidgetType(
+    visibleWidget.type,
+  )
+
+  return (
+    <AppBar position="static">
+      <Toolbar>
+        {HeadingComponent ? (
+          <HeadingComponent model={visibleWidget} />
+        ) : (
+          <Typography variant="h6">{heading}</Typography>
+        )}
+      </Toolbar>
+      <IconButton className={classes.closeButton} onClick={onClose}>
+        <CloseIcon />
+      </IconButton>
+    </AppBar>
+  )
 })
 
 const ModalWidget = observer(function ({
@@ -27,9 +70,7 @@ const ModalWidget = observer(function ({
   if (!visibleWidget) {
     return null
   }
-  const { ReactComponent, HeadingComponent, heading } =
-    pluginManager.getWidgetType(visibleWidget.type)
-
+  const { ReactComponent } = pluginManager.getWidgetType(visibleWidget.type)
   const Component = visibleWidget
     ? (pluginManager.evaluateExtensionPoint(
         'Core-replaceWidget',
@@ -46,17 +87,7 @@ const ModalWidget = observer(function ({
       open
       onClose={onClose}
       maxWidth="xl"
-      header={
-        <AppBar position="static">
-          <Toolbar>
-            {HeadingComponent ? (
-              <HeadingComponent model={visibleWidget} />
-            ) : (
-              <Typography variant="h6">{heading}</Typography>
-            )}
-          </Toolbar>
-        </AppBar>
-      }
+      header={<DrawerAppBar onClose={onClose} session={session} />}
     >
       {Component ? (
         <Suspense fallback={<div>Loading...</div>}>
@@ -64,6 +95,7 @@ const ModalWidget = observer(function ({
             <Component
               model={visibleWidget}
               session={session}
+              modal={true}
               overrideDimensions={{
                 height: (window.innerHeight * 5) / 8,
                 width: 800,
