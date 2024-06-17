@@ -511,6 +511,54 @@ exports[`adds a bam+bai track with load inPlace 1`] = `
 }
 `;
 
+exports[`adds a chain file 1`] = `
+{
+  "assemblies": [
+    {
+      "name": "testAssembly",
+      "sequence": {
+        "adapter": {
+          "twoBitLocation": {
+            "locationType": "UriLocation",
+            "uri": "test.2bit",
+          },
+          "type": "testSeqAdapter",
+        },
+        "trackId": "",
+        "type": "testSequenceTrack",
+      },
+    },
+  ],
+  "configuration": {},
+  "connections": [],
+  "defaultSession": {
+    "name": "New Session",
+  },
+  "tracks": [
+    {
+      "adapter": {
+        "assemblyNames": [
+          "volvox_random_inv",
+          "volvox",
+        ],
+        "chainLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox_inv_indels.chain",
+        },
+        "type": "ChainAdapter",
+      },
+      "assemblyNames": [
+        "volvox_random_inv",
+        "volvox",
+      ],
+      "name": "volvox_inv_indels",
+      "trackId": "volvox_inv_indels",
+      "type": "SyntenyTrack",
+    },
+  ],
+}
+`;
+
 exports[`adds a delta file 1`] = `
 {
   "assemblies": [
@@ -546,110 +594,6 @@ exports[`adds a delta file 1`] = `
           "uri": "volvox_inv_indels.delta",
         },
         "type": "DeltaAdapter",
-      },
-      "assemblyNames": [
-        "volvox_random_inv",
-        "volvox",
-      ],
-      "name": "volvox_inv_indels",
-      "trackId": "volvox_inv_indels",
-      "type": "SyntenyTrack",
-    },
-  ],
-}
-`;
-
-exports[`adds a mashmap anchors file 1`] = `
-{
-  "assemblies": [
-    {
-      "name": "testAssembly",
-      "sequence": {
-        "adapter": {
-          "twoBitLocation": {
-            "locationType": "UriLocation",
-            "uri": "test.2bit",
-          },
-          "type": "testSeqAdapter",
-        },
-        "trackId": "",
-        "type": "testSequenceTrack",
-      },
-    },
-  ],
-  "configuration": {},
-  "connections": [],
-  "defaultSession": {
-    "name": "New Session",
-  },
-  "tracks": [
-    {
-      "adapter": {
-        "assemblyNames": [
-          "volvox_random_inv",
-          "volvox",
-        ],
-        "bed1Location": {
-          "locationType": "UriLocation",
-          "uri": "grape.bed",
-        },
-        "bed2Location": {
-          "locationType": "UriLocation",
-          "uri": "peach.bed",
-        },
-        "mcscanAnchorsLocation": {
-          "locationType": "UriLocation",
-          "uri": "volvox_inv_indels.anchors",
-        },
-        "type": "MCScanAnchorsAdapter",
-      },
-      "assemblyNames": [
-        "volvox_random_inv",
-        "volvox",
-      ],
-      "name": "volvox_inv_indels",
-      "trackId": "volvox_inv_indels",
-      "type": "SyntenyTrack",
-    },
-  ],
-}
-`;
-
-exports[`adds a mashmap anchors file 2`] = `
-{
-  "assemblies": [
-    {
-      "name": "testAssembly",
-      "sequence": {
-        "adapter": {
-          "twoBitLocation": {
-            "locationType": "UriLocation",
-            "uri": "test.2bit",
-          },
-          "type": "testSeqAdapter",
-        },
-        "trackId": "",
-        "type": "testSequenceTrack",
-      },
-    },
-  ],
-  "configuration": {},
-  "connections": [],
-  "defaultSession": {
-    "name": "New Session",
-  },
-  "tracks": [
-    {
-      "adapter": {
-        "assemblyNames": [
-          "volvox_random_inv",
-          "volvox",
-        ],
-        "chainLocation": {
-          "locationType": "UriLocation",
-          "uri": "volvox_inv_indels.chain",
-        },
-        "type": "ChainAdapter",
       },
       "assemblyNames": [
         "volvox_random_inv",
@@ -711,7 +655,63 @@ exports[`adds a mashmap file 1`] = `
 }
 `;
 
-exports[`adds a mashmap simple anchors file 1`] = `
+exports[`adds a mcscan anchors file 1`] = `
+{
+  "assemblies": [
+    {
+      "name": "testAssembly",
+      "sequence": {
+        "adapter": {
+          "twoBitLocation": {
+            "locationType": "UriLocation",
+            "uri": "test.2bit",
+          },
+          "type": "testSeqAdapter",
+        },
+        "trackId": "",
+        "type": "testSequenceTrack",
+      },
+    },
+  ],
+  "configuration": {},
+  "connections": [],
+  "defaultSession": {
+    "name": "New Session",
+  },
+  "tracks": [
+    {
+      "adapter": {
+        "assemblyNames": [
+          "volvox_random_inv",
+          "volvox",
+        ],
+        "bed1Location": {
+          "locationType": "UriLocation",
+          "uri": "grape.bed",
+        },
+        "bed2Location": {
+          "locationType": "UriLocation",
+          "uri": "peach.bed",
+        },
+        "mcscanAnchorsLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox_inv_indels.anchors",
+        },
+        "type": "MCScanAnchorsAdapter",
+      },
+      "assemblyNames": [
+        "volvox_random_inv",
+        "volvox",
+      ],
+      "name": "volvox_inv_indels",
+      "trackId": "volvox_inv_indels",
+      "type": "SyntenyTrack",
+    },
+  ],
+}
+`;
+
+exports[`adds a mcscan simple anchors file 1`] = `
 {
   "assemblies": [
     {

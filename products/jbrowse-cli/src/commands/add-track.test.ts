@@ -489,7 +489,7 @@ test('adds a mashmap file', async () => {
   })
 })
 
-test('adds a mashmap simple anchors file', async () => {
+test('adds a mcscan simple anchors file', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
 
@@ -513,7 +513,7 @@ test('adds a mashmap simple anchors file', async () => {
   })
 })
 
-test('adds a mashmap anchors file', async () => {
+test('adds a mcscan anchors file', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
 
@@ -537,7 +537,7 @@ test('adds a mashmap anchors file', async () => {
   })
 })
 
-test('adds a mashmap anchors file', async () => {
+test('adds a chain file', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
 
@@ -546,12 +546,10 @@ test('adds a mashmap anchors file', async () => {
       simpleChain,
       '--assemblyNames',
       'volvox_random_inv,volvox',
-
       '--load',
       'copy',
     ])
     expect(exists(ctxDir(ctx, 'volvox_inv_indels.chain'))).toBeTruthy()
-
     expect(readConf(ctx)).toMatchSnapshot()
   })
 })

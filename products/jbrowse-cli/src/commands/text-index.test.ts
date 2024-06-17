@@ -4,10 +4,10 @@
 
 import fs from 'fs'
 import path from 'path'
-import nock, { Scope } from 'nock'
+import nock from 'nock'
 
 // locals
-import { setup, dataDir, copyDir, runInTmpDir } from '../testUtil'
+import { dataDir, copyDir, runInTmpDir } from '../testUtil'
 import { runCommand } from '@oclif/test'
 
 const configPath = dataDir('indexing_config.json')
@@ -20,22 +20,6 @@ const volvoxDir = path.join(
   'test_data',
   'volvox',
 )
-
-function mockRemote1(exampleSite: Scope) {
-  return exampleSite
-    .get('/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3')
-    .reply(200, () =>
-      fs.createReadStream(dataDir('au9_scaffold_subset_sync.gff3')),
-    )
-}
-
-function mockRemote2(exampleSite: Scope) {
-  return exampleSite
-    .get(
-      '/GMOD/jbrowse-components/raw/main/test_data/volvox/volvox.sort.gff3.gz',
-    )
-    .reply(200, fs.createReadStream(dataDir('volvox.sort.gff3.gz')))
-}
 
 const ixLoc = (loc: string, b = 'volvox') => path.join(loc, 'trix', b + '.ix')
 const ixxLoc = (loc: string, b = 'volvox') => path.join(loc, 'trix', b + '.ixx')
@@ -66,7 +50,8 @@ function verifyIxxFiles(ctx: string, base = 'volvox') {
   expect(ixxdata).toMatchSnapshot()
 }
 
-// Cleaning up exitCode in Node.js 20, xref https://github.com/jestjs/jest/issues/14501
+// Cleaning up exitCode in Node.js 20, xref
+// https://github.com/jestjs/jest/issues/14501
 afterAll(() => (process.exitCode = 0))
 
 test('fails if no track ids are provided with --tracks flag.', async () => {
