@@ -9,6 +9,7 @@ import { SessionWithWidgets } from '@jbrowse/core/util'
 const useStyles = makeStyles()({
   paper: {
     overflow: 'auto',
+    minWidth: 800,
   },
 })
 
