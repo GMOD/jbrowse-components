@@ -543,13 +543,14 @@ Set a default session with views and tracks
 
 ```
 USAGE
-  $ jbrowse set-default-session -s <value> [-n <value>] [-c] [--target <value>] [--out <value>] [--delete] [-h]
+  $ jbrowse set-default-session [-s <value>] [-n <value>] [-c] [--target <value>] [--out <value>] [--delete] [-h]
 
 FLAGS
   -c, --currentSession   List out the current default session
   -h, --help             Show CLI help.
   -n, --name=<value>     [default: New Default Session] Give a name for the default session
-  -s, --session=<value>  (required) set path to a file containing session in json format
+  -s, --session=<value>  set path to a file containing session in json format (required, unless using
+                         delete/currentSession flags)
       --delete           Delete any existing default session.
       --out=<value>      synonym for target
       --target=<value>   path to config file in JB2 installation directory to write out to

@@ -37,8 +37,8 @@ export default class SetDefaultSession extends JBrowseCommand {
   static flags = {
     session: Flags.string({
       char: 's',
-      description: 'set path to a file containing session in json format',
-      required: true,
+      description:
+        'set path to a file containing session in json format (required, unless using delete/currentSession flags)',
     }),
     name: Flags.string({
       char: 'n',
@@ -83,7 +83,7 @@ export default class SetDefaultSession extends JBrowseCommand {
       )
       this.exit()
     } else if (!session) {
-      this.error(`Please provide a default session file`, { exit: 120 })
+      this.error(`Please provide a --session file`, { exit: 120 })
     } else if (session) {
       await this.writeJsonFile(this.target, {
         ...configContents,
