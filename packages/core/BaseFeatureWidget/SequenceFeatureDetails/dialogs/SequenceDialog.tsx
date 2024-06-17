@@ -52,10 +52,7 @@ const SequenceDialog = observer(function ({
     >
       <DialogContent className={classes.dialogContent}>
         <div>
-          <SequenceTypeSelector
-            feature={feature}
-            model={sequenceFeatureDetails}
-          />
+          <SequenceTypeSelector model={sequenceFeatureDetails} />
           <SequenceFeatureMenu
             ref={seqPanelRef}
             model={sequenceFeatureDetails}

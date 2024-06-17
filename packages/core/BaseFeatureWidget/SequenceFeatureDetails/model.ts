@@ -2,7 +2,11 @@ import { types, addDisposer, Instance } from 'mobx-state-tree'
 import { autorun } from 'mobx'
 
 // locals
-import { localStorageGetItem, localStorageSetItem } from '../../util'
+import {
+  SimpleFeatureSerialized,
+  localStorageGetItem,
+  localStorageSetItem,
+} from '../../util'
 
 function localStorageGetNumber(key: string, defaultVal: number) {
   return +(localStorageGetItem(key) ?? defaultVal)
@@ -22,32 +26,78 @@ export function SequenceFeatureDetailsF() {
           localStorageGetItem('sequenceFeatureDetails-upperCaseCDS') || 'true',
         ),
       ),
-      width: 100,
+      charactersPerRow: 100,
+      feature: undefined as SimpleFeatureSerialized | undefined,
       mode: '',
     }))
-    .views(self => ({
-      get showCoordinates() {
-        return self.showCoordinatesSetting !== 'none'
-      },
-      get showGenomicCoordsOption() {
-        return self.mode === 'gene' || self.mode === 'gene_updownstream'
-      },
-    }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      setFeature(f: SimpleFeatureSerialized) {
+        self.feature = f
+      },
+      /**
+       * #action
+       */
       setUpDownBp(f: number) {
         self.upDownBp = f
       },
+      /**
+       * #action
+       */
       setIntronBp(f: number) {
         self.intronBp = f
       },
+      /**
+       * #action
+       */
       setUpperCaseCDS(f: boolean) {
         self.upperCaseCDS = f
       },
+      /**
+       * #action
+       */
       setShowCoordinates(f: 'none' | 'relative' | 'genomic') {
         self.showCoordinatesSetting = f
       },
+      /**
+       * #action
+       */
       setMode(mode: string) {
         self.mode = mode
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get showCoordinates() {
+        return self.showCoordinatesSetting !== 'none'
+      },
+      /**
+       * #getter
+       */
+      get showGenomicCoordsOption() {
+        return self.mode === 'gene' || self.mode === 'gene_updownstream'
+      },
+      /**
+       * #getter
+       */
+      get hasCDS() {
+        return self.feature?.subfeatures?.some(sub => sub.type === 'CDS')
+      },
+      /**
+       * #getter
+       */
+      get hasExon() {
+        return self.feature?.subfeatures?.some(sub => sub.type === 'exon')
+      },
+      /**
+       * #getter
+       */
+      get hasExonOrCDS() {
+        return this.hasExon || this.hasCDS
       },
     }))
     .actions(self => ({
@@ -70,6 +120,14 @@ export function SequenceFeatureDetailsF() {
             localStorageSetItem(
               'sequenceFeatureDetails-showCoordinatesSetting',
               self.showCoordinatesSetting,
+            )
+          }),
+        )
+        addDisposer(
+          self,
+          autorun(() => {
+            self.setMode(
+              self.hasCDS ? 'cds' : self.hasExon ? 'cdna' : 'genomic',
             )
           }),
         )
