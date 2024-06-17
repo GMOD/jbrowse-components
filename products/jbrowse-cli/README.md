@@ -67,9 +67,9 @@ Add an assembly to a JBrowse 2 configuration
 
 ```
 USAGE
-  $ jbrowse add-assembly SEQUENCE [-t indexedFasta|bgzipFasta|twoBit|chromSizes|custom] [-n <value>] [-a <value>]
-    [--displayName <value>] [--faiLocation <value>] [--gziLocation <value>] [--refNameAliasesType aliases|custom
-    --refNameAliases <value>] [--refNameColors <value>] [--target <value>] [--out <value>] [-h] [-l
+  $ jbrowse add-assembly SEQUENCE [-t indexedFasta|bgzipFasta|twoBit|chromSizes|custom] [-n <value>] [-a
+    <value>...] [--displayName <value>] [--faiLocation <value>] [--gziLocation <value>] [--refNameAliasesType
+    aliases|custom --refNameAliases <value>] [--refNameColors <value>] [--target <value>] [--out <value>] [-h] [-l
     copy|symlink|move|inPlace] [--skipCheck] [--overwrite] [-f]
 
 ARGUMENTS
@@ -477,7 +477,7 @@ DESCRIPTION
 ```
 
 _See code:
-[@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.0.22/src/commands/help.ts)_
+[@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.2.3/src/commands/help.ts)_
 
 ## `jbrowse make-pif FILE`
 
@@ -608,8 +608,8 @@ Make a text-indexing file for any given track(s).
 ```
 USAGE
   $ jbrowse text-index [-h] [--tracks <value>] [--target <value>] [--out <value>] [--attributes <value>] [-a
-    <value>] [--force] [-q] [--perTrack] [--exclude <value>] [--prefixSize <value>] [--file <value>] [--fileId <value>]
-    [--dryrun]
+    <value>] [--force] [-q] [--perTrack] [--exclude <value>] [--prefixSize <value>] [--file <value>...] [--fileId
+    <value>...] [--dryrun]
 
 FLAGS
   -a, --assemblies=<value>  Specify the assembl(ies) to create an index for. If unspecified, creates an index for each

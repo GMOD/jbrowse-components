@@ -4,8 +4,11 @@
 
 import fs from 'fs'
 import path from 'path'
-import { Scope } from 'nock'
-import { setup } from '../testUtil'
+import nock from 'nock'
+import { runCommand } from '@oclif/test'
+
+// locals
+import { runInTmpDir } from '../testUtil'
 
 const { readdir } = fs.promises
 
@@ -22,34 +25,14 @@ const releaseArray = [
   },
 ]
 
-function mockTagFail(gitHubApi: Scope) {
-  return gitHubApi
-    .get('/repos/GMOD/jbrowse-components/releases/tags/v999.999.999')
-    .reply(404, {})
-}
-
-function mockTagSuccess(gitHubApi: Scope) {
-  return gitHubApi
-    .get('/repos/GMOD/jbrowse-components/releases/tags/v0.0.1')
-    .reply(200, releaseArray[0])
-}
-
-function mockReleases(gitHubApi: Scope) {
-  return gitHubApi
+function mockReleases() {
+  nock('https://api.github.com')
     .get('/repos/GMOD/jbrowse-components/releases?page=1')
     .reply(200, releaseArray)
 }
 
-function mockReleasesListVersions(gitHubApi: Scope) {
-  return gitHubApi
-    .get('/repos/GMOD/jbrowse-components/releases?page=1')
-    .reply(200, releaseArray)
-    .get('/repos/GMOD/jbrowse-components/releases?page=2')
-    .reply(200, [])
-}
-
-function mockZip(exampleSite: Scope) {
-  return exampleSite
+function mockZip() {
+  nock('https://example.com')
     .get('/jbrowse-web-v0.0.1.zip')
     .replyWithFile(
       200,
@@ -58,110 +41,118 @@ function mockZip(exampleSite: Scope) {
     )
 }
 
-function mockWrongSite(exampleSite: Scope) {
-  return exampleSite
-    .get('/jbrowse-web-v0.0.1.json')
-    .reply(200, 'I am the wrong type', { 'Content-Type': 'application/json' })
-}
-
-// Cleaning up exitCode in Node.js 20, xref https://github.com/jestjs/jest/issues/14501
+// Cleaning up exitCode in Node.js 20, xref
+// https://github.com/jestjs/jest/issues/14501
 afterAll(() => (process.exitCode = 0))
 
-describe('create', () => {
-  setup
-    .command(['create'])
-    .catch(err => {
-      expect(err.message).toContain('Missing 1 required arg:')
-      expect(err.message).toContain(
-        'localPath  Location where JBrowse 2 will be installed',
-      )
-      expect(err.message).toContain('See more help with --help')
-    })
-    .it('fails if no path is provided to the command')
-  setup
-    .command(['create', '--force'])
-    .catch(err => {
-      expect(err.message).toContain('Missing 1 required arg:')
-      expect(err.message).toContain(
-        'localPath  Location where JBrowse 2 will be installed',
-      )
-      expect(err.message).toContain('See more help with --help')
-    })
-    .it('fails if no path is provided to the command even with force')
-  setup
-    .command(['create', '.'])
-    .exit(120)
-    .it(
-      'fails if user selects a directory that already has existing files, no force flag',
-    )
-  setup
-    .nock('https://example.com', mockWrongSite)
-    .command([
+test('fails if no path is provided to the command', async () => {
+  await runInTmpDir(async () => {
+    const { error } = await runCommand(['create'])
+    expect(error?.message).toMatchSnapshot()
+  })
+})
+
+test('fails if no path is provided to the command, even with force', async () => {
+  await runInTmpDir(async () => {
+    const { error } = await runCommand(['create', '--force'])
+    expect(error?.message).toMatchSnapshot()
+  })
+})
+
+test('fails if user selects a directory that already has existing files', async () => {
+  await runInTmpDir(async () => {
+    nock('https://example.com')
+      .get('/jbrowse-web-v0.0.1.json')
+      .reply(200, 'I am the wrong type', { 'Content-Type': 'application/json' })
+    const { error } = await runCommand(['create', '.'])
+    expect(error?.message).toMatchSnapshot()
+  })
+})
+test('fails if the fetch does not return the right file', async () => {
+  await runInTmpDir(async () => {
+    const { error } = await runCommand([
       'create',
       'jbrowse',
       '--url',
       'https://example.com/jbrowse-web-v0.0.1.json',
     ])
-    .exit(2)
-    .it('fails if the fetch does not return the right file')
-  setup
-    .nock('https://api.github.com', mockReleases)
-    .nock('https://example.com', mockZip)
-    .command(['create', 'jbrowse'])
-    .it('download and unzips JBrowse 2 to new directory', async ctx => {
-      expect(await readdir(path.join(ctx.dir, 'jbrowse'))).toContain(
-        'manifest.json',
-      )
-    })
-  setup
+    expect(error?.message).toMatchSnapshot()
+  })
+})
 
-    .nock('https://example.com', mockZip)
-    .command([
+test('download and unzips to new directory', async () => {
+  await runInTmpDir(async ctx => {
+    mockReleases()
+    mockZip()
+    await runCommand(['create', 'jbrowse'])
+    expect(await readdir(path.join(ctx.dir, 'jbrowse'))).toContain(
+      'manifest.json',
+    )
+  })
+})
+
+test('downloads from a url', async () => {
+  await runInTmpDir(async ctx => {
+    mockZip()
+    await runCommand([
       'create',
       'jbrowse',
       '--url',
       'https://example.com/jbrowse-web-v0.0.1.zip',
     ])
-    .it('upgrades a directory from a url', async ctx => {
-      expect(await readdir(path.join(ctx.dir, 'jbrowse'))).toContain(
-        'manifest.json',
-      )
-    })
-  setup
-
-    .nock('https://api.github.com', mockTagSuccess)
-
-    .nock('https://example.com', mockZip)
-    .command(['create', 'jbrowse', '--tag', 'v0.0.1', '--force'])
-    .it(
-      'overwrites and succeeds in downloading JBrowse in a non-empty directory with version #',
-      async ctx => {
-        expect(await readdir(path.join(ctx.dir, 'jbrowse'))).toContain(
-          'manifest.json',
-        )
-      },
+    expect(await readdir(path.join(ctx.dir, 'jbrowse'))).toContain(
+      'manifest.json',
     )
-  setup
+  })
+})
 
-    .nock('https://api.github.com', mockTagFail)
-    .command(['create', 'jbrowse', '--tag', 'v999.999.999', '--force'])
-    .catch(/Could not find version/)
-    .it('fails to download a version that does not exist')
-  setup
+test('overwrites and succeeds in download in a non-empty directory with tag', async () => {
+  await runInTmpDir(async ctx => {
+    nock('https://api.github.com')
+      .get('/repos/GMOD/jbrowse-components/releases/tags/v0.0.1')
+      .reply(200, releaseArray[0])
+    mockZip()
+    await runCommand(['create', 'jbrowse', '--tag', 'v0.0.1', '--force'])
+    expect(await readdir(path.join(ctx.dir, 'jbrowse'))).toContain(
+      'manifest.json',
+    )
+  })
+})
 
-    .nock('https://api.github.com', mockReleases)
+test('fails to download a version that does not exist', async () => {
+  await runInTmpDir(async () => {
+    nock('https://api.github.com')
+      .get('/repos/GMOD/jbrowse-components/releases/tags/v999.999.999')
+      .reply(404, {})
+    const { error } = await runCommand([
+      'create',
+      'jbrowse',
+      '--tag',
+      'v999.999.999',
+      '--force',
+    ])
+    expect(error?.message).toMatchSnapshot()
+  })
+})
 
-    .nock('https://example.com', mockZip)
-    .command(['create', 'jbrowse'])
-    .command(['create', 'jbrowse'])
-    .exit(120)
-    .it('fails because this directory is already set up')
-  setup
+test('fails because this directory is already set up', async () => {
+  await runInTmpDir(async () => {
+    mockReleases()
+    mockZip()
+    await runCommand(['create', 'jbrowse'])
+    const { error } = await runCommand(['create', 'jbrowse'])
+    expect(error?.message).toMatchSnapshot()
+  })
+})
 
-    .nock('https://api.github.com', mockReleasesListVersions)
-    .command(['create', '--listVersions'])
-    .catch(/0/)
-    .it('lists versions', ctx => {
-      expect(ctx.stdout).toBe('All JBrowse versions:\nv0.0.1\n')
-    })
+test('lists versions', async () => {
+  await runInTmpDir(async () => {
+    nock('https://api.github.com')
+      .get('/repos/GMOD/jbrowse-components/releases?page=1')
+      .reply(200, releaseArray)
+      .get('/repos/GMOD/jbrowse-components/releases?page=2')
+      .reply(200, [])
+    const { stdout } = await runCommand(['create', '--listVersions'])
+    expect(stdout).toBe('All JBrowse versions:\nv0.0.1\n')
+  })
 })

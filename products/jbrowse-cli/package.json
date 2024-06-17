@@ -45,7 +45,7 @@
     "docs:version:add": "git add README.md"
   },
   "dependencies": {
-    "@oclif/core": "^3.22.0",
+    "@oclif/core": "^4.0.6",
     "@oclif/plugin-help": "^6.0.15",
     "boxen": "^4.2.0",
     "chalk": "^4.1.0",
