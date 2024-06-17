@@ -12,8 +12,8 @@ export function SequenceFeatureDetailsF() {
   return types
     .model('SequenceFeatureDetails')
     .volatile(() => ({
-      showCoordinates2:
-        localStorageGetItem('sequenceFeatureDetails-showCoordinates2') ||
+      showCoordinatesSetting:
+        localStorageGetItem('sequenceFeatureDetails-showCoordinatesSetting') ||
         'none',
       intronBp: localStorageGetNumber('sequenceFeatureDetails-intronBp', 10),
       upDownBp: localStorageGetNumber('sequenceFeatureDetails-upDownBp', 100),
@@ -23,10 +23,14 @@ export function SequenceFeatureDetailsF() {
         ),
       ),
       width: 100,
+      mode: '',
     }))
     .views(self => ({
       get showCoordinates() {
-        return self.showCoordinates2 !== 'none'
+        return self.showCoordinatesSetting !== 'none'
+      },
+      get showGenomicCoordsOption() {
+        return self.mode === 'gene' || self.mode === 'gene_updownstream'
       },
     }))
     .actions(self => ({
@@ -39,8 +43,11 @@ export function SequenceFeatureDetailsF() {
       setUpperCaseCDS(f: boolean) {
         self.upperCaseCDS = f
       },
-      setShowCoordinates(f: string) {
-        self.showCoordinates2 = f
+      setShowCoordinates(f: 'none' | 'relative' | 'genomic') {
+        self.showCoordinatesSetting = f
+      },
+      setMode(mode: string) {
+        self.mode = mode
       },
     }))
     .actions(self => ({
@@ -61,8 +68,8 @@ export function SequenceFeatureDetailsF() {
               JSON.stringify(self.upperCaseCDS),
             )
             localStorageSetItem(
-              'sequenceFeatureDetails-showCoordinates2',
-              self.showCoordinates2,
+              'sequenceFeatureDetails-showCoordinatesSetting',
+              self.showCoordinatesSetting,
             )
           }),
         )

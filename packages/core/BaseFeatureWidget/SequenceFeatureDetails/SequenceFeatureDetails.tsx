@@ -37,14 +37,10 @@ const SequenceFeatureDetails = observer(function ({
     force,
   )
 
-  const [mode, setMode] = useState('cds')
-
   return (
     <>
       <div>
         <SequenceTypeSelector
-          mode={mode}
-          setMode={setMode}
           feature={feature}
           model={sequenceFeatureDetails}
         />
@@ -92,7 +88,6 @@ const SequenceFeatureDetails = observer(function ({
               <SequencePanel
                 ref={seqPanelRef}
                 feature={feature}
-                mode={mode}
                 sequence={sequence}
                 model={sequenceFeatureDetails}
               />

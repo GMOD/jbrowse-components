@@ -6,23 +6,24 @@ const SequenceDisplay = observer(function ({
   chunks,
   start,
   color,
+  strand = 1,
   coordStart = start,
-  coordMultiplier = 1,
   model,
 }: {
   chunks: string[]
   start: number
   coordStart?: number
-  coordMultiplier?: number
+  strand?: number
   color?: string
   model: SequenceFeatureDetailsModel
 }) {
   const { width, showCoordinates } = model
+
   return chunks.map((chunk, idx) => {
     const f = coordStart - (start % 100)
     const prefix =
       (idx == 0 && start % width == 0) || idx > 0
-        ? `${f + idx * width * coordMultiplier}`.padStart(4) + '   '
+        ? `${f + idx * strand * width}`.padStart(4) + '   '
         : ''
     const postfix =
       idx === chunks.length - 1 &&
