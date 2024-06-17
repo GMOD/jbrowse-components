@@ -10,6 +10,20 @@ import { SequenceFeatureDetailsF } from './model'
 import DLGAP3 from './test_data/DLGAP3'
 import NCDN from './test_data/NCDN'
 
+const f = {
+  start: 1200,
+  end: 1500,
+  refName: 'chr1',
+  strand: 1,
+  type: 'mRNA',
+  uniqueId: 'unique',
+  name: 'made_up',
+  subfeatures: [
+    { refName: 'chr1', start: 1200, end: 1500, type: 'exon' },
+    { refName: 'chr1', start: 1200, end: 1500, type: 'CDS' },
+  ],
+}
+
 const readFasta = (filename: string) => {
   return fs
     .readFileSync(require.resolve(filename), 'utf8')
@@ -129,18 +143,7 @@ test('NCDN updownstream', () => {
   )
 
   const element = getByTestId('sequence_panel')
-
   expect(element.textContent).toMatchSnapshot()
-
-  // expect(element.children[1].textContent).toEqual(
-  //   'AGTGGGCAACGCGGCGTGAGCAGCGGCCCGAGGCTCCCGGAGCATCGCGCTGGGAGAAGACTTCGCCGCTCGGGGCCGCAGCCTGGTGAGCTCAGCCCCCTTCGGGCCCTCCCCTGCATCCCAGCCGGGGCCTCTCCGAGCCGGCGCTGATCGATGCCGACACACCCCGGGGACCCTATCGCGACTCCATCGCGCCATATCGCGACACCATCGTGCCCTGTCGAGACTCCATTTTGTCACAGCCCTTTTCAATATATATCTTTTTTTTTTTTAATTTGCCCTGTCATCTTTGGGGGCTGTCTCCCATGTCGTGATTTTGACGTGATCTCTCCGTGACATCACCGCGCCATCGTGAAGTGTGATCTCATCGCCGCCCTGTCGTGACTTCATCA',
-  // )
-
-  // 3rd is a blank element, so go to 4th, not strictly needed for 3rd to be
-  // blank but helps test
-  // expect(element.children[3].textContent).toEqual(
-  //   'ATGTCGTGTTGTGACCTGGCTGCGGCGGGACAG',
-  // )
 })
 
 test('single exon cDNA should not have duplicate sequences', () => {
@@ -148,21 +151,7 @@ test('single exon cDNA should not have duplicate sequences', () => {
   const model = SequenceFeatureDetailsF().create()
   model.setMode('cdna')
   const { getByTestId } = render(
-    <SequencePanel
-      model={model}
-      sequence={{ seq }}
-      feature={{
-        start: 1200,
-        end: 1500,
-        refName: 'chr1',
-        type: 'mRNA',
-        uniqueId: 'unique',
-        subfeatures: [
-          { refName: 'chr1', start: 1200, end: 1500, type: 'exon' },
-          { refName: 'chr1', start: 1200, end: 1500, type: 'CDS' },
-        ],
-      }}
-    />,
+    <SequencePanel model={model} sequence={{ seq }} feature={f} />,
   )
 
   const element = getByTestId('sequence_panel')
@@ -176,4 +165,30 @@ test('single exon cDNA should not have duplicate sequences', () => {
   ).toEqual(
     'ATGTCACCTCGGGTACTGCCTCTATTACAGAGGTATCTTAATGGCGCATCCAGCCTTGTGGCTGGGTCTACGTACGCGTGGGCACCATACGTATGTTGGCAGGAAAGGTCAATCATGCTTGTTTCCTCGTCGCAGAAACGTTCACACTATTGGCTCGCGGGATCGAACGGGCCTGATTATTTTTCCAGCTCCTGCGTTCCTATCACGCCAACTGTCGCTAATAAAATGTTATATAGAGATAACCCATTGCTATGCAAGGATGGAGAAACCGCTTCACAACACCCTAGAATTACTTCAGCA',
   )
+})
+
+test('single exon cDNA display genomic coords', () => {
+  const seq = readFasta('./test_data/volvox.fa')
+  const model = SequenceFeatureDetailsF().create()
+  model.setMode('gene')
+  model.setShowCoordinates('genomic')
+  const { getByTestId } = render(
+    <SequencePanel model={model} sequence={{ seq }} feature={f} />,
+  )
+
+  const element = getByTestId('sequence_panel')
+  expect(element.textContent).toMatchSnapshot()
+})
+
+test('single exon cDNA display relative coords', () => {
+  const seq = readFasta('./test_data/volvox.fa')
+  const model = SequenceFeatureDetailsF().create()
+  model.setMode('gene')
+  model.setShowCoordinates('relative')
+  const { getByTestId } = render(
+    <SequencePanel model={model} sequence={{ seq }} feature={f} />,
+  )
+
+  const element = getByTestId('sequence_panel')
+  expect(element.textContent).toMatchSnapshot()
 })
