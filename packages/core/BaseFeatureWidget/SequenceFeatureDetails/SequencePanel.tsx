@@ -5,6 +5,7 @@ import {
   defaultCodonTable,
   generateCodonTable,
   revcom,
+  toLocale,
 } from '../../util'
 import {
   SeqState,
@@ -137,9 +138,9 @@ const SequencePanel = observer(
             <div style={{ background: 'white' }}>
               {`>${[
                 (feature.name || feature.id) + '-' + mode,
-                `${feature.refName}:${feature.start + 1}-${feature.end}(${getStrand(feature.strand as number)})`,
+                `${feature.refName}:${toLocale(feature.start + 1)}-${toLocale(feature.end)}(${getStrand(feature.strand as number)})`,
                 mode.endsWith('updownstream')
-                  ? `+/- ${model.upDownBp} up/downstream bp`
+                  ? `+/- ${toLocale(model.upDownBp)} up/downstream bp`
                   : '',
               ]
                 .filter(f => !!f)
