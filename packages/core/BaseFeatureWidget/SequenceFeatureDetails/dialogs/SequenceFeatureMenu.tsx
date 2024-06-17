@@ -28,7 +28,7 @@ const SequenceFeatureMenu = observer(
       throw new Error('needs a non function ref')
     }
     const [showSettings, setShowSettings] = useState(false)
-    const { showCoordinates2 } = model
+    const { showCoordinatesSetting, showGenomicCoordsOption } = model
 
     return (
       <>
@@ -90,15 +90,26 @@ const SequenceFeatureMenu = observer(
                 {
                   label: 'No coordinates',
                   type: 'radio',
-                  checked: showCoordinates2 === 'none',
+                  checked: showCoordinatesSetting === 'none',
                   onClick: () => model.setShowCoordinates('none'),
                 },
                 {
                   label: 'Coordinates relative to feature start',
                   type: 'radio',
-                  checked: showCoordinates2 === 'relative',
+                  checked: showCoordinatesSetting === 'relative',
                   onClick: () => model.setShowCoordinates('relative'),
                 },
+                ...(showGenomicCoordsOption
+                  ? [
+                      {
+                        label:
+                          'Coordinates relative to genome (only available for continuous genome based sequence types)',
+                        type: 'radio' as const,
+                        checked: showCoordinatesSetting === 'genomic',
+                        onClick: () => model.setShowCoordinates('genomic'),
+                      },
+                    ]
+                  : []),
               ],
             },
             {

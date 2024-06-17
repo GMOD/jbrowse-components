@@ -23,7 +23,6 @@ import { observer } from 'mobx-react'
 interface SequencePanelProps {
   sequence: SeqState
   feature: SimpleFeatureSerialized
-  mode: string
   model: SequenceFeatureDetailsModel
 }
 
@@ -73,8 +72,8 @@ function NoWordWrap({ children }: { children: React.ReactNode }) {
 const SequencePanel = observer(
   React.forwardRef<HTMLDivElement, SequencePanelProps>(
     function SequencePanel2(props, ref) {
-      const { model, feature, mode } = props
-      const { showCoordinates } = model
+      const { model, feature } = props
+      const { showCoordinates, mode } = model
       let {
         sequence: { seq, upstream = '', downstream = '' },
       } = props
@@ -161,6 +160,7 @@ const SequencePanel = observer(
               <CDNASequence
                 model={model}
                 exons={exons}
+                feature={feature}
                 cds={cds}
                 utr={utr}
                 sequence={seq}
@@ -176,6 +176,7 @@ const SequencePanel = observer(
               <CDNASequence
                 model={model}
                 exons={exons}
+                feature={feature}
                 cds={cds}
                 utr={utr}
                 sequence={seq}
@@ -185,6 +186,7 @@ const SequencePanel = observer(
               <CDNASequence
                 model={model}
                 exons={exons}
+                feature={feature}
                 cds={cds}
                 sequence={seq}
                 utr={utr}
@@ -195,6 +197,7 @@ const SequencePanel = observer(
               <CDNASequence
                 model={model}
                 exons={exons}
+                feature={feature}
                 cds={cds}
                 sequence={seq}
                 utr={utr}
@@ -206,6 +209,7 @@ const SequencePanel = observer(
               <CDNASequence
                 model={model}
                 exons={exons}
+                feature={feature}
                 cds={cds}
                 sequence={seq}
                 utr={utr}
