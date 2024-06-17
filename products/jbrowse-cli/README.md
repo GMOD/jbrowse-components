@@ -549,7 +549,8 @@ FLAGS
   -c, --currentSession   List out the current default session
   -h, --help             Show CLI help.
   -n, --name=<value>     [default: New Default Session] Give a name for the default session
-  -s, --session=<value>  set path to a file containing session in json format
+  -s, --session=<value>  set path to a file containing session in json format (required, unless using
+                         delete/currentSession flags)
       --delete           Delete any existing default session.
       --out=<value>      synonym for target
       --target=<value>   path to config file in JB2 installation directory to write out to
@@ -558,11 +559,19 @@ DESCRIPTION
   Set a default session with views and tracks
 
 EXAMPLES
+  # set default session for the config.json in your current directory
+
   $ jbrowse set-default-session --session /path/to/default/session.json
 
-  $ jbrowse set-default-session --target /path/to/jb2/installation/config.json
 
-  $ jbrowse set-default-session --view LinearGenomeView, --name newName
+
+  # make session.json the defaultSession on the specified target config.json file
+
+  $ jbrowse set-default-session --target /path/to/jb2/installation/config.json --session session.json
+
+
+
+  # print current default session
 
   $ jbrowse set-default-session --currentSession # Prints out current default session
 ```
