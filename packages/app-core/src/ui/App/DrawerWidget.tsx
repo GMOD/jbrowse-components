@@ -1,16 +1,16 @@
-import React, { Suspense, useState } from 'react'
+import React, { Suspense, lazy, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 
 import { observer } from 'mobx-react'
 import { getEnv } from '@jbrowse/core/util'
-import LoadingEllipses from '@jbrowse/core/ui/LoadingEllipses'
-import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
+import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
 
 // locals
 import Drawer from './Drawer'
 import DrawerHeader from './DrawerHeader'
-import { Dialog } from '@jbrowse/core/ui'
+
+const ModalWidget = lazy(() => import('./ModalWidget'))
 
 const DrawerWidget = observer(function ({
   session,
@@ -51,7 +51,13 @@ const DrawerWidget = observer(function ({
         >
           {DrawerComponent ? (
             popoutDrawer ? (
-              <div>Opened in dialog...</div>
+              <>
+                <div>Opened in dialog...</div>
+                <ModalWidget
+                  session={session}
+                  onClose={() => setPopoutDrawer(false)}
+                />
+              </>
             ) : (
               <>
                 <DrawerComponent
@@ -65,25 +71,6 @@ const DrawerWidget = observer(function ({
           ) : null}
         </ErrorBoundary>
       </Suspense>
-      {popoutDrawer ? (
-        <Dialog
-          title=""
-          open
-          maxWidth="xl"
-          onClose={() => setPopoutDrawer(false)}
-        >
-          {DrawerComponent ? (
-            <>
-              <DrawerComponent
-                model={visibleWidget}
-                session={session}
-                toolbarHeight={toolbarHeight}
-              />
-              <div style={{ height: 300 }} />
-            </>
-          ) : null}
-        </Dialog>
-      ) : null}
     </Drawer>
   )
 })
