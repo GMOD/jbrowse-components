@@ -52,7 +52,7 @@ test('fails if no track is specified', async () => {
 
 test('fails if load flag is not passed in for a localFile', async () => {
   const { error } = await runCommand(['add-track', simpleBam])
-  expect(error).toMatchSnapshot()
+  expect(error?.message).toMatchSnapshot()
 })
 
 test('fails if URL with load flag is passed', async () => {
@@ -62,7 +62,7 @@ test('fails if URL with load flag is passed', async () => {
     '--load',
     'inPlace',
   ])
-  expect(error).toMatchSnapshot()
+  expect(error?.message).toMatchSnapshot()
 })
 
 test('cannot add a track with the same track id', async () => {
@@ -75,7 +75,7 @@ test('cannot add a track with the same track id', async () => {
       '--load',
       'copy',
     ])
-    expect(error).toMatchSnapshot()
+    expect(error?.message).toMatchSnapshot()
   })
 })
 
@@ -131,7 +131,7 @@ test('cannot add a track if there is no config file', async () => {
       '--load',
       'copy',
     ])
-    expect(error).toMatchSnapshot()
+    expect(error?.message).toMatchSnapshot()
   })
 })
 test('fails if it cannot assume the assemblyname', async () => {
@@ -145,7 +145,7 @@ test('fails if it cannot assume the assemblyname', async () => {
       'copy',
     ])
 
-    expect(error).toMatchSnapshot()
+    expect(error?.message).toMatchSnapshot()
   })
 })
 
@@ -155,7 +155,7 @@ test('adds a bam track with bai', async () => {
     await runCommand(['add-track', simpleBam, '--load', 'copy'])
     expect(exists(path.join(ctx.dir, 'simple.bam'))).toBeTruthy()
     expect(exists(path.join(ctx.dir, 'simple.bam.bai'))).toBeTruthy()
-    expect(readConf(ctx)).toMatchSnapshot()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
   })
 })
 
@@ -172,7 +172,7 @@ test('adds a bam track with csi', async () => {
     ])
     expect(exists(path.join(ctx.dir, 'simple.bam'))).toBeTruthy()
     expect(exists(path.join(ctx.dir, 'simple.bam.csi'))).toBeTruthy()
-    expect(readConf(ctx)).toMatchSnapshot()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
   })
 })
 
@@ -185,7 +185,7 @@ test('adds a bam track with load inPlace', async () => {
       '--load',
       'inPlace',
     ])
-    expect(readConf(ctx)).toMatchSnapshot()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
   })
 })
 
@@ -200,7 +200,7 @@ test('adds a bam+bai track with load inPlace', async () => {
       '--indexFile',
       '/something/else/random.bai',
     ])
-    expect(readConf(ctx)).toMatchSnapshot()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
   })
 })
 
@@ -217,7 +217,7 @@ test('adds a bam track with indexFile for bai', async () => {
     ])
     expect(exists(ctxDir(ctx, 'simple.bam'))).toBeTruthy()
     expect(exists(ctxDir(ctx, 'simple.bai'))).toBeTruthy()
-    expect(readConf(ctx)).toMatchSnapshot()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
   })
 })
 
@@ -235,7 +235,7 @@ test('adds a bam track with subDir', async () => {
 
     expect(exists(ctxDir(ctx, 'bam/simple.bam'))).toBeTruthy()
     expect(exists(ctxDir(ctx, 'bam/simple.bam.bai'))).toBeTruthy()
-    expect(readConf(ctx)).toMatchSnapshot()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
   })
 })
 
@@ -256,7 +256,7 @@ test('adds a bam track with subDir and localPath protocol', async () => {
 
     expect(exists(ctxDir(ctx, 'bam/simple.bam'))).toBeTruthy()
     expect(exists(ctxDir(ctx, 'bam/simple.bam.bai'))).toBeTruthy()
-    expect(readConf(ctx)).toMatchSnapshot()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
   })
 })
 
@@ -285,7 +285,7 @@ test('adds a bam track with all the custom fields', async () => {
       '{"defaultRendering":"test"}',
     ])
 
-    expect(readConf(ctx)).toMatchSnapshot()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
   })
 })
 
@@ -295,7 +295,7 @@ test('adds a bam track from a url', async () => {
 
     await runCommand(['add-track', 'https://mysite.com/data/simple.bam'])
 
-    expect(readConf(ctx)).toMatchSnapshot()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
   })
 })
 
@@ -312,7 +312,7 @@ test('fails multiple assemblies exist but no assemblyNames passed', async () => 
       'copy',
     ])
 
-    expect(error).toMatchSnapshot()
+    expect(error?.message).toMatchSnapshot()
   })
 })
 
@@ -341,7 +341,7 @@ test('adds a plaintext gff', async () => {
 
     await runCommand(['add-track', simpleGff, '--load', 'copy'])
     expect(exists(ctxDir(ctx, 'volvox.sort.gff3'))).toBeTruthy()
-    expect(readConf(ctx)).toMatchSnapshot()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
   })
 })
 
@@ -351,7 +351,7 @@ test('adds a plaintext vcf', async () => {
 
     await runCommand(['add-track', simpleVcf, '--load', 'copy'])
     expect(exists(ctxDir(ctx, 'volvox.filtered.vcf'))).toBeTruthy()
-    expect(readConf(ctx)).toMatchSnapshot()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
   })
 })
 
@@ -360,7 +360,7 @@ test('adds a plaintext gtf', async () => {
     await initctx(ctx)
     await runCommand(['add-track', simpleGtf, '--load', 'copy'])
     expect(exists(ctxDir(ctx, 'volvox.sorted.gtf'))).toBeTruthy()
-    expect(readConf(ctx)).toMatchSnapshot()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
   })
 })
 
@@ -371,7 +371,7 @@ test('adds a plaintext bed', async () => {
 
     expect(exists(ctxDir(ctx, 'volvox.bed'))).toBeTruthy()
 
-    expect(readConf(ctx)).toMatchSnapshot()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
   })
 })
 
@@ -382,7 +382,7 @@ test('adds a plaintext bedpe', async () => {
 
     expect(exists(ctxDir(ctx, 'volvox.bedpe'))).toBeTruthy()
 
-    expect(readConf(ctx)).toMatchSnapshot()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
   })
 })
 
@@ -395,7 +395,7 @@ test('adds a tabix gff with tbi', async () => {
     expect(exists(ctxDir(ctx, 'volvox.sort.gff3.gz'))).toBeTruthy()
     expect(exists(ctxDir(ctx, 'volvox.sort.gff3.gz.tbi'))).toBeTruthy()
 
-    expect(readConf(ctx)).toMatchSnapshot()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
   })
 })
 
@@ -415,7 +415,7 @@ test('adds a tabix gff with csi', async () => {
     expect(exists(ctxDir(ctx, 'volvox.sort.gff3.gz'))).toBeTruthy()
     expect(exists(ctxDir(ctx, 'volvox.sort.gff3.gz.csi'))).toBeTruthy()
 
-    expect(readConf(ctx)).toMatchSnapshot()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
   })
 })
 
@@ -433,7 +433,7 @@ test('adds a paf.gz file', async () => {
     ])
     expect(exists(ctxDir(ctx, 'volvox_inv_indels.paf.gz'))).toBeTruthy()
 
-    expect(readConf(ctx)).toMatchSnapshot()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
   })
 })
 
@@ -451,7 +451,7 @@ test('adds a paf file', async () => {
     ])
 
     expect(exists(ctxDir(ctx, 'volvox_inv_indels.paf'))).toBeTruthy()
-    expect(readConf(ctx)).toMatchSnapshot()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
   })
 })
 
@@ -468,7 +468,7 @@ test('adds a delta file', async () => {
     ])
 
     expect(exists(ctxDir(ctx, 'volvox_inv_indels.delta'))).toBeTruthy()
-    expect(readConf(ctx)).toMatchSnapshot()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
   })
 })
 
@@ -485,7 +485,7 @@ test('adds a mashmap file', async () => {
     ])
 
     expect(exists(ctxDir(ctx, 'volvox_inv_indels.out'))).toBeTruthy()
-    expect(readConf(ctx)).toMatchSnapshot()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
   })
 })
 
@@ -509,7 +509,7 @@ test('adds a mcscan simple anchors file', async () => {
     expect(exists(ctxDir(ctx, 'grape.bed'))).toBeTruthy()
     expect(exists(ctxDir(ctx, 'peach.bed'))).toBeTruthy()
 
-    expect(readConf(ctx)).toMatchSnapshot()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
   })
 })
 
@@ -533,7 +533,7 @@ test('adds a mcscan anchors file', async () => {
     expect(exists(ctxDir(ctx, 'grape.bed'))).toBeTruthy()
     expect(exists(ctxDir(ctx, 'peach.bed'))).toBeTruthy()
 
-    expect(readConf(ctx)).toMatchSnapshot()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
   })
 })
 
@@ -550,6 +550,6 @@ test('adds a chain file', async () => {
       'copy',
     ])
     expect(exists(ctxDir(ctx, 'volvox_inv_indels.chain'))).toBeTruthy()
-    expect(readConf(ctx)).toMatchSnapshot()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
   })
 })

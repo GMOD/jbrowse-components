@@ -63,50 +63,10 @@ exports[`deletes a default session 1`] = `
 }
 `;
 
-exports[`fails when default session is not readable 1`] = `
-{
-  "code": undefined,
-  "message": "Could not read the provided file",
-  "oclif": {
-    "exit": 150,
-  },
-  "skipOclifErrorHandling": undefined,
-  "suggestions": undefined,
-}
-`;
+exports[`fails when default session is not readable 1`] = `"Could not read the provided file"`;
 
-exports[`fails when file does not exist 1`] = `
-{
-  "code": undefined,
-  "message": "Could not read the provided file",
-  "oclif": {
-    "exit": 150,
-  },
-  "skipOclifErrorHandling": undefined,
-  "suggestions": undefined,
-}
-`;
+exports[`fails when file does not exist 1`] = `"Could not read the provided file"`;
 
-exports[`fails when file is does not have a default session to read 1`] = `
-{
-  "code": undefined,
-  "message": "Could not parse the given default session file",
-  "oclif": {
-    "exit": 160,
-  },
-  "skipOclifErrorHandling": undefined,
-  "suggestions": undefined,
-}
-`;
+exports[`fails when file is does not have a default session to read 1`] = `"Could not parse the given default session file"`;
 
-exports[`fails when no necessary default session information is provided 1`] = `
-{
-  "code": undefined,
-  "message": "Please either provide a default session file",
-  "oclif": {
-    "exit": 120,
-  },
-  "skipOclifErrorHandling": undefined,
-  "suggestions": undefined,
-}
-`;
+exports[`fails when no necessary default session information is provided 1`] = `"Please either provide a default session file"`;

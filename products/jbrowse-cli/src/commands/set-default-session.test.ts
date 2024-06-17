@@ -26,7 +26,7 @@ test('fails when no necessary default session information is provided', async ()
       path.join(ctx.dir, 'config.json'),
     )
     const { error } = await runCommand(['set-default-session'])
-    expect(error).toMatchSnapshot()
+    expect(error?.message).toMatchSnapshot()
   })
 })
 
@@ -42,7 +42,7 @@ test('fails when default session is not readable', async () => {
       '--session',
       '{}',
     ])
-    expect(error).toMatchSnapshot()
+    expect(error?.message).toMatchSnapshot()
   })
 })
 test('fails when file does not exist', async () => {
@@ -57,7 +57,7 @@ test('fails when file does not exist', async () => {
       '--session',
       path.join(simpleDefaultSession, 'nonexist.json'),
     ])
-    expect(error).toMatchSnapshot()
+    expect(error?.message).toMatchSnapshot()
   })
 })
 
@@ -74,7 +74,7 @@ test('fails when file is does not have a default session to read', async () => {
       '--session',
       simpleBam,
     ])
-    expect(error).toMatchSnapshot()
+    expect(error?.message).toMatchSnapshot()
   })
 })
 test('deletes a default session', async () => {

@@ -41,13 +41,13 @@ test('fails if user selects a directory that does not have a installation', asyn
   await runInTmpDir(async () => {
     mkdirSync('jbrowse')
     const { error } = await runCommand(['upgrade', 'jbrowse'])
-    expect(error).toMatchSnapshot()
+    expect(error?.message).toMatchSnapshot()
   })
 })
 
 test('fails if user selects a directory that does not exist', async () => {
   const { error } = await runCommand(['upgrade', 'jbrowse'])
-  expect(error).toMatchSnapshot()
+  expect(error?.message).toMatchSnapshot()
 })
 
 test('upgrades a directory', async () => {
@@ -114,7 +114,7 @@ test('fails to upgrade if version does not exist', async () => {
     .reply(404, {})
 
   const { error } = await runCommand(['upgrade', '--tag', 'v999.999.999'])
-  expect(error).toMatchSnapshot()
+  expect(error?.message).toMatchSnapshot()
 })
 test('fails if the fetch does not return the right file', async () => {
   nock('https://example.com')
@@ -125,5 +125,5 @@ test('fails if the fetch does not return the right file', async () => {
     '--url',
     'https://example.com/JBrowse2-0.0.1.json',
   ])
-  expect(error).toMatchSnapshot()
+  expect(error?.message).toMatchSnapshot()
 })

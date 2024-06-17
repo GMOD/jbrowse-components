@@ -57,14 +57,14 @@ afterAll(() => (process.exitCode = 0))
 test('fails if no track ids are provided with --tracks flag.', async () => {
   await runInTmpDir(async () => {
     const { error } = await runCommand(['text-index', '--tracks'])
-    expect(error).toMatchSnapshot()
+    expect(error?.message).toMatchSnapshot()
   })
 })
 
 test('fails if there is an invalid flag', async () => {
   await runInTmpDir(async () => {
     const { error } = await runCommand(['text-index', '--Command'])
-    expect(error).toMatchSnapshot()
+    expect(error?.message).toMatchSnapshot()
   })
 })
 

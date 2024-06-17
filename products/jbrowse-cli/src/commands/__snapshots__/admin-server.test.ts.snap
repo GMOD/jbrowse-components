@@ -39,26 +39,6 @@ exports[`does not overwrite an existing config 1`] = `
 }
 `;
 
-exports[`throws an error with a negative port 1`] = `
-{
-  "code": undefined,
-  "message": "-10 is not a valid port",
-  "oclif": {
-    "exit": 2,
-  },
-  "skipOclifErrorHandling": undefined,
-  "suggestions": undefined,
-}
-`;
+exports[`throws an error with a negative port 1`] = `"-10 is not a valid port"`;
 
-exports[`throws an error with a port greater than 65535 1`] = `
-{
-  "code": undefined,
-  "message": "66666 is not a valid port",
-  "oclif": {
-    "exit": 2,
-  },
-  "skipOclifErrorHandling": undefined,
-  "suggestions": undefined,
-}
-`;
+exports[`throws an error with a port greater than 65535 1`] = `"66666 is not a valid port"`;

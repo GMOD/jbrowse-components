@@ -22,12 +22,12 @@ afterAll(() => (process.exitCode = 0))
 
 test('add-assembly no load flag', async () => {
   const { error } = await runCommand('add-assembly {}')
-  expect(error).toMatchSnapshot()
+  expect(error?.message).toMatchSnapshot()
 })
 
 test('fails if using inline JSON sequence custom with no --name', async () => {
   const { error } = await runCommand(['add-assembly', '{}', '--load', 'copy'])
-  expect(error).toMatchSnapshot()
+  expect(error?.message).toMatchSnapshot()
 })
 test('fails if custom sequence adapter has no type', async () => {
   const { error } = await runCommand([
@@ -38,7 +38,7 @@ test('fails if custom sequence adapter has no type', async () => {
     '--load',
     'copy',
   ])
-  expect(error).toMatchSnapshot()
+  expect(error?.message).toMatchSnapshot()
 })
 test('fails if custom refNameAliases adapter has no type', async () => {
   const { error } = await runCommand([
@@ -53,7 +53,7 @@ test('fails if custom refNameAliases adapter has no type', async () => {
     '--load',
     'copy',
   ])
-  expect(error).toMatchSnapshot()
+  expect(error?.message).toMatchSnapshot()
 })
 test('fails if custom refNameAliases adapter has no type', async () => {
   const { error } = await runCommand([
@@ -68,7 +68,7 @@ test('fails if custom refNameAliases adapter has no type', async () => {
     '--load',
     'copy',
   ])
-  expect(error).toMatchSnapshot()
+  expect(error?.message).toMatchSnapshot()
 })
 
 test('fails if trying to add an assembly with a name that already exists', async () => {
@@ -84,7 +84,7 @@ test('fails if trying to add an assembly with a name that already exists', async
     await copyFile(simple2bit, path.join(ctx.dir, path.basename(simple2bit)))
     await runCommand('add-assembly simple.2bit --load copy')
     const { error } = await runCommand('add-assembly simple.2bit --load copy')
-    expect(error).toMatchSnapshot()
+    expect(error?.message).toMatchSnapshot()
   })
 })
 test('fails if it cannot guess the sequence type', async () => {
@@ -94,7 +94,7 @@ test('fails if it cannot guess the sequence type', async () => {
     '--load',
     'copy',
   ])
-  expect(error).toMatchSnapshot()
+  expect(error?.message).toMatchSnapshot()
 })
 
 test('fails if it cannot find a file', async () => {
@@ -104,7 +104,7 @@ test('fails if it cannot find a file', async () => {
     '--load',
     'copy',
   ])
-  expect(error).toMatchSnapshot()
+  expect(error?.message).toMatchSnapshot()
 })
 
 test('fails if using invalid inline JSON', async () => {
@@ -120,7 +120,7 @@ test('fails if using invalid inline JSON', async () => {
     '--load',
     'copy',
   ])
-  expect(error).toMatchSnapshot()
+  expect(error?.message).toMatchSnapshot()
 })
 
 test('fails if load flag is passed with a URL', async () => {
@@ -130,7 +130,7 @@ test('fails if load flag is passed with a URL', async () => {
     '--load',
     'copy',
   ])
-  expect(error).toMatchSnapshot()
+  expect(error?.message).toMatchSnapshot()
 })
 
 test('adds an assembly from a FASTA', async () => {

@@ -48,14 +48,14 @@ afterAll(() => (process.exitCode = 0))
 test('fails if no path is provided to the command', async () => {
   await runInTmpDir(async () => {
     const { error } = await runCommand(['create'])
-    expect(error).toMatchSnapshot()
+    expect(error?.message).toMatchSnapshot()
   })
 })
 
 test('fails if no path is provided to the command, even with force', async () => {
   await runInTmpDir(async () => {
     const { error } = await runCommand(['create', '--force'])
-    expect(error).toMatchSnapshot()
+    expect(error?.message).toMatchSnapshot()
   })
 })
 
@@ -65,7 +65,7 @@ test('fails if user selects a directory that already has existing files', async 
       .get('/jbrowse-web-v0.0.1.json')
       .reply(200, 'I am the wrong type', { 'Content-Type': 'application/json' })
     const { error } = await runCommand(['create', '.'])
-    expect(error).toMatchSnapshot()
+    expect(error?.message).toMatchSnapshot()
   })
 })
 test('fails if the fetch does not return the right file', async () => {
@@ -76,7 +76,7 @@ test('fails if the fetch does not return the right file', async () => {
       '--url',
       'https://example.com/jbrowse-web-v0.0.1.json',
     ])
-    expect(error).toMatchSnapshot()
+    expect(error?.message).toMatchSnapshot()
   })
 })
 
@@ -131,7 +131,7 @@ test('fails to download a version that does not exist', async () => {
       'v999.999.999',
       '--force',
     ])
-    expect(error).toMatchSnapshot()
+    expect(error?.message).toMatchSnapshot()
   })
 })
 
@@ -141,7 +141,7 @@ test('fails because this directory is already set up', async () => {
     mockZip()
     await runCommand(['create', 'jbrowse'])
     const { error } = await runCommand(['create', 'jbrowse'])
-    expect(error).toMatchSnapshot()
+    expect(error?.message).toMatchSnapshot()
   })
 })
 
