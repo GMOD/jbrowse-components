@@ -17,7 +17,7 @@ const GenomicSequence = observer(function ({
   downstream?: string
   model: SequenceFeatureDetailsModel
 }) {
-  const { width, showCoordinates } = model
+  const { charactersPerRow, showCoordinates } = model
   let currStart = 0
   let upstreamChunk = null as React.ReactNode
   let currRemainder = 0
@@ -25,7 +25,7 @@ const GenomicSequence = observer(function ({
   if (upstream) {
     const { segments, remainder } = splitString({
       str: upstream,
-      width,
+      charactersPerRow,
       showCoordinates,
     })
     currRemainder = remainder
@@ -42,7 +42,7 @@ const GenomicSequence = observer(function ({
 
   const { segments, remainder } = splitString({
     str: sequence,
-    width,
+    charactersPerRow,
     showCoordinates,
     currRemainder,
   })
@@ -61,7 +61,7 @@ const GenomicSequence = observer(function ({
   if (downstream) {
     const { segments, remainder } = splitString({
       str: downstream,
-      width,
+      charactersPerRow,
       currRemainder,
       showCoordinates,
     })

@@ -34,7 +34,7 @@ const CDNASequence = observer(function ({
   const {
     upperCaseCDS,
     intronBp,
-    width,
+    charactersPerRow,
     showCoordinates,
     showCoordinatesSetting,
   } = model
@@ -66,7 +66,7 @@ const CDNASequence = observer(function ({
       : 0
     const { segments, remainder } = splitString({
       str: toLower(upstream),
-      width,
+      charactersPerRow,
       showCoordinates,
     })
     currRemainder = remainder
@@ -103,7 +103,7 @@ const CDNASequence = observer(function ({
           ? toUpper(s)
           : toLower(s)
         : toUpper(s),
-      width,
+      charactersPerRow,
       currRemainder,
       showCoordinates,
     })
@@ -139,7 +139,7 @@ const CDNASequence = observer(function ({
       )
       const { segments, remainder } = splitString({
         str,
-        width,
+        charactersPerRow,
         currRemainder,
         showCoordinates,
       })
@@ -174,7 +174,7 @@ const CDNASequence = observer(function ({
   if (downstream) {
     const { segments, remainder } = splitString({
       str: toLower(downstream),
-      width,
+      charactersPerRow,
       currRemainder,
       showCoordinates,
     })
