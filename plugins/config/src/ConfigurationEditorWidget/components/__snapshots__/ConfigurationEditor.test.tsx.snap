@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ConfigurationEditor widget renders all the different types of built-in slots 1`] = `
+exports[`renders all the different types of built-in slots 1`] = `
 <div>
   <div
     class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded MuiAccordion-gutters css-cczqch-MuiPaper-root-MuiAccordion-root-accordion"
@@ -25,7 +25,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
       >
         <svg
           aria-hidden="true"
-          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ymsoo8-MuiSvgIcon-root-expandIcon"
+          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1nfyztd-MuiSvgIcon-root-icon"
           data-testid="ExpandMoreIcon"
           focusable="false"
           viewBox="0 0 24 24"
@@ -862,7 +862,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
 </div>
 `;
 
-exports[`ConfigurationEditor widget renders with defaults of the PileupTrack schema 1`] = `
+exports[`renders with defaults of the PileupTrack schema 1`] = `
 <div>
   <div
     class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded MuiAccordion-gutters css-cczqch-MuiPaper-root-MuiAccordion-root-accordion"
@@ -887,7 +887,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
       >
         <svg
           aria-hidden="true"
-          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ymsoo8-MuiSvgIcon-root-expandIcon"
+          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1nfyztd-MuiSvgIcon-root-icon"
           data-testid="ExpandMoreIcon"
           focusable="false"
           viewBox="0 0 24 24"
@@ -1237,7 +1237,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                   >
                     <svg
                       aria-hidden="true"
-                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ymsoo8-MuiSvgIcon-root-expandIcon"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1nfyztd-MuiSvgIcon-root-icon"
                       data-testid="ExpandMoreIcon"
                       focusable="false"
                       viewBox="0 0 24 24"
@@ -2005,7 +2005,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
 </div>
 `;
 
-exports[`ConfigurationEditor widget renders with just the required model elements 1`] = `
+exports[`renders with just the required model elements 1`] = `
 <div>
   <div
     class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded MuiAccordion-gutters css-cczqch-MuiPaper-root-MuiAccordion-root-accordion"
@@ -2030,7 +2030,7 @@ exports[`ConfigurationEditor widget renders with just the required model element
       >
         <svg
           aria-hidden="true"
-          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ymsoo8-MuiSvgIcon-root-expandIcon"
+          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1nfyztd-MuiSvgIcon-root-icon"
           data-testid="ExpandMoreIcon"
           focusable="false"
           viewBox="0 0 24 24"

@@ -1,11 +1,5 @@
 import React from 'react'
-import {
-  readConfObject,
-  getTypeNamesFromExplicitlyTypedUnion,
-  isConfigurationSchemaType,
-  isConfigurationSlotType,
-  AnyConfigurationModel,
-} from '@jbrowse/core/configuration'
+
 import {
   FormGroup,
   Accordion,
@@ -17,8 +11,17 @@ import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getMembers, IAnyType } from 'mobx-state-tree'
 import { singular } from 'pluralize'
+
+// jbrowse
 import { AbstractSessionModel } from '@jbrowse/core/util'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
+import {
+  readConfObject,
+  getTypeNamesFromExplicitlyTypedUnion,
+  isConfigurationSchemaType,
+  isConfigurationSlotType,
+  AnyConfigurationModel,
+} from '@jbrowse/core/configuration'
 
 // icons
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
@@ -28,11 +31,8 @@ import SlotEditor from './SlotEditor'
 import TypeSelector from './TypeSelector'
 
 const useStyles = makeStyles()(theme => ({
-  expandIcon: {
+  icon: {
     color: theme.palette.tertiary?.contrastText || '#fff',
-  },
-  root: {
-    padding: theme.spacing(1, 3, 1, 1),
   },
   expansionPanelDetails: {
     display: 'block',
@@ -77,7 +77,7 @@ const Member = observer(function (props: {
     return (
       <Accordion defaultExpanded className={classes.accordion}>
         <AccordionSummary
-          expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
+          expandIcon={<ExpandMoreIcon className={classes.icon} />}
         >
           <Typography>{[...path, slotName].join('➔')}</Typography>
         </AccordionSummary>
@@ -101,7 +101,6 @@ const Member = observer(function (props: {
       </Accordion>
     )
   } else if (isConfigurationSlotType(slotSchema)) {
-    // this is a regular config slot
     return <SlotEditor key={slotName} slot={slot} slotSchema={slotSchema} />
   } else {
     return null
@@ -147,7 +146,7 @@ const ConfigurationEditor = observer(function ({
   return (
     <Accordion key={key} defaultExpanded className={classes.accordion}>
       <AccordionSummary
-        expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
+        expandIcon={<ExpandMoreIcon className={classes.icon} />}
       >
         <Typography>
           <SanitizedHTML html={name ?? 'Configuration'} />
