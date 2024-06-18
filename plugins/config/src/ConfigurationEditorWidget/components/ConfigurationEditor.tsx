@@ -1,11 +1,5 @@
 import React from 'react'
-import {
-  readConfObject,
-  getTypeNamesFromExplicitlyTypedUnion,
-  isConfigurationSchemaType,
-  isConfigurationSlotType,
-  AnyConfigurationModel,
-} from '@jbrowse/core/configuration'
+
 import {
   FormGroup,
   Accordion,
@@ -18,20 +12,27 @@ import { observer } from 'mobx-react'
 import { getMembers, IAnyType } from 'mobx-state-tree'
 import { singular } from 'pluralize'
 
+// jbrowse
+import { AbstractSessionModel } from '@jbrowse/core/util'
+import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
+import {
+  readConfObject,
+  getTypeNamesFromExplicitlyTypedUnion,
+  isConfigurationSchemaType,
+  isConfigurationSlotType,
+  AnyConfigurationModel,
+} from '@jbrowse/core/configuration'
+
 // icons
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 
 // locals
 import SlotEditor from './SlotEditor'
 import TypeSelector from './TypeSelector'
-import { AbstractSessionModel } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
-  expandIcon: {
+  icon: {
     color: theme.palette.tertiary?.contrastText || '#fff',
-  },
-  root: {
-    padding: theme.spacing(1, 3, 1, 1),
   },
   expansionPanelDetails: {
     display: 'block',
@@ -61,54 +62,49 @@ const Member = observer(function (props: {
     slot = schema[slotName],
     path = [],
   } = props
-  let typeSelector
   if (isConfigurationSchemaType(slotSchema)) {
     if (slot.length) {
       return slot.map((subslot: AnyConfigurationModel, slotIndex: number) => {
-        const key = `${singular(slotName)} ${slotIndex + 1}`
+        const key = subslot.type
+          ? `${singular(slotName)} ${subslot.type}`
+          : `${singular(slotName)} ${slotIndex + 1}`
         return <Member key={key} {...props} slot={subslot} slotName={key} />
       })
     }
     // if this is an explicitly typed schema, make a type-selecting dropdown
     // that can be used to change its type
     const typeNameChoices = getTypeNamesFromExplicitlyTypedUnion(slotSchema)
-    if (typeNameChoices.length) {
-      typeSelector = (
-        <TypeSelector
-          typeNameChoices={typeNameChoices}
-          slotName={slotName}
-          slot={slot}
-          onChange={evt => {
-            if (evt.target.value !== slot.type) {
-              schema.setSubschema(slotName, { type: evt.target.value })
-            }
-          }}
-        />
-      )
-    }
     return (
       <Accordion defaultExpanded className={classes.accordion}>
         <AccordionSummary
-          expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
+          expandIcon={<ExpandMoreIcon className={classes.icon} />}
         >
           <Typography>{[...path, slotName].join('➔')}</Typography>
         </AccordionSummary>
         <AccordionDetails className={classes.expansionPanelDetails}>
-          {typeSelector}
+          {typeNameChoices.length ? (
+            <TypeSelector
+              typeNameChoices={typeNameChoices}
+              slotName={slotName}
+              slot={slot}
+              onChange={evt => {
+                if (evt.target.value !== slot.type) {
+                  schema.setSubschema(slotName, { type: evt.target.value })
+                }
+              }}
+            />
+          ) : null}
           <FormGroup className={classes.noOverflow}>
             <Schema schema={slot} path={[...path, slotName]} />
           </FormGroup>
         </AccordionDetails>
       </Accordion>
     )
-  }
-
-  if (isConfigurationSlotType(slotSchema)) {
-    // this is a regular config slot
+  } else if (isConfigurationSlotType(slotSchema)) {
     return <SlotEditor key={slotName} slot={slot} slotSchema={slotSchema} />
+  } else {
+    return null
   }
-
-  return null
 })
 
 const Schema = observer(function ({
@@ -150,9 +146,11 @@ const ConfigurationEditor = observer(function ({
   return (
     <Accordion key={key} defaultExpanded className={classes.accordion}>
       <AccordionSummary
-        expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
+        expandIcon={<ExpandMoreIcon className={classes.icon} />}
       >
-        <Typography>{name ?? 'Configuration'}</Typography>
+        <Typography>
+          <SanitizedHTML html={name ?? 'Configuration'} />
+        </Typography>
       </AccordionSummary>
       <AccordionDetails
         className={classes.expansionPanelDetails}
