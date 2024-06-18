@@ -25,12 +25,6 @@ const releaseArray = [
   },
 ]
 
-function mockReleases() {
-  nock('https://api.github.com')
-    .get('/repos/GMOD/jbrowse-components/releases?page=1')
-    .reply(200, releaseArray)
-}
-
 function mockZip() {
   nock('https://example.com')
     .get('/jbrowse-web-v0.0.1.zip')
@@ -59,22 +53,20 @@ test('fails if no path is provided to the command, even with force', async () =>
   })
 })
 
-test('fails if user selects a directory that already has existing files', async () => {
-  await runInTmpDir(async () => {
-    nock('https://example.com')
-      .get('/jbrowse-web-v0.0.1.json')
-      .reply(200, 'I am the wrong type', { 'Content-Type': 'application/json' })
-    const { error } = await runCommand(['create', '.'])
-    expect(error?.message).toMatchSnapshot()
-  })
+test('fails if user selects a directory that has existing files', async () => {
+  const { error } = await runCommand(['create', '.'])
+  expect(error?.message).toMatchSnapshot()
 })
 test('fails if the fetch does not return the right file', async () => {
   await runInTmpDir(async () => {
+    nock('https://example.com')
+      .get('/jbrowse-web-v0.0.1.zip')
+      .reply(200, 'I am the wrong type', { 'Content-Type': 'application/json' })
     const { error } = await runCommand([
       'create',
       'jbrowse',
       '--url',
-      'https://example.com/jbrowse-web-v0.0.1.json',
+      'https://example.com/jbrowse-web-v0.0.1.zip',
     ])
     expect(error?.message).toMatchSnapshot()
   })
@@ -82,7 +74,9 @@ test('fails if the fetch does not return the right file', async () => {
 
 test('download and unzips to new directory', async () => {
   await runInTmpDir(async ctx => {
-    mockReleases()
+    nock('https://api.github.com')
+      .get('/repos/GMOD/jbrowse-components/releases?page=1')
+      .reply(200, releaseArray)
     mockZip()
     await runCommand(['create', 'jbrowse'])
     expect(await readdir(path.join(ctx.dir, 'jbrowse'))).toContain(
@@ -137,7 +131,9 @@ test('fails to download a version that does not exist', async () => {
 
 test('fails because this directory is already set up', async () => {
   await runInTmpDir(async () => {
-    mockReleases()
+    nock('https://api.github.com')
+      .get('/repos/GMOD/jbrowse-components/releases?page=1')
+      .reply(200, releaseArray)
     mockZip()
     await runCommand(['create', 'jbrowse'])
     const { error } = await runCommand(['create', 'jbrowse'])
