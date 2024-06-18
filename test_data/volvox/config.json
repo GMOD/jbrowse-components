@@ -265,7 +265,7 @@
       "type": "VariantTrack",
       "trackId": "volvox_sv_test",
       "description": "A uniquely interesting track",
-      "name": "volvox structural variant test (<i>HTML italic</i>)",
+      "name": "volvox structural variant test (<a href=\"https://google.com\"><i>HTML italic+link</i></a>)",
       "category": ["Variants"],
       "assemblyNames": ["volvox"],
       "adapter": {

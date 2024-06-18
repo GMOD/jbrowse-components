@@ -45,33 +45,39 @@ const TrackRenderingContainer = observer(function ({
   const { classes } = useStyles()
   const display = track.displays[0]
   const { height, RenderingComponent, DisplayBlurb } = display
+  const { trackRefs, id, scaleFactor } = model
   const trackId = getConf(track, 'trackId')
   const ref = useRef<HTMLDivElement>(null)
   const minimized = track.minimized
 
   useEffect(() => {
     if (ref.current) {
-      model.trackRefs[trackId] = ref.current
+      trackRefs[trackId] = ref.current
     }
     return () => {
-      delete model.trackRefs[trackId]
+      delete trackRefs[trackId]
     }
-  }, [model.trackRefs, trackId])
+  }, [trackRefs, trackId])
 
   return (
     <div
       className={classes.trackRenderingContainer}
-      style={{ height: minimized ? 20 : height }}
+      style={{
+        height: minimized ? 20 : height,
+      }}
       onScroll={evt => display.setScrollTop(evt.currentTarget.scrollTop)}
       onDragEnter={onDragEnter}
-      data-testid={`trackRenderingContainer-${model.id}-${trackId}`}
+      data-testid={`trackRenderingContainer-${id}-${trackId}`}
     >
       {!minimized ? (
         <>
           <div
             ref={ref}
             className={classes.renderingComponentContainer}
-            style={{ transform: `scaleX(${model.scaleFactor})` }}
+            style={{
+              transform:
+                scaleFactor !== 1 ? `scaleX(${scaleFactor})` : undefined,
+            }}
           >
             <Suspense fallback={<LoadingEllipses />}>
               <RenderingComponent
