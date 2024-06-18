@@ -581,7 +581,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "type": "LinearPairedArcDisplay",
         },
       ],
-      "name": "volvox structural variant test (<i>HTML italic</i>)",
+      "name": "volvox structural variant test (<a href="https://google.com"><i>HTML italic+link</i></a>)",
       "trackId": "volvox_sv_test",
       "type": "VariantTrack",
     },
