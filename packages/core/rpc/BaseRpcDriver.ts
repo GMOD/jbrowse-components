@@ -37,6 +37,7 @@ export async function watchWorker(
   rpcDriverClassName: string,
 ) {
   // after first ping succeeds, apply wait for timeout
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     await worker.call('ping', [], {
       timeout: pingTime * 2,

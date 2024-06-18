@@ -2,7 +2,6 @@
 
 const fs = require('fs')
 const path = require('path')
-// eslint-disable-next-line no-redeclare
 const crypto = require('crypto')
 const chalk = require('chalk')
 const paths = require('./paths')

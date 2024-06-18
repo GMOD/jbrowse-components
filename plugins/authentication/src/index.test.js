@@ -28,10 +28,12 @@ beforeEach(() => {
   jest.spyOn(console, 'warn').mockImplementation(() => {})
 })
 
+afterEach(() => {
+  console.warn.mockRestore()
+})
+
 class AuthenticationPlugin extends Plugin {
-  name = 'AuthenticatedPlugin'
-  configure() {}
-  install(pluginManager: PluginManager) {
+  install(pluginManager) {
     pluginManager.addInternetAccountType(() => {
       return new InternetAccountType({
         name: 'OAuthInternetAccount',
