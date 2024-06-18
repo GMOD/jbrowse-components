@@ -1,13 +1,14 @@
 import BED from '@gmod/bed'
 import { SimpleFeature } from '@jbrowse/core/util'
 
-interface MinimalFeature {
+export interface MinimalFeature {
   type: string
   start: number
   end: number
   refName: string
+  [key: string]: unknown
 }
-interface TranscriptFeat {
+export interface TranscriptFeat extends MinimalFeature {
   thickStart: number
   thickEnd: number
   blockCount: number
@@ -16,7 +17,6 @@ interface TranscriptFeat {
   refName: string
   strand?: number
   subfeatures: MinimalFeature[]
-  [key: string]: unknown
 }
 
 export function ucscProcessedTranscript(feature: TranscriptFeat) {
@@ -243,7 +243,7 @@ export function featureData(
   }
   return new SimpleFeature({
     id: uniqueId,
-    data: isUCSC(data)
+    data: isUcscProcessedTranscript(data)
       ? ucscProcessedTranscript({
           thickStart,
           thickEnd,
@@ -256,7 +256,7 @@ export function featureData(
   })
 }
 
-export function isUCSC(f: {
+export function isUcscProcessedTranscript(f: {
   thickStart?: number
   blockCount?: number
   strand?: number
