@@ -61,10 +61,10 @@ const FeatureLabel = observer(function ({
   const [labelVisible, setLabelVisible] = useState(exportSVG)
   const theme = useTheme()
 
-  // we use an effect to set the label visible because there can be a
-  // mismatch between the server and the client after hydration due to the
-  // floating labels. if we are exporting an SVG we allow it as is though and
-  // do not use the effect
+  // we use an effect to set the label visible because there can be a mismatch
+  // between the server and the client after hydration due to the floating
+  // labels. if we are exporting an SVG we allow it as is though and do not use
+  // the effect
   useEffect(() => {
     setLabelVisible(true)
   }, [])
