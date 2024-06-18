@@ -13,7 +13,7 @@
     "useDist": "lerna run useDist --scope \"@jbrowse/plugin*\" --scope @jbrowse/text-indexing",
     "useSrc": "lerna run useSrc --scope \"@jbrowse/plugin*\" --scope @jbrowse/text-indexing",
     "lerna-publish": "lerna publish",
-    "lint": "eslint --report-unused-disable-directives --max-warnings 0 --ext .js,.ts,.jsx,.tsx .",
+    "lint": "eslint --report-unused-disable-directives --max-warnings 0 .",
     "format": "prettier --write .",
     "check-format": "prettier --check .",
     "typecheck": "tsc --noEmit",
@@ -35,6 +35,7 @@
     "@emotion/cache": "^11.7.1",
     "@emotion/react": "^11.9.0",
     "@emotion/styled": "^11.8.1",
+    "@eslint/compat": "^1.1.0",
     "@mui/material": "^5.10.17",
     "@mui/system": "^5.14.4",
     "@mui/x-data-grid": "^7.0.0",
@@ -104,7 +105,7 @@
     "electron": "31.0.1",
     "electron-builder": "^24.9.0",
     "electron-mock-ipc": "^0.3.8",
-    "eslint": "^8.0.0",
+    "eslint": "^9.0.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
     "eslint-plugin-react": "^7.33.2",
@@ -157,5 +158,8 @@
     "webpack-dev-server": "^5.0.0",
     "webpack-manifest-plugin": "^5.0.0"
   },
-  "version": "0.0.0"
+  "version": "0.0.0",
+  "resolutions": {
+    "globals": "^14.0.0"
+  }
 }

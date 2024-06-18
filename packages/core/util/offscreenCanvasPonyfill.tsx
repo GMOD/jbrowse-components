@@ -39,6 +39,7 @@ const weHave = {
 if (weHave.realOffscreenCanvas) {
   createCanvas = (width, height) => new OffscreenCanvas(width, height)
 
+  // eslint-disable-next-line no-global-assign
   createImageBitmap = window.createImageBitmap || self.createImageBitmap
 
   ImageBitmapType = window.ImageBitmap || self.ImageBitmap
@@ -49,6 +50,7 @@ if (weHave.realOffscreenCanvas) {
     // eslint-disable-next-line no-undef
     return nodeCreateCanvas(...args)
   }
+  // eslint-disable-next-line no-global-assign
   createImageBitmap = async (canvas, ...otherargs) => {
     if (otherargs.length > 0) {
       throw new Error(
@@ -77,6 +79,7 @@ if (weHave.realOffscreenCanvas) {
       },
     }
   }
+  // eslint-disable-next-line no-global-assign
   createImageBitmap = async canvas => {
     const ctx = canvas.getContext('2d')
     return {
