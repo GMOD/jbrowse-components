@@ -1,21 +1,6 @@
 {
   "assemblies": [
     {
-      "name": "volvox2",
-      "sequence": {
-        "type": "ReferenceSequenceTrack",
-        "trackId": "volvox_refseq2",
-        "adapter": {
-          "type": "TwoBitAdapter",
-          "twoBitLocation": {
-            "uri": "volvox.2bit",
-            "locationType": "UriLocation"
-          }
-        }
-      }
-    },
-
-    {
       "name": "volvox",
       "aliases": ["vvx"],
       "sequence": {
@@ -66,7 +51,20 @@
         }
       }
     },
-
+    {
+      "name": "volvox2",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "volvox_refseq2",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
     {
       "name": "volvox404",
       "sequence": {
