@@ -5,7 +5,6 @@ import {
   getParent,
   getPath,
   getRoot,
-  onAction,
   resolveIdentifier,
   types,
   Instance,
@@ -61,10 +60,6 @@ function stateModelFactory(pluginManager: PluginManager) {
          * #property
          */
         showIntraviewLinks: true,
-        /**
-         * #property
-         */
-        linkViews: false,
         /**
          * #property
          */
@@ -137,24 +132,6 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
-      afterAttach() {
-        addDisposer(
-          self,
-          onAction(self, param => {
-            if (self.linkViews) {
-              const { name, path, args } = param
-
-              // doesn't link showTrack/hideTrack, doesn't make sense in
-              // synteny views most time
-              const actions = ['horizontalScroll', 'zoomTo', 'setScaleFactor']
-              if (actions.includes(name) && path) {
-                this.onSubviewAction(name, path, args)
-              }
-            }
-          }),
-        )
-      },
-
       // automatically removes session assemblies associated with this view
       // e.g. read vs ref
       beforeDestroy() {
@@ -211,13 +188,6 @@ function stateModelFactory(pluginManager: PluginManager) {
       setMiddleComparativeHeight(n: number) {
         self.middleComparativeHeight = n
         return self.middleComparativeHeight
-      },
-
-      /**
-       * #action
-       */
-      toggleLinkViews() {
-        self.linkViews = !self.linkViews
       },
 
       /**
