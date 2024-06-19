@@ -1,5 +1,6 @@
 import electron, { dialog } from 'electron'
 import fs from 'fs'
+import debug from 'electron-debug'
 import path from 'path'
 import url from 'url'
 import windowStateKeeper from 'electron-window-state'
@@ -78,6 +79,8 @@ autoUpdater.on('update-available', async () => {
     autoUpdater.downloadUpdate()
   }
 })
+
+debug({ showDevTools: false, isEnabled: true })
 
 const devServerUrl = url.parse(
   process.env.DEV_SERVER_URL || 'http://localhost:3000',
