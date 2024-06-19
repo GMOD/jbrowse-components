@@ -3,14 +3,13 @@ import fs from 'fs'
 import path from 'path'
 import url from 'url'
 import windowStateKeeper from 'electron-window-state'
-import fetch from 'node-fetch'
-import { getFileStream } from './generateFastaIndex'
 import { generateFastaIndex } from '@gmod/faidx'
-
+import { autoUpdater } from 'electron-updater'
 // @ts-ignore
 import parseJson from 'json-parse-even-better-errors'
 
-import { autoUpdater } from 'electron-updater'
+// locals
+import { getFileStream } from './generateFastaIndex'
 
 const { unlink, readFile, copyFile, readdir, writeFile } = fs.promises
 

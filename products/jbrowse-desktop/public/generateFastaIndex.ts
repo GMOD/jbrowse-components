@@ -1,5 +1,4 @@
 import fs from 'fs'
-import fetch from 'node-fetch'
 
 // Method for handing off the parsing of a gff3 file URL.
 // Calls the proper parser depending on if it is gzipped or not.

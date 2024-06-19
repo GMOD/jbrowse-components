@@ -11,7 +11,7 @@
   "scripts": {
     "start": "cross-env BROWSER=none node scripts/start.js",
     "electron": "electron . --no-sandbox",
-    "electron-ts": "tsc --strict --esModuleInterop --skipLibCheck public/electron.ts",
+    "electron-ts": "tsc --strict --esModuleInterop --module esnext --skipLibCheck public/electron.ts",
     "preelectron": "npm run electron-ts",
     "prebuild": "npm run electron-ts",
     "prepack": "npm run build",
@@ -88,7 +88,6 @@
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",
-    "node-fetch": "^2.6.0",
     "prompts": "^2.4.2",
     "prop-types": "^15.7.2",
     "react": "^18.0.0",
