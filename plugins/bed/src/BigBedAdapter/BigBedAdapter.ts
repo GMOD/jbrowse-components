@@ -1,4 +1,4 @@
-import { BigBed, Header } from '@gmod/bbi'
+import { BigBed } from '@gmod/bbi'
 import BED from '@gmod/bed'
 import {
   BaseFeatureDataAdapter,
@@ -25,7 +25,11 @@ import {
 } from '../util'
 
 export default class BigBedAdapter extends BaseFeatureDataAdapter {
-  private cached?: Promise<{ bigbed: BigBed; header: Header; parser: BED }>
+  private cached?: Promise<{
+    bigbed: BigBed
+    header: Awaited<ReturnType<BigBed['getHeader']>>
+    parser: BED
+  }>
 
   public async configurePre(opts?: BaseOptions) {
     const pm = this.pluginManager
