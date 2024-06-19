@@ -1,5 +1,4 @@
 import electron, { dialog } from 'electron'
-import debug from 'electron-debug'
 import fs from 'fs'
 import path from 'path'
 import url from 'url'
@@ -80,8 +79,6 @@ autoUpdater.on('update-available', async () => {
     autoUpdater.downloadUpdate()
   }
 })
-
-debug({ showDevTools: false })
 
 const devServerUrl = url.parse(
   process.env.DEV_SERVER_URL || 'http://localhost:3000',
@@ -218,93 +215,20 @@ async function createWindow() {
 
   const isMac = process.platform === 'darwin'
 
+  // similar to https://www.electronjs.org/docs/latest/api/menu#examples
   const mainMenu = Menu.buildFromTemplate([
-    // { role: 'appMenu' }
-    ...(isMac
-      ? [
-          {
-            label: app.name,
-            submenu: [
-              { role: 'about' as const },
-              { type: 'separator' as const },
-              { role: 'services' as const },
-              { type: 'separator' as const },
-              { role: 'hide' as const },
-              { role: 'hideOthers' as const },
-              { role: 'unhide' as const },
-              { type: 'separator' as const },
-              { role: 'quit' as const },
-            ],
-          },
-        ]
-      : []),
-    {
-      label: 'File',
-      submenu: [isMac ? { role: 'close' as const } : { role: 'quit' as const }],
-    },
-    {
-      label: 'Edit',
-      submenu: [
-        { role: 'undo' as const },
-        { role: 'redo' as const },
-        { type: 'separator' as const },
-        { role: 'cut' as const },
-        { role: 'copy' as const },
-        { role: 'paste' as const },
-        ...(isMac
-          ? [
-              { role: 'pasteAndMatchStyle' as const },
-              { role: 'delete' as const },
-              { role: 'selectAll' as const },
-              { type: 'separator' as const },
-              {
-                label: 'Speech' as const,
-                submenu: [
-                  { role: 'startSpeaking' as const },
-                  { role: 'stopSpeaking' as const },
-                ],
-              },
-            ]
-          : [
-              { role: 'delete' as const },
-              { type: 'separator' as const },
-              { role: 'selectAll' as const },
-            ]),
-      ],
-    },
-    {
-      label: 'View',
-      submenu: [
-        { role: 'reload' as const },
-        { role: 'toggleDevTools' as const },
-        { type: 'separator' as const },
-        { role: 'zoomIn' as const },
-        { role: 'zoomOut' as const },
-        { type: 'separator' as const },
-        { role: 'togglefullscreen' as const },
-      ],
-    },
-    {
-      label: 'Window',
-      submenu: [
-        { role: 'minimize' as const },
-        { role: 'zoom' as const },
-        ...(isMac
-          ? [
-              { type: 'separator' as const },
-              { role: 'front' as const },
-              { type: 'separator' as const },
-              { role: 'window' as const },
-            ]
-          : [{ role: 'close' as const }]),
-      ],
-    },
+    { role: 'appMenu' },
+    { role: 'fileMenu' },
+    { role: 'editMenu' },
+    { role: 'viewMenu' },
+    { role: 'windowMenu' },
+
     {
       label: 'Help',
       role: 'help',
       submenu: [
         {
-          label: 'Learn More',
+          label: 'Visit jbrowse.org',
           click: () => electron.shell.openExternal('https://jbrowse.org'),
         },
         {
