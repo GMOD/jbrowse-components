@@ -24,6 +24,15 @@ const BigBedAdapter = ConfigurationSchema(
       description: 'The column to use as a "score" attribute',
       defaultValue: '',
     },
+
+    /**
+     * #slot
+     */
+    aggregateField: {
+      type: 'string',
+      description: 'An attribute to aggregate features with',
+      defaultValue: 'geneName',
+    },
   },
   { explicitlyTyped: true },
 )

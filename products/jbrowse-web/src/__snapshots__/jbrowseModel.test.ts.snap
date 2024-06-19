@@ -2392,9 +2392,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "type": "LinearArcDisplay",
         },
       ],
-      "formatDetails": {
-        "maxDepth": 0,
-      },
       "name": "BigBed genes",
       "trackId": "bigbed_genes",
       "type": "FeatureTrack",
