@@ -1,4 +1,4 @@
-// from https://github.com/d3473r/jitsi-meet-electron/blob/master/LICENSE
+// from https://github.com/d3473r/jitsi-meet-electron/commit/11b9348f117a87349917c252cbae203cf92062a
 //
 const fs = require('fs').promises
 const path = require('path')
