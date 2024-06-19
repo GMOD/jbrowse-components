@@ -10,7 +10,7 @@
   "repository": "https://github.com/GMOD/jbrowse-components.git",
   "scripts": {
     "start": "cross-env BROWSER=none node scripts/start.js",
-    "electron": "electron .",
+    "electron": "electron . --no-sandbox",
     "electron-ts": "tsc --strict --esModuleInterop --skipLibCheck public/electron.ts",
     "preelectron": "npm run electron-ts",
     "prebuild": "npm run electron-ts",
@@ -180,7 +180,8 @@
     "directories": {
       "buildResources": "assets/"
     },
-    "afterSign": "scripts/notarize.js"
+    "afterSign": "scripts/notarize.js",
+    "afterPack": "./linux-sandbox-fix.js"
   },
   "private": true
 }
