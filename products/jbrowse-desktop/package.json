@@ -180,7 +180,8 @@
     "directories": {
       "buildResources": "assets/"
     },
-    "afterSign": "scripts/notarize.js"
+    "afterSign": "scripts/notarize.js",
+    "afterPack": "./linux-sandbox-fix.js"
   },
   "private": true
 }
