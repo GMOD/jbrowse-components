@@ -117,7 +117,7 @@ function getDependencyGraph(packages) {
 function getLevels(graph, levels = []) {
   const done = levels.flat()
   const newLevel = []
-  for (const n of Object.keys(graph.nodes).filter(n => !done.includes(n))) {
+  for (const n of [...graph.nodes.keys()].filter(n => !done.includes(n))) {
     const deps = graph.dependenciesOf(n)
     if (!done.includes(n) && deps.every(d => done.includes(d))) {
       newLevel.push(n)
