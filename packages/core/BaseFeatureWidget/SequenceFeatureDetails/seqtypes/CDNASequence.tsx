@@ -45,22 +45,21 @@ const CDNASequence = observer(function ({
   const toLower = (s: string) => (upperCaseCDS ? s.toLowerCase() : s)
   const toUpper = (s: string) => (upperCaseCDS ? s.toUpperCase() : s)
 
-  const strand = feature.strand as number
+  const strand = feature.strand === -1 ? -1 : 1
   const fullGenomicCoordinates =
     showCoordinatesSetting === 'genomic' && includeIntrons && !collapseIntron
 
-  const mult = fullGenomicCoordinates ? (strand > 0 ? 1 : -1) : 1
+  const mult = fullGenomicCoordinates ? strand : 1
   let coordStart = fullGenomicCoordinates
     ? strand > 0
-      ? feature.start + 1
-      : feature.end
+      ? feature.start + 1 - (upstream?.length || 0)
+      : feature.end + (upstream?.length || 0)
     : 0
   let currStart = 0
   let currRemainder = 0
 
   let upstreamChunk = null as React.ReactNode
   if (upstream) {
-    coordStart = coordStart - upstream.length * mult
     const { segments, remainder } = splitString({
       str: toLower(upstream),
       charactersPerRow,

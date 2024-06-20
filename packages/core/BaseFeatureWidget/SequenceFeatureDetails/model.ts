@@ -79,7 +79,12 @@ export function SequenceFeatureDetailsF() {
        * #getter
        */
       get showGenomicCoordsOption() {
-        return self.mode === 'gene' || self.mode === 'gene_updownstream'
+        return (
+          self.mode === 'gene' ||
+          self.mode === 'gene_updownstream' ||
+          self.mode === 'genomic' ||
+          self.mode === 'genomic_sequence_updownstream'
+        )
       },
       /**
        * #getter
