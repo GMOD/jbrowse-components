@@ -1,5 +1,7 @@
 import React from 'react'
+import { observer } from 'mobx-react'
 
+// locals
 import {
   SimpleFeatureSerialized,
   defaultCodonTable,
@@ -14,12 +16,12 @@ import {
   dedupe,
   revlist,
 } from '../util'
+import { SequenceFeatureDetailsModel } from './model'
+// panel types
 import CDNASequence from './seqtypes/CDNASequence'
 import ProteinSequence from './seqtypes/ProteinSequence'
 import GenomicSequence from './seqtypes/GenomicSequence'
 import CDSSequence from './seqtypes/CDSSequence'
-import { SequenceFeatureDetailsModel } from './model'
-import { observer } from 'mobx-react'
 
 interface SequencePanelProps {
   sequence: SeqState
@@ -88,10 +90,10 @@ const SequencePanel = observer(
           end: sub.end - feature.start,
         }))
 
-      // we filter duplicate entries in cds and exon lists duplicate entries may be
-      // rare but was seen in Gencode v36 track NCList, likely a bug on GFF3 or
-      // probably worth ignoring here (produces broken protein translations if
-      // included)
+      // we filter duplicate entries in cds and exon lists duplicate entries
+      // may be rare but was seen in Gencode v36 track NCList, likely a bug
+      // on GFF3 or probably worth ignoring here (produces broken protein
+      // translations if included)
       //
       // position 1:224,800,006..225,203,064 gene ENSG00000185842.15 first
       // transcript ENST00000445597.6

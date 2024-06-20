@@ -49,6 +49,7 @@ const CDNASequence = observer(function ({
   const fullGenomicCoordinates =
     showCoordinatesSetting === 'genomic' && includeIntrons && !collapseIntron
 
+  const mult = fullGenomicCoordinates ? (strand > 0 ? 1 : -1) : 1
   let coordStart = fullGenomicCoordinates
     ? strand > 0
       ? feature.start + 1
@@ -59,37 +60,25 @@ const CDNASequence = observer(function ({
 
   let upstreamChunk = null as React.ReactNode
   if (upstream) {
-    coordStart = fullGenomicCoordinates
-      ? strand > 0
-        ? coordStart - upstream.length
-        : coordStart + upstream.length
-      : 0
+    coordStart = coordStart - upstream.length * mult
     const { segments, remainder } = splitString({
       str: toLower(upstream),
       charactersPerRow,
       showCoordinates,
     })
-    currRemainder = remainder
     upstreamChunk = (
       <SequenceDisplay
         model={model}
         color={updownstreamColor}
-        strand={fullGenomicCoordinates ? strand : 1}
+        strand={mult}
         start={currStart}
         coordStart={coordStart}
         chunks={segments}
       />
     )
-    currStart = fullGenomicCoordinates
-      ? strand > 0
-        ? currStart + upstream.length
-        : currStart - upstream.length
-      : currStart + upstream.length
-    coordStart = fullGenomicCoordinates
-      ? strand > 0
-        ? coordStart + upstream.length
-        : coordStart - upstream.length
-      : coordStart + upstream.length
+    currRemainder = remainder
+    currStart = currStart + upstream.length * mult
+    coordStart = coordStart + upstream.length * mult
   }
 
   const middleChunks = [] as React.ReactNode[]
@@ -107,29 +96,21 @@ const CDNASequence = observer(function ({
       currRemainder,
       showCoordinates,
     })
-    currRemainder = remainder
 
     middleChunks.push(
       <SequenceDisplay
         key={JSON.stringify(chunk) + '-mid'}
         model={model}
         color={chunk.type === 'CDS' ? cdsColor : utrColor}
-        strand={fullGenomicCoordinates ? strand : 1}
+        strand={mult}
         start={currStart}
         coordStart={coordStart}
         chunks={segments}
       />,
     )
-    currStart = fullGenomicCoordinates
-      ? strand > 0
-        ? currStart + s.length
-        : currStart - s.length
-      : currStart + s.length
-    coordStart = fullGenomicCoordinates
-      ? strand > 0
-        ? coordStart + s.length
-        : coordStart - s.length
-      : coordStart + s.length
+    currRemainder = remainder
+    currStart = currStart + s.length * mult
+    coordStart = coordStart + s.length * mult
 
     if (intron && includeIntrons && idx < chunks.length - 1) {
       const str = toLower(
@@ -145,34 +126,26 @@ const CDNASequence = observer(function ({
       })
 
       if (segments.length) {
-        currRemainder = remainder
         middleChunks.push(
           <SequenceDisplay
             key={JSON.stringify(chunk) + '-intron'}
             model={model}
-            strand={fullGenomicCoordinates ? strand : 1}
+            strand={mult}
             coordStart={coordStart}
             start={currStart}
             chunks={segments}
           />,
         )
-        currStart = fullGenomicCoordinates
-          ? strand > 0
-            ? currStart + str.length
-            : currStart - str.length
-          : currStart + str.length
-        coordStart = fullGenomicCoordinates
-          ? strand > 0
-            ? coordStart + str.length
-            : coordStart - str.length
-          : coordStart + str.length
+        currRemainder = remainder
+        currStart = currStart + str.length * mult
+        coordStart = coordStart + str.length * mult
       }
     }
   }
 
   let downstreamChunk = null as React.ReactNode
   if (downstream) {
-    const { segments, remainder } = splitString({
+    const { segments } = splitString({
       str: toLower(downstream),
       charactersPerRow,
       currRemainder,
@@ -182,23 +155,12 @@ const CDNASequence = observer(function ({
       <SequenceDisplay
         start={currStart}
         model={model}
-        strand={fullGenomicCoordinates ? strand : 1}
+        strand={mult}
         chunks={segments}
         coordStart={coordStart}
         color={updownstreamColor}
       />
     )
-    currRemainder = remainder
-    currStart = fullGenomicCoordinates
-      ? strand > 0
-        ? currStart - downstream.length
-        : currStart + downstream.length
-      : currStart + downstream.length
-    coordStart = fullGenomicCoordinates
-      ? strand > 0
-        ? coordStart - downstream.length
-        : coordStart + downstream.length
-      : coordStart + downstream.length
   }
   return (
     <>
