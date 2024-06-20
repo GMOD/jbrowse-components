@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/app-core",
-  "version": "2.11.2",
+  "version": "2.12.0",
   "description": "JBrowse 2 code shared between the 'full featured' apps e.g. jbrowse-web and jbrowse-desktop",
   "keywords": [
     "jbrowse",
@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.16.3",
-    "@jbrowse/product-core": "^2.11.2",
+    "@jbrowse/product-core": "^2.12.0",
     "@mui/icons-material": "^5.0.0",
     "@mui/material": "^5.10.17",
     "copy-to-clipboard": "^3.3.1",
