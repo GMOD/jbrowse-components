@@ -109,8 +109,8 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
       if (!feats2[r2]) {
         feats2[r2] = []
       }
-      feats1[r1]!.push(line)
-      feats2[r2]!.push(line)
+      feats1[r1].push(line)
+      feats2[r2].push(line)
     }
     const columnNames = this.getConf('columnNames')
 

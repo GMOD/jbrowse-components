@@ -169,7 +169,7 @@ function makeConfigurationSchemaModel<
   let completeModel = types
     .model(`${modelName}ConfigurationSchema`, modelDefinition)
     .actions(self => ({
-      setSubschema(slotName: string, data: unknown) {
+      setSubschema(slotName: string, data: Record<string, unknown>) {
         if (!isConfigurationSchemaType(modelDefinition[slotName])) {
           throw new Error(`${slotName} is not a subschema, cannot replace`)
         }

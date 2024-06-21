@@ -73,10 +73,10 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   public async getGlobalStats(opts?: BaseOptions) {
     const adapters = await this.getAdapters()
     const stats = (
-      await Promise.all(
+      (await Promise.all(
         // @ts-expect-error
         adapters.map(adp => adp.dataAdapter.getGlobalStats?.(opts)),
-      )
+      )) as { scoreMin: number; scoreMax: number }[]
     ).filter(f => !!f)
     const scoreMin = min(stats.map(s => s.scoreMin))
     const scoreMax = max(stats.map(s => s.scoreMax))
