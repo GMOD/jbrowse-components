@@ -2267,11 +2267,12 @@
     "@gmod/bgzf-filehandle" "^1.4.0"
     generic-filehandle "^3.0.0"
 
-"@gmod/nclist@^0.2.1":
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/@gmod/nclist/-/nclist-0.2.2.tgz#c550efae85f61b4c42abfe92f07ae74db27e66ba"
-  integrity sha512-LzIYvOSul9rl4y9eGIZx2ltTpTsXVWlEbW/rkauKSLjge6Pnv9XgkT43fCalYMi9Bzniwm5eF59JPi2eM5pcMg==
+"@gmod/nclist@^1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@gmod/nclist/-/nclist-1.0.2.tgz#d1bfdf15d7f50995a677934a9a69a962634cb5af"
+  integrity sha512-fyqrGHpzvbXdUc7oxU8Ho0lkcFDtIe7BO/kjyJtvkLnbkua+dWe4XWsllpvv/UYygdztlyZS1Oz6AQdx1qzZcQ==
   dependencies:
+    "@jridgewell/resolve-uri" "^3.1.2"
     abortable-promise-cache "^1.0.1"
     quick-lru "^4.0.0"
 
@@ -2624,7 +2625,7 @@
     "@jridgewell/sourcemap-codec" "^1.4.10"
     "@jridgewell/trace-mapping" "^0.3.24"
 
-"@jridgewell/resolve-uri@^3.0.3", "@jridgewell/resolve-uri@^3.1.0":
+"@jridgewell/resolve-uri@^3.0.3", "@jridgewell/resolve-uri@^3.1.0", "@jridgewell/resolve-uri@^3.1.2":
   version "3.1.2"
   resolved "https://registry.yarnpkg.com/@jridgewell/resolve-uri/-/resolve-uri-3.1.2.tgz#7a0ee601f60f99a20c7c7c5ff0c80388c1189bd6"
   integrity sha512-bRISgCIjP20/tbWSPWMEi54QVPRZExkuD9lJL+UIxUKtwVJA8wW1Trb1jMs1RFXo1CBTNZ/5hpC9QvmKWdopKw==
