@@ -2251,6 +2251,14 @@
   dependencies:
     stream-browserify "^3.0.0"
 
+"@gmod/http-range-fetcher@^3.0.0":
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/@gmod/http-range-fetcher/-/http-range-fetcher-3.0.3.tgz#eda1c9f5f2399ce95e947e05c464d8f8f910b6a2"
+  integrity sha512-VKFgGq+hBDNQzbyUgCLpNlzGJnHofUEUMyk9UX2dlNHpyif6mTXVAAAMs6cHI1z9L2bJTivZ23GyOvzaxEI8XQ==
+  dependencies:
+    abortcontroller-polyfill "^1.2.9"
+    quick-lru "^4.0.0"
+
 "@gmod/indexedfasta@^2.0.2":
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/@gmod/indexedfasta/-/indexedfasta-2.1.1.tgz#aa8eaf6be21f634f11da90dd8494f3df5ed7e50d"
@@ -10527,14 +10535,6 @@ http-proxy@^1.18.1:
     eventemitter3 "^4.0.0"
     follow-redirects "^1.0.0"
     requires-port "^1.0.0"
-
-http-range-fetcher@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/http-range-fetcher/-/http-range-fetcher-2.0.0.tgz#3d09e677531f86dd90ad58fdeb0cf3bc874490d2"
-  integrity sha512-uR82f/nXKwSMJkLlvQU5KTpSFGldq1Ilwc5mEDwSjpW1JAQQ2NlruSwwteUZTH2+WRbdrZS6iGCDXxaSTuE9OQ==
-  dependencies:
-    abortcontroller-polyfill "^1.2.9"
-    quick-lru "^4.0.0"
 
 http2-wrapper@^1.0.0-beta.5.2:
   version "1.0.3"
