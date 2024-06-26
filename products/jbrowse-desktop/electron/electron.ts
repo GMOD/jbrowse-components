@@ -392,10 +392,10 @@ ipcMain.handle(
   'createInitialAutosaveFile',
   async (_event: unknown, snap: SessionSnap) => {
     const rows = await readRecentSessions()
-    const idx = rows.findIndex(r => r.path === path)
-    const path = getAutosavePath(`${+Date.now()}`)
+    const autosavePath = getAutosavePath(`${+Date.now()}`)
+    const idx = rows.findIndex(r => r.path === autosavePath)
     const entry = {
-      path,
+      path: autosavePath,
       updated: +Date.now(),
       name: snap.defaultSession?.name,
     }
@@ -406,10 +406,10 @@ ipcMain.handle(
     }
     await Promise.all([
       writeFile(recentSessionsPath, stringify(rows)),
-      writeFile(path, stringify(snap)),
+      writeFile(autosavePath, stringify(snap)),
     ])
 
-    return path
+    return autosavePath
   },
 )
 
