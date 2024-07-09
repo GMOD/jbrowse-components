@@ -1,18 +1,16 @@
 import React from 'react'
+import { createRoot } from 'react-dom/client'
 import { createViewState } from '@jbrowse/react-linear-genome-view'
 import {
   LinearGenomeViewModel,
   renderToSvg,
 } from '@jbrowse/plugin-linear-genome-view'
-import createCache from '@emotion/cache'
-import { CacheProvider } from '@emotion/react'
 import path from 'path'
 import fs from 'fs'
 
 // local
 import { Entry } from './parseArgv'
 import { booleanize } from './util'
-import { createRoot } from 'react-dom/client'
 
 export interface Opts {
   noRasterize?: boolean
@@ -173,7 +171,8 @@ export function readData({
 
   trackList.forEach(track => {
     const [type, opts] = track
-    const [file] = opts
+    const [file, ...rest] = opts
+    const index = rest.find(r => r.startsWith('index:'))?.replace('index:', '')
 
     if (type === 'bam') {
       configData.tracks = [
@@ -186,7 +185,10 @@ export function readData({
           adapter: {
             type: 'BamAdapter',
             bamLocation: makeLocation(file),
-            index: { location: makeLocation(file + '.bai') },
+            index: {
+              location: makeLocation(index || file + '.bai'),
+              indexType: index?.endsWith('.csi') ? 'CSI' : 'BAI',
+            },
             sequenceAdapter: configData.assembly.sequence.adapter,
           },
           ...(opts.includes('snpcov')
@@ -213,7 +215,7 @@ export function readData({
           adapter: {
             type: 'CramAdapter',
             cramLocation: makeLocation(file),
-            craiLocation: makeLocation(file + '.crai'),
+            craiLocation: makeLocation(index || file + '.crai'),
             sequenceAdapter: configData.assembly.sequence.adapter,
           },
           ...(opts.includes('snpcov')
@@ -257,7 +259,8 @@ export function readData({
             type: 'VcfTabixAdapter',
             vcfGzLocation: makeLocation(file),
             index: {
-              location: makeLocation(file + '.tbi'),
+              location: makeLocation(index || file + '.tbi'),
+              indexType: index?.endsWith('.csi') ? 'CSI' : 'TBI',
             },
           },
         },
@@ -276,7 +279,8 @@ export function readData({
             type: 'Gff3TabixAdapter',
             gffGzLocation: makeLocation(file),
             index: {
-              location: makeLocation(file + '.tbi'),
+              location: makeLocation(index || file + '.tbi'),
+              indexType: index?.endsWith('.csi') ? 'CSI' : 'TBI',
             },
           },
         },
@@ -325,7 +329,8 @@ export function readData({
             type: 'BedTabixAdapter',
             bedGzLocation: makeLocation(file),
             index: {
-              location: makeLocation(file + '.tbi'),
+              location: makeLocation(index || file + '.tbi'),
+              indexType: index?.endsWith('.csi') ? 'CSI' : 'TBI',
             },
           },
         },
@@ -346,13 +351,6 @@ export function readData({
 
   return configData
 }
-
-// without this, the styles can become messed up especially in lgv header
-// xref https://github.com/garronej/tss-react/issues/25
-export const muiCache = createCache({
-  key: 'mui',
-  prepend: true,
-})
 
 function process(
   trackEntry: Entry,
@@ -474,8 +472,5 @@ export async function renderRegion(opts: Opts) {
   return renderToSvg(view, {
     rasterizeLayers: !opts.noRasterize,
     ...opts,
-    Wrapper: ({ children }) => (
-      <CacheProvider value={muiCache}>{children}</CacheProvider>
-    ),
   })
 }
