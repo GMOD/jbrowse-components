@@ -3957,7 +3957,6 @@
         }
       ]
     },
-
     {
       "type": "SyntenyTrack",
       "trackId": "hg19ToHg38.over.chain.gz-1645073157673",
@@ -4326,6 +4325,48 @@
         }
       },
       "assemblyNames": ["chm13v2.0"]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "NA12878_LINE1",
+      "name": "NA12878_LINE1",
+      "category": ["NA12878"],
+      "adapter": {
+        "type": "VcfAdapter",
+        "vcfLocation": {
+          "uri": "https://jbrowse.org/genomes/hg19/NA12878_LINE1.vcf",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["hg19"]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "NA12878_SVA",
+      "name": "NA12878_SVA",
+      "category": ["NA12878"],
+      "adapter": {
+        "type": "VcfAdapter",
+        "vcfLocation": {
+          "uri": "https://jbrowse.org/genomes/hg19/NA12878_SVA.vcf",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["hg19"]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "NA12878_ALU",
+      "name": "NA12878_ALU",
+      "category": ["NA12878"],
+      "adapter": {
+        "type": "VcfAdapter",
+        "vcfLocation": {
+          "uri": "https://jbrowse.org/genomes/hg19/NA12878_ALU.vcf",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["hg19"]
     }
   ],
   "connections": [],
