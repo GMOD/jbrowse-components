@@ -1,4 +1,3 @@
-import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { createViewState } from '@jbrowse/react-linear-genome-view'
 import {
