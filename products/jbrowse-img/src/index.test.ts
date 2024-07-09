@@ -63,7 +63,7 @@ test('renders volvox with csi index', async () => {
     trackList: [
       [
         'bam',
-        [fp('volvox-sorted.bam') + 'index:' + fp('volvox-sorted.bam.csi')],
+        [fp('volvox-sorted.bam'), 'index:' + fp('volvox-sorted.bam.csi')],
       ],
     ],
     loc: 'ctgA:1000-2000',
