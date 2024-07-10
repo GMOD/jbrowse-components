@@ -241,10 +241,11 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
   const [region] = regions
   const width = (region.end - region.start) / bpPerPx
   const displayMode = readConfObject(config, 'displayMode') as string
+  const maxConfHeight = readConfObject(config, 'maxHeight') as number
 
   const ref = useRef<SVGSVGElement>(null)
   const [mouseIsDown, setMouseIsDown] = useState(false)
-  const [height, setHeight] = useState(0)
+  const [height, setHeight] = useState(maxConfHeight)
   const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] =
     useState(false)
 
