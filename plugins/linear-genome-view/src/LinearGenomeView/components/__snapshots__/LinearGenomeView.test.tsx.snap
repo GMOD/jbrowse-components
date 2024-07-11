@@ -159,7 +159,7 @@ exports[`renders one track, one region 1`] = `
               />
             </button>
             <div
-              class="MuiAutocomplete-root css-1j0qgw8-MuiAutocomplete-root"
+              class="MuiAutocomplete-root css-ka7ti6-MuiAutocomplete-root"
               data-testid="autocomplete"
               style="width: 175px;"
             >
@@ -478,7 +478,7 @@ exports[`renders one track, one region 1`] = `
             />
           </button>
           <span
-            class="MuiTypography-root MuiTypography-body1 css-877agm-MuiTypography-root-trackName"
+            class="MuiTypography-root MuiTypography-body1 css-ij4gik-MuiTypography-root-trackName"
           >
             <span>
               Foo Track
@@ -513,7 +513,6 @@ exports[`renders one track, one region 1`] = `
         >
           <div
             class="css-v11ioz-renderingComponentContainer"
-            style="transform: scaleX(1);"
           >
             <div
               class="css-1y9lrrz-display"
@@ -731,7 +730,7 @@ exports[`renders two tracks, two regions 1`] = `
               />
             </button>
             <div
-              class="MuiAutocomplete-root css-1j0qgw8-MuiAutocomplete-root"
+              class="MuiAutocomplete-root css-ka7ti6-MuiAutocomplete-root"
               data-testid="autocomplete"
               style="width: 283.990625px;"
             >
@@ -1295,7 +1294,7 @@ exports[`renders two tracks, two regions 1`] = `
             />
           </button>
           <span
-            class="MuiTypography-root MuiTypography-body1 css-877agm-MuiTypography-root-trackName"
+            class="MuiTypography-root MuiTypography-body1 css-ij4gik-MuiTypography-root-trackName"
           >
             <span>
               Foo Track
@@ -1330,7 +1329,6 @@ exports[`renders two tracks, two regions 1`] = `
         >
           <div
             class="css-v11ioz-renderingComponentContainer"
-            style="transform: scaleX(1);"
           >
             <div
               class="css-1y9lrrz-display"
@@ -1424,7 +1422,7 @@ exports[`renders two tracks, two regions 1`] = `
             />
           </button>
           <span
-            class="MuiTypography-root MuiTypography-body1 css-877agm-MuiTypography-root-trackName"
+            class="MuiTypography-root MuiTypography-body1 css-ij4gik-MuiTypography-root-trackName"
           >
             <span>
               Bar Track
@@ -1459,7 +1457,6 @@ exports[`renders two tracks, two regions 1`] = `
         >
           <div
             class="css-v11ioz-renderingComponentContainer"
-            style="transform: scaleX(1);"
           >
             <div
               class="css-1y9lrrz-display"

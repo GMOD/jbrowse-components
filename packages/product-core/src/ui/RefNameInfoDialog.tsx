@@ -6,6 +6,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { Dialog, LoadingEllipses } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
+import { getConfAssemblyNames } from '@jbrowse/core/util/tracks'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 import copy from 'copy-to-clipboard'
@@ -43,11 +44,8 @@ const RefNameInfoDialog = observer(function ({
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
-        const assemblyNames = [
-          ...new Set(readConfObject(config, 'assemblyNames') as string[]),
-        ]
         const map = await Promise.all(
-          assemblyNames.map(async assemblyName => {
+          [...new Set(getConfAssemblyNames(config))].map(async assemblyName => {
             const adapterConfig = readConfObject(config, 'adapter')
             return [
               assemblyName,

@@ -248,7 +248,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                       />
                     </button>
                     <div
-                      class="MuiAutocomplete-root css-ia8vjw-MuiAutocomplete-root"
+                      class="MuiAutocomplete-root css-1y8r37a-MuiAutocomplete-root"
                       data-testid="autocomplete"
                       style="width: 175px;"
                     >
@@ -969,7 +969,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     />
                   </button>
                   <span
-                    class="MuiTypography-root MuiTypography-body1 css-bpawrf-MuiTypography-root-trackName"
+                    class="MuiTypography-root MuiTypography-body1 css-1lqq4j2-MuiTypography-root-trackName"
                   >
                     <span>
                       Reference sequence (volvox)
@@ -1004,7 +1004,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 >
                   <div
                     class="css-v11ioz-renderingComponentContainer"
-                    style="transform: scaleX(1);"
                   >
                     <div
                       class="css-1y9lrrz-display"

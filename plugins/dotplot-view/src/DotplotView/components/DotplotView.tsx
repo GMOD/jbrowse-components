@@ -3,7 +3,6 @@ import { LoadingEllipses, Menu, ResizeHandle } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 import { transaction } from 'mobx'
 import { makeStyles } from 'tss-react/mui'
-import normalizeWheel from 'normalize-wheel'
 
 // locals
 import { DotplotViewModel } from '../model'
@@ -127,12 +126,11 @@ const DotplotViewInternal = observer(function ({
 
   // use non-React wheel handler to properly prevent body scrolling
   useEffect(() => {
-    function onWheel(origEvent: WheelEvent) {
-      const event = normalizeWheel(origEvent)
-      origEvent.preventDefault()
+    function onWheel(event: WheelEvent) {
+      event.preventDefault()
 
-      distanceX.current += event.pixelX
-      distanceY.current -= event.pixelY
+      distanceX.current += event.deltaX
+      distanceY.current -= event.deltaY
       if (!scheduled.current) {
         scheduled.current = true
 

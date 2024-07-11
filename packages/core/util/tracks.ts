@@ -1,22 +1,22 @@
 import { getParent, isRoot, IAnyStateTreeNode } from 'mobx-state-tree'
 import { getSession, objectHash, getEnv } from './index'
 import { PreFileLocation, FileLocation } from './types'
-import {
-  getConf,
-  readConfObject,
-  AnyConfigurationModel,
-} from '../configuration'
+import { readConfObject, AnyConfigurationModel } from '../configuration'
 
 /* utility functions for use by track models and so forth */
 
 export function getTrackAssemblyNames(
   track: IAnyStateTreeNode & { configuration: AnyConfigurationModel },
 ) {
-  const trackAssemblyNames = getConf(track, 'assemblyNames') as string[]
+  return getConfAssemblyNames(track.configuration)
+}
+
+export function getConfAssemblyNames(conf: AnyConfigurationModel) {
+  const trackAssemblyNames = readConfObject(conf, 'assemblyNames') as string[]
   if (!trackAssemblyNames) {
     // Check if it's an assembly sequence track
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const parent = getParent<any>(track.configuration)
+    const parent = getParent<any>(conf)
     if ('sequence' in parent) {
       return [readConfObject(parent, 'name') as string]
     }
@@ -46,8 +46,8 @@ export function getRpcSessionId(thisNode: IAnyStateTreeNode) {
 }
 
 /**
- * given an MST node, get the renderprops of the first parent container that has
- * renderProps
+ * given an MST node, get the renderprops of the first parent container that
+ * has renderProps
  * @param node -
  * @returns renderprops, or empty object if none found
  */

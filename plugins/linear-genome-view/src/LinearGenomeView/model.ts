@@ -2,7 +2,8 @@ import React, { lazy } from 'react'
 import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { Region } from '@jbrowse/core/util/types'
-import { ElementId, Region as MUIRegion } from '@jbrowse/core/util/types/mst'
+import { ElementId } from '@jbrowse/core/util/types/mst'
+import { Region as IRegion } from '@jbrowse/core/util/types'
 import { MenuItem } from '@jbrowse/core/ui'
 import {
   assembleLocString,
@@ -175,7 +176,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * advised to use the entire set of chromosomes if your assembly is very
          * fragmented
          */
-        displayedRegions: types.array(MUIRegion),
+        displayedRegions: types.optional(types.frozen<IRegion[]>(), []),
 
         /**
          * #property
@@ -421,7 +422,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get totalBp() {
-        return self.displayedRegions.reduce((a, b) => a + b.end - b.start, 0)
+        return sum(self.displayedRegions.map(r => r.end - r.start))
       },
 
       /**

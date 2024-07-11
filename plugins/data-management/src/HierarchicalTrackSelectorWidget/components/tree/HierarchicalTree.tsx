@@ -68,7 +68,11 @@ const HierarchicalTree = observer(function HierarchicalTree({
     }),
     [view, model, drawerPosition, tree],
   )
+
+  // doing this properly without ts-expect-error is tricky, react-vtree has
+  // some typescript examples that could help
   const treeWalker = useCallback(
+    // @ts-expect-error
     function* treeWalker() {
       for (const child of tree.children) {
         yield getNodeData(child, 0, extra, obj)
@@ -78,6 +82,7 @@ const HierarchicalTree = observer(function HierarchicalTree({
         // @ts-expect-error
         const parentMeta = yield
 
+        // @ts-expect-error
         for (const curr of parentMeta.node.children) {
           yield getNodeData(curr, parentMeta.nestingLevel + 1, extra, obj)
         }

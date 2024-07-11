@@ -33,7 +33,7 @@ function findPosInCigar(cigar: string[], startX: number) {
       mateX += len
     } else if (op === 'D') {
       featX += min
-    } else if (op === 'M') {
+    } else if (op === 'M' || op === '=' || op === 'X') {
       mateX += min
       featX += min
     }

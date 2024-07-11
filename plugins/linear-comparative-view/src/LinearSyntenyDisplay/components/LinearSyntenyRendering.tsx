@@ -1,12 +1,6 @@
 import React, { useState, useCallback, useRef } from 'react'
 import { observer } from 'mobx-react'
-import {
-  assembleLocString,
-  Feature,
-  getContainingView,
-  getSession,
-  isSessionModelWithWidgets,
-} from '@jbrowse/core/util'
+import { getContainingView } from '@jbrowse/core/util'
 import { transaction } from 'mobx'
 import { makeStyles } from 'tss-react/mui'
 
@@ -16,6 +10,9 @@ import { LinearSyntenyDisplayModel } from '../model'
 import { getId, MAX_COLOR_RANGE } from '../drawSynteny'
 import { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
 import SyntenyContextMenu from './SyntenyContextMenu'
+import { ClickCoord, getTooltip, onSynClick, onSynContextClick } from './util'
+
+type Timer = ReturnType<typeof setTimeout>
 
 const useStyles = makeStyles()({
   pix: {
@@ -35,12 +32,6 @@ const useStyles = makeStyles()({
   },
 })
 
-interface ClickCoord {
-  clientX: number
-  clientY: number
-  feature: any // eslint-disable-line @typescript-eslint/no-explicit-any
-}
-
 const LinearSyntenyRendering = observer(function ({
   model,
 }: {
@@ -52,12 +43,15 @@ const LinearSyntenyRendering = observer(function ({
   const view = getContainingView(model) as LinearSyntenyViewModel
   const height = view.middleComparativeHeight
   const width = view.width
+  const delta = useRef(0)
+  const timeout = useRef<Timer>()
   const [anchorEl, setAnchorEl] = useState<ClickCoord>()
   const [tooltip, setTooltip] = useState('')
   const [currX, setCurrX] = useState<number>()
   const [mouseCurrDownX, setMouseCurrDownX] = useState<number>()
   const [mouseInitialDownX, setMouseInitialDownX] = useState<number>()
   const [currY, setCurrY] = useState<number>()
+  const { mouseoverId } = model
 
   // these useCallbacks avoid new refs from being created on any mouseover, etc.
   const k1 = useCallback(
@@ -66,7 +60,59 @@ const LinearSyntenyRendering = observer(function ({
     [model, height, width],
   )
   const k2 = useCallback(
-    (ref: HTMLCanvasElement) => model.setMainCanvasRef(ref),
+    (ref: HTMLCanvasElement) => {
+      model.setMainCanvasRef(ref)
+      function onWheel(event: WheelEvent) {
+        event.preventDefault()
+        if (event.ctrlKey === true) {
+          delta.current += event.deltaY / 500
+          for (const v of view.views) {
+            v.setScaleFactor(
+              delta.current < 0 ? 1 - delta.current : 1 / (1 + delta.current),
+            )
+          }
+          if (timeout.current) {
+            clearTimeout(timeout.current)
+          }
+          timeout.current = setTimeout(() => {
+            for (const v of view.views) {
+              v.setScaleFactor(1)
+              v.zoomTo(
+                delta.current > 0
+                  ? v.bpPerPx * (1 + delta.current)
+                  : v.bpPerPx / (1 - delta.current),
+                event.clientX - (ref?.getBoundingClientRect().left || 0),
+              )
+            }
+            delta.current = 0
+          }, 300)
+        } else {
+          if (Math.abs(event.deltaY) < Math.abs(event.deltaX)) {
+            xOffset.current += event.deltaX / 2
+          }
+          if (currScrollFrame.current === undefined) {
+            currScrollFrame.current = requestAnimationFrame(() => {
+              transaction(() => {
+                for (const v of view.views) {
+                  v.horizontalScroll(xOffset.current)
+                }
+                xOffset.current = 0
+                currScrollFrame.current = undefined
+              })
+            })
+          }
+        }
+      }
+      if (ref) {
+        ref.addEventListener('wheel', onWheel)
+
+        // this is a react 19-ism to have a cleanup in the ref callback
+        // https://react.dev/blog/2024/04/25/react-19#cleanup-functions-for-refs
+        // note: it warns in earlier versions of react
+        return () => ref.removeEventListener('wheel', onWheel)
+      }
+      return () => {}
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [model, height, width],
   )
@@ -91,22 +137,6 @@ const LinearSyntenyRendering = observer(function ({
       />
       <canvas
         ref={k2}
-        onWheel={event => {
-          if (Math.abs(event.deltaY) < Math.abs(event.deltaX)) {
-            xOffset.current += event.deltaX
-          }
-          if (currScrollFrame.current === undefined) {
-            currScrollFrame.current = requestAnimationFrame(() => {
-              transaction(() => {
-                for (const v of view.views) {
-                  v.horizontalScroll(xOffset.current)
-                }
-                xOffset.current = 0
-                currScrollFrame.current = undefined
-              })
-            })
-          }
-        }}
         onMouseMove={event => {
           if (mouseCurrDownX !== undefined) {
             xOffset.current += mouseCurrDownX - event.clientX
@@ -169,12 +199,10 @@ const LinearSyntenyRendering = observer(function ({
             mouseInitialDownX !== undefined &&
             Math.abs(evt.clientX - mouseInitialDownX) < 5
           ) {
-            onSyntenyClick(evt, model)
+            onSynClick(evt, model)
           }
         }}
-        onContextMenu={evt => {
-          onSyntenyContextClick(evt, model, setAnchorEl)
-        }}
+        onContextMenu={evt => onSynContextClick(evt, model, setAnchorEl)}
         data-testid="synteny_canvas"
         className={classes.abs}
         width={width}
@@ -182,7 +210,7 @@ const LinearSyntenyRendering = observer(function ({
       />
       <canvas ref={k3} className={classes.pix} width={width} height={height} />
       <canvas ref={k4} className={classes.pix} width={width} height={height} />
-      {model.mouseoverId && tooltip && currX && currY ? (
+      {mouseoverId && tooltip && currX && currY ? (
         <SyntenyTooltip title={tooltip} />
       ) : null}
       {anchorEl ? (
@@ -195,112 +223,5 @@ const LinearSyntenyRendering = observer(function ({
     </div>
   )
 })
-
-function onSyntenyClick(
-  event: React.MouseEvent,
-  model: LinearSyntenyDisplayModel,
-) {
-  const ref1 = model.clickMapCanvas
-  const ref2 = model.cigarClickMapCanvas
-  if (!ref1 || !ref2) {
-    return
-  }
-  const rect = ref1.getBoundingClientRect()
-  const ctx1 = ref1.getContext('2d')
-  const ctx2 = ref2.getContext('2d')
-  if (!ctx1 || !ctx2) {
-    return
-  }
-  const x = event.clientX - rect.left
-  const y = event.clientY - rect.top
-  const [r1, g1, b1] = ctx1.getImageData(x, y, 1, 1).data
-  const unitMultiplier = Math.floor(MAX_COLOR_RANGE / model.numFeats)
-  const id = getId(r1, g1, b1, unitMultiplier)
-  const feat = model.featPositions[id]
-  if (feat) {
-    const { f } = feat
-    model.setClickId(f.id())
-    const session = getSession(model)
-    if (isSessionModelWithWidgets(session)) {
-      session.showWidget(
-        session.addWidget('SyntenyFeatureWidget', 'syntenyFeature', {
-          featureData: {
-            feature1: f.toJSON(),
-            feature2: f.get('mate'),
-          },
-        }),
-      )
-    }
-  }
-  return feat
-}
-
-function onSyntenyContextClick(
-  event: React.MouseEvent,
-  model: LinearSyntenyDisplayModel,
-  setAnchorEl: (arg: ClickCoord) => void,
-) {
-  event.preventDefault()
-  const ref1 = model.clickMapCanvas
-  const ref2 = model.cigarClickMapCanvas
-  if (!ref1 || !ref2) {
-    return
-  }
-  const rect = ref1.getBoundingClientRect()
-  const ctx1 = ref1.getContext('2d')
-  const ctx2 = ref2.getContext('2d')
-  if (!ctx1 || !ctx2) {
-    return
-  }
-  const { clientX, clientY } = event
-  const x = clientX - rect.left
-  const y = clientY - rect.top
-  const [r1, g1, b1] = ctx1.getImageData(x, y, 1, 1).data
-  const unitMultiplier = Math.floor(MAX_COLOR_RANGE / model.numFeats)
-  const id = getId(r1, g1, b1, unitMultiplier)
-  const f = model.featPositions[id]
-  if (f) {
-    model.setClickId(f.f.id())
-    setAnchorEl({ clientX, clientY, feature: f })
-  }
-}
-
-function getTooltip(f: Feature, cigarOp?: string, cigarOpLen?: string) {
-  // @ts-expect-error
-  const f1 = f.toJSON() as {
-    refName: string
-    start: number
-    end: number
-    strand?: number
-    assemblyName: string
-    identity?: number
-    name?: string
-    mate: {
-      start: number
-      end: number
-      refName: string
-      name: string
-    }
-  }
-  const f2 = f1.mate
-  const l1 = f1.end - f1.start
-  const l2 = f2.end - f2.start
-  const identity = f1.identity
-  const n1 = f1.name
-  const n2 = f2.name
-  return [
-    `Loc1: ${assembleLocString(f1)}`,
-    `Loc2: ${assembleLocString(f2)}`,
-    `Inverted: ${f1.strand === -1}`,
-    `Query len: ${l1.toLocaleString('en-US')}`,
-    `Target len: ${l2.toLocaleString('en-US')}`,
-    identity ? `Identity: ${identity.toPrecision(2)}` : '',
-    cigarOp ? `CIGAR operator: ${cigarOp}${cigarOpLen}` : '',
-    n1 ? `Name 1: ${n1}` : '',
-    n2 ? `Name 1: ${n2}` : '',
-  ]
-    .filter(f => !!f)
-    .join('<br/>')
-}
 
 export default LinearSyntenyRendering

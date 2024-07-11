@@ -131,7 +131,6 @@ export default class SimpleFeature implements Feature {
         `invalid feature data, end less than start. end: ${this.data.end} start: ${this.data.start}`,
       )
     }
-
     if (this.data.subfeatures) {
       this.subfeatures = this.data.subfeatures?.map(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

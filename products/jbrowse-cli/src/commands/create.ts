@@ -115,7 +115,7 @@ export default class Create extends JBrowseCommand {
     const allFiles = await fsPromises.readdir(userPath)
     if (allFiles.length > 0) {
       this.error(
-        `${userPath} This directory has existing files and could cause conflicts with create. Please choose another directory or use the force flag to overwrite existing files`,
+        `This directory (${userPath}) has existing files and could cause conflicts with create. Please choose another directory or use the force flag to overwrite existing files`,
         { exit: 120 },
       )
     }

@@ -1,11 +1,11 @@
-import React, { lazy, useRef, useState, Suspense } from 'react'
+import React, { lazy, useRef, useState, Suspense, useEffect } from 'react'
 import { Button, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 // locals
 import { useFeatureSequence } from './hooks'
 import { ErrorMessage, LoadingEllipses } from '../../ui'
-import { SimpleFeatureSerialized, getSession } from '../../util'
+import { SimpleFeatureSerialized } from '../../util'
 import { BaseFeatureWidgetModel } from '../stateModelFactory'
 
 // icons
@@ -29,6 +29,7 @@ const SequenceFeatureDetails = observer(function ({
   const { upDownBp } = sequenceFeatureDetails
   const seqPanelRef = useRef<HTMLDivElement>(null)
 
+  const [openInDialog, setOpenInDialog] = useState(false)
   const [force, setForce] = useState(false)
   const { sequence, error } = useFeatureSequence(
     model,
@@ -36,19 +37,14 @@ const SequenceFeatureDetails = observer(function ({
     upDownBp,
     force,
   )
-
-  const [mode, setMode] = useState('cds')
+  useEffect(() => {
+    sequenceFeatureDetails.setFeature(feature)
+  }, [sequenceFeatureDetails, feature])
 
   return (
     <>
       <div>
-        <SequenceTypeSelector
-          mode={mode}
-          setMode={setMode}
-          feature={feature}
-          model={sequenceFeatureDetails}
-        />
-
+        <SequenceTypeSelector model={sequenceFeatureDetails} />
         <SequenceFeatureMenu
           ref={seqPanelRef}
           model={sequenceFeatureDetails}
@@ -56,52 +52,63 @@ const SequenceFeatureDetails = observer(function ({
             {
               label: 'Open in dialog',
               onClick: () => {
-                getSession(model).queueDialog(handleClose => [
-                  SequenceDialog,
-                  { model, feature, handleClose },
-                ])
+                // this is given a setTimeout because it allows the menu to
+                // close before dialog opens
+                setTimeout(() => setOpenInDialog(true), 1)
               },
             },
           ]}
         />
       </div>
-      <div>
-        {feature.type === 'gene' ? (
-          <Typography>
-            Note: inspect subfeature sequences for protein/CDS computations
-          </Typography>
-        ) : null}
-        {error ? (
-          <ErrorMessage error={error} />
-        ) : !sequence ? (
-          <LoadingEllipses />
-        ) : sequence ? (
-          'error' in sequence ? (
-            <>
-              <Typography color="error">{sequence.error}</Typography>
-              <Button
-                variant="contained"
-                color="inherit"
-                onClick={() => setForce(true)}
-              >
-                Force load
-              </Button>
-            </>
+      {openInDialog ? (
+        <div>
+          Open in dialog...
+          <Suspense fallback={<LoadingEllipses />}>
+            <SequenceDialog
+              model={model}
+              feature={feature}
+              handleClose={() => setOpenInDialog(false)}
+            />
+          </Suspense>
+        </div>
+      ) : (
+        <div>
+          {feature.type === 'gene' ? (
+            <Typography>
+              Note: inspect subfeature sequences for protein/CDS computations
+            </Typography>
+          ) : null}
+          {error ? (
+            <ErrorMessage error={error} />
+          ) : !sequence ? (
+            <LoadingEllipses />
+          ) : sequence ? (
+            'error' in sequence ? (
+              <>
+                <Typography color="error">{sequence.error}</Typography>
+                <Button
+                  variant="contained"
+                  color="inherit"
+                  onClick={() => setForce(true)}
+                >
+                  Force load
+                </Button>
+              </>
+            ) : (
+              <Suspense fallback={<LoadingEllipses />}>
+                <SequencePanel
+                  ref={seqPanelRef}
+                  feature={feature}
+                  sequence={sequence}
+                  model={sequenceFeatureDetails}
+                />
+              </Suspense>
+            )
           ) : (
-            <Suspense fallback={<LoadingEllipses />}>
-              <SequencePanel
-                ref={seqPanelRef}
-                feature={feature}
-                mode={mode}
-                sequence={sequence}
-                model={sequenceFeatureDetails}
-              />
-            </Suspense>
-          )
-        ) : (
-          <Typography>No sequence found</Typography>
-        )}
-      </div>
+            <Typography>No sequence found</Typography>
+          )}
+        </div>
+      )}
     </>
   )
 })

@@ -581,7 +581,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "type": "LinearPairedArcDisplay",
         },
       ],
-      "name": "volvox structural variant test (<i>HTML italic</i>)",
+      "name": "volvox structural variant test (<a href="https://google.com"><i>HTML italic+link</i></a>)",
       "trackId": "volvox_sv_test",
       "type": "VariantTrack",
     },
@@ -2392,9 +2392,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "type": "LinearArcDisplay",
         },
       ],
-      "formatDetails": {
-        "maxDepth": 0,
-      },
       "name": "BigBed genes",
       "trackId": "bigbed_genes",
       "type": "FeatureTrack",

@@ -1,6 +1,6 @@
 {
   "name": "jbrowse-predefined-sessions",
-  "version": "2.11.2",
+  "version": "2.12.3",
   "main": "index.js",
   "author": "JBrowse Team",
   "license": "MIT",

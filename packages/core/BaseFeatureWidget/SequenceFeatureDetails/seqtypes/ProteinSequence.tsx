@@ -18,7 +18,7 @@ const ProteinSequence = observer(function ({
   codonTable: Record<string, string>
   model: SequenceFeatureDetailsModel
 }) {
-  const { width, showCoordinates } = model
+  const { charactersPerRow, showCoordinates } = model
   const str = stitch(cds, sequence)
   let protein = ''
   for (let i = 0; i < str.length; i += 3) {
@@ -27,7 +27,7 @@ const ProteinSequence = observer(function ({
   }
   const { segments } = splitString({
     str: protein,
-    width,
+    charactersPerRow,
     showCoordinates,
   })
   return (

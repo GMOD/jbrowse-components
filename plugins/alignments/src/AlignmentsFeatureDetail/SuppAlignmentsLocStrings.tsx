@@ -34,6 +34,7 @@ export default function SuppAlignmentsLocStrings({
             return (
               <li key={`${locString}-${index}`}>
                 <Link
+                  href="#"
                   onClick={async event => {
                     event.preventDefault()
 

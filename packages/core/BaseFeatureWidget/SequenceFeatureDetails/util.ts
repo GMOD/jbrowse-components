@@ -9,26 +9,26 @@ export const genomeColor = 'rgb(200,280,200)'
 
 export function splitString({
   str,
-  width,
+  charactersPerRow,
   showCoordinates,
   currRemainder = 0,
   splitSize = 10,
 }: {
   str: string
-  width: number
+  charactersPerRow: number
   showCoordinates: boolean
   currRemainder?: number
   splitStart?: number
   splitSize?: number
 }) {
-  const numChunks = Math.ceil(str.length / width)
+  const numChunks = Math.ceil(str.length / charactersPerRow)
   const chunks = new Array(numChunks)
   let splitStart = currRemainder % 10
 
   let iter = 0
   let offset = 0
   for (; iter < numChunks + 1; ++iter) {
-    const inc = iter === 0 ? width - currRemainder : width
+    const inc = iter === 0 ? charactersPerRow - currRemainder : charactersPerRow
     const r = str.slice(offset, offset + inc)
     if (!r) {
       break
@@ -59,6 +59,6 @@ export function splitString({
     remainder:
       ((chunks.at(-1)?.replaceAll(' ', '').length || 0) +
         (iter < 2 ? currRemainder : 0)) %
-      width,
+      charactersPerRow,
   }
 }

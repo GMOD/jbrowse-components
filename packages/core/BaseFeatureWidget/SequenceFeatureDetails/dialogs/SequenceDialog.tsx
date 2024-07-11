@@ -43,7 +43,6 @@ const SequenceDialog = observer(function ({
     force,
   )
 
-  const [mode, setMode] = useState('cds')
   return (
     <Dialog
       maxWidth="xl"
@@ -53,12 +52,7 @@ const SequenceDialog = observer(function ({
     >
       <DialogContent className={classes.dialogContent}>
         <div>
-          <SequenceTypeSelector
-            mode={mode}
-            setMode={setMode}
-            feature={feature}
-            model={sequenceFeatureDetails}
-          />
+          <SequenceTypeSelector model={sequenceFeatureDetails} />
           <SequenceFeatureMenu
             ref={seqPanelRef}
             model={sequenceFeatureDetails}
@@ -92,7 +86,6 @@ const SequenceDialog = observer(function ({
                 <SequencePanel
                   ref={seqPanelRef}
                   feature={feature}
-                  mode={mode}
                   sequence={sequence}
                   model={sequenceFeatureDetails}
                 />

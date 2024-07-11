@@ -2,29 +2,15 @@ const originalWarn = console.warn
 const originalError = console.error
 
 jest.spyOn(console, 'error').mockImplementation((...args) => {
-  if (String(args[0]).includes('volvox.2bit_404')) {
-    return undefined
-  }
-
-  if (String(args).includes('popupState')) {
-    return undefined
-  }
-
+  const r = String(args)
   if (
-    String(args).includes(
-      "Can't perform a React state update on an unmounted component.",
-    )
+    r.includes('volvox.2bit_404') ||
+    r.includes('popupState') ||
+    r.includes("Can't perform a React state update on an unmounted") ||
+    r.includes('Unexpected return value from a callback ref') ||
+    r.includes('A suspended resource finished loading inside a test') ||
+    r.includes('was not wrapped in act')
   ) {
-    return undefined
-  }
-
-  if (
-    String(args).includes('A suspended resource finished loading inside a test')
-  ) {
-    return undefined
-  }
-
-  if (String(args).includes('was not wrapped in act')) {
     return undefined
   }
 

@@ -1,9 +1,8 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { FormControl, MenuItem, Select } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 // locals
-import { SimpleFeatureSerialized } from '../../../util'
 import { SequenceFeatureDetailsModel } from '../model'
 
 const useStyles = makeStyles()({
@@ -14,33 +13,19 @@ const useStyles = makeStyles()({
 })
 
 const SequenceTypeSelector = observer(function ({
-  mode,
-  setMode,
-  feature,
   model,
 }: {
-  mode: string
-  setMode: (arg: string) => void
-  feature: SimpleFeatureSerialized
   model: SequenceFeatureDetailsModel
 }) {
   const { classes } = useStyles()
-  const { intronBp, upDownBp } = model
-
-  const hasCDS = feature.subfeatures?.some(sub => sub.type === 'CDS')
-  const hasExon = feature.subfeatures?.some(sub => sub.type === 'exon')
-  const hasExonOrCDS = hasExon || hasCDS
-
-  useEffect(() => {
-    setMode(hasCDS ? 'cds' : hasExon ? 'cdna' : 'genomic')
-  }, [setMode, hasCDS, hasExon])
+  const { intronBp, upDownBp, mode, hasCDS, hasExonOrCDS } = model
 
   return (
     <FormControl className={classes.formControl}>
       <Select
         size="small"
         value={mode}
-        onChange={event => setMode(event.target.value)}
+        onChange={event => model.setMode(event.target.value)}
       >
         {Object.entries({
           ...(hasCDS
@@ -78,7 +63,6 @@ const SequenceTypeSelector = observer(function ({
                 gene_updownstream_collapsed_intron: `Genomic w/ ${intronBp}bp intron +/- ${upDownBp}bp up+down stream `,
               }
             : {}),
-
           ...(!hasExonOrCDS
             ? {
                 genomic: 'Genomic',
