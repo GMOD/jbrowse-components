@@ -9,7 +9,7 @@ import { SceneGraph } from '@jbrowse/core/util/layouts'
 import { Region, Feature, stripAlpha } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
-const Arrow = observer(function ({
+const Arrow = observer(function Arrow({
   feature,
   featureLayout,
   config,

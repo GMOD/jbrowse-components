@@ -1,0 +1,59 @@
+{
+  "assemblies": [
+    {
+      "name": "sequence",
+      "name": "Wuhan-Hu-1",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "sequence-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "sequence.fasta.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "sequence.fasta.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "sequence.fasta.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "configuration": {},
+  "connections": [],
+  "defaultSession": {
+    "name": "New Session"
+  },
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "sequence",
+      "name": "NCBI genes",
+      "adapter": {
+        "type": "Gff3Adapter",
+        "gffLocation": {
+          "uri": "ncbi_original.gff3",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["Wuhan-Hu-1"]
+    }
+  ],
+  "plugins": [
+    {
+      "name": "Protein3d",
+      "umdLoc": {
+        "uri": "http://localhost:9001/dist/out.js"
+      }
+    },
+    {
+      "name": "MafViewer",
+      "url": "https://unpkg.com/jbrowse-plugin-mafviewer/dist/jbrowse-plugin-mafviewer.umd.production.min.js"
+    }
+  ]
+}

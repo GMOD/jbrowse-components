@@ -60,6 +60,7 @@ import Header from './components/Header'
 import { generateLocations, parseLocStrings } from './util'
 import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import { handleSelectedRegion } from '../searchUtils'
+
 // lazies
 const ReturnToImportFormDialog = lazy(
   () => import('@jbrowse/core/ui/ReturnToImportFormDialog'),
