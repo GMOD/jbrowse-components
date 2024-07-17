@@ -68,11 +68,17 @@ function sortCategoriesK() {
   return 'sortCategories'
 }
 
-function localStorageGetJSON<T>(key: string, defaultValue: string) {
-  return JSON.parse(localStorageGetItem(key) ?? defaultValue) as T
+function localStorageGetJSON<T>(key: string, defaultValue: T) {
+  const val = localStorageGetItem(key)
+  return val !== undefined && val !== null && val
+    ? (JSON.parse(val) as T)
+    : defaultValue
 }
+
 function localStorageSetJSON(key: string, val: unknown) {
-  localStorageSetItem(key, JSON.stringify(val))
+  if (val !== undefined && val !== null) {
+    localStorageSetItem(key, JSON.stringify(val))
+  }
 }
 
 const MAX_RECENTLY_USED = 10
@@ -104,16 +110,16 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       faceted: types.optional(facetedStateTreeF(), {}),
     })
     .volatile(() => ({
-      favorites: localStorageGetJSON<string[]>(favoritesK(), '[]'),
+      favorites: localStorageGetJSON<string[]>(favoritesK(), []),
       recentlyUsed: [] as string[],
       selection: [] as AnyConfigurationModel[],
-      sortTrackNames: !!localStorageGetJSON<Boolean>(
+      sortTrackNames: localStorageGetJSON<boolean | undefined>(
         sortTrackNamesK(),
-        'false',
+        undefined,
       ),
-      sortCategories: !!localStorageGetJSON<Boolean>(
+      sortCategories: localStorageGetJSON<boolean | undefined>(
         sortCategoriesK(),
-        'false',
+        undefined,
       ),
       collapsed: observable.map<string, boolean>(),
       filterText: '',
@@ -504,7 +510,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
             const { assemblyNames, view } = self
 
             self.setRecentlyUsed(
-              localStorageGetJSON<string[]>(recentlyUsedK(assemblyNames), '[]'),
+              localStorageGetJSON<string[]>(recentlyUsedK(assemblyNames), []),
             )
             if (view) {
               const val = localStorageGetItem(
