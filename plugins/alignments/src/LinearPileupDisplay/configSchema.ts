@@ -53,6 +53,11 @@ function configSchemaF(pluginManager: PluginManager) {
         description: 'color scheme to use',
         defaultValue: 'normal',
       },
+
+      colorBy: {
+        type: 'frozen',
+        defaultValue: {},
+      },
     },
     {
       /**
