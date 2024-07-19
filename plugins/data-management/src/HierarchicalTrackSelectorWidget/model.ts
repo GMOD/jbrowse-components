@@ -23,6 +23,10 @@ import { facetedStateTreeF } from './facetedModel'
 
 type MaybeAnyConfigurationModel = AnyConfigurationModel | undefined
 
+type MaybeBoolean = boolean | undefined
+
+type MaybeCollapsedKeys = [string, boolean][] | undefined
+
 // for settings that are not config dependent
 function keyNoConfigPostFix() {
   return typeof window !== 'undefined'
@@ -64,6 +68,7 @@ function collapsedK(assemblyNames: string[], viewType: string) {
 function sortTrackNamesK() {
   return 'sortTrackNames'
 }
+
 function sortCategoriesK() {
   return 'sortCategories'
 }
@@ -113,11 +118,11 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       favorites: localStorageGetJSON<string[]>(favoritesK(), []),
       recentlyUsed: [] as string[],
       selection: [] as AnyConfigurationModel[],
-      sortTrackNames: localStorageGetJSON<boolean | undefined>(
+      sortTrackNames: localStorageGetJSON<MaybeBoolean>(
         sortTrackNamesK(),
         undefined,
       ),
-      sortCategories: localStorageGetJSON<boolean | undefined>(
+      sortCategories: localStorageGetJSON<MaybeBoolean>(
         sortCategoriesK(),
         undefined,
       ),
@@ -513,39 +518,25 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
               localStorageGetJSON<string[]>(recentlyUsedK(assemblyNames), []),
             )
             if (view) {
-              const val = localStorageGetItem(
+              const lc = localStorageGetJSON<MaybeCollapsedKeys>(
                 collapsedK(assemblyNames, view.type),
+                undefined,
               )
-              if (!val) {
+              if (!lc) {
                 self.expandAllCategories()
                 const session = getSession(self)
-                if (
-                  getConf(session, [
-                    'hierarchical',
-                    'defaultCollapsed',
-                    'topLevelCategories',
-                  ])
-                ) {
+                const r = ['hierarchical', 'defaultCollapsed']
+                if (getConf(session, [...r, 'topLevelCategories'])) {
                   self.collapseTopLevelCategories()
                 }
-                if (
-                  getConf(session, [
-                    'hierarchical',
-                    'defaultCollapsed',
-                    'subCategories',
-                  ])
-                ) {
+                if (getConf(session, [...r, 'subCategories'])) {
                   self.collapseSubCategories()
                 }
-                for (const entry of getConf(session, [
-                  'hierarchical',
-                  'defaultCollapsed',
-                  'categoryNames',
-                ])) {
-                  self.setCategoryCollapsed(`Tracks-${entry}`, true)
+                for (const elt of getConf(session, [...r, 'categoryNames'])) {
+                  self.setCategoryCollapsed(`Tracks-${elt}`, true)
                 }
               } else {
-                self.setCollapsedCategories(JSON.parse(val))
+                self.setCollapsedCategories(lc)
               }
             }
           }),
@@ -554,11 +545,19 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         addDisposer(
           self,
           autorun(() => {
-            const { assemblyNames, collapsed, view } = self
-            localStorageSetJSON(recentlyUsedK(assemblyNames), self.recentlyUsed)
-            localStorageSetJSON(favoritesK(), self.favorites)
-            localStorageSetJSON(sortTrackNamesK(), self.sortTrackNames)
-            localStorageSetJSON(sortCategoriesK(), self.sortCategories)
+            const {
+              sortTrackNames,
+              sortCategories,
+              favorites,
+              recentlyUsed,
+              assemblyNames,
+              collapsed,
+              view,
+            } = self
+            localStorageSetJSON(recentlyUsedK(assemblyNames), recentlyUsed)
+            localStorageSetJSON(favoritesK(), favorites)
+            localStorageSetJSON(sortTrackNamesK(), sortTrackNames)
+            localStorageSetJSON(sortCategoriesK(), sortCategories)
             if (view) {
               localStorageSetJSON(
                 collapsedK(assemblyNames, view.type),
