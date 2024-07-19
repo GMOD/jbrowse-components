@@ -204,8 +204,8 @@ jobs:
       - name: Lint codebase
         run: yarn lint
 
-  format:
-    name: Format on node 20 and ubuntu-latest
+  formatchecks:
+    name: Format/spellcheck/docs on node 20 and ubuntu-latest
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -217,12 +217,7 @@ jobs:
         uses: bahmutov/npm-install@v1
       - name: Check codebase format
         run: yarn prettier --check .
-
-  spellcheck:
-    name: Spell check
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Check spelling
+      - name: Check autogen docs
+        run: yarn statedocs && yarn configdocs
+      - name: Spellcheck
         uses: crate-ci/typos@master
