@@ -75,7 +75,23 @@ AnyConfigurationSchemaType
 configuration: ConfigurationReference(configSchema)
 ```
 
+#### property: jexlFilters
+
+```js
+// type signature
+IMaybe<IArrayType<ISimpleType<string>>>
+// code
+jexlFilters: types.maybe(types.array(types.string))
+```
+
 ### LinearBasicDisplay - Getters
+
+#### getter: activeFilters
+
+```js
+// type
+any
+```
 
 #### getter: rendererTypeName
 
@@ -116,7 +132,7 @@ any
 
 ```js
 // type
-{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>
+{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>
 ```
 
 ### LinearBasicDisplay - Methods
@@ -125,7 +141,7 @@ any
 
 ```js
 // type signature
-renderProps: () => { config: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>; }
+renderProps: () => { config: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>; filters: SerializableFilterChain; }
 ```
 
 #### method: trackMenuItems
@@ -136,6 +152,13 @@ trackMenuItems: () => MenuItem[]
 ```
 
 ### LinearBasicDisplay - Actions
+
+#### action: setJexlFilters
+
+```js
+// type signature
+setJexlFilters: (f?: string[]) => void
+```
 
 #### action: toggleShowLabels
 

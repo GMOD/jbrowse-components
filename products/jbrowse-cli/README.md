@@ -205,7 +205,7 @@ EXAMPLES
 ```
 
 _See code:
-[src/commands/add-assembly.ts](https://github.com/GMOD/jbrowse-components/blob/v2.12.3/products/jbrowse-cli/src/commands/add-assembly.ts)_
+[lib/commands/add-assembly.js](https://github.com/GMOD/jbrowse-components/blob/v2.12.3/products/jbrowse-cli/lib/commands/add-assembly.js)_
 
 ## `jbrowse add-connection CONNECTIONURLORPATH`
 
@@ -256,7 +256,7 @@ EXAMPLES
 ```
 
 _See code:
-[src/commands/add-connection.ts](https://github.com/GMOD/jbrowse-components/blob/v2.12.3/products/jbrowse-cli/src/commands/add-connection.ts)_
+[lib/commands/add-connection.js](https://github.com/GMOD/jbrowse-components/blob/v2.12.3/products/jbrowse-cli/lib/commands/add-connection.js)_
 
 ## `jbrowse add-track TRACK`
 
@@ -337,7 +337,7 @@ EXAMPLES
 ```
 
 _See code:
-[src/commands/add-track.ts](https://github.com/GMOD/jbrowse-components/blob/v2.12.3/products/jbrowse-cli/src/commands/add-track.ts)_
+[lib/commands/add-track.js](https://github.com/GMOD/jbrowse-components/blob/v2.12.3/products/jbrowse-cli/lib/commands/add-track.js)_
 
 ## `jbrowse add-track-json TRACK`
 
@@ -367,7 +367,7 @@ EXAMPLES
 ```
 
 _See code:
-[src/commands/add-track-json.ts](https://github.com/GMOD/jbrowse-components/blob/v2.12.3/products/jbrowse-cli/src/commands/add-track-json.ts)_
+[lib/commands/add-track-json.js](https://github.com/GMOD/jbrowse-components/blob/v2.12.3/products/jbrowse-cli/lib/commands/add-track-json.js)_
 
 ## `jbrowse admin-server`
 
@@ -399,7 +399,7 @@ EXAMPLES
 ```
 
 _See code:
-[src/commands/admin-server.ts](https://github.com/GMOD/jbrowse-components/blob/v2.12.3/products/jbrowse-cli/src/commands/admin-server.ts)_
+[lib/commands/admin-server.js](https://github.com/GMOD/jbrowse-components/blob/v2.12.3/products/jbrowse-cli/lib/commands/admin-server.js)_
 
 ## `jbrowse create LOCALPATH`
 
@@ -456,7 +456,7 @@ EXAMPLES
 ```
 
 _See code:
-[src/commands/create.ts](https://github.com/GMOD/jbrowse-components/blob/v2.12.3/products/jbrowse-cli/src/commands/create.ts)_
+[lib/commands/create.js](https://github.com/GMOD/jbrowse-components/blob/v2.12.3/products/jbrowse-cli/lib/commands/create.js)_
 
 ## `jbrowse help [COMMAND]`
 
@@ -477,7 +477,7 @@ DESCRIPTION
 ```
 
 _See code:
-[@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.2.3/src/commands/help.ts)_
+[@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.2.5/src/commands/help.ts)_
 
 ## `jbrowse make-pif FILE`
 
@@ -507,7 +507,7 @@ EXAMPLES
 ```
 
 _See code:
-[src/commands/make-pif.ts](https://github.com/GMOD/jbrowse-components/blob/v2.12.3/products/jbrowse-cli/src/commands/make-pif.ts)_
+[lib/commands/make-pif.js](https://github.com/GMOD/jbrowse-components/blob/v2.12.3/products/jbrowse-cli/lib/commands/make-pif.js)_
 
 ## `jbrowse remove-track TRACK`
 
@@ -535,7 +535,7 @@ EXAMPLES
 ```
 
 _See code:
-[src/commands/remove-track.ts](https://github.com/GMOD/jbrowse-components/blob/v2.12.3/products/jbrowse-cli/src/commands/remove-track.ts)_
+[lib/commands/remove-track.js](https://github.com/GMOD/jbrowse-components/blob/v2.12.3/products/jbrowse-cli/lib/commands/remove-track.js)_
 
 ## `jbrowse set-default-session`
 
@@ -577,7 +577,7 @@ EXAMPLES
 ```
 
 _See code:
-[src/commands/set-default-session.ts](https://github.com/GMOD/jbrowse-components/blob/v2.12.3/products/jbrowse-cli/src/commands/set-default-session.ts)_
+[lib/commands/set-default-session.js](https://github.com/GMOD/jbrowse-components/blob/v2.12.3/products/jbrowse-cli/lib/commands/set-default-session.js)_
 
 ## `jbrowse sort-gff FILE`
 
@@ -608,7 +608,7 @@ EXAMPLES
 ```
 
 _See code:
-[src/commands/sort-gff.ts](https://github.com/GMOD/jbrowse-components/blob/v2.12.3/products/jbrowse-cli/src/commands/sort-gff.ts)_
+[lib/commands/sort-gff.js](https://github.com/GMOD/jbrowse-components/blob/v2.12.3/products/jbrowse-cli/lib/commands/sort-gff.js)_
 
 ## `jbrowse text-index`
 
@@ -675,7 +675,7 @@ EXAMPLES
 ```
 
 _See code:
-[src/commands/text-index.ts](https://github.com/GMOD/jbrowse-components/blob/v2.12.3/products/jbrowse-cli/src/commands/text-index.ts)_
+[lib/commands/text-index.js](https://github.com/GMOD/jbrowse-components/blob/v2.12.3/products/jbrowse-cli/lib/commands/text-index.js)_
 
 ## `jbrowse upgrade [LOCALPATH]`
 
@@ -738,7 +738,7 @@ EXAMPLES
 ```
 
 _See code:
-[src/commands/upgrade.ts](https://github.com/GMOD/jbrowse-components/blob/v2.12.3/products/jbrowse-cli/src/commands/upgrade.ts)_
+[lib/commands/upgrade.js](https://github.com/GMOD/jbrowse-components/blob/v2.12.3/products/jbrowse-cli/lib/commands/upgrade.js)_
 
 <!-- commandsstop -->
 
