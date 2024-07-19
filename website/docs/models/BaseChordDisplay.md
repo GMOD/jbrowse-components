@@ -86,7 +86,7 @@ renderProps: () => any
 
 ```js
 // type signature
-isCompatibleWithRenderer: (renderer: RendererType) => boolean
+isCompatibleWithRenderer: (renderer: RendererType) => renderer is CircularChordRendererType
 ```
 
 #### method: renderSvg

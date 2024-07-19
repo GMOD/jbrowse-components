@@ -28,16 +28,20 @@ export function extractWithComment(
   }
 
   function visit(node: ts.Node) {
-    const count = node.getChildCount()
+    try {
+      const count = node.getChildCount()
 
-    // @ts-expect-error
-    const symbol = checker.getSymbolAtLocation(node.name)
-    if (symbol) {
-      serializeSymbol(symbol, node, cb)
-    }
+      // @ts-expect-error
+      const symbol = checker.getSymbolAtLocation(node.name)
+      if (symbol) {
+        serializeSymbol(symbol, node, cb)
+      }
 
-    if (count > 0) {
-      ts.forEachChild(node, visit)
+      if (count > 0) {
+        ts.forEachChild(node, visit)
+      }
+    } catch (e) {
+      console.error(e)
     }
   }
 

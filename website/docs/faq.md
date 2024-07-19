@@ -258,9 +258,13 @@ faceted track selector:
 
 ### Can I compress the config.json, it's large and users have to download it?
 
-You can set up your server to serve zipped files. Most cloud-based services, like AWS Amplify and AWS CloudFront, already do this automatically. However, for Apache and Nginx, you need to configure them manually.
+You can set up your server to serve zipped files. Most cloud-based services,
+like AWS Amplify and AWS CloudFront, already do this automatically. However, for
+Apache and Nginx, you need to configure them manually.
 
-For Nginx, you can enable gzip compression by editing the config.template. See for instance for a set of reasonable nginx defaults: https://gist.github.com/sydcanem/3e00c09b3361927b2fd1#file-nginx-gzip-conf
+For Nginx, you can enable gzip compression by editing the config.template. See
+for instance for a set of reasonable nginx defaults:
+https://gist.github.com/sydcanem/3e00c09b3361927b2fd1#file-nginx-gzip-conf
 
 ```
 server {
@@ -269,7 +273,7 @@ server {
     # Default: off
     gzip on;
 
-    # make sure to **at least** allow json to be compressed, multiple 
+    # make sure to **at least** allow json to be compressed, multiple
     gzip_types
       application/json
 }
@@ -282,7 +286,8 @@ sudo a2enmod deflate
 sudo systemctl restart apache2
 ```
 
-Add the following configuration to your Apache configuration file (e.g., /etc/apache2/sites-available/000-default.conf):
+Add the following configuration to your Apache configuration file (e.g.,
+/etc/apache2/sites-available/000-default.conf):
 
 ```
 <IfModule mod_deflate.c>
@@ -292,7 +297,9 @@ Add the following configuration to your Apache configuration file (e.g., /etc/ap
 
 ```
 
-By enabling gzip compression, your config.json and other specified files will be served in a compressed format, reducing the file size and improving download times for your users.
+By enabling gzip compression, your config.json and other specified files will be
+served in a compressed format, reducing the file size and improving download
+times for your users.
 
 ## Curiosities
 
