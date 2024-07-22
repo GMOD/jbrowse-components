@@ -13,7 +13,7 @@ const configSchema = ConfigurationSchema(
      */
     features: {
       type: 'frozen',
-      defaultValue: [],
+      defaultValue: null,
     },
   },
   { explicitlyTyped: true },

@@ -13,7 +13,7 @@ const regionsConfigSchema = ConfigurationSchema(
      */
     features: {
       type: 'frozen',
-      defaultValue: [],
+      defaultValue: null,
     },
   },
   {

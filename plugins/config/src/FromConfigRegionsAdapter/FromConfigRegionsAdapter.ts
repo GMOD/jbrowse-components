@@ -31,8 +31,9 @@ export default class FromConfigRegionsAdapter
     pluginManager?: PluginManager,
   ) {
     super(config, getSubAdapter, pluginManager)
-    const f = readConfObject(config, 'features') as SimpleFeatureSerialized[]
-    this.features = makeFeatures(f || [])
+    this.features = makeFeatures(
+      (readConfObject(config, 'features') || []) as SimpleFeatureSerialized[],
+    )
   }
 
   /**
