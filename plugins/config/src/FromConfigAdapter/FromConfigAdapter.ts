@@ -45,9 +45,8 @@ export default class FromConfigAdapter extends BaseFeatureDataAdapter {
     pluginManager?: PluginManager,
   ) {
     super(conf, getSubAdapter, pluginManager)
-    this.features = makeFeatures(
-      (readConfObject(conf, 'features') || []) as SimpleFeatureSerialized[],
-    )
+    const feats = readConfObject(conf, 'features') as SimpleFeatureSerialized[]
+    this.features = makeFeatures(feats || [])
   }
 
   async getRefNames() {

@@ -186,6 +186,7 @@ exports[`Root MST model adds track and connection configs to an assembly 1`] = `
   "name": "assembly1",
   "sequence": {
     "adapter": {
+      "adapterId": "sequenceConfigAdapterId",
       "features": [
         {
           "end": 10,

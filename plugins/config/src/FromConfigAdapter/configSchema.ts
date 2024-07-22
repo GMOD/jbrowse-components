@@ -13,10 +13,10 @@ const configSchema = ConfigurationSchema(
      */
     features: {
       type: 'frozen',
-      defaultValue: null,
+      defaultValue: [],
     },
   },
-  { explicitlyTyped: true },
+  { explicitlyTyped: true, implicitIdentifier: 'adapterId' },
 )
 
 export default configSchema
