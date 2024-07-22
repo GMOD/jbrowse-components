@@ -27,20 +27,15 @@ type MaybeBoolean = boolean | undefined
 
 type MaybeCollapsedKeys = [string, boolean][] | undefined
 
-// for settings that are not config dependent
-function keyNoConfigPostFix() {
-  return typeof window !== 'undefined'
-    ? [window.location.host, window.location.pathname].join('-')
-    : 'empty'
-}
-
 // for settings that are config dependent
 function keyConfigPostFix() {
   return typeof window !== 'undefined'
     ? [
-        keyNoConfigPostFix(),
+        window.location.pathname,
         new URLSearchParams(window.location.search).get('config'),
-      ].join('-')
+      ]
+        .filter(f => !!f)
+        .join('-')
     : 'empty'
 }
 
@@ -57,14 +52,12 @@ function favoritesK() {
 }
 
 function collapsedK(assemblyNames: string[], viewType: string) {
-  const ret = [
+  return [
     'collapsedCategories',
     keyConfigPostFix(),
     assemblyNames.join(','),
     viewType,
   ].join('-')
-  // console.log({ ret })
-  return ret
 }
 
 function sortTrackNamesK() {
@@ -518,17 +511,15 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
             self.setRecentlyUsed(
               localStorageGetJSON<string[]>(recentlyUsedK(assemblyNames), []),
             )
-            // console.log({ view })
             if (view) {
               const lc = localStorageGetJSON<MaybeCollapsedKeys>(
                 collapsedK(assemblyNames, view.type),
                 undefined,
               )
-              // console.log({ lc, assemblyNames })
+              const r = ['hierarchical', 'defaultCollapsed']
+              const session = getSession(self)
               if (!lc) {
                 self.expandAllCategories()
-                const session = getSession(self)
-                const r = ['hierarchical', 'defaultCollapsed']
                 if (getConf(session, [...r, 'topLevelCategories'])) {
                   self.collapseTopLevelCategories()
                 }

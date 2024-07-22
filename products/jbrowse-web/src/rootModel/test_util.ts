@@ -6,12 +6,12 @@ import sessionModelFactory, { WebSessionModel } from '../sessionModel'
 export function createTestSession(args?: {
   adminMode?: boolean
   sessionSnapshot?: Record<string, unknown>
-  configuration?: Record<string, unknown>
+  jbrowseConfig?: Record<string, unknown>
 }) {
   const {
     sessionSnapshot = {},
     adminMode = false,
-    configuration = {},
+    jbrowseConfig = {},
   } = args || {}
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.createPluggableElements()
@@ -26,9 +26,9 @@ export function createTestSession(args?: {
         configuration: {
           rpc: { defaultDriver: 'MainThreadRpcDriver' },
           // @ts-expect-error
-          ...configuration?.configuration,
+          ...jbrowseConfig?.configuration,
         },
-        ...configuration,
+        ...jbrowseConfig,
       },
     },
     { pluginManager },
