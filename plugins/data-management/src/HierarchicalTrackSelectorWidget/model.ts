@@ -57,12 +57,14 @@ function favoritesK() {
 }
 
 function collapsedK(assemblyNames: string[], viewType: string) {
-  return [
+  const ret = [
     'collapsedCategories',
     keyConfigPostFix(),
     assemblyNames.join(','),
     viewType,
   ].join('-')
+  // console.log({ ret })
+  return ret
 }
 
 function sortTrackNamesK() {
@@ -513,15 +515,16 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           self,
           autorun(() => {
             const { assemblyNames, view } = self
-
             self.setRecentlyUsed(
               localStorageGetJSON<string[]>(recentlyUsedK(assemblyNames), []),
             )
+            // console.log({ view })
             if (view) {
               const lc = localStorageGetJSON<MaybeCollapsedKeys>(
                 collapsedK(assemblyNames, view.type),
                 undefined,
               )
+              // console.log({ lc, assemblyNames })
               if (!lc) {
                 self.expandAllCategories()
                 const session = getSession(self)

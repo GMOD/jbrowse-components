@@ -23,7 +23,7 @@ describe('JBrowseWebSessionModel', () => {
   })
 
   it('accepts a custom drawer width', () => {
-    const session = createTestSession({ drawerWidth: 256 })
+    const session = createTestSession({ sessionSnapshot: { drawerWidth: 256 } })
     expect(session.drawerWidth).toBe(256)
   })
 })

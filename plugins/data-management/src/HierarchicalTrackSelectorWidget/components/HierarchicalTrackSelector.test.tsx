@@ -6,57 +6,31 @@ import { ThemeProvider } from '@mui/material'
 
 // locals
 import HierarchicalTrackSelector from './HierarchicalTrackSelector'
+import { HierarchicalTrackSelectorModel } from '../model'
 
+// test data
 import conf from '../../../../../test_data/test_order/config.json'
 
 jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 
-test('renders nothing with no assembly', () => {
+test('no tracks', () => {
   const session = createTestSession()
   const firstView = session.addView('LinearGenomeView')
-  const model = firstView.activateTrackSelector()
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
 
   const { container } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <HierarchicalTrackSelector model={model} toolbarHeight={20} />
     </ThemeProvider>,
   )
+  expect(model.allTracks[0].tracks.length).toBe(0)
   expect(container).toMatchSnapshot()
 })
 
-test('renders with a couple of uncategorized tracks', async () => {
-  const session = createTestSession()
-  session.addAssemblyConf({
-    name: 'volMyt1',
-    sequence: {
-      trackId: 'sequenceConfigId',
-      type: 'ReferenceSequenceTrack',
-      adapter: {
-        type: 'FromConfigSequenceAdapter',
-        features: [
-          {
-            refName: 'ctgA',
-            uniqueId: 'firstId',
-            start: 0,
-            end: 10,
-            seq: 'cattgttgcg',
-          },
-        ],
-      },
-    },
-  })
-  session.addTrackConf({
-    trackId: 'fooC',
-    assemblyNames: ['volMyt1'],
-    type: 'FeatureTrack',
-    adapter: { type: 'FromConfigAdapter', features: [] },
-  })
-  session.addTrackConf({
-    trackId: 'barC',
-    assemblyNames: ['volMyt1'],
-    type: 'FeatureTrack',
-    adapter: { type: 'FromConfigAdapter', features: [] },
-  })
+test('small test data - uncategorized tracks', async () => {
+  // session tracks
+  const session = addTestData(createTestSession())
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
       {
@@ -71,49 +45,18 @@ test('renders with a couple of uncategorized tracks', async () => {
   firstView.showTrack(session.sessionTracks[1].trackId)
   const model = firstView.activateTrackSelector()
 
-  const { container, findByTestId } = render(
+  const { findByTestId } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <HierarchicalTrackSelector model={model} toolbarHeight={20} />
     </ThemeProvider>,
   )
-  await findByTestId('hierarchical_track_selector')
-  expect(container).toMatchSnapshot()
+  expect(await findByTestId('hierarchical_track_selector')).toMatchSnapshot()
+  expect(model.allTracks).toMatchSnapshot()
 })
 
-test('renders with a couple of categorized tracks', async () => {
-  const session = createTestSession()
-  session.addAssemblyConf({
-    name: 'volMyt1',
-    sequence: {
-      trackId: 'sequenceConfigId',
-      type: 'ReferenceSequenceTrack',
-      adapter: {
-        type: 'FromConfigSequenceAdapter',
-        features: [
-          {
-            refName: 'ctgA',
-            uniqueId: 'firstId',
-            start: 0,
-            end: 10,
-            seq: 'cattgttgcg',
-          },
-        ],
-      },
-    },
-  })
+test('small test data - categorized tracks', async () => {
+  const session = addTestData(createTestSession())
 
-  session.addTrackConf({
-    trackId: 'fooC',
-    assemblyNames: ['volMyt1'],
-    type: 'FeatureTrack',
-    adapter: { type: 'FromConfigAdapter', features: [] },
-  })
-  session.addTrackConf({
-    trackId: 'barC',
-    assemblyNames: ['volMyt1'],
-    type: 'FeatureTrack',
-    adapter: { type: 'FromConfigAdapter', features: [] },
-  })
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
       {
@@ -133,19 +76,195 @@ test('renders with a couple of categorized tracks', async () => {
   ])
   const model = firstView.activateTrackSelector()
 
-  const { container, findByTestId } = render(
+  const { findByTestId } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <HierarchicalTrackSelector model={model} toolbarHeight={20} />
     </ThemeProvider>,
   )
-  await findByTestId('hierarchical_track_selector')
-  expect(container).toMatchSnapshot()
+
+  expect(await findByTestId('hierarchical_track_selector')).toMatchSnapshot()
+  expect(model.allTracks).toMatchSnapshot()
 })
 
-test('right order when using multiple categories', async () => {
+test('unsorted categories', async () => {
+  const session = createTestSession({
+    configuration: conf,
+  })
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      {
+        assemblyName: 'volMyt1',
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+      },
+    ],
+  })
+
+  const model = firstView.activateTrackSelector()
+
+  const { findAllByTestId } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <HierarchicalTrackSelector model={model} toolbarHeight={20} />
+    </ThemeProvider>,
+  )
+
+  expect(
+    (await findAllByTestId(/htsTrackLabel/)).map(e => e.textContent),
+  ).toMatchSnapshot()
+})
+
+test('configuration preference - sorting categories', async () => {
+  const session = createTestSession({
+    configuration: {
+      tracks: shuffle(conf.tracks),
+      configuration: {
+        hierarchical: {
+          sort: {
+            categories: true,
+          },
+        },
+      },
+    },
+  })
+
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      {
+        assemblyName: 'volMyt1',
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+      },
+    ],
+  })
+
+  const model = firstView.activateTrackSelector()
+
+  const { findAllByTestId } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <HierarchicalTrackSelector model={model} toolbarHeight={20} />
+    </ThemeProvider>,
+  )
+
+  expect(
+    (await findAllByTestId(/htsCategory/)).map(e => e.textContent),
+  ).toMatchSnapshot()
+})
+
+test('configuration preference - sorting track names', async () => {
+  const session = createTestSession({
+    configuration: {
+      tracks: shuffle(conf.tracks),
+      configuration: {
+        hierarchical: {
+          sort: {
+            trackNames: true,
+          },
+        },
+      },
+    },
+  })
+
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      {
+        assemblyName: 'volMyt1',
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+      },
+    ],
+  })
+
+  const model = firstView.activateTrackSelector()
+
+  const { findAllByTestId } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <HierarchicalTrackSelector model={model} toolbarHeight={20} />
+    </ThemeProvider>,
+  )
+
+  expect(
+    (await findAllByTestId(/htsCategory/)).map(e => e.textContent),
+  ).toMatchSnapshot()
+})
+
+test('localstorage preference - sorting categories', async () => {
+  localStorage.setItem('sortCategories', 'true')
+  const session = createTestSession({
+    configuration: {
+      tracks: shuffle(conf.tracks),
+    },
+  })
+
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      {
+        assemblyName: 'volMyt1',
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+      },
+    ],
+  })
+
+  const model = firstView.activateTrackSelector()
+
+  const { findAllByTestId } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <HierarchicalTrackSelector model={model} toolbarHeight={20} />
+    </ThemeProvider>,
+  )
+
+  expect(
+    (await findAllByTestId(/htsCategory/)).map(e => e.textContent),
+  ).toMatchSnapshot()
+})
+
+test('localstorage preference - sorting track names', async () => {
+  // use localstorage preference
+  localStorage.setItem('sortTrackNames', 'true')
   const session = createTestSession()
+
+  for (const track of shuffle(conf.tracks)) {
+    session.addTrackConf(track)
+  }
+
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      {
+        assemblyName: 'volMyt1',
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+      },
+    ],
+  })
+
+  const model = firstView.activateTrackSelector()
+
+  const { findAllByTestId } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <HierarchicalTrackSelector model={model} toolbarHeight={20} />
+    </ThemeProvider>,
+  )
+
+  const list = await findAllByTestId('htsTrackLabel', {
+    exact: false,
+  })
+  const trackNameList = []
+  for (const entry of list) {
+    trackNameList.push(entry.textContent)
+  }
+  expect(trackNameList).toMatchSnapshot()
+})
+
+// -------------------------- test utils -
+
+function addTestData(session: ReturnType<typeof createTestSession>) {
   session.addAssemblyConf({
-    name: 'volvox',
+    name: 'volMyt1',
     sequence: {
       trackId: 'sequenceConfigId',
       type: 'ReferenceSequenceTrack',
@@ -164,34 +283,36 @@ test('right order when using multiple categories', async () => {
     },
   })
 
-  for (const track of conf.tracks) {
-    session.addTrackConf(track)
-  }
-
-  const firstView = session.addView('LinearGenomeView', {
-    displayedRegions: [
-      {
-        assemblyName: 'volMyt1',
-        refName: 'ctgA',
-        start: 0,
-        end: 1000,
-      },
-    ],
+  session.addTrackConf({
+    trackId: 'fooC',
+    assemblyNames: ['volMyt1'],
+    type: 'FeatureTrack',
+    adapter: { type: 'FromConfigAdapter', features: [] },
   })
-
-  const model = firstView.activateTrackSelector()
-
-  const { getAllByTestId, findByTestId } = render(
-    <ThemeProvider theme={createJBrowseTheme()}>
-      <HierarchicalTrackSelector model={model} toolbarHeight={20} />
-    </ThemeProvider>,
-  )
-  await findByTestId('hierarchical_track_selector')
-
-  const list = getAllByTestId('htsTrackLabel', {
-    exact: false,
+  session.addTrackConf({
+    trackId: 'barC',
+    assemblyNames: ['volMyt1'],
+    type: 'FeatureTrack',
+    adapter: { type: 'FromConfigAdapter', features: [] },
   })
-  for (const entry of list) {
-    expect(entry.textContent).toMatchSnapshot()
+  return session
+}
+
+function shuffle<T>(copy: T[]) {
+  const array = [...copy]
+  let currentIndex = array.length
+
+  // While there remain elements to shuffle...
+  while (currentIndex != 0) {
+    // Pick a remaining element...
+    const randomIndex = Math.floor(Math.random() * currentIndex)
+    currentIndex--
+
+    // And swap it with the current element.
+    ;[array[currentIndex], array[randomIndex]] = [
+      array[randomIndex],
+      array[currentIndex],
+    ]
   }
-})
+  return array
+}
