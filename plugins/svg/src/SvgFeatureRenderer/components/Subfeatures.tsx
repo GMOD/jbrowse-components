@@ -13,7 +13,7 @@ import {
   layOutFeature,
 } from './util'
 
-const Subfeatures = observer(function (props: {
+const Subfeatures = observer(function Subfeatures(props: {
   feature: Feature
   featureLayout: SceneGraph
   selected?: boolean
