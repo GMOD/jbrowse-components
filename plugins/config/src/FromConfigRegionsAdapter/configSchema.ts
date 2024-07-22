@@ -13,12 +13,11 @@ const regionsConfigSchema = ConfigurationSchema(
      */
     features: {
       type: 'frozen',
-      defaultValue: [],
+      defaultValue: null,
     },
   },
   {
     explicitlyTyped: true,
-    implicitIdentifier: 'adapterId',
   },
 )
 export default regionsConfigSchema

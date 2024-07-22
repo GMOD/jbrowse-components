@@ -78,9 +78,8 @@ export default class FromConfigSequenceAdapter
   }
 
   /**
-   * called to provide a hint that data tied to a certain region
-   * will not be needed for the foreseeable future and can be purged
-   * from caches, etc
+   * called to provide a hint that data tied to a certain region will not be
+   * needed for the foreseeable future and can be purged from caches, etc
    */
   freeResources(/* { region } */): void {}
 }

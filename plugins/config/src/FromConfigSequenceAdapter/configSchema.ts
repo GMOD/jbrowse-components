@@ -12,10 +12,10 @@ const sequenceConfigSchema = ConfigurationSchema(
      */
     features: {
       type: 'frozen',
-      defaultValue: [],
+      defaultValue: null,
     },
   },
-  { explicitlyTyped: true, implicitIdentifier: 'adapterId' },
+  { explicitlyTyped: true },
 )
 
 export default sequenceConfigSchema
