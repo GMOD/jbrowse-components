@@ -47,7 +47,7 @@ export default function Category({
         }
       }}
     >
-      <Typography>
+      <Typography data-testid={`htsCategory-${name}`}>
         {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
         {name}
         <IconButton

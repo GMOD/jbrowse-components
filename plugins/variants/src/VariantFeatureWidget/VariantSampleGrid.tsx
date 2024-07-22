@@ -124,6 +124,7 @@ export default function VariantSamples(props: {
       ) : null}
 
       <DataGrid
+        autoHeight
         rows={rows}
         hideFooter={rows.length < 100}
         columns={columns}
@@ -133,7 +134,11 @@ export default function VariantSamples(props: {
         disableColumnMenu
         slots={{ toolbar: checked ? GridToolbar : null }}
         slotProps={{
-          toolbar: { printOptions: { disableToolbarButton: true } },
+          toolbar: {
+            printOptions: {
+              disableToolbarButton: true,
+            },
+          },
         }}
       />
     </BaseCard>

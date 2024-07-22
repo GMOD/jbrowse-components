@@ -8,24 +8,26 @@ jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 describe('Scalebar genome view component', () => {
   it('renders two regions', () => {
     const session = createTestSession({
-      views: [
-        {
-          type: 'LinearGenomeView',
-          offsetPx: 0,
-          bpPerPx: 1,
-          displayedRegions: [
-            { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
-            {
-              assemblyName: 'volvox',
-              refName: 'ctgB',
-              start: 100,
-              end: 200,
-            },
-          ],
-          tracks: [],
-          configuration: {},
-        },
-      ],
+      sessionSnapshot: {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            offsetPx: 0,
+            bpPerPx: 1,
+            displayedRegions: [
+              { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
+              {
+                assemblyName: 'volvox',
+                refName: 'ctgB',
+                start: 100,
+                end: 200,
+              },
+            ],
+            tracks: [],
+            configuration: {},
+          },
+        ],
+      },
     }) as any
     session.addAssemblyConf({
       name: 'volMyt1',
@@ -55,19 +57,21 @@ describe('Scalebar genome view component', () => {
   })
   it('renders two regions when scrolled to the left, the label is ctgA to the actual blocks', () => {
     const session = createTestSession({
-      views: [
-        {
-          type: 'LinearGenomeView',
-          offsetPx: -100,
-          bpPerPx: 1,
-          displayedRegions: [
-            { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
-            { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 100 },
-          ],
-          tracks: [],
-          configuration: {},
-        },
-      ],
+      sessionSnapshot: {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            offsetPx: -100,
+            bpPerPx: 1,
+            displayedRegions: [
+              { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
+              { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 100 },
+            ],
+            tracks: [],
+            configuration: {},
+          },
+        ],
+      },
     }) as any
     session.addAssemblyConf({
       name: 'volMyt1',
@@ -98,21 +102,23 @@ describe('Scalebar genome view component', () => {
 
   it('renders two regions when scrolled to the left, the label is ctgA to the actual blocks', () => {
     const session = createTestSession({
-      views: [
-        {
-          type: 'LinearGenomeView',
-          offsetPx: -100,
-          bpPerPx: 1,
-          displayedRegions: [
-            { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
-            { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 1 },
-            { assemblyName: 'volvox', refName: 'ctgC', start: 0, end: 1 },
-            { assemblyName: 'volvox', refName: 'ctgD', start: 0, end: 1 },
-          ],
-          tracks: [],
-          configuration: {},
-        },
-      ],
+      sessionSnapshot: {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            offsetPx: -100,
+            bpPerPx: 1,
+            displayedRegions: [
+              { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
+              { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 1 },
+              { assemblyName: 'volvox', refName: 'ctgC', start: 0, end: 1 },
+              { assemblyName: 'volvox', refName: 'ctgD', start: 0, end: 1 },
+            ],
+            tracks: [],
+            configuration: {},
+          },
+        ],
+      },
     }) as any
     session.addAssemblyConf({
       name: 'volMyt1',

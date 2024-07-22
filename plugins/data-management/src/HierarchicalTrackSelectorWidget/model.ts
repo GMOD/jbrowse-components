@@ -23,20 +23,19 @@ import { facetedStateTreeF } from './facetedModel'
 
 type MaybeAnyConfigurationModel = AnyConfigurationModel | undefined
 
-// for settings that are not config dependent
-function keyNoConfigPostFix() {
-  return typeof window !== 'undefined'
-    ? [window.location.host, window.location.pathname].join('-')
-    : 'empty'
-}
+type MaybeBoolean = boolean | undefined
+
+type MaybeCollapsedKeys = [string, boolean][] | undefined
 
 // for settings that are config dependent
 function keyConfigPostFix() {
   return typeof window !== 'undefined'
     ? [
-        keyNoConfigPostFix(),
+        window.location.pathname,
         new URLSearchParams(window.location.search).get('config'),
-      ].join('-')
+      ]
+        .filter(f => !!f)
+        .join('-')
     : 'empty'
 }
 
@@ -64,15 +63,22 @@ function collapsedK(assemblyNames: string[], viewType: string) {
 function sortTrackNamesK() {
   return 'sortTrackNames'
 }
+
 function sortCategoriesK() {
   return 'sortCategories'
 }
 
-function localStorageGetJSON<T>(key: string, defaultValue: string) {
-  return JSON.parse(localStorageGetItem(key) ?? defaultValue) as T
+function localStorageGetJSON<T>(key: string, defaultValue: T) {
+  const val = localStorageGetItem(key)
+  return val !== undefined && val !== null && val
+    ? (JSON.parse(val) as T)
+    : defaultValue
 }
+
 function localStorageSetJSON(key: string, val: unknown) {
-  localStorageSetItem(key, JSON.stringify(val))
+  if (val !== undefined && val !== null) {
+    localStorageSetItem(key, JSON.stringify(val))
+  }
 }
 
 const MAX_RECENTLY_USED = 10
@@ -104,16 +110,16 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       faceted: types.optional(facetedStateTreeF(), {}),
     })
     .volatile(() => ({
-      favorites: localStorageGetJSON<string[]>(favoritesK(), '[]'),
+      favorites: localStorageGetJSON<string[]>(favoritesK(), []),
       recentlyUsed: [] as string[],
       selection: [] as AnyConfigurationModel[],
-      sortTrackNames: !!localStorageGetJSON<Boolean>(
+      sortTrackNames: localStorageGetJSON<MaybeBoolean>(
         sortTrackNamesK(),
-        'false',
+        undefined,
       ),
-      sortCategories: !!localStorageGetJSON<Boolean>(
+      sortCategories: localStorageGetJSON<MaybeBoolean>(
         sortCategoriesK(),
-        'false',
+        undefined,
       ),
       collapsed: observable.map<string, boolean>(),
       filterText: '',
@@ -502,44 +508,29 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           self,
           autorun(() => {
             const { assemblyNames, view } = self
-
             self.setRecentlyUsed(
-              localStorageGetJSON<string[]>(recentlyUsedK(assemblyNames), '[]'),
+              localStorageGetJSON<string[]>(recentlyUsedK(assemblyNames), []),
             )
             if (view) {
-              const val = localStorageGetItem(
+              const lc = localStorageGetJSON<MaybeCollapsedKeys>(
                 collapsedK(assemblyNames, view.type),
+                undefined,
               )
-              if (!val) {
+              const r = ['hierarchical', 'defaultCollapsed']
+              const session = getSession(self)
+              if (!lc) {
                 self.expandAllCategories()
-                const session = getSession(self)
-                if (
-                  getConf(session, [
-                    'hierarchical',
-                    'defaultCollapsed',
-                    'topLevelCategories',
-                  ])
-                ) {
+                if (getConf(session, [...r, 'topLevelCategories'])) {
                   self.collapseTopLevelCategories()
                 }
-                if (
-                  getConf(session, [
-                    'hierarchical',
-                    'defaultCollapsed',
-                    'subCategories',
-                  ])
-                ) {
+                if (getConf(session, [...r, 'subCategories'])) {
                   self.collapseSubCategories()
                 }
-                for (const entry of getConf(session, [
-                  'hierarchical',
-                  'defaultCollapsed',
-                  'categoryNames',
-                ])) {
-                  self.setCategoryCollapsed(`Tracks-${entry}`, true)
+                for (const elt of getConf(session, [...r, 'categoryNames'])) {
+                  self.setCategoryCollapsed(`Tracks-${elt}`, true)
                 }
               } else {
-                self.setCollapsedCategories(JSON.parse(val))
+                self.setCollapsedCategories(lc)
               }
             }
           }),
@@ -548,11 +539,19 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         addDisposer(
           self,
           autorun(() => {
-            const { assemblyNames, collapsed, view } = self
-            localStorageSetJSON(recentlyUsedK(assemblyNames), self.recentlyUsed)
-            localStorageSetJSON(favoritesK(), self.favorites)
-            localStorageSetJSON(sortTrackNamesK(), self.sortTrackNames)
-            localStorageSetJSON(sortCategoriesK(), self.sortCategories)
+            const {
+              sortTrackNames,
+              sortCategories,
+              favorites,
+              recentlyUsed,
+              assemblyNames,
+              collapsed,
+              view,
+            } = self
+            localStorageSetJSON(recentlyUsedK(assemblyNames), recentlyUsed)
+            localStorageSetJSON(favoritesK(), favorites)
+            localStorageSetJSON(sortTrackNamesK(), sortTrackNames)
+            localStorageSetJSON(sortCategoriesK(), sortCategories)
             if (view) {
               localStorageSetJSON(
                 collapsedK(assemblyNames, view.type),
