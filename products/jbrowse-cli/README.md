@@ -485,15 +485,16 @@ creates pairwise indexed PAF (PIF), with bgzip and tabix
 
 ```
 USAGE
-  $ jbrowse make-pif FILE [--out <value>] [--csi] [-h]
+  $ jbrowse make-pif FILE [--threads <value>] [--out <value>] [--csi] [-h]
 
 ARGUMENTS
   FILE  PAF file as input
 
 FLAGS
-  -h, --help         Show CLI help.
-      --csi          Create a CSI index for the PIF file instead of TBI
-      --out=<value>  Where to write the output file. will write ${file}.pif.gz and ${file}.pif.gz.tbi
+  -h, --help             Show CLI help.
+      --csi              Create a CSI index for the PIF file instead of TBI
+      --out=<value>      Where to write the output file. will write ${file}.pif.gz and ${file}.pif.gz.tbi
+      --threads=<value>  Number of threads to use for bgzip, optional
 
 DESCRIPTION
   creates pairwise indexed PAF (PIF), with bgzip and tabix

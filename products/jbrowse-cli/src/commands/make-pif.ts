@@ -87,6 +87,9 @@ export default class MakePIF extends JBrowseCommand {
   ]
 
   static flags = {
+    threads: Flags.integer({
+      description: 'Number of threads to use for bgzip, optional',
+    }),
     out: Flags.string({
       description:
         'Where to write the output file. will write ${file}.pif.gz and ${file}.pif.gz.tbi',
@@ -106,7 +109,7 @@ export default class MakePIF extends JBrowseCommand {
   async run() {
     const {
       args: { file },
-      flags: { out, csi },
+      flags: { out, csi, threads },
     } = await this.parse(MakePIF)
 
     if (
@@ -117,11 +120,12 @@ export default class MakePIF extends JBrowseCommand {
       commandExistsSync('bgzip')
     ) {
       const fn = out || `${path.basename(file || 'output', '.paf')}.pif.gz`
+      const threadString = threads ? `-@${threads}` : ''
       const child = spawn(
         'sh',
         [
           '-c',
-          `sort -t"\`printf '\t'\`" -k1,1 -k3,3n | bgzip -@4 > ${fn}; tabix ${
+          `sort -t"\`printf '\t'\`" -k1,1 -k3,3n | bgzip ${threadString} > ${fn}; tabix ${
             csi ? '-C ' : ''
           }-s1 -b3 -e4 -0 ${fn}`,
         ],
