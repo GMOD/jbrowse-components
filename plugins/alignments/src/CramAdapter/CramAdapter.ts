@@ -56,7 +56,6 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       index: new CraiIndex({ filehandle: openLocation(craiLocation, pm) }),
       seqFetch: (...args) => this.seqFetch(...args),
       checkSequenceMD5: false,
-      fetchSizeLimit: 200_000_000, // just make this a large size to avoid hitting it
     })
 
     if (!this.getSubAdapter) {

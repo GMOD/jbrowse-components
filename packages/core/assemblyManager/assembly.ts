@@ -1,5 +1,5 @@
 import { getParent, types, Instance, IAnyType } from 'mobx-state-tree'
-import AbortablePromiseCache from 'abortable-promise-cache'
+import AbortablePromiseCache from '@gmod/abortable-promise-cache'
 
 // locals
 import { getConf, AnyConfigurationModel } from '../configuration'
