@@ -9,7 +9,7 @@ import {
   AnyConfiguration,
 } from '@jbrowse/core/configuration'
 import { AssemblyManager, JBrowsePlugin } from '@jbrowse/core/util/types'
-import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
+import { localStorageSetItem } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
 import {
   addDisposer,
@@ -106,10 +106,6 @@ export function BaseWebSession({
       sessionPlugins: types.array(types.frozen()),
     })
     .volatile((/* self */) => ({
-      /**
-       * #volatile
-       */
-      sessionThemeName: localStorageGetItem('themeName') || 'default',
       /**
        * #volatile
        * this is the current "task" that is being performed in the UI.
@@ -410,7 +406,6 @@ export function BaseWebSession({
           self,
           autorun(() => {
             localStorageSetItem('drawerPosition', self.drawerPosition)
-            localStorageSetItem('themeName', self.themeName)
           }),
         )
       },

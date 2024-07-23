@@ -25,32 +25,36 @@
   ],
   "configuration": {
     "theme": {
-      "palette": {
-        "tertiary": {
-          "main": "#9da9b6"
-        },
-        "secondary": {
-          "main": "#29405F"
+      "light": {
+        "palette": {
+          "tertiary": {
+            "main": "#9da9b6"
+          },
+          "secondary": {
+            "main": "#29405F"
+          }
         }
       }
     },
     "extraThemes": {
       "darkWild": {
-        "name": "Dark (wild)",
-        "palette": {
-          "primary": {
-            "main": "#444"
-          },
-          "secondary": {
-            "main": "#335"
-          },
-          "tertiary": {
-            "main": "#250"
-          },
-          "quaternary": {
-            "main": "#535"
-          },
-          "mode": "dark"
+        "name": "Wild",
+        "dark": {
+          "palette": {
+            "primary": {
+              "main": "#444"
+            },
+            "secondary": {
+              "main": "#335"
+            },
+            "tertiary": {
+              "main": "#250"
+            },
+            "quaternary": {
+              "main": "#535"
+            },
+            "mode": "dark"
+          }
         }
       }
     }

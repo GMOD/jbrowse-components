@@ -7,15 +7,18 @@ import {
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getConf } from '@jbrowse/core/configuration'
-import { createJBrowseTheme, defaultThemes } from '@jbrowse/core/ui'
+import {
+  JBrowseThemeOptions,
+  createJBrowseTheme,
+  defaultThemes,
+} from '@jbrowse/core/ui'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
-import { ThemeOptions } from '@mui/material'
 import { autorun } from 'mobx'
 
 // locals
 import { BaseSession } from './BaseSession'
 
-type ThemeMap = Record<string, ThemeOptions>
+type ThemeMap = Record<string, JBrowseThemeOptions>
 
 /**
  * #stateModel ThemeManagerSessionMixin
@@ -25,6 +28,8 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
     .model({})
     .volatile(() => ({
       sessionThemeName: localStorageGetItem('themeName') || 'default',
+      prefersDarkMode: localStorageGetItem('prefersDarkMode') || 'false',
+      themeMode: localStorageGetItem('themeMode') || 'system',
     }))
     .views(s => ({
       /**
@@ -33,7 +38,10 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
       allThemes(): ThemeMap {
         const self = s as typeof s & BaseSession
         const extraThemes = getConf(self.jbrowse, 'extraThemes')
-        return { ...defaultThemes, ...extraThemes }
+        return {
+          ...defaultThemes,
+          ...extraThemes,
+        }
       },
       /**
        * #getter
@@ -48,9 +56,21 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
        */
       get theme() {
         const self = s as typeof s & BaseSession
-        const configTheme = getConf(self.jbrowse, 'theme')
         const all = this.allThemes()
-        return createJBrowseTheme(configTheme, all, this.themeName)
+
+        const desiredMode =
+          s.themeMode === 'system'
+            ? JSON.parse(s.prefersDarkMode)
+              ? 'dark'
+              : 'light'
+            : s.themeMode
+
+        const theme =
+          this.themeName === 'default'
+            ? getConf(self.jbrowse, 'theme')
+            : all[this.themeName]
+
+        return createJBrowseTheme(theme, all, this.themeName, desiredMode)
       },
     }))
     .actions(self => ({
@@ -60,11 +80,25 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
       setThemeName(name: string) {
         self.sessionThemeName = name
       },
+      /**
+       * #action
+       */
+      setPrefersDarkMode(preference: string) {
+        self.prefersDarkMode = preference
+      },
+      /**
+       * #action
+       */
+      setThemeMode(preference: 'light' | 'dark' | 'system') {
+        self.themeMode = preference
+      },
       afterAttach() {
         addDisposer(
           self,
           autorun(() => {
             localStorageSetItem('themeName', self.themeName)
+            localStorageSetItem('prefersDarkMode', self.prefersDarkMode)
+            localStorageSetItem('themeMode', self.themeMode)
           }),
         )
       },

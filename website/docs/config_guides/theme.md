@@ -43,7 +43,7 @@ The customized theme screenshot uses the below configuration:
 ```json
 {
   "configuration": {
-    "theme" :{
+    "theme": {
       "palette": {
         "primary": {
           "main": "#311b92"
@@ -60,24 +60,39 @@ The customized theme screenshot uses the below configuration:
       }
     }
   }
+}
 ```
 
-### Extra themes and dark mode
+### Dark themes, extra themes, and system settings
 
-In v2.4.0 we introduced the ability to add extra themes via the config. In
-jbrowse-web and jbrowse-desktop, these show up in a "Preferences" dialog that
-the user can select from. We also added better support for dark mode themes.
-Adding "mode": "dark" to your theme will use MUI's dark mode
-https://mui.com/material-ui/customization/dark-mode/
+JBrowse themes can be defined as either a `"light":` or `"dark":` theme, should
+the administrator wish to define both. Without an explicitly defined light or
+dark theme, JBrowse will generate an acceptable light or dark mode theme for the
+user should their preference setting require it.
 
 Example
 
 ```json
 {
   "configuration": {
-    "extraThemes": {
-      "myTheme": {
-        "name": "My theme",
+    "theme": {
+      "light": {
+        "palette": {
+          "primary": {
+            "main": "#311b92"
+          },
+          "secondary": {
+            "main": "#0097a7"
+          },
+          "tertiary": {
+            "main": "#f57c00"
+          },
+          "quaternary": {
+            "main": "#d50000"
+          }
+        }
+      },
+      "dark": {
         "mode": "dark",
         "palette": {
           "primary": {
@@ -91,6 +106,48 @@ Example
           },
           "quaternary": {
             "main": "#d50000"
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+Extra themes can be defined via the config. In jbrowse-web and jbrowse-desktop,
+the user can select these themes from the Tools>Preferences menu.
+
+From this dialog, you can also select whether you would like to use light, dark,
+or system mode for the theme. Selecting "system" will adopt your desktop's
+system-level theming preference.
+
+An administrator can use MUI's built-in dark mode themeing by adding the
+`"mode": "dark"` option to their theme. Some more information about MUI's dark
+mode can be found here: https://mui.com/material-ui/customization/dark-mode/.
+
+Example
+
+```json
+{
+  "configuration": {
+    "extraThemes": {
+      "myTheme": {
+        "name": "My theme",
+        "dark": {
+          "mode": "dark",
+          "palette": {
+            "primary": {
+              "main": "#311b92"
+            },
+            "secondary": {
+              "main": "#0097a7"
+            },
+            "tertiary": {
+              "main": "#f57c00"
+            },
+            "quaternary": {
+              "main": "#d50000"
+            }
           }
         }
       }
