@@ -39,6 +39,8 @@ const ReturnToImportFormDialog = lazy(
  * - [BaseViewModel](../baseviewmodel)
  */
 function stateModelFactory(pluginManager: PluginManager) {
+  const model = pluginManager.getViewType('LinearGenomeView')
+    .stateModel as LinearGenomeViewStateModel
   return types
     .compose(
       'LinearComparativeView',
@@ -79,8 +81,11 @@ function stateModelFactory(pluginManager: PluginManager) {
          * currently this is limited to an array of two
          */
         views: types.array(
-          pluginManager.getViewType('LinearGenomeView')
-            .stateModel as LinearGenomeViewStateModel,
+          model.views(self => ({
+            scaleBarDisplayPrefix() {
+              return self.assemblyNames[0]
+            },
+          })),
         ),
 
         /**
