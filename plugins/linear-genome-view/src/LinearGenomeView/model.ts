@@ -283,6 +283,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       rightOffset: undefined as undefined | BpOffset,
     }))
     .views(self => ({
+      scaleBarDisplayPrefix() {
+        return ''
+      },
       /**
        * #getter
        * this is the effective value of the track labels setting, incorporating

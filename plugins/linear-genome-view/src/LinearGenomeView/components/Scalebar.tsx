@@ -3,6 +3,9 @@ import { makeStyles } from 'tss-react/mui'
 import { ContentBlock } from '@jbrowse/core/util/blockTypes'
 import { observer } from 'mobx-react'
 import React from 'react'
+import { getTickDisplayStr } from '@jbrowse/core/util'
+
+// locals
 import { LinearGenomeViewModel } from '..'
 import {
   ContentBlock as ContentBlockComponent,
@@ -10,7 +13,6 @@ import {
   InterRegionPaddingBlock as InterRegionPaddingBlockComponent,
 } from '../../BaseLinearDisplay/components/Block'
 import { makeTicks } from '../util'
-import { getTickDisplayStr } from '@jbrowse/core/util'
 
 type LGV = LinearGenomeViewModel
 
@@ -57,7 +59,7 @@ const useStyles = makeStyles()(theme => ({
 
 const RenderedRefNameLabels = observer(function ({ model }: { model: LGV }) {
   const { classes } = useStyles()
-  const { staticBlocks, offsetPx, assemblyNames } = model
+  const { staticBlocks, offsetPx, scaleBarDisplayPrefix } = model
 
   // find the block that needs pinning to the left side for context
   let lastLeftBlock = 0
@@ -66,6 +68,7 @@ const RenderedRefNameLabels = observer(function ({ model }: { model: LGV }) {
       lastLeftBlock = i
     }
   })
+  const val = scaleBarDisplayPrefix()
   return (
     <>
       {staticBlocks.blocks[0].type !== 'ContentBlock' ? (
@@ -73,7 +76,7 @@ const RenderedRefNameLabels = observer(function ({ model }: { model: LGV }) {
           style={{ left: 0, zIndex: 100 }}
           className={classes.refLabel}
         >
-          {assemblyNames[0]}
+          {val}
         </Typography>
       ) : null}
       {staticBlocks.map((block, index) => {
@@ -91,7 +94,7 @@ const RenderedRefNameLabels = observer(function ({ model }: { model: LGV }) {
             className={classes.refLabel}
             data-testid={`refLabel-${block.refName}`}
           >
-            {index === lastLeftBlock ? assemblyNames[0] + ':' : ''}
+            {index === lastLeftBlock && val ? `${val}:` : ''}
             {block.refName}
           </Typography>
         ) : null
