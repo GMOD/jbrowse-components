@@ -55,19 +55,28 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const RenderedRefNameLabels = observer(({ model }: { model: LGV }) => {
+const RenderedRefNameLabels = observer(function ({ model }: { model: LGV }) {
   const { classes } = useStyles()
+  const { staticBlocks, offsetPx, assemblyNames } = model
 
   // find the block that needs pinning to the left side for context
   let lastLeftBlock = 0
-  model.staticBlocks.forEach((block, i) => {
-    if (block.offsetPx - model.offsetPx < 0) {
+  staticBlocks.forEach((block, i) => {
+    if (block.offsetPx - offsetPx < 0) {
       lastLeftBlock = i
     }
   })
   return (
     <>
-      {model.staticBlocks.map((block, index) => {
+      {staticBlocks.blocks[0].type !== 'ContentBlock' ? (
+        <Typography
+          style={{ left: 0, zIndex: 100 }}
+          className={classes.refLabel}
+        >
+          {assemblyNames[0]}
+        </Typography>
+      ) : null}
+      {staticBlocks.map((block, index) => {
         return block.type === 'ContentBlock' &&
           (block.isLeftEndOfDisplayedRegion || index === lastLeftBlock) ? (
           <Typography
@@ -75,13 +84,14 @@ const RenderedRefNameLabels = observer(({ model }: { model: LGV }) => {
             style={{
               left:
                 index === lastLeftBlock
-                  ? Math.max(0, -model.offsetPx)
-                  : block.offsetPx - model.offsetPx - 1,
+                  ? Math.max(0, -offsetPx)
+                  : block.offsetPx - offsetPx - 1,
               paddingLeft: index === lastLeftBlock ? 0 : 1,
             }}
             className={classes.refLabel}
             data-testid={`refLabel-${block.refName}`}
           >
+            {index === lastLeftBlock ? assemblyNames[0] + ':' : ''}
             {block.refName}
           </Typography>
         ) : null
