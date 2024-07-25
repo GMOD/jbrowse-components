@@ -264,6 +264,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
         colorByCDS: types.optional(types.boolean, () =>
           Boolean(JSON.parse(localStorageGetItem('lgv-colorByCDS') || 'false')),
         ),
+
+        /**
+         * #property
+         * color by CDS
+         */
+        showTrackOutlines: types.optional(types.boolean, () =>
+          Boolean(
+            JSON.parse(localStorageGetItem('lgv-showTrackOutlines') || 'true'),
+          ),
+        ),
       }),
     )
     .volatile(() => ({
@@ -557,6 +567,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      setShowTrackOutlines(arg: boolean) {
+        self.showTrackOutlines = arg
+      },
       /**
        * #action
        */
@@ -1207,6 +1223,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 onClick: () => self.setHideHeader(!self.hideHeader),
               },
 
+              {
+                label: 'Show track outlines',
+                type: 'checkbox',
+                checked: self.showTrackOutlines,
+                onClick: () =>
+                  self.setShowTrackOutlines(!self.showTrackOutlines),
+              },
               {
                 label: 'Show header overview',
                 type: 'checkbox',
