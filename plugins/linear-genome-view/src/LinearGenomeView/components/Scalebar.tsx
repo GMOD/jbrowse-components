@@ -71,7 +71,7 @@ const RenderedRefNameLabels = observer(function ({ model }: { model: LGV }) {
   const val = scaleBarDisplayPrefix()
   return (
     <>
-      {staticBlocks.blocks[0].type !== 'ContentBlock' ? (
+      {staticBlocks.blocks[0].type !== 'ContentBlock' && val ? (
         <Typography
           style={{ left: 0, zIndex: 100 }}
           className={classes.refLabel}
@@ -136,7 +136,7 @@ const RenderedBlockTicks = function ({
   )
 }
 
-const RenderedScalebarLabels = observer(({ model }: { model: LGV }) => {
+const RenderedScalebarLabels = observer(function ({ model }: { model: LGV }) {
   const { staticBlocks, bpPerPx } = model
 
   return (
