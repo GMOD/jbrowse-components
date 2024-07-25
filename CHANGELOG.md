@@ -1,3 +1,59 @@
+yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 2.13.0
+
+## 2.13.0 (2024-07-25)
+
+#### :rocket: Enhancement
+
+- [#4494](https://github.com/GMOD/jbrowse-components/pull/4494) Add assembly
+  name to scalebar in synteny views ([@cmdcolin](https://github.com/cmdcolin))
+- [#4480](https://github.com/GMOD/jbrowse-components/pull/4480) Changes default
+  height for SVG rendering to maxHeight to fix blank track effect on slow CPU
+  ([@carolinebridge](https://github.com/carolinebridge))
+- [#4478](https://github.com/GMOD/jbrowse-components/pull/4478) Add ability to
+  use CSI indexes in @jbrowse/img ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- `core`
+  - [#4483](https://github.com/GMOD/jbrowse-components/pull/4483) Fix
+    configuration settings for track sorting in the track selector
+    ([@cmdcolin](https://github.com/cmdcolin))
+- Other
+  - [#4476](https://github.com/GMOD/jbrowse-components/pull/4476) Fix config
+    editor crash in vite usage of embedded components in dev mode
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4473](https://github.com/GMOD/jbrowse-components/pull/4473) Fix 'Show no
+    tracks active button' checkbox not working
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :memo: Documentation
+
+- `core`
+  - [#4481](https://github.com/GMOD/jbrowse-components/pull/4481) Add SARS-CoV2
+    demo to test_data ([@cmdcolin](https://github.com/cmdcolin))
+- Other
+  - [#4487](https://github.com/GMOD/jbrowse-components/pull/4487) Update faq.md
+    with compression explanation
+    ([@Maarten-vd-Sande](https://github.com/Maarten-vd-Sande))
+
+#### :house: Internal
+
+- `core`
+  - [#4493](https://github.com/GMOD/jbrowse-components/pull/4493) Remove
+    prop-types from re-exports ([@cmdcolin](https://github.com/cmdcolin))
+  - [#4492](https://github.com/GMOD/jbrowse-components/pull/4492) Change
+    abortable-promise-cache to @gmod/abortable-promise-cache
+    ([@cmdcolin](https://github.com/cmdcolin))
+- Other
+  - [#4488](https://github.com/GMOD/jbrowse-components/pull/4488) Fix autogen
+    docs build ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 3
+
+- Caroline Bridge ([@carolinebridge](https://github.com/carolinebridge))
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- [@Maarten-vd-Sande](https://github.com/Maarten-vd-Sande) Done in 1.66s.
+
 yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 2.12.3
 
 ## 2.12.3 (2024-06-27)
