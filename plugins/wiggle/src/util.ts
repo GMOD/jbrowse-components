@@ -130,11 +130,10 @@ export function getNiceDomain({
     }
   }
   if (scaleType === 'log') {
-    // if the min is 0, assume that it's just something
-    // with no read coverage and that we should ignore it in calculations
-    // if it's greater than 1 pin to 1 for the full range also
-    // otherwise, we may see bigwigs with fractional values
-    if (min === 0 || min > 1) {
+    // for min>0 and max>1, set log min to 1, which works for most coverage
+    // types tracks. if max is not >1, might be like raw p-values so then it'll
+    // display negative values
+    if (min >= 0 && max > 1) {
       min = 1
     }
   }
