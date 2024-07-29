@@ -4,7 +4,7 @@ exports[`renders with the available plugins 1`] = `
 <div>
   <div>
     <div
-      class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-1z10yd4-MuiFormControl-root-MuiTextField-root"
+      class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-1naooin-MuiFormControl-root-MuiTextField-root"
     >
       <label
         class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard css-1s1jvl0-MuiFormLabel-root-MuiInputLabel-root"
@@ -28,7 +28,7 @@ exports[`renders with the available plugins 1`] = `
           class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-1laqsz7-MuiInputAdornment-root"
         >
           <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1nv3o53-MuiButtonBase-root-MuiIconButton-root"
             tabindex="0"
             type="button"
           >
@@ -105,7 +105,7 @@ exports[`renders with the available plugins 1`] = `
                   class="MuiList-root MuiList-padding css-h4y409-MuiList-root"
                 >
                   <li
-                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-1mpppvc-MuiListItem-root"
                   >
                     <svg
                       aria-hidden="true"
@@ -127,7 +127,7 @@ exports[`renders with the available plugins 1`] = `
                     </p>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-1mpppvc-MuiListItem-root"
                   >
                     <svg
                       aria-hidden="true"
@@ -149,7 +149,7 @@ exports[`renders with the available plugins 1`] = `
                     </p>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-1mpppvc-MuiListItem-root"
                   >
                     <svg
                       aria-hidden="true"
@@ -171,7 +171,7 @@ exports[`renders with the available plugins 1`] = `
                     </p>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-1mpppvc-MuiListItem-root"
                   >
                     <svg
                       aria-hidden="true"
@@ -193,7 +193,7 @@ exports[`renders with the available plugins 1`] = `
                     </p>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-1mpppvc-MuiListItem-root"
                   >
                     <svg
                       aria-hidden="true"
@@ -215,7 +215,7 @@ exports[`renders with the available plugins 1`] = `
                     </p>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-1mpppvc-MuiListItem-root"
                   >
                     <svg
                       aria-hidden="true"
@@ -237,7 +237,7 @@ exports[`renders with the available plugins 1`] = `
                     </p>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-1mpppvc-MuiListItem-root"
                   >
                     <svg
                       aria-hidden="true"
@@ -259,7 +259,7 @@ exports[`renders with the available plugins 1`] = `
                     </p>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-1mpppvc-MuiListItem-root"
                   >
                     <svg
                       aria-hidden="true"
@@ -281,7 +281,7 @@ exports[`renders with the available plugins 1`] = `
                     </p>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-1mpppvc-MuiListItem-root"
                   >
                     <svg
                       aria-hidden="true"
@@ -303,7 +303,7 @@ exports[`renders with the available plugins 1`] = `
                     </p>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-1mpppvc-MuiListItem-root"
                   >
                     <svg
                       aria-hidden="true"
@@ -325,7 +325,7 @@ exports[`renders with the available plugins 1`] = `
                     </p>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-1mpppvc-MuiListItem-root"
                   >
                     <svg
                       aria-hidden="true"
@@ -347,7 +347,7 @@ exports[`renders with the available plugins 1`] = `
                     </p>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-1mpppvc-MuiListItem-root"
                   >
                     <svg
                       aria-hidden="true"
@@ -369,7 +369,7 @@ exports[`renders with the available plugins 1`] = `
                     </p>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-1mpppvc-MuiListItem-root"
                   >
                     <svg
                       aria-hidden="true"
@@ -391,7 +391,7 @@ exports[`renders with the available plugins 1`] = `
                     </p>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-1mpppvc-MuiListItem-root"
                   >
                     <svg
                       aria-hidden="true"
@@ -413,7 +413,7 @@ exports[`renders with the available plugins 1`] = `
                     </p>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-1mpppvc-MuiListItem-root"
                   >
                     <svg
                       aria-hidden="true"
@@ -435,7 +435,7 @@ exports[`renders with the available plugins 1`] = `
                     </p>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-1mpppvc-MuiListItem-root"
                   >
                     <svg
                       aria-hidden="true"
@@ -457,7 +457,7 @@ exports[`renders with the available plugins 1`] = `
                     </p>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-1mpppvc-MuiListItem-root"
                   >
                     <svg
                       aria-hidden="true"
@@ -479,7 +479,7 @@ exports[`renders with the available plugins 1`] = `
                     </p>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-1mpppvc-MuiListItem-root"
                   >
                     <svg
                       aria-hidden="true"
@@ -501,7 +501,7 @@ exports[`renders with the available plugins 1`] = `
                     </p>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-1mpppvc-MuiListItem-root"
                   >
                     <svg
                       aria-hidden="true"
@@ -523,7 +523,7 @@ exports[`renders with the available plugins 1`] = `
                     </p>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-1mpppvc-MuiListItem-root"
                   >
                     <svg
                       aria-hidden="true"
@@ -545,7 +545,7 @@ exports[`renders with the available plugins 1`] = `
                     </p>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-1mpppvc-MuiListItem-root"
                   >
                     <svg
                       aria-hidden="true"
@@ -567,7 +567,7 @@ exports[`renders with the available plugins 1`] = `
                     </p>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-1mpppvc-MuiListItem-root"
                   >
                     <svg
                       aria-hidden="true"
@@ -589,7 +589,7 @@ exports[`renders with the available plugins 1`] = `
                     </p>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-1mpppvc-MuiListItem-root"
                   >
                     <svg
                       aria-hidden="true"
@@ -611,7 +611,7 @@ exports[`renders with the available plugins 1`] = `
                     </p>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-1mpppvc-MuiListItem-root"
                   >
                     <svg
                       aria-hidden="true"
@@ -633,7 +633,7 @@ exports[`renders with the available plugins 1`] = `
                     </p>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-1mpppvc-MuiListItem-root"
                   >
                     <svg
                       aria-hidden="true"
@@ -655,7 +655,7 @@ exports[`renders with the available plugins 1`] = `
                     </p>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-1mpppvc-MuiListItem-root"
                   >
                     <svg
                       aria-hidden="true"
@@ -677,7 +677,7 @@ exports[`renders with the available plugins 1`] = `
                     </p>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-1mpppvc-MuiListItem-root"
                   >
                     <svg
                       aria-hidden="true"
@@ -699,7 +699,7 @@ exports[`renders with the available plugins 1`] = `
                     </p>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-1mpppvc-MuiListItem-root"
                   >
                     <svg
                       aria-hidden="true"
@@ -721,7 +721,7 @@ exports[`renders with the available plugins 1`] = `
                     </p>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-1mpppvc-MuiListItem-root"
                   >
                     <svg
                       aria-hidden="true"
@@ -807,7 +807,7 @@ exports[`renders with the available plugins 1`] = `
                     class="MuiTypography-root MuiTypography-h5 css-1ldbtdh-MuiTypography-root"
                   >
                     <a
-                      class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-6z5vhu-MuiTypography-root-MuiLink-root"
+                      class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-1g43wb-MuiTypography-root-MuiLink-root"
                       href="https://github.com/GMOD/jbrowse-plugin-msaview#readme"
                       rel="noopener"
                       target="_blank"
@@ -848,15 +848,15 @@ exports[`renders with the available plugins 1`] = `
                   </p>
                 </div>
                 <div
-                  class="MuiCardActions-root MuiCardActions-spacing css-dnrpxu-MuiCardActions-root"
+                  class="MuiCardActions-root MuiCardActions-spacing css-xm0xqa-MuiCardActions-root"
                 >
                   <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary css-1cpxz0y-MuiButtonBase-root-MuiButton-root"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary css-qy5lo8-MuiButtonBase-root-MuiButton-root"
                     tabindex="0"
                     type="button"
                   >
                     <span
-                      class="MuiButton-icon MuiButton-startIcon MuiButton-iconSizeSmall css-cstir9-MuiButton-startIcon"
+                      class="MuiButton-icon MuiButton-startIcon MuiButton-iconSizeSmall css-h0vgxp-MuiButton-startIcon"
                     >
                       <svg
                         aria-hidden="true"

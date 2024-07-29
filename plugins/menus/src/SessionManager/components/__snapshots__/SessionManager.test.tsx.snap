@@ -9,7 +9,7 @@ exports[`<SessionManager /> renders 1`] = `
       class="MuiList-root MuiList-padding MuiList-subheader css-p64g7a-MuiList-root"
     >
       <li
-        class="MuiListSubheader-root MuiListSubheader-gutters MuiListSubheader-sticky css-uob957-MuiListSubheader-root"
+        class="MuiListSubheader-root MuiListSubheader-gutters MuiListSubheader-sticky css-1t6ue01-MuiListSubheader-root"
       >
         Saved sessions
       </li>

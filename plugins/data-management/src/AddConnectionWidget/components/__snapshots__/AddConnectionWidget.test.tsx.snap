@@ -6,13 +6,13 @@ exports[`renders 1`] = `
     class="css-1ohm0fb-root"
   >
     <div
-      class="MuiStepper-root MuiStepper-vertical css-1nq3qk0-MuiStepper-root-stepper"
+      class="MuiStepper-root MuiStepper-vertical css-pg954s-MuiStepper-root-stepper"
     >
       <div
         class="MuiStep-root MuiStep-vertical css-8wcvy5-MuiStep-root"
       >
         <span
-          class="MuiStepLabel-root MuiStepLabel-vertical css-14sza3e-MuiStepLabel-root"
+          class="MuiStepLabel-root MuiStepLabel-vertical css-ifbt3e-MuiStepLabel-root"
         >
           <span
             class="MuiStepLabel-iconContainer Mui-active css-vnkopk-MuiStepLabel-iconContainer"
@@ -66,7 +66,7 @@ exports[`renders 1`] = `
                   autocomplete="off"
                 >
                   <div
-                    class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
+                    class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-y4n9bg-MuiFormControl-root-MuiTextField-root"
                   >
                     <label
                       class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeMedium MuiInputLabel-outlined MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeMedium MuiInputLabel-outlined css-1jy569b-MuiFormLabel-root-MuiInputLabel-root"
@@ -124,12 +124,12 @@ exports[`renders 1`] = `
                       </fieldset>
                     </div>
                     <p
-                      class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
+                      class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-wq8qsl-MuiFormHelperText-root"
                       id=":r0:-helper-text"
                     >
                       A track or assembly hub in the Track Hub format
                       <a
-                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-yvetkp-MuiButtonBase-root-MuiIconButton-root"
                         href="//genome.ucsc.edu/goldenPath/help/hgTrackHubHelp.html#Intro"
                         rel="noopener noreferrer"
                         tabindex="0"
@@ -157,7 +157,7 @@ exports[`renders 1`] = `
                   class="css-1spe31o-actionsContainer"
                 >
                   <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary Mui-disabled MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary css-1j3hqkx-MuiButtonBase-root-MuiButton-root-button"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary Mui-disabled MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary css-16zpp1g-MuiButtonBase-root-MuiButton-root-button"
                     disabled=""
                     tabindex="-1"
                     type="button"
@@ -165,7 +165,7 @@ exports[`renders 1`] = `
                     Back
                   </button>
                   <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary css-1xo5g2a-MuiButtonBase-root-MuiButton-root-button"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary css-1f3kj6n-MuiButtonBase-root-MuiButton-root-button"
                     data-testid="addConnectionNext"
                     tabindex="0"
                     type="button"
@@ -182,17 +182,17 @@ exports[`renders 1`] = `
         </div>
       </div>
       <div
-        class="MuiStepConnector-root MuiStepConnector-vertical Mui-disabled css-1pe7n21-MuiStepConnector-root"
+        class="MuiStepConnector-root MuiStepConnector-vertical Mui-disabled css-8orou1-MuiStepConnector-root"
       >
         <span
-          class="MuiStepConnector-line MuiStepConnector-lineVertical css-8t49rw-MuiStepConnector-line"
+          class="MuiStepConnector-line MuiStepConnector-lineVertical css-18ltxn-MuiStepConnector-line"
         />
       </div>
       <div
         class="MuiStep-root MuiStep-vertical css-8wcvy5-MuiStep-root"
       >
         <span
-          class="MuiStepLabel-root MuiStepLabel-vertical Mui-disabled css-14sza3e-MuiStepLabel-root"
+          class="MuiStepLabel-root MuiStepLabel-vertical Mui-disabled css-ifbt3e-MuiStepLabel-root"
         >
           <span
             class="MuiStepLabel-iconContainer Mui-disabled css-vnkopk-MuiStepLabel-iconContainer"
@@ -230,7 +230,7 @@ exports[`renders 1`] = `
           </span>
         </span>
         <div
-          class="MuiStepContent-root MuiStepContent-last css-1mz1l2x-MuiStepContent-root"
+          class="MuiStepContent-root MuiStepContent-last css-pikvia-MuiStepContent-root"
         />
       </div>
     </div>
