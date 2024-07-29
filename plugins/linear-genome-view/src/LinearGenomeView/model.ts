@@ -35,6 +35,7 @@ import {
   resolveIdentifier,
   types,
   Instance,
+  getParent,
 } from 'mobx-state-tree'
 
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
@@ -293,9 +294,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       rightOffset: undefined as undefined | BpOffset,
     }))
     .views(self => ({
-      scaleBarDisplayPrefix() {
-        return ''
-      },
       /**
        * #getter
        * this is the effective value of the track labels setting, incorporating
@@ -339,6 +337,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #method
        */
+      scaleBarDisplayPrefix() {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return getParent<any>(self, 2).type === 'LinearSyntenyView'
+          ? self.assemblyNames[0]
+          : ''
+      },
+      /**
+       * #method
+       */
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       MiniControlsComponent(): React.FC<any> {
         return MiniControls
@@ -357,8 +364,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       get assemblyErrors() {
         const { assemblyManager } = getSession(self)
-        const { assemblyNames } = self
-        return assemblyNames
+        return self.assemblyNames
           .map(a => assemblyManager.get(a)?.error)
           .filter(f => !!f)
           .join(', ')

@@ -39,8 +39,6 @@ const ReturnToImportFormDialog = lazy(
  * - [BaseViewModel](../baseviewmodel)
  */
 function stateModelFactory(pluginManager: PluginManager) {
-  const model = pluginManager.getViewType('LinearGenomeView')
-    .stateModel as LinearGenomeViewStateModel
   return types
     .compose(
       'LinearComparativeView',
@@ -81,17 +79,14 @@ function stateModelFactory(pluginManager: PluginManager) {
          * currently this is limited to an array of two
          */
         views: types.array(
-          model.views(self => ({
-            scaleBarDisplayPrefix() {
-              return self.assemblyNames[0]
-            },
-          })),
+          pluginManager.getViewType('LinearGenomeView')
+            .stateModel as LinearGenomeViewStateModel,
         ),
 
         /**
          * #property
-         * this represents tracks specific to this view specifically used
-         * for read vs ref dotplots where this track would not really apply
+         * this represents tracks specific to this view specifically used for
+         * read vs ref dotplots where this track would not really apply
          * elsewhere
          */
         viewTrackConfigs: types.array(
@@ -100,6 +95,9 @@ function stateModelFactory(pluginManager: PluginManager) {
       }),
     )
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       width: undefined as number | undefined,
     }))
     .views(self => ({

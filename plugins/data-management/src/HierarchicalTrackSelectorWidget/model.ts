@@ -110,20 +110,47 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       faceted: types.optional(facetedStateTreeF(), {}),
     })
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       favorites: localStorageGetJSON<string[]>(favoritesK(), []),
+      /**
+       * #volatile
+       */
       recentlyUsed: [] as string[],
+      /**
+       * #volatile
+       */
       selection: [] as AnyConfigurationModel[],
+      /**
+       * #volatile
+       */
       sortTrackNames: localStorageGetJSON<MaybeBoolean>(
         sortTrackNamesK(),
         undefined,
       ),
+      /**
+       * #volatile
+       */
       sortCategories: localStorageGetJSON<MaybeBoolean>(
         sortCategoriesK(),
         undefined,
       ),
+      /**
+       * #volatile
+       */
       collapsed: observable.map<string, boolean>(),
+      /**
+       * #volatile
+       */
       filterText: '',
+      /**
+       * #volatile
+       */
       recentlyUsedCounter: 0,
+      /**
+       * #volatile
+       */
       favoritesCounter: 0,
     }))
     .views(self => ({
