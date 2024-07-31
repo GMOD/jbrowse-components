@@ -1,3 +1,24 @@
+yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 2.13.1
+
+## 2.13.1 (2024-07-31)
+
+#### :rocket: Enhancement
+
+- [#4497](https://github.com/GMOD/jbrowse-components/pull/4497) Add ability to
+  toggle "Show track outlines" ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- [#4501](https://github.com/GMOD/jbrowse-components/pull/4501) Fix opening
+  track selector in linear synteny view causing crash in v2.13.0
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#4495](https://github.com/GMOD/jbrowse-components/pull/4495) Fix log scale
+  for some types of signal tracks ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 1
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin)) Done in 1.30s.
+
 yarn run v1.22.22 $ lerna-changelog --silent --silent --next-version 2.13.0
 
 ## 2.13.0 (2024-07-25)
