@@ -37,11 +37,7 @@ const Breakends = observer(function ({
   const [mouseoverElt, setMouseoverElt] = useState<string>()
   const snap = getSnapshot(model)
   useNextFrame(snap)
-  const assembly = assemblyManager.get(views[0].assemblyNames[0])
-
-  if (!assembly) {
-    return null
-  }
+  const asm = assemblyManager.get(views[0].assemblyNames[0])
 
   let yoff = 0
   if (ref.current) {
@@ -49,7 +45,7 @@ const Breakends = observer(function ({
     yoff = rect.top
   }
 
-  return (
+  return asm ? (
     <g
       stroke="green"
       strokeWidth={5}
@@ -69,15 +65,10 @@ const Breakends = observer(function ({
           if (!c1 || !c2) {
             return null
           }
-          const f1origref = f1.get('refName')
-          const f2origref = f2.get('refName')
-          const f1ref = assembly.getCanonicalRefName(f1origref)
-          const f2ref = assembly.getCanonicalRefName(f2origref)
-          if (!f1ref || !f2ref) {
-            throw new Error(`unable to find ref for ${f1ref || f2ref}`)
-          }
-          const x1 = getPxFromCoordinate(views[level1], f1ref, c1[LEFT])
-          const x2 = getPxFromCoordinate(views[level2], f2ref, c2[LEFT])
+          const f1ref = f1.get('refName')
+          const f2ref = f2.get('refName')
+          const x1 = getPxFromCoordinate(views[level1], f1ref, c1[LEFT], asm)
+          const x2 = getPxFromCoordinate(views[level2], f2ref, c2[LEFT], asm)
           const reversed1 = views[level1].pxToBp(x1).reversed
           const reversed2 = views[level2].pxToBp(x2).reversed
 
@@ -136,7 +127,7 @@ const Breakends = observer(function ({
         return ret
       })}
     </g>
-  )
+  ) : null
 })
 
 export default Breakends

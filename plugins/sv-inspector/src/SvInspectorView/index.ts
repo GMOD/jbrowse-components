@@ -8,7 +8,7 @@ import { IAnyStateTreeNode } from 'mobx-state-tree'
 import BreakpointSplitViewType from '@jbrowse/plugin-breakpoint-split-view/src/BreakpointSplitView/BreakpointSplitView'
 import { CircularViewModel } from '@jbrowse/plugin-circular-view'
 
-function defaultOnChordClick(
+async function defaultOnChordClick(
   feature: Feature,
   chordTrack: IAnyStateTreeNode,
   pluginManager: PluginManager,
@@ -19,7 +19,12 @@ function defaultOnChordClick(
   const viewType = pluginManager.getViewType(
     'BreakpointSplitView',
   ) as BreakpointSplitViewType
-  const viewSnapshot = viewType.snapshotFromBreakendFeature(feature, view)
+  const [assemblyName] = view.assemblyNames
+  const viewSnapshot = await viewType.snapshotFromBreakendFeature(
+    feature,
+    assemblyName,
+    session,
+  )
 
   // try to center the offsetPx
   viewSnapshot.views[0].offsetPx -= view.width / 2 + 100
