@@ -20,7 +20,7 @@ const delay = { timeout: 20000 }
 
 jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
   // this is the analytics
-  if (`${url}`.match(/jb2=true/)) {
+  if (/jb2=true/.exec(`${url}`)) {
     return new Response('{}')
   }
   try {

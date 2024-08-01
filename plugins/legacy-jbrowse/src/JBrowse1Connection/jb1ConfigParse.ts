@@ -54,7 +54,7 @@ function parse(text: string, url: string): Config {
         | boolean[]
       try {
         // parse json
-        const match = value.match(/^json:(.+)/i)
+        const match = /^json:(.+)/i.exec(value)
         if (match) {
           parsedValue = JSON.parse(match[1])
         }
@@ -105,7 +105,7 @@ function parse(text: string, url: string): Config {
 
     // new section
     let match: RegExpMatchArray | null
-    if ((match = line.match(/^\s*\[([^\]]+)/))) {
+    if ((match = /^\s*\[([^\]]+)/.exec(line))) {
       // new section
       recordVal()
       keyPath = undefined
@@ -132,14 +132,14 @@ function parse(text: string, url: string): Config {
     // add to existing array value
     else if (
       keyPath !== undefined &&
-      (match = line.match(/^\s{0,4}\+\s*(.+)/))
+      (match = /^\s{0,4}\+\s*(.+)/.exec(line))
     ) {
       recordVal()
       operation = '+='
       value = match[1].trim()
     }
     // add to existing value
-    else if (value !== undefined && (match = line.match(/^\s+(\S.*)/))) {
+    else if (value !== undefined && (match = /^\s+(\S.*)/.exec(line))) {
       value += value.length ? ` ${match[1].trim()}` : match[1].trim()
     }
     // done with last value
@@ -211,7 +211,7 @@ export function regularizeConf(conf: Config, url: string): Config {
     meta.sources = meta.sources.map((sourceDef: string | Source): Source => {
       if (typeof sourceDef === 'string') {
         const newSourceDef: Source = { url: sourceDef }
-        const typeMatch = sourceDef.match(/\.(\w+)$/)
+        const typeMatch = /\.(\w+)$/.exec(sourceDef)
         if (typeMatch) {
           newSourceDef.type = typeMatch[1].toLowerCase()
         }

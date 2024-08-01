@@ -1,4 +1,8 @@
-import { scaleLinear, scaleLog, scaleQuantize } from 'd3-scale'
+import {
+  scaleLinear,
+  scaleLog,
+  scaleQuantize,
+} from '@mui/x-charts-vendor/d3-scale'
 import { autorun } from 'mobx'
 import {
   isAbortException,
@@ -181,7 +185,7 @@ export async function getQuantitativeStats(
   },
 ): Promise<QuantitativeStats> {
   const { rpcManager } = getSession(self)
-  const nd = getConf(self, 'numStdDev') || 3
+  const numStdDev = getConf(self, 'numStdDev') || 3
   const { adapterConfig, autoscaleType } = self
   const sessionId = getRpcSessionId(self)
   const params = {
@@ -208,8 +212,8 @@ export async function getQuantitativeStats(
     return autoscaleType === 'globalsd'
       ? {
           ...results,
-          scoreMin: scoreMin >= 0 ? 0 : scoreMean - nd * scoreStdDev,
-          scoreMax: scoreMean + nd * scoreStdDev,
+          scoreMin: scoreMin >= 0 ? 0 : scoreMean - numStdDev * scoreStdDev,
+          scoreMax: scoreMean + numStdDev * scoreStdDev,
         }
       : results
   }
@@ -239,8 +243,8 @@ export async function getQuantitativeStats(
     return autoscaleType === 'localsd'
       ? {
           ...results,
-          scoreMin: scoreMin >= 0 ? 0 : scoreMean - nd * scoreStdDev,
-          scoreMax: scoreMean + nd * scoreStdDev,
+          scoreMin: scoreMin >= 0 ? 0 : scoreMean - numStdDev * scoreStdDev,
+          scoreMax: scoreMean + numStdDev * scoreStdDev,
         }
       : results
   }

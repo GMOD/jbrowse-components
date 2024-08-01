@@ -21,9 +21,9 @@ const StringArrayEditor = observer(function ({
   slot: {
     name: string
     value: string[]
-    setAtIndex: Function
-    removeAtIndex: Function
-    add: Function
+    setAtIndex: (arg: number, arg2: string) => void
+    removeAtIndex: (arg: number) => void
+    add: (arg: string) => void
     description: string
   }
 }) {

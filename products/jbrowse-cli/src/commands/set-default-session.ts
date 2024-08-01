@@ -11,7 +11,7 @@ type Track = Record<string, unknown>
 
 interface Config {
   assemblies?: { name: string; sequence: Record<string, unknown> }[]
-  configuration?: {}
+  configuration?: Record<string, unknown>
   connections?: unknown[]
   defaultSession?: DefaultSession
   tracks?: Track[]

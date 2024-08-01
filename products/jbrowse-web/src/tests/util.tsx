@@ -14,6 +14,7 @@ import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { AbstractSessionModel } from '@jbrowse/core/util'
 
 // locals
 import JBrowseWithoutQueryParamProvider from '../components/JBrowse'
@@ -31,8 +32,10 @@ global.nodeImage = Image
 // @ts-expect-error
 global.nodeCreateCanvas = createCanvas
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function getPluginManager(initialState?: any, adminMode = true) {
+export function getPluginManager(
+  initialState?: Record<string, unknown>,
+  adminMode = true,
+) {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.createPluggableElements()
 
@@ -50,7 +53,7 @@ export function getPluginManager(initialState?: any, adminMode = true) {
   rootModel.setDefaultSession()
   pluginManager.setRootModel(rootModel)
   pluginManager.configure()
-  return pluginManager
+  return { pluginManager, rootModel }
 }
 
 export function generateReadBuffer(getFile: (s: string) => GenericFilehandle) {
@@ -129,10 +132,9 @@ export async function createView(args?: any, adminMode?: boolean) {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createViewNoWait(args?: any, adminMode?: boolean) {
-  const pluginManager = getPluginManager(args, adminMode)
+  const { pluginManager, rootModel } = getPluginManager(args, adminMode)
   const rest = render(<JBrowse pluginManager={pluginManager} />)
-  const rootModel = pluginManager.rootModel!
-  const session = rootModel.session!
+  const session = rootModel.session! as AbstractSessionModel
   const view = session.views[0] as LGV
   return { view, rootModel, session, ...rest }
 }

@@ -239,7 +239,7 @@ const SessionLoader = types
                   resolve(msg.data)
                 }
               }
-              setTimeout(() => reject(), 1000)
+              setTimeout(() => reject(new Error('timeout')), 1000)
             },
           )
           return this.setSessionSnapshot({ ...result, id: nanoid() })

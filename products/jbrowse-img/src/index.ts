@@ -11,14 +11,14 @@ setupEnv()
 
 const err = console.error
 console.error = (...p: unknown[]) => {
-  if (!`${p[0]}`.match('useLayoutEffect')) {
+  if (!/useLayoutEffect/.exec(`${p[0]}`)) {
     err(p)
   }
 }
 
 const warn = console.warn
 console.warn = (...p: unknown[]) => {
-  if (!`${p[0]}`.match('estimation reached timeout')) {
+  if (!/estimation reached timeout/.exec(`${p[0]}`)) {
     warn(p)
   }
 }

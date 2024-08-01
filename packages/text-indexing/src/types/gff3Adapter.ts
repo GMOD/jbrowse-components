@@ -27,7 +27,7 @@ export async function* indexGff3(
     statusCallback(`${progress}`)
   })
   const rl = readline.createInterface({
-    input: inLocation.match(/.b?gz$/) ? stream.pipe(createGunzip()) : stream,
+    input: /.b?gz$/.exec(inLocation) ? stream.pipe(createGunzip()) : stream,
   })
 
   for await (const line of rl) {

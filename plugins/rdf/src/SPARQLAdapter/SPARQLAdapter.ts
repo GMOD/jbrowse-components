@@ -6,12 +6,12 @@ import { NoAssemblyRegion } from '@jbrowse/core/util/types'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import format from 'string-template'
-
 import { Instance } from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
-import MyConfigSchema from './configSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+
+import type MyConfigSchema from './configSchema'
 
 interface SPARQLEntry {
   type: string

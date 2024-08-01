@@ -56,6 +56,7 @@ export function createPluginManager(self: SessionLoaderModel) {
   // local session if session in query, or loads the default session
   try {
     if (self.sessionError) {
+      // eslint-disable-next-line @typescript-eslint/only-throw-error
       throw self.sessionError
     } else if (self.sessionSnapshot) {
       rootModel.setSession(self.sessionSnapshot)

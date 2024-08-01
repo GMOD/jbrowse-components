@@ -10,7 +10,7 @@ import { freeAdapterResources } from '../../data_adapters/dataAdapterCache'
 export default class CoreFreeResources extends RpcMethodType {
   name = 'CoreFreeResources'
 
-  async execute(specification: {}) {
+  async execute(specification: Record<string, unknown>) {
     let deleteCount = 0
 
     deleteCount += freeAdapterResources(specification)
@@ -25,7 +25,7 @@ export default class CoreFreeResources extends RpcMethodType {
 
     return deleteCount
   }
-  async serializeArguments(args: {}, _rpcDriver: string): Promise<{}> {
+  async serializeArguments(args: Record<string, unknown>, _rpcDriver: string) {
     return args
   }
 }

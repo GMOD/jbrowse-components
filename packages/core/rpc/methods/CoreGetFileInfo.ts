@@ -11,7 +11,7 @@ export default class CoreGetFileInfo extends RpcMethodType {
     args: {
       sessionId: string
       signal: RemoteAbortSignal
-      adapterConfig: {}
+      adapterConfig: Record<string, unknown>
     },
     rpcDriver: string,
   ) {

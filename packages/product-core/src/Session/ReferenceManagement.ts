@@ -66,7 +66,7 @@ export function ReferenceManagementSessionMixin(_pluginManager: PluginManager) {
       removeReferring(
         referring: ReferringNode[],
         track: BaseTrackConfig,
-        callbacks: Function[],
+        callbacks: ((arg: string) => void)[],
         dereferenceTypeCount: Record<string, number>,
       ) {
         referring.forEach(({ node }) => {

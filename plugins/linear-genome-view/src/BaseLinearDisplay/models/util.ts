@@ -10,7 +10,7 @@ export interface RenderProps {
   renderArgs: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
   renderProps: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
   displayError: unknown
-  rpcManager: { call: Function }
+  rpcManager: { call: (...args: unknown[]) => void }
   cannotBeRenderedReason: string
 }
 

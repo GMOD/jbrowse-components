@@ -4,8 +4,8 @@ import { Menu, MenuItem } from '@jbrowse/core/ui'
 import { Instance } from 'mobx-state-tree'
 
 // locals
-import SpreadsheetModel from '../models/Spreadsheet'
-import ViewModel from '../models/SpreadsheetView'
+import type SpreadsheetModel from '../models/Spreadsheet'
+import type ViewModel from '../models/SpreadsheetView'
 
 const RowMenu = observer(function ({
   viewModel,
@@ -27,7 +27,7 @@ const RowMenu = observer(function ({
   }
 
   const row = spreadsheetModel.rowSet.rows[+rowNumber - 1]
-
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   function handleMenuItemClick(_event: unknown, callback: Function) {
     callback(viewModel, spreadsheetModel, rowNumber, row)
     rowMenuClose()

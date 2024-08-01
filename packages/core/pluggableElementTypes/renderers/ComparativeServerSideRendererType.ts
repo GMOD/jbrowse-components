@@ -16,18 +16,18 @@ import { dedupe, getSerializedSvg } from '../../util'
 import { firstValueFrom } from 'rxjs'
 
 export interface RenderArgs extends ServerSideRenderArgs {
-  displayModel: {}
+  displayModel: Record<string, unknown>
   blockKey: string
 }
 
 export interface RenderArgsSerialized extends ServerSideRenderArgsSerialized {
-  displayModel: {}
+  displayModel: Record<string, unknown>
   blockKey: string
 }
 
 export interface RenderArgsDeserialized
   extends ServerSideRenderArgsDeserialized {
-  displayModel: {}
+  displayModel: Record<string, unknown>
   blockKey: string
 }
 

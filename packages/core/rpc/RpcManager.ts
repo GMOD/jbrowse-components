@@ -15,6 +15,7 @@ interface BackendConfigurations {
     'config'
   >
 }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const DriverClasses = {
   WebWorkerRpcDriver,
   MainThreadRpcDriver,
@@ -86,7 +87,12 @@ export default class RpcManager {
     return this.getDriver(backendName)
   }
 
-  async call(sessionId: string, functionName: string, args: {}, opts = {}) {
+  async call(
+    sessionId: string,
+    functionName: string,
+    args: Record<string, unknown>,
+    opts = {},
+  ) {
     if (!sessionId) {
       throw new Error('sessionId is required')
     }

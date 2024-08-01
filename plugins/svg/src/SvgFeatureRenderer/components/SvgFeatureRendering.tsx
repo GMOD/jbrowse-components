@@ -113,6 +113,9 @@ function RenderedFeatureGlyph(props: {
       const aboveLayout = shouldShowName
         ? rootLayout.getSubRecord('nameLabel')
         : featureLayout
+      if (!aboveLayout) {
+        throw new Error('failed to layout nameLabel')
+      }
 
       rootLayout.addChild(
         'descriptionLabel',

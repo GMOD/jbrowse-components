@@ -51,7 +51,7 @@ export async function* indexGff3({
 
   const rl = readline.createInterface({
     // @ts-expect-error
-    input: inLocation.match(/.b?gz$/) ? stream.pipe(createGunzip()) : stream,
+    input: /.b?gz$/.exec(inLocation) ? stream.pipe(createGunzip()) : stream,
   })
 
   for await (const line of rl) {

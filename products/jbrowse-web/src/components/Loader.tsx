@@ -8,6 +8,7 @@ import {
 } from 'use-query-params'
 import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
 import { FatalErrorDialog, LoadingEllipses } from '@jbrowse/core/ui'
+import PluginManager from '@jbrowse/core/PluginManager'
 import '@fontsource/roboto'
 
 // locals
@@ -19,8 +20,8 @@ import SessionLoader, {
   SessionTriagedInfo,
 } from '../SessionLoader'
 import StartScreenErrorMessage from './StartScreenErrorMessage'
-import PluginManager from '@jbrowse/core/PluginManager'
 import { createPluginManager } from '../createPluginManager'
+import type { WebRootModel } from '../rootModel/rootModel'
 
 const ConfigWarningDialog = lazy(() => import('./ConfigWarningDialog'))
 const SessionWarningDialog = lazy(() => import('./SessionWarningDialog'))
@@ -122,7 +123,10 @@ const PluginManagerLoaded = observer(function ({
   const { rootModel } = pluginManager
   return !rootModel?.session ? (
     <Suspense fallback={<LoadingEllipses />}>
-      <StartScreen rootModel={rootModel} onFactoryReset={factoryReset} />
+      <StartScreen
+        rootModel={rootModel as WebRootModel}
+        onFactoryReset={factoryReset}
+      />
     </Suspense>
   ) : (
     <JBrowse pluginManager={pluginManager} />

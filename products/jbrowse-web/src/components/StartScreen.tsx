@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { lazy, useEffect, useState } from 'react'
 import {
   CircularProgress,
@@ -14,6 +13,7 @@ import {
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { LogoFull, ErrorMessage } from '@jbrowse/core/ui'
+import { localStorageGetItem, notEmpty } from '@jbrowse/core/util'
 
 // icons
 import WarningIcon from '@mui/icons-material/Warning'
@@ -26,7 +26,7 @@ import {
   NewSVInspectorSession,
 } from './NewSessionCards'
 import RecentSessionCard from './RecentSessionCard'
-import { localStorageGetItem } from '@jbrowse/core/util'
+import type { WebRootModel } from '../rootModel/rootModel'
 
 // lazies
 const DeleteSessionDialog = lazy(() => import('./DeleteSessionDialog'))
@@ -56,8 +56,8 @@ export default function StartScreen({
   rootModel,
   onFactoryReset,
 }: {
-  rootModel: any
-  onFactoryReset: Function
+  rootModel: WebRootModel
+  onFactoryReset: () => void
 }) {
   const { classes } = useStyles()
 
@@ -88,7 +88,10 @@ export default function StartScreen({
       try {
         if (updateSessionsList) {
           setUpdateSessionsList(false)
-          setSessionNames(rootModel.savedSessions.map((s: any) => s?.name))
+
+          setSessionNames(
+            rootModel.savedSessions.map(s => s.name).filter(notEmpty),
+          )
         }
       } catch (e) {
         setError(e)

@@ -166,7 +166,7 @@ const LinearComparativeRubberband = observer(function Rubberband({
 
   const open = Boolean(anchorPosition)
 
-  function handleMenuItemClick(_: unknown, callback: Function) {
+  function handleMenuItemClick(_: unknown, callback: () => void) {
     callback()
     handleClose()
   }

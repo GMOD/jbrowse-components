@@ -14,9 +14,12 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { colord } from '@jbrowse/core/util/colord'
 import { firstValueFrom } from 'rxjs'
-import { scaleSequential, scaleSequentialLog } from 'd3-scale'
-import { interpolateViridis } from 'd3-scale-chromatic'
-import { interpolateRgbBasis } from 'd3-interpolate'
+import {
+  scaleSequential,
+  scaleSequentialLog,
+} from '@mui/x-charts-vendor/d3-scale'
+import interpolateViridis from './viridis'
+import { interpolateRgbBasis } from '@mui/x-charts-vendor/d3-interpolate'
 
 interface HicFeature {
   bin1: number

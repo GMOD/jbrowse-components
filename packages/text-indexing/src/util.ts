@@ -110,10 +110,10 @@ export interface TrixTextSearchAdapter {
 export interface Config {
   assemblies?: Assembly[]
   assembly?: Assembly
-  configuration?: {}
+  configuration?: Record<string, unknown>
   aggregateTextSearchAdapters?: TrixTextSearchAdapter[]
   connections?: unknown[]
-  defaultSession?: {}
+  defaultSession?: Record<string, unknown>
   tracks?: Track[]
 }
 

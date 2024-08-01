@@ -195,7 +195,7 @@ export function useRangeSelect(
     setCurrentX(undefined)
   }
 
-  function handleMenuItemClick(_: unknown, callback: Function) {
+  function handleMenuItemClick(_: unknown, callback: () => void) {
     callback()
     handleClose()
   }

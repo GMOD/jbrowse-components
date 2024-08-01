@@ -45,7 +45,9 @@ const NewHydrate = observer(function RpcRenderedSvgGroup(props: Props) {
         )
     })
     return () => {
-      clearTimeout(renderTimeout)
+      if (renderTimeout !== undefined) {
+        clearTimeout(renderTimeout)
+      }
       const root = rootRef.current
       rootRef.current = undefined
 

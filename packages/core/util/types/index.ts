@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import React from 'react'
 import {
   isStateTreeNode,
@@ -7,22 +8,22 @@ import {
   IStateTreeNode,
   IType,
 } from 'mobx-state-tree'
+import { ThemeOptions } from '@mui/material'
 import { AnyConfigurationModel } from '../../configuration'
-
-import assemblyManager from '../../assemblyManager'
 import TextSearchManager from '../../TextSearch/TextSearchManager'
 import { MenuItem } from '../../ui'
-import {
+import RpcManager from '../../rpc/RpcManager'
+import { Feature } from '../simpleFeature'
+import { BaseInternetAccountModel } from '../../pluggableElementTypes/models'
+// types
+import type assemblyManager from '../../assemblyManager'
+import type {
   NoAssemblyRegion as MUNoAssemblyRegion,
   Region as MUIRegion,
   LocalPathLocation as MULocalPathLocation,
   UriLocation as MUUriLocation,
   BlobLocation as MUBlobLocation,
 } from './mst'
-import RpcManager from '../../rpc/RpcManager'
-import { Feature } from '../simpleFeature'
-import { BaseInternetAccountModel } from '../../pluggableElementTypes/models'
-import { ThemeOptions } from '@mui/material'
 
 export * from './util'
 
@@ -411,8 +412,7 @@ export function isAbstractMenuManager(
 
 // Empty interfaces required by mobx-state-tree
 // See https://mobx-state-tree.js.org/tips/typescript#using-a-mst-type-at-design-time
-/* eslint-disable @typescript-eslint/no-empty-interface */
-
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface NoAssemblyRegion
   extends SnapshotIn<typeof MUNoAssemblyRegion> {}
 
@@ -420,15 +420,18 @@ export interface NoAssemblyRegion
  * a description of a specific genomic region. assemblyName, refName, start,
  * end, and reversed
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface Region extends SnapshotIn<typeof MUIRegion> {}
 
 export interface AugmentedRegion extends Region {
   originalRefName?: string
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface LocalPathLocation
   extends SnapshotIn<typeof MULocalPathLocation> {}
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface UriLocation extends SnapshotIn<typeof MUUriLocation> {}
 
 export function isUriLocation(location: unknown): location is UriLocation {
@@ -499,6 +502,7 @@ export function isRetryException(exception: Error): boolean {
   )
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface BlobLocation extends SnapshotIn<typeof MUBlobLocation> {}
 
 export type FileLocation = LocalPathLocation | UriLocation | BlobLocation

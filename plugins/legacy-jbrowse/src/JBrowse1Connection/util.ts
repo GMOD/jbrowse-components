@@ -126,7 +126,11 @@ export function clone(src: any): any {
  * to the Javascript assignment operator.
  * @returns dest, as modified
  */
-function mixin(dest: Obj, source: Obj, copyFunc: Function): Obj {
+function mixin(
+  dest: Obj,
+  source: Obj,
+  copyFunc: (arg: unknown) => unknown,
+): Obj {
   let name
   let s
   const empty = {}
