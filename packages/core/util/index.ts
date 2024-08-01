@@ -360,7 +360,7 @@ export function parseLocStringOneBased(
   // remove any whitespace
   locString = locString.replace(/\s/, '')
   // refNames can have colons, ref https://samtools.github.io/hts-specs/SAMv1.pdf Appendix A
-  const assemblyMatch = locString.match(/({(.+)})?(.+)/)
+  const assemblyMatch = /({(.+)})?(.+)/.exec(locString)
   if (!assemblyMatch) {
     throw new Error(`invalid location string: "${locString}"`)
   }
@@ -385,11 +385,12 @@ export function parseLocStringOneBased(
   } else if (isValidRefName(prefix, assemblyName)) {
     if (suffix) {
       // see if it's a range
-      const rangeMatch = suffix.match(
-        /^(-?(\d+|\d{1,3}(,\d{3})*))(\.\.|-)(-?(\d+|\d{1,3}(,\d{3})*))$/,
-      )
+      const rangeMatch =
+        /^(-?(\d+|\d{1,3}(,\d{3})*))(\.\.|-)(-?(\d+|\d{1,3}(,\d{3})*))$/.exec(
+          suffix,
+        )
       // see if it's a single point
-      const singleMatch = suffix.match(/^(-?(\d+|\d{1,3}(,\d{3})*))(\.\.|-)?$/)
+      const singleMatch = /^(-?(\d+|\d{1,3}(,\d{3})*))(\.\.|-)?$/.exec(suffix)
       if (rangeMatch) {
         const [, start, , , , end] = rangeMatch
         if (start !== undefined && end !== undefined) {

@@ -319,7 +319,7 @@ export function getModificationPositions(
     const [basemod, ...skips] = mod.split(',')
 
     // regexes based on parse_mm.pl from hts-specs
-    const matches = basemod.match(modificationRegex)
+    const matches = modificationRegex.exec(basemod)
     if (!matches) {
       throw new Error('bad format for MM tag')
     }
@@ -373,7 +373,7 @@ export function getModificationTypes(mm: string) {
     .flatMap(mod => {
       const [basemod] = mod.split(',')
 
-      const matches = basemod.match(modificationRegex)
+      const matches = modificationRegex.exec(basemod)
       if (!matches) {
         throw new Error(`bad format for MM tag: ${mm}`)
       }
@@ -450,8 +450,8 @@ export function getLengthSansClipping(cigar: string) {
 
 export function getClip(cigar: string, strand: number) {
   return strand === -1
-    ? +(cigar.match(startClip) || [])[1] || 0
-    : +(cigar.match(endClip) || [])[1] || 0
+    ? +(startClip.exec(cigar) || [])[1] || 0
+    : +(endClip.exec(cigar) || [])[1] || 0
 }
 
 export function getTag(f: Feature, tag: string) {

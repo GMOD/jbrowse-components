@@ -15,7 +15,7 @@ const SortByTagDialog = observer(function (props: {
 }) {
   const { model, handleClose } = props
   const [tag, setTag] = useState('')
-  const validTag = tag.match(/^[A-Za-z][A-Za-z0-9]$/)
+  const validTag = /^[A-Za-z][A-Za-z0-9]$/.exec(tag)
   return (
     <Dialog open onClose={handleClose} title="Sort by tag">
       <DialogContent>

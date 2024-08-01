@@ -48,7 +48,7 @@ export async function* indexVcf({
     progressBar.update(receivedBytes)
   })
 
-  const gzStream = inLocation.match(/.b?gz$/)
+  const gzStream = /.b?gz$/.exec(inLocation)
     ? // @ts-expect-error
       stream.pipe(createGunzip())
     : stream

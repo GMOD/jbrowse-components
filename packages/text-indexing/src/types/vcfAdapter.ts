@@ -26,7 +26,7 @@ export async function* indexVcf(
     statusCallback(`${progress}`)
   })
 
-  const gzStream = inLocation.match(/.b?gz$/)
+  const gzStream = /.b?gz$/.exec(inLocation)
     ? stream.pipe(createGunzip())
     : stream
 
