@@ -14,7 +14,7 @@ export default function FactoryResetDialog({
 }: {
   open: boolean
   onClose: () => void
-  onFactoryReset: Function
+  onFactoryReset: () => void
 }) {
   return (
     <Dialog open={open} onClose={() => onClose()} title="Reset">

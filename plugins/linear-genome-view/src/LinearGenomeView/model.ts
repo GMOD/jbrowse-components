@@ -285,7 +285,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       // array of callbacks to run after the next set of the displayedRegions,
       // which is basically like an onLoad
-      afterDisplayedRegionsSetCallbacks: [] as Function[],
+      afterDisplayedRegionsSetCallbacks: [] as (() => void)[],
       scaleFactor: 1,
       trackRefs: {} as Record<string, HTMLDivElement>,
       coarseDynamicBlocks: [] as BaseBlock[],
@@ -962,7 +962,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * schedule something to be run after the next time displayedRegions is
        * set
        */
-      afterDisplayedRegionsSet(cb: Function) {
+      afterDisplayedRegionsSet(cb: () => void) {
         self.afterDisplayedRegionsSetCallbacks.push(cb)
       },
 

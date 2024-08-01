@@ -19,7 +19,7 @@ const useStyles = makeStyles()({
 const SetMaxHeightDialog = observer(function (props: {
   model: {
     maxHeight?: number
-    setMaxHeight: Function
+    setMaxHeight: (arg?: number) => void
   }
   handleClose: () => void
 }) {

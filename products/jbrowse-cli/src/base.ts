@@ -127,10 +127,10 @@ export interface Track {
 export interface Config {
   assemblies?: Assembly[]
   assembly?: Assembly
-  configuration?: {}
+  configuration?: Record<string, unknown>
   aggregateTextSearchAdapters?: TrixTextSearchAdapter[]
-  connections?: unknown[]
-  defaultSession?: {}
+  connections?: { connectionId: string }[]
+  defaultSession?: Record<string, unknown>
   tracks?: Track[]
 }
 

@@ -33,7 +33,7 @@ const MenuButton = observer(function MenuButton({
         open={!!anchorEl}
         anchorEl={anchorEl}
         onClose={() => setAnchorEl(undefined)}
-        onMenuItemClick={(_: unknown, callback: Function) => {
+        onMenuItemClick={(_: unknown, callback: () => void) => {
           callback()
           if (closeAfterItemClick) {
             setAnchorEl(undefined)

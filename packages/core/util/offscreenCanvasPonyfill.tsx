@@ -16,7 +16,7 @@ export let createImageBitmap: (
 ) => Promise<AbstractImageBitmap>
 
 /** the JS class (constructor) for offscreen-generated image bitmap data */
-export let ImageBitmapType: Function
+export let ImageBitmapType: unknown
 
 export function drawImageOntoCanvasContext(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

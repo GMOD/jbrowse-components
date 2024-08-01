@@ -42,11 +42,8 @@ test('open a bigwig track that needs oauth authentication and has existing token
   })
   const token = '1234'
   sessionStorage.setItem('dropboxOAuth-token', token)
-  // @ts-expect-error
   await waitFor(() => expect(rootModel.internetAccounts.length).toBe(4))
-  // @ts-expect-error
   rootModel.internetAccounts[0].validateToken = jest.fn().mockReturnValue(token)
-  // @ts-expect-error
   rootModel.internetAccounts[0].openLocation = jest
     .fn()
     .mockReturnValue(new RemoteFile('volvox_microarray_dropbox.bw'))

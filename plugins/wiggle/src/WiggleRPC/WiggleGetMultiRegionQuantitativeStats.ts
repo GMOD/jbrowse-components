@@ -44,7 +44,7 @@ export class WiggleGetMultiRegionQuantitativeStats extends RpcMethodType {
 
   async execute(
     args: {
-      adapterConfig: {}
+      adapterConfig: Record<string, unknown>
       signal?: RemoteAbortSignal
       sessionId: string
       headers?: Record<string, string>

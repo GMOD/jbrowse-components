@@ -40,14 +40,14 @@ function stateModelFactory() {
        */
       get RenderingComponent(): React.FC<{
         model: typeof self
-        onHorizontalScroll?: Function
+        onHorizontalScroll?: () => void
         blockState?: Record<string, any>
       }> {
         const { pluginManager } = getEnv(self)
-        const displayType = pluginManager.getDisplayType(self.type)
-        return displayType.ReactComponent as React.FC<{
+        return pluginManager.getDisplayType(self.type)
+          .ReactComponent as React.FC<{
           model: typeof self
-          onHorizontalScroll?: Function
+          onHorizontalScroll?: () => void
           blockState?: Record<string, any>
         }>
       },

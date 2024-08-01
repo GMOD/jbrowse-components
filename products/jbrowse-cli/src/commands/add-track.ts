@@ -2,7 +2,7 @@ import { Args, Flags } from '@oclif/core'
 import fs from 'fs'
 import path from 'path'
 import parseJSON from 'json-parse-better-errors'
-import JBrowseCommand from '../base'
+import JBrowseCommand, { Config, Track } from '../base'
 
 const { copyFile, rename, symlink } = fs.promises
 const { COPYFILE_EXCL } = fs.constants
@@ -70,18 +70,6 @@ function destinationFn({
     }
   }
   return dest
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Track = Record<string, any>
-
-interface Config {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  assemblies?: { name: string; sequence: Record<string, any> }[]
-  configuration?: {}
-  connections?: unknown[]
-  defaultSession?: {}
-  tracks?: Track[]
 }
 
 interface UriLocation {
@@ -339,6 +327,7 @@ export default class AddTrack extends JBrowseCommand {
         asm => asm.name === assemblyNames,
       )
       if (assembly) {
+        // @ts-expect-error
         trackConfig.adapter.sequenceAdapter = assembly.sequence.adapter
       } else if (!skipCheck) {
         this.error(`Failed to find assemblyName ${assemblyNames}`)

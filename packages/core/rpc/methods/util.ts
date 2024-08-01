@@ -6,14 +6,14 @@ import {
 import { Region } from '../../util'
 
 export interface RenderArgs extends ServerSideRenderArgs {
-  adapterConfig: {}
+  adapterConfig: Record<string, unknown>
   rendererType: string
 }
 
 export interface RenderArgsSerialized extends ServerSideRenderArgsSerialized {
   assemblyName: string
   regions: Region[]
-  adapterConfig: {}
+  adapterConfig: Record<string, unknown>
   rendererType: string
 }
 

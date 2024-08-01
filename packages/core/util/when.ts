@@ -59,7 +59,7 @@ export function when(
         if (!finished) {
           finished = true
           finishTimeout()
-
+          // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
           reject(err)
         }
       })

@@ -24,7 +24,7 @@ export interface Glyph
     topLevel?: boolean
     [key: string]: unknown
   }> {
-  layOut?: Function
+  layOut?: (arg: FeatureLayOutArgs) => SceneGraph
 }
 
 type LayoutRecord = [number, number, number, number]
@@ -74,18 +74,18 @@ export function chooseGlyphComponent(
 interface BaseLayOutArgs {
   layout: SceneGraph
   bpPerPx: number
-  reversed: boolean
+  reversed?: boolean
   config: AnyConfigurationModel
 }
 
 interface FeatureLayOutArgs extends BaseLayOutArgs {
   feature: Feature
-  extraGlyphs: ExtraGlyphValidator[]
+  extraGlyphs?: ExtraGlyphValidator[]
 }
 
 interface SubfeatureLayOutArgs extends BaseLayOutArgs {
   subfeatures: Feature[]
-  extraGlyphs: ExtraGlyphValidator[]
+  extraGlyphs?: ExtraGlyphValidator[]
 }
 
 export function layOut({

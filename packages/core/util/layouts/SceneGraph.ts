@@ -121,7 +121,7 @@ export default class SceneGraph {
     return this.left + this.width
   }
 
-  walkParents(callback: Function) {
+  walkParents(callback: (arg: SceneGraph) => void) {
     if (this.parent) {
       callback(this.parent)
       this.parent.walkParents(callback)

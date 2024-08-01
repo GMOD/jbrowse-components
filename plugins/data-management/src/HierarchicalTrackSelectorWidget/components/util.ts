@@ -12,7 +12,7 @@ export interface NodeData {
   trackId: string
   isLeaf: boolean
   name: string
-  onChange: Function
+  onChange: (trackId: string) => void
   toggleCollapse: (arg: string) => void
   tree: TreeNode
   selected: boolean

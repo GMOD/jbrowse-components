@@ -42,7 +42,7 @@ export default class CoreGetFeatures extends RpcMethodType {
     args: {
       sessionId: string
       regions: Region[]
-      adapterConfig: {}
+      adapterConfig: Record<string, unknown>
       signal?: RemoteAbortSignal
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       opts?: any

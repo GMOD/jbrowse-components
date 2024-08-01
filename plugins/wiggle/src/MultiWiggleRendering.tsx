@@ -12,12 +12,12 @@ const MultiWiggleRendering = observer(function (props: {
   bpPerPx: number
   width: number
   height: number
-  onMouseLeave: Function
-  onMouseMove: Function
-  onFeatureClick: Function
   blockKey: string
   sources: Source[]
   displayModel: { isMultiRow: boolean }
+  onMouseLeave?: (event: React.MouseEvent) => void
+  onMouseMove?: (event: React.MouseEvent, arg?: Feature) => void
+  onFeatureClick?: (event: React.MouseEvent, arg?: Feature) => void
 }) {
   const {
     regions,
@@ -99,14 +99,14 @@ const MultiWiggleRendering = observer(function (props: {
       onMouseMove={event => {
         const { clientX, clientY } = event
         const featureUnderMouse = getFeatureUnderMouse(clientX, clientY)
-        onMouseMove(event, featureUnderMouse)
+        onMouseMove?.(event, featureUnderMouse)
       }}
       onClick={event => {
         const { clientX, clientY } = event
         const featureUnderMouse = getFeatureUnderMouse(clientX, clientY)
-        onFeatureClick(event, featureUnderMouse)
+        onFeatureClick?.(event, featureUnderMouse)
       }}
-      onMouseLeave={event => onMouseLeave(event)}
+      onMouseLeave={event => onMouseLeave?.(event)}
       style={{
         overflow: 'visible',
         position: 'relative',

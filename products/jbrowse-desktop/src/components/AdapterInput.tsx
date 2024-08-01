@@ -6,27 +6,27 @@ import { FileLocation } from '@jbrowse/core/util/types'
 export default function AdapterInput({
   adapterSelection,
   fastaLocation,
-  setFastaLocation,
   faiLocation,
-  setFaiLocation,
   chromSizesLocation,
   gziLocation,
-  setGziLocation,
   twoBitLocation,
+  setGziLocation,
+  setFastaLocation,
+  setFaiLocation,
   setTwoBitLocation,
   setChromSizesLocation,
 }: {
   adapterSelection: string
   fastaLocation: FileLocation
-  setFastaLocation: Function
   faiLocation: FileLocation
-  setFaiLocation: Function
   gziLocation: FileLocation
   chromSizesLocation: FileLocation
-  setGziLocation: Function
   twoBitLocation: FileLocation
-  setTwoBitLocation: Function
-  setChromSizesLocation: Function
+  setFastaLocation: (arg: FileLocation) => void
+  setFaiLocation: (arg: FileLocation) => void
+  setGziLocation: (arg: FileLocation) => void
+  setTwoBitLocation: (arg: FileLocation) => void
+  setChromSizesLocation: (arg: FileLocation) => void
 }) {
   if (adapterSelection === 'IndexedFastaAdapter') {
     return (

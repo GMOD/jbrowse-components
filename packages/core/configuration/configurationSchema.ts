@@ -56,7 +56,9 @@ export interface ConfigurationSchemaOptions<
   actions?: (self: unknown) => any
   views?: (self: unknown) => any
   extend?: (self: unknown) => any
-  preProcessSnapshot?: (snapshot: {}) => {}
+  preProcessSnapshot?: (
+    snapshot: Record<string, unknown>,
+  ) => Record<string, unknown>
 }
 
 function preprocessConfigurationSchemaArguments(

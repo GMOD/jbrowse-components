@@ -7,7 +7,7 @@ import {
   InterRegionPaddingBlock,
 } from './blockTypes'
 import { Region } from './types'
-import { Region as RegionModel } from './types/mst'
+import type { Region as RegionModel } from './types/mst'
 
 export interface Base1DViewModel {
   offsetPx: number

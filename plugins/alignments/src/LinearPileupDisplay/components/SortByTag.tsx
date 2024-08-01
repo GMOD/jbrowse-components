@@ -10,7 +10,9 @@ import {
 import { Dialog } from '@jbrowse/core/ui'
 
 const SortByTagDialog = observer(function (props: {
-  model: { setSortedBy: Function }
+  model: {
+    setSortedBy: (arg: string, arg2: string) => void
+  }
   handleClose: () => void
 }) {
   const { model, handleClose } = props

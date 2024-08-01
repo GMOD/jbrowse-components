@@ -73,11 +73,10 @@ test(
         findByText,
       } = await createView(undefined, true)
 
-      // @ts-expect-error
       const { assemblyManager } = rootModel
 
       view.setNewView(0.05, 5000)
-      const trackConf = getConf(assemblyManager.get('volvox'), 'sequence')
+      const trackConf = getConf(assemblyManager.get('volvox')!, 'sequence')
 
       // @ts-expect-error
       const trackMenuItems = session.getTrackActionMenuItems(trackConf)
