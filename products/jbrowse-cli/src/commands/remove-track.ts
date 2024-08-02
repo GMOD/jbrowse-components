@@ -14,7 +14,7 @@ export default class RemoveTrackJson extends JBrowseCommand {
   static args = {
     track: Args.string({
       required: true,
-      description: `track JSON file or command line arg blob`,
+      description: "track JSON file or command line arg blob",
     }),
   }
 

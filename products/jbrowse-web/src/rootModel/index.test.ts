@@ -44,7 +44,7 @@ test('creates with a minimal session', () => {
 
 test('activates a session snapshot', () => {
   const session = { name: 'testSession' }
-  localStorage.setItem(`localSaved-123`, JSON.stringify({ session }))
+  localStorage.setItem("localSaved-123", JSON.stringify({ session }))
   Storage.prototype.getItem = jest.fn(
     () => `{"session": {"name": "testSession"}}`,
   )

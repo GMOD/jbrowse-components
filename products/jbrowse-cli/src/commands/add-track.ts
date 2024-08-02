@@ -99,7 +99,7 @@ export default class AddTrack extends JBrowseCommand {
     '$ jbrowse add-track my.bam --load copy --out /path/to/jb2 --subDir bam',
     '',
 
-    `# same as above, but specify path to bai file. needed for if the bai file does not have the extension .bam.bai`,
+    "# same as above, but specify path to bai file. needed for if the bai file does not have the extension .bam.bai",
     '$ jbrowse add-track my.bam --indexFile my.bai --load copy',
     '',
 
@@ -118,14 +118,14 @@ export default class AddTrack extends JBrowseCommand {
   static args = {
     track: Args.string({
       required: true,
-      description: `Track file or URL`,
+      description: "Track file or URL",
     }),
   }
 
   static flags = {
     trackType: Flags.string({
       char: 't',
-      description: `Type of track, by default inferred from track file`,
+      description: "Type of track, by default inferred from track file",
     }),
     name: Flags.string({
       char: 'n',

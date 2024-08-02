@@ -26,7 +26,7 @@ function recordStats(event, context, done) {
   const trackTypesRe = /^track-types-/
   for (const key in stats) {
     if (key.startsWith('track-types-')) {
-      trackTypes[key.replace(trackTypesRe, '')] = parseInt(stats[key], 10)
+      trackTypes[key.replace(trackTypesRe, '')] = Number.parseInt(stats[key], 10)
       delete stats[key]
     }
   }
@@ -38,7 +38,7 @@ function recordStats(event, context, done) {
     const sessionTrackTypesRe = /^sessionTrack-types-/
     for (const key in stats) {
       if (key.startsWith('sessionTrack-types-')) {
-        sessionTrackTypes[key.replace(sessionTrackTypesRe, '')] = parseInt(
+        sessionTrackTypes[key.replace(sessionTrackTypesRe, '')] = Number.parseInt(
           stats[key],
           10,
         )
@@ -51,7 +51,7 @@ function recordStats(event, context, done) {
   stats.trackTypes = trackTypes
   const tableName =
     stats.jb2 === 'true' ? 'JB2_Analytics_Events' : 'JB1_Analytics_Events'
-  delete stats.jb2
+  stats.jb2 = undefined
   const params = {
     TableName: tableName,
     Item: stats,

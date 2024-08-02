@@ -132,8 +132,8 @@ export function readData({
         adapter: {
           type: bgzip ? 'BgzipFastaAdapter' : 'IndexedFastaAdapter',
           fastaLocation: makeLocation(fasta),
-          faiLocation: makeLocation(fasta + '.fai'),
-          gziLocation: bgzip ? makeLocation(fasta + '.gzi') : undefined,
+          faiLocation: makeLocation(`${fasta}.fai`),
+          gziLocation: bgzip ? makeLocation(`${fasta}.gzi`) : undefined,
         },
       },
     }
@@ -185,7 +185,7 @@ export function readData({
             type: 'BamAdapter',
             bamLocation: makeLocation(file),
             index: {
-              location: makeLocation(index || file + '.bai'),
+              location: makeLocation(index || `${file}.bai`),
               indexType: index?.endsWith('.csi') ? 'CSI' : 'BAI',
             },
             sequenceAdapter: configData.assembly.sequence.adapter,
@@ -195,7 +195,7 @@ export function readData({
                 displays: [
                   {
                     type: 'LinearSNPCoverageDisplay',
-                    displayId: path.basename(file) + '-' + Math.random(),
+                    displayId: `${path.basename(file)}-${Math.random()}`,
                   },
                 ],
               }
@@ -214,7 +214,7 @@ export function readData({
           adapter: {
             type: 'CramAdapter',
             cramLocation: makeLocation(file),
-            craiLocation: makeLocation(index || file + '.crai'),
+            craiLocation: makeLocation(index || `${file}.crai`),
             sequenceAdapter: configData.assembly.sequence.adapter,
           },
           ...(opts.includes('snpcov')
@@ -222,7 +222,7 @@ export function readData({
                 displays: [
                   {
                     type: 'LinearSNPCoverageDisplay',
-                    displayId: path.basename(file) + '-' + Math.random(),
+                    displayId: `${path.basename(file)}-${Math.random()}`,
                   },
                 ],
               }
@@ -258,7 +258,7 @@ export function readData({
             type: 'VcfTabixAdapter',
             vcfGzLocation: makeLocation(file),
             index: {
-              location: makeLocation(index || file + '.tbi'),
+              location: makeLocation(index || `${file}.tbi`),
               indexType: index?.endsWith('.csi') ? 'CSI' : 'TBI',
             },
           },
@@ -278,7 +278,7 @@ export function readData({
             type: 'Gff3TabixAdapter',
             gffGzLocation: makeLocation(file),
             index: {
-              location: makeLocation(index || file + '.tbi'),
+              location: makeLocation(index || `${file}.tbi`),
               indexType: index?.endsWith('.csi') ? 'CSI' : 'TBI',
             },
           },
@@ -328,7 +328,7 @@ export function readData({
             type: 'BedTabixAdapter',
             bedGzLocation: makeLocation(file),
             index: {
-              location: makeLocation(index || file + '.tbi'),
+              location: makeLocation(index || `${file}.tbi`),
               indexType: index?.endsWith('.csi') ? 'CSI' : 'TBI',
             },
           },
@@ -340,7 +340,7 @@ export function readData({
   if (!defaultSession) {
     // don't use defaultSession from config.json file, can result in assembly
     // name confusion
-    delete configData.defaultSession
+    configData.defaultSession = undefined
   }
 
   // only allow an external manually specified session

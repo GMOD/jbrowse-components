@@ -105,7 +105,7 @@ export const ShadowDOMOneLinearGenomeView = () => {
   }
   return (
     <div>
-      <jbrowse-linear-view></jbrowse-linear-view>
+      <jbrowse-linear-view />
       <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/stories/examples/ShadowDOMOneLinearGenomeView.tsx">
         Source code
       </a>

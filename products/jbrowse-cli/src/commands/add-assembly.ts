@@ -149,12 +149,12 @@ custom         Either a JSON file location or inline JSON that defines a custom
 
     if (this.needLoadData(argsSequence) && !runFlags.load) {
       this.error(
-        `Please specify the loading operation for this file with --load copy|symlink|move|inPlace`,
+        "Please specify the loading operation for this file with --load copy|symlink|move|inPlace",
         { exit: 110 },
       )
     } else if (!this.needLoadData(argsSequence) && runFlags.load) {
       this.error(
-        `URL detected with --load flag. Please rerun the function without the --load flag`,
+        "URL detected with --load flag. Please rerun the function without the --load flag",
         { exit: 120 },
       )
     }

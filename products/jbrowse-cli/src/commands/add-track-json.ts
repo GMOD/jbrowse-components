@@ -17,14 +17,14 @@ export default class AddTrackJson extends JBrowseCommand {
   static args = {
     track: Args.string({
       required: true,
-      description: `track JSON file or command line arg blob`,
+      description: "track JSON file or command line arg blob",
     }),
   }
 
   static flags = {
     update: Flags.boolean({
       char: 'u',
-      description: `update the contents of an existing track, matched based on trackId`,
+      description: "update the contents of an existing track, matched based on trackId",
     }),
     target: Flags.string({
       description:

@@ -55,7 +55,7 @@ test('opens a bigwig track that needs httpbasic authentication', async () => {
   )
   expect(
     sessionStorage.getItem('HTTPBasicInternetAccount-HTTPBasicTest-token'),
-  ).toContain(btoa(`username:password`))
+  ).toContain(btoa("username:password"))
 
   expectCanvasMatch(await findByTestId(pv('1..4000-0'), {}, delay))
 }, 25000)

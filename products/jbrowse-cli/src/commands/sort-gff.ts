@@ -17,7 +17,7 @@ export default class SortGff extends JBrowseCommand {
   static args = {
     file: Args.string({
       required: true,
-      description: `GFF file`,
+      description: "GFF file",
     }),
   }
 

@@ -229,7 +229,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
           }
         } catch (e) {
           if (isAbortException(e)) {
-            self.session?.notify(`Cancelled job`, 'info')
+            self.session?.notify("Cancelled job", 'info')
           } else {
             self.session?.notify(
               `An error occurred while indexing: ${e}`,
@@ -279,7 +279,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
           t => trackId === t.trackId,
         )
         // name of index
-        const id = trackId + '-index'
+        const id = `${trackId}-index`
         const adapterConf = createTextSearchConf(
           id,
           [trackId],
@@ -299,7 +299,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
       },
       addAggregateTextSearchConf(trackIds: string[], asm: string) {
         // name of index
-        const id = asm + '-index'
+        const id = `${asm}-index`
         const foundIdx = self.aggregateTextSearchAdapters.findIndex(
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (x: any) => x.textSearchAdapterId === id,

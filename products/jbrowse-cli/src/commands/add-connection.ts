@@ -25,7 +25,7 @@ export default class AddConnection extends JBrowseCommand {
   static args = {
     connectionUrlOrPath: Args.string({
       required: true,
-      description: `URL of data directory\nFor hub file, usually called hub.txt\nFor JBrowse 1, location of JB1 data directory similar to http://mysite.com/jbrowse/data/ `,
+      description: "URL of data directory\nFor hub file, usually called hub.txt\nFor JBrowse 1, location of JB1 data directory similar to http://mysite.com/jbrowse/data/ ",
     }),
   }
 
