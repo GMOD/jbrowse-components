@@ -14,9 +14,9 @@ function s() {
   return (s =
     Object.assign ||
     function (e) {
-      for (var r = 1; r < arguments.length; r++) {
-        var t = arguments[r]
-        for (var o in t)
+      for (let r = 1; r < arguments.length; r++) {
+        const t = arguments[r]
+        for (const o in t)
           Object.prototype.hasOwnProperty.call(t, o) && (e[o] = t[o])
       }
       return e
@@ -24,26 +24,26 @@ function s() {
 }
 function c(e, r) {
   if (null == e) return {}
-  var t,
-    o,
-    a = {},
-    l = Object.keys(e)
+  let t
+  let o
+  const a = {}
+  const l = Object.keys(e)
   for (o = 0; o < l.length; o++) r.indexOf((t = l[o])) >= 0 || (a[t] = e[t])
   return a
 }
 function u(e) {
-  const t = r(e),
-    o = r(e => {
-      t.current && t.current(e)
+  const t = r(e)
+  const o = r(e => {
+      t.current?.(e)
     })
   return (t.current = e), o.current
 }
-const i = (e, r = 0, t = 1) => (e > t ? t : e < r ? r : e),
-  d = e => 'touches' in e,
-  f = e => (e && e.ownerDocument.defaultView) || self,
-  h = (e, r, t) => {
-    const o = e.getBoundingClientRect(),
-      a = d(r)
+const i = (e, r = 0, t = 1) => (e > t ? t : e < r ? r : e)
+const d = e => 'touches' in e
+const f = e => (e?.ownerDocument.defaultView) || self
+const h = (e, r, t) => {
+    const o = e.getBoundingClientRect()
+    const a = d(r)
         ? ((e, r) => {
             for (let t = 0; t < e.length; t++)
               if (e[t].identifier === r) return e[t]
@@ -54,30 +54,30 @@ const i = (e, r = 0, t = 1) => (e > t ? t : e < r ? r : e),
       left: i((a.pageX - (o.left + f(e).pageXOffset)) / o.width),
       top: i((a.pageY - (o.top + f(e).pageYOffset)) / o.height),
     }
-  },
-  v = e => {
+  }
+const v = e => {
     !d(e) && e.preventDefault()
-  },
-  m = e.memo(a => {
-    let { onMove: l, onKey: n } = a,
-      i = c(a, ['onMove', 'onKey'])
-    const m = r(null),
-      g = u(l),
-      p = u(n),
-      b = r(null),
-      _ = r(!1),
-      [x, C, E] = t(() => {
+  }
+const m = e.memo(a => {
+    const { onMove: l, onKey: n } = a
+    const i = c(a, ['onMove', 'onKey'])
+    const m = r(null)
+    const g = u(l)
+    const p = u(n)
+    const b = r(null)
+    const _ = r(!1)
+    const [x, C, E] = t(() => {
         const e = e => {
             v(e),
               (d(e) ? e.touches.length > 0 : e.buttons > 0) && m.current
                 ? g(h(m.current, e, b.current))
                 : t(!1)
-          },
-          r = () => t(!1)
+          }
+        const r = () => t(!1)
         function t(t) {
-          const o = _.current,
-            a = f(m.current),
-            l = t ? a.addEventListener : a.removeEventListener
+          const o = _.current
+          const a = f(m.current)
+          const l = t ? a.addEventListener : a.removeEventListener
           l(o ? 'touchmove' : 'mousemove', e), l(o ? 'touchend' : 'mouseup', r)
         }
         return [
@@ -120,39 +120,39 @@ const i = (e, r = 0, t = 1) => (e > t ? t : e < r ? r : e),
         }),
       )
     )
-  }),
-  g = e => e.filter(Boolean).join(' '),
-  p = ({ className: r, color: t, left: o, top: a = 0.5 }) => {
+  })
+const g = e => e.filter(Boolean).join(' ')
+const p = ({ className: r, color: t, left: o, top: a = 0.5 }) => {
     const l = g(['react-colorful__pointer', r])
     return e.createElement(
       'div',
-      { className: l, style: { top: 100 * a + '%', left: 100 * o + '%' } },
+      { className: l, style: { top: `${100 * a}%`, left: `${100 * o}%` } },
       e.createElement('div', {
         className: 'react-colorful__pointer-fill',
         style: { backgroundColor: t },
       }),
     )
-  },
-  b = (e, r = 0, t = Math.pow(10, r)) => Math.round(t * e) / t,
-  _ = { grad: 0.9, turn: 360, rad: 360 / (2 * Math.PI) },
-  x = e => (
+  }
+const b = (e, r = 0, t = 10 ** r) => Math.round(t * e) / t
+const _ = { grad: 0.9, turn: 360, rad: 360 / (2 * Math.PI) }
+const x = e => (
     '#' === e[0] && (e = e.substr(1)),
     e.length < 6
       ? {
-          r: parseInt(e[0] + e[0], 16),
-          g: parseInt(e[1] + e[1], 16),
-          b: parseInt(e[2] + e[2], 16),
+          r: Number.parseInt(e[0] + e[0], 16),
+          g: Number.parseInt(e[1] + e[1], 16),
+          b: Number.parseInt(e[2] + e[2], 16),
           a: 1,
         }
       : {
-          r: parseInt(e.substr(0, 2), 16),
-          g: parseInt(e.substr(2, 2), 16),
-          b: parseInt(e.substr(4, 2), 16),
+          r: Number.parseInt(e.substr(0, 2), 16),
+          g: Number.parseInt(e.substr(2, 2), 16),
+          b: Number.parseInt(e.substr(4, 2), 16),
           a: 1,
         }
-  ),
-  C = (e, r = 'deg') => Number(e) * (_[r] || 1),
-  E = e => {
+  )
+const C = (e, r = 'deg') => Number(e) * (_[r] || 1)
+const E = e => {
     const r =
       /hsla?\(?\s*(-?\d*\.?\d+)(deg|rad|grad|turn)?[,\s]+(-?\d*\.?\d+)%?[,\s]+(-?\d*\.?\d+)%?,?\s*[/\s]*(-?\d*\.?\d+)?(%)?\s*\)?/i.exec(
         e,
@@ -165,15 +165,15 @@ const i = (e, r = 0, t = 1) => (e > t ? t : e < r ? r : e),
           a: void 0 === r[5] ? 1 : Number(r[5]) / (r[6] ? 100 : 1),
         })
       : { h: 0, s: 0, v: 0, a: 1 }
-  },
-  H = E,
-  M = ({ h: e, s: r, l: t, a: o }) => ({
+  }
+const H = E
+const M = ({ h: e, s: r, l: t, a: o }) => ({
     h: e,
     s: (r *= (t < 50 ? t : 100 - t) / 100) > 0 ? ((2 * r) / (t + r)) * 100 : 0,
     v: t + r,
     a: o,
-  }),
-  N = ({ h: e, s: r, v: t, a: o }) => {
+  })
+const N = ({ h: e, s: r, v: t, a: o }) => {
     const a = ((200 - r) * t) / 100
     return {
       h: b(e),
@@ -183,30 +183,30 @@ const i = (e, r = 0, t = 1) => (e > t ? t : e < r ? r : e),
       l: b(a / 2),
       a: b(o, 2),
     }
-  },
-  w = e => {
+  }
+const w = e => {
     const { h: r, s: t, l: o } = N(e)
     return `hsl(${r}, ${t}%, ${o}%)`
-  },
-  $ = e => {
+  }
+const $ = e => {
     const { h: r, s: t, l: o, a } = N(e)
     return `hsla(${r}, ${t}%, ${o}%, ${a})`
-  },
-  y = ({ h: e, s: r, v: t, a: o }) => {
+  }
+const y = ({ h: e, s: r, v: t, a: o }) => {
     ;(e = (e / 360) * 6), (r /= 100), (t /= 100)
-    const a = Math.floor(e),
-      l = t * (1 - r),
-      n = t * (1 - (e - a) * r),
-      s = t * (1 - (1 - e + a) * r),
-      c = a % 6
+    const a = Math.floor(e)
+    const l = t * (1 - r)
+    const n = t * (1 - (e - a) * r)
+    const s = t * (1 - (1 - e + a) * r)
+    const c = a % 6
     return {
       r: b(255 * [t, n, l, l, s, t][c]),
       g: b(255 * [s, t, t, n, l, l][c]),
       b: b(255 * [l, l, s, t, t, n][c]),
       a: b(o, 2),
     }
-  },
-  q = e => {
+  }
+const q = e => {
     const r =
       /hsva?\(?\s*(-?\d*\.?\d+)(deg|rad|grad|turn)?[,\s]+(-?\d*\.?\d+)%?[,\s]+(-?\d*\.?\d+)%?,?\s*[/\s]*(-?\d*\.?\d+)?(%)?\s*\)?/i.exec(
         e,
@@ -219,9 +219,9 @@ const i = (e, r = 0, t = 1) => (e > t ? t : e < r ? r : e),
           a: void 0 === r[5] ? 1 : Number(r[5]) / (r[6] ? 100 : 1),
         })
       : { h: 0, s: 0, v: 0, a: 1 }
-  },
-  k = q,
-  O = e => {
+  }
+const k = q
+const O = e => {
     const r =
       /rgba?\(?\s*(-?\d*\.?\d+)(%)?[,\s]+(-?\d*\.?\d+)(%)?[,\s]+(-?\d*\.?\d+)(%)?,?\s*[/\s]*(-?\d*\.?\d+)?(%)?\s*\)?/i.exec(
         e,
@@ -234,16 +234,16 @@ const i = (e, r = 0, t = 1) => (e > t ? t : e < r ? r : e),
           a: void 0 === r[7] ? 1 : Number(r[7]) / (r[8] ? 100 : 1),
         })
       : { h: 0, s: 0, v: 0, a: 1 }
-  },
-  I = O,
-  j = e => {
+  }
+const I = O
+const j = e => {
     const r = e.toString(16)
-    return r.length < 2 ? '0' + r : r
-  },
-  z = ({ r: e, g: r, b: t, a: o }) => {
-    const a = Math.max(e, r, t),
-      l = a - Math.min(e, r, t),
-      n = l
+    return r.length < 2 ? `0${r}` : r
+  }
+const z = ({ r: e, g: r, b: t, a: o }) => {
+    const a = Math.max(e, r, t)
+    const l = a - Math.min(e, r, t)
+    const n = l
         ? a === e
           ? (r - t) / l
           : a === r
@@ -256,9 +256,9 @@ const i = (e, r = 0, t = 1) => (e > t ? t : e < r ? r : e),
       v: b((a / 255) * 100),
       a: o,
     }
-  },
-  B = e => ({ h: b(e.h), s: b(e.s), v: b(e.v), a: b(e.a, 2) }),
-  D = e.memo(({ className: r, hue: t, onChange: o }) => {
+  }
+const B = e => ({ h: b(e.h), s: b(e.s), v: b(e.v), a: b(e.a, 2) })
+const D = e.memo(({ className: r, hue: t, onChange: o }) => {
     const a = g(['react-colorful__hue', r])
     return e.createElement(
       'div',
@@ -282,8 +282,8 @@ const i = (e, r = 0, t = 1) => (e > t ? t : e < r ? r : e),
         }),
       ),
     )
-  }),
-  K = e.memo(({ hsva: r, onChange: t }) => {
+  })
+const K = e.memo(({ hsva: r, onChange: t }) => {
     const o = { backgroundColor: w({ h: r.h, s: 100, v: 100, a: 1 }) }
     return e.createElement(
       'div',
@@ -311,17 +311,17 @@ const i = (e, r = 0, t = 1) => (e > t ? t : e < r ? r : e),
         }),
       ),
     )
-  }),
-  L = (e, r) => {
+  })
+const L = (e, r) => {
     if (e === r) return !0
     for (const t in e) if (e[t] !== r[t]) return !1
     return !0
-  },
-  A = (e, r) => e.replace(/\s/g, '') === r.replace(/\s/g, '')
+  }
+const A = (e, r) => e.replace(/\s/g, '') === r.replace(/\s/g, '')
 function S(e, t, n) {
-  const s = u(n),
-    [c, i] = a(() => e.toHsva(t)),
-    d = r({ color: t, hsva: c })
+  const s = u(n)
+  const [c, i] = a(() => e.toHsva(t))
+  const d = r({ color: t, hsva: c })
   o(() => {
     if (!e.equal(t, d.current.color)) {
       const r = e.toHsva(t)
@@ -339,15 +339,15 @@ function S(e, t, n) {
   }, [])
   return [c, f]
 }
-const T = 'undefined' != typeof window ? n : o
+const T = 'undefined' !== typeof window ? n : o
 let F
 const P = () =>
-    F || ('undefined' != typeof __webpack_nonce__ ? __webpack_nonce__ : void 0),
-  X = e => {
+    F || ('undefined' !== typeof __webpack_nonce__ ? __webpack_nonce__ : void 0)
+const X = e => {
     F = e
-  },
-  Y = new Map(),
-  R = e => {
+  }
+const Y = new Map()
+const R = e => {
     T(() => {
       const r = e.current ? e.current.ownerDocument : document
       if (void 0 !== r && !Y.has(r)) {
@@ -359,19 +359,19 @@ const P = () =>
         t && e.setAttribute('nonce', t), r.head.appendChild(e)
       }
     }, [])
-  },
-  V = t => {
-    let {
+  }
+const V = t => {
+    const {
         className: o,
         colorModel: a,
         color: l = a.defaultColor,
         onChange: n,
-      } = t,
-      u = c(t, ['className', 'colorModel', 'color', 'onChange'])
+      } = t
+    const u = c(t, ['className', 'colorModel', 'color', 'onChange'])
     const i = r(null)
     R(i)
-    const [d, f] = S(a, l, n),
-      h = g(['react-colorful', o])
+    const [d, f] = S(a, l, n)
+    const h = g(['react-colorful', o])
     return e.createElement(
       'div',
       s({}, u, { ref: i, className: h }),
@@ -382,21 +382,21 @@ const P = () =>
         className: 'react-colorful__last-control',
       }),
     )
-  },
-  G = {
+  }
+const G = {
     defaultColor: '000',
     toHsva: e => z(x(e)),
-    fromHsva: e => (({ r: e, g: r, b: t }) => '#' + j(e) + j(r) + j(t))(y(e)),
+    fromHsva: e => (({ r: e, g: r, b: t }) => `#${j(e)}${j(r)}${j(t)}`)(y(e)),
     equal: (e, r) => e.toLowerCase() === r.toLowerCase() || L(x(e), x(r)),
-  },
-  J = r => e.createElement(V, s({}, r, { colorModel: G })),
-  Q = ({ className: r, hsva: t, onChange: o }) => {
+  }
+const J = r => e.createElement(V, s({}, r, { colorModel: G }))
+const Q = ({ className: r, hsva: t, onChange: o }) => {
     const a = {
         backgroundImage: `linear-gradient(90deg, ${$(
           Object.assign({}, t, { a: 0 }),
         )}, ${$(Object.assign({}, t, { a: 1 }))})`,
-      },
-      l = g(['react-colorful__alpha', r])
+      }
+    const l = g(['react-colorful__alpha', r])
     return e.createElement(
       'div',
       { className: l },
@@ -423,19 +423,19 @@ const P = () =>
         }),
       ),
     )
-  },
-  U = t => {
-    let {
+  }
+const U = t => {
+    const {
         className: o,
         colorModel: a,
         color: l = a.defaultColor,
         onChange: n,
-      } = t,
-      u = c(t, ['className', 'colorModel', 'color', 'onChange'])
+      } = t
+    const u = c(t, ['className', 'colorModel', 'color', 'onChange'])
     const i = r(null)
     R(i)
-    const [d, f] = S(a, l, n),
-      h = g(['react-colorful', o])
+    const [d, f] = S(a, l, n)
+    const h = g(['react-colorful', o])
     return e.createElement(
       'div',
       s({}, u, { ref: i, className: h }),
@@ -447,33 +447,33 @@ const P = () =>
         className: 'react-colorful__last-control',
       }),
     )
-  },
-  W = {
+  }
+const W = {
     defaultColor: { h: 0, s: 0, l: 0, a: 1 },
     toHsva: M,
     fromHsva: N,
     equal: L,
-  },
-  Z = r => e.createElement(U, s({}, r, { colorModel: W })),
-  ee = { defaultColor: 'hsla(0, 0%, 0%, 1)', toHsva: E, fromHsva: $, equal: A },
-  re = r => e.createElement(U, s({}, r, { colorModel: ee })),
-  te = {
+  }
+const Z = r => e.createElement(U, s({}, r, { colorModel: W }))
+const ee = { defaultColor: 'hsla(0, 0%, 0%, 1)', toHsva: E, fromHsva: $, equal: A }
+const re = r => e.createElement(U, s({}, r, { colorModel: ee }))
+const te = {
     defaultColor: { h: 0, s: 0, l: 0 },
     toHsva: ({ h: e, s: r, l: t }) => M({ h: e, s: r, l: t, a: 1 }),
     fromHsva: e => (({ h: e, s: r, l: t }) => ({ h: e, s: r, l: t }))(N(e)),
     equal: L,
-  },
-  oe = r => e.createElement(V, s({}, r, { colorModel: te })),
-  ae = { defaultColor: 'hsl(0, 0%, 0%)', toHsva: H, fromHsva: w, equal: A },
-  le = r => e.createElement(V, s({}, r, { colorModel: ae })),
-  ne = {
+  }
+const oe = r => e.createElement(V, s({}, r, { colorModel: te }))
+const ae = { defaultColor: 'hsl(0, 0%, 0%)', toHsva: H, fromHsva: w, equal: A }
+const le = r => e.createElement(V, s({}, r, { colorModel: ae }))
+const ne = {
     defaultColor: { h: 0, s: 0, v: 0, a: 1 },
     toHsva: e => e,
     fromHsva: B,
     equal: L,
-  },
-  se = r => e.createElement(U, s({}, r, { colorModel: ne })),
-  ce = {
+  }
+const se = r => e.createElement(U, s({}, r, { colorModel: ne }))
+const ce = {
     defaultColor: 'hsva(0, 0%, 0%, 1)',
     toHsva: q,
     fromHsva: e => {
@@ -481,9 +481,9 @@ const P = () =>
       return `hsva(${r}, ${t}%, ${o}%, ${a})`
     },
     equal: A,
-  },
-  ue = r => e.createElement(U, s({}, r, { colorModel: ce })),
-  ie = {
+  }
+const ue = r => e.createElement(U, s({}, r, { colorModel: ce }))
+const ie = {
     defaultColor: { h: 0, s: 0, v: 0 },
     toHsva: ({ h: e, s: r, v: t }) => ({ h: e, s: r, v: t, a: 1 }),
     fromHsva: e => {
@@ -491,9 +491,9 @@ const P = () =>
       return { h: r, s: t, v: o }
     },
     equal: L,
-  },
-  de = r => e.createElement(V, s({}, r, { colorModel: ie })),
-  fe = {
+  }
+const de = r => e.createElement(V, s({}, r, { colorModel: ie }))
+const fe = {
     defaultColor: 'hsv(0, 0%, 0%)',
     toHsva: k,
     fromHsva: e => {
@@ -501,16 +501,16 @@ const P = () =>
       return `hsv(${r}, ${t}%, ${o}%)`
     },
     equal: A,
-  },
-  he = r => e.createElement(V, s({}, r, { colorModel: fe })),
-  ve = {
+  }
+const he = r => e.createElement(V, s({}, r, { colorModel: fe }))
+const ve = {
     defaultColor: { r: 0, g: 0, b: 0, a: 1 },
     toHsva: z,
     fromHsva: y,
     equal: L,
-  },
-  me = r => e.createElement(U, s({}, r, { colorModel: ve })),
-  ge = {
+  }
+const me = r => e.createElement(U, s({}, r, { colorModel: ve }))
+const ge = {
     defaultColor: 'rgba(0, 0, 0, 1)',
     toHsva: O,
     fromHsva: e => {
@@ -518,16 +518,16 @@ const P = () =>
       return `rgba(${r}, ${t}, ${o}, ${a})`
     },
     equal: A,
-  },
-  pe = r => e.createElement(U, s({}, r, { colorModel: ge })),
-  be = {
+  }
+const pe = r => e.createElement(U, s({}, r, { colorModel: ge }))
+const be = {
     defaultColor: { r: 0, g: 0, b: 0 },
     toHsva: ({ r: e, g: r, b: t }) => z({ r: e, g: r, b: t, a: 1 }),
     fromHsva: e => (({ r: e, g: r, b: t }) => ({ r: e, g: r, b: t }))(y(e)),
     equal: L,
-  },
-  _e = r => e.createElement(V, s({}, r, { colorModel: be })),
-  xe = {
+  }
+const _e = r => e.createElement(V, s({}, r, { colorModel: be }))
+const xe = {
     defaultColor: 'rgb(0, 0, 0)',
     toHsva: I,
     fromHsva: e => {
@@ -535,10 +535,10 @@ const P = () =>
       return `rgb(${r}, ${t}, ${o})`
     },
     equal: A,
-  },
-  Ce = r => e.createElement(V, s({}, r, { colorModel: xe })),
-  Ee = /^#?([0-9A-F]{3,8})$/i,
-  He = r => {
+  }
+const Ce = r => e.createElement(V, s({}, r, { colorModel: xe }))
+const Ee = /^#?([0-9A-F]{3,8})$/i
+const He = r => {
     const {
         color: t = '',
         onChange: n,
@@ -547,8 +547,8 @@ const P = () =>
         validate: f,
         format: h,
         process: v,
-      } = r,
-      m = c(r, [
+      } = r
+    const m = c(r, [
         'color',
         'onChange',
         'onBlur',
@@ -556,18 +556,18 @@ const P = () =>
         'validate',
         'format',
         'process',
-      ]),
-      [g, p] = a(() => d(t)),
-      b = u(n),
-      _ = u(i),
-      x = l(
+      ])
+    const [g, p] = a(() => d(t))
+    const b = u(n)
+    const _ = u(i)
+    const x = l(
         e => {
           const r = d(e.target.value)
           p(r), f(r) && b(v ? v(r) : r)
         },
         [d, v, f, b],
-      ),
-      C = l(
+      )
+    const C = l(
         e => {
           f(e.target.value) || p(d(t)), _(e)
         },
@@ -587,17 +587,17 @@ const P = () =>
         }),
       )
     )
-  },
-  Me = e => '#' + e,
-  Ne = r => {
-    const { prefixed: t, alpha: o } = r,
-      a = c(r, ['prefixed', 'alpha']),
-      n = l(e => e.replace(/([^0-9A-F]+)/gi, '').substr(0, o ? 8 : 6), [o]),
-      u = l(
+  }
+const Me = e => `#${e}`
+const Ne = r => {
+    const { prefixed: t, alpha: o } = r
+    const a = c(r, ['prefixed', 'alpha'])
+    const n = l(e => e.replace(/([^0-9A-F]+)/gi, '').substr(0, o ? 8 : 6), [o])
+    const u = l(
         e =>
           ((e, r) => {
-            const t = Ee.exec(e),
-              o = t ? t[1].length : 0
+            const t = Ee.exec(e)
+            const o = t ? t[1].length : 0
             return 3 === o || 6 === o || (!!r && 4 === o) || (!!r && 8 === o)
           })(e, o),
         [o],

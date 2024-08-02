@@ -28,7 +28,7 @@ function ResizeHandle({
   onMouseDown,
   ...props
 }: {
-  onDrag: (lastFrameDistance: number, totalDistance: number) => number | void
+  onDrag: (lastFrameDistance: number, totalDistance: number) => number | undefined
   onMouseDown?: (event: React.MouseEvent) => void
   vertical?: boolean
   flexbox?: boolean

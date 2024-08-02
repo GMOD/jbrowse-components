@@ -49,7 +49,7 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
        */
       createEphemeralInternetAccount(
         internetAccountId: string,
-        initialSnapshot = {},
+        initialSnapshot,
         url: string,
       ) {
         let hostUri

@@ -45,7 +45,7 @@ const SequenceTypeSelector = observer(function ({
             : {}),
           ...(hasExonOrCDS
             ? {
-                gene: `Genomic w/ full introns`,
+                gene: "Genomic w/ full introns",
               }
             : {}),
           ...(hasExonOrCDS

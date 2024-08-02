@@ -257,7 +257,7 @@ export default class PluginManager {
     // see elementCreationSchedule above for the creation order
     if (this.elementCreationSchedule) {
       this.elementCreationSchedule.run()
-      delete this.elementCreationSchedule
+      this.elementCreationSchedule = undefined
     }
     return this
   }

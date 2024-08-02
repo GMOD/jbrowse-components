@@ -41,7 +41,7 @@ function PrerenderedCanvas(props: {
   }, [imageData])
 
   const softClipString = showSoftClip ? '_softclipped' : ''
-  const blockKeyStr = blockKey ? '_' + blockKey : ''
+  const blockKeyStr = blockKey ? `_${blockKey}` : ''
   const testId = `prerendered_canvas${softClipString}${blockKeyStr}${
     done ? '_done' : ''
   }`

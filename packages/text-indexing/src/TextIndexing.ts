@@ -128,7 +128,7 @@ async function aggregateIndex(
   }
   for (const asm of assemblies) {
     // console.log('Indexing assembly ' + asm + '...')
-    const id = asm + '-index'
+    const id = `${asm}-index`
     // default settings
     const attrs = attributes || ['Name', 'ID']
     const excludeTypes = exclude || ['exon', 'CDS']

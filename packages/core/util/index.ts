@@ -829,7 +829,7 @@ export function minmax(a: number, b: number) {
 
 export function shorten(name: string, max = 70, short = 30) {
   return name.length > max
-    ? name.slice(0, short) + '...' + name.slice(-short)
+    ? `${name.slice(0, short)}...${name.slice(-short)}`
     : name
 }
 
@@ -1186,7 +1186,7 @@ export function getLayoutId({
   sessionId: string
   layoutId: string
 }) {
-  return sessionId + '-' + layoutId
+  return `${sessionId}-${layoutId}`
 }
 
 // Hook from https://usehooks.com/useLocalStorage/
@@ -1292,7 +1292,7 @@ export function localStorageSetItem(str: string, item: string) {
     : undefined
 }
 
-export function max(arr: number[], init = -Infinity) {
+export function max(arr: number[], init = Number.NEGATIVE_INFINITY) {
   let max = init
   for (const entry of arr) {
     max = entry > max ? entry : max
@@ -1300,7 +1300,7 @@ export function max(arr: number[], init = -Infinity) {
   return max
 }
 
-export function min(arr: number[], init = Infinity) {
+export function min(arr: number[], init = Number.POSITIVE_INFINITY) {
   let min = init
   for (const entry of arr) {
     min = entry < min ? entry : min

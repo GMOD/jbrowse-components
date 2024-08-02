@@ -85,7 +85,7 @@ function preprocessConfigurationSchemaArguments(
       ...inputOptions.baseConfiguration.jbrowseSchemaOptions,
       ...inputOptions,
     }
-    delete options.baseConfiguration
+    options.baseConfiguration = undefined
   }
   return { schemaDefinition, options }
 }

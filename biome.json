@@ -26,7 +26,8 @@
         "noNonNullAssertion": "off",
         "useImportType": "off",
         "noParameterAssign": "off",
-        "noUselessElse": "off"
+        "noUselessElse": "off",
+        "useNodejsImportProtocol": "off"
       }
     }
   }

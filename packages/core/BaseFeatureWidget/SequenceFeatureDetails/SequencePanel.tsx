@@ -138,7 +138,7 @@ const SequencePanel = observer(
         <Container>
           <div style={{ background: 'white' }}>
             {`>${[
-              (feature.name || feature.id) + '-' + mode,
+              `${feature.name || feature.id}-${mode}`,
               `${feature.refName}:${toLocale(feature.start + 1)}-${toLocale(feature.end)}${getStrand(feature.strand as number)}`,
               mode.endsWith('updownstream')
                 ? `+/- ${toLocale(model.upDownBp)} up/downstream bp`

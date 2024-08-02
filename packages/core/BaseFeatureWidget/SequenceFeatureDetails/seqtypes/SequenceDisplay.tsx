@@ -22,8 +22,8 @@ const SequenceDisplay = observer(function ({
   return chunks.map((chunk, idx) => {
     const f = coordStart - (start % charactersPerRow)
     const prefix =
-      (idx == 0 && start % charactersPerRow == 0) || idx > 0
-        ? `${f + idx * strand * charactersPerRow}`.padStart(4) + '   '
+      (idx === 0 && start % charactersPerRow === 0) || idx > 0
+        ? `${`${f + idx * strand * charactersPerRow}`.padStart(4)}   `
         : ''
     const postfix =
       idx === chunks.length - 1 &&

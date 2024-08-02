@@ -327,7 +327,7 @@ const MenuPage = React.forwardRef<HTMLDivElement, MenuPageProps>(
                     switch (e.key) {
                       case 'ArrowLeft':
                       case 'Escape': {
-                        onClose && onClose(e, 'escapeKeyDown')
+                        onClose?.(e, 'escapeKeyDown')
 
                         break
                       }
@@ -394,7 +394,7 @@ const MenuPage = React.forwardRef<HTMLDivElement, MenuPageProps>(
     return top ? (
       ListContents
     ) : (
-      <Grow in={open} style={{ transformOrigin: `0 0 0` }} ref={ref}>
+      <Grow in={open} style={{ transformOrigin: "0 0 0" }} ref={ref}>
         <Paper
           elevation={8}
           ref={paperRef}

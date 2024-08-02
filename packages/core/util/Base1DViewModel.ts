@@ -194,7 +194,7 @@ const Base1DView = types
       const newBpPerPx = clamp(
         bpPerPx,
         'minBpPerPx' in self ? (self.minBpPerPx as number) : 0,
-        'maxBpPerPx' in self ? (self.maxBpPerPx as number) : Infinity,
+        'maxBpPerPx' in self ? (self.maxBpPerPx as number) : Number.POSITIVE_INFINITY,
       )
 
       const oldBpPerPx = self.bpPerPx
