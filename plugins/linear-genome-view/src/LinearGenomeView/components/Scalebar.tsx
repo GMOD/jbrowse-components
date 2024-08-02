@@ -103,7 +103,7 @@ const RenderedRefNameLabels = observer(function ({ model }: { model: LGV }) {
   )
 })
 
-const RenderedBlockTicks = function ({
+const RenderedBlockTickLabels = function ({
   block,
   bpPerPx,
 }: {
@@ -145,7 +145,9 @@ const RenderedScalebarLabels = observer(function ({ model }: { model: LGV }) {
         const { key, widthPx } = block
         const k = `${key}-${idx}`
         if (block.type === 'ContentBlock') {
-          return <RenderedBlockTicks key={k} block={block} bpPerPx={bpPerPx} />
+          return (
+            <RenderedBlockTickLabels key={k} block={block} bpPerPx={bpPerPx} />
+          )
         } else if (block.type === 'ElidedBlock') {
           return <ElidedBlockComponent key={k} width={widthPx} />
         } else if (block.type === 'InterRegionPaddingBlock') {

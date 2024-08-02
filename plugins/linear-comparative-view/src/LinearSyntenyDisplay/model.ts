@@ -1,4 +1,4 @@
-import { types, Instance } from 'mobx-state-tree'
+import { types, Instance, getParent } from 'mobx-state-tree'
 import {
   getConf,
   ConfigurationReference,
@@ -142,6 +142,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       get trackIds() {
         return getConf(self, 'trackIds') as string[]
+      },
+      /**
+       * #getter
+       */
+      get height() {
+        // @ts-expect-error
+        return getParent(self, 4).height as number
       },
       /**
        * #getter

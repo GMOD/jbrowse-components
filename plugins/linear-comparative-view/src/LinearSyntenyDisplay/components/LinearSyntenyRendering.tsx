@@ -24,11 +24,12 @@ const useStyles = makeStyles()({
   rel: {
     position: 'relative',
   },
-  abs: {
+  mouseoverCanvas: {
     position: 'absolute',
-  },
-  none: {
     pointEvents: 'none',
+  },
+  mainCanvas: {
+    position: 'absolute',
   },
 })
 
@@ -37,11 +38,10 @@ const LinearSyntenyRendering = observer(function ({
 }: {
   model: LinearSyntenyDisplayModel
 }) {
-  const { classes, cx } = useStyles()
+  const { classes } = useStyles()
   const xOffset = useRef(0)
   const currScrollFrame = useRef<number>()
   const view = getContainingView(model) as LinearSyntenyViewModel
-  const height = view.middleComparativeHeight
   const width = view.width
   const delta = useRef(0)
   const timeout = useRef<Timer>()
@@ -51,7 +51,7 @@ const LinearSyntenyRendering = observer(function ({
   const [mouseCurrDownX, setMouseCurrDownX] = useState<number>()
   const [mouseInitialDownX, setMouseInitialDownX] = useState<number>()
   const [currY, setCurrY] = useState<number>()
-  const { mouseoverId } = model
+  const { mouseoverId, height } = model
 
   // these useCallbacks avoid new refs from being created on any mouseover, etc.
   const k1 = useCallback(
@@ -63,8 +63,8 @@ const LinearSyntenyRendering = observer(function ({
     (ref: HTMLCanvasElement) => {
       model.setMainCanvasRef(ref)
       function onWheel(event: WheelEvent) {
-        event.preventDefault()
         if (event.ctrlKey === true) {
+          event.preventDefault()
           delta.current += event.deltaY / 500
           for (const v of view.views) {
             v.setScaleFactor(
@@ -88,6 +88,7 @@ const LinearSyntenyRendering = observer(function ({
           }, 300)
         } else {
           if (Math.abs(event.deltaY) < Math.abs(event.deltaX)) {
+            event.preventDefault()
             xOffset.current += event.deltaX / 2
           }
           if (currScrollFrame.current === undefined) {
@@ -106,12 +107,10 @@ const LinearSyntenyRendering = observer(function ({
       if (ref) {
         ref.addEventListener('wheel', onWheel)
 
-        // this is a react 19-ism to have a cleanup in the ref callback
+        // there is a react 19-ism to have a cleanup in the ref callback
         // https://react.dev/blog/2024/04/25/react-19#cleanup-functions-for-refs
         // note: it warns in earlier versions of react
-        return () => ref.removeEventListener('wheel', onWheel)
       }
-      return () => {}
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [model, height, width],
@@ -133,7 +132,7 @@ const LinearSyntenyRendering = observer(function ({
         ref={k1}
         width={width}
         height={height}
-        className={cx(classes.abs, classes.none)}
+        className={classes.mouseoverCanvas}
       />
       <canvas
         ref={k2}
@@ -204,7 +203,7 @@ const LinearSyntenyRendering = observer(function ({
         }}
         onContextMenu={evt => onSynContextClick(evt, model, setAnchorEl)}
         data-testid="synteny_canvas"
-        className={classes.abs}
+        className={classes.mainCanvas}
         width={width}
         height={height}
       />

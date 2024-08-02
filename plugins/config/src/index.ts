@@ -23,6 +23,4 @@ export default class ConfigurationPlugin extends Plugin {
   }
 }
 
-export { default as JsonEditor } from './ConfigurationEditorWidget/components/JsonEditor'
-
 export { LazyConfigurationEditorComponent as ConfigurationEditor }
