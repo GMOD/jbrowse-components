@@ -40,7 +40,7 @@ export async function renderSvg<T extends { id: string; height: number }>(
         xlinkHref={canvas.toDataURL('image/png')}
       />
     )
-  } else {
+  }
     // @ts-ignore
     const C2S = await import('canvas2svg')
     const ctx = new C2S.default(width, height)
@@ -60,5 +60,4 @@ export async function renderSvg<T extends { id: string; height: number }>(
         />
       </>
     )
-  }
 }

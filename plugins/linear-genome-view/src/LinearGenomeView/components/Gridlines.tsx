@@ -79,9 +79,9 @@ const RenderedVerticalGuides = observer(({ model }: { model: LGV }) => {
         const k = `${block.key}-${index}`
         if (block.type === 'ContentBlock') {
           return <RenderedBlockLines key={k} block={block} bpPerPx={bpPerPx} />
-        } else if (block.type === 'ElidedBlock') {
+        }if (block.type === 'ElidedBlock') {
           return <ElidedBlockComponent key={k} width={block.widthPx} />
-        } else if (block.type === 'InterRegionPaddingBlock') {
+        }if (block.type === 'InterRegionPaddingBlock') {
           return (
             <InterRegionPaddingBlockComponent
               key={k}

@@ -341,11 +341,10 @@ export function stateModelFactory(
         get fillSetting() {
           if (self.filled) {
             return 0
-          } else if (!self.filled && self.minSize === 1) {
+          }if (!self.filled && self.minSize === 1) {
             return 1
-          } else {
-            return 2
           }
+            return 2
         },
       }
     })

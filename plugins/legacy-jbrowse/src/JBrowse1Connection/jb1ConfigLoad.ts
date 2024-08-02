@@ -216,7 +216,7 @@ async function loadIncludes(inputConfig: Config): Promise<Config> {
       regularizeIncludes(config.include || []),
       newUpstreamConf,
     )
-    delete config.include
+    config.include = undefined
 
     const loads = includes.map(async (include): Promise<Config> => {
       include.cacheBuster = inputConfig.cacheBuster
@@ -266,7 +266,7 @@ function regularizeIncludes(
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unnecessary-type-constraint
-function fillTemplates<T extends any>(subconfig: T, config: Config): T {
+function fillTemplates<T>(subconfig: T, config: Config): T {
   if (!subconfig) {
     return subconfig
   }

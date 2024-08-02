@@ -1,5 +1,5 @@
-import { promises as fsPromises } from 'fs'
-import path from 'path'
+import { promises as fsPromises } from 'node:fs'
+import path from 'node:path'
 import { parseVcfBuffer, splitVcfFileHeaderAndBody } from './VcfImport'
 import SpreadsheetModel from '../models/Spreadsheet'
 

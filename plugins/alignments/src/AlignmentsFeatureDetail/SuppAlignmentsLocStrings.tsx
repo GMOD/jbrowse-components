@@ -19,7 +19,7 @@ export default function SuppAlignmentsLocStrings({
         {tag
           .split(';')
           .filter(SA => !!SA)
-          .map((SA, index) => {
+          .map((SA, idx) => {
             const [saRef, saStart, saStrand, saCigar] = SA.split(',')
             const saLength = getLengthOnRef(saCigar)
             const extra = Math.floor(saLength / 5)
@@ -32,7 +32,8 @@ export default function SuppAlignmentsLocStrings({
             const displayEnd = end.toLocaleString('en-US')
             const displayString = `${saRef}:${displayStart}-${displayEnd} (${saStrand}) [${saLength}bp]`
             return (
-              <li key={`${locString}-${index}`}>
+              /* biome-ignore lint/suspicious/noArrayIndexKey: */
+              <li key={`${locString}-${idx}`}>
                 <Link
                   href="#"
                   onClick={async event => {

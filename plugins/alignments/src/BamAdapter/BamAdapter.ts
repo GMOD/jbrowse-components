@@ -44,7 +44,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       // chunkSizeLimit and fetchSizeLimit are more troublesome than
       // helpful, and have given overly large values on the ultra long
       // nanopore reads even with 500MB limits, so disabled with infinity
-      yieldThreadTime: Infinity,
+      yieldThreadTime: Number.POSITIVE_INFINITY,
     })
 
     const adapterConfig = this.getConf('sequenceAdapter')
@@ -54,9 +54,8 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
         bam,
         sequenceAdapter: dataAdapter as BaseFeatureDataAdapter,
       }
-    } else {
-      return { bam }
     }
+      return { bam }
   }
 
   protected async configure() {
@@ -236,9 +235,8 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       const bytes = await bytesForRegions(regions, bam)
       const fetchSizeLimit = this.getConf('fetchSizeLimit')
       return { bytes, fetchSizeLimit }
-    } else {
-      return super.getMultiRegionFeatureDensityStats(regions, opts)
     }
+      return super.getMultiRegionFeatureDensityStats(regions, opts)
   }
 
   freeResources(/* { region } */): void {}

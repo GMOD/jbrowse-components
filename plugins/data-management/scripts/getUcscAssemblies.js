@@ -8,7 +8,7 @@
  * 2bit files, one name per line.
  */
 
-const http = require('http')
+const http = require('node:http')
 
 const downloadsPageUrl = 'http://hgdownload.soe.ucsc.edu/downloads.html'
 

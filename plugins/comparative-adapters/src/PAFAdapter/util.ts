@@ -60,7 +60,7 @@ export function getWeightedMeans(ret: PAFRecord[]) {
   for (const entry of ret) {
     const query = entry.qname
     const target = entry.tname
-    const key = query + '-' + target
+    const key = `${query}-${target}`
     if (!scoreMap[key]) {
       scoreMap[key] = { quals: [], len: [] }
     }
@@ -77,7 +77,7 @@ export function getWeightedMeans(ret: PAFRecord[]) {
   for (const entry of ret) {
     const query = entry.qname
     const target = entry.tname
-    const key = query + '-' + target
+    const key = `${query}-${target}`
     entry.extra.meanScore = meanScoreMap[key]
   }
 

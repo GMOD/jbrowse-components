@@ -39,7 +39,7 @@ export default class BedPlugin extends Plugin {
 
           if (regexGuess.test(fileName) && !adapterHint) {
             return obj
-          } else if (adapterHint === adapterName) {
+          }if (adapterHint === adapterName) {
             return obj
           }
           return adapterGuesser(file, index, adapterHint)

@@ -136,8 +136,8 @@ function makeTrackConfig({
           bamLocation: bigDataLocation,
           index: {
             location: isUri
-              ? makeLocAlt(bigDataIdx, bigDataUrl + '.bai', trackDbLoc)
-              : makeLoc2(bigDataIdx, bigDataUrl + '.bai'),
+              ? makeLocAlt(bigDataIdx, `${bigDataUrl}.bai`, trackDbLoc)
+              : makeLoc2(bigDataIdx, `${bigDataUrl}.bai`),
           },
         },
       }
@@ -152,8 +152,8 @@ function makeTrackConfig({
           type: 'CramAdapter',
           cramLocation: bigDataLocation,
           craiLocation: isUri
-            ? makeLocAlt(bigDataIdx, bigDataUrl + '.crai', trackDbLoc)
-            : makeLoc2(bigDataIdx, bigDataUrl + '.crai'),
+            ? makeLocAlt(bigDataIdx, `${bigDataUrl}.crai`, trackDbLoc)
+            : makeLoc2(bigDataIdx, `${bigDataUrl}.crai`),
           sequenceAdapter,
         },
       }
@@ -198,8 +198,8 @@ function makeTrackConfig({
           vcfGzLocation: bigDataLocation,
           index: {
             location: isUri
-              ? makeLocAlt(bigDataIdx, bigDataUrl + '.tbi', trackDbLoc)
-              : makeLoc2(bigDataIdx, bigDataUrl + '.tbi'),
+              ? makeLocAlt(bigDataIdx, `${bigDataUrl}.tbi`, trackDbLoc)
+              : makeLoc2(bigDataIdx, `${bigDataUrl}.tbi`),
           },
         },
       }

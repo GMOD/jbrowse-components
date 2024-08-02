@@ -50,7 +50,9 @@ export default class FromConfigSequenceAdapter
 
     // recall: features are stored in this object sorted by start coordinate
     for (const [refName, features] of this.features) {
-      let currentRegion
+      let currentRegion:
+        | { start: number; end: number; refName: string }
+        | undefined
       for (const feature of features) {
         if (
           currentRegion &&

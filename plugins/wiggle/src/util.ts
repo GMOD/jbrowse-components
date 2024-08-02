@@ -53,7 +53,10 @@ export function getScale({
   pivotValue,
   inverted,
 }: ScaleOpts) {
-  let scale
+  let scale:
+    | ReturnType<typeof scaleLinear>
+    | ReturnType<typeof scaleLog>
+    | ReturnType<typeof scaleQuantize>
   const [min, max] = domain
   if (min === undefined || max === undefined) {
     throw new Error('invalid domain')
@@ -61,8 +64,7 @@ export function getScale({
   if (scaleType === 'linear') {
     scale = scaleLinear()
   } else if (scaleType === 'log') {
-    scale = scaleLog()
-    scale.base(2)
+    scale = scaleLog().base(2)
   } else if (scaleType === 'quantize') {
     scale = scaleQuantize()
   } else {

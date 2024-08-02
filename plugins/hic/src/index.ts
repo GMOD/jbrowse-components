@@ -41,11 +41,10 @@ export default class HicPlugin extends Plugin {
 
           if (regexGuess.test(fileName) && !adapterHint) {
             return obj
-          } else if (adapterHint === adapterName) {
+          }if (adapterHint === adapterName) {
             return obj
-          } else {
-            return adapterGuesser(file, index, adapterHint)
           }
+            return adapterGuesser(file, index, adapterHint)
         }
       },
     )

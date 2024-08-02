@@ -13,8 +13,7 @@ const ScoreLegend = observer(({ model }: { model: WiggleDisplayModel }) => {
   const { ticks, scaleType } = model
   const { width } = getContainingView(model) as LGV
   const legend =
-    `[${ticks?.values[0]}-${ticks?.values[1]}]` +
-    (scaleType === 'log' ? ' (log scale)' : '')
+    `[${ticks?.values[0]}-${ticks?.values[1]}]${scaleType === 'log' ? ' (log scale)' : ''}`
   const len = measureText(legend, 14)
   const padding = 25
   const xpos = width - len - padding

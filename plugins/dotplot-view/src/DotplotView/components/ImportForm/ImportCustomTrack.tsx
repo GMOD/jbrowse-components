@@ -36,28 +36,28 @@ function getAdapter({
       queryAssembly: assembly1,
       targetAssembly: assembly2,
     }
-  } else if (radioOption === '.out') {
+  }if (radioOption === '.out') {
     return {
       type: 'MashMapAdapter',
       outLocation: fileLocation,
       queryAssembly: assembly1,
       targetAssembly: assembly2,
     }
-  } else if (radioOption === '.delta') {
+  }if (radioOption === '.delta') {
     return {
       type: 'DeltaAdapter',
       deltaLocation: fileLocation,
       queryAssembly: assembly1,
       targetAssembly: assembly2,
     }
-  } else if (radioOption === '.chain') {
+  }if (radioOption === '.chain') {
     return {
       type: 'ChainAdapter',
       chainLocation: fileLocation,
       queryAssembly: assembly1,
       targetAssembly: assembly2,
     }
-  } else if (radioOption === '.anchors') {
+  }if (radioOption === '.anchors') {
     return {
       type: 'MCScanAnchorsAdapter',
       mcscanAnchorsLocation: fileLocation,
@@ -65,7 +65,7 @@ function getAdapter({
       bed2Location,
       assemblyNames: [assembly1, assembly2],
     }
-  } else if (radioOption === '.anchors.simple') {
+  }if (radioOption === '.anchors.simple') {
     return {
       type: 'MCScanSimpleAnchorsAdapter',
       mcscanSimpleAnchorsLocation: fileLocation,
@@ -73,11 +73,10 @@ function getAdapter({
       bed2Location,
       assemblyNames: [assembly1, assembly2],
     }
-  } else {
+  }
     throw new Error(
       `Unknown to detect type ${radioOption} from filename (select radio button to clarify)`,
     )
-  }
 }
 
 type Conf = SnapshotIn<AnyConfigurationModel>
@@ -229,7 +228,7 @@ const OpenTrack = observer(
               </div>
             ) : (
               <FileSelector
-                name={value ? value + ' location' : ''}
+                name={value ? `${value} location` : ''}
                 description=""
                 location={fileLocation}
                 setLocation={loc => setFileLocation(loc)}

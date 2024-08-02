@@ -202,7 +202,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
       },
     }))
     .actions(self => {
-      let listener: (event: MessageEvent) => void | undefined
+      let listener: (event: MessageEvent) => undefined | undefined
       let exchangedTokenPromise: Promise<string> | undefined = undefined
       return {
         /**
@@ -274,7 +274,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             return reject(new Error('OAuth flow was cancelled'))
           }
           if (redirectUriWithInfo.includes('error')) {
-            return reject(new Error('OAuth flow error: ' + queryStringSearch))
+            return reject(new Error(`OAuth flow error: ${queryStringSearch}`))
           }
           this.deleteMessageChannel()
         },
@@ -331,7 +331,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this.finishOAuthWindow(eventFromDesktop, resolve, reject)
           } else {
-            window.open(url, eventName, `width=500,height=600,left=0,top=0`)
+            window.open(url, eventName, "width=500,height=600,left=0,top=0")
           }
         },
         /**

@@ -27,7 +27,7 @@ function LoadingMessage() {
 }
 
 function useSvgLocal<T>(key: string, val: T) {
-  return useLocalStorage('svg-' + key, val)
+  return useLocalStorage(`svg-${key}`, val)
 }
 
 function TextField2({ children, ...rest }: TextFieldProps) {

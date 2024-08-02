@@ -63,6 +63,7 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
         .filter(notEmpty)
         .map(({ left, width, highlight, label }, idx) => (
           <div
+            /* biome-ignore lint/suspicious/noArrayIndexKey: */
             key={`${left}_${width}_${idx}`}
             className={classes.highlight}
             style={{

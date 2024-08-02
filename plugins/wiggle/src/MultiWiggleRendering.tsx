@@ -47,7 +47,7 @@ const MultiWiggleRendering = observer(function (props: {
     }
     const px = region.reversed ? width - offsetX : offsetX
     const mouseoverBp = region.start + bpPerPx * px
-    let featureUnderMouse
+    let featureUnderMouse: Feature | undefined
     if (displayModel.isMultiRow) {
       for (const feature of features.values()) {
         if (feature.get('source') !== source.name) {

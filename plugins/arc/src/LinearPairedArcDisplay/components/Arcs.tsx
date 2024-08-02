@@ -144,7 +144,7 @@ const Arcs = observer(function ({
         return (
           alts?.map(a => (
             <Arc
-              key={f.id() + '-' + a}
+              key={`${f.id()}-${a}`}
               session={session}
               feature={f}
               alt={a}

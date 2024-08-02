@@ -58,16 +58,17 @@ const Chord = observer(function Chord({
   if (!startBlock) {
     return null
   }
-  let svType
+  let svType: string | undefined
   if (feature.get('INFO')) {
     ;[svType] = feature.get('INFO').SVTYPE || []
   } else if (feature.get('mate')) {
     svType = 'mate'
   }
-  let endPosition
+  let endPosition: number
   let endBlock: Block | undefined
   const alt = feature.get('ALT')?.[0]
   const bnd = alt && parseBreakend(alt)
+  const startPos = feature.get('start')
   if (bnd) {
     // VCF BND
     const matePosition = bnd.MatePosition.split(':')
@@ -77,7 +78,7 @@ const Chord = observer(function Chord({
     // VCF TRA
     const chr2 = feature.get('INFO')?.CHR2?.[0]
     const end = feature.get('INFO')?.END?.[0]
-    endPosition = parseInt(end, 10)
+    endPosition = Number.parseInt(end, 10)
     endBlock = blocksForRefs[chr2]
   } else if (svType === 'mate') {
     // generic simplefeatures arcs
@@ -85,10 +86,12 @@ const Chord = observer(function Chord({
     const chr2 = mate.refName
     endPosition = mate.start
     endBlock = blocksForRefs[chr2]
+  } else {
+    console.warn('unknown sv type', svType)
+    endPosition = startPos + 1
   }
 
   if (endBlock) {
-    const startPos = feature.get('start')
     const startRadians = bpToRadians(startBlock, startPos)
     const endRadians = bpToRadians(endBlock, endPosition)
     const startXY = polarToCartesian(radius, startRadians)

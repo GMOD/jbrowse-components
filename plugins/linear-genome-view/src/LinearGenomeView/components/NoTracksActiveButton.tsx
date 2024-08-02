@@ -43,7 +43,7 @@ const NoTracksActiveButton = observer(function ({
           </Button>
         </>
       ) : (
-        <div style={{ height: '48px' }}></div>
+        <div style={{ height: '48px' }} />
       )}
     </Paper>
   )

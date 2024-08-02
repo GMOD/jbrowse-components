@@ -83,7 +83,7 @@ const FilterReactComponent = observer(
           error={filterModel.firstNumberIsInvalid}
           defaultValue={filterModel.firstNumber}
           onChange={evt => {
-            filterModel.setFirstNumber(parseFloat(evt.target.value))
+            filterModel.setFirstNumber(Number.parseFloat(evt.target.value))
           }}
           className={classes.textFilterControl}
         />
@@ -98,7 +98,7 @@ const FilterReactComponent = observer(
               error={filterModel.secondNumberIsInvalid}
               defaultValue={filterModel.secondNumber}
               onChange={evt =>
-                filterModel.setSecondNumber(parseFloat(evt.target.value))
+                filterModel.setSecondNumber(Number.parseFloat(evt.target.value))
               }
               className={classes.textFilterControl}
             />
@@ -138,7 +138,7 @@ const FilterModelType = types
           return false
         }
 
-        const parsedCellText = parseFloat(cell.text)
+        const parsedCellText = Number.parseFloat(cell.text)
         if (typeof parsedCellText !== 'number') {
           return false
         }
@@ -169,7 +169,7 @@ const FilterModelType = types
 
 const NumberColumn = MakeSpreadsheetColumnType('Number', {
   compare(cellA: { text: string }, cellB: { text: string }) {
-    return parseFloat(cellA.text) - parseFloat(cellB.text)
+    return Number.parseFloat(cellA.text) - Number.parseFloat(cellB.text)
   },
   FilterModelType,
 })

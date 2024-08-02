@@ -97,7 +97,7 @@ export function makeTicks(
  * Used by navToLocations and navToLocString
  */
 export async function generateLocations(
-  regions: ParsedLocString[] = [],
+  regions: ParsedLocString[],
   assemblyManager: AssemblyManager,
   assemblyName?: string,
 ) {
@@ -171,12 +171,11 @@ export function parseLocStrings(
       Number.isInteger(+end)
     ) {
       return [
-        parseLocString(refName + ':' + start + '..' + end, ref =>
+        parseLocString(`${refName}:${start}..${end}`, ref =>
           isValidRefName(ref, assemblyName),
         ),
       ]
-    } else {
-      throw e
     }
+      throw e
   }
 }

@@ -240,12 +240,12 @@ export default function f(pluginManager: PluginManager) {
        */
       get warningMessage() {
         if (self.isFtp) {
-          return `Warning: JBrowse cannot access files using the ftp protocol`
-        } else if (self.isRelativeUrl) {
+          return "Warning: JBrowse cannot access files using the ftp protocol"
+        }if (self.isRelativeUrl) {
           return `Warning: one or more of your files do not provide the protocol e.g.
           https://, please provide an absolute URL unless you are sure a
           relative URL is intended.`
-        } else if (self.wrongProtocol) {
+        }if (self.wrongProtocol) {
           return `Warning: You entered a http:// resources but we cannot access HTTP
           resources from JBrowse when it is running on https. Please use an
           https URL for your track, or access the JBrowse app from the http

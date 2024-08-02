@@ -21,7 +21,7 @@ function parseMashMapLine(line: string) {
   const fields = line.split(' ')
   if (fields.length < 9) {
     // xref https://github.com/marbl/MashMap/issues/38
-    throw new Error('improperly formatted line: ' + line)
+    throw new Error(`improperly formatted line: ${line}`)
   }
   const [qname, , qstart, qend, strand, tname, , tstart, tend, mq] = fields
 

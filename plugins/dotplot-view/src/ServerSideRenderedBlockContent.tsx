@@ -75,11 +75,11 @@ const ServerSideRenderedDotplotContent = observer(function ({
 }) {
   if (model.error) {
     return <BlockError error={model.error} data-testid="reload_button" />
-  } else if (model.message) {
+  }if (model.message) {
     return <BlockMessage messageText={model.message} />
-  } else if (!model.filled) {
+  }if (!model.filled) {
     return <LoadingMessage />
-  } else if (model.shouldDisplay) {
+  }if (model.shouldDisplay) {
     return <div style={style}>{model.reactElement}</div>
   }
   return null

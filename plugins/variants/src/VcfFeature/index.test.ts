@@ -3,9 +3,9 @@ import VcfFeature from './index'
 
 test('test usage of the VcfFeature', () => {
   const parser = new VcfParser({
-    header: `#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tBAMs/caudaus.sorted.sam`,
+    header: "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tBAMs/caudaus.sorted.sam",
   })
-  const line = `lcl|Scaffald_1\t80465\trs118266897\tR\tA\t29\tPASS\tNS=3;0,14;AF=0.5;DB;112;PG2.1`
+  const line = "lcl|Scaffald_1\t80465\trs118266897\tR\tA\t29\tPASS\tNS=3;0,14;AF=0.5;DB;112;PG2.1"
 
   const variant = parser.parseLine(line)
 
@@ -20,9 +20,9 @@ test('test usage of the VcfFeature', () => {
 
 test('try INS feature with END less than start', () => {
   const parser = new VcfParser({
-    header: `#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tBAMs/caudaus.sorted.sam`,
+    header: "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tBAMs/caudaus.sorted.sam",
   })
-  const line = `chr1\t100\trs123\tR\tA\t29\tPASS\tEND=1;SVTYPE=INS`
+  const line = "chr1\t100\trs123\tR\tA\t29\tPASS\tEND=1;SVTYPE=INS"
 
   const variant = parser.parseLine(line)
 
@@ -38,9 +38,9 @@ test('try INS feature with END less than start', () => {
 
 test('try DEL feature with END info field valid', () => {
   const parser = new VcfParser({
-    header: `#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tBAMs/caudaus.sorted.sam`,
+    header: "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tBAMs/caudaus.sorted.sam",
   })
-  const line = `chr1\t100\trs123\tR\t<DEL>\t29\tPASS\tEND=1000;SVTYPE=DEL`
+  const line = "chr1\t100\trs123\tR\t<DEL>\t29\tPASS\tEND=1000;SVTYPE=DEL"
 
   const variant = parser.parseLine(line)
 
@@ -56,9 +56,9 @@ test('try DEL feature with END info field valid', () => {
 
 test('multiple SVs', () => {
   const parser = new VcfParser({
-    header: `#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tBAMs/caudaus.sorted.sam`,
+    header: "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tBAMs/caudaus.sorted.sam",
   })
-  const line = `chr1\t100\trs123\tR\t<INVDUP>,<INV>\t29\tPASS\tEND=1000;SVTYPE=DEL`
+  const line = "chr1\t100\trs123\tR\t<INVDUP>,<INV>\t29\tPASS\tEND=1000;SVTYPE=DEL"
 
   const variant = parser.parseLine(line)
 
@@ -71,9 +71,9 @@ test('multiple SVs', () => {
 })
 test('BND', () => {
   const parser = new VcfParser({
-    header: `#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tBAMs/caudaus.sorted.sam`,
+    header: "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tBAMs/caudaus.sorted.sam",
   })
-  const line = `chr1\t100\trs123\tR\tG[ctgA:34200[\t29\tPASS\tEND=1000;SVTYPE=BND`
+  const line = "chr1\t100\trs123\tR\tG[ctgA:34200[\t29\tPASS\tEND=1000;SVTYPE=BND"
 
   const variant = parser.parseLine(line)
 
@@ -86,9 +86,9 @@ test('BND', () => {
 })
 test('multiple BND', () => {
   const parser = new VcfParser({
-    header: `#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tBAMs/caudaus.sorted.sam`,
+    header: "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tBAMs/caudaus.sorted.sam",
   })
-  const line = `chr1\t100\trs123\tR\tG[ctgA:34200[,G[ctgA:44200[\t29\tPASS\tEND=1000;SVTYPE=BND`
+  const line = "chr1\t100\trs123\tR\tG[ctgA:34200[,G[ctgA:44200[\t29\tPASS\tEND=1000;SVTYPE=BND"
 
   const variant = parser.parseLine(line)
 
@@ -101,9 +101,9 @@ test('multiple BND', () => {
 })
 test('multiple SNV', () => {
   const parser = new VcfParser({
-    header: `#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tBAMs/caudaus.sorted.sam`,
+    header: "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tBAMs/caudaus.sorted.sam",
   })
-  const line = `chr1\t100\trs123\tG\tA,C\t29\tPASS\tHELLO=world`
+  const line = "chr1\t100\trs123\tG\tA,C\t29\tPASS\tHELLO=world"
 
   const variant = parser.parseLine(line)
 
@@ -117,9 +117,9 @@ test('multiple SNV', () => {
 
 test('multiple SNV2', () => {
   const parser = new VcfParser({
-    header: `#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tBAMs/caudaus.sorted.sam`,
+    header: "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tBAMs/caudaus.sorted.sam",
   })
-  const line = `chr1\t100\trs123\tG\tAT,<*>\t29\tPASS\tHELLO=world`
+  const line = "chr1\t100\trs123\tG\tAT,<*>\t29\tPASS\tHELLO=world"
 
   const variant = parser.parseLine(line)
 

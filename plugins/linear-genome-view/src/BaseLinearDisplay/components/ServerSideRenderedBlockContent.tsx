@@ -84,18 +84,17 @@ const ServerSideRenderedBlockContent = observer(function ({
         }
       />
     )
-  } else if (model.message) {
+  }if (model.message) {
     // the message can be a fully rendered react component, e.g. the region too large message
     return React.isValidElement(model.message) ? (
       model.message
     ) : (
       <BlockMsg message={`${model.message}`} severity="info" />
     )
-  } else if (!model.filled) {
+  }if (!model.filled) {
     return <LoadingMessage model={model} />
-  } else {
-    return model.reactElement
   }
+    return model.reactElement
 })
 
 export default ServerSideRenderedBlockContent

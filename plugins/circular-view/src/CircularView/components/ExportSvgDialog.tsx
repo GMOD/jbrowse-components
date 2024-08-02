@@ -34,7 +34,7 @@ function TextField2({ children, ...rest }: TextFieldProps) {
   )
 }
 function useSvgLocal<T>(key: string, val: T) {
-  return useLocalStorage('svg-' + key, val)
+  return useLocalStorage(`svg-${key}`, val)
 }
 
 export default function ExportSvgDialog({

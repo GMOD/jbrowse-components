@@ -37,7 +37,7 @@ const WarningDialog = observer(function WarningDialog({
     const name = getConf(track, 'name')
     for (let j = 0; j < track.displays[0].warnings.length; j++) {
       const warning = track.displays[0].warnings[j]
-      rows.push({ name, ...warning, id: i + '_' + j })
+      rows.push({ name, ...warning, id: `${i}_${j}` })
     }
   }
   const columns = [

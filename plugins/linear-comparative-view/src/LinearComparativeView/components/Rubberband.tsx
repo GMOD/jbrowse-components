@@ -125,7 +125,7 @@ const LinearComparativeRubberband = observer(function Rubberband({
       }
     }
     return () => {}
-  }, [startX, mouseDragging, anchorPosition, model])
+  }, [startX, mouseDragging, model])
 
   useEffect(() => {
     if (
@@ -254,6 +254,7 @@ const LinearComparativeRubberband = observer(function Rubberband({
       >
         <Typography variant="h6" className={classes.rubberbandText}>
           {numOfBpSelected.map((n, i) => (
+            /* biome-ignore lint/suspicious/noArrayIndexKey: */
             <Typography key={`${n}_${i}`}>
               {`${n.toLocaleString('en-US')}bp`}
             </Typography>

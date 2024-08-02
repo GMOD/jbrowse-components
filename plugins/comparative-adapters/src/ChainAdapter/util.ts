@@ -141,13 +141,13 @@ export function paf_chain2paf(buffer: Buffer) {
 
       if (size_ungapped_alignment !== 0) {
         num_matches += +size_ungapped_alignment
-        cigar += size_ungapped_alignment + 'M'
+        cigar += `${size_ungapped_alignment}M`
       }
       if (diff_in_query !== 0) {
-        cigar += diff_in_query + 'I'
+        cigar += `${diff_in_query}I`
       }
       if (diff_in_target !== 0) {
-        cigar += diff_in_target + 'D'
+        cigar += `${diff_in_target}D`
       }
     }
   }

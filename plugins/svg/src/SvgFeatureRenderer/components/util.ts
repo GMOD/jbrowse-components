@@ -60,12 +60,11 @@ export function chooseGlyphComponent(
       subfeatures.some(f => f.get('type') === 'CDS')
     ) {
       return ProcessedTranscript
-    } else if (!feature.parent() && hasSubSub) {
+    }if (!feature.parent() && hasSubSub) {
       // only do sub-sub on parent level features like gene
       return Subfeatures
-    } else {
-      return Segments
     }
+      return Segments
   }
 
   return extraGlyphs?.find(f => f.validator(feature))?.glyph || Box

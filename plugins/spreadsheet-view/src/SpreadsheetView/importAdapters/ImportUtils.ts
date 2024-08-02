@@ -1,4 +1,4 @@
-import { parseLocString } from '@jbrowse/core/util'
+import { ParsedLocString, parseLocString } from '@jbrowse/core/util'
 
 export function bufferToString(buffer: Buffer) {
   return new TextDecoder('utf8', { fatal: true }).decode(buffer)
@@ -50,7 +50,7 @@ function guessColumnType(
 
   let guessedType = 'Text'
 
-  let parsedLoc
+  let parsedLoc: ParsedLocString | undefined
   try {
     parsedLoc = parseLocString(text, isValidRefName)
   } catch (error) {

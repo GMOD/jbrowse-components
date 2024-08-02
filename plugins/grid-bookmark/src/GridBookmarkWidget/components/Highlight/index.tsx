@@ -11,10 +11,10 @@ export default function AddHighlightModelF(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(
     'LinearGenomeView-TracksContainerComponent',
     // @ts-expect-error
-    (rest: React.ReactNode[] = [], { model }: { model: IExtendedLGV }) => {
+    (rest: React.ReactNode[], { model }: { model: IExtendedLGV }) => {
       return [
         ...rest,
-        <Highlight key={`highlight_grid_bookmark`} model={model} />,
+        <Highlight key="highlight_grid_bookmark" model={model} />,
       ]
     },
   )
@@ -22,13 +22,13 @@ export default function AddHighlightModelF(pluginManager: PluginManager) {
     'LinearGenomeView-OverviewScalebarComponent',
     // @ts-expect-error
     (
-      rest: React.ReactNode[] = [],
+      rest: React.ReactNode[],
       { model, overview }: { model: IExtendedLGV; overview: Base1DViewModel },
     ) => {
       return [
         ...rest,
         <OverviewHighlight
-          key={`overview_highlight_grid_bookmark`}
+          key="overview_highlight_grid_bookmark"
           model={model}
           overview={overview}
         />,

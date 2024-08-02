@@ -71,7 +71,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     const names = await this.pif.getReferenceSequenceNames(opts)
     if (idx === 0) {
       return names.filter(n => n.startsWith('q')).map(n => n.slice(1))
-    } else if (idx === 1) {
+    }if (idx === 1) {
       return names.filter(n => n.startsWith('t')).map(n => n.slice(1))
     }
     return []

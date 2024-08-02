@@ -72,7 +72,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
 
   public async getFeaturesHelper(
     query: Region,
-    opts: BaseOptions = {},
+    opts: BaseOptions,
     observer: Observer<Feature>,
     allowRedispatch: boolean,
     originalQuery = query,
@@ -91,8 +91,8 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
       },
     )
     if (allowRedispatch && feats.length) {
-      let minStart = Infinity
-      let maxEnd = -Infinity
+      let minStart = Number.POSITIVE_INFINITY
+      let maxEnd = Number.NEGATIVE_INFINITY
       for (const feat of feats) {
         if (feat.start < minStart) {
           minStart = feat.start

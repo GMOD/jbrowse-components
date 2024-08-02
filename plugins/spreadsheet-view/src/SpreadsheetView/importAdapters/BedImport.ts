@@ -125,7 +125,7 @@ export async function parseBedPEBuffer(buffer: Buffer, options: ParseOptions) {
       const bedColumn = bedColumns[columnNumber]
       const val =
         bedColumn && bedColumn.dataType.type === 'Number' && text
-          ? parseFloat(text)
+          ? Number.parseFloat(text)
           : text
       if (bedColumn) {
         // a predefined column

@@ -126,7 +126,7 @@ const GetSequenceDialog = observer(function ({
       controller.abort()
       active = false
     }
-  }, [model, session, leftOffset, rightOffset])
+  }, [model, leftOffset, rightOffset])
 
   const sequence = sequenceChunks
     ? formatSeqFasta(
