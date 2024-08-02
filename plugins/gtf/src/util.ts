@@ -63,7 +63,6 @@ export function featureData(data: FeatureLoc) {
   f.child_features = undefined
   f.data = undefined
   f.derived_features = undefined
-  // eslint-disable-next-line no-underscore-dangle
   f._linehash = undefined
   f.attributes = undefined
   f.seq_name = undefined

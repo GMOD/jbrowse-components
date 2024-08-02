@@ -184,11 +184,11 @@ const SessionLoader = types
 
     async fetchConfig() {
       // @ts-expect-error
-      // eslint-disable-next-line no-underscore-dangle
+
       let { configPath = window.__jbrowseConfigPath || 'config.json' } = self
 
       // @ts-expect-error
-      // eslint-disable-next-line no-underscore-dangle
+
       if (window.__jbrowseCacheBuster) {
         configPath += `?rand=${Math.random()}`
       }

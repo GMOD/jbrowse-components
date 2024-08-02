@@ -1,4 +1,4 @@
-/* eslint-disable react-refresh/only-export-components */
+/* eslint-disable react-refresh/only-export-components,no-global-assign */
 // This file is a ponyfill for the HTML5 OffscreenCanvas API.
 
 import isNode from 'detect-node'

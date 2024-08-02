@@ -106,7 +106,6 @@ function CoreDetails(props: BaseProps) {
     }
   }
 
-  // eslint-disable-next-line no-underscore-dangle
   const formattedFeat = { ...obj, ...obj.__jbrowsefmt }
   const { start, end } = formattedFeat
 

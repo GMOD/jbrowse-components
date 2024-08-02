@@ -4,8 +4,6 @@ import VCF from '@gmod/vcf'
 // locals
 import { getSOTermAndDescription } from './util'
 
-/* eslint-disable no-underscore-dangle */
-
 type Samples = Record<
   string,
   Record<string, { values: string[] | number[] | null }>
