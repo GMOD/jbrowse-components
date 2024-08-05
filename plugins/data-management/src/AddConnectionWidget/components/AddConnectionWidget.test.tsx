@@ -56,13 +56,11 @@ genomesFile genomes.txt
 email genome@test.com
 descriptionUrl test.html
 `)
-    }
-    if (urlText.endsWith('genomes.txt')) {
+    } else if (urlText.endsWith('genomes.txt')) {
       return new Response(`genome volMyt1
 trackDb hg19/trackDb.txt
 `)
-    }
-    if (urlText.endsWith('trackDb.txt')) {
+    } else if (urlText.endsWith('trackDb.txt')) {
       return new Response(`track dnaseSignal
 bigDataUrl dnaseSignal.bigWig
 shortLabel DNAse Signal

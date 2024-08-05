@@ -23,20 +23,17 @@ export default class ArcPlugin extends Plugin {
       (_feature: Feature, alt: string) => {
         if (alt?.startsWith('<DEL')) {
           return set1[0]
-        }
-        if (alt?.startsWith('<DUP')) {
+        } else if (alt?.startsWith('<DUP')) {
           return set1[1]
-        }
-        if (alt?.startsWith('<INV')) {
+        } else if (alt?.startsWith('<INV')) {
           return set1[2]
-        }
-        if (alt?.startsWith('<TRA')) {
+        } else if (alt?.startsWith('<TRA')) {
           return set1[3]
-        }
-        if (alt?.startsWith('<CNV')) {
+        } else if (alt?.startsWith('<CNV')) {
           return set1[4]
+        } else {
+          return set1[6] // skip 5, yellow
         }
-        return set1[6] // skip 5, yellow
       },
     )
   }

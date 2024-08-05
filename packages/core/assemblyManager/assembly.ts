@@ -16,8 +16,10 @@ import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache'
 
 type AdapterConf = Record<string, unknown>
 
-const refNameRegex =
-  /[0-9A-Za-z!#$%&+.\/:;?@^_|~-][0-9A-Za-z!#$%&*+.\/:;=?@^_|~-]*/
+/* biome-ignore lint/complexity/useRegexLiterals: */
+const refNameRegex = new RegExp(
+  '[0-9A-Za-z!#$%&+./:;?@^_|~-][0-9A-Za-z!#$%&*+./:;=?@^_|~-]*',
+)
 
 // Based on the UCSC Genome Browser chromosome color palette:
 // https://github.com/ucscGenomeBrowser/kent/blob/a50ed53aff81d6fb3e34e6913ce18578292bc24e/src/hg/inc/chromColors.h

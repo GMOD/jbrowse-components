@@ -10,9 +10,10 @@ export function hasAnyOverlap<T>(a1: T[] = [], a2: T[] = []) {
   // long case is that we use a set
   if (a1[0] === a2[0]) {
     return true
+  } else {
+    const s1 = new Set(a1)
+    return a2.some(a => s1.has(a))
   }
-  const s1 = new Set(a1)
-  return a2.some(a => s1.has(a))
 }
 
 export function hasAllOverlap<T>(a1: T[] = [], a2: T[] = []) {

@@ -37,8 +37,7 @@ export default class GtfPlugin extends Plugin {
           }
           if (regexGuess.test(fileName) && !adapterHint) {
             return obj
-          }
-          if (adapterHint === adapterName) {
+          } else if (adapterHint === adapterName) {
             return obj
           }
           return adapterGuesser(file, index, adapterHint)

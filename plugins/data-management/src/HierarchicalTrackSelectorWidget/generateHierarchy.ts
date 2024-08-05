@@ -32,11 +32,9 @@ function sortConfs(
     ret.sort((a, b) => {
       if (a[2] !== b[2]) {
         return a[2].localeCompare(b[2])
-      }
-      if (a[3] !== b[3]) {
+      } else if (a[3] !== b[3]) {
         return a[3].localeCompare(b[3])
-      }
-      if (a[4] !== b[4]) {
+      } else if (a[4] !== b[4]) {
         return a[4].localeCompare(b[4])
       }
       return 0

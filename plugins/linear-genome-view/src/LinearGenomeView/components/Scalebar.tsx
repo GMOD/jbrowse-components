@@ -146,11 +146,9 @@ const RenderedScalebarLabels = observer(function ({ model }: { model: LGV }) {
         const k = `${key}-${idx}`
         if (block.type === 'ContentBlock') {
           return <RenderedBlockTicks key={k} block={block} bpPerPx={bpPerPx} />
-        }
-        if (block.type === 'ElidedBlock') {
+        } else if (block.type === 'ElidedBlock') {
           return <ElidedBlockComponent key={k} width={widthPx} />
-        }
-        if (block.type === 'InterRegionPaddingBlock') {
+        } else if (block.type === 'InterRegionPaddingBlock') {
           return (
             <InterRegionPaddingBlockComponent
               key={k}
