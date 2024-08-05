@@ -58,9 +58,11 @@ export function getPairedInsertSizeColor(
   const tlen = Math.abs(f1.tlen || 0)
   if (sameRef && tlen > (stats?.upper || 0)) {
     return [fillColor.color_longinsert, strokeColor.color_longinsert] as const
-  }if (sameRef && tlen < (stats?.lower || 0)) {
+  }
+  if (sameRef && tlen < (stats?.lower || 0)) {
     return [fillColor.color_shortinsert, strokeColor.color_shortinsert] as const
-  }if (!sameRef) {
+  }
+  if (!sameRef) {
     return [fillColor.color_interchrom, strokeColor.color_interchrom] as const
   }
   return undefined

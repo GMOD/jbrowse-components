@@ -11,8 +11,8 @@ export function hasAnyOverlap<T>(a1: T[] = [], a2: T[] = []) {
   if (a1[0] === a2[0]) {
     return true
   }
-    const s1 = new Set(a1)
-    return a2.some(a => s1.has(a))
+  const s1 = new Set(a1)
+  return a2.some(a => s1.has(a))
 }
 
 export function hasAllOverlap<T>(a1: T[] = [], a2: T[] = []) {

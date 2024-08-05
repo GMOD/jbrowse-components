@@ -87,7 +87,6 @@ const GetSequenceDialog = observer(function ({
   handleClose: () => void
 }) {
   const { classes } = useStyles()
-  const session = getSession(model)
   const [error, setError] = useState<unknown>()
   const [sequenceChunks, setSequenceChunks] = useState<Feature[]>()
   const [rev, setReverse] = useState(false)

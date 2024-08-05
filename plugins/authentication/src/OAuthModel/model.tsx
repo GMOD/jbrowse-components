@@ -202,7 +202,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
       },
     }))
     .actions(self => {
-      let listener: (event: MessageEvent) => undefined | undefined
+      let listener: (event: MessageEvent) => undefined
       let exchangedTokenPromise: Promise<string> | undefined = undefined
       return {
         /**
@@ -331,7 +331,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this.finishOAuthWindow(eventFromDesktop, resolve, reject)
           } else {
-            window.open(url, eventName, "width=500,height=600,left=0,top=0")
+            window.open(url, eventName, 'width=500,height=600,left=0,top=0')
           }
         },
         /**

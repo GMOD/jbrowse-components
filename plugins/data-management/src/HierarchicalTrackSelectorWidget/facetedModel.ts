@@ -66,6 +66,7 @@ export function facetedStateTreeF() {
        */
       setPanelWidth(width: number) {
         self.panelWidth = width
+        return self.panelWidth
       },
       /**
        * #action

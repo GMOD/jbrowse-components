@@ -54,9 +54,9 @@ export function getScale({
   inverted,
 }: ScaleOpts) {
   let scale:
-    | ReturnType<typeof scaleLinear>
-    | ReturnType<typeof scaleLog>
-    | ReturnType<typeof scaleQuantize>
+    | ReturnType<typeof scaleLinear<number>>
+    | ReturnType<typeof scaleLog<number>>
+    | ReturnType<typeof scaleQuantize<number>>
   const [min, max] = domain
   if (min === undefined || max === undefined) {
     throw new Error('invalid domain')

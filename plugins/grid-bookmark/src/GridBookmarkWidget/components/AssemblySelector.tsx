@@ -20,7 +20,7 @@ const AssemblySelector = observer(function ({
   model: GridBookmarkModel
 }) {
   const { validAssemblies, selectedAssemblies } = model
-  const noAssemblies = validAssemblies.size  === 0
+  const noAssemblies = validAssemblies.size === 0
   const label = 'Select assemblies'
   const id = 'select-assemblies-label'
   const selectedSet = new Set(selectedAssemblies)

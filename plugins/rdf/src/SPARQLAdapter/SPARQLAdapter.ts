@@ -220,7 +220,8 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
               delete seenFeatures[uniqueId]
               found = true
               break
-            }if (subfeature?.subfeatures) {
+            }
+            if (subfeature?.subfeatures) {
               subfeatures.push(...subfeature.subfeatures)
             }
           }

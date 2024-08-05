@@ -8,15 +8,15 @@ test('adapter can fetch output files', async () => {
     type: 'TrixTextSearchAdapter',
     textSearchAdapterId: 'TrixTextSearchAdapterTest',
     ixFilePath: {
-      localPath: path.resolve(__dirname, "test_data/volvox.ix"),
+      localPath: path.resolve(__dirname, 'test_data/volvox.ix'),
       locationType: 'LocalPathLocation',
     },
     ixxFilePath: {
-      localPath: path.resolve(__dirname, "test_data/volvox.ixx"),
+      localPath: path.resolve(__dirname, 'test_data/volvox.ixx'),
       locationType: 'LocalPathLocation',
     },
     metaFilePath: {
-      localPath: path.resolve(__dirname, "test_data/volvox_meta.json"),
+      localPath: path.resolve(__dirname, 'test_data/volvox_meta.json'),
       locationType: 'LocalPathLocation',
     },
   }

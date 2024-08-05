@@ -49,9 +49,9 @@ export function splitLast(str: string, split: string): [string, string] {
   if (lastIndex === -1) {
     return [str, '']
   }
-    const before = str.slice(0, lastIndex)
-    const after = str.slice(lastIndex + 1)
-    return [before, after]
+  const before = str.slice(0, lastIndex)
+  const after = str.slice(lastIndex + 1)
+  return [before, after]
 }
 
 export function getRelativeX<

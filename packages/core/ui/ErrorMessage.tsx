@@ -34,7 +34,7 @@ function parseError(str: string) {
     // case 2. element has no path
     const match2 = /.*snapshot `(.*)` is not assignable/.exec(trim)
     if (match2) {
-      str = "Failed to load element...Failed element had snapshot"
+      str = 'Failed to load element...Failed element had snapshot'
       snapshotError = match2[1]
     }
   }

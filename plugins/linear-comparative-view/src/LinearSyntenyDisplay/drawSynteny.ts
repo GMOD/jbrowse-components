@@ -215,6 +215,7 @@ export function drawRef(
       height,
     })
   }
+  return undefined
 }
 
 export function drawMouseoverSynteny(model: LinearSyntenyDisplayModel) {

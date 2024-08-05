@@ -100,10 +100,11 @@ const Member = observer(function (props: {
         </AccordionDetails>
       </Accordion>
     )
-  }if (isConfigurationSlotType(slotSchema)) {
+  }
+  if (isConfigurationSlotType(slotSchema)) {
     return <SlotEditor key={slotName} slot={slot} slotSchema={slotSchema} />
   }
-    return null
+  return null
 })
 
 const Schema = observer(function ({

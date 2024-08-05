@@ -100,30 +100,39 @@ export function getSOAndDescByExamination(ref: string, alt: string) {
   const bnd = parseBreakend(alt)
   if (bnd) {
     return ['breakend', alt]
-  }if (ref.length === 1 && alt.length === 1) {
+  }
+  if (ref.length === 1 && alt.length === 1) {
     return ['SNV', makeDescriptionString('SNV', ref, alt)]
-  }if (alt === '<INS>') {
+  }
+  if (alt === '<INS>') {
     return ['insertion', alt]
-  }if (alt === '<DEL>') {
+  }
+  if (alt === '<DEL>') {
     return ['deletion', alt]
-  }if (alt === '<INV>') {
+  }
+  if (alt === '<INV>') {
     return ['inversion', alt]
-  }if (alt === '<TRA>') {
+  }
+  if (alt === '<TRA>') {
     return ['translocation', alt]
-  }if (alt.includes('<')) {
+  }
+  if (alt.includes('<')) {
     return ['sv', alt]
-  }if (ref.length === alt.length) {
+  }
+  if (ref.length === alt.length) {
     return ref.split('').reverse().join('') === alt
       ? ['inversion', makeDescriptionString('inversion', ref, alt)]
       : ['substitution', makeDescriptionString('substitution', ref, alt)]
-  }if (ref.length <= alt.length) {
+  }
+  if (ref.length <= alt.length) {
     const len = alt.length - ref.length
     const lena = len.toLocaleString('en-US')
     return [
       'insertion',
       len > 5 ? `${lena}bp INS` : makeDescriptionString('insertion', ref, alt),
     ]
-  }if (ref.length > alt.length) {
+  }
+  if (ref.length > alt.length) {
     const len = ref.length - alt.length
     const lena = len.toLocaleString('en-US')
     return [

@@ -115,7 +115,8 @@ const ColumnMenu = observer(function ({
               onClick: () =>
                 spreadsheetModel.setColumnType(columnNumber, typeName),
             }
-          }if ('subMenuItems' in record && record.subMenuItems) {
+          }
+          if ('subMenuItems' in record && record.subMenuItems) {
             const { subMenuItems } = record
             return {
               label: displayName,
@@ -130,7 +131,7 @@ const ColumnMenu = observer(function ({
               })),
             }
           }
-            return null
+          return null
         },
       ).filter(Boolean),
     },

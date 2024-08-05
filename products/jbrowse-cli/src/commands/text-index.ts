@@ -55,7 +55,8 @@ export default class TextIndex extends JBrowseCommand {
   static flags = {
     help: Flags.help({ char: 'h' }),
     tracks: Flags.string({
-      description: "Specific tracks to index, formatted as comma separated trackIds. If unspecified, indexes all available tracks",
+      description:
+        'Specific tracks to index, formatted as comma separated trackIds. If unspecified, indexes all available tracks',
     }),
     target: Flags.string({
       description:
@@ -268,7 +269,7 @@ export default class TextIndex extends JBrowseCommand {
     const confs = await this.getTrackConfigs(confFilePath, tracks?.split(','))
     if (!confs.length) {
       throw new Error(
-        "Tracks not found in config.json, please add track configurations before indexing.",
+        'Tracks not found in config.json, please add track configurations before indexing.',
       )
     }
     for (const trackConfig of confs) {

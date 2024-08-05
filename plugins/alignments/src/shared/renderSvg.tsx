@@ -41,23 +41,23 @@ export async function renderSvg<T extends { id: string; height: number }>(
       />
     )
   }
-    // @ts-ignore
-    const C2S = await import('canvas2svg')
-    const ctx = new C2S.default(width, height)
-    cb(self, ctx, width, height)
-    const clipid = getId(self.id)
-    return (
-      <>
-        <defs>
-          <clipPath id={clipid}>
-            <rect x={0} y={0} width={width} height={height} />
-          </clipPath>
-        </defs>
-        <g
-          /* eslint-disable-next-line react/no-danger */
-          dangerouslySetInnerHTML={{ __html: ctx.getSvg().innerHTML }}
-          clipPath={`url(#${clipid})`}
-        />
-      </>
-    )
+  // @ts-ignore
+  const C2S = await import('canvas2svg')
+  const ctx = new C2S.default(width, height)
+  cb(self, ctx, width, height)
+  const clipid = getId(self.id)
+  return (
+    <>
+      <defs>
+        <clipPath id={clipid}>
+          <rect x={0} y={0} width={width} height={height} />
+        </clipPath>
+      </defs>
+      <g
+        /* eslint-disable-next-line react/no-danger */
+        dangerouslySetInnerHTML={{ __html: ctx.getSvg().innerHTML }}
+        clipPath={`url(#${clipid})`}
+      />
+    </>
+  )
 }

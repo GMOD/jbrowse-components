@@ -13,10 +13,11 @@ const [LEFT] = [0, 1, 2, 3]
 function str(s: string) {
   if (s === '+') {
     return 1
-  }if (s === '-') {
+  }
+  if (s === '-') {
     return -1
   }
-    return 0
+  return 0
 }
 
 const Translocations = observer(function ({

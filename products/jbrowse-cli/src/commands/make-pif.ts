@@ -99,7 +99,7 @@ export default class MakePIF extends JBrowseCommand {
   static args = {
     file: Args.string({
       required: true,
-      description: "PAF file as input",
+      description: 'PAF file as input',
     }),
   }
 

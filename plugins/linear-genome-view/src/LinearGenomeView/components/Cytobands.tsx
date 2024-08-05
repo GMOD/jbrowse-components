@@ -88,7 +88,8 @@ const Cytobands = observer(function ({
               {...getFillProps(c)}
             />
           )
-        }if (type === 'acen' && centromereSeen) {
+        }
+        if (type === 'acen' && centromereSeen) {
           return (
             <polygon
               key={k}
@@ -100,7 +101,8 @@ const Cytobands = observer(function ({
               {...getFillProps(c)}
             />
           )
-        }if (lcap === index) {
+        }
+        if (lcap === index) {
           return (
             <path
               key={k}
@@ -108,7 +110,8 @@ const Cytobands = observer(function ({
               {...getFillProps(c)}
             />
           )
-        }if (rcap === index) {
+        }
+        if (rcap === index) {
           return (
             <path
               key={k}
@@ -117,16 +120,9 @@ const Cytobands = observer(function ({
             />
           )
         }
-          return (
-            <rect
-              key={k}
-              x={l}
-              y={0}
-              width={w}
-              height={h}
-              {...getFillProps(c)}
-            />
-          )
+        return (
+          <rect key={k} x={l} y={0} width={w} height={h} {...getFillProps(c)} />
+        )
       })}
     </g>
   )

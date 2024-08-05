@@ -122,11 +122,14 @@ export function getPairedColor({
 }): readonly [string, string] | undefined {
   if (type === 'insertSizeAndOrientation') {
     return getPairedInsertSizeAndOrientationColor(v0, v1, stats)
-  }if (type === 'orientation') {
+  }
+  if (type === 'orientation') {
     return getPairedOrientationColor(v0)
-  }if (type === 'insertSize') {
+  }
+  if (type === 'insertSize') {
     return getPairedInsertSizeColor(v0, v1, stats)
-  }if (type === 'gradient') {
+  }
+  if (type === 'gradient') {
     const s = Math.min(v0.start, v1.start)
     const e = Math.max(v0.end, v1.end)
     return [

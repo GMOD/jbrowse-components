@@ -7,7 +7,6 @@
       "suspicious": {
         "noApproximativeNumericConstant": "off",
         "noExplicitAny": "off",
-
         "noAssignInExpressions": "off"
       },
       "complexity": {
@@ -15,7 +14,6 @@
         "noForEach": "off",
         "noBannedTypes": "off"
       },
-
       "security": {
         "noDangerouslySetInnerHtml": "off"
       },

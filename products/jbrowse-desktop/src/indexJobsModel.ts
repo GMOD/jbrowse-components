@@ -229,7 +229,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
           }
         } catch (e) {
           if (isAbortException(e)) {
-            self.session?.notify("Cancelled job", 'info')
+            self.session?.notify('Cancelled job', 'info')
           } else {
             self.session?.notify(
               `An error occurred while indexing: ${e}`,

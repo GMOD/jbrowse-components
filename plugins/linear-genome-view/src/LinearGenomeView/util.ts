@@ -176,6 +176,6 @@ export function parseLocStrings(
         ),
       ]
     }
-      throw e
+    throw e
   }
 }

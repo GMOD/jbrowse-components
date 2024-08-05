@@ -176,7 +176,7 @@ export default class PluginLoader {
     }
 
     if (!this.fetchESM) {
-      throw new Error("No ESM fetcher installed")
+      throw new Error('No ESM fetcher installed')
     }
     const plugin = await this.fetchESM(parsedUrl.href)
 

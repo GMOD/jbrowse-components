@@ -12,7 +12,10 @@ import { Region, Feature, SimpleFeature } from '@jbrowse/core/util'
 
 // returns a callback that will filter features features according to the
 // subParts conf var
-function makeSubpartsFilter(confKey, config: AnyConfigurationModel) {
+function makeSubpartsFilter(
+  confKey: string | string[],
+  config: AnyConfigurationModel,
+) {
   const filter = readConfObject(config, confKey) as string[] | string
   const ret = typeof filter === 'string' ? filter.split(/\s*,\s*/) : filter
 

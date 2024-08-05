@@ -34,7 +34,7 @@ const SetDefaultSession = observer(function ({
           variant="contained"
           onClick={() => {
             jbrowse.setDefaultSessionConf({
-              name: "New session",
+              name: 'New session',
             })
             onClose()
           }}

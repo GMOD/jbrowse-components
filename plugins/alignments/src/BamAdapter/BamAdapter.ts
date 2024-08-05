@@ -55,7 +55,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
         sequenceAdapter: dataAdapter as BaseFeatureDataAdapter,
       }
     }
-      return { bam }
+    return { bam }
   }
 
   protected async configure() {
@@ -236,7 +236,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       const fetchSizeLimit = this.getConf('fetchSizeLimit')
       return { bytes, fetchSizeLimit }
     }
-      return super.getMultiRegionFeatureDensityStats(regions, opts)
+    return super.getMultiRegionFeatureDensityStats(regions, opts)
   }
 
   freeResources(/* { region } */): void {}

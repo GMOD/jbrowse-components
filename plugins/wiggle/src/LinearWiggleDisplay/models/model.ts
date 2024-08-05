@@ -128,10 +128,11 @@ function stateModelFactory(
         get fillSetting() {
           if (self.filled) {
             return 0
-          }if (!self.filled && self.minSize === 1) {
+          }
+          if (!self.filled && self.minSize === 1) {
             return 1
           }
-            return 2
+          return 2
         },
       }
     })

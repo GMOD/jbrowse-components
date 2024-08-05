@@ -83,7 +83,7 @@ export default class SetDefaultSession extends JBrowseCommand {
       )
       this.exit()
     } else if (!session) {
-      this.error("Please provide a --session file", { exit: 120 })
+      this.error('Please provide a --session file', { exit: 120 })
     } else if (session) {
       await this.writeJsonFile(this.target, {
         ...configContents,

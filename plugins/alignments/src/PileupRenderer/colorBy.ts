@@ -68,8 +68,8 @@ function getStranded(feature: Feature) {
         : 'color_fwd_strand_not_proper'
     }
     // abberant chrom
-    
-      return strand === 1 ? 'color_fwd_diff_chr' : 'color_rev_diff_chr'
+
+    return strand === 1 ? 'color_fwd_diff_chr' : 'color_rev_diff_chr'
   }
   return 'color_unknown'
 }

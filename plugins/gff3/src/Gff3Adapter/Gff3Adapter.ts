@@ -73,7 +73,7 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
         return [
           refName,
           (sc?: (arg: string) => void) => {
-            sc?.("Parsing GFF data")
+            sc?.('Parsing GFF data')
             if (!this.calculatedIntervalTreeMap[refName]) {
               const intervalTree = new IntervalTree()
               gff

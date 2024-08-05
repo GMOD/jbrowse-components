@@ -400,7 +400,7 @@ export function getOrientedCigar(flip: boolean, cigar: string[]) {
     }
     return ret
   }
-    return cigar
+  return cigar
 }
 
 export function getOrientedMismatches(flip: boolean, cigar: string) {

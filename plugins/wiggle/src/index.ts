@@ -81,7 +81,8 @@ export default class WigglePlugin extends Plugin {
 
           if (regexGuess.test(fileName) && !hint) {
             return obj
-          }if (hint === adapterName) {
+          }
+          if (hint === adapterName) {
             return obj
           }
 

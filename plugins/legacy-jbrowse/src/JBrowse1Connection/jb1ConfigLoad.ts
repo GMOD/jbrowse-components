@@ -265,7 +265,6 @@ function regularizeIncludes(
   })
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unnecessary-type-constraint
 function fillTemplates<T>(subconfig: T, config: Config): T {
   if (!subconfig) {
     return subconfig

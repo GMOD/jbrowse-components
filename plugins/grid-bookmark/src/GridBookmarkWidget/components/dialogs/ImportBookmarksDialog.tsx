@@ -156,7 +156,7 @@ const ImportBookmarksDialog = observer(function ({
             />
             <AssemblySelector
               onChange={val => setSelectedAsm(val)}
-              helperText={"Select the assembly for BED file."}
+              helperText={'Select the assembly for BED file.'}
               session={session}
               selected={selectedAsm}
             />

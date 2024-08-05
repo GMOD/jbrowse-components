@@ -74,8 +74,8 @@ const ImportSessionWidget = observer(function ({
             `${rejectedFiles[0].errors.map(e => `${e}`).join(', ')}`,
           )
         }
-          const sessionText = await acceptedFiles[0].text()
-          getSession(model).setSession?.(JSON.parse(sessionText).session)
+        const sessionText = await acceptedFiles[0].text()
+        getSession(model).setSession?.(JSON.parse(sessionText).session)
       } catch (e) {
         console.error(e)
         setError(e)

@@ -13,10 +13,10 @@ export function fillRect(
   if (l + w < 0 || l > cw) {
     return
   }
-    if (color) {
-      ctx.fillStyle = color
-    }
-    ctx.fillRect(l, t, w, h)
+  if (color) {
+    ctx.fillStyle = color
+  }
+  ctx.fillRect(l, t, w, h)
 }
 
 export function getColorBaseMap(theme: Theme) {
