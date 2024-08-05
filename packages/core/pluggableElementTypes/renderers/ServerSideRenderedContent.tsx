@@ -61,7 +61,7 @@ const NewHydrate = observer(function ServerSideRenderedContent({
         root?.unmount()
       })
     }
-  }, [html, theme, rest, hydrateFn, RenderingComponent])
+  }, [theme, rest, hydrateFn, RenderingComponent])
 
   return (
     <div

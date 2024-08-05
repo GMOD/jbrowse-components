@@ -66,12 +66,12 @@ type MenuItemEndDecorationProps =
 export function MenuItemEndDecoration(props: MenuItemEndDecorationProps) {
   const { classes } = useStyles()
   const { type } = props
-  let checked
-  let disabled
+  let checked: boolean | undefined
+  let disabled: boolean | undefined
   if ('checked' in props) {
     ;({ checked, disabled } = props)
   }
-  let icon
+  let icon: React.ReactElement
   switch (type) {
     case 'subMenu': {
       icon = <ArrowRightIcon color="action" />
@@ -394,7 +394,7 @@ const MenuPage = React.forwardRef<HTMLDivElement, MenuPageProps>(
     return top ? (
       ListContents
     ) : (
-      <Grow in={open} style={{ transformOrigin: "0 0 0" }} ref={ref}>
+      <Grow in={open} style={{ transformOrigin: '0 0 0' }} ref={ref}>
         <Paper
           elevation={8}
           ref={paperRef}

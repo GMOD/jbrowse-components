@@ -87,22 +87,22 @@ export function useDebouncedCallback<T>(
   const argsRef = useRef<T[]>()
   const timeout = useRef<ReturnType<typeof setTimeout>>()
 
-  function cleanup() {
+  // make sure our timeout gets cleared if our consuming component gets
+  // unmounted
+  useEffect(() => {
     if (timeout.current) {
       clearTimeout(timeout.current)
     }
-  }
-
-  // make sure our timeout gets cleared if our consuming component gets
-  // unmounted
-  useEffect(() => cleanup, [])
+  }, [])
 
   return function debouncedCallback(...args: T[]) {
     // capture latest args
     argsRef.current = args
 
     // clear debounce timer
-    cleanup()
+    if (timeout.current) {
+      clearTimeout(timeout.current)
+    }
 
     // start waiting again
     timeout.current = setTimeout(() => {
@@ -316,7 +316,7 @@ export function assembleLocStringFast(
 ) {
   const { assemblyName, refName, start, end, reversed } = region
   const assemblyNameString = assemblyName ? `{${assemblyName}}` : ''
-  let startString
+  let startString: string
   if (start !== undefined) {
     startString = `:${cb(start + 1)}`
   } else if (end !== undefined) {
@@ -324,7 +324,7 @@ export function assembleLocStringFast(
   } else {
     startString = ''
   }
-  let endString
+  let endString: string
   if (end !== undefined) {
     endString = start !== undefined && start + 1 === end ? '' : `..${cb(end)}`
   } else {
@@ -1144,15 +1144,13 @@ export function isSupportedIndexingAdapter(type: string) {
 }
 
 export function getBpDisplayStr(totalBp: number) {
-  let str
   if (Math.floor(totalBp / 1_000_000) > 0) {
-    str = `${Number.parseFloat((totalBp / 1_000_000).toPrecision(3))}Mbp`
+    return `${Number.parseFloat((totalBp / 1_000_000).toPrecision(3))}Mbp`
   } else if (Math.floor(totalBp / 1_000) > 0) {
-    str = `${Number.parseFloat((totalBp / 1_000).toPrecision(3))}Kbp`
+    return `${Number.parseFloat((totalBp / 1_000).toPrecision(3))}Kbp`
   } else {
-    str = `${toLocale(Math.floor(totalBp))}bp`
+    return `${toLocale(Math.floor(totalBp))}bp`
   }
-  return str
 }
 
 export function toLocale(n: number) {
@@ -1220,7 +1218,7 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
 
 export function getUriLink(value: { uri: string; baseUri?: string }) {
   const { uri, baseUri = '' } = value
-  let href
+  let href: string
   try {
     href = new URL(uri, baseUri).href
   } catch (e) {

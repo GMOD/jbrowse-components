@@ -18,7 +18,7 @@ export async function createRemoteStream(urlIn: string) {
 }
 
 export function isURL(FileName: string) {
-  let url
+  let url: URL | undefined
 
   try {
     url = new URL(FileName)

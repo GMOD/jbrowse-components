@@ -101,7 +101,7 @@ export default function RecentSessionPanel({
         setError(e)
       }
     })()
-  }, [setError, updateSessionsList, showAutosaves])
+  }, [setError, showAutosaves])
 
   if (!sessions) {
     return (

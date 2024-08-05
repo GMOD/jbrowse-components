@@ -524,4 +524,4 @@ export type PreFileLocation =
   | PreLocalPathLocation
   | PreBlobLocation
 
-export { type default as TextSearchManager } from '../../TextSearch/TextSearchManager'
+export { default as TextSearchManager } from '../../TextSearch/TextSearchManager'

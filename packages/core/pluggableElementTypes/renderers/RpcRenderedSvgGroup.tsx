@@ -55,7 +55,7 @@ const NewHydrate = observer(function RpcRenderedSvgGroup(props: Props) {
         root?.unmount()
       })
     }
-  }, [html, RenderingComponent, hydrateRoot, theme, props, rest])
+  }, [RenderingComponent, hydrateRoot, theme, rest])
 
   // eslint-disable-next-line react/no-danger
   return <g ref={ref} dangerouslySetInnerHTML={{ __html: html }} />

@@ -153,7 +153,7 @@ export default abstract class JBrowseCommand extends Command {
   }
 
   async readJsonFile<T>(location: string): Promise<T> {
-    let contents
+    let contents: string | undefined
     try {
       contents = await fsPromises.readFile(location, { encoding: 'utf8' })
     } catch (error) {
@@ -165,16 +165,14 @@ export default abstract class JBrowseCommand extends Command {
         exit: 40,
       })
     }
-    let result
     try {
-      result = parseJSON(contents)
+      return parseJSON(contents)
     } catch (error) {
       this.error(error instanceof Error ? error : `${error}`, {
         suggestions: [`Make sure "${location}" is a valid JSON file`],
         exit: 50,
       })
     }
-    return result
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

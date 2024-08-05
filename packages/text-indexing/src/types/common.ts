@@ -19,7 +19,7 @@ export async function createRemoteStream(urlIn: string) {
 // Checks if the passed in string is a valid URL.
 // Returns a boolean.
 export function isURL(FileName: string) {
-  let url
+  let url: URL | undefined
 
   try {
     url = new URL(FileName)
