@@ -1,6 +1,6 @@
 import React from 'react'
 import { render } from '@testing-library/react'
-import fs from 'node:fs'
+import fs from 'fs'
 
 // locals
 import SequencePanel from './SequencePanel'

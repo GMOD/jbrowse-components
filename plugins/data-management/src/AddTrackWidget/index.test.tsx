@@ -54,7 +54,7 @@ const realLocation = window.location
 // https://stackoverflow.com/a/60110508/2129219
 function setWindowLoc(loc: string) {
   // @ts-expect-error
-  window.location = undefined
+  delete window.location
   // @ts-expect-error
   window.location = new URL(loc)
 }

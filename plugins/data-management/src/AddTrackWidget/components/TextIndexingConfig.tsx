@@ -113,7 +113,7 @@ const TextIndexingConfig = observer(function ({
                             }
                           }}
                           disabled={index === 0 ? value1 === '' : value2 === ''}
-                          data-testid={'stringArrayAdd-Feat'}
+                          data-testid="stringArrayAdd-Feat"
                         >
                           <AddIcon />
                         </IconButton>

@@ -1,4 +1,4 @@
-import path from 'node:path'
+import path from 'path'
 import meta from '../../test_data/names/meta.json'
 import first from '../../test_data/names/0.json'
 import last from '../../test_data/names/f.json'

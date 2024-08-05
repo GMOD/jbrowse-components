@@ -3,7 +3,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import {
   Divider,
-  Grow,
   ListItemIcon,
   ListItemText,
   ListSubheader,
@@ -394,16 +393,14 @@ const MenuPage = React.forwardRef<HTMLDivElement, MenuPageProps>(
     return top ? (
       ListContents
     ) : (
-      <Grow in={open} style={{ transformOrigin: '0 0 0' }} ref={ref}>
-        <Paper
-          elevation={8}
-          ref={paperRef}
-          className={classes.paper}
-          style={{ ...position }}
-        >
-          {ListContents}
-        </Paper>
-      </Grow>
+      <Paper
+        elevation={8}
+        ref={paperRef}
+        className={classes.paper}
+        style={{ ...position }}
+      >
+        {ListContents}
+      </Paper>
     )
   },
 )

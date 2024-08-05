@@ -1,5 +1,5 @@
 import { toArray } from 'rxjs/operators'
-import path from 'node:path'
+import path from 'path'
 import { LocalFile, GenericFilehandle } from 'generic-filehandle'
 import { firstValueFrom } from 'rxjs'
 import Adapter from './NCListAdapter'

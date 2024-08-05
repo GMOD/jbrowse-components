@@ -86,6 +86,6 @@ export function makeImageData({
         canvasWidth,
       })
     }
-    return undefined
   }
+  return undefined
 }
