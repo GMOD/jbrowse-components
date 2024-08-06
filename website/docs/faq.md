@@ -533,3 +533,43 @@ links without the central server.
 Also, if you are implementing JBrowse Web on your own server and would like to
 create your own URL shortener, you can use the shareURL parameter in the
 config.json file to point at your own server instead of ours.
+
+## What are the differences between the embedded components and the "JBrowse Web" app
+
+The JBrowse Web app is what you get when you use e.g.
+`jbrowse create newinstance`
+
+It downloads a pre-built bundle of JS from github
+
+The embedded components on the other hand can be installed from NPM, for
+example, we have
+
+- @jbrowse/react-app - the full jbrowse-web type app, but installable from npm
+- @jbrowse/react-linear-genome-view - a simple linear genome view that can be
+  embedded on a page
+- @jbrowse/react-circular-genome-view - a single circular view that can be
+  embedded on a page
+
+There are some differences between the embedded components and the "JBrowse Web"
+app experience for both developers and end users. Here are a couple
+
+- JBrowse Web app has workflows where a user can launch views from other views,
+  have multiple views on the same page, etc. while the single view type
+  components don't have those integrations
+
+- In the `@jbrowse/react-linear-genome-view` component and
+  `@jbrowse/react-circular-genome-view` component, feature details and track
+  selector open as a dialog instead of a sidebar (the `@jbrowse/react-app` uses
+  the sidebar)
+
+- The embedded components don't read or write from the URL parameters, or
+  implement session sharing
+
+**Both can:**
+
+- enable/disable tracks through the track selector
+- change the track's assembly based on what is available in the configuration
+- manipulate the views with zoom, horizontal flip, view all regions, track label
+  positioning, etc.
+- change track display options
+- export the view as an SVG
