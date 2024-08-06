@@ -4,7 +4,14 @@ title: Embedded components
 toplevel: true
 ---
 
-Our embedded components allow you to use JBrowse in your application
+Our embedded components allow you to use JBrowse in your application. The
+embedded components can be installed via NPM or included via `<script>` tags
+(the so-called 'vanillajs' examples) in your app
+
+Note: there are some differences between embedded components and the "full"
+jbrowse-web app. For example, the embedded component do not update or read from
+the URL query parameters, as app developers will commonly implement custom
+scenarios for query parameter usage.
 
 ## @jbrowse/react-app2
 

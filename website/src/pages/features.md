@@ -26,25 +26,24 @@ The view types available by default with JBrowse 2 web include
 
 ## Feature comparison
 
-| Feature                                                             | JBrowse 2                        | JBrowse 1          |
-| ------------------------------------------------------------------- | -------------------------------- | ------------------ |
-| Status updates during track loading (e.g. Downloading BAM index...) | :heavy_check_mark:               | :x:                |
-| Sort, color, and filter by BAM/CRAM tags and other advanced options | :heavy_check_mark:               | :x:                |
-| Uses webworkers for parsing and rendering tracks                    | :heavy_check_mark:               | :x:                |
-| Supports interactive editing of configuration in the app            | :heavy_check_mark:               | :x:                |
-| Can "flip" or reverse complement the linear view                    | :heavy_check_mark:               | :x:                |
-| Hi-C data rendering                                                 | :heavy_check_mark:               | :x:                |
-| Can display multiple chromosomes in a single view                   | :heavy_check_mark:               | :x:                |
-| Sort read pileup in alignments tracks                               | :heavy_check_mark:               | :x:                |
-| Show soft clipping in alignments tracks                             | :heavy_check_mark:               | :x:                |
-| Built-in tabular view for datasets                                  | :heavy_check_mark:               | :x:                |
-| Can open UCSC track hubs                                            | :heavy_check_mark: [#footnote-1] | :x:                |
-| Add and remove plugins without running scripts                      | :heavy_check_mark:               | :x:                |
-| Non-administrator users can open tracks and share them with others  | :heavy_check_mark:               | :x:                |
-| Embeddable in JavaScript projects using NPM                         | :heavy_check_mark: [#footnote-2] | :x:                |
-| Embeddable directly in React applications                           | :heavy_check_mark: [#footnote-2] | :x:                |
-| Ability to search by gene name/ID (added in 1.4.0)                  | :heavy_check_mark:               | :heavy_check_mark: |
-| URL query API e.g. specifying ?loc=chr1:1-100 in URL bar            | :heavy_check_mark:               | :heavy_check_mark: |
+| Feature                                                                                            | JBrowse 2          | JBrowse 1          |
+| -------------------------------------------------------------------------------------------------- | ------------------ | ------------------ |
+| Status updates during track loading (e.g. Downloading BAM index...)                                | :heavy_check_mark: | :x:                |
+| Sort, color, and filter by BAM/CRAM tags and other advanced options                                | :heavy_check_mark: | :x:                |
+| Uses webworkers for parsing and rendering tracks                                                   | :heavy_check_mark: | :x:                |
+| Supports interactive editing of configuration in the app                                           | :heavy_check_mark: | :x:                |
+| Can "flip" or reverse complement the linear view                                                   | :heavy_check_mark: | :x:                |
+| Hi-C data rendering                                                                                | :heavy_check_mark: | :x:                |
+| Can display multiple chromosomes in a single view                                                  | :heavy_check_mark: | :x:                |
+| Sort read pileup in alignments tracks                                                              | :heavy_check_mark: | :x:                |
+| Show soft clipping in alignments tracks                                                            | :heavy_check_mark: | :x:                |
+| Built-in tabular view for datasets                                                                 | :heavy_check_mark: | :x:                |
+| Can open UCSC track hubs                                                                           | :heavy_check_mark: | :x:                |
+| Add and remove plugins without running scripts                                                     | :heavy_check_mark: | :x:                |
+| Non-administrator users can open tracks and share them with others                                 | :heavy_check_mark: | :x:                |
+| Embeddable and installable from NPM (see [embedded views](/jb2/docs/embedded_components/) page) | :heavy_check_mark: | :x:                |
+| Ability to search by gene name/ID                                                 | :heavy_check_mark: | :heavy_check_mark: |
+| [URL query param API](/jb2/docs/urlparams/) e.g. specifying ?loc=chr1:1-100 in URL bar             | :heavy_check_mark: | :heavy_check_mark: |
 
 ## Supported data formats
 
@@ -66,55 +65,7 @@ available for additional data formats.
 - 2bit
 - .hic (Hi-C contact matrix visualization)
 
-## Integration and embedding
+## Comparison of the embedded components to JBrowse Web
 
-The JBrowse 2 platform and plugins are designed from the ground up to be modular
-and reusable. For example, individual JBrowse 2 views (e.g. linear, circular,
-tabular, etc) can be packaged to be embeddable in other web applications (as
-demonstrated by the
-[@jbrowse/react-linear-genome-view](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view)
-package).
-
-See the full list of our embedded components
-[here](https://jbrowse.org/jb2/docs/embedded_components/).
-
-### Embedded views versus full JBrowse app
-
-Embedded views are intended to facilitate genome browsing within the context of
-an existing webpage, however if it makes sense for a given use case, one might
-decide to run an instance of JBrowse on one's hosting website instead. Detailed
-below are the core differences between embedded components and the full JBrowse
-app:
-
-| Embedded components [^3]                                | JBrowse Web                                                                            |
-| ------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| Only has access to one view type                        | Access to all view types loaded into the JBrowse session, including those from plugins |
-| Feature details and track selector open as a dialog     | Feature details open as a left/right oriented drawer                                   |
-| No built-in concept of local session, saving or loading | Save / import / export session options for any user                                    |
-
-**Both can:**
-
-- enable/disable tracks through the Track interface
-- change the track's assembly based on what is available in the configuration
-- manipulate the views with zoom, horizontal flip, view all regions, track label
-  positioning, etc.
-- change track display options
-- export the view as an SVG
-
-### Footnote 1
-
-If using with JBrowse 2 web, requires that trackhub server be configured to
-allow [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
-
-### Footnote 2
-
-See
-[`@jbrowse/react-linear-genome-view` on npm](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view)
-
-### Footnote 3
-
-Note that though the embedded components lack certain functionality, they are
-designed for web developers to build a custom system around, so though some of
-these options are not available by default, the ability to design mechanics such
-as sessions and custom track manipulation is present for a developer seeking to
-do these things.
+See FAQ entry
+[here](/jb2/docs/faq/#what-are-the-differences-between-the-embedded-components-and-the-jbrowse-web-app)
