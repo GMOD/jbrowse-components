@@ -1,37 +1,49 @@
 import { createGunzip } from 'zlib'
 import readline from 'readline'
-import { Track, decodeURIComponentNoThrow } from '../util'
-import { getLocalOrRemoteStream } from './common'
-import { checkAbortSignal } from '@jbrowse/core/util'
 
-export async function* indexGff3(
-  config: Track,
-  attributes: string[],
-  inLocation: string,
-  outLocation: string,
-  typesToExclude: string[],
-  quiet: boolean,
-  statusCallback: (message: string) => void,
-  signal?: AbortSignal,
-) {
+// locals
+import { decodeURIComponentNoThrow } from '../util'
+import { getLocalOrRemoteStream } from './common'
+
+export async function* indexGff3({
+  config,
+  attributesToIndex,
+  inLocation,
+  outLocation,
+  typesToExclude,
+  onStart,
+  onUpdate,
+}: {
+  config: any
+  attributesToIndex: string[]
+  inLocation: string
+  outLocation: string
+  typesToExclude: string[]
+  onStart: (totalBytes: number) => void
+  onUpdate: (progressBytes: number) => void
+}) {
   const { trackId } = config
+
   let receivedBytes = 0
   const { totalBytes, stream } = await getLocalOrRemoteStream(
     inLocation,
     outLocation,
   )
+  onStart(totalBytes)
+
   stream.on('data', chunk => {
     receivedBytes += chunk.length
-    // send an update?
-    const progress = Math.round((receivedBytes / totalBytes) * 100)
-    statusCallback(`${progress}`)
+    onUpdate(receivedBytes)
   })
+
   const rl = readline.createInterface({
     input: /.b?gz$/.exec(inLocation) ? stream.pipe(createGunzip()) : stream,
   })
 
   for await (const line of rl) {
-    if (line.startsWith('#')) {
+    if (!line.trim()) {
+      continue
+    } else if (line.startsWith('#')) {
       continue
     } else if (line.startsWith('>')) {
       break
@@ -54,7 +66,7 @@ export async function* indexGff3(
             decodeURIComponentNoThrow(val).trim().split(',').join(' '),
           ]),
       )
-      const attrs = attributes
+      const attrs = attributesToIndex
         .map(attr => col9attrs[attr])
         .filter((f): f is string => !!f)
 
@@ -65,11 +77,8 @@ export async function* indexGff3(
           ...attrs.map(a => encodeURIComponent(a)),
         ]).replaceAll(',', '|')
 
-        // Check abort signal
-        checkAbortSignal(signal)
         yield `${record} ${[...new Set(attrs)].join(' ')}\n`
       }
     }
   }
-  // console.log('done')
 }

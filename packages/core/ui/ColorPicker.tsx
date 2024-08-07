@@ -122,6 +122,8 @@ export function ColorPicker({
         <div className={classes.swatches}>
           {presetColors.map((presetColor, idx) => (
             <button
+              type="button"
+              /* biome-ignore lint/suspicious/noArrayIndexKey: */
               key={`${presetColor}-${idx}`}
               className={classes.swatch}
               style={{ background: presetColor }}

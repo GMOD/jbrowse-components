@@ -3,10 +3,10 @@ import path from 'path'
 import { Readable } from 'stream'
 import { ixIxxStream } from 'ixixx'
 import { Flags } from '@oclif/core'
+import { SingleBar, Presets } from 'cli-progress'
+import { indexGff3, indexVcf } from '@jbrowse/text-indexing'
 
 // locals
-import { indexGff3 } from '../types/gff3Adapter'
-import { indexVcf } from '../types/vcfAdapter'
 import JBrowseCommand, {
   Track,
   Config,
@@ -442,7 +442,7 @@ export default class TextIndex extends JBrowseCommand {
         indexingAttributes = attributes,
       } = textSearching || {}
 
-      let loc
+      let loc: UriLocation | LocalPathLocation | undefined
       if (type === 'Gff3TabixAdapter') {
         loc = adapter.gffGzLocation
       } else if (type === 'Gff3Adapter') {
@@ -455,6 +455,15 @@ export default class TextIndex extends JBrowseCommand {
       if (!loc) {
         return
       }
+      // progress bar code was aided by blog post at
+      // https://webomnizz.com/download-a-file-with-progressbar-using-node-js/
+      const progressBar = new SingleBar(
+        {
+          format: `{bar} ${config.trackId} {percentage}% | ETA: {eta}s`,
+          etaBuffer: 2000,
+        },
+        Presets.shades_classic,
+      )
       if (type === 'Gff3TabixAdapter' || type === 'Gff3Adapter') {
         yield* indexGff3({
           config,
@@ -462,7 +471,14 @@ export default class TextIndex extends JBrowseCommand {
           inLocation: getLoc(loc),
           outLocation,
           typesToExclude: indexingFeatureTypesToExclude,
-          quiet,
+          onStart: totalBytes => {
+            if (!quiet) {
+              progressBar.start(totalBytes, 0)
+            }
+          },
+          onUpdate: progressBytes => {
+            progressBar.update(progressBytes)
+          },
         })
       } else if (type === 'VcfTabixAdapter' || type === 'VcfAdapter') {
         yield* indexVcf({
@@ -471,9 +487,17 @@ export default class TextIndex extends JBrowseCommand {
           inLocation: getLoc(loc),
           outLocation,
           typesToExclude: indexingFeatureTypesToExclude,
-          quiet,
+          onStart: totalBytes => {
+            if (!quiet) {
+              progressBar.start(totalBytes, 0)
+            }
+          },
+          onUpdate: progressBytes => {
+            progressBar.update(progressBytes)
+          },
         })
       }
+      progressBar.stop()
     }
   }
 

@@ -206,7 +206,10 @@ function CascadingMenuList({
             />
           </CascadingSubmenu>
         ) : item.type === 'divider' ? (
-          <Divider key={`divider-${idx}`} component="li" />
+          <Divider
+            key={`divider-${JSON.stringify(item)}-${idx}`}
+            component="li"
+          />
         ) : item.type === 'subHeader' ? (
           <ListSubheader key={`subHeader-${item.label}-${idx}`}>
             {item.label}

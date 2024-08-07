@@ -240,7 +240,7 @@ export default function f(pluginManager: PluginManager) {
        */
       get warningMessage() {
         if (self.isFtp) {
-          return `Warning: JBrowse cannot access files using the ftp protocol`
+          return "Warning: JBrowse cannot access files using the ftp protocol"
         } else if (self.isRelativeUrl) {
           return `Warning: one or more of your files do not provide the protocol e.g.
           https://, please provide an absolute URL unless you are sure a

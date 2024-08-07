@@ -263,7 +263,12 @@ function MenuPage(props: MenuPageProps) {
           .sort((a, b) => (b.priority || 0) - (a.priority || 0))
           .map((menuItem, idx) => {
             if (menuItem.type === 'divider') {
-              return <Divider key={`divider-${idx}`} component="li" />
+              return (
+                <Divider
+                  key={`divider-${JSON.stringify(menuItem)}-${idx}`}
+                  component="li"
+                />
+              )
             }
             if (menuItem.type === 'subHeader') {
               return (

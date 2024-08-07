@@ -35,6 +35,7 @@ const SequenceDisplay = observer(function ({
           ? ' \n'
           : ''
     return (
+      /* biome-ignore lint/suspicious/noArrayIndexKey: */
       <React.Fragment key={`${chunk}-${idx}`}>
         {showCoordinates ? prefix : null}
         <span style={{ background: color }}>{chunk}</span>

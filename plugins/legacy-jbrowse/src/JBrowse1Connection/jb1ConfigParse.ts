@@ -7,7 +7,7 @@ import { Config, Track, Source, Store, Names } from './types'
 
 export function parseJB1Json(config: Config | string, url: string): Config {
   if (typeof config === 'string') {
-    let parsedConf
+    let parsedConf: Config
     try {
       parsedConf = JSON.parse(config)
     } catch (error) {
@@ -19,7 +19,7 @@ export function parseJB1Json(config: Config | string, url: string): Config {
 }
 
 export function parseJB1Conf(config: string, url: string): Config {
-  let parsedConf
+  let parsedConf: Config
   try {
     parsedConf = parse(config, url)
   } catch (error) {
