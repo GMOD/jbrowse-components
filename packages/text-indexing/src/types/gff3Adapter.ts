@@ -9,16 +9,16 @@ export async function* indexGff3({
   config,
   attributesToIndex,
   inLocation,
-  outLocation,
-  typesToExclude,
+  outDir,
+  featureTypesToExclude,
   onStart,
   onUpdate,
 }: {
   config: any
   attributesToIndex: string[]
   inLocation: string
-  outLocation: string
-  typesToExclude: string[]
+  outDir: string
+  featureTypesToExclude: string[]
   onStart: (totalBytes: number) => void
   onUpdate: (progressBytes: number) => void
 }) {
@@ -27,7 +27,7 @@ export async function* indexGff3({
   let receivedBytes = 0
   const { totalBytes, stream } = await getLocalOrRemoteStream(
     inLocation,
-    outLocation,
+    outDir,
   )
   onStart(totalBytes)
 
@@ -52,7 +52,7 @@ export async function* indexGff3({
     const [seq_id, , type, start, end, , , , col9] = line.split('\t')
     const locStr = `${seq_id}:${start}..${end}`
 
-    if (!typesToExclude.includes(type)) {
+    if (!featureTypesToExclude.includes(type)) {
       // turns gff3 attrs into a map, and converts the arrays into space
       // separated strings
       const col9attrs = Object.fromEntries(

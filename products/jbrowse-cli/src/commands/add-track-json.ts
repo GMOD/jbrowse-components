@@ -1,6 +1,6 @@
 import { Args, Flags } from '@oclif/core'
 import { promises as fsPromises } from 'fs'
-import JBrowseCommand, { Config } from '../base'
+import JBrowseCommand, { Config, Track } from '../base'
 
 export default class AddTrackJson extends JBrowseCommand {
   // @ts-expect-error
@@ -50,7 +50,7 @@ export default class AddTrackJson extends JBrowseCommand {
     const config: Config = await this.readJsonFile(this.target)
     this.debug(`Found existing config file ${this.target}`)
 
-    const track = await this.readInlineOrFileJson(inputtedTrack)
+    const track = await this.readInlineOrFileJson<Track>(inputtedTrack)
     if (!config.tracks) {
       config.tracks = []
     }

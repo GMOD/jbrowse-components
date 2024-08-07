@@ -26,13 +26,14 @@ export interface Opts {
   tracks?: string
 }
 
-function read(file: string) {
-  let res
+function read<T>(file: string) {
+  let res: T
   try {
     res = JSON.parse(fs.readFileSync(file, 'utf8'))
   } catch (e) {
     throw new Error(
       `Failed to parse ${file} as JSON, use --fasta if you mean to pass a FASTA file`,
+      { cause: e },
     )
   }
   return res
@@ -82,10 +83,13 @@ export function readData({
   tracks,
   trackList = [],
 }: Opts) {
-  const assemblyData = asm && fs.existsSync(asm) ? read(asm) : undefined
-  const tracksData = tracks ? read(tracks) : undefined
-  const configData = (config ? read(config) : {}) as Config
-  let sessionData = session ? read(session) : undefined
+  const assemblyData =
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    asm && fs.existsSync(asm) ? read<Assembly>(asm) : undefined
+  const tracksData = tracks ? read<Track[]>(tracks) : undefined
+  const configData = config ? read<Config>(config) : ({} as Config)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let sessionData = session ? read<Record<string, any>>(session) : undefined
 
   if (config) {
     addRelativePaths(configData, path.dirname(path.resolve(config)))

@@ -3,9 +3,8 @@ import fetch from 'node-fetch'
 import path from 'path'
 import { LocalPathLocation, UriLocation, Track } from '../util'
 
-// Method for handing off the parsing of a gff3 file URL.
-// Calls the proper parser depending on if it is gzipped or not.
-// Returns a @gmod/gff stream.
+// Method for handing off the parsing of a gff3 file URL. Calls the proper
+// parser depending on if it is gzipped or not. Returns a @gmod/gff stream.
 export async function createRemoteStream(urlIn: string) {
   const response = await fetch(urlIn)
   if (!response.ok) {
@@ -120,48 +119,39 @@ export function guessAdapterFromFileName(filePath: string): Track {
 
 /**
  * Generates metadata of index given a filename (trackId or assembly)
- * @param name -  assembly name or trackId
- * @param attributes -  attributes indexed
- * @param include -  feature types included from index
- * @param exclude -  feature types excluded from index
- * @param configs - list of track
  */
 export async function generateMeta({
   configs,
-  attributes,
+  attributesToIndex,
   outDir,
   name,
-  exclude,
+  featureTypesToExclude,
   assemblyNames,
 }: {
   configs: Track[]
-  attributes: string[]
+  attributesToIndex: string[]
   outDir: string
   name: string
-  exclude: string[]
+  featureTypesToExclude: string[]
   assemblyNames: string[]
 }) {
-  const tracks = configs.map(config => {
-    const { trackId, textSearching, adapter } = config
-
-    const includeExclude =
-      textSearching?.indexingFeatureTypesToExclude || exclude
-
-    const metaAttrs = textSearching?.indexingAttributes || attributes
-
-    return {
-      trackId: trackId,
-      attributesIndexed: metaAttrs,
-      excludedTypes: includeExclude,
-      adapterConf: adapter,
-    }
-  })
   fs.writeFileSync(
     path.join(outDir, 'trix', `${name}_meta.json`),
     JSON.stringify(
       {
         dateCreated: new Date().toISOString(),
-        tracks,
+        tracks: configs.map(config => {
+          const { trackId, textSearching, adapter } = config
+          return {
+            trackId,
+            attributesIndexed:
+              textSearching?.indexingAttributes || attributesToIndex,
+            excludedTypes:
+              textSearching?.indexingFeatureTypesToExclude ||
+              featureTypesToExclude,
+            adapterConf: adapter,
+          }
+        }),
         assemblyNames,
       },
       null,

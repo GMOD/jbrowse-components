@@ -1,7 +1,12 @@
 import { Args, Flags } from '@oclif/core'
 import fs from 'fs'
 import path from 'path'
-import JBrowseCommand, { Assembly, Sequence, Config } from '../base'
+import JBrowseCommand, {
+  Assembly,
+  Sequence,
+  Config,
+  needLoadData,
+} from '../base'
 
 const { rename, copyFile, mkdir, symlink } = fs.promises
 
@@ -147,12 +152,12 @@ custom         Either a JSON file location or inline JSON that defines a custom
     const { args: runArgs, flags: runFlags } = await this.parse(AddAssembly)
     const { sequence: argsSequence } = runArgs as { sequence: string }
 
-    if (this.needLoadData(argsSequence) && !runFlags.load) {
+    if (needLoadData(argsSequence) && !runFlags.load) {
       this.error(
         'Please specify the loading operation for this file with --load copy|symlink|move|inPlace',
         { exit: 110 },
       )
-    } else if (!this.needLoadData(argsSequence) && runFlags.load) {
+    } else if (!needLoadData(argsSequence) && runFlags.load) {
       this.error(
         'URL detected with --load flag. Please rerun the function without the --load flag',
         { exit: 120 },
@@ -270,7 +275,10 @@ custom         Either a JSON file location or inline JSON that defines a custom
               uri: sequenceLocation,
               locationType: 'UriLocation',
             },
-            faiLocation: { uri: indexLocation, locationType: 'UriLocation' },
+            faiLocation: {
+              uri: indexLocation,
+              locationType: 'UriLocation',
+            },
             gziLocation: {
               uri: bgzipIndexLocation,
               locationType: 'UriLocation',
@@ -340,7 +348,9 @@ custom         Either a JSON file location or inline JSON that defines a custom
         break
       }
       case 'custom': {
-        const adapter = await this.readInlineOrFileJson(argsSequence)
+        const adapter = await this.readInlineOrFileJson<{ type: string }>(
+          argsSequence,
+        )
         this.debug(`Custom adapter: ${JSON.stringify(adapter)}`)
         if (!name) {
           if (isValidJSON(argsSequence)) {
@@ -415,9 +425,9 @@ custom         Either a JSON file location or inline JSON that defines a custom
         runFlags.refNameAliasesType &&
         runFlags.refNameAliasesType === 'custom'
       ) {
-        const refNameAliasesConfig = await this.readInlineOrFileJson(
-          runFlags.refNameAliases,
-        )
+        const refNameAliasesConfig = await this.readInlineOrFileJson<{
+          type: string
+        }>(runFlags.refNameAliases)
         if (!refNameAliasesConfig.type) {
           this.error(
             `No "type" specified in refNameAliases adapter "${JSON.stringify(
@@ -520,43 +530,25 @@ custom         Either a JSON file location or inline JSON that defines a custom
       sequence.endsWith('.fasta')
     ) {
       return 'indexedFasta'
-    }
-    if (
+    } else if (
       sequence.endsWith('.fa.gz') ||
       sequence.endsWith('.fna.gz') ||
       sequence.endsWith('.fasta.gz')
     ) {
       return 'bgzipFasta'
-    }
-    if (sequence.endsWith('.2bit')) {
+    } else if (sequence.endsWith('.2bit')) {
       return 'twoBit'
-    }
-    if (sequence.endsWith('.chrom.sizes')) {
+    } else if (sequence.endsWith('.chrom.sizes')) {
       return 'chromSizes'
-    }
-    if (sequence.endsWith('.json')) {
+    } else if (sequence.endsWith('.json')) {
       return 'custom'
-    }
-    if (isValidJSON(sequence)) {
+    } else if (isValidJSON(sequence)) {
       return 'custom'
     }
     return this.error(
       'Could not determine sequence type automatically, add --type to specify it',
       { exit: 170 },
     )
-  }
-
-  needLoadData(location: string) {
-    let locationUrl: URL | undefined
-    try {
-      locationUrl = new URL(location)
-    } catch (error) {
-      // ignore
-    }
-    if (locationUrl) {
-      return false
-    }
-    return true
   }
 
   async loadData(load: string, filePaths: string[]) {

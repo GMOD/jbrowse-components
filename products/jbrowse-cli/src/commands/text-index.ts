@@ -4,7 +4,7 @@ import { Readable } from 'stream'
 import { ixIxxStream } from 'ixixx'
 import { Flags } from '@oclif/core'
 import { SingleBar, Presets } from 'cli-progress'
-import { indexGff3, indexVcf } from '@jbrowse/text-indexing'
+import { indexGff3, indexVcf, generateMeta } from '@jbrowse/text-indexing'
 
 // locals
 import JBrowseCommand, {
@@ -14,11 +14,7 @@ import JBrowseCommand, {
   UriLocation,
   LocalPathLocation,
 } from '../base'
-import {
-  generateMeta,
-  supported,
-  guessAdapterFromFileName,
-} from '../types/common'
+import { supported, guessAdapterFromFileName } from '../types/common'
 
 function readConf(path: string) {
   return JSON.parse(fs.readFileSync(path, 'utf8')) as Config
@@ -143,10 +139,10 @@ export default class TextIndex extends JBrowseCommand {
     const outFlag = target || out || '.'
     const isDir = fs.lstatSync(outFlag).isDirectory()
     const confPath = isDir ? path.join(outFlag, 'config.json') : outFlag
-    const outLocation = path.dirname(confPath)
+    const outDir = path.dirname(confPath)
     const config = readConf(confPath)
 
-    const trixDir = path.join(outLocation, 'trix')
+    const trixDir = path.join(outDir, 'trix')
     if (!fs.existsSync(trixDir)) {
       fs.mkdirSync(trixDir)
     }
@@ -191,11 +187,11 @@ export default class TextIndex extends JBrowseCommand {
 
         await this.indexDriver({
           trackConfigs,
-          outLocation,
+          outDir,
           quiet,
           name: asm,
-          attributes: attributes.split(','),
-          typesToExclude: exclude.split(','),
+          attributesToIndex: attributes.split(','),
+          featureTypesToExclude: exclude.split(','),
           assemblyNames: [asm],
           prefixSize,
         })
@@ -254,10 +250,10 @@ export default class TextIndex extends JBrowseCommand {
 
     const isDir = fs.lstatSync(outFlag).isDirectory()
     const confFilePath = isDir ? path.join(outFlag, 'config.json') : outFlag
-    const outLocation = path.dirname(confFilePath)
+    const outDir = path.dirname(confFilePath)
     const config = readConf(confFilePath)
     const configTracks = config.tracks || []
-    const trixDir = path.join(outLocation, 'trix')
+    const trixDir = path.join(outDir, 'trix')
     if (!fs.existsSync(trixDir)) {
       fs.mkdirSync(trixDir)
     }
@@ -284,11 +280,11 @@ export default class TextIndex extends JBrowseCommand {
 
       await this.indexDriver({
         trackConfigs: [trackConfig],
-        attributes: attributes.split(','),
-        outLocation,
+        attributesToIndex: attributes.split(','),
+        outDir,
         quiet,
         name: trackId,
-        typesToExclude: exclude.split(','),
+        featureTypesToExclude: exclude.split(','),
         assemblyNames,
         prefixSize,
       })
@@ -360,11 +356,11 @@ export default class TextIndex extends JBrowseCommand {
 
     await this.indexDriver({
       trackConfigs,
-      outLocation: outFlag,
+      outDir: outFlag,
       name: trackConfigs.length > 1 ? 'aggregate' : path.basename(file[0]),
       quiet,
-      attributes: attributes.split(','),
-      typesToExclude: exclude.split(','),
+      attributesToIndex: attributes.split(','),
+      featureTypesToExclude: exclude.split(','),
       assemblyNames: [],
       prefixSize,
     })
@@ -376,46 +372,46 @@ export default class TextIndex extends JBrowseCommand {
 
   async indexDriver({
     trackConfigs,
-    attributes,
-    outLocation,
+    attributesToIndex,
+    outDir,
     name,
     quiet,
-    typesToExclude,
+    featureTypesToExclude,
     assemblyNames,
     prefixSize,
   }: {
     trackConfigs: Track[]
-    attributes: string[]
-    outLocation: string
+    attributesToIndex: string[]
+    outDir: string
     name: string
     quiet: boolean
-    typesToExclude: string[]
+    featureTypesToExclude: string[]
     assemblyNames: string[]
     prefixSize?: number
   }) {
     const readStream = Readable.from(
       this.indexFiles({
         trackConfigs,
-        attributes,
-        outLocation,
+        attributesToIndex,
+        outDir,
         quiet,
-        typesToExclude,
+        featureTypesToExclude,
       }),
     )
 
     const ixIxxStream = await this.runIxIxx({
       readStream,
-      outLocation,
+      outLocation: outDir,
       name,
       prefixSize,
     })
 
     await generateMeta({
-      trackConfigs,
-      attributes,
-      outLocation,
+      configs: trackConfigs,
+      attributesToIndex,
+      outDir,
       name,
-      typesToExclude,
+      featureTypesToExclude,
       assemblyNames,
     })
     return ixIxxStream
@@ -423,23 +419,23 @@ export default class TextIndex extends JBrowseCommand {
 
   async *indexFiles({
     trackConfigs,
-    attributes,
-    outLocation,
+    attributesToIndex,
+    outDir,
     quiet,
-    typesToExclude,
+    featureTypesToExclude,
   }: {
     trackConfigs: Track[]
-    attributes: string[]
-    outLocation: string
+    attributesToIndex: string[]
+    outDir: string
     quiet: boolean
-    typesToExclude: string[]
+    featureTypesToExclude: string[]
   }) {
     for (const config of trackConfigs) {
       const { adapter, textSearching } = config
       const { type } = adapter
       const {
-        indexingFeatureTypesToExclude = typesToExclude,
-        indexingAttributes = attributes,
+        indexingFeatureTypesToExclude = featureTypesToExclude,
+        indexingAttributes = attributesToIndex,
       } = textSearching || {}
 
       let loc: UriLocation | LocalPathLocation | undefined
@@ -469,8 +465,8 @@ export default class TextIndex extends JBrowseCommand {
           config,
           attributesToIndex: indexingAttributes,
           inLocation: getLoc(loc),
-          outLocation,
-          typesToExclude: indexingFeatureTypesToExclude,
+          outDir,
+          featureTypesToExclude: indexingFeatureTypesToExclude,
           onStart: totalBytes => {
             if (!quiet) {
               progressBar.start(totalBytes, 0)
@@ -485,7 +481,7 @@ export default class TextIndex extends JBrowseCommand {
           config,
           attributesToIndex: indexingAttributes,
           inLocation: getLoc(loc),
-          outLocation,
+          outDir,
           onStart: totalBytes => {
             if (!quiet) {
               progressBar.start(totalBytes, 0)

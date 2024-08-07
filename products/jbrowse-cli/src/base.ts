@@ -79,12 +79,7 @@ export interface CustomRefNameAliasAdapter {
 export interface Sequence {
   type: 'ReferenceSequenceTrack'
   trackId: string
-  adapter:
-    | IndexedFastaAdapter
-    | BgzipFastaAdapter
-    | TwoBitAdapter
-    | ChromeSizesAdapter
-    | CustomSequenceAdapter
+  adapter: { type: string; [key: string]: unknown }
 }
 
 export interface Assembly {
@@ -218,17 +213,17 @@ export default abstract class JBrowseCommand extends Command {
     })
   }
 
-  async readInlineOrFileJson(inlineOrFileName: string) {
-    let result
+  async readInlineOrFileJson<T>(inlineOrFileName: string) {
+    let result: T
     // see if it's inline JSON
     try {
-      result = parseJSON(inlineOrFileName)
+      result = parseJSON(inlineOrFileName) as T
     } catch (error) {
       this.debug(
         `Not valid inline JSON, attempting to parse as filename: '${inlineOrFileName}'`,
       )
       // not inline JSON, must be location of a JSON file
-      result = await this.readJsonFile(inlineOrFileName)
+      result = await this.readJsonFile<T>(inlineOrFileName)
     }
     return result
   }
@@ -268,7 +263,7 @@ export default abstract class JBrowseCommand extends Command {
 
   async *fetchVersions() {
     let page = 1
-    let result
+    let result: GithubRelease[] | undefined
 
     do {
       const response = await fetch(
@@ -311,4 +306,14 @@ export default abstract class JBrowseCommand extends Command {
   async getBranch(branch: string) {
     return `https://s3.amazonaws.com/jbrowse.org/code/jb2/${branch}/jbrowse-web-${branch}.zip`
   }
+}
+
+export function needLoadData(location: string) {
+  let isUrl: URL | undefined
+  try {
+    isUrl = new URL(location)
+  } catch (error) {
+    // ignore
+  }
+  return !isUrl
 }

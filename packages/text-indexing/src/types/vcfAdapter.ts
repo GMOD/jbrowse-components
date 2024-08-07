@@ -9,7 +9,7 @@ export async function* indexVcf({
   config,
   attributesToIndex,
   inLocation,
-  outLocation,
+  outDir,
   onStart,
   onUpdate,
 }: {
@@ -17,7 +17,7 @@ export async function* indexVcf({
   config: any
   attributesToIndex: string[]
   inLocation: string
-  outLocation: string
+  outDir: string
   onStart: (totalBytes: number) => void
   onUpdate: (progressBytes: number) => void
 }) {
@@ -25,7 +25,7 @@ export async function* indexVcf({
   let receivedBytes = 0
   const { totalBytes, stream } = await getLocalOrRemoteStream(
     inLocation,
-    outLocation,
+    outDir,
   )
 
   onStart(totalBytes)
