@@ -486,7 +486,6 @@ export default class TextIndex extends JBrowseCommand {
           attributesToIndex: indexingAttributes,
           inLocation: getLoc(loc),
           outLocation,
-          typesToExclude: indexingFeatureTypesToExclude,
           onStart: totalBytes => {
             if (!quiet) {
               progressBar.start(totalBytes, 0)
