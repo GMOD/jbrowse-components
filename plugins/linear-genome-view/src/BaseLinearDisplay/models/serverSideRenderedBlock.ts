@@ -48,6 +48,7 @@ const blockState = types
     reactElement: undefined as React.ReactElement | undefined,
     features: undefined as Map<string, Feature> | undefined,
     layout: undefined as any,
+    blockHeight: undefined as number | undefined,
     status: '',
     error: undefined as unknown,
     message: undefined as string | undefined,
@@ -98,6 +99,7 @@ const blockState = types
         self.reactElement = undefined
         self.features = undefined
         self.layout = undefined
+        self.blockHeight = undefined
         self.error = undefined
         self.maxHeightReached = false
         self.renderProps = undefined
@@ -112,6 +114,7 @@ const blockState = types
         self.reactElement = undefined
         self.features = undefined
         self.layout = undefined
+        self.blockHeight = undefined
         self.error = undefined
         self.maxHeightReached = false
         self.renderProps = undefined
@@ -123,6 +126,7 @@ const blockState = types
               reactElement: React.ReactElement
               features: Map<string, Feature>
               layout: any
+              blockHeight: number
               maxHeightReached: boolean
               renderProps: any
             }
@@ -135,6 +139,7 @@ const blockState = types
           reactElement,
           features,
           layout,
+          blockHeight,
           maxHeightReached,
           renderProps,
         } = props
@@ -143,6 +148,7 @@ const blockState = types
         self.reactElement = reactElement
         self.features = features
         self.layout = layout
+        self.blockHeight = blockHeight
         self.error = undefined
         self.maxHeightReached = maxHeightReached
         self.renderProps = renderProps
@@ -159,6 +165,7 @@ const blockState = types
         self.reactElement = undefined
         self.features = undefined
         self.layout = undefined
+        self.blockHeight = undefined
         self.maxHeightReached = false
         self.error = error
         self.renderProps = undefined
@@ -173,6 +180,7 @@ const blockState = types
         self.reactElement = undefined
         self.features = undefined
         self.layout = undefined
+        self.blockHeight = undefined
         self.error = undefined
         self.message = undefined
         self.maxHeightReached = false
@@ -303,7 +311,7 @@ async function renderBlockEffect(
     return undefined
   }
 
-  const { reactElement, features, layout, maxHeightReached } =
+  const { reactElement, features, layout, blockHeight, maxHeightReached } =
     await rendererType.renderInClient(rpcManager, {
       ...renderArgs,
       ...renderProps,
@@ -314,6 +322,7 @@ async function renderBlockEffect(
     reactElement,
     features,
     layout,
+    blockHeight,
     maxHeightReached,
     renderProps,
   }

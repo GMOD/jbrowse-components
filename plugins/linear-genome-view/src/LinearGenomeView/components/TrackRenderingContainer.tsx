@@ -29,6 +29,16 @@ const useStyles = makeStyles()({
     background: 'none',
     zIndex: 2,
   },
+
+  dynamicResize: {
+    overflowY: 'auto',
+    overflowX: 'hidden',
+    whiteSpace: 'nowrap',
+    position: 'relative',
+    background: 'none',
+    zIndex: 2,
+    transition: 'height 0.5s',
+  },
 })
 
 type LGV = LinearGenomeViewModel
@@ -49,6 +59,12 @@ const TrackRenderingContainer = observer(function ({
   const trackId = getConf(track, 'trackId')
   const ref = useRef<HTMLDivElement>(null)
   const minimized = track.minimized
+  const dynamicResize =
+    display?.adjustTrackLayoutHeightSetting === 'static'
+      ? false
+      : display?.PileupDisplay?.adjustTrackLayoutHeightSetting === 'static'
+        ? false
+        : true
 
   useEffect(() => {
     if (ref.current) {
@@ -61,10 +77,10 @@ const TrackRenderingContainer = observer(function ({
 
   return (
     <div
-      className={classes.trackRenderingContainer}
-      style={{
-        height: minimized ? 20 : height,
-      }}
+      className={
+        dynamicResize ? classes.dynamicResize : classes.trackRenderingContainer
+      }
+      style={{ height: minimized ? 20 : height }}
       onScroll={evt => display.setScrollTop(evt.currentTarget.scrollTop)}
       onDragEnter={onDragEnter}
       data-testid={`trackRenderingContainer-${id}-${trackId}`}

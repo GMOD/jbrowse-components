@@ -55,6 +55,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         trackMaxHeight: types.maybe(types.number),
         /**
          * #property
+         * setting to auto-adjust the layout height of tracks
+         */
+        adjustTrackLayoutHeight: types.optional(types.string, 'static'),
+        /**
+         * #property
          */
         configuration: ConfigurationReference(configSchema),
         /**
@@ -114,6 +119,15 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           self.trackDisplayMode ?? getConf(self, ['renderer', 'displayMode'])
         )
       },
+      /**
+       * #getter
+       */
+      get adjustTrackLayoutHeightSetting() {
+        return (
+          self.adjustTrackLayoutHeight ||
+          getConf(self, ['renderer', 'adjustTrackLayoutHeight'])
+        )
+      },
     }))
     .views(self => ({
       /**
@@ -166,6 +180,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setMaxHeight(val?: number) {
         self.trackMaxHeight = val
+      },
+      /**
+       * #action
+       */
+      setAdjustTrackLayoutHeightSetting(setting: 'static' | 'dynamic') {
+        self.adjustTrackLayoutHeight = setting
       },
     }))
     .views(self => {
@@ -229,6 +249,25 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   { model: self, handleClose },
                 ])
               },
+            },
+            {
+              label: 'Track height adjustment',
+              subMenu: [
+                {
+                  label: 'Static (resized, or configured height)',
+                  type: 'radio',
+                  checked: self.adjustTrackLayoutHeightSetting === 'static',
+                  onClick: () =>
+                    self.setAdjustTrackLayoutHeightSetting('static'),
+                },
+                {
+                  label: 'Dynamic (auto-adjust to show all features)',
+                  type: 'radio',
+                  checked: self.adjustTrackLayoutHeightSetting === 'dynamic',
+                  onClick: () =>
+                    self.setAdjustTrackLayoutHeightSetting('dynamic'),
+                },
+              ],
             },
             {
               label: 'Edit filters',

@@ -21,10 +21,6 @@ import {
 const xPadding = 3
 const yPadding = 5
 
-// used so that user can click-away-from-feature below the laid out features
-// (issue #1248)
-const svgHeightPadding = 100
-
 function RenderedFeatureGlyph(props: {
   feature: Feature
   bpPerPx: number
@@ -315,8 +311,19 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
   )
 
   useEffect(() => {
-    setHeight(layout.getTotalHeight())
-  }, [layout])
+    if (
+      // @ts-ignore
+      displayModel.height &&
+      // @ts-ignore
+      displayModel.adjustTrackLayoutHeight === 'dynamic'
+    ) {
+      // @ts-ignore
+      setHeight(displayModel.height)
+    } else {
+      setHeight(layout.getTotalHeight())
+    }
+    // @ts-ignore
+  }, [layout, displayModel.height, displayModel.adjustTrackLayoutHeight])
 
   return exportSVG ? (
     <RenderedFeatures
@@ -330,7 +337,7 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
       ref={ref}
       data-testid="svgfeatures"
       width={width}
-      height={height + svgHeightPadding}
+      height={height}
       style={{
         // use block because svg by default is inline, which adds a margin
         display: 'block',

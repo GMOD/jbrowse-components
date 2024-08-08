@@ -520,13 +520,34 @@ export function SharedLinearPileupDisplayMixin(
               ],
             },
             {
-              label: 'Set max height...',
+              label: 'Set max height',
               onClick: () => {
                 getSession(self).queueDialog(doneCallback => [
                   SetMaxHeightDialog,
                   { model: self, handleClose: doneCallback },
                 ])
               },
+            },
+            {
+              label: 'Track height adjustment',
+              subMenu: [
+                {
+                  label: 'Static (resized, or configured height)',
+                  type: 'radio',
+                  checked: self.adjustTrackLayoutHeightSetting === 'static',
+                  onClick: () =>
+                    // @ts-expect-error
+                    self.setAdjustTrackLayoutHeightSetting('static'),
+                },
+                {
+                  label: 'Dynamic (auto-adjust to show all features)',
+                  type: 'radio',
+                  checked: self.adjustTrackLayoutHeightSetting === 'dynamic',
+                  onClick: () =>
+                    // @ts-expect-error
+                    self.setAdjustTrackLayoutHeightSetting('dynamic'),
+                },
+              ],
             },
           ]
         },

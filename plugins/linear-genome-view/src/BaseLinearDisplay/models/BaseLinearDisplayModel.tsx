@@ -104,6 +104,27 @@ function stateModelFactory() {
     .views(self => ({
       /**
        * #getter
+       * array of the current block heights rendered
+       */
+      get currentLayoutBlockHeights() {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        return view.initialized
+          ? self.blockDefinitions.contentBlocks.map(
+              block => self.blockState.get(block.key)?.blockHeight,
+            )
+          : []
+      },
+
+      /**
+       * #getter
+       * returns true if all blocks are defined
+       */
+      get allLayoutBlocksRendered() {
+        return this.currentLayoutBlockHeights.every(b => b !== undefined)
+      },
+
+      /**
+       * #getter
        * how many milliseconds to wait for the display to
        * "settle" before re-rendering a block
        */

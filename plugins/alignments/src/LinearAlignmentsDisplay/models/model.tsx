@@ -222,6 +222,7 @@ function stateModelFactory(
        * #action
        */
       resizeHeight(distance: number) {
+        self.PileupDisplay.resizeHeight(distance)
         const oldHeight = self.height
         const newHeight = this.setHeight(self.height + distance)
         return newHeight - oldHeight
@@ -268,15 +269,6 @@ function stateModelFactory(
           self,
           autorun(() => {
             self.setSNPCoverageHeight(self.SNPCoverageDisplay.height)
-          }),
-        )
-
-        addDisposer(
-          self,
-          autorun(() => {
-            self.PileupDisplay.setHeight(
-              self.height - self.SNPCoverageDisplay.height,
-            )
           }),
         )
       },
@@ -348,6 +340,29 @@ function stateModelFactory(
       const { height, ...rest } = snap
       return { heightPreConfig: height, ...rest }
     })
+    .actions(self => ({
+      afterAttach() {
+        addDisposer(
+          self,
+          autorun(() => {
+            // Sets the heightPreConfig conditional to whether the user has the layout height setting on (impacts the PileupDisplay)
+            const { PileupDisplay, SNPCoverageDisplay } = self
+
+            const setting = PileupDisplay.adjustTrackLayoutHeightSetting
+
+            if (setting === 'dynamic' || setting === 'bound') {
+              self.setHeight(PileupDisplay.height + SNPCoverageDisplay.height)
+            }
+
+            if (setting === 'static') {
+              self.PileupDisplay.setHeight(
+                self.height - SNPCoverageDisplay.height,
+              )
+            }
+          }),
+        )
+      },
+    }))
 }
 
 export default stateModelFactory

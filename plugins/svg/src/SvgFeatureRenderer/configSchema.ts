@@ -161,6 +161,18 @@ const SvgFeatureRenderer = ConfigurationSchema(
     /**
      * #slot
      */
+    adjustTrackLayoutHeight: {
+      type: 'string',
+      defaultValue: 'static',
+      model: types.enumeration('adjustTrackLayoutHeight', [
+        'static',
+        'dynamic',
+      ]),
+    },
+
+    /**
+     * #slot
+     */
     subParts: {
       type: 'string',
       description: 'subparts for a glyph',

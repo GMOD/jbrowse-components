@@ -998,7 +998,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   </button>
                 </div>
                 <div
-                  class="css-1ql7uaq-trackRenderingContainer"
+                  class="css-v8p4u0-dynamicResize"
                   data-testid="trackRenderingContainer-test_view-volvox_refseq"
                   style="height: 120px;"
                 >
