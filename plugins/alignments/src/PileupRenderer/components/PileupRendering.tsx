@@ -5,6 +5,13 @@ import { bpSpanPx } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
 
+interface Rect {
+  left: number
+  top: number
+  width: number
+  height: number
+}
+
 const PileupRendering = observer(function (props: {
   blockKey: string
   displayModel: BaseLinearDisplayModel
@@ -31,67 +38,50 @@ const PileupRendering = observer(function (props: {
   } = props
   const { selectedFeatureId, featureIdUnderMouse, contextMenuFeature } =
     displayModel
+  const [firstRender, setFirstRender] = useState(false)
+  useEffect(() => {
+    setFirstRender(true)
+  }, [])
 
   const [region] = regions
-  const [highlight, setHighlight] = useState<{
-    left: number
-    top: number
-    width: number
-    height: number
-  }>()
-  const [selected, setSelected] = useState<{
-    left: number
-    top: number
-    width: number
-    height: number
-  }>()
+  let selected = undefined as Rect | undefined
+  let highlight = undefined as Rect | undefined
   const ref = useRef<HTMLDivElement>(null)
   const [mouseIsDown, setMouseIsDown] = useState(false)
   const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] =
     useState(false)
-  useEffect(() => {
-    const selectedRect = selectedFeatureId
-      ? displayModel.getFeatureByID?.(blockKey, selectedFeatureId)
-      : undefined
-    if (selectedRect) {
-      const [leftBp, topPx, rightBp, bottomPx] = selectedRect
-      const [leftPx, rightPx] = bpSpanPx(leftBp, rightBp, region, bpPerPx)
-      const rectTop = Math.round(topPx)
-      const rectHeight = Math.round(bottomPx - topPx)
-      setSelected({
-        left: leftPx - 2,
-        top: rectTop - 2,
-        width: rightPx - leftPx + 4,
-        height: rectHeight + 4,
-      })
+  const selectedRect = selectedFeatureId
+    ? displayModel.getFeatureByID?.(blockKey, selectedFeatureId)
+    : undefined
+  if (selectedRect) {
+    const [leftBp, topPx, rightBp, bottomPx] = selectedRect
+    const [leftPx, rightPx] = bpSpanPx(leftBp, rightBp, region, bpPerPx)
+    const rectTop = Math.round(topPx)
+    const rectHeight = Math.round(bottomPx - topPx)
+    selected = {
+      left: leftPx,
+      top: rectTop,
+      width: rightPx - leftPx,
+      height: rectHeight,
     }
-    const highlightedFeature = featureIdUnderMouse || contextMenuFeature?.id()
-    const highlightedRect = highlightedFeature
-      ? displayModel.getFeatureByID?.(blockKey, highlightedFeature)
-      : undefined
-    if (highlightedRect) {
-      const [leftBp, topPx, rightBp, bottomPx] = highlightedRect
-      const [leftPx, rightPx] = bpSpanPx(leftBp, rightBp, region, bpPerPx)
-      const rectTop = Math.round(topPx)
-      const rectHeight = Math.round(bottomPx - topPx)
-      setHighlight({
-        left: leftPx,
-        top: rectTop,
-        width: rightPx - leftPx,
-        height: rectHeight,
-      })
-    } else {
-      setHighlight(undefined)
+  }
+  const highlightedFeature = featureIdUnderMouse || contextMenuFeature?.id()
+  const highlightedRect = highlightedFeature
+    ? displayModel.getFeatureByID?.(blockKey, highlightedFeature)
+    : undefined
+
+  if (highlightedRect) {
+    const [leftBp, topPx, rightBp, bottomPx] = highlightedRect
+    const [leftPx, rightPx] = bpSpanPx(leftBp, rightBp, region, bpPerPx)
+    const rectTop = Math.round(topPx)
+    const rectHeight = Math.round(bottomPx - topPx)
+    highlight = {
+      left: leftPx,
+      top: rectTop,
+      width: rightPx - leftPx,
+      height: rectHeight,
     }
-  }, [
-    bpPerPx,
-    region,
-    blockKey,
-    selectedFeatureId,
-    displayModel,
-    featureIdUnderMouse,
-    contextMenuFeature,
-  ])
+  }
 
   function onMouseDown(event: React.MouseEvent) {
     setMouseIsDown(true)
@@ -194,21 +184,23 @@ const PileupRendering = observer(function (props: {
         {...props}
         style={{ position: 'absolute', left: 0, top: 0 }}
       />
-      {highlight ? (
+      {firstRender && highlight ? (
         <div
           style={{
             position: 'absolute',
-            ...highlight,
             backgroundColor: '#0003',
+            pointerEvents: 'none',
+            ...highlight,
           }}
         />
       ) : null}
-      {selected ? (
+      {firstRender && selected ? (
         <div
           style={{
             position: 'absolute',
-            ...selected,
             border: '1px solid #00b8ff',
+            pointerEvents: 'none',
+            ...selected,
           }}
         />
       ) : null}
