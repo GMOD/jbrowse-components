@@ -2,16 +2,16 @@ import { getAdapter } from '../../data_adapters/dataAdapterCache'
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType'
 
 import { RemoteAbortSignal } from '../remoteAbortSignals'
-import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
+import { isRegionsAdapter } from '../../data_adapters/BaseAdapter'
 
-export default class CoreGetRefNames extends RpcMethodType {
-  name = 'CoreGetRefNames'
+export default class CoreGetRegions extends RpcMethodType {
+  name = 'CoreGetRegions'
 
   async execute(
     args: {
       sessionId: string
       signal: RemoteAbortSignal
-      adapterConfig: Record<string, unknown>
+      adapterConfig: {}
     },
     rpcDriver: string,
   ) {
@@ -19,8 +19,8 @@ export default class CoreGetRefNames extends RpcMethodType {
     const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
     const { sessionId, adapterConfig } = deserializedArgs
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
-    return isFeatureAdapter(dataAdapter)
-      ? dataAdapter.getRefNames(deserializedArgs)
+    return isRegionsAdapter(dataAdapter)
+      ? dataAdapter.getRegions(deserializedArgs)
       : []
   }
 }
