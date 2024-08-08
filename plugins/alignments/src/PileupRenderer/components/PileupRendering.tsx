@@ -59,8 +59,8 @@ const PileupRendering = observer(function (props: {
     const rectTop = Math.round(topPx)
     const rectHeight = Math.round(bottomPx - topPx)
     selected = {
-      left: leftPx,
-      top: rectTop,
+      left: leftPx - 2,
+      top: rectTop - 2,
       width: rightPx - leftPx,
       height: rectHeight,
     }
@@ -198,7 +198,8 @@ const PileupRendering = observer(function (props: {
         <div
           style={{
             position: 'absolute',
-            border: '1px solid #00b8ff',
+            border: '2px solid #00b8ff',
+            boxSizing: 'content-box',
             pointerEvents: 'none',
             ...selected,
           }}

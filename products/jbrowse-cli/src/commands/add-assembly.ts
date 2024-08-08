@@ -149,12 +149,12 @@ custom         Either a JSON file location or inline JSON that defines a custom
 
     if (this.needLoadData(argsSequence) && !runFlags.load) {
       this.error(
-        `Please specify the loading operation for this file with --load copy|symlink|move|inPlace`,
+        'Please specify the loading operation for this file with --load copy|symlink|move|inPlace',
         { exit: 110 },
       )
     } else if (!this.needLoadData(argsSequence) && runFlags.load) {
       this.error(
-        `URL detected with --load flag. Please rerun the function without the --load flag`,
+        'URL detected with --load flag. Please rerun the function without the --load flag',
         { exit: 120 },
       )
     }
@@ -340,7 +340,9 @@ custom         Either a JSON file location or inline JSON that defines a custom
         break
       }
       case 'custom': {
-        const adapter = await this.readInlineOrFileJson(argsSequence)
+        const adapter = await this.readInlineOrFileJson<{ type: string }>(
+          argsSequence,
+        )
         this.debug(`Custom adapter: ${JSON.stringify(adapter)}`)
         if (!name) {
           if (isValidJSON(argsSequence)) {
@@ -415,9 +417,9 @@ custom         Either a JSON file location or inline JSON that defines a custom
         runFlags.refNameAliasesType &&
         runFlags.refNameAliasesType === 'custom'
       ) {
-        const refNameAliasesConfig = await this.readInlineOrFileJson(
-          runFlags.refNameAliases,
-        )
+        const refNameAliasesConfig = await this.readInlineOrFileJson<{
+          type: string
+        }>(runFlags.refNameAliases)
         if (!refNameAliasesConfig.type) {
           this.error(
             `No "type" specified in refNameAliases adapter "${JSON.stringify(
