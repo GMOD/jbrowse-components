@@ -15,5 +15,7 @@
   },
   "include": ["src"],
   "exclude": ["**/*.test.ts", "**/testUtil.ts"],
-  "references": [{ "path": "../../packages/core/tsconfig.build.json" }]
+  "references": [
+    { "path": "../../packages/text-indexing/tsconfig.build.commonjs.json" }
+  ]
 }
