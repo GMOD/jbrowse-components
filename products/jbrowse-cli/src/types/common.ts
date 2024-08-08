@@ -1,4 +1,3 @@
-import fs from 'fs'
 import path from 'path'
 
 // locals
@@ -6,15 +5,13 @@ import { Track, LocalPathLocation, UriLocation } from '../base'
 import fetch from '../fetchWithProxy'
 
 export async function createRemoteStream(urlIn: string) {
-  const response = await fetch(urlIn)
-  if (!response.ok) {
+  const res = await fetch(urlIn)
+  if (!res.ok) {
     throw new Error(
-      `Failed to fetch ${urlIn} status ${
-        response.status
-      } ${await response.text()}`,
+      `Failed to fetch ${urlIn} status ${res.status} ${await res.text()}`,
     )
   }
-  return response
+  return res
 }
 
 export function isURL(FileName: string) {

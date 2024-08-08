@@ -14,7 +14,7 @@ export async function* indexGff3({
   onStart,
   onUpdate,
 }: {
-  config: any
+  config: { trackId: string }
   attributesToIndex: string[]
   inLocation: string
   outDir: string

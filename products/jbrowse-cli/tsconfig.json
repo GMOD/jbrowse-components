@@ -7,11 +7,13 @@
     "outDir": "lib",
     "rootDir": "src",
     "strict": true,
+    "composite": true,
     "lib": ["es2021"],
     "target": "es2021",
     "esModuleInterop": true,
     "skipLibCheck": true
   },
   "include": ["src"],
-  "exclude": ["**/*.test.ts", "**/testUtil.ts"]
+  "exclude": ["**/*.test.ts", "**/testUtil.ts"],
+  "references": [{ "path": "../../packages/core/tsconfig.build.json" }]
 }

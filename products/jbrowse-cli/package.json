@@ -48,6 +48,7 @@
     "@oclif/core": "^4.0.6",
     "@oclif/plugin-help": "^6.0.15",
     "@jbrowse/text-indexing": "^2.0.0",
+    "@jbrowse/core": "^2.0.0",
     "boxen": "^4.2.0",
     "chalk": "^4.1.0",
     "cli-progress": "^3.9.0",

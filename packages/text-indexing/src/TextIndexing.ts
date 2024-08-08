@@ -257,6 +257,7 @@ async function* indexFiles({
 }
 
 function getLoc(attr: string, config: Track) {
+  // @ts-expect-error
   const elt = config.adapter[attr]
   return elt.uri || elt.localPath
 }

@@ -84,7 +84,6 @@ export function readData({
   trackList = [],
 }: Opts) {
   const assemblyData =
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     asm && fs.existsSync(asm) ? read<Assembly>(asm) : undefined
   const tracksData = tracks ? read<Track[]>(tracks) : undefined
   const configData = config ? read<Config>(config) : ({} as Config)

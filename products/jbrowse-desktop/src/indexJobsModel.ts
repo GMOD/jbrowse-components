@@ -160,9 +160,8 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
         } = toJS(entry.indexingParams)
         const rpcManager = self.rpcManager
         const trackConfigs = findTrackConfigsToIndex(self.tracks, trackIds).map(
-          conf => {
-            return JSON.parse(JSON.stringify(getSnapshot(conf)))
-          },
+          // @ts-expect-error
+          c => JSON.parse(JSON.stringify(getSnapshot(c))),
         )
         try {
           this.setRunning(true)
