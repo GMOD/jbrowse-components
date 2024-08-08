@@ -79,7 +79,12 @@ export interface CustomRefNameAliasAdapter {
 export interface Sequence {
   type: 'ReferenceSequenceTrack'
   trackId: string
-  adapter: { type: string; [key: string]: unknown }
+  adapter:
+    | IndexedFastaAdapter
+    | BgzipFastaAdapter
+    | TwoBitAdapter
+    | ChromeSizesAdapter
+    | CustomSequenceAdapter
 }
 
 export interface Assembly {
@@ -148,7 +153,7 @@ export default abstract class JBrowseCommand extends Command {
   }
 
   async readJsonFile<T>(location: string): Promise<T> {
-    let contents: string | undefined
+    let contents
     try {
       contents = await fsPromises.readFile(location, { encoding: 'utf8' })
     } catch (error) {
@@ -160,14 +165,16 @@ export default abstract class JBrowseCommand extends Command {
         exit: 40,
       })
     }
+    let result
     try {
-      return parseJSON(contents)
+      result = parseJSON(contents)
     } catch (error) {
       this.error(error instanceof Error ? error : `${error}`, {
         suggestions: [`Make sure "${location}" is a valid JSON file`],
         exit: 50,
       })
     }
+    return result
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -213,17 +220,17 @@ export default abstract class JBrowseCommand extends Command {
     })
   }
 
-  async readInlineOrFileJson<T>(inlineOrFileName: string) {
-    let result: T
+  async readInlineOrFileJson(inlineOrFileName: string) {
+    let result
     // see if it's inline JSON
     try {
-      result = parseJSON(inlineOrFileName) as T
+      result = parseJSON(inlineOrFileName)
     } catch (error) {
       this.debug(
         `Not valid inline JSON, attempting to parse as filename: '${inlineOrFileName}'`,
       )
       // not inline JSON, must be location of a JSON file
-      result = await this.readJsonFile<T>(inlineOrFileName)
+      result = await this.readJsonFile(inlineOrFileName)
     }
     return result
   }
@@ -263,7 +270,7 @@ export default abstract class JBrowseCommand extends Command {
 
   async *fetchVersions() {
     let page = 1
-    let result: GithubRelease[] | undefined
+    let result
 
     do {
       const response = await fetch(
@@ -306,14 +313,4 @@ export default abstract class JBrowseCommand extends Command {
   async getBranch(branch: string) {
     return `https://s3.amazonaws.com/jbrowse.org/code/jb2/${branch}/jbrowse-web-${branch}.zip`
   }
-}
-
-export function needLoadData(location: string) {
-  let isUrl: URL | undefined
-  try {
-    isUrl = new URL(location)
-  } catch (error) {
-    // ignore
-  }
-  return !isUrl
 }

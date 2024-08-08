@@ -29,7 +29,7 @@ export default class Create extends JBrowseCommand {
   static args = {
     localPath: Args.string({
       required: true,
-      description: 'Location where JBrowse 2 will be installed',
+      description: `Location where JBrowse 2 will be installed`,
     }),
   }
 

@@ -3,10 +3,10 @@ import path from 'path'
 import { Readable } from 'stream'
 import { ixIxxStream } from 'ixixx'
 import { Flags } from '@oclif/core'
-import { SingleBar, Presets } from 'cli-progress'
-import { indexGff3, indexVcf, generateMeta } from '@jbrowse/text-indexing'
 
 // locals
+import { indexGff3 } from '../types/gff3Adapter'
+import { indexVcf } from '../types/vcfAdapter'
 import JBrowseCommand, {
   Track,
   Config,
@@ -14,7 +14,11 @@ import JBrowseCommand, {
   UriLocation,
   LocalPathLocation,
 } from '../base'
-import { supported, guessAdapterFromFileName } from '../types/common'
+import {
+  generateMeta,
+  supported,
+  guessAdapterFromFileName,
+} from '../types/common'
 
 function readConf(path: string) {
   return JSON.parse(fs.readFileSync(path, 'utf8')) as Config
@@ -51,8 +55,7 @@ export default class TextIndex extends JBrowseCommand {
   static flags = {
     help: Flags.help({ char: 'h' }),
     tracks: Flags.string({
-      description:
-        'Specific tracks to index, formatted as comma separated trackIds. If unspecified, indexes all available tracks',
+      description: `Specific tracks to index, formatted as comma separated trackIds. If unspecified, indexes all available tracks`,
     }),
     target: Flags.string({
       description:
@@ -139,10 +142,10 @@ export default class TextIndex extends JBrowseCommand {
     const outFlag = target || out || '.'
     const isDir = fs.lstatSync(outFlag).isDirectory()
     const confPath = isDir ? path.join(outFlag, 'config.json') : outFlag
-    const outDir = path.dirname(confPath)
+    const outLocation = path.dirname(confPath)
     const config = readConf(confPath)
 
-    const trixDir = path.join(outDir, 'trix')
+    const trixDir = path.join(outLocation, 'trix')
     if (!fs.existsSync(trixDir)) {
       fs.mkdirSync(trixDir)
     }
@@ -164,17 +167,17 @@ export default class TextIndex extends JBrowseCommand {
         asm,
       )
       if (!trackConfigs.length) {
-        this.log(`Indexing assembly ${asm}...(no tracks found)...`)
+        this.log('Indexing assembly ' + asm + '...(no tracks found)...')
         continue
       }
-      this.log(`Indexing assembly ${asm}...`)
+      this.log('Indexing assembly ' + asm + '...')
 
       if (dryrun) {
         this.log(
           trackConfigs.map(e => `${e.trackId}\t${e.adapter.type}`).join('\n'),
         )
       } else {
-        const id = `${asm}-index`
+        const id = asm + '-index'
         const idx = aggregateTextSearchAdapters.findIndex(
           x => x.textSearchAdapterId === id,
         )
@@ -187,11 +190,11 @@ export default class TextIndex extends JBrowseCommand {
 
         await this.indexDriver({
           trackConfigs,
-          outDir,
+          outLocation,
           quiet,
           name: asm,
-          attributesToIndex: attributes.split(','),
-          featureTypesToExclude: exclude.split(','),
+          attributes: attributes.split(','),
+          typesToExclude: exclude.split(','),
           assemblyNames: [asm],
           prefixSize,
         })
@@ -250,10 +253,10 @@ export default class TextIndex extends JBrowseCommand {
 
     const isDir = fs.lstatSync(outFlag).isDirectory()
     const confFilePath = isDir ? path.join(outFlag, 'config.json') : outFlag
-    const outDir = path.dirname(confFilePath)
+    const outLocation = path.dirname(confFilePath)
     const config = readConf(confFilePath)
     const configTracks = config.tracks || []
-    const trixDir = path.join(outDir, 'trix')
+    const trixDir = path.join(outLocation, 'trix')
     if (!fs.existsSync(trixDir)) {
       fs.mkdirSync(trixDir)
     }
@@ -265,7 +268,7 @@ export default class TextIndex extends JBrowseCommand {
     const confs = await this.getTrackConfigs(confFilePath, tracks?.split(','))
     if (!confs.length) {
       throw new Error(
-        'Tracks not found in config.json, please add track configurations before indexing.',
+        `Tracks not found in config.json, please add track configurations before indexing.`,
       )
     }
     for (const trackConfig of confs) {
@@ -276,15 +279,15 @@ export default class TextIndex extends JBrowseCommand {
         )
         continue
       }
-      this.log(`Indexing track ${trackId}...`)
+      this.log('Indexing track ' + trackId + '...')
 
       await this.indexDriver({
         trackConfigs: [trackConfig],
-        attributesToIndex: attributes.split(','),
-        outDir,
+        attributes: attributes.split(','),
+        outLocation,
         quiet,
         name: trackId,
-        featureTypesToExclude: exclude.split(','),
+        typesToExclude: exclude.split(','),
         assemblyNames,
         prefixSize,
       })
@@ -298,7 +301,7 @@ export default class TextIndex extends JBrowseCommand {
               ...textSearching,
               textSearchAdapter: {
                 type: 'TrixTextSearchAdapter',
-                textSearchAdapterId: `${trackId}-index`,
+                textSearchAdapterId: trackId + '-index',
                 ixFilePath: {
                   uri: `trix/${trackId}.ix`,
                   locationType: 'UriLocation' as const,
@@ -356,11 +359,11 @@ export default class TextIndex extends JBrowseCommand {
 
     await this.indexDriver({
       trackConfigs,
-      outDir: outFlag,
+      outLocation: outFlag,
       name: trackConfigs.length > 1 ? 'aggregate' : path.basename(file[0]),
       quiet,
-      attributesToIndex: attributes.split(','),
-      featureTypesToExclude: exclude.split(','),
+      attributes: attributes.split(','),
+      typesToExclude: exclude.split(','),
       assemblyNames: [],
       prefixSize,
     })
@@ -372,46 +375,46 @@ export default class TextIndex extends JBrowseCommand {
 
   async indexDriver({
     trackConfigs,
-    attributesToIndex,
-    outDir,
+    attributes,
+    outLocation,
     name,
     quiet,
-    featureTypesToExclude,
+    typesToExclude,
     assemblyNames,
     prefixSize,
   }: {
     trackConfigs: Track[]
-    attributesToIndex: string[]
-    outDir: string
+    attributes: string[]
+    outLocation: string
     name: string
     quiet: boolean
-    featureTypesToExclude: string[]
+    typesToExclude: string[]
     assemblyNames: string[]
     prefixSize?: number
   }) {
     const readStream = Readable.from(
       this.indexFiles({
         trackConfigs,
-        attributesToIndex,
-        outDir,
+        attributes,
+        outLocation,
         quiet,
-        featureTypesToExclude,
+        typesToExclude,
       }),
     )
 
     const ixIxxStream = await this.runIxIxx({
       readStream,
-      outLocation: outDir,
+      outLocation,
       name,
       prefixSize,
     })
 
     await generateMeta({
-      configs: trackConfigs,
-      attributesToIndex,
-      outDir,
+      trackConfigs,
+      attributes,
+      outLocation,
       name,
-      featureTypesToExclude,
+      typesToExclude,
       assemblyNames,
     })
     return ixIxxStream
@@ -419,26 +422,26 @@ export default class TextIndex extends JBrowseCommand {
 
   async *indexFiles({
     trackConfigs,
-    attributesToIndex,
-    outDir,
+    attributes,
+    outLocation,
     quiet,
-    featureTypesToExclude,
+    typesToExclude,
   }: {
     trackConfigs: Track[]
-    attributesToIndex: string[]
-    outDir: string
+    attributes: string[]
+    outLocation: string
     quiet: boolean
-    featureTypesToExclude: string[]
+    typesToExclude: string[]
   }) {
     for (const config of trackConfigs) {
       const { adapter, textSearching } = config
       const { type } = adapter
       const {
-        indexingFeatureTypesToExclude = featureTypesToExclude,
-        indexingAttributes = attributesToIndex,
+        indexingFeatureTypesToExclude = typesToExclude,
+        indexingAttributes = attributes,
       } = textSearching || {}
 
-      let loc: UriLocation | LocalPathLocation | undefined
+      let loc
       if (type === 'Gff3TabixAdapter') {
         loc = adapter.gffGzLocation
       } else if (type === 'Gff3Adapter') {
@@ -451,48 +454,25 @@ export default class TextIndex extends JBrowseCommand {
       if (!loc) {
         return
       }
-      // progress bar code was aided by blog post at
-      // https://webomnizz.com/download-a-file-with-progressbar-using-node-js/
-      const progressBar = new SingleBar(
-        {
-          format: `{bar} ${config.trackId} {percentage}% | ETA: {eta}s`,
-          etaBuffer: 2000,
-        },
-        Presets.shades_classic,
-      )
       if (type === 'Gff3TabixAdapter' || type === 'Gff3Adapter') {
         yield* indexGff3({
           config,
           attributesToIndex: indexingAttributes,
           inLocation: getLoc(loc),
-          outDir,
-          featureTypesToExclude: indexingFeatureTypesToExclude,
-          onStart: totalBytes => {
-            if (!quiet) {
-              progressBar.start(totalBytes, 0)
-            }
-          },
-          onUpdate: progressBytes => {
-            progressBar.update(progressBytes)
-          },
+          outLocation,
+          typesToExclude: indexingFeatureTypesToExclude,
+          quiet,
         })
       } else if (type === 'VcfTabixAdapter' || type === 'VcfAdapter') {
         yield* indexVcf({
           config,
           attributesToIndex: indexingAttributes,
           inLocation: getLoc(loc),
-          outDir,
-          onStart: totalBytes => {
-            if (!quiet) {
-              progressBar.start(totalBytes, 0)
-            }
-          },
-          onUpdate: progressBytes => {
-            progressBar.update(progressBytes)
-          },
+          outLocation,
+          typesToExclude: indexingFeatureTypesToExclude,
+          quiet,
         })
       }
-      progressBar.stop()
     }
   }
 

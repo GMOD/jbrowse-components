@@ -32,7 +32,7 @@ export default class Upgrade extends JBrowseCommand {
   static args = {
     localPath: Args.string({
       required: false,
-      description: 'Location where JBrowse 2 is installed',
+      description: `Location where JBrowse 2 is installed`,
       default: '.',
     }),
   }
@@ -77,7 +77,7 @@ export default class Upgrade extends JBrowseCommand {
 
     this.debug(`Want to upgrade at: ${argsPath}`)
     if (!argsPath) {
-      this.error('No directory supplied', { exit: 100 })
+      this.error(`No directory supplied`, { exit: 100 })
     }
 
     if (!fs.existsSync(path.join(argsPath, 'manifest.json'))) {

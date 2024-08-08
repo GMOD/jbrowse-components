@@ -25,8 +25,7 @@ export default class AddConnection extends JBrowseCommand {
   static args = {
     connectionUrlOrPath: Args.string({
       required: true,
-      description:
-        'URL of data directory\nFor hub file, usually called hub.txt\nFor JBrowse 1, location of JB1 data directory similar to http://mysite.com/jbrowse/data/ ',
+      description: `URL of data directory\nFor hub file, usually called hub.txt\nFor JBrowse 1, location of JB1 data directory similar to http://mysite.com/jbrowse/data/ `,
     }),
   }
 
@@ -168,14 +167,16 @@ export default class AddConnection extends JBrowseCommand {
       this.error('The location provided is not a valid URL', { exit: 160 })
     }
     if (locationUrl) {
+      let response
       try {
         if (check) {
-          const response = await fetch(`${locationUrl}`, { method: 'HEAD' })
-          if (!response.ok) {
-            this.error(`Response returned with code ${response.status}`)
-          }
+          // @ts-expect-error
+          response = await fetch(locationUrl, { method: 'HEAD' })
         }
-        return locationUrl.href
+        if (!response || response.ok) {
+          return locationUrl.href
+        }
+        this.error(`Response returned with code ${response.status}`)
       } catch (error) {
         // ignore
         this.error(`Unable to fetch from URL, ${error}`, { exit: 170 })

@@ -32,10 +32,10 @@
   },
   "scripts": {
     "prebuild": "npm run clean",
-    "build": "tsc -b tsconfig.build.json",
+    "build": "tsc --build",
     "postpack": "rimraf oclif.manifest.json",
-    "clean": "rimraf lib *.tsbuildinfo",
-    "prepack": "npm run build && npm run docs",
+    "clean": "rimraf lib",
+    "prepack": "npm run clean  && npm run build && npm run manifest && npm run docs",
     "manifest": "oclif manifest",
     "version": "npm run docs && npm run docs:version:add",
     "predocs": "npm run build",
@@ -47,7 +47,6 @@
   "dependencies": {
     "@oclif/core": "^4.0.6",
     "@oclif/plugin-help": "^6.0.15",
-    "@jbrowse/text-indexing": "^2.0.0",
     "boxen": "^4.2.0",
     "chalk": "^4.1.0",
     "cli-progress": "^3.9.0",

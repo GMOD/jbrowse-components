@@ -168,7 +168,7 @@ test('adds a bam track with csi', async () => {
       '--load',
       'copy',
       '--indexFile',
-      `${simpleBam}.csi`,
+      simpleBam + '.csi',
     ])
     expect(exists(path.join(ctx.dir, 'simple.bam'))).toBeTruthy()
     expect(exists(path.join(ctx.dir, 'simple.bam.csi'))).toBeTruthy()
@@ -409,7 +409,7 @@ test('adds a tabix gff with csi', async () => {
       '--load',
       'copy',
       '--indexFile',
-      `${simpleGffGz}.csi`,
+      simpleGffGz + '.csi',
     ])
 
     expect(exists(ctxDir(ctx, 'volvox.sort.gff3.gz'))).toBeTruthy()

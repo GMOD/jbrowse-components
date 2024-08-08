@@ -21,8 +21,8 @@ const volvoxDir = path.join(
   'volvox',
 )
 
-const ixLoc = (loc: string, b = 'volvox') => path.join(loc, 'trix', `${b}.ix`)
-const ixxLoc = (loc: string, b = 'volvox') => path.join(loc, 'trix', `${b}.ixx`)
+const ixLoc = (loc: string, b = 'volvox') => path.join(loc, 'trix', b + '.ix')
+const ixxLoc = (loc: string, b = 'volvox') => path.join(loc, 'trix', b + '.ixx')
 
 function readText(str: string) {
   return fs.readFileSync(str, 'utf8')
@@ -247,7 +247,7 @@ test('indexes single assembly volvox config', async () => {
     await copyDir(volvoxDir, ctx.dir)
     const volvoxConfig = readJSON(path.join(ctx.dir, 'config.json'))
     const assembly = volvoxConfig.assemblies[0]
-    volvoxConfig.assemblies = undefined
+    delete volvoxConfig.assemblies
     fs.writeFileSync(
       path.join(ctx.dir, 'config.json'),
       JSON.stringify({ ...volvoxConfig, assembly }),

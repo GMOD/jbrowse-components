@@ -1,3 +1,4 @@
+import fs from 'fs'
 import path from 'path'
 
 // locals
@@ -5,17 +6,19 @@ import { Track, LocalPathLocation, UriLocation } from '../base'
 import fetch from '../fetchWithProxy'
 
 export async function createRemoteStream(urlIn: string) {
-  const res = await fetch(urlIn)
-  if (!res.ok) {
+  const response = await fetch(urlIn)
+  if (!response.ok) {
     throw new Error(
-      `Failed to fetch ${urlIn} status ${res.status} ${await res.text()}`,
+      `Failed to fetch ${urlIn} status ${
+        response.status
+      } ${await response.text()}`,
     )
   }
-  return res
+  return response
 }
 
 export function isURL(FileName: string) {
-  let url: URL | undefined
+  let url
 
   try {
     url = new URL(FileName)
@@ -108,4 +111,41 @@ export function supported(type: string) {
     'Gff3Adapter',
     'VcfAdapter',
   ].includes(type)
+}
+
+export async function generateMeta({
+  trackConfigs,
+  attributes,
+  outLocation,
+  name,
+  typesToExclude,
+  assemblyNames,
+}: {
+  trackConfigs: Track[]
+  attributes: string[]
+  outLocation: string
+  name: string
+  typesToExclude: string[]
+  assemblyNames: string[]
+}) {
+  const tracks = trackConfigs.map(({ adapter, textSearching, trackId }) => ({
+    trackId,
+    attributesIndexed: textSearching?.indexingAttributes || attributes,
+    excludedTypes:
+      textSearching?.indexingFeatureTypesToExclude || typesToExclude,
+    adapterConf: adapter,
+  }))
+
+  fs.writeFileSync(
+    path.join(outLocation, 'trix', `${name}_meta.json`),
+    JSON.stringify(
+      {
+        dateCreated: new Date().toISOString(),
+        tracks,
+        assemblyNames,
+      },
+      null,
+      2,
+    ),
+  )
 }

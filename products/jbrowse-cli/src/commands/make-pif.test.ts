@@ -15,7 +15,7 @@ const exists = (p: string) => fs.existsSync(p)
 
 test('make-pif', async () => {
   await runInTmpDir(async () => {
-    const fn = `${path.basename(simplePaf, '.paf')}.pif.gz`
+    const fn = path.basename(simplePaf, '.paf') + '.pif.gz'
     await runCommand(['make-pif', simplePaf, '--out', fn])
     expect(exists(fn)).toBeTruthy()
     expect(gunzipSync(fs.readFileSync(fn)).toString()).toMatchSnapshot()
@@ -24,9 +24,9 @@ test('make-pif', async () => {
 
 test('make pif with CSI', async () => {
   await runInTmpDir(async () => {
-    const fn = `${path.basename(simplePaf, '.paf')}.pif.gz`
+    const fn = path.basename(simplePaf, '.paf') + '.pif.gz'
     await runCommand(['make-pif', simplePaf, '--out', fn, '--csi'])
     expect(exists(fn)).toBeTruthy()
-    expect(exists(`${fn}.csi`)).toBeTruthy()
+    expect(exists(fn + '.csi')).toBeTruthy()
   })
 })

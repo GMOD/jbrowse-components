@@ -73,7 +73,7 @@ export default class SetDefaultSession extends JBrowseCommand {
     const configContents: Config = await this.readJsonFile(this.target)
 
     if (deleteDefaultSession) {
-      configContents.defaultSession = undefined
+      delete configContents.defaultSession
       await this.writeJsonFile(this.target, configContents)
     } else if (currentSession) {
       this.log(
@@ -83,7 +83,7 @@ export default class SetDefaultSession extends JBrowseCommand {
       )
       this.exit()
     } else if (!session) {
-      this.error('Please provide a --session file', { exit: 120 })
+      this.error(`Please provide a --session file`, { exit: 120 })
     } else if (session) {
       await this.writeJsonFile(this.target, {
         ...configContents,
