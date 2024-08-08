@@ -169,7 +169,7 @@ const PileupRendering = observer(function (props: {
     <div
       ref={ref}
       data-testid={[
-        'pileup',
+        'pileup-overlay',
         sortedBy?.type,
         colorBy?.type,
         colorBy?.tag,
