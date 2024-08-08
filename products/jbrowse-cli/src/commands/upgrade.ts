@@ -1,5 +1,4 @@
 import { Args, Flags } from '@oclif/core'
-import { rimrafSync } from 'rimraf'
 import fs from 'fs'
 import path from 'path'
 import decompress from 'decompress'
@@ -112,7 +111,7 @@ export default class Upgrade extends JBrowseCommand {
     }
 
     if (clean) {
-      rimrafSync(path.join(argsPath, 'static'))
+      fs.rmSync(path.join(argsPath, 'static'), { recursive: true })
       fs.readdirSync(argsPath)
         .filter(f => f.includes('worker.js'))
         .forEach(f => fs.unlinkSync(path.join(argsPath, f)))

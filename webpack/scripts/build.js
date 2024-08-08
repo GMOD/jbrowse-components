@@ -13,7 +13,6 @@ const path = require('path')
 const chalk = require('chalk')
 const fs = require('fs')
 const webpack = require('webpack')
-const rimraf = require('rimraf')
 const paths = require('../config/paths')
 const checkRequiredFiles = require('react-dev-utils/checkRequiredFiles')
 const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages')
@@ -53,7 +52,7 @@ module.exports = function buildWebpack(config) {
     .then(previousFileSizes => {
       // Remove all content but keep the directory so that
       // if you're in it, you don't end up in Trash
-      rimraf.rimrafSync(paths.appBuild)
+      fs.rmSync(paths.appBuild, { recursive: true })
       // Merge with the public folder
       copyPublicFolder()
       // Start the webpack build
