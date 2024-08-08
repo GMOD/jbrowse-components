@@ -18,10 +18,10 @@ export function featureData(data: FeatureLoc) {
   f.phase = Number(data.frame)
   f.refName = data.seq_name
   if (data.score === null) {
-    delete f.score
+    f.score = undefined
   }
   if (data.frame === null) {
-    delete f.score
+    f.score = undefined
   }
   const defaultFields = new Set([
     'start',
@@ -60,15 +60,15 @@ export function featureData(data: FeatureLoc) {
     )
   }
 
-  delete f.child_features
-  delete f.data
-  delete f.derived_features
+  f.child_features = undefined
+  f.data = undefined
+  f.derived_features = undefined
   // eslint-disable-next-line no-underscore-dangle
-  delete f._linehash
-  delete f.attributes
-  delete f.seq_name
-  delete f.featureType
-  delete f.frame
+  f._linehash = undefined
+  f.attributes = undefined
+  f.seq_name = undefined
+  f.featureType = undefined
+  f.frame = undefined
 
   if (f.transcript_id) {
     f.name = f.transcript_id

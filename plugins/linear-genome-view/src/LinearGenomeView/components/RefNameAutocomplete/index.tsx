@@ -64,7 +64,7 @@ const RefNameAutocomplete = observer(function ({
         session.notifyError(`${e}`, e)
       }
     })()
-  }, [assemblyName, fetchResults, debouncedSearch, session, model])
+  }, [assemblyName, fetchResults, debouncedSearch, session])
 
   const inputBoxVal = coarseVisibleLocStrings || value || ''
 

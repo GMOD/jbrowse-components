@@ -19,15 +19,13 @@ export interface ErrorProps {
 }
 
 export function getDisplayStr(totalBytes: number) {
-  let displayBp
   if (Math.floor(totalBytes / 1000000) > 0) {
-    displayBp = `${Number.parseFloat((totalBytes / 1000000).toPrecision(3))} Mb`
+    return `${Number.parseFloat((totalBytes / 1000000).toPrecision(3))} Mb`
   } else if (Math.floor(totalBytes / 1000) > 0) {
-    displayBp = `${Number.parseFloat((totalBytes / 1000).toPrecision(3))} Kb`
+    return `${Number.parseFloat((totalBytes / 1000).toPrecision(3))} Kb`
   } else {
-    displayBp = `${Math.floor(totalBytes)} bytes`
+    return `${Math.floor(totalBytes)} bytes`
   }
-  return displayBp
 }
 
 // stabilize clipid under test for snapshot

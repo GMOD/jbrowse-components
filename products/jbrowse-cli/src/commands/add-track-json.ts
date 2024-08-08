@@ -1,6 +1,6 @@
 import { Args, Flags } from '@oclif/core'
 import { promises as fsPromises } from 'fs'
-import JBrowseCommand, { Config } from '../base'
+import JBrowseCommand, { Config, Track } from '../base'
 
 export default class AddTrackJson extends JBrowseCommand {
   // @ts-expect-error
@@ -17,14 +17,15 @@ export default class AddTrackJson extends JBrowseCommand {
   static args = {
     track: Args.string({
       required: true,
-      description: `track JSON file or command line arg blob`,
+      description: 'track JSON file or command line arg blob',
     }),
   }
 
   static flags = {
     update: Flags.boolean({
       char: 'u',
-      description: `update the contents of an existing track, matched based on trackId`,
+      description:
+        'update the contents of an existing track, matched based on trackId',
     }),
     target: Flags.string({
       description:
@@ -49,7 +50,7 @@ export default class AddTrackJson extends JBrowseCommand {
     const config: Config = await this.readJsonFile(this.target)
     this.debug(`Found existing config file ${this.target}`)
 
-    const track = await this.readInlineOrFileJson(inputtedTrack)
+    const track = await this.readInlineOrFileJson<Track>(inputtedTrack)
     if (!config.tracks) {
       config.tracks = []
     }

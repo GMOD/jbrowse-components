@@ -57,7 +57,6 @@
     "ixixx": "^2.0.1",
     "json-parse-better-errors": "^1.0.2",
     "node-fetch-native": "^1.6.4",
-    "rimraf": "^5.0.0",
     "tslib": "^2.3.1"
   },
   "devDependencies": {

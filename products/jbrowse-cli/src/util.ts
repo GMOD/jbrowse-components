@@ -3,18 +3,19 @@ import fs from 'fs'
 import path from 'path'
 
 export async function getLocalOrRemoteStream(uri: string, out: string) {
-  let stream
-  let totalBytes = 0
   if (isURL(uri)) {
     const result = await createRemoteStream(uri)
-    totalBytes = +(result.headers.get('Content-Length') || 0)
-    stream = result.body
+    return {
+      totalBytes: +(result.headers?.get('Content-Length') || 0),
+      stream: result.body,
+    }
   } else {
     const filename = path.isAbsolute(uri) ? uri : path.join(out, uri)
-    totalBytes = fs.statSync(filename).size
-    stream = fs.createReadStream(filename)
+    return {
+      totalBytes: fs.statSync(filename).size,
+      stream: fs.createReadStream(filename),
+    }
   }
-  return { totalBytes, stream }
 }
 
 export function decodeURIComponentNoThrow(uri: string) {

@@ -209,7 +209,7 @@ function stateModelFactory() {
        * #getter
        */
       searchFeatureByID(id: string): LayoutRecord | undefined {
-        let ret
+        let ret: LayoutRecord | undefined
         self.blockState.forEach(block => {
           const val = block?.layout?.getByID(id)
           if (val) {

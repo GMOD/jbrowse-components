@@ -91,7 +91,7 @@ const model: MyModel = {
   },
   async revokeAuthorizationCode(_authorizationCode) {
     /* This is where we delete codes */
-    delete db.authorizationCode
+    db.authorizationCode = undefined
     const codeWasFoundAndDeleted = true // Return true if code found and deleted, false otherwise
     return codeWasFoundAndDeleted
   },

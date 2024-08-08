@@ -141,13 +141,13 @@ class MockRpcDriver extends BaseRpcDriver {
   }
 }
 
-export class MockRendererTimeout extends RpcMethodType {
+class MockRendererTimeout extends RpcMethodType {
   name = 'MockRenderTimeout'
 
   async execute() {}
 }
 
-export class MockRendererShort extends RpcMethodType {
+class MockRendererShort extends RpcMethodType {
   name = 'MockRenderShort'
 
   async execute() {}

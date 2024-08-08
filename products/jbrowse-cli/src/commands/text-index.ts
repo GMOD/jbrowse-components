@@ -55,7 +55,8 @@ export default class TextIndex extends JBrowseCommand {
   static flags = {
     help: Flags.help({ char: 'h' }),
     tracks: Flags.string({
-      description: `Specific tracks to index, formatted as comma separated trackIds. If unspecified, indexes all available tracks`,
+      description:
+        'Specific tracks to index, formatted as comma separated trackIds. If unspecified, indexes all available tracks',
     }),
     target: Flags.string({
       description:
@@ -167,17 +168,17 @@ export default class TextIndex extends JBrowseCommand {
         asm,
       )
       if (!trackConfigs.length) {
-        this.log('Indexing assembly ' + asm + '...(no tracks found)...')
+        this.log(`Indexing assembly ${asm}...(no tracks found)...`)
         continue
       }
-      this.log('Indexing assembly ' + asm + '...')
+      this.log(`Indexing assembly ${asm}...`)
 
       if (dryrun) {
         this.log(
           trackConfigs.map(e => `${e.trackId}\t${e.adapter.type}`).join('\n'),
         )
       } else {
-        const id = asm + '-index'
+        const id = `${asm}-index`
         const idx = aggregateTextSearchAdapters.findIndex(
           x => x.textSearchAdapterId === id,
         )
@@ -268,7 +269,7 @@ export default class TextIndex extends JBrowseCommand {
     const confs = await this.getTrackConfigs(confFilePath, tracks?.split(','))
     if (!confs.length) {
       throw new Error(
-        `Tracks not found in config.json, please add track configurations before indexing.`,
+        'Tracks not found in config.json, please add track configurations before indexing.',
       )
     }
     for (const trackConfig of confs) {
@@ -279,7 +280,7 @@ export default class TextIndex extends JBrowseCommand {
         )
         continue
       }
-      this.log('Indexing track ' + trackId + '...')
+      this.log(`Indexing track ${trackId}...`)
 
       await this.indexDriver({
         trackConfigs: [trackConfig],
@@ -301,7 +302,7 @@ export default class TextIndex extends JBrowseCommand {
               ...textSearching,
               textSearchAdapter: {
                 type: 'TrixTextSearchAdapter',
-                textSearchAdapterId: trackId + '-index',
+                textSearchAdapterId: `${trackId}-index`,
                 ixFilePath: {
                   uri: `trix/${trackId}.ix`,
                   locationType: 'UriLocation' as const,
@@ -441,7 +442,7 @@ export default class TextIndex extends JBrowseCommand {
         indexingAttributes = attributes,
       } = textSearching || {}
 
-      let loc
+      let loc: UriLocation | LocalPathLocation
       if (type === 'Gff3TabixAdapter') {
         loc = adapter.gffGzLocation
       } else if (type === 'Gff3Adapter') {
@@ -450,10 +451,10 @@ export default class TextIndex extends JBrowseCommand {
         loc = adapter.vcfLocation
       } else if (type === 'VcfTabixAdapter') {
         loc = adapter.vcfGzLocation
-      }
-      if (!loc) {
+      } else {
         return
       }
+
       if (type === 'Gff3TabixAdapter' || type === 'Gff3Adapter') {
         yield* indexGff3({
           config,

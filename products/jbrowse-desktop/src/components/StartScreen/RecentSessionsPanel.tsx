@@ -87,6 +87,7 @@ export default function RecentSessionPanel({
     [sessions],
   )
 
+  /* biome-ignore lint/correctness/useExhaustiveDependencies: */
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {

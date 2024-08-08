@@ -42,7 +42,6 @@ export default class RpcManager {
     if (driver) {
       return driver
     }
-    let newDriver
     const config = this.mainConfiguration.drivers.get('WebWorkerRpcDriver')
     if (backendName === 'MainThreadRpcDriver') {
       const backendConfiguration =
@@ -53,7 +52,12 @@ export default class RpcManager {
           `requested RPC driver "${backendName}" is missing config`,
         )
       }
-      newDriver = new MainThreadRpcDriver({ ...backendConfiguration, config })
+      const newDriver = new MainThreadRpcDriver({
+        ...backendConfiguration,
+        config,
+      })
+      this.driverObjects.set(backendName, newDriver)
+      return newDriver
     } else if (backendName === 'WebWorkerRpcDriver') {
       const backendConfiguration = this.backendConfigurations.WebWorkerRpcDriver
       if (!backendConfiguration) {
@@ -61,18 +65,18 @@ export default class RpcManager {
           `requested RPC driver "${backendName}" is missing config`,
         )
       }
-      newDriver = new WebWorkerRpcDriver(
+      const newDriver = new WebWorkerRpcDriver(
         { ...backendConfiguration, config },
         {
           plugins: this.pluginManager.runtimePluginDefinitions,
           windowHref: window.location.href,
         },
       )
+      this.driverObjects.set(backendName, newDriver)
+      return newDriver
     } else {
       throw new Error(`requested RPC driver "${backendName}" is not installed`)
     }
-    this.driverObjects.set(backendName, newDriver)
-    return newDriver
   }
 
   async getDriverForCall(

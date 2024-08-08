@@ -67,7 +67,7 @@ const OverviewHighlight = observer(function OverviewHighlight({
           const { left, width, highlight, label } = obj
           return (
             <Tooltip
-              key={JSON.stringify(obj) + '-' + idx}
+              key={`${JSON.stringify(obj)}-${idx}`}
               title={showBookmarkLabels ? label : ''}
               arrow
             >

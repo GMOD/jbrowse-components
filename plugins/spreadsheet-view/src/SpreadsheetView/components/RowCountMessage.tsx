@@ -18,7 +18,7 @@ const RowCountMessage = observer(function ({
       selectedAndPassingFiltersCount,
     } = spreadsheet.rowSet
 
-    let rowMessage
+    let rowMessage: string
     if (passingFiltersCount !== count) {
       rowMessage = `${spreadsheet.rowSet.passingFiltersCount} rows of ${spreadsheet.rowSet.count} total`
       if (selectedCount) {

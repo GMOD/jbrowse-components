@@ -83,7 +83,8 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
 
       if ('imageData' in r) {
         throw new Error('found a canvas in svg export, probably a bug')
-      } else if ('canvasRecordedData' in r) {
+      }
+      if ('canvasRecordedData' in r) {
         return {
           html: await getSerializedSvg({
             ...r,
@@ -91,9 +92,8 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
             height: synH,
           }),
         }
-      } else {
-        return r
       }
+      return r
     }),
   )
 
@@ -154,9 +154,10 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
             transform={`translate(${shift + trackLabelOffset} ${
               fontSize + heights[0]
             })`}
-            clipPath={`url(#synclip)`}
+            clipPath={'url(#synclip)'}
           >
             {renderings.map((r, i) => (
+              /* biome-ignore lint/suspicious/noArrayIndexKey: */
               <ReactRendering key={i} rendering={r} />
             ))}
           </g>

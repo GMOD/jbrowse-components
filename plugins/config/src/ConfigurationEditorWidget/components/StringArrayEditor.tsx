@@ -34,7 +34,7 @@ const StringArrayEditor = observer(function ({
       {slot.name ? <InputLabel>{slot.name}</InputLabel> : null}
       <List disablePadding>
         {slot.value.map((val, idx) => (
-          <ListItem key={idx} disableGutters>
+          <ListItem key={`${JSON.stringify(val)}-${idx}`} disableGutters>
             <TextField
               value={val}
               onChange={evt => slot.setAtIndex(idx, evt.target.value)}

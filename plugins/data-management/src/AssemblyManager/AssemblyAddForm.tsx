@@ -147,7 +147,7 @@ const AssemblyAddForm = observer(function ({
       rootModel.session?.notify("Can't create an assembly without a name")
     } else {
       setFormOpen(false)
-      let newAssembly
+      let newAssembly: Record<string, unknown>
       if (adapterSelection === 'IndexedFastaAdapter') {
         newAssembly = {
           name: assemblyName,
@@ -185,6 +185,8 @@ const AssemblyAddForm = observer(function ({
             },
           },
         }
+      } else {
+        throw new Error(`unknown ${adapterSelection}`)
       }
       rootModel.jbrowse.addAssemblyConf(newAssembly)
       rootModel.session?.notify(

@@ -74,7 +74,7 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
 
   private async getFeaturesHelper(
     query: Region,
-    opts: BaseOptions = {},
+    opts: BaseOptions,
     metadata: { columnNumbers: { start: number; end: number } },
     observer: Observer<Feature>,
     allowRedispatch: boolean,
@@ -92,8 +92,8 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
         },
       )
       if (allowRedispatch && lines.length) {
-        let minStart = Infinity
-        let maxEnd = -Infinity
+        let minStart = Number.POSITIVE_INFINITY
+        let maxEnd = Number.NEGATIVE_INFINITY
         lines.forEach(line => {
           const featureType = line.fields[2]
           // only expand redispatch range if feature is not a "dontRedispatch" type
@@ -186,7 +186,7 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
         new SimpleFeature({
           data: this.featureData(featureLoc),
 
-          id: `${this.id}-offset-${featureLoc.attributes!._lineHash![0]}`,
+          id: `${this.id}-offset-${featureLoc.attributes?._lineHash?.[0]}`,
         }),
     )
   }
@@ -206,10 +206,10 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
     f.phase = Number(data.phase)
     f.refName = data.seq_id
     if (data.score === null) {
-      delete f.score
+      f.score = undefined
     }
     if (data.phase === null) {
-      delete f.score
+      f.score = undefined
     }
     const defaultFields = new Set([
       'start',
@@ -246,12 +246,12 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
       )
     }
 
-    delete f.child_features
-    delete f.data
+    f.child_features = undefined
+    f.data = undefined
     // delete f.derived_features
-    delete f._linehash
-    delete f.attributes
-    delete f.seq_id
+    f._linehash = undefined
+    f.attributes = undefined
+    f.seq_id = undefined
 
     return f
   }

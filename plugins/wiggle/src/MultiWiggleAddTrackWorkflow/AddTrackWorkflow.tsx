@@ -87,7 +87,7 @@ export default function MultiWiggleWidget({ model }: { model: AddTrackModel }) {
           ].join('')
 
           // allow list of bigwigs in JSON format or line-by-line
-          let bigWigs
+          let bigWigs: unknown[]
           try {
             bigWigs = JSON.parse(val)
           } catch (e) {

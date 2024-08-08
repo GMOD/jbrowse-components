@@ -85,7 +85,7 @@ function preprocessConfigurationSchemaArguments(
       ...inputOptions.baseConfiguration.jbrowseSchemaOptions,
       ...inputOptions,
     }
-    delete options.baseConfiguration
+    options.baseConfiguration = undefined
   }
   return { schemaDefinition, options }
 }
@@ -96,7 +96,7 @@ function makeConfigurationSchemaModel<
 >(modelName: string, schemaDefinition: DEFINITION, options: OPTIONS) {
   // now assemble the MST model of the configuration schema
   const modelDefinition: Record<string, any> = {}
-  let identifier
+  let identifier: string | undefined
 
   if (options.explicitlyTyped) {
     modelDefinition.type = types.optional(types.literal(modelName), modelName)

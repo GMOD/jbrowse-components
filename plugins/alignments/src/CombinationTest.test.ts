@@ -29,7 +29,7 @@ async function getFeats(f1: string, f2: string) {
         localPath: require.resolve(f1),
       },
       craiLocation: {
-        localPath: require.resolve(f1 + '.crai'),
+        localPath: require.resolve(`${f1}.crai`),
       },
       sequenceAdapter: {},
     }),
@@ -44,7 +44,7 @@ async function getFeats(f1: string, f2: string) {
       },
       index: {
         location: {
-          localPath: require.resolve(f2 + '.bai'),
+          localPath: require.resolve(`${f2}.bai`),
         },
       },
     }),

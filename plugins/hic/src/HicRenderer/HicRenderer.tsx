@@ -146,6 +146,7 @@ export default class HicRenderer extends ServerSideRendererType {
       }
       ctx.restore()
     }
+    return undefined
   }
 
   async render(renderProps: RenderArgsDeserialized) {

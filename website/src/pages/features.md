@@ -86,13 +86,11 @@ decide to run an instance of JBrowse on one's hosting website instead. Detailed
 below are the core differences between embedded components and the full JBrowse
 app:
 
-| Embedded components [#footnote-3]                       | JBrowse Web                                                                            |
+| Embedded components [^3]                                | JBrowse Web                                                                            |
 | ------------------------------------------------------- | -------------------------------------------------------------------------------------- |
 | Only has access to one view type                        | Access to all view types loaded into the JBrowse session, including those from plugins |
-| Feature details open as a dialogue                      | Feature details open as a left/right oriented drawer                                   |
-| Only has access to plugin display types and adapters    | Access to all plugin extensions (displays, views, adapters, widgets, etc.)             |
+| Feature details and track selector open as a dialog     | Feature details open as a left/right oriented drawer                                   |
 | No built-in concept of local session, saving or loading | Save / import / export session options for any user                                    |
-| Only configured tracks available to view                | Various options to populate new tracks from local or remote sources                    |
 
 **Both can:**
 

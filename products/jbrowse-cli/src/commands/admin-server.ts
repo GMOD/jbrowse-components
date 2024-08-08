@@ -68,10 +68,10 @@ export default class AdminServer extends JBrowseCommand {
     // start server with admin key in URL query string
     let port = 9090
     if (runFlags.port) {
-      if (!isValidPort(parseInt(runFlags.port, 10))) {
+      if (!isValidPort(Number.parseInt(runFlags.port, 10))) {
         this.error(`${runFlags.port} is not a valid port`)
       } else {
-        port = parseInt(runFlags.port, 10)
+        port = Number.parseInt(runFlags.port, 10)
       }
     }
     const app = express()

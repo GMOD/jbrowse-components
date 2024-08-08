@@ -17,6 +17,8 @@ const Cloud = observer(function ({
   const view = getContainingView(model) as LGV
   const width = Math.round(view.dynamicBlocks.totalWidthPx)
   const height = model.height
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies:
   const cb = useCallback(
     (ref: HTMLCanvasElement) => model.setRef(ref),
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -83,10 +83,7 @@ function Translation({
           : defaultStops.includes(codon)
             ? theme?.palette.stopCodon
             : undefined
-        if (!(renderLetter || codonFill)) {
-          return null
-        }
-        return (
+        return !(renderLetter || codonFill) ? null : (
           <React.Fragment key={`${index}-${letter}`}>
             <rect
               x={x}
@@ -147,7 +144,8 @@ function DNA(props: {
         const color = theme.palette.bases[letter.toUpperCase()]
         const x = reverse ? rightPx - (index + 1) * w : leftPx + index * w
         return (
-          <React.Fragment key={index}>
+          /* biome-ignore lint/suspicious/noArrayIndexKey: */
+          <React.Fragment key={`${letter}-${index}`}>
             <rect
               x={x}
               y={y}

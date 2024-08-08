@@ -46,7 +46,7 @@ export function drawDensity(
           readConfObject(config, 'color', { feature, score })
   const [niceMin, niceMax] = scale2.domain()
 
-  let prevLeftPx = -Infinity
+  let prevLeftPx = Number.NEGATIVE_INFINITY
   let hasClipping = false
   const reducedFeatures = []
   for (const feature of features.values()) {

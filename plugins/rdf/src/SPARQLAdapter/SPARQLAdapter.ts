@@ -179,9 +179,9 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
             ...rd,
             uniqueId,
             refName,
-            start: parseInt(rd.start, 10),
-            end: parseInt(rd.end, 10),
-            strand: parseInt(rd.strand, 10) || 0,
+            start: Number.parseInt(rd.start, 10),
+            end: Number.parseInt(rd.end, 10),
+            strand: Number.parseInt(rd.strand, 10) || 0,
           },
         }
       })
@@ -190,7 +190,7 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
     // resolve subfeatures, keeping only top-level features in seenFeatures
     for (const [uniqueId, f] of Object.entries(seenFeatures)) {
       const pid = f.data.parentUniqueId
-      delete f.data.parentUniqueId
+      f.data.parentUniqueId = undefined
       if (pid) {
         const p = seenFeatures[pid]
         if (p) {
@@ -220,7 +220,8 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
               delete seenFeatures[uniqueId]
               found = true
               break
-            } else if (subfeature?.subfeatures) {
+            }
+            if (subfeature?.subfeatures) {
               subfeatures.push(...subfeature.subfeatures)
             }
           }

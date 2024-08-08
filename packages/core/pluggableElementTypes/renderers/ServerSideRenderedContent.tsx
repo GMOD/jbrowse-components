@@ -61,7 +61,8 @@ const NewHydrate = observer(function ServerSideRenderedContent({
         root?.unmount()
       })
     }
-  }, [html, theme, rest, hydrateFn, RenderingComponent])
+    /* biome-ignore lint/correctness/useExhaustiveDependencies: */
+  }, [theme, rest, hydrateFn, RenderingComponent])
 
   return (
     <div
@@ -109,6 +110,7 @@ const OldHydrate = observer(function ({
         unmountComponentAtNode(domNode)
       }
     }
+    /* biome-ignore lint/correctness/useExhaustiveDependencies: */
   }, [html, jbrowseTheme, rest, RenderingComponent])
 
   return <div ref={ref} />

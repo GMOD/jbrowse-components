@@ -306,7 +306,7 @@ const DataCellReactComponent = observer(function ({
         }
       }}
       title="open a new linear genome view here"
-      href="#link"
+      href="#"
     >
       {cell.text}
     </a>

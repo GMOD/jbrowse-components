@@ -325,7 +325,7 @@ function stateModelFactory(
             },
             {
               type: 'subMenu',
-              label: `Replace lower panel with...`,
+              label: 'Replace lower panel with...',
               subMenu: extra,
             },
           ]

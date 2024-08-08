@@ -8,7 +8,7 @@ export default function setupEnv() {
   // @ts-expect-error
   global.nodeCreateCanvas = createCanvas
 
-  const window = new JSDOM(`...`).window
+  const window = new JSDOM('...').window
   global.document = window.document
   // @ts-expect-error
   global.window = window

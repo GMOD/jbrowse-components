@@ -52,7 +52,7 @@ export function useSideScroll(model: LGV) {
       }
     }
     return cleanup
-  }, [model, mouseDragging, prevX])
+  }, [model, mouseDragging])
 
   function mouseDown(event: React.MouseEvent) {
     if (event.shiftKey) {
@@ -147,7 +147,7 @@ export function useRangeSelect(
       }
     }
     return () => {}
-  }, [startX, mouseDragging, anchorPosition, model, ref])
+  }, [startX, mouseDragging, model, ref])
 
   useEffect(() => {
     if (
@@ -210,29 +210,28 @@ export function useRangeSelect(
       mouseOut,
       handleMenuItemClick,
     }
-  } else {
-    const right = anchorPosition ? anchorPosition.offsetX : currentX || 0
-    const left = right < startX ? right : startX
-    const width = Math.abs(right - startX)
-    const leftBpOffset = model.pxToBp(left)
-    const rightBpOffset = model.pxToBp(left + width)
-    const numOfBpSelected = Math.ceil(width * model.bpPerPx)
+  }
+  const right = anchorPosition ? anchorPosition.offsetX : currentX || 0
+  const left = right < startX ? right : startX
+  const width = Math.abs(right - startX)
+  const leftBpOffset = model.pxToBp(left)
+  const rightBpOffset = model.pxToBp(left + width)
+  const numOfBpSelected = Math.ceil(width * model.bpPerPx)
 
-    return {
-      open,
-      rubberbandOn: true,
-      mouseDown,
-      mouseMove,
-      mouseOut,
-      handleClose,
-      handleMenuItemClick,
-      leftBpOffset,
-      rightBpOffset,
-      anchorPosition,
-      numOfBpSelected,
-      width,
-      left,
-    }
+  return {
+    open,
+    rubberbandOn: true,
+    mouseDown,
+    mouseMove,
+    mouseOut,
+    handleClose,
+    handleMenuItemClick,
+    leftBpOffset,
+    rightBpOffset,
+    anchorPosition,
+    numOfBpSelected,
+    width,
+    left,
   }
 }
 

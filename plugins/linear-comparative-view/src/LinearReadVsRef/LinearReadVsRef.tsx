@@ -195,7 +195,7 @@ export default function ReadVsRefDialog({
         name: `${readAssembly}`,
         sequence: {
           type: 'ReferenceSequenceTrack',
-          name: `Read sequence`,
+          name: 'Read sequence',
           trackId: seqTrackId,
           assemblyNames: [readAssembly],
           adapter: {

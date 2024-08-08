@@ -93,7 +93,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     _args: unknown,
     _rpcDriverClassName: string,
   ) {
-    let r
+    let r: unknown
     try {
       r = await serializedReturn
     } catch (error) {

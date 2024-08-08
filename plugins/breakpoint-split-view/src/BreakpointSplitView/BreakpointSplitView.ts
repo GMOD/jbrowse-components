@@ -11,7 +11,7 @@ export default class BreakpointSplitViewType extends ViewType {
     const alt = feature.get('ALT')?.[0]
     const bnd = alt ? parseBreakend(alt) : undefined
     const startPos = feature.get('start')
-    let endPos
+    let endPos: number
     const bpPerPx = 10
 
     // TODO: Figure this out for multiple assembly names
@@ -52,6 +52,8 @@ export default class BreakpointSplitViewType extends ViewType {
       const mate = feature.get('mate')
       mateRefName = assembly.getCanonicalRefName(mate.refName)
       endPos = mate.start
+    } else {
+      endPos = startPos + 1
     }
 
     if (!mateRefName) {
@@ -64,7 +66,7 @@ export default class BreakpointSplitViewType extends ViewType {
 
     if (!topRegion || !bottomRegion) {
       throw new Error(
-        `unable to find the refName for the top or bottom of the breakpoint view`,
+        'unable to find the refName for the top or bottom of the breakpoint view',
       )
     }
 

@@ -258,5 +258,6 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
         ctx.stroke()
       })
     }
+    return undefined
   }
 }

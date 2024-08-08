@@ -153,7 +153,7 @@ export default class ServerSideRenderer extends RendererType {
         {results.reactElement}
       </ThemeProvider>,
     )
-    delete results.reactElement
+    results.reactElement = undefined
     return { ...results, html }
   }
 
@@ -173,7 +173,7 @@ export default class ServerSideRenderer extends RendererType {
 
     if (isSvgExport(results)) {
       results.html = await getSerializedSvg(results)
-      delete results.reactElement
+      results.reactElement = undefined
     }
     return results
   }

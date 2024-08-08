@@ -116,7 +116,7 @@ export function JBrowse(props: any) {
   )
 }
 
-export const hts = (str: string) => 'htsTrackEntry-Tracks,' + str
+export const hts = (str: string) => `htsTrackEntry-Tracks,${str}`
 export const pc = (str: string) => `prerendered_canvas_${str}_done`
 export const pv = (str: string) => pc(`{volvox}ctgA:${str}`)
 

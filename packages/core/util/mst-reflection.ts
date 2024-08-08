@@ -20,7 +20,7 @@ export interface ILiteralType<T> extends ISimpleType<T> {
  * get the inner type of an MST optional, array, or late type object
  */
 export function getSubType(type: IAnyType): IAnyType {
-  let t
+  let t: IAnyType
   if (isOptionalType(type)) {
     // @ts-expect-error
     t = type._subtype || type.type

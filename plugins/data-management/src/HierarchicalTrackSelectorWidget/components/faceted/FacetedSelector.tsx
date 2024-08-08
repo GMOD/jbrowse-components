@@ -79,10 +79,10 @@ const FacetedSelector = observer(function FacetedSelector({
     ),
     ...Object.fromEntries(
       filteredMetadataKeys
-        .filter(f => visible['metadata.' + f])
+        .filter(f => visible[`metadata.${f}`])
         .map(e => {
           return [
-            'metadata.' + e,
+            `metadata.${e}`,
             measureGridWidth(
               rows.map(r => r.metadata[e]),
               { maxWidth: 400, stripHTML: true },
@@ -127,7 +127,7 @@ const FacetedSelector = observer(function FacetedSelector({
         headerName: ['name', ...filteredNonMetadataKeys].includes(e)
           ? `${e} (from metadata)`
           : e,
-        width: widths['metadata.' + e] ?? 100,
+        width: widths[`metadata.${e}`] ?? 100,
         valueGetter: (_, row) => `${row.metadata[e] ?? ''}`,
         renderCell: params => {
           const val = params.value

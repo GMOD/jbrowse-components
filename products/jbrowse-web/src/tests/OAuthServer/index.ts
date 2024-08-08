@@ -28,7 +28,7 @@ app.use(
 
 // eslint-disable-next-line no-console
 console.log(
-  `The redirect-uri is http://localhost:3000, must be running jbrowse-web on this port e.g. the default dev server port`,
+  'The redirect-uri is http://localhost:3000, must be running jbrowse-web on this port e.g. the default dev server port',
 )
 
 export default app

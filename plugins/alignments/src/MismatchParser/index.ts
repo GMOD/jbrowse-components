@@ -399,9 +399,8 @@ export function getOrientedCigar(flip: boolean, cigar: string[]) {
       ret.push(len, op)
     }
     return ret
-  } else {
-    return cigar
   }
+  return cigar
 }
 
 export function getOrientedMismatches(flip: boolean, cigar: string) {

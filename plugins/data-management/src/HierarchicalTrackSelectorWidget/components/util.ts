@@ -25,7 +25,7 @@ export function getAllChildren(subtree?: TreeNode): AnyConfigurationModel[] {
   return subtree?.type === 'category'
     ? subtree.children
         .map(t => (t.type === 'category' ? getAllChildren(t) : t.conf))
-        .flat(Infinity)
+        .flat(Number.POSITIVE_INFINITY)
     : []
 }
 

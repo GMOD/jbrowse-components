@@ -50,7 +50,7 @@ const OverviewHighlight = observer(function OverviewHighlight({
       ...r,
       coord: r.reversed ? r.start : r.end,
     })
-    return s !== undefined && e != undefined
+    return s !== undefined && e !== undefined
       ? {
           width: Math.abs(e - s),
           left: s + cytobandOffset,
@@ -69,6 +69,7 @@ const OverviewHighlight = observer(function OverviewHighlight({
     .filter(notEmpty)
     .map(({ left, width }, idx) => (
       <div
+        /* biome-ignore lint/suspicious/noArrayIndexKey: */
         key={`${left}_${width}_${idx}`}
         className={classes.highlight}
         style={{

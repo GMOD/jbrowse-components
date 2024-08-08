@@ -52,7 +52,8 @@ export function getAlignmentShapeColor({
             '+': 'color_fwd_strand' as const,
           }[val as '-' | '+'] || 'color_nostrand'
         ]
-      } else if (tag === 'ts') {
+      }
+      if (tag === 'ts') {
         return fillColor[
           {
             '-':
@@ -65,9 +66,8 @@ export function getAlignmentShapeColor({
                 : ('color_fwd_strand' as const),
           }[val as '-' | '+'] || 'color_nostrand'
         ]
-      } else {
-        return colorTagMap[val] || fillColor.color_nostrand
       }
+      return colorTagMap[val] || fillColor.color_nostrand
     }
     case 'insertSizeAndPairOrientation':
       break

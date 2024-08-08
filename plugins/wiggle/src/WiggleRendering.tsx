@@ -38,7 +38,7 @@ const WiggleRendering = observer(function (props: {
     const offsetX = eventClientX - offset
     const px = region.reversed ? width - offsetX : offsetX
     const clientBp = region.start + bpPerPx * px
-    let featureUnderMouse
+    let featureUnderMouse: Feature | undefined
     for (const feature of features.values()) {
       // bpPerPx added to the end to accommodate "reduced features" (one feature per px)
       if (

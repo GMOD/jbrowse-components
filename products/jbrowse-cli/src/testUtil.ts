@@ -1,5 +1,4 @@
 import { runCommand } from '@oclif/test'
-import { rimrafSync } from 'rimraf'
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
@@ -26,7 +25,7 @@ export async function runInTmpDir(
     await callbackFn({ dir, originalDir })
   } finally {
     if (dir) {
-      rimrafSync(dir)
+      fs.rmSync(dir, { recursive: true, force: true })
     }
     process.chdir(originalDir)
   }

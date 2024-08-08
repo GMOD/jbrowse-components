@@ -37,7 +37,7 @@ const SequenceSearchDialog = observer(function ({
   const [searchReverse, setSearchReverse] = useState(true)
   const [caseInsensitive, setCaseInsensitive] = useState(true)
 
-  let error
+  let error: unknown
 
   try {
     new RegExp(value)

@@ -33,7 +33,7 @@ test('color by tag', async () => {
     'HP',
   )
   await user.click(await screen.findByText('Submit'))
-  await screen.findAllByTestId('pileup-tag-HP', ...opts)
+  await screen.findAllByTestId('pileup-overlay-tag-HP', ...opts)
   const f1 = within(await screen.findByTestId('Blockset-pileup'))
   expectCanvasMatch(await f1.findByTestId(pv('39805..40176-0'), ...opts))
 }, 50000)
@@ -48,7 +48,7 @@ test('color by stranded rna-seq', async () => {
   await user.click(await screen.findByTestId('track_menu_icon', ...opts))
   await user.click(await screen.findByText('Color scheme'))
   await user.click(await screen.findByText('First-of-pair strand'))
-  await screen.findAllByTestId('pileup-stranded', ...opts)
+  await screen.findAllByTestId('pileup-overlay-stranded', ...opts)
   const f1 = within(await screen.findByTestId('Blockset-pileup'))
 
   // note on test flakiness: this is the taller of two blocks, (the first

@@ -28,7 +28,7 @@ const ZoomControls = observer(function ({
   const [value, setValue] = useState(-Math.log2(bpPerPx) * 100)
   useEffect(() => {
     setValue(-Math.log2(bpPerPx) * 100)
-  }, [setValue, bpPerPx])
+  }, [bpPerPx])
 
   return (
     <div className={classes.container}>

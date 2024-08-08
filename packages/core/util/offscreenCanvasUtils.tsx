@@ -6,7 +6,7 @@ import { CanvasSequence } from 'canvas-sequencer'
 import { createCanvas, createImageBitmap } from './offscreenCanvasPonyfill'
 import { blobToDataURL } from './blobToDataURL'
 
-export type RenderReturn = Record<string, unknown> | void
+export type RenderReturn = Record<string, unknown> | undefined
 
 type RendererRet = Promise<RenderReturn> | RenderReturn
 

@@ -52,7 +52,7 @@ async function myfetchtext(uri: string) {
 // reference code https://stackoverflow.com/a/77158517/2129219
 const sourceMaps: Record<string, SourceMapConsumer> = {}
 async function getSourceMapFromUri(uri: string) {
-  if (sourceMaps[uri] != undefined) {
+  if (sourceMaps[uri] !== undefined) {
     return sourceMaps[uri]
   }
   const uriQuery = new URL(uri).search
@@ -84,8 +84,8 @@ async function mapStackTrace(stack: string) {
     const consumer = await getSourceMapFromUri(uri)
 
     const originalPosition = consumer.originalPositionFor({
-      line: parseInt(match[3]),
-      column: parseInt(match[4]),
+      line: Number.parseInt(match[3]),
+      column: Number.parseInt(match[4]),
     })
 
     if (
@@ -134,13 +134,13 @@ const useStyles = makeStyles()(theme => ({
 function Contents({ text, extra }: { text: string; extra?: unknown }) {
   const { classes } = useStyles()
   const err = encodeURIComponent(
-    [
+    `${[
       'I got this error from JBrowse, here is the stack trace:\n',
       '```',
       text,
       '```',
       extra ? `supporting data: ${JSON.stringify(extra, null, 2)}` : '',
-    ].join('\n') + '\n',
+    ].join('\n')}\n`,
   )
 
   const err2 = [

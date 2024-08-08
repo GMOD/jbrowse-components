@@ -432,7 +432,7 @@ export function loadSessionSpec(
 
       await Promise.all(
         views.map(view =>
-          pluginManager.evaluateAsyncExtensionPoint('LaunchView-' + view.type, {
+          pluginManager.evaluateAsyncExtensionPoint(`LaunchView-${view.type}`, {
             ...view,
             session: rootModel.session,
           }),

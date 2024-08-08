@@ -27,7 +27,7 @@ export function getBreakpointSplitView({
 
   if (!topRegion || !bottomRegion) {
     throw new Error(
-      `unable to find the refName for the top or bottom of the breakpoint view`,
+      'unable to find the refName for the top or bottom of the breakpoint view',
     )
   }
   const topMarkedRegion = [{ ...topRegion }, { ...topRegion }]
@@ -59,6 +59,6 @@ export function getBreakpointSplitView({
         offsetPx: (bottomRegion.start + e) / bpPerPx,
       },
     ],
-    displayName: `breakend split detail`,
+    displayName: 'breakend split detail',
   }
 }

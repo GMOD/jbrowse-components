@@ -48,16 +48,14 @@ const stateModelFactory = (
         const newInit = self.addAuthHeaderToInit({ method: 'HEAD' }, token)
         const response = await fetch(location.uri, newInit)
         if (!response.ok) {
-          let errorMessage
+          let errorMessage: string
           try {
             errorMessage = await response.text()
           } catch (error) {
             errorMessage = ''
           }
           throw new Error(
-            `Token could not be validated — ${response.status} (${
-              response.statusText
-            })${errorMessage ? ` (${errorMessage})` : ''}`,
+            `Token could not be validated — ${response.status} ${errorMessage ? ` (${errorMessage})` : ''}`,
           )
         }
         return token

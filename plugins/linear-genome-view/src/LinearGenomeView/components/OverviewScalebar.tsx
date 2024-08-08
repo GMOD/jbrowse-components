@@ -285,25 +285,27 @@ const OverviewScalebar = observer(function ({
   children: React.ReactNode
 }) {
   const { classes } = useStyles()
-  const { totalBp, width, cytobandOffset, displayedRegions } = model
+  const {
+    minimumBlockWidth,
+    totalBp,
+    width,
+    cytobandOffset,
+    displayedRegions,
+  } = model
 
   const modWidth = width - cytobandOffset
+  const str = JSON.stringify(displayedRegions)
   const overview = useMemo(() => {
     const overview = Base1DView.create({
-      displayedRegions: JSON.parse(JSON.stringify(displayedRegions)),
+      displayedRegions: JSON.parse(str),
       interRegionPaddingWidth: 0,
-      minimumBlockWidth: model.minimumBlockWidth,
+      minimumBlockWidth,
     })
 
     overview.setVolatileWidth(modWidth)
     overview.showAllRegions()
     return overview
-  }, [
-    JSON.stringify(displayedRegions), // eslint-disable-line react-hooks/exhaustive-deps
-    model.minimumBlockWidth,
-    modWidth,
-    displayedRegions,
-  ])
+  }, [str, minimumBlockWidth, modWidth])
 
   const scale =
     totalBp / (modWidth - (displayedRegions.length - 1) * wholeSeqSpacer)

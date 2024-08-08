@@ -65,7 +65,8 @@ const TextIndexingConfig = observer(function ({
             <InputLabel>{section.label}</InputLabel>
             <List disablePadding>
               {section.values.map((val: string, idx: number) => (
-                <ListItem key={idx} disableGutters>
+                /* biome-ignore lint/suspicious/noArrayIndexKey: */
+                <ListItem key={`${val}-${idx}`} disableGutters>
                   <TextField
                     value={val}
                     InputProps={{
@@ -112,7 +113,7 @@ const TextIndexingConfig = observer(function ({
                             }
                           }}
                           disabled={index === 0 ? value1 === '' : value2 === ''}
-                          data-testid={`stringArrayAdd-Feat`}
+                          data-testid="stringArrayAdd-Feat"
                         >
                           <AddIcon />
                         </IconButton>

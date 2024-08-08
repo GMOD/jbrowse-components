@@ -53,7 +53,7 @@ export default class SequenceSearchAdapter extends BaseFeatureDataAdapter {
       const searchForward = this.getConf('searchForward')
       const searchReverse = this.getConf('searchReverse')
       const caseInsensitive = this.getConf('caseInsensitive')
-      const re = new RegExp(search, 'g' + (caseInsensitive ? 'i' : ''))
+      const re = new RegExp(search, `g${caseInsensitive ? 'i' : ''}`)
 
       if (search) {
         if (searchForward) {
