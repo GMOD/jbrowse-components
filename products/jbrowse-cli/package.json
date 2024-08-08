@@ -32,9 +32,9 @@
   },
   "scripts": {
     "prebuild": "npm run clean",
-    "build": "tsc --build",
+    "build": "tsc -b tsconfig.build.json",
     "postpack": "rimraf oclif.manifest.json",
-    "clean": "rimraf lib",
+    "clean": "rimraf lib *.tsbuildinfo",
     "prepack": "npm run build && npm run docs",
     "manifest": "oclif manifest",
     "version": "npm run docs && npm run docs:version:add",
@@ -42,8 +42,7 @@
     "docs": "npm run docs:create && npm run docs:format",
     "docs:create": "oclif readme",
     "docs:format": "prettier --write README.md",
-    "docs:version:add": "git add README.md",
-    "postdocs": "npm run manifest"
+    "docs:version:add": "git add README.md"
   },
   "dependencies": {
     "@oclif/core": "^4.0.6",
