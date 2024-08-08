@@ -25,7 +25,7 @@ export async function runInTmpDir(
     await callbackFn({ dir, originalDir })
   } finally {
     if (dir) {
-      fs.rmSync(dir, { recursive: true })
+      fs.rmSync(dir, { recursive: true, force: true })
     }
     process.chdir(originalDir)
   }

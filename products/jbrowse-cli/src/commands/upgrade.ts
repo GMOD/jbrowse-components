@@ -111,7 +111,7 @@ export default class Upgrade extends JBrowseCommand {
     }
 
     if (clean) {
-      fs.rmSync(path.join(argsPath, 'static'), { recursive: true })
+      fs.rmSync(path.join(argsPath, 'static'), { recursive: true, force: true })
       fs.readdirSync(argsPath)
         .filter(f => f.includes('worker.js'))
         .forEach(f => fs.unlinkSync(path.join(argsPath, f)))

@@ -52,7 +52,7 @@ module.exports = function buildWebpack(config) {
     .then(previousFileSizes => {
       // Remove all content but keep the directory so that
       // if you're in it, you don't end up in Trash
-      fs.rmSync(paths.appBuild, { recursive: true })
+      fs.rmSync(paths.appBuild, { recursive: true, force: true })
       // Merge with the public folder
       copyPublicFolder()
       // Start the webpack build

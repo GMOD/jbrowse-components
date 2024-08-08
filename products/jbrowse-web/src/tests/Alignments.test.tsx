@@ -33,7 +33,7 @@ test('opens an alignments track and clicks feature', async () => {
   expectCanvasMatch(await f1.findByTestId(pv('1..4000-0'), ...opts))
   expectCanvasMatch(await f2.findByTestId(pv('1..4000-0'), ...opts))
 
-  const track = await findAllByTestId('pileup')
+  const track = await findAllByTestId('pileup-overlay')
   fireEvent.mouseMove(track[0], { clientX: 200, clientY: 20 })
   fireEvent.click(track[0], { clientX: 200, clientY: 40 })
   fireEvent.mouseDown(track[0], { clientX: 200, clientY: 20 })
