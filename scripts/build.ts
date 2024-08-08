@@ -1,8 +1,8 @@
-const fs = require('fs')
-const path = require('path')
-const { DepGraph } = require('dependency-graph')
-const spawn = require('cross-spawn')
-const workspaceRoot = require('find-yarn-workspace-root')()
+import fs from 'fs'
+import path from 'path'
+import spawn from 'cross-spawn'
+import workspaceRoot from 'find-yarn-workspace-root'
+import { DepGraph } from 'dependency-graph'
 
 const DEPENDENCY_TYPES = [
   'devDependencies',
@@ -10,17 +10,14 @@ const DEPENDENCY_TYPES = [
   'optionalDependencies',
   'peerDependencies',
 ]
+const subDirs = ['cgv', 'lgv', 'react-app']
+const root = workspaceRoot()!
 
 function main() {
-  // Get packages in all workspaces
   const packages = getPackages()
-  // Make a dependency graph of packages (includes peerDependencies)
   const graph = getDependencyGraph(packages)
-  // Get the levels of the graph. Each level is a list of packages that can all
-  // be build concurrently as long as the previous levels have been built
-  const levels = getLevels(graph)
-  levels.forEach(level => {
-    const scopes = []
+  getLevels(graph).forEach(level => {
+    const scopes = [] as string[]
     level.forEach(pkg => {
       scopes.push('--scope', pkg)
     })
@@ -33,7 +30,6 @@ function main() {
       process.exit(status || 1)
     }
   })
-  const subDirs = ['cgv', 'lgv', 'react-app']
   subDirs.forEach(dir => {
     fs.mkdirSync(path.join('component_tests', dir, 'packed'), {
       recursive: true,
@@ -45,6 +41,9 @@ function main() {
     if (location === 'packages/core') {
       const files = fs.readdirSync(location)
       const tarball = files.find(fileName => fileName.endsWith('.tgz'))
+      if (!tarball) {
+        throw new Error('tarball not found')
+      }
       fs.unlinkSync(path.join(location, tarball))
       location = path.join(location, 'dist')
       const { signal, status } = spawn.sync(
@@ -74,7 +73,7 @@ function main() {
   })
 }
 
-function getPackages() {
+function getPackages(): Record<string, { location: string }> {
   const workspacesInfoJson = spawn.sync(
     'yarn',
     ['--json', 'workspaces', 'info'],
@@ -84,15 +83,16 @@ function getPackages() {
   return JSON.parse(workspacesInfo.data)
 }
 
-function getDependencyGraph(packages) {
+function getDependencyGraph(packages: Record<string, { location: string }>) {
   const graph = new DepGraph()
   Object.entries(packages).forEach(([packageName, packageInfo]) => {
     if (!graph.hasNode(packageName)) {
       graph.addNode(packageName)
     }
-    const dependencies = []
+    const dependencies = [] as string[]
     const packageJsonText = fs.readFileSync(
-      path.join(workspaceRoot, packageInfo.location, 'package.json'),
+      path.join(root, packageInfo.location, 'package.json'),
+      'utf8',
     )
     const packageJson = JSON.parse(packageJsonText)
     for (const dt of DEPENDENCY_TYPES) {
@@ -114,9 +114,12 @@ function getDependencyGraph(packages) {
   return graph
 }
 
-function getLevels(graph, levels = []) {
+// Get the levels of the graph. Each level is a list of packages that can all
+// be build concurrently as long as the previous levels have been built
+function getLevels(graph: DepGraph<unknown>, levels = [] as string[][]) {
   const done = levels.flat()
-  const newLevel = []
+  const newLevel = [] as string[]
+  // @ts-expect-error
   for (const n of [...graph.nodes.keys()].filter(n => !done.includes(n))) {
     const deps = graph.dependenciesOf(n)
     if (!done.includes(n) && deps.every(d => done.includes(d))) {
