@@ -1,18 +1,21 @@
 import React from 'react'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import Dialog from '@jbrowse/core/ui/Dialog'
-import { getSession, getEnv } from '@jbrowse/core/util'
+import { getEnv, AbstractSessionModel } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
+
+// locals
 import AboutContents from './AboutDialogContents'
 
 export function AboutDialog({
   config,
+  session,
   handleClose,
 }: {
   config: AnyConfigurationModel
+  session: AbstractSessionModel
   handleClose: () => void
 }) {
-  const session = getSession(config)
   const trackName = getTrackName(config, session)
   const { pluginManager } = getEnv(session)
 
@@ -20,12 +23,14 @@ export function AboutDialog({
     'Core-replaceAbout',
     AboutContents,
     { session, config },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ) as React.FC<any>
+  ) as React.FC<{
+    config: AnyConfigurationModel
+    session: AbstractSessionModel
+  }>
 
   return (
     <Dialog open onClose={handleClose} title={trackName} maxWidth="xl">
-      <AboutComponent config={config} />
+      <AboutComponent config={config} session={session} />
     </Dialog>
   )
 }

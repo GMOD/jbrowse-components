@@ -24,13 +24,15 @@ import { JBrowseConfigF } from '../JBrowseConfig'
 
  */
 export function JBrowseModelF({
+  adminMode,
   pluginManager,
   assemblyConfigSchema,
 }: {
+  adminMode: boolean
   pluginManager: PluginManager
   assemblyConfigSchema: BaseAssemblyConfigSchema
 }) {
-  return JBrowseConfigF({ pluginManager, assemblyConfigSchema })
+  return JBrowseConfigF({ pluginManager, assemblyConfigSchema, adminMode })
     .views(self => ({
       /**
        * #getter
@@ -82,13 +84,17 @@ export function JBrowseModelF({
       /**
        * #action
        */
-      addTrackConf(trackConf: AnyConfigurationModel) {
+      addTrackConf(trackConf: { trackId: string; type: string }) {
         const { type } = trackConf
         if (!type) {
           throw new Error(`unknown track type ${type}`)
         }
-        const length = self.tracks.push(trackConf)
-        return self.tracks[length - 1]
+        if (adminMode) {
+          self.tracks.push(trackConf)
+        } else {
+          self.tracks = [...self.tracks, trackConf]
+        }
+        return self.tracks.at(-1)
       },
       /**
        * #action
@@ -112,8 +118,13 @@ export function JBrowseModelF({
        * #action
        */
       deleteTrackConf(trackConf: AnyConfigurationModel) {
-        const elt = self.tracks.find(t => t.trackId === trackConf.trackId)
-        return self.tracks.remove(elt)
+        if (adminMode) {
+          const elt = self.tracks.find(t => t.trackId === trackConf.trackId)
+          // @ts-expect-error
+          return self.tracks.remove(elt)
+        } else {
+          return self.tracks.filter(f => f.trackId !== trackConf.trackId)
+        }
       },
       /**
        * #action

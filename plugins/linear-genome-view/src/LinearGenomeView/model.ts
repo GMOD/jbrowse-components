@@ -1,5 +1,5 @@
 import React, { lazy } from 'react'
-import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
+import { getConf } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { Region } from '@jbrowse/core/util/types'
 import { ElementId } from '@jbrowse/core/util/types/mst'
@@ -25,14 +25,17 @@ import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { BlockSet, BaseBlock } from '@jbrowse/core/util/blockTypes'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
-import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import { when, transaction, autorun } from 'mobx'
+import {
+  getParentRenderProps,
+  hideTrackGeneric,
+  showTrackGeneric,
+  toggleTrackGeneric,
+} from '@jbrowse/core/util/tracks'
+import { when, autorun } from 'mobx'
 import {
   addDisposer,
   cast,
   getSnapshot,
-  getRoot,
-  resolveIdentifier,
   types,
   Instance,
   getParent,
@@ -743,56 +746,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
         initialSnapshot = {},
         displayInitialSnapshot = {},
       ) {
-        const schema = pluginManager.pluggableConfigSchemaType('track')
-        const conf = resolveIdentifier(schema, getRoot(self), trackId)
-        if (!conf) {
-          throw new Error(`Could not resolve identifier "${trackId}"`)
-        }
-        const trackType = pluginManager.getTrackType(conf?.type)
-        if (!trackType) {
-          throw new Error(`Unknown track type ${conf.type}`)
-        }
-        const viewType = pluginManager.getViewType(self.type)
-        const supportedDisplays = new Set(
-          viewType.displayTypes.map(d => d.name),
+        return showTrackGeneric(
+          self,
+          trackId,
+          initialSnapshot,
+          displayInitialSnapshot,
         )
-        const displayConf = conf.displays.find((d: AnyConfigurationModel) =>
-          supportedDisplays.has(d.type),
-        )
-        if (!displayConf) {
-          throw new Error(
-            `Could not find a compatible display for view type ${self.type}`,
-          )
-        }
-
-        const t = self.tracks.filter(t => t.configuration === conf)
-        if (t.length === 0) {
-          const track = trackType.stateModel.create({
-            ...initialSnapshot,
-            type: conf.type,
-            configuration: conf,
-            displays: [
-              {
-                type: displayConf.type,
-                configuration: displayConf,
-                ...displayInitialSnapshot,
-              },
-            ],
-          })
-          self.tracks.push(track)
-          return track
-        }
-        return t[0]
       },
       /**
        * #action
        */
       hideTrack(trackId: string) {
-        const schema = pluginManager.pluggableConfigSchemaType('track')
-        const conf = resolveIdentifier(schema, getRoot(self), trackId)
-        const t = self.tracks.filter(t => t.configuration === conf)
-        transaction(() => t.forEach(t => self.tracks.remove(t)))
-        return t.length
+        return hideTrackGeneric(self, trackId)
       },
     }))
     .actions(self => ({
@@ -876,14 +841,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       toggleTrack(trackId: string) {
-        // if we have any tracks with that configuration, turn them off
-        const hiddenCount = self.hideTrack(trackId)
-        // if none had that configuration, turn one on
-        if (!hiddenCount) {
-          self.showTrack(trackId)
-          return true
-        }
-        return false
+        toggleTrackGeneric(self, trackId)
       },
 
       /**
