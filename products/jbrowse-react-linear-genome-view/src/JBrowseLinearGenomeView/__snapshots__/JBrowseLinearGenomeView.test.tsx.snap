@@ -173,9 +173,11 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     height="48"
                   >
                     <polygon
-                      fill="rgba(66, 119, 127, 0.3)"
+                      fill="#42777f"
+                      fill-opacity="0.3"
                       points="0,48,801,48,267,0,0,0"
-                      stroke="rgba(66, 119, 127, 0.8)"
+                      stroke="#42777f"
+                      stroke-opacity="0.8"
                     />
                   </svg>
                   <div
@@ -249,7 +251,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         />
                       </button>
                       <div
-                        class="MuiAutocomplete-root css-1p6gcs-MuiAutocomplete-root"
+                        class="MuiAutocomplete-root css-1y8r37a-MuiAutocomplete-root"
                         data-testid="autocomplete"
                         style="width: 175px;"
                       >
@@ -369,7 +371,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                           style="left: 0%; width: 56.78411120929245%;"
                         />
                         <span
-                          class="MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary css-1j77ekx-MuiSlider-thumb"
+                          class="MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary css-1nqyqyn-MuiSlider-thumb"
                           data-index="0"
                           style="left: 56.78411120929245%;"
                         >
@@ -1295,10 +1297,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 </div>
               </div>
               <div
-                class="css-10yx2nr-pinnedTracks"
-                style="top: 113px;"
-              />
-              <div
                 class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-1m8zmvt-MuiPaper-root-root-unpinnedTrack"
               >
                 <div
@@ -1343,7 +1341,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     />
                   </button>
                   <span
-                    class="MuiTypography-root MuiTypography-body1 css-bpawrf-MuiTypography-root-trackName"
+                    class="MuiTypography-root MuiTypography-body1 css-1lqq4j2-MuiTypography-root-trackName"
                   >
                     <span>
                       Reference sequence (volvox)
@@ -1378,7 +1376,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 >
                   <div
                     class="css-v11ioz-renderingComponentContainer"
-                    style="transform: scaleX(1);"
                   >
                     <div
                       class="css-1y9lrrz-display"
