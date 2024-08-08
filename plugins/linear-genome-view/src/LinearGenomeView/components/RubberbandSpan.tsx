@@ -13,9 +13,8 @@ const useStyles = makeStyles()(theme => {
       height: '100%',
       background,
       position: 'absolute',
-      zIndex: 10,
+      zIndex: 4,
       textAlign: 'center',
-      overflow: 'hidden',
     },
     rubberbandControl: {
       cursor: 'crosshair',
@@ -24,6 +23,7 @@ const useStyles = makeStyles()(theme => {
     },
     rubberbandText: {
       color: tertiary ? tertiary.contrastText : primary.contrastText,
+      position: 'sticky',
     },
     popover: {
       mouseEvents: 'none',
@@ -48,12 +48,14 @@ export default function RubberbandSpan({
   numOfBpSelected,
   left,
   width,
+  top = 0,
 }: {
   leftBpOffset: Offset
   rightBpOffset: Offset
   numOfBpSelected?: number
   left: number
   width: number
+  top?: number
 }) {
   const ref = useRef(null)
   const { classes } = useStyles()
@@ -87,9 +89,14 @@ export default function RubberbandSpan({
           </Popover>
         </>
       ) : null}
-      <div ref={ref} className={classes.rubberband} style={{ left, width }}>
+      <div className={classes.rubberband} style={{ left, width }}>
         {numOfBpSelected ? (
-          <Typography variant="h6" className={classes.rubberbandText}>
+          <Typography
+            ref={ref}
+            variant="h6"
+            className={classes.rubberbandText}
+            style={{ top }}
+          >
             {toLocale(numOfBpSelected)} bp
           </Typography>
         ) : null}
