@@ -1,5 +1,4 @@
 /* eslint-disable no-console */
-'use strict'
 // Makes the script crash on unhandled rejections instead of silently
 // ignoring them. In the future, promise rejections that are not handled will
 // terminate the Node.js process with a non-zero exit code.
@@ -12,7 +11,7 @@ require('../config/env')
 
 const path = require('path')
 const chalk = require('chalk')
-const fs = require('fs-extra')
+const fs = require('fs')
 const webpack = require('webpack')
 const paths = require('../config/paths')
 const checkRequiredFiles = require('react-dev-utils/checkRequiredFiles')
@@ -53,7 +52,7 @@ module.exports = function buildWebpack(config) {
     .then(previousFileSizes => {
       // Remove all content but keep the directory so that
       // if you're in it, you don't end up in Trash
-      fs.emptyDirSync(paths.appBuild)
+      fs.rmSync(paths.appBuild, { recursive: true, force: true })
       // Merge with the public folder
       copyPublicFolder()
       // Start the webpack build
@@ -65,14 +64,10 @@ module.exports = function buildWebpack(config) {
           console.log(chalk.yellow('Compiled with warnings.\n'))
           console.log(warnings.join('\n\n'))
           console.log(
-            '\nSearch for the ' +
-              chalk.underline(chalk.yellow('keywords')) +
-              ' to learn more about each warning.',
+            `\nSearch for the ${chalk.underline(chalk.yellow('keywords'))} to learn more about each warning.`,
           )
           console.log(
-            'To ignore, add ' +
-              chalk.cyan('// eslint-disable-next-line') +
-              ' to the line before.\n',
+            `To ignore, add ${chalk.cyan('// eslint-disable-next-line')} to the line before.\n`,
           )
         } else {
           console.log(chalk.green('Compiled successfully.\n'))
@@ -140,9 +135,7 @@ module.exports = function buildWebpack(config) {
 
           // Add additional information for postcss errors
           if (Object.prototype.hasOwnProperty.call(err, 'postcssNode')) {
-            errMessage +=
-              '\nCompileError: Begins at CSS selector ' +
-              err.postcssNode.selector
+            errMessage += `\nCompileError: Begins at CSS selector ${err.postcssNode.selector}`
           }
 
           messages = formatWebpackMessages({
@@ -191,7 +184,7 @@ module.exports = function buildWebpack(config) {
 
         if (writeStatsJson) {
           return fs.writeFileSync(
-            paths.appBuild + '/bundle-stats.json',
+            `${paths.appBuild}/bundle-stats.json`,
             JSON.stringify(stats.toJson()),
           )
         }
@@ -202,7 +195,8 @@ module.exports = function buildWebpack(config) {
   }
 
   function copyPublicFolder() {
-    fs.copySync(paths.appPublic, paths.appBuild, {
+    fs.cpSync(paths.appPublic, paths.appBuild, {
+      recursive: true,
       dereference: true,
       filter: file => file !== paths.appHtml,
     })

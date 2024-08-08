@@ -117,7 +117,7 @@ const DefaultAddTrackWorkflow = observer(function ({
           attributes: ['Name', 'ID'],
           exclude: ['CDS', 'exon'],
         }
-        const indexName = trackName + '-index'
+        const indexName = `${trackName}-index`
         const newEntry = {
           indexingParams: {
             ...attr,

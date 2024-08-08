@@ -11,7 +11,7 @@ export function locstr(
   return oob
     ? 'out of bounds'
     : `${
-        includeAsm ? '{' + assemblyName + '}' : ''
+        includeAsm ? `{${assemblyName}}` : ''
       }${refName}:${coord.toLocaleString('en-US')}`
 }
 

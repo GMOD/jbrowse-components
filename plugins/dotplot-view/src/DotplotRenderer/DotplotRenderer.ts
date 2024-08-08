@@ -90,7 +90,7 @@ export default class DotplotRenderer extends ComparativeRenderer {
     const colorBy = readConfObject(config, 'colorBy')
     const lineWidth = readConfObject(config, 'lineWidth')
     const thresholds = readConfObject(config, 'thresholds')
-    const palette = readConfObject(config, 'thresholdsPalette')
+    const palette = readConfObject(config, 'thresholdsPalette') as string[]
     const isCallback = config.color.isCallback
     const [hview, vview] = views
     const db1 = hview.dynamicBlocks.contentBlocks[0]?.offsetPx
@@ -189,7 +189,7 @@ export default class DotplotRenderer extends ComparativeRenderer {
       const mate = feature.get('mate')
       const mateRef = mate.refName
 
-      let r
+      let r = 'black'
       if (colorBy === 'identity') {
         const identity = feature.get('identity')
         for (let i = 0; i < thresholds.length; i++) {

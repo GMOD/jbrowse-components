@@ -58,7 +58,7 @@ export async function parseSTARFusionBuffer(
         }
       } else if (text && numericColumns[column.name]) {
         // some other column, numeric
-        featureData[column.name] = parseFloat(text)
+        featureData[column.name] = Number.parseFloat(text)
       } else {
         // some other column, text
         featureData[column.name] = text

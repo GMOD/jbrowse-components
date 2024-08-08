@@ -16,6 +16,7 @@ import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache'
 
 type AdapterConf = Record<string, unknown>
 
+/* biome-ignore lint/complexity/useRegexLiterals: */
 const refNameRegex = new RegExp(
   '[0-9A-Za-z!#$%&+./:;?@^_|~-][0-9A-Za-z!#$%&*+./:;=?@^_|~-]*',
 )

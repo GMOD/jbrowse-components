@@ -3,7 +3,7 @@ import RpcMethodType from './RpcMethodType'
 
 const pluginManager = new PluginManager()
 
-export class MockRpcMethodType extends RpcMethodType {
+class MockRpcMethodType extends RpcMethodType {
   async execute() {}
 }
 

@@ -160,7 +160,7 @@ async function updatePreconfiguredSessions() {
     Object.entries(data).forEach(([key, value]) => {
       // if there is not a 'gravestone' (.deleted file), then repopulate it on
       // startup, this allows the user to delete even defaults if they want to
-      if (!fs.existsSync(getQuickstartPath(key) + '.deleted')) {
+      if (!fs.existsSync(`${getQuickstartPath(key)}.deleted`)) {
         fs.writeFileSync(getQuickstartPath(key), JSON.stringify(value, null, 2))
       }
     })
@@ -341,7 +341,7 @@ ipcMain.handle('deleteQuickstart', async (_event: unknown, name: string) => {
   // add a gravestone '.deleted' file when we delete a session, so that if it
   // comes from the https://jbrowse.org/genomes/sessions.json, we don't
   // recreate it
-  fs.writeFileSync(getQuickstartPath(name) + '.deleted', '', 'utf8')
+  fs.writeFileSync(`${getQuickstartPath(name)}.deleted`, '', 'utf8')
 })
 
 ipcMain.handle(

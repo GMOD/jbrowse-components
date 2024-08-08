@@ -56,7 +56,7 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
           if (!featureMap[refName]) {
             featureMap[refName] = ''
           }
-          featureMap[refName] += line + '\n'
+          featureMap[refName] += `${line}\n`
         }
       }
       if (i++ % 10_000 === 0) {
@@ -73,7 +73,7 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
         return [
           refName,
           (sc?: (arg: string) => void) => {
-            sc?.(`Parsing GFF data`)
+            sc?.('Parsing GFF data')
             if (!this.calculatedIntervalTreeMap[refName]) {
               const intervalTree = new IntervalTree()
               gff
@@ -157,10 +157,10 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
     f.phase = Number(data.phase)
     f.refName = data.seq_id
     if (data.score === null) {
-      delete f.score
+      f.score = undefined
     }
     if (data.phase === null) {
-      delete f.score
+      f.score = undefined
     }
     const defaultFields = new Set([
       'start',
@@ -197,11 +197,11 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
       )
     }
 
-    delete f.child_features
-    delete f.data
+    f.child_features = undefined
+    f.data = undefined
     // delete f.derived_features
-    delete f.attributes
-    delete f.seq_id
+    f.attributes = undefined
+    f.seq_id = undefined
     return f
   }
 

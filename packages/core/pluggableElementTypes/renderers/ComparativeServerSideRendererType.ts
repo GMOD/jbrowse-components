@@ -98,7 +98,7 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
 
     if (isSvgExport(results)) {
       results.html = await getSerializedSvg(results)
-      delete results.reactElement
+      results.reactElement = undefined
     }
     return results
   }

@@ -48,7 +48,7 @@ export class Slice {
   }
 
   bpToXY(bp: number, radiusPx: number) {
-    let offsetBp
+    let offsetBp: number | undefined
     if (this.region.elided) {
       offsetBp = this.region.widthBp / 2
     } else if (this.flipped) {

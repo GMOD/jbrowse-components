@@ -102,7 +102,7 @@ export function parseVcfBuffer(buffer: Buffer, options: ParseOptions = {}) {
 export function splitVcfFileHeaderAndBody(wholeFile: string) {
   // split into header and the rest of the file
   let headerEndIndex = 0
-  let prevChar
+  let prevChar: string | undefined
   for (; headerEndIndex < wholeFile.length; headerEndIndex += 1) {
     const c = wholeFile[headerEndIndex]
     if (prevChar === '\n' && c !== '#') {

@@ -36,7 +36,7 @@ function Ruler({
         const x = (reversed ? end - tick.base : tick.base - start) / bpPerPx
         return (
           <line
-            key={'tick-' + tick.base}
+            key={`tick-${tick.base}`}
             x1={x}
             x2={x}
             y1={0}

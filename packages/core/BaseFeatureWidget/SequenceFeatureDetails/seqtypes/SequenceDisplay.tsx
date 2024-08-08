@@ -22,8 +22,8 @@ const SequenceDisplay = observer(function ({
   return chunks.map((chunk, idx) => {
     const f = coordStart - (start % charactersPerRow)
     const prefix =
-      (idx == 0 && start % charactersPerRow == 0) || idx > 0
-        ? `${f + idx * strand * charactersPerRow}`.padStart(4) + '   '
+      (idx === 0 && start % charactersPerRow === 0) || idx > 0
+        ? `${`${f + idx * strand * charactersPerRow}`.padStart(4)}   `
         : ''
     const postfix =
       idx === chunks.length - 1 &&
@@ -35,6 +35,7 @@ const SequenceDisplay = observer(function ({
           ? ' \n'
           : ''
     return (
+      /* biome-ignore lint/suspicious/noArrayIndexKey: */
       <React.Fragment key={`${chunk}-${idx}`}>
         {showCoordinates ? prefix : null}
         <span style={{ background: color }}>{chunk}</span>

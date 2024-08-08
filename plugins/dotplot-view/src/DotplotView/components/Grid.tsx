@@ -33,8 +33,8 @@ export const GridRaw = observer(function ({
   const w = Math.min(htop - hbottom, viewWidth)
   const h = Math.min(viewHeight - vbottom - ry, viewHeight)
 
-  let lastx = Infinity
-  let lasty = Infinity
+  let lastx = Number.POSITIVE_INFINITY
+  let lasty = Number.POSITIVE_INFINITY
   return (
     <>
       <rect

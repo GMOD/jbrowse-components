@@ -178,14 +178,14 @@ const LazyMUICore = Object.fromEntries(
 
 const MaterialPrefixMUI = Object.fromEntries(
   Object.entries(LazyMUICore).map(([key, value]) => [
-    '@material-ui/core/' + key,
+    `@material-ui/core/${key}`,
     value,
   ]),
 )
 
 const MuiPrefixMUI = Object.fromEntries(
   Object.entries(LazyMUICore).map(([key, value]) => [
-    '@mui/material/' + key,
+    `@mui/material/${key}`,
     value,
   ]),
 )

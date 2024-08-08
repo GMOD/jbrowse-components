@@ -229,7 +229,7 @@ const OpenTrack = observer(
               </div>
             ) : (
               <FileSelector
-                name={value ? value + ' location' : ''}
+                name={value ? `${value} location` : ''}
                 description=""
                 location={fileLocation}
                 setLocation={loc => setFileLocation(loc)}

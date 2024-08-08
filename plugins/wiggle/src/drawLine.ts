@@ -50,7 +50,7 @@ export function drawLine(
   const toY = (n: number) => clamp(height - (scale(n) || 0), 0, height) + offset
 
   let lastVal: number | undefined
-  let prevLeftPx = -Infinity
+  let prevLeftPx = Number.NEGATIVE_INFINITY
   const reducedFeatures = []
   for (const feature of features.values()) {
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)

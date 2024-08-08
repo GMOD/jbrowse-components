@@ -153,7 +153,7 @@ export default abstract class JBrowseCommand extends Command {
   }
 
   async readJsonFile<T>(location: string): Promise<T> {
-    let contents
+    let contents: string
     try {
       contents = await fsPromises.readFile(location, { encoding: 'utf8' })
     } catch (error) {
@@ -165,7 +165,7 @@ export default abstract class JBrowseCommand extends Command {
         exit: 40,
       })
     }
-    let result
+    let result: T
     try {
       result = parseJSON(contents)
     } catch (error) {
@@ -220,11 +220,11 @@ export default abstract class JBrowseCommand extends Command {
     })
   }
 
-  async readInlineOrFileJson(inlineOrFileName: string) {
-    let result
+  async readInlineOrFileJson<T>(inlineOrFileName: string) {
+    let result: T
     // see if it's inline JSON
     try {
-      result = parseJSON(inlineOrFileName)
+      result = parseJSON(inlineOrFileName) as T
     } catch (error) {
       this.debug(
         `Not valid inline JSON, attempting to parse as filename: '${inlineOrFileName}'`,
@@ -270,7 +270,7 @@ export default abstract class JBrowseCommand extends Command {
 
   async *fetchVersions() {
     let page = 1
-    let result
+    let result: GithubRelease[]
 
     do {
       const response = await fetch(

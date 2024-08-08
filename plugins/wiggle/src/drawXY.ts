@@ -77,7 +77,7 @@ export function drawXY(
   const getHeight = (n: number) => (filled ? toOrigin(n) : Math.max(minSize, 1))
   let hasClipping = false
 
-  let prevLeftPx = -Infinity
+  let prevLeftPx = Number.NEGATIVE_INFINITY
   const reducedFeatures = []
   const crossingOrigin = niceMin < pivotValue && niceMax > pivotValue
 
@@ -85,8 +85,8 @@ export function drawXY(
   // passes. this reduces subpixel rendering issues. note: for stylistic
   // reasons, clipping indicator is only drawn for score, not min/max score
   if (summaryScoreMode === 'whiskers') {
-    let lastCol
-    let lastMix
+    let lastCol: string | undefined
+    let lastMix: string | undefined
     for (const feature of features.values()) {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       if (feature.get('summary')) {

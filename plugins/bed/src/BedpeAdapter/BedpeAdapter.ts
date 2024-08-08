@@ -33,10 +33,9 @@ export function featureData(
   const rest = names
     ? Object.fromEntries(names.slice(10).map((n, idx) => [n, extra[idx]]))
     : extra
-  let ALT
-  if (['DUP', 'TRA', 'INV', 'CNV', 'DEL'].includes(extra[0])) {
-    ALT = `<${extra[0]}>`
-  }
+  const ALT = ['DUP', 'TRA', 'INV', 'CNV', 'DEL'].includes(extra[0])
+    ? `<${extra[0]}>`
+    : undefined
 
   return new SimpleFeature({
     start: start1,
@@ -55,13 +54,14 @@ export function featureData(
 function parseStrand(strand: string) {
   if (strand === '+') {
     return 1
-  } else if (strand === '-') {
-    return -1
-  } else if (strand === '.') {
-    return 0
-  } else {
-    return undefined
   }
+  if (strand === '-') {
+    return -1
+  }
+  if (strand === '.') {
+    return 0
+  }
+  return undefined
 }
 
 export default class BedpeAdapter extends BaseFeatureDataAdapter {

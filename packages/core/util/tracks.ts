@@ -24,13 +24,15 @@ export function getConfAssemblyNames(conf: AnyConfigurationModel) {
   return trackAssemblyNames
 }
 
-/** return the rpcSessionId of the highest parent node in the tree that has an rpcSessionId */
+/**
+ * return the rpcSessionId of the highest parent node in the tree that has an
+ * rpcSessionId */
 
 export function getRpcSessionId(thisNode: IAnyStateTreeNode) {
   interface NodeWithRpcSessionId extends IAnyStateTreeNode {
     rpcSessionId: string
   }
-  let highestRpcSessionId
+  let highestRpcSessionId: string | undefined
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   for (let node = thisNode; !isRoot(node); node = getParent<any>(node)) {
     if ('rpcSessionId' in node) {

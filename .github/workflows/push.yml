@@ -4,13 +4,12 @@ on: push
 
 jobs:
   test:
-    name: Test and typecheck on node 20.x and ubuntu-latest
+    name: Test and typecheck
     runs-on: ubuntu-latest
     steps:
       - run: sudo apt-get -y install tabix
       - uses: actions/checkout@v4
-      - name: Use Node.js 20.x
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
       - name: Install deps (with cache)
@@ -23,12 +22,11 @@ jobs:
         run: yarn typecheck
 
   buildwebsite:
-    name: Build website on node 20 and ubuntu-latest
+    name: Build website
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Use Node.js 20
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
       - name: Install website deps (with cache)
@@ -47,12 +45,11 @@ jobs:
           args: website/testing/ --check-anchors
 
   buildwholerepo:
-    name: Build whole repo on node 20 and ubuntu-latest
+    name: Build whole repo
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Use Node.js 20
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
       - name: Install deps (with cache)
@@ -81,12 +78,11 @@ jobs:
         working-directory: component_tests/react-app
 
   buildjbrowseweb:
-    name: Build only jbrowse-web and upload to s3 on node 20 and ubuntu-latest
+    name: Build only jbrowse-web and upload to s3
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Use Node.js 20
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
       - name: Install deps (with cache)
@@ -113,8 +109,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Use Node.js 20
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
       - name: Install deps (with cache)
@@ -140,8 +135,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Use Node.js 20
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
       - name: Install deps (with cache)
@@ -168,8 +162,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Use Node.js 20
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
       - name: Install deps (with cache)
@@ -191,12 +184,11 @@ jobs:
           aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/cgv/$(echo ${{github.ref}} | cut -d "/" -f3-)/*"
         working-directory: products/jbrowse-react-circular-genome-view
   lint:
-    name: Lint on node 20 and ubuntu-latest
+    name: Lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Use Node.js 20
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
       - name: Install deps and build (with cache)
@@ -205,12 +197,11 @@ jobs:
         run: yarn lint
 
   formatchecks:
-    name: Format/spellcheck/docs on node 20 and ubuntu-latest
+    name: Format/spellcheck/docs
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Use Node.js 20
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
       - name: Install deps and build (with cache)

@@ -60,6 +60,7 @@ const LinearGenomeViewImportForm = observer(function ({
   // r0 because changing assembly will run setValue('') and then r0 may not
   // change if assembly names are the same across assemblies, but it still
   // needs to be reset
+  /* biome-ignore lint/correctness/useExhaustiveDependencies: */
   useEffect(() => {
     setValue(r0)
   }, [r0, selectedAsm])

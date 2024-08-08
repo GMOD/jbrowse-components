@@ -144,7 +144,7 @@ const HighlightGroup = observer(function HighlightGroup({
 }) {
   return model.highlight.map((highlight, idx) => (
     <Highlight
-      key={JSON.stringify(highlight) + '-' + idx}
+      key={`${JSON.stringify(highlight)}-${idx}`}
       model={model}
       highlight={highlight}
     />

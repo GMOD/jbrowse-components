@@ -91,6 +91,7 @@ const HierarchicalTree = observer(function HierarchicalTree({
     [tree, extra, obj],
   )
 
+  /* biome-ignore lint/correctness/useExhaustiveDependencies: */
   useEffect(() => {
     // @ts-expect-error
     treeRef.current.recomputeTree({

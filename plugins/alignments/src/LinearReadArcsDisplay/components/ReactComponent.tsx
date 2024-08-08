@@ -17,6 +17,7 @@ const Arcs = observer(function ({
   const view = getContainingView(model) as LGV
   const width = Math.round(view.dynamicBlocks.totalWidthPx)
   const height = model.height
+  // biome-ignore lint/correctness/useExhaustiveDependencies:
   const cb = useCallback(
     (ref: HTMLCanvasElement) => {
       model.setRef(ref)

@@ -130,7 +130,7 @@ const model = types
      * #getter
      */
     get outputRows() {
-      if (self.spreadsheet && self.spreadsheet.rowSet.isLoaded) {
+      if (self.spreadsheet?.rowSet.isLoaded) {
         const selected = self.spreadsheet.rowSet.selectedFilteredRows
         if (selected.length) {
           return selected

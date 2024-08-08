@@ -89,7 +89,7 @@ export function ucscProcessedTranscript(feature: TranscriptFeat) {
             refName,
           },
           {
-            type: `CDS`,
+            type: 'CDS',
             start: thickStart,
             end: thickEnd,
             refName,
@@ -106,7 +106,7 @@ export function ucscProcessedTranscript(feature: TranscriptFeat) {
         const prime = strand > 0 ? 'three' : 'five'
         subfeatures.push(
           {
-            type: `CDS`,
+            type: 'CDS',
             start,
             end: thickEnd,
             refName,

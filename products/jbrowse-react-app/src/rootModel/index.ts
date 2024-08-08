@@ -241,7 +241,7 @@ export default function RootModel({
                   session.showWidget(widget)
                   if (session.views.length > 1) {
                     session.notify(
-                      `This will add a track to the first view. Note: if you want to open a track in a specific view open the track selector for that view and use the add track (plus icon) in the bottom right`,
+                      'This will add a track to the first view. Note: if you want to open a track in a specific view open the track selector for that view and use the add track (plus icon) in the bottom right',
                     )
                   }
                 }

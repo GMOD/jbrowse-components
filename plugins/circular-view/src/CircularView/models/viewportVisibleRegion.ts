@@ -113,7 +113,7 @@ export function viewportVisibleSection(
       [viewL, viewB],
       [viewR, viewB],
     ]
-    let maxRho = -Infinity
+    let maxRho = Number.NEGATIVE_INFINITY
     for (const [x, y] of vertices) {
       const rho = Math.sqrt(x * x + y * y)
       if (rho > maxRho) {
@@ -226,10 +226,10 @@ export function viewportVisibleSection(
   // viewportCenterTheta < Math.PI / 2 || viewportCenterTheta > 1.5 * Math.PI
   //   ? -1
   //   : 1
-  let rhoMin = Infinity
-  let rhoMax = -Infinity
-  let thetaMin = Infinity
-  let thetaMax = -Infinity
+  let rhoMin = Number.POSITIVE_INFINITY
+  let rhoMax = Number.NEGATIVE_INFINITY
+  let thetaMin = Number.POSITIVE_INFINITY
+  let thetaMax = Number.NEGATIVE_INFINITY
   for (const [vx, vy] of vertices) {
     // ignore vertex if outside the viewport
     if (vx >= viewL && vx <= viewR && vy >= viewT && vy <= viewB) {

@@ -14,7 +14,7 @@ export function layoutFeats(
     props
   const [region] = regions
   if (!layout) {
-    throw new Error(`layout required`)
+    throw new Error('layout required')
   }
   if (!layout.addRect) {
     throw new Error('invalid layout object')

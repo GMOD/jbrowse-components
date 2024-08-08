@@ -204,7 +204,7 @@ export function FeatureDetails(props: {
               end: mate.end,
               // @ts-expect-error
               refName: mate.refName,
-              uniqueId: uniqueId + '-mate',
+              uniqueId: `${uniqueId}-mate`,
             }}
           />
         </>

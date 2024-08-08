@@ -77,6 +77,7 @@ export async function renderBaseLinearDisplaySvg(
         const clipid = getId(id, index)
 
         return (
+          /* biome-ignore lint/suspicious/noArrayIndexKey: */
           <React.Fragment key={`frag-${index}`}>
             <defs>
               <clipPath id={clipid}>

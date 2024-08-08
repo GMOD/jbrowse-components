@@ -179,16 +179,8 @@ const DotplotViewInternal = observer(function ({
 
     window.addEventListener('mousemove', globalMouseMove)
     return () => window.removeEventListener('mousemove', globalMouseMove)
-  }, [
-    validPan,
-    mousecurrClient,
-    mousedownClient,
-    cursorMode,
-    ctrlKeyWasUsed,
-    mouseupClient,
-    hview,
-    vview,
-  ])
+  }, [validPan, mousecurrClient, mousedownClient, mouseupClient, hview, vview])
+
   useEffect(() => {
     function globalCtrlKeyDown(event: KeyboardEvent) {
       if (event.metaKey || event.ctrlKey) {
@@ -223,19 +215,9 @@ const DotplotViewInternal = observer(function ({
       return () => {
         window.removeEventListener('mouseup', globalMouseUp, true)
       }
-    } else {
-      return () => {}
     }
-  }, [
-    validSelect,
-    mousedown,
-    mousecurr,
-    mouseup,
-    xdistance,
-    ydistance,
-    ctrlKeyWasUsed,
-    cursorMode,
-  ])
+    return () => {}
+  }, [validSelect, mousedown, mouseup, xdistance, ydistance])
 
   return (
     <div>

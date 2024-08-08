@@ -58,7 +58,7 @@ export default function LauncherPanel({
                 {
                   assemblies: conf,
                   defaultSession: {
-                    name: 'New Session ' + new Date().toLocaleString('en-US'),
+                    name: `New Session ${new Date().toLocaleString('en-US')}`,
                   },
                 },
               )

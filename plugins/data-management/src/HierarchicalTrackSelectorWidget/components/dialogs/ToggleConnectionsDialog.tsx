@@ -80,7 +80,7 @@ const ConnectionList = observer(function ConnectionsList({
         <Typography>No connections found</Typography>
       ) : (
         session.connections.map((conf, idx) => (
-          <div key={conf.name + '_' + idx}>
+          <div key={`${conf.name}_${idx}`}>
             <ConnectionRow
               conf={conf}
               session={session}

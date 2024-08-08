@@ -18,7 +18,7 @@ export function makeAdHocFeature(
     }
     let { text } = row.cells[columnNumber]
     if (column.dataType.type === 'Number') {
-      text = parseFloat(text)
+      text = Number.parseFloat(text)
     }
     otherData[column.name] = text
   })
@@ -81,13 +81,13 @@ export function makeAdHocSvFeatureFromTwoRefStartEndSets(
   const textOf = colno => row.cells[colno].text
   const loc1 = {
     refName: textOf(locRefColumnNumbers[0]),
-    start: parseInt(textOf(locStartColumnNumbers[0]), 10) - 1,
-    end: parseInt(textOf(locEndColumnNumbers[0]), 10),
+    start: Number.parseInt(textOf(locStartColumnNumbers[0]), 10) - 1,
+    end: Number.parseInt(textOf(locEndColumnNumbers[0]), 10),
   }
   const loc2 = {
     refName: textOf(locRefColumnNumbers[1]),
-    start: parseInt(textOf(locStartColumnNumbers[1]), 10) - 1,
-    end: parseInt(textOf(locEndColumnNumbers[1]), 10),
+    start: Number.parseInt(textOf(locStartColumnNumbers[1]), 10) - 1,
+    end: Number.parseInt(textOf(locEndColumnNumbers[1]), 10),
   }
   const columnsAlreadyUsedInLocations = [
     locRefColumnNumbers[0],

@@ -19,7 +19,7 @@ test('launch read vs ref panel', async () => {
     await findByTestId(hts('volvox_alignments_pileup_coverage'), {}, delay),
   )
 
-  const track = await findAllByTestId('pileup_overlay_canvas', {}, delay)
+  const track = await findAllByTestId('pileup-overlay', {}, delay)
   fireEvent.mouseMove(track[0], { clientX: 200, clientY: 20 })
   fireEvent.click(track[0], { clientX: 200, clientY: 40 })
   fireEvent.contextMenu(track[0], { clientX: 200, clientY: 20 })
@@ -41,7 +41,7 @@ test('launch read vs ref dotplot', async () => {
     await findByTestId(hts('volvox_alignments_pileup_coverage'), {}, delay),
   )
 
-  const track = await findAllByTestId('pileup_overlay_canvas', {}, delay)
+  const track = await findAllByTestId('pileup-overlay', {}, delay)
   fireEvent.mouseMove(track[0], { clientX: 200, clientY: 20 })
   fireEvent.click(track[0], { clientX: 200, clientY: 40 })
   fireEvent.contextMenu(track[0], { clientX: 200, clientY: 20 })

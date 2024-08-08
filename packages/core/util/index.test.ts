@@ -67,7 +67,7 @@ describe('parseLocString', () => {
   for (const [input, output] of cases) {
     test(`${input}`, () => {
       expect(
-        parseLocString(input + '[rev]', refName =>
+        parseLocString(`${input}[rev]`, refName =>
           ['chr1', 'chr2'].includes(refName),
         ),
       ).toEqual({ ...output, reversed: true })

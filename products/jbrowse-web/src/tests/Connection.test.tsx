@@ -45,7 +45,7 @@ test('Open up a UCSC trackhub connection', async () => {
 
   const input = await findByTestId('urlInput', ...opts)
   await user.clear(input)
-  await user.type(input, root + 'hub.txt')
+  await user.type(input, `${root}hub.txt`)
 
   const elt2 = await screen.findByText('Connect', ...opts)
   await waitFor(() => expect(elt2).toHaveProperty('disabled', false))

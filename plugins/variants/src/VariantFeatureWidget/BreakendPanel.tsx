@@ -27,6 +27,7 @@ function LocStringList({
       <Typography>Link to linear view of breakend endpoints</Typography>
       <ul>
         {locStrings.map((locString, index) => (
+          /* biome-ignore lint/suspicious/noArrayIndexKey: */
           <li key={`${locString}-${index}`}>
             <Link
               href="#"

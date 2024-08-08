@@ -69,12 +69,12 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter {
           }
         }
         const pos = queryStart
-        let score
-        if (this.gcMode === 'content') {
-          score = (ng + nc) / (len || 1)
-        } else if (this.gcMode === 'skew') {
-          score = (ng - nc) / (ng + nc || 1)
-        }
+        const score =
+          this.gcMode === 'content'
+            ? (ng + nc) / (len || 1)
+            : this.gcMode === 'skew'
+              ? (ng - nc) / (ng + nc || 1)
+              : 0
 
         observer.next(
           new SimpleFeature({

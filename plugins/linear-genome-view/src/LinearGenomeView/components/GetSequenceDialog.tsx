@@ -87,7 +87,6 @@ const GetSequenceDialog = observer(function ({
   handleClose: () => void
 }) {
   const { classes } = useStyles()
-  const session = getSession(model)
   const [error, setError] = useState<unknown>()
   const [sequenceChunks, setSequenceChunks] = useState<Feature[]>()
   const [rev, setReverse] = useState(false)
@@ -126,7 +125,7 @@ const GetSequenceDialog = observer(function ({
       controller.abort()
       active = false
     }
-  }, [model, session, leftOffset, rightOffset])
+  }, [model, leftOffset, rightOffset])
 
   const sequence = sequenceChunks
     ? formatSeqFasta(

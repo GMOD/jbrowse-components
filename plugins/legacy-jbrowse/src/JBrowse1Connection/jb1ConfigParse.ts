@@ -7,7 +7,7 @@ import { Config, Track, Source, Store, Names } from './types'
 
 export function parseJB1Json(config: Config | string, url: string): Config {
   if (typeof config === 'string') {
-    let parsedConf
+    let parsedConf: Config
     try {
       parsedConf = JSON.parse(config)
     } catch (error) {
@@ -19,7 +19,7 @@ export function parseJB1Json(config: Config | string, url: string): Config {
 }
 
 export function parseJB1Conf(config: string, url: string): Config {
-  let parsedConf
+  let parsedConf: Config
   try {
     parsedConf = parse(config, url)
   } catch (error) {
@@ -60,7 +60,7 @@ function parse(text: string, url: string): Config {
         }
         // parse numbers if it looks numeric
         else if (/^[+-]?[\d.,]+([eE][-+]?\d+)?$/.test(value)) {
-          parsedValue = parseFloat(value.replaceAll(',', ''))
+          parsedValue = Number.parseFloat(value.replaceAll(',', ''))
         } else {
           parsedValue = value
         }
@@ -265,7 +265,7 @@ export function regularizeConf(conf: Config, url: string): Config {
     // config
     if (trackConfig.config) {
       const c = trackConfig.config
-      delete trackConfig.config
+      trackConfig.config = undefined
       trackConfig = { ...c, ...trackConfig }
     }
 

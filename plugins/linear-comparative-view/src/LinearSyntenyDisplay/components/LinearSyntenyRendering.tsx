@@ -53,12 +53,15 @@ const LinearSyntenyRendering = observer(function ({
   const [currY, setCurrY] = useState<number>()
   const { mouseoverId } = model
 
-  // these useCallbacks avoid new refs from being created on any mouseover, etc.
+  // these useCallbacks avoid new refs from being created on any mouseover,
+  // etc.
+  // biome-ignore lint/correctness/useExhaustiveDependencies:
   const k1 = useCallback(
     (ref: HTMLCanvasElement) => model.setMouseoverCanvasRef(ref),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [model, height, width],
   )
+  // biome-ignore lint/correctness/useExhaustiveDependencies:
   const k2 = useCallback(
     (ref: HTMLCanvasElement) => {
       model.setMainCanvasRef(ref)
@@ -116,11 +119,13 @@ const LinearSyntenyRendering = observer(function ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [model, height, width],
   )
+  // biome-ignore lint/correctness/useExhaustiveDependencies:
   const k3 = useCallback(
     (ref: HTMLCanvasElement) => model.setClickMapCanvasRef(ref),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [model, height, width],
   )
+  // biome-ignore lint/correctness/useExhaustiveDependencies:
   const k4 = useCallback(
     (ref: HTMLCanvasElement) => model.setCigarClickMapCanvasRef(ref),
     // eslint-disable-next-line react-hooks/exhaustive-deps

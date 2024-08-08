@@ -115,7 +115,8 @@ const ColumnMenu = observer(function ({
               onClick: () =>
                 spreadsheetModel.setColumnType(columnNumber, typeName),
             }
-          } else if ('subMenuItems' in record && record.subMenuItems) {
+          }
+          if ('subMenuItems' in record && record.subMenuItems) {
             const { subMenuItems } = record
             return {
               label: displayName,
@@ -129,9 +130,8 @@ const ColumnMenu = observer(function ({
                   spreadsheetModel.setColumnType(columnNumber, typeName),
               })),
             }
-          } else {
-            return null
           }
+          return null
         },
       ).filter(Boolean),
     },

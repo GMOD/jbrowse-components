@@ -50,7 +50,7 @@ const Drawer = observer(function ({
       document.removeEventListener('mousedown', handleSelectView)
       document.removeEventListener('keydown', handleSelectView)
     }
-  }, [ref, session])
+  }, [session])
 
   return (
     <Paper ref={ref} className={classes.paper} elevation={16} square>

@@ -23,7 +23,7 @@ const HicRenderer = ConfigurationSchema(
     color: {
       type: 'color',
       description: 'the color of each feature in a hic alignment',
-      defaultValue: `jexl:interpolate(count,scale)`,
+      defaultValue: 'jexl:interpolate(count,scale)',
       contextVariable: ['count', 'maxScore', 'baseColor', 'scale'],
     },
 

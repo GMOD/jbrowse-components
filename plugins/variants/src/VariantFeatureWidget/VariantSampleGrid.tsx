@@ -60,7 +60,7 @@ export default function VariantSamples(props: {
   const samples = (feature.samples || {}) as Record<string, InfoFields>
   const preFilteredRows = Object.entries(samples)
 
-  let error
+  let error: unknown
   let rows = [] as Entry[]
   const filters = Object.keys(filter)
 

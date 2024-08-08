@@ -87,13 +87,11 @@ export function clone(src: any): any {
     // RegExp
     return new RegExp(src) // RegExp
   }
-  let r
-  let i
-  let l
+  let r: unknown[]
   if (Array.isArray(src)) {
     // array
     r = []
-    for (i = 0, l = src.length; i < l; ++i) {
+    for (let i = 0, l = src.length; i < l; ++i) {
       if (i in src) {
         r[i] = clone(src[i])
       }
@@ -131,15 +129,13 @@ function mixin(
   source: Obj,
   copyFunc: (arg: unknown) => unknown,
 ): Obj {
-  let name
-  let s
   const empty = {}
-  for (name in source) {
+  for (const name in source) {
     // the (!(name in empty) || empty[name] !== s) condition avoids copying
     // properties in "source" inherited from Object.prototype.	 For example,
     // if dest has a custom toString() method, don't overwrite it with the
     // toString() method that source inherited from Object.prototype
-    s = source[name]
+    const s = source[name]
     if (
       !(name in dest) ||
       // @ts-expect-error
