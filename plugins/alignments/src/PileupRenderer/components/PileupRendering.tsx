@@ -5,10 +5,6 @@ import { bpSpanPx } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
 
-// used so that user can click-away-from-feature below the laid out features
-// (issue #1248)
-const canvasPadding = 100
-
 const PileupRendering = observer(function (props: {
   blockKey: string
   displayModel: BaseLinearDisplayModel
@@ -37,20 +33,23 @@ const PileupRendering = observer(function (props: {
     displayModel
 
   const [region] = regions
-  const highlightOverlayCanvas = useRef<HTMLCanvasElement>(null)
+  const [highlight, setHighlight] = useState<{
+    left: number
+    top: number
+    width: number
+    height: number
+  }>()
+  const [selected, setSelected] = useState<{
+    left: number
+    top: number
+    width: number
+    height: number
+  }>()
+  const ref = useRef<HTMLDivElement>(null)
   const [mouseIsDown, setMouseIsDown] = useState(false)
   const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] =
     useState(false)
   useEffect(() => {
-    const canvas = highlightOverlayCanvas.current
-    if (!canvas) {
-      return
-    }
-    const ctx = canvas.getContext('2d')
-    if (!ctx) {
-      return
-    }
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
     const selectedRect = selectedFeatureId
       ? displayModel.getFeatureByID?.(blockKey, selectedFeatureId)
       : undefined
@@ -59,18 +58,12 @@ const PileupRendering = observer(function (props: {
       const [leftPx, rightPx] = bpSpanPx(leftBp, rightBp, region, bpPerPx)
       const rectTop = Math.round(topPx)
       const rectHeight = Math.round(bottomPx - topPx)
-      ctx.shadowColor = '#222266'
-      ctx.shadowBlur = 10
-      ctx.lineJoin = 'bevel'
-      ctx.lineWidth = 2
-      ctx.strokeStyle = '#00b8ff'
-      ctx.strokeRect(
-        leftPx - 2,
-        rectTop - 2,
-        rightPx - leftPx + 4,
-        rectHeight + 4,
-      )
-      ctx.clearRect(leftPx, rectTop, rightPx - leftPx, rectHeight)
+      setSelected({
+        left: leftPx - 2,
+        top: rectTop - 2,
+        width: rightPx - leftPx + 4,
+        height: rectHeight + 4,
+      })
     }
     const highlightedFeature = featureIdUnderMouse || contextMenuFeature?.id()
     const highlightedRect = highlightedFeature
@@ -81,8 +74,14 @@ const PileupRendering = observer(function (props: {
       const [leftPx, rightPx] = bpSpanPx(leftBp, rightBp, region, bpPerPx)
       const rectTop = Math.round(topPx)
       const rectHeight = Math.round(bottomPx - topPx)
-      ctx.fillStyle = '#0003'
-      ctx.fillRect(leftPx, rectTop, rightPx - leftPx, rectHeight)
+      setHighlight({
+        left: leftPx,
+        top: rectTop,
+        width: rightPx - leftPx,
+        height: rectHeight,
+      })
+    } else {
+      setHighlight(undefined)
     }
   }, [
     bpPerPx,
@@ -134,13 +133,13 @@ const PileupRendering = observer(function (props: {
   }
 
   function mouseMove(event: React.MouseEvent) {
-    if (!highlightOverlayCanvas.current) {
+    if (!ref.current) {
       return
     }
     if (mouseIsDown) {
       setMovedDuringLastMouseDown(true)
     }
-    const rect = highlightOverlayCanvas.current.getBoundingClientRect()
+    const rect = ref.current.getBoundingClientRect()
     const offsetX = event.clientX - rect.left
     const offsetY = event.clientY - rect.top
     const px = region.reversed ? width - offsetX : offsetX
@@ -168,39 +167,51 @@ const PileupRendering = observer(function (props: {
   // need to call this in render so we get the right observer behavior
   return (
     <div
-      data-testid={`pileup-${[
+      ref={ref}
+      data-testid={[
+        'pileup',
         sortedBy?.type,
         colorBy?.type,
         colorBy?.tag,
         filterBy?.tagFilter?.tag,
       ]
         .filter(f => !!f)
-        .join('-')}`}
+        .join('-')}
       style={{ position: 'relative', width: canvasWidth, height }}
+      onMouseDown={event => onMouseDown(event)}
+      onMouseEnter={event => onMouseEnter(event)}
+      onMouseOut={event => onMouseOut(event)}
+      onMouseOver={event => onMouseOver(event)}
+      onMouseUp={event => onMouseUp(event)}
+      onMouseLeave={event => onMouseLeave(event)}
+      onMouseMove={event => mouseMove(event)}
+      onClick={event => onClick(event)}
+      onContextMenu={event => onContextMenu(event)}
+      onFocus={() => {}}
+      onBlur={() => {}}
     >
       <PrerenderedCanvas
         {...props}
         style={{ position: 'absolute', left: 0, top: 0 }}
       />
-      <canvas
-        data-testid="pileup_overlay_canvas"
-        width={canvasWidth}
-        height={height + canvasPadding}
-        style={{ position: 'absolute', left: 0, top: 0 }}
-        className="highlightOverlayCanvas"
-        ref={highlightOverlayCanvas}
-        onMouseDown={event => onMouseDown(event)}
-        onMouseEnter={event => onMouseEnter(event)}
-        onMouseOut={event => onMouseOut(event)}
-        onMouseOver={event => onMouseOver(event)}
-        onMouseUp={event => onMouseUp(event)}
-        onMouseLeave={event => onMouseLeave(event)}
-        onMouseMove={event => mouseMove(event)}
-        onClick={event => onClick(event)}
-        onContextMenu={event => onContextMenu(event)}
-        onFocus={() => {}}
-        onBlur={() => {}}
-      />
+      {highlight ? (
+        <div
+          style={{
+            position: 'absolute',
+            ...highlight,
+            backgroundColor: '#0003',
+          }}
+        />
+      ) : null}
+      {selected ? (
+        <div
+          style={{
+            position: 'absolute',
+            ...selected,
+            border: '1px solid #00b8ff',
+          }}
+        />
+      ) : null}
     </div>
   )
 })
