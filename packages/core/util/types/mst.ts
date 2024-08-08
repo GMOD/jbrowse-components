@@ -1,24 +1,7 @@
 import { types } from 'mobx-state-tree'
-import propTypes from 'prop-types'
-import { PropTypes as MxPropTypes } from 'mobx-react'
-
 import { nanoid } from '../nanoid'
 
 export const ElementId = types.optional(types.identifier, () => nanoid())
-
-// PropTypes that are useful when working with instances of these in react components
-export const PropTypes = {
-  Region: propTypes.shape({
-    refName: propTypes.string.isRequired,
-    start: propTypes.number.isRequired,
-    end: propTypes.number.isRequired,
-  }),
-  ConfigSchema: MxPropTypes.objectOrObservableObject,
-  Feature: propTypes.shape({
-    get: propTypes.func.isRequired,
-    id: propTypes.func.isRequired,
-  }),
-}
 
 export const NoAssemblyRegion = types
   .model('NoAssemblyRegion', {

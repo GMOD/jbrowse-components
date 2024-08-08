@@ -9,8 +9,9 @@ import { makeStyles } from 'tss-react/mui'
 import ArrowDropDown from '@mui/icons-material/ArrowDropDown'
 
 // locals
-import SpreadsheetStateModel from '../models/Spreadsheet'
-import RowStateModel from '../models/Row'
+import type SpreadsheetStateModel from '../models/Spreadsheet'
+import type RowStateModel from '../models/Row'
+
 import CellData from './CellData'
 
 type SpreadsheetModel = Instance<typeof SpreadsheetStateModel>

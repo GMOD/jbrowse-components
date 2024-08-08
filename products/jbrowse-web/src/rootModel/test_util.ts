@@ -3,7 +3,16 @@ import corePlugins from '../corePlugins'
 import RootModel from './rootModel'
 import sessionModelFactory, { WebSessionModel } from '../sessionModel'
 
-export function createTestSession(snapshot = {}, adminMode = false) {
+export function createTestSession(args?: {
+  adminMode?: boolean
+  sessionSnapshot?: Record<string, unknown>
+  jbrowseConfig?: Record<string, unknown>
+}) {
+  const {
+    sessionSnapshot = {},
+    adminMode = false,
+    jbrowseConfig = {},
+  } = args || {}
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.createPluggableElements()
 
@@ -14,14 +23,19 @@ export function createTestSession(snapshot = {}, adminMode = false) {
   }).create(
     {
       jbrowse: {
-        configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
+        configuration: {
+          rpc: { defaultDriver: 'MainThreadRpcDriver' },
+          // @ts-expect-error
+          ...jbrowseConfig?.configuration,
+        },
+        ...jbrowseConfig,
       },
     },
     { pluginManager },
   )
   root.setSession({
     name: 'testSession',
-    ...snapshot,
+    ...sessionSnapshot,
   })
 
   const session = root.session as WebSessionModel

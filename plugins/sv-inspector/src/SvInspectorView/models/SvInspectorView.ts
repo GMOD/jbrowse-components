@@ -111,8 +111,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
        * #getter
        */
       get selectedRows() {
-        // @ts-expect-error
-        return self.spreadsheetView.rowSet.selectedRows
+        return self.spreadsheetView.spreadsheet?.rowSet.selectedRows
       },
       /**
        * #getter
@@ -387,7 +386,6 @@ function SvInspectorViewF(pluginManager: PluginManager) {
                     )
                   },
 
-                  // @ts-expect-error
                   onClick(spreadsheetView, spreadsheet, rowNumber, row) {
                     openBreakpointSplitViewFromTableRow(
                       self,

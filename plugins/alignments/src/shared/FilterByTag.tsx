@@ -86,7 +86,7 @@ const FilterByTagDialog = observer(function (props: {
   const [tag, setTag] = useState(filterBy.tagFilter?.tag || '')
   const [tagValue, setTagValue] = useState(filterBy.tagFilter?.value || '')
   const [readName, setReadName] = useState(filterBy.readName || '')
-  const validTag = tag.match(/^[A-Za-z][A-Za-z0-9]$/)
+  const validTag = /^[A-Za-z][A-Za-z0-9]$/.exec(tag)
 
   const site = 'https://broadinstitute.github.io/picard/explain-flags.html'
 

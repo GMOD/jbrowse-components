@@ -40,9 +40,9 @@ jest.spyOn(global, 'fetch').mockImplementation(async () => {
   return new Response(JSON.stringify(plugins))
 })
 
-function setup(snapshot?: {}, adminMode?: boolean) {
+function setup(sessionSnapshot?: Record<string, unknown>, adminMode?: boolean) {
   const user = userEvent.setup()
-  const session = createTestSession(snapshot, adminMode)
+  const session = createTestSession({ sessionSnapshot, adminMode })
   const model = session.addWidget(
     'PluginStoreWidget',
     'pluginStoreWidget',

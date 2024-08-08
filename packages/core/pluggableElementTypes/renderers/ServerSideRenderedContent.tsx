@@ -51,7 +51,9 @@ const NewHydrate = observer(function ServerSideRenderedContent({
         )
     })
     return () => {
-      clearTimeout(renderTimeout)
+      if (renderTimeout !== undefined) {
+        clearTimeout(renderTimeout)
+      }
       const root = rootRef.current
       rootRef.current = undefined
 

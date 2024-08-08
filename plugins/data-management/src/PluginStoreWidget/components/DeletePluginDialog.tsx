@@ -33,13 +33,7 @@ export default function DeletePluginDialog({
         >
           Confirm
         </Button>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={() => {
-            onClose()
-          }}
-        >
+        <Button variant="contained" color="secondary" onClick={() => onClose()}>
           Cancel
         </Button>
       </DialogActions>

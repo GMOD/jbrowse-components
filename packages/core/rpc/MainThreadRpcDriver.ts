@@ -6,7 +6,7 @@ class DummyHandle {
 
   async call(
     _functionName: string,
-    _filteredArgs?: {},
+    _filteredArgs?: Record<string, unknown>,
     _options = {},
   ): Promise<unknown> {
     return undefined
@@ -28,7 +28,12 @@ export default class MainThreadRpcDriver extends BaseRpcDriver {
     this.makeWorker = async (): Promise<DummyHandle> => new DummyHandle()
   }
 
-  async call(pm: PluginManager, sessionId: string, funcName: string, args: {}) {
+  async call(
+    pm: PluginManager,
+    sessionId: string,
+    funcName: string,
+    args: Record<string, unknown>,
+  ) {
     if (!sessionId) {
       throw new TypeError('sessionId is required')
     }

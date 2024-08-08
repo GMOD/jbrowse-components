@@ -56,7 +56,7 @@ export function isFeature(thing: unknown): thing is Feature {
 
 export interface SimpleFeatureArgs {
   /** key-value data, must include 'start' and 'end' */
-  data: {}
+  data: Record<string, unknown>
   /** optional parent feature */
   parent?: Feature
   /** unique identifier. can also be in data.uniqueId */

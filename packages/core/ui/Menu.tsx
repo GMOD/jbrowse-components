@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import React, { useEffect, useRef, useState } from 'react'
 import {
   Divider,
@@ -120,19 +122,19 @@ export interface BaseMenuItem {
 
 export interface NormalMenuItem extends BaseMenuItem {
   type?: 'normal'
-  onClick: Function
+  onClick: (...args: any[]) => void
 }
 
 export interface CheckboxMenuItem extends BaseMenuItem {
   type: 'checkbox'
   checked: boolean
-  onClick: Function
+  onClick: (...args: any[]) => void
 }
 
 export interface RadioMenuItem extends BaseMenuItem {
   type: 'radio'
   checked: boolean
-  onClick: Function
+  onClick: (...args: any[]) => void
 }
 
 export interface SubMenuItem extends BaseMenuItem {
@@ -156,7 +158,7 @@ interface MenuPageProps {
   menuItems: MenuItem[]
   onMenuItemClick: (
     event: React.MouseEvent<HTMLLIElement, MouseEvent>,
-    callback: Function,
+    callback: (...args: any[]) => void,
   ) => void
   anchorEl?: AnchorElProp
   open: OpenProp
@@ -250,7 +252,7 @@ const MenuPage = React.forwardRef<HTMLDivElement, MenuPageProps>(
     )
     const menuItemStyle: MenuItemStyleProp = {}
 
-    function handleClick(callback: Function) {
+    function handleClick(callback: (...args: any[]) => void) {
       return (event: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
         onMenuItemClick(event, callback)
       }
@@ -410,7 +412,7 @@ interface MenuProps extends PopoverProps {
   menuItems: MenuItem[]
   onMenuItemClick: (
     event: React.MouseEvent<HTMLLIElement, MouseEvent>,
-    callback: Function,
+    callback: (...args: any[]) => void,
   ) => void
 }
 

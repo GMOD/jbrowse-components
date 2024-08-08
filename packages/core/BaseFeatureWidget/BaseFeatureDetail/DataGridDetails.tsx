@@ -78,13 +78,15 @@ export default function DataGridDetails({
           label={<Typography variant="body2">Show options</Typography>}
         />
         <DataGrid
+          autoHeight
           disableRowSelectionOnClick
           rows={rows}
-          rowCount={25}
-          rowHeight={25}
+          rowHeight={20}
           columnHeaderHeight={35}
           hideFooter={rows.length < 25}
-          slots={{ toolbar: checked ? GridToolbar : null }}
+          slots={{
+            toolbar: checked ? GridToolbar : null,
+          }}
           slotProps={{
             toolbar: {
               printOptions: {
@@ -100,7 +102,7 @@ export default function DataGridDetails({
                   const value = params.value as string
                   return (
                     <div className={classes.cell}>
-                      <SanitizedHTML html={getStr(value)} />
+                      <SanitizedHTML html={getStr(value || '')} />
                     </div>
                   )
                 },

@@ -146,7 +146,7 @@ function QuickstartPanel({
         {quickstarts ? (
           quickstarts
             .filter(name =>
-              search ? name.match(new RegExp(search, 'i')) : true,
+              search ? new RegExp(search, 'i').exec(name) : true,
             )
             .map(name => (
               <div key={name} className={classes.checkboxContainer}>

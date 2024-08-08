@@ -13,7 +13,7 @@ const cigarRegex = new RegExp(/([MIDNSHPX=])/)
 function getReadline(filename: string) {
   const stream = fs.createReadStream(filename)
   return readline.createInterface({
-    input: filename.match(/.b?gz$/) ? stream.pipe(createGunzip()) : stream,
+    input: /.b?gz$/.exec(filename) ? stream.pipe(createGunzip()) : stream,
   })
 }
 

@@ -6,6 +6,7 @@ import {
   DialogContentText,
 } from '@mui/material'
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
+import type { WebRootModel } from '../rootModel/rootModel'
 
 const DeleteSessionDialog = ({
   sessionToDelete,
@@ -14,7 +15,7 @@ const DeleteSessionDialog = ({
 }: {
   sessionToDelete?: string
   onClose: (_arg0: boolean) => void
-  rootModel: { removeSavedSession: (arg: { name?: string }) => void }
+  rootModel: WebRootModel
 }) => {
   const [error, setError] = useState<unknown>()
   return (
@@ -36,7 +37,9 @@ const DeleteSessionDialog = ({
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
             ;(async () => {
               try {
-                rootModel.removeSavedSession({ name: sessionToDelete })
+                if (sessionToDelete) {
+                  rootModel.removeSavedSession({ name: sessionToDelete })
+                }
                 onClose(true)
               } catch (e) {
                 console.error(e)

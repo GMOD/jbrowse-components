@@ -580,7 +580,7 @@ test('can perform bpToPx in a way that makes sense on things that happen outside
 //
 // this test is important because interregionpadding blocks outside the current
 // view should not be taken into account
-test('can perform pxToBp on human genome things with ellided blocks (zoomed in)', () => {
+test('can perform pxToBp on human genome things with elided blocks (zoomed in)', () => {
   const { Session, LinearGenomeModel } = initialize()
   const session = Session.create({
     configuration: {},
@@ -605,7 +605,7 @@ test('can perform pxToBp on human genome things with ellided blocks (zoomed in)'
 //
 // this tests some places on hg38 when zoomed to whole genome, so inter-region
 // padding blocks and elided blocks matter
-test('can perform pxToBp on human genome things with ellided blocks (zoomed out)', () => {
+test('can perform pxToBp on human genome things with elided blocks (zoomed out)', () => {
   const { Session, LinearGenomeModel } = initialize()
   const session = Session.create({
     configuration: {},
@@ -629,7 +629,7 @@ test('can perform pxToBp on human genome things with ellided blocks (zoomed out)
   expect(model.pxToBp(800).coord).toBe(111057351)
   expect(model.pxToBp(800).refName).toBe('10')
 
-  // chrX after an ellided block, this tests a specific coord but should just be
+  // chrX after an elided block, this tests a specific coord but should just be
   // probably somewhat around here
   expect(model.pxToBp(1228).coord).toBe(1075410)
   expect(model.pxToBp(1228).refName).toBe('Y')

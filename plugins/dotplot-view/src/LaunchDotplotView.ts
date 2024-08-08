@@ -54,7 +54,7 @@ function tryTrack(
   try {
     model.showTrack(trackId)
   } catch (e) {
-    if (`${e}`.match('Could not resolve identifier')) {
+    if (/Could not resolve identifier/.exec(`${e}`)) {
       idsNotFound.push(trackId)
     } else {
       throw e

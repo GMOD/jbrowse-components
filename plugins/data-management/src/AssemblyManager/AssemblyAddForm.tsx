@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { Button, Grid, MenuItem, Paper, TextField } from '@mui/material'
 import { FileSelector } from '@jbrowse/core/ui'
-import { FileLocation } from '@jbrowse/core/util/types'
+import { AbstractRootModel, FileLocation } from '@jbrowse/core/util/types'
 
 // icons
 import AddIcon from '@mui/icons-material/Add'
@@ -13,7 +13,7 @@ const AdapterSelector = observer(function ({
   adapterTypes,
 }: {
   adapterSelection: string
-  setAdapterSelection: Function
+  setAdapterSelection: (arg: string) => void
   adapterTypes: string[]
 }) {
   return (
@@ -38,27 +38,27 @@ const AdapterInput = observer(
   ({
     adapterSelection,
     fastaLocation,
-    setFastaLocation,
     faiLocation,
-    setFaiLocation,
     gziLocation,
-    setGziLocation,
     twoBitLocation,
-    setTwoBitLocation,
     chromSizesLocation,
+    setFaiLocation,
+    setGziLocation,
+    setTwoBitLocation,
+    setFastaLocation,
     setChromSizesLocation,
   }: {
     adapterSelection: string
     fastaLocation: FileLocation
-    setFastaLocation: Function
     faiLocation: FileLocation
-    setFaiLocation: Function
     gziLocation: FileLocation
-    setGziLocation: Function
     twoBitLocation: FileLocation
-    setTwoBitLocation: Function
     chromSizesLocation: FileLocation
-    setChromSizesLocation: Function
+    setGziLocation: (arg: FileLocation) => void
+    setTwoBitLocation: (arg: FileLocation) => void
+    setChromSizesLocation: (arg: FileLocation) => void
+    setFastaLocation: (arg: FileLocation) => void
+    setFaiLocation: (arg: FileLocation) => void
   }) => {
     if (
       adapterSelection === 'IndexedFastaAdapter' ||
@@ -124,9 +124,8 @@ const AssemblyAddForm = observer(function ({
   rootModel,
   setFormOpen,
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  rootModel: any
-  setFormOpen: Function
+  rootModel: AbstractRootModel
+  setFormOpen: (arg: boolean) => void
 }) {
   const adapterTypes = [
     'IndexedFastaAdapter',
@@ -145,7 +144,7 @@ const AssemblyAddForm = observer(function ({
 
   function createAssembly() {
     if (assemblyName === '') {
-      rootModel.session.notify("Can't create an assembly without a name")
+      rootModel.session?.notify("Can't create an assembly without a name")
     } else {
       setFormOpen(false)
       let newAssembly
@@ -188,7 +187,7 @@ const AssemblyAddForm = observer(function ({
         }
       }
       rootModel.jbrowse.addAssemblyConf(newAssembly)
-      rootModel.session.notify(
+      rootModel.session?.notify(
         `Successfully added ${assemblyName} assembly to JBrowse 2`,
         'success',
       )
@@ -218,20 +217,20 @@ const AssemblyAddForm = observer(function ({
         />
         <AdapterSelector
           adapterSelection={adapterSelection}
-          setAdapterSelection={setAdapterSelection}
           adapterTypes={adapterTypes}
+          setAdapterSelection={setAdapterSelection}
         />
         <AdapterInput
           adapterSelection={adapterSelection}
           fastaLocation={fastaLocation}
-          setFastaLocation={setFastaLocation}
           faiLocation={faiLocation}
-          setFaiLocation={setFaiLocation}
           gziLocation={gziLocation}
-          setGziLocation={setGziLocation}
           twoBitLocation={twoBitLocation}
-          setTwoBitLocation={setTwoBitLocation}
           chromSizesLocation={chromSizesLocation}
+          setFaiLocation={setFaiLocation}
+          setGziLocation={setGziLocation}
+          setTwoBitLocation={setTwoBitLocation}
+          setFastaLocation={setFastaLocation}
           setChromSizesLocation={setChromSizesLocation}
         />
       </Paper>

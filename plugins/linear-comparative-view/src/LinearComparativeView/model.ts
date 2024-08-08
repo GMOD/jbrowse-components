@@ -85,8 +85,8 @@ function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
-         * this represents tracks specific to this view specifically used
-         * for read vs ref dotplots where this track would not really apply
+         * this represents tracks specific to this view specifically used for
+         * read vs ref dotplots where this track would not really apply
          * elsewhere
          */
         viewTrackConfigs: types.array(
@@ -95,6 +95,9 @@ function stateModelFactory(pluginManager: PluginManager) {
       }),
     )
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       width: undefined as number | undefined,
     }))
     .views(self => ({

@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-lollipop",
-  "version": "2.12.3",
+  "version": "2.13.1",
   "description": "JBrowse 2 plugin for lollipops",
   "keywords": [
     "jbrowse",
@@ -42,7 +42,6 @@
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "mobx-state-tree": "^5.0.0",
-    "prop-types": "^15.0.0",
     "react": ">=16.8.0"
   },
   "distModule": "esm/index.js",

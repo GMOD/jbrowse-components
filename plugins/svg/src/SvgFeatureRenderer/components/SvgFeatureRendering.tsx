@@ -109,6 +109,9 @@ function RenderedFeatureGlyph(props: {
       const aboveLayout = shouldShowName
         ? rootLayout.getSubRecord('nameLabel')
         : featureLayout
+      if (!aboveLayout) {
+        throw new Error('failed to layout nameLabel')
+      }
 
       rootLayout.addChild(
         'descriptionLabel',
@@ -147,45 +150,43 @@ function RenderedFeatureGlyph(props: {
   )
 }
 
-const RenderedFeatures = observer(
-  (props: {
-    features?: Map<string, Feature>
-    isFeatureDisplayed?: (f: Feature) => boolean
-    bpPerPx: number
-    config: AnyConfigurationModel
-    displayMode: string
-    colorByCDS: boolean
-    displayModel?: DisplayModel
-    region: Region
-    exportSVG?: unknown
-    extraGlyphs?: ExtraGlyphValidator[]
-    layout: BaseLayout<unknown>
-    viewParams: {
-      start: number
-      end: number
-      offsetPx: number
-      offsetPx1: number
-    }
-    [key: string]: unknown
-  }) => {
-    const { features = new Map(), isFeatureDisplayed } = props
-    return (
-      <>
-        {[...features.values()]
-          .filter(feature =>
-            isFeatureDisplayed ? isFeatureDisplayed(feature) : true,
-          )
-          .map(feature => (
-            <RenderedFeatureGlyph
-              key={feature.id()}
-              feature={feature}
-              {...props}
-            />
-          ))}
-      </>
-    )
-  },
-)
+const RenderedFeatures = observer(function RenderedFeatures(props: {
+  features?: Map<string, Feature>
+  isFeatureDisplayed?: (f: Feature) => boolean
+  bpPerPx: number
+  config: AnyConfigurationModel
+  displayMode: string
+  colorByCDS: boolean
+  displayModel?: DisplayModel
+  region: Region
+  exportSVG?: unknown
+  extraGlyphs?: ExtraGlyphValidator[]
+  layout: BaseLayout<unknown>
+  viewParams: {
+    start: number
+    end: number
+    offsetPx: number
+    offsetPx1: number
+  }
+  [key: string]: unknown
+}) {
+  const { features = new Map(), isFeatureDisplayed } = props
+  return (
+    <>
+      {[...features.values()]
+        .filter(feature =>
+          isFeatureDisplayed ? isFeatureDisplayed(feature) : true,
+        )
+        .map(feature => (
+          <RenderedFeatureGlyph
+            key={feature.id()}
+            feature={feature}
+            {...props}
+          />
+        ))}
+    </>
+  )
+})
 
 const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
   layout: BaseLayout<unknown>

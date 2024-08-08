@@ -41,7 +41,7 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
        * #action
        */
       deleteTrackConf(trackConf: AnyConfigurationModel) {
-        const callbacksToDereferenceTrack: Function[] = []
+        const callbacksToDereferenceTrack: (() => void)[] = []
         const dereferenceTypeCount: Record<string, number> = {}
         const referring = self.getReferring(trackConf)
         self.removeReferring(

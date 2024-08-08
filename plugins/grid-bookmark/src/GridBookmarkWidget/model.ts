@@ -42,8 +42,8 @@ const SharedBookmarksModel = types.model('SharedBookmarksModel', {
 export interface IExtendedLGV extends LinearGenomeViewModel {
   showBookmarkHighlights: boolean
   showBookmarkLabels: boolean
-  toggleShowBookmarkHighlights: (arg: boolean) => {}
-  toggleShowBookmarkLabels: (arg: boolean) => {}
+  toggleShowBookmarkHighlights: (arg: boolean) => void
+  toggleShowBookmarkLabels: (arg: boolean) => void
 }
 
 export interface ILabeledRegionModel

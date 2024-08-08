@@ -22,7 +22,7 @@ const testIndex = dataDir('simpleIndex.html')
 afterAll(() => (process.exitCode = 0))
 
 function getPort(output: string) {
-  const portMatch = output.match(/localhost:([0-9]{4})/)
+  const portMatch = /localhost:([0-9]{4})/.exec(output)
   const port = portMatch?.[1]
   if (!port) {
     throw new Error(`Port not found in "${JSON.stringify(output)}"`)
@@ -31,7 +31,7 @@ function getPort(output: string) {
 }
 
 function getAdminKey(output: string) {
-  const keyMatch = output.match(/adminKey=([a-zA-Z0-9]{10,12}) /)
+  const keyMatch = /adminKey=([a-zA-Z0-9]{10,12}) /.exec(output)
   const key = keyMatch?.[1]
   if (!key) {
     throw new Error(`Admin key not found in "${output}"`)

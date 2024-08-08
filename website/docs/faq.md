@@ -242,7 +242,7 @@ all the metadata. Categories are also used to group tracks in the track
 selector. New categories can be added with the `--category` option from
 `jbrowse add-track`.
 
-Alternatively, you can add a metadata to a track, which will be used in the
+Alternatively, you can add a metadata key to a track, which will be used in the
 faceted track selector:
 
 ```
@@ -255,6 +255,51 @@ faceted track selector:
   }
 }
 ```
+
+### Can I compress the config.json, it's large and users have to download it?
+
+You can set up your server to serve zipped files. Most cloud-based services,
+like AWS Amplify and AWS CloudFront, already do this automatically. However, for
+Apache and Nginx, you need to configure them manually.
+
+For Nginx, you can enable gzip compression by editing the config.template. See
+for instance for a set of reasonable nginx defaults:
+https://gist.github.com/sydcanem/3e00c09b3361927b2fd1#file-nginx-gzip-conf
+
+```
+server {
+    ...
+    # Enable gzip compression.
+    # Default: off
+    gzip on;
+
+    # make sure to **at least** allow json to be compressed, multiple
+    gzip_types
+      application/json
+}
+```
+
+To enable compression in Apache, you can use the mod_deflate module.
+
+```
+sudo a2enmod deflate
+sudo systemctl restart apache2
+```
+
+Add the following configuration to your Apache configuration file (e.g.,
+/etc/apache2/sites-available/000-default.conf):
+
+```
+<IfModule mod_deflate.c>
+    # Compress output
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
+</IfModule>
+
+```
+
+By enabling gzip compression, your config.json and other specified files will be
+served in a compressed format, reducing the file size and improving download
+times for your users.
 
 ## Curiosities
 

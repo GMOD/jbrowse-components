@@ -3,7 +3,7 @@ import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 
 // locals
-import SpreadsheetStateModel from '../models/Spreadsheet'
+import type SpreadsheetStateModel from '../models/Spreadsheet'
 
 type SpreadsheetModel = Instance<typeof SpreadsheetStateModel>
 

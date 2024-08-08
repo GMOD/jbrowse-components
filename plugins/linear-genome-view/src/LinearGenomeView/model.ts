@@ -35,6 +35,7 @@ import {
   resolveIdentifier,
   types,
   Instance,
+  getParent,
 } from 'mobx-state-tree'
 
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
@@ -60,6 +61,7 @@ import Header from './components/Header'
 import { generateLocations, parseLocStrings } from './util'
 import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import { handleSelectedRegion } from '../searchUtils'
+
 // lazies
 const ReturnToImportFormDialog = lazy(
   () => import('@jbrowse/core/ui/ReturnToImportFormDialog'),
@@ -263,6 +265,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
         colorByCDS: types.optional(types.boolean, () =>
           Boolean(JSON.parse(localStorageGetItem('lgv-colorByCDS') || 'false')),
         ),
+
+        /**
+         * #property
+         * color by CDS
+         */
+        showTrackOutlines: types.optional(types.boolean, () =>
+          Boolean(
+            JSON.parse(localStorageGetItem('lgv-showTrackOutlines') || 'true'),
+          ),
+        ),
       }),
     )
     .volatile(() => ({
@@ -273,7 +285,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       // array of callbacks to run after the next set of the displayedRegions,
       // which is basically like an onLoad
-      afterDisplayedRegionsSetCallbacks: [] as Function[],
+      afterDisplayedRegionsSetCallbacks: [] as (() => void)[],
       scaleFactor: 1,
       trackRefs: {} as Record<string, HTMLDivElement>,
       coarseDynamicBlocks: [] as BaseBlock[],
@@ -325,6 +337,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #method
        */
+      scaleBarDisplayPrefix() {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return getParent<any>(self, 2).type === 'LinearSyntenyView'
+          ? self.assemblyNames[0]
+          : ''
+      },
+      /**
+       * #method
+       */
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       MiniControlsComponent(): React.FC<any> {
         return MiniControls
@@ -343,8 +364,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       get assemblyErrors() {
         const { assemblyManager } = getSession(self)
-        const { assemblyNames } = self
-        return assemblyNames
+        return self.assemblyNames
           .map(a => assemblyManager.get(a)?.error)
           .filter(f => !!f)
           .join(', ')
@@ -556,6 +576,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      setShowTrackOutlines(arg: boolean) {
+        self.showTrackOutlines = arg
+      },
       /**
        * #action
        */
@@ -936,7 +962,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * schedule something to be run after the next time displayedRegions is
        * set
        */
-      afterDisplayedRegionsSet(cb: Function) {
+      afterDisplayedRegionsSet(cb: () => void) {
         self.afterDisplayedRegionsSetCallbacks.push(cb)
       },
 
@@ -1206,6 +1232,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 onClick: () => self.setHideHeader(!self.hideHeader),
               },
 
+              {
+                label: 'Show track outlines',
+                type: 'checkbox',
+                checked: self.showTrackOutlines,
+                onClick: () =>
+                  self.setShowTrackOutlines(!self.showTrackOutlines),
+              },
               {
                 label: 'Show header overview',
                 type: 'checkbox',

@@ -60,7 +60,7 @@ function NewSessionCard({
 }
 
 interface RootModel {
-  setSession: Function
+  setSession: (arg: unknown) => void
 }
 
 export function NewEmptySession({ rootModel }: { rootModel: RootModel }) {

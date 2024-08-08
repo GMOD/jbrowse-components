@@ -12,7 +12,7 @@ import {
 // locals
 import { ColumnTypes, AnyColumnType } from './ColumnDataTypes'
 import StaticRowSetModel from './StaticRowSet'
-import RowModel from './Row'
+import type RowModel from './Row'
 
 type Row = Instance<typeof RowModel>
 

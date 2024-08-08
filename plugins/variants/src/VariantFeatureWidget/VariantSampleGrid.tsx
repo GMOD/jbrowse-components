@@ -83,7 +83,7 @@ export default function VariantSamples(props: {
           ? filters.every(key => {
               const currFilter = filter[key]
               return currFilter
-                ? row[key].match(new RegExp(currFilter, 'i'))
+                ? new RegExp(currFilter, 'i').exec(row[key])
                 : true
             })
           : true,
@@ -124,6 +124,7 @@ export default function VariantSamples(props: {
       ) : null}
 
       <DataGrid
+        autoHeight
         rows={rows}
         hideFooter={rows.length < 100}
         columns={columns}
@@ -133,7 +134,11 @@ export default function VariantSamples(props: {
         disableColumnMenu
         slots={{ toolbar: checked ? GridToolbar : null }}
         slotProps={{
-          toolbar: { printOptions: { disableToolbarButton: true } },
+          toolbar: {
+            printOptions: {
+              disableToolbarButton: true,
+            },
+          },
         }}
       />
     </BaseCard>

@@ -47,7 +47,7 @@ rpcDriverName: types.maybe(types.string)
 
 ```js
 // type
-React.FC<{ model: { id: string; type: string; rpcDriverName: string; } & NonEmptyObject & { rendererTypeName: string; error: unknown; message: string; } & IStateTreeNode<IModelType<{ id: IOptionalIType<ISimpleType<string>, [...]>; type: ISimpleType<...>; rpcDriverName: IMaybe<...>; }, { ...; }, _NotCustomized, _NotC...
+React.FC<{ model: { id: string; type: string; rpcDriverName: string; } & NonEmptyObject & { rendererTypeName: string; error: unknown; message: string | undefined; } & IStateTreeNode<IModelType<{ id: IOptionalIType<...>; type: ISimpleType<...>; rpcDriverName: IMaybe<...>; }, { ...; }, _NotCustomized, _NotCustomized>>...
 ```
 
 #### getter: DisplayBlurb

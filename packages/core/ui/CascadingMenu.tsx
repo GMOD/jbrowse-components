@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import React, { useContext, useMemo } from 'react'
 import {
   Divider,

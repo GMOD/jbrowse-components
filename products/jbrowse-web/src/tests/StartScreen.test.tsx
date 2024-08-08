@@ -15,8 +15,7 @@ test('Empty config', async () => {
 }, 10000)
 
 test('Add new session', async () => {
-  const pluginManager = getPluginManager()
-  const root = pluginManager.rootModel!
+  const { rootModel: root } = getPluginManager()
   const { findByText } = render(
     <StartScreen rootModel={root} onFactoryReset={factoryReset} />,
   )
@@ -26,8 +25,7 @@ test('Add new session', async () => {
 }, 10000)
 
 test('Add new LGV session', async () => {
-  const pluginManager = getPluginManager()
-  const root = pluginManager.rootModel!
+  const { rootModel: root } = getPluginManager()
   const { findByText } = render(
     <StartScreen rootModel={root} onFactoryReset={factoryReset} />,
   )
@@ -37,8 +35,7 @@ test('Add new LGV session', async () => {
 }, 10000)
 
 test('Add new SV Inspector session', async () => {
-  const pluginManager = getPluginManager()
-  const root = pluginManager.rootModel!
+  const { rootModel: root } = getPluginManager()
   const { findByText } = render(
     <StartScreen rootModel={root} onFactoryReset={factoryReset} />,
   )

@@ -52,6 +52,6 @@ this for certain feature types to avoid fetching e.g. the entire chromosome
 ```js
 dontRedispatch: {
       type: 'stringArray',
-      defaultValue: ['chromosome', 'region'],
+      defaultValue: ['chromosome', 'region', 'contig'],
     }
 ```

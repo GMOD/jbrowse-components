@@ -36,7 +36,8 @@ function isUTR(feature: Feature) {
 }
 
 function makeUTRs(parent: Feature, subs: Feature[]) {
-  // based on Lincoln's UTR-making code in Bio::Graphics::Glyph::processed_transcript
+  // based on Lincoln's UTR-making code in
+  // Bio::Graphics::Glyph::processed_transcript
   const subparts = [...subs]
 
   let codeStart = Infinity

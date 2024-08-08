@@ -5,22 +5,7 @@ import parseJSON from 'json-parse-better-errors'
 
 // locals
 import fetch from '../fetchWithProxy'
-import JBrowseCommand from '../base'
-
-type Connection = Record<string, unknown>
-
-interface Assembly {
-  name: string
-  sequence: Record<string, unknown>
-}
-
-interface Config {
-  assemblies?: Assembly[]
-  configuration?: {}
-  connections?: Connection[]
-  defaultSession?: {}
-  tracks?: unknown[]
-}
+import JBrowseCommand, { Config } from '../base'
 
 export default class AddConnection extends JBrowseCommand {
   // @ts-expect-error

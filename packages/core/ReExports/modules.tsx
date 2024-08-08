@@ -7,7 +7,6 @@ import * as mobx from 'mobx'
 import * as mst from 'mobx-state-tree'
 import * as mxreact from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
-import PropTypes from 'prop-types'
 
 import * as MUIStyles from '@mui/material/styles'
 import * as MUIUtils from '@mui/material/utils'
@@ -525,7 +524,6 @@ const libs = {
     alpha: MUIStyles.alpha,
     useTheme: MUIStyles.useTheme,
   },
-  'prop-types': PropTypes,
 
   // end special case
   // material-ui subcomponents, should get rid of these

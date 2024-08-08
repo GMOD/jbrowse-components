@@ -71,7 +71,7 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
       prepareToBreakConnection(configuration: AnyConfigurationModel) {
         const root = self as typeof self &
           Instance<SessionWithReferenceManagementType>
-        const callbacksToDeref: Function[] = []
+        const callbacksToDeref: (() => void)[] = []
         const derefTypeCount: Record<string, number> = {}
         const name = readConfObject(configuration, 'name')
         const connection = self.connectionInstances.find(c => c.name === name)

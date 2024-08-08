@@ -16,7 +16,6 @@ export default [
   'tss-react/mui',
   '@material-ui/core',
   '@mui/material',
-  'prop-types',
 
   '@mui/material/styles',
   '@material-ui/core/styles',
