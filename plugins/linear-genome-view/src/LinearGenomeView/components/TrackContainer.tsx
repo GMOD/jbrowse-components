@@ -40,7 +40,7 @@ const TrackContainer = observer(function ({
   model: LGV
   track: BaseTrackModel
 }) {
-  const { classes } = useStyles()
+  const { cx, classes } = useStyles()
   const display = track.displays[0]
   const { draggingTrackId, showTrackOutlines } = model
   const ref = useRef<HTMLDivElement>(null)

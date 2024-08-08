@@ -1,8 +1,9 @@
 import React, { lazy, Suspense, useEffect, useRef } from 'react'
 import { makeStyles } from 'tss-react/mui'
 import { LoadingEllipses, VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
-import { getSession, partition } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
+import { Paper } from '@mui/material'
 
 // locals
 import {
@@ -45,6 +46,7 @@ const useStyles = makeStyles()(theme => ({
 
 const LinearGenomeView = observer(({ model }: { model: LGV }) => {
   const {
+    tracks,
     pinnedTracks,
     unpinnedTracks,
     error,
