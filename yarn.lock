@@ -2269,13 +2269,12 @@
     long "^4.0.0"
     quick-lru "^4.0.0"
 
-"@gmod/bbi@^4.0.0":
-  version "4.0.6"
-  resolved "https://registry.yarnpkg.com/@gmod/bbi/-/bbi-4.0.6.tgz#c537e43e651004cea332eab0f5ace4465a872aa3"
-  integrity sha512-OC1mQtW/QCN6hGZ94M4GPmsqRHlzJchywpYG0yWv9bUXwUVAcCj6ySW+y3SO/nDqWroQLX3DKZs8EXKWu55RQw==
+"@gmod/bbi@^5.0.0":
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/@gmod/bbi/-/bbi-5.0.0.tgz#e4daa62ee88b15a1f27cb82c2d15c8806946e61a"
+  integrity sha512-hfgvHmyyiHmc8mGx8xysumurzkN8DgcEH2HCn2zouBJG7tzcOYzF/3x5NeBG4aIuPRHAoeP7Vkm57+tWnqfVsA==
   dependencies:
     "@gmod/abortable-promise-cache" "^2.0.0"
-    binary-parser "^2.1.0"
     generic-filehandle "^3.0.0"
     pako "^2.0.0"
     quick-lru "^4.0.0"
@@ -2295,13 +2294,6 @@
     generic-filehandle "^3.0.0"
     long "^4.0.0"
     pako "^1.0.11"
-
-"@gmod/binary-parser@^1.3.5":
-  version "1.4.2"
-  resolved "https://registry.yarnpkg.com/@gmod/binary-parser/-/binary-parser-1.4.2.tgz#54f50e7b3437cc0882bd8ba6ef7c8e664ae3e892"
-  integrity sha512-X/UI86z2l6+qhy3Biai9Mog5/PPT3HR8+xo6qALijQ6FpRovkd/OPWOgy2fZX3vMRuMcyZKUva7V24Iir8HfhQ==
-  dependencies:
-    long "^4.0.0"
 
 "@gmod/cram@^3.0.0":
   version "3.0.0"
@@ -2380,14 +2372,12 @@
   resolved "https://registry.yarnpkg.com/@gmod/trix/-/trix-2.0.6.tgz#00f97eef28a13c688be3c4c0773916ecf68765f8"
   integrity sha512-J12/c8kRHw8mxoVpHTeG6B7w9aGOmFdOGRxhljjaUmcMiFB7CFinPtApsoOSO/e6TYI40E5zd5n3+Q2ZC89Qww==
 
-"@gmod/twobit@^1.1.12":
-  version "1.1.14"
-  resolved "https://registry.yarnpkg.com/@gmod/twobit/-/twobit-1.1.14.tgz#84ea1156462cb5ee37295bcb3da6c395ffeb7a25"
-  integrity sha512-q0mpBkP6nwuHp/kLJAu8ereI8s/JPmPadmOWa0pfrAYU4ffEyItJOm0Kqfsn3Sc9l3p4hPeJ/7aHPkunsQDILQ==
+"@gmod/twobit@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@gmod/twobit/-/twobit-2.0.0.tgz#c86af95a3cadba017b231d9227c30c9da1eacd73"
+  integrity sha512-tECpGjrJLy+wNMVRHF/C58GzQUnPPnzyqbfQRHdHMSswMHizrebeI0ufghBT7jMvCBN1tSaz9qycfmOt0ZpIlQ==
   dependencies:
-    "@gmod/binary-parser" "^1.3.5"
     generic-filehandle "^3.0.0"
-    long "^4.0.0"
 
 "@gmod/ucsc-hub@^0.3.0":
   version "0.3.0"
@@ -6171,11 +6161,6 @@ binary-extensions@^2.0.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/binary-extensions/-/binary-extensions-2.3.0.tgz#f6e14a97858d327252200242d4ccfe522c445522"
   integrity sha512-Ceh+7ox5qe7LJuLHoY0feh3pHuUDHAcRUeyL2VYghZwfpkNIy/+8Ocg0a3UuSoYzavmylwuLWQOf3hl0jjMMIw==
-
-binary-parser@^2.1.0:
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/binary-parser/-/binary-parser-2.2.1.tgz#4edc6da2dc56db73fa5ba450dfe6382ede8294ce"
-  integrity sha512-5ATpz/uPDgq5GgEDxTB4ouXCde7q2lqAQlSdBRQVl/AJnxmQmhIfyxJx+0MGu//D5rHQifkfGbWWlaysG0o9NA==
 
 bl@^1.0.0:
   version "1.2.3"
