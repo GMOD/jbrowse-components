@@ -108,6 +108,25 @@ const tracks = [
       },
     },
   },
+  {
+    type: 'AlignmentsTrack',
+    trackId: 'skbr3_pacbio',
+    name: 'SKBR3 pacbio',
+    assemblyNames: ['hg38'],
+    adapter: {
+      type: 'BamAdapter',
+      bamLocation: {
+        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/SKBR3_Feb17_GRCh38.sorted.bam',
+        locationType: 'UriLocation',
+      },
+      index: {
+        location: {
+          uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/SKBR3_Feb17_GRCh38.sorted.bam.bai',
+          locationType: 'UriLocation',
+        },
+      },
+    },
+  },
 ]
 
 export default tracks

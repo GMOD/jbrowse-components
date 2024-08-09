@@ -2258,13 +2258,13 @@
   integrity sha512-6PQTJv+uxAb8XE/oL2Uh4EmFJpn65YOTSqGn8HLNXrWRlW1Clp1Oze6biHeRCMonLwEx4oH4bPeyjdcMnNP8pw==
 
 "@gmod/bam@^2.0.0":
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-2.0.3.tgz#3dd494fbe9a1f0688885f989d2d4e98d06f188e2"
-  integrity sha512-rXxo7n9NUExTpHwbvMb18OWqfTUXPCjRzyWE+3hxGdCwTe0NbkgJjHn7E7qDYdCoFO/HMZLOtekfo9nx53lNdQ==
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-2.0.4.tgz#bdffb52da9af4fc90cb10993a3044d01d7bf0374"
+  integrity sha512-lV/eM/ITwVPovyn4d8iDWyRP/zIuzHUylV5y5LJm0ZBm9nQfFwE25KpHKzoZ7a/0197Dxl+jJEjKzSlDN8YNZA==
   dependencies:
     "@gmod/abortable-promise-cache" "^2.0.0"
     "@gmod/bgzf-filehandle" "^1.4.4"
-    buffer-crc32 "^1.0.0"
+    crc "^4.3.2"
     generic-filehandle "^3.0.0"
     long "^4.0.0"
     quick-lru "^4.0.0"
@@ -2296,14 +2296,14 @@
     pako "^1.0.11"
 
 "@gmod/cram@^3.0.3":
-  version "3.0.3"
-  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-3.0.3.tgz#5bcbe10d21ccaa2b2156f98218b38f6d1e059628"
-  integrity sha512-GpXwpwPFkafKWk78ZZRggIt9hokjJ0U+z5Dz+sSLVJvbv3Ro8D14RdiXL8MY3t8dmbKjFwyNLCObxi+8iSCJQw==
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-3.0.4.tgz#86b8a31f67f81fe919e33e1d540c75cc2cd46345"
+  integrity sha512-4mlQBJkd0qGQ3AsnlJGaIlu1EFs16h9x1C8HLAZqQOS51KHVQsfrWgwQttDoNBThdIAw1jYblynhuwvS+5Iqvw==
   dependencies:
     "@gmod/abortable-promise-cache" "^2.0.0"
     "@jkbonfield/htscodecs" "^0.5.1"
-    buffer-crc32 "^1.0.0"
     bzip2 "^0.1.1"
+    crc "^4.3.2"
     long "^4.0.0"
     md5 "^2.2.1"
     pako "^1.0.4"
@@ -6303,11 +6303,6 @@ buffer-alloc@^1.2.0:
     buffer-alloc-unsafe "^1.1.0"
     buffer-fill "^1.0.0"
 
-buffer-crc32@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/buffer-crc32/-/buffer-crc32-1.0.0.tgz#a10993b9055081d55304bd9feb4a072de179f405"
-  integrity sha512-Db1SbgBS/fg/392AblrMJk97KggmvYhr4pB5ZIMTWtaivCPMWLkmb7m21cJvpvgK+J3nsU2CmmixNBZx4vFj/w==
-
 buffer-crc32@~0.2.3:
   version "0.2.13"
   resolved "https://registry.yarnpkg.com/buffer-crc32/-/buffer-crc32-0.2.13.tgz#0d333e3f00eac50aa1454abd30ef8c2a5d9a7242"
@@ -7218,6 +7213,11 @@ crc@^3.8.0:
   integrity sha512-iX3mfgcTMIq3ZKLIsVFAbv7+Mc10kxabAGQb8HvjA1o3T1PIYprbakQ65d3I+2HGHt6nSKkM9PYjgoJO2KcFBQ==
   dependencies:
     buffer "^5.1.0"
+
+crc@^4.0.0, crc@^4.3.2:
+  version "4.3.2"
+  resolved "https://registry.yarnpkg.com/crc/-/crc-4.3.2.tgz#49b7821cbf2cf61dfd079ed93863bbebd5469b9a"
+  integrity sha512-uGDHf4KLLh2zsHa8D8hIQ1H/HtFQhyHrc0uhHBcoKGol/Xnb+MPYfUMw7cvON6ze/GUESTudKayDcJC5HnJv1A==
 
 create-jest@^29.7.0:
   version "29.7.0"
