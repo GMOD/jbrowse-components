@@ -38,7 +38,7 @@
   "dependencies": {
     "@gmod/abortable-promise-cache": "^2.0.0",
     "@gmod/indexedfasta": "^2.0.2",
-    "@gmod/twobit": "^2.0.0"
+    "@gmod/twobit": "^2.0.1"
   },
   "peerDependencies": {
     "@jbrowse/core": "^2.0.0",
