@@ -119,11 +119,10 @@ ${derives.code}
 \`\`\`
 `
           : ''
-        const slotstr =
-          `${slots.length ? `### ${config.name} - Slots` : ''}\n${slots
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .map(({ name, docs, code }: any) => {
-              return `#### slot: ${name}
+        const slotstr = `${slots.length ? `### ${config.name} - Slots` : ''}\n${slots
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .map(({ name, docs, code }: any) => {
+            return `#### slot: ${name}
 
 ${docs}
 
@@ -131,10 +130,10 @@ ${docs}
 ${code}
 \`\`\`
 `
-            })
-            .join('\n')}`
+          })
+          .join('\n')}`
 
-        const dir = "website/docs/config"
+        const dir = 'website/docs/config'
         try {
           fs.mkdirSync(dir)
         } catch (e) {}

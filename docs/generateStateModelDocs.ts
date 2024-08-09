@@ -111,60 +111,51 @@ function generateStateModelDocs(files: string[]) {
   Object.values(contents).forEach(
     ({ model, getters, properties, actions, methods, filename }) => {
       if (model) {
-        const getterstr =
-          `${getters.length ? `### ${model.name} - Getters` : ''}\n${getters
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .map(({ name, docs, signature }: any) =>
-              join(
-                `#### getter: ${name}`,
-                docs,
-                codeBlock('// type', signature || ''),
-              ),
-            )
-            .join('\n')}`
+        const getterstr = `${getters.length ? `### ${model.name} - Getters` : ''}\n${getters
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .map(({ name, docs, signature }: any) =>
+            join(
+              `#### getter: ${name}`,
+              docs,
+              codeBlock('// type', signature || ''),
+            ),
+          )
+          .join('\n')}`
 
-        const methodstr =
-          `${methods.length ? `### ${model.name} - Methods` : ''}\n${methods
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .map(({ name, docs, signature }: any) =>
-              join(
-                `#### method: ${name}`,
-                docs,
-                codeBlock('// type signature', `${name}: ${signature || ''}`),
-              ),
-            )
-            .join('\n')}`
+        const methodstr = `${methods.length ? `### ${model.name} - Methods` : ''}\n${methods
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .map(({ name, docs, signature }: any) =>
+            join(
+              `#### method: ${name}`,
+              docs,
+              codeBlock('// type signature', `${name}: ${signature || ''}`),
+            ),
+          )
+          .join('\n')}`
 
-        const propertiesstr =
-          `${properties.length ? `### ${model.name} - Properties` : ''}\n${properties
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .map(({ name, docs, code, signature }: any) =>
-              join(
-                `#### property: ${name}`,
-                docs,
-                codeBlock(
-                  '// type signature',
-                  signature || '',
-                  '// code',
-                  code,
-                ),
-              ),
-            )
-            .join('\n')}`
+        const propertiesstr = `${properties.length ? `### ${model.name} - Properties` : ''}\n${properties
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .map(({ name, docs, code, signature }: any) =>
+            join(
+              `#### property: ${name}`,
+              docs,
+              codeBlock('// type signature', signature || '', '// code', code),
+            ),
+          )
+          .join('\n')}`
 
-        const actionstr =
-          `${actions.length ? `### ${model.name} - Actions` : ''}\n${actions
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .map(({ name, docs, signature }: any) =>
-              join(
-                `#### action: ${name}`,
-                docs,
-                codeBlock('// type signature', `${name}: ${signature || ''}`),
-              ),
-            )
-            .join('\n')}`
+        const actionstr = `${actions.length ? `### ${model.name} - Actions` : ''}\n${actions
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .map(({ name, docs, signature }: any) =>
+            join(
+              `#### action: ${name}`,
+              docs,
+              codeBlock('// type signature', `${name}: ${signature || ''}`),
+            ),
+          )
+          .join('\n')}`
 
-        const dir = "website/docs/models"
+        const dir = 'website/docs/models'
         try {
           fs.mkdirSync(dir)
         } catch (e) {}
