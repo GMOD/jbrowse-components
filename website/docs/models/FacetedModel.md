@@ -124,7 +124,7 @@ setFilter: (key: string, value: string[]) => void
 
 ```js
 // type signature
-setPanelWidth: (width: number) => void
+setPanelWidth: (width: number) => number
 ```
 
 #### action: setUseShoppingCart

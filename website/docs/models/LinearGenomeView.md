@@ -212,6 +212,21 @@ colorByCDS: types.optional(types.boolean, () =>
         )
 ```
 
+#### property: showTrackOutlines
+
+color by CDS
+
+```js
+// type signature
+IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+showTrackOutlines: types.optional(types.boolean, () =>
+          Boolean(
+            JSON.parse(localStorageGetItem('lgv-showTrackOutlines') || 'true'),
+          ),
+        )
+```
+
 ### LinearGenomeView - Getters
 
 #### getter: trackLabelsSetting
@@ -455,6 +470,13 @@ any
 
 ### LinearGenomeView - Methods
 
+#### method: scaleBarDisplayPrefix
+
+```js
+// type signature
+scaleBarDisplayPrefix: () => any
+```
+
 #### method: MiniControlsComponent
 
 ```js
@@ -566,6 +588,13 @@ pxToBp: (px: number) => { coord: number; index: number; refName: string; oob: bo
 ```
 
 ### LinearGenomeView - Actions
+
+#### action: setShowTrackOutlines
+
+```js
+// type signature
+setShowTrackOutlines: (arg: boolean) => void
+```
 
 #### action: setColorByCDS
 
@@ -787,7 +816,7 @@ schedule something to be run after the next time displayedRegions is set
 
 ```js
 // type signature
-afterDisplayedRegionsSet: (cb: Function) => void
+afterDisplayedRegionsSet: (cb: () => void) => void
 ```
 
 #### action: horizontalScroll

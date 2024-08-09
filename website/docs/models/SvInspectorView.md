@@ -117,7 +117,7 @@ circularView: types.optional(CircularModel, () =>
 
 ```js
 // type
-any
+({ id: string; cells: IMSTArray<IModelType<{ text: ISimpleType<string>; extendedData: IMaybe<IType<any, any, any>>; }, {}, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>; extendedData: any; isSelected: boolean; } & NonEmptyObject & { ...; } & { ...; } & IStateTreeNode<...>)[]
 ```
 
 #### getter: assemblyName

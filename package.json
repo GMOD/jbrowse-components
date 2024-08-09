@@ -21,10 +21,9 @@
     "built-test-ci": "jest --ci integration.test.js",
     "test": "jest",
     "prepare": "husky",
-    "preconfigdocs": "rm -rf docs/dist && yarn tsc --build docs/tsconfig.json",
-    "configdocs": "rm -rf website/docs/config && mkdir website/docs/config && node docs/dist/generateConfigDocs.js",
-    "prestatedocs": "rm -rf docs/dist && yarn tsc --build docs/tsconfig.json",
-    "statedocs": "rm -rf website/docs/models && mkdir website/docs/models && node docs/dist/generateStateModelDocs.js"
+    "configdocs": "rm -rf website/docs/config && mkdir website/docs/config && yarn tsx docs/generateConfigDocs.ts",
+    "statedocs": "rm -rf website/docs/models && mkdir website/docs/models && yarn tsx docs/generateStateModelDocs.ts",
+    "autogen": "yarn statedocs && yarn configdocs && yarn prettier --write website"
   },
   "devDependencies": {
     "@babel/core": "^7.3.4",

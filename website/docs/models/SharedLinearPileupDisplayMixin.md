@@ -189,7 +189,7 @@ setTagsReady: (flag: boolean) => void
 
 ```js
 // type signature
-setMaxHeight: (n: number) => void
+setMaxHeight: (n?: number) => void
 ```
 
 #### action: setFeatureHeight

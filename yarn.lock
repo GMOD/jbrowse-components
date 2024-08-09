@@ -2295,10 +2295,10 @@
     long "^4.0.0"
     pako "^1.0.11"
 
-"@gmod/cram@^3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-3.0.0.tgz#23dc8b32f9703e6857967c5910859320ad58c4bb"
-  integrity sha512-EbfOkBhfAdRQ6n7N9oJLXH8FNGXsfMxkQoCiKy8Bv31UMwte0W/han5cldkSJylFF7X2bcUz3iurLHJsfgNPiw==
+"@gmod/cram@^3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-3.0.1.tgz#e3fc97c063e0e0db49bb3f6387a28155a6d71856"
+  integrity sha512-ZQEb8Z/zJITVAJCWmBg0vj1vSSIVMCVP+VjIH6P9WnlEbDWItXgN2t96vmaISJ1N/jjLjBY39n/St449w9OV4g==
   dependencies:
     "@gmod/abortable-promise-cache" "^2.0.0"
     "@jkbonfield/htscodecs" "^0.5.1"
