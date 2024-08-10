@@ -29,5 +29,6 @@
     "**/plugin-development-tools/",
     "**/webpack.config.js",
     "**/website"
-  ]
+  ],
+  "include": ["."]
 }

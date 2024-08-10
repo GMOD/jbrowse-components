@@ -1,7 +1,6 @@
-/* eslint-disable no-console */
-// Makes the script crash on unhandled rejections instead of silently
-// ignoring them. In the future, promise rejections that are not handled will
-// terminate the Node.js process with a non-zero exit code.
+// Makes the script crash on unhandled rejections instead of silently ignoring
+// them. In the future, promise rejections that are not handled will terminate
+// the Node.js process with a non-zero exit code.
 process.on('unhandledRejection', err => {
   throw err
 })
@@ -128,7 +127,8 @@ module.exports = function buildWebpack(config) {
         let messages
         if (err) {
           if (!err.message) {
-            return reject(err)
+            reject(err)
+            return
           }
 
           let errMessage = err.message
@@ -153,7 +153,8 @@ module.exports = function buildWebpack(config) {
           if (messages.errors.length > 1) {
             messages.errors.length = 1
           }
-          return reject(new Error(messages.errors.join('\n\n')))
+          reject(new Error(messages.errors.join('\n\n')))
+          return
         }
         if (
           process.env.CI &&
@@ -172,7 +173,8 @@ module.exports = function buildWebpack(config) {
                   'Most CI servers set it automatically.\n',
               ),
             )
-            return reject(new Error(filteredWarnings.join('\n\n')))
+            reject(new Error(filteredWarnings.join('\n\n')))
+            return
           }
         }
 
@@ -183,13 +185,14 @@ module.exports = function buildWebpack(config) {
         }
 
         if (writeStatsJson) {
-          return fs.writeFileSync(
+          fs.writeFileSync(
             `${paths.appBuild}/bundle-stats.json`,
             JSON.stringify(stats.toJson()),
           )
+          return
         }
 
-        return resolve(resolveArgs)
+        resolve(resolveArgs)
       })
     })
   }
