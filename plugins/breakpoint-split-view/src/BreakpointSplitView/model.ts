@@ -1,7 +1,6 @@
 import React, { lazy } from 'react'
 import {
   types,
-  getParent,
   onAction,
   addDisposer,
   getPath,
@@ -293,13 +292,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       removeView(view: LGV) {
         self.views.remove(view)
-      },
-
-      /**
-       * #action
-       */
-      closeView() {
-        getParent<any>(self, 2).removeView(self)
       },
 
       /**

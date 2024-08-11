@@ -1,6 +1,6 @@
 import clone from 'clone'
 import { autorun, reaction } from 'mobx'
-import { types, getParent, addDisposer, Instance } from 'mobx-state-tree'
+import { types, addDisposer, Instance } from 'mobx-state-tree'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSession, Region } from '@jbrowse/core/util'
@@ -210,12 +210,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       setDisplayMode() {
         self.spreadsheetView.setDisplayMode()
       },
-      /**
-       * #action
-       */
-      closeView() {
-        getParent<any>(self, 2).removeView(self)
-      },
+
       /**
        * #action
        */
@@ -350,7 +345,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
               )
 
               // put our track in as the only track
-              if (assemblyName && generatedTrackConf) {
+              if (assemblyName) {
                 // @ts-expect-error
                 circularView.addTrackConf(generatedTrackConf, {
                   assemblyName,

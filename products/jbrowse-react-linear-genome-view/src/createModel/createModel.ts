@@ -87,11 +87,9 @@ export default function createModel(
        * #action
        */
       renameCurrentSession(sessionName: string) {
-        if (self.session) {
-          const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
-          snapshot.name = sessionName
-          this.setSession(snapshot)
-        }
+        const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
+        snapshot.name = sessionName
+        this.setSession(snapshot)
       },
       /**
        * #action

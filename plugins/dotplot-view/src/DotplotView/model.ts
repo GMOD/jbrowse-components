@@ -338,15 +338,6 @@ export default function stateModelFactory(pm: PluginManager) {
 
       /**
        * #action
-       * removes the view itself from the state tree entirely by calling the
-       * parent removeView
-       */
-      closeView() {
-        getParent<any>(self, 2).removeView(self)
-      },
-
-      /**
-       * #action
        */
       zoomOutButton() {
         self.hview.zoomOut()

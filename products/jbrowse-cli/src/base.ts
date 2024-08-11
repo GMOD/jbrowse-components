@@ -240,11 +240,11 @@ export default abstract class JBrowseCommand extends Command {
 
   async getLatest() {
     for await (const versions of this.fetchVersions()) {
-      // if a release was just uploaded, or an erroneous build was made
-      // then it might have no build asset
+      // if a release was just uploaded, or an erroneous build was made then it
+      // might have no build asset
       const nonprereleases = versions
         .filter(release => !release.prerelease)
-        .filter(release => release.assets && release.assets.length > 0)
+        .filter(release => release.assets?.length)
 
       if (nonprereleases.length > 0) {
         // @ts-expect-error
@@ -277,7 +277,7 @@ export default abstract class JBrowseCommand extends Command {
       } else {
         throw new Error(`HTTP ${response.status} fetching ${url}`)
       }
-    } while (result && result.length > 0)
+    } while (result.length)
   }
 
   async getTag(tag: string) {

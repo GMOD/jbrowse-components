@@ -467,7 +467,10 @@ export default class TextIndex extends JBrowseCommand {
           typesToExclude: indexingFeatureTypesToExclude,
           quiet,
         })
-      } else if (type === 'VcfTabixAdapter' || type === 'VcfAdapter') {
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      else if (type === 'VcfTabixAdapter' || type === 'VcfAdapter') {
         yield* indexVcf({
           config,
           attributesToIndex: indexingAttributes,

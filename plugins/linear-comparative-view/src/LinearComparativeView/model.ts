@@ -2,7 +2,6 @@ import { lazy } from 'react'
 import {
   addDisposer,
   cast,
-  getParent,
   getPath,
   getRoot,
   resolveIdentifier,
@@ -173,15 +172,6 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       removeView(view: LinearGenomeViewModel) {
         self.views.remove(view)
-      },
-
-      /**
-       * #action
-       * removes the view itself from the state tree entirely by calling the
-       * parent removeView
-       */
-      closeView() {
-        getParent<any>(self, 2).removeView(self)
       },
 
       /**

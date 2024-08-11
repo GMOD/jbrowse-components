@@ -2,7 +2,6 @@ import React, { lazy } from 'react'
 import PluginManager from '@jbrowse/core/PluginManager'
 import {
   cast,
-  getParent,
   getRoot,
   resolveIdentifier,
   types,
@@ -452,13 +451,6 @@ function stateModelFactory(pluginManager: PluginManager) {
         if (self.lockedFitToWindow && secondCondition) {
           this.setBpPerPx(self.minBpPerPx)
         }
-      },
-
-      /**
-       * #action
-       */
-      closeView() {
-        getParent<any>(self, 2).removeView(self)
       },
 
       /**

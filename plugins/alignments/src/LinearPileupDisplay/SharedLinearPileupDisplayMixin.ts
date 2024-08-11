@@ -416,7 +416,7 @@ export function SharedLinearPileupDisplayMixin(
                       layoutId: getContainingView(self).id,
                       rendererType: 'PileupRenderer',
                     },
-                  )) as { feature: SimpleFeatureSerialized }
+                  )) as { feature: SimpleFeatureSerialized | undefined }
 
                   if (feature) {
                     self.setContextMenuFeature(new SimpleFeature(feature))

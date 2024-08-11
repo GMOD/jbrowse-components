@@ -52,14 +52,10 @@ const CloseConnectionDialog = observer(function CloseConnectionDialog({
         </Button>
         <Button
           variant="contained"
-          onClick={
-            modalInfo
-              ? () => {
-                  safelyBreakConnection?.()
-                  onClose()
-                }
-              : () => {}
-          }
+          onClick={() => {
+            safelyBreakConnection?.()
+            onClose()
+          }}
           color="primary"
         >
           OK

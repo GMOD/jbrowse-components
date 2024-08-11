@@ -44,11 +44,15 @@ const SessionLoader = types
     sessionError: undefined as unknown,
     configError: undefined as unknown,
     bc1:
-      window.BroadcastChannel &&
-      new window.BroadcastChannel('jb_request_session'),
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      window.BroadcastChannel
+        ? new window.BroadcastChannel('jb_request_session')
+        : undefined,
     bc2:
-      window.BroadcastChannel &&
-      new window.BroadcastChannel('jb_respond_session'),
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      window.BroadcastChannel
+        ? new window.BroadcastChannel('jb_respond_session')
+        : undefined,
   }))
   .views(self => ({
     get isSharedSession() {

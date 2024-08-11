@@ -79,6 +79,7 @@ export default tseslint.config(
       '@typescript-eslint/explicit-module-boundary-types': 0,
       '@typescript-eslint/ban-ts-comment': 0,
       semi: ['error', 'never'],
+      'unicorn/prefer-structured-clone': 'off',
       'unicorn/no-new-array': 'off',
       'unicorn/no-empty-file': 'off',
       'unicorn/prefer-type-error': 'off',
@@ -152,7 +153,7 @@ export default tseslint.config(
       'products/jbrowse-aws-lambda-functions/**/*.js',
       'plugins/data-management/scripts/*.js',
       'config/jest/*.js',
-      '**/webpack.config.js',
+      'products/**/webpack.config.js',
     ],
     languageOptions: {
       globals: {
@@ -162,6 +163,14 @@ export default tseslint.config(
     rules: {
       '@typescript-eslint/no-require-imports': 'off',
       'no-console': 'off',
+    },
+  },
+  {
+    files: ['**/workerPolyfill.js'],
+    languageOptions: {
+      globals: {
+        ...globals.worker,
+      },
     },
   },
 )

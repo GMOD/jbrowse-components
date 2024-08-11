@@ -122,9 +122,7 @@ function RecentSessionCard({
               style={{ width: 178 }}
             >
               Last modified{' '}
-              {sessionData
-                ? new Date(sessionData.updated || 0).toLocaleString('en-US')
-                : null}
+              {new Date(sessionData.updated || 0).toLocaleString('en-US')}
             </Typography>
           }
         />

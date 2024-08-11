@@ -10,9 +10,9 @@ import { getVolvoxConfig } from './util'
 import r2wc from '@r2wc/react-to-web-component'
 
 const ShadowComponent = () => {
-  const node = useRef(null)
+  const node = useRef<HTMLDivElement>(null)
   const nodeForPin = useRef(null)
-  const [rootNode, setRootNode] = useState(null)
+  const [rootNode, setRootNode] = useState<ShadowRoot>(null)
   const [cacheNode, setCacheNode] = useState(null)
   const [config, setConfig] = useState(null)
   useEffect(() => {

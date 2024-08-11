@@ -1,11 +1,4 @@
-import {
-  types,
-  getParent,
-  getEnv,
-  cast,
-  SnapshotIn,
-  Instance,
-} from 'mobx-state-tree'
+import { types, getEnv, cast, SnapshotIn, Instance } from 'mobx-state-tree'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { MenuItem } from '@jbrowse/core/ui'
@@ -211,12 +204,6 @@ const model = types
       if (self.readyToDisplay) {
         self.mode = 'display'
       }
-    },
-    /**
-     * #action
-     */
-    closeView() {
-      getParent<any>(self, 2).removeView(self)
     },
   }))
   .views(self => ({
