@@ -99,14 +99,16 @@ const MultiWiggleRendering = observer(function (props: {
       onMouseMove={event => {
         const { clientX, clientY } = event
         const featureUnderMouse = getFeatureUnderMouse(clientX, clientY)
-        onMouseMove?.(event, featureUnderMouse)
+        onMouseMove(event, featureUnderMouse)
       }}
       onClick={event => {
         const { clientX, clientY } = event
         const featureUnderMouse = getFeatureUnderMouse(clientX, clientY)
-        onFeatureClick?.(event, featureUnderMouse)
+        onFeatureClick(event, featureUnderMouse)
       }}
-      onMouseLeave={event => onMouseLeave?.(event)}
+      onMouseLeave={event => {
+        onMouseLeave(event)
+      }}
       style={{
         overflow: 'visible',
         position: 'relative',

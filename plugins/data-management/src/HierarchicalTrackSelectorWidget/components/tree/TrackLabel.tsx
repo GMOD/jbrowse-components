@@ -58,7 +58,9 @@ export default function TrackLabel({ data }: { data: NodeData }) {
             <Checkbox
               className={classes.compactCheckbox}
               checked={checked}
-              onChange={() => onChange(trackId)}
+              onChange={() => {
+                onChange(trackId)
+              }}
               disabled={isUnsupported(name)}
               inputProps={{
                 // @ts-expect-error

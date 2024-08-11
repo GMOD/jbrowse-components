@@ -76,12 +76,16 @@ const BreakendOptionDialog = observer(function ({
       <DialogContent>
         <Checkbox2
           checked={copyTracks}
-          onChange={event => setCopyTracks(event.target.checked)}
+          onChange={event => {
+            setCopyTracks(event.target.checked)
+          }}
           label="Copy tracks into the new view"
         />
         <Checkbox2
           checked={mirror}
-          onChange={event => setMirror(event.target.checked)}
+          onChange={event => {
+            setMirror(event.target.checked)
+          }}
           label="Mirror tracks vertically in vertically stacked view"
         />
       </DialogContent>
@@ -126,7 +130,9 @@ const BreakendOptionDialog = observer(function ({
           OK
         </Button>
         <Button
-          onClick={() => handleClose()}
+          onClick={() => {
+            handleClose()
+          }}
           color="secondary"
           variant="contained"
         >

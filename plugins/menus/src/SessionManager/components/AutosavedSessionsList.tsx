@@ -30,7 +30,9 @@ const AutosaveSessionsList = observer(function ({
         <SessionListItem
           session={session}
           sessionSnapshot={autosavedSession}
-          onClick={() => session.loadAutosaveSession()}
+          onClick={() => {
+            session.loadAutosaveSession()
+          }}
         />
       </List>
     </Paper>

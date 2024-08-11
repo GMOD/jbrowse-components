@@ -77,7 +77,11 @@ const Controls = observer(function ({ model }: { model: CircularViewModel }) {
         {model.lockedFitToWindow ? <LockIcon /> : <LockOpenIcon />}
       </IconButton>
 
-      <IconButton onClick={event => setAnchorEl(event.currentTarget)}>
+      <IconButton
+        onClick={event => {
+          setAnchorEl(event.currentTarget)
+        }}
+      >
         <MoreVert />
       </IconButton>
 
@@ -111,7 +115,9 @@ const Controls = observer(function ({ model }: { model: CircularViewModel }) {
             setAnchorEl(null)
           }}
           open={Boolean(anchorEl)}
-          onClose={() => setAnchorEl(null)}
+          onClose={() => {
+            setAnchorEl(null)
+          }}
         />
       ) : null}
     </div>

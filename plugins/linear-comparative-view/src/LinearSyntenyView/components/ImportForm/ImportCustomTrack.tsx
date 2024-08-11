@@ -150,7 +150,9 @@ const OpenTrack = observer(
         </Typography>
         <RadioGroup
           value={radioOption}
-          onChange={event => setValue(event.target.value)}
+          onChange={event => {
+            setValue(event.target.value)
+          }}
         >
           <Grid container justifyContent="center">
             <Grid item>
@@ -206,7 +208,9 @@ const OpenTrack = observer(
                       name=".anchors file"
                       description=""
                       location={fileLocation}
-                      setLocation={loc => setFileLocation(loc)}
+                      setLocation={loc => {
+                        setFileLocation(loc)
+                      }}
                     />
                   </div>
                   <div>
@@ -214,7 +218,9 @@ const OpenTrack = observer(
                       name="genome 1 .bed (left column of anchors file)"
                       description=""
                       location={bed1Location}
-                      setLocation={loc => setBed1Location(loc)}
+                      setLocation={loc => {
+                        setBed1Location(loc)
+                      }}
                     />
                   </div>
                   <div>
@@ -222,7 +228,9 @@ const OpenTrack = observer(
                       name="genome 2 .bed (right column of anchors file)"
                       description=""
                       location={bed2Location}
-                      setLocation={loc => setBed2Location(loc)}
+                      setLocation={loc => {
+                        setBed2Location(loc)
+                      }}
                     />
                   </div>
                 </div>
@@ -232,7 +240,9 @@ const OpenTrack = observer(
                 name={value ? `${value} location` : ''}
                 description=""
                 location={fileLocation}
-                setLocation={loc => setFileLocation(loc)}
+                setLocation={loc => {
+                  setFileLocation(loc)
+                }}
               />
             )}
           </Grid>

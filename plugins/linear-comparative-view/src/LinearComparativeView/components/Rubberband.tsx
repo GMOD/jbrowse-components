@@ -155,7 +155,9 @@ const LinearComparativeRubberband = observer(function Rubberband({
 
   function mouseOut() {
     setGuideX(undefined)
-    model.views.forEach(view => view.setOffsets(undefined, undefined))
+    model.views.forEach(view => {
+      view.setOffsets(undefined, undefined)
+    })
   }
 
   function handleClose() {

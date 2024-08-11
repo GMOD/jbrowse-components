@@ -31,7 +31,9 @@ test('export svg of breakpoint split view', async () => {
   fireEvent.click((await findAllByText('Export SVG'))[0])
   fireEvent.click(await findByText('Submit'))
 
-  await waitFor(() => expect(FileSaver.saveAs).toHaveBeenCalled(), delay)
+  await waitFor(() => {
+    expect(FileSaver.saveAs).toHaveBeenCalled()
+  }, delay)
 
   // @ts-expect-error
   const svg = FileSaver.saveAs.mock.calls[0][0].content[0]

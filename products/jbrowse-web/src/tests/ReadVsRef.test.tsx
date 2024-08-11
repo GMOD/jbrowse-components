@@ -27,7 +27,9 @@ test('launch read vs ref panel', async () => {
   const elt = await findByText('Submit')
 
   // https://stackoverflow.com/a/62443937/2129219
-  await waitFor(() => expect(elt.getAttribute('disabled')).toBe(null))
+  await waitFor(() => {
+    expect(elt.getAttribute('disabled')).toBe(null)
+  })
   fireEvent.click(elt)
 
   expectCanvasMatch(await findByTestId('synteny_canvas', {}, delay))

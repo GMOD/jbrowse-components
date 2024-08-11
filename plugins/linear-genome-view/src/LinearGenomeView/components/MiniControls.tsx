@@ -43,14 +43,18 @@ const MiniControls = observer(function ({
         </CascadingMenuButton>
         <IconButton
           data-testid="zoom_out"
-          onClick={() => model.zoom(bpPerPx * 2)}
+          onClick={() => {
+            model.zoom(bpPerPx * 2)
+          }}
           disabled={bpPerPx >= maxBpPerPx - 0.0001 || scaleFactor !== 1}
         >
           <ZoomOut fontSize="small" />
         </IconButton>
         <IconButton
           data-testid="zoom_in"
-          onClick={() => model.zoom(bpPerPx / 2)}
+          onClick={() => {
+            model.zoom(bpPerPx / 2)
+          }}
           disabled={bpPerPx <= minBpPerPx + 0.0001 || scaleFactor !== 1}
         >
           <ZoomIn fontSize="small" />

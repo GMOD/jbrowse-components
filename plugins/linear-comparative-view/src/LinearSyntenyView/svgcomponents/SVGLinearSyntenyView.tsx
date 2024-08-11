@@ -45,7 +45,7 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
   const { width, views, middleComparativeHeight: synH, tracks } = model
   const shift = 50
   const offset = headerHeight + rulerHeight
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const { createRootFn } = getRoot<any>(model)
   const heights = views.map(
     v => totalHeight(v.tracks, textHeight, trackLabels) + offset,
@@ -78,7 +78,9 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
         width,
         synH,
         { exportSVG: opts },
-        ctx => drawRef(d, ctx),
+        ctx => {
+          drawRef(d, ctx)
+        },
       )
 
       if ('imageData' in r) {

@@ -347,7 +347,7 @@ ipcMain.handle('deleteQuickstart', async (_event: unknown, name: string) => {
 ipcMain.handle(
   'renameQuickstart',
   async (_event: unknown, oldName: string, newName: string) => {
-    return fs.renameSync(getQuickstartPath(oldName), getQuickstartPath(newName))
+    fs.renameSync(getQuickstartPath(oldName), getQuickstartPath(newName))
   },
 )
 
@@ -397,7 +397,7 @@ ipcMain.handle(
     const entry = {
       path: autosavePath,
       updated: +Date.now(),
-      name: snap.defaultSession?.name,
+      name: snap.defaultSession.name,
     }
     if (idx === -1) {
       rows.unshift(entry)
@@ -426,7 +426,7 @@ ipcMain.handle(
     const entry = {
       path,
       updated: +Date.now(),
-      name: snap.defaultSession?.name,
+      name: snap.defaultSession.name,
     }
     if (idx === -1) {
       rows.unshift(entry)
@@ -485,10 +485,14 @@ ipcMain.handle(
     await Promise.all([
       writeFile(recentSessionsPath, stringify(sessions)),
       ...sessionPaths.map(sessionPath =>
-        unlink(getThumbnailPath(sessionPath)).catch(e => console.error(e)),
+        unlink(getThumbnailPath(sessionPath)).catch(e => {
+          console.error(e)
+        }),
       ),
       ...sessionPaths.map(sessionPath =>
-        unlink(sessionPath).catch(e => console.error(e)),
+        unlink(sessionPath).catch(e => {
+          console.error(e)
+        }),
       ),
     ])
   },

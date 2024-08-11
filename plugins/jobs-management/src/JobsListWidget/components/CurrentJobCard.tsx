@@ -63,7 +63,7 @@ const CurrentJobCard = observer(function CurrentJobCard({
             disabled={clicked || job.progressPct === 0}
             onClick={() => {
               job.setStatusMessage('Aborted via cancel button')
-              job.cancelCallback?.()
+              job.cancelCallback()
               setClicked(true)
             }}
           >

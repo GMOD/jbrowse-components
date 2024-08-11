@@ -458,7 +458,6 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       closeView() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         getParent<any>(self, 2).removeView(self)
       },
 
@@ -575,7 +574,9 @@ function stateModelFactory(pluginManager: PluginManager) {
         const schema = pluginManager.pluggableConfigSchemaType('track')
         const conf = resolveIdentifier(schema, getRoot(self), trackId)
         const t = self.tracks.filter(t => t.configuration === conf)
-        transaction(() => t.forEach(t => self.tracks.remove(t)))
+        transaction(() => {
+          t.forEach(t => self.tracks.remove(t))
+        })
         return t.length
       },
 
@@ -609,7 +610,9 @@ function stateModelFactory(pluginManager: PluginManager) {
         return [
           {
             label: 'Return to import form',
-            onClick: () => self.setDisplayedRegions([]),
+            onClick: () => {
+              self.setDisplayedRegions([])
+            },
             icon: FolderOpenIcon,
           },
           {

@@ -73,14 +73,18 @@ const PluginStoreWidget = observer(function ({
           <Button
             className={classes.customPluginButton}
             variant="contained"
-            onClick={() => setOpen(true)}
+            onClick={() => {
+              setOpen(true)
+            }}
           >
             Add custom plugin
           </Button>
           {open ? (
             <Suspense fallback={null}>
               <AddCustomPluginDialog
-                onClose={() => setOpen(false)}
+                onClose={() => {
+                  setOpen(false)
+                }}
                 model={model}
               />
             </Suspense>
@@ -90,12 +94,18 @@ const PluginStoreWidget = observer(function ({
       <TextField
         label="Filter plugins"
         value={model.filterText}
-        onChange={event => model.setFilterText(event.target.value)}
+        onChange={event => {
+          model.setFilterText(event.target.value)
+        }}
         fullWidth
         InputProps={{
           endAdornment: (
             <InputAdornment position="end">
-              <IconButton onClick={() => model.clearFilterText()}>
+              <IconButton
+                onClick={() => {
+                  model.clearFilterText()
+                }}
+              >
                 <ClearIcon />
               </IconButton>
             </InputAdornment>

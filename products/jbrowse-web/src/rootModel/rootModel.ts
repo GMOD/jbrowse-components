@@ -174,7 +174,7 @@ export default function RootModel({
       get currentSessionId() {
         const locationUrl = new URL(window.location.href)
         const params = new URLSearchParams(locationUrl.search)
-        return params?.get('session')?.split('local-')[1]
+        return params.get('session')?.split('local-')[1]
       },
     }))
 
@@ -368,7 +368,7 @@ export default function RootModel({
             {
               label: 'New session',
               icon: AddIcon,
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
               onClick: (session: any) => {
                 const lastAutosave = localStorage.getItem(self.autosaveId)
                 if (lastAutosave) {
@@ -465,7 +465,9 @@ export default function RootModel({
             {
               label: 'Return to splash screen',
               icon: AppsIcon,
-              onClick: () => self.setSession(undefined),
+              onClick: () => {
+                self.setSession(undefined)
+              },
             },
           ],
         },

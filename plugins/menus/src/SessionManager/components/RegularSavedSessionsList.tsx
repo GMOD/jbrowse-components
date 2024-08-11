@@ -52,7 +52,9 @@ const RegularSavedSessionsList = observer(function ({
         {session.savedSessions.length ? (
           session.savedSessions.map((sessionSnapshot, idx) => (
             <SessionListItem
-              onClick={() => session.activateSession(sessionSnapshot.name)}
+              onClick={() => {
+                session.activateSession(sessionSnapshot.name)
+              }}
               sessionSnapshot={sessionSnapshot}
               session={session}
               key={sessionSnapshot.name}
@@ -60,7 +62,9 @@ const RegularSavedSessionsList = observer(function ({
                 <IconButton
                   edge="end"
                   disabled={session.name === sessionSnapshot.name}
-                  onClick={() => setSessionIndexToDelete(idx)}
+                  onClick={() => {
+                    setSessionIndexToDelete(idx)
+                  }}
                 >
                   <DeleteIcon />
                 </IconButton>

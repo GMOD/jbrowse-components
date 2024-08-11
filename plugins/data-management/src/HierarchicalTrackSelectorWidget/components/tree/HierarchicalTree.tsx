@@ -61,7 +61,9 @@ const HierarchicalTree = observer(function HierarchicalTree({
           model.addToRecentlyUsed(trackId)
         }
       },
-      toggleCollapse: (pathName: string) => model.toggleCategory(pathName),
+      toggleCollapse: (pathName: string) => {
+        model.toggleCategory(pathName)
+      },
       tree,
       model,
       drawerPosition,

@@ -112,7 +112,9 @@ const LinearGenomeViewImportForm = observer(function ({
             <Grid item>
               <FormControl>
                 <AssemblySelector
-                  onChange={val => setSelectedAsm(val)}
+                  onChange={val => {
+                    setSelectedAsm(val)
+                  }}
                   localStorageKey="lgv"
                   session={session}
                   selected={selectedAsm}

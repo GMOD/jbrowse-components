@@ -18,7 +18,7 @@ const InstalledPluginsList = observer(function InstalledPluginsList({
   const { filterText } = model
 
   const externalPlugins = plugins.filter(
-    p => !pluginManager.pluginMetadata[p.name]?.isCore,
+    p => !pluginManager.pluginMetadata[p.name].isCore,
   )
 
   return (

@@ -61,7 +61,7 @@ test('set custom jexl filters on linear snp cov display', async () => {
   const nm = model.create(config)
 
   expect(nm.jexlFilters).toEqual([])
-  const filter = [`jexl:get(feature,'end')==${99319638}`]
+  const filter = [`jexl:get(feature,'end')==99319638`]
   nm.setJexlFilters(filter)
-  expect(nm.jexlFilters).toEqual([`jexl:get(feature,'end')==${99319638}`])
+  expect(nm.jexlFilters).toEqual([`jexl:get(feature,'end')==99319638`])
 })

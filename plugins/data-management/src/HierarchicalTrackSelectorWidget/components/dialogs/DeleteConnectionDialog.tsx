@@ -28,7 +28,12 @@ const DeleteConnectionDialog = observer(function DeleteConnectionDialog({
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => handleClose()} color="primary">
+        <Button
+          onClick={() => {
+            handleClose()
+          }}
+          color="primary"
+        >
           Cancel
         </Button>
         <Button

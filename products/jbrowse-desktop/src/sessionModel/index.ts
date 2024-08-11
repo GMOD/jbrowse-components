@@ -90,7 +90,7 @@ export default function sessionModelFactory({
        * #action
        */
       renameCurrentSession(sessionName: string) {
-        return self.root.renameCurrentSession(sessionName)
+        self.root.renameCurrentSession(sessionName)
       },
       /**
        * #action

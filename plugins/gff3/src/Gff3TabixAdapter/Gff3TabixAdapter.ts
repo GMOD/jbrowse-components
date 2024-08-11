@@ -143,7 +143,7 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
         disableDerivesFromReferences: true,
       })
 
-      features.forEach(featureLocs =>
+      features.forEach(featureLocs => {
         this.formatFeatures(featureLocs).forEach(f => {
           if (
             doesIntersect2(
@@ -155,8 +155,8 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
           ) {
             observer.next(f)
           }
-        }),
-      )
+        })
+      })
       observer.complete()
     } catch (e) {
       observer.error(e)

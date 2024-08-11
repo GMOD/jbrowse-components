@@ -317,7 +317,9 @@ function stateModelFactory(
             type: 'radio',
             label: d.displayName,
             checked: d.name === self.PileupDisplay.type,
-            onClick: () => self.setLowerPanelType(d.name),
+            onClick: () => {
+              self.setLowerPanelType(d.name)
+            },
           }))
           return [
             ...superTrackMenuItems(),

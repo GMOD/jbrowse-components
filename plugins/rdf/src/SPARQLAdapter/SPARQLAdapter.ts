@@ -41,7 +41,7 @@ interface SPARQLFeatureData {
   refName: string
   subfeatures?: SPARQLFeatureData[]
   uniqueId: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   [propName: string]: any
 }
 
@@ -105,7 +105,6 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
     }, opts.signal)
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async querySparql(query: string, opts?: BaseOptions): Promise<any> {
     let additionalQueryParams = ''
     if (this.additionalQueryParams.length) {
@@ -123,7 +122,7 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
   }
 
   private resultsToRefNames(response: SPARQLResponse): string[] {
-    const rows = response?.results?.bindings || []
+    const rows = response.results.bindings || []
     if (!rows.length) {
       return []
     }
@@ -138,7 +137,7 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
     results: SPARQLResponse,
     refName: string,
   ): SimpleFeature[] {
-    const rows = results?.results?.bindings || []
+    const rows = results.results.bindings || []
     if (!rows.length) {
       return []
     }
@@ -221,7 +220,7 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
               found = true
               break
             }
-            if (subfeature?.subfeatures) {
+            if (subfeature.subfeatures) {
               subfeatures.push(...subfeature.subfeatures)
             }
           }

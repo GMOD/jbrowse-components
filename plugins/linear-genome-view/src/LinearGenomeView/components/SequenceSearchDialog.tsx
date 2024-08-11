@@ -55,7 +55,9 @@ const SequenceSearchDialog = observer(function ({
         </Typography>
         <TextField
           value={value}
-          onChange={e => setValue(e.target.value)}
+          onChange={e => {
+            setValue(e.target.value)
+          }}
           helperText="Sequence search pattern"
         />
         <FormGroup>
@@ -63,7 +65,9 @@ const SequenceSearchDialog = observer(function ({
             control={
               <Checkbox
                 checked={searchForward}
-                onChange={event => setSearchForward(event.target.checked)}
+                onChange={event => {
+                  setSearchForward(event.target.checked)
+                }}
               />
             }
             label="Search forward strand"
@@ -72,7 +76,9 @@ const SequenceSearchDialog = observer(function ({
             control={
               <Checkbox
                 checked={searchReverse}
-                onChange={event => setSearchReverse(event.target.checked)}
+                onChange={event => {
+                  setSearchReverse(event.target.checked)
+                }}
               />
             }
             label="Search reverse strand"
@@ -81,7 +87,9 @@ const SequenceSearchDialog = observer(function ({
             control={
               <Checkbox
                 checked={caseInsensitive}
-                onChange={event => setCaseInsensitive(event.target.checked)}
+                onChange={event => {
+                  setCaseInsensitive(event.target.checked)
+                }}
               />
             }
             label="Case insensitive"
@@ -127,7 +135,9 @@ const SequenceSearchDialog = observer(function ({
         </Button>
 
         <Button
-          onClick={() => handleClose()}
+          onClick={() => {
+            handleClose()
+          }}
           variant="contained"
           color="secondary"
         >

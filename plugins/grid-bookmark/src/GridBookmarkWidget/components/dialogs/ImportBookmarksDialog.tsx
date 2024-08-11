@@ -113,7 +113,9 @@ const ImportBookmarksDialog = observer(function ({
       <DialogContent className={classes.minWidth}>
         <Accordion
           expanded={expanded === 'shareLinkAccordion'}
-          onChange={() => setExpanded('shareLinkAccordion')}
+          onChange={() => {
+            setExpanded('shareLinkAccordion')
+          }}
         >
           <AccordionSummary
             expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
@@ -134,13 +136,17 @@ const ImportBookmarksDialog = observer(function ({
               variant="outlined"
               fullWidth
               value={shareLink}
-              onChange={e => setShareLink(e.target.value)}
+              onChange={e => {
+                setShareLink(e.target.value)
+              }}
             />
           </AccordionDetails>
         </Accordion>
         <Accordion
           expanded={expanded === 'fileAccordion'}
-          onChange={() => setExpanded('fileAccordion')}
+          onChange={() => {
+            setExpanded('fileAccordion')
+          }}
         >
           <AccordionSummary
             expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
@@ -155,7 +161,9 @@ const ImportBookmarksDialog = observer(function ({
               description={`Choose a BED or TSV format file to import. Required TSV column headers are "chrom, start, end, label, assembly_name".`}
             />
             <AssemblySelector
-              onChange={val => setSelectedAsm(val)}
+              onChange={val => {
+                setSelectedAsm(val)
+              }}
               helperText={'Select the assembly for BED file.'}
               session={session}
               selected={selectedAsm}

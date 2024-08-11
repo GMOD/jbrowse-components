@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { lazy } from 'react'
 import { AbstractSessionModel } from '@jbrowse/core/util/types'
 import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'

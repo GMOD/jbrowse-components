@@ -118,7 +118,7 @@ export function drawRef(
       // cx1/cx2 are the current x positions on top and bottom rows
       let cx1 = k1
       let cx2 = s1 === -1 ? x22 : x21
-      if (cigar?.length && drawCIGAR) {
+      if (cigar.length && drawCIGAR) {
         // continuingFlag skips drawing commands on very small CIGAR features
         let continuingFlag = false
 
@@ -204,7 +204,9 @@ export function drawRef(
 
     // too many click map false positives with colored stroked lines
     drawMatchSimple({
-      cb: ctx => ctx.fill(),
+      cb: ctx => {
+        ctx.fill()
+      },
       feature,
       ctx: ctx2,
       drawCurves,
@@ -238,7 +240,9 @@ export function drawMouseoverSynteny(model: LinearSyntenyDisplayModel) {
   if (feature1) {
     ctx.fillStyle = 'rgb(0,0,0,0.1)'
     drawMatchSimple({
-      cb: ctx => ctx.fill(),
+      cb: ctx => {
+        ctx.fill()
+      },
       feature: feature1,
       ctx,
       oobLimit,
@@ -253,7 +257,9 @@ export function drawMouseoverSynteny(model: LinearSyntenyDisplayModel) {
     ctx.strokeStyle = 'rgb(0, 0, 0, 0.9)'
 
     drawMatchSimple({
-      cb: ctx => ctx.stroke(),
+      cb: ctx => {
+        ctx.stroke()
+      },
       feature: feature2,
       ctx,
       oobLimit,

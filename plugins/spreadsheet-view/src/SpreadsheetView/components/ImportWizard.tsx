@@ -54,7 +54,9 @@ const ImportWizard = observer(({ model }: { model: ImportWizardModel }) => {
           <FormGroup>
             <FileSelector
               location={fileSource}
-              setLocation={arg => model.setFileSource(arg)}
+              setLocation={arg => {
+                model.setFileSource(arg)
+              }}
               rootModel={rootModel as AbstractRootModel}
             />
           </FormGroup>
@@ -69,7 +71,9 @@ const ImportWizard = observer(({ model }: { model: ImportWizardModel }) => {
                 key={fileTypeName}
                 checked={fileType === fileTypeName}
                 value={fileTypeName}
-                onClick={() => model.setFileType(fileTypeName)}
+                onClick={() => {
+                  model.setFileType(fileTypeName)
+                }}
                 control={<Radio />}
                 label={fileTypeName}
               />
@@ -88,7 +92,9 @@ const ImportWizard = observer(({ model }: { model: ImportWizardModel }) => {
               control={
                 <Checkbox
                   checked={hasColumnNameLine}
-                  onClick={() => model.toggleHasColumnNameLine()}
+                  onClick={() => {
+                    model.toggleHasColumnNameLine()
+                  }}
                 />
               }
             />
@@ -105,7 +111,9 @@ const ImportWizard = observer(({ model }: { model: ImportWizardModel }) => {
         <AssemblySelector
           session={session}
           selected={selected}
-          onChange={val => setSelected(val)}
+          onChange={val => {
+            setSelected(val)
+          }}
         />
       </div>
       <div>
@@ -113,7 +121,9 @@ const ImportWizard = observer(({ model }: { model: ImportWizardModel }) => {
           <Button
             variant="contained"
             color="secondary"
-            onClick={() => model.cancelButton()}
+            onClick={() => {
+              model.cancelButton()
+            }}
             disabled={!canCancel}
           >
             Cancel

@@ -34,7 +34,9 @@ const TextFilter = observer(function ({
       <TextField
         label="text filter"
         value={textFilterValue}
-        onChange={evt => setTextFilterValue(evt.target.value)}
+        onChange={evt => {
+          setTextFilterValue(evt.target.value)
+        }}
         variant="outlined"
         InputProps={{
           startAdornment: (
@@ -49,7 +51,9 @@ const TextFilter = observer(function ({
             >
               <IconButton
                 aria-label="clear filter"
-                onClick={() => setTextFilterValue('')}
+                onClick={() => {
+                  setTextFilterValue('')
+                }}
               >
                 <ClearIcon />
               </IconButton>
@@ -61,7 +65,6 @@ const TextFilter = observer(function ({
   )
 })
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const GlobalFilterControls = observer(({ model }: { model: any }) => {
   const textFilter = model.filterControls.rowFullText
   return <TextFilter textFilter={textFilter} />

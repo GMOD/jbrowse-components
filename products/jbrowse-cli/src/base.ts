@@ -177,7 +177,6 @@ export default abstract class JBrowseCommand extends Command {
     return result
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async writeJsonFile(location: string, contents: any) {
     this.debug(`Writing JSON file to ${process.cwd()} ${location}`)
     return fsPromises.writeFile(location, JSON.stringify(contents, null, 2))
@@ -249,7 +248,7 @@ export default abstract class JBrowseCommand extends Command {
       // if a release was just uploaded, or an erroneous build was made
       // then it might have no build asset
       const nonprereleases = versions
-        .filter(release => release.prerelease === false)
+        .filter(release => !release.prerelease)
         .filter(release => release.assets && release.assets.length > 0)
 
       if (nonprereleases.length > 0) {
@@ -282,7 +281,7 @@ export default abstract class JBrowseCommand extends Command {
         yield result.filter(release => release.tag_name.startsWith('v'))
         page++
       } else {
-        throw new Error(`${response.statusText}`)
+        throw new Error(response.statusText)
       }
     } while (result && result.length > 0)
   }
@@ -293,7 +292,7 @@ export default abstract class JBrowseCommand extends Command {
     )
     if (response.ok) {
       const result = (await response.json()) as GithubRelease
-      const file = result?.assets?.find(f =>
+      const file = result.assets?.find(f =>
         f.name.includes('jbrowse-web'),
       )?.browser_download_url
 

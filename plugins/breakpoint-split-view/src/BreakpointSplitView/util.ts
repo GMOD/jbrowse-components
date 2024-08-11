@@ -31,7 +31,7 @@ function heightFromSpecificLevel(
 ) {
   return getYPosOverride
     ? getYPosOverride(trackId, level)
-    : views[level].trackRefs[trackId]?.getBoundingClientRect().top || 0
+    : views[level].trackRefs[trackId].getBoundingClientRect().top || 0
 }
 
 export function getPxFromCoordinate(view: LGV, refName: string, coord: number) {

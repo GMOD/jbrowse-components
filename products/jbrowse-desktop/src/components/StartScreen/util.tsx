@@ -51,7 +51,6 @@ export async function loadPluginManager(configPath: string) {
 }
 
 export async function createPluginManager(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   configSnapshot: any,
   initialTimestamp = +Date.now(),
 ) {

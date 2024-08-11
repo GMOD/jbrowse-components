@@ -441,27 +441,39 @@ export function SharedLinearPileupDisplayMixin(
           return [
             {
               label: 'Normal',
-              onClick: () => self.setColorScheme({ type: 'normal' }),
+              onClick: () => {
+                self.setColorScheme({ type: 'normal' })
+              },
             },
             {
               label: 'Mapping quality',
-              onClick: () => self.setColorScheme({ type: 'mappingQuality' }),
+              onClick: () => {
+                self.setColorScheme({ type: 'mappingQuality' })
+              },
             },
             {
               label: 'Strand',
-              onClick: () => self.setColorScheme({ type: 'strand' }),
+              onClick: () => {
+                self.setColorScheme({ type: 'strand' })
+              },
             },
             {
               label: 'Per-base quality',
-              onClick: () => self.setColorScheme({ type: 'perBaseQuality' }),
+              onClick: () => {
+                self.setColorScheme({ type: 'perBaseQuality' })
+              },
             },
             {
               label: 'Per-base lettering',
-              onClick: () => self.setColorScheme({ type: 'perBaseLettering' }),
+              onClick: () => {
+                self.setColorScheme({ type: 'perBaseLettering' })
+              },
             },
             {
               label: 'First-of-pair strand',
-              onClick: () => self.setColorScheme({ type: 'stranded' }),
+              onClick: () => {
+                self.setColorScheme({ type: 'stranded' })
+              },
             },
             {
               label: 'Color by tag...',
@@ -588,7 +600,7 @@ export function SharedLinearPileupDisplayMixin(
                   // feature.id that was returned e.g. that the user hasn't
                   // moused over to a new position during the async operation
                   // above
-                  if (self.featureIdUnderMouse === feature?.uniqueId) {
+                  if (self.featureIdUnderMouse === feature.uniqueId) {
                     self.setFeatureUnderMouse(new SimpleFeature(feature))
                   }
                 }

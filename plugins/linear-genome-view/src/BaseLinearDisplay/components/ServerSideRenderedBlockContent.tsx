@@ -63,7 +63,9 @@ const ServerSideRenderedBlockContent = observer(function ({
             <Tooltip title="Reload track">
               <IconButton
                 data-testid="reload_button"
-                onClick={() => model.reload()}
+                onClick={() => {
+                  model.reload()
+                }}
               >
                 <RefreshIcon />
               </IconButton>

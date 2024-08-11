@@ -147,8 +147,12 @@ const AlignmentConnections = observer(function ({
                 )
                 session.showWidget?.(featureWidget)
               }}
-              onMouseOver={() => setMouseoverElt(id)}
-              onMouseOut={() => setMouseoverElt(undefined)}
+              onMouseOver={() => {
+                setMouseoverElt(id)
+              }}
+              onMouseOut={() => {
+                setMouseoverElt(undefined)
+              }}
             />,
           )
         }

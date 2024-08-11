@@ -52,7 +52,6 @@ const useStyles = makeStyles()({
 const FilterReactComponent = observer(function ({
   filterModel,
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   filterModel: any
 }) {
   const { classes } = useStyles()
@@ -200,7 +199,6 @@ const FilterModelType = types
     get parsedLocString() {
       const session = getSession(self)
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const model = getParent<any>(self, 3).spreadsheet
       const { assemblyName } = model
       try {
@@ -228,7 +226,6 @@ const FilterModelType = types
         }
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return function stringPredicate(_sheet: any, row: any) {
         const { cellsWithDerived: cells } = row
         const cell = cells[columnNumber]
@@ -263,16 +260,14 @@ const FilterModelType = types
 // opens a new LGV at the location described in the locString in the cell text
 
 async function locationLinkClick(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   spreadsheet: any,
   _columnNumber: number,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   cell: any,
 ) {
   const session = getSession(spreadsheet)
   const { assemblyName } = spreadsheet
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { id } = getParent<any>(spreadsheet)
 
   const newViewId = `${id}_${assemblyName}`
@@ -285,7 +280,6 @@ async function locationLinkClick(
   await view.navToLocString(cell.text, assemblyName)
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type DataCell = any
 
 const DataCellReactComponent = observer(function ({
@@ -317,7 +311,6 @@ const LocStringColumnType = MakeSpreadsheetColumnType('LocString', {
   categoryName: 'Location',
   displayName: 'Full location',
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   compare(cellA: { extendedData: any }, cellB: { extendedData: any }) {
     return compareLocs(cellA.extendedData, cellB.extendedData)
   },

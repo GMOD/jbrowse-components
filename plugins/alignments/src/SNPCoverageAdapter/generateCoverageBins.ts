@@ -19,7 +19,6 @@ function isInterbase(type: string) {
   return type === 'softclip' || type === 'hardclip' || type === 'insertion'
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function inc(bin: any, strand: number, type: string, field: string) {
   let thisBin = bin[type][field]
   if (thisBin === undefined) {
@@ -172,7 +171,7 @@ export default async function generateCoverageBins(
           } else {
             if (bin0) {
               if (
-                !dels?.some(d =>
+                !dels.some(d =>
                   doesIntersect2(
                     j,
                     j + 1,
@@ -188,7 +187,7 @@ export default async function generateCoverageBins(
             }
             if (bin1) {
               if (
-                !dels?.some(d =>
+                !dels.some(d =>
                   doesIntersect2(
                     j + 1,
                     j + 2,

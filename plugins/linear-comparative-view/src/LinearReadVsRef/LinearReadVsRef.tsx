@@ -54,7 +54,7 @@ export default function ReadVsRefDialog({
 }: {
   feature: Feature
   handleClose: () => void
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   track: any
 }) {
   const { classes } = useStyles()
@@ -165,7 +165,7 @@ export default function ReadVsRefDialog({
       const features = [feat, ...suppAlns] as ReducedFeature[]
 
       features.forEach((f, idx) => {
-        f.refName = assembly?.getCanonicalRefName(f.refName) || f.refName
+        f.refName = assembly.getCanonicalRefName(f.refName) || f.refName
         f.syntenyId = idx
         f.mate.syntenyId = idx
         f.mate.uniqueId = `${f.uniqueId}_mate`
@@ -192,7 +192,7 @@ export default function ReadVsRefDialog({
       )
 
       session.addTemporaryAssembly?.({
-        name: `${readAssembly}`,
+        name: readAssembly,
         sequence: {
           type: 'ReferenceSequenceTrack',
           name: 'Read sequence',
@@ -336,7 +336,9 @@ export default function ReadVsRefDialog({
 
             <TextField
               value={windowSize}
-              onChange={event => setWindowSize(event.target.value)}
+              onChange={event => {
+                setWindowSize(event.target.value)
+              }}
               label="Set window size"
             />
           </div>

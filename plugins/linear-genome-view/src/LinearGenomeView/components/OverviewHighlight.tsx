@@ -19,9 +19,9 @@ const useStyles = makeStyles()(theme => ({
   highlight: {
     height: '100%',
     position: 'absolute',
-    background: `${colord(theme.palette.highlight?.main ?? 'goldenrod')
+    background: colord(theme.palette.highlight?.main ?? 'goldenrod')
       .alpha(0.35)
-      .toRgbString()}`,
+      .toRgbString(),
     borderLeft: `1px solid ${theme.palette.highlight?.main ?? 'goldenrod'}`,
     borderRight: `1px solid ${theme.palette.highlight?.main ?? 'goldenrod'}`,
   },
@@ -60,7 +60,7 @@ const OverviewHighlight = observer(function OverviewHighlight({
 
   return model.highlight
     .map(h => {
-      const asm = assemblyManager.get(h?.assemblyName)
+      const asm = assemblyManager.get(h.assemblyName)
       return mapCoords({
         ...h,
         refName: asm?.getCanonicalRefName(h.refName) ?? h.refName,

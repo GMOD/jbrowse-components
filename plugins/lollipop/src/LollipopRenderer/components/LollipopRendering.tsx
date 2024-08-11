@@ -38,7 +38,6 @@ function layoutFeat(args: {
   })
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const LollipopRendering = observer(function (props: Record<string, any>) {
   const onMouseDown = (event: React.MouseEvent) => {
     const { onMouseDown: handler } = props

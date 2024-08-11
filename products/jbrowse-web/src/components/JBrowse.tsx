@@ -54,7 +54,7 @@ const JBrowse = observer(function ({
           throw new Error(`HTTP ${response.status} (${message})`)
         }
       } catch (e) {
-        session?.notify(`Admin server error: ${e}`)
+        session.notify(`Admin server error: ${e}`)
       }
     })
   }, [jbrowse, session, adminKey, adminServer, configPath])

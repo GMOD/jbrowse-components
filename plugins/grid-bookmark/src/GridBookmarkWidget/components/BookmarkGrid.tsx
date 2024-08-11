@@ -136,7 +136,9 @@ const BookmarkGrid = observer(function ({
         model.updateBookmarkLabel(target, row.label)
         return row
       }}
-      onProcessRowUpdateError={e => session.notifyError(`${e}`, e)}
+      onProcessRowUpdateError={e => {
+        session.notifyError(`${e}`, e)
+      }}
       checkboxSelection
       onRowSelectionModelChange={newRowSelectionModel => {
         if (bookmarksWithValidAssemblies.length > 0) {

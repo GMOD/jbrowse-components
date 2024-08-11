@@ -66,7 +66,9 @@ const DataTableHeader = observer(function ({
             <Tooltip title="Unselect all" placement="right">
               <span>
                 <IconButton
-                  onClick={() => model.unselectAll()}
+                  onClick={() => {
+                    model.unselectAll()
+                  }}
                   disabled={!rowSet.selectedCount}
                 >
                   <CropFreeIcon />
@@ -78,11 +80,15 @@ const DataTableHeader = observer(function ({
             <th
               className={classes.columnHead}
               key={colNumber}
-              onMouseOver={() => setHoveredColumn(colNumber)}
-              onMouseOut={() => setHoveredColumn(undefined)}
+              onMouseOver={() => {
+                setHoveredColumn(colNumber)
+              }}
+              onMouseOut={() => {
+                setHoveredColumn(undefined)
+              }}
             >
               <SortIndicator model={model} columnNumber={colNumber} />
-              {(hasColumnNames && columns[colNumber]?.name) ||
+              {(hasColumnNames && columns[colNumber].name) ||
                 numToColName(colNumber)}
               <div
                 className={classes.columnButtonContainer}

@@ -274,7 +274,6 @@ function fillTemplates<T>(subconfig: T, config: Config): T {
       subconfig[i] = fillTemplates(subconfig[i], config)
     }
   } else if (typeof subconfig === 'object') {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sub = subconfig as Record<string, any>
     for (const name of Object.keys(sub)) {
       sub[name] = fillTemplates(sub[name], config)

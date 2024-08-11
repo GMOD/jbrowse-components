@@ -198,7 +198,7 @@ export const BaseChordDisplayModel = types
       renderingComponent,
     }: {
       message: string
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       data: any
       html: string
       reactElement: React.ReactElement
@@ -266,11 +266,11 @@ export const BaseChordDisplayModel = types
         self,
         () => ({
           assemblyNames: getTrackAssemblyNames(self.parentTrack),
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
           adapter: getConf(getParent<any>(self, 2), 'adapter'),
           assemblyManager: getSession(self).assemblyManager,
         }),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         async ({ assemblyNames, adapter, assemblyManager }: any, signal) => {
           return assemblyManager.getRefNameMapForAdapter(
             adapter,
@@ -283,7 +283,9 @@ export const BaseChordDisplayModel = types
           fireImmediately: true,
         },
         () => {},
-        refNameMap => self.setRefNameMap(refNameMap),
+        refNameMap => {
+          self.setRefNameMap(refNameMap)
+        },
         error => {
           console.error(error)
           self.setError(error)

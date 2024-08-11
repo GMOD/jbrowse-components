@@ -72,10 +72,7 @@ export default function LaunchLinearGenomeViewF(pluginManager: PluginManager) {
                 assemblyName: assembly,
               }
 
-              if (
-                location?.start !== undefined &&
-                location?.end !== undefined
-              ) {
+              if (location.start !== undefined && location.end !== undefined) {
                 view.addToHighlights(location)
               }
             }
@@ -85,7 +82,9 @@ export default function LaunchLinearGenomeViewF(pluginManager: PluginManager) {
         await handleSelectedRegion({ input: loc, model: view, assembly: asm })
 
         const idsNotFound = [] as string[]
-        tracks.forEach(track => tryTrack(view, track, idsNotFound))
+        tracks.forEach(track => {
+          tryTrack(view, track, idsNotFound)
+        })
         if (idsNotFound.length) {
           throw new Error(
             `Could not resolve identifiers: ${idsNotFound.join(',')}`,

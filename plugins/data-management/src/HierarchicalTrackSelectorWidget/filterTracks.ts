@@ -29,7 +29,7 @@ export function filterTracks(
     .filter(c => {
       const trackAssemblyNames = readConfObject(c, 'assemblyNames') as string[]
       const trackAssemblies = trackAssemblyNames
-        ?.map(name => assemblyManager.get(name))
+        .map(name => assemblyManager.get(name))
         .filter(notEmpty)
       return view.trackSelectorAnyOverlap
         ? hasAnyOverlap(trackAssemblies, trackListAssemblies)

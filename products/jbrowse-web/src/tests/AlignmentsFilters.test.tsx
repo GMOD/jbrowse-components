@@ -70,7 +70,7 @@ test('set jexl filters on bam pileup display', async () => {
   await user.click(await screen.findByTestId('track_menu_icon', ...opts))
   await user.click((await screen.findAllByText('Pileup display'))[1])
 
-  const filter = [`jexl:get(feature,'end')==${40005}`]
+  const filter = [`jexl:get(feature,'end')==40005`]
   view.tracks[0].displays[0].setJexlFilters(filter)
 
   expectCanvasMatch(await screen.findByTestId(pv('39805..40176-0'), ...opts))
@@ -85,7 +85,7 @@ test('set jexl filters on snp cov display', async () => {
   await user.click(await screen.findByTestId('track_menu_icon', ...opts))
   await user.click(await screen.findByText('SNPCoverage display'))
 
-  const filter = [`jexl:get(feature,'end')==${40005}`]
+  const filter = [`jexl:get(feature,'end')==40005`]
   view.tracks[0].displays[0].setJexlFilters(filter)
 
   expectCanvasMatch(await screen.findByTestId(pv('39805..40176-0'), ...opts))

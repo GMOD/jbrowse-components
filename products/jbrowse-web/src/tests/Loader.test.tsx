@@ -107,7 +107,9 @@ test('can use config from a url with shared session ', async () => {
     <App search="?config=test_data/volvox/config_main_thread.json&session=share-testid&password=Z42aq" />,
   )
 
-  await waitFor(() => expect(sessionStorage.length).toBeGreaterThan(0), delay)
+  await waitFor(() => {
+    expect(sessionStorage.length).toBeGreaterThan(0)
+  }, delay)
 }, 20000)
 
 // minimal session with plugin in our plugins.json
@@ -116,9 +118,14 @@ test('approves sessionPlugins from plugin list', async () => {
   render(
     <App search='?config=test_data/volvox/config_main_thread.json&session=json-{"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"url":"https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js","name":"MsaView"}]}}' />,
   )
-  await waitFor(() => expect(sessionStorage.length).toBeGreaterThan(0), {
-    timeout: 50000,
-  })
+  await waitFor(
+    () => {
+      expect(sessionStorage.length).toBeGreaterThan(0)
+    },
+    {
+      timeout: 50000,
+    },
+  )
 }, 50000)
 
 // minimal session,
@@ -151,10 +158,9 @@ test('can use a spec url for lgv', async () => {
 
   await findByText(/volvox-sorted.bam/, {}, delay)
   const elt = await findByPlaceholderText('Search for location', {}, delay)
-  await waitFor(
-    () => expect((elt as HTMLInputElement).value).toBe('ctgA:5,999..6,999'),
-    delay,
-  )
+  await waitFor(() => {
+    expect((elt as HTMLInputElement).value).toBe('ctgA:5,999..6,999')
+  }, delay)
 }, 40000)
 
 test('can use a spec url for spreadsheet view', async () => {

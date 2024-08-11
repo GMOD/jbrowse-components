@@ -162,7 +162,9 @@ const DotplotViewInternal = observer(function ({
     if (ref.current) {
       const curr = ref.current
       curr.addEventListener('wheel', onWheel)
-      return () => curr.removeEventListener('wheel', onWheel)
+      return () => {
+        curr.removeEventListener('wheel', onWheel)
+      }
     }
     return () => {}
   }, [hview, vview, wheelMode, mousecurr, rootRect.height])
@@ -178,7 +180,9 @@ const DotplotViewInternal = observer(function ({
     }
 
     window.addEventListener('mousemove', globalMouseMove)
-    return () => window.removeEventListener('mousemove', globalMouseMove)
+    return () => {
+      window.removeEventListener('mousemove', globalMouseMove)
+    }
   }, [validPan, mousecurrClient, mousedownClient, mouseupClient, hview, vview])
 
   useEffect(() => {
@@ -235,8 +239,12 @@ const DotplotViewInternal = observer(function ({
       <div
         ref={root}
         className={classes.root}
-        onMouseLeave={() => setMouseOvered(false)}
-        onMouseEnter={() => setMouseOvered(true)}
+        onMouseLeave={() => {
+          setMouseOvered(false)
+        }}
+        onMouseEnter={() => {
+          setMouseOvered(true)
+        }}
       >
         <div className={classes.container}>
           <VerticalAxis model={model} />

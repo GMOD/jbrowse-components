@@ -20,7 +20,6 @@ const vcfCoreColumns: { name: string; type: string }[] = [
   { name: 'FORMAT', type: 'Text' }, // 8
 ]
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function vcfRecordToRow(vcfParser: any, line: string, lineNumber: number): Row {
   const vcfVariant = vcfParser.parseLine(line)
   const vcfFeature = new VcfFeature({

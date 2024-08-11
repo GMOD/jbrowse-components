@@ -13,11 +13,11 @@ async function parseWith(buffer: Buffer, options = {}) {
 
 export interface Row {
   id: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   extendedData?: any
   cells: {
     text: string
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     extendedData?: any
   }[]
 }

@@ -100,7 +100,6 @@ const SessionLoader = types
     },
   }))
   .actions(self => ({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any,
     setSessionQuery(session?: any) {
       self.sessionQuery = session
     },
@@ -206,11 +205,12 @@ const SessionLoader = types
         const configPlugins = config.plugins || []
         const configPluginsAllowed = await checkPlugins(configPlugins)
         if (!configPluginsAllowed) {
-          return self.setSessionTriaged({
+          self.setSessionTriaged({
             snap: config,
             origin: 'config',
             reason: configPlugins,
           })
+          return
         }
       }
       await this.fetchPlugins(config)
@@ -239,7 +239,9 @@ const SessionLoader = types
                   resolve(msg.data)
                 }
               }
-              setTimeout(() => reject(new Error('timeout')), 1000)
+              setTimeout(() => {
+                reject(new Error('timeout'))
+              }, 1000)
             },
           )
           return this.setSessionSnapshot({ ...result, id: nanoid() })

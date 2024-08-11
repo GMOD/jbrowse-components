@@ -24,9 +24,9 @@ export default function LaunchSvInspectorViewF(pluginManager: PluginManager) {
         throw new Error('Failed to initialize view')
       }
       const exts = uri.split('.')
-      let ext = exts?.pop()?.toUpperCase()
+      let ext = exts.pop()?.toUpperCase()
       if (ext === 'GZ') {
-        ext = exts?.pop()?.toUpperCase()
+        ext = exts.pop()?.toUpperCase()
       }
 
       view.spreadsheetView.importWizard.setFileType(fileType || ext || '')

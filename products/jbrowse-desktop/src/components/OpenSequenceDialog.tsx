@@ -196,7 +196,9 @@ const OpenSequenceDialog = ({
             helperText="The assembly name e.g. hg38"
             variant="outlined"
             value={assemblyName}
-            onChange={event => setAssemblyName(event.target.value)}
+            onChange={event => {
+              setAssemblyName(event.target.value)
+            }}
           />
 
           <TextField
@@ -204,7 +206,9 @@ const OpenSequenceDialog = ({
             helperText='(optional) A human readable display name for the assembly e.g. "Homo sapiens (hg38)"'
             variant="outlined"
             value={assemblyDisplayName}
-            onChange={event => setAssemblyDisplayName(event.target.value)}
+            onChange={event => {
+              setAssemblyDisplayName(event.target.value)
+            }}
           />
 
           <TextField
@@ -213,7 +217,9 @@ const OpenSequenceDialog = ({
             select
             helperText="Type of adapter to use"
             fullWidth
-            onChange={event => setAdapterSelection(event.target.value)}
+            onChange={event => {
+              setAdapterSelection(event.target.value)
+            }}
           >
             {adapterTypes.map(str => (
               <MenuItem key={str} value={str}>
@@ -237,7 +243,12 @@ const OpenSequenceDialog = ({
           />
         </Paper>
 
-        <Button onClick={() => setShowAdvanced(a => !a)} variant="contained">
+        <Button
+          onClick={() => {
+            setShowAdvanced(a => !a)
+          }}
+          variant="contained"
+        >
           {showAdvanced ? 'Hide advanced options' : 'Show advanced options'}
         </Button>
         {showAdvanced ? (

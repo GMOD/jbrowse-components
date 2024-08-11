@@ -40,7 +40,7 @@ export function ucscProcessedTranscript(feature: TranscriptFeat) {
   oldSubfeatures
     .filter(child => child.type === 'block')
     .sort((a, b) => a.start - b.start)
-    ?.forEach(block => {
+    .forEach(block => {
       const start = block.start
       const end = block.end
       if (thickStart >= end) {
@@ -146,9 +146,9 @@ function defaultParser(fields: string[], line: string) {
 
   return {
     ...rest,
-    blockStarts: blockStarts?.split(',').map(r => +r),
-    chromStarts: chromStarts?.split(',').map(r => +r),
-    blockSizes: blockSizes?.split(',').map(r => +r),
+    blockStarts: blockStarts.split(',').map(r => +r),
+    chromStarts: chromStarts.split(',').map(r => +r),
+    blockSizes: blockSizes.split(',').map(r => +r),
     thickStart: +thickStart,
     thickEnd: +thickEnd,
     blockCount: +blockCount,
@@ -176,7 +176,7 @@ export function makeBlocks({
   const starts = chromStarts || blockStarts || []
   for (let b = 0; b < blockCount; b++) {
     const bmin = (starts[b] || 0) + start
-    const bmax = bmin + (blockSizes?.[b] || 0)
+    const bmax = bmin + (blockSizes[b] || 0)
     subfeatures.push({
       uniqueId: `${uniqueId}-${b}`,
       start: bmin,

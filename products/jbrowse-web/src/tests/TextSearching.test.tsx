@@ -32,7 +32,9 @@ test('single result, searching: eden.1', async () => {
   const { input, autocomplete } = await doSetup()
   fireEvent.change(input, { target: { value: 'eden.1' } })
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
-  await waitFor(() => expect(input.value).toBe('ctgA:1,055..9,005'), delay)
+  await waitFor(() => {
+    expect(input.value).toBe('ctgA:1,055..9,005')
+  }, delay)
 }, 30000)
 
 test('dialog with multiple results, searching seg02', async () => {
@@ -55,9 +57,9 @@ test('test navigation with the search input box, {volvox2}ctgB:1..200', async ()
   fireEvent.change(input, { target: { value: '{volvox2}ctgB:1..200' } })
   fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' })
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
-  await waitFor(() =>
-    expect(view.displayedRegions[0].assemblyName).toEqual('volvox2'),
-  )
+  await waitFor(() => {
+    expect(view.displayedRegions[0].assemblyName).toEqual('volvox2')
+  })
 }, 30000)
 
 test('nav lower case refnames, searching: ctgb:1-100', async () => {
@@ -65,7 +67,9 @@ test('nav lower case refnames, searching: ctgb:1-100', async () => {
   fireEvent.change(input, { target: { value: 'ctgb:1-100' } })
   fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' })
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
-  await waitFor(() => expect(view.displayedRegions[0].refName).toBe('ctgB'))
+  await waitFor(() => {
+    expect(view.displayedRegions[0].refName).toBe('ctgB')
+  })
 }, 30000)
 
 test('nav lower case refnames, searching: ctgb', async () => {
@@ -74,7 +78,9 @@ test('nav lower case refnames, searching: ctgb', async () => {
   fireEvent.change(input, { target: { value: 'ctgb' } })
   fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' })
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
-  await waitFor(() => expect(view.displayedRegions[0].refName).toBe('ctgB'))
+  await waitFor(() => {
+    expect(view.displayedRegions[0].refName).toBe('ctgB')
+  })
 }, 30000)
 
 test('nav lower case refnames, searching: contigb:1-100', async () => {
@@ -83,7 +89,9 @@ test('nav lower case refnames, searching: contigb:1-100', async () => {
   fireEvent.change(input, { target: { value: 'contigb:1-100' } })
   fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' })
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
-  await waitFor(() => expect(view.displayedRegions[0].refName).toBe('ctgB'))
+  await waitFor(() => {
+    expect(view.displayedRegions[0].refName).toBe('ctgB')
+  })
 }, 30000)
 
 test('description of gene, searching: kinase', async () => {
@@ -92,7 +100,9 @@ test('description of gene, searching: kinase', async () => {
   fireEvent.change(input, { target: { value: 'kinase' } })
   fireEvent.click(await findByText('EDEN (protein kinase)', ...opts))
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
-  await waitFor(() => expect(input.value).toBe('ctgA:1,055..9,005'), delay)
+  await waitFor(() => {
+    expect(input.value).toBe('ctgA:1,055..9,005')
+  }, delay)
 }, 30000)
 
 test('search matches description for feature in two places', async () => {

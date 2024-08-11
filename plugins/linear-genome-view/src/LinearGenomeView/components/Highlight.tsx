@@ -26,9 +26,9 @@ const useStyles = makeStyles()(theme => ({
     height: '100%',
     position: 'absolute',
     overflow: 'hidden',
-    background: `${colord(theme.palette.highlight?.main ?? 'goldenrod')
+    background: colord(theme.palette.highlight?.main ?? 'goldenrod')
       .alpha(0.35)
-      .toRgbString()}`,
+      .toRgbString(),
   },
 }))
 
@@ -72,7 +72,7 @@ const Highlight = observer(function Highlight({
       : undefined
   }
 
-  const asm = assemblyManager.get(highlight?.assemblyName)
+  const asm = assemblyManager.get(highlight.assemblyName)
 
   const h = mapCoords({
     ...highlight,
@@ -90,13 +90,15 @@ const Highlight = observer(function Highlight({
       <Tooltip title={'Highlighted from URL parameter'} arrow>
         <IconButton
           ref={anchorEl}
-          onClick={() => setOpen(true)}
+          onClick={() => {
+            setOpen(true)
+          }}
           style={{ zIndex: 3 }}
         >
           <LinkIcon
             fontSize="small"
             sx={{
-              color: `${colord(color).darken(0.2).toRgbString()}`,
+              color: colord(color).darken(0.2).toRgbString(),
             }}
           />
         </IconButton>
@@ -113,7 +115,9 @@ const Highlight = observer(function Highlight({
           {
             label: 'Dismiss highlight',
             icon: CloseIcon,
-            onClick: () => dismissHighlight(),
+            onClick: () => {
+              dismissHighlight()
+            },
           },
           {
             label: 'Bookmark highlighted region',

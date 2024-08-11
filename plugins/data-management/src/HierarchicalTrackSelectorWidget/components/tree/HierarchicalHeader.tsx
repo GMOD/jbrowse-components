@@ -31,12 +31,18 @@ const SearchTracksTextField = observer(function ({
       className={classes.searchBox}
       label="Filter tracks"
       value={filterText}
-      onChange={event => model.setFilterText(event.target.value)}
+      onChange={event => {
+        model.setFilterText(event.target.value)
+      }}
       fullWidth
       InputProps={{
         endAdornment: (
           <InputAdornment position="end">
-            <IconButton onClick={() => model.clearFilterText()}>
+            <IconButton
+              onClick={() => {
+                model.clearFilterText()
+              }}
+            >
               <ClearIcon />
             </IconButton>
           </InputAdornment>
@@ -55,7 +61,9 @@ const HierarchicalTrackSelectorHeader = observer(function ({
 }) {
   return (
     <div
-      ref={ref => setHeaderHeight(ref?.getBoundingClientRect().height || 0)}
+      ref={ref => {
+        setHeaderHeight(ref?.getBoundingClientRect().height || 0)
+      }}
       data-testid="hierarchical_track_selector"
     >
       <div style={{ display: 'flex' }}>

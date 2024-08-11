@@ -93,9 +93,9 @@ export default function RecentSessionsList({
       <DataGrid
         checkboxSelection
         disableRowSelectionOnClick
-        onRowSelectionModelChange={args =>
+        onRowSelectionModelChange={args => {
           setSelectedSessions(sessions.filter(s => args.includes(s.path)))
-        }
+        }}
         rows={rows}
         rowHeight={25}
         columnHeaderHeight={33}

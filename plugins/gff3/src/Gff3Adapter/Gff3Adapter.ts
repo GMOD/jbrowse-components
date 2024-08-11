@@ -133,8 +133,10 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
         const { start, end, refName } = query
         const { intervalTreeMap } = await this.loadData(opts)
         intervalTreeMap[refName]?.(opts.statusCallback)
-          ?.search([start, end])
-          .forEach(f => observer.next(f))
+          .search([start, end])
+          .forEach(f => {
+            observer.next(f)
+          })
         observer.complete()
       } catch (e) {
         observer.error(e)

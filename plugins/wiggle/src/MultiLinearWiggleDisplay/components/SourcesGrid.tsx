@@ -52,33 +52,43 @@ function SourcesGrid({
     <div>
       <Button
         disabled={!selected.length}
-        onClick={event => setAnchorEl(event.currentTarget)}
+        onClick={event => {
+          setAnchorEl(event.currentTarget)
+        }}
       >
         Change color of selected items
       </Button>
       <Button
-        onClick={() => onChange(moveUp([...rows], selected))}
+        onClick={() => {
+          onChange(moveUp([...rows], selected))
+        }}
         disabled={!selected.length}
       >
         <KeyboardArrowUpIcon />
         {showTips ? 'Move selected items up' : null}
       </Button>
       <Button
-        onClick={() => onChange(moveDown([...rows], selected))}
+        onClick={() => {
+          onChange(moveDown([...rows], selected))
+        }}
         disabled={!selected.length}
       >
         <KeyboardArrowDownIcon />
         {showTips ? 'Move selected items down' : null}
       </Button>
       <Button
-        onClick={() => onChange(moveUp([...rows], selected, rows.length))}
+        onClick={() => {
+          onChange(moveUp([...rows], selected, rows.length))
+        }}
         disabled={!selected.length}
       >
         <KeyboardDoubleArrowUpIcon />
         {showTips ? 'Move selected items to top' : null}
       </Button>
       <Button
-        onClick={() => onChange(moveDown([...rows], selected, rows.length))}
+        onClick={() => {
+          onChange(moveDown([...rows], selected, rows.length))
+        }}
         disabled={!selected.length}
       >
         <KeyboardDoubleArrowDownIcon />
@@ -98,14 +108,18 @@ function SourcesGrid({
 
           onChange([...rows])
         }}
-        onClose={() => setAnchorEl(null)}
+        onClose={() => {
+          setAnchorEl(null)
+        }}
       />
       <div style={{ height: 400, width: '100%' }}>
         <DataGrid
           getRowId={row => row.name}
           checkboxSelection
           disableRowSelectionOnClick
-          onRowSelectionModelChange={arg => setSelected(arg as string[])}
+          onRowSelectionModelChange={arg => {
+            setSelected(arg as string[])
+          }}
           rows={rows}
           rowHeight={25}
           columnHeaderHeight={33}
@@ -161,7 +175,7 @@ function SourcesGrid({
             // thing since we are controlling sort instead of the default data
             // grid sort anyways
             const idx = (currSort.idx + 1) % 2
-            const field = sort?.field || currSort.field
+            const field = sort.field || currSort.field
             setCurrSort({ idx, field })
             onChange(
               field

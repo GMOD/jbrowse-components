@@ -80,7 +80,7 @@ export default function SearchResultsTable({
         </TableHead>
         <TableBody>
           {searchResults.map(result => (
-            <TableRow key={`${result.getId()}`}>
+            <TableRow key={result.getId()}>
               <TableCell component="th" scope="row">
                 {result.getLabel()}
               </TableCell>

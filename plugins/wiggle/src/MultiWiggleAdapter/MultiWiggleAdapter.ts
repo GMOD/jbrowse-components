@@ -48,7 +48,6 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     }
 
     return Promise.all(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       subConfs.map(async (conf: any) => {
         const dataAdapter = (await getSubAdapter(conf))
           .dataAdapter as BaseFeatureDataAdapter

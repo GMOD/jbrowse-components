@@ -16,7 +16,7 @@ class HighlightRegionPlugin extends Plugin {
   install(pluginManager: PluginManager) {
     pluginManager.addToExtensionPoint(
       'Core-extendPluggableElement',
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       (pluggableElement: any) => {
         if (pluggableElement.name === 'LinearGenomeView') {
           const { stateModel } = pluggableElement as ViewType

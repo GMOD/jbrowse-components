@@ -204,9 +204,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       getTrackFeatures(trackConfigId: string) {
         return new Map(
-          self.matchedTrackFeatures[trackConfigId]
-            ?.flat()
-            .map(f => [f.id(), f]),
+          self.matchedTrackFeatures[trackConfigId].flat().map(f => [f.id(), f]),
         )
       },
 
@@ -283,7 +281,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       setWidth(newWidth: number) {
         self.width = newWidth
-        self.views.forEach(v => v.setWidth(newWidth))
+        self.views.forEach(v => {
+          v.setWidth(newWidth)
+        })
       },
 
       /**
@@ -297,7 +297,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       closeView() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         getParent<any>(self, 2).removeView(self)
       },
 
@@ -343,7 +342,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   await Promise.all(
                     self.matchedTracks.map(async track => [
                       track.configuration.trackId,
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
                       await getBlockFeatures(self as any, track),
                     ]),
                   ),
@@ -363,7 +362,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       menuItems() {
         return [
           ...self.views
-            .map((view, idx) => [idx, view.menuItems?.()] as const)
+            .map((view, idx) => [idx, view.menuItems()] as const)
             .filter(f => !!f[1])
             .map(f => ({ label: `View ${f[0] + 1} Menu`, subMenu: f[1] })),
 
@@ -371,13 +370,17 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             label: 'Show intra-view links',
             type: 'checkbox',
             checked: self.showIntraviewLinks,
-            onClick: () => self.toggleIntraviewLinks(),
+            onClick: () => {
+              self.toggleIntraviewLinks()
+            },
           },
           {
             label: 'Allow clicking alignment squiggles?',
             type: 'checkbox',
             checked: self.interactToggled,
-            onClick: () => self.toggleInteract(),
+            onClick: () => {
+              self.toggleInteract()
+            },
           },
 
           {

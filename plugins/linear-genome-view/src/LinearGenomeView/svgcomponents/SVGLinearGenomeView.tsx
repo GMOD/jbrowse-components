@@ -36,7 +36,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   } = opts
   const session = getSession(model)
   const { allThemes } = session
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const { createRootFn } = getRoot<any>(model)
   const theme = allThemes?.()[themeName]
   const { width, tracks, showCytobands } = model

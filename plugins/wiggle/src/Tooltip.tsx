@@ -45,7 +45,6 @@ type Coord = [number, number]
 // React.forwardRef component for the tooltip, the ref is used for measuring
 // the size of the tooltip
 export type TooltipContentsComponent = React.ForwardRefExoticComponent<
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   { feature: Feature; model: any } & React.RefAttributes<HTMLDivElement>
 >
 
@@ -79,7 +78,7 @@ const Tooltip = observer(function Tooltip({
   const clientPoint = useClientPoint(context, { x, y })
   const { getFloatingProps } = useInteractions([clientPoint])
 
-  const popperTheme = theme?.components?.MuiPopper
+  const popperTheme = theme.components?.MuiPopper
 
   return featureUnderMouse ? (
     <>

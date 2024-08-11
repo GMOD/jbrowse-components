@@ -3,7 +3,6 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { getSession, getContainingView } from '@jbrowse/core/util'
 import { CircularViewModel } from '../../CircularView/models/model'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function renderReactionData(self: any) {
   const view = getContainingView(self) as CircularViewModel
   const { rendererType } = self
@@ -26,10 +25,9 @@ export function renderReactionData(self: any) {
 }
 
 export async function renderReactionEffect(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   props: any,
   signal: AbortSignal | undefined,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   self: any,
 ) {
   if (!props) {

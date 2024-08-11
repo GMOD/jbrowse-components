@@ -132,7 +132,7 @@ const ConfirmTrack = observer(function ConfirmTrack({
     return <Typography>Could not recognize this data type.</Typography>
   }
 
-  const supportedForIndexing = isSupportedIndexingAdapter(trackAdapter?.type)
+  const supportedForIndexing = isSupportedIndexingAdapter(trackAdapter.type)
   return (
     <div>
       {trackAdapter ? (
@@ -147,7 +147,9 @@ const ConfirmTrack = observer(function ConfirmTrack({
         helperText="A name for this track"
         fullWidth
         value={trackName}
-        onChange={event => model.setTrackName(event.target.value)}
+        onChange={event => {
+          model.setTrackName(event.target.value)
+        }}
         inputProps={{ 'data-testid': 'trackNameInput' }}
       />
       <TrackAdapterSelector model={model} />
@@ -156,7 +158,9 @@ const ConfirmTrack = observer(function ConfirmTrack({
         session={session}
         helperText="Select assembly to add track to"
         selected={model.assembly}
-        onChange={asm => model.setAssembly(asm)}
+        onChange={asm => {
+          model.setAssembly(asm)
+        }}
         TextFieldProps={{
           fullWidth: true,
           SelectProps: {

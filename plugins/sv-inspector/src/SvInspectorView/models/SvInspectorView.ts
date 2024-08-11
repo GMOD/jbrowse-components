@@ -212,7 +212,6 @@ function SvInspectorViewF(pluginManager: PluginManager) {
        * #action
        */
       closeView() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         getParent<any>(self, 2).removeView(self)
       },
       /**
@@ -236,7 +235,9 @@ function SvInspectorViewF(pluginManager: PluginManager) {
         return [
           {
             label: 'Return to import form',
-            onClick: () => self.setImportMode(),
+            onClick: () => {
+              self.setImportMode()
+            },
             icon: FolderOpenIcon,
           },
         ]
@@ -335,8 +336,8 @@ function SvInspectorViewF(pluginManager: PluginManager) {
           self,
           reaction(
             () => ({
-              generatedTrackConf: self?.featuresCircularTrackConfiguration,
-              assemblyName: self?.assemblyName,
+              generatedTrackConf: self.featuresCircularTrackConfiguration,
+              assemblyName: self.assemblyName,
             }),
             data => {
               if (!data) {

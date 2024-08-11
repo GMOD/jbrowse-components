@@ -78,9 +78,15 @@ function RecentSessionCard({
     <>
       <Card
         className={classes.card}
-        onMouseOver={() => setHovered(true)}
-        onMouseOut={() => setHovered(false)}
-        onClick={() => onClick(sessionData)}
+        onMouseOver={() => {
+          setHovered(true)
+        }}
+        onMouseOut={() => {
+          setHovered(false)
+        }}
+        onClick={() => {
+          onClick(sessionData)
+        }}
         raised={Boolean(hovered)}
       >
         {screenshot ? (
@@ -117,9 +123,7 @@ function RecentSessionCard({
             >
               Last modified{' '}
               {sessionData
-                ? `${new Date(sessionData.updated || 0).toLocaleString(
-                    'en-US',
-                  )}`
+                ? new Date(sessionData.updated || 0).toLocaleString('en-US')
                 : null}
             </Typography>
           }
@@ -129,7 +133,9 @@ function RecentSessionCard({
         anchorEl={menuAnchorEl}
         keepMounted
         open={Boolean(menuAnchorEl)}
-        onClose={() => setMenuAnchorEl(null)}
+        onClose={() => {
+          setMenuAnchorEl(null)
+        }}
       >
         <MenuItem
           onClick={() => {

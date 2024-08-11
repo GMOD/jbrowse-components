@@ -57,7 +57,9 @@ const LinearSyntenyRendering = observer(function ({
   // etc.
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   const k1 = useCallback(
-    (ref: HTMLCanvasElement) => model.setMouseoverCanvasRef(ref),
+    (ref: HTMLCanvasElement) => {
+      model.setMouseoverCanvasRef(ref)
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [model, height, width],
   )
@@ -67,7 +69,7 @@ const LinearSyntenyRendering = observer(function ({
       model.setMainCanvasRef(ref)
       function onWheel(event: WheelEvent) {
         event.preventDefault()
-        if (event.ctrlKey === true) {
+        if (event.ctrlKey) {
           delta.current += event.deltaY / 500
           for (const v of view.views) {
             v.setScaleFactor(
@@ -84,7 +86,7 @@ const LinearSyntenyRendering = observer(function ({
                 delta.current > 0
                   ? v.bpPerPx * (1 + delta.current)
                   : v.bpPerPx / (1 - delta.current),
-                event.clientX - (ref?.getBoundingClientRect().left || 0),
+                event.clientX - (ref.getBoundingClientRect().left || 0),
               )
             }
             delta.current = 0
@@ -112,7 +114,9 @@ const LinearSyntenyRendering = observer(function ({
         // this is a react 19-ism to have a cleanup in the ref callback
         // https://react.dev/blog/2024/04/25/react-19#cleanup-functions-for-refs
         // note: it warns in earlier versions of react
-        return () => ref.removeEventListener('wheel', onWheel)
+        return () => {
+          ref.removeEventListener('wheel', onWheel)
+        }
       }
       return () => {}
     },
@@ -121,13 +125,17 @@ const LinearSyntenyRendering = observer(function ({
   )
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   const k3 = useCallback(
-    (ref: HTMLCanvasElement) => model.setClickMapCanvasRef(ref),
+    (ref: HTMLCanvasElement) => {
+      model.setClickMapCanvasRef(ref)
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [model, height, width],
   )
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   const k4 = useCallback(
-    (ref: HTMLCanvasElement) => model.setCigarClickMapCanvasRef(ref),
+    (ref: HTMLCanvasElement) => {
+      model.setCigarClickMapCanvasRef(ref)
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [model, height, width],
   )
@@ -207,7 +215,9 @@ const LinearSyntenyRendering = observer(function ({
             onSynClick(evt, model)
           }
         }}
-        onContextMenu={evt => onSynContextClick(evt, model, setAnchorEl)}
+        onContextMenu={evt => {
+          onSynContextClick(evt, model, setAnchorEl)
+        }}
         data-testid="synteny_canvas"
         className={classes.abs}
         width={width}
@@ -222,7 +232,9 @@ const LinearSyntenyRendering = observer(function ({
         <SyntenyContextMenu
           model={model}
           anchorEl={anchorEl}
-          onClose={() => setAnchorEl(undefined)}
+          onClose={() => {
+            setAnchorEl(undefined)
+          }}
         />
       ) : null}
     </div>

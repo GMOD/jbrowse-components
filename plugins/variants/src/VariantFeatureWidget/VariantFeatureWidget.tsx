@@ -18,7 +18,7 @@ function AnnPanel({
   descriptions: { INFO?: { ANN?: { Description?: string } } }
   feature: { INFO?: { ANN?: string[] } }
 }) {
-  const annDesc = descriptions?.INFO?.ANN?.Description
+  const annDesc = descriptions.INFO?.ANN?.Description
   const annFields =
     annDesc?.match(/.*Functional annotations:'(.*)'$/)?.[1].split('|') || []
   const ann = feature.INFO?.ANN || []
@@ -38,7 +38,7 @@ function CsqPanel({
   descriptions: { INFO?: { CSQ?: { Description?: string } } }
   feature: { INFO?: { CSQ?: string[] } }
 }) {
-  const csqDescription = descriptions?.INFO?.CSQ?.Description
+  const csqDescription = descriptions.INFO?.CSQ?.Description
   const csqFields =
     csqDescription?.match(/.*Format: (.*)/)?.[1].split('|') || []
   const csq = feature.INFO?.CSQ || []

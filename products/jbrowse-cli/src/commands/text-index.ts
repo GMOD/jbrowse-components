@@ -157,7 +157,7 @@ export default class TextIndex extends JBrowseCommand {
       config.assemblies?.map(a => a.name) ||
       (config.assembly ? [config.assembly.name] : [])
 
-    if (!asms?.length) {
+    if (!asms.length) {
       throw new Error('No assemblies found')
     }
 
@@ -505,7 +505,7 @@ export default class TextIndex extends JBrowseCommand {
     if (!tracks) {
       return []
     }
-    const trackIdsToIndex = trackIds || tracks?.map(track => track.trackId)
+    const trackIdsToIndex = trackIds || tracks.map(track => track.trackId)
     return trackIdsToIndex
       .map(trackId => {
         const currentTrack = tracks.find(t => trackId === t.trackId)
@@ -516,7 +516,7 @@ export default class TextIndex extends JBrowseCommand {
         }
         return currentTrack
       })
-      .filter(track => supported(track.adapter?.type))
+      .filter(track => supported(track.adapter.type))
       .filter(track =>
         assemblyName ? track.assemblyNames.includes(assemblyName) : true,
       )

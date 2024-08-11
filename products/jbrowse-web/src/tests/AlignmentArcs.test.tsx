@@ -10,12 +10,10 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function wait(view: any) {
-  await waitFor(
-    () => expect(view.tracks[0].displays[0].PileupDisplay.drawn).toBe(true),
-    delay,
-  )
+  await waitFor(() => {
+    expect(view.tracks[0].displays[0].PileupDisplay.drawn).toBe(true)
+  }, delay)
 }
 
 const delay = { timeout: 50000 }

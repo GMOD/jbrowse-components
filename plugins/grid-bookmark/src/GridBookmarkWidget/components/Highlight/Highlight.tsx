@@ -43,7 +43,7 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
 
   const set = new Set(model.assemblyNames)
 
-  return showBookmarkHighlights && bookmarkWidget?.bookmarks
+  return showBookmarkHighlights && bookmarkWidget.bookmarks
     ? bookmarkWidget.bookmarks
         .filter(value => set.has(value.assemblyName))
         .map(r => {
@@ -77,11 +77,10 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
                 <BookmarkIcon
                   fontSize="small"
                   sx={{
-                    color: `${
+                    color:
                       colord(highlight).alpha() !== 0
                         ? colord(highlight).alpha(0.8).toRgbString()
-                        : colord(highlight).alpha(0).toRgbString()
-                    }`,
+                        : colord(highlight).alpha(0).toRgbString(),
                   }}
                 />
               </Tooltip>

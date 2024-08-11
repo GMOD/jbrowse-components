@@ -18,7 +18,7 @@ interface Pos {
 export interface ClickCoord {
   clientX: number
   clientY: number
-  feature: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  feature: any
 }
 
 interface FeatPos {

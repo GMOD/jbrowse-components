@@ -46,7 +46,7 @@ export function createPluginManager(self: SessionLoaderModel) {
   )
 
   // @ts-expect-error
-  if (!self.configSnapshot?.configuration?.rpc?.defaultDriver) {
+  if (!self.configSnapshot.configuration?.rpc?.defaultDriver) {
     rootModel.jbrowse.configuration.rpc.defaultDriver.set('WebWorkerRpcDriver')
   }
 

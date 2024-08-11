@@ -28,7 +28,12 @@ const AddTrackSelector = observer(function ({
   return (
     <>
       <FormControl>
-        <Select value={val2} onChange={event => setVal(event.target.value)}>
+        <Select
+          value={val2}
+          onChange={event => {
+            setVal(event.target.value)
+          }}
+        >
           {Object.keys(ComponentMap).map(e => (
             <MenuItem key={e} value={e}>
               {e}

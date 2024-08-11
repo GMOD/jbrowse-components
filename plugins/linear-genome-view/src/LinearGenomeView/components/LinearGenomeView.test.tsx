@@ -37,11 +37,18 @@ test('renders setup wizard', async () => {
   const { findByText } = render(<LinearGenomeView model={model} />)
   expect(model.displayedRegions.length).toEqual(0)
   const elt = await findByText('Open', {}, { timeout: 10000 })
-  await waitFor(() => expect(elt.getAttribute('disabled')).toBe(null))
-  fireEvent.click(elt)
-  await waitFor(() => expect(model.displayedRegions.length).toEqual(1), {
-    timeout: 15000,
+  await waitFor(() => {
+    expect(elt.getAttribute('disabled')).toBe(null)
   })
+  fireEvent.click(elt)
+  await waitFor(
+    () => {
+      expect(model.displayedRegions.length).toEqual(1)
+    },
+    {
+      timeout: 15000,
+    },
+  )
 }, 15000)
 
 test('renders one track, one region', async () => {
@@ -91,7 +98,9 @@ test('renders one track, one region', async () => {
       (getByPlaceholderText('Search for location') as HTMLInputElement).value,
     ).toEqual('ctgA:1..100')
   })
-  await waitFor(() => expect(queryAllByTestId('svgfeatures').length).toBe(1))
+  await waitFor(() => {
+    expect(queryAllByTestId('svgfeatures').length).toBe(1)
+  })
   // snapshot has no features rendered
   expect(container).toMatchSnapshot()
 })
@@ -161,6 +170,8 @@ test('renders two tracks, two regions', async () => {
   await findByText('Foo Track')
   await findByText('798bp')
   await findByDisplayValue('ctgA:1..100 ctgB:1,001..1,698')
-  await waitFor(() => expect(queryAllByTestId('svgfeatures').length).toBe(4))
+  await waitFor(() => {
+    expect(queryAllByTestId('svgfeatures').length).toBe(4)
+  })
   expect(container).toMatchSnapshot()
 }, 15000)

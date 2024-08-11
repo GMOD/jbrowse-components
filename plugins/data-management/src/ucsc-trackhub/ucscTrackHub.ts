@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   FileLocation,
   isUriLocation,
@@ -116,7 +115,7 @@ function makeTrackConfig({
   const bigDataUrl = track.data.bigDataUrl || ''
   const bigDataIdx = track.data.bigDataIndex || ''
   const isUri = isUriLocation(trackDbLoc)
-  let baseTrackType = trackType?.split(' ')[0] || ''
+  let baseTrackType = trackType.split(' ')[0] || ''
   if (baseTrackType === 'bam' && bigDataUrl.toLowerCase().endsWith('cram')) {
     baseTrackType = 'cram'
   }

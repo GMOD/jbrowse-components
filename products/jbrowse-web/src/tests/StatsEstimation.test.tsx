@@ -28,7 +28,9 @@ test('test stats estimation pileup, zoom in to see', async () => {
   fireEvent.click(await findByTestId('zoom_in'))
   // found it helps avoid flaky test to check that it is zoomed in before
   // checking snapshot (even though it seems like it is unneeded) #2673
-  await waitFor(() => expect(view.bpPerPx).toBe(before / 2), delay)
+  await waitFor(() => {
+    expect(view.bpPerPx).toBe(before / 2)
+  }, delay)
   expectCanvasMatch(await findByTestId(pv('1..12000-0'), ...o))
 }, 30000)
 
@@ -55,7 +57,9 @@ test('test stats estimation on vcf track, zoom in to see', async () => {
   fireEvent.click(await findByTestId('zoom_in'))
   // found it helps avoid flaky test to check that it is zoomed in before
   // checking snapshot (even though it seems like it is unneeded) #2673
-  await waitFor(() => expect(view.bpPerPx).toBe(before / 2), delay)
+  await waitFor(() => {
+    expect(view.bpPerPx).toBe(before / 2)
+  }, delay)
   await findAllByTestId('box-test-vcf-606969', ...o)
 }, 30000)
 

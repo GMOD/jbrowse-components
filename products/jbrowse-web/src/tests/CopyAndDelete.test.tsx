@@ -51,11 +51,15 @@ test(
       fireEvent.click(await findByText('Copy track'))
       fireEvent.click(await findByText('volvox filtered vcf (copy)'))
       expect(queryByText(/Session tracks/)).toBeNull()
-      await waitFor(() => expect(view.tracks.length).toBe(1))
+      await waitFor(() => {
+        expect(view.tracks.length).toBe(1)
+      })
       await findAllByTestId('box-test-vcf-604453', {}, delay)
       fireEvent.click(await findByTestId('track_menu_icon'))
       fireEvent.click(await findByText('Delete track'))
-      await waitFor(() => expect(view.tracks.length).toBe(0))
+      await waitFor(() => {
+        expect(view.tracks.length).toBe(0)
+      })
     }),
   40000,
 )
@@ -88,7 +92,9 @@ test(
       fireEvent.click(await findByText('Copy track'))
       expect(queryByText(/Session tracks/)).toBeNull()
       // clicking 'copy track' should not create a copy of a ref sequence track
-      await waitFor(() => expect(view.tracks.length).toBe(0))
+      await waitFor(() => {
+        expect(view.tracks.length).toBe(0)
+      })
       expect(trackMenuItems[2].disabled).toBe(true)
       expect(trackMenuItems[3].disabled).toBe(true)
     }),
@@ -113,11 +119,15 @@ test(
       fireEvent.click(await findByText('Copy track'))
       fireEvent.click(await findByText('volvox filtered vcf (copy)'))
       await findByText(/Session tracks/)
-      await waitFor(() => expect(view.tracks.length).toBe(1))
+      await waitFor(() => {
+        expect(view.tracks.length).toBe(1)
+      })
       await findAllByTestId('box-test-vcf-604453', {}, delay)
       fireEvent.click(await findByTestId('track_menu_icon'))
       fireEvent.click(await findByText('Delete track'))
-      await waitFor(() => expect(view.tracks.length).toBe(0))
+      await waitFor(() => {
+        expect(view.tracks.length).toBe(0)
+      })
     }),
   40000,
 )

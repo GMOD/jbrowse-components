@@ -23,7 +23,9 @@ const AdapterSelector = observer(function ({
       select
       helperText="Type of adapter to use"
       fullWidth
-      onChange={event => setAdapterSelection(event.target.value)}
+      onChange={event => {
+        setAdapterSelection(event.target.value)
+      }}
     >
       {adapterTypes.map(str => (
         <MenuItem key={str} value={str}>
@@ -70,14 +72,18 @@ const AdapterInput = observer(
             <FileSelector
               name="fastaLocation"
               location={fastaLocation}
-              setLocation={loc => setFastaLocation(loc)}
+              setLocation={loc => {
+                setFastaLocation(loc)
+              }}
             />
           </Grid>
           <Grid item>
             <FileSelector
               name="faiLocation"
               location={faiLocation}
-              setLocation={loc => setFaiLocation(loc)}
+              setLocation={loc => {
+                setFaiLocation(loc)
+              }}
             />
           </Grid>
           {adapterSelection === 'BgzipFastaAdapter' ? (
@@ -85,7 +91,9 @@ const AdapterInput = observer(
               <FileSelector
                 name="gziLocation"
                 location={gziLocation}
-                setLocation={loc => setGziLocation(loc)}
+                setLocation={loc => {
+                  setGziLocation(loc)
+                }}
               />
             </Grid>
           ) : null}
@@ -100,14 +108,18 @@ const AdapterInput = observer(
             <FileSelector
               name="twoBitLocation"
               location={twoBitLocation}
-              setLocation={loc => setTwoBitLocation(loc)}
+              setLocation={loc => {
+                setTwoBitLocation(loc)
+              }}
             />
           </Grid>
           <Grid item>
             <FileSelector
               name="chromSizesLocation (optional, can be added to speed up loading 2bit files with many contigs)"
               location={chromSizesLocation}
-              setLocation={loc => setChromSizesLocation(loc)}
+              setLocation={loc => {
+                setChromSizesLocation(loc)
+              }}
             />
           </Grid>
         </Grid>
@@ -206,7 +218,9 @@ const AssemblyAddForm = observer(function ({
           helperText="The assembly name e.g. hg38"
           variant="outlined"
           value={assemblyName}
-          onChange={event => setAssemblyName(event.target.value)}
+          onChange={event => {
+            setAssemblyName(event.target.value)
+          }}
         />
         <TextField
           id="assembly-name"
@@ -215,7 +229,9 @@ const AssemblyAddForm = observer(function ({
           helperText='A human readable display name for the assembly e.g. "Homo sapiens (hg38)"'
           variant="outlined"
           value={assemblyDisplayName}
-          onChange={event => setAssemblyDisplayName(event.target.value)}
+          onChange={event => {
+            setAssemblyDisplayName(event.target.value)
+          }}
         />
         <AdapterSelector
           adapterSelection={adapterSelection}

@@ -29,7 +29,7 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
     Wrapper = ({ children }) => children,
     themeName = 'default',
   } = opts
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const { createRootFn } = getRoot<any>(model)
   const session = getSession(model)
   const theme = session.allThemes?.()[themeName]

@@ -25,11 +25,11 @@ test(
       fireEvent.change(await findByTestId('urlInput', {}, delay), {
         target: { value: 'volvox.dup.renamed.vcf.gz' },
       })
-      await waitFor(() =>
+      await waitFor(() => {
         expect(
           getByTestId('open_spreadsheet').closest('button'),
-        ).not.toBeDisabled(),
-      )
+        ).not.toBeDisabled()
+      })
       fireEvent.click(await findByTestId('open_spreadsheet'))
       fireEvent.click(await findByTestId('chord-vcf-0', {}, delay))
 

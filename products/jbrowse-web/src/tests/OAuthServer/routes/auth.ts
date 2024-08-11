@@ -18,7 +18,8 @@ router.post(
     const { username, password } = req.body
     if (username === 'username' && password === 'password') {
       req.body.user = { user: 1 }
-      return next()
+      next()
+      return
     }
     const params = [
       // Send params back down
@@ -30,7 +31,7 @@ router.post(
     ]
       .map(a => `${a}=${req.body[a]}`)
       .join('&')
-    return res.redirect(`/oauth?success=false&${params}`)
+    res.redirect(`/oauth?success=false&${params}`)
   },
   oauthServer.authorize({
     authenticateHandler: {

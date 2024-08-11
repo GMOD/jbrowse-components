@@ -31,7 +31,6 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function FilterOperations({ filterModel }: { filterModel: any }) {
   if (filterModel) {
     return <filterModel.ReactComponent filterModel={filterModel} />
@@ -44,8 +43,7 @@ const ColumnFilterControls = observer(function ({
   filterModel,
   columnNumber,
   height,
-}: // eslint-disable-next-line @typescript-eslint/no-explicit-any
-any) {
+}: any) {
   const { classes } = useStyles()
 
   const columnDefinition = viewModel.spreadsheet.columns[columnNumber]
@@ -65,7 +63,6 @@ any) {
       <Grid item>
         <IconButton
           onClick={() =>
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             getParent<any>(filterModel, 2).removeColumnFilter(filterModel)
           }
           title="remove filter"

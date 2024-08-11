@@ -34,7 +34,6 @@ export async function setup(str: string | string[]) {
   return runCommand(str)
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Conf = Record<string, any>
 
 export function readConf(ctx: { dir: string }, ...rest: string[]): Conf {

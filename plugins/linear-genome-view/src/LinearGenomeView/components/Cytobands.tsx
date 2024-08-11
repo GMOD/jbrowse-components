@@ -14,12 +14,12 @@ import { getFillProps } from '@jbrowse/core/util'
 // rounded rect from https://stackoverflow.com/a/45889603/2129219
 // prettier-ignore
 function rightRoundedRect(x: number, y: number, width: number, height: number, radius: number) {
-  return `M${x},${y}h${width - radius}a${radius},${radius} 0 0 1 ${radius},${radius}v${height - 2 * radius}a${radius},${radius} 0 0 1 ${-radius},${radius}h${radius - width}z`;
+  return `M${x},${y}h${width - radius}a${radius},${radius} 0 0 1 ${radius},${radius}v${height - 2 * radius}a${radius},${radius} 0 0 1 ${-radius},${radius}h${radius - width}z`
 }
 
 // prettier-ignore
 function leftRoundedRect(x: number, y: number, width: number, height: number, radius: number ) {
-  return `M${x + radius},${y}h${width - radius}v${height}h${radius - width}a${radius},${radius} 0 0 1 ${-radius},${-radius}v${2 * radius - height}a${radius},${radius} 0 0 1 ${radius},${-radius}z`;
+  return `M${x + radius},${y}h${width - radius}v${height}h${radius - width}a${radius},${radius} 0 0 1 ${-radius},${-radius}v${2 * radius - height}a${radius},${radius} 0 0 1 ${radius},${-radius}z`
 }
 
 function leftTriangle(x: number, y: number, width: number, height: number) {

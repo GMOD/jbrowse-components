@@ -37,7 +37,7 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
     // sets the focused view id based on a click within the LGV;
     // necessary for subviews to be focused properly
     function handleSelectView(e: Event) {
-      if (e.target instanceof Element && ref?.current?.contains(e.target)) {
+      if (e.target instanceof Element && ref.current?.contains(e.target)) {
         session.setFocusedViewId?.(model.id)
       }
     }
@@ -64,7 +64,9 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
     <div
       className={classes.rel}
       ref={ref}
-      onMouseLeave={() => session.setHovered(undefined)}
+      onMouseLeave={() => {
+        session.setHovered(undefined)
+      }}
       onMouseMove={event => {
         const c = ref.current
         if (!c) {

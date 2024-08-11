@@ -118,7 +118,9 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
       try {
         const { start, end, refName } = query
         const intervalTree = await this.loadFeatureIntervalTree(refName)
-        intervalTree?.search([start, end]).forEach(f => observer.next(f))
+        intervalTree?.search([start, end]).forEach(f => {
+          observer.next(f)
+        })
         observer.complete()
       } catch (e) {
         observer.error(e)

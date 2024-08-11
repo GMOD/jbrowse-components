@@ -22,10 +22,21 @@ export default function DeleteSavedSessionDialog({
         <DialogContentText>This action cannot be undone</DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => handleClose()} color="primary">
+        <Button
+          onClick={() => {
+            handleClose()
+          }}
+          color="primary"
+        >
           Cancel
         </Button>
-        <Button onClick={() => handleClose(true)} color="primary" autoFocus>
+        <Button
+          onClick={() => {
+            handleClose(true)
+          }}
+          color="primary"
+          autoFocus
+        >
           Delete
         </Button>
       </DialogActions>

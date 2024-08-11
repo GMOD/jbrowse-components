@@ -233,29 +233,29 @@ test('can instantiate a model that tests navTo/moveTo', async () => {
   expect(model.offsetPx).toBe(0)
   expect(model.bpPerPx).toBe(0.125)
 
-  expect(() => model.navTo({ refName: 'ctgA', start: 200, end: 100 })).toThrow(
-    /start greater than end/,
-  )
+  expect(() => {
+    model.navTo({ refName: 'ctgA', start: 200, end: 100 })
+  }).toThrow(/start greater than end/)
 
-  expect(() => model.navTo({ refName: 'noExist', start: 0, end: 100 })).toThrow(
-    /could not find a region/,
-  )
+  expect(() => {
+    model.navTo({ refName: 'noExist', start: 0, end: 100 })
+  }).toThrow(/could not find a region/)
 
-  expect(() => model.navTo({ refName: 'ctgA', end: 20100 })).toThrow(
-    /could not find a region/,
-  )
+  expect(() => {
+    model.navTo({ refName: 'ctgA', end: 20100 })
+  }).toThrow(/could not find a region/)
 
-  expect(() => model.navTo({ refName: 'ctgA', start: 20000 })).toThrow(
-    /could not find a region/,
-  )
+  expect(() => {
+    model.navTo({ refName: 'ctgA', start: 20000 })
+  }).toThrow(/could not find a region/)
 
-  expect(() =>
-    model.navTo({ refName: 'ctgA', start: 20000, end: 20100 }),
-  ).toThrow(/could not find a region/)
+  expect(() => {
+    model.navTo({ refName: 'ctgA', start: 20000, end: 20100 })
+  }).toThrow(/could not find a region/)
 
-  expect(() => model.navTo({ refName: 'ctgA', start: 0, end: 20000 })).toThrow(
-    /could not find a region/,
-  )
+  expect(() => {
+    model.navTo({ refName: 'ctgA', start: 0, end: 20000 })
+  }).toThrow(/could not find a region/)
 })
 
 test('can navToMultiple', () => {
@@ -939,14 +939,22 @@ test('navToLocString with human assembly', async () => {
   const w = view.width
 
   await view.navToLocString('2')
-  await waitFor(() => expect(view.bpPerPx).toBe(hg38Regions[1].end / w))
+  await waitFor(() => {
+    expect(view.bpPerPx).toBe(hg38Regions[1].end / w)
+  })
 
   await view.navToLocString('chr3')
-  await waitFor(() => expect(view.bpPerPx).toBe(hg38Regions[2].end / w))
+  await waitFor(() => {
+    expect(view.bpPerPx).toBe(hg38Regions[2].end / w)
+  })
 
   await view.navToLocString('chr3:1,000,000,000-1,100,000,000')
-  await waitFor(() => expect(view.bpPerPx).toBe(0.02))
-  await waitFor(() => expect(view.offsetPx).toBe(9914777550))
+  await waitFor(() => {
+    expect(view.bpPerPx).toBe(0.02)
+  })
+  await waitFor(() => {
+    expect(view.offsetPx).toBe(9914777550)
+  })
   await view.navToLocString('chr3:-1,100,000,000..-1,000,000,000')
 })
 
@@ -964,8 +972,12 @@ test('multi region', async () => {
   model.setDisplayedRegions(volvoxDisplayedRegions.slice(0, 1))
 
   await model.navToLocString('ctgA ctgB')
-  await waitFor(() => expect(model.displayedRegions[0].refName).toBe('ctgA'))
-  await waitFor(() => expect(model.displayedRegions[1].refName).toBe('ctgB'))
+  await waitFor(() => {
+    expect(model.displayedRegions[0].refName).toBe('ctgA')
+  })
+  await waitFor(() => {
+    expect(model.displayedRegions[1].refName).toBe('ctgB')
+  })
 })
 
 test('space separated locstring', async () => {
@@ -982,6 +994,10 @@ test('space separated locstring', async () => {
   model.setDisplayedRegions(volvoxDisplayedRegions.slice(0, 1))
 
   await model.navToLocString('ctgA 0 100')
-  await waitFor(() => expect(model.offsetPx).toBe(0))
-  await waitFor(() => expect(model.bpPerPx).toBe(0.125))
+  await waitFor(() => {
+    expect(model.offsetPx).toBe(0)
+  })
+  await waitFor(() => {
+    expect(model.bpPerPx).toBe(0.125)
+  })
 })

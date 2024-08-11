@@ -181,7 +181,6 @@ function stateModelFactory(pluginManager: PluginManager) {
        * parent removeView
        */
       closeView() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         getParent<any>(self, 2).removeView(self)
       },
 
@@ -267,7 +266,9 @@ function stateModelFactory(pluginManager: PluginManager) {
         const schema = pluginManager.pluggableConfigSchemaType('track')
         const config = resolveIdentifier(schema, getRoot(self), trackId)
         const shownTracks = self.tracks.filter(t => t.configuration === config)
-        transaction(() => shownTracks.forEach(t => self.tracks.remove(t)))
+        transaction(() => {
+          shownTracks.forEach(t => self.tracks.remove(t))
+        })
         return shownTracks.length
       },
       /**
@@ -309,7 +310,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       menuItems(): MenuItem[] {
         return [
           ...self.views
-            .map((view, idx) => [idx, view.menuItems?.()] as const)
+            .map((view, idx) => [idx, view.menuItems()] as const)
             .filter(f => !!f[1])
             .map(f => ({ label: `View ${f[0] + 1} Menu`, subMenu: f[1] })),
           {
@@ -354,7 +355,9 @@ function stateModelFactory(pluginManager: PluginManager) {
           self,
           autorun(() => {
             if (self.width) {
-              self.views.forEach(v => v.setWidth(self.width))
+              self.views.forEach(v => {
+                v.setWidth(self.width)
+              })
             }
           }),
         )

@@ -59,7 +59,9 @@ const StatusBar = observer(function StatusBar({
             component="div"
             rowsPerPage={rowsPerPage}
             page={page}
-            onPageChange={(_, newPage) => setPage(newPage)}
+            onPageChange={(_, newPage) => {
+              setPage(newPage)
+            }}
             onRowsPerPageChange={event => {
               setRowsPerPage(+event.target.value)
               setPage(0)

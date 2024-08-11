@@ -194,7 +194,7 @@ export default class HicRenderer extends ServerSideRendererType {
     // cast to any to avoid return-type conflict, because the
     // types of features returned by our getFeatures are quite
     // different from the base interface
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     return features as any
   }
 }

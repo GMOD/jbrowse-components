@@ -83,7 +83,7 @@ export default function RecentSessionPanel({
   )
 
   const sortedSessions = useMemo(
-    () => sessions?.sort((a, b) => (b.updated || 0) - (a.updated || 0)),
+    () => sessions.sort((a, b) => (b.updated || 0) - (a.updated || 0)),
     [sessions],
   )
 
@@ -152,7 +152,9 @@ export default function RecentSessionPanel({
             <ToggleButtonGroup
               exclusive
               value={displayMode}
-              onChange={(_, newVal) => setDisplayMode(newVal)}
+              onChange={(_, newVal) => {
+                setDisplayMode(newVal)
+              }}
             >
               <ToggleButtonWithTooltip value="grid" title="Grid view">
                 <ViewComfyIcon />
@@ -170,7 +172,9 @@ export default function RecentSessionPanel({
                 value="delete"
                 title="Delete sessions"
                 disabled={!selectedSessions?.length}
-                onClick={() => setSessionsToDelete(selectedSessions)}
+                onClick={() => {
+                  setSessionsToDelete(selectedSessions)
+                }}
               >
                 <DeleteIcon />
               </ToggleButtonWithTooltip>
@@ -190,9 +194,9 @@ export default function RecentSessionPanel({
             control={
               <Checkbox
                 checked={showAutosaves === 'true'}
-                onChange={() =>
+                onChange={() => {
                   setShowAutosaves(showAutosaves === 'true' ? 'false' : 'true')
-                }
+                }}
               />
             }
             label="Show autosaves"
@@ -206,7 +210,7 @@ export default function RecentSessionPanel({
               hidden
               onChange={async ({ target }) => {
                 try {
-                  const file = target?.files?.[0]
+                  const file = target.files?.[0]
                   if (file) {
                     const path = (file as File & { path: string }).path
                     setPluginManager(await loadPluginManager(path))

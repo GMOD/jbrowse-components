@@ -39,7 +39,6 @@ interface ViewStateOptions {
   hydrateFn?: (
     container: Element | Document,
     initialChildren: React.ReactNode,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ) => any
   createRootFn?: (elt: Element | DocumentFragment) => {
     render: (node: React.ReactElement) => unknown
@@ -129,10 +128,7 @@ export default function createViewState(opts: ViewStateOptions) {
                 assemblyName: assembly,
               }
 
-              if (
-                location?.start !== undefined &&
-                location?.end !== undefined
-              ) {
+              if (location.start !== undefined && location.end !== undefined) {
                 session.view.addToHighlights(location)
               }
             }

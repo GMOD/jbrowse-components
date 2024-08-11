@@ -210,7 +210,9 @@ const GetSequenceDialog = observer(function ({
             control={
               <Checkbox
                 value={rev}
-                onChange={event => setReverse(event.target.checked)}
+                onChange={event => {
+                  setReverse(event.target.checked)
+                }}
               />
             }
             label="Reverse sequence"
@@ -219,7 +221,9 @@ const GetSequenceDialog = observer(function ({
             control={
               <Checkbox
                 value={comp}
-                onChange={event => setComplement(event.target.checked)}
+                onChange={event => {
+                  setComplement(event.target.checked)
+                }}
               />
             }
             label="Complement sequence"
@@ -234,7 +238,9 @@ const GetSequenceDialog = observer(function ({
           onClick={() => {
             copy(sequence)
             setCopied(true)
-            setTimeout(() => setCopied(false), 500)
+            setTimeout(() => {
+              setCopied(false)
+            }, 500)
           }}
           disabled={loading || !!error || sequenceTooLarge}
           color="primary"

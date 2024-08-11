@@ -11,7 +11,6 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ImportForm = observer(({ model }: { model: any }) => {
   const { classes } = useStyles()
   const session = getSession(model)
@@ -48,7 +47,7 @@ const ImportForm = observer(({ model }: { model: any }) => {
 
         <Grid item>
           <Button
-            disabled={!regions?.length}
+            disabled={!regions.length}
             onClick={() => {
               model.setError(undefined)
               model.setDisplayedRegions(regions)

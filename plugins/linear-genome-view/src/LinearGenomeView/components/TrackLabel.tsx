@@ -64,28 +64,38 @@ const TrackLabel = observer(
           {
             label: minimized ? 'Restore track' : 'Minimize track',
             icon: minimized ? AddIcon : MinimizeIcon,
-            onClick: () => track.setMinimized(!minimized),
+            onClick: () => {
+              track.setMinimized(!minimized)
+            },
           },
           {
             label: 'Move track to top',
             icon: KeyboardDoubleArrowUpIcon,
-            onClick: () => view.moveTrackToTop(track.id),
+            onClick: () => {
+              view.moveTrackToTop(track.id)
+            },
           },
 
           {
             label: 'Move track up',
             icon: KeyboardArrowUpIcon,
-            onClick: () => view.moveTrackUp(track.id),
+            onClick: () => {
+              view.moveTrackUp(track.id)
+            },
           },
           {
             label: 'Move track down',
             icon: KeyboardArrowDownIcon,
-            onClick: () => view.moveTrackDown(track.id),
+            onClick: () => {
+              view.moveTrackDown(track.id)
+            },
           },
           {
             label: 'Move track to bottom',
             icon: KeyboardDoubleArrowDownIcon,
-            onClick: () => view.moveTrackToBottom(track.id),
+            onClick: () => {
+              view.moveTrackToBottom(track.id)
+            },
           },
         ],
       },

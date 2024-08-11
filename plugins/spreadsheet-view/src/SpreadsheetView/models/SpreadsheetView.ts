@@ -146,7 +146,7 @@ const model = types
       const name = self.spreadsheet?.assemblyName
       if (name) {
         const assemblies = getSession(self).assemblies
-        return assemblies?.find(asm => readConfObject(asm, 'name') === name)
+        return assemblies.find(asm => readConfObject(asm, 'name') === name)
       }
       return undefined
     },
@@ -216,7 +216,6 @@ const model = types
      * #action
      */
     closeView() {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       getParent<any>(self, 2).removeView(self)
     },
   }))
@@ -228,7 +227,9 @@ const model = types
       return [
         {
           label: 'Return to import form',
-          onClick: () => self.setImportMode(),
+          onClick: () => {
+            self.setImportMode()
+          },
           icon: FolderOpenIcon,
         },
       ]

@@ -342,7 +342,6 @@ export default function stateModelFactory(pm: PluginManager) {
        * parent removeView
        */
       closeView() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         getParent<any>(self, 2).removeView(self)
       },
 
@@ -414,7 +413,9 @@ export default function stateModelFactory(pm: PluginManager) {
         const schema = pm.pluggableConfigSchemaType('track')
         const conf = resolveIdentifier(schema, getRoot(self), trackId)
         const t = self.tracks.filter(t => t.configuration === conf)
-        transaction(() => t.forEach(t => self.tracks.remove(t)))
+        transaction(() => {
+          t.forEach(t => self.tracks.remove(t))
+        })
         return t.length
       },
       /**
@@ -692,15 +693,21 @@ export default function stateModelFactory(pm: PluginManager) {
           },
           {
             label: 'Square view - same bp per pixel',
-            onClick: () => self.squareView(),
+            onClick: () => {
+              self.squareView()
+            },
           },
           {
             label: 'Rectangular view - same total bp',
-            onClick: () => self.squareView(),
+            onClick: () => {
+              self.squareView()
+            },
           },
           {
             label: 'Show all regions',
-            onClick: () => self.showAllRegions(),
+            onClick: () => {
+              self.showAllRegions()
+            },
           },
           {
             label: 'Export SVG',

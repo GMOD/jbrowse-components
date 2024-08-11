@@ -93,18 +93,23 @@ export default class PileupRenderer extends BoxRendererType {
     const height = Math.max(layout.getTotalHeight(), 1)
 
     const { makeImageData } = await import('./makeImageData')
-    const res = await renderToAbstractCanvas(width, height, renderProps, ctx =>
-      makeImageData({
-        ctx,
-        layoutRecords: layoutRecords.filter(notEmpty),
-        canvasWidth: width,
-        renderArgs: {
-          ...renderProps,
-          layout,
-          features,
-          regionSequence,
-        },
-      }),
+    const res = await renderToAbstractCanvas(
+      width,
+      height,
+      renderProps,
+      ctx => {
+        makeImageData({
+          ctx,
+          layoutRecords: layoutRecords.filter(notEmpty),
+          canvasWidth: width,
+          renderArgs: {
+            ...renderProps,
+            layout,
+            features,
+            regionSequence,
+          },
+        })
+      },
     )
 
     const results = await super.render({

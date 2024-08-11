@@ -7,7 +7,6 @@ import {
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 
 const BreakpointAlignmentsFeatureDetail = observer(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ({ model }: { model: any }) => {
     const { feature1, feature2 } = JSON.parse(JSON.stringify(model.featureData))
     return (

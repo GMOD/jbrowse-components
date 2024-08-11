@@ -6,7 +6,7 @@ export async function getLocalOrRemoteStream(uri: string, out: string) {
   if (isURL(uri)) {
     const result = await createRemoteStream(uri)
     return {
-      totalBytes: +(result.headers?.get('Content-Length') || 0),
+      totalBytes: +(result.headers.get('Content-Length') || 0),
       stream: result.body,
     }
   } else {

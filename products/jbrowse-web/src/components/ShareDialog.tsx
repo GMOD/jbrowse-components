@@ -115,14 +115,23 @@ const ShareDialog = observer(function ({
         <DialogContent>
           <DialogContentText>
             Copy the URL below to share your current JBrowse session.
-            <IconButton onClick={() => setSettingsDialogOpen(true)}>
+            <IconButton
+              onClick={() => {
+                setSettingsDialogOpen(true)
+              }}
+            >
               <SettingsIcon />
             </IconButton>
           </DialogContentText>
 
           {currentSetting === 'short' ? (
             error ? (
-              <ErrorMessage error={error} onReset={() => setError(undefined)} />
+              <ErrorMessage
+                error={error}
+                onReset={() => {
+                  setError(undefined)
+                }}
+              />
             ) : loading ? (
               <Typography>Generating short URL...</Typography>
             ) : (
@@ -165,7 +174,9 @@ const ShareDialog = observer(function ({
 
       <SettingsDialog
         open={settingsDialogOpen}
-        onClose={() => setSettingsDialogOpen(false)}
+        onClose={() => {
+          setSettingsDialogOpen(false)
+        }}
         currentSetting={currentSetting}
       />
     </>

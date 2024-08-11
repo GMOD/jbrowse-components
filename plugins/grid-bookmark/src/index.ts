@@ -86,7 +86,7 @@ export default class GridBookmarkPlugin extends Plugin {
                 const session = getSession(self)
                 const bookmarkWidget = self.activateBookmarkWidget()
                 const regions = bookmarkWidget.bookmarks
-                if (regions?.length) {
+                if (regions.length) {
                   self.navTo(regions.at(-1)!)
                 } else {
                   session.notify(
@@ -127,21 +127,27 @@ export default class GridBookmarkPlugin extends Plugin {
                         {
                           label: 'Bookmark current region',
                           icon: BookmarkIcon,
-                          onClick: () => self.bookmarkCurrentRegion(),
+                          onClick: () => {
+                            self.bookmarkCurrentRegion()
+                          },
                         },
                         {
                           label: 'Toggle bookmark highlights',
                           icon: HighlightIcon,
                           type: 'checkbox',
                           checked: self.showBookmarkHighlights,
-                          onClick: () => self.toggleShowBookmarkHighlights(),
+                          onClick: () => {
+                            self.toggleShowBookmarkHighlights()
+                          },
                         },
                         {
                           label: 'Toggle bookmark labels',
                           icon: LabelIcon,
                           type: 'checkbox',
                           checked: self.showBookmarkLabels,
-                          onClick: () => self.toggleShowBookmarkLabels(),
+                          onClick: () => {
+                            self.toggleShowBookmarkLabels()
+                          },
                         },
                       ],
                     },

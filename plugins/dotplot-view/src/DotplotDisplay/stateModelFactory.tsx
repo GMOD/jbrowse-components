@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
 import { ThemeOptions } from '@mui/material'
 import { types, Instance } from 'mobx-state-tree'

@@ -34,7 +34,7 @@ const Spreadsheet = observer(function ({
 
   return (
     <div className={classes.root} style={{ height }}>
-      {model?.rowSet?.isLoaded && model.initialized ? (
+      {model.rowSet.isLoaded && model.initialized ? (
         <DataTable model={model} page={page} rowsPerPage={rowsPerPage} />
       ) : (
         <LoadingEllipses variant="h6" />

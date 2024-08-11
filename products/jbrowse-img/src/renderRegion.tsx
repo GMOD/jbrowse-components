@@ -87,7 +87,7 @@ export function readData({
     asm && fs.existsSync(asm) ? read<Assembly>(asm) : undefined
   const tracksData = tracks ? read<Track[]>(tracks) : undefined
   const configData = config ? read<Config>(config) : ({} as Config)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   let sessionData = session ? read<Record<string, any>>(session) : undefined
 
   if (config) {
@@ -111,7 +111,7 @@ export function readData({
     configData.assembly = assemblyData
   }
   // else check if it was an assembly name in a config file
-  else if (configData.assemblies?.length) {
+  else if (configData.assemblies.length) {
     configData.assemblies.find(entry => entry.name === asm)
     if (asm) {
       const assembly = configData.assemblies.find(entry => entry.name === asm)

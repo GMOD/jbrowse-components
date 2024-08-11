@@ -70,9 +70,7 @@ const ImportSessionWidget = observer(function ({
     onDrop: async (acceptedFiles, rejectedFiles) => {
       try {
         if (rejectedFiles.length > 0) {
-          throw new Error(
-            `${rejectedFiles[0].errors.map(e => `${e}`).join(', ')}`,
-          )
+          throw new Error(rejectedFiles[0].errors.map(e => `${e}`).join(', '))
         }
         const sessionText = await acceptedFiles[0].text()
         getSession(model).setSession?.(JSON.parse(sessionText).session)
@@ -84,7 +82,7 @@ const ImportSessionWidget = observer(function ({
   })
 
   // @ts-expect-error
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const { classes } = useStyles({ isDragActive }) as any
 
   return (

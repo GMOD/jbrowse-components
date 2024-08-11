@@ -140,7 +140,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
       }
       statusCallback('')
       observer.complete()
-    }, opts.signal) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }, opts.signal) as any
   }
 
   // don't do feature stats estimation, similar to bigwigadapter

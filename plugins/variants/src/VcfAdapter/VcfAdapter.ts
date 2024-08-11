@@ -104,7 +104,7 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
       try {
         const { start, end, refName } = region
         const { intervalTree } = await this.setup()
-        intervalTree[refName]?.search([start, end]).forEach((f: VcfFeature) => {
+        intervalTree[refName].search([start, end]).forEach((f: VcfFeature) => {
           observer.next(f)
         })
         observer.complete()

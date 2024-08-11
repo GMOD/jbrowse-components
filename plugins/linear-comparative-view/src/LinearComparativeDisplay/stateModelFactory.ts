@@ -96,7 +96,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           const existingFeatures = self.features || []
 
           const featIds = new Set(existingFeatures.map(f => f.id()) || [])
-          const newFeatIds = new Set(features?.map(f => f.id()) || [])
+          const newFeatIds = new Set(features.map(f => f.id()) || [])
 
           let foundNewFeatureNotInExistingMap = false
           let foundExistingFeatureNotInNewMap = false

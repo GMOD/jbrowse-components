@@ -103,7 +103,9 @@ test('Navigate to a bookmark using the embedded link in the widget data grid', a
   })
 
   fireEvent.click(await findByText('ctgA:201..240', {}, delay))
-  await waitFor(() => expect(view.visibleLocStrings).toBe('ctgA:201..240'))
+  await waitFor(() => {
+    expect(view.visibleLocStrings).toBe('ctgA:201..240')
+  })
 }, 40000)
 
 test('Navigate to a bookmark using the hotkey to navigate to the most recently created bookmark', async () => {
@@ -131,7 +133,9 @@ test('Navigate to a bookmark using the hotkey to navigate to the most recently c
     }),
   )
 
-  await waitFor(() => expect(view.visibleLocStrings).toBe('ctgA:201..240'))
+  await waitFor(() => {
+    expect(view.visibleLocStrings).toBe('ctgA:201..240')
+  })
 }, 40000)
 
 test('Edit a bookmark label with a single click on the data grid', async () => {

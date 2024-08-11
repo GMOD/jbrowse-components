@@ -14,7 +14,6 @@ function resolve(uri: string, baseUri: string) {
   return new URL(uri, baseUri).href
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function doConnect(self: any) {
   const session = getSession(self)
   const notLoadedAssemblies = [] as string[]

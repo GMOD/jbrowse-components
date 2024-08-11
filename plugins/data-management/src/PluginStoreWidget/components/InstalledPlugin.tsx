@@ -48,7 +48,7 @@ const InstalledPlugin = observer(function ({
   const session = getSession(model)
   const { jbrowse, adminMode } = session
   const isSessionPlugin = isSessionWithSessionPlugins(session)
-    ? session.sessionPlugins?.some(
+    ? session.sessionPlugins.some(
         p => pluginManager.pluginMetadata[plugin.name].url === p.url,
       )
     : false
@@ -78,7 +78,9 @@ const InstalledPlugin = observer(function ({
         {adminMode || isSessionPlugin ? (
           <IconButton
             data-testid={`removePlugin-${plugin.name}`}
-            onClick={() => setDialogPlugin(plugin.name)}
+            onClick={() => {
+              setDialogPlugin(plugin.name)
+            }}
           >
             <CloseIcon />
           </IconButton>

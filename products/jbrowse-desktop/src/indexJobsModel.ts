@@ -14,7 +14,6 @@ import {
 import { isAbortException, isSessionModelWithWidgets } from '@jbrowse/core/util'
 import path from 'path'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Track = Record<string, any>
 
 interface TrackTextIndexing {
@@ -51,27 +50,21 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
     }))
     .views(self => ({
       get rpcManager() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getParent<any>(self).jbrowse.rpcManager
       },
       get tracks() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getParent<any>(self).jbrowse.tracks
       },
       get sessionPath() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getParent<any>(self).sessionPath
       },
       get session() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getParent<any>(self).session
       },
       get aggregateTextSearchAdapters() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getParent<any>(self).jbrowse.aggregateTextSearchAdapters
       },
       get location() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return path.dirname(getParent<any>(self).sessionPath)
       },
     }))
@@ -300,7 +293,6 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
         // name of index
         const id = `${asm}-index`
         const foundIdx = self.aggregateTextSearchAdapters.findIndex(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (x: any) => x.textSearchAdapterId === id,
         )
         const trixConf = createTextSearchConf(
@@ -320,7 +312,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
           self,
           autorun(
             async () => {
-              if (self.jobsQueue?.length > 0 && self.running === false) {
+              if (self.jobsQueue.length > 0 && !self.running) {
                 await this.runJob()
               }
             },
