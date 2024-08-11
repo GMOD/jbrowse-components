@@ -104,7 +104,7 @@ const OPERATIONS = [
   'does not overlap',
   'not contained within',
   'does not contain',
-]
+] as const
 
 interface Loc {
   start: number
@@ -153,13 +153,16 @@ OPERATION_PREDICATES['does not overlap'] = (
   cellLocation,
   specifiedLocation,
 ) => {
-  return !OPERATION_PREDICATES['overlaps with'](cellLocation, specifiedLocation)
+  return !OPERATION_PREDICATES['overlaps with']!(
+    cellLocation,
+    specifiedLocation,
+  )
 }
 OPERATION_PREDICATES['not contained within'] = (
   cellLocation,
   specifiedLocation,
 ) => {
-  return !OPERATION_PREDICATES['contained within'](
+  return !OPERATION_PREDICATES['contained within']!(
     cellLocation,
     specifiedLocation,
   )
@@ -168,7 +171,7 @@ OPERATION_PREDICATES['does not contain'] = (
   cellLocation,
   specifiedLocation,
 ) => {
-  return !OPERATION_PREDICATES['fully contains'](
+  return !OPERATION_PREDICATES['fully contains']!(
     cellLocation,
     specifiedLocation,
   )
@@ -180,7 +183,7 @@ const FilterModelType = types
     type: types.literal('LocString'),
     columnNumber: types.integer,
     locString: '',
-    operation: types.optional(types.enumeration(OPERATIONS), OPERATIONS[0]),
+    operation: types.optional(types.string, OPERATIONS[0]!),
   })
   .views(self => ({
     get locStringIsInvalid() {

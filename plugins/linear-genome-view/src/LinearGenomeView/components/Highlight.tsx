@@ -26,7 +26,7 @@ const useStyles = makeStyles()(theme => ({
     height: '100%',
     position: 'absolute',
     overflow: 'hidden',
-    background: colord(theme.palette.highlight?.main ?? 'goldenrod')
+    background: colord(theme.palette.highlight.main ?? 'goldenrod')
       .alpha(0.35)
       .toRgbString(),
   },
@@ -42,7 +42,7 @@ const Highlight = observer(function Highlight({
   const { classes } = useStyles()
   const [open, setOpen] = useState(false)
   const anchorEl = useRef(null)
-  const color = useTheme().palette.highlight?.main ?? 'goldenrod'
+  const color = useTheme().palette.highlight.main ?? 'goldenrod'
   const session = getSession(model) as SessionWithWidgets
   const { assemblyManager } = session
 

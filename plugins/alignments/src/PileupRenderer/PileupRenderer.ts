@@ -53,7 +53,7 @@ export default class PileupRenderer extends BoxRendererType {
     }
     const pm = this.pluginManager
     const { dataAdapter } = await getAdapter(pm, sessionId, sequenceAdapter)
-    const [region] = regions
+    const region = regions[0]!
     return fetchSequence(region, dataAdapter as BaseFeatureDataAdapter)
   }
 
@@ -75,7 +75,7 @@ export default class PileupRenderer extends BoxRendererType {
     const features = await this.getFeatures(renderProps)
     const layout = this.createLayoutInWorker(renderProps)
     const { regions, bpPerPx } = renderProps
-    const [region] = regions
+    const region = regions[0]!
 
     const layoutRecords = layoutFeats({
       ...renderProps,

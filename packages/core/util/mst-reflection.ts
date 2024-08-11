@@ -70,7 +70,7 @@ export function getPropertyType(
   type: IModelReflectionPropertiesData,
   propertyName: string,
 ) {
-  return type.properties[propertyName]
+  return type.properties[propertyName]!
 }
 
 /**

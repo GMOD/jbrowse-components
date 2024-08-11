@@ -19,11 +19,11 @@ const useStyles = makeStyles()(theme => ({
   highlight: {
     height: '100%',
     position: 'absolute',
-    background: colord(theme.palette.highlight?.main ?? 'goldenrod')
+    background: colord(theme.palette.highlight.main ?? 'goldenrod')
       .alpha(0.35)
       .toRgbString(),
-    borderLeft: `1px solid ${theme.palette.highlight?.main ?? 'goldenrod'}`,
-    borderRight: `1px solid ${theme.palette.highlight?.main ?? 'goldenrod'}`,
+    borderLeft: `1px solid ${theme.palette.highlight.main ?? 'goldenrod'}`,
+    borderRight: `1px solid ${theme.palette.highlight.main ?? 'goldenrod'}`,
   },
 }))
 

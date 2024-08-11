@@ -20,7 +20,7 @@ function AnnPanel({
 }) {
   const annDesc = descriptions.INFO?.ANN?.Description
   const annFields =
-    annDesc?.match(/.*Functional annotations:'(.*)'$/)?.[1].split('|') || []
+    annDesc?.match(/.*Functional annotations:'(.*)'$/)?.[1]?.split('|') || []
   const ann = feature.INFO?.ANN || []
   return (
     <VariantAnnotationTable
@@ -40,7 +40,7 @@ function CsqPanel({
 }) {
   const csqDescription = descriptions.INFO?.CSQ?.Description
   const csqFields =
-    csqDescription?.match(/.*Format: (.*)/)?.[1].split('|') || []
+    csqDescription?.match(/.*Format: (.*)/)?.[1]?.split('|') || []
   const csq = feature.INFO?.CSQ || []
   return (
     <VariantAnnotationTable

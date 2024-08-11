@@ -478,10 +478,10 @@ export default function SharedWiggleMixin(
             subMenu: [
               ['local', 'Local'],
               ...(self.hasGlobalStats
-                ? [
+                ? ([
                     ['global', 'Global'],
                     ['globalsd', 'Global ± 3σ'],
-                  ]
+                  ] as const)
                 : []),
               ['localsd', 'Local ± 3σ'],
             ].map(([val, label]) => ({

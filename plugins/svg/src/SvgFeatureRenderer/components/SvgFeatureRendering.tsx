@@ -239,7 +239,7 @@ const SvgFeatureRendering = observer(function SvgFeatureRendering(props: {
     onClick,
   } = props
 
-  const [region] = regions
+  const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
   const displayMode = readConfObject(config, 'displayMode') as string
   const maxConfHeight = readConfObject(config, 'maxHeight') as number

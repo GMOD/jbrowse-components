@@ -43,10 +43,12 @@ export function getSOTermAndDescription(
   if (descriptions.size > 1) {
     const descs = [...descriptions]
     const prefixes = new Set(
-      descs.map(desc => {
-        const prefix = desc.split('->')
-        return prefix[1] ? prefix[0] : desc
-      }),
+      descs
+        .map(desc => {
+          const prefix = desc.split('->')
+          return prefix[1] ? prefix[0] : desc
+        })
+        .filter((f): f is string => !!f),
     )
 
     descriptions = new Set(

@@ -140,7 +140,7 @@ xtest('delete connection', async () => {
 
   const deleteButtons = await findAllByTestId('delete-connection')
   expect(deleteButtons.length).toBe(2)
-  fireEvent.click(deleteButtons[0])
+  fireEvent.click(deleteButtons[0]!)
   fireEvent.click(await findByText('OK'))
   expect((await findAllByTestId('delete-connection')).length).toBe(1)
 })

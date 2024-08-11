@@ -35,7 +35,7 @@ export function renderMismatches({
 }) {
   const { bpPerPx, regions } = renderArgs
   const { heightPx, topPx, feature } = feat
-  const [region] = regions
+  const region = regions[0]!
   const start = feature.get('start')
 
   const pxPerBp = Math.min(1 / bpPerPx, 2)

@@ -83,7 +83,7 @@ export default function VariantSamples(props: {
           ? filters.every(key => {
               const currFilter = filter[key]
               return currFilter
-                ? new RegExp(currFilter, 'i').exec(row[key])
+                ? new RegExp(currFilter, 'i').exec(row[key]!)
                 : true
             })
           : true,

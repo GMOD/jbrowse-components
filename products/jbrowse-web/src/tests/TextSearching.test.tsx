@@ -58,7 +58,7 @@ test('test navigation with the search input box, {volvox2}ctgB:1..200', async ()
   fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' })
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
   await waitFor(() => {
-    expect(view.displayedRegions[0].assemblyName).toEqual('volvox2')
+    expect(view.displayedRegions[0]!.assemblyName).toEqual('volvox2')
   })
 }, 30000)
 
@@ -68,7 +68,7 @@ test('nav lower case refnames, searching: ctgb:1-100', async () => {
   fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' })
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
   await waitFor(() => {
-    expect(view.displayedRegions[0].refName).toBe('ctgB')
+    expect(view.displayedRegions[0]!.refName).toBe('ctgB')
   })
 }, 30000)
 
@@ -79,7 +79,7 @@ test('nav lower case refnames, searching: ctgb', async () => {
   fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' })
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
   await waitFor(() => {
-    expect(view.displayedRegions[0].refName).toBe('ctgB')
+    expect(view.displayedRegions[0]!.refName).toBe('ctgB')
   })
 }, 30000)
 
@@ -90,7 +90,7 @@ test('nav lower case refnames, searching: contigb:1-100', async () => {
   fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' })
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
   await waitFor(() => {
-    expect(view.displayedRegions[0].refName).toBe('ctgB')
+    expect(view.displayedRegions[0]!.refName).toBe('ctgB')
   })
 }, 30000)
 

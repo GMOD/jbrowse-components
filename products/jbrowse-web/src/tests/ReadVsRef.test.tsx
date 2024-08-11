@@ -20,9 +20,9 @@ test('launch read vs ref panel', async () => {
   )
 
   const track = await findAllByTestId('pileup-overlay', {}, delay)
-  fireEvent.mouseMove(track[0], { clientX: 200, clientY: 20 })
-  fireEvent.click(track[0], { clientX: 200, clientY: 40 })
-  fireEvent.contextMenu(track[0], { clientX: 200, clientY: 20 })
+  fireEvent.mouseMove(track[0]!, { clientX: 200, clientY: 20 })
+  fireEvent.click(track[0]!, { clientX: 200, clientY: 40 })
+  fireEvent.contextMenu(track[0]!, { clientX: 200, clientY: 20 })
   fireEvent.click(await findByText('Linear read vs ref', {}, delay))
   const elt = await findByText('Submit')
 
@@ -44,9 +44,9 @@ test('launch read vs ref dotplot', async () => {
   )
 
   const track = await findAllByTestId('pileup-overlay', {}, delay)
-  fireEvent.mouseMove(track[0], { clientX: 200, clientY: 20 })
-  fireEvent.click(track[0], { clientX: 200, clientY: 40 })
-  fireEvent.contextMenu(track[0], { clientX: 200, clientY: 20 })
+  fireEvent.mouseMove(track[0]!, { clientX: 200, clientY: 20 })
+  fireEvent.click(track[0]!, { clientX: 200, clientY: 40 })
+  fireEvent.contextMenu(track[0]!, { clientX: 200, clientY: 20 })
   fireEvent.click(await findByText('Dotplot of read vs ref', {}, delay))
   expectCanvasMatch(await findByTestId('prerendered_canvas_done', {}, delay))
 }, 40000)

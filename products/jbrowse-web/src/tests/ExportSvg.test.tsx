@@ -192,7 +192,7 @@ test('export svg of synteny', async () => {
     })
 
     fireEvent.click(await findByTestId('view_menu_icon', ...opts))
-    fireEvent.click((await findAllByText('Export SVG', ...opts))[0])
+    fireEvent.click((await findAllByText('Export SVG', ...opts))[0]!)
     fireEvent.click(await findByText('Submit', ...opts))
 
     await waitFor(() => {

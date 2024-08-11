@@ -120,7 +120,7 @@ export function readData({
       }
       configData.assembly = assembly
     } else {
-      configData.assembly = configData.assemblies[0]
+      configData.assembly = configData.assemblies[0]!
     }
   }
   // else load fasta from command line
@@ -175,6 +175,9 @@ export function readData({
     const [type, opts] = track
     const [file, ...rest] = opts
     const index = rest.find(r => r.startsWith('index:'))?.replace('index:', '')
+    if (!file) {
+      throw new Error('no file specified')
+    }
 
     if (type === 'bam') {
       configData.tracks = [
@@ -360,13 +363,18 @@ function process(
   extra: (arg: string) => string = c => c,
 ) {
   const [, [track, ...opts]] = trackEntry
+  if (!track) {
+    throw new Error('invalid command line args')
+  }
   const currentTrack = view.showTrack(extra(track))
   const display = currentTrack.displays[0]
   opts.forEach(opt => {
     // apply height to any track
     if (opt.startsWith('height:')) {
       const [, height] = opt.split(':')
-      display.setHeight(+height)
+      if (height) {
+        display.setHeight(+height)
+      }
     }
 
     // apply sort to pileup
@@ -402,8 +410,12 @@ function process(
     // apply min and max score to wiggle
     else if (opt.startsWith('minmax:')) {
       const [, min, max] = opt.split(':')
-      display.setMinScore(+min)
-      display.setMaxScore(+max)
+      if (min) {
+        display.setMinScore(+min)
+      }
+      if (max) {
+        display.setMaxScore(+max)
+      }
     }
 
     // apply linear or log scale to wiggle
@@ -414,19 +426,19 @@ function process(
 
     // draw crosshatches on wiggle
     else if (opt.startsWith('crosshatch:')) {
-      const [, val] = opt.split(':')
+      const [, val = 'false'] = opt.split(':')
       display.setCrossHatches(booleanize(val))
     }
 
     // turn off fill on bigwig with fill:false
     else if (opt.startsWith('fill:')) {
-      const [, val] = opt.split(':')
+      const [, val = 'true'] = opt.split(':')
       display.setFill(booleanize(val))
     }
 
     // set resolution:superfine to use finer bigwig bin size
     else if (opt.startsWith('resolution:')) {
-      let [, val] = opt.split(':')
+      let [, val = 1] = opt.split(':')
       if (val === 'fine') {
         val = '10'
       } else if (val === 'superfine') {
@@ -457,11 +469,11 @@ export async function renderRegion(opts: Opts) {
   view.setWidth(width)
 
   if (loc) {
-    const [assembly] = assemblyManager.assemblies
+    const { name } = assemblyManager.assemblies[0]!
     if (loc === 'all') {
-      view.showAllRegionsInAssembly(assembly.name)
+      view.showAllRegionsInAssembly(name)
     } else {
-      await view.navToLocString(loc, assembly.name)
+      await view.navToLocString(loc, name)
     }
   } else if (!sessionParam && !defaultSession) {
     console.warn('No loc specified')

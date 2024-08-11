@@ -569,7 +569,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
     let locationUrl: URL | undefined
     const destination = this.target
     try {
-      locationUrl = new URL(filePaths[0])
+      locationUrl = new URL(filePaths[0]!)
     } catch (error) {
       // ignore
     }

@@ -307,7 +307,7 @@ export default class AddTrack extends JBrowseCommand {
     trackType = trackType || this.guessTrackType(adapter.type)
     trackId = trackId || path.basename(location, path.extname(location))
     name = name || trackId
-    assemblyNames = assemblyNames || configContents.assemblies[0].name
+    assemblyNames = assemblyNames || configContents.assemblies[0]?.name || ''
 
     const configObj = config ? parseJSON(config) : {}
     const trackConfig: Track = {

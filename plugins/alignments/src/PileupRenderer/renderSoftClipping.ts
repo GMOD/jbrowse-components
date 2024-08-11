@@ -29,7 +29,7 @@ export function renderSoftClipping({
 }) {
   const { feature, topPx, heightPx } = feat
   const { regions, bpPerPx } = renderArgs
-  const [region] = regions
+  const region = regions[0]!
   const minFeatWidth = readConfObject(config, 'minSubfeatureWidth')
   const mismatches = feature.get('mismatches') as Mismatch[] | undefined
   const seq = feature.get('seq') as string | undefined

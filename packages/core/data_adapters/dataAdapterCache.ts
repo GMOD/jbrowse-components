@@ -18,19 +18,22 @@ interface AdapterCacheEntry {
 let adapterCache: Record<string, AdapterCacheEntry> = {}
 
 /**
- * instantiate a data adapter, or return an already-instantiated one if we have one with the same
- * configuration
+ * instantiate a data adapter, or return an already-instantiated one if we have
+ * one with the same configuration
  *
- * @param pluginManager -
- * @param sessionId - session ID of the associated worker session.
- *   used for reference counting
- * @param adapterConfigSnapshot - plain-JS configuration snapshot for the adapter
+ * @param pluginManager
+ *
+ * @param sessionId - session ID of the associated worker session. used for
+ * reference counting
+ *
+ * @param adapterConfigSnapshot - plain-JS configuration snapshot for the
+ * adapter
  */
 export async function getAdapter(
   pluginManager: PluginManager,
   sessionId: string,
   adapterConfigSnapshot: SnapshotIn<AnyConfigurationSchemaType>,
-) {
+): Promise<AdapterCacheEntry> {
   // cache the adapter object
   const cacheKey = adapterConfigCacheKey(adapterConfigSnapshot)
   if (!adapterCache[cacheKey]) {
@@ -77,7 +80,7 @@ export async function getAdapter(
     }
   }
 
-  const cacheEntry = adapterCache[cacheKey]
+  const cacheEntry = adapterCache[cacheKey]!
   cacheEntry.sessionIds.add(sessionId)
 
   return cacheEntry

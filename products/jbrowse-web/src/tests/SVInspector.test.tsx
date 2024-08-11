@@ -35,7 +35,7 @@ test(
 
       // confirm breakpoint split view opened
       expect(session.views.length).toBe(3)
-      expect(session.views[2].displayName).toBe('bnd_A split detail')
+      expect(session.views[2]!.displayName).toBe('bnd_A split detail')
 
       consoleMock.mockRestore()
     }),

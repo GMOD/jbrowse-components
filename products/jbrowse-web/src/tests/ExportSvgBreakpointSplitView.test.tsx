@@ -28,7 +28,7 @@ test('export svg of breakpoint split view', async () => {
   await new Promise(resolve => setTimeout(resolve, 10000))
 
   fireEvent.click(await findByTestId('view_menu_icon'))
-  fireEvent.click((await findAllByText('Export SVG'))[0])
+  fireEvent.click((await findAllByText('Export SVG'))[0]!)
   fireEvent.click(await findByText('Submit'))
 
   await waitFor(() => {

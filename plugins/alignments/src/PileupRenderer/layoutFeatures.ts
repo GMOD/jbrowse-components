@@ -12,7 +12,7 @@ export function layoutFeats(
 ) {
   const { layout, features, sortedBy, config, bpPerPx, showSoftClip, regions } =
     props
-  const [region] = regions
+  const region = regions[0]!
   if (!layout) {
     throw new Error('layout required')
   }

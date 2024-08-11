@@ -38,26 +38,27 @@ function isBlank(location: FileLocation) {
   return 'uri' in location && location.uri === ''
 }
 
+const adapterTypes = [
+  'IndexedFastaAdapter',
+  'BgzipFastaAdapter',
+  'FastaAdapter',
+  'TwoBitAdapter',
+]
+
 const OpenSequenceDialog = ({
   onClose,
 }: {
   onClose: (conf?: unknown) => Promise<void>
 }) => {
   const { classes } = useStyles()
-
-  const adapterTypes = [
-    'IndexedFastaAdapter',
-    'BgzipFastaAdapter',
-    'FastaAdapter',
-    'TwoBitAdapter',
-  ]
   type AssemblyConf = Awaited<ReturnType<typeof createAssemblyConfig>>
+
   const [assemblyConfs, setAssemblyConfs] = useState<AssemblyConf[]>([])
   const [error, setError] = useState<unknown>()
   const [assemblyName, setAssemblyName] = useState('')
   const [assemblyDisplayName, setAssemblyDisplayName] = useState('')
   const [loading, setLoading] = useState('')
-  const [adapterSelection, setAdapterSelection] = useState(adapterTypes[0])
+  const [adapterSelection, setAdapterSelection] = useState(adapterTypes[0]!)
   const [fastaLocation, setFastaLocation] = useState(blank)
   const [faiLocation, setFaiLocation] = useState(blank)
   const [gziLocation, setGziLocation] = useState(blank)

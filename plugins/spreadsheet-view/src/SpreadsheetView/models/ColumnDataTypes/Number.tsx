@@ -38,7 +38,7 @@ OPERATION_PREDICATES['not between'] = (
   firstNumber,
   secondNumber,
 ) => {
-  return !OPERATION_PREDICATES.between(numberInCell, firstNumber, secondNumber)
+  return !OPERATION_PREDICATES.between!(numberInCell, firstNumber, secondNumber)
 }
 
 const useStyles = makeStyles()({
@@ -115,7 +115,7 @@ const FilterModelType = types
     columnNumber: types.integer,
     firstNumber: types.maybe(types.number),
     secondNumber: types.maybe(types.number),
-    operation: types.optional(types.enumeration(OPERATIONS), OPERATIONS[0]),
+    operation: types.optional(types.enumeration(OPERATIONS), OPERATIONS[0]!),
   })
   .views(self => ({
     // returns a function that tests the given row

@@ -207,17 +207,20 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
           }
           // remove from the queue and add to finished/completed jobs
           const current = this.dequeueJob()
-          current && this.addFinishedJob(current)
-          if (isSessionModelWithWidgets(session)) {
-            const jobStatusWidget = self.getJobStatusWidget()
-            session.showWidget(jobStatusWidget)
-            const { name, statusMessage, progressPct, cancelCallback } = current
-            jobStatusWidget.addFinishedJob({
-              name,
-              statusMessage: statusMessage || 'done',
-              progressPct: progressPct || 100,
-              cancelCallback,
-            })
+          if (current) {
+            this.addFinishedJob(current)
+            if (isSessionModelWithWidgets(session)) {
+              const jobStatusWidget = self.getJobStatusWidget()
+              session.showWidget(jobStatusWidget)
+              const { name, statusMessage, progressPct, cancelCallback } =
+                current
+              jobStatusWidget.addFinishedJob({
+                name,
+                statusMessage: statusMessage || 'done',
+                progressPct: progressPct || 100,
+                cancelCallback,
+              })
+            }
           }
         } catch (e) {
           if (isAbortException(e)) {
@@ -244,7 +247,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
       async runJob() {
         const { session } = self
         if (self.jobsQueue.length) {
-          const firstIndexingJob = self.jobsQueue[0]
+          const firstIndexingJob = self.jobsQueue[0]!
           if (isSessionModelWithWidgets(session)) {
             const jobStatusWidget = self.getJobStatusWidget()
             session.showWidget(jobStatusWidget)

@@ -2,8 +2,8 @@ import { parseTsvBuffer, ParseOptions } from './ImportUtils'
 
 function parseSTARFusionBreakpointString(str: string) {
   const fields = str.split(':')
-  const refName = fields[0]
-  const pos = Number.parseInt(fields[1], 10)
+  const refName = fields[0]!
+  const pos = Number.parseInt(fields[1]!, 10)
   const strand = fields[2] === '-' ? -1 : 1
   return { refName, pos, strand }
 }
@@ -28,7 +28,7 @@ export async function parseSTARFusionBuffer(
   })
 
   // remove the # in #FusionName
-  data.columns[0].name = data.columns[0].name.replace('#', '')
+  data.columns[0]!.name = data.columns[0]!.name.replace('#', '')
   // set some columns to be numeric
   data.columns.forEach(col => {
     if (numericColumns[col.name]) {
@@ -40,7 +40,7 @@ export async function parseSTARFusionBuffer(
   data.rowSet.rows.forEach((row, rowNumber) => {
     const featureData: Record<string, any> = {}
     row.cells.forEach(({ text }, columnNumber) => {
-      const column = data.columns[columnNumber]
+      const column = data.columns[columnNumber]!
       if (column.name === 'LeftBreakpoint' && text) {
         const { refName, pos, strand } = parseSTARFusionBreakpointString(text)
         featureData.refName = refName

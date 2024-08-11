@@ -83,7 +83,7 @@ const LollipopRendering = observer(function (props: Record<string, any>) {
     displayModel = {},
   } = props
   const { selectedFeatureId } = displayModel
-  const [region] = regions
+  const region = regions[0]!
   for (const feature of features.values()) {
     layoutFeat({
       feature,

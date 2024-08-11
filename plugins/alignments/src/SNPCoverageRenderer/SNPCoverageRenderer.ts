@@ -55,7 +55,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       ticks,
     } = props
     const theme = createJBrowseTheme(configTheme)
-    const [region] = regions
+    const region = regions[0]!
     const width = (region.end - region.start) / bpPerPx
 
     // the adjusted height takes into account YSCALEBAR_LABEL_OFFSET from the

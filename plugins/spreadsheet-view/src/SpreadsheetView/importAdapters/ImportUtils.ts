@@ -46,7 +46,7 @@ function guessColumnType(
   columnNumber: number,
   isValidRefName: (refName: string, assemblyName?: string) => boolean,
 ) {
-  const text = rowSet.rows[0].cells[columnNumber].text || ''
+  const text = rowSet.rows[0]!.cells[columnNumber]!.text || ''
 
   let guessedType = 'Text'
 
@@ -119,13 +119,13 @@ function dataToSpreadsheetSnapshot(
     // store extendeddata for LocString column
     if (guessedType === 'LocString') {
       for (const row of rowSet.rows) {
-        const cell = row.cells[columnNumber]
+        const cell = row.cells[columnNumber]!
         cell.extendedData = parseLocString(cell.text, isValidRefName)
       }
     }
 
     columns[columnNumber] = {
-      name: columnNames[columnNumber],
+      name: columnNames[columnNumber]!,
       dataType: {
         type: guessedType,
       },

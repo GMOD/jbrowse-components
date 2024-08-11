@@ -479,7 +479,7 @@ ipcMain.handle(
       .filter((f): f is number => f !== undefined)
 
     for (let i = indices.length - 1; i >= 0; i--) {
-      sessions.splice(indices[i], 1)
+      sessions.splice(indices[i]!, 1)
     }
 
     await Promise.all([
@@ -505,7 +505,7 @@ ipcMain.handle(
     const session = parseJson(await readFile(path, 'utf8'))
     const idx = sessions.findIndex(row => row.path === path)
     if (idx !== -1) {
-      sessions[idx].name = newName
+      sessions[idx]!.name = newName
       session.defaultSession.name = newName
     } else {
       throw new Error(`Session at ${path} not found`)

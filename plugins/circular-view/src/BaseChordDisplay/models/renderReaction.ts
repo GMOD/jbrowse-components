@@ -13,7 +13,7 @@ export function renderReactionData(self: any) {
     rpcManager,
     renderProps: self.renderProps(),
     renderArgs: {
-      assemblyName: view.displayedRegions[0]?.assemblyName,
+      assemblyName: view.displayedRegions[0].assemblyName,
       adapterConfig: clone(self.adapterConfig),
       rendererType: rendererType.name,
       regions: clone(view.displayedRegions),

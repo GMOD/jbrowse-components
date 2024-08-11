@@ -69,14 +69,17 @@ export function parseVcfBuffer(buffer: Buffer, options: ParseOptions = {}) {
   for (let i = 0; i < vcfCoreColumns.length; i += 1) {
     columnDisplayOrder.push(i)
     columns[i] = {
-      name: vcfCoreColumns[i].name,
-      dataType: { type: vcfCoreColumns[i].type },
+      name: vcfCoreColumns[i]!.name,
+      dataType: { type: vcfCoreColumns[i]!.type },
     }
   }
   for (let i = 0; i < vcfParser.samples.length; i += 1) {
     const oi = vcfCoreColumns.length + i
     columnDisplayOrder.push(oi)
-    columns[oi] = { name: vcfParser.samples[i], dataType: { type: 'Text' } }
+    columns[oi] = {
+      name: vcfParser.samples[i]!,
+      dataType: { type: 'Text' },
+    }
   }
 
   columnDisplayOrder.push(columnDisplayOrder.length)

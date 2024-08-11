@@ -354,6 +354,7 @@ export default class TextIndex extends JBrowseCommand {
 
     if (fileId?.length) {
       for (let i = 0; i < fileId.length; i++) {
+        // @ts-expect-error
         trackConfigs[i].trackId = fileId[i]
       }
     }
@@ -361,7 +362,7 @@ export default class TextIndex extends JBrowseCommand {
     await this.indexDriver({
       trackConfigs,
       outLocation: outFlag,
-      name: trackConfigs.length > 1 ? 'aggregate' : path.basename(file[0]),
+      name: trackConfigs.length > 1 ? 'aggregate' : path.basename(file[0]!),
       quiet,
       attributes: attributes.split(','),
       typesToExclude: exclude.split(','),

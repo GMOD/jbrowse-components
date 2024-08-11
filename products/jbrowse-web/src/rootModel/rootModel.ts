@@ -438,7 +438,7 @@ export default function RootModel({
                   const widget = session.addWidget(
                     'AddTrackWidget',
                     'addTrackWidget',
-                    { view: session.views[0].id },
+                    { view: session.views[0]!.id },
                   )
                   session.showWidget(widget)
                   if (session.views.length > 1) {

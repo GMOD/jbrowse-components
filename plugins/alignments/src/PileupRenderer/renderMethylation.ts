@@ -48,8 +48,8 @@ export function renderMethylation({
   }
   for (let i = 0; i < fend - fstart; i++) {
     const j = i + fstart
-    const l1 = regionSequence[j - region.start + 1]?.toLowerCase()
-    const l2 = regionSequence[j - region.start + 2]?.toLowerCase()
+    const l1 = regionSequence[j - region.start + 1].toLowerCase()
+    const l2 = regionSequence[j - region.start + 2].toLowerCase()
 
     if (l1 === 'c' && l2 === 'g') {
       if (bpPerPx > 2) {

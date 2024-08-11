@@ -226,7 +226,7 @@ const ArcRendering = observer(function ({
   onFeatureClick: (event: React.MouseEvent, featureId: string) => void
   exportSVG: boolean
 }) {
-  const [region] = regions
+  const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
   const semicircles = readConfObject(config, 'displayMode') === 'semicircles'
 

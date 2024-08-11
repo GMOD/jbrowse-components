@@ -41,7 +41,7 @@ function SourcesGrid({
   const { classes } = useStyles()
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const [selected, setSelected] = useState([] as string[])
-  const { name: _name, color: _color, baseUri: _baseUri, ...rest } = rows[0]
+  const { name: _name, color: _color, baseUri: _baseUri, ...rest } = rows[0]!
   const [widgetColor, setWidgetColor] = useState('blue')
   const [currSort, setCurrSort] = useState<SortField>({
     idx: 0,
@@ -175,7 +175,7 @@ function SourcesGrid({
             // thing since we are controlling sort instead of the default data
             // grid sort anyways
             const idx = (currSort.idx + 1) % 2
-            const field = sort.field || currSort.field
+            const field = sort!.field || currSort.field
             setCurrSort({ idx, field })
             onChange(
               field

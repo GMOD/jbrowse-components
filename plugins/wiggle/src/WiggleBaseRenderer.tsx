@@ -38,7 +38,7 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
   async render(renderProps: RenderArgsDeserialized) {
     const features = await this.getFeatures(renderProps)
     const { height, regions, bpPerPx } = renderProps
-    const [region] = regions
+    const region = regions[0]!!
     const width = (region.end - region.start) / bpPerPx
 
     // @ts-expect-error

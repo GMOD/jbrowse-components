@@ -28,7 +28,7 @@ import { readSessionFromDynamo } from '../../sessionSharing'
 
 const useStyles = makeStyles()(theme => ({
   expandIcon: {
-    color: theme.palette.tertiary?.contrastText || '#fff',
+    color: theme.palette.tertiary.contrastText || '#fff',
   },
   minWidth: {
     minWidth: 500,

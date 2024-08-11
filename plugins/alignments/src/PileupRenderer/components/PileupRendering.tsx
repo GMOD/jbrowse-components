@@ -43,7 +43,7 @@ const PileupRendering = observer(function (props: {
     setFirstRender(true)
   }, [])
 
-  const [region] = regions
+  const region = regions[0]!
   let selected = undefined as Rect | undefined
   let highlight = undefined as Rect | undefined
   const ref = useRef<HTMLDivElement>(null)

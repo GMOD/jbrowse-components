@@ -68,7 +68,7 @@ test('set jexl filters on bam pileup display', async () => {
   const user = userEvent.setup()
   await user.click(await screen.findByTestId(hts('volvox_bam'), ...opts))
   await user.click(await screen.findByTestId('track_menu_icon', ...opts))
-  await user.click((await screen.findAllByText('Pileup display'))[1])
+  await user.click((await screen.findAllByText('Pileup display'))[1]!)
 
   const filter = [`jexl:get(feature,'end')==40005`]
   view.tracks[0].displays[0].setJexlFilters(filter)

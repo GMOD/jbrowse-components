@@ -13,6 +13,7 @@ function bytesAreFoundAt(position: number, buffer: Buffer, bytes: number[]) {
   }
   return true
 }
+
 export function removeBedHeaders(buffer: Buffer) {
   // slice off the first lines of the buffer if it starts with one or more
   // header lines
@@ -41,6 +42,7 @@ export function removeBedHeaders(buffer: Buffer) {
 export async function parseBedBuffer(buffer: Buffer, options: ParseOptions) {
   const b = removeBedHeaders(buffer)
   const data = await parseTsvBuffer(b)
+
   const bedColumns = [
     { name: 'chrom', dataType: { type: 'LocRef' } },
     { name: 'chromStart', dataType: { type: 'LocStart' } },
@@ -48,7 +50,8 @@ export async function parseBedBuffer(buffer: Buffer, options: ParseOptions) {
     { name: 'name', dataType: { type: 'Text' } },
     { name: 'score', dataType: { type: 'Number' } },
     { name: 'strand', dataType: { type: 'Text' } },
-  ]
+  ] as const
+
   data.columns.forEach((col, colNumber) => {
     const bedColumn = bedColumns[colNumber]
     if (bedColumn) {
@@ -107,7 +110,7 @@ export async function parseBedPEBuffer(buffer: Buffer, options: ParseOptions) {
       dataType: { type: 'Text' },
       featureField: ['mate', 'strand'],
     },
-  ]
+  ] as const
   data.columns.forEach((col, colNumber) => {
     const bedColumn = bedColumns[colNumber]
     if (bedColumn) {
@@ -129,13 +132,13 @@ export async function parseBedPEBuffer(buffer: Buffer, options: ParseOptions) {
       if (bedColumn) {
         // a predefined column
         if (bedColumn.featureField.length === 2) {
-          if (!featureData[bedColumn.featureField[0]]) {
-            featureData[bedColumn.featureField[0]] = {}
+          if (!featureData[bedColumn.featureField[0]!]) {
+            featureData[bedColumn.featureField[0]!] = {}
           }
-          featureData[bedColumn.featureField[0]][bedColumn.featureField[1]] =
+          featureData[bedColumn.featureField[0]!][bedColumn.featureField[1]!] =
             val
         } else {
-          featureData[bedColumn.featureField[0]] = val
+          featureData[bedColumn.featureField[0]!] = val
         }
       } else {
         // some other column
