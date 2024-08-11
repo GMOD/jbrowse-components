@@ -140,13 +140,10 @@ export class ElidedBlock extends BaseBlock {
 
   push(otherBlock: ElidedBlock) {
     this.elidedBlockCount += 1
-
-    if (otherBlock) {
-      this.refName = ''
-      this.start = 0
-      this.end = 0
-      this.widthPx += otherBlock.widthPx
-    }
+    this.refName = ''
+    this.start = 0
+    this.end = 0
+    this.widthPx += otherBlock.widthPx
   }
 }
 

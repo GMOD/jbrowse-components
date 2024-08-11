@@ -496,6 +496,7 @@ export function isRetryException(exception: Error): boolean {
   return (
     // DOMException
     exception.name === 'RetryError' ||
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     (exception as RetryError).internetAccountId !== undefined
   )
 }

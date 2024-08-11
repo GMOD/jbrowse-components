@@ -9,6 +9,10 @@ import globals from 'globals'
 export default tseslint.config(
   {
     ignores: [
+      '**/build/**/*',
+      '**/dist/**/*',
+      '**/esm/**/*',
+      '**/public/**/*',
       'website/*',
       'packages/core/util/nanoid.js',
       'products/**/webpack.config.js',
@@ -61,22 +65,11 @@ export default tseslint.config(
     plugins: {
       'react-refresh': eslintPluginReactRefresh,
     },
-    rules: {
-      'react-refresh/only-export-components': 'warn',
-    },
+    rules: {},
   },
   {
     rules: {
-      'react/prop-types': 'off',
       'no-empty': 'off',
-      '@typescript-eslint/no-unused-vars': [
-        'warn',
-        {
-          argsIgnorePattern: '^_',
-          ignoreRestSiblings: true,
-          caughtErrors: 'none',
-        },
-      ],
       'no-console': [
         'warn',
         {
@@ -85,12 +78,12 @@ export default tseslint.config(
       ],
       'no-underscore-dangle': 'off',
       curly: 'error',
-      '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/explicit-module-boundary-types': 'off',
-      '@typescript-eslint/ban-ts-comment': 'off',
-      '@typescript-eslint/no-unnecessary-type-parameters': 'off',
-      'react/no-unescaped-entities': 'off',
       semi: ['error', 'never'],
+
+      'react-refresh/only-export-components': 'warn',
+      'react/no-unescaped-entities': 'off',
+      'react/prop-types': 'off',
+
       'unicorn/prefer-structured-clone': 'off',
       'unicorn/no-new-array': 'off',
       'unicorn/no-empty-file': 'off',
@@ -135,6 +128,11 @@ export default tseslint.config(
       'unicorn/prefer-at': 'off',
       'unicorn/prefer-string-replace-all': 'off',
       'unicorn/no-array-reduce': 'off',
+
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
+      '@typescript-eslint/ban-ts-comment': 'off',
+      '@typescript-eslint/no-unnecessary-type-parameters': 'off',
       '@typescript-eslint/no-misused-promises': 'off',
       '@typescript-eslint/no-base-to-string': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
@@ -151,6 +149,14 @@ export default tseslint.config(
       '@typescript-eslint/no-extraneous-class': 'off',
       '@typescript-eslint/unbound-method': 'off',
       '@typescript-eslint/no-dynamic-delete': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          ignoreRestSiblings: true,
+          caughtErrors: 'none',
+        },
+      ],
     },
   },
   {

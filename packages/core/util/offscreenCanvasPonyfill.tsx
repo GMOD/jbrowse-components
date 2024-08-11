@@ -37,25 +37,20 @@ const weHave = {
 if (weHave.realOffscreenCanvas) {
   createCanvas = (width, height) => new OffscreenCanvas(width, height)
 
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   createImageBitmap = window.createImageBitmap || self.createImageBitmap
 
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   ImageBitmapType = window.ImageBitmap || self.ImageBitmap
 } else if (weHave.node) {
   // use node-canvas if we are running in node (i.e. automated tests)
   createCanvas = (...args) => {
     // @ts-expect-error
-
     return nodeCreateCanvas(...args)
   }
-  createImageBitmap = async (canvas, ...otherargs) => {
-    if (otherargs.length > 0) {
-      throw new Error(
-        'only one-argument uses of createImageBitmap are supported by the node offscreencanvas ponyfill',
-      )
-    }
+  createImageBitmap = async canvas => {
     const dataUri = canvas.toDataURL()
     // @ts-expect-error
-
     const img = new nodeImage()
     return new Promise((resolve, reject) => {
       // need onload for jest

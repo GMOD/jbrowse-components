@@ -47,7 +47,6 @@ import InfoIcon from '@mui/icons-material/Info'
 
 // locals
 import { WebSessionConnectionsMixin } from '../SessionConnections'
-import { parseTsvBuffer } from '@jbrowse/plugin-spreadsheet-view/src/SpreadsheetView/importAdapters/ImportUtils'
 
 // lazies
 const AboutDialog = lazy(() => import('./AboutDialog'))

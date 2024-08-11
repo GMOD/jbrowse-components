@@ -129,14 +129,13 @@ export default class BoxRendererType extends FeatureRendererType {
     return session
   }
 
-  // expands region for glyphs to use
   getExpandedRegion(region: Region, renderArgs: RenderArgsDeserialized) {
     const { bpPerPx, config } = renderArgs
     const maxFeatureGlyphExpansion =
       readConfObject(config, 'maxFeatureGlyphExpansion') || 0
     const bpExpansion = Math.round(maxFeatureGlyphExpansion * bpPerPx)
     return {
-      ...region,
+      ...(region as Omit<typeof region, symbol>),
       start: Math.floor(Math.max(region.start - bpExpansion, 0)),
       end: Math.ceil(region.end + bpExpansion),
     }
@@ -150,7 +149,7 @@ export default class BoxRendererType extends FeatureRendererType {
     const { regions } = args
     const key = getLayoutId(args)
     const session = this.sessions[key]
-    if (session && regions) {
+    if (session) {
       const region = regions[0]!
       session.layout.discardRange(region.refName, region.start, region.end)
     }
@@ -188,11 +187,9 @@ export default class BoxRendererType extends FeatureRendererType {
     serialized.layout = results.layout.serializeRegion(
       this.getExpandedRegion(region, args),
     )
-    if (serialized.layout.rectangles) {
-      serialized.features = serialized.features.filter(f => {
-        return Boolean(serialized.layout.rectangles[f.uniqueId])
-      })
-    }
+    serialized.features = serialized.features.filter(f => {
+      return Boolean(serialized.layout.rectangles[f.uniqueId])
+    })
 
     serialized.maxHeightReached = serialized.layout.maxHeightReached
     return serialized

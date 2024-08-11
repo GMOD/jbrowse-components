@@ -181,6 +181,7 @@ const Spreadsheet = types
      * #action
      */
     setSortColumns(newSort: NonNullable<SnapshotIn<typeof self.sortColumns>>) {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (newSort) {
         // @ts-expect-error
         self.sortColumns = newSort

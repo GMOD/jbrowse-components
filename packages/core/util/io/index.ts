@@ -43,9 +43,6 @@ export function openLocation(
   location: FileLocation,
   pluginManager?: PluginManager,
 ): GenericFilehandle {
-  if (!location) {
-    throw new Error('must provide a location to openLocation')
-  }
   if (isLocalPathLocation(location)) {
     if (!location.localPath) {
       throw new Error('No local path provided')

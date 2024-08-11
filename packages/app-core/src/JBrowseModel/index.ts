@@ -130,9 +130,13 @@ export function JBrowseModelF({
         self.plugins = cast(
           self.plugins.filter(
             plugin =>
+              // @ts-expect-error
               plugin.url !== pluginDefinition.url ||
+              // @ts-expect-error
               plugin.umdUrl !== pluginDefinition.umdUrl ||
+              // @ts-expect-error
               plugin.cjsUrl !== pluginDefinition.cjsUrl ||
+              // @ts-expect-error
               plugin.esmUrl !== pluginDefinition.esmUrl,
           ),
         )

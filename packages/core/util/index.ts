@@ -773,7 +773,7 @@ export function renameRegionIfNeeded(
     return region
   }
 
-  if (region && refNameMap?.[region.refName]) {
+  if (refNameMap?.[region.refName]) {
     // clone the region so we don't modify it
     region = isStateTreeNode(region)
       ? { ...getSnapshot(region) }
@@ -929,7 +929,8 @@ export const complement = (() => {
 // get the contents of the canvas
 export const rIC =
   typeof jest === 'undefined'
-    ? typeof window !== 'undefined' && window.requestIdleCallback
+    ? // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      typeof window !== 'undefined' && window.requestIdleCallback
       ? window.requestIdleCallback
       : (cb: () => void) =>
           setTimeout(() => {
@@ -1295,9 +1296,9 @@ export function localStorageGetItem(item: string) {
 }
 
 export function localStorageSetItem(str: string, item: string) {
-  typeof localStorage !== 'undefined'
-    ? localStorage.setItem(str, item)
-    : undefined
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem(str, item)
+  }
 }
 
 export function max(arr: number[], init = Number.NEGATIVE_INFINITY) {

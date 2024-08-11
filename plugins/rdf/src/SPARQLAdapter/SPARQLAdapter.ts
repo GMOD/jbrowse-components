@@ -200,7 +200,7 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
             .flat()
           let found = false
           for (const subfeature of subfeatures) {
-            if (subfeature && subfeature.uniqueId === pid) {
+            if (subfeature.uniqueId === pid) {
               if (!subfeature.subfeatures) {
                 subfeature.subfeatures = []
               }

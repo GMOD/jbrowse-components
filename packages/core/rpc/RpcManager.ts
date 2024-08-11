@@ -55,7 +55,9 @@ export default class RpcManager {
       })
       this.driverObjects.set(backendName, newDriver)
       return newDriver
-    } else if (backendName === 'WebWorkerRpcDriver') {
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    else if (backendName === 'WebWorkerRpcDriver') {
       const backendConfiguration = this.backendConfigurations.WebWorkerRpcDriver
       if (!backendConfiguration) {
         throw new Error(

@@ -81,7 +81,7 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
    */
   abstract draw<T extends RenderArgsDeserializedWithFeatures>(
     ctx: CanvasRenderingContext2D,
-     
+
     props: T,
   ): Promise<Record<string, unknown> | undefined>
 }

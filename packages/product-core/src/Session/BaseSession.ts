@@ -20,9 +20,7 @@ import { ElementId } from '@jbrowse/core/util/types/mst'
  * here, everything will use it.
  */
 export function BaseSessionModel<
-   
   ROOT_MODEL_TYPE extends BaseRootModelType,
-   
   JB_CONFIG_SCHEMA extends AnyConfigurationSchemaType,
 >(_pluginManager: PluginManager) {
   return types
