@@ -23,7 +23,7 @@ const DrawerWidget = observer(function ({
   const DrawerComponent = visibleWidget
     ? (pluginManager.evaluateExtensionPoint(
         'Core-replaceWidget',
-        pluginManager.getWidgetType(visibleWidget.type).ReactComponent,
+        pluginManager.getWidgetType(visibleWidget.type)!.ReactComponent,
         {
           session,
           model: visibleWidget,

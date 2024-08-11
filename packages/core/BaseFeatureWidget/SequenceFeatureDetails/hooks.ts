@@ -25,7 +25,7 @@ export function useFeatureSequence(
       return
     }
     const { assemblyManager, rpcManager } = getSession(model)
-    const [assemblyName] = model.view?.assemblyNames || []
+    const assemblyName = model.view?.assemblyNames?.[0] || ''
     async function fetchSeq(start: number, end: number, refName: string) {
       const assembly = await assemblyManager.waitForAssembly(assemblyName)
       if (!assembly) {
@@ -46,7 +46,7 @@ export function useFeatureSequence(
       })
 
       const [feat] = feats as Feature[]
-      return (feat.get('seq') as string | undefined) || ''
+      return (feat?.get('seq') as string | undefined) || ''
     }
 
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
