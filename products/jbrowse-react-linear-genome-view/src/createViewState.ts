@@ -119,17 +119,17 @@ export default function createViewState(opts: ViewStateOptions) {
         if (highlight) {
           highlight.forEach(h => {
             if (h) {
-              const parsedLocString = parseLocString(h, refName =>
+              const p = parseLocString(h, refName =>
                 isValidRefName(refName, assembly.name),
-              ) as Required<ParsedLocString>
-
-              const location = {
-                ...parsedLocString,
-                assemblyName: assembly,
-              }
-
-              if (location.start !== undefined && location.end !== undefined) {
-                session.view.addToHighlights(location)
+              )
+              const { start, end } = p
+              if (start !== undefined && end !== undefined) {
+                session.view.addToHighlights({
+                  ...p,
+                  start,
+                  end,
+                  assemblyName: assembly,
+                })
               }
             }
           })

@@ -244,7 +244,7 @@ const SessionLoader = types
               }, 1000)
             },
           )
-          return this.setSessionSnapshot({ ...result, id: nanoid() })
+          await this.setSessionSnapshot({ ...result, id: nanoid() })
         } catch (e) {
           // the broadcast channels did not find the session in another tab
           // clear session param, so just ignore

@@ -5,7 +5,12 @@ import globals from 'globals'
 
 export default tseslint.config(
   {
-    ignores: ['website/*'],
+    ignores: [
+      'website/*',
+      '**/output-version.js',
+      '**/.storybook/*',
+      '**/umd_plugin.js',
+    ],
   },
 
   {
@@ -32,11 +37,13 @@ export default tseslint.config(
   eslintPluginUnicorn.configs['flat/recommended'],
   {
     rules: {
+      'no-empty': 'off',
       '@typescript-eslint/no-unused-vars': [
         'warn',
         {
           argsIgnorePattern: '^_',
           ignoreRestSiblings: true,
+          caughtErrors: 'none',
         },
       ],
       'no-console': [
@@ -94,6 +101,7 @@ export default tseslint.config(
       'unicorn/prefer-at': 'off',
       'unicorn/prefer-string-replace-all': 'off',
       'unicorn/no-array-reduce': 'off',
+      '@typescript-eslint/no-misused-promises': 'off',
       '@typescript-eslint/no-base-to-string': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',
@@ -107,14 +115,18 @@ export default tseslint.config(
       '@typescript-eslint/restrict-template-expressions': 'off',
       '@typescript-eslint/no-empty-function': 'off',
       '@typescript-eslint/no-extraneous-class': 'off',
+      '@typescript-eslint/no-dynamic-delete': 'off',
     },
   },
   {
     files: [
       'webpack/**/*',
       'scripts/**/*',
+      'products/jbrowse-cli/**/*',
       'products/jbrowse-web/scripts/*',
       'products/jbrowse-desktop/scripts/*',
+      'products/jbrowse-desktop/linux-sandbox-fix.js',
+      '**/webpack.config.js',
     ],
     languageOptions: {
       globals: {

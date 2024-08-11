@@ -100,6 +100,13 @@ export interface ExportSvgOptions {
   themeName?: string
 }
 
+export interface HighlightType {
+  start: number
+  end: number
+  assemblyName: string
+  refName: string
+}
+
 function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
   if (!contentBlocks.length) {
     return ''
@@ -254,7 +261,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * highlights on the LGV from the URL parameters
          */
         highlight: types.optional(
-          types.array(types.frozen<Required<ParsedLocString>>()),
+          types.array(types.frozen<HighlightType>()),
           [],
         ),
 
@@ -632,19 +639,19 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      addToHighlights(highlight: Required<ParsedLocString>) {
+      addToHighlights(highlight: HighlightType) {
         self.highlight.push(highlight)
       },
       /**
        * #action
        */
-      setHighlight(highlight: Required<ParsedLocString>[] | undefined) {
+      setHighlight(highlight?: HighlightType[]) {
         self.highlight = cast(highlight)
       },
       /**
        * #action
        */
-      removeHighlight(highlight: Required<ParsedLocString>) {
+      removeHighlight(highlight: HighlightType) {
         self.highlight.remove(highlight)
       },
       /**
