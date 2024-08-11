@@ -96,7 +96,6 @@ const GetSequenceDialog = observer(function ({
   const loading = Boolean(sequenceChunks === undefined)
 
   useEffect(() => {
-    let active = true
     const controller = new AbortController()
 
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -110,20 +109,15 @@ const GetSequenceDialog = observer(function ({
           throw new Error('Selected region is out of bounds')
         }
         const chunks = await fetchSequence(model, selection, controller.signal)
-        if (active) {
-          setSequenceChunks(chunks)
-        }
+        setSequenceChunks(chunks)
       } catch (e) {
         console.error(e)
-        if (active) {
-          setError(e)
-        }
+        setError(e)
       }
     })()
 
     return () => {
       controller.abort()
-      active = false
     }
   }, [model, leftOffset, rightOffset])
 

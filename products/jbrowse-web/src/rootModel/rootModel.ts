@@ -216,9 +216,7 @@ export default function RootModel({
               if (!self.session) {
                 return
               }
-              const snapshot = getSnapshot(self.session as BaseSession) || {
-                name: 'empty',
-              }
+              const snapshot = getSnapshot(self.session as BaseSession)
               const s = JSON.stringify
               sessionStorage.setItem('current', s({ session: snapshot }))
               localStorage.setItem(

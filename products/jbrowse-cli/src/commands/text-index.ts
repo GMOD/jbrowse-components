@@ -403,7 +403,7 @@ export default class TextIndex extends JBrowseCommand {
       }),
     )
 
-    const ixIxxStream = await this.runIxIxx({
+    await this.runIxIxx({
       readStream,
       outLocation,
       name,
@@ -418,7 +418,6 @@ export default class TextIndex extends JBrowseCommand {
       typesToExclude,
       assemblyNames,
     })
-    return ixIxxStream
   }
 
   async *indexFiles({
@@ -481,7 +480,7 @@ export default class TextIndex extends JBrowseCommand {
     }
   }
 
-  runIxIxx({
+  async runIxIxx({
     readStream,
     outLocation,
     name,
@@ -492,7 +491,7 @@ export default class TextIndex extends JBrowseCommand {
     name: string
     prefixSize?: number
   }) {
-    return ixIxxStream(
+    await ixIxxStream(
       readStream,
       path.join(outLocation, 'trix', `${name}.ix`),
       path.join(outLocation, 'trix', `${name}.ixx`),

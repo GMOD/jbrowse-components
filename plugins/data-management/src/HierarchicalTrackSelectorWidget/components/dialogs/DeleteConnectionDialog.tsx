@@ -15,7 +15,10 @@ const DeleteConnectionDialog = observer(function DeleteConnectionDialog({
   session,
   handleClose,
 }: {
-  deleteDialogDetails: { name: string; connectionConf: AnyConfigurationModel }
+  deleteDialogDetails: {
+    name: string
+    connectionConf: AnyConfigurationModel
+  }
   session: AbstractSessionModel
   handleClose: () => void
 }) {
@@ -40,9 +43,7 @@ const DeleteConnectionDialog = observer(function DeleteConnectionDialog({
           variant="contained"
           color="primary"
           onClick={() => {
-            if (connectionConf) {
-              session.deleteConnection?.(connectionConf)
-            }
+            session.deleteConnection?.(connectionConf)
             handleClose()
           }}
         >

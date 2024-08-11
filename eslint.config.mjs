@@ -7,6 +7,7 @@ export default tseslint.config(
   {
     ignores: [
       'website/*',
+      'plugin-development-tools/**',
       '**/output-version.js',
       '**/.storybook/*',
       '**/umd_plugin.js',
@@ -115,6 +116,7 @@ export default tseslint.config(
       '@typescript-eslint/restrict-template-expressions': 'off',
       '@typescript-eslint/no-empty-function': 'off',
       '@typescript-eslint/no-extraneous-class': 'off',
+      '@typescript-eslint/unbound-method': 'off',
       '@typescript-eslint/no-dynamic-delete': 'off',
     },
   },
@@ -123,9 +125,11 @@ export default tseslint.config(
       'webpack/**/*',
       'scripts/**/*',
       'products/jbrowse-cli/**/*',
+      'products/jbrowse-img/**/*',
       'products/jbrowse-web/scripts/*',
       'products/jbrowse-desktop/scripts/*',
       'products/jbrowse-desktop/linux-sandbox-fix.js',
+      'products/jbrowse-aws-lambda-functions/*.js',
       '**/webpack.config.js',
     ],
     languageOptions: {

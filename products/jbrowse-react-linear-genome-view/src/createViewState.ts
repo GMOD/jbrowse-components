@@ -1,10 +1,6 @@
 import React from 'react'
 import { PluginConstructor } from '@jbrowse/core/Plugin'
-import {
-  ParsedLocString,
-  assembleLocString,
-  parseLocString,
-} from '@jbrowse/core/util'
+import { assembleLocString, parseLocString } from '@jbrowse/core/util'
 import { SnapshotIn, onPatch, IJsonPatch } from 'mobx-state-tree'
 import createModel from './createModel'
 import type { createSessionModel, createConfigModel } from './createModel'

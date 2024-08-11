@@ -104,21 +104,6 @@ export default function RecentSessionPanel({
     })()
   }, [setError, updateSessionsList, showAutosaves])
 
-  if (!sessions) {
-    return (
-      <CircularProgress
-        style={{
-          position: 'fixed',
-          top: '50%',
-          left: '50%',
-          marginTop: -25,
-          marginLeft: -25,
-        }}
-        size={50}
-      />
-    )
-  }
-
   async function addToQuickstartList(arg: RecentSessionData[]) {
     await Promise.all(
       arg.map(s => ipcRenderer.invoke('addToQuickstartList', s.path, s.name)),

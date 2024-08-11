@@ -167,23 +167,18 @@ export default class AddConnection extends JBrowseCommand {
     } catch (error) {
       this.error('The location provided is not a valid URL', { exit: 160 })
     }
-    if (locationUrl) {
-      try {
-        if (check) {
-          const response = await fetch(`${locationUrl}`, { method: 'HEAD' })
-          if (!response.ok) {
-            this.error(`Response returned with code ${response.status}`)
-          }
+    try {
+      if (check) {
+        const response = await fetch(`${locationUrl}`, { method: 'HEAD' })
+        if (!response.ok) {
+          this.error(`Response returned with code ${response.status}`)
         }
-        return locationUrl.href
-      } catch (error) {
-        // ignore
-        this.error(`Unable to fetch from URL, ${error}`, { exit: 170 })
       }
+      return locationUrl.href
+    } catch (error) {
+      // ignore
+      this.error(`Unable to fetch from URL, ${error}`, { exit: 170 })
     }
-    return this.error(`Could not resolve to a URL: "${location}"`, {
-      exit: 180,
-    })
   }
 
   determineConnectionType(url: string) {

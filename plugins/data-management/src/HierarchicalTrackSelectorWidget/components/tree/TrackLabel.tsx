@@ -45,7 +45,7 @@ export default function TrackLabel({ data }: { data: NodeData }) {
     onChange,
     selected,
   } = data
-  const description = (conf && readConfObject(conf, 'description')) || ''
+  const description = readConfObject(conf, 'description')
   return (
     <>
       <Tooltip

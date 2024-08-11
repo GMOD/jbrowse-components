@@ -58,7 +58,8 @@ export default async function generateCoverageBins(
     const fstart = feature.get('start')
     const fend = feature.get('end')
     const fstrand = feature.get('strand') as -1 | 0 | 1
-    const mismatches = (feature.get('mismatches') as Mismatch[]) || []
+    const mismatches =
+      (feature.get('mismatches') as Mismatch[] | undefined) || []
 
     for (let j = fstart; j < fend + 1; j++) {
       const i = j - region.start
@@ -113,13 +114,7 @@ export default async function generateCoverageBins(
                 }
               }
               const bin = bins[epos]
-              if (bin) {
-                inc(bin, fstrand, 'cov', mod)
-              } else {
-                console.warn(
-                  'Undefined position in modifications snpcoverage encountered',
-                )
-              }
+              inc(bin, fstrand, 'cov', mod)
             }
           }
         }

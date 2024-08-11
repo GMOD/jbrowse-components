@@ -65,7 +65,7 @@ const LinearComparativeRubberband = observer(function Rubberband({
   }>()
   const [guideX, setGuideX] = useState<number>()
   const controlsRef = useRef<HTMLDivElement>(null)
-  const rubberbandRef = useRef(null)
+  const rubberbandRef = useRef<HTMLDivElement>(null)
   const { classes } = useStyles()
   const mouseDragging = startX !== undefined && anchorPosition === undefined
 

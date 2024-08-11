@@ -43,7 +43,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
 
   public async configure(opts?: BaseOptions) {
     if (!this.cached) {
-      this.cached = this.configurePre(opts).catch(e => {
+      this.cached = this.configurePre(opts).catch((e: unknown) => {
         this.cached = undefined
         throw e
       })

@@ -340,9 +340,6 @@ function SvInspectorViewF(pluginManager: PluginManager) {
               assemblyName: self.assemblyName,
             }),
             data => {
-              if (!data) {
-                return
-              }
               const { assemblyName, generatedTrackConf } = data
               const { circularView } = self
               // hide any visible tracks

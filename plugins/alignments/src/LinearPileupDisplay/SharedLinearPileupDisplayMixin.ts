@@ -327,18 +327,14 @@ export function SharedLinearPileupDisplayMixin(
                   icon: MenuOpenIcon,
                   onClick: (): void => {
                     self.clearFeatureSelection()
-                    if (feat) {
-                      self.selectFeature(feat)
-                    }
+                    self.selectFeature(feat)
                   },
                 },
                 {
                   label: 'Copy info to clipboard',
                   icon: ContentCopyIcon,
                   onClick: (): void => {
-                    if (feat) {
-                      self.copyFeatureToClipboard(feat)
-                    }
+                    self.copyFeatureToClipboard(feat)
                   },
                 },
               ]

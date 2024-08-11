@@ -70,7 +70,7 @@ const AboutDialogContents = observer(function ({
     'Core-extraAboutPanel',
     null,
     { session, config },
-  ) as { name: string; Component: React.FC<any> }
+  ) as { name: string; Component: React.FC<any> } | null
 
   return (
     <div className={classes.content}>

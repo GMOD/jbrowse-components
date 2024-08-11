@@ -10,19 +10,32 @@ test('one slice', () => {
     pxPerRadian: 1000,
   }
 
+  // @ts-expect-error
   const slices = calculateStaticSlices(view)
-  // console.log(slices)
   expect(slices.length).toBe(1)
   const [slice] = slices
-  // expect(slices).toMatchSnapshot()
   expect(slice).toMatchSnapshot()
 })
 
 test('two slices', () => {
   const view = {
     elidedRegions: [
-      { refName: 'toast', start: 0, end: 10000, widthBp: 10000 },
-      { refName: 'teest', start: 0, end: 10000, widthBp: 10000 },
+      {
+        elided: true,
+        assemblyName: 'wow',
+        refName: 'toast',
+        start: 0,
+        end: 10000,
+        widthBp: 10000,
+      },
+      {
+        elided: true,
+        assemblyName: 'wow',
+        refName: 'teest',
+        start: 0,
+        end: 10000,
+        widthBp: 10000,
+      },
     ],
     spacingPx: 5,
     radiusPx: 1000,
@@ -31,8 +44,8 @@ test('two slices', () => {
     bpPerRadian: 20000 / (2 * Math.PI),
   }
 
+  // @ts-expect-error
   const slices = calculateStaticSlices(view)
-  // console.log(slices)
   expect(slices.length).toBe(2)
   expect(slices).toMatchSnapshot()
 })
@@ -63,8 +76,8 @@ test('volvox', () => {
     bpPerRadian: totalBp / (2 * Math.PI),
   }
 
+  // @ts-expect-error
   const slices = calculateStaticSlices(view)
-  // console.log(slices)
   expect(slices.length).toBe(2)
   expect(slices).toMatchSnapshot()
 })

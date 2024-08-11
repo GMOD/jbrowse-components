@@ -76,11 +76,9 @@ export default function createModel(
        * #action
        */
       renameCurrentSession(sessionName: string) {
-        if (self.session) {
-          const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
-          snapshot.name = sessionName
-          this.setSession(snapshot)
-        }
+        const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
+        snapshot.name = sessionName
+        this.setSession(snapshot)
       },
       /**
        * #action
@@ -103,9 +101,9 @@ export default function createModel(
         // find the existing account selected from menu
         const selectedId = location.internetAccountId
         if (selectedId) {
-          const selectedAccount = self.internetAccounts.find(account => {
-            return account.internetAccountId === selectedId
-          })
+          const selectedAccount = self.internetAccounts.find(
+            a => a.internetAccountId === selectedId,
+          )
           if (selectedAccount) {
             return selectedAccount
           }

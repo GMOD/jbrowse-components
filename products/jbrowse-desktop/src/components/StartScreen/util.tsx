@@ -108,7 +108,7 @@ export async function createPluginManager(
   pluginManager.setRootModel(rootModel)
   pluginManager.configure()
 
-  if (rootModel && !readConfObject(config, 'disableAnalytics')) {
+  if (!readConfObject(config, 'disableAnalytics')) {
     // these are ok if they are uncaught promises
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     writeAWSAnalytics(rootModel, initialTimestamp)

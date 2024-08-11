@@ -89,9 +89,9 @@ async function mapStackTrace(stack: string) {
     })
 
     if (
-      originalPosition.source === null ||
-      originalPosition.line === null ||
-      originalPosition.column === null
+      !originalPosition.source ||
+      !originalPosition.line ||
+      !originalPosition.column
     ) {
       mappedStack.push(line)
       continue

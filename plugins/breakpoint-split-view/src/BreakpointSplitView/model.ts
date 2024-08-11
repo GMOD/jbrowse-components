@@ -365,7 +365,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         return [
           ...self.views
             .map((view, idx) => [idx, view.menuItems()] as const)
-            .filter(f => !!f[1])
             .map(f => ({ label: `View ${f[0] + 1} Menu`, subMenu: f[1] })),
 
           {

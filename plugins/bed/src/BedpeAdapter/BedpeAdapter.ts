@@ -124,7 +124,7 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
 
   private async loadData(opts: BaseOptions = {}) {
     if (!this.bedpeFeatures) {
-      this.bedpeFeatures = this.loadDataP(opts).catch(e => {
+      this.bedpeFeatures = this.loadDataP(opts).catch((e: unknown) => {
         this.bedpeFeatures = undefined
         throw e
       })
@@ -180,10 +180,12 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
 
   private async loadFeatureTree(refName: string) {
     if (!this.intervalTrees[refName]) {
-      this.intervalTrees[refName] = this.loadFeatureTreeP(refName).catch(e => {
-        this.intervalTrees[refName] = undefined
-        throw e
-      })
+      this.intervalTrees[refName] = this.loadFeatureTreeP(refName).catch(
+        (e: unknown) => {
+          this.intervalTrees[refName] = undefined
+          throw e
+        },
+      )
     }
     return this.intervalTrees[refName]
   }
