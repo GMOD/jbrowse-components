@@ -27,7 +27,9 @@ interface BaseRenderArgs extends RenderProps {
   // deserialization happens before deserializeArgsInWorker
   signal?: AbortSignal
   theme: ThemeOptions
-  exportSVG: { rasterizeLayers?: boolean }
+  exportSVG?: {
+    rasterizeLayers?: boolean
+  }
 }
 
 export interface RenderArgs extends BaseRenderArgs {

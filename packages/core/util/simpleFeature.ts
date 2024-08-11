@@ -7,8 +7,7 @@ export interface Feature {
    * 'start' and 'end', but everything else is optional.
    */
   get(name: 'refName'): string
-  get(name: 'start'): number
-  get(name: 'end'): number
+  get(name: 'start' | 'end'): number
   get(name: 'subfeatures'): Feature[] | undefined
 
   get(name: string): any

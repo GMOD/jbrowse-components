@@ -44,24 +44,5 @@ export default class DisplayType extends PluggableElementBase {
     this.ReactComponent = stuff.ReactComponent
     this.trackType = stuff.trackType
     this.viewType = stuff.viewType
-    if (!this.stateModel) {
-      throw new Error(`no stateModel defined for display ${this.name}`)
-    }
-    if (!this.configSchema) {
-      throw new Error(`no configSchema provided for display ${this.name}`)
-    }
-    if (!this.ReactComponent) {
-      throw new Error(`no ReactComponent provided for display ${this.name}`)
-    }
-    if (!this.trackType) {
-      throw new Error(`no trackType provided for display ${this.name}`)
-    }
-    if (!this.viewType) {
-      throw new Error(`no viewType provided for display ${this.name}`)
-    }
-    if (!getDefaultValue(this.configSchema).type) {
-      const name = this.configSchema ? this.configSchema.name : 'UNKNOWN'
-      throw new Error(`${name} is not explicitlyTyped`)
-    }
   }
 }

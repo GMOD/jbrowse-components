@@ -95,8 +95,8 @@ export function freeAdapterResources(specification: Record<string, any>) {
   let deleteCount = 0
   const specKeys = Object.keys(specification)
 
-  // if we don't specify a range, delete any adapters that are
-  // only associated with that session
+  // if we don't specify a range, delete any adapters that are only associated
+  // with that session
   if (specKeys.length === 1 && specKeys[0] === 'sessionId') {
     const { sessionId } = specification
     Object.entries(adapterCache).forEach(([cacheKey, cacheEntry]) => {
@@ -109,16 +109,12 @@ export function freeAdapterResources(specification: Record<string, any>) {
   } else {
     // otherwise call freeResources on all the cached data adapters
     Object.values(adapterCache).forEach(cacheEntry => {
-      if (!cacheEntry.dataAdapter.freeResources) {
-        console.warn(cacheEntry.dataAdapter, 'does not implement freeResources')
-      } else {
-        const regions =
-          specification.regions ||
-          (specification.region ? [specification.region] : [])
-        for (const region of regions) {
-          if (region.refName !== undefined) {
-            cacheEntry.dataAdapter.freeResources(region)
-          }
+      const regions =
+        specification.regions ||
+        (specification.region ? [specification.region] : [])
+      for (const region of regions) {
+        if (region.refName !== undefined) {
+          cacheEntry.dataAdapter.freeResources(region)
         }
       }
     })

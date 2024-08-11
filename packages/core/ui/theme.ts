@@ -468,7 +468,7 @@ export function createJBrowseTheme(
         ? deepmerge(themes.default!, augmentTheme(configTheme), {
             arrayMerge: overwriteArrayMerge,
           })
-        : augmentThemePlus(themes[themeName]) || themes.default,
+        : augmentThemePlus(themes[themeName]),
     ),
   )
 }

@@ -55,7 +55,7 @@ export default function RubberbandSpan({
   left: number
   width: number
 }) {
-  const ref = useRef(null)
+  const ref = useRef<HTMLDivElement>(null)
   const { classes } = useStyles()
   return (
     <>

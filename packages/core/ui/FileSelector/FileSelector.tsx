@@ -77,13 +77,13 @@ const FileSelector = observer(function (props: {
   const shownAccounts = arr.slice(0, NUM_SHOWN)
   const hiddenAccounts = arr.slice(NUM_SHOWN)
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
-  const selectedAccount = map[toggleButtonValue]!
+  const selectedAccount = map[toggleButtonValue]
 
   const setLocationWithAccount = useCallback(
     (location: FileLocation) => {
       setLocation({
         ...location,
-        ...(isUriLocation(location)
+        ...(selectedAccount && isUriLocation(location)
           ? { internetAccountId: selectedAccount.internetAccountId }
           : {}),
       })
@@ -106,13 +106,13 @@ const FileSelector = observer(function (props: {
     <UrlChooser
       {...props}
       setLocation={setLocationWithAccount}
-      label={selectedAccount.selectorLabel}
+      label={selectedAccount?.selectorLabel}
     />
   )
   if (toggleButtonValue === 'file') {
     locationInput = <LocalFileChooser {...props} />
   }
-  if (selectedAccount.SelectorComponent) {
+  if (selectedAccount?.SelectorComponent) {
     const { SelectorComponent } = selectedAccount
     locationInput = (
       <SelectorComponent {...props} setLocation={setLocationWithAccount} />

@@ -71,32 +71,28 @@ const SequenceDialog = observer(function ({
             <ErrorMessage error={error} />
           ) : !sequence ? (
             <LoadingEllipses />
-          ) : sequence ? (
-            'error' in sequence ? (
-              <>
-                <Typography color="error">{sequence.error}</Typography>
-                <Button
-                  variant="contained"
-                  color="inherit"
-                  onClick={() => {
-                    setForce(true)
-                  }}
-                >
-                  Force load
-                </Button>
-              </>
-            ) : (
-              <Suspense fallback={<LoadingEllipses />}>
-                <SequencePanel
-                  ref={seqPanelRef}
-                  feature={feature}
-                  sequence={sequence}
-                  model={sequenceFeatureDetails}
-                />
-              </Suspense>
-            )
+          ) : 'error' in sequence ? (
+            <>
+              <Typography color="error">{sequence.error}</Typography>
+              <Button
+                variant="contained"
+                color="inherit"
+                onClick={() => {
+                  setForce(true)
+                }}
+              >
+                Force load
+              </Button>
+            </>
           ) : (
-            <Typography>No sequence found</Typography>
+            <Suspense fallback={<LoadingEllipses />}>
+              <SequencePanel
+                ref={seqPanelRef}
+                feature={feature}
+                sequence={sequence}
+                model={sequenceFeatureDetails}
+              />
+            </Suspense>
           )}
         </div>
       </DialogContent>

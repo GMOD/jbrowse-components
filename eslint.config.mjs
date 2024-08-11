@@ -8,6 +8,8 @@ export default tseslint.config(
     ignores: [
       'website/*',
       'plugin-development-tools/**',
+      'products/jbrowse-cli/lib/**',
+      'component_tests/**/*',
       '**/output-version.js',
       '**/.storybook/*',
       '**/umd_plugin.js',
@@ -130,6 +132,8 @@ export default tseslint.config(
       'products/jbrowse-desktop/scripts/*',
       'products/jbrowse-desktop/linux-sandbox-fix.js',
       'products/jbrowse-aws-lambda-functions/**/*.js',
+      'plugins/data-management/scripts/*.js',
+      'config/jest/*.js',
       '**/webpack.config.js',
     ],
     languageOptions: {

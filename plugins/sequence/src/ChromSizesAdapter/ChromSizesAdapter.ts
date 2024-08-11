@@ -29,7 +29,7 @@ export default class ChromSizesAdapter
 
   async setup() {
     if (!this.setupP) {
-      this.setupP = this.setupPre().catch(e => {
+      this.setupP = this.setupPre().catch((e: unknown) => {
         this.setupP = undefined
         throw e
       })

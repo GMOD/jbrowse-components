@@ -57,9 +57,6 @@ export function makeTicks(
 
   let minBase = start
   let maxBase = end
-  if (minBase === null || maxBase === null) {
-    return []
-  }
 
   if (bpPerPx < 0) {
     ;[minBase, maxBase] = [maxBase, minBase]

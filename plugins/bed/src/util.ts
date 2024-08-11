@@ -171,9 +171,9 @@ export function makeBlocks({
   start: number
   uniqueId: string
   refName: string
-  chromStarts: number[]
+  chromStarts?: number[]
   blockSizes: number[]
-  blockStarts: number[]
+  blockStarts?: number[]
 }) {
   const subfeatures = []
   const starts = chromStarts || blockStarts || []

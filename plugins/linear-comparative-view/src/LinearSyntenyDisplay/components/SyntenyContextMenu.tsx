@@ -59,14 +59,14 @@ export default function SyntenyContextMenu({
             const refName = f.get('refName')
             const mate = f.get('mate')
             view.views[0]!.navToLocString(`${refName}:${start}-${end}`).catch(
-              e => {
+              (e: unknown) => {
                 console.error(e)
                 getSession(model).notifyError(`${e}`, e)
               },
             )
             view.views[1]!.navToLocString(
               `${mate.refName}:${mate.start}-${mate.end}`,
-            ).catch(e => {
+            ).catch((e: unknown) => {
               console.error(e)
               getSession(model).notifyError(`${e}`, e)
             })

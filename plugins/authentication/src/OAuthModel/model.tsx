@@ -272,7 +272,11 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
               resolve(token)
               return
             } catch (e) {
-              e instanceof Error ? reject(e) : reject(new Error(String(e)))
+              if (e instanceof Error) {
+                reject(e)
+              } else {
+                reject(new Error(String(e)))
+              }
               return
             }
           }

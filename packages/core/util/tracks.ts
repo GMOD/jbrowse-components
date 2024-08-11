@@ -12,10 +12,11 @@ export function getTrackAssemblyNames(
 }
 
 export function getConfAssemblyNames(conf: AnyConfigurationModel) {
-  const trackAssemblyNames = readConfObject(conf, 'assemblyNames') as string[]
+  const trackAssemblyNames = readConfObject(conf, 'assemblyNames') as
+    | string[]
+    | undefined
   if (!trackAssemblyNames) {
     // Check if it's an assembly sequence track
-
     const parent = getParent<any>(conf)
     if ('sequence' in parent) {
       return [readConfObject(parent, 'name') as string]
@@ -93,7 +94,7 @@ let counter = 0
 // of timestamp plus counter to be unique across sessions and fast repeated
 // calls
 export function storeBlobLocation(location: PreFileLocation) {
-  if (location && 'blob' in location) {
+  if ('blob' in location) {
     const blobId = `b${+Date.now()}-${counter++}`
     blobMap[blobId] = location.blob
     return { name: location.blob.name, blobId, locationType: 'BlobLocation' }

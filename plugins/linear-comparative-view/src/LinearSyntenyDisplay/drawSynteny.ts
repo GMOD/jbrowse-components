@@ -168,13 +168,12 @@ export function drawRef(
             ) {
               continuingFlag = true
             } else {
-              continuingFlag = false
-
-              // allow rendering the dominant color when using continuing
-              // flag if the last element of continuing was a large
-              // feature, else just use match
+              // allow rendering the dominant color when using continuing flag
+              // if the last element of continuing was a large feature, else
+              // just use match
               ctx1.fillStyle =
                 colorMap[(continuingFlag && d1 > 1) || d2 > 1 ? op : 'M']
+              continuingFlag = false
 
               draw(ctx1, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
               if (ctx3) {

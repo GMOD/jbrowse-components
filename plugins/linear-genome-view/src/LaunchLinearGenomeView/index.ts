@@ -1,10 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import {
-  AbstractSessionModel,
-  when,
-  parseLocString,
-  ParsedLocString,
-} from '@jbrowse/core/util'
+import { AbstractSessionModel, when, parseLocString } from '@jbrowse/core/util'
 // locals
 import { LinearGenomeViewModel } from '../LinearGenomeView'
 import { handleSelectedRegion } from '../searchUtils'

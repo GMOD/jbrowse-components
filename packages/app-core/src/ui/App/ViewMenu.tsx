@@ -47,8 +47,8 @@ const ViewMenu = observer(function ({
   // a confusing bug related to it! see
   // https://github.com/GMOD/jbrowse-components/issues/4115
   //
-  // Make sure to test the Breakpoint split view menu checkboxes if you
-  // intend to change this
+  // Make sure to test the Breakpoint split view menu checkboxes if you intend
+  // to change this
   return (
     <>
       <IconButton
@@ -102,10 +102,7 @@ const ViewMenu = observer(function ({
                 },
               ]
             : []),
-
-          // <=1.3.3 didn't use a function, so check as value also
-          ...((typeof menuItems === 'function' ? menuItems() : menuItems) ||
-            []),
+          ...menuItems(),
         ]}
         popupState={popupState}
       />

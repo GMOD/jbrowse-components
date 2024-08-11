@@ -5,12 +5,14 @@ export function makeFeaturePair(feature: Feature, alt?: string) {
   const start = feature.get('start')
   let end = feature.get('end')
   const strand = feature.get('strand')
-  const mate = feature.get('mate') as {
-    refName: string
-    start: number
-    end: number
-    mateDirection?: number
-  }
+  const mate = feature.get('mate') as
+    | {
+        refName: string
+        start: number
+        end: number
+        mateDirection?: number
+      }
+    | undefined
   const refName = feature.get('refName')
 
   let mateRefName: string | undefined

@@ -125,7 +125,7 @@ export function clone(src: any): any {
 function mixin(
   dest: Obj,
   source: Obj,
-  copyFunc: (arg: unknown) => unknown,
+  copyFunc?: (arg: unknown) => unknown,
 ): Obj {
   const empty = {}
   for (const name in source) {

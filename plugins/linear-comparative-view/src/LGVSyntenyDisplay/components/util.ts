@@ -6,7 +6,6 @@ import {
 } from '@jbrowse/core/util'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
-import { when } from 'mobx'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
@@ -131,7 +130,6 @@ export async function navToSynteny({
   const l2 = `${mateRef}:${f(m1 - ws)}-${f(m2 + ws)}${
     horizontallyFlip ? '[rev]' : ''
   }`
-  await when(() => view2.width !== undefined)
   await Promise.all([
     view2.views[0]!.navToLocString(l1, featAsm),
     view2.views[1]!.navToLocString(l2, mateAsm),

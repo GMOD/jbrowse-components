@@ -6,7 +6,7 @@ import { readConfObject, AnyConfigurationModel } from '../configuration'
 
 export interface WorkerHandle {
   status?: string
-  error?: Error
+  error?: unknown
   on?: (channel: string, callback: (message: unknown) => void) => void
   off?: (channel: string, callback: (message: unknown) => void) => void
   destroy(): void
@@ -66,7 +66,7 @@ class LazyWorker {
         .makeWorker()
         .then(worker => {
           watchWorker(worker, this.driver.maxPingTime, this.driver.name).catch(
-            error => {
+            (error: unknown) => {
               if (worker) {
                 console.error(
                   'worker did not respond, killing and generating new one',
@@ -81,7 +81,7 @@ class LazyWorker {
           )
           return worker
         })
-        .catch(e => {
+        .catch((e: unknown) => {
           this.workerP = undefined
           throw e
         })

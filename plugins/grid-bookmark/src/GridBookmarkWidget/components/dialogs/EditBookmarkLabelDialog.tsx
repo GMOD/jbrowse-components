@@ -45,7 +45,7 @@ const EditBookmarkLabelDialog = observer(function ({
           variant="contained"
           color="primary"
           onClick={() => {
-            if (newLabel && dialogRow) {
+            if (newLabel) {
               model.updateBookmarkLabel(dialogRow, newLabel)
             }
             setNewLabel('')

@@ -414,9 +414,6 @@ function stateModelFactory() {
       },
     }))
     .preProcessSnapshot(snap => {
-      if (!snap) {
-        return snap
-      }
       // rewrite "height" from older snapshots to "heightPreConfig", this allows
       // us to maintain a height "getter" going forward
       // @ts-expect-error

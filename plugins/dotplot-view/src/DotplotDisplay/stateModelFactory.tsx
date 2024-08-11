@@ -81,7 +81,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #method
        */
-      async renderSvg(opts: ExportSvgOptions & { theme: ThemeOptions }) {
+      async renderSvg(opts: ExportSvgOptions & { theme?: ThemeOptions }) {
         const props = renderBlockData(self)
         if (!props) {
           return null

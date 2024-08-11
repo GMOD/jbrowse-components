@@ -113,11 +113,11 @@ export default function FeatureDensityMixin() {
       /**
        * #action
        */
-      async getFeatureDensityStats() {
+      getFeatureDensityStats() {
         if (!self.featureDensityStatsP) {
           self.featureDensityStatsP = getFeatureDensityStatsPre(
             self as any,
-          ).catch(e => {
+          ).catch((e: unknown) => {
             if (isAlive(self)) {
               this.setFeatureDensityStatsP(undefined)
             }

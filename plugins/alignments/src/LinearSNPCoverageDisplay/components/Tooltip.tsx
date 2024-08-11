@@ -113,20 +113,20 @@ const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
 
 type Coord = [number, number]
 
-const SNPCoverageTooltip = observer(
-  (props: {
-    model: { featureUnderMouse: Feature }
-    height: number
-    offsetMouseCoord: Coord
-    clientMouseCoord: Coord
-    clientRect?: DOMRect
-  }) => {
-    const { model } = props
-    const { featureUnderMouse: feat } = model
-    return feat && feat.get('type') === 'skip' ? null : (
-      <Tooltip TooltipContents={TooltipContents} {...props} />
-    )
-  },
-)
+const SNPCoverageTooltip = observer(function (props: {
+  model: {
+    featureUnderMouse?: Feature
+  }
+  height: number
+  offsetMouseCoord: Coord
+  clientMouseCoord: Coord
+  clientRect?: DOMRect
+}) {
+  const { model } = props
+  const { featureUnderMouse: feat } = model
+  return feat && feat.get('type') === 'skip' ? null : (
+    <Tooltip TooltipContents={TooltipContents} {...props} />
+  )
+})
 
 export default SNPCoverageTooltip

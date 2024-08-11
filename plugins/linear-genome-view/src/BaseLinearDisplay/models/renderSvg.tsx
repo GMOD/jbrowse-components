@@ -17,7 +17,7 @@ export async function renderBaseLinearDisplaySvg(
   self: BaseLinearDisplayModel,
   opts: ExportSvgOptions & {
     overrideHeight: number
-    theme: ThemeOptions
+    theme?: ThemeOptions
   },
 ) {
   const { height, id } = self

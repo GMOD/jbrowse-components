@@ -1,3 +1,4 @@
+// @ts-nocheck
 // this file contains the rather verbose functions for
 // creating features from CSV/TSV lines
 import { parseLocString } from '@jbrowse/core/util'

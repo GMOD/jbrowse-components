@@ -63,9 +63,11 @@ export function downloadBookmarkFile(
       const labelVal = label === '' ? '.' : label
       const line = `${bookmark.refName}\t${bookmark.start}\t${bookmark.end}\t${labelVal}\n`
 
-      fileContents[bookmark.assemblyName]
-        ? fileContents[bookmark.assemblyName]!.push(line)
-        : (fileContents[bookmark.assemblyName] = [line])
+      if (fileContents[bookmark.assemblyName]) {
+        fileContents[bookmark.assemblyName]!.push(line)
+      } else {
+        fileContents[bookmark.assemblyName] = [line]
+      }
     })
 
     for (const assembly in fileContents) {

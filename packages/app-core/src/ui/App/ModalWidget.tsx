@@ -78,7 +78,7 @@ const ModalWidget = observer(function ({
       session,
       model: visibleWidget,
     },
-  ) as React.FC<any>
+  ) as React.FC<any> | undefined
   return (
     <Dialog
       open

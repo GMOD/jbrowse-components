@@ -48,7 +48,6 @@ const ShareBookmarksDialog = observer(function ({
       : model.sharedBookmarksModel
 
   useEffect(() => {
-    let cancelled = false
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
@@ -63,24 +62,18 @@ const ShareBookmarksDialog = observer(function ({
           session.shareURL,
           locationUrl.href,
         )
-        if (!cancelled) {
-          const params = new URLSearchParams(locationUrl.search)
-          params.set('bookmarks', `share-${result.json.sessionId}`)
-          params.set('password', result.password)
-          locationUrl.search = params.toString()
-          setUrl(locationUrl.href)
-          setLoading(false)
-        }
+        const params = new URLSearchParams(locationUrl.search)
+        params.set('bookmarks', `share-${result.json.sessionId}`)
+        params.set('password', result.password)
+        locationUrl.search = params.toString()
+        setUrl(locationUrl.href)
+        setLoading(false)
       } catch (e) {
         setError(e)
       } finally {
         setLoading(false)
       }
     })()
-
-    return () => {
-      cancelled = true
-    }
   }, [bookmarksToShare, session])
   return (
     <Dialog open onClose={onClose} title="Share bookmarks">
