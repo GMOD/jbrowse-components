@@ -71,7 +71,7 @@ export function createBaseTrackModel(
        * determines which webworker to send the track to, currently based on trackId
        */
       get rpcSessionId() {
-        return self.configuration?.trackId
+        return self.configuration.trackId
       },
       /**
        * #getter
@@ -117,7 +117,7 @@ export function createBaseTrackModel(
         return (
           isSessionModelWithConfigEditing(session) &&
           (adminMode ||
-            sessionTracks?.find(t => t.trackId === self.configuration?.trackId))
+            sessionTracks?.find(t => t.trackId === self.configuration.trackId))
         )
       },
     }))
@@ -154,7 +154,9 @@ export function createBaseTrackModel(
         const schema = pm.pluggableConfigSchemaType('display')
         const conf = resolveIdentifier(schema, getRoot(self), displayId)
         const t = self.displays.filter(d => d.configuration === conf)
-        transaction(() => t.forEach(d => self.displays.remove(d)))
+        transaction(() => {
+          t.forEach(d => self.displays.remove(d))
+        })
         return t.length
       },
 
@@ -203,7 +205,9 @@ export function createBaseTrackModel(
                     type: 'radio',
                     label: pm.getDisplayType(d.type).displayName,
                     checked: d.displayId === shownId,
-                    onClick: () => self.replaceDisplay(shownId, d.displayId),
+                    onClick: () => {
+                      self.replaceDisplay(shownId, d.displayId)
+                    },
                   })),
                 },
               ]

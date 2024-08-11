@@ -29,7 +29,6 @@ export * from './util'
 
 /** abstract type for a model that contains multiple views */
 export interface AbstractViewContainer
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   extends IStateTreeNode<IType<any, unknown, any>> {
   views: AbstractViewModel[]
   removeView(view: AbstractViewModel): void
@@ -77,9 +76,7 @@ export interface JBrowsePlugin {
 }
 
 export type DialogComponentType =
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | React.LazyExoticComponent<React.FC<any>>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | React.FC<any>
 
 /** minimum interface that all session state models must implement */
@@ -127,14 +124,14 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   }[]
   makeConnection?: Function
   breakConnection?: Function
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   prepareToBreakConnection?: (arg: AnyConfigurationModel) => any
   adminMode?: boolean
   showWidget?: Function
   addWidget?: Function
 
   DialogComponent?: DialogComponentType
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   DialogProps: any
   queueDialog<T extends DialogComponentType>(
     callback: (doneCallback: () => void) => [T, React.ComponentProps<T>],
@@ -317,7 +314,7 @@ export interface AbstractDisplayModel {
   id: string
   parentTrack: AbstractTrackModel
   renderDelay: number
-  rendererType: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  rendererType: any
   cannotBeRenderedReason?: string
 }
 export function isDisplayModel(thing: unknown): thing is AbstractDisplayModel {

@@ -1,6 +1,5 @@
 import createJexlInstance from './jexl'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const compilationCache: Record<string, any> = {}
 
 // revert function strings back to main, create a different file for jexlStrings.ts
@@ -14,7 +13,7 @@ const compilationCache: Record<string, any> = {}
  */
 export function stringToJexlExpression(
   str: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   jexl?: any,
 ) {
   const cacheKey = `nosig|${str}`
@@ -25,8 +24,8 @@ export function stringToJexlExpression(
     }
     const code = str.split('jexl:')[1]
     const compiled = jexl
-      ? jexl.compile(`${code}`)
-      : createJexlInstance().compile(`${code}`)
+      ? jexl.compile(code)
+      : createJexlInstance().compile(code)
     compilationCache[cacheKey] = compiled
   }
 

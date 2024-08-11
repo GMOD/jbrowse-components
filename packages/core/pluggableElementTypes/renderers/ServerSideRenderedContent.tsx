@@ -11,7 +11,6 @@ import { hydrate, unmountComponentAtNode } from 'react-dom'
 import { rIC } from '../../util'
 
 interface Props extends ResultsSerialized, RenderArgs {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   RenderingComponent: React.ComponentType<any>
 }
 
@@ -22,10 +21,9 @@ const NewHydrate = observer(function ServerSideRenderedContent({
   ...rest
 }: Props) {
   const ref = useRef<HTMLDivElement>(null)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const rootRef = useRef<any>()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { hydrateFn } = getRoot<any>(rest.displayModel)
 
   useEffect(() => {
@@ -117,7 +115,6 @@ const OldHydrate = observer(function ({
 })
 
 const ServerSideRenderedContent = observer(function (props: Props) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const root = getRoot<any>(props.displayModel)
   return root.hydrateFn ? <NewHydrate {...props} /> : <OldHydrate {...props} />
 })

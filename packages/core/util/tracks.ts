@@ -15,7 +15,7 @@ export function getConfAssemblyNames(conf: AnyConfigurationModel) {
   const trackAssemblyNames = readConfObject(conf, 'assemblyNames') as string[]
   if (!trackAssemblyNames) {
     // Check if it's an assembly sequence track
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const parent = getParent<any>(conf)
     if ('sequence' in parent) {
       return [readConfObject(parent, 'name') as string]
@@ -33,7 +33,7 @@ export function getRpcSessionId(thisNode: IAnyStateTreeNode) {
     rpcSessionId: string
   }
   let highestRpcSessionId: string | undefined
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   for (let node = thisNode; !isRoot(node); node = getParent<any>(node)) {
     if ('rpcSessionId' in node) {
       highestRpcSessionId = (node as NodeWithRpcSessionId).rpcSessionId
@@ -55,10 +55,8 @@ export function getRpcSessionId(thisNode: IAnyStateTreeNode) {
  */
 export function getParentRenderProps(node: IAnyStateTreeNode) {
   for (
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let currentNode = getParent<any>(node);
     !isRoot(currentNode);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     currentNode = getParent<any>(currentNode)
   ) {
     if ('renderProps' in currentNode) {
@@ -98,7 +96,7 @@ export function storeBlobLocation(location: PreFileLocation) {
   if (location && 'blob' in location) {
     const blobId = `b${+Date.now()}-${counter++}`
     blobMap[blobId] = location.blob
-    return { name: location?.blob.name, blobId, locationType: 'BlobLocation' }
+    return { name: location.blob.name, blobId, locationType: 'BlobLocation' }
   }
   return location
 }
@@ -159,7 +157,7 @@ export function getFileName(track: FileLocation) {
   return (
     blob?.name ||
     uri?.slice(uri.lastIndexOf('/') + 1) ||
-    localPath?.slice(localPath?.replace(/\\/g, '/').lastIndexOf('/') + 1) ||
+    localPath?.slice(localPath.replace(/\\/g, '/').lastIndexOf('/') + 1) ||
     ''
   )
 }

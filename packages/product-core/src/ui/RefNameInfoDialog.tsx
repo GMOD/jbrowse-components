@@ -71,11 +71,9 @@ const RefNameInfoDialog = observer(function ({
       return [
         `--- ${assemblyName} ---`,
         ...refNames.slice(0, MAX_REF_NAMES),
-        `${
-          refNames.length > MAX_REF_NAMES
-            ? `\nToo many refNames to show in browser for ${assemblyName}, use "Copy ref names" button to copy to clipboard`
-            : ''
-        }`,
+        refNames.length > MAX_REF_NAMES
+          ? `\nToo many refNames to show in browser for ${assemblyName}, use "Copy ref names" button to copy to clipboard`
+          : '',
       ]
     })
     .filter(f => !!f)
@@ -107,7 +105,9 @@ const RefNameInfoDialog = observer(function ({
                     .join('\n'),
                 )
                 setCopied(true)
-                setTimeout(() => setCopied(false), 1000)
+                setTimeout(() => {
+                  setCopied(false)
+                }, 1000)
               }}
             >
               {copied ? 'Copied to clipboard!' : 'Copy ref names'}

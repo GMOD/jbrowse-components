@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { lazy } from 'react'
 import clone from 'clone'
 import { PluginDefinition } from '@jbrowse/core/PluginLoader'
@@ -364,7 +363,9 @@ export function BaseWebSession({
           {
             label: 'Settings',
             disabled: !canEdit,
-            onClick: () => self.editTrackConfiguration(config),
+            onClick: () => {
+              self.editTrackConfiguration(config)
+            },
             icon: SettingsIcon,
           },
           {

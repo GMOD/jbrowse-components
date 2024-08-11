@@ -91,13 +91,17 @@ const SequenceFeatureMenu = observer(
                   label: 'No coordinates',
                   type: 'radio',
                   checked: showCoordinatesSetting === 'none',
-                  onClick: () => model.setShowCoordinates('none'),
+                  onClick: () => {
+                    model.setShowCoordinates('none')
+                  },
                 },
                 {
                   label: 'Coordinates relative to feature start',
                   type: 'radio',
                   checked: showCoordinatesSetting === 'relative',
-                  onClick: () => model.setShowCoordinates('relative'),
+                  onClick: () => {
+                    model.setShowCoordinates('relative')
+                  },
                 },
                 ...(showGenomicCoordsOption
                   ? [
@@ -106,7 +110,9 @@ const SequenceFeatureMenu = observer(
                           'Coordinates relative to genome (only available for continuous genome based sequence types)',
                         type: 'radio' as const,
                         checked: showCoordinatesSetting === 'genomic',
-                        onClick: () => model.setShowCoordinates('genomic'),
+                        onClick: () => {
+                          model.setShowCoordinates('genomic')
+                        },
                       },
                     ]
                   : []),
@@ -115,7 +121,9 @@ const SequenceFeatureMenu = observer(
             {
               label: 'Settings',
               icon: Settings,
-              onClick: () => setShowSettings(true),
+              onClick: () => {
+                setShowSettings(true)
+              },
             },
           ]}
         >
@@ -125,7 +133,9 @@ const SequenceFeatureMenu = observer(
         {showSettings ? (
           <SequenceFeatureSettingsDialog
             model={model}
-            handleClose={() => setShowSettings(false)}
+            handleClose={() => {
+              setShowSettings(false)
+            }}
           />
         ) : null}
       </>

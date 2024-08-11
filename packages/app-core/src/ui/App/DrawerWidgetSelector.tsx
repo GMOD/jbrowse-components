@@ -92,7 +92,9 @@ const DrawerWidgetSelector = observer(function ({
                 data-testid={`${widget.type}-drawer-delete`}
                 color="inherit"
                 aria-label="Delete"
-                onClick={() => session.hideWidget(widget)}
+                onClick={() => {
+                  session.hideWidget(widget)
+                }}
               >
                 <DeleteIcon />
               </IconButton>

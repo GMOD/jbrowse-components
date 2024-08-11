@@ -117,7 +117,6 @@ class TypeRecord<ElementClass extends PluggableElementBase> {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyFunction = (...args: any) => any
 
 /**
@@ -271,7 +270,9 @@ export default class PluginManager {
       throw new Error('already configured')
     }
 
-    this.plugins.forEach(plugin => plugin.configure(this))
+    this.plugins.forEach(plugin => {
+      plugin.configure(this)
+    })
 
     this.configured = true
 
@@ -437,7 +438,6 @@ export default class PluginManager {
    */
   jbrequire = (
     lib: keyof typeof ReExports | AnyFunction | { default: AnyFunction },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): any => {
     if (typeof lib === 'string') {
       const pack = this.lib[lib]

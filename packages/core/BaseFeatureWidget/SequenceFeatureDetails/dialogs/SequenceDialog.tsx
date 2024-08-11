@@ -47,7 +47,9 @@ const SequenceDialog = observer(function ({
     <Dialog
       maxWidth="xl"
       open
-      onClose={() => handleClose()}
+      onClose={() => {
+        handleClose()
+      }}
       title="Sequence view"
     >
       <DialogContent className={classes.dialogContent}>
@@ -76,7 +78,9 @@ const SequenceDialog = observer(function ({
                 <Button
                   variant="contained"
                   color="inherit"
-                  onClick={() => setForce(true)}
+                  onClick={() => {
+                    setForce(true)
+                  }}
                 >
                   Force load
                 </Button>
@@ -98,7 +102,12 @@ const SequenceDialog = observer(function ({
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={() => handleClose()} variant="contained">
+        <Button
+          onClick={() => {
+            handleClose()
+          }}
+          variant="contained"
+        >
           Close
         </Button>
       </DialogActions>

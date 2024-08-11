@@ -28,7 +28,6 @@ const DrawerWidget = observer(function ({
           session,
           model: visibleWidget,
         },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ) as React.FC<any>)
     : null
 
@@ -41,7 +40,9 @@ const DrawerWidget = observer(function ({
   return (
     <Drawer session={session}>
       <DrawerHeader
-        onPopoutDrawer={() => setPopoutDrawer(true)}
+        onPopoutDrawer={() => {
+          setPopoutDrawer(true)
+        }}
         session={session}
         setToolbarHeight={setToolbarHeight}
       />
@@ -55,7 +56,9 @@ const DrawerWidget = observer(function ({
                 <div>Opened in dialog...</div>
                 <ModalWidget
                   session={session}
-                  onClose={() => setPopoutDrawer(false)}
+                  onClose={() => {
+                    setPopoutDrawer(false)
+                  }}
                 />
               </>
             ) : (

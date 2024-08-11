@@ -176,7 +176,7 @@ export function findTrackConfigsToIndex(
     .filter(track =>
       assemblyName ? track.assemblyNames.includes(assemblyName) : true,
     )
-    .filter(track => isSupportedIndexingAdapter(track.adapter?.type))
+    .filter(track => isSupportedIndexingAdapter(track.adapter.type))
 }
 
 export function decodeURIComponentNoThrow(uri: string) {

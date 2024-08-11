@@ -92,7 +92,6 @@ export type getSubAdapterType = (
   adapterConfigSnap: ConfigSnap,
 ) => ReturnType<typeof getAdapter>
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function freeAdapterResources(specification: Record<string, any>) {
   let deleteCount = 0
   const specKeys = Object.keys(specification)

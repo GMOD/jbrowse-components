@@ -14,5 +14,5 @@ jest.spyOn(console, 'error').mockImplementation((...args) => {
     return undefined
   }
 
-  return originalError.call(console, ...args)
+  originalError.call(console, ...args)
 })

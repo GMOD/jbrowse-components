@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { filter, toArray } from 'rxjs/operators'
 import { Feature } from '../../util/simpleFeature'
 import { Region } from '../../util/types'

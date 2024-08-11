@@ -42,7 +42,6 @@ export function JBrowseModelF({
        * #getter
        */
       get rpcManager(): RpcManager {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getParent<any>(self).rpcManager
       },
     }))
@@ -120,7 +119,7 @@ export function JBrowseModelF({
        */
       addPlugin(pluginDefinition: PluginDefinition) {
         self.plugins.push(pluginDefinition)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         const rootModel = getParent<any>(self)
         rootModel.setPluginsUpdated(true)
       },
@@ -137,7 +136,7 @@ export function JBrowseModelF({
               plugin.esmUrl !== pluginDefinition.esmUrl,
           ),
         )
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         getParent<any>(self).setPluginsUpdated(true)
       },
 
@@ -146,7 +145,6 @@ export function JBrowseModelF({
        */
       setDefaultSessionConf(sessionConf: AnyConfigurationModel) {
         const newDefault =
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           getParent<any>(self).session.name === sessionConf.name
             ? getSnapshot(sessionConf)
             : toJS(sessionConf)

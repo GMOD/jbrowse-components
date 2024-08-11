@@ -54,7 +54,9 @@ const SequenceFeatureDetails = observer(function ({
               onClick: () => {
                 // this is given a setTimeout because it allows the menu to
                 // close before dialog opens
-                setTimeout(() => setOpenInDialog(true), 1)
+                setTimeout(() => {
+                  setOpenInDialog(true)
+                }, 1)
               },
             },
           ]}
@@ -67,7 +69,9 @@ const SequenceFeatureDetails = observer(function ({
             <SequenceDialog
               model={model}
               feature={feature}
-              handleClose={() => setOpenInDialog(false)}
+              handleClose={() => {
+                setOpenInDialog(false)
+              }}
             />
           </Suspense>
         </div>
@@ -89,7 +93,9 @@ const SequenceFeatureDetails = observer(function ({
                 <Button
                   variant="contained"
                   color="inherit"
-                  onClick={() => setForce(true)}
+                  onClick={() => {
+                    setForce(true)
+                  }}
                 >
                   Force load
                 </Button>

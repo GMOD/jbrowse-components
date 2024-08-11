@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useRef, useState } from 'react'
 import isObject from 'is-object'
 import PluginManager from '../PluginManager'
@@ -70,9 +69,9 @@ export function useWidthSetter(
       // sets after a requestAnimationFrame
       // https://stackoverflow.com/a/58701523/2129219
       // avoids ResizeObserver loop error being shown during development
-      requestAnimationFrame(() =>
-        view.setWidth(width - Number.parseInt(padding, 10) * 2),
-      )
+      requestAnimationFrame(() => {
+        view.setWidth(width - Number.parseInt(padding, 10) * 2)
+      })
     }
   }, [padding, view, width])
   return ref
@@ -194,19 +193,23 @@ export function springAnimate(
       onFinish()
     } else {
       setValue(position)
-      animationFrameId = requestAnimationFrame(() =>
+      animationFrameId = requestAnimationFrame(() => {
         update({
           lastPosition: position,
           lastTime: time,
           lastVelocity: velocity,
-        }),
-      )
+        })
+      })
     }
   }
 
   return [
-    () => update({ lastPosition: fromValue }),
-    () => cancelAnimationFrame(animationFrameId),
+    () => {
+      update({ lastPosition: fromValue })
+    },
+    () => {
+      cancelAnimationFrame(animationFrameId)
+    },
   ]
 }
 
@@ -768,7 +771,7 @@ export function renameRegionIfNeeded(
     return region
   }
 
-  if (region && refNameMap?.[region.refName]) {
+  if (region && refNameMap[region.refName]) {
     // clone the region so we don't modify it
     region = isStateTreeNode(region)
       ? { ...getSnapshot(region) }
@@ -926,8 +929,13 @@ export const rIC =
   typeof jest === 'undefined'
     ? typeof window !== 'undefined' && window.requestIdleCallback
       ? window.requestIdleCallback
-      : (cb: () => void) => setTimeout(() => cb(), 1)
-    : (cb: () => void) => cb()
+      : (cb: () => void) =>
+          setTimeout(() => {
+            cb()
+          }, 1)
+    : (cb: () => void) => {
+        cb()
+      }
 
 // prettier-ignore
 const widths = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.2796875,0.2765625,0.3546875,0.5546875,0.5546875,0.8890625,0.665625,0.190625,0.3328125,0.3328125,0.3890625,0.5828125,0.2765625,0.3328125,0.2765625,0.3015625,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.2765625,0.2765625,0.584375,0.5828125,0.584375,0.5546875,1.0140625,0.665625,0.665625,0.721875,0.721875,0.665625,0.609375,0.7765625,0.721875,0.2765625,0.5,0.665625,0.5546875,0.8328125,0.721875,0.7765625,0.665625,0.7765625,0.721875,0.665625,0.609375,0.721875,0.665625,0.94375,0.665625,0.665625,0.609375,0.2765625,0.3546875,0.2765625,0.4765625,0.5546875,0.3328125,0.5546875,0.5546875,0.5,0.5546875,0.5546875,0.2765625,0.5546875,0.5546875,0.221875,0.240625,0.5,0.221875,0.8328125,0.5546875,0.5546875,0.5546875,0.5546875,0.3328125,0.5,0.2765625,0.5546875,0.5,0.721875,0.5,0.5,0.5,0.3546875,0.259375,0.353125,0.5890625]
@@ -1160,7 +1168,7 @@ export function toLocale(n: number) {
 export function getTickDisplayStr(totalBp: number, bpPerPx: number) {
   return Math.floor(bpPerPx / 1_000) > 0
     ? `${toLocale(Number.parseFloat((totalBp / 1_000_000).toFixed(2)))}M`
-    : `${toLocale(Math.floor(totalBp))}`
+    : toLocale(Math.floor(totalBp))
 }
 
 export function getViewParams(model: IAnyStateTreeNode, exportSVG?: boolean) {
@@ -1285,7 +1293,7 @@ export function localStorageGetItem(item: string) {
 }
 
 export function localStorageSetItem(str: string, item: string) {
-  return typeof localStorage !== 'undefined'
+  typeof localStorage !== 'undefined'
     ? localStorage.setItem(str, item)
     : undefined
 }

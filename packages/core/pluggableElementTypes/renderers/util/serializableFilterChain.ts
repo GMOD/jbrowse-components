@@ -1,6 +1,5 @@
 import { stringToJexlExpression } from '../../../util/jexlStrings'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type FilterExpression = (...args: Record<string, any>[] | any[]) => boolean
 
 interface Filter {
@@ -26,7 +25,6 @@ export default class SerializableFilterChain {
       })
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   passes(...args: any[]) {
     for (const entry of this.filterChain) {
       if (

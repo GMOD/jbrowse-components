@@ -13,7 +13,6 @@ export async function* indexVcf({
   onStart,
   onUpdate,
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   config: any
   attributesToIndex: string[]
   inLocation: string

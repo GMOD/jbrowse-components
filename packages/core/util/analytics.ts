@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { readConfObject } from '../configuration'
 import { isElectron } from '../util'
 

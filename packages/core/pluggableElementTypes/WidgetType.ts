@@ -3,7 +3,6 @@ import { IAnyModelType, IAnyStateTreeNode } from 'mobx-state-tree'
 import PluggableElementBase from './PluggableElementBase'
 import { AnyConfigurationSchemaType } from '../configuration'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type WidgetComponentType = LazyExoticComponent<React.FC<any>> | React.FC<any>
 
 type HeadingComponentType = ComponentType<{ model: IAnyStateTreeNode }>

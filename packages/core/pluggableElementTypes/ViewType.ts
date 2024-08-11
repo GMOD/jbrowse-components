@@ -5,7 +5,7 @@ import DisplayType from './DisplayType'
 
 type BasicView = React.ComponentType<{
   // TODO: can we use AbstractViewModel here?
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   model: any
   session?: IAnyStateTreeNode
 }>

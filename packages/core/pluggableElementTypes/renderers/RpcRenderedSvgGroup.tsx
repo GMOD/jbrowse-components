@@ -13,7 +13,7 @@ interface Props {
   html: string
   features: Map<string, Feature>
   theme: ThemeOptions
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   displayModel: any
   RenderingComponent: AnyReactComponentType
 }
@@ -23,9 +23,9 @@ const NewHydrate = observer(function RpcRenderedSvgGroup(props: Props) {
   const ref = useRef<SVGGElement>(null)
 
   // this `any` is a react-dom/client::Root
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const rootRef = useRef<any>()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const root = getRoot<any>(props.displayModel)
   const hydrateRoot = root.hydrateFn
 
@@ -97,7 +97,6 @@ const OldHydrate = observer(function OldHydrate(props: Props) {
 })
 
 const RpcRenderedSvgGroup = observer(function (props: Props) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const root = getRoot<any>(props.displayModel)
   return root.hydrateFn ? <NewHydrate {...props} /> : <OldHydrate {...props} />
 })

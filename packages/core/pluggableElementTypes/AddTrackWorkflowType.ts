@@ -4,7 +4,7 @@ import PluggableElementBase from './PluggableElementBase'
 
 type BasicComponent = React.ComponentType<{
   // TODO: can we use AbstractViewModel here?
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   model: any
 }>
 type AddTrackWorkflowComponentType =

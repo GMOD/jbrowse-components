@@ -223,7 +223,9 @@ export default function ErrorMessageStackTraceDialog({
           onClick={() => {
             copy(errorBoxText)
             setClicked(true)
-            setTimeout(() => setClicked(false), 1000)
+            setTimeout(() => {
+              setClicked(false)
+            }, 1000)
           }}
         >
           {clicked ? 'Copied!' : 'Copy stack trace to clipboard'}

@@ -83,7 +83,7 @@ async function perTrackIndex({
   // default settings
   const force = true
   const supportedTracks = tracks.filter(track =>
-    isSupportedIndexingAdapter(track.adapter?.type),
+    isSupportedIndexingAdapter(track.adapter.type),
   )
   for (const trackConfig of supportedTracks) {
     const { textSearching, trackId, assemblyNames } = trackConfig
@@ -142,7 +142,7 @@ async function aggregateIndex({
     const id = `${asm}-index`
     // supported tracks for given assembly
     const supportedTracks = tracks
-      .filter(track => isSupportedIndexingAdapter(track.adapter?.type))
+      .filter(track => isSupportedIndexingAdapter(track.adapter.type))
       .filter(track => (asm ? track.assemblyNames.includes(asm) : true))
 
     await indexDriver({

@@ -55,7 +55,7 @@ export default class QuickLRU extends Map {
 
   _getOrDeleteIfExpired(key, item) {
     const deleted = this._deleteIfExpired(key, item)
-    if (deleted === false) {
+    if (!deleted) {
       return item.value
     }
   }
@@ -92,7 +92,7 @@ export default class QuickLRU extends Map {
       const [key, value] = item
       if (!this.cache.has(key)) {
         const deleted = this._deleteIfExpired(key, value)
-        if (deleted === false) {
+        if (!deleted) {
           yield item
         }
       }
@@ -101,7 +101,7 @@ export default class QuickLRU extends Map {
     for (const item of this.cache) {
       const [key, value] = item
       const deleted = this._deleteIfExpired(key, value)
-      if (deleted === false) {
+      if (!deleted) {
         yield item
       }
     }
@@ -116,7 +116,7 @@ export default class QuickLRU extends Map {
 
     if (this.oldCache.has(key)) {
       const item = this.oldCache.get(key)
-      if (this._deleteIfExpired(key, item) === false) {
+      if (!this._deleteIfExpired(key, item)) {
         this._moveToRecent(key, item)
         return item.value
       }
@@ -215,7 +215,7 @@ export default class QuickLRU extends Map {
     for (const item of this.cache) {
       const [key, value] = item
       const deleted = this._deleteIfExpired(key, value)
-      if (deleted === false) {
+      if (!deleted) {
         yield [key, value.value]
       }
     }
@@ -224,7 +224,7 @@ export default class QuickLRU extends Map {
       const [key, value] = item
       if (!this.cache.has(key)) {
         const deleted = this._deleteIfExpired(key, value)
-        if (deleted === false) {
+        if (!deleted) {
           yield [key, value.value]
         }
       }
@@ -237,7 +237,7 @@ export default class QuickLRU extends Map {
       const item = items[i]
       const [key, value] = item
       const deleted = this._deleteIfExpired(key, value)
-      if (deleted === false) {
+      if (!deleted) {
         yield [key, value.value]
       }
     }
@@ -248,7 +248,7 @@ export default class QuickLRU extends Map {
       const [key, value] = item
       if (!this.cache.has(key)) {
         const deleted = this._deleteIfExpired(key, value)
-        if (deleted === false) {
+        if (!deleted) {
           yield [key, value.value]
         }
       }

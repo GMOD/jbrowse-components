@@ -78,7 +78,7 @@ async function loadScript(scriptUrl: string) {
   }
 
   // @ts-expect-error
-  if (globalThis?.importScripts) {
+  if (globalThis.importScripts) {
     // @ts-expect-error
     await globalThis.importScripts(scriptUrl)
     return
@@ -118,7 +118,7 @@ export function pluginDescriptionString(pluginDefinition: PluginDefinition) {
   if (isESMPluginDefinition(pluginDefinition)) {
     return `ESM plugin ${
       (pluginDefinition as ESMUrlPluginDefinition).esmUrl ||
-      (pluginDefinition as ESMLocPluginDefinition).esmLoc?.uri
+      (pluginDefinition as ESMLocPluginDefinition).esmLoc.uri
     }`
   }
   if (isCJSPluginDefinition(pluginDefinition)) {

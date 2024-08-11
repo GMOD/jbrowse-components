@@ -98,7 +98,7 @@ export const InternetAccount = types
      * @returns true or false
      */
     handlesLocation(location: UriLocation) {
-      return self.domains.some(domain => location?.uri.includes(domain))
+      return self.domains.some(domain => location.uri.includes(domain))
     },
     /**
      * #getter
@@ -189,7 +189,7 @@ export const InternetAccount = types
           tokenPromise = Promise.resolve(token)
           return tokenPromise
         }
-        tokenPromise = new Promise((resolve, reject) =>
+        tokenPromise = new Promise((resolve, reject) => {
           self.getTokenFromUser(
             token => {
               self.storeToken(token)
@@ -199,8 +199,8 @@ export const InternetAccount = types
               self.removeToken()
               reject(error)
             },
-          ),
-        )
+          )
+        })
         return tokenPromise
       },
     }
@@ -218,7 +218,7 @@ export const InternetAccount = types
             ? {
                 [self.authHeader]: self.tokenType
                   ? `${self.tokenType} ${token}`
-                  : `${token}`,
+                  : token,
               }
             : {}),
         }),

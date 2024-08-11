@@ -60,7 +60,12 @@ const ErrorMessage = ({
       <div style={{ float: 'right', marginLeft: 100 }}>
         {typeof error === 'object' && error && 'stack' in error ? (
           <Tooltip title="Get stack trace">
-            <IconButton onClick={() => setShowStack(true)} color="primary">
+            <IconButton
+              onClick={() => {
+                setShowStack(true)
+              }}
+              color="primary"
+            >
               <ReportIcon />
             </IconButton>
           </Tooltip>
@@ -88,7 +93,9 @@ const ErrorMessage = ({
         <Suspense fallback={null}>
           <ErrorMessageStackTraceDialog
             error={error}
-            onClose={() => setShowStack(false)}
+            onClose={() => {
+              setShowStack(false)
+            }}
           />
         </Suspense>
       ) : null}

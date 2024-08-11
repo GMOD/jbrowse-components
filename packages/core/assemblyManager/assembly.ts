@@ -263,7 +263,6 @@ export default function assemblyFactory(
        * #getter
        */
       get rpcManager(): RpcManager {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getParent<any>(self, 2).rpcManager
       },
       /**
@@ -457,7 +456,7 @@ export default function assemblyFactory(
         adapterConf: AdapterConf,
         opts: BaseOptions,
       ) {
-        if (!opts?.sessionId) {
+        if (!opts.sessionId) {
           throw new Error('sessionId is required')
         }
         const map = await this.getAdapterMapEntry(adapterConf, opts)

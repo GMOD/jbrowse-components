@@ -16,7 +16,9 @@ function debounce(func: (...args: unknown[]) => void, timeout = 300) {
   let timer: ReturnType<typeof setTimeout>
   return (...args: unknown[]) => {
     clearTimeout(timer)
-    timer = setTimeout(() => func(...args), timeout)
+    timer = setTimeout(() => {
+      func(...args)
+    }, timeout)
   }
 }
 
@@ -84,7 +86,9 @@ const TimeTraveller = types
 
         snapshotDisposer = onSnapshot(
           targetStore,
-          debounce((snapshot: unknown) => this.addUndoState(snapshot), 300),
+          debounce((snapshot: unknown) => {
+            this.addUndoState(snapshot)
+          }, 300),
         )
         if (self.history.length === 0) {
           this.addUndoState(getSnapshot(targetStore))

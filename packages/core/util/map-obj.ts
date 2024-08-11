@@ -23,13 +23,14 @@ export default function map(
 
   isSeen.add(object)
 
-  const mapArray = (array: unknown[]) =>
+  const mapArray = (array: unknown[]) => {
     array.forEach(element => {
       mapper(element)
       if (isObject(element)) {
         map(element as Record<string, unknown>, mapper, isSeen)
       }
     })
+  }
 
   if (Array.isArray(object)) {
     mapArray(object)

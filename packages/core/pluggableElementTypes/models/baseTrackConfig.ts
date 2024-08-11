@@ -178,7 +178,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
        */
       explicitIdentifier: 'trackId',
       explicitlyTyped: true,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       actions: (self: any) => ({
         addDisplayConf(conf: { type: string; displayId: string }) {
           const { type } = conf
@@ -186,7 +186,6 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
             throw new Error(`unknown display type ${type}`)
           }
           const display = self.displays.find(
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (d: any) => d?.displayId === conf.displayId,
           )
           if (display) {

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import {
@@ -61,7 +60,9 @@ export function BaseCard({
   return (
     <Accordion
       expanded={expanded}
-      onChange={() => setExpanded(s => !s)}
+      onChange={() => {
+        setExpanded(s => !s)
+      }}
       TransitionProps={{ unmountOnExit: true, timeout: 150 }}
     >
       <AccordionSummary

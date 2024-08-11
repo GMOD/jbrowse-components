@@ -35,13 +35,14 @@ const ModalWidget = observer(function ({
           session,
           model: visibleWidget,
         },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ) as React.FC<any>)
     : null
   return (
     <Dialog
       open
-      onClose={() => session.hideAllWidgets()}
+      onClose={() => {
+        session.hideAllWidgets()
+      }}
       maxWidth="xl"
       header={
         <AppBar position="static">

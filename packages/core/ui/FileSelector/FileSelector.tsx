@@ -171,7 +171,9 @@ const FileSelector = observer(function (props: {
             {hiddenAccounts.length > 0 ? (
               // @ts-expect-error
               <ToggleButton
-                onClick={event => setAnchorEl(event.target as HTMLElement)}
+                onClick={event => {
+                  setAnchorEl(event.target as HTMLElement)
+                }}
                 selected={false}
               >
                 More
@@ -183,11 +185,13 @@ const FileSelector = observer(function (props: {
           <Menu
             open={Boolean(anchorEl)}
             anchorEl={anchorEl}
-            onClose={() => setAnchorEl(null)}
+            onClose={() => {
+              setAnchorEl(null)
+            }}
             anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
             transformOrigin={{ vertical: 'top', horizontal: 'center' }}
           >
-            {hiddenAccounts?.map(id => {
+            {hiddenAccounts.map(id => {
               const { internetAccountId, name } = map[id]
               return (
                 <MenuItem

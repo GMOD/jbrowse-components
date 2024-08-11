@@ -72,7 +72,9 @@ export default function DataGridDetails({
           control={
             <Checkbox
               checked={checked}
-              onChange={event => setChecked(event.target.checked)}
+              onChange={event => {
+                setChecked(event.target.checked)
+              }}
             />
           }
           label={<Typography variant="body2">Show options</Typography>}

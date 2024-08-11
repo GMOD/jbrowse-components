@@ -42,18 +42,23 @@ const SequenceFeaturePanel = observer(function ({
   return model ? (
     <div className={classes.container}>
       <FormControl className={classes.formControl}>
-        <Button variant="contained" onClick={() => setShown(!shown)}>
+        <Button
+          variant="contained"
+          onClick={() => {
+            setShown(!shown)
+          }}
+        >
           {shown ? 'Hide feature sequence' : 'Show feature sequence'}
         </Button>
       </FormControl>
 
       <IconButton
-        onClick={() =>
+        onClick={() => {
           getSession(model).queueDialog(handleClose => [
             HelpDialog,
             { handleClose },
           ])
-        }
+        }}
       >
         <Help />
       </IconButton>

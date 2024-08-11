@@ -10,13 +10,13 @@ export interface Feature {
   get(name: 'start'): number
   get(name: 'end'): number
   get(name: 'subfeatures'): Feature[] | undefined
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   get(name: string): any
 
   /**
    * Set an item of data.
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   set(name: string, val: any): void
 
   /**
@@ -90,7 +90,6 @@ function isSimpleFeatureSerialized(
  * Simple implementation of a feature object.
  */
 export default class SimpleFeature implements Feature {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private data: Record<string, any>
 
   private subfeatures?: SimpleFeature[]
@@ -132,20 +131,17 @@ export default class SimpleFeature implements Feature {
       )
     }
     if (this.data.subfeatures) {
-      this.subfeatures = this.data.subfeatures?.map(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (f: any, i: number) =>
-          typeof f.get !== 'function'
-            ? new SimpleFeature({
-                id: f.uniqueId || `${id}-${i}`,
-                data: {
-                  strand: this.data.strand,
-                  ...f,
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                } as Record<string, any>,
-                parent: this,
-              })
-            : f,
+      this.subfeatures = this.data.subfeatures?.map((f: any, i: number) =>
+        typeof f.get !== 'function'
+          ? new SimpleFeature({
+              id: f.uniqueId || `${id}-${i}`,
+              data: {
+                strand: this.data.strand,
+                ...f,
+              } as Record<string, any>,
+              parent: this,
+            })
+          : f,
       )
     }
   }
@@ -154,7 +150,7 @@ export default class SimpleFeature implements Feature {
    * Get a piece of data about the feature.  All features must have
    * 'start' and 'end', but everything else is optional.
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   public get(name: string): any {
     return name === 'subfeatures'
       ? this.subfeatures
@@ -166,7 +162,7 @@ export default class SimpleFeature implements Feature {
   /**
    * Set an item of data.
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   public set(name: string, val: any): void {
     this.data[name] = val
   }

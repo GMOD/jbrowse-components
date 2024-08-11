@@ -70,7 +70,6 @@ const AboutDialogContents = observer(function ({
     'Core-extraAboutPanel',
     null,
     { session, config },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ) as { name: string; Component: React.FC<any> }
 
   return (
@@ -81,7 +80,9 @@ const AboutDialogContents = observer(function ({
             <Button
               variant="contained"
               color="secondary"
-              onClick={() => setShowRefNames(true)}
+              onClick={() => {
+                setShowRefNames(true)
+              }}
             >
               Show ref names
             </Button>
@@ -91,7 +92,9 @@ const AboutDialogContents = observer(function ({
                 const snap = removeAttr(clone(conf), 'baseUri')
                 copy(JSON.stringify(snap, null, 2))
                 setCopied(true)
-                setTimeout(() => setCopied(false), 1000)
+                setTimeout(() => {
+                  setCopied(false)
+                }, 1000)
               }}
             >
               {copied ? 'Copied to clipboard!' : 'Copy config'}
@@ -113,7 +116,9 @@ const AboutDialogContents = observer(function ({
       {showRefNames ? (
         <RefNameInfoDialog
           config={config}
-          onClose={() => setShowRefNames(false)}
+          onClose={() => {
+            setShowRefNames(false)
+          }}
         />
       ) : null}
     </div>
