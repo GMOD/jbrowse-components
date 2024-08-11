@@ -54,7 +54,7 @@ export function drawXY(
     offset = 0,
     colorCallback,
   } = props
-  const region = regions[0]!!
+  const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
 
   // the adjusted height takes into account YSCALEBAR_LABEL_OFFSET from the

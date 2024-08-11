@@ -63,7 +63,7 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
         const configuration = {
           type: internetAccountSplit[0]!,
           internetAccountId: internetAccountId,
-          name: internetAccountSplit.slice(1)!.join('-'),
+          name: internetAccountSplit.slice(1).join('-'),
           description: '',
           domains: hostUri ? [hostUri] : [],
         }

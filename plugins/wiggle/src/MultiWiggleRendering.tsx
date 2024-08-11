@@ -31,7 +31,7 @@ const MultiWiggleRendering = observer(function (props: {
     onFeatureClick = () => {},
     displayModel,
   } = props
-  const region = regions[0]!!
+  const region = regions[0]!
   const ref = useRef<HTMLDivElement>(null)
 
   function getFeatureUnderMouse(eventClientX: number, eventClientY: number) {

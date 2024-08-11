@@ -24,7 +24,7 @@ export function drawDensity(
   },
 ) {
   const { features, regions, bpPerPx, scaleOpts, height, config } = props
-  const region = regions[0]!!
+  const region = regions[0]!
   const pivot = readConfObject(config, 'bicolorPivot')
   const pivotValue = readConfObject(config, 'bicolorPivotValue')
   const negColor = readConfObject(config, 'negColor')

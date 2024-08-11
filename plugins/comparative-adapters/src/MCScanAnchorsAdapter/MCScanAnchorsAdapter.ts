@@ -63,7 +63,7 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
         if (!r1 || !r2) {
           throw new Error(`feature not found, ${name1} ${name2} ${r1} ${r2}`)
         }
-        return [r1!, r2!, +score!, index] as Row
+        return [r1, r2, +score!, index] as Row
       })
 
     return {

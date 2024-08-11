@@ -183,7 +183,7 @@ const FilterModelType = types
     type: types.literal('LocString'),
     columnNumber: types.integer,
     locString: '',
-    operation: types.optional(types.string, OPERATIONS[0]!),
+    operation: types.optional(types.string, OPERATIONS[0]),
   })
   .views(self => ({
     get locStringIsInvalid() {

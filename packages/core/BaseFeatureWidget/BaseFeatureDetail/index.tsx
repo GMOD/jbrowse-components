@@ -46,7 +46,7 @@ const useStyles = makeStyles()(theme => ({
     padding: theme.spacing(1),
   },
   expandIcon: {
-    color: theme.palette.tertiary?.contrastText || '#fff',
+    color: theme.palette.tertiary.contrastText || '#fff',
   },
 }))
 

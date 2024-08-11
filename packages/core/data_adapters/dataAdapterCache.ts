@@ -80,7 +80,7 @@ export async function getAdapter(
     }
   }
 
-  const cacheEntry = adapterCache[cacheKey]!
+  const cacheEntry = adapterCache[cacheKey]
   cacheEntry.sessionIds.add(sessionId)
 
   return cacheEntry
