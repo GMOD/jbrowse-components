@@ -54,20 +54,18 @@ const ModalWidget = observer(function ({
         </AppBar>
       }
     >
-      {Component ? (
-        <Suspense fallback={<div>Loading...</div>}>
-          <Paper className={classes.paper}>
-            <Component
-              model={visibleWidget}
-              session={session}
-              overrideDimensions={{
-                height: (window.innerHeight * 5) / 8,
-                width: 800,
-              }}
-            />
-          </Paper>
-        </Suspense>
-      ) : null}
+      <Suspense fallback={<div>Loading...</div>}>
+        <Paper className={classes.paper}>
+          <Component
+            model={visibleWidget}
+            session={session}
+            overrideDimensions={{
+              height: (window.innerHeight * 5) / 8,
+              width: 800,
+            }}
+          />
+        </Paper>
+      </Suspense>
     </Dialog>
   )
 })

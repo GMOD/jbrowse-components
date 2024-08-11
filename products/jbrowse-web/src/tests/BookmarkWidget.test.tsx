@@ -231,8 +231,7 @@ test('Toggle highlight visibility across all views', async () => {
 })
 
 test('Toggle highlight label visibility across all views', async () => {
-  const { session, findByText, findByTestId, findAllByTestId } =
-    await createView()
+  const { session, findByText, findByTestId } = await createView()
 
   const user = userEvent.setup()
 

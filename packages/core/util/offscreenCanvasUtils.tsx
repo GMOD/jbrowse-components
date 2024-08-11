@@ -102,9 +102,6 @@ export function ReactRendering({
   return React.isValidElement(rendering.reactElement) ? (
     rendering.reactElement
   ) : (
-    <g
-       
-      dangerouslySetInnerHTML={{ __html: rendering.html || '' }}
-    />
+    <g dangerouslySetInnerHTML={{ __html: rendering.html || '' }} />
   )
 }

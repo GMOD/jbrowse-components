@@ -180,11 +180,13 @@ export async function checkPlugins(pluginsToCheck: PluginDefinition[]) {
     if (isESMPluginDefinition(p)) {
       return storePlugins.plugins.some(
         pp =>
+          // @ts-expect-error
           isESMPluginDefinition(p) && 'esmUrl' in p && p.esmUrl === pp.esmUrl,
       )
     }
     if (isCJSPluginDefinition(p)) {
       return storePlugins.plugins.some(
+        // @ts-expect-error
         pp => isCJSPluginDefinition(p) && p.cjsUrl === pp.cjsUrl,
       )
     }

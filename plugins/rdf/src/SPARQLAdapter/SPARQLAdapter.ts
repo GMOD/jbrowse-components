@@ -26,7 +26,7 @@ interface SPARQLResponseHead {
 }
 
 interface SPARQLResponseResults {
-  bindings: SPARQLBinding[]
+  bindings?: SPARQLBinding[]
 }
 
 interface SPARQLResponse {
@@ -121,9 +121,6 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
 
   private resultsToRefNames(response: SPARQLResponse): string[] {
     const rows = response.results.bindings || []
-    if (!rows.length) {
-      return []
-    }
     const fields = response.head.vars
     if (!fields.includes('refName')) {
       throw new Error('"refName" not found in refNamesQueryTemplate response')
@@ -136,9 +133,6 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
     refName: string,
   ): SimpleFeature[] {
     const rows = results.results.bindings || []
-    if (!rows.length) {
-      return []
-    }
     const fields = results.head.vars
     const requiredFields = ['start', 'end', 'uniqueId']
     requiredFields.forEach(requiredField => {

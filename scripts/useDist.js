@@ -3,7 +3,6 @@
  * field match the "distModule" field.
  */
 
- 
 const fs = require('fs')
 
 function main() {

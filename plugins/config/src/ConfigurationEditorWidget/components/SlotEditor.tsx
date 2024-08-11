@@ -160,6 +160,7 @@ const FileSelectorWrapper = observer(function ({
       }}
       name={slot.name}
       description={slot.description}
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       rootModel={getEnv(slot).pluginManager?.rootModel}
     />
   )

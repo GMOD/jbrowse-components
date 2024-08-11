@@ -213,11 +213,13 @@ export default function ConfigSlot(
         if (self.isCallback) {
           // compile as jexl function
           const { pluginManager } = getEnv(self)
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           if (!pluginManager && typeof jest === 'undefined') {
             console.warn(
               'no pluginManager detected on config env (if you dynamically instantiate a config, for example in renderProps for your display model, check that you add the env argument)',
             )
           }
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           return stringToJexlExpression(String(self.value), pluginManager?.jexl)
         }
         return { evalSync: () => self.value }
@@ -280,16 +282,13 @@ export default function ConfigSlot(
           /* ignore */
         }
         self.value = defaultValue
-        // if it is still a callback (happens if the defaultValue is a callback),
-        // then use the last-resort fallback default
-
+        // if it is still a callback (happens if the defaultValue is a
+        // callback), then use the last-resort fallback default
         // if defaultValue has jexl: string, run this part
-        if (self.isCallback) {
-          if (!(type in fallbackDefaults)) {
-            throw new Error(`no fallbackDefault defined for type ${type}`)
-          }
-          self.value = fallbackDefaults[type]
+        if (!(type in fallbackDefaults)) {
+          throw new Error(`no fallbackDefault defined for type ${type}`)
         }
+        self.value = fallbackDefaults[type]
       },
     }))
 

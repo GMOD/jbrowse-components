@@ -3,7 +3,6 @@
  * field into an empty string.
  */
 
- 
 const fs = require('fs')
 
 function main() {

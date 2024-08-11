@@ -99,6 +99,7 @@ function dataToSpreadsheetSnapshot(
 
   // process the column names row if present
   const columnNames: Record<string, string> = {}
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (hasColumnNameLine && columnNameLineNumber !== undefined) {
     const [colNamesRow] = rowSet.rows.splice(columnNameLineNumber - 1, 1)
 

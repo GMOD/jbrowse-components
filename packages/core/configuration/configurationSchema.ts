@@ -90,7 +90,9 @@ function preprocessConfigurationSchemaArguments(
 }
 
 function makeConfigurationSchemaModel<
+   
   DEFINITION extends ConfigurationSchemaDefinition,
+   
   OPTIONS extends ConfigurationSchemaOptions<any, any>,
 >(modelName: string, schemaDefinition: DEFINITION, options: OPTIONS) {
   // now assemble the MST model of the configuration schema

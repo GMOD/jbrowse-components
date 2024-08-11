@@ -9,6 +9,7 @@ const RowCountMessage = observer(function ({
 }: {
   spreadsheet: SpreadsheetModel
 }) {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (spreadsheet.rowSet.isLoaded) {
     const {
       passingFiltersCount,

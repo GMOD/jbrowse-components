@@ -177,7 +177,7 @@ export default async function generateCoverageBins(
               ) {
                 inc(bin0, fstrand, 'cov', 'unmeth')
                 bin0.ref--
-                bin0[fstrand]
+                bin0[fstrand]--
               }
             }
             if (bin1) {

@@ -66,7 +66,6 @@ const NewHydrate = observer(function ServerSideRenderedContent({
     <div
       data-testid="hydrationContainer"
       ref={ref}
-       
       dangerouslySetInnerHTML={{ __html: html }}
     />
   )

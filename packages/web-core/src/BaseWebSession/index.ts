@@ -47,6 +47,7 @@ import InfoIcon from '@mui/icons-material/Info'
 
 // locals
 import { WebSessionConnectionsMixin } from '../SessionConnections'
+import { parseTsvBuffer } from '@jbrowse/plugin-spreadsheet-view/src/SpreadsheetView/importAdapters/ImportUtils'
 
 // lazies
 const AboutDialog = lazy(() => import('./AboutDialog'))
@@ -255,9 +256,13 @@ export function BaseWebSession({
         self.sessionPlugins = cast(
           self.sessionPlugins.filter(
             plugin =>
+              // @ts-expect-error
               plugin.url !== pluginDefinition.url ||
+              // @ts-expect-error
               plugin.umdUrl !== pluginDefinition.umdUrl ||
+              // @ts-expect-error
               plugin.cjsUrl !== pluginDefinition.cjsUrl ||
+              // @ts-expect-error
               plugin.esmUrl !== pluginDefinition.esmUrl,
           ),
         )

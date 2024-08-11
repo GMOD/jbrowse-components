@@ -29,9 +29,13 @@ export function isUMDPluginDefinition(
   def: PluginDefinition,
 ): def is UMDPluginDefinition | LegacyUMDPluginDefinition {
   return (
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     ((def as UMDUrlPluginDefinition).umdUrl !== undefined ||
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       (def as LegacyUMDPluginDefinition).url !== undefined ||
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       (def as UMDLocPluginDefinition).umdLoc !== undefined) &&
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     (def as LegacyUMDPluginDefinition | UMDPluginDefinition).name !== undefined
   )
 }
@@ -54,7 +58,9 @@ export function isESMPluginDefinition(
   def: PluginDefinition,
 ): def is ESMPluginDefinition {
   return (
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     (def as ESMUrlPluginDefinition).esmUrl !== undefined ||
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     (def as ESMLocPluginDefinition).esmLoc !== undefined
   )
 }
@@ -94,6 +100,7 @@ async function loadScript(scriptUrl: string) {
 export function isCJSPluginDefinition(
   def: PluginDefinition,
 ): def is CJSPluginDefinition {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   return (def as CJSPluginDefinition).cjsUrl !== undefined
 }
 
@@ -183,6 +190,7 @@ export default class PluginLoader {
     }
     const plugin = await this.fetchESM(parsedUrl.href)
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!plugin) {
       throw new Error(`Could not load ESM plugin: ${parsedUrl}`)
     }
@@ -243,6 +251,7 @@ export default class PluginLoader {
     } else {
       throw new Error(`Could not determine plugin type: ${JSON.stringify(def)}`)
     }
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!plugin.default) {
       throw new Error(
         `${pluginDescriptionString(

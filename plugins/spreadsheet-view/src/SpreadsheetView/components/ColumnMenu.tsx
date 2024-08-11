@@ -48,7 +48,9 @@ const ColumnMenu = observer(function ({
   dataTypeChoices.forEach(dataTypeRecord => {
     const { displayName, categoryName } = dataTypeRecord
     if (categoryName) {
-      let entry = dataTypeTopLevelMenu.get(categoryName) as RecordGroup
+      let entry = dataTypeTopLevelMenu.get(categoryName) as
+        | RecordGroup
+        | undefined
       if (!entry) {
         entry = {
           isCategory: true,
@@ -115,6 +117,7 @@ const ColumnMenu = observer(function ({
       subMenu: iterMap(
         dataTypeTopLevelMenu.entries(),
         ([displayName, record]) => {
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           if ('typeName' in record && record.typeName) {
             const { typeName } = record
             return {
@@ -125,6 +128,8 @@ const ColumnMenu = observer(function ({
               },
             }
           }
+
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           if ('subMenuItems' in record && record.subMenuItems) {
             const { subMenuItems } = record
             return {

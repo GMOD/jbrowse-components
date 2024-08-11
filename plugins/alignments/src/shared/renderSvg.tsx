@@ -54,7 +54,6 @@ export async function renderSvg<T extends { id: string; height: number }>(
           </clipPath>
         </defs>
         <g
-           
           dangerouslySetInnerHTML={{ __html: ctx.getSvg().innerHTML }}
           clipPath={`url(#${clipid})`}
         />

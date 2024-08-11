@@ -1,5 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import PluginLoader from '@jbrowse/core/PluginLoader'
+import PluginLoader, { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import { readConfObject } from '@jbrowse/core/configuration'
 import deepmerge from 'deepmerge'
 
@@ -51,7 +51,9 @@ export async function loadPluginManager(configPath: string) {
 }
 
 export async function createPluginManager(
-  configSnapshot: { plugins?: Record<string, unknown>[] },
+  configSnapshot: {
+    plugins?: PluginDefinition[]
+  },
   initialTimestamp = +Date.now(),
 ) {
   const pluginLoader = new PluginLoader(configSnapshot.plugins, {
@@ -63,15 +65,21 @@ export async function createPluginManager(
   const pluginManager = new PluginManager([
     ...corePlugins.map(P => ({
       plugin: new P(),
-      metadata: { isCore: true },
+      metadata: {
+        isCore: true,
+      },
     })),
     ...runtimePlugins.map(({ plugin: P, definition }) => ({
       plugin: new P(),
       definition,
       metadata: {
+        // @ts-expect-error
         url: definition.url,
+        // @ts-expect-error
         esmUrl: definition.esmUrl,
+        // @ts-expect-error
         umdUrl: definition.umdUrl,
+        // @ts-expect-error
         cjsUrl: definition.cjsUrl,
       },
     })),

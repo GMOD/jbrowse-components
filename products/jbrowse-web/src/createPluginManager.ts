@@ -19,12 +19,18 @@ export function createPluginManager(self: SessionLoaderModel) {
     ...self.runtimePlugins.map(({ plugin: P, definition }) => ({
       plugin: new P(),
       definition,
-      metadata: { url: definition.url },
+      metadata: {
+        // @ts-expect-error
+        url: definition.url,
+      },
     })),
     ...self.sessionPlugins.map(({ plugin: P, definition }) => ({
       plugin: new P(),
       definition,
-      metadata: { url: definition.url },
+      metadata: {
+        // @ts-expect-error
+        url: definition.url,
+      },
     })),
   ])
   pluginManager.createPluggableElements()

@@ -28,9 +28,8 @@ import { getLowerPanelDisplays } from './util'
 const minDisplayHeight = 20
 
 function deepSnap<T extends IStateTreeNode, U extends IStateTreeNode>(
-   
   x1: T,
-   
+
   x2: U,
 ) {
   return deepEqual(

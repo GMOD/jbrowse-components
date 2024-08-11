@@ -34,11 +34,14 @@ const Spreadsheet = observer(function ({
 
   return (
     <div className={classes.root} style={{ height }}>
-      {model.rowSet.isLoaded && model.initialized ? (
-        <DataTable model={model} page={page} rowsPerPage={rowsPerPage} />
-      ) : (
-        <LoadingEllipses variant="h6" />
-      )}
+      {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        model.rowSet.isLoaded && model.initialized ? (
+          <DataTable model={model} page={page} rowsPerPage={rowsPerPage} />
+        ) : (
+          <LoadingEllipses variant="h6" />
+        )
+      }
     </div>
   )
 })

@@ -38,6 +38,7 @@ export async function watchWorker(
 ) {
   // after first ping succeeds, apply wait for timeout
 
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   while (true) {
     await worker.call('ping', [], {
       timeout: pingTime * 2,

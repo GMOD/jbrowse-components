@@ -89,7 +89,6 @@ export default function SanitizedHTML({
   return (
     <span
       className={className}
-       
       dangerouslySetInnerHTML={{
         __html: dompurify.sanitize(value),
       }}

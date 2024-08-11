@@ -67,7 +67,6 @@ export class LayoutSession implements LayoutSessionProps {
    */
   cachedLayoutIsValid(cachedLayout: CachedLayout) {
     return (
-      cachedLayout &&
       cachedLayout.layout.subLayoutConstructorArgs.pitchX === this.bpPerPx &&
       deepEqual(readConfObject(this.config), cachedLayout.config) &&
       deepEqual(this.filters, cachedLayout.filters)
@@ -132,17 +131,9 @@ export default class BoxRendererType extends FeatureRendererType {
 
   // expands region for glyphs to use
   getExpandedRegion(region: Region, renderArgs: RenderArgsDeserialized) {
-    if (!region) {
-      return region
-    }
     const { bpPerPx, config } = renderArgs
     const maxFeatureGlyphExpansion =
-      config === undefined
-        ? 0
-        : readConfObject(config, 'maxFeatureGlyphExpansion')
-    if (!maxFeatureGlyphExpansion) {
-      return region
-    }
+      readConfObject(config, 'maxFeatureGlyphExpansion') || 0
     const bpExpansion = Math.round(maxFeatureGlyphExpansion * bpPerPx)
     return {
       ...region,
@@ -158,17 +149,12 @@ export default class BoxRendererType extends FeatureRendererType {
   async freeResourcesInClient(rpcManager: RpcManager, args: RenderArgs) {
     const { regions } = args
     const key = getLayoutId(args)
-    let freed = 0
     const session = this.sessions[key]
-    if (!regions && session) {
-      delete this.sessions[key]
-      freed = 1
-    }
     if (session && regions) {
       const region = regions[0]!
       session.layout.discardRange(region.refName, region.start, region.end)
     }
-    return freed + (await super.freeResourcesInClient(rpcManager, args))
+    return await super.freeResourcesInClient(rpcManager, args)
   }
 
   deserializeLayoutInClient(json: SerializedLayout) {

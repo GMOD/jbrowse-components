@@ -111,9 +111,6 @@ export function getConf<CONFMODEL extends AnyConfigurationModel>(
   slotPath?: Parameters<typeof readConfObject<CONFMODEL>>[1],
   args?: Parameters<typeof readConfObject<CONFMODEL>>[2],
 ) {
-  if (!model) {
-    throw new TypeError('must provide a model object')
-  }
   const { configuration } = model
   if (isConfigurationModel(configuration)) {
     return readConfObject<CONFMODEL>(configuration, slotPath, args)

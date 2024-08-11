@@ -59,7 +59,7 @@ export function when(
           resolve(true)
         }
       })
-      .catch(err => {
+      .catch((err: unknown) => {
         if (!finished) {
           finished = true
           finishTimeout()

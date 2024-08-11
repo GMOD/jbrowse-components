@@ -88,6 +88,7 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/ban-ts-comment': 'off',
+      '@typescript-eslint/no-unnecessary-type-parameters': 'off',
       'react/no-unescaped-entities': 'off',
       semi: ['error', 'never'],
       'unicorn/prefer-structured-clone': 'off',
@@ -155,6 +156,7 @@ export default tseslint.config(
   {
     files: [
       'babel.config.js',
+      'jest.config.js',
       'webpack/**/*',
       'scripts/**/*',
       'products/jbrowse-cli/**/*',

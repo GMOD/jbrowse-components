@@ -1,5 +1,4 @@
 #!/usr/bin/env node
- 
 
 /**
  * This grabs the UCSC genome downloads page and parses it for assembly names.

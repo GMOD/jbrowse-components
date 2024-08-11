@@ -159,9 +159,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
           // Gets the displays on the track snapshot and the possible displays
           // from the track type and adds any missing possible displays to the
           // snapshot
-          const configDisplayTypes = new Set(
-            displays.filter(d => !!d).map(d => d.type),
-          )
+          const configDisplayTypes = new Set(displays.map(d => d.type))
           pluginManager.getTrackType(snap.type)!.displayTypes.forEach(d => {
             if (!configDisplayTypes.has(d.name)) {
               displays.push({

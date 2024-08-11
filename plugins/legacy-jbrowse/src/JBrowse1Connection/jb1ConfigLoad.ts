@@ -11,12 +11,14 @@ import {
 } from './types'
 
 function isUriLocation(location: JBLocation): location is UriLocation {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   return (location as UriLocation).uri !== undefined
 }
 
 function isLocalPathLocation(
   location: JBLocation,
 ): location is LocalPathLocation {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   return (location as LocalPathLocation).localPath !== undefined
 }
 
@@ -130,8 +132,9 @@ function mergeConfigs(a: Config | null, b: Config | null): Config | null {
     if (prop === 'tracks' && prop in a) {
       const aTracks = a[prop] || []
       const bTracks = b[prop] || []
+
       if (Array.isArray(aTracks) && Array.isArray(bTracks)) {
-        a[prop] = mergeTrackConfigs(aTracks || [], bTracks || [])
+        a[prop] = mergeTrackConfigs(aTracks, bTracks)
       } else {
         throw new Error(
           `Track config has not been properly regularized: ${aTracks} ${bTracks}`,
