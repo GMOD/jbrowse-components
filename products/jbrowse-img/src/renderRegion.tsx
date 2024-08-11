@@ -26,8 +26,8 @@ export interface Opts {
   tracks?: string
 }
 
-function read<T>(file: string) {
-  let res: T
+function read(file: string): unknown {
+  let res: unknown
   try {
     res = JSON.parse(fs.readFileSync(file, 'utf8'))
   } catch (e) {
@@ -84,11 +84,13 @@ export function readData({
   trackList = [],
 }: Opts) {
   const assemblyData =
-    asm && fs.existsSync(asm) ? read<Assembly>(asm) : undefined
-  const tracksData = tracks ? read<Track[]>(tracks) : undefined
-  const configData = config ? read<Config>(config) : ({} as Config)
+    asm && fs.existsSync(asm) ? (read(asm) as Assembly) : undefined
+  const tracksData = tracks ? (read(tracks) as Track[]) : undefined
+  const configData = config ? (read(config) as Config) : ({} as Config)
 
-  let sessionData = session ? read<Record<string, any>>(session) : undefined
+  let sessionData = session
+    ? (read(session) as Record<string, unknown>)
+    : undefined
 
   if (config) {
     addRelativePaths(configData, path.dirname(path.resolve(config)))
@@ -98,12 +100,12 @@ export function readData({
   // attribute, which is what is exported via the "File->Export session" in
   // jbrowse-web
   if (sessionData?.session) {
-    sessionData = sessionData.session
+    sessionData = sessionData.session as Record<string, unknown>
   }
 
   // only export first view
   if (sessionData?.views) {
-    sessionData.view = sessionData.views[0]
+    sessionData.view = (sessionData.views as Record<string, unknown>[])[0]
   }
 
   // use assembly from file if a file existed
@@ -159,6 +161,7 @@ export function readData({
   }
 
   // throw if still no assembly
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (!configData.assembly) {
     throw new Error(
       'no assembly specified, use --fasta to supply an indexed FASTA file (generated with samtools faidx yourfile.fa). see README for alternatives with --assembly and --config',
@@ -167,7 +170,10 @@ export function readData({
 
   if (tracksData) {
     configData.tracks = tracksData
-  } else if (!configData.tracks) {
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  else if (!configData.tracks) {
     configData.tracks = []
   }
 

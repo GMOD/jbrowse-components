@@ -60,6 +60,7 @@ autoUpdater.autoDownload = false
 autoUpdater.on('error', error => {
   dialog.showErrorBox(
     'Error: ',
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     error == null ? 'unknown' : (error.stack || error).toString(),
   )
 })

@@ -79,16 +79,14 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
     if (this.refNames) {
       return this.refNames
     }
-    let refNames = [] as string[]
     if (this.refNamesQueryTemplate) {
       const queryTemplate = encodeURIComponent(this.refNamesQueryTemplate)
       const results = await this.querySparql(queryTemplate, opts)
-      refNames = this.resultsToRefNames(results)
-    } else if (this.configRefNames) {
-      refNames = this.configRefNames
+      this.refNames = this.resultsToRefNames(results)
+    } else {
+      this.refNames = this.configRefNames
     }
-    this.refNames = refNames
-    return refNames
+    return this.refNames
   }
 
   public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {

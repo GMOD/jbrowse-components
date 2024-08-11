@@ -20,6 +20,8 @@ export function getConfAssemblyNames(conf: AnyConfigurationModel) {
     const parent = getParent<any>(conf)
     if ('sequence' in parent) {
       return [readConfObject(parent, 'name') as string]
+    } else {
+      throw new Error('unknown assembly names')
     }
   }
   return trackAssemblyNames

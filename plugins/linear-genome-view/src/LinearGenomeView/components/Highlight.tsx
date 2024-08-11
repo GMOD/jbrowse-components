@@ -2,12 +2,7 @@ import React, { useRef, useState } from 'react'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 import { colord } from '@jbrowse/core/util/colord'
-import {
-  ParsedLocString,
-  Region,
-  SessionWithWidgets,
-  getSession,
-} from '@jbrowse/core/util'
+import { Region, SessionWithWidgets, getSession } from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
 import { IconButton, Tooltip } from '@mui/material'
 
@@ -38,7 +33,12 @@ const Highlight = observer(function Highlight({
   highlight,
 }: {
   model: LGV
-  highlight: Required<ParsedLocString>
+  highlight: {
+    assemblyName: string
+    refName: string
+    start: number
+    end: number
+  }
 }) {
   const { classes } = useStyles()
   const [open, setOpen] = useState(false)
@@ -55,7 +55,12 @@ const Highlight = observer(function Highlight({
   }
 
   // coords
-  const mapCoords = (r: Required<ParsedLocString>) => {
+  const mapCoords = (r: {
+    assemblyName: string
+    refName: string
+    start: number
+    end: number
+  }) => {
     const s = model.bpToPx({
       refName: r.refName,
       coord: r.start,
@@ -87,7 +92,7 @@ const Highlight = observer(function Highlight({
         width: h.width,
       }}
     >
-      <Tooltip title={'Highlighted from URL parameter'} arrow>
+      <Tooltip title="Highlighted from URL parameter" arrow>
         <IconButton
           ref={anchorEl}
           onClick={() => {
@@ -125,7 +130,7 @@ const Highlight = observer(function Highlight({
                   'GridBookmark',
                 )
               }
-              // @ts-ignore
+              // @ts-expect-error
               bookmarkWidget.addBookmark(highlight as Region)
               dismissHighlight()
             },

@@ -1,5 +1,6 @@
 import eslint from '@eslint/js'
 import eslintPluginReact from 'eslint-plugin-react'
+import eslintPluginReactHooks from 'eslint-plugin-react-hooks'
 import eslintPluginReactRefresh from 'eslint-plugin-react-refresh'
 import eslintPluginUnicorn from 'eslint-plugin-unicorn'
 import tseslint from 'typescript-eslint'
@@ -9,9 +10,11 @@ export default tseslint.config(
   {
     ignores: [
       'website/*',
+      'products/**/webpack.config.js',
       'plugin-development-tools/**',
       'products/jbrowse-cli/lib/**',
       'component_tests/**/*',
+      'embedded_demos/**/*',
       '**/output-version.js',
       '**/.storybook/*',
       '**/umd_plugin.js',
@@ -45,6 +48,12 @@ export default tseslint.config(
   ...tseslint.configs.stylisticTypeChecked,
   ...tseslint.configs.strictTypeChecked,
   eslintPluginReact.configs.flat.recommended,
+  {
+    plugins: {
+      'react-hooks': eslintPluginReactHooks,
+    },
+    rules: eslintPluginReactHooks.configs.recommended.rules,
+  },
   eslintPluginUnicorn.configs['flat/recommended'],
   {
     // in main config for TSX/JSX source files
@@ -73,11 +82,12 @@ export default tseslint.config(
           allow: ['error', 'warn'],
         },
       ],
-      'no-underscore-dangle': 0,
+      'no-underscore-dangle': 'off',
       curly: 'error',
-      '@typescript-eslint/no-explicit-any': 0,
-      '@typescript-eslint/explicit-module-boundary-types': 0,
-      '@typescript-eslint/ban-ts-comment': 0,
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
+      '@typescript-eslint/ban-ts-comment': 'off',
+      'react/no-unescaped-entities': 'off',
       semi: ['error', 'never'],
       'unicorn/prefer-structured-clone': 'off',
       'unicorn/no-new-array': 'off',
@@ -143,6 +153,7 @@ export default tseslint.config(
   },
   {
     files: [
+      'babel.config.js',
       'webpack/**/*',
       'scripts/**/*',
       'products/jbrowse-cli/**/*',
@@ -152,12 +163,23 @@ export default tseslint.config(
       'products/jbrowse-desktop/linux-sandbox-fix.js',
       'products/jbrowse-aws-lambda-functions/**/*.js',
       'plugins/data-management/scripts/*.js',
-      'config/jest/*.js',
-      'products/**/webpack.config.js',
     ],
     languageOptions: {
       globals: {
         ...globals.node,
+      },
+    },
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off',
+      'no-console': 'off',
+    },
+  },
+  {
+    files: ['config/jest/*.js', 'integration.test.js'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        ...globals.jest,
       },
     },
     rules: {

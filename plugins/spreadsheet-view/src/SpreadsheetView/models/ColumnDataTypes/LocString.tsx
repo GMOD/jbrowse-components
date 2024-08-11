@@ -274,7 +274,7 @@ async function locationLinkClick(
   const { id } = getParent<any>(spreadsheet)
 
   const newViewId = `${id}_${assemblyName}`
-  let view = session.views.find(v => v.id === newViewId) as LGV
+  let view = session.views.find(v => v.id === newViewId) as LGV | undefined
   if (!view) {
     view = session.addView('LinearGenomeView', {
       id: newViewId,

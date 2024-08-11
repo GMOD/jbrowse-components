@@ -64,7 +64,7 @@ const TextIndexingConfig = observer(function ({
           <CardContent>
             <InputLabel>{section.label}</InputLabel>
             <List disablePadding>
-              {section.values.map((val: string, idx: number) => (
+              {section.values.map((val, idx) => (
                 /* biome-ignore lint/suspicious/noArrayIndexKey: */
                 <ListItem key={`${val}-${idx}`} disableGutters>
                   <TextField

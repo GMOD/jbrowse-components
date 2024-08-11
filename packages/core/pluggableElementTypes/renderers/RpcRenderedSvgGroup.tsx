@@ -14,7 +14,7 @@ interface Props {
   features: Map<string, Feature>
   theme: ThemeOptions
 
-  displayModel: any
+  displayModel?: any
   RenderingComponent: AnyReactComponentType
 }
 
@@ -58,7 +58,6 @@ const NewHydrate = observer(function RpcRenderedSvgGroup(props: Props) {
     // biome-ignore lint/correctness/useExhaustiveDependencies:
   }, [RenderingComponent, hydrateRoot, theme, rest])
 
-   
   return <g ref={ref} dangerouslySetInnerHTML={{ __html: html }} />
 })
 
@@ -77,9 +76,9 @@ const OldHydrate = observer(function OldHydrate(props: Props) {
         // https://github.com/GMOD/jbrowse-components/issues/2160
         domNode.style.outline = 'none'
         domNode.innerHTML = html
-        // use requestIdleCallback to defer main-thread rendering
-        // and hydration for when we have some free time. helps
-        // keep the framerate up.
+        // use requestIdleCallback to defer main-thread rendering and
+        // hydration for when we have some free time. helps keep the
+        // framerate up.
         rIC(() => {
           hydrate(<RenderingComponent {...props} />, domNode)
         })

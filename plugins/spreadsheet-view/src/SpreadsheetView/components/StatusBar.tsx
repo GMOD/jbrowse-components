@@ -47,29 +47,27 @@ const StatusBar = observer(function StatusBar({
       className={classes.statusBar}
       style={{ display: mode === 'display' ? undefined : 'none' }}
     >
-      {spreadsheet ? (
-        <FormGroup row>
-          <div className={classes.verticallyCenter}>
-            <RowCountMessage spreadsheet={spreadsheet} />
-          </div>
-          <div className={classes.spacer} />
-          <TablePagination
-            rowsPerPageOptions={[10, 25, 100, 1000]}
-            count={spreadsheet.rowSet.count}
-            component="div"
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={(_, newPage) => {
-              setPage(newPage)
-            }}
-            onRowsPerPageChange={event => {
-              setRowsPerPage(+event.target.value)
-              setPage(0)
-            }}
-          />
-          <div className={classes.spacer} />
-        </FormGroup>
-      ) : null}
+      <FormGroup row>
+        <div className={classes.verticallyCenter}>
+          <RowCountMessage spreadsheet={spreadsheet} />
+        </div>
+        <div className={classes.spacer} />
+        <TablePagination
+          rowsPerPageOptions={[10, 25, 100, 1000]}
+          count={spreadsheet.rowSet.count}
+          component="div"
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={(_, newPage) => {
+            setPage(newPage)
+          }}
+          onRowsPerPageChange={event => {
+            setRowsPerPage(+event.target.value)
+            setPage(0)
+          }}
+        />
+        <div className={classes.spacer} />
+      </FormGroup>
     </div>
   )
 })

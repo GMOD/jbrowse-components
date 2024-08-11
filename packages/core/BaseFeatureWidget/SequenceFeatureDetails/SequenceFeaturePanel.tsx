@@ -39,7 +39,7 @@ const SequenceFeaturePanel = observer(function ({
   const { classes } = useStyles()
   const [shown, setShown] = useState(false)
 
-  return model ? (
+  return (
     <div className={classes.container}>
       <FormControl className={classes.formControl}>
         <Button
@@ -72,7 +72,7 @@ const SequenceFeaturePanel = observer(function ({
         </Suspense>
       ) : null}
     </div>
-  ) : null
+  )
 })
 
 export default SequenceFeaturePanel

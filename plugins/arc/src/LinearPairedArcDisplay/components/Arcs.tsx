@@ -74,7 +74,7 @@ const Arc = observer(function ({
           fill="none"
           pointerEvents="stroke"
         />
-        {k1.mateDirection !== undefined ? (
+        {k1.mateDirection ? (
           <line
             {...getStrokeProps(col)}
             strokeWidth={sw}
@@ -93,7 +93,7 @@ const Arc = observer(function ({
             y2={1.5}
           />
         ) : null}
-        {k2.mateDirection !== undefined ? (
+        {k2.mateDirection ? (
           <line
             {...getStrokeProps(col)}
             strokeWidth={sw}

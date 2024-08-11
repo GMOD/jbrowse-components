@@ -346,7 +346,7 @@ const DotplotViewInternal = observer(function ({
     </div>
   )
 })
-const DotplotView = observer(({ model }: { model: DotplotViewModel }) => {
+const DotplotView = observer(function ({ model }: { model: DotplotViewModel }) {
   const { initialized, loading, error } = model
 
   if ((!initialized && !loading) || error) {

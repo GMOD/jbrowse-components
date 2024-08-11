@@ -23,6 +23,7 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 const { parseCigar } = MismatchParser
 
 export interface DotplotRenderArgsDeserialized extends RenderArgsDeserialized {
+  adapterConfig: AnyConfigurationModel
   height: number
   width: number
   highResolutionScaling: number

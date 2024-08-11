@@ -203,7 +203,7 @@ function stateModelFactory(
             // must use getSnapshot because otherwise changes to e.g. just the
             // colorBy.type are not read
             colorBy: colorBy ? getSnapshot(colorBy) : undefined,
-            filterBy: filterBy ? getSnapshot(filterBy) : undefined,
+            filterBy: getSnapshot(filterBy),
           }
         },
       }

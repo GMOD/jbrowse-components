@@ -53,7 +53,7 @@ export function makeFeaturePair(feature: Feature, alt?: string) {
       mateDirection,
     },
     k2: mate ?? {
-      refName: mateRefName,
+      refName: mateRefName || 'unknown',
       end: mateEnd,
       start: mateStart,
       mateDirection: joinDirection,

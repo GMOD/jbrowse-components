@@ -10,7 +10,7 @@ export default class CircularChordRendererType extends FeatureRenderer {
   deserializeResultsInClient(
     res: { features: SimpleFeatureSerialized[]; html: string },
     args: {
-      displayModel: any
+      displayModel?: any
       theme: ThemeOptions
       exportSVG?: { rasterizeLayers?: boolean }
     },

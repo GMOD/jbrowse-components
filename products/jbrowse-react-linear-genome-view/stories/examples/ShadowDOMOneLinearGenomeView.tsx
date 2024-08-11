@@ -2,19 +2,21 @@
 import React, { useRef, useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { CacheProvider } from '@emotion/react'
-import createCache from '@emotion/cache'
+import createCache, { EmotionCache } from '@emotion/cache'
 // in your code:
 // import {createViewState, JBrowseLinearGenomeView} from '@jbrowse/react-linear-genome-view'
 import { createViewState, JBrowseLinearGenomeView } from '../../src'
 import { getVolvoxConfig } from './util'
 import r2wc from '@r2wc/react-to-web-component'
 
+type ViewState = ReturnType<typeof createViewState>
+
 const ShadowComponent = () => {
   const node = useRef<HTMLDivElement>(null)
   const nodeForPin = useRef(null)
-  const [rootNode, setRootNode] = useState<ShadowRoot>(null)
-  const [cacheNode, setCacheNode] = useState(null)
-  const [config, setConfig] = useState(null)
+  const [rootNode, setRootNode] = useState<ShadowRoot>()
+  const [cacheNode, setCacheNode] = useState<EmotionCache>()
+  const [config, setConfig] = useState<ViewState>()
   useEffect(() => {
     if (!node.current) {
       return

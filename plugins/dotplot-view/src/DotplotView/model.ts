@@ -724,7 +724,7 @@ export default function stateModelFactory(pm: PluginManager) {
       /**
        * #getter
        */
-      get error() {
+      get error(): unknown {
         return self.volatileError || self.assemblyErrors
       },
     }))

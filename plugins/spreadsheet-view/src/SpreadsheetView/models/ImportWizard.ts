@@ -159,9 +159,6 @@ const ImportWizard = types
       self.loading = true
       const type = self.fileType as keyof typeof fileTypeParsers
       const typeParser = await fileTypeParsers[type]()
-      if (!typeParser) {
-        throw new Error(`cannot open files of type '${self.fileType}'`)
-      }
 
       const { unzip } = await import('@gmod/bgzf-filehandle')
       const { pluginManager } = getEnv(self)
