@@ -210,6 +210,9 @@ export default abstract class BaseRpcDriver {
       unextendedWorker,
     ) as WorkerHandle
     const rpcMethod = pluginManager.getRpcMethodType(functionName)
+    if (!rpcMethod) {
+      throw new Error(`unknown RPC method ${functionName}`)
+    }
     const serializedArgs = await rpcMethod.serializeArguments(args, this.name)
     const filteredAndSerializedArgs = this.filterArgs(serializedArgs, sessionId)
 

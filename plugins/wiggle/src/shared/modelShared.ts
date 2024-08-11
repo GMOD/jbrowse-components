@@ -296,7 +296,7 @@ export default function SharedWiggleMixin(
       get adapterCapabilities() {
         const type = self.adapterTypeName
         const { pluginManager } = getEnv(self)
-        return pluginManager.getAdapterType(type).adapterCapabilities
+        return pluginManager.getAdapterType(type)!.adapterCapabilities
       },
       /**
        * #getter

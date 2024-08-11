@@ -36,7 +36,7 @@ export function filterTracks(
         : hasAllOverlap(trackAssemblies, trackListAssemblies)
     })
     .filter(c => {
-      const { displayTypes } = pluginManager.getViewType(view.type)
+      const { displayTypes } = pluginManager.getViewType(view.type)!
       const compatDisplays = displayTypes.map(d => d.name)
       const trackDisplays = c.displays.map((d: { type: string }) => d.type)
       return hasAnyOverlap(compatDisplays, trackDisplays)

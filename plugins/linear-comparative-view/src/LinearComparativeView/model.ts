@@ -79,7 +79,7 @@ function stateModelFactory(pluginManager: PluginManager) {
          * currently this is limited to an array of two
          */
         views: types.array(
-          pluginManager.getViewType('LinearGenomeView')
+          pluginManager.getViewType('LinearGenomeView')!
             .stateModel as LinearGenomeViewStateModel,
         ),
 
@@ -237,7 +237,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         if (!trackType) {
           throw new Error(`unknown track type ${configuration.type}`)
         }
-        const viewType = pluginManager.getViewType(self.type)
+        const viewType = pluginManager.getViewType(self.type)!
         const supportedDisplays = new Set(
           viewType.displayTypes.map(d => d.name),
         )

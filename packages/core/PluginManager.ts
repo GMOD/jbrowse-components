@@ -462,7 +462,7 @@ export default class PluginManager {
     )
   }
 
-  getRendererType(typeName: string): RendererType {
+  getRendererType(typeName: string) {
     return this.rendererTypes.get(typeName)
   }
 
@@ -470,43 +470,43 @@ export default class PluginManager {
     return this.rendererTypes.all()
   }
 
-  getAdapterType(typeName: string): AdapterType {
+  getAdapterType(typeName: string) {
     return this.adapterTypes.get(typeName)
   }
 
-  getTextSearchAdapterType(typeName: string): TextSearchAdapterType {
+  getTextSearchAdapterType(typeName: string) {
     return this.textSearchAdapterTypes.get(typeName)
   }
 
-  getTrackType(typeName: string): TrackType {
+  getTrackType(typeName: string) {
     return this.trackTypes.get(typeName)
   }
 
-  getDisplayType(typeName: string): DisplayType {
+  getDisplayType(typeName: string) {
     return this.displayTypes.get(typeName)
   }
 
-  getViewType(typeName: string): ViewType {
+  getViewType(typeName: string) {
     return this.viewTypes.get(typeName)
   }
 
-  getAddTrackWorkflow(typeName: string): AddTrackWorkflowType {
+  getAddTrackWorkflow(typeName: string) {
     return this.addTrackWidgets.get(typeName)
   }
 
-  getWidgetType(typeName: string): WidgetType {
+  getWidgetType(typeName: string) {
     return this.widgetTypes.get(typeName)
   }
 
-  getConnectionType(typeName: string): ConnectionType {
+  getConnectionType(typeName: string) {
     return this.connectionTypes.get(typeName)
   }
 
-  getRpcMethodType(methodName: string): RpcMethodType {
+  getRpcMethodType(methodName: string) {
     return this.rpcMethods.get(methodName)
   }
 
-  getInternetAccountType(name: string): InternetAccountType {
+  getInternetAccountType(name: string) {
     return this.internetAccountTypes.get(name)
   }
 

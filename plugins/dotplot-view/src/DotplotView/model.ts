@@ -388,7 +388,7 @@ export default function stateModelFactory(pm: PluginManager) {
         if (!trackType) {
           throw new Error(`unknown track type ${conf.type}`)
         }
-        const viewType = pm.getViewType(self.type)
+        const viewType = pm.getViewType(self.type)!
         const displayConf = conf.displays.find((d: AnyConfigurationModel) =>
           viewType.displayTypes.find(type => type.name === d.type),
         )

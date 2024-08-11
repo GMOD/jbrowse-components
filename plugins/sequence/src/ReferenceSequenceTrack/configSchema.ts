@@ -78,7 +78,7 @@ export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
           // snapshot
           displays.forEach((d: any) => d && displayTypes.add(d.type))
           const trackType = pluginManager.getTrackType(snap.type)
-          trackType.displayTypes.forEach(displayType => {
+          trackType?.displayTypes.forEach(displayType => {
             if (!displayTypes.has(displayType.name)) {
               displays.push({
                 displayId: `${snap.trackId}-${displayType.name}`,

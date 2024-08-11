@@ -43,7 +43,7 @@ function stateModelFactory() {
         blockState?: Record<string, any>
       }> {
         const { pluginManager } = getEnv(self)
-        return pluginManager.getDisplayType(self.type)
+        return pluginManager.getDisplayType(self.type)!
           .ReactComponent as React.FC<{
           model: typeof self
           onHorizontalScroll?: () => void

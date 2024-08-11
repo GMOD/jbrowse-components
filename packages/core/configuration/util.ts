@@ -78,7 +78,7 @@ export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
   }
 
   if (Array.isArray(slotPath)) {
-    const slotName = slotPath[0]
+    const slotName = slotPath[0]!
     if (slotPath.length > 1) {
       const newPath = slotPath.slice(1)
       let subConf = confObject[slotName]

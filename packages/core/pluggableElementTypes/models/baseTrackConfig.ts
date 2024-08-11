@@ -162,7 +162,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
           const configDisplayTypes = new Set(
             displays.filter(d => !!d).map(d => d.type),
           )
-          pluginManager.getTrackType(snap.type).displayTypes.forEach(d => {
+          pluginManager.getTrackType(snap.type)!.displayTypes.forEach(d => {
             if (!configDisplayTypes.has(d.name)) {
               displays.push({
                 displayId: `${snap.trackId}-${d.name}`,

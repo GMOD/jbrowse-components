@@ -482,14 +482,14 @@ async function getRefNameAliases(
   pm: PluginManager,
   signal?: AbortSignal,
 ) {
-  const type = pm.getAdapterType(config.type)
+  const type = pm.getAdapterType(config.type)!
   const CLASS = await type.getAdapterClass()
   const adapter = new CLASS(config, undefined, pm) as BaseRefNameAliasAdapter
   return adapter.getRefNameAliases({ signal })
 }
 
 async function getCytobands(config: AnyConfigurationModel, pm: PluginManager) {
-  const type = pm.getAdapterType(config.type)
+  const type = pm.getAdapterType(config.type)!
   const CLASS = await type.getAdapterClass()
   const adapter = new CLASS(config, undefined, pm)
 
@@ -502,7 +502,7 @@ async function getAssemblyRegions(
   pm: PluginManager,
   signal?: AbortSignal,
 ) {
-  const type = pm.getAdapterType(config.type)
+  const type = pm.getAdapterType(config.type)!
   const CLASS = await type.getAdapterClass()
   const adapter = new CLASS(config, undefined, pm) as RegionsAdapter
   return adapter.getRegions({ signal })

@@ -125,14 +125,15 @@ function getInternetAccount(
         'Failed to obtain token from internet account. Try reloading the page',
       )
     }
-    const internetAccountType = pluginManager.getInternetAccountType(
-      location.internetAccountPreAuthorization.internetAccountType,
-    )
-    return internetAccountType.stateModel.create({
-      type: location.internetAccountPreAuthorization.internetAccountType,
-      configuration:
-        location.internetAccountPreAuthorization.authInfo.configuration,
-    })
+    return pluginManager
+      .getInternetAccountType(
+        location.internetAccountPreAuthorization.internetAccountType,
+      )!
+      .stateModel.create({
+        type: location.internetAccountPreAuthorization.internetAccountType,
+        configuration:
+          location.internetAccountPreAuthorization.authInfo.configuration,
+      })
   }
   return undefined
 }

@@ -140,7 +140,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * #property
          */
         views: types.array(
-          pluginManager.getViewType('LinearGenomeView')
+          pluginManager.getViewType('LinearGenomeView')!
             .stateModel as LinearGenomeViewStateModel,
         ),
       }),

@@ -34,7 +34,7 @@ function getItemId(feat: Feat) {
 // filters if successive elements share same start/end
 export function dedupe(list: Feat[]) {
   return list.filter(
-    (item, pos, ary) => !pos || getItemId(item) !== getItemId(ary[pos - 1]),
+    (item, pos, ary) => !pos || getItemId(item) !== getItemId(ary[pos - 1]!),
   )
 }
 
@@ -63,8 +63,8 @@ export function calculateUTRs(cds: Feat[], exons: Feat[]) {
   const lastCdsIdx = exons.findIndex(
     exon => exon.end >= lastCds.end && exon.start <= lastCds.end,
   )
-  const lastCdsExon = exons[lastCdsIdx]
-  const firstCdsExon = exons[firstCdsIdx]
+  const lastCdsExon = exons[lastCdsIdx]!
+  const firstCdsExon = exons[firstCdsIdx]!
 
   const fiveUTRs = [
     ...exons.slice(0, firstCdsIdx),

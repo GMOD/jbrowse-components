@@ -32,8 +32,8 @@ import {
  * - [BaseViewModel](../baseviewmodel)
  */
 function SvInspectorViewF(pluginManager: PluginManager) {
-  const SpreadsheetViewType = pluginManager.getViewType('SpreadsheetView')
-  const CircularViewType = pluginManager.getViewType('CircularView')
+  const SpreadsheetViewType = pluginManager.getViewType('SpreadsheetView')!
+  const CircularViewType = pluginManager.getViewType('CircularView')!
 
   const SpreadsheetModel =
     SpreadsheetViewType.stateModel as SpreadsheetViewStateModel

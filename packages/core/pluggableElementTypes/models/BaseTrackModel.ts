@@ -23,7 +23,7 @@ import { ElementId } from '../../util/types/mst'
 export function getCompatibleDisplays(self: IAnyStateTreeNode) {
   const { pluginManager } = getEnv(self)
   const view = getContainingView(self)
-  const viewType = pluginManager.getViewType(view.type)
+  const viewType = pluginManager.getViewType(view.type)!
   const compatTypes = new Set(viewType.displayTypes.map(d => d.name))
   const displays = self.configuration.displays as AnyConfigurationModel[]
   return displays.filter(d => compatTypes.has(d.type))
@@ -203,7 +203,7 @@ export function createBaseTrackModel(
                   label: 'Display types',
                   subMenu: compatDisp.map(d => ({
                     type: 'radio',
-                    label: pm.getDisplayType(d.type).displayName,
+                    label: pm.getDisplayType(d.type)!.displayName,
                     checked: d.displayId === shownId,
                     onClick: () => {
                       self.replaceDisplay(shownId, d.displayId)
