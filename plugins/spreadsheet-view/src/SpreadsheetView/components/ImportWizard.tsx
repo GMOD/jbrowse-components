@@ -100,7 +100,7 @@ const ImportWizard = observer(({ model }: { model: ImportWizardModel }) => {
             />
             <NumberEditor
               model={model}
-              disabled={!showRowControls || !hasColumnNameLine}
+              disabled={!hasColumnNameLine}
               modelPropName="columnNameLineNumber"
               modelSetterName="setColumnNameLineNumber"
             />

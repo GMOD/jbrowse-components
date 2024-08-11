@@ -487,6 +487,7 @@ export function isAuthNeededException(
     exception instanceof Error &&
     // DOMException
     (exception.name === 'AuthNeededError' ||
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       (exception as AuthNeededError).url !== undefined)
   )
 }

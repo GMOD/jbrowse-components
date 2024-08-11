@@ -372,7 +372,7 @@ export default function assemblyFactory(
        */
       load() {
         if (!self.loadingP) {
-          self.loadingP = this.loadPre().catch(e => {
+          self.loadingP = this.loadPre().catch((e: unknown) => {
             this.setLoadingP(undefined)
             this.setError(e)
           })

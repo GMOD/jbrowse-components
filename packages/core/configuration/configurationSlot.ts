@@ -218,7 +218,7 @@ export default function ConfigSlot(
               'no pluginManager detected on config env (if you dynamically instantiate a config, for example in renderProps for your display model, check that you add the env argument)',
             )
           }
-          return stringToJexlExpression(String(self.value), pluginManager.jexl)
+          return stringToJexlExpression(String(self.value), pluginManager?.jexl)
         }
         return { evalSync: () => self.value }
       },

@@ -305,7 +305,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           const data: OAuthData = {
             client_id: self.clientId,
             redirect_uri: redirectUri,
-            response_type: self.responseType || 'code',
+            response_type: self.responseType,
             token_access_type: 'offline',
           }
 

@@ -149,7 +149,7 @@ export async function scoresToStats(
         }, seed),
       ),
     )
-
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   return found
     ? rectifyStats({
         scoreMax,

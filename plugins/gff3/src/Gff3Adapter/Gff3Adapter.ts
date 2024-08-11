@@ -197,6 +197,7 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
 
     // the SimpleFeature constructor takes care of recursively inflating
     // subfeatures
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (data.child_features && data.child_features.length > 0) {
       f.subfeatures = data.child_features.flatMap(childLocs =>
         childLocs.map(childLoc => this.featureData(childLoc)),

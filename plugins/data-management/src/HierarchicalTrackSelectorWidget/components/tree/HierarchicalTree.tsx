@@ -80,6 +80,7 @@ const HierarchicalTree = observer(function HierarchicalTree({
         yield getNodeData(child, 0, extra, obj)
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       while (true) {
         // @ts-expect-error
         const parentMeta = yield

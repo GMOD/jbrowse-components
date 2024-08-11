@@ -11,11 +11,7 @@ const compilationCache: Record<string, any> = {}
  * @param str - string of code like `jexl:...`
  * @param options -
  */
-export function stringToJexlExpression(
-  str: string,
-
-  jexl?: any,
-) {
+export function stringToJexlExpression(str: string, jexl?: any) {
   const cacheKey = `nosig|${str}`
   if (!compilationCache[cacheKey]) {
     const match = str.startsWith('jexl:')

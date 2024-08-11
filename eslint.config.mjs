@@ -10,6 +10,7 @@ export default tseslint.config(
   {
     ignores: [
       'website/*',
+      'packages/core/util/nanoid.js',
       'products/**/webpack.config.js',
       'plugin-development-tools/**',
       'products/jbrowse-cli/lib/**',

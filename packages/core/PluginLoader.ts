@@ -37,7 +37,10 @@ export function isUMDPluginDefinition(
 }
 
 export interface ESMLocPluginDefinition {
-  esmLoc: { uri: string; baseUri?: string }
+  esmLoc: {
+    uri: string
+    baseUri?: string
+  }
 }
 export interface ESMUrlPluginDefinition {
   esmUrl: string
@@ -94,13 +97,13 @@ export function isCJSPluginDefinition(
   return (def as CJSPluginDefinition).cjsUrl !== undefined
 }
 
-export interface PluginDefinition
-  extends Partial<UMDUrlPluginDefinition>,
-    Partial<UMDLocPluginDefinition>,
-    Partial<LegacyUMDPluginDefinition>,
-    Partial<ESMLocPluginDefinition>,
-    Partial<ESMUrlPluginDefinition>,
-    Partial<CJSPluginDefinition> {}
+export type PluginDefinition =
+  | UMDUrlPluginDefinition
+  | UMDLocPluginDefinition
+  | LegacyUMDPluginDefinition
+  | ESMLocPluginDefinition
+  | ESMUrlPluginDefinition
+  | CJSPluginDefinition
 
 export interface PluginRecord {
   plugin: PluginConstructor

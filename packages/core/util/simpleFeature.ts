@@ -107,16 +107,19 @@ export default class SimpleFeature implements Feature {
     if (isSimpleFeatureSerialized(args)) {
       this.data = args
     } else {
-      this.data = args.data || {}
-      // load handle from args.parent (not args.data.parent)
-      // this reason is because if args is an object, it likely isn't properly loaded with
-      // parent as a Feature reference (probably a raw parent ID or something instead)
+      this.data = args.data
+      // load handle from args.parent (not args.data.parent) this reason is
+      // because if args is an object, it likely isn't properly loaded with
+      // parent as a Feature reference (probably a raw parent ID or something
+      // instead)
       this.parentHandle = args.parent
     }
 
-    // the feature id comes from
-    // args.id, args.data.uniqueId, or args.uniqueId due to this initialization
+    // the feature id comes from args.id, args.data.uniqueId, or args.uniqueId
+    // due to this initialization
     const id = isSimpleFeatureSerialized(args) ? args.uniqueId : args.id
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (id === undefined || id === null) {
       throw new Error(
         'SimpleFeature requires a unique `id` or `data.uniqueId` attribute',

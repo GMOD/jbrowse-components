@@ -111,6 +111,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       get initialized() {
         return (
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           self.width !== undefined &&
           self.views.length > 0 &&
           self.views.every(view => view.initialized)
