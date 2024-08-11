@@ -154,11 +154,7 @@ export default class FeatureRendererType extends ServerSideRendererType {
     if (!isFeatureAdapter(dataAdapter)) {
       throw new Error('Adapter does not support retrieving features')
     }
-    const features = new Map()
 
-    if (!regions || regions.length === 0) {
-      return features
-    }
     // make sure the requested region's start and end are integers, if
     // there is a region specification.
     const requestRegions = regions.map(r => {

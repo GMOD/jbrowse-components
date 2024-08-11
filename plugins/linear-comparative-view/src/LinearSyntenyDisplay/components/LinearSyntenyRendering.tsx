@@ -38,7 +38,7 @@ const LinearSyntenyRendering = observer(function ({
   model: LinearSyntenyDisplayModel
 }) {
   const { classes, cx } = useStyles()
-  const xOffset = useRef(0)
+  const xOffset = useRef<number>(0)
   const currScrollFrame = useRef<number>()
   const view = getContainingView(model) as LinearSyntenyViewModel
   const height = view.middleComparativeHeight
@@ -108,17 +108,14 @@ const LinearSyntenyRendering = observer(function ({
           }
         }
       }
-      if (ref) {
-        ref.addEventListener('wheel', onWheel)
+      ref.addEventListener('wheel', onWheel)
 
-        // this is a react 19-ism to have a cleanup in the ref callback
-        // https://react.dev/blog/2024/04/25/react-19#cleanup-functions-for-refs
-        // note: it warns in earlier versions of react
-        return () => {
-          ref.removeEventListener('wheel', onWheel)
-        }
+      // this is a react 19-ism to have a cleanup in the ref callback
+      // https://react.dev/blog/2024/04/25/react-19#cleanup-functions-for-refs
+      // note: it warns in earlier versions of react
+      return () => {
+        ref.removeEventListener('wheel', onWheel)
       }
-      return () => {}
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [model, height, width],

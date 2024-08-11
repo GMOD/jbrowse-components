@@ -35,7 +35,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-async function getBookmarksFromShareLink(shareLink: string, shareURL: string) {
+async function getBookmarksFromShareLink(shareLink: string, shareURL?: string) {
   const defaultURL = 'https://share.jbrowse.org/api/v1/'
   const urlParams = new URL(shareLink)
   const sessionQueryParam = urlParams.searchParams.get('bookmarks')

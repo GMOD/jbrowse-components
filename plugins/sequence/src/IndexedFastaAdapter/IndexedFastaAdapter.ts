@@ -77,7 +77,7 @@ export default class IndexedFastaAdapter extends BaseSequenceAdapter {
     return ObservableCreate<Feature>(async observer => {
       const { fasta } = await this.setup()
       const size = await fasta.getSequenceSize(refName, opts)
-      const regionEnd = size !== undefined ? Math.min(size, end) : end
+      const regionEnd = Math.min(size, end)
       const chunks = []
       const chunkSize = 128000
 

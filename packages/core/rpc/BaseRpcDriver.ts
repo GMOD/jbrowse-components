@@ -67,16 +67,14 @@ class LazyWorker {
         .then(worker => {
           watchWorker(worker, this.driver.maxPingTime, this.driver.name).catch(
             (error: unknown) => {
-              if (worker) {
-                console.error(
-                  'worker did not respond, killing and generating new one',
-                )
-                console.error(error)
-                worker.destroy()
-                worker.status = 'killed'
-                worker.error = error
-                this.workerP = undefined
-              }
+              console.error(
+                'worker did not respond, killing and generating new one',
+              )
+              console.error(error)
+              worker.destroy()
+              worker.status = 'killed'
+              worker.error = error
+              this.workerP = undefined
             },
           )
           return worker

@@ -9,7 +9,7 @@ import {
   getSession,
 } from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
-import { IconButton, Tooltip, useTheme } from '@mui/material'
+import { IconButton, Tooltip } from '@mui/material'
 
 // icons
 import LinkIcon from '@mui/icons-material/Link'
@@ -26,9 +26,10 @@ const useStyles = makeStyles()(theme => ({
     height: '100%',
     position: 'absolute',
     overflow: 'hidden',
-    background: colord(theme.palette.highlight.main ?? 'goldenrod')
-      .alpha(0.35)
-      .toRgbString(),
+    background: colord(theme.palette.highlight.main).alpha(0.35).toRgbString(),
+  },
+  linkIcon: {
+    color: colord(theme.palette.highlight.main).darken(0.2).toRgbString(),
   },
 }))
 
@@ -42,7 +43,6 @@ const Highlight = observer(function Highlight({
   const { classes } = useStyles()
   const [open, setOpen] = useState(false)
   const anchorEl = useRef(null)
-  const color = useTheme().palette.highlight.main ?? 'goldenrod'
   const session = getSession(model) as SessionWithWidgets
   const { assemblyManager } = session
 
@@ -95,12 +95,7 @@ const Highlight = observer(function Highlight({
           }}
           style={{ zIndex: 3 }}
         >
-          <LinkIcon
-            fontSize="small"
-            sx={{
-              color: colord(color).darken(0.2).toRgbString(),
-            }}
-          />
+          <LinkIcon fontSize="small" className={classes.linkIcon} />
         </IconButton>
       </Tooltip>
       <Menu

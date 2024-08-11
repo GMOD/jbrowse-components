@@ -222,7 +222,7 @@ const GetSequenceDialog = observer(function ({
           />
         </FormGroup>
         <Typography style={{ margin: 10 }}>
-          Note: Check both boxes for the "reverse complement"
+          Note: Check both boxes for the &quot;reverse complement&quot;
         </Typography>
       </DialogContent>
       <DialogActions>

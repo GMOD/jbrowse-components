@@ -1,5 +1,6 @@
 import eslint from '@eslint/js'
 import eslintPluginReact from 'eslint-plugin-react'
+import eslintPluginReactRefresh from 'eslint-plugin-react-refresh'
 import eslintPluginUnicorn from 'eslint-plugin-unicorn'
 import tseslint from 'typescript-eslint'
 import globals from 'globals'
@@ -32,6 +33,12 @@ export default tseslint.config(
         tsconfigRootDir: import.meta.dirname,
       },
     },
+
+    settings: {
+      react: {
+        version: 'detect',
+      },
+    },
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
@@ -39,6 +46,15 @@ export default tseslint.config(
   ...tseslint.configs.strictTypeChecked,
   eslintPluginReact.configs.flat.recommended,
   eslintPluginUnicorn.configs['flat/recommended'],
+  {
+    // in main config for TSX/JSX source files
+    plugins: {
+      'react-refresh': eslintPluginReactRefresh,
+    },
+    rules: {
+      'react-refresh/only-export-components': 'warn',
+    },
+  },
   {
     rules: {
       'react/prop-types': 'off',

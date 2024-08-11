@@ -18,10 +18,6 @@ export default function LaunchSpreadsheetViewF(pluginManager: PluginManager) {
       fileType?: string
     }) => {
       const view = session.addView('SpreadsheetView') as SpreadsheetViewModel
-
-      if (!view) {
-        throw new Error('Failed to initialize view')
-      }
       const exts = uri.split('.')
       let ext = exts.pop()?.toUpperCase()
       if (ext === 'GZ') {

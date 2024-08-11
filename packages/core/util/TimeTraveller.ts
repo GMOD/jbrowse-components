@@ -40,7 +40,7 @@ const TimeTraveller = types
     },
   }))
   .actions(self => {
-    let targetStore: IAnyStateTreeNode
+    let targetStore: IAnyStateTreeNode | undefined
     let snapshotDisposer: IDisposer
     let skipNextUndoState = false
 
@@ -97,12 +97,16 @@ const TimeTraveller = types
       undo() {
         self.undoIdx--
         skipNextUndoState = true
-        applySnapshot(targetStore, self.history[self.undoIdx])
+        if (targetStore) {
+          applySnapshot(targetStore, self.history[self.undoIdx])
+        }
       },
       redo() {
         self.undoIdx++
         skipNextUndoState = true
-        applySnapshot(targetStore, self.history[self.undoIdx])
+        if (targetStore) {
+          applySnapshot(targetStore, self.history[self.undoIdx])
+        }
       },
     }
   })
