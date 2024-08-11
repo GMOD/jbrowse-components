@@ -51,7 +51,7 @@ export async function loadPluginManager(configPath: string) {
 }
 
 export async function createPluginManager(
-  configSnapshot: any,
+  configSnapshot: { plugins?: Record<string, unknown>[] },
   initialTimestamp = +Date.now(),
 ) {
   const pluginLoader = new PluginLoader(configSnapshot.plugins, {

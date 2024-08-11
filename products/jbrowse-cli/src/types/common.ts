@@ -44,7 +44,6 @@ function makeLocation(location: string, protocol: string) {
 }
 
 export function guessAdapterFromFileName(filePath: string): Track {
-  // const uri = isURL(filePath) ? filePath : path.resolve(filePath)
   const protocol = isURL(filePath) ? 'uri' : 'localPath'
   const name = path.basename(filePath)
   if (/\.vcf\.b?gz$/i.test(filePath)) {
@@ -102,7 +101,7 @@ export function guessAdapterFromFileName(filePath: string): Track {
   }
 }
 
-export function supported(type: string) {
+export function supported(type = '') {
   return [
     'Gff3TabixAdapter',
     'VcfTabixAdapter',

@@ -594,13 +594,16 @@ export function SharedLinearPileupDisplayMixin(
                       layoutId: view.id,
                       rendererType: 'PileupRenderer',
                     },
-                  )) as { feature: SimpleFeatureSerialized }
+                  )) as { feature: SimpleFeatureSerialized | undefined }
 
                   // check featureIdUnderMouse is still the same as the
                   // feature.id that was returned e.g. that the user hasn't
                   // moused over to a new position during the async operation
                   // above
-                  if (self.featureIdUnderMouse === feature.uniqueId) {
+                  if (
+                    feature &&
+                    self.featureIdUnderMouse === feature.uniqueId
+                  ) {
                     self.setFeatureUnderMouse(new SimpleFeature(feature))
                   }
                 }

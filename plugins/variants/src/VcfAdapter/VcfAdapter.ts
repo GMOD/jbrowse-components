@@ -37,7 +37,7 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
 
   protected vcfFeatures?: Promise<{
     header: string
-    intervalTree: Record<string, IntervalTree<VcfFeature>>
+    intervalTree: Record<string, IntervalTree<VcfFeature> | undefined>
   }>
 
   public async getHeader() {
@@ -81,7 +81,10 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
       intervalTree[key].insert([f.get('start'), f.get('end')], f)
     }
 
-    return { header, intervalTree }
+    return {
+      header,
+      intervalTree,
+    }
   }
 
   public async setup() {
@@ -104,7 +107,7 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
       try {
         const { start, end, refName } = region
         const { intervalTree } = await this.setup()
-        intervalTree[refName].search([start, end]).forEach((f: VcfFeature) => {
+        intervalTree[refName]?.search([start, end]).forEach((f: VcfFeature) => {
           observer.next(f)
         })
         observer.complete()

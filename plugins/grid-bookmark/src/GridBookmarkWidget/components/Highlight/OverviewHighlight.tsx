@@ -30,9 +30,9 @@ const OverviewHighlight = observer(function OverviewHighlight({
   const { classes } = useStyles()
   const { assemblyManager } = session
   const { showBookmarkHighlights, showBookmarkLabels } = model
-  const bookmarkWidget = session.widgets.get(
-    'GridBookmark',
-  ) as GridBookmarkModel
+  const bookmarkWidget = session.widgets.get('GridBookmark') as
+    | GridBookmarkModel
+    | undefined
 
   useEffect(() => {
     if (!bookmarkWidget) {
@@ -44,7 +44,7 @@ const OverviewHighlight = observer(function OverviewHighlight({
   }, [session, bookmarkWidget])
 
   const assemblyNames = new Set(model.assemblyNames)
-  return showBookmarkHighlights && bookmarkWidget.bookmarks
+  return showBookmarkHighlights && bookmarkWidget?.bookmarks
     ? bookmarkWidget.bookmarks
         .filter(r => assemblyNames.has(r.assemblyName))
         .map(r => {

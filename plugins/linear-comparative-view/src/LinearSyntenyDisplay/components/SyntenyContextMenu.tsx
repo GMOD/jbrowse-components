@@ -1,5 +1,5 @@
 import React from 'react'
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getContainingView, getSession, Feature } from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
 
 // locals
@@ -9,7 +9,7 @@ import { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
 interface ClickCoord {
   clientX: number
   clientY: number
-  feature: any
+  feature: { f: Feature }
 }
 
 export default function SyntenyContextMenu({

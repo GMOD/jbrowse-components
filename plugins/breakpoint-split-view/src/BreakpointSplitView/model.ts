@@ -147,7 +147,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     )
     .volatile(() => ({
       width: 800,
-      matchedTrackFeatures: {} as Record<string, Feature[][]>,
+      matchedTrackFeatures: {} as Record<string, Feature[][] | undefined>,
     }))
     .views(self => ({
       /**
@@ -204,7 +204,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       getTrackFeatures(trackConfigId: string) {
         return new Map(
-          self.matchedTrackFeatures[trackConfigId].flat().map(f => [f.id(), f]),
+          self.matchedTrackFeatures[trackConfigId]
+            ?.flat()
+            .map(f => [f.id(), f]),
         )
       },
 

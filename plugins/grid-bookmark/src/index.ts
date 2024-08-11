@@ -85,9 +85,8 @@ export default class GridBookmarkPlugin extends Plugin {
               navigateNewestBookmark() {
                 const session = getSession(self)
                 const bookmarkWidget = self.activateBookmarkWidget()
-                const regions = bookmarkWidget.bookmarks
-                if (regions.length) {
-                  self.navTo(regions.at(-1)!)
+                if (bookmarkWidget.bookmarks.length) {
+                  self.navTo(bookmarkWidget.bookmarks.at(-1)!)
                 } else {
                   session.notify(
                     'There are no recent bookmarks to navigate to.',

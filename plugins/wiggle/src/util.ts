@@ -183,7 +183,7 @@ export async function getQuantitativeStats(
   opts: {
     headers?: Record<string, string>
     signal?: AbortSignal
-    filters?: string[]
+    filters: string[]
   },
 ): Promise<QuantitativeStats> {
   const { rpcManager } = getSession(self)
@@ -297,6 +297,7 @@ export function quantitativeStatsAutorun(self: {
 
           const wiggleStats = await getQuantitativeStats(self, {
             signal: aborter.signal,
+            filters: [],
             ...self.renderProps(),
           })
 

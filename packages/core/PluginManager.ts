@@ -142,7 +142,7 @@ export default class PluginManager {
 
   jexl = createJexlInstance()
 
-  pluginMetadata: Record<string, PluginMetadata> = {}
+  pluginMetadata: Record<string, PluginMetadata | undefined> = {}
 
   runtimePluginDefinitions: PluginDefinition[] = []
 

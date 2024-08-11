@@ -19,13 +19,15 @@ type MyMultiLayout = MultiLayout<GranularRectLayout<unknown>, unknown>
 interface CachedPileupLayout {
   layout: MyMultiLayout
   config: AnyConfigurationModel
-  filters: SerializableFilterChain
+  filters?: SerializableFilterChain
   filterBy: unknown
   sortedBy: unknown
   showSoftClip: boolean
 }
-// Sorting and revealing soft clip changes the layout of Pileup renderer
-// Adds extra conditions to see if cached layout is valid
+
+// The pileup layout session adds
+// - sorting and revealing soft clip changes the layout of pileup renderer
+// - extra conditions to see if cached layout is valid
 export class PileupLayoutSession extends LayoutSession {
   sortedBy: unknown
   filterBy: unknown

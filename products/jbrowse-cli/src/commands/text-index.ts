@@ -175,7 +175,7 @@ export default class TextIndex extends JBrowseCommand {
 
       if (dryrun) {
         this.log(
-          trackConfigs.map(e => `${e.trackId}\t${e.adapter.type}`).join('\n'),
+          trackConfigs.map(e => `${e.trackId}\t${e.adapter?.type}`).join('\n'),
         )
       } else {
         const id = `${asm}-index`
@@ -350,7 +350,7 @@ export default class TextIndex extends JBrowseCommand {
 
     const trackConfigs = file
       .map(file => guessAdapterFromFileName(file))
-      .filter(fileConfig => supported(fileConfig.adapter.type))
+      .filter(fileConfig => supported(fileConfig.adapter?.type))
 
     if (fileId?.length) {
       for (let i = 0; i < fileId.length; i++) {
@@ -436,7 +436,7 @@ export default class TextIndex extends JBrowseCommand {
   }) {
     for (const config of trackConfigs) {
       const { adapter, textSearching } = config
-      const { type } = adapter
+      const { type } = adapter || {}
       const {
         indexingFeatureTypesToExclude = typesToExclude,
         indexingAttributes = attributes,
@@ -444,12 +444,16 @@ export default class TextIndex extends JBrowseCommand {
 
       let loc: UriLocation | LocalPathLocation
       if (type === 'Gff3TabixAdapter') {
+        // @ts-expect-error
         loc = adapter.gffGzLocation
       } else if (type === 'Gff3Adapter') {
+        // @ts-expect-error
         loc = adapter.gffLocation
       } else if (type === 'VcfAdapter') {
+        // @ts-expect-error
         loc = adapter.vcfLocation
       } else if (type === 'VcfTabixAdapter') {
+        // @ts-expect-error
         loc = adapter.vcfGzLocation
       } else {
         return
@@ -516,7 +520,7 @@ export default class TextIndex extends JBrowseCommand {
         }
         return currentTrack
       })
-      .filter(track => supported(track.adapter.type))
+      .filter(track => supported(track.adapter?.type))
       .filter(track =>
         assemblyName ? track.assemblyNames.includes(assemblyName) : true,
       )

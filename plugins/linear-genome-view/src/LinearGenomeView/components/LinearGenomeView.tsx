@@ -12,8 +12,6 @@ import TracksContainer from './TracksContainer'
 const ImportForm = lazy(() => import('./ImportForm'))
 const NoTracksActiveButton = lazy(() => import('./NoTracksActiveButton'))
 
-type LGV = LinearGenomeViewModel
-
 const useStyles = makeStyles()(theme => ({
   note: {
     textAlign: 'center',
@@ -28,7 +26,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const LinearGenomeView = observer(({ model }: { model: LGV }) => {
+const LinearGenomeView = observer(function ({
+  model,
+}: {
+  model: LinearGenomeViewModel
+}) {
   const { tracks, error, initialized, hasDisplayedRegions } = model
   const ref = useRef<HTMLDivElement>(null)
   const session = getSession(model)

@@ -49,7 +49,7 @@ const InstalledPlugin = observer(function ({
   const { jbrowse, adminMode } = session
   const isSessionPlugin = isSessionWithSessionPlugins(session)
     ? session.sessionPlugins.some(
-        p => pluginManager.pluginMetadata[plugin.name].url === p.url,
+        p => pluginManager.pluginMetadata[plugin.name]?.url === p.url,
       )
     : false
 

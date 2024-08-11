@@ -18,7 +18,7 @@ interface Pos {
 export interface ClickCoord {
   clientX: number
   clientY: number
-  feature: any
+  feature: { f: Feature }
 }
 
 interface FeatPos {

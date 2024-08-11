@@ -249,8 +249,9 @@ export default function f(_pluginManager: PluginManager) {
        */
       setHighlightToggle(toggle: boolean) {
         const { views } = getSession(self)
-        ;(views as IExtendedLGV[]).forEach(view => {
-          view.toggleShowBookmarkHighlights(toggle)
+        views.forEach(view => {
+          // @ts-expect-error
+          view.toggleShowBookmarkHighlights?.(toggle)
         })
       },
       /**
@@ -258,8 +259,9 @@ export default function f(_pluginManager: PluginManager) {
        */
       setLabelToggle(toggle: boolean) {
         const { views } = getSession(self)
-        ;(views as IExtendedLGV[]).forEach(view => {
-          view.toggleShowBookmarkLabels(toggle)
+        views.forEach(view => {
+          // @ts-expect-error
+          view.toggleShowBookmarkLabels?.(toggle)
         })
       },
     }))

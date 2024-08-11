@@ -103,7 +103,10 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
       }),
     )
 
-    return { header: headerLines.join('\n'), intervalTreeMap }
+    return {
+      header: headerLines.join('\n'),
+      intervalTreeMap,
+    }
   }
 
   private async loadData(opts: BaseOptions) {

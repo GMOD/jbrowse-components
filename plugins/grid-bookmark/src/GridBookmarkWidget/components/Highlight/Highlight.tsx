@@ -28,9 +28,9 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
   const { assemblyManager } = session
   const { showBookmarkHighlights, showBookmarkLabels } = model
 
-  const bookmarkWidget = session.widgets.get(
-    'GridBookmark',
-  ) as GridBookmarkModel
+  const bookmarkWidget = session.widgets.get('GridBookmark') as
+    | GridBookmarkModel
+    | undefined
 
   useEffect(() => {
     if (!bookmarkWidget) {
@@ -43,7 +43,7 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
 
   const set = new Set(model.assemblyNames)
 
-  return showBookmarkHighlights && bookmarkWidget.bookmarks
+  return showBookmarkHighlights && bookmarkWidget?.bookmarks
     ? bookmarkWidget.bookmarks
         .filter(value => set.has(value.assemblyName))
         .map(r => {

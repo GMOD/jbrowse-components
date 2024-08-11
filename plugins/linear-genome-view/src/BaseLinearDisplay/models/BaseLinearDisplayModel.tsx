@@ -283,7 +283,7 @@ function stateModelFactory() {
           self.setError()
           self.setCurrStatsBpPerPx(0)
           self.clearFeatureDensityStats()
-          ;[...self.blockState.values()].map(val => {
+          ;[...self.blockState.values()].forEach(val => {
             val.doReload()
           })
           superReload()

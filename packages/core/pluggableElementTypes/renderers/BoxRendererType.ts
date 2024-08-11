@@ -23,14 +23,15 @@ import RpcManager from '../../rpc/RpcManager'
 export interface LayoutSessionProps {
   config: AnyConfigurationModel
   bpPerPx: number
-  filters: SerializableFilterChain
+  filters?: SerializableFilterChain
 }
 
 export type MyMultiLayout = MultiLayout<GranularRectLayout<unknown>, unknown>
+
 export interface CachedLayout {
   layout: MyMultiLayout
   config: AnyConfigurationModel
-  filters: SerializableFilterChain
+  filters?: SerializableFilterChain
 }
 
 export class LayoutSession implements LayoutSessionProps {
@@ -38,7 +39,7 @@ export class LayoutSession implements LayoutSessionProps {
 
   bpPerPx: number
 
-  filters: SerializableFilterChain
+  filters?: SerializableFilterChain
 
   constructor(args: LayoutSessionProps) {
     this.config = args.config

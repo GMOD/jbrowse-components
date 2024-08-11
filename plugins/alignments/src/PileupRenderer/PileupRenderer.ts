@@ -109,6 +109,7 @@ export default class PileupRenderer extends BoxRendererType {
             regionSequence,
           },
         })
+        return undefined
       },
     )
 

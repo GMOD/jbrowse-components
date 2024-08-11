@@ -80,6 +80,7 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
         { exportSVG: opts },
         ctx => {
           drawRef(d, ctx)
+          return undefined
         },
       )
 

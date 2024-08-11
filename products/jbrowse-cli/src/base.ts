@@ -115,12 +115,7 @@ export interface Track {
   trackId: string
   name: string
   assemblyNames: string[]
-  adapter:
-    | Gff3TabixAdapter
-    | GtfAdapter
-    | VcfTabixAdapter
-    | Gff3Adapter
-    | VcfAdapter
+  adapter?: { type: string; [key: string]: unknown }
   textSearching?: TextSearching
 }
 
@@ -177,7 +172,7 @@ export default abstract class JBrowseCommand extends Command {
     return result
   }
 
-  async writeJsonFile(location: string, contents: any) {
+  async writeJsonFile(location: string, contents: unknown) {
     this.debug(`Writing JSON file to ${process.cwd()} ${location}`)
     return fsPromises.writeFile(location, JSON.stringify(contents, null, 2))
   }
@@ -272,16 +267,15 @@ export default abstract class JBrowseCommand extends Command {
     let result: GithubRelease[]
 
     do {
-      const response = await fetch(
-        `https://api.github.com/repos/GMOD/jbrowse-components/releases?page=${page}`,
-      )
+      const url = `https://api.github.com/repos/GMOD/jbrowse-components/releases?page=${page}`
+      const response = await fetch(url)
       if (response.ok) {
         result = (await response.json()) as GithubRelease[]
 
         yield result.filter(release => release.tag_name.startsWith('v'))
         page++
       } else {
-        throw new Error(response.statusText)
+        throw new Error(`HTTP ${response.status} fetching ${url}`)
       }
     } while (result && result.length > 0)
   }
