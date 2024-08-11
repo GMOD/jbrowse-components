@@ -57,7 +57,7 @@ const Tooltip = observer(function Tooltip({
   TooltipContents,
   useClientY,
 }: {
-  model: { featureUnderMouse: Feature }
+  model: { featureUnderMouse?: Feature }
   useClientY?: boolean
   height: number
   clientMouseCoord: Coord

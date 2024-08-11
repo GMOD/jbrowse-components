@@ -84,7 +84,7 @@ const FileSelector = observer(function (props: {
       setLocation({
         ...location,
         ...(isUriLocation(location)
-          ? { internetAccountId: selectedAccount?.internetAccountId }
+          ? { internetAccountId: selectedAccount.internetAccountId }
           : {}),
       })
     },
@@ -106,13 +106,13 @@ const FileSelector = observer(function (props: {
     <UrlChooser
       {...props}
       setLocation={setLocationWithAccount}
-      label={selectedAccount?.selectorLabel}
+      label={selectedAccount.selectorLabel}
     />
   )
   if (toggleButtonValue === 'file') {
     locationInput = <LocalFileChooser {...props} />
   }
-  if (selectedAccount?.SelectorComponent) {
+  if (selectedAccount.SelectorComponent) {
     const { SelectorComponent } = selectedAccount
     locationInput = (
       <SelectorComponent {...props} setLocation={setLocationWithAccount} />

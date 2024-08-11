@@ -64,10 +64,6 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     const offset = YSCALEBAR_LABEL_OFFSET
     const height = unadjustedHeight - offset * 2
 
-    const { domain } = scaleOpts
-    if (!domain) {
-      return
-    }
     const opts = { ...scaleOpts, range: [0, height] }
     const viewScale = getScale(opts)
 

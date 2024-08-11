@@ -105,11 +105,17 @@ export default tseslint.config(
       '@typescript-eslint/no-non-null-assertion': 'off',
       '@typescript-eslint/require-await': 'off',
       '@typescript-eslint/restrict-template-expressions': 'off',
+      '@typescript-eslint/no-empty-function': 'off',
       '@typescript-eslint/no-extraneous-class': 'off',
     },
   },
   {
-    files: ['webpack/**/*', 'scripts'],
+    files: [
+      'webpack/**/*',
+      'scripts/**/*',
+      'products/jbrowse-web/scripts/*',
+      'products/jbrowse-desktop/scripts/*',
+    ],
     languageOptions: {
       globals: {
         ...globals.node,

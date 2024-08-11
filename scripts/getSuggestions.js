@@ -86,13 +86,13 @@ async function getFiles(dir) {
           )
         })
         if (warnings.length) {
-          /* eslint-disable no-console */
+           
           console.log(files[(response.request_seq - 1) / 2])
           warnings.forEach(warning => {
             console.log(warning)
           })
           console.log()
-          /* eslint-enable no-console */
+           
         }
       }
     })

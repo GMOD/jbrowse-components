@@ -3,7 +3,7 @@
  * field match the "distModule" field.
  */
 
-/* eslint-disable no-console */
+ 
 const fs = require('fs')
 
 function main() {

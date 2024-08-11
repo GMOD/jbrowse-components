@@ -23,6 +23,8 @@ interface AdapterEntry {
   [key: string]: unknown
 }
 
+type MaybeStats = { scoreMin: number; scoreMax: number } | undefined
+
 export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   public static capabilities = [
     'hasResolution',
@@ -75,7 +77,7 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
       (await Promise.all(
         // @ts-expect-error
         adapters.map(adp => adp.dataAdapter.getGlobalStats?.(opts)),
-      )) as { scoreMin: number; scoreMax: number }[]
+      )) as MaybeStats[]
     ).filter(f => !!f)
     const scoreMin = min(stats.map(s => s.scoreMin))
     const scoreMax = max(stats.map(s => s.scoreMax))

@@ -91,14 +91,7 @@ export interface VcfAdapter {
 }
 
 export interface Track {
-  adapter: {
-    type: string
-    gtfLocation?: Loc
-    gffLocation?: Loc
-    vcfLocation?: Loc
-    vcfGzLocation?: Loc
-    gffGzLocation?: Loc
-  }
+  adapter?: { type: string; [key: string]: unknown }
   textSearching?: TextSearching
   name: string
   assemblyNames: string[]
@@ -176,7 +169,7 @@ export function findTrackConfigsToIndex(
     .filter(track =>
       assemblyName ? track.assemblyNames.includes(assemblyName) : true,
     )
-    .filter(track => isSupportedIndexingAdapter(track.adapter.type))
+    .filter(track => isSupportedIndexingAdapter(track.adapter?.type))
 }
 
 export function decodeURIComponentNoThrow(uri: string) {
