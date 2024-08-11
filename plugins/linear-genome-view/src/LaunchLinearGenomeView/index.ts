@@ -62,19 +62,17 @@ export default function LaunchLinearGenomeViewF(pluginManager: PluginManager) {
         }
         if (highlight !== undefined) {
           highlight.forEach(async h => {
-            if (h) {
-              const parsedLocString = parseLocString(h, refName =>
-                isValidRefName(refName, assembly),
-              ) as Required<ParsedLocString>
-
-              const location = {
-                ...parsedLocString,
+            const p = parseLocString(h, refName =>
+              isValidRefName(refName, assembly),
+            )
+            const { start, end } = p
+            if (start !== undefined && end !== undefined) {
+              view.addToHighlights({
+                ...p,
+                start,
+                end,
                 assemblyName: assembly,
-              }
-
-              if (location.start !== undefined && location.end !== undefined) {
-                view.addToHighlights(location)
-              }
+              })
             }
           })
         }

@@ -129,7 +129,7 @@ export default tseslint.config(
       'products/jbrowse-web/scripts/*',
       'products/jbrowse-desktop/scripts/*',
       'products/jbrowse-desktop/linux-sandbox-fix.js',
-      'products/jbrowse-aws-lambda-functions/*.js',
+      'products/jbrowse-aws-lambda-functions/**/*.js',
       '**/webpack.config.js',
     ],
     languageOptions: {

@@ -85,9 +85,7 @@ const OldHydrate = observer(function ({
     const domNode = ref.current
     function doHydrate() {
       if (domNode) {
-        if (domNode) {
-          unmountComponentAtNode(domNode)
-        }
+        unmountComponentAtNode(domNode)
         domNode.innerHTML = html
 
         rIC(() => {

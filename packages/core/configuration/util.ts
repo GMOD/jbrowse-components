@@ -41,9 +41,6 @@ export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
     | string[],
   args: Record<string, unknown> = {},
 ): any {
-  if (!confObject) {
-    throw new TypeError('must provide conf object to read')
-  }
   if (!slotPath) {
     return JSON.parse(JSON.stringify(getSnapshot(confObject)))
   }

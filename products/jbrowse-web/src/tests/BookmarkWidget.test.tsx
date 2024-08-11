@@ -218,16 +218,16 @@ test('Toggle highlight visibility across all views', async () => {
   const highlight = (await findAllByTestId('BookmarkIcon'))[0]
   const highlight2 = (await findAllByTestId('BookmarkIcon'))[1]
 
-  expect(highlight).toBeDefined
-  expect(highlight2).toBeDefined
+  expect(highlight).toBeDefined()
+  expect(highlight2).toBeDefined()
 
   fireEvent.click(await findByTestId('grid_bookmark_menu', ...opts))
   await user.click(await findByText('Settings'))
   await user.click(await findByTestId('toggle_highlight_all_switch'))
   await user.click(await findByText('Close'))
 
-  expect(highlight).toBeUndefined
-  expect(highlight2).toBeUndefined
+  expect(highlight).toBeUndefined()
+  expect(highlight2).toBeUndefined()
 })
 
 test('Toggle highlight label visibility across all views', async () => {
@@ -251,16 +251,16 @@ test('Toggle highlight label visibility across all views', async () => {
   const highlight = (await findAllByTestId('BookmarkIcon'))[0]
   const highlight2 = (await findAllByTestId('BookmarkIcon'))[1]
 
-  expect(highlight).toBeDefined
-  expect(highlight2).toBeDefined
+  expect(highlight).toBeDefined()
+  expect(highlight2).toBeDefined()
 
   fireEvent.click(await findByTestId('grid_bookmark_menu', ...opts))
   await user.click(await findByText('Settings'))
   await user.click(await findByTestId('toggle_highlight_label_all_switch'))
   await user.click(await findByText('Close'))
 
-  expect(highlight).toBeUndefined
-  expect(highlight2).toBeUndefined
+  expect(highlight).toBeUndefined()
+  expect(highlight2).toBeUndefined()
 })
 
 test('Downloads a BED file correctly', async () => {

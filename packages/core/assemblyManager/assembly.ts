@@ -248,7 +248,7 @@ export default function assemblyFactory(
       get lowerCaseRefNames() {
         return !self.lowerCaseRefNameAliases
           ? undefined
-          : Object.keys(self.lowerCaseRefNameAliases || {})
+          : Object.keys(self.lowerCaseRefNameAliases)
       },
 
       /**

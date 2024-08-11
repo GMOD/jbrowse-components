@@ -123,33 +123,31 @@ const GetSequenceDialog = observer(function ({
 
   const sequence = sequenceChunks
     ? formatSeqFasta(
-        sequenceChunks
-          .filter(f => !!f)
-          .map(chunk => {
-            let chunkSeq = chunk.get('seq')
-            const chunkRefName = chunk.get('refName')
-            const chunkStart = chunk.get('start') + 1
-            const chunkEnd = chunk.get('end')
-            const loc = `${chunkRefName}:${chunkStart}-${chunkEnd}`
-            if (chunkSeq?.length !== chunkEnd - chunkStart + 1) {
-              throw new Error(
-                `${loc} returned ${chunkSeq.length.toLocaleString()} bases, but should have returned ${(
-                  chunkEnd - chunkStart
-                ).toLocaleString()}`,
-              )
-            }
+        sequenceChunks.map(chunk => {
+          let chunkSeq = chunk.get('seq')
+          const chunkRefName = chunk.get('refName')
+          const chunkStart = chunk.get('start') + 1
+          const chunkEnd = chunk.get('end')
+          const loc = `${chunkRefName}:${chunkStart}-${chunkEnd}`
+          if (chunkSeq?.length !== chunkEnd - chunkStart + 1) {
+            throw new Error(
+              `${loc} returned ${chunkSeq.length.toLocaleString()} bases, but should have returned ${(
+                chunkEnd - chunkStart
+              ).toLocaleString()}`,
+            )
+          }
 
-            if (rev) {
-              chunkSeq = reverse(chunkSeq)
-            }
-            if (comp) {
-              chunkSeq = complement(chunkSeq)
-            }
-            return {
-              header: loc + (rev ? '-rev' : '') + (comp ? '-comp' : ''),
-              seq: chunkSeq,
-            }
-          }),
+          if (rev) {
+            chunkSeq = reverse(chunkSeq)
+          }
+          if (comp) {
+            chunkSeq = complement(chunkSeq)
+          }
+          return {
+            header: loc + (rev ? '-rev' : '') + (comp ? '-comp' : ''),
+            seq: chunkSeq,
+          }
+        }),
       )
     : ''
 

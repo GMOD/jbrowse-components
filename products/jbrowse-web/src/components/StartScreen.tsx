@@ -1,6 +1,5 @@
 import React, { lazy, useEffect, useState } from 'react'
 import {
-  CircularProgress,
   Container,
   Grid,
   IconButton,
@@ -103,18 +102,7 @@ export default function StartScreen({
     localStorageGetItem(rootModel.previousAutosaveId) || '{}',
   ).session
 
-  return !sessionNames ? (
-    <CircularProgress
-      style={{
-        position: 'fixed',
-        top: '50%',
-        left: '50%',
-        marginTop: -25,
-        marginLeft: -25,
-      }}
-      size={50}
-    />
-  ) : (
+  return (
     <>
       {reset ? (
         <React.Suspense fallback={null}>

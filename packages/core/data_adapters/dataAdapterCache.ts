@@ -67,10 +67,6 @@ export async function getAdapter(
     const { AdapterClass, getAdapterClass } = dataAdapterType
 
     const CLASS = AdapterClass || (await getAdapterClass())
-    if (!CLASS) {
-      throw new Error('Failed to get adapter')
-    }
-
     const dataAdapter = new CLASS(adapterConfig, getSubAdapter, pluginManager)
 
     // store it in our cache

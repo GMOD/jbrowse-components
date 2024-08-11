@@ -197,7 +197,7 @@ async function createWindow() {
   // this ready-to-show handler must be attached before the loadURL
   mainWindow.once('ready-to-show', () => {
     // unsure how to error handle
-    autoUpdater.checkForUpdatesAndNotify().catch(e => {
+    autoUpdater.checkForUpdatesAndNotify().catch((e: unknown) => {
       console.error(e)
     })
   })
@@ -485,12 +485,12 @@ ipcMain.handle(
     await Promise.all([
       writeFile(recentSessionsPath, stringify(sessions)),
       ...sessionPaths.map(sessionPath =>
-        unlink(getThumbnailPath(sessionPath)).catch(e => {
+        unlink(getThumbnailPath(sessionPath)).catch((e: unknown) => {
           console.error(e)
         }),
       ),
       ...sessionPaths.map(sessionPath =>
-        unlink(sessionPath).catch(e => {
+        unlink(sessionPath).catch((e: unknown) => {
           console.error(e)
         }),
       ),

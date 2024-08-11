@@ -82,7 +82,7 @@ export default class VCFFeature implements Feature {
       description,
       type,
       name: ID.join(','),
-      aliases: ID && ID.length > 1 ? variant.ID.slice(1) : undefined,
+      aliases: ID.length > 1 ? variant.ID.slice(1) : undefined,
     }
   }
 

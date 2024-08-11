@@ -143,9 +143,7 @@ export function getNiceDomain({
       min = 1
     }
   }
-  if (min === undefined || max === undefined) {
-    throw new Error('invalid domain supplied to stats function')
-  }
+
   if (minScore !== undefined && minScore !== Number.MIN_VALUE) {
     min = minScore
   }

@@ -23,8 +23,8 @@ const JBrowse = observer(function ({
   const [, setSessionId] = useQueryParam('session', StringParam)
   const { rootModel } = pluginManager
   const { error, jbrowse } = rootModel || {}
-  const session = rootModel?.session as WebSessionModel
-  const currentSessionId = session.id
+  const session = rootModel?.session as WebSessionModel | undefined
+  const currentSessionId = session?.id
 
   useEffect(() => {
     setSessionId(`local-${currentSessionId}`, 'replaceIn')
@@ -54,7 +54,7 @@ const JBrowse = observer(function ({
           throw new Error(`HTTP ${response.status} (${message})`)
         }
       } catch (e) {
-        session.notify(`Admin server error: ${e}`)
+        session?.notify(`Admin server error: ${e}`)
       }
     })
   }, [jbrowse, session, adminKey, adminServer, configPath])

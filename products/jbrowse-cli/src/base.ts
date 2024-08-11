@@ -264,7 +264,7 @@ export default abstract class JBrowseCommand extends Command {
 
   async *fetchVersions() {
     let page = 1
-    let result: GithubRelease[]
+    let result: GithubRelease[] | undefined
 
     do {
       const url = `https://api.github.com/repos/GMOD/jbrowse-components/releases?page=${page}`

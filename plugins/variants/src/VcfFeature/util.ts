@@ -18,7 +18,7 @@ const altTypeToSO: Record<string, string | undefined> = {
  */
 export function getSOTermAndDescription(
   ref: string,
-  alt: string[],
+  alt: string[] | undefined,
   parser: VCF,
 ): string[] {
   // it's just a remark if there are no alternate alleles

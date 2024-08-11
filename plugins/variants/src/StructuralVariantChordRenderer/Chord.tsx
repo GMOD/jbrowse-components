@@ -117,9 +117,7 @@ const Chord = observer(function Chord({
         {...getStrokeProps(hovered ? hoverStrokeColor : strokeColor)}
         strokeWidth={hovered ? 3 : 1}
         onClick={evt => {
-          if (endBlock && startBlock) {
-            onClick(feature, startBlock.region, endBlock.region, evt)
-          }
+          onClick(feature, startBlock.region, endBlock.region, evt)
         }}
         onMouseOver={() => {
           if (!selected) {

@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo } from 'react'
 import {
   Button,
   Checkbox,
-  CircularProgress,
   FormControl,
   FormControlLabel,
   Grid,
