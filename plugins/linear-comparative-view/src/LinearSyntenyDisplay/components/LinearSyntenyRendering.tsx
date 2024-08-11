@@ -57,7 +57,7 @@ const LinearSyntenyRendering = observer(function ({
   // etc.
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   const k1 = useCallback(
-    (ref: HTMLCanvasElement) => {
+    (ref: HTMLCanvasElement | null) => {
       model.setMouseoverCanvasRef(ref)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -65,7 +65,7 @@ const LinearSyntenyRendering = observer(function ({
   )
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   const k2 = useCallback(
-    (ref: HTMLCanvasElement) => {
+    (ref: HTMLCanvasElement | null) => {
       model.setMainCanvasRef(ref)
       function onWheel(event: WheelEvent) {
         event.preventDefault()
@@ -86,7 +86,7 @@ const LinearSyntenyRendering = observer(function ({
                 delta.current > 0
                   ? v.bpPerPx * (1 + delta.current)
                   : v.bpPerPx / (1 - delta.current),
-                event.clientX - (ref.getBoundingClientRect().left || 0),
+                event.clientX - (ref?.getBoundingClientRect().left || 0),
               )
             }
             delta.current = 0
@@ -108,13 +108,13 @@ const LinearSyntenyRendering = observer(function ({
           }
         }
       }
-      ref.addEventListener('wheel', onWheel)
+      ref?.addEventListener('wheel', onWheel)
 
       // this is a react 19-ism to have a cleanup in the ref callback
       // https://react.dev/blog/2024/04/25/react-19#cleanup-functions-for-refs
       // note: it warns in earlier versions of react
       return () => {
-        ref.removeEventListener('wheel', onWheel)
+        ref?.removeEventListener('wheel', onWheel)
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -122,7 +122,7 @@ const LinearSyntenyRendering = observer(function ({
   )
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   const k3 = useCallback(
-    (ref: HTMLCanvasElement) => {
+    (ref: HTMLCanvasElement | null) => {
       model.setClickMapCanvasRef(ref)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -130,7 +130,7 @@ const LinearSyntenyRendering = observer(function ({
   )
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   const k4 = useCallback(
-    (ref: HTMLCanvasElement) => {
+    (ref: HTMLCanvasElement | null) => {
       model.setCigarClickMapCanvasRef(ref)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps

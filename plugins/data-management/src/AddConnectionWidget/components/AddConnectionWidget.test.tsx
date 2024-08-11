@@ -4,9 +4,19 @@ import { render } from '@testing-library/react'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 
 // locals
-import AddConnectionWidget from './AddConnectionWidget'
+import AddConnectionWidget2 from './AddConnectionWidget'
+import { ThemeProvider } from '@emotion/react'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 
 jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
+
+function AddConnectionWidget({ model }: { model: unknown }) {
+  return (
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <AddConnectionWidget2 model={model} />
+    </ThemeProvider>
+  )
+}
 
 function makeSession() {
   const session = createTestSession()

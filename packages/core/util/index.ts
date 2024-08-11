@@ -766,14 +766,14 @@ export function makeAbortableReaction<T, U, V>(
 }
 
 export function renameRegionIfNeeded(
-  refNameMap: Record<string, string>,
+  refNameMap: Record<string, string> | undefined,
   region: Region | Instance<typeof MUIRegion>,
 ): Region & { originalRefName?: string } {
   if (isStateTreeNode(region) && !isAlive(region)) {
     return region
   }
 
-  if (region && refNameMap[region.refName]) {
+  if (region && refNameMap?.[region.refName]) {
     // clone the region so we don't modify it
     region = isStateTreeNode(region)
       ? { ...getSnapshot(region) }

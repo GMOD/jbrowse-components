@@ -113,7 +113,8 @@ export function readData({
     configData.assembly = assemblyData
   }
   // else check if it was an assembly name in a config file
-  else if (configData.assemblies.length) {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  else if (configData.assemblies?.length) {
     configData.assemblies.find(entry => entry.name === asm)
     if (asm) {
       const assembly = configData.assemblies.find(entry => entry.name === asm)

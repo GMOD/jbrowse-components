@@ -67,7 +67,7 @@ export default class VCFFeature implements Feature {
     ALT: string[]
     CHROM: string
     INFO: any
-    ID: string[]
+    ID?: string[]
   }): FeatureData {
     const { REF, ALT, POS, CHROM, INFO, ID } = variant
     const start = POS - 1
@@ -81,8 +81,8 @@ export default class VCFFeature implements Feature {
       end: isSymbolic && INFO.END && !isTRA ? +INFO.END[0] : start + REF.length,
       description,
       type,
-      name: ID.join(','),
-      aliases: ID.length > 1 ? variant.ID.slice(1) : undefined,
+      name: ID?.join(','),
+      aliases: ID && ID?.length > 1 ? ID.slice(1) : undefined,
     }
   }
 

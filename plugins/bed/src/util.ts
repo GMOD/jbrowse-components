@@ -149,12 +149,12 @@ function defaultParser(fields: string[], line: string) {
 
   return {
     ...rest,
-    blockStarts: blockStarts!.split(',').map(r => +r),
-    chromStarts: chromStarts!.split(',').map(r => +r),
-    blockSizes: blockSizes!.split(',').map(r => +r),
-    thickStart: +thickStart!,
-    thickEnd: +thickEnd!,
-    blockCount: +blockCount!,
+    blockStarts: blockStarts?.split(',').map(r => +r),
+    chromStarts: chromStarts?.split(',').map(r => +r),
+    blockSizes: blockSizes?.split(',').map(r => +r),
+    thickStart: thickStart ? +thickStart : undefined,
+    thickEnd: thickEnd ? +thickEnd : undefined,
+    blockCount: blockCount ? +blockCount : undefined,
   } as Record<string, unknown>
 }
 

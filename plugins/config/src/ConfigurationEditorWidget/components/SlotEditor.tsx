@@ -160,7 +160,7 @@ const FileSelectorWrapper = observer(function ({
       }}
       name={slot.name}
       description={slot.description}
-      rootModel={getEnv(slot).pluginManager.rootModel}
+      rootModel={getEnv(slot).pluginManager?.rootModel}
     />
   )
 })
