@@ -39,7 +39,7 @@ export default class IndexedFastaAdapter extends BaseSequenceAdapter {
     return Object.keys(seqSizes).map(refName => ({
       refName,
       start: 0,
-      end: seqSizes[refName],
+      end: seqSizes[refName]!,
     }))
   }
 

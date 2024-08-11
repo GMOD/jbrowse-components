@@ -181,7 +181,7 @@ export function SharedLinearPileupDisplayMixin(
         uniqueTag.forEach(value => {
           if (!self.colorTagMap.has(value)) {
             const totalKeys = [...self.colorTagMap.keys()].length
-            self.colorTagMap.set(value, colorPalette[totalKeys])
+            self.colorTagMap.set(value, colorPalette[totalKeys]!)
           }
         })
       },

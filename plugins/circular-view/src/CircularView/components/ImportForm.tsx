@@ -17,7 +17,7 @@ const ImportForm = observer(function ({ model }: { model: CircularViewModel }) {
   const session = getSession(model)
   const { error } = model
   const { assemblyNames, assemblyManager } = session
-  const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0])
+  const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0]!)
   const assembly = assemblyManager.get(selectedAsm)
   const assemblyError = assemblyNames.length
     ? assembly?.error

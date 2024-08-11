@@ -188,7 +188,7 @@ export default class HicRenderer extends ServerSideRendererType {
     )
     const features = await firstValueFrom(
       (dataAdapter as BaseFeatureDataAdapter)
-        .getFeatures(regions[0], args)
+        .getFeatures(regions[0]!, args)
         .pipe(toArray()),
     )
     // cast to any to avoid return-type conflict, because the

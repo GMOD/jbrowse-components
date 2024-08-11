@@ -72,7 +72,7 @@ export function generateTracks({
       do {
         currentTrackName = trackDb.data[currentTrackName]?.data.parent || ''
         if (currentTrackName) {
-          ;[currentTrackName] = currentTrackName.split(' ')
+          currentTrackName = currentTrackName.split(' ')[0]!
           parentTracks.push(trackDb.data[currentTrackName])
         }
       } while (currentTrackName)

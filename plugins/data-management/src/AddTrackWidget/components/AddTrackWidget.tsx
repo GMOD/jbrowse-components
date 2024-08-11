@@ -24,7 +24,7 @@ const AddTrackSelector = observer(function ({
 
   // make sure the selected value is in the list
   const val2 = ComponentMap[val] ? val : 'Default add track workflow'
-  const Component = ComponentMap[val2]
+  const Component = ComponentMap[val2]!
   return (
     <>
       <FormControl>

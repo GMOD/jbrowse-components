@@ -57,10 +57,10 @@ export function drawRef(
   ctx1.fillStyle = colorMap.M
   ctx1.strokeStyle = colorMap.M
   for (const { p11, p12, p21, p22 } of featPos) {
-    const x11 = p11.offsetPx - offsets[0]
-    const x12 = p12.offsetPx - offsets[0]
-    const x21 = p21.offsetPx - offsets[1]
-    const x22 = p22.offsetPx - offsets[1]
+    const x11 = p11.offsetPx - offsets[0]!
+    const x12 = p12.offsetPx - offsets[0]!
+    const x21 = p21.offsetPx - offsets[1]!
+    const x22 = p22.offsetPx - offsets[1]!
     const l1 = Math.abs(x12 - x11)
     const l2 = Math.abs(x22 - x21)
     const y1 = 0
@@ -90,10 +90,10 @@ export function drawRef(
   ctx1.fillStyle = colorMap.M
   ctx1.strokeStyle = colorMap.M
   for (const { p11, p12, p21, p22, f, cigar } of featPos) {
-    const x11 = p11.offsetPx - offsets[0]
-    const x12 = p12.offsetPx - offsets[0]
-    const x21 = p21.offsetPx - offsets[1]
-    const x22 = p22.offsetPx - offsets[1]
+    const x11 = p11.offsetPx - offsets[0]!
+    const x12 = p12.offsetPx - offsets[0]!
+    const x21 = p21.offsetPx - offsets[1]!
+    const x22 = p22.offsetPx - offsets[1]!
     const l1 = Math.abs(x12 - x11)
     const l2 = Math.abs(x22 - x21)
     const minX = Math.min(x21, x22)
@@ -129,7 +129,7 @@ export function drawRef(
         for (let j = 0; j < cigar.length; j += 2) {
           const idx = j * unitMultiplier2 + 1
 
-          const len = +cigar[j]
+          const len = +cigar[j]!
           const op = cigar[j + 1] as keyof typeof colorMap
 
           if (!continuingFlag) {
@@ -137,8 +137,8 @@ export function drawRef(
             px2 = cx2
           }
 
-          const d1 = len / bpPerPxs[0]
-          const d2 = len / bpPerPxs[1]
+          const d1 = len / bpPerPxs[0]!
+          const d2 = len / bpPerPxs[1]!
 
           if (op === 'M' || op === '=' || op === 'X') {
             cx1 += d1 * rev1
@@ -198,7 +198,7 @@ export function drawRef(
   ctx2.imageSmoothingEnabled = false
   ctx2.clearRect(0, 0, width, height)
   for (let i = 0; i < featPos.length; i++) {
-    const feature = featPos[i]
+    const feature = featPos[i]!
     const idx = i * unitMultiplier + 1
     ctx2.fillStyle = makeColor(idx)
 

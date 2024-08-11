@@ -287,8 +287,8 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * this is displayedRegions, post-processed to
-       * elide regions that are too small to see reasonably
+       * this is displayedRegions, post-processed to elide regions that are too
+       * small to see reasonably
        */
       get elidedRegions() {
         const visible: SliceRegion[] = []
@@ -316,9 +316,9 @@ function stateModelFactory(pluginManager: PluginManager) {
 
         // remove any single-region elisions
         for (let i = 0; i < visible.length; i += 1) {
-          const v = visible[i]
+          const v = visible[i]!
           if (v.elided && v.regions.length === 1) {
-            visible[i] = { ...v, ...v.regions[0], elided: false }
+            visible[i] = { ...v, ...v.regions[0]!, elided: false }
           }
         }
         return visible

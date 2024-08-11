@@ -19,21 +19,21 @@ export function featureData(
   names?: string[],
 ) {
   const l = line.split('\t')
-  const ref1 = l[flip ? 3 : 0]
-  const start1 = +l[flip ? 4 : 1]
-  const end1 = +l[flip ? 5 : 2]
-  const ref2 = l[!flip ? 3 : 0]
-  const start2 = +l[!flip ? 4 : 1]
-  const end2 = +l[!flip ? 5 : 2]
-  const name = l[6]
-  const score = +l[7]
-  const strand1 = parseStrand(l[8])
-  const strand2 = parseStrand(l[9])
+  const ref1 = l[flip ? 3 : 0]!
+  const start1 = +l[flip ? 4 : 1]!
+  const end1 = +l[flip ? 5 : 2]!
+  const ref2 = l[!flip ? 3 : 0]!
+  const start2 = +l[!flip ? 4 : 1]!
+  const end2 = +l[!flip ? 5 : 2]!
+  const name = l[6]!
+  const score = +l[7]!
+  const strand1 = parseStrand(l[8]!)
+  const strand2 = parseStrand(l[9]!)
   const extra = l.slice(10)
   const rest = names
     ? Object.fromEntries(names.slice(10).map((n, idx) => [n, extra[idx]]))
     : extra
-  const ALT = ['DUP', 'TRA', 'INV', 'CNV', 'DEL'].includes(extra[0])
+  const ALT = ['DUP', 'TRA', 'INV', 'CNV', 'DEL'].includes(extra[0]!)
     ? `<${extra[0]}>`
     : undefined
 
@@ -92,17 +92,17 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
     const lines = data.split(/\n|\r\n|\r/).filter(f => !!f)
     const headerLines = []
     let i = 0
-    for (; i < lines.length && lines[i].startsWith('#'); i++) {
+    for (; i < lines.length && lines[i]!.startsWith('#'); i++) {
       headerLines.push(lines[i])
     }
     const header = headerLines.join('\n')
     const feats1 = {} as Record<string, string[] | undefined>
     const feats2 = {} as Record<string, string[] | undefined>
     for (; i < lines.length; i++) {
-      const line = lines[i]
+      const line = lines[i]!
       const cols = line.split('\t')
-      const r1 = cols[0]
-      const r2 = cols[3]
+      const r1 = cols[0]!
+      const r2 = cols[3]!
       if (!feats1[r1]) {
         feats1[r1] = []
       }

@@ -63,10 +63,10 @@ const ColumnMenu = observer(function ({
   })
 
   const { columns, sortColumns } = spreadsheetModel
-  const dataType = currentColumnMenu && columns[columnNumber].dataType
+  const dataType = currentColumnMenu && columns[columnNumber]!.dataType
   const dataTypeName = dataType?.type || ''
   const dataTypeDisplayName =
-    (currentColumnMenu && columns[columnNumber].dataType.displayName) || ''
+    (currentColumnMenu && columns[columnNumber]!.dataType.displayName) || ''
 
   const isSortingAscending =
     !!currentColumnMenu &&

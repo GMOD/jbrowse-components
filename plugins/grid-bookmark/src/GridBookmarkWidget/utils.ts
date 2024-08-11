@@ -64,12 +64,12 @@ export function downloadBookmarkFile(
       const line = `${bookmark.refName}\t${bookmark.start}\t${bookmark.end}\t${labelVal}\n`
 
       fileContents[bookmark.assemblyName]
-        ? fileContents[bookmark.assemblyName].push(line)
+        ? fileContents[bookmark.assemblyName]!.push(line)
         : (fileContents[bookmark.assemblyName] = [line])
     })
 
     for (const assembly in fileContents) {
-      const fileContent = fileContents[assembly].reduce(
+      const fileContent = fileContents[assembly]!.reduce(
         (a, b) => a + b,
         fileHeader,
       )

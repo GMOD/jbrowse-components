@@ -88,7 +88,7 @@ const DataTableHeader = observer(function ({
               }}
             >
               <SortIndicator model={model} columnNumber={colNumber} />
-              {(hasColumnNames && columns[colNumber].name) ||
+              {(hasColumnNames && columns[colNumber]!.name) ||
                 numToColName(colNumber)}
               <div
                 className={classes.columnButtonContainer}

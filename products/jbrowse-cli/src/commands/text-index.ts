@@ -354,8 +354,7 @@ export default class TextIndex extends JBrowseCommand {
 
     if (fileId?.length) {
       for (let i = 0; i < fileId.length; i++) {
-        // @ts-expect-error
-        trackConfigs[i].trackId = fileId[i]
+        trackConfigs[i]!.trackId = fileId[i]!
       }
     }
 

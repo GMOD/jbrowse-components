@@ -39,7 +39,7 @@ interface Track {
 }
 
 function calc(track: Track, f: Feature) {
-  return track.displays[0].searchFeatureByID?.(f.id())
+  return track.displays[0]!.searchFeatureByID?.(f.id())
 }
 
 export interface ExportSvgOptions {
@@ -73,7 +73,7 @@ async function getBlockFeatures(
 ) {
   const { views } = model
   const { rpcManager, assemblyManager } = getSession(model)
-  const assemblyName = model.views[0].assemblyNames[0]
+  const assemblyName = model.views[0]!.assemblyNames[0]!
   const assembly = await assemblyManager.waitForAssembly(assemblyName)
   if (!assembly) {
     return undefined // throw new Error(`assembly not found: "${assemblyName}"`)

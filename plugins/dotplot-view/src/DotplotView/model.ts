@@ -612,7 +612,7 @@ export default function stateModelFactory(pm: PluginManager) {
               transaction(() => {
                 self.assemblyNames.forEach((name, index) => {
                   const assembly = session.assemblyManager.get(name)
-                  const view = views[index]
+                  const view = views[index]!
                   view.setDisplayedRegions(assembly?.regions || [])
                 })
                 self.showAllRegions()

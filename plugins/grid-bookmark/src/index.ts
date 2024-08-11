@@ -102,7 +102,11 @@ export default class GridBookmarkPlugin extends Plugin {
                     undefined,
                   )
                   const bookmarkWidget = self.activateBookmarkWidget()
-                  bookmarkWidget.addBookmark(selectedRegions[0])
+                  if (!selectedRegions.length) {
+                    throw new Error('no region selected')
+                  } else {
+                    bookmarkWidget.addBookmark(selectedRegions[0]!)
+                  }
                 }
               },
             }))
@@ -166,7 +170,11 @@ export default class GridBookmarkPlugin extends Plugin {
                           rightOffset,
                         )
                         const bookmarkWidget = self.activateBookmarkWidget()
-                        bookmarkWidget.addBookmark(selectedRegions[0])
+                        if (!selectedRegions.length) {
+                          throw new Error('no regions selected')
+                        } else {
+                          bookmarkWidget.addBookmark(selectedRegions[0]!)
+                        }
                       },
                     },
                   ]

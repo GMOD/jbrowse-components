@@ -77,7 +77,7 @@ const FileSelector = observer(function (props: {
   const shownAccounts = arr.slice(0, NUM_SHOWN)
   const hiddenAccounts = arr.slice(NUM_SHOWN)
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
-  const selectedAccount = map[toggleButtonValue]
+  const selectedAccount = map[toggleButtonValue]!
 
   const setLocationWithAccount = useCallback(
     (location: FileLocation) => {
@@ -155,7 +155,7 @@ const FileSelector = observer(function (props: {
               URL
             </ToggleButton>
             {shownAccounts.map(id => {
-              const { internetAccountId, name, toggleContents } = map[id]
+              const { internetAccountId, name, toggleContents } = map[id]!
               return (
                 <ToggleButtonWithTooltip
                   key={id}
@@ -192,7 +192,7 @@ const FileSelector = observer(function (props: {
             transformOrigin={{ vertical: 'top', horizontal: 'center' }}
           >
             {hiddenAccounts.map(id => {
-              const { internetAccountId, name } = map[id]
+              const { internetAccountId, name } = map[id]!
               return (
                 <MenuItem
                   key={id}

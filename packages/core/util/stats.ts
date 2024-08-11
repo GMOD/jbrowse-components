@@ -90,7 +90,10 @@ export function calcPerBaseStats(
   let i = 0
 
   while (pos < end) {
-    while (currentFeat < feats.length && pos >= feats[currentFeat].get('end')) {
+    while (
+      currentFeat < feats.length &&
+      pos >= feats[currentFeat]!.get('end')
+    ) {
       currentFeat += 1
     }
     const f = feats[currentFeat]

@@ -62,9 +62,9 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
         // id of a custom new internaccount is `${type}-${name}`
         const internetAccountSplit = internetAccountId.split('-')
         const configuration = {
-          type: internetAccountSplit[0],
+          type: internetAccountSplit[0]!,
           internetAccountId: internetAccountId,
-          name: internetAccountSplit.slice(1).join('-'),
+          name: internetAccountSplit.slice(1)!.join('-'),
           description: '',
           domains: hostUri ? [hostUri] : [],
         }

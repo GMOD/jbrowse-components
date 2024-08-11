@@ -80,7 +80,7 @@ type bigWig
     findByDisplayValue,
   } = renderWidget()
   expect(session.connections.length).toBe(0)
-  await user.click(getAllByRole('combobox')[0])
+  await user.click(getAllByRole('combobox')[0]!)
   const ucscTrackHubSelection = await findAllByText('UCSC Track Hub')
   await user.click(ucscTrackHubSelection.at(-1)!)
   await user.click(await findByText('Next'))
@@ -120,7 +120,7 @@ test('can handle a custom JBrowse 1 data directory URL', async () => {
     session,
   } = renderWidget()
   expect(session.connections.length).toBe(0)
-  await user.click(getAllByRole('combobox')[0])
+  await user.click(getAllByRole('combobox')[0]!)
   await user.click(await findByText('JBrowse 1 Data'))
   await user.click(await findByText('Next'))
   await user.type(await findByDisplayValue('nameOfConnection'), 'testing')

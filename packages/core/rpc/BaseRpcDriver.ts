@@ -188,7 +188,7 @@ export default abstract class BaseRpcDriver {
       workerNumber = workerAssignment
     }
 
-    return workers[workerNumber].getWorker()
+    return workers[workerNumber]!.getWorker()
   }
 
   async call(

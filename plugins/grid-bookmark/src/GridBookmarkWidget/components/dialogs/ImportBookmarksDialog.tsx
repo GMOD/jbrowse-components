@@ -57,7 +57,7 @@ function guessFileType(header: string) {
 }
 
 async function getBookmarksFromTSVFile(lines: string[]) {
-  if (lines[0].startsWith('chrom')) {
+  if (lines[0]!.startsWith('chrom')) {
     lines = lines.slice(1)
   }
 
@@ -66,10 +66,10 @@ async function getBookmarksFromTSVFile(lines: string[]) {
     .map(line => {
       const [refName, start, end, label, assemblyName] = line.split('\t')
       return {
-        assemblyName: assemblyName,
-        refName,
-        start: +start,
-        end: +end,
+        assemblyName: assemblyName!,
+        refName: refName!,
+        start: +start!,
+        end: +end!,
         label: label === '.' ? undefined : label,
       }
     })
@@ -82,9 +82,9 @@ async function getBookmarksFromBEDFile(lines: string[], selectedAsm: string) {
       const [refName, start, end, label] = line.split('\t')
       return {
         assemblyName: selectedAsm,
-        refName,
-        start: +start,
-        end: +end,
+        refName: refName!,
+        start: +start!,
+        end: +end!,
         label: label === '.' ? undefined : label,
       }
     })
@@ -103,7 +103,7 @@ const ImportBookmarksDialog = observer(function ({
   const [shareLink, setShareLink] = useState('')
   const session = getSession(model)
   const { assemblyNames } = session
-  const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0])
+  const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0]!)
   const [expanded, setExpanded] = useState<
     'shareLinkAccordion' | 'fileAccordion'
   >('shareLinkAccordion')
@@ -187,7 +187,7 @@ const ImportBookmarksDialog = observer(function ({
               if (expanded === 'fileAccordion' && location) {
                 const data = await openLocation(location).readFile('utf8')
                 const lines = data.split(/\n|\r\n|\r/).filter(f => !!f.trim())
-                const fileType = guessFileType(lines[0])
+                const fileType = guessFileType(lines[0]!)
                 if (fileType === 'BED') {
                   model.importBookmarks(
                     await getBookmarksFromBEDFile(lines, selectedAsm),

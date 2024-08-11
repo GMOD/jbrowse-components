@@ -94,9 +94,9 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
         let minStart = Number.POSITIVE_INFINITY
         let maxEnd = Number.NEGATIVE_INFINITY
         lines.forEach(line => {
-          const featureType = line.fields[2]
-          // only expand redispatch range if feature is not a "dontRedispatch" type
-          // skips large regions like chromosome,region
+          const featureType = line.fields[2]!
+          // only expand redispatch range if feature is not a "dontRedispatch"
+          // type skips large regions like chromosome,region
           if (!this.dontRedispatch.includes(featureType)) {
             const start = line.start - 1 // gff is 1-based
             if (start < minStart) {
@@ -172,8 +172,8 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
 
     // note: index column numbers are 1-based
     return {
-      start: +fields[columnNumbers.start - 1],
-      end: +fields[columnNumbers.end - 1],
+      start: +fields[columnNumbers.start - 1]!,
+      end: +fields[columnNumbers.end - 1]!,
       lineHash: fileOffset,
       fields,
     }

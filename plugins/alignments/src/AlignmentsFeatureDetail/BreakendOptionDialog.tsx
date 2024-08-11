@@ -96,7 +96,9 @@ const BreakendOptionDialog = observer(function ({
             const session = getSession(model)
             try {
               const viewSnapshot = getBreakpointSplitView({ view, f1, f2 })
-              const [view1, view2] = viewSnapshot.views
+              const views = viewSnapshot.views
+              const view1 = views[0]!
+              const view2 = views[1]!
               // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
               const viewTracks = getSnapshot(view.tracks) as Track[]
 

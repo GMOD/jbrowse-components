@@ -165,11 +165,8 @@ export default class BoxRendererType extends FeatureRendererType {
       freed = 1
     }
     if (session && regions) {
-      session.layout.discardRange(
-        regions[0].refName,
-        regions[0].start,
-        regions[0].end,
-      )
+      const region = regions[0]!
+      session.layout.discardRange(region.refName, region.start, region.end)
     }
     return freed + (await super.freeResourcesInClient(rpcManager, args))
   }
@@ -189,7 +186,7 @@ export default class BoxRendererType extends FeatureRendererType {
   createLayoutInWorker(args: RenderArgsDeserialized) {
     const { regions } = args
     const session = this.getWorkerSession(args)
-    return session.layout.getSublayout(regions[0].refName)
+    return session.layout.getSublayout(regions[0]!.refName)
   }
 
   serializeResultsInWorker(
@@ -201,7 +198,7 @@ export default class BoxRendererType extends FeatureRendererType {
       args,
     ) as ResultsSerialized
 
-    const [region] = args.regions
+    const region = args.regions[0]!
     serialized.layout = results.layout.serializeRegion(
       this.getExpandedRegion(region, args),
     )

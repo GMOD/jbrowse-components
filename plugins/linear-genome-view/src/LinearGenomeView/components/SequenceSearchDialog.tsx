@@ -104,7 +104,7 @@ const SequenceSearchDialog = observer(function ({
               const trackId = `sequence_search_${+Date.now()}`
               const session = getSession(model)
               const { assemblyManager } = session
-              const assemblyName = model.assemblyNames[0]
+              const assemblyName = model.assemblyNames[0]!
               if (isSessionWithAddTracks(session)) {
                 session.addTrackConf({
                   trackId,

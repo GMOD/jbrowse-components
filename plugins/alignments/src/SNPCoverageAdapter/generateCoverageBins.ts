@@ -143,8 +143,8 @@ export default async function generateCoverageBins(
       // CpG detection and reads
       for (let i = 0; i < fend - fstart; i++) {
         const j = i + fstart
-        const l1 = regionSequence[j - region.start + 1].toLowerCase()
-        const l2 = regionSequence[j - region.start + 2].toLowerCase()
+        const l1 = regionSequence[j - region.start + 1]?.toLowerCase()
+        const l2 = regionSequence[j - region.start + 2]?.toLowerCase()
         if (l1 === 'c' && l2 === 'g') {
           const bin0 = bins[j - region.start]
           const bin1 = bins[j - region.start + 1]
@@ -217,7 +217,7 @@ export default async function generateCoverageBins(
       for (let j = mstart; j < mstart + mlen; j++) {
         const epos = j - region.start
         if (epos >= 0 && epos < bins.length) {
-          const bin = bins[epos]
+          const bin = bins[epos]!
           const { base, type } = mismatch
           const interbase = isInterbase(type)
           if (!interbase) {

@@ -53,9 +53,9 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
     const [bed1text, bed2text, mcscantext] = await Promise.all(
       [bed1, bed2, mcscan].map(r => readFile(r, opts)),
     )
-    const bed1Map = parseBed(bed1text)
-    const bed2Map = parseBed(bed2text)
-    const feats = mcscantext
+    const bed1Map = parseBed(bed1text!)
+    const bed2Map = parseBed(bed2text!)
+    const feats = mcscantext!
       .split(/\n|\r\n|\r/)
       .filter(f => !!f && f !== '###')
       .map((line, index) => {
@@ -74,7 +74,7 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
           r12,
           r21,
           r22,
-          +score,
+          +score!,
           strand === '-' ? -1 : 1,
           index,
         ] as Row

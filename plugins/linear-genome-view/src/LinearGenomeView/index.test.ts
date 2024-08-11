@@ -717,8 +717,8 @@ describe('get sequence for selected displayed regions', () => {
       model.rightOffset,
     )
     expect(singleRegion.length).toEqual(1)
-    expect(singleRegion[0].start).toEqual(0)
-    expect(singleRegion[0].end).toEqual(800)
+    expect(singleRegion[0]!.start).toEqual(0)
+    expect(singleRegion[0]!.end).toEqual(800)
   })
   it('handles when start or end offsets are out of bounds of displayed regions', () => {
     model.setOffsets(
@@ -793,12 +793,12 @@ describe('get sequence for selected displayed regions', () => {
       model.rightOffset,
     )
     expect(overlapping.length).toEqual(3)
-    expect(overlapping[0].start).toEqual(200)
-    expect(overlapping[0].end).toEqual(500)
-    expect(overlapping[1].start).toEqual(0)
-    expect(overlapping[1].end).toEqual(3000)
-    expect(overlapping[2].start).toEqual(0)
-    expect(overlapping[2].end).toEqual(110)
+    expect(overlapping[0]!.start).toEqual(200)
+    expect(overlapping[0]!.end).toEqual(500)
+    expect(overlapping[1]!.start).toEqual(0)
+    expect(overlapping[1]!.end).toEqual(3000)
+    expect(overlapping[2]!.start).toEqual(0)
+    expect(overlapping[2]!.end).toEqual(110)
   })
 
   it('can select over two regions in diff reference sequence', () => {
@@ -835,10 +835,10 @@ describe('get sequence for selected displayed regions', () => {
       model.rightOffset,
     )
     expect(multipleRegions.length).toEqual(2)
-    expect(multipleRegions[0].start).toEqual(49998)
-    expect(multipleRegions[0].end).toEqual(50001)
-    expect(multipleRegions[1].start).toEqual(0)
-    expect(multipleRegions[1].end).toEqual(9)
+    expect(multipleRegions[0]!.start).toEqual(49998)
+    expect(multipleRegions[0]!.end).toEqual(50001)
+    expect(multipleRegions[1]!.start).toEqual(0)
+    expect(multipleRegions[1]!.end).toEqual(9)
   })
 
   it('can handle horizontally flipped regions', () => {
@@ -877,8 +877,8 @@ describe('get sequence for selected displayed regions', () => {
     )
 
     expect(hfRegion.length).toEqual(1)
-    expect(hfRegion[0].start).toEqual(49997)
-    expect(hfRegion[0].end).toEqual(50000)
+    expect(hfRegion[0]!.start).toEqual(49997)
+    expect(hfRegion[0]!.end).toEqual(50000)
   })
 })
 
@@ -940,12 +940,12 @@ test('navToLocString with human assembly', async () => {
 
   await view.navToLocString('2')
   await waitFor(() => {
-    expect(view.bpPerPx).toBe(hg38Regions[1].end / w)
+    expect(view.bpPerPx).toBe(hg38Regions[1]!.end / w)
   })
 
   await view.navToLocString('chr3')
   await waitFor(() => {
-    expect(view.bpPerPx).toBe(hg38Regions[2].end / w)
+    expect(view.bpPerPx).toBe(hg38Regions[2]!.end / w)
   })
 
   await view.navToLocString('chr3:1,000,000,000-1,100,000,000')
@@ -973,10 +973,10 @@ test('multi region', async () => {
 
   await model.navToLocString('ctgA ctgB')
   await waitFor(() => {
-    expect(model.displayedRegions[0].refName).toBe('ctgA')
+    expect(model.displayedRegions[0]!.refName).toBe('ctgA')
   })
   await waitFor(() => {
-    expect(model.displayedRegions[1].refName).toBe('ctgB')
+    expect(model.displayedRegions[1]!.refName).toBe('ctgB')
   })
 })
 

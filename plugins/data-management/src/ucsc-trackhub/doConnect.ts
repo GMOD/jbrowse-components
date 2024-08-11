@@ -42,10 +42,10 @@ export async function doConnect(self: {
             adapter: {
               type: 'TwoBitAdapter',
               twoBitLocation: {
-                uri: resolve(genome.data.twoBitPath, hubUri),
+                uri: resolve(genome.data.twoBitPath!, hubUri),
               },
               chromSizesLocation: {
-                uri: resolve(genome.data.chromSizes, hubUri),
+                uri: resolve(genome.data.chromSizes!, hubUri),
               },
             },
           },

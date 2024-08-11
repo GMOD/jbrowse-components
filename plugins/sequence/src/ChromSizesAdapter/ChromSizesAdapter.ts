@@ -20,9 +20,9 @@ export default class ChromSizesAdapter
         .split(/\n|\r\n|\r/)
         .map(f => f.trim())
         .filter(f => !!f)
-        .map((line: string) => {
+        .map(line => {
           const [name, length] = line.split('\t')
-          return [name, +length]
+          return [name!, +length!]
         }),
     )
   }
@@ -42,7 +42,7 @@ export default class ChromSizesAdapter
     return Object.keys(refSeqs).map(refName => ({
       refName,
       start: 0,
-      end: refSeqs[refName],
+      end: refSeqs[refName]!,
     }))
   }
 

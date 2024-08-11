@@ -132,17 +132,17 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
                 fontSize={fontSize}
                 {...getFillProps(theme.palette.text.primary)}
               >
-                {views[0].assemblyNames.join(', ')}
+                {views[0]!.assemblyNames.join(', ')}
               </text>
 
-              <SVGRuler model={displayResults[0].view} fontSize={fontSize} />
+              <SVGRuler model={displayResults[0]!.view} fontSize={fontSize} />
             </g>
             <SVGTracks
               textHeight={textHeight}
               trackLabels={trackLabels}
               fontSize={fontSize}
-              model={displayResults[0].view}
-              displayResults={displayResults[0].data}
+              model={displayResults[0]!.view}
+              displayResults={displayResults[0]!.data}
               offset={offset}
               trackLabelOffset={trackLabelOffset}
             />
@@ -155,7 +155,7 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
           </defs>
           <g
             transform={`translate(${shift + trackLabelOffset} ${
-              fontSize + heights[0]
+              fontSize + heights[0]!
             })`}
             clipPath={'url(#synclip)'}
           >
@@ -164,23 +164,23 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
               <ReactRendering key={i} rendering={r} />
             ))}
           </g>
-          <g transform={`translate(${shift} ${fontSize + heights[0] + synH})`}>
+          <g transform={`translate(${shift} ${fontSize + heights[0]! + synH})`}>
             <g transform={`translate(${trackLabelOffset})`}>
               <text
                 x={0}
                 fontSize={fontSize}
                 {...getFillProps(theme.palette.text.primary)}
               >
-                {views[1].assemblyNames.join(', ')}
+                {views[1]!.assemblyNames.join(', ')}
               </text>
-              <SVGRuler model={displayResults[1].view} fontSize={fontSize} />
+              <SVGRuler model={displayResults[1]!.view} fontSize={fontSize} />
             </g>
             <SVGTracks
               textHeight={textHeight}
               trackLabels={trackLabels}
               fontSize={fontSize}
-              model={displayResults[1].view}
-              displayResults={displayResults[1].data}
+              model={displayResults[1]!.view}
+              displayResults={displayResults[1]!.data}
               offset={offset}
               trackLabelOffset={trackLabelOffset}
             />

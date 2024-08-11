@@ -155,7 +155,7 @@ export default class FeatureRendererType extends ServerSideRendererType {
     }
     // make sure the requested region's start and end are integers, if
     // there is a region specification.
-    const requestRegions = regions.map((r: Region) => {
+    const requestRegions = regions.map(r => {
       const requestRegion = { ...r }
       if (requestRegion.start) {
         requestRegion.start = Math.floor(requestRegion.start)
@@ -166,7 +166,7 @@ export default class FeatureRendererType extends ServerSideRendererType {
       return requestRegion
     })
 
-    const region = requestRegions[0]
+    const region = requestRegions[0]!
 
     const featureObservable =
       requestRegions.length === 1

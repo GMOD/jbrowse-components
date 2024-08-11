@@ -46,7 +46,7 @@ export default function calculateStaticBlocks(
     regionNumber < displayedRegions.length;
     regionNumber++
   ) {
-    const region = displayedRegions[regionNumber]
+    const region = displayedRegions[regionNumber]!
     const {
       assemblyName,
       refName,

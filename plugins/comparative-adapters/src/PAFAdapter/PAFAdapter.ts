@@ -114,7 +114,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       }
 
       for (let i = 0; i < pafRecords.length; i++) {
-        const r = pafRecords[i]
+        const r = pafRecords[i]!
         let start = 0
         let end = 0
         let refName = ''

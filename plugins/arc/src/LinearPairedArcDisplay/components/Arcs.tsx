@@ -153,7 +153,7 @@ const Arcs = observer(function ({
   const session = getSession(model)
   const { assemblyManager } = session
   const { features } = model
-  const assembly = assemblyManager.get(view.assemblyNames[0])
+  const assembly = assemblyManager.get(view.assemblyNames[0]!)
 
   return assembly ? (
     <Wrapper model={model} exportSVG={exportSVG}>

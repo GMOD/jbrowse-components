@@ -30,7 +30,8 @@ export default function SearchResultsTable({
   const session = getSession(model)
   const { pluginManager } = getEnv(session)
   const { assemblyManager } = session
-  const assemblyName = optAssemblyName || model.displayedRegions[0].assemblyName
+  const assemblyName =
+    optAssemblyName || model.displayedRegions[0]!.assemblyName
 
   const assembly = assemblyManager.get(assemblyName)
   if (!assembly) {

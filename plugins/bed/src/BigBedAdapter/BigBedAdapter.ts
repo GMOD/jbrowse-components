@@ -223,7 +223,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
       const s = min(subfeatures.map(f => f.start))
       const e = max(subfeatures.map(f => f.end))
       if (doesIntersect2(s, e, originalQuery.start, originalQuery.end)) {
-        const { uniqueId, strand } = subfeatures[0]
+        const { uniqueId, strand } = subfeatures[0]!
         observer.next(
           new SimpleFeature({
             id: `${this.id}-${uniqueId}-parent`,

@@ -41,7 +41,7 @@ const ImportWizard = observer(({ model }: { model: ImportWizardModel }) => {
     error,
   } = model
   const [selected, setSelected] = useState(assemblyNames[0])
-  const err = assemblyManager.get(selected)?.error || error
+  const err = assemblyManager.get(selected!)?.error || error
   const showRowControls = fileType === 'CSV' || fileType === 'TSV'
   const rootModel = getRoot(model)
 
@@ -136,7 +136,7 @@ const ImportWizard = observer(({ model }: { model: ImportWizardModel }) => {
           color="primary"
           onClick={() => {
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            model.import(selected)
+            model.import(selected!)
           }}
         >
           Open

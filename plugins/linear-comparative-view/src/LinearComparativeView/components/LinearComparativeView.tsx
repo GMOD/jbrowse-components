@@ -78,7 +78,7 @@ const MiddleComparativeView = observer(({ model }: { model: LCV }) => {
   const { classes } = useStyles()
   const { views } = model
   const { pluginManager } = getEnv(model)
-  const { ReactComponent } = pluginManager.getViewType(views[0].type)
+  const { ReactComponent } = pluginManager.getViewType(views[0]!.type)
 
   return (
     <div className={classes.rubberbandContainer}>

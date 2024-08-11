@@ -113,7 +113,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     let chosenResolution = resolutions.at(-1)!
 
     for (let i = resolutions.length - 1; i >= 0; i -= 1) {
-      const r = resolutions[i]
+      const r = resolutions[i]!
       if (r <= 2 * bpPerPx) {
         chosenResolution = r
       }

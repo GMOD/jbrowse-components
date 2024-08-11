@@ -105,7 +105,7 @@ function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
     return ''
   }
   const isSingleAssemblyName = contentBlocks.every(
-    b => b.assemblyName === contentBlocks[0].assemblyName,
+    b => b.assemblyName === contentBlocks[0]!.assemblyName,
   )
   const locs = contentBlocks.map(block =>
     assembleLocString({
@@ -1010,7 +1010,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           }
           ;[assemblyName] = [...names]
         }
-        const assembly = assemblyManager.get(assemblyName)
+        const assembly = assemblyManager.get(assemblyName!)
         if (assembly) {
           const { regions } = assembly
           if (regions) {
@@ -1079,8 +1079,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
           200,
         )
         cancelLastAnimation()
-        cancelLastAnimation = cancelAnimation
-        animate()
+        cancelLastAnimation = cancelAnimation!
+        animate!()
       }
 
       return { slide }
@@ -1113,8 +1113,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
           },
         )
         cancelLastAnimation()
-        cancelLastAnimation = cancelAnimation
-        animate()
+        cancelLastAnimation = cancelAnimation!
+        animate!()
       }
 
       return { zoom }
@@ -1148,7 +1148,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       get cytobandOffset() {
         return this.showCytobands
-          ? measureText(self.displayedRegions[0].refName, 12) + 15
+          ? measureText(self.displayedRegions[0]?.refName || '', 12) + 15
           : 0
       },
     }))
@@ -1459,7 +1459,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const { assemblyNames } = self
         const { assemblyManager } = getSession(self)
         const { isValidRefName } = assemblyManager
-        const assemblyName = optAssemblyName || assemblyNames[0]
+        const assemblyName = optAssemblyName || assemblyNames[0]!
         if (assemblyName) {
           // wait before isValidRefName can be called
           await assemblyManager.waitForAssembly(assemblyName)
@@ -1511,7 +1511,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         )
 
         if (locations.length === 1) {
-          const loc = locations[0]
+          const loc = locations[0]!
           const { reversed, parentRegion, start, end } = loc
           self.setDisplayedRegions([{ reversed, ...parentRegion }])
 
@@ -1571,7 +1571,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         if (!f1 || !f2) {
           return
         }
-        const a = self.assemblyNames[0]
+        const a = self.assemblyNames[0]!
         const { assemblyManager } = getSession(self)
         const assembly1 = assemblyManager.get(f1.assemblyName || a)
         const assembly2 = assemblyManager.get(f2.assemblyName || a)
@@ -1617,8 +1617,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
           )
         }
 
-        const sd = self.displayedRegions[index]
-        const ed = self.displayedRegions[index2]
+        const sd = self.displayedRegions[index]!
+        const ed = self.displayedRegions[index2]!
 
         this.moveTo(
           {

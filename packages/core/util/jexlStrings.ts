@@ -2,8 +2,8 @@ import createJexlInstance from './jexl'
 
 const compilationCache: Record<string, any> = {}
 
-// revert function strings back to main, create a different file for jexlStrings.ts
-// pass the jexl property of the pluginManager as a param
+// revert function strings back to main, create a different file for
+// jexlStrings.ts pass the jexl property of the pluginManager as a param
 
 /**
  * compile a jexlExpression to a string
@@ -22,7 +22,7 @@ export function stringToJexlExpression(
     if (!match) {
       throw new Error('string does not appear to be in jexl format')
     }
-    const code = str.split('jexl:')[1]
+    const code = str.split('jexl:')[1]!
     const compiled = jexl
       ? jexl.compile(code)
       : createJexlInstance().compile(code)

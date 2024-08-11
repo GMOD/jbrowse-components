@@ -15,7 +15,7 @@ import ImportError from './ImportError'
 const MAX_FILE_SIZE = 512 * 1024 ** 2 // 512 MiB
 
 function styledBy(property: string, mapping: Record<string, string>) {
-  return (props: Record<string, string>) => mapping[props[property]]
+  return (props: Record<string, string>) => mapping[props[property]!]
 }
 
 // @ts-expect-error
@@ -70,9 +70,9 @@ const ImportSessionWidget = observer(function ({
     onDrop: async (acceptedFiles, rejectedFiles) => {
       try {
         if (rejectedFiles.length > 0) {
-          throw new Error(rejectedFiles[0].errors.map(e => `${e}`).join(', '))
+          throw new Error(rejectedFiles[0]!.errors.map(e => `${e}`).join(', '))
         }
-        const sessionText = await acceptedFiles[0].text()
+        const sessionText = await acceptedFiles[0]!.text()
         getSession(model).setSession?.(JSON.parse(sessionText).session)
       } catch (e) {
         console.error(e)

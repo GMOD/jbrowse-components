@@ -134,6 +134,9 @@ export function ucscProcessedTranscript(feature: TranscriptFeat) {
 }
 
 function defaultParser(fields: string[], line: string) {
+  const obj = Object.fromEntries(
+    line.split('\t').map((f, i) => [fields[i]!, f] as const),
+  )
   const {
     blockStarts,
     blockCount,
@@ -142,16 +145,16 @@ function defaultParser(fields: string[], line: string) {
     thickStart,
     blockSizes,
     ...rest
-  } = Object.fromEntries(line.split('\t').map((f, i) => [fields[i], f]))
+  } = obj
 
   return {
     ...rest,
-    blockStarts: blockStarts.split(',').map(r => +r),
-    chromStarts: chromStarts.split(',').map(r => +r),
-    blockSizes: blockSizes.split(',').map(r => +r),
-    thickStart: +thickStart,
-    thickEnd: +thickEnd,
-    blockCount: +blockCount,
+    blockStarts: blockStarts!.split(',').map(r => +r),
+    chromStarts: chromStarts!.split(',').map(r => +r),
+    blockSizes: blockSizes!.split(',').map(r => +r),
+    thickStart: +thickStart!,
+    thickEnd: +thickEnd!,
+    blockCount: +blockCount!,
   } as Record<string, unknown>
 }
 
@@ -198,10 +201,10 @@ export function featureData(
   names?: string[],
 ) {
   const l = line.split('\t')
-  const refName = l[colRef]
-  const start = +l[colStart]
+  const refName = l[colRef]!
+  const start = +l[colStart]!
   const colSame = colStart === colEnd ? 1 : 0
-  const end = +l[colEnd] + colSame
+  const end = +l[colEnd]! + colSame
   const data = names
     ? defaultParser(names, line)
     : parser.parseLine(line, { uniqueId })
@@ -245,11 +248,11 @@ export function featureData(
     id: uniqueId,
     data: isUcscProcessedTranscript(data)
       ? ucscProcessedTranscript({
-          thickStart,
-          thickEnd,
-          blockCount,
-          blockSizes,
-          chromStarts,
+          thickStart: thickStart!,
+          thickEnd: thickEnd!,
+          blockCount: blockCount!,
+          blockSizes: blockSizes!,
+          chromStarts: chromStarts,
           ...f,
         })
       : f,

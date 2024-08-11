@@ -61,7 +61,7 @@ export async function handleSelectedRegion({
       model.setSearchResults(results, input.toLowerCase(), assemblyName)
     } else if (results.length === 1) {
       await navToOption({
-        option: results[0],
+        option: results[0]!,
         model,
         assemblyName,
       })

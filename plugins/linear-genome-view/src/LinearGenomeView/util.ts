@@ -17,7 +17,7 @@ export function chooseGridPitch(
   scale = Math.abs(scale)
   const minMajorPitchBp = minMajorPitchPx * scale
   const majorMagnitude = Number.parseInt(
-    Number(minMajorPitchBp).toExponential().split(/e/i)[1],
+    Number(minMajorPitchBp).toExponential().split(/e/i)[1]!,
     10,
   )
 
@@ -167,8 +167,8 @@ export function parseLocStrings(
     const [refName, start, end] = inputs
     if (
       /Unknown reference sequence/.exec(`${e}`) &&
-      Number.isInteger(+start) &&
-      Number.isInteger(+end)
+      Number.isInteger(+start!) &&
+      Number.isInteger(+end!)
     ) {
       return [
         parseLocString(`${refName}:${start}..${end}`, ref =>

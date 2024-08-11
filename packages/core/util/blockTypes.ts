@@ -56,7 +56,7 @@ export class BlockSet {
   }
 
   get offsetPx() {
-    return this.blocks.length > 0 ? this.blocks[0].offsetPx : 0
+    return this.blocks.length > 0 ? this.blocks[0]!.offsetPx : 0
   }
 
   get contentBlocks() {

@@ -130,7 +130,7 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
     if (!fields.includes('refName')) {
       throw new Error('"refName" not found in refNamesQueryTemplate response')
     }
-    return rows.map(row => row.refName.value)
+    return rows.map(row => row.refName!.value)
   }
 
   private resultsToFeatures(
@@ -155,7 +155,7 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
       const rawData: Record<string, string>[] = [{}]
       fields.forEach(field => {
         if (field in row) {
-          const { value } = row[field]
+          const { value } = row[field]!
           let idx = 0
           while (field.startsWith('sub_')) {
             field = field.slice(4)
@@ -164,23 +164,23 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
           while (idx > rawData.length - 1) {
             rawData.push({})
           }
-          rawData[idx][field] = value
+          rawData[idx]![field] = value
         }
       })
 
       rawData.forEach((rd, idx) => {
-        const { uniqueId } = rd
+        const { uniqueId, start, end, strand } = rd
         if (idx < rawData.length - 1) {
-          rawData[idx + 1].parentUniqueId = uniqueId
+          rawData[idx + 1]!.parentUniqueId = uniqueId!
         }
-        seenFeatures[uniqueId] = {
+        seenFeatures[uniqueId!] = {
           data: {
             ...rd,
-            uniqueId,
+            uniqueId: uniqueId!,
             refName,
-            start: Number.parseInt(rd.start, 10),
-            end: Number.parseInt(rd.end, 10),
-            strand: Number.parseInt(rd.strand, 10) || 0,
+            start: Number.parseInt(start!, 10),
+            end: Number.parseInt(end!, 10),
+            strand: Number.parseInt(strand!, 10) || 0,
           },
         }
       })
@@ -234,9 +234,9 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
     return Object.keys(seenFeatures).map(
       seenFeature =>
         new SimpleFeature({
-          ...seenFeatures[seenFeature].data,
+          ...seenFeatures[seenFeature]!.data,
           uniqueId: seenFeature,
-          subfeatures: seenFeatures[seenFeature].data.subfeatures,
+          subfeatures: seenFeatures[seenFeature]!.data.subfeatures,
         }),
     )
   }

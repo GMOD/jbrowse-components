@@ -118,7 +118,7 @@ export async function writeGAAnalytics(
   const analyticsScriptNode = document.createElement('script')
   analyticsScriptNode.innerHTML = analyticsScript
 
-  document.getElementsByTagName('head')[0].append(analyticsScriptNode)
+  document.getElementsByTagName('head')[0]!.append(analyticsScriptNode)
 }
 
 export function doAnalytics(

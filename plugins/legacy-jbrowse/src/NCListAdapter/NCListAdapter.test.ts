@@ -44,8 +44,8 @@ test('adapter can fetch features from ensembl_genes test set', async () => {
   })
 
   const featArr = await firstValueFrom(features.pipe(toArray()))
-  expect(featArr[0].get('refName')).toBe('21')
-  expect(featArr[0].id()).toBe('test-21,0,0,19,22,0')
+  expect(featArr[0]!.get('refName')).toBe('21')
+  expect(featArr[0]!.id()).toBe('test-21,0,0,19,22,0')
   const featJson = featArr.map(f => f.toJSON())
   expect(featJson.length).toEqual(94)
   for (const feature of featJson) {

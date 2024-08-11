@@ -37,8 +37,8 @@ export function makeFeaturePair(feature: Feature, alt?: string) {
     const matePosition = bnd.MatePosition.split(':')
     mateDirection = bnd.MateDirection === 'left' ? 1 : -1
     joinDirection = bnd.Join === 'left' ? -1 : 1
-    mateEnd = +matePosition[1]
-    mateStart = +matePosition[1] - 1
+    mateEnd = +matePosition[1]!
+    mateStart = +matePosition[1]! - 1
     mateRefName = matePosition[0]
   }
 

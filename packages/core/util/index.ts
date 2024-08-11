@@ -367,7 +367,9 @@ export function parseLocStringOneBased(
   if (!assemblyMatch) {
     throw new Error(`invalid location string: "${locString}"`)
   }
-  const [, , assemblyName, location] = assemblyMatch
+  const [, , assemblyName2, location2] = assemblyMatch
+  const assemblyName = assemblyName2!
+  const location = location2!
   if (!assemblyName && location.startsWith('{}')) {
     throw new Error(`no assembly name was provided in location "${location}"`)
   }
@@ -647,7 +649,7 @@ export function findLastIndex<T>(
 ): number {
   let l = array.length
   while (l--) {
-    if (predicate(array[l], l, array)) {
+    if (predicate(array[l]!, l, array)) {
       return l
     }
   }
@@ -660,7 +662,7 @@ export function findLast<T>(
 ): T | undefined {
   let l = array.length
   while (l--) {
-    if (predicate(array[l], l, array)) {
+    if (predicate(array[l]!, l, array)) {
       return array[l]
     }
   }
@@ -821,13 +823,13 @@ export async function renameRegionsIfNeeded<
     ...args,
     regions: regions.map((region, i) =>
       // note: uses assemblyNames defined above since region could be dead now
-      renameRegionIfNeeded(assemblyMaps[assemblyNames[i]], region),
+      renameRegionIfNeeded(assemblyMaps[assemblyNames[i]!], region),
     ),
   }
 }
 
 export function minmax(a: number, b: number) {
-  return [Math.min(a, b), Math.max(a, b)]
+  return [Math.min(a, b), Math.max(a, b)] as const
 }
 
 export function shorten(name: string, max = 70, short = 30) {
@@ -1046,15 +1048,15 @@ export function generateCodonTable(table: any) {
     for (let i = 0; i < 3; i++) {
       const nuc = codon.charAt(i)
       nucs[i] = []
-      nucs[i][0] = nuc.toUpperCase()
-      nucs[i][1] = nuc.toLowerCase()
+      nucs[i]![0] = nuc.toUpperCase()
+      nucs[i]![1] = nuc.toLowerCase()
     }
     for (let i = 0; i < 2; i++) {
-      const n0 = nucs[0][i]
+      const n0 = nucs[0]![i]!
       for (let j = 0; j < 2; j++) {
-        const n1 = nucs[1][j]
+        const n1 = nucs[1]![j]!
         for (let k = 0; k < 2; k++) {
-          const n2 = nucs[2][k]
+          const n2 = nucs[2]![k]!
           const triplet = n0 + n1 + n2
           tempCodonTable[triplet] = aa
         }
@@ -1360,18 +1362,17 @@ export function mergeIntervals<T extends { start: number; end: number }>(
   // start from the next interval and merge if needed
   for (let i = 1; i < intervals.length; i++) {
     // get the top element
-
     top = stack.at(-1)!
 
     // if the current interval doesn't overlap with the
     // stack top element, push it to the stack
-    if (top.end + w < intervals[i].start - w) {
-      stack.push(intervals[i])
+    if (top.end + w < intervals[i]!.start - w) {
+      stack.push(intervals[i]!)
     }
     // otherwise update the end value of the top element
     // if end of current interval is higher
-    else if (top.end < intervals[i].end) {
-      top.end = Math.max(top.end, intervals[i].end)
+    else if (top.end < intervals[i]!.end) {
+      top.end = Math.max(top.end, intervals[i]!.end)
       stack.pop()
       stack.push(top)
     }
@@ -1395,7 +1396,7 @@ export function gatherOverlaps(regions: BasicFeature[]) {
     if (!memo[x.refName]) {
       memo[x.refName] = []
     }
-    memo[x.refName].push(x)
+    memo[x.refName]!.push(x)
   }
 
   return Object.values(memo).flatMap(group =>

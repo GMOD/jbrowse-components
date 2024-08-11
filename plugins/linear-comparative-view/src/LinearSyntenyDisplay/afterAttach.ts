@@ -113,8 +113,8 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           const r2 = mate.refName
           const ref1 = a1?.getCanonicalRefName(r1) || r1
           const ref2 = a2?.getCanonicalRefName(r2) || r2
-          const v1 = viewSnaps[0]
-          const v2 = viewSnaps[1]
+          const v1 = viewSnaps[0]!
+          const v2 = viewSnaps[1]!
           const p11 = bpToPx({ self: v1, refName: ref1, coord: f1s })
           const p12 = bpToPx({ self: v1, refName: ref1, coord: f1e })
           const p21 = bpToPx({ self: v2, refName: ref2, coord: f2s })

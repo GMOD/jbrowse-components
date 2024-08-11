@@ -37,14 +37,14 @@ const RegularSavedSessionsList = observer(function ({
 
   function handleDialogClose(deleteSession = false) {
     if (deleteSession && sessionIndexToDelete !== undefined) {
-      session.removeSavedSession(session.savedSessions[sessionIndexToDelete])
+      session.removeSavedSession(session.savedSessions[sessionIndexToDelete]!)
     }
     setSessionIndexToDelete(undefined)
   }
 
   const sessionNameToDelete =
     sessionIndexToDelete !== undefined
-      ? session.savedSessions[sessionIndexToDelete].name
+      ? session.savedSessions[sessionIndexToDelete]!.name
       : ''
   return (
     <Paper className={classes.root}>

@@ -80,12 +80,12 @@ async function mapStackTrace(stack: string) {
       continue
     }
 
-    const uri = match[2]
+    const uri = match[2]!
     const consumer = await getSourceMapFromUri(uri)
 
     const originalPosition = consumer.originalPositionFor({
-      line: Number.parseInt(match[3]),
-      column: Number.parseInt(match[4]),
+      line: Number.parseInt(match[3]!),
+      column: Number.parseInt(match[4]!),
     })
 
     if (
@@ -100,7 +100,7 @@ async function mapStackTrace(stack: string) {
     mappedStack.push(
       `${originalPosition.source}:${originalPosition.line}:${
         originalPosition.column + 1
-      } (${match[1].trim()})`,
+      } (${match[1]!.trim()})`,
     )
   }
 

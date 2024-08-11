@@ -8,7 +8,7 @@ import { findMatchingAlt, getMatchedBreakendFeatures } from './util'
 import { yPos, getPxFromCoordinate, useNextFrame } from '../util'
 import { BreakpointViewModel } from '../model'
 
-const [LEFT] = [0, 1, 2, 3]
+const [LEFT] = [0, 1, 2, 3] as const
 
 const Breakends = observer(function ({
   model,
@@ -37,7 +37,7 @@ const Breakends = observer(function ({
   const [mouseoverElt, setMouseoverElt] = useState<string>()
   const snap = getSnapshot(model)
   useNextFrame(snap)
-  const assembly = assemblyManager.get(views[0].assemblyNames[0])
+  const assembly = assemblyManager.get(views[0]!.assemblyNames[0]!)
 
   if (!assembly) {
     return null
@@ -61,8 +61,8 @@ const Breakends = observer(function ({
         // we follow a path in the list of chunks, not from top to bottom, just
         // in series following x1,y1 -> x2,y2
         for (let i = 0; i < chunk.length - 1; i += 1) {
-          const { layout: c1, feature: f1, level: level1 } = chunk[i]
-          const { layout: c2, feature: f2, level: level2 } = chunk[i + 1]
+          const { layout: c1, feature: f1, level: level1 } = chunk[i]!
+          const { layout: c2, feature: f2, level: level2 } = chunk[i + 1]!
           const id = f1.id()
 
           const relevantAlt = findMatchingAlt(f1, f2)
@@ -76,10 +76,10 @@ const Breakends = observer(function ({
           if (!f1ref || !f2ref) {
             throw new Error(`unable to find ref for ${f1ref || f2ref}`)
           }
-          const x1 = getPxFromCoordinate(views[level1], f1ref, c1[LEFT])
-          const x2 = getPxFromCoordinate(views[level2], f2ref, c2[LEFT])
-          const reversed1 = views[level1].pxToBp(x1).reversed
-          const reversed2 = views[level2].pxToBp(x2).reversed
+          const x1 = getPxFromCoordinate(views[level1]!, f1ref, c1[LEFT])
+          const x2 = getPxFromCoordinate(views[level2]!, f2ref, c2[LEFT])
+          const reversed1 = views[level1]!.pxToBp(x1).reversed
+          const reversed2 = views[level2]!.pxToBp(x2).reversed
 
           const tracks = views.map(v => v.getTrack(trackId))
           const y1 =

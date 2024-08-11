@@ -185,14 +185,14 @@ const LinearSyntenyRendering = observer(function ({
             const [r1, g1, b1] = ctx1.getImageData(x, y, 1, 1).data
             const [r2, g2, b2] = ctx2.getImageData(x, y, 1, 1).data
             const unitMultiplier = Math.floor(MAX_COLOR_RANGE / model.numFeats)
-            const id = getId(r1, g1, b1, unitMultiplier)
+            const id = getId(r1!, g1!, b1!, unitMultiplier)
             model.setMouseoverId(model.featPositions[id]?.f.id())
             if (id === -1) {
               setTooltip('')
             } else if (model.featPositions[id]) {
               const { f, cigar } = model.featPositions[id]
               const unitMultiplier2 = Math.floor(MAX_COLOR_RANGE / cigar.length)
-              const cigarIdx = getId(r2, g2, b2, unitMultiplier2)
+              const cigarIdx = getId(r2!, g2!, b2!, unitMultiplier2)
               setTooltip(getTooltip(f, cigar[cigarIdx], cigar[cigarIdx + 1]))
             }
           }

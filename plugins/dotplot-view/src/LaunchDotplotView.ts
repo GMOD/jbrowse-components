@@ -25,7 +25,7 @@ export default function LaunchDotplotView(pluginManager: PluginManager) {
             { bpPerPx: 0.1, offsetPx: 0 },
             { bpPerPx: 0.1, offsetPx: 0 },
           ])
-          model.setAssemblyNames(assemblyNames[0], assemblyNames[1])
+          model.setAssemblyNames(assemblyNames[0]!, assemblyNames[1]!)
         })
 
         // http://localhost:3000/?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"type":"DotplotView","views":[{"assembly":"volvox"},{"assembly":"volvox"}],"tracks":["volvox_fake_synteny"]}]}

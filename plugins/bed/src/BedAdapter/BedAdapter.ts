@@ -48,13 +48,13 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
     const lines = data.split(/\n|\r\n|\r/).filter(f => !!f)
     const headerLines = []
     let i = 0
-    for (; i < lines.length && lines[i].startsWith('#'); i++) {
+    for (; i < lines.length && lines[i]!.startsWith('#'); i++) {
       headerLines.push(lines[i])
     }
     const header = headerLines.join('\n')
     const features = {} as Record<string, string[]>
     for (; i < lines.length; i++) {
-      const line = lines[i]
+      const line = lines[i]!
       const tab = line.indexOf('\t')
       const refName = line.slice(0, tab)
       if (!features[refName]) {
