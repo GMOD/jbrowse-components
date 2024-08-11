@@ -41,8 +41,7 @@ const ViewContainer = observer(function ({
 
   useEffect(() => {
     function handleSelectView(e: Event) {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (e.target instanceof Element && ref?.current?.contains(e.target)) {
+      if (e.target instanceof Element && ref.current?.contains(e.target)) {
         session.setFocusedViewId(view.id)
       }
     }

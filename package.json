@@ -103,8 +103,6 @@
     "electron-builder": "^24.9.0",
     "electron-mock-ipc": "^0.3.8",
     "eslint": "^9.0.0",
-    "eslint-config-prettier": "^9.0.0",
-    "eslint-plugin-prettier": "^5.0.0",
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "next",
     "eslint-plugin-react-refresh": "^0.4.3",

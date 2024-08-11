@@ -25,15 +25,6 @@ export default tseslint.config(
       '**/umd_plugin.js',
     ],
   },
-
-  {
-    files: ['products/jbrowse-web/src/workerPolyfill.js'],
-    languageOptions: {
-      globals: {
-        ...globals.worker,
-      },
-    },
-  },
   {
     languageOptions: {
       parserOptions: {
