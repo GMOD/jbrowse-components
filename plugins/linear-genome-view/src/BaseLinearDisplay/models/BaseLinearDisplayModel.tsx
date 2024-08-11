@@ -414,15 +414,18 @@ function stateModelFactory() {
       },
     }))
     .preProcessSnapshot(snap => {
+      if (!snap) {
+        return snap
+      }
       // rewrite "height" from older snapshots to "heightPreConfig", this allows
       // us to maintain a height "getter" going forward
       // @ts-expect-error
       const { height, ...rest } = snap
       return { heightPreConfig: height, ...rest }
     })
-    .postProcessSnapshot(self => {
+    .postProcessSnapshot(snap => {
       // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
-      const r = self as Omit<typeof self, symbol>
+      const r = snap as Omit<typeof snap, symbol>
       const { blockState, ...rest } = r
       return rest
     })

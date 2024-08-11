@@ -89,7 +89,7 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
 
   public async setup() {
     if (!this.vcfFeatures) {
-      this.vcfFeatures = this.setupP().catch(e => {
+      this.vcfFeatures = this.setupP().catch((e: unknown) => {
         this.vcfFeatures = undefined
         throw e
       })

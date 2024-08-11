@@ -22,13 +22,19 @@ import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
 import { AnyConfigurationModel } from '../../configuration'
 
 export interface RenderArgs extends ServerSideRenderArgs {
-  displayModel: { id: string; selectedFeatureId?: string }
+  displayModel?: {
+    id: string
+    selectedFeatureId?: string
+  }
   regions: Region[]
   blockKey: string
 }
 
 export interface RenderArgsSerialized extends ServerSideRenderArgsSerialized {
-  displayModel: { id: string; selectedFeatureId?: string }
+  displayModel?: {
+    id: string
+    selectedFeatureId?: string
+  }
   regions: Region[]
   blockKey: string
 }

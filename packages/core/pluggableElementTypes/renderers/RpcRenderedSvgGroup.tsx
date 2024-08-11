@@ -58,7 +58,7 @@ const NewHydrate = observer(function RpcRenderedSvgGroup(props: Props) {
     // biome-ignore lint/correctness/useExhaustiveDependencies:
   }, [RenderingComponent, hydrateRoot, theme, rest])
 
-  // eslint-disable-next-line react/no-danger
+   
   return <g ref={ref} dangerouslySetInnerHTML={{ __html: html }} />
 })
 

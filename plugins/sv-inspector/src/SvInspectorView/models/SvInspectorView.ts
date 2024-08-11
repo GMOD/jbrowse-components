@@ -118,7 +118,9 @@ function SvInspectorViewF(pluginManager: PluginManager) {
        */
       get assemblyName() {
         const { assembly } = self.spreadsheetView
-        return assembly ? readConfObject(assembly, 'name') : undefined
+        return assembly
+          ? (readConfObject(assembly, 'name') as string)
+          : undefined
       },
       /**
        * #getter

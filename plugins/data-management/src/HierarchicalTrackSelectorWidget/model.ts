@@ -412,7 +412,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         const { connectionInstances = [] } = getSession(self)
         return [
           ...this.configAndSessionTrackConfigurations,
-          ...(connectionInstances.flatMap(c => c.tracks) || []),
+          ...connectionInstances.flatMap(c => c.tracks),
         ]
       },
 

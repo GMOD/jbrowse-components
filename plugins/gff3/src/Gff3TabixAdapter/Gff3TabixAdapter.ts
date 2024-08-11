@@ -228,7 +228,7 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
         // reproduces behavior of NCList
         b += '2'
       }
-      if (dataAttributes[a] !== null) {
+      if (dataAttributes[a]) {
         let attr: string | string[] | undefined = dataAttributes[a]
         if (Array.isArray(attr) && attr.length === 1) {
           ;[attr] = attr

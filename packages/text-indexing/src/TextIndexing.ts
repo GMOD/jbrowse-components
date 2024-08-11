@@ -81,19 +81,13 @@ async function perTrackIndex({
   }
 
   // default settings
-  const force = true
   const supportedTracks = tracks.filter(track =>
     isSupportedIndexingAdapter(track.adapter?.type),
   )
   for (const trackConfig of supportedTracks) {
-    const { textSearching, trackId, assemblyNames } = trackConfig
+    const { trackId, assemblyNames } = trackConfig
     const id = `${trackId}-index`
-    if (textSearching?.textSearchAdapter && !force) {
-      console.warn(
-        `Note: ${trackId} has already been indexed with this configuration, use --force to overwrite this track. Skipping for now`,
-      )
-      continue
-    }
+
     await indexDriver({
       tracks: [trackConfig],
       outDir,

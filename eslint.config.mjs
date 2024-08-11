@@ -1,4 +1,5 @@
 import eslint from '@eslint/js'
+import eslintPluginReact from 'eslint-plugin-react'
 import eslintPluginUnicorn from 'eslint-plugin-unicorn'
 import tseslint from 'typescript-eslint'
 import globals from 'globals'
@@ -36,10 +37,11 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   ...tseslint.configs.stylisticTypeChecked,
   ...tseslint.configs.strictTypeChecked,
-
+  eslintPluginReact.configs.flat.recommended,
   eslintPluginUnicorn.configs['flat/recommended'],
   {
     rules: {
+      'react/prop-types': 'off',
       'no-empty': 'off',
       '@typescript-eslint/no-unused-vars': [
         'warn',

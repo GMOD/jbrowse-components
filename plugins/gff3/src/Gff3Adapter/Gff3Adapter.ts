@@ -29,7 +29,7 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
     >
   }>
 
-  private async loadDataP(opts: BaseOptions) {
+  private async loadDataP(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts || {}
     const pm = this.pluginManager
     const buf = await openLocation(this.getConf('gffLocation'), pm).readFile()
@@ -111,7 +111,7 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
 
   private async loadData(opts: BaseOptions) {
     if (!this.gffFeatures) {
-      this.gffFeatures = this.loadDataP(opts).catch(e => {
+      this.gffFeatures = this.loadDataP(opts).catch((e: unknown) => {
         this.gffFeatures = undefined
         throw e
       })
@@ -185,7 +185,7 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
         // reproduces behavior of NCList
         b += '2'
       }
-      if (dataAttributes[a] !== null) {
+      if (dataAttributes[a]) {
         let attr: string | string[] | undefined = dataAttributes[a]
         if (Array.isArray(attr) && attr.length === 1) {
           ;[attr] = attr
@@ -195,7 +195,8 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
     }
     f.refName = f.seq_id
 
-    // the SimpleFeature constructor takes care of recursively inflating subfeatures
+    // the SimpleFeature constructor takes care of recursively inflating
+    // subfeatures
     if (data.child_features && data.child_features.length > 0) {
       f.subfeatures = data.child_features.flatMap(childLocs =>
         childLocs.map(childLoc => this.featureData(childLoc)),

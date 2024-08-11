@@ -103,7 +103,7 @@ export function ReactRendering({
     rendering.reactElement
   ) : (
     <g
-      /* eslint-disable-next-line react/no-danger */
+       
       dangerouslySetInnerHTML={{ __html: rendering.html || '' }}
     />
   )

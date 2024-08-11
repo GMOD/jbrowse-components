@@ -59,7 +59,7 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
 
   private async loadData(opts: BaseOptions = {}) {
     if (!this.gtfFeatures) {
-      this.gtfFeatures = this.loadDataP(opts).catch(e => {
+      this.gtfFeatures = this.loadDataP(opts).catch((e: unknown) => {
         this.gtfFeatures = undefined
         throw e
       })
@@ -105,7 +105,7 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
     if (!this.intervalTrees[refName]) {
       this.intervalTrees[refName] = this.loadFeatureIntervalTreeHelper(
         refName,
-      ).catch(e => {
+      ).catch((e: unknown) => {
         this.intervalTrees[refName] = undefined
         throw e
       })

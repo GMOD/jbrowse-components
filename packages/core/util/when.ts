@@ -28,7 +28,11 @@ export function when(
           reject(new Error(`timed out waiting for ${name || 'whenPresent'}`))
         }
       }, timeout)
-      finishTimeout = () => timeoutId && clearTimeout(timeoutId)
+      finishTimeout = () => {
+        if (timeoutId) {
+          clearTimeout(timeoutId)
+        }
+      }
     }
 
     // set up aborting

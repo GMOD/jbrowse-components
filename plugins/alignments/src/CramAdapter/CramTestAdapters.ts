@@ -94,7 +94,7 @@ export class SequenceAdapter extends BaseFeatureDataAdapter {
           )
           observer.complete()
         })
-        .catch(e => {
+        .catch((e: unknown) => {
           observer.error(e)
         })
       return { unsubscribe: () => {} }
