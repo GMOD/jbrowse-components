@@ -99,7 +99,6 @@ export default function createConfigModel(
        * #getter
        */
       get rpcManager() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getParent<any>(self).rpcManager
       },
     }))

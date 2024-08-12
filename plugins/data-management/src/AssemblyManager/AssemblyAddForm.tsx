@@ -14,7 +14,7 @@ const AdapterSelector = observer(function ({
 }: {
   adapterSelection: string
   setAdapterSelection: (arg: string) => void
-  adapterTypes: string[]
+  adapterTypes: readonly string[]
 }) {
   return (
     <TextField
@@ -23,7 +23,9 @@ const AdapterSelector = observer(function ({
       select
       helperText="Type of adapter to use"
       fullWidth
-      onChange={event => setAdapterSelection(event.target.value)}
+      onChange={event => {
+        setAdapterSelection(event.target.value)
+      }}
     >
       {adapterTypes.map(str => (
         <MenuItem key={str} value={str}>
@@ -34,91 +36,105 @@ const AdapterSelector = observer(function ({
   )
 })
 
-const AdapterInput = observer(
-  ({
-    adapterSelection,
-    fastaLocation,
-    faiLocation,
-    gziLocation,
-    twoBitLocation,
-    chromSizesLocation,
-    setFaiLocation,
-    setGziLocation,
-    setTwoBitLocation,
-    setFastaLocation,
-    setChromSizesLocation,
-  }: {
-    adapterSelection: string
-    fastaLocation: FileLocation
-    faiLocation: FileLocation
-    gziLocation: FileLocation
-    twoBitLocation: FileLocation
-    chromSizesLocation: FileLocation
-    setGziLocation: (arg: FileLocation) => void
-    setTwoBitLocation: (arg: FileLocation) => void
-    setChromSizesLocation: (arg: FileLocation) => void
-    setFastaLocation: (arg: FileLocation) => void
-    setFaiLocation: (arg: FileLocation) => void
-  }) => {
-    if (
-      adapterSelection === 'IndexedFastaAdapter' ||
-      adapterSelection === 'BgzipFastaAdapter'
-    ) {
-      return (
-        <Grid container spacing={2}>
-          <Grid item>
-            <FileSelector
-              name="fastaLocation"
-              location={fastaLocation}
-              setLocation={loc => setFastaLocation(loc)}
-            />
-          </Grid>
-          <Grid item>
-            <FileSelector
-              name="faiLocation"
-              location={faiLocation}
-              setLocation={loc => setFaiLocation(loc)}
-            />
-          </Grid>
-          {adapterSelection === 'BgzipFastaAdapter' ? (
-            <Grid item>
-              <FileSelector
-                name="gziLocation"
-                location={gziLocation}
-                setLocation={loc => setGziLocation(loc)}
-              />
-            </Grid>
-          ) : null}
+const AdapterInput = observer(function ({
+  adapterSelection,
+  fastaLocation,
+  faiLocation,
+  gziLocation,
+  twoBitLocation,
+  chromSizesLocation,
+  setFaiLocation,
+  setGziLocation,
+  setTwoBitLocation,
+  setFastaLocation,
+  setChromSizesLocation,
+}: {
+  adapterSelection: string
+  fastaLocation: FileLocation
+  faiLocation: FileLocation
+  gziLocation: FileLocation
+  twoBitLocation: FileLocation
+  chromSizesLocation: FileLocation
+  setGziLocation: (arg: FileLocation) => void
+  setTwoBitLocation: (arg: FileLocation) => void
+  setChromSizesLocation: (arg: FileLocation) => void
+  setFastaLocation: (arg: FileLocation) => void
+  setFaiLocation: (arg: FileLocation) => void
+}) {
+  if (
+    adapterSelection === 'IndexedFastaAdapter' ||
+    adapterSelection === 'BgzipFastaAdapter'
+  ) {
+    return (
+      <Grid container spacing={2}>
+        <Grid item>
+          <FileSelector
+            name="fastaLocation"
+            location={fastaLocation}
+            setLocation={loc => {
+              setFastaLocation(loc)
+            }}
+          />
         </Grid>
-      )
-    }
-
-    if (adapterSelection === 'TwoBitAdapter') {
-      return (
-        <Grid container spacing={2}>
-          <Grid item>
-            <FileSelector
-              name="twoBitLocation"
-              location={twoBitLocation}
-              setLocation={loc => setTwoBitLocation(loc)}
-            />
-          </Grid>
-          <Grid item>
-            <FileSelector
-              name="chromSizesLocation (optional, can be added to speed up loading 2bit files with many contigs)"
-              location={chromSizesLocation}
-              setLocation={loc => setChromSizesLocation(loc)}
-            />
-          </Grid>
+        <Grid item>
+          <FileSelector
+            name="faiLocation"
+            location={faiLocation}
+            setLocation={loc => {
+              setFaiLocation(loc)
+            }}
+          />
         </Grid>
-      )
-    }
+        {adapterSelection === 'BgzipFastaAdapter' ? (
+          <Grid item>
+            <FileSelector
+              name="gziLocation"
+              location={gziLocation}
+              setLocation={loc => {
+                setGziLocation(loc)
+              }}
+            />
+          </Grid>
+        ) : null}
+      </Grid>
+    )
+  }
 
-    return null
-  },
-)
+  if (adapterSelection === 'TwoBitAdapter') {
+    return (
+      <Grid container spacing={2}>
+        <Grid item>
+          <FileSelector
+            name="twoBitLocation"
+            location={twoBitLocation}
+            setLocation={loc => {
+              setTwoBitLocation(loc)
+            }}
+          />
+        </Grid>
+        <Grid item>
+          <FileSelector
+            name="chromSizesLocation (optional, can be added to speed up loading 2bit files with many contigs)"
+            location={chromSizesLocation}
+            setLocation={loc => {
+              setChromSizesLocation(loc)
+            }}
+          />
+        </Grid>
+      </Grid>
+    )
+  }
+
+  return null
+})
 
 const blank = { uri: '' } as FileLocation
+
+const adapterTypes = [
+  'IndexedFastaAdapter',
+  'BgzipFastaAdapter',
+  'TwoBitAdapter',
+] as const
 
 const AssemblyAddForm = observer(function ({
   rootModel,
@@ -127,15 +143,11 @@ const AssemblyAddForm = observer(function ({
   rootModel: AbstractRootModel
   setFormOpen: (arg: boolean) => void
 }) {
-  const adapterTypes = [
-    'IndexedFastaAdapter',
-    'BgzipFastaAdapter',
-    'TwoBitAdapter',
-  ]
-
   const [assemblyName, setAssemblyName] = useState('')
   const [assemblyDisplayName, setAssemblyDisplayName] = useState('')
-  const [adapterSelection, setAdapterSelection] = useState(adapterTypes[0])
+  const [adapterSelection, setAdapterSelection] = useState(
+    adapterTypes[0] as string,
+  )
   const [fastaLocation, setFastaLocation] = useState(blank)
   const [faiLocation, setFaiLocation] = useState(blank)
   const [gziLocation, setGziLocation] = useState(blank)
@@ -206,7 +218,9 @@ const AssemblyAddForm = observer(function ({
           helperText="The assembly name e.g. hg38"
           variant="outlined"
           value={assemblyName}
-          onChange={event => setAssemblyName(event.target.value)}
+          onChange={event => {
+            setAssemblyName(event.target.value)
+          }}
         />
         <TextField
           id="assembly-name"
@@ -215,7 +229,9 @@ const AssemblyAddForm = observer(function ({
           helperText='A human readable display name for the assembly e.g. "Homo sapiens (hg38)"'
           variant="outlined"
           value={assemblyDisplayName}
-          onChange={event => setAssemblyDisplayName(event.target.value)}
+          onChange={event => {
+            setAssemblyDisplayName(event.target.value)
+          }}
         />
         <AdapterSelector
           adapterSelection={adapterSelection}

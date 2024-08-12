@@ -80,18 +80,18 @@ async function mapStackTrace(stack: string) {
       continue
     }
 
-    const uri = match[2]
+    const uri = match[2]!
     const consumer = await getSourceMapFromUri(uri)
 
     const originalPosition = consumer.originalPositionFor({
-      line: Number.parseInt(match[3]),
-      column: Number.parseInt(match[4]),
+      line: Number.parseInt(match[3]!),
+      column: Number.parseInt(match[4]!),
     })
 
     if (
-      originalPosition.source === null ||
-      originalPosition.line === null ||
-      originalPosition.column === null
+      !originalPosition.source ||
+      !originalPosition.line ||
+      !originalPosition.column
     ) {
       mappedStack.push(line)
       continue
@@ -100,7 +100,7 @@ async function mapStackTrace(stack: string) {
     mappedStack.push(
       `${originalPosition.source}:${originalPosition.line}:${
         originalPosition.column + 1
-      } (${match[1].trim()})`,
+      } (${match[1]!.trim()})`,
     )
   }
 
@@ -223,7 +223,9 @@ export default function ErrorMessageStackTraceDialog({
           onClick={() => {
             copy(errorBoxText)
             setClicked(true)
-            setTimeout(() => setClicked(false), 1000)
+            setTimeout(() => {
+              setClicked(false)
+            }, 1000)
           }}
         >
           {clicked ? 'Copied!' : 'Copy stack trace to clipboard'}

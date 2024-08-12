@@ -57,7 +57,7 @@ const TrackLabel = observer(
     const { minimized, pinned } = track
     const trackId = getConf(track, 'trackId')
     const trackName = getTrackName(trackConf, session)
-    let lgvHasParentView: Boolean
+    let lgvHasParentView: boolean
     try {
       getContainingView(view)
       lgvHasParentView = true
@@ -71,7 +71,9 @@ const TrackLabel = observer(
             {
               label: pinned ? 'Unpin track' : 'Pin track',
               icon: PushPinIcon,
-              onClick: () => track.setPinned(!pinned),
+              onClick: () => {
+                track.setPinned(!pinned)
+              },
             },
           ]),
       {
@@ -81,28 +83,38 @@ const TrackLabel = observer(
           {
             label: minimized ? 'Restore track' : 'Minimize track',
             icon: minimized ? AddIcon : MinimizeIcon,
-            onClick: () => track.setMinimized(!minimized),
+            onClick: () => {
+              track.setMinimized(!minimized)
+            },
           },
           {
             label: 'Move track to top',
             icon: KeyboardDoubleArrowUpIcon,
-            onClick: () => view.moveTrackToTop(track.id),
+            onClick: () => {
+              view.moveTrackToTop(track.id)
+            },
           },
 
           {
             label: 'Move track up',
             icon: KeyboardArrowUpIcon,
-            onClick: () => view.moveTrackUp(track.id),
+            onClick: () => {
+              view.moveTrackUp(track.id)
+            },
           },
           {
             label: 'Move track down',
             icon: KeyboardArrowDownIcon,
-            onClick: () => view.moveTrackDown(track.id),
+            onClick: () => {
+              view.moveTrackDown(track.id)
+            },
           },
           {
             label: 'Move track to bottom',
             icon: KeyboardDoubleArrowDownIcon,
-            onClick: () => view.moveTrackToBottom(track.id),
+            onClick: () => {
+              view.moveTrackToBottom(track.id)
+            },
           },
         ],
       },

@@ -71,17 +71,14 @@ const ModalWidget = observer(function ({
     return null
   }
   const { ReactComponent } = pluginManager.getWidgetType(visibleWidget.type)
-  const Component = visibleWidget
-    ? (pluginManager.evaluateExtensionPoint(
-        'Core-replaceWidget',
-        ReactComponent,
-        {
-          session,
-          model: visibleWidget,
-        },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ) as React.FC<any>)
-    : null
+  const Component = pluginManager.evaluateExtensionPoint(
+    'Core-replaceWidget',
+    ReactComponent,
+    {
+      session,
+      model: visibleWidget,
+    },
+  ) as React.FC<any> | undefined
   return (
     <Dialog
       open

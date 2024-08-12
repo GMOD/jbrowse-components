@@ -245,7 +245,7 @@ const Ruler = observer(function ({
 }) {
   return slice.region.elided ? (
     <ElisionRulerArc
-      key={assembleLocString(slice.region.regions[0])}
+      key={assembleLocString(slice.region.regions[0]!)}
       model={model}
       region={slice.region}
       slice={slice}

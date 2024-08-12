@@ -50,7 +50,7 @@ test('test using the sequence feature panel', () => {
     <SequencePanel
       model={model}
       sequence={{ seq: dna }}
-      feature={feature.subfeatures[0]}
+      feature={feature.subfeatures[0]!}
     />,
   )
 
@@ -85,7 +85,7 @@ test('test using the sequence feature panel with show coords', () => {
     <SequencePanel
       model={model}
       sequence={{ seq: dna }}
-      feature={feature.subfeatures[0]}
+      feature={feature.subfeatures[0]!}
     />,
   )
 
@@ -112,7 +112,7 @@ test('NCDN collapsed intron', () => {
     <SequencePanel
       model={model}
       sequence={{ seq: dna }}
-      feature={feature.subfeatures[0]}
+      feature={feature.subfeatures[0]!}
     />,
   )
 
@@ -138,7 +138,7 @@ test('NCDN updownstream', () => {
     <SequencePanel
       model={model}
       sequence={{ seq, upstream }}
-      feature={feature.subfeatures[0]}
+      feature={feature.subfeatures[0]!}
     />,
   )
 

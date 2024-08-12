@@ -79,7 +79,6 @@ const Dotplot1DView = Base1DView.extend(self => {
 const DotplotHView = Dotplot1DView.extend(self => ({
   views: {
     get width() {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return getParent<any>(self).viewWidth
     },
   },
@@ -88,7 +87,6 @@ const DotplotHView = Dotplot1DView.extend(self => ({
 const DotplotVView = Dotplot1DView.extend(self => ({
   views: {
     get width() {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return getParent<any>(self).viewHeight
     },
   },

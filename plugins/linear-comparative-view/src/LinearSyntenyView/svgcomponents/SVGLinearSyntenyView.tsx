@@ -45,7 +45,7 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
   const { width, views, middleComparativeHeight: synH, tracks } = model
   const shift = 50
   const offset = headerHeight + rulerHeight
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const { createRootFn } = getRoot<any>(model)
   const heights = views.map(
     v => totalHeight(v.tracks, textHeight, trackLabels) + offset,
@@ -78,7 +78,10 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
         width,
         synH,
         { exportSVG: opts },
-        ctx => drawRef(d, ctx),
+        ctx => {
+          drawRef(d, ctx)
+          return undefined
+        },
       )
 
       if ('imageData' in r) {
@@ -129,17 +132,17 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
                 fontSize={fontSize}
                 {...getFillProps(theme.palette.text.primary)}
               >
-                {views[0].assemblyNames.join(', ')}
+                {views[0]!.assemblyNames.join(', ')}
               </text>
 
-              <SVGRuler model={displayResults[0].view} fontSize={fontSize} />
+              <SVGRuler model={displayResults[0]!.view} fontSize={fontSize} />
             </g>
             <SVGTracks
               textHeight={textHeight}
               trackLabels={trackLabels}
               fontSize={fontSize}
-              model={displayResults[0].view}
-              displayResults={displayResults[0].data}
+              model={displayResults[0]!.view}
+              displayResults={displayResults[0]!.data}
               offset={offset}
               trackLabelOffset={trackLabelOffset}
             />
@@ -152,7 +155,7 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
           </defs>
           <g
             transform={`translate(${shift + trackLabelOffset} ${
-              fontSize + heights[0]
+              fontSize + heights[0]!
             })`}
             clipPath={'url(#synclip)'}
           >
@@ -161,23 +164,23 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
               <ReactRendering key={i} rendering={r} />
             ))}
           </g>
-          <g transform={`translate(${shift} ${fontSize + heights[0] + synH})`}>
+          <g transform={`translate(${shift} ${fontSize + heights[0]! + synH})`}>
             <g transform={`translate(${trackLabelOffset})`}>
               <text
                 x={0}
                 fontSize={fontSize}
                 {...getFillProps(theme.palette.text.primary)}
               >
-                {views[1].assemblyNames.join(', ')}
+                {views[1]!.assemblyNames.join(', ')}
               </text>
-              <SVGRuler model={displayResults[1].view} fontSize={fontSize} />
+              <SVGRuler model={displayResults[1]!.view} fontSize={fontSize} />
             </g>
             <SVGTracks
               textHeight={textHeight}
               trackLabels={trackLabels}
               fontSize={fontSize}
-              model={displayResults[1].view}
-              displayResults={displayResults[1].data}
+              model={displayResults[1]!.view}
+              displayResults={displayResults[1]!.data}
               offset={offset}
               trackLabelOffset={trackLabelOffset}
             />

@@ -6,9 +6,9 @@ import { IAnyStateTreeNode, isAlive } from 'mobx-state-tree'
 import { LinearGenomeViewModel } from '../../LinearGenomeView'
 
 export interface RenderProps {
-  rendererType: any // eslint-disable-line @typescript-eslint/no-explicit-any
-  renderArgs: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
-  renderProps: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
+  rendererType: any
+  renderArgs: Record<string, any>
+  renderProps: Record<string, any>
   displayError: unknown
   rpcManager: { call: (...args: unknown[]) => void }
   cannotBeRenderedReason: string

@@ -37,7 +37,9 @@ const ShareButton = observer(function (props: {
   return (
     <div className={classes.shareDiv}>
       <Button
-        onClick={async () => setOpen(true)}
+        onClick={async () => {
+          setOpen(true)
+        }}
         size="small"
         color="inherit"
         startIcon={<ShareIcon />}
@@ -47,7 +49,12 @@ const ShareButton = observer(function (props: {
       </Button>
       {open ? (
         <React.Suspense fallback={null}>
-          <ShareDialog handleClose={() => setOpen(false)} session={session} />
+          <ShareDialog
+            handleClose={() => {
+              setOpen(false)
+            }}
+            session={session}
+          />
         </React.Suspense>
       ) : null}
     </div>

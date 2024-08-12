@@ -253,7 +253,7 @@ export function useWheelScroll(
     // if ctrl is held down, zoom in with y-scroll
     // else scroll horizontally with x-scroll
     function onWheel(event: WheelEvent) {
-      if (event.ctrlKey === true) {
+      if (event.ctrlKey) {
         event.preventDefault()
         delta.current += event.deltaY / 500
         model.setScaleFactor(

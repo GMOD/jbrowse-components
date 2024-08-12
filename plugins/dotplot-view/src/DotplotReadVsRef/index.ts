@@ -31,7 +31,9 @@ export default function DotplotReadVsRefMenuItem(pluginManager: PluginManager) {
                           {
                             label: 'Dotplot of read vs ref',
                             icon: AddIcon,
-                            onClick: () => onClick(feature, self),
+                            onClick: () => {
+                              onClick(feature, self)
+                            },
                           },
                         ]
                       : []),

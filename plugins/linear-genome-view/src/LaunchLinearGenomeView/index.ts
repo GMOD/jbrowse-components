@@ -1,10 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import {
-  AbstractSessionModel,
-  when,
-  parseLocString,
-  ParsedLocString,
-} from '@jbrowse/core/util'
+import { AbstractSessionModel, when, parseLocString } from '@jbrowse/core/util'
 // locals
 import { LinearGenomeViewModel } from '../LinearGenomeView'
 import { handleSelectedRegion } from '../searchUtils'
@@ -62,22 +57,17 @@ export default function LaunchLinearGenomeViewF(pluginManager: PluginManager) {
         }
         if (highlight !== undefined) {
           highlight.forEach(async h => {
-            if (h) {
-              const parsedLocString = parseLocString(h, refName =>
-                isValidRefName(refName, assembly),
-              ) as Required<ParsedLocString>
-
-              const location = {
-                ...parsedLocString,
+            const p = parseLocString(h, refName =>
+              isValidRefName(refName, assembly),
+            )
+            const { start, end } = p
+            if (start !== undefined && end !== undefined) {
+              view.addToHighlights({
+                ...p,
+                start,
+                end,
                 assemblyName: assembly,
-              }
-
-              if (
-                location?.start !== undefined &&
-                location?.end !== undefined
-              ) {
-                view.addToHighlights(location)
-              }
+              })
             }
           })
         }
@@ -85,7 +75,9 @@ export default function LaunchLinearGenomeViewF(pluginManager: PluginManager) {
         await handleSelectedRegion({ input: loc, model: view, assembly: asm })
 
         const idsNotFound = [] as string[]
-        tracks.forEach(track => tryTrack(view, track, idsNotFound))
+        tracks.forEach(track => {
+          tryTrack(view, track, idsNotFound)
+        })
         if (idsNotFound.length) {
           throw new Error(
             `Could not resolve identifiers: ${idsNotFound.join(',')}`,

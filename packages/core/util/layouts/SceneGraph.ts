@@ -24,7 +24,7 @@ export default class SceneGraph {
     public top: number,
     public width: number,
     public height: number,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     public data?: Record<string, any>,
   ) {
     this.children = new Map()
@@ -37,7 +37,7 @@ export default class SceneGraph {
     top: number,
     width: number,
     height: number,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     data?: Record<string, any>,
   ) {
     const child =

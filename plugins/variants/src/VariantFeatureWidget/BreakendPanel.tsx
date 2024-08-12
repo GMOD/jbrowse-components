@@ -77,7 +77,7 @@ function LaunchBreakpointSplitViewPanel({
       </Typography>
       <ul>
         {locStrings.map(locString => (
-          <li key={`${JSON.stringify(locString)}`}>
+          <li key={JSON.stringify(locString)}>
             <Link
               href="#"
               onClick={event => {

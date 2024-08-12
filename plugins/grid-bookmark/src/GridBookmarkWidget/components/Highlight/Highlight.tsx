@@ -28,9 +28,9 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
   const { assemblyManager } = session
   const { showBookmarkHighlights, showBookmarkLabels } = model
 
-  const bookmarkWidget = session.widgets.get(
-    'GridBookmark',
-  ) as GridBookmarkModel
+  const bookmarkWidget = session.widgets.get('GridBookmark') as
+    | GridBookmarkModel
+    | undefined
 
   useEffect(() => {
     if (!bookmarkWidget) {
@@ -77,11 +77,10 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
                 <BookmarkIcon
                   fontSize="small"
                   sx={{
-                    color: `${
+                    color:
                       colord(highlight).alpha() !== 0
                         ? colord(highlight).alpha(0.8).toRgbString()
-                        : colord(highlight).alpha(0).toRgbString()
-                    }`,
+                        : colord(highlight).alpha(0).toRgbString(),
                   }}
                 />
               </Tooltip>

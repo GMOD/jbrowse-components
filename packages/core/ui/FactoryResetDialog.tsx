@@ -24,7 +24,13 @@ export default function FactoryResetDialog({
   }
 
   return (
-    <Dialog title="Reset" onClose={() => handleDialogClose()} open={open}>
+    <Dialog
+      title="Reset"
+      onClose={() => {
+        handleDialogClose()
+      }}
+      open={open}
+    >
       <DialogContent>
         <DialogContentText>
           Are you sure you want to reset? This will restore the default
@@ -32,11 +38,18 @@ export default function FactoryResetDialog({
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => handleDialogClose()} color="primary">
+        <Button
+          onClick={() => {
+            handleDialogClose()
+          }}
+          color="primary"
+        >
           Cancel
         </Button>
         <Button
-          onClick={() => handleDialogClose('reset')}
+          onClick={() => {
+            handleDialogClose('reset')
+          }}
           color="primary"
           variant="contained"
         >

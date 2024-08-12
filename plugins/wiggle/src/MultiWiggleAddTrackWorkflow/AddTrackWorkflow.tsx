@@ -43,7 +43,9 @@ export default function MultiWiggleWidget({ model }: { model: AddTrackModel }) {
         multiline
         rows={10}
         value={val}
-        onChange={event => setVal(event.target.value)}
+        onChange={event => {
+          setVal(event.target.value)
+        }}
         placeholder={'Paste list of URLs here, or use file selector below'}
         variant="outlined"
         className={classes.textbox}
@@ -56,7 +58,7 @@ export default function MultiWiggleWidget({ model }: { model: AddTrackModel }) {
           hidden
           multiple
           onChange={({ target }) => {
-            const res = [...(target?.files || [])].map(file => ({
+            const res = [...(target.files || [])].map(file => ({
               type: 'BigWigAdapter',
               bigWigLocation: isElectron
                 ? {
@@ -72,7 +74,9 @@ export default function MultiWiggleWidget({ model }: { model: AddTrackModel }) {
       </Button>
       <TextField
         value={trackName}
-        onChange={event => setTrackName(event.target.value)}
+        onChange={event => {
+          setTrackName(event.target.value)
+        }}
         helperText="Track name"
       />
       <Button
@@ -83,7 +87,7 @@ export default function MultiWiggleWidget({ model }: { model: AddTrackModel }) {
 
           const trackId = [
             `${trackName.toLowerCase().replaceAll(' ', '_')}-${Date.now()}`,
-            `${session.adminMode ? '' : '-sessionTrack'}`,
+            session.adminMode ? '' : '-sessionTrack',
           ].join('')
 
           // allow list of bigwigs in JSON format or line-by-line

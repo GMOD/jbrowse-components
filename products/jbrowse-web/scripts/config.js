@@ -1,6 +1,6 @@
 const webpack = require('webpack')
 
-module.exports = function (config) {
+module.exports = function webpackConfig(config) {
   config.plugins.push(
     // this is needed to properly polyfill buffer in desktop, after the CRA5
     // conversion it was observed cram, twobit, etc that use

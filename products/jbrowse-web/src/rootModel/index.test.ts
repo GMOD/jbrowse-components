@@ -120,7 +120,9 @@ test('throws if session snapshot is invalid', () => {
       configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
     },
   })
-  expect(() => root.setSession({})).toThrow()
+  expect(() => {
+    root.setSession({})
+  }).toThrow()
 })
 
 test('adds menus', () => {

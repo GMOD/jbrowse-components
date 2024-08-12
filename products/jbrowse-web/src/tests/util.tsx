@@ -67,7 +67,7 @@ export function generateReadBuffer(getFile: (s: string) => GenericFilehandle) {
         if (range === -2 || range === -1) {
           throw new Error(`Error parsing range "${r}"`)
         }
-        const { start, end } = range[0]
+        const { start, end } = range[0]!
         const len = end - start + 1
         const buf = Buffer.alloc(len)
         const { bytesRead } = await file.read(buf, 0, len, start)
@@ -107,7 +107,6 @@ export function expectCanvasMatch(
   })
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function JBrowse(props: any) {
   return (
     <QueryParamProvider adapter={WindowHistoryAdapter}>
@@ -120,17 +119,20 @@ export const hts = (str: string) => `htsTrackEntry-Tracks,${str}`
 export const pc = (str: string) => `prerendered_canvas_${str}_done`
 export const pv = (str: string) => pc(`{volvox}ctgA:${str}`)
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function createView(args?: any, adminMode?: boolean) {
   const ret = createViewNoWait(args, adminMode)
   const { view } = ret
-  if (view && 'initialized' in view) {
-    await waitFor(() => expect(view.initialized).toBe(true), { timeout: 30000 })
+  if ('initialized' in view) {
+    await waitFor(
+      () => {
+        expect(view.initialized).toBe(true)
+      },
+      { timeout: 30000 },
+    )
   }
   return ret
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createViewNoWait(args?: any, adminMode?: boolean) {
   const { pluginManager, rootModel } = getPluginManager(args, adminMode)
   const rest = render(<JBrowse pluginManager={pluginManager} />)

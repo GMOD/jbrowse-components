@@ -22,7 +22,7 @@ const AutosaveSessionsList = observer(function ({
   const { classes } = useStyles()
   const autosavedSession = JSON.parse(
     localStorage.getItem(session.previousAutosaveId) || '{}',
-  ).session as SessionSnap
+  ).session as SessionSnap | undefined
 
   return autosavedSession ? (
     <Paper className={classes.root}>
@@ -30,7 +30,9 @@ const AutosaveSessionsList = observer(function ({
         <SessionListItem
           session={session}
           sessionSnapshot={autosavedSession}
-          onClick={() => session.loadAutosaveSession()}
+          onClick={() => {
+            session.loadAutosaveSession()
+          }}
         />
       </List>
     </Paper>

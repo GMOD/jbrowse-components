@@ -2,7 +2,6 @@ import { lazy } from 'react'
 import {
   addDisposer,
   cast,
-  getParent,
   getPath,
   getRoot,
   resolveIdentifier,
@@ -79,7 +78,7 @@ function stateModelFactory(pluginManager: PluginManager) {
          * currently this is limited to an array of two
          */
         views: types.array(
-          pluginManager.getViewType('LinearGenomeView')
+          pluginManager.getViewType('LinearGenomeView')!
             .stateModel as LinearGenomeViewStateModel,
         ),
 
@@ -112,6 +111,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       get initialized() {
         return (
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           self.width !== undefined &&
           self.views.length > 0 &&
           self.views.every(view => view.initialized)
@@ -177,16 +177,6 @@ function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
-       * removes the view itself from the state tree entirely by calling the
-       * parent removeView
-       */
-      closeView() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        getParent<any>(self, 2).removeView(self)
-      },
-
-      /**
-       * #action
        */
       setMiddleComparativeHeight(n: number) {
         self.middleComparativeHeight = n
@@ -238,7 +228,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         if (!trackType) {
           throw new Error(`unknown track type ${configuration.type}`)
         }
-        const viewType = pluginManager.getViewType(self.type)
+        const viewType = pluginManager.getViewType(self.type)!
         const supportedDisplays = new Set(
           viewType.displayTypes.map(d => d.name),
         )
@@ -267,7 +257,9 @@ function stateModelFactory(pluginManager: PluginManager) {
         const schema = pluginManager.pluggableConfigSchemaType('track')
         const config = resolveIdentifier(schema, getRoot(self), trackId)
         const shownTracks = self.tracks.filter(t => t.configuration === config)
-        transaction(() => shownTracks.forEach(t => self.tracks.remove(t)))
+        transaction(() => {
+          shownTracks.forEach(t => self.tracks.remove(t))
+        })
         return shownTracks.length
       },
       /**
@@ -309,8 +301,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       menuItems(): MenuItem[] {
         return [
           ...self.views
-            .map((view, idx) => [idx, view.menuItems?.()] as const)
-            .filter(f => !!f[1])
+            .map((view, idx) => [idx, view.menuItems()] as const)
             .map(f => ({ label: `View ${f[0] + 1} Menu`, subMenu: f[1] })),
           {
             label: 'Return to import form',
@@ -354,7 +345,9 @@ function stateModelFactory(pluginManager: PluginManager) {
           self,
           autorun(() => {
             if (self.width) {
-              self.views.forEach(v => v.setWidth(self.width))
+              self.views.forEach(v => {
+                v.setWidth(self.width)
+              })
             }
           }),
         )

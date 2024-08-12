@@ -24,7 +24,7 @@ const RowFullTextFilter = types
         const { cellsWithDerived } = row
         for (const cell of cellsWithDerived) {
           // note: case insensitive
-          if (cell.text?.toLowerCase().includes(s)) {
+          if (cell.text.toLowerCase().includes(s)) {
             return true
           }
         }
@@ -76,7 +76,6 @@ const model = types
   .actions(self => ({
     addBlankColumnFilter(columnNumber: number) {
       const { dataType } =
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         getParent<any>(self).spreadsheet.columns[columnNumber]
       self.columnFilters.push({
         type: dataType.type,

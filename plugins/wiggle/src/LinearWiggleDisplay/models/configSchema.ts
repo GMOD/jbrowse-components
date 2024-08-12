@@ -12,11 +12,11 @@ import sharedWiggleConfigFactory from '../../shared/configShared'
  */
 export default function WiggleConfigFactory(pluginManager: PluginManager) {
   const XYPlotRendererConfigSchema =
-    pluginManager.getRendererType('XYPlotRenderer').configSchema
+    pluginManager.getRendererType('XYPlotRenderer')!.configSchema
   const DensityRendererConfigSchema =
-    pluginManager.getRendererType('DensityRenderer').configSchema
+    pluginManager.getRendererType('DensityRenderer')!.configSchema
   const LinePlotRendererConfigSchema =
-    pluginManager.getRendererType('LinePlotRenderer').configSchema
+    pluginManager.getRendererType('LinePlotRenderer')!.configSchema
 
   return ConfigurationSchema(
     'LinearWiggleDisplay',

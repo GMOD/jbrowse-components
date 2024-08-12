@@ -49,10 +49,10 @@ function cartesianToTheta(x: number, y: number) {
 export function cartesianToPolar(x: number, y: number) {
   const rho = Math.sqrt(x * x + y * y)
   if (rho === 0) {
-    return [0, 0]
+    return [0, 0] as const
   }
   const theta = cartesianToTheta(x, y)
-  return [rho, theta]
+  return [rho, theta] as const
 }
 
 const twoPi = 2 * Math.PI
@@ -112,7 +112,7 @@ export function viewportVisibleSection(
       [viewR, viewT],
       [viewL, viewB],
       [viewR, viewB],
-    ]
+    ] as const
     let maxRho = Number.NEGATIVE_INFINITY
     for (const [x, y] of vertices) {
       const rho = Math.sqrt(x * x + y * y)

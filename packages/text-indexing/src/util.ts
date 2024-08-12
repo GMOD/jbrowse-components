@@ -91,14 +91,7 @@ export interface VcfAdapter {
 }
 
 export interface Track {
-  adapter: {
-    type: string
-    gtfLocation?: Loc
-    gffLocation?: Loc
-    vcfLocation?: Loc
-    vcfGzLocation?: Loc
-    gffGzLocation?: Loc
-  }
+  adapter?: { type: string; [key: string]: unknown }
   textSearching?: TextSearching
   name: string
   assemblyNames: string[]

@@ -363,7 +363,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         const { assemblyManager } = getSession(self)
         const assembly = assemblyManager.get(assemblyName)
         const trackConf = assembly?.configuration.sequence
-        const viewType = pluginManager.getViewType(self.view.type)
+        const viewType = pluginManager.getViewType(self.view.type)!
         if (trackConf) {
           for (const display of trackConf.displays) {
             if (viewType.displayTypes.some(d => d.name === display.type)) {
@@ -412,7 +412,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         const { connectionInstances = [] } = getSession(self)
         return [
           ...this.configAndSessionTrackConfigurations,
-          ...(connectionInstances?.flatMap(c => c.tracks) || []),
+          ...connectionInstances.flatMap(c => c.tracks),
         ]
       },
 

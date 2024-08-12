@@ -5,7 +5,7 @@ import {
   fetchTrackDbFile,
 } from './ucscTrackHub'
 
-import { getConf } from '@jbrowse/core/configuration'
+import { AnyConfigurationModel, getConf } from '@jbrowse/core/configuration'
 import { FileLocation, getSession } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { nanoid } from '@jbrowse/core/util/nanoid'
@@ -14,8 +14,10 @@ function resolve(uri: string, baseUri: string) {
   return new URL(uri, baseUri).href
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function doConnect(self: any) {
+export async function doConnect(self: {
+  configuration: AnyConfigurationModel
+  addTrackConfs: (arg: Record<string, unknown>[]) => void
+}) {
   const session = getSession(self)
   const notLoadedAssemblies = [] as string[]
   try {
@@ -40,10 +42,10 @@ export async function doConnect(self: any) {
             adapter: {
               type: 'TwoBitAdapter',
               twoBitLocation: {
-                uri: resolve(genome.data.twoBitPath, hubUri),
+                uri: resolve(genome.data.twoBitPath!, hubUri),
               },
               chromSizesLocation: {
-                uri: resolve(genome.data.chromSizes, hubUri),
+                uri: resolve(genome.data.chromSizes!, hubUri),
               },
             },
           },

@@ -11,7 +11,7 @@ export async function getUniqueTagValues(
   opts?: {
     headers?: Record<string, string>
     signal?: AbortSignal
-    filters?: string[]
+    filters: string[]
   },
 ) {
   const { rpcManager } = getSession(self)
@@ -43,7 +43,7 @@ export async function getUniqueModificationValues(
   opts?: {
     headers?: Record<string, string>
     signal?: AbortSignal
-    filters?: string[]
+    filters: string[]
   },
 ) {
   const { rpcManager } = getSession(self)

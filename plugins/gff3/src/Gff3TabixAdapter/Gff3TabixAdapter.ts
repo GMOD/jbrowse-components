@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 import {
   BaseFeatureDataAdapter,
   BaseOptions,
@@ -95,9 +94,9 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
         let minStart = Number.POSITIVE_INFINITY
         let maxEnd = Number.NEGATIVE_INFINITY
         lines.forEach(line => {
-          const featureType = line.fields[2]
-          // only expand redispatch range if feature is not a "dontRedispatch" type
-          // skips large regions like chromosome,region
+          const featureType = line.fields[2]!
+          // only expand redispatch range if feature is not a "dontRedispatch"
+          // type skips large regions like chromosome,region
           if (!this.dontRedispatch.includes(featureType)) {
             const start = line.start - 1 // gff is 1-based
             if (start < minStart) {
@@ -144,7 +143,7 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
         disableDerivesFromReferences: true,
       })
 
-      features.forEach(featureLocs =>
+      features.forEach(featureLocs => {
         this.formatFeatures(featureLocs).forEach(f => {
           if (
             doesIntersect2(
@@ -156,8 +155,8 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
           ) {
             observer.next(f)
           }
-        }),
-      )
+        })
+      })
       observer.complete()
     } catch (e) {
       observer.error(e)
@@ -173,8 +172,8 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
 
     // note: index column numbers are 1-based
     return {
-      start: +fields[columnNumbers.start - 1],
-      end: +fields[columnNumbers.end - 1],
+      start: +fields[columnNumbers.start - 1]!,
+      end: +fields[columnNumbers.end - 1]!,
       lineHash: fileOffset,
       fields,
     }
@@ -229,7 +228,7 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
         // reproduces behavior of NCList
         b += '2'
       }
-      if (dataAttributes[a] !== null) {
+      if (dataAttributes[a]) {
         let attr: string | string[] | undefined = dataAttributes[a]
         if (Array.isArray(attr) && attr.length === 1) {
           ;[attr] = attr
@@ -240,6 +239,7 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
     f.refName = f.seq_id
 
     // the SimpleFeature constructor takes care of recursively inflating subfeatures
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (data.child_features && data.child_features.length > 0) {
       f.subfeatures = data.child_features.flatMap(childLocs =>
         childLocs.map(childLoc => this.featureData(childLoc)),

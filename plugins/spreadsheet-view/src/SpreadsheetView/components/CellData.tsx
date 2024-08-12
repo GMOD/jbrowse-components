@@ -12,7 +12,6 @@ const CellData = observer(function ({
   spreadsheetModel,
   columnNumber,
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   cell: any
   spreadsheetModel: SpreadsheetModel
   columnNumber: number

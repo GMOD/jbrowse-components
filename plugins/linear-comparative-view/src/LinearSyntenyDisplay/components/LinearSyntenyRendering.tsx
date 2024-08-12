@@ -38,7 +38,7 @@ const LinearSyntenyRendering = observer(function ({
   model: LinearSyntenyDisplayModel
 }) {
   const { classes, cx } = useStyles()
-  const xOffset = useRef(0)
+  const xOffset = useRef<number>(0)
   const currScrollFrame = useRef<number>()
   const view = getContainingView(model) as LinearSyntenyViewModel
   const height = view.middleComparativeHeight
@@ -57,17 +57,19 @@ const LinearSyntenyRendering = observer(function ({
   // etc.
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   const k1 = useCallback(
-    (ref: HTMLCanvasElement) => model.setMouseoverCanvasRef(ref),
+    (ref: HTMLCanvasElement | null) => {
+      model.setMouseoverCanvasRef(ref)
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [model, height, width],
   )
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   const k2 = useCallback(
-    (ref: HTMLCanvasElement) => {
+    (ref: HTMLCanvasElement | null) => {
       model.setMainCanvasRef(ref)
       function onWheel(event: WheelEvent) {
         event.preventDefault()
-        if (event.ctrlKey === true) {
+        if (event.ctrlKey) {
           delta.current += event.deltaY / 500
           for (const v of view.views) {
             v.setScaleFactor(
@@ -106,28 +108,31 @@ const LinearSyntenyRendering = observer(function ({
           }
         }
       }
-      if (ref) {
-        ref.addEventListener('wheel', onWheel)
+      ref?.addEventListener('wheel', onWheel)
 
-        // this is a react 19-ism to have a cleanup in the ref callback
-        // https://react.dev/blog/2024/04/25/react-19#cleanup-functions-for-refs
-        // note: it warns in earlier versions of react
-        return () => ref.removeEventListener('wheel', onWheel)
+      // this is a react 19-ism to have a cleanup in the ref callback
+      // https://react.dev/blog/2024/04/25/react-19#cleanup-functions-for-refs
+      // note: it warns in earlier versions of react
+      return () => {
+        ref?.removeEventListener('wheel', onWheel)
       }
-      return () => {}
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [model, height, width],
   )
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   const k3 = useCallback(
-    (ref: HTMLCanvasElement) => model.setClickMapCanvasRef(ref),
+    (ref: HTMLCanvasElement | null) => {
+      model.setClickMapCanvasRef(ref)
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [model, height, width],
   )
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   const k4 = useCallback(
-    (ref: HTMLCanvasElement) => model.setCigarClickMapCanvasRef(ref),
+    (ref: HTMLCanvasElement | null) => {
+      model.setCigarClickMapCanvasRef(ref)
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [model, height, width],
   )
@@ -177,14 +182,14 @@ const LinearSyntenyRendering = observer(function ({
             const [r1, g1, b1] = ctx1.getImageData(x, y, 1, 1).data
             const [r2, g2, b2] = ctx2.getImageData(x, y, 1, 1).data
             const unitMultiplier = Math.floor(MAX_COLOR_RANGE / model.numFeats)
-            const id = getId(r1, g1, b1, unitMultiplier)
+            const id = getId(r1!, g1!, b1!, unitMultiplier)
             model.setMouseoverId(model.featPositions[id]?.f.id())
             if (id === -1) {
               setTooltip('')
             } else if (model.featPositions[id]) {
               const { f, cigar } = model.featPositions[id]
               const unitMultiplier2 = Math.floor(MAX_COLOR_RANGE / cigar.length)
-              const cigarIdx = getId(r2, g2, b2, unitMultiplier2)
+              const cigarIdx = getId(r2!, g2!, b2!, unitMultiplier2)
               setTooltip(getTooltip(f, cigar[cigarIdx], cigar[cigarIdx + 1]))
             }
           }
@@ -207,7 +212,9 @@ const LinearSyntenyRendering = observer(function ({
             onSynClick(evt, model)
           }
         }}
-        onContextMenu={evt => onSynContextClick(evt, model, setAnchorEl)}
+        onContextMenu={evt => {
+          onSynContextClick(evt, model, setAnchorEl)
+        }}
         data-testid="synteny_canvas"
         className={classes.abs}
         width={width}
@@ -222,7 +229,9 @@ const LinearSyntenyRendering = observer(function ({
         <SyntenyContextMenu
           model={model}
           anchorEl={anchorEl}
-          onClose={() => setAnchorEl(undefined)}
+          onClose={() => {
+            setAnchorEl(undefined)
+          }}
         />
       ) : null}
     </div>

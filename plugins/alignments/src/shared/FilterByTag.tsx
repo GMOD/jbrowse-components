@@ -45,7 +45,9 @@ function Bitmask(props: { flag?: number; setFlag: (arg: number) => void }) {
       <TextField
         type="number"
         value={flag}
-        onChange={event => setFlag(+event.target.value)}
+        onChange={event => {
+          setFlag(+event.target.value)
+        }}
       />
       {flagNames.map((name, index) => {
         const val = flag & (1 << index)
@@ -119,7 +121,9 @@ const FilterByTagDialog = observer(function (props: {
           <TextField
             className={classes.field}
             value={tag}
-            onChange={event => setTag(event.target.value)}
+            onChange={event => {
+              setTag(event.target.value)
+            }}
             placeholder="Enter tag name"
             inputProps={{ maxLength: 2 }}
             error={tag.length === 2 && !validTag}
@@ -128,7 +132,9 @@ const FilterByTagDialog = observer(function (props: {
           <TextField
             className={classes.field}
             value={tagValue}
-            onChange={event => setTagValue(event.target.value)}
+            onChange={event => {
+              setTagValue(event.target.value)
+            }}
             placeholder="Enter tag value"
           />
         </Paper>
@@ -137,7 +143,9 @@ const FilterByTagDialog = observer(function (props: {
           <TextField
             className={classes.field}
             value={readName}
-            onChange={event => setReadName(event.target.value)}
+            onChange={event => {
+              setReadName(event.target.value)
+            }}
             placeholder="Enter read name"
           />
         </Paper>
@@ -168,7 +176,9 @@ const FilterByTagDialog = observer(function (props: {
           <Button
             variant="contained"
             color="secondary"
-            onClick={() => handleClose()}
+            onClick={() => {
+              handleClose()
+            }}
           >
             Cancel
           </Button>

@@ -7,19 +7,19 @@ exports[`open up a widget 1`] = `
     data-testid="alignment-side-drawer"
   >
     <div
-      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded MuiAccordion-gutters css-1086bdv-MuiPaper-root-MuiAccordion-root"
+      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded css-siucz7-MuiPaper-root-MuiAccordion-root"
     >
       <div
         aria-expanded="true"
-        class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded MuiAccordionSummary-gutters css-1f773le-MuiButtonBase-root-MuiAccordionSummary-root"
+        class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-1yigmdy-MuiButtonBase-root-MuiAccordionSummary-root"
         role="button"
         tabindex="0"
       >
         <div
-          class="MuiAccordionSummary-content Mui-expanded MuiAccordionSummary-contentGutters css-eqpfi5-MuiAccordionSummary-content"
+          class="MuiAccordionSummary-content Mui-expanded css-1rhnrrr-MuiAccordionSummary-content"
         >
           <span
-            class="MuiTypography-root MuiTypography-button css-1f0on15-MuiTypography-root"
+            class="MuiTypography-root MuiTypography-button css-6ux8zw-MuiTypography-root"
           >
             ctgA_3_555_0:0:0_2:0... - match
           </span>
@@ -29,7 +29,7 @@ exports[`open up a widget 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ymsoo8-MuiSvgIcon-root-expandIcon"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-kbgf2m-MuiSvgIcon-root-expandIcon"
             data-testid="ExpandMoreIcon"
             focusable="false"
             viewBox="0 0 24 24"
@@ -55,10 +55,10 @@ exports[`open up a widget 1`] = `
               role="region"
             >
               <div
-                class="MuiAccordionDetails-root css-rqrb7m-MuiAccordionDetails-root-expansionPanelDetails"
+                class="MuiAccordionDetails-root css-mz6w4y-MuiAccordionDetails-root-expansionPanelDetails"
               >
                 <p
-                  class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                  class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
                 >
                   Core details
                 </p>
@@ -66,12 +66,12 @@ exports[`open up a widget 1`] = `
                   class="css-1m8nxnb-field"
                 >
                   <div
-                    class="css-1q83rf3-fieldName"
+                    class="css-ify9vk-fieldName"
                   >
                     Position
                   </div>
                   <div
-                    class="css-1omt041-fieldValue"
+                    class="css-xb19vs-fieldValue"
                   >
                     ctgA:3..102 (+)
                   </div>
@@ -80,12 +80,12 @@ exports[`open up a widget 1`] = `
                   class="css-1m8nxnb-field"
                 >
                   <div
-                    class="css-1q83rf3-fieldName"
+                    class="css-ify9vk-fieldName"
                   >
                     Name
                   </div>
                   <div
-                    class="css-1omt041-fieldValue"
+                    class="css-xb19vs-fieldValue"
                   >
                     <span>
                       ctgA_3_555_0:0:0_2:0:0_102d
@@ -96,12 +96,12 @@ exports[`open up a widget 1`] = `
                   class="css-1m8nxnb-field"
                 >
                   <div
-                    class="css-1q83rf3-fieldName"
+                    class="css-ify9vk-fieldName"
                   >
                     Length
                   </div>
                   <div
-                    class="css-1omt041-fieldValue"
+                    class="css-xb19vs-fieldValue"
                   >
                     <span>
                       100
@@ -112,12 +112,12 @@ exports[`open up a widget 1`] = `
                   class="css-1m8nxnb-field"
                 >
                   <div
-                    class="css-1q83rf3-fieldName"
+                    class="css-ify9vk-fieldName"
                   >
                     Type
                   </div>
                   <div
-                    class="css-1omt041-fieldValue"
+                    class="css-xb19vs-fieldValue"
                   >
                     <span>
                       match
@@ -128,7 +128,7 @@ exports[`open up a widget 1`] = `
                   class="MuiDivider-root MuiDivider-fullWidth css-9mgopn-MuiDivider-root"
                 />
                 <p
-                  class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                  class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
                 >
                   Attributes
                 </p>
@@ -136,13 +136,13 @@ exports[`open up a widget 1`] = `
                   class="css-1m8nxnb-field"
                 >
                   <div
-                    class="css-1q83rf3-fieldName"
+                    class="css-ify9vk-fieldName"
                     style="width: 96px;"
                   >
                     seq
                   </div>
                   <div
-                    class="css-1omt041-fieldValue"
+                    class="css-xb19vs-fieldValue"
                   >
                     <div>
                       TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG
@@ -153,13 +153,13 @@ exports[`open up a widget 1`] = `
                   class="css-1m8nxnb-field"
                 >
                   <div
-                    class="css-1q83rf3-fieldName"
+                    class="css-ify9vk-fieldName"
                     style="width: 96px;"
                   >
                     score
                   </div>
                   <div
-                    class="css-1omt041-fieldValue"
+                    class="css-xb19vs-fieldValue"
                   >
                     <div>
                       37
@@ -170,13 +170,13 @@ exports[`open up a widget 1`] = `
                   class="css-1m8nxnb-field"
                 >
                   <div
-                    class="css-1q83rf3-fieldName"
+                    class="css-ify9vk-fieldName"
                     style="width: 96px;"
                   >
                     qual
                   </div>
                   <div
-                    class="css-1omt041-fieldValue"
+                    class="css-xb19vs-fieldValue"
                   >
                     <button
                       type="button"
@@ -198,13 +198,13 @@ exports[`open up a widget 1`] = `
                 >
                   <div
                     aria-label="Mapping quality of the mate/next segment"
-                    class="css-18vnxxj-fieldDescription-fieldName"
+                    class="css-167enf1-fieldDescription-fieldName"
                     data-mui-internal-clone-element="true"
                   >
                     MQ
                   </div>
                   <div
-                    class="css-1omt041-fieldValue"
+                    class="css-xb19vs-fieldValue"
                   >
                     <div>
                       37
@@ -215,13 +215,13 @@ exports[`open up a widget 1`] = `
                   class="css-1m8nxnb-field"
                 >
                   <div
-                    class="css-1q83rf3-fieldName"
+                    class="css-ify9vk-fieldName"
                     style="width: 96px;"
                   >
                     CIGAR
                   </div>
                   <div
-                    class="css-1omt041-fieldValue"
+                    class="css-xb19vs-fieldValue"
                   >
                     <div>
                       100M
@@ -232,13 +232,13 @@ exports[`open up a widget 1`] = `
                   class="css-1m8nxnb-field"
                 >
                   <div
-                    class="css-1q83rf3-fieldName"
+                    class="css-ify9vk-fieldName"
                     style="width: 96px;"
                   >
                     length_on_ref
                   </div>
                   <div
-                    class="css-1omt041-fieldValue"
+                    class="css-xb19vs-fieldValue"
                   >
                     <div>
                       100
@@ -249,13 +249,13 @@ exports[`open up a widget 1`] = `
                   class="css-1m8nxnb-field"
                 >
                   <div
-                    class="css-1q83rf3-fieldName"
+                    class="css-ify9vk-fieldName"
                     style="width: 96px;"
                   >
                     template_length
                   </div>
                   <div
-                    class="css-1omt041-fieldValue"
+                    class="css-xb19vs-fieldValue"
                   >
                     <div>
                       0
@@ -266,13 +266,13 @@ exports[`open up a widget 1`] = `
                   class="css-1m8nxnb-field"
                 >
                   <div
-                    class="css-1q83rf3-fieldName"
+                    class="css-ify9vk-fieldName"
                     style="width: 96px;"
                   >
                     seq_length
                   </div>
                   <div
-                    class="css-1omt041-fieldValue"
+                    class="css-xb19vs-fieldValue"
                   >
                     <div>
                       100
@@ -280,13 +280,13 @@ exports[`open up a widget 1`] = `
                   </div>
                 </div>
                 <div
-                  class="css-1lttu3w-container"
+                  class="css-57ilie-container"
                 >
                   <div
-                    class="MuiFormControl-root css-147opmv-MuiFormControl-root-formControl"
+                    class="MuiFormControl-root MuiFormControl-marginDense css-m7qnnf-MuiFormControl-root-formControl"
                   >
                     <button
-                      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary css-sghohy-MuiButtonBase-root-MuiButton-root"
+                      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary css-1cpxz0y-MuiButtonBase-root-MuiButton-root"
                       tabindex="0"
                       type="button"
                     >
@@ -297,13 +297,13 @@ exports[`open up a widget 1`] = `
                     </button>
                   </div>
                   <button
-                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
                     tabindex="0"
                     type="button"
                   >
                     <svg
                       aria-hidden="true"
-                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
                       data-testid="HelpIcon"
                       focusable="false"
                       viewBox="0 0 24 24"
@@ -324,5 +324,6 @@ exports[`open up a widget 1`] = `
       </div>
     </div>
   </div>
+  ,
 </div>
 `;

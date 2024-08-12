@@ -43,7 +43,7 @@ const SyntenyTooltip = observer(function ({ title }: { title: string }) {
   const clientPoint = useClientPoint(context)
   const { getFloatingProps } = useInteractions([clientPoint])
 
-  const popperTheme = theme?.components?.MuiPopper
+  const popperTheme = theme.components?.MuiPopper
 
   return title ? (
     <Portal container={popperTheme?.defaultProps?.container}>

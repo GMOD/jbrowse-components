@@ -159,10 +159,8 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
           // Gets the displays on the track snapshot and the possible displays
           // from the track type and adds any missing possible displays to the
           // snapshot
-          const configDisplayTypes = new Set(
-            displays.filter(d => !!d).map(d => d.type),
-          )
-          pluginManager.getTrackType(snap.type).displayTypes.forEach(d => {
+          const configDisplayTypes = new Set(displays.map(d => d.type))
+          pluginManager.getTrackType(snap.type)!.displayTypes.forEach(d => {
             if (!configDisplayTypes.has(d.name)) {
               displays.push({
                 displayId: `${snap.trackId}-${d.name}`,
@@ -178,7 +176,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
        */
       explicitIdentifier: 'trackId',
       explicitlyTyped: true,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       actions: (self: any) => ({
         addDisplayConf(conf: { type: string; displayId: string }) {
           const { type } = conf
@@ -186,7 +184,6 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
             throw new Error(`unknown display type ${type}`)
           }
           const display = self.displays.find(
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (d: any) => d?.displayId === conf.displayId,
           )
           if (display) {

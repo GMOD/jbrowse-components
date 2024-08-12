@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { SimpleFeature, getEnv, getSession } from '@jbrowse/core/util'
 import { makeAdHocSvFeature } from './adhocFeatureUtils'
 

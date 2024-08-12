@@ -14,7 +14,6 @@ import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 export default class NCListAdapter extends BaseFeatureDataAdapter {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private nclist: any
 
   private configRefNames?: string[]
@@ -62,7 +61,6 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
     })
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   wrapFeature(ncFeature: any): NCListFeature {
     return new NCListFeature(
       ncFeature,

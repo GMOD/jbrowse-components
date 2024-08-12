@@ -18,9 +18,9 @@ export function parseBed(text: string) {
           name,
           {
             refName,
-            start: +start,
-            end: +end,
-            score: +score,
+            start: +start!,
+            end: +end!,
+            score: +score!,
             name,
             strand: strand === '-' ? -1 : 1,
           },
@@ -93,16 +93,16 @@ export function parsePAFLine(line: string) {
 
   return {
     tname,
-    tstart: +tstart,
-    tend: +tend,
+    tstart: +tstart!,
+    tend: +tend!,
     qname,
-    qstart: +qstart,
-    qend: +qend,
+    qstart: +qstart!,
+    qend: +qend!,
     strand: strand === '-' ? -1 : 1,
     extra: {
-      numMatches: +numMatches,
-      blockLen: +blockLen,
-      mappingQual: +mappingQual,
+      numMatches: +numMatches!,
+      blockLen: +blockLen!,
+      mappingQual: +mappingQual!,
       ...rest,
     },
   } as PAFRecord

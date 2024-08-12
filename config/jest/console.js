@@ -1,4 +1,3 @@
-const originalWarn = console.warn
 const originalError = console.error
 
 jest.spyOn(console, 'error').mockImplementation((...args) => {
@@ -14,5 +13,5 @@ jest.spyOn(console, 'error').mockImplementation((...args) => {
     return undefined
   }
 
-  return originalError.call(console, ...args)
+  originalError.call(console, ...args)
 })

@@ -35,14 +35,18 @@ export default function AdapterInput({
           <FileSelector
             name="fastaLocation"
             location={fastaLocation}
-            setLocation={loc => setFastaLocation(loc)}
+            setLocation={loc => {
+              setFastaLocation(loc)
+            }}
           />
         </Grid>
         <Grid item>
           <FileSelector
             name="faiLocation"
             location={faiLocation}
-            setLocation={loc => setFaiLocation(loc)}
+            setLocation={loc => {
+              setFaiLocation(loc)
+            }}
           />
         </Grid>
       </Grid>
@@ -55,21 +59,27 @@ export default function AdapterInput({
           <FileSelector
             name="fastaLocation"
             location={fastaLocation}
-            setLocation={loc => setFastaLocation(loc)}
+            setLocation={loc => {
+              setFastaLocation(loc)
+            }}
           />
         </Grid>
         <Grid item>
           <FileSelector
             name="faiLocation"
             location={faiLocation}
-            setLocation={loc => setFaiLocation(loc)}
+            setLocation={loc => {
+              setFaiLocation(loc)
+            }}
           />
         </Grid>
         <Grid item>
           <FileSelector
             name="gziLocation"
             location={gziLocation}
-            setLocation={loc => setGziLocation(loc)}
+            setLocation={loc => {
+              setGziLocation(loc)
+            }}
           />
         </Grid>
       </Grid>
@@ -83,14 +93,18 @@ export default function AdapterInput({
           <FileSelector
             name="twoBitLocation"
             location={twoBitLocation}
-            setLocation={loc => setTwoBitLocation(loc)}
+            setLocation={loc => {
+              setTwoBitLocation(loc)
+            }}
           />
         </Grid>
         <Grid item>
           <FileSelector
             name="chromSizesLocation (optional, can be added to speed up loading 2bit files with many contigs)"
             location={chromSizesLocation}
-            setLocation={loc => setChromSizesLocation(loc)}
+            setLocation={loc => {
+              setChromSizesLocation(loc)
+            }}
           />
         </Grid>
       </Grid>
@@ -104,7 +118,9 @@ export default function AdapterInput({
           <FileSelector
             name="fastaLocation"
             location={fastaLocation}
-            setLocation={loc => setFastaLocation(loc)}
+            setLocation={loc => {
+              setFastaLocation(loc)
+            }}
           />
         </Grid>
       </Grid>

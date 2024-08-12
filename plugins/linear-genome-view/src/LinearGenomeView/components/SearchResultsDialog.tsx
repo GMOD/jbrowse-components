@@ -48,7 +48,12 @@ export default function SearchResultsDialog({
       </DialogContent>
       <Divider />
       <DialogActions>
-        <Button onClick={() => handleClose()} color="primary">
+        <Button
+          onClick={() => {
+            handleClose()
+          }}
+          color="primary"
+        >
           Cancel
         </Button>
       </DialogActions>

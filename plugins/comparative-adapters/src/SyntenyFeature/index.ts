@@ -5,7 +5,6 @@ import { MismatchParser } from '@jbrowse/plugin-alignments'
 const { getMismatches } = MismatchParser
 
 export default class SyntenyFeature extends SimpleFeature {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   get(arg: string): any {
     if (arg === 'mismatches') {
       return getMismatches(this.get('CIGAR'))

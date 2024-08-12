@@ -35,7 +35,7 @@ test('reloads vcf (VCF.GZ 404)', async () => {
     // @ts-expect-error
     fetch.mockResponse(readBuffer)
     const buttons = await findAllByTestId('reload_button')
-    fireEvent.click(buttons[0])
+    fireEvent.click(buttons[0]!)
 
     await findAllByTestId('box-test-vcf-604453', ...opts)
   })
@@ -52,7 +52,7 @@ test('reloads vcf (VCF.GZ.TBI 404)', async () => {
     // @ts-expect-error
     fetch.mockResponse(readBuffer)
     const buttons = await findAllByTestId('reload_button')
-    fireEvent.click(buttons[0])
+    fireEvent.click(buttons[0]!)
 
     await findAllByTestId('box-test-vcf-604453', ...opts)
   })

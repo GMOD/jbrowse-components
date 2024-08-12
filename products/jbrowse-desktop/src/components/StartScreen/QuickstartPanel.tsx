@@ -94,7 +94,11 @@ function QuickstartPanel({
       <Typography>
         Select one or more entries from this quickstart list to start your
         session. If more than one entry is selected, they will be combined
-        <IconButton onClick={() => setFilterShown(!filterShown)}>
+        <IconButton
+          onClick={() => {
+            setFilterShown(!filterShown)
+          }}
+        >
           <Tooltip title="Show filter?">
             <SearchIcon />
           </Tooltip>
@@ -135,7 +139,9 @@ function QuickstartPanel({
         <TextField
           label="Filter datasets"
           value={search}
-          onChange={event => setSearch(event.target.value)}
+          onChange={event => {
+            setSearch(event.target.value)
+          }}
         />
       ) : null}
       <div className={classes.panel}>
@@ -155,9 +161,9 @@ function QuickstartPanel({
                   control={
                     <Checkbox
                       checked={selected[name] || false}
-                      onChange={() =>
+                      onChange={() => {
                         setSelected({ ...selected, [name]: !selected[name] })
-                      }
+                      }}
                     />
                   }
                   label={name}
@@ -182,7 +188,9 @@ function QuickstartPanel({
           keepMounted
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
-          onClose={() => setAnchorEl(null)}
+          onClose={() => {
+            setAnchorEl(null)
+          }}
         >
           <MenuItem
             onClick={() => {
@@ -206,7 +214,9 @@ function QuickstartPanel({
       {deleteDialogOpen && currentEl ? (
         <DeleteQuickstartDialog
           quickstartToDelete={currentEl}
-          onClose={() => setDeleteDialogOpen(undefined)}
+          onClose={() => {
+            setDeleteDialogOpen(undefined)
+          }}
         />
       ) : null}
 
@@ -214,7 +224,9 @@ function QuickstartPanel({
         <RenameQuickstartDialog
           quickstartNames={quickstarts}
           quickstartToRename={currentEl}
-          onClose={() => setRenameDialogOpen(undefined)}
+          onClose={() => {
+            setRenameDialogOpen(undefined)
+          }}
         />
       ) : null}
     </div>

@@ -35,7 +35,9 @@ export default function PreferencesDialog({
           select
           label="Theme"
           value={session.themeName}
-          onChange={event => session.setThemeName(event.target.value)}
+          onChange={event => {
+            session.setThemeName(event.target.value)
+          }}
         >
           {Object.entries(session.allThemes()).map(([key, val]) => (
             <MenuItem key={key} value={key}>

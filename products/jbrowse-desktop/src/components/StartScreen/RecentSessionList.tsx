@@ -86,16 +86,16 @@ export default function RecentSessionsList({
             ) + 20,
       ]),
     ),
-  } as Record<string, number | undefined>
+  } as Record<string, number>
 
   return (
     <div style={{ height: 400, width: '100%' }}>
       <DataGrid
         checkboxSelection
         disableRowSelectionOnClick
-        onRowSelectionModelChange={args =>
+        onRowSelectionModelChange={args => {
           setSelectedSessions(sessions.filter(s => args.includes(s.path)))
-        }
+        }}
         rows={rows}
         rowHeight={25}
         columnHeaderHeight={33}

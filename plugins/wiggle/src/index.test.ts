@@ -10,7 +10,7 @@ test('plugin in a stock JBrowse', () => {
     /JBrowse already configured, cannot add plugins/,
   )
 
-  const BigWigAdapter = pluginManager.getAdapterType('BigWigAdapter')
+  const BigWigAdapter = pluginManager.getAdapterType('BigWigAdapter')!
   const config = BigWigAdapter.configSchema.create({ type: 'BigWigAdapter' })
   expect(getSnapshot(config)).toMatchSnapshot()
 })

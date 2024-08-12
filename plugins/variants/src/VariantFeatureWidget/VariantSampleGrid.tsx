@@ -42,9 +42,9 @@ function SampleFilters({
           key={`filter-${field}`}
           placeholder={`Filter ${field}`}
           value={filter[field] || ''}
-          onChange={event =>
+          onChange={event => {
             setFilter({ ...filter, [field]: event.target.value })
-          }
+          }}
         />
       ))}
     </>
@@ -83,7 +83,7 @@ export default function VariantSamples(props: {
           ? filters.every(key => {
               const currFilter = filter[key]
               return currFilter
-                ? new RegExp(currFilter, 'i').exec(row[key])
+                ? new RegExp(currFilter, 'i').exec(row[key]!)
                 : true
             })
           : true,
@@ -110,7 +110,9 @@ export default function VariantSamples(props: {
         control={
           <Checkbox
             checked={checked}
-            onChange={event => setChecked(event.target.checked)}
+            onChange={event => {
+              setChecked(event.target.checked)
+            }}
           />
         }
         label={<Typography variant="body2">Show options</Typography>}

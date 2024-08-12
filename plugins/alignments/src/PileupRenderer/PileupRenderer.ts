@@ -23,7 +23,7 @@ import { layoutFeats } from './layoutFeatures'
 export interface RenderArgsDeserialized extends BoxRenderArgsDeserialized {
   colorBy?: { type: string; tag?: string }
   colorTagMap?: Record<string, string>
-  modificationTagMap?: Record<string, string | undefined>
+  modificationTagMap?: Record<string, string>
   sortedBy?: {
     type: string
     pos: number
@@ -53,7 +53,7 @@ export default class PileupRenderer extends BoxRendererType {
     }
     const pm = this.pluginManager
     const { dataAdapter } = await getAdapter(pm, sessionId, sequenceAdapter)
-    const [region] = regions
+    const region = regions[0]!
     return fetchSequence(region, dataAdapter as BaseFeatureDataAdapter)
   }
 
@@ -75,7 +75,7 @@ export default class PileupRenderer extends BoxRendererType {
     const features = await this.getFeatures(renderProps)
     const layout = this.createLayoutInWorker(renderProps)
     const { regions, bpPerPx } = renderProps
-    const [region] = regions
+    const region = regions[0]!
 
     const layoutRecords = layoutFeats({
       ...renderProps,
@@ -93,18 +93,24 @@ export default class PileupRenderer extends BoxRendererType {
     const height = Math.max(layout.getTotalHeight(), 1)
 
     const { makeImageData } = await import('./makeImageData')
-    const res = await renderToAbstractCanvas(width, height, renderProps, ctx =>
-      makeImageData({
-        ctx,
-        layoutRecords: layoutRecords.filter(notEmpty),
-        canvasWidth: width,
-        renderArgs: {
-          ...renderProps,
-          layout,
-          features,
-          regionSequence,
-        },
-      }),
+    const res = await renderToAbstractCanvas(
+      width,
+      height,
+      renderProps,
+      ctx => {
+        makeImageData({
+          ctx,
+          layoutRecords: layoutRecords.filter(notEmpty),
+          canvasWidth: width,
+          renderArgs: {
+            ...renderProps,
+            layout,
+            features,
+            regionSequence,
+          },
+        })
+        return undefined
+      },
     )
 
     const results = await super.render({

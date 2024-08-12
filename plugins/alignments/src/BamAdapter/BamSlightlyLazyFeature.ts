@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 import {
   Feature,
   SimpleFeatureSerialized,
@@ -94,7 +93,6 @@ export default class BamSlightlyLazyFeature implements Feature {
     return `${this.adapter.id}-${this.record.id()}`
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   get(field: string): any {
     const methodName = `_get_${field}`
     // @ts-expect-error

@@ -21,7 +21,7 @@ test('adapter can fetch sequences when there is just one feature representing wh
   })
   const featuresArray = await firstValueFrom(result.pipe(toArray()))
   expect(featuresArray.length).toBe(1)
-  expect(featuresArray[0].get('seq')).toBe(features[0].seq.slice(0, 50))
+  expect(featuresArray[0]!.get('seq')).toBe(features[0]!.seq.slice(0, 50))
 
   const result2 = adapter.getFeatures({
     refName: 'ctgA',
@@ -30,7 +30,7 @@ test('adapter can fetch sequences when there is just one feature representing wh
   })
   const featuresArray2 = await firstValueFrom(result2.pipe(toArray()))
   expect(featuresArray2.length).toBe(1)
-  expect(featuresArray2[0].get('seq')).toBe(features[0].seq.slice(100, 150))
+  expect(featuresArray2[0]!.get('seq')).toBe(features[0]!.seq.slice(100, 150))
 })
 
 test("adapter can fetch sequences when the config's sequence doesn't start at 0", async () => {
@@ -51,7 +51,7 @@ test("adapter can fetch sequences when the config's sequence doesn't start at 0"
   })
   const featuresArray = await firstValueFrom(result.pipe(toArray()))
   expect(featuresArray.length).toBe(1)
-  expect(featuresArray[0].get('seq')).toBe(features[0].seq.slice(0, 50))
+  expect(featuresArray[0]!.get('seq')).toBe(features[0]!.seq.slice(0, 50))
 
   const result2 = adapter.getFeatures({
     refName: 'ctgA',
@@ -60,5 +60,5 @@ test("adapter can fetch sequences when the config's sequence doesn't start at 0"
   })
   const featuresArray2 = await firstValueFrom(result2.pipe(toArray()))
   expect(featuresArray2.length).toBe(1)
-  expect(featuresArray2[0].get('seq')).toBe(features[0].seq.slice(50, 150))
+  expect(featuresArray2[0]!.get('seq')).toBe(features[0]!.seq.slice(50, 150))
 })

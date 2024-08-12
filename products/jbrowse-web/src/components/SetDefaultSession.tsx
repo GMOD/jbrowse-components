@@ -27,7 +27,13 @@ const SetDefaultSession = observer(function ({
         </Typography>
       </DialogContent>
       <DialogActions>
-        <Button color="secondary" variant="contained" onClick={() => onClose()}>
+        <Button
+          color="secondary"
+          variant="contained"
+          onClick={() => {
+            onClose()
+          }}
+        >
           Cancel
         </Button>
         <Button

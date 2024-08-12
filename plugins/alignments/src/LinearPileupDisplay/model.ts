@@ -288,7 +288,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 ...['Start location', 'Read strand', 'Base pair'].map(
                   option => ({
                     label: option,
-                    onClick: () => self.setSortedBy(option),
+                    onClick: () => {
+                      self.setSortedBy(option)
+                    },
                   }),
                 ),
                 {
@@ -302,7 +304,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 },
                 {
                   label: 'Clear sort',
-                  onClick: () => self.clearSelected(),
+                  onClick: () => {
+                    self.clearSelected()
+                  },
                 },
               ],
             },
@@ -311,8 +315,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               subMenu: [
                 {
                   label: 'Pair orientation',
-                  onClick: () =>
-                    self.setColorScheme({ type: 'pairOrientation' }),
+                  onClick: () => {
+                    self.setColorScheme({ type: 'pairOrientation' })
+                  },
                 },
                 {
                   label: 'Modifications or methylation',
@@ -325,7 +330,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 },
                 {
                   label: 'Insert size',
-                  onClick: () => self.setColorScheme({ type: 'insertSize' }),
+                  onClick: () => {
+                    self.setColorScheme({ type: 'insertSize' })
+                  },
                 },
                 ...superColorSchemeSubMenuItems(),
               ],
@@ -334,7 +341,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               label: 'Fade mismatches by quality',
               type: 'checkbox',
               checked: self.mismatchAlphaSetting,
-              onClick: () => self.toggleMismatchAlpha(),
+              onClick: () => {
+                self.toggleMismatchAlpha()
+              },
             },
           ]
         },

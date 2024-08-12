@@ -91,7 +91,9 @@ const ColorByModificationsDialog = observer(function ({
           <Button
             variant="contained"
             color="secondary"
-            onClick={() => handleClose()}
+            onClick={() => {
+              handleClose()
+            }}
           >
             Cancel
           </Button>

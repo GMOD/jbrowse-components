@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import React, { useEffect, useRef, useState } from 'react'
 import {
   Divider,
@@ -156,7 +154,7 @@ type OnCloseProp = MUIMenuProps['onClose']
 interface MenuPageProps {
   menuItems: MenuItem[]
   onMenuItemClick: (
-    event: React.MouseEvent<HTMLLIElement, MouseEvent>,
+    event: React.MouseEvent<HTMLLIElement>,
     callback: (...args: any[]) => void,
   ) => void
   anchorEl?: AnchorElProp
@@ -251,7 +249,7 @@ function MenuPage(props: MenuPageProps) {
   const menuItemStyle: MenuItemStyleProp = {}
 
   function handleClick(callback: (...args: any[]) => void) {
-    return (event: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
+    return (event: React.MouseEvent<HTMLLIElement>) => {
       onMenuItemClick(event, callback)
     }
   }
@@ -409,7 +407,7 @@ function MenuPage(props: MenuPageProps) {
 interface MenuProps extends PopoverProps {
   menuItems: MenuItem[]
   onMenuItemClick: (
-    event: React.MouseEvent<HTMLLIElement, MouseEvent>,
+    event: React.MouseEvent<HTMLLIElement>,
     callback: (...args: any[]) => void,
   ) => void
 }

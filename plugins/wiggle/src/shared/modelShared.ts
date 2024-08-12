@@ -296,7 +296,7 @@ export default function SharedWiggleMixin(
       get adapterCapabilities() {
         const type = self.adapterTypeName
         const { pluginManager } = getEnv(self)
-        return pluginManager.getAdapterType(type).adapterCapabilities
+        return pluginManager.getAdapterType(type)!.adapterCapabilities
       },
       /**
        * #getter
@@ -441,11 +441,15 @@ export default function SharedWiggleMixin(
                   subMenu: [
                     {
                       label: 'Finer resolution',
-                      onClick: () => self.setResolution(self.resolution * 5),
+                      onClick: () => {
+                        self.setResolution(self.resolution * 5)
+                      },
                     },
                     {
                       label: 'Coarser resolution',
-                      onClick: () => self.setResolution(self.resolution / 5),
+                      onClick: () => {
+                        self.setResolution(self.resolution / 5)
+                      },
                     },
                   ],
                 },
@@ -455,7 +459,9 @@ export default function SharedWiggleMixin(
                     label: elt,
                     type: 'radio',
                     checked: self.summaryScoreModeSetting === elt,
-                    onClick: () => self.setSummaryScoreMode(elt),
+                    onClick: () => {
+                      self.setSummaryScoreMode(elt)
+                    },
                   })),
                 },
               ]
@@ -463,24 +469,28 @@ export default function SharedWiggleMixin(
           {
             label:
               self.scaleType === 'log' ? 'Set linear scale' : 'Set log scale',
-            onClick: () => self.toggleLogScale(),
+            onClick: () => {
+              self.toggleLogScale()
+            },
           },
           {
             label: 'Autoscale type',
             subMenu: [
               ['local', 'Local'],
               ...(self.hasGlobalStats
-                ? [
+                ? ([
                     ['global', 'Global'],
                     ['globalsd', 'Global ± 3σ'],
-                  ]
+                  ] as const)
                 : []),
               ['localsd', 'Local ± 3σ'],
             ].map(([val, label]) => ({
               label,
               type: 'radio',
               checked: self.autoscaleType === val,
-              onClick: () => self.setAutoscale(val),
+              onClick: () => {
+                self.setAutoscale(val)
+              },
             })),
           },
           {

@@ -18,8 +18,6 @@ import TracksContainer from './TracksContainer'
 const ImportForm = lazy(() => import('./ImportForm'))
 const NoTracksActiveButton = lazy(() => import('./NoTracksActiveButton'))
 
-type LGV = LinearGenomeViewModel
-
 const useStyles = makeStyles()(theme => ({
   header: {
     background: theme.palette.background.paper,
@@ -44,7 +42,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const LinearGenomeView = observer(({ model }: { model: LGV }) => {
+const LinearGenomeView = observer(function ({
+  model,
+}: {
+  model: LinearGenomeViewModel
+}) {
   const {
     tracks,
     pinnedTracks,
@@ -60,7 +62,7 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
     // sets the focused view id based on a click within the LGV;
     // necessary for subviews to be focused properly
     function handleSelectView(e: Event) {
-      if (e.target instanceof Element && ref?.current?.contains(e.target)) {
+      if (e.target instanceof Element && ref.current?.contains(e.target)) {
         session.setFocusedViewId?.(model.id)
       }
     }
@@ -95,7 +97,9 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
     <div
       className={classes.rel}
       ref={ref}
-      onMouseLeave={() => session.setHovered(undefined)}
+      onMouseLeave={() => {
+        session.setHovered(undefined)
+      }}
       onMouseMove={event => {
         const c = ref.current
         if (!c) {

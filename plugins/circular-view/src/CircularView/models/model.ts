@@ -2,7 +2,6 @@ import React, { lazy } from 'react'
 import PluginManager from '@jbrowse/core/PluginManager'
 import {
   cast,
-  getParent,
   getRoot,
   resolveIdentifier,
   types,
@@ -287,8 +286,8 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * this is displayedRegions, post-processed to
-       * elide regions that are too small to see reasonably
+       * this is displayedRegions, post-processed to elide regions that are too
+       * small to see reasonably
        */
       get elidedRegions() {
         const visible: SliceRegion[] = []
@@ -316,9 +315,9 @@ function stateModelFactory(pluginManager: PluginManager) {
 
         // remove any single-region elisions
         for (let i = 0; i < visible.length; i += 1) {
-          const v = visible[i]
+          const v = visible[i]!
           if (v.elided && v.regions.length === 1) {
-            visible[i] = { ...v, ...v.regions[0], elided: false }
+            visible[i] = { ...v, ...v.regions[0]!, elided: false }
           }
         }
         return visible
@@ -457,14 +456,6 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      closeView() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        getParent<any>(self, 2).removeView(self)
-      },
-
-      /**
-       * #action
-       */
       setDisplayedRegions(regions: SnapshotOrInstance<typeof Region>[]) {
         const previouslyEmpty = self.displayedRegions.length === 0
         self.displayedRegions = cast(regions)
@@ -524,7 +515,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         if (!trackType) {
           throw new Error(`unknown track type ${conf.type}`)
         }
-        const viewType = pluginManager.getViewType(self.type)
+        const viewType = pluginManager.getViewType(self.type)!
         const supportedDisplays = new Set(
           viewType.displayTypes.map(d => d.name),
         )
@@ -550,7 +541,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         if (!trackType) {
           throw new Error(`unknown track type ${type}`)
         }
-        const viewType = pluginManager.getViewType(self.type)
+        const viewType = pluginManager.getViewType(self.type)!
         const supportedDisplays = new Set(
           viewType.displayTypes.map(d => d.name),
         )
@@ -575,7 +566,9 @@ function stateModelFactory(pluginManager: PluginManager) {
         const schema = pluginManager.pluggableConfigSchemaType('track')
         const conf = resolveIdentifier(schema, getRoot(self), trackId)
         const t = self.tracks.filter(t => t.configuration === conf)
-        transaction(() => t.forEach(t => self.tracks.remove(t)))
+        transaction(() => {
+          t.forEach(t => self.tracks.remove(t))
+        })
         return t.length
       },
 
@@ -609,7 +602,9 @@ function stateModelFactory(pluginManager: PluginManager) {
         return [
           {
             label: 'Return to import form',
-            onClick: () => self.setDisplayedRegions([]),
+            onClick: () => {
+              self.setDisplayedRegions([])
+            },
             icon: FolderOpenIcon,
           },
           {

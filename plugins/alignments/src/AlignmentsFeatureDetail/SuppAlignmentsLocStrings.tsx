@@ -21,10 +21,10 @@ export default function SuppAlignmentsLocStrings({
           .filter(SA => !!SA)
           .map((SA, idx) => {
             const [saRef, saStart, saStrand, saCigar] = SA.split(',')
-            const saLength = getLengthOnRef(saCigar)
+            const saLength = getLengthOnRef(saCigar!)
             const extra = Math.floor(saLength / 5)
-            const start = +saStart
-            const end = +saStart + saLength
+            const start = +saStart!
+            const end = +saStart! + saLength
             const sp = start - extra
             const ep = end + extra
             const locString = `${saRef}:${Math.max(1, sp)}-${ep}`

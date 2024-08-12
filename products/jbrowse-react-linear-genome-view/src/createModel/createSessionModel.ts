@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { lazy } from 'react'
 import { AbstractSessionModel } from '@jbrowse/core/util/types'
 import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
@@ -50,7 +49,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       /**
        * #property
        */
-      view: pluginManager.getViewType('LinearGenomeView')
+      view: pluginManager.getViewType('LinearGenomeView')!
         .stateModel as LinearGenomeViewStateModel,
       /**
        * #property

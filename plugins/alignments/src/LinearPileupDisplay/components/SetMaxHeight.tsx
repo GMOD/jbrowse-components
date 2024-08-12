@@ -37,7 +37,9 @@ const SetMaxHeightDialog = observer(function (props: {
         </Typography>
         <TextField
           value={max}
-          onChange={event => setMax(event.target.value)}
+          onChange={event => {
+            setMax(event.target.value)
+          }}
           placeholder="Enter max height for layout"
         />
         <DialogActions>
@@ -58,7 +60,9 @@ const SetMaxHeightDialog = observer(function (props: {
           <Button
             variant="contained"
             color="secondary"
-            onClick={() => handleClose()}
+            onClick={() => {
+              handleClose()
+            }}
           >
             Cancel
           </Button>

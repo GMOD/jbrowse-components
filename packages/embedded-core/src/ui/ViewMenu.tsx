@@ -20,7 +20,7 @@ const ViewMenu = observer(function ({
 }) {
   const [anchorEl, setAnchorEl] = useState<HTMLElement>()
 
-  if (!model.menuItems()?.length) {
+  if (!model.menuItems().length) {
     return null
   }
 
@@ -31,7 +31,9 @@ const ViewMenu = observer(function ({
         aria-label="more"
         aria-controls="view-menu"
         aria-haspopup="true"
-        onClick={event => setAnchorEl(event.currentTarget)}
+        onClick={event => {
+          setAnchorEl(event.currentTarget)
+        }}
         data-testid="view_menu_icon"
       >
         <MenuIcon {...IconProps} />
@@ -43,7 +45,9 @@ const ViewMenu = observer(function ({
           callback()
           setAnchorEl(undefined)
         }}
-        onClose={() => setAnchorEl(undefined)}
+        onClose={() => {
+          setAnchorEl(undefined)
+        }}
         menuItems={model.menuItems()}
       />
     </>

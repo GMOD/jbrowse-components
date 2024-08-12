@@ -8,7 +8,7 @@ import { getMatchedTranslocationFeatures } from './util'
 import { yPos, getPxFromCoordinate, useNextFrame } from '../util'
 import { BreakpointViewModel, LayoutRecord } from '../model'
 
-const [LEFT] = [0, 1, 2, 3]
+const [LEFT] = [0, 1, 2, 3] as const
 
 function str(s: string) {
   if (s === '+') {
@@ -49,7 +49,7 @@ const Translocations = observer(function ({
   const snap = getSnapshot(model)
   useNextFrame(snap)
 
-  const assembly = assemblyManager.get(views[0].assemblyNames[0])
+  const assembly = assemblyManager.get(views[0]!.assemblyNames[0]!)
   if (!assembly) {
     return null
   }
@@ -91,17 +91,17 @@ const Translocations = observer(function ({
           const res = info.STRANDS?.[0]?.split('') // not all files have STRANDS
           const [myDirection, mateDirection] = res ?? ['.', '.']
 
-          const r = getPxFromCoordinate(views[level2], chr2, end2)
+          const r = getPxFromCoordinate(views[level2]!, chr2, end2)
           if (r) {
             const c2: LayoutRecord = [r, 0, r + 1, 0]
             const x1 = getPxFromCoordinate(
-              views[level1],
+              views[level1]!,
               f1.get('refName'),
               c1[LEFT],
             )
             const x2 = r
-            const reversed1 = views[level1].pxToBp(x1).reversed
-            const reversed2 = views[level2].pxToBp(x2).reversed
+            const reversed1 = views[level1]!.pxToBp(x1).reversed
+            const reversed2 = views[level2]!.pxToBp(x2).reversed
 
             const tracks = views.map(v => v.getTrack(trackId))
             const y1 =
@@ -118,7 +118,7 @@ const Translocations = observer(function ({
               'L', // line to
               x1,
               y1,
-              'L', // line to
+              'L', // line to as const
               x2,
               y2,
               'L', // line to
@@ -142,8 +142,12 @@ const Translocations = observer(function ({
                   )
                   session.showWidget?.(featureWidget)
                 }}
-                onMouseOver={() => setMouseoverElt(id)}
-                onMouseOut={() => setMouseoverElt(undefined)}
+                onMouseOver={() => {
+                  setMouseoverElt(id)
+                }}
+                onMouseOut={() => {
+                  setMouseoverElt(undefined)
+                }}
               />,
             )
           }

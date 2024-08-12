@@ -36,7 +36,7 @@ export default function DataGridDetails({
 }) {
   const { classes } = useStyles()
   const [checked, setChecked] = useState(false)
-  const keys = Object.keys(value[0]).sort()
+  const keys = Object.keys(value[0]!).sort()
   const unionKeys = new Set(keys)
 
   // avoids key 'id' from being used in row data
@@ -72,7 +72,9 @@ export default function DataGridDetails({
           control={
             <Checkbox
               checked={checked}
-              onChange={event => setChecked(event.target.checked)}
+              onChange={event => {
+                setChecked(event.target.checked)
+              }}
             />
           }
           label={<Typography variant="body2">Show options</Typography>}

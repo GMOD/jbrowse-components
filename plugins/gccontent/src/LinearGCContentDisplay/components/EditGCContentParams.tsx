@@ -38,13 +38,17 @@ const EditGCContentParamsDialog = observer(function ({
         ) : null}
         <TextField
           label="Size of sliding window (bp)"
-          value={`${windowSize}`}
-          onChange={event => setWindowSize(event.target.value)}
+          value={windowSize}
+          onChange={event => {
+            setWindowSize(event.target.value)
+          }}
         />
         <TextField
           label="Step size of sliding window (bp)"
-          value={`${windowDelta}`}
-          onChange={event => setWindowDelta(event.target.value)}
+          value={windowDelta}
+          onChange={event => {
+            setWindowDelta(event.target.value)
+          }}
         />
 
         <DialogActions>
@@ -63,7 +67,9 @@ const EditGCContentParamsDialog = observer(function ({
           <Button
             variant="contained"
             color="secondary"
-            onClick={() => handleClose()}
+            onClick={() => {
+              handleClose()
+            }}
           >
             Cancel
           </Button>

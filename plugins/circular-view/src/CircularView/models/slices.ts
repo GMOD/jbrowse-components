@@ -66,7 +66,7 @@ export class Slice {
 }
 
 function calculateStaticSlices(self: {
-  elidedRegions: SliceRegion[]
+  elidedRegions: readonly SliceRegion[]
   bpPerRadian: number
   spacingPx: number
   pxPerRadian: number

@@ -378,7 +378,11 @@ custom         Either a JSON file location or inline JSON that defines a custom
   async run() {
     // https://stackoverflow.com/a/35008327/2129219
     const exists = (s: string) =>
-      new Promise(r => fs.access(s, fs.constants.F_OK, e => r(!e)))
+      new Promise(r => {
+        fs.access(s, fs.constants.F_OK, e => {
+          r(!e)
+        })
+      })
 
     const { args: runArgs, flags: runFlags } = await this.parse(AddAssembly)
 
@@ -565,7 +569,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
     let locationUrl: URL | undefined
     const destination = this.target
     try {
-      locationUrl = new URL(filePaths[0])
+      locationUrl = new URL(filePaths[0]!)
     } catch (error) {
       // ignore
     }

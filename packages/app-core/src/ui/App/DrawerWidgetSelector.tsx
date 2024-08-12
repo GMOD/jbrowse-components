@@ -53,7 +53,7 @@ const DrawerWidgetSelector = observer(function ({
               </Typography>
             )
           }
-          const widgetType = pluginManager.getWidgetType(widget.type)
+          const widgetType = pluginManager.getWidgetType(widget.type)!
           const { HeadingComponent, heading } = widgetType
           return HeadingComponent ? (
             <HeadingComponent model={widget} />
@@ -73,7 +73,7 @@ const DrawerWidgetSelector = observer(function ({
         }}
       >
         {[...activeWidgets.values()].map(widget => {
-          const widgetType = pluginManager.getWidgetType(widget.type)
+          const widgetType = pluginManager.getWidgetType(widget.type)!
           const { HeadingComponent, heading } = widgetType
           return (
             <MenuItem
@@ -92,7 +92,9 @@ const DrawerWidgetSelector = observer(function ({
                 data-testid={`${widget.type}-drawer-delete`}
                 color="inherit"
                 aria-label="Delete"
-                onClick={() => session.hideWidget(widget)}
+                onClick={() => {
+                  session.hideWidget(widget)
+                }}
               >
                 <DeleteIcon />
               </IconButton>

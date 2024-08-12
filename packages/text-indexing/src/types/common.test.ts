@@ -25,12 +25,12 @@ describe('utils for text indexing', () => {
   })
   it('test guess adapter from file name', () => {
     const conf1 = guessAdapterFromFileName(gff3)
-    expect(conf1.adapter.type).toBe('Gff3TabixAdapter')
-    expect(isSupportedIndexingAdapter(conf1.adapter.type)).toBe(true)
+    expect(conf1.adapter?.type).toBe('Gff3TabixAdapter')
+    expect(isSupportedIndexingAdapter(conf1.adapter?.type)).toBe(true)
     const conf2 = guessAdapterFromFileName(gff)
-    expect(conf2.adapter.type).toBe('Gff3TabixAdapter')
+    expect(conf2.adapter?.type).toBe('Gff3TabixAdapter')
     const conf3 = guessAdapterFromFileName(vcf)
-    expect(conf3.adapter.type).toBe('VcfTabixAdapter')
+    expect(conf3.adapter?.type).toBe('VcfTabixAdapter')
     expect(() => {
       guessAdapterFromFileName(unsupported)
     }).toThrowError(`Unsupported file type ${unsupported}`)

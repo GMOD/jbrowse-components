@@ -24,11 +24,16 @@ const AddTrackSelector = observer(function ({
 
   // make sure the selected value is in the list
   const val2 = ComponentMap[val] ? val : 'Default add track workflow'
-  const Component = ComponentMap[val2]
+  const Component = ComponentMap[val2]!
   return (
     <>
       <FormControl>
-        <Select value={val2} onChange={event => setVal(event.target.value)}>
+        <Select
+          value={val2}
+          onChange={event => {
+            setVal(event.target.value)
+          }}
+        >
           {Object.keys(ComponentMap).map(e => (
             <MenuItem key={e} value={e}>
               {e}

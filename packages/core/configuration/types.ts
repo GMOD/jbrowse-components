@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { IStateTreeNode, Instance, SnapshotOut } from 'mobx-state-tree'
 import type {
   ConfigurationSchemaType,

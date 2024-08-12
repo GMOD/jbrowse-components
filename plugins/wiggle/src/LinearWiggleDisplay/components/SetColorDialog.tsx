@@ -37,13 +37,17 @@ const SetColorDialog = observer(function SetColorDialog({
         </Typography>
         <FormControlLabel
           checked={!posneg}
-          onClick={() => setPosNeg(false)}
+          onClick={() => {
+            setPosNeg(false)
+          }}
           control={<Radio />}
           label="Overall color"
         />
         <FormControlLabel
           checked={posneg}
-          onClick={() => setPosNeg(true)}
+          onClick={() => {
+            setPosNeg(true)
+          }}
           control={<Radio />}
           label="Positive/negative color"
         />
@@ -73,7 +77,9 @@ const SetColorDialog = observer(function SetColorDialog({
             <Typography>Overall color</Typography>
             <ColorPicker
               color={model.color || 'black'}
-              onChange={event => model.setColor(event)}
+              onChange={event => {
+                model.setColor(event)
+              }}
             />
           </>
         )}
@@ -95,7 +101,9 @@ const SetColorDialog = observer(function SetColorDialog({
           variant="contained"
           color="primary"
           type="submit"
-          onClick={() => handleClose()}
+          onClick={() => {
+            handleClose()
+          }}
         >
           Submit
         </Button>

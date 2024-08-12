@@ -26,7 +26,7 @@ export function createTestSession(args?: {
         configuration: {
           rpc: { defaultDriver: 'MainThreadRpcDriver' },
           // @ts-expect-error
-          ...jbrowseConfig?.configuration,
+          ...jbrowseConfig.configuration,
         },
         ...jbrowseConfig,
       },

@@ -37,7 +37,7 @@ export function drawLine(
     config,
     offset = 0,
   } = props
-  const [region] = regions
+  const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
 
   // the adjusted height takes into account YSCALEBAR_LABEL_OFFSET from the
@@ -46,7 +46,9 @@ export function drawLine(
   const height = unadjustedHeight - offset * 2
   const clipColor = readConfObject(config, 'clipColor')
   const scale = getScale({ ...scaleOpts, range: [0, height] })
-  const [niceMin, niceMax] = scale.domain()
+  const domain = scale.domain()
+  const niceMin = domain[0]!
+  const niceMax = domain[1]!
   const toY = (n: number) => clamp(height - (scale(n) || 0), 0, height) + offset
 
   let lastVal: number | undefined

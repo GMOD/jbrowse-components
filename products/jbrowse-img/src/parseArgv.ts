@@ -15,7 +15,7 @@ export type Entry = [string, string[]]
 export function parseArgv(argv: string[]) {
   const map = [] as Entry[]
   while (argv.length) {
-    const val = argv[0].slice(2)
+    const val = argv[0]!.slice(2)
     argv = argv.slice(1)
     const next = argv.findIndex(arg => arg.startsWith('-'))
 

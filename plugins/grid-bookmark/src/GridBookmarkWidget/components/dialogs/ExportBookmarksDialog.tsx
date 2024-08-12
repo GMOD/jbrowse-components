@@ -65,7 +65,9 @@ const ExportBookmarksDialog = observer(function ExportBookmarksDialog({
           <Select
             size="small"
             value={fileType}
-            onChange={event => setFileType(event.target.value)}
+            onChange={event => {
+              setFileType(event.target.value)
+            }}
           >
             <MenuItem value="BED">BED</MenuItem>
             <MenuItem value="TSV">TSV</MenuItem>

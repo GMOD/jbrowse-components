@@ -45,23 +45,31 @@ const TrackLabelMenu = function ({
         model.isFavorite(trackId)
           ? {
               label: 'Remove from favorites',
-              onClick: () => model.removeFromFavorites(trackId),
+              onClick: () => {
+                model.removeFromFavorites(trackId)
+              },
               icon: StarIcon,
             }
           : {
               label: 'Add to favorites',
-              onClick: () => model.addToFavorites(trackId),
+              onClick: () => {
+                model.addToFavorites(trackId)
+              },
               icon: FilledStarIcon,
             },
         {
           label: 'Add to selection',
-          onClick: () => model.addToSelection([conf]),
+          onClick: () => {
+            model.addToSelection([conf])
+          },
         },
         ...(model.isSelected(conf)
           ? [
               {
                 label: 'Remove from selection',
-                onClick: () => model.removeFromSelection([conf]),
+                onClick: () => {
+                  model.removeFromSelection([conf])
+                },
               },
             ]
           : []),

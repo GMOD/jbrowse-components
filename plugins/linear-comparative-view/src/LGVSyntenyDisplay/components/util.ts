@@ -6,7 +6,6 @@ import {
 } from '@jbrowse/core/util'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
-import { when } from 'mobx'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
@@ -23,8 +22,8 @@ function findPosInCigar(cigar: string[], startX: number) {
   let featX = 0
   let mateX = 0
   for (let i = 0; i < cigar.length; i++) {
-    const len = +cigar[i]
-    const op = cigar[i + 1]
+    const len = +cigar[i]!
+    const op = cigar[i + 1]!
     const min = Math.min(len, startX - featX)
 
     if (featX >= startX) {
@@ -39,7 +38,7 @@ function findPosInCigar(cigar: string[], startX: number) {
       featX += min
     }
   }
-  return [featX, mateX]
+  return [featX, mateX] as const
 }
 
 export async function navToSynteny({
@@ -57,6 +56,9 @@ export async function navToSynteny({
   const track = getContainingTrack(model)
   const view = getContainingView(model) as LinearGenomeViewModel
   const reg = view.dynamicBlocks.contentBlocks[0]
+  if (!reg) {
+    throw new Error('no visible region')
+  }
   const cigar = feature.get('CIGAR')
   const strand = feature.get('strand')
   const regStart = reg.start
@@ -128,9 +130,8 @@ export async function navToSynteny({
   const l2 = `${mateRef}:${f(m1 - ws)}-${f(m2 + ws)}${
     horizontallyFlip ? '[rev]' : ''
   }`
-  await when(() => view2.width !== undefined)
   await Promise.all([
-    view2.views[0].navToLocString(l1, featAsm),
-    view2.views[1].navToLocString(l2, mateAsm),
+    view2.views[0]!.navToLocString(l1, featAsm),
+    view2.views[1]!.navToLocString(l2, mateAsm),
   ])
 }

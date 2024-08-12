@@ -13,7 +13,7 @@ export function renderAlignmentShape({
 }) {
   const { regions, bpPerPx } = renderArgs
   const { heightPx, topPx, feature } = feat
-  const [region] = regions
+  const region = regions[0]!
   const s = feature.get('start')
   const e = feature.get('end')
   const [leftPx, rightPx] = bpSpanPx(s, e, region, bpPerPx)

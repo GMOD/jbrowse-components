@@ -38,13 +38,17 @@ const SetFeatureHeightDialog = observer(function (props: {
         <TextField
           value={height}
           helperText="Feature height"
-          onChange={event => setHeight(event.target.value)}
+          onChange={event => {
+            setHeight(event.target.value)
+          }}
         />
         <FormControlLabel
           control={
             <Checkbox
               checked={!!noSpacing}
-              onChange={() => setNoSpacing(val => !val)}
+              onChange={() => {
+                setNoSpacing(val => !val)
+              }}
             />
           }
           label="Remove spacing between features in y-direction?"
@@ -69,7 +73,9 @@ const SetFeatureHeightDialog = observer(function (props: {
           <Button
             variant="contained"
             color="secondary"
-            onClick={() => handleClose()}
+            onClick={() => {
+              handleClose()
+            }}
           >
             Cancel
           </Button>

@@ -179,7 +179,7 @@ function CascadingMenuList({
   onMenuItemClick: Function
 }) {
   function handleClick(callback: Function) {
-    return (event: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
+    return (event: React.MouseEvent<HTMLLIElement>) => {
       onMenuItemClick(event, callback)
     }
   }

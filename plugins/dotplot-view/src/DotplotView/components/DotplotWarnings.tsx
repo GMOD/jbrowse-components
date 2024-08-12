@@ -18,14 +18,27 @@ const DotplotWarnings = observer(function ({
   return trackWarnings.length && !hide ? (
     <Alert severity="warning">
       Warnings during render{' '}
-      <Button onClick={() => setShown(true)}>More info</Button>
+      <Button
+        onClick={() => {
+          setShown(true)
+        }}
+      >
+        More info
+      </Button>
       {shown ? (
         <WarningDialog
           trackWarnings={trackWarnings}
-          handleClose={() => setShown(false)}
+          handleClose={() => {
+            setShown(false)
+          }}
         />
       ) : null}
-      <Button variant="contained" onClick={() => setHide(true)}>
+      <Button
+        variant="contained"
+        onClick={() => {
+          setHide(true)
+        }}
+      >
         Dismiss
       </Button>
     </Alert>

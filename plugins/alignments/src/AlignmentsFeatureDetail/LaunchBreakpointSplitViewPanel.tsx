@@ -48,7 +48,7 @@ export default function LaunchBreakpointSplitViewPanel({
   const ret = [] as [ReducedFeature, ReducedFeature][]
   if (res) {
     for (let i = 0; i < res.length - 1; i++) {
-      ret.push([res[i], res[i + 1]] as const)
+      ret.push([res[i]!, res[i + 1]!] as const)
     }
   }
   return ret.length ? (

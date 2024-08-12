@@ -57,10 +57,10 @@ export function drawRef(
   ctx1.fillStyle = colorMap.M
   ctx1.strokeStyle = colorMap.M
   for (const { p11, p12, p21, p22 } of featPos) {
-    const x11 = p11.offsetPx - offsets[0]
-    const x12 = p12.offsetPx - offsets[0]
-    const x21 = p21.offsetPx - offsets[1]
-    const x22 = p22.offsetPx - offsets[1]
+    const x11 = p11.offsetPx - offsets[0]!
+    const x12 = p12.offsetPx - offsets[0]!
+    const x21 = p21.offsetPx - offsets[1]!
+    const x22 = p22.offsetPx - offsets[1]!
     const l1 = Math.abs(x12 - x11)
     const l2 = Math.abs(x22 - x21)
     const y1 = 0
@@ -90,10 +90,10 @@ export function drawRef(
   ctx1.fillStyle = colorMap.M
   ctx1.strokeStyle = colorMap.M
   for (const { p11, p12, p21, p22, f, cigar } of featPos) {
-    const x11 = p11.offsetPx - offsets[0]
-    const x12 = p12.offsetPx - offsets[0]
-    const x21 = p21.offsetPx - offsets[1]
-    const x22 = p22.offsetPx - offsets[1]
+    const x11 = p11.offsetPx - offsets[0]!
+    const x12 = p12.offsetPx - offsets[0]!
+    const x21 = p21.offsetPx - offsets[1]!
+    const x22 = p22.offsetPx - offsets[1]!
     const l1 = Math.abs(x12 - x11)
     const l2 = Math.abs(x22 - x21)
     const minX = Math.min(x21, x22)
@@ -118,7 +118,7 @@ export function drawRef(
       // cx1/cx2 are the current x positions on top and bottom rows
       let cx1 = k1
       let cx2 = s1 === -1 ? x22 : x21
-      if (cigar?.length && drawCIGAR) {
+      if (cigar.length && drawCIGAR) {
         // continuingFlag skips drawing commands on very small CIGAR features
         let continuingFlag = false
 
@@ -129,7 +129,7 @@ export function drawRef(
         for (let j = 0; j < cigar.length; j += 2) {
           const idx = j * unitMultiplier2 + 1
 
-          const len = +cigar[j]
+          const len = +cigar[j]!
           const op = cigar[j + 1] as keyof typeof colorMap
 
           if (!continuingFlag) {
@@ -137,15 +137,17 @@ export function drawRef(
             px2 = cx2
           }
 
-          const d1 = len / bpPerPxs[0]
-          const d2 = len / bpPerPxs[1]
+          const d1 = len / bpPerPxs[0]!
+          const d2 = len / bpPerPxs[1]!
 
           if (op === 'M' || op === '=' || op === 'X') {
             cx1 += d1 * rev1
             cx2 += d2 * rev2
           } else if (op === 'D' || op === 'N') {
             cx1 += d1 * rev1
-          } else if (op === 'I') {
+          }
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+          else if (op === 'I') {
             cx2 += d2 * rev2
           }
 
@@ -168,13 +170,12 @@ export function drawRef(
             ) {
               continuingFlag = true
             } else {
-              continuingFlag = false
-
-              // allow rendering the dominant color when using continuing
-              // flag if the last element of continuing was a large
-              // feature, else just use match
+              // allow rendering the dominant color when using continuing flag
+              // if the last element of continuing was a large feature, else
+              // just use match
               ctx1.fillStyle =
                 colorMap[(continuingFlag && d1 > 1) || d2 > 1 ? op : 'M']
+              continuingFlag = false
 
               draw(ctx1, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
               if (ctx3) {
@@ -198,13 +199,15 @@ export function drawRef(
   ctx2.imageSmoothingEnabled = false
   ctx2.clearRect(0, 0, width, height)
   for (let i = 0; i < featPos.length; i++) {
-    const feature = featPos[i]
+    const feature = featPos[i]!
     const idx = i * unitMultiplier + 1
     ctx2.fillStyle = makeColor(idx)
 
     // too many click map false positives with colored stroked lines
     drawMatchSimple({
-      cb: ctx => ctx.fill(),
+      cb: ctx => {
+        ctx.fill()
+      },
       feature,
       ctx: ctx2,
       drawCurves,
@@ -238,7 +241,9 @@ export function drawMouseoverSynteny(model: LinearSyntenyDisplayModel) {
   if (feature1) {
     ctx.fillStyle = 'rgb(0,0,0,0.1)'
     drawMatchSimple({
-      cb: ctx => ctx.fill(),
+      cb: ctx => {
+        ctx.fill()
+      },
       feature: feature1,
       ctx,
       oobLimit,
@@ -253,7 +258,9 @@ export function drawMouseoverSynteny(model: LinearSyntenyDisplayModel) {
     ctx.strokeStyle = 'rgb(0, 0, 0, 0.9)'
 
     drawMatchSimple({
-      cb: ctx => ctx.stroke(),
+      cb: ctx => {
+        ctx.stroke()
+      },
       feature: feature2,
       ctx,
       oobLimit,

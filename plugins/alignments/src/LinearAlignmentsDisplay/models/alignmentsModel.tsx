@@ -30,7 +30,7 @@ export function LinearAlignmentsDisplayMixin(
      * refers to LinearSNPCoverageDisplay sub-display model
      */
     SNPCoverageDisplay: types.maybe(
-      pluginManager.getDisplayType('LinearSNPCoverageDisplay').stateModel,
+      pluginManager.getDisplayType('LinearSNPCoverageDisplay')!.stateModel,
     ),
     /**
      * #property

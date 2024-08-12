@@ -1,4 +1,4 @@
-/* eslint-disable no-restricted-globals */
+/* globals self,window */
 // we put the code in a function to avoid variable name collisions with the
 // global scope
 ;(function () {

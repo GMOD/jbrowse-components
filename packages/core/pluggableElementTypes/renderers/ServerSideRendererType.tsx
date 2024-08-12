@@ -27,22 +27,24 @@ interface BaseRenderArgs extends RenderProps {
   // deserialization happens before deserializeArgsInWorker
   signal?: AbortSignal
   theme: ThemeOptions
-  exportSVG: { rasterizeLayers?: boolean }
+  exportSVG?: {
+    rasterizeLayers?: boolean
+  }
 }
 
 export interface RenderArgs extends BaseRenderArgs {
   config: SnapshotOrInstance<AnyConfigurationModel>
-  filters: SerializableFilterChain
+  filters?: SerializableFilterChain
 }
 
 export interface RenderArgsSerialized extends BaseRenderArgs {
   statusCallback?: (arg: string) => void
   config: SnapshotIn<AnyConfigurationModel>
-  filters: SerializedFilterChain
+  filters?: SerializedFilterChain
 }
 export interface RenderArgsDeserialized extends BaseRenderArgs {
   config: AnyConfigurationModel
-  filters: SerializableFilterChain
+  filters?: SerializableFilterChain
 }
 
 export interface ResultsSerialized extends Omit<RenderResults, 'reactElement'> {
@@ -129,9 +131,11 @@ export default class ServerSideRenderer extends RendererType {
     deserialized.config = this.configSchema.create(args.config || {}, {
       pluginManager: this.pluginManager,
     })
-    deserialized.filters = new SerializableFilterChain({
-      filters: args.filters,
-    })
+    deserialized.filters = args.filters
+      ? new SerializableFilterChain({
+          filters: args.filters,
+        })
+      : undefined
 
     return deserialized
   }

@@ -20,14 +20,21 @@ const DeleteSessionDialog = ({
   return (
     <Dialog
       open
-      onClose={() => onClose(false)}
+      onClose={() => {
+        onClose(false)
+      }}
       title={`Delete ${sessionsToDelete.length} sessions?`}
     >
       <DialogContent>
         <DialogContentText>This action cannot be undone</DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => onClose(false)} color="primary">
+        <Button
+          onClick={() => {
+            onClose(false)
+          }}
+          color="primary"
+        >
           Cancel
         </Button>
         <Button

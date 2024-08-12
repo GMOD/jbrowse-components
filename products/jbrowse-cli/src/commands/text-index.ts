@@ -157,7 +157,7 @@ export default class TextIndex extends JBrowseCommand {
       config.assemblies?.map(a => a.name) ||
       (config.assembly ? [config.assembly.name] : [])
 
-    if (!asms?.length) {
+    if (!asms.length) {
       throw new Error('No assemblies found')
     }
 
@@ -175,7 +175,7 @@ export default class TextIndex extends JBrowseCommand {
 
       if (dryrun) {
         this.log(
-          trackConfigs.map(e => `${e.trackId}\t${e.adapter.type}`).join('\n'),
+          trackConfigs.map(e => `${e.trackId}\t${e.adapter?.type}`).join('\n'),
         )
       } else {
         const id = `${asm}-index`
@@ -350,18 +350,18 @@ export default class TextIndex extends JBrowseCommand {
 
     const trackConfigs = file
       .map(file => guessAdapterFromFileName(file))
-      .filter(fileConfig => supported(fileConfig.adapter.type))
+      .filter(fileConfig => supported(fileConfig.adapter?.type))
 
     if (fileId?.length) {
       for (let i = 0; i < fileId.length; i++) {
-        trackConfigs[i].trackId = fileId[i]
+        trackConfigs[i]!.trackId = fileId[i]!
       }
     }
 
     await this.indexDriver({
       trackConfigs,
       outLocation: outFlag,
-      name: trackConfigs.length > 1 ? 'aggregate' : path.basename(file[0]),
+      name: trackConfigs.length > 1 ? 'aggregate' : path.basename(file[0]!),
       quiet,
       attributes: attributes.split(','),
       typesToExclude: exclude.split(','),
@@ -403,7 +403,7 @@ export default class TextIndex extends JBrowseCommand {
       }),
     )
 
-    const ixIxxStream = await this.runIxIxx({
+    await this.runIxIxx({
       readStream,
       outLocation,
       name,
@@ -418,7 +418,6 @@ export default class TextIndex extends JBrowseCommand {
       typesToExclude,
       assemblyNames,
     })
-    return ixIxxStream
   }
 
   async *indexFiles({
@@ -436,7 +435,7 @@ export default class TextIndex extends JBrowseCommand {
   }) {
     for (const config of trackConfigs) {
       const { adapter, textSearching } = config
-      const { type } = adapter
+      const { type } = adapter || {}
       const {
         indexingFeatureTypesToExclude = typesToExclude,
         indexingAttributes = attributes,
@@ -444,12 +443,16 @@ export default class TextIndex extends JBrowseCommand {
 
       let loc: UriLocation | LocalPathLocation
       if (type === 'Gff3TabixAdapter') {
+        // @ts-expect-error
         loc = adapter.gffGzLocation
       } else if (type === 'Gff3Adapter') {
+        // @ts-expect-error
         loc = adapter.gffLocation
       } else if (type === 'VcfAdapter') {
+        // @ts-expect-error
         loc = adapter.vcfLocation
       } else if (type === 'VcfTabixAdapter') {
+        // @ts-expect-error
         loc = adapter.vcfGzLocation
       } else {
         return
@@ -464,7 +467,10 @@ export default class TextIndex extends JBrowseCommand {
           typesToExclude: indexingFeatureTypesToExclude,
           quiet,
         })
-      } else if (type === 'VcfTabixAdapter' || type === 'VcfAdapter') {
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      else if (type === 'VcfTabixAdapter' || type === 'VcfAdapter') {
         yield* indexVcf({
           config,
           attributesToIndex: indexingAttributes,
@@ -477,7 +483,7 @@ export default class TextIndex extends JBrowseCommand {
     }
   }
 
-  runIxIxx({
+  async runIxIxx({
     readStream,
     outLocation,
     name,
@@ -488,7 +494,7 @@ export default class TextIndex extends JBrowseCommand {
     name: string
     prefixSize?: number
   }) {
-    return ixIxxStream(
+    await ixIxxStream(
       readStream,
       path.join(outLocation, 'trix', `${name}.ix`),
       path.join(outLocation, 'trix', `${name}.ixx`),
@@ -505,7 +511,7 @@ export default class TextIndex extends JBrowseCommand {
     if (!tracks) {
       return []
     }
-    const trackIdsToIndex = trackIds || tracks?.map(track => track.trackId)
+    const trackIdsToIndex = trackIds || tracks.map(track => track.trackId)
     return trackIdsToIndex
       .map(trackId => {
         const currentTrack = tracks.find(t => trackId === t.trackId)

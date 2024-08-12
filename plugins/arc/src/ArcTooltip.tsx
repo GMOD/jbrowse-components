@@ -57,7 +57,7 @@ const ArcTooltip = observer(function ({ contents }: { contents?: string }) {
   const clientPoint = useClientPoint(context)
   const { getFloatingProps } = useInteractions([clientPoint])
 
-  const popperTheme = theme?.components?.MuiPopper
+  const popperTheme = theme.components?.MuiPopper
   return contents ? (
     <Portal container={popperTheme?.defaultProps?.container}>
       <div

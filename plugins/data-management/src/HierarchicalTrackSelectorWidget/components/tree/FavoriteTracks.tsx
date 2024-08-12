@@ -27,7 +27,9 @@ const FavoriteTracks = observer(function ({
   const { view, favoriteTracks } = model
   return view ? (
     <DropdownTrackSelector
-      onClick={() => model.setFavoritesCounter(0)}
+      onClick={() => {
+        model.setFavoritesCounter(0)
+      }}
       tracks={favoriteTracks}
       model={model}
       extraMenuItems={
@@ -36,7 +38,9 @@ const FavoriteTracks = observer(function ({
               { type: 'divider' as const },
               {
                 label: 'Clear favorites',
-                onClick: () => model.clearFavorites(),
+                onClick: () => {
+                  model.clearFavorites()
+                },
               },
             ]
           : [

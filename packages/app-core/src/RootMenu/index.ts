@@ -110,8 +110,8 @@ export function RootAppMenuMixin() {
       appendToSubMenu(menuPath: string[], menuItem: MenuItem) {
         let topMenu = self.menus.find(m => m.label === menuPath[0])
         if (!topMenu) {
-          const idx = this.appendMenu(menuPath[0])
-          topMenu = self.menus[idx - 1]
+          const idx = this.appendMenu(menuPath[0]!)
+          topMenu = self.menus[idx - 1]!
         }
         let { menuItems: subMenu } = topMenu
         const pathSoFar = [menuPath[0]]
@@ -120,7 +120,7 @@ export function RootAppMenuMixin() {
           let sm = subMenu.find(mi => 'label' in mi && mi.label === menuName)
           if (!sm) {
             const idx = subMenu.push({ label: menuName, subMenu: [] })
-            sm = subMenu[idx - 1]
+            sm = subMenu[idx - 1]!
           }
           if (!('subMenu' in sm)) {
             throw new Error(
@@ -153,8 +153,8 @@ export function RootAppMenuMixin() {
       ) {
         let topMenu = self.menus.find(m => m.label === menuPath[0])
         if (!topMenu) {
-          const idx = this.appendMenu(menuPath[0])
-          topMenu = self.menus[idx - 1]
+          const idx = this.appendMenu(menuPath[0]!)
+          topMenu = self.menus[idx - 1]!
         }
         let { menuItems: subMenu } = topMenu
         const pathSoFar = [menuPath[0]]
@@ -163,7 +163,7 @@ export function RootAppMenuMixin() {
           let sm = subMenu.find(mi => 'label' in mi && mi.label === menuName)
           if (!sm) {
             const idx = subMenu.push({ label: menuName, subMenu: [] })
-            sm = subMenu[idx - 1]
+            sm = subMenu[idx - 1]!
           }
           if (!('subMenu' in sm)) {
             throw new Error(

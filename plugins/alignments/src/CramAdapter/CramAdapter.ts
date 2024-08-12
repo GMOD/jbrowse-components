@@ -76,7 +76,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
 
   public async configure() {
     if (!this.configureP) {
-      this.configureP = this.configurePre().catch(e => {
+      this.configureP = this.configurePre().catch((e: unknown) => {
         this.configureP = undefined
         throw e
       })
@@ -173,7 +173,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
 
   private async setup(opts?: BaseOptions) {
     if (!this.setupP) {
-      this.setupP = this.setupPre(opts).catch(e => {
+      this.setupP = this.setupPre(opts).catch((e: unknown) => {
         this.setupP = undefined
         throw e
       })

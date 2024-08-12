@@ -23,14 +23,15 @@ import RpcManager from '../../rpc/RpcManager'
 export interface LayoutSessionProps {
   config: AnyConfigurationModel
   bpPerPx: number
-  filters: SerializableFilterChain
+  filters?: SerializableFilterChain
 }
 
 export type MyMultiLayout = MultiLayout<GranularRectLayout<unknown>, unknown>
+
 export interface CachedLayout {
   layout: MyMultiLayout
   config: AnyConfigurationModel
-  filters: SerializableFilterChain
+  filters?: SerializableFilterChain
 }
 
 export class LayoutSession implements LayoutSessionProps {
@@ -38,7 +39,7 @@ export class LayoutSession implements LayoutSessionProps {
 
   bpPerPx: number
 
-  filters: SerializableFilterChain
+  filters?: SerializableFilterChain
 
   constructor(args: LayoutSessionProps) {
     this.config = args.config
@@ -66,7 +67,6 @@ export class LayoutSession implements LayoutSessionProps {
    */
   cachedLayoutIsValid(cachedLayout: CachedLayout) {
     return (
-      cachedLayout &&
       cachedLayout.layout.subLayoutConstructorArgs.pitchX === this.bpPerPx &&
       deepEqual(readConfObject(this.config), cachedLayout.config) &&
       deepEqual(this.filters, cachedLayout.filters)
@@ -129,22 +129,13 @@ export default class BoxRendererType extends FeatureRendererType {
     return session
   }
 
-  // expands region for glyphs to use
   getExpandedRegion(region: Region, renderArgs: RenderArgsDeserialized) {
-    if (!region) {
-      return region
-    }
     const { bpPerPx, config } = renderArgs
     const maxFeatureGlyphExpansion =
-      config === undefined
-        ? 0
-        : readConfObject(config, 'maxFeatureGlyphExpansion')
-    if (!maxFeatureGlyphExpansion) {
-      return region
-    }
+      readConfObject(config, 'maxFeatureGlyphExpansion') || 0
     const bpExpansion = Math.round(maxFeatureGlyphExpansion * bpPerPx)
     return {
-      ...region,
+      ...(region as Omit<typeof region, symbol>),
       start: Math.floor(Math.max(region.start - bpExpansion, 0)),
       end: Math.ceil(region.end + bpExpansion),
     }
@@ -157,20 +148,12 @@ export default class BoxRendererType extends FeatureRendererType {
   async freeResourcesInClient(rpcManager: RpcManager, args: RenderArgs) {
     const { regions } = args
     const key = getLayoutId(args)
-    let freed = 0
     const session = this.sessions[key]
-    if (!regions && session) {
-      delete this.sessions[key]
-      freed = 1
+    if (session) {
+      const region = regions[0]!
+      session.layout.discardRange(region.refName, region.start, region.end)
     }
-    if (session && regions) {
-      session.layout.discardRange(
-        regions[0].refName,
-        regions[0].start,
-        regions[0].end,
-      )
-    }
-    return freed + (await super.freeResourcesInClient(rpcManager, args))
+    return await super.freeResourcesInClient(rpcManager, args)
   }
 
   deserializeLayoutInClient(json: SerializedLayout) {
@@ -188,7 +171,7 @@ export default class BoxRendererType extends FeatureRendererType {
   createLayoutInWorker(args: RenderArgsDeserialized) {
     const { regions } = args
     const session = this.getWorkerSession(args)
-    return session.layout.getSublayout(regions[0].refName)
+    return session.layout.getSublayout(regions[0]!.refName)
   }
 
   serializeResultsInWorker(
@@ -200,15 +183,13 @@ export default class BoxRendererType extends FeatureRendererType {
       args,
     ) as ResultsSerialized
 
-    const [region] = args.regions
+    const region = args.regions[0]!
     serialized.layout = results.layout.serializeRegion(
       this.getExpandedRegion(region, args),
     )
-    if (serialized.layout.rectangles) {
-      serialized.features = serialized.features.filter(f => {
-        return Boolean(serialized.layout.rectangles[f.uniqueId])
-      })
-    }
+    serialized.features = serialized.features.filter(f => {
+      return Boolean(serialized.layout.rectangles[f.uniqueId])
+    })
 
     serialized.maxHeightReached = serialized.layout.maxHeightReached
     return serialized

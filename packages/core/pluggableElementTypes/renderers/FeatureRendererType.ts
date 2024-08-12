@@ -22,13 +22,19 @@ import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
 import { AnyConfigurationModel } from '../../configuration'
 
 export interface RenderArgs extends ServerSideRenderArgs {
-  displayModel: { id: string; selectedFeatureId?: string }
+  displayModel?: {
+    id: string
+    selectedFeatureId?: string
+  }
   regions: Region[]
   blockKey: string
 }
 
 export interface RenderArgsSerialized extends ServerSideRenderArgsSerialized {
-  displayModel: { id: string; selectedFeatureId?: string }
+  displayModel?: {
+    id: string
+    selectedFeatureId?: string
+  }
   regions: Region[]
   blockKey: string
 }
@@ -148,14 +154,10 @@ export default class FeatureRendererType extends ServerSideRendererType {
     if (!isFeatureAdapter(dataAdapter)) {
       throw new Error('Adapter does not support retrieving features')
     }
-    const features = new Map()
 
-    if (!regions || regions.length === 0) {
-      return features
-    }
     // make sure the requested region's start and end are integers, if
     // there is a region specification.
-    const requestRegions = regions.map((r: Region) => {
+    const requestRegions = regions.map(r => {
       const requestRegion = { ...r }
       if (requestRegion.start) {
         requestRegion.start = Math.floor(requestRegion.start)
@@ -166,7 +168,7 @@ export default class FeatureRendererType extends ServerSideRendererType {
       return requestRegion
     })
 
-    const region = requestRegions[0]
+    const region = requestRegions[0]!
 
     const featureObservable =
       requestRegions.length === 1

@@ -44,7 +44,7 @@ function OverlayRect({
   )
 }
 
-type ME = React.MouseEvent<SVGRectElement, MouseEvent>
+type ME = React.MouseEvent<SVGRectElement>
 type MEFE = ME | React.FocusEvent<SVGRectElement>
 
 const SvgOverlay = observer(function ({
@@ -90,7 +90,7 @@ const SvgOverlay = observer(function ({
     if (!(handler && mouseoverFeatureId)) {
       return undefined
     }
-    return handler(event, mouseoverFeatureId)
+    handler(event, mouseoverFeatureId)
   }
 
   function onFeatureMouseEnter(event: ME) {
@@ -98,7 +98,7 @@ const SvgOverlay = observer(function ({
     if (!(handler && mouseoverFeatureId)) {
       return undefined
     }
-    return handler(event, mouseoverFeatureId)
+    handler(event, mouseoverFeatureId)
   }
 
   function onFeatureMouseOut(event: ME | React.FocusEvent<SVGRectElement>) {
@@ -106,7 +106,7 @@ const SvgOverlay = observer(function ({
     if (!(handler && mouseoverFeatureId)) {
       return undefined
     }
-    return handler(event, mouseoverFeatureId)
+    handler(event, mouseoverFeatureId)
   }
 
   function onFeatureMouseOver(event: ME | React.FocusEvent<SVGRectElement>) {
@@ -114,7 +114,7 @@ const SvgOverlay = observer(function ({
     if (!(handler && mouseoverFeatureId)) {
       return undefined
     }
-    return handler(event, mouseoverFeatureId)
+    handler(event, mouseoverFeatureId)
   }
 
   function onFeatureMouseUp(event: ME) {
@@ -122,7 +122,7 @@ const SvgOverlay = observer(function ({
     if (!(handler && mouseoverFeatureId)) {
       return undefined
     }
-    return handler(event, mouseoverFeatureId)
+    handler(event, mouseoverFeatureId)
   }
 
   function onFeatureMouseLeave(event: ME) {
@@ -130,7 +130,7 @@ const SvgOverlay = observer(function ({
     if (!(handler && mouseoverFeatureId)) {
       return undefined
     }
-    return handler(event, mouseoverFeatureId)
+    handler(event, mouseoverFeatureId)
   }
 
   function onFeatureMouseMove(event: ME) {
@@ -138,7 +138,7 @@ const SvgOverlay = observer(function ({
     if (!(handler && mouseoverFeatureId)) {
       return undefined
     }
-    return handler(event, mouseoverFeatureId)
+    handler(event, mouseoverFeatureId)
   }
 
   function onFeatureClick(event: ME) {
@@ -150,7 +150,7 @@ const SvgOverlay = observer(function ({
       return undefined
     }
     event.stopPropagation()
-    return handler(event, mouseoverFeatureId)
+    handler(event, mouseoverFeatureId)
   }
 
   function onFeatureContextMenu(event: ME) {
@@ -158,7 +158,7 @@ const SvgOverlay = observer(function ({
     if (!(handler && mouseoverFeatureId)) {
       return undefined
     }
-    return handler(event, mouseoverFeatureId)
+    handler(event, mouseoverFeatureId)
   }
 
   return renderOverlay ? (

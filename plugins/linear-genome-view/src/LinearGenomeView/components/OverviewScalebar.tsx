@@ -204,9 +204,7 @@ const Scalebar = observer(function ({
   const { pluginManager } = getEnv(model)
   const visibleRegions = dynamicBlocks.contentBlocks
   const overviewVisibleRegions = overview.dynamicBlocks
-
-  const { tertiary, primary } = theme.palette
-  const scalebarColor = tertiary ? tertiary.light : primary.light
+  const scalebarColor = theme.palette.tertiary.light
   // catches possible null from at's below
   if (!visibleRegions.length) {
     return null

@@ -21,9 +21,6 @@ export function validateRendererType<T>(
   rendererType: string,
   RendererType: T,
 ): ServerSideRendererType {
-  if (!RendererType) {
-    throw new Error(`renderer "${rendererType}" not found`)
-  }
   // @ts-expect-error
   if (!RendererType.ReactComponent) {
     throw new Error(

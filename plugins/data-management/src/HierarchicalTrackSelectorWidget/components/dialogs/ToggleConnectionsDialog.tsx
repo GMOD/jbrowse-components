@@ -115,7 +115,9 @@ const ToggleConnectionDialog = observer(function ({
       </DialogContent>
       <DialogActions>
         <Button
-          onClick={() => handleClose()}
+          onClick={() => {
+            handleClose()
+          }}
           variant="contained"
           color="primary"
         >

@@ -86,11 +86,11 @@ function makeUTRs(parent: Feature, subs: Feature[]) {
   let end: number | undefined
   if (!haveLeftUTR) {
     for (let i = 0; i < exons.length; i++) {
-      start = exons[i].get('start')
+      start = exons[i]!.get('start')
       if (start >= codeStart) {
         break
       }
-      end = codeStart > exons[i].get('end') ? exons[i].get('end') : codeStart
+      end = codeStart > exons[i]!.get('end') ? exons[i]!.get('end') : codeStart
       const type = strand >= 0 ? 'five_prime_UTR' : 'three_prime_UTR'
       subparts.unshift(
         new SimpleFeature({
@@ -105,12 +105,13 @@ function makeUTRs(parent: Feature, subs: Feature[]) {
   // make the right-hand UTRs
   if (!haveRightUTR) {
     for (let i = exons.length - 1; i >= 0; i--) {
-      end = exons[i].get('end')
+      end = exons[i]!.get('end')
       if (end <= codeEnd) {
         break
       }
 
-      start = codeEnd < exons[i].get('start') ? exons[i].get('start') : codeEnd
+      start =
+        codeEnd < exons[i]!.get('start') ? exons[i]!.get('start') : codeEnd
       const type = strand >= 0 ? 'three_prime_UTR' : 'five_prime_UTR'
       subparts.push(
         new SimpleFeature({

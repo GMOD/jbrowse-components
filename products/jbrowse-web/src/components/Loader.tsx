@@ -100,15 +100,19 @@ const SessionTriaged = observer(function ({
 }) {
   return (
     <Suspense fallback={null}>
-      {sessionTriaged?.origin === 'session' ? (
+      {sessionTriaged.origin === 'session' ? (
         <SessionWarningDialog
           loader={loader}
-          handleClose={() => loader.setSessionTriaged(undefined)}
+          handleClose={() => {
+            loader.setSessionTriaged(undefined)
+          }}
         />
       ) : (
         <ConfigWarningDialog
           loader={loader}
-          handleClose={() => loader.setSessionTriaged(undefined)}
+          handleClose={() => {
+            loader.setSessionTriaged(undefined)
+          }}
         />
       )}
     </Suspense>

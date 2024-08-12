@@ -162,7 +162,7 @@ simplified SVG renderer just to illustrate:
 ```jsx
 export default function SvgFeatureRendering(props) {
   const { width, features, regions, layout, bpPerPx } = props
-  const region = regions[0]
+  const region = regions[0]!
 
   const feats = Array.from(features.values())
   const height = readConfObject(config, 'height', { feature })

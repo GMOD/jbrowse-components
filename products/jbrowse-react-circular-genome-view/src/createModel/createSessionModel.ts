@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { lazy } from 'react'
 import { AbstractSessionModel } from '@jbrowse/core/util/types'
 import { getParent, types, Instance } from 'mobx-state-tree'
@@ -44,7 +43,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       /**
        * #property
        */
-      view: pluginManager.getViewType('CircularView').stateModel,
+      view: pluginManager.getViewType('CircularView')!.stateModel,
     })
     .volatile((/* self */) => ({
       /**

@@ -20,8 +20,8 @@ export default function useMeasure() {
     }
     const observer = new RS(entries => {
       setDims({
-        width: entries[0].contentRect.width,
-        height: entries[0].contentRect.height,
+        width: entries[0]!.contentRect.width,
+        height: entries[0]!.contentRect.height,
       })
     })
     observer.observe(ref.current)

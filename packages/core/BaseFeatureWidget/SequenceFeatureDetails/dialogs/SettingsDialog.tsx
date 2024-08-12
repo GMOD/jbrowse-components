@@ -64,7 +64,9 @@ const SequenceFeatureSettingsDialog = observer(function ({
     <Dialog
       maxWidth="xl"
       open
-      onClose={() => handleClose()}
+      onClose={() => {
+        handleClose()
+      }}
       title="Feature sequence settings"
     >
       <DialogContent className={classes.dialogContent}>
@@ -74,7 +76,9 @@ const SequenceFeatureSettingsDialog = observer(function ({
           value={intronBp}
           helperText={!intronBpValid ? 'Not a number' : ''}
           error={!intronBpValid}
-          onChange={event => setIntronBp(event.target.value)}
+          onChange={event => {
+            setIntronBp(event.target.value)
+          }}
         />
         <TextField2
           label="Number of bases up/down stream of feature to display"
@@ -82,13 +86,17 @@ const SequenceFeatureSettingsDialog = observer(function ({
           value={upDownBp}
           helperText={!upDownBpValid ? 'Not a number' : ''}
           error={!upDownBpValid}
-          onChange={event => setUpDownBp(event.target.value)}
+          onChange={event => {
+            setUpDownBp(event.target.value)
+          }}
         />
         <FormControl2>
           <FormLabel>Sequence capitalization</FormLabel>
           <RadioGroup
             value={upperCaseCDS ? 'cds' : 'unchanged'}
-            onChange={e => model.setUpperCaseCDS(e.target.value === 'cds')}
+            onChange={e => {
+              model.setUpperCaseCDS(e.target.value === 'cds')
+            }}
           >
             <FormControlLabel
               value="cds"
@@ -118,7 +126,9 @@ const SequenceFeatureSettingsDialog = observer(function ({
           Submit
         </Button>
         <Button
-          onClick={() => handleClose()}
+          onClick={() => {
+            handleClose()
+          }}
           color="secondary"
           autoFocus
           variant="contained"

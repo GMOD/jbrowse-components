@@ -15,12 +15,19 @@ export default function Formatter({ value }: { value: unknown }) {
         onClick={() => {
           copy(display)
           setCopied(true)
-          setTimeout(() => setCopied(false), 700)
+          setTimeout(() => {
+            setCopied(false)
+          }, 700)
         }}
       >
         {copied ? 'Copied to clipboard' : 'Copy'}
       </button>
-      <button type="button" onClick={() => setShow(val => !val)}>
+      <button
+        type="button"
+        onClick={() => {
+          setShow(val => !val)
+        }}
+      >
         {show ? 'Show less' : 'Show more'}
       </button>
       <div>{show ? display : `${display.slice(0, 100)}...`}</div>

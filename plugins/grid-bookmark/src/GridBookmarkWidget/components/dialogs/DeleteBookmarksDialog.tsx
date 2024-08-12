@@ -34,7 +34,13 @@ const DeleteBookmarksDialog = observer(function ({
         </Alert>
       </DialogContent>
       <DialogActions>
-        <Button variant="contained" color="secondary" onClick={() => onClose()}>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => {
+            onClose()
+          }}
+        >
           Cancel
         </Button>
         <Button

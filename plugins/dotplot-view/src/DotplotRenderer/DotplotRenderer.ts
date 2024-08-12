@@ -23,6 +23,7 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 const { parseCigar } = MismatchParser
 
 export interface DotplotRenderArgsDeserialized extends RenderArgsDeserialized {
+  adapterConfig: AnyConfigurationModel
   height: number
   width: number
   highResolutionScaling: number
@@ -92,7 +93,8 @@ export default class DotplotRenderer extends ComparativeRenderer {
     const thresholds = readConfObject(config, 'thresholds')
     const palette = readConfObject(config, 'thresholdsPalette') as string[]
     const isCallback = config.color.isCallback
-    const [hview, vview] = views
+    const hview = views[0]!
+    const vview = views[1]!
     const db1 = hview.dynamicBlocks.contentBlocks[0]?.offsetPx
     const db2 = vview.dynamicBlocks.contentBlocks[0]?.offsetPx
     const warnings = [] as { message: string; effect: string }[]
@@ -194,7 +196,7 @@ export default class DotplotRenderer extends ComparativeRenderer {
         const identity = feature.get('identity')
         for (let i = 0; i < thresholds.length; i++) {
           if (identity > +thresholds[i]) {
-            r = palette[i]
+            r = palette[i] || 'black'
             break
           }
         }
@@ -224,10 +226,10 @@ export default class DotplotRenderer extends ComparativeRenderer {
         e10 !== undefined &&
         e20 !== undefined
       ) {
-        const b1 = b10.offsetPx - db1
-        const b2 = b20.offsetPx - db1
-        const e1 = e10.offsetPx - db2
-        const e2 = e20.offsetPx - db2
+        const b1 = b10.offsetPx - db1!
+        const b2 = b20.offsetPx - db1!
+        const e1 = e10.offsetPx - db2!
+        const e2 = e20.offsetPx - db2!
         if (Math.abs(b1 - b2) <= 4 && Math.abs(e1 - e2) <= 4) {
           drawCir(ctx, b1, height - e1, lineWidth)
         } else {
@@ -243,8 +245,8 @@ export default class DotplotRenderer extends ComparativeRenderer {
             let lastDrawnX = currX
             let lastDrawnY = currX
             for (let i = 0; i < cigarOps.length; i += 2) {
-              const val = +cigarOps[i]
-              const op = cigarOps[i + 1]
+              const val = +cigarOps[i]!
+              const op = cigarOps[i + 1]!
               if (op === 'M' || op === '=' || op === 'X') {
                 currX += (val / hBpPerPx) * strand
                 currY += val / vBpPerPx
@@ -304,10 +306,10 @@ export default class DotplotRenderer extends ComparativeRenderer {
     const dimensions = [width, height]
     const views = [hview, vview].map((snap, idx) => {
       const view = Dotplot1DView.create(snap)
-      view.setVolatileWidth(dimensions[idx])
+      view.setVolatileWidth(dimensions[idx]!)
       return view
     })
-    const target = views[0]
+    const target = views[0]!
     const feats = await this.getFeatures({
       ...renderProps,
       regions: target.dynamicBlocks.contentBlocks,
@@ -330,10 +332,10 @@ export default class DotplotRenderer extends ComparativeRenderer {
       ...ret,
       height,
       width,
-      offsetX: views[0].dynamicBlocks.blocks[0]?.offsetPx || 0,
-      offsetY: views[1].dynamicBlocks.blocks[0]?.offsetPx || 0,
-      bpPerPxX: views[0].bpPerPx,
-      bpPerPxY: views[1].bpPerPx,
+      offsetX: views[0]!.dynamicBlocks.blocks[0]?.offsetPx || 0,
+      offsetY: views[1]!.dynamicBlocks.blocks[0]?.offsetPx || 0,
+      bpPerPxX: views[0]!.bpPerPx,
+      bpPerPxY: views[1]!.bpPerPx,
     }
   }
 }

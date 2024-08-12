@@ -60,7 +60,11 @@ const ViewTitle = observer(({ view }: { view: IBaseViewModel }) => {
         </Typography>
       ) : null}
       <div className={classes.grow} />
-      <IconButton onClick={() => setDialogOpen(true)}>
+      <IconButton
+        onClick={() => {
+          setDialogOpen(true)
+        }}
+      >
         <div style={{ width: 22, height: 22 }}>
           <Logomark variant="white" />
         </div>
@@ -69,7 +73,9 @@ const ViewTitle = observer(({ view }: { view: IBaseViewModel }) => {
         <Suspense fallback={null}>
           <VersionAboutDialog
             open
-            onClose={() => setDialogOpen(false)}
+            onClose={() => {
+              setDialogOpen(false)
+            }}
             version={session.version}
           />
         </Suspense>

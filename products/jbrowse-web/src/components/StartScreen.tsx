@@ -1,6 +1,5 @@
 import React, { lazy, useEffect, useState } from 'react'
 import {
-  CircularProgress,
   Container,
   Grid,
   IconButton,
@@ -36,7 +35,7 @@ const FactoryResetDialog = lazy(
 
 const useStyles = makeStyles()(theme => ({
   newSession: {
-    backgroundColor: theme.palette?.grey['300'],
+    backgroundColor: theme.palette.grey['300'],
     padding: 8,
     marginTop: 8,
   },
@@ -103,25 +102,16 @@ export default function StartScreen({
     localStorageGetItem(rootModel.previousAutosaveId) || '{}',
   ).session
 
-  return !sessionNames ? (
-    <CircularProgress
-      style={{
-        position: 'fixed',
-        top: '50%',
-        left: '50%',
-        marginTop: -25,
-        marginLeft: -25,
-      }}
-      size={50}
-    />
-  ) : (
+  return (
     <>
       {reset ? (
         <React.Suspense fallback={null}>
           <FactoryResetDialog
             open={reset}
             onFactoryReset={onFactoryReset}
-            onClose={() => setReset(false)}
+            onClose={() => {
+              setReset(false)
+            }}
           />
         </React.Suspense>
       ) : null}
@@ -169,12 +159,16 @@ export default function StartScreen({
             Recent sessions
           </Typography>
           <List className={classes.list}>
-            {sessionNames?.map(name => (
+            {sessionNames.map(name => (
               <RecentSessionCard
                 key={name}
                 sessionName={name}
-                onClick={() => setSessionToLoad(name)}
-                onDelete={() => setSessionToDelete(name)}
+                onClick={() => {
+                  setSessionToLoad(name)
+                }}
+                onDelete={() => {
+                  setSessionToDelete(name)
+                }}
               />
             ))}
           </List>
@@ -186,7 +180,9 @@ export default function StartScreen({
               <List className={classes.list}>
                 <RecentSessionCard
                   sessionName={lastAutosavedSession.name}
-                  onClick={() => rootModel.loadAutosaveSession()}
+                  onClick={() => {
+                    rootModel.loadAutosaveSession()
+                  }}
                 />
               </List>
             </>
@@ -199,7 +195,9 @@ export default function StartScreen({
         anchorEl={menuAnchorEl}
         keepMounted
         open={Boolean(menuAnchorEl)}
-        onClose={() => setMenuAnchorEl(null)}
+        onClose={() => {
+          setMenuAnchorEl(null)
+        }}
       >
         <ListSubheader>Advanced Settings</ListSubheader>
         <MenuItem

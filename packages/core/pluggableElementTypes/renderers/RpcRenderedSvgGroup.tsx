@@ -13,8 +13,8 @@ interface Props {
   html: string
   features: Map<string, Feature>
   theme: ThemeOptions
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  displayModel: any
+
+  displayModel?: any
   RenderingComponent: AnyReactComponentType
 }
 
@@ -23,9 +23,9 @@ const NewHydrate = observer(function RpcRenderedSvgGroup(props: Props) {
   const ref = useRef<SVGGElement>(null)
 
   // this `any` is a react-dom/client::Root
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const rootRef = useRef<any>()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const root = getRoot<any>(props.displayModel)
   const hydrateRoot = root.hydrateFn
 
@@ -58,7 +58,6 @@ const NewHydrate = observer(function RpcRenderedSvgGroup(props: Props) {
     // biome-ignore lint/correctness/useExhaustiveDependencies:
   }, [RenderingComponent, hydrateRoot, theme, rest])
 
-  // eslint-disable-next-line react/no-danger
   return <g ref={ref} dangerouslySetInnerHTML={{ __html: html }} />
 })
 
@@ -77,9 +76,9 @@ const OldHydrate = observer(function OldHydrate(props: Props) {
         // https://github.com/GMOD/jbrowse-components/issues/2160
         domNode.style.outline = 'none'
         domNode.innerHTML = html
-        // use requestIdleCallback to defer main-thread rendering
-        // and hydration for when we have some free time. helps
-        // keep the framerate up.
+        // use requestIdleCallback to defer main-thread rendering and
+        // hydration for when we have some free time. helps keep the
+        // framerate up.
         rIC(() => {
           hydrate(<RenderingComponent {...props} />, domNode)
         })
@@ -97,7 +96,6 @@ const OldHydrate = observer(function OldHydrate(props: Props) {
 })
 
 const RpcRenderedSvgGroup = observer(function (props: Props) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const root = getRoot<any>(props.displayModel)
   return root.hydrateFn ? <NewHydrate {...props} /> : <OldHydrate {...props} />
 })

@@ -26,7 +26,7 @@ const WiggleRendering = observer(function (props: {
     onMouseMove,
     onFeatureClick,
   } = props
-  const [region] = regions
+  const region = regions[0]!
   const ref = useRef<HTMLDivElement>(null)
 
   function getFeatureUnderMouse(eventClientX: number) {

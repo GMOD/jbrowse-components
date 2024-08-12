@@ -40,14 +40,20 @@ export default function SettingsDialog(props: {
         <DialogContent>
           <DialogContentText>
             Select between generating long or short URLs for the session sharing
-            <IconButton onClick={() => setInfoDialogOpen(true)}>
+            <IconButton
+              onClick={() => {
+                setInfoDialogOpen(true)
+              }}
+            >
               <HelpOutlineIcon />
             </IconButton>
           </DialogContentText>
           <FormControl component="fieldset">
             <RadioGroup
               value={setting}
-              onChange={event => setSetting(event.target.value)}
+              onChange={event => {
+                setSetting(event.target.value)
+              }}
             >
               <FormControlLabel
                 value="short"
@@ -65,7 +71,9 @@ export default function SettingsDialog(props: {
       </Dialog>
       <InfoDialog
         open={infoDialogOpen}
-        onClose={() => setInfoDialogOpen(false)}
+        onClose={() => {
+          setInfoDialogOpen(false)
+        }}
       />
     </>
   )

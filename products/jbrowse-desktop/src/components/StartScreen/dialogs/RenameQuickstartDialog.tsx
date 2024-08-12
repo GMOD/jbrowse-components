@@ -25,7 +25,9 @@ const RenameQuickstartDialog = ({
   return (
     <Dialog
       open={!!quickstartToRename}
-      onClose={() => onClose(false)}
+      onClose={() => {
+        onClose(false)
+      }}
       title="Rename quickstart"
     >
       <DialogContent>
@@ -40,14 +42,21 @@ const RenameQuickstartDialog = ({
         <Input
           autoFocus
           defaultValue={quickstartToRename}
-          onChange={event => setNewQuickstartName(event.target.value)}
+          onChange={event => {
+            setNewQuickstartName(event.target.value)
+          }}
         />
         {error ? (
           <Typography color="error" variant="h6">{`${error}`}</Typography>
         ) : null}
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => onClose(false)} color="primary">
+        <Button
+          onClick={() => {
+            onClose(false)
+          }}
+          color="primary"
+        >
           Cancel
         </Button>
         <Button

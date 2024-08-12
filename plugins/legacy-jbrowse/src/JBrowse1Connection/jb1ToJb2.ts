@@ -395,15 +395,13 @@ export function convertTrackConfig(
     }
   }
 
-  // If we don't recognize the store class, make a best effort to guess by file type
+  // If we don't recognize the store class, make a best effort to guess by file
+  // type
   jb2TrackConfig.adapter = guessAdapter(
     { uri: urlTemplate, locationType: 'UriLocation' },
     undefined,
     urlTemplate,
   )
-  if (!jb2TrackConfig.adapter) {
-    throw new Error('Could not determine adapter')
-  }
 
   if (jb2TrackConfig.adapter.type === UNSUPPORTED) {
     return generateUnsupportedTrackConf(

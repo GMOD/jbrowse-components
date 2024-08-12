@@ -41,13 +41,21 @@ function ConfigWarningDialog({
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button color="primary" variant="contained" onClick={() => onConfirm()}>
+        <Button
+          color="primary"
+          variant="contained"
+          onClick={() => {
+            onConfirm()
+          }}
+        >
           Yes, I trust it
         </Button>
         <Button
           color="secondary"
           variant="contained"
-          onClick={() => onCancel()}
+          onClick={() => {
+            onCancel()
+          }}
         >
           Cancel
         </Button>

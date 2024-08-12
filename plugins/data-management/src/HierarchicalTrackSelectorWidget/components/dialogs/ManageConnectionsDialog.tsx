@@ -59,7 +59,11 @@ const ManageConnectionsDialog = observer(function ({
             return (
               <Typography key={`conn-${name}`}>
                 {adminMode || sessionConnections?.includes(conf) ? (
-                  <IconButton onClick={() => breakConnection(conf, true)}>
+                  <IconButton
+                    onClick={() => {
+                      breakConnection(conf, true)
+                    }}
+                  >
                     <CloseIcon color="error" />
                   </IconButton>
                 ) : (
@@ -76,7 +80,9 @@ const ManageConnectionsDialog = observer(function ({
       </DialogContent>
       <DialogActions>
         <Button
-          onClick={() => handleClose()}
+          onClick={() => {
+            handleClose()
+          }}
           variant="contained"
           color="primary"
         >

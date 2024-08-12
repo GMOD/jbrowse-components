@@ -11,7 +11,7 @@ interface DropboxError {
  * Error messages from
  * https://www.dropbox.com/developers/documentation/http/documentation#sharing-get_shared_link_file
  * */
-const dropboxErrorMessages: Record<string, string | undefined> = {
+const dropboxErrorMessages: Record<string, string> = {
   shared_link_not_found: "The shared link wasn't found.",
   shared_link_access_denied:
     'The caller is not allowed to access this shared link.',

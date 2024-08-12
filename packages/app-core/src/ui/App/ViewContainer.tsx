@@ -41,7 +41,7 @@ const ViewContainer = observer(function ({
 
   useEffect(() => {
     function handleSelectView(e: Event) {
-      if (e.target instanceof Element && ref?.current?.contains(e.target)) {
+      if (e.target instanceof Element && ref.current?.contains(e.target)) {
         session.setFocusedViewId(view.id)
       }
     }
@@ -67,8 +67,12 @@ const ViewContainer = observer(function ({
     <Paper ref={ref} elevation={12} className={viewContainerClassName}>
       <ViewHeader
         view={view}
-        onClose={() => session.removeView(view)}
-        onMinimize={() => view.setMinimized(!view.minimized)}
+        onClose={() => {
+          session.removeView(view)
+        }}
+        onMinimize={() => {
+          view.setMinimized(!view.minimized)
+        }}
         className={backgroundColorClassName}
       />
       <Paper elevation={0}>

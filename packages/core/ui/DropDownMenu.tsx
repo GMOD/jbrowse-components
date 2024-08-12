@@ -26,7 +26,7 @@ const DropDownMenu = observer(function ({
   menuItems,
 }: {
   menuTitle: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   session: any
   menuItems: MenuItem[]
 }) {
@@ -42,7 +42,9 @@ const DropDownMenu = observer(function ({
     <>
       <Button
         ref={anchorEl}
-        onClick={() => setOpen(!open)}
+        onClick={() => {
+          setOpen(!open)
+        }}
         color="inherit"
         data-testid="dropDownMenuButton"
         classes={{ root: classes.buttonRoot }}

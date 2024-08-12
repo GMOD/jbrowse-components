@@ -40,7 +40,7 @@ const RowMenu = observer(function ({
         viewModel,
         spreadsheetModel,
         +rowNumber,
-        row,
+        row!,
       )
       return { ...item, disabled }
     }

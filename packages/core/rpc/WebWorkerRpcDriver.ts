@@ -17,7 +17,7 @@ interface Options {
 
 class WebWorkerHandle extends Rpc.Client {
   destroy(): void {
-    this.workers[0].terminate()
+    this.workers[0]!.terminate()
   }
 
   async call(funcName: string, args: Record<string, unknown>, opts: Options) {
@@ -79,11 +79,11 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
         switch (e.data.message) {
           case 'ready': {
             resolve(worker)
-            worker.workers[0].removeEventListener('message', listener)
+            worker.workers[0]!.removeEventListener('message', listener)
             break
           }
           case 'readyForConfig': {
-            worker.workers[0].postMessage({
+            worker.workers[0]!.postMessage({
               message: 'config',
               config: this.workerBootConfiguration,
             })
@@ -96,7 +96,7 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
           // No default
         }
       }
-      worker.workers[0].addEventListener('message', listener)
+      worker.workers[0]!.addEventListener('message', listener)
     })
   }
 }

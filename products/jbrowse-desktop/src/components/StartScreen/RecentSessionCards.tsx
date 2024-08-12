@@ -21,7 +21,7 @@ export default function RecentSessionsCards({
 }) {
   return (
     <Grid container spacing={4}>
-      {sessions?.map(session => (
+      {sessions.map(session => (
         <Grid item key={session.path}>
           <SessionCard
             sessionData={session}
@@ -34,7 +34,9 @@ export default function RecentSessionsCards({
                 setError(e)
               }
             }}
-            onDelete={del => setSessionsToDelete([del])}
+            onDelete={del => {
+              setSessionsToDelete([del])
+            }}
             onRename={setSessionToRename}
             onAddToQuickstartList={addToQuickstartList}
           />

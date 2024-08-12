@@ -28,8 +28,8 @@ import { getLowerPanelDisplays } from './util'
 const minDisplayHeight = 20
 
 function deepSnap<T extends IStateTreeNode, U extends IStateTreeNode>(
-  x1: T,
-  x2: U,
+  x1?: T,
+  x2?: U,
 ) {
   return deepEqual(
     x1 ? getSnapshot(x1) : undefined,
@@ -317,7 +317,9 @@ function stateModelFactory(
             type: 'radio',
             label: d.displayName,
             checked: d.name === self.PileupDisplay.type,
-            onClick: () => self.setLowerPanelType(d.name),
+            onClick: () => {
+              self.setLowerPanelType(d.name)
+            },
           }))
           return [
             ...superTrackMenuItems(),
@@ -341,6 +343,7 @@ function stateModelFactory(
       }
     })
     .preProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {
         return snap
       }

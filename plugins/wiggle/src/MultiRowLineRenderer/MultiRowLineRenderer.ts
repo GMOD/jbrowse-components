@@ -9,7 +9,7 @@ export default class MultiRowLineRenderer extends WiggleBaseRenderer {
   // @ts-expect-error
   async draw(ctx: CanvasRenderingContext2D, props: MultiArgs) {
     const { bpPerPx, sources, regions, features } = props
-    const [region] = regions
+    const region = regions[0]!
     const groups = groupBy(features.values(), f => f.get('source'))
     const height = props.height / sources.length
     const width = (region.end - region.start) / bpPerPx

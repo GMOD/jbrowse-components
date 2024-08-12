@@ -71,10 +71,20 @@ test('<JBrowseLinearGenomeView /> renders successfully', async () => {
 
   const getInputValue = () =>
     (getByPlaceholderText('Search for location') as HTMLInputElement).value
-  await waitFor(() => expect(getAllByTestId('sequence_track').length).toBe(2), {
-    timeout,
-  })
-  await waitFor(() => expect(getInputValue()).toBe('ctgA:1..40'), { timeout })
+  await waitFor(
+    () => {
+      expect(getAllByTestId('sequence_track').length).toBe(2)
+    },
+    {
+      timeout,
+    },
+  )
+  await waitFor(
+    () => {
+      expect(getInputValue()).toBe('ctgA:1..40')
+    },
+    { timeout },
+  )
 
   expect(container).toMatchSnapshot()
 }, 40000)

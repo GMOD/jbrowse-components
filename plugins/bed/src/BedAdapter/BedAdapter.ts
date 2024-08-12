@@ -48,13 +48,13 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
     const lines = data.split(/\n|\r\n|\r/).filter(f => !!f)
     const headerLines = []
     let i = 0
-    for (; i < lines.length && lines[i].startsWith('#'); i++) {
+    for (; i < lines.length && lines[i]!.startsWith('#'); i++) {
       headerLines.push(lines[i])
     }
     const header = headerLines.join('\n')
     const features = {} as Record<string, string[]>
     for (; i < lines.length; i++) {
-      const line = lines[i]
+      const line = lines[i]!
       const tab = line.indexOf('\t')
       const refName = line.slice(0, tab)
       if (!features[refName]) {
@@ -85,7 +85,7 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
 
   private async loadData(opts: BaseOptions = {}) {
     if (!this.bedFeatures) {
-      this.bedFeatures = this.loadDataP(opts).catch(e => {
+      this.bedFeatures = this.loadDataP(opts).catch((e: unknown) => {
         this.bedFeatures = undefined
         throw e
       })
@@ -153,7 +153,7 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
     if (!this.intervalTrees[refName]) {
       this.intervalTrees[refName] = this.loadFeatureIntervalTreeHelper(
         refName,
-      ).catch(e => {
+      ).catch((e: unknown) => {
         this.intervalTrees[refName] = undefined
         throw e
       })
@@ -165,7 +165,9 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
     return ObservableCreate<Feature>(async observer => {
       const { start, end, refName } = query
       const intervalTree = await this.loadFeatureIntervalTree(refName)
-      intervalTree?.search([start, end]).forEach(f => observer.next(f))
+      intervalTree?.search([start, end]).forEach(f => {
+        observer.next(f)
+      })
       observer.complete()
     }, opts.signal)
   }

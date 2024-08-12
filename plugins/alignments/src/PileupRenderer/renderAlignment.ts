@@ -32,7 +32,7 @@ export function renderAlignment({
   const { config, bpPerPx, regions, colorBy, colorTagMap = {} } = renderArgs
   const { tag = '', type: colorType = '' } = colorBy || {}
   const { feature } = feat
-  const region = regions[0]
+  const region = regions[0]!
 
   ctx.fillStyle = getAlignmentShapeColor({
     feature,

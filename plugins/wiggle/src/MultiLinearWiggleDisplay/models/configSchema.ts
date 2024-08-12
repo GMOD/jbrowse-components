@@ -15,18 +15,18 @@ function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 export default function WiggleConfigFactory(pluginManager: PluginManager) {
   const MultiXYPlotRendererConfigSchema = pluginManager.getRendererType(
     'MultiXYPlotRenderer',
-  ).configSchema
+  )!.configSchema
   const MultiDensityRendererConfigSchema = pluginManager.getRendererType(
     'MultiDensityRenderer',
-  ).configSchema
+  )!.configSchema
   const MultiRowXYPlotRendererConfigSchema = pluginManager.getRendererType(
     'MultiRowXYPlotRenderer',
-  ).configSchema
+  )!.configSchema
   const MultiLineRendererConfigSchema =
-    pluginManager.getRendererType('MultiLineRenderer').configSchema
+    pluginManager.getRendererType('MultiLineRenderer')!.configSchema
   const MultiRowLineRendererConfigSchema = pluginManager.getRendererType(
     'MultiRowLineRenderer',
-  ).configSchema
+  )!.configSchema
 
   return ConfigurationSchema(
     'MultiLinearWiggleDisplay',

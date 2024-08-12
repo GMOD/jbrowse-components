@@ -34,7 +34,7 @@ test('no tracks', () => {
       <HierarchicalTrackSelector model={model} toolbarHeight={20} />
     </ThemeProvider>,
   )
-  expect(model.allTracks[0].tracks.length).toBe(0)
+  expect(model.allTracks[0]!.tracks.length).toBe(0)
 })
 
 test('sm uncategorized tracks', async () => {
@@ -395,8 +395,8 @@ function shuffle<T>(copy: T[]) {
 
     // And swap it with the current element.
     ;[array[currentIndex], array[randomIndex]] = [
-      array[randomIndex],
-      array[currentIndex],
+      array[randomIndex]!,
+      array[currentIndex]!,
     ]
   }
   return array

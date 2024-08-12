@@ -56,7 +56,7 @@ function parse(text: string, url: string): Config {
         // parse json
         const match = /^json:(.+)/i.exec(value)
         if (match) {
-          parsedValue = JSON.parse(match[1])
+          parsedValue = JSON.parse(match[1]!)
         }
         // parse numbers if it looks numeric
         else if (/^[+-]?[\d.,]+([eE][-+]?\d+)?$/.test(value)) {
@@ -110,8 +110,8 @@ function parse(text: string, url: string): Config {
       recordVal()
       keyPath = undefined
       value = undefined
-      section = match[1].trim().split(/\s*\.\s*/)
-      if (section.length === 1 && section[0].toLowerCase() === 'general') {
+      section = match[1]!.trim().split(/\s*\.\s*/)
+      if (section.length === 1 && section[0]!.toLowerCase() === 'general') {
         section = []
       }
     }
@@ -122,12 +122,13 @@ function parse(text: string, url: string): Config {
       ))
     ) {
       recordVal()
-      keyPath = match[1].trim().split(/\s*\.\s*/)
+      keyPath = match[1]!.trim().split(/\s*\.\s*/)
+      // @ts-expect-error
       ;[, , operation] = match
       if (isAlwaysArray([...section, ...keyPath].join('.'))) {
         operation = '+='
       }
-      value = match[3].trim()
+      value = match[3]!.trim()
     }
     // add to existing array value
     else if (
@@ -136,11 +137,12 @@ function parse(text: string, url: string): Config {
     ) {
       recordVal()
       operation = '+='
-      value = match[1].trim()
+      value = match[1]!.trim()
     }
     // add to existing value
     else if (value !== undefined && (match = /^\s+(\S.*)/.exec(line))) {
-      value += value.length ? ` ${match[1].trim()}` : match[1].trim()
+      const m = match[1]!
+      value += value.length ? ` ${m.trim()}` : m.trim()
     }
     // done with last value
     else {
@@ -198,7 +200,7 @@ export function regularizeConf(conf: Config, url: string): Config {
     if (!Array.isArray(meta.sources)) {
       const sources: Source[] = []
       for (const name of Object.keys(meta.sources)) {
-        const source = meta.sources[name]
+        const source = meta.sources[name]!
         if (!('name' in source)) {
           source.name = name
         }
@@ -213,7 +215,7 @@ export function regularizeConf(conf: Config, url: string): Config {
         const newSourceDef: Source = { url: sourceDef }
         const typeMatch = /\.(\w+)$/.exec(sourceDef)
         if (typeMatch) {
-          newSourceDef.type = typeMatch[1].toLowerCase()
+          newSourceDef.type = typeMatch[1]!.toLowerCase()
         }
         return newSourceDef
       }

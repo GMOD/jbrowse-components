@@ -52,7 +52,9 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
           radius: view.radiusPx,
           blockDefinitions: self.blockDefinitions,
           config: self.configuration.renderer,
-          onChordClick: (arg: Feature) => self.onChordClick(arg),
+          onChordClick: (arg: Feature) => {
+            self.onChordClick(arg)
+          },
         }
       },
     }))

@@ -120,7 +120,7 @@ ${derives.code}
 `
           : ''
         const slotstr = `${slots.length ? `### ${config.name} - Slots` : ''}\n${slots
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
           .map(({ name, docs, code }: any) => {
             return `#### slot: ${name}
 

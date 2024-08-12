@@ -17,8 +17,6 @@ import sessionModelFactory from '../sessionModel'
 jest.mock('../makeWorkerInstance', () => () => {})
 
 type JBrowseRootModel = ReturnType<typeof JBrowseRootModelFactory>
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 ;(configSnapshot as any).configuration = {
   rpc: {
     defaultDriver: 'MainThreadRpcDriver',

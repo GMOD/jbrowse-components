@@ -46,7 +46,7 @@ export function stateModelFactory(_pluginManager: PluginManager) {
       addJob(job: NewJob) {
         const { cancelCallback } = job
         const length = self.jobs.push(job)
-        const addedJob = self.jobs[length - 1]
+        const addedJob = self.jobs[length - 1]!
         addedJob.setCancelCallback(cancelCallback)
         return addedJob
       },

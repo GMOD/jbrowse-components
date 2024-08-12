@@ -18,7 +18,7 @@ interface Pos {
 export interface ClickCoord {
   clientX: number
   clientY: number
-  feature: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  feature: { f: Feature }
 }
 
 interface FeatPos {
@@ -53,10 +53,10 @@ export function drawMatchSimple({
 }) {
   const { p11, p12, p21, p22 } = feature
 
-  const x11 = p11.offsetPx - offsets[0]
-  const x12 = p12.offsetPx - offsets[0]
-  const x21 = p21.offsetPx - offsets[1]
-  const x22 = p22.offsetPx - offsets[1]
+  const x11 = p11.offsetPx - offsets[0]!
+  const x12 = p12.offsetPx - offsets[0]!
+  const x21 = p21.offsetPx - offsets[1]!
+  const x22 = p22.offsetPx - offsets[1]!
 
   const l1 = Math.abs(x12 - x11)
   const l2 = Math.abs(x22 - x21)
@@ -177,7 +177,7 @@ export function onSynClick(
   const y = event.clientY - rect.top
   const [r1, g1, b1] = ctx1.getImageData(x, y, 1, 1).data
   const unitMultiplier = Math.floor(MAX_COLOR_RANGE / model.numFeats)
-  const id = getId(r1, g1, b1, unitMultiplier)
+  const id = getId(r1!, g1!, b1!, unitMultiplier)
   const feat = model.featPositions[id]
   if (feat) {
     const { f } = feat
@@ -219,7 +219,7 @@ export function onSynContextClick(
   const y = clientY - rect.top
   const [r1, g1, b1] = ctx1.getImageData(x, y, 1, 1).data
   const unitMultiplier = Math.floor(MAX_COLOR_RANGE / model.numFeats)
-  const id = getId(r1, g1, b1, unitMultiplier)
+  const id = getId(r1!, g1!, b1!, unitMultiplier)
   const f = model.featPositions[id]
   if (f) {
     model.setClickId(f.f.id())

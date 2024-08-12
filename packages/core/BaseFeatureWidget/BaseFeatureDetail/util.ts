@@ -34,7 +34,7 @@ export function accessNested(arr: string[], obj: Record<string, unknown> = {}) {
   })
   return typeof obj2 === 'string'
     ? obj2
-    : isObject(obj2) && typeof obj2?.Description === 'string'
+    : isObject(obj2) && typeof obj2.Description === 'string'
       ? obj2.Description
       : undefined
 }

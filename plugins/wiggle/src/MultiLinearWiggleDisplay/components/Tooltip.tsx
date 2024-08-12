@@ -18,7 +18,9 @@ const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
     const end = feature.get('end')
     const refName = feature.get('refName')
     const coord = start === end ? en(start) : `${en(start)}..${en(end)}`
-    const sources = feature.get('sources') as Record<string, { score: number }>
+    const sources = feature.get('sources') as
+      | Record<string, { score: number }>
+      | undefined
     const source = feature.get('source')
     const summary = feature.get('summary')
     const obj = Object.fromEntries(model.sources.map(ent => [ent.name, ent]))
@@ -39,7 +41,7 @@ const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
             <tbody>
               {Object.entries(sources).map(([source, data]) => (
                 <tr key={source}>
-                  <td style={{ background: obj[source]?.color }}> </td>
+                  <td style={{ background: obj[source]!.color }}> </td>
                   <td>{source}</td>
                   <td>{toP(data.score)}</td>
                 </tr>

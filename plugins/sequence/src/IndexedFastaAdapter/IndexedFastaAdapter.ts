@@ -39,7 +39,7 @@ export default class IndexedFastaAdapter extends BaseSequenceAdapter {
     return Object.keys(seqSizes).map(refName => ({
       refName,
       start: 0,
-      end: seqSizes[refName],
+      end: seqSizes[refName]!,
     }))
   }
 
@@ -64,7 +64,7 @@ export default class IndexedFastaAdapter extends BaseSequenceAdapter {
 
   public async setup() {
     if (!this.setupP) {
-      this.setupP = this.setupPre().catch(e => {
+      this.setupP = this.setupPre().catch((e: unknown) => {
         this.setupP = undefined
         throw e
       })
@@ -77,7 +77,7 @@ export default class IndexedFastaAdapter extends BaseSequenceAdapter {
     return ObservableCreate<Feature>(async observer => {
       const { fasta } = await this.setup()
       const size = await fasta.getSequenceSize(refName, opts)
-      const regionEnd = size !== undefined ? Math.min(size, end) : end
+      const regionEnd = Math.min(size, end)
       const chunks = []
       const chunkSize = 128000
 

@@ -90,7 +90,10 @@ export function calcPerBaseStats(
   let i = 0
 
   while (pos < end) {
-    while (currentFeat < feats.length && pos >= feats[currentFeat].get('end')) {
+    while (
+      currentFeat < feats.length &&
+      pos >= feats[currentFeat]!.get('end')
+    ) {
       currentFeat += 1
     }
     const f = feats[currentFeat]
@@ -146,7 +149,7 @@ export async function scoresToStats(
         }, seed),
       ),
     )
-
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   return found
     ? rectifyStats({
         scoreMax,

@@ -71,7 +71,7 @@ export default function SNPCoverageConfigFactory(pluginManager: PluginManager) {
       renderers: ConfigurationSchema('RenderersConfiguration', {
         SNPCoverageRenderer: pluginManager.getRendererType(
           'SNPCoverageRenderer',
-        ).configSchema,
+        )!.configSchema,
       }),
     },
     {

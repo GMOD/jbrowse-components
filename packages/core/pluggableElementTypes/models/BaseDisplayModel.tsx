@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
 import { getParent, Instance, types, isRoot } from 'mobx-state-tree'
 
@@ -44,7 +43,7 @@ function stateModelFactory() {
         blockState?: Record<string, any>
       }> {
         const { pluginManager } = getEnv(self)
-        return pluginManager.getDisplayType(self.type)
+        return pluginManager.getDisplayType(self.type)!
           .ReactComponent as React.FC<{
           model: typeof self
           onHorizontalScroll?: () => void
@@ -96,29 +95,17 @@ function stateModelFactory() {
 
       /**
        * #getter
-       * the pluggable element type object for this display's
-       * renderer
+       * the pluggable element type object for this display's renderer
        */
       get rendererType() {
         const { pluginManager } = getEnv(self)
-        const RendererType = pluginManager.getRendererType(
-          self.rendererTypeName,
-        )
-        if (!RendererType) {
-          throw new Error(`renderer "${self.rendererTypeName}" not found`)
-        }
-        if (!RendererType.ReactComponent) {
-          throw new Error(
-            `renderer ${self.rendererTypeName} has no ReactComponent, it may not be completely implemented yet`,
-          )
-        }
-        return RendererType
+        return pluginManager.getRendererType(self.rendererTypeName)!
       },
 
       /**
        * #getter
-       * if a display-level message should be displayed instead,
-       * make this return a react component
+       * if a display-level message should be displayed instead, make this
+       * return a react component
        */
       get DisplayMessageComponent() {
         return undefined as undefined | React.FC<any>

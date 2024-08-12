@@ -51,11 +51,6 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
   model: GridBookmarkModel
 }) {
   const { classes } = useStyles()
-
-  if (!model) {
-    return null
-  }
-
   return (
     <div>
       <Alert severity="info">

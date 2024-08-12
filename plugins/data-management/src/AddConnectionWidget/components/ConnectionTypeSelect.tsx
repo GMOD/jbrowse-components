@@ -46,11 +46,11 @@ const ConnectionTypeSelect = observer(function ConnectionTypeSelect({
           }
           select
           fullWidth
-          onChange={event =>
+          onChange={event => {
             setConnectionType(
               connectionTypeChoices.find(c => c.name === event.target.value),
             )
-          }
+          }}
           variant="outlined"
         >
           {connectionTypeChoices.map(c => (

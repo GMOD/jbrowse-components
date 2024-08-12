@@ -76,7 +76,7 @@ const Tooltip = observer(function ({
     ? getConf(model, 'mouseover', { feature: featureUnderMouse })
     : undefined
 
-  const popperTheme = theme?.components?.MuiPopper
+  const popperTheme = theme.components?.MuiPopper
   return featureUnderMouse && contents ? (
     <Portal container={popperTheme?.defaultProps?.container}>
       <div

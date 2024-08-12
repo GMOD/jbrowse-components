@@ -60,6 +60,7 @@ autoUpdater.autoDownload = false
 autoUpdater.on('error', error => {
   dialog.showErrorBox(
     'Error: ',
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     error == null ? 'unknown' : (error.stack || error).toString(),
   )
 })
@@ -197,7 +198,7 @@ async function createWindow() {
   // this ready-to-show handler must be attached before the loadURL
   mainWindow.once('ready-to-show', () => {
     // unsure how to error handle
-    autoUpdater.checkForUpdatesAndNotify().catch(e => {
+    autoUpdater.checkForUpdatesAndNotify().catch((e: unknown) => {
       console.error(e)
     })
   })
@@ -347,7 +348,7 @@ ipcMain.handle('deleteQuickstart', async (_event: unknown, name: string) => {
 ipcMain.handle(
   'renameQuickstart',
   async (_event: unknown, oldName: string, newName: string) => {
-    return fs.renameSync(getQuickstartPath(oldName), getQuickstartPath(newName))
+    fs.renameSync(getQuickstartPath(oldName), getQuickstartPath(newName))
   },
 )
 
@@ -397,7 +398,7 @@ ipcMain.handle(
     const entry = {
       path: autosavePath,
       updated: +Date.now(),
-      name: snap.defaultSession?.name,
+      name: snap.defaultSession.name,
     }
     if (idx === -1) {
       rows.unshift(entry)
@@ -426,7 +427,7 @@ ipcMain.handle(
     const entry = {
       path,
       updated: +Date.now(),
-      name: snap.defaultSession?.name,
+      name: snap.defaultSession.name,
     }
     if (idx === -1) {
       rows.unshift(entry)
@@ -479,16 +480,20 @@ ipcMain.handle(
       .filter((f): f is number => f !== undefined)
 
     for (let i = indices.length - 1; i >= 0; i--) {
-      sessions.splice(indices[i], 1)
+      sessions.splice(indices[i]!, 1)
     }
 
     await Promise.all([
       writeFile(recentSessionsPath, stringify(sessions)),
       ...sessionPaths.map(sessionPath =>
-        unlink(getThumbnailPath(sessionPath)).catch(e => console.error(e)),
+        unlink(getThumbnailPath(sessionPath)).catch((e: unknown) => {
+          console.error(e)
+        }),
       ),
       ...sessionPaths.map(sessionPath =>
-        unlink(sessionPath).catch(e => console.error(e)),
+        unlink(sessionPath).catch((e: unknown) => {
+          console.error(e)
+        }),
       ),
     ])
   },
@@ -501,7 +506,7 @@ ipcMain.handle(
     const session = parseJson(await readFile(path, 'utf8'))
     const idx = sessions.findIndex(row => row.path === path)
     if (idx !== -1) {
-      sessions[idx].name = newName
+      sessions[idx]!.name = newName
       session.defaultSession.name = newName
     } else {
       throw new Error(`Session at ${path} not found`)

@@ -40,8 +40,12 @@ function NewSessionCard({
     <Container>
       <Card
         className={classes.card}
-        onMouseOver={() => setHovered(true)}
-        onMouseOut={() => setHovered(false)}
+        onMouseOver={() => {
+          setHovered(true)
+        }}
+        onMouseOut={() => {
+          setHovered(false)
+        }}
         onClick={onClick}
         raised={Boolean(hovered)}
       >

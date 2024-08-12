@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { BaseLayout, SerializedLayout } from './BaseLayout'
 
 export default class MultiLayout<SUB_LAYOUT_CLASS extends BaseLayout<T>, T> {

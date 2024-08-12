@@ -83,8 +83,8 @@ const FileSelector = observer(function (props: {
     (location: FileLocation) => {
       setLocation({
         ...location,
-        ...(isUriLocation(location)
-          ? { internetAccountId: selectedAccount?.internetAccountId }
+        ...(selectedAccount && isUriLocation(location)
+          ? { internetAccountId: selectedAccount.internetAccountId }
           : {}),
       })
     },
@@ -155,7 +155,7 @@ const FileSelector = observer(function (props: {
               URL
             </ToggleButton>
             {shownAccounts.map(id => {
-              const { internetAccountId, name, toggleContents } = map[id]
+              const { internetAccountId, name, toggleContents } = map[id]!
               return (
                 <ToggleButtonWithTooltip
                   key={id}
@@ -171,7 +171,9 @@ const FileSelector = observer(function (props: {
             {hiddenAccounts.length > 0 ? (
               // @ts-expect-error
               <ToggleButton
-                onClick={event => setAnchorEl(event.target as HTMLElement)}
+                onClick={event => {
+                  setAnchorEl(event.target as HTMLElement)
+                }}
                 selected={false}
               >
                 More
@@ -183,12 +185,14 @@ const FileSelector = observer(function (props: {
           <Menu
             open={Boolean(anchorEl)}
             anchorEl={anchorEl}
-            onClose={() => setAnchorEl(null)}
+            onClose={() => {
+              setAnchorEl(null)
+            }}
             anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
             transformOrigin={{ vertical: 'top', horizontal: 'center' }}
           >
-            {hiddenAccounts?.map(id => {
-              const { internetAccountId, name } = map[id]
+            {hiddenAccounts.map(id => {
+              const { internetAccountId, name } = map[id]!
               return (
                 <MenuItem
                   key={id}

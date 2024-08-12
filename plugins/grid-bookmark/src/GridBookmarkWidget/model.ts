@@ -228,9 +228,9 @@ export default function f(_pluginManager: PluginManager) {
        * #action
        */
       updateBulkBookmarkHighlights(color: string) {
-        self.selectedBookmarks.forEach(bookmark =>
-          this.updateBookmarkHighlight(bookmark, color),
-        )
+        self.selectedBookmarks.forEach(bookmark => {
+          this.updateBookmarkHighlight(bookmark, color)
+        })
       },
       /**
        * #action
@@ -249,7 +249,8 @@ export default function f(_pluginManager: PluginManager) {
        */
       setHighlightToggle(toggle: boolean) {
         const { views } = getSession(self)
-        ;(views as IExtendedLGV[]).forEach(view => {
+        views.forEach(view => {
+          // @ts-expect-error
           view.toggleShowBookmarkHighlights?.(toggle)
         })
       },
@@ -258,7 +259,8 @@ export default function f(_pluginManager: PluginManager) {
        */
       setLabelToggle(toggle: boolean) {
         const { views } = getSession(self)
-        ;(views as IExtendedLGV[]).forEach(view => {
+        views.forEach(view => {
+          // @ts-expect-error
           view.toggleShowBookmarkLabels?.(toggle)
         })
       },

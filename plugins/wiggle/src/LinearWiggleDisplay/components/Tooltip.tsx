@@ -44,7 +44,9 @@ const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
 type Coord = [number, number]
 
 const WiggleTooltip = observer(function (props: {
-  model: { featureUnderMouse: Feature }
+  model: {
+    featureUnderMouse?: Feature
+  }
   height: number
   offsetMouseCoord: Coord
   clientMouseCoord: Coord

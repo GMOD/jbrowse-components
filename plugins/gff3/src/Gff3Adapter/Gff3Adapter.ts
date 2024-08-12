@@ -29,7 +29,7 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
     >
   }>
 
-  private async loadDataP(opts: BaseOptions) {
+  private async loadDataP(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts || {}
     const pm = this.pluginManager
     const buf = await openLocation(this.getConf('gffLocation'), pm).readFile()
@@ -103,12 +103,15 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
       }),
     )
 
-    return { header: headerLines.join('\n'), intervalTreeMap }
+    return {
+      header: headerLines.join('\n'),
+      intervalTreeMap,
+    }
   }
 
   private async loadData(opts: BaseOptions) {
     if (!this.gffFeatures) {
-      this.gffFeatures = this.loadDataP(opts).catch(e => {
+      this.gffFeatures = this.loadDataP(opts).catch((e: unknown) => {
         this.gffFeatures = undefined
         throw e
       })
@@ -133,8 +136,10 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
         const { start, end, refName } = query
         const { intervalTreeMap } = await this.loadData(opts)
         intervalTreeMap[refName]?.(opts.statusCallback)
-          ?.search([start, end])
-          .forEach(f => observer.next(f))
+          .search([start, end])
+          .forEach(f => {
+            observer.next(f)
+          })
         observer.complete()
       } catch (e) {
         observer.error(e)
@@ -180,7 +185,7 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
         // reproduces behavior of NCList
         b += '2'
       }
-      if (dataAttributes[a] !== null) {
+      if (dataAttributes[a]) {
         let attr: string | string[] | undefined = dataAttributes[a]
         if (Array.isArray(attr) && attr.length === 1) {
           ;[attr] = attr
@@ -190,7 +195,9 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
     }
     f.refName = f.seq_id
 
-    // the SimpleFeature constructor takes care of recursively inflating subfeatures
+    // the SimpleFeature constructor takes care of recursively inflating
+    // subfeatures
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (data.child_features && data.child_features.length > 0) {
       f.subfeatures = data.child_features.flatMap(childLocs =>
         childLocs.map(childLoc => this.featureData(childLoc)),

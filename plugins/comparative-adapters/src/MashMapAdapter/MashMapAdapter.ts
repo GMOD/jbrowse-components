@@ -26,15 +26,15 @@ function parseMashMapLine(line: string) {
   const [qname, , qstart, qend, strand, tname, , tstart, tend, mq] = fields
 
   return {
-    tname,
-    tstart: +tstart,
-    tend: +tend,
-    qname,
-    qstart: +qstart,
-    qend: +qend,
+    tname: tname!,
+    tstart: +tstart!,
+    tend: +tend!,
+    qname: qname!,
+    qstart: +qstart!,
+    qend: +qend!,
     strand: strand === '-' ? -1 : 1,
     extra: {
-      mappingQual: +mq,
+      mappingQual: +mq!,
     },
   }
 }

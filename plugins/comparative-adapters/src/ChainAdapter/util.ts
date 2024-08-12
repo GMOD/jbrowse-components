@@ -110,14 +110,14 @@ export function paf_chain2paf(buffer: Buffer) {
       // qStart -- alignment start position (query sequence)
       // qEnd -- alignment end position (query sequence)
       // id -- chain ID
-      t_name = l_vec[2]
-      t_start = +l_vec[5]
-      t_end = +l_vec[6]
-      q_name = l_vec[7]
-      q_size = l_vec[8]
-      q_strand = l_vec[9]
-      q_start = +l_vec[10]
-      q_end = +l_vec[11]
+      t_name = l_vec[2]!
+      t_start = +l_vec[5]!
+      t_end = +l_vec[6]!
+      q_name = l_vec[7]!
+      q_size = l_vec[8]!
+      q_strand = l_vec[9]!
+      q_start = +l_vec[10]!
+      q_end = +l_vec[11]!
       if (q_strand === '-') {
         const tmp = q_start
         q_start = +q_size - q_end
@@ -135,9 +135,9 @@ export function paf_chain2paf(buffer: Buffer) {
       //
       // dq -- the difference between the end of this block and the beginning
       //    of the next block (query sequence)
-      const size_ungapped_alignment = +l_vec[0] || 0
-      const diff_in_target = l_vec.length > 1 ? +l_vec[1] : 0
-      const diff_in_query = l_vec.length > 2 ? +l_vec[2] : 0
+      const size_ungapped_alignment = +l_vec[0]! || 0
+      const diff_in_target = l_vec.length > 1 ? +l_vec[1]! : 0
+      const diff_in_query = l_vec.length > 2 ? +l_vec[2]! : 0
 
       if (size_ungapped_alignment !== 0) {
         num_matches += +size_ungapped_alignment

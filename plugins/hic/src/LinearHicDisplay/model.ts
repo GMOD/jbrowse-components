@@ -116,7 +116,9 @@ export default function stateModelFactory(
               label: 'Use log scale',
               type: 'checkbox',
               checked: self.useLogScale,
-              onClick: () => self.setUseLogScale(!self.useLogScale),
+              onClick: () => {
+                self.setUseLogScale(!self.useLogScale)
+              },
             },
             {
               label: 'Color scheme',
@@ -124,19 +126,27 @@ export default function stateModelFactory(
               subMenu: [
                 {
                   label: 'Fall',
-                  onClick: () => self.setColorScheme('fall'),
+                  onClick: () => {
+                    self.setColorScheme('fall')
+                  },
                 },
                 {
                   label: 'Viridis',
-                  onClick: () => self.setColorScheme('viridis'),
+                  onClick: () => {
+                    self.setColorScheme('viridis')
+                  },
                 },
                 {
                   label: 'Juicebox',
-                  onClick: () => self.setColorScheme('juicebox'),
+                  onClick: () => {
+                    self.setColorScheme('juicebox')
+                  },
                 },
                 {
                   label: 'Clear',
-                  onClick: () => self.setColorScheme(undefined),
+                  onClick: () => {
+                    self.setColorScheme(undefined)
+                  },
                 },
               ],
             },
@@ -145,11 +155,15 @@ export default function stateModelFactory(
               subMenu: [
                 {
                   label: 'Finer resolution',
-                  onClick: () => self.setResolution(self.resolution * 2),
+                  onClick: () => {
+                    self.setResolution(self.resolution * 2)
+                  },
                 },
                 {
                   label: 'Coarser resolution',
-                  onClick: () => self.setResolution(self.resolution / 2),
+                  onClick: () => {
+                    self.setResolution(self.resolution / 2)
+                  },
                 },
               ],
             },

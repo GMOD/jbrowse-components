@@ -27,7 +27,7 @@ const SessionListItem = observer(function ({
   onClick: () => void
   secondaryAction?: React.ReactNode
 }) {
-  const { views = [] } = sessionSnapshot || {}
+  const { views = [] } = sessionSnapshot
   const totalTracks = sum(views.map(view => view.tracks?.length ?? 0))
   const n = views.length
 

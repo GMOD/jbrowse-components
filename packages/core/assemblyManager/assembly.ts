@@ -110,7 +110,7 @@ function checkRefName(refName: string) {
   }
 }
 
-type RefNameAliases = Record<string, string | undefined>
+type RefNameAliases = Record<string, string>
 
 interface CacheData {
   adapterConf: unknown
@@ -248,7 +248,7 @@ export default function assemblyFactory(
       get lowerCaseRefNames() {
         return !self.lowerCaseRefNameAliases
           ? undefined
-          : Object.keys(self.lowerCaseRefNameAliases || {})
+          : Object.keys(self.lowerCaseRefNameAliases)
       },
 
       /**
@@ -263,7 +263,6 @@ export default function assemblyFactory(
        * #getter
        */
       get rpcManager(): RpcManager {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getParent<any>(self, 2).rpcManager
       },
       /**
@@ -373,7 +372,7 @@ export default function assemblyFactory(
        */
       load() {
         if (!self.loadingP) {
-          self.loadingP = this.loadPre().catch(e => {
+          self.loadingP = this.loadPre().catch((e: unknown) => {
             this.setLoadingP(undefined)
             this.setError(e)
           })
@@ -457,7 +456,7 @@ export default function assemblyFactory(
         adapterConf: AdapterConf,
         opts: BaseOptions,
       ) {
-        if (!opts?.sessionId) {
+        if (!opts.sessionId) {
           throw new Error('sessionId is required')
         }
         const map = await this.getAdapterMapEntry(adapterConf, opts)
@@ -483,14 +482,14 @@ async function getRefNameAliases(
   pm: PluginManager,
   signal?: AbortSignal,
 ) {
-  const type = pm.getAdapterType(config.type)
+  const type = pm.getAdapterType(config.type)!
   const CLASS = await type.getAdapterClass()
   const adapter = new CLASS(config, undefined, pm) as BaseRefNameAliasAdapter
   return adapter.getRefNameAliases({ signal })
 }
 
 async function getCytobands(config: AnyConfigurationModel, pm: PluginManager) {
-  const type = pm.getAdapterType(config.type)
+  const type = pm.getAdapterType(config.type)!
   const CLASS = await type.getAdapterClass()
   const adapter = new CLASS(config, undefined, pm)
 
@@ -503,7 +502,7 @@ async function getAssemblyRegions(
   pm: PluginManager,
   signal?: AbortSignal,
 ) {
-  const type = pm.getAdapterType(config.type)
+  const type = pm.getAdapterType(config.type)!
   const CLASS = await type.getAdapterClass()
   const adapter = new CLASS(config, undefined, pm) as RegionsAdapter
   return adapter.getRegions({ signal })

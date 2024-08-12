@@ -43,8 +43,12 @@ const ImportFormRefNameAutocomplete = observer(function ({
       assemblyName={selectedAsm}
       value={value}
       minWidth={270}
-      onChange={str => setValue(str)}
-      onSelect={val => setOption(val)}
+      onChange={str => {
+        setValue(str)
+      }}
+      onSelect={val => {
+        setOption(val)
+      }}
       TextFieldProps={{
         variant: 'outlined',
         helperText: 'Enter sequence name, feature name, or location',

@@ -49,7 +49,9 @@ const BaseDisplayComponent = observer(function ({
           <Tooltip title="Reload">
             <IconButton
               data-testid="reload_button"
-              onClick={() => model.reload()}
+              onClick={() => {
+                model.reload()
+              }}
             >
               <RefreshIcon />
             </IconButton>

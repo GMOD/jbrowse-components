@@ -70,14 +70,18 @@ function PanControls({ model }: { model: LGV }) {
       <Button
         variant="outlined"
         className={classes.panButton}
-        onClick={() => model.slide(-0.9)}
+        onClick={() => {
+          model.slide(-0.9)
+        }}
       >
         <ArrowBackIcon />
       </Button>
       <Button
         variant="outlined"
         className={classes.panButton}
-        onClick={() => model.slide(0.9)}
+        onClick={() => {
+          model.slide(0.9)
+        }}
       >
         <ArrowForwardIcon />
       </Button>

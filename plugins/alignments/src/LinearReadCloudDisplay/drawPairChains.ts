@@ -45,8 +45,8 @@ export function drawPairChains({
     // two reads (some small cases may defy this assumption such as
     // secondary alignments but this may be uncommon)
     if (chain.length > 1) {
-      const v0 = chain[0]
-      const v1 = chain[1]
+      const v0 = chain[0]!
+      const v1 = chain[1]!
       const ra1 = asm.getCanonicalRefName(v0.refName) || v0.refName
       const ra2 = asm.getCanonicalRefName(v1.refName) || v1.refName
       const r1s = view.bpToPx({ refName: ra1, coord: v0.start })?.offsetPx
@@ -78,7 +78,7 @@ export function drawPairChains({
         })
       }
     } else if (self.drawSingletons) {
-      const v0 = chain[0]
+      const v0 = chain[0]!
 
       const ra1 = asm.getCanonicalRefName(v0.refName) || v0.refName
       const r1s = view.bpToPx({ refName: ra1, coord: v0.start })?.offsetPx

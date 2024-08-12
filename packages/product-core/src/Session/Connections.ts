@@ -84,7 +84,9 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
         }
         return [
           () => {
-            callbacksToDeref.forEach(cb => cb())
+            callbacksToDeref.forEach(cb => {
+              cb()
+            })
             this.breakConnection(configuration)
           },
           derefTypeCount,

@@ -54,7 +54,7 @@ export function drawXY(
     offset = 0,
     colorCallback,
   } = props
-  const [region] = regions
+  const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
 
   // the adjusted height takes into account YSCALEBAR_LABEL_OFFSET from the
@@ -70,7 +70,9 @@ export function drawXY(
 
   const scale = getScale({ ...scaleOpts, range: [0, height] })
   const originY = getOrigin(scaleOpts.scaleType)
-  const [niceMin, niceMax] = scale.domain()
+  const domain = scale.domain()
+  const niceMin = domain[0]!
+  const niceMax = domain[1]!
 
   const toY = (n: number) => clamp(height - (scale(n) || 0), 0, height) + offset
   const toOrigin = (n: number) => toY(originY) - toY(n)

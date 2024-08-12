@@ -25,7 +25,9 @@ const SequenceTypeSelector = observer(function ({
       <Select
         size="small"
         value={mode}
-        onChange={event => model.setMode(event.target.value)}
+        onChange={event => {
+          model.setMode(event.target.value)
+        }}
       >
         {Object.entries({
           ...(hasCDS

@@ -50,7 +50,9 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
           callbacksToDereferenceTrack,
           dereferenceTypeCount,
         )
-        callbacksToDereferenceTrack.forEach(cb => cb())
+        callbacksToDereferenceTrack.forEach(cb => {
+          cb()
+        })
         if (self.adminMode) {
           return self.jbrowse.deleteTrackConf(trackConf)
         }

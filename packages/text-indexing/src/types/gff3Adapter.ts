@@ -52,18 +52,20 @@ export async function* indexGff3({
     const [seq_id, , type, start, end, , , , col9] = line.split('\t')
     const locStr = `${seq_id}:${start}..${end}`
 
-    if (!featureTypesToExclude.includes(type)) {
+    if (!featureTypesToExclude.includes(type!)) {
       // turns gff3 attrs into a map, and converts the arrays into space
       // separated strings
       const col9attrs = Object.fromEntries(
-        col9
+        col9!
           .split(';')
           .map(f => f.trim())
           .filter(f => !!f)
           .map(f => f.split('='))
           .map(([key, val]) => [
-            key.trim(),
-            decodeURIComponentNoThrow(val).trim().split(',').join(' '),
+            key!.trim(),
+            val
+              ? decodeURIComponentNoThrow(val).trim().split(',').join(' ')
+              : undefined,
           ]),
       )
       const attrs = attributesToIndex

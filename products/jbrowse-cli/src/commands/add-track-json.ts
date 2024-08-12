@@ -58,7 +58,7 @@ export default class AddTrackJson extends JBrowseCommand {
       ({ trackId }: { trackId: string }) => trackId === track.trackId,
     )
     if (idx !== -1) {
-      const existing = config.tracks[idx].name
+      const existing = config.tracks[idx]?.name
       this.debug(`Found existing track ${existing} in configuration`)
       if (update) {
         this.debug(`Overwriting track ${existing} in configuration`)

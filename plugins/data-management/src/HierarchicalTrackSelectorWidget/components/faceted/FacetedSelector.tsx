@@ -60,7 +60,7 @@ const FacetedSelector = observer(function FacetedSelector({
 
   type T = GridColDef<(typeof filteredRows)[0]>
 
-  const [widths, setWidths] = useState<Record<string, number | undefined>>({
+  const [widths, setWidths] = useState<Record<string, number>>({
     name:
       measureGridWidth(
         rows.map(r => r.name),
@@ -160,11 +160,13 @@ const FacetedSelector = observer(function FacetedSelector({
         >
           <DataGrid
             rows={filteredRows}
-            onColumnWidthChange={arg =>
+            onColumnWidthChange={arg => {
               setWidths({ ...widths, [arg.colDef.field]: arg.width })
-            }
+            }}
             columnVisibilityModel={visible}
-            onColumnVisibilityModelChange={n => faceted.setVisible(n)}
+            onColumnVisibilityModelChange={n => {
+              faceted.setVisible(n)
+            }}
             columnHeaderHeight={35}
             checkboxSelection
             disableRowSelectionOnClick

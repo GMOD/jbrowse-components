@@ -61,7 +61,9 @@ const HierarchicalTree = observer(function HierarchicalTree({
           model.addToRecentlyUsed(trackId)
         }
       },
-      toggleCollapse: (pathName: string) => model.toggleCategory(pathName),
+      toggleCollapse: (pathName: string) => {
+        model.toggleCategory(pathName)
+      },
       tree,
       model,
       drawerPosition,
@@ -78,6 +80,7 @@ const HierarchicalTree = observer(function HierarchicalTree({
         yield getNodeData(child, 0, extra, obj)
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       while (true) {
         // @ts-expect-error
         const parentMeta = yield

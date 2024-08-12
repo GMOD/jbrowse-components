@@ -50,7 +50,13 @@ const HighlightSettingsDialog = observer(function ({
         </Stack>
       </DialogContent>
       <DialogActions>
-        <Button variant="contained" color="primary" onClick={() => onClose()}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => {
+            onClose()
+          }}
+        >
           Close
         </Button>
       </DialogActions>

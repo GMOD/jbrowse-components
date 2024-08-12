@@ -25,7 +25,9 @@ const RecentlyUsedTracks = observer(function ({
   const { view, recentlyUsedCounter, recentlyUsedTracks } = model
   return view ? (
     <DropdownTrackSelector
-      onClick={() => model.setRecentlyUsedCounter(0)}
+      onClick={() => {
+        model.setRecentlyUsedCounter(0)
+      }}
       model={model}
       tracks={recentlyUsedTracks}
       extraMenuItems={
@@ -34,7 +36,9 @@ const RecentlyUsedTracks = observer(function ({
               { type: 'divider' as const },
               {
                 label: 'Clear recently used',
-                onClick: () => model.clearRecentlyUsed(),
+                onClick: () => {
+                  model.clearRecentlyUsed()
+                },
               },
             ]
           : [

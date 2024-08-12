@@ -1,12 +1,10 @@
 import getValue from 'get-value'
 import { Track, Source } from './types'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isTrack(arg: any): arg is Track {
   return arg?.label && typeof arg.label === 'string'
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isSource(arg: any): arg is Source {
   return arg?.url && typeof arg.url === 'string'
 }
@@ -14,7 +12,7 @@ export function isSource(arg: any): arg is Source {
 /**
  * updates a with values from b, recursively
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 type Obj = Record<string, any>
 export function deepUpdate(a: Obj, b: Obj): Obj {
   for (const prop of Object.keys(b)) {
@@ -65,7 +63,7 @@ export function fillTemplate(template: string, fillWith: Obj): string {
  * (Lifted from dojo https://github.com/dojo/dojo/blob/master/_base/lang.js)
  * @param src - The object to clone
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 export function clone(src: any): any {
   if (
     !src ||
@@ -127,7 +125,7 @@ export function clone(src: any): any {
 function mixin(
   dest: Obj,
   source: Obj,
-  copyFunc: (arg: unknown) => unknown,
+  copyFunc?: (arg: unknown) => unknown,
 ): Obj {
   const empty = {}
   for (const name in source) {

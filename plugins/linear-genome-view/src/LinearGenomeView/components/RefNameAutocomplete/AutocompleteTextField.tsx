@@ -29,7 +29,9 @@ export default function AutocompleteTextField({
       onBlur={() =>
         // this is used to restore a refName or the non-user-typed input
         // to the box on blurring
-        setInputValue(inputBoxVal)
+        {
+          setInputValue(inputBoxVal)
+        }
       }
       {...params}
       {...TextFieldProps}
@@ -47,7 +49,9 @@ export default function AutocompleteTextField({
         ),
       }}
       placeholder="Search for location"
-      onChange={e => setCurrentSearch(e.target.value)}
+      onChange={e => {
+        setCurrentSearch(e.target.value)
+      }}
     />
   )
 }

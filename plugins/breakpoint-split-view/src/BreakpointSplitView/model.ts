@@ -1,7 +1,6 @@
 import React, { lazy } from 'react'
 import {
   types,
-  getParent,
   onAction,
   addDisposer,
   getPath,
@@ -39,7 +38,7 @@ interface Track {
 }
 
 function calc(track: Track, f: Feature) {
-  return track.displays[0].searchFeatureByID?.(f.id())
+  return track.displays[0]!.searchFeatureByID?.(f.id())
 }
 
 export interface ExportSvgOptions {
@@ -73,7 +72,7 @@ async function getBlockFeatures(
 ) {
   const { views } = model
   const { rpcManager, assemblyManager } = getSession(model)
-  const assemblyName = model.views[0].assemblyNames[0]
+  const assemblyName = model.views[0]!.assemblyNames[0]!
   const assembly = await assemblyManager.waitForAssembly(assemblyName)
   if (!assembly) {
     return undefined // throw new Error(`assembly not found: "${assemblyName}"`)
@@ -140,7 +139,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * #property
          */
         views: types.array(
-          pluginManager.getViewType('LinearGenomeView')
+          pluginManager.getViewType('LinearGenomeView')!
             .stateModel as LinearGenomeViewStateModel,
         ),
       }),
@@ -283,7 +282,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       setWidth(newWidth: number) {
         self.width = newWidth
-        self.views.forEach(v => v.setWidth(newWidth))
+        self.views.forEach(v => {
+          v.setWidth(newWidth)
+        })
       },
 
       /**
@@ -291,14 +292,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       removeView(view: LGV) {
         self.views.remove(view)
-      },
-
-      /**
-       * #action
-       */
-      closeView() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        getParent<any>(self, 2).removeView(self)
       },
 
       /**
@@ -343,7 +336,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   await Promise.all(
                     self.matchedTracks.map(async track => [
                       track.configuration.trackId,
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
                       await getBlockFeatures(self as any, track),
                     ]),
                   ),
@@ -363,21 +356,24 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       menuItems() {
         return [
           ...self.views
-            .map((view, idx) => [idx, view.menuItems?.()] as const)
-            .filter(f => !!f[1])
+            .map((view, idx) => [idx, view.menuItems()] as const)
             .map(f => ({ label: `View ${f[0] + 1} Menu`, subMenu: f[1] })),
 
           {
             label: 'Show intra-view links',
             type: 'checkbox',
             checked: self.showIntraviewLinks,
-            onClick: () => self.toggleIntraviewLinks(),
+            onClick: () => {
+              self.toggleIntraviewLinks()
+            },
           },
           {
             label: 'Allow clicking alignment squiggles?',
             type: 'checkbox',
             checked: self.interactToggled,
-            onClick: () => self.toggleInteract(),
+            onClick: () => {
+              self.toggleInteract()
+            },
           },
 
           {

@@ -166,7 +166,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               label: 'Draw singletons',
               type: 'checkbox',
               checked: self.drawSingletons,
-              onClick: () => self.setDrawSingletons(!self.drawSingletons),
+              onClick: () => {
+                self.setDrawSingletons(!self.drawSingletons)
+              },
             },
             {
               label: 'Filter by',
@@ -185,20 +187,27 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               subMenu: [
                 {
                   label: 'Insert size ± 3σ and orientation',
-                  onClick: () =>
-                    self.setColorScheme({ type: 'insertSizeAndOrientation' }),
+                  onClick: () => {
+                    self.setColorScheme({ type: 'insertSizeAndOrientation' })
+                  },
                 },
                 {
                   label: 'Insert size ± 3σ',
-                  onClick: () => self.setColorScheme({ type: 'insertSize' }),
+                  onClick: () => {
+                    self.setColorScheme({ type: 'insertSize' })
+                  },
                 },
                 {
                   label: 'Orientation',
-                  onClick: () => self.setColorScheme({ type: 'orientation' }),
+                  onClick: () => {
+                    self.setColorScheme({ type: 'orientation' })
+                  },
                 },
                 {
                   label: 'Insert size gradient',
-                  onClick: () => self.setColorScheme({ type: 'gradient' }),
+                  onClick: () => {
+                    self.setColorScheme({ type: 'gradient' })
+                  },
                 },
               ],
             },

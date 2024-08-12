@@ -72,7 +72,7 @@ const DataRow = observer(function ({
   const { hideRowSelection, columnDisplayOrder } = spreadsheetModel
   let rowClass = ''
   if (rowModel.isSelected) {
-    rowClass += `${classes.dataRowSelected}`
+    rowClass += classes.dataRowSelected
   }
 
   function labelClick(evt: React.MouseEvent) {
