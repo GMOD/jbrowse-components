@@ -76,12 +76,16 @@ const BreakendOptionDialog = observer(function ({
       <DialogContent>
         <Checkbox2
           checked={copyTracks}
-          onChange={event => setCopyTracks(event.target.checked)}
+          onChange={event => {
+            setCopyTracks(event.target.checked)
+          }}
           label="Copy tracks into the new view"
         />
         <Checkbox2
           checked={mirror}
-          onChange={event => setMirror(event.target.checked)}
+          onChange={event => {
+            setMirror(event.target.checked)
+          }}
           label="Mirror tracks vertically in vertically stacked view"
         />
       </DialogContent>
@@ -92,7 +96,9 @@ const BreakendOptionDialog = observer(function ({
             const session = getSession(model)
             try {
               const viewSnapshot = getBreakpointSplitView({ view, f1, f2 })
-              const [view1, view2] = viewSnapshot.views
+              const views = viewSnapshot.views
+              const view1 = views[0]!
+              const view2 = views[1]!
               // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
               const viewTracks = getSnapshot(view.tracks) as Track[]
 
@@ -126,7 +132,9 @@ const BreakendOptionDialog = observer(function ({
           OK
         </Button>
         <Button
-          onClick={() => handleClose()}
+          onClick={() => {
+            handleClose()
+          }}
           color="secondary"
           variant="contained"
         >

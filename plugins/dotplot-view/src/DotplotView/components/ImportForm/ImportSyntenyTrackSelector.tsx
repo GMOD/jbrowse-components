@@ -72,7 +72,9 @@ const Selector = observer(
         {filteredTracks.length ? (
           <Select
             value={value}
-            onChange={event => setValue(event.target.value)}
+            onChange={event => {
+              setValue(event.target.value)
+            }}
           >
             {filteredTracks.map(track => (
               <MenuItem key={track.trackId} value={track.trackId}>

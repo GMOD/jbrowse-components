@@ -32,7 +32,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
     })
     .views(self => ({
       get assemblyNameMap() {
-        const obj = {} as Record<string, Assembly | undefined>
+        const obj = {} as Record<string, Assembly>
         for (const assembly of self.assemblies) {
           for (const name of assembly.allAliases) {
             obj[name] = assembly
@@ -67,7 +67,6 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
         const {
           jbrowse: { assemblies },
           session: { sessionAssemblies = [], temporaryAssemblies = [] } = {},
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } = getParent<any>(self)
         return [
           ...assemblies,
@@ -77,7 +76,6 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       },
 
       get rpcManager(): RpcManager {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getParent<any>(self).rpcManager
       },
     }))
@@ -107,8 +105,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
         await assembly.load()
         await when(
           () =>
-            !!(assembly?.regions && assembly.refNameAliases) ||
-            !!assembly?.error,
+            !!(assembly.regions && assembly.refNameAliases) || !!assembly.error,
         )
         if (assembly.error) {
           // eslint-disable-next-line @typescript-eslint/only-throw-error

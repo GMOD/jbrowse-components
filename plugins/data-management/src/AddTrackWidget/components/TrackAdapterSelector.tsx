@@ -42,7 +42,9 @@ const TrackAdapterSelector = observer(({ model }: { model: AddTrackModel }) => {
       helperText="Select an adapter type"
       select
       fullWidth
-      onChange={event => model.setAdapterHint(event.target.value)}
+      onChange={event => {
+        model.setAdapterHint(event.target.value)
+      }}
       SelectProps={{
         // @ts-expect-error
         SelectDisplayProps: { 'data-testid': 'adapterTypeSelect' },

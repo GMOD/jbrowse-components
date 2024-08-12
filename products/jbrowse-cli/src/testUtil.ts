@@ -34,7 +34,6 @@ export async function setup(str: string | string[]) {
   return runCommand(str)
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Conf = Record<string, any>
 
 export function readConf(ctx: { dir: string }, ...rest: string[]): Conf {
@@ -53,19 +52,4 @@ export function dataDir(str: string) {
 
 export function ctxDir(ctx: { dir: string }, str: string) {
   return path.join(ctx.dir, str)
-}
-
-// source https://stackoverflow.com/a/64255382/2129219
-export async function copyDir(src: string, dest: string) {
-  await fs.promises.mkdir(dest, { recursive: true })
-  const entries = await fs.promises.readdir(src, { withFileTypes: true })
-
-  for (const entry of entries) {
-    const srcPath = path.join(src, entry.name)
-    const destPath = path.join(dest, entry.name)
-
-    entry.isDirectory()
-      ? await copyDir(srcPath, destPath)
-      : await fs.promises.copyFile(srcPath, destPath)
-  }
 }

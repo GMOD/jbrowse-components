@@ -96,7 +96,6 @@ const GetSequenceDialog = observer(function ({
   const loading = Boolean(sequenceChunks === undefined)
 
   useEffect(() => {
-    let active = true
     const controller = new AbortController()
 
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -110,52 +109,45 @@ const GetSequenceDialog = observer(function ({
           throw new Error('Selected region is out of bounds')
         }
         const chunks = await fetchSequence(model, selection, controller.signal)
-        if (active) {
-          setSequenceChunks(chunks)
-        }
+        setSequenceChunks(chunks)
       } catch (e) {
         console.error(e)
-        if (active) {
-          setError(e)
-        }
+        setError(e)
       }
     })()
 
     return () => {
       controller.abort()
-      active = false
     }
   }, [model, leftOffset, rightOffset])
 
   const sequence = sequenceChunks
     ? formatSeqFasta(
-        sequenceChunks
-          .filter(f => !!f)
-          .map(chunk => {
-            let chunkSeq = chunk.get('seq')
-            const chunkRefName = chunk.get('refName')
-            const chunkStart = chunk.get('start') + 1
-            const chunkEnd = chunk.get('end')
-            const loc = `${chunkRefName}:${chunkStart}-${chunkEnd}`
-            if (chunkSeq?.length !== chunkEnd - chunkStart + 1) {
-              throw new Error(
-                `${loc} returned ${chunkSeq.length.toLocaleString()} bases, but should have returned ${(
-                  chunkEnd - chunkStart
-                ).toLocaleString()}`,
-              )
-            }
+        sequenceChunks.map(chunk => {
+          let chunkSeq = chunk.get('seq')
+          const chunkRefName = chunk.get('refName')
+          const chunkStart = chunk.get('start') + 1
+          const chunkEnd = chunk.get('end')
+          const loc = `${chunkRefName}:${chunkStart}-${chunkEnd}`
+          if (chunkSeq?.length !== chunkEnd - chunkStart + 1) {
+            throw new Error(
+              `${loc} returned ${chunkSeq.length.toLocaleString()} bases, but should have returned ${(
+                chunkEnd - chunkStart
+              ).toLocaleString()}`,
+            )
+          }
 
-            if (rev) {
-              chunkSeq = reverse(chunkSeq)
-            }
-            if (comp) {
-              chunkSeq = complement(chunkSeq)
-            }
-            return {
-              header: loc + (rev ? '-rev' : '') + (comp ? '-comp' : ''),
-              seq: chunkSeq,
-            }
-          }),
+          if (rev) {
+            chunkSeq = reverse(chunkSeq)
+          }
+          if (comp) {
+            chunkSeq = complement(chunkSeq)
+          }
+          return {
+            header: loc + (rev ? '-rev' : '') + (comp ? '-comp' : ''),
+            seq: chunkSeq,
+          }
+        }),
       )
     : ''
 
@@ -210,7 +202,9 @@ const GetSequenceDialog = observer(function ({
             control={
               <Checkbox
                 value={rev}
-                onChange={event => setReverse(event.target.checked)}
+                onChange={event => {
+                  setReverse(event.target.checked)
+                }}
               />
             }
             label="Reverse sequence"
@@ -219,14 +213,16 @@ const GetSequenceDialog = observer(function ({
             control={
               <Checkbox
                 value={comp}
-                onChange={event => setComplement(event.target.checked)}
+                onChange={event => {
+                  setComplement(event.target.checked)
+                }}
               />
             }
             label="Complement sequence"
           />
         </FormGroup>
         <Typography style={{ margin: 10 }}>
-          Note: Check both boxes for the "reverse complement"
+          Note: Check both boxes for the &quot;reverse complement&quot;
         </Typography>
       </DialogContent>
       <DialogActions>
@@ -234,7 +230,9 @@ const GetSequenceDialog = observer(function ({
           onClick={() => {
             copy(sequence)
             setCopied(true)
-            setTimeout(() => setCopied(false), 500)
+            setTimeout(() => {
+              setCopied(false)
+            }, 500)
           }}
           disabled={loading || !!error || sequenceTooLarge}
           color="primary"

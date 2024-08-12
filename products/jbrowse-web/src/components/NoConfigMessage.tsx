@@ -24,7 +24,7 @@ export default function NoConfigMessage() {
     ['test_data/volvox/config_auth_main.json', 'Volvox (auth, mainthreadrpc)'],
     ['test_data/volvox/config_auth.json', 'Volvox (auth)'],
     ['test_data/volvoxhub/config.json', 'Volvox (with ucsc-hub)'],
-  ]
+  ] as const
   const { href, search } = window.location
   const { config, ...rest } = Object.fromEntries(new URLSearchParams(search))
   const root = href.split('?')[0]

@@ -13,10 +13,9 @@ const delay = { timeout: 50000 }
 const opts = [{}, delay]
 
 async function waitForReady() {
-  await waitFor(
-    () => expect(screen.getByTestId('open_spreadsheet')).not.toBeDisabled(),
-    delay,
-  )
+  await waitFor(() => {
+    expect(screen.getByTestId('open_spreadsheet')).not.toBeDisabled()
+  }, delay)
 }
 
 test('opens a vcf.gz file in the spreadsheet view', async () => {

@@ -27,7 +27,12 @@ function Formatter({ value }: { value: unknown }) {
         >
           {copied ? 'Copied to clipboard' : 'Copy'}
         </button>
-        <button type="button" onClick={() => setShow(val => !val)}>
+        <button
+          type="button"
+          onClick={() => {
+            setShow(val => !val)
+          }}
+        >
           {show ? 'Show less' : 'Show more'}
         </button>
         <div>{show ? display : `${display.slice(0, 100)}...`}</div>

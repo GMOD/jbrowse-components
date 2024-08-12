@@ -14,7 +14,9 @@ export default function HelpDialog({
     <Dialog
       maxWidth="xl"
       open
-      onClose={() => handleClose()}
+      onClose={() => {
+        handleClose()
+      }}
       title="Feature sequence panel help"
     >
       <DialogContent>
@@ -63,7 +65,13 @@ export default function HelpDialog({
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={() => handleClose()} autoFocus variant="contained">
+        <Button
+          onClick={() => {
+            handleClose()
+          }}
+          autoFocus
+          variant="contained"
+        >
           Close
         </Button>
       </DialogActions>

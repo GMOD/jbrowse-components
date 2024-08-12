@@ -23,7 +23,9 @@ const ColumnMenu = observer(function ({
   currentColumnMenu?: { colNumber: number; anchorEl: HTMLElement }
   setColumnMenu: (arg?: { anchorEl: HTMLElement; colNumber: number }) => void
 }) {
-  const columnMenuClose = () => setColumnMenu(undefined)
+  const columnMenuClose = () => {
+    setColumnMenu(undefined)
+  }
   const columnNumber = currentColumnMenu?.colNumber || 0
   const sortMenuClick = (descending: boolean) => {
     spreadsheetModel.setSortColumns([
@@ -46,7 +48,9 @@ const ColumnMenu = observer(function ({
   dataTypeChoices.forEach(dataTypeRecord => {
     const { displayName, categoryName } = dataTypeRecord
     if (categoryName) {
-      let entry = dataTypeTopLevelMenu.get(categoryName) as RecordGroup
+      let entry = dataTypeTopLevelMenu.get(categoryName) as
+        | RecordGroup
+        | undefined
       if (!entry) {
         entry = {
           isCategory: true,
@@ -61,10 +65,10 @@ const ColumnMenu = observer(function ({
   })
 
   const { columns, sortColumns } = spreadsheetModel
-  const dataType = currentColumnMenu && columns[columnNumber].dataType
+  const dataType = currentColumnMenu && columns[columnNumber]!.dataType
   const dataTypeName = dataType?.type || ''
   const dataTypeDisplayName =
-    (currentColumnMenu && columns[columnNumber].dataType.displayName) || ''
+    (currentColumnMenu && columns[columnNumber]!.dataType.displayName) || ''
 
   const isSortingAscending =
     !!currentColumnMenu &&
@@ -84,21 +88,27 @@ const ColumnMenu = observer(function ({
       icon: SortIcon,
       type: 'radio',
       checked: isSortingAscending,
-      onClick: () => sortMenuClick(false),
+      onClick: () => {
+        sortMenuClick(false)
+      },
     },
     {
       label: 'Sort descending',
       icon: SortIcon,
       type: 'radio',
       checked: isSortingDescending,
-      onClick: () => sortMenuClick(true),
+      onClick: () => {
+        sortMenuClick(true)
+      },
     },
     {
       label: 'No sort',
       icon: SortIcon,
       type: 'radio',
       checked: !isSortingDescending && !isSortingAscending,
-      onClick: () => spreadsheetModel.setSortColumns([]),
+      onClick: () => {
+        spreadsheetModel.setSortColumns([])
+      },
     },
     // data type menu
     {
@@ -107,15 +117,19 @@ const ColumnMenu = observer(function ({
       subMenu: iterMap(
         dataTypeTopLevelMenu.entries(),
         ([displayName, record]) => {
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           if ('typeName' in record && record.typeName) {
             const { typeName } = record
             return {
               label: displayName || typeName,
               icon: dataTypeName === typeName ? CheckIcon : undefined,
-              onClick: () =>
-                spreadsheetModel.setColumnType(columnNumber, typeName),
+              onClick: () => {
+                spreadsheetModel.setColumnType(columnNumber, typeName)
+              },
             }
           }
+
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           if ('subMenuItems' in record && record.subMenuItems) {
             const { subMenuItems } = record
             return {
@@ -126,8 +140,9 @@ const ColumnMenu = observer(function ({
               subMenu: subMenuItems.map(({ typeName, displayName }) => ({
                 label: displayName,
                 icon: typeName === dataTypeName ? CheckIcon : undefined,
-                onClick: () =>
-                  spreadsheetModel.setColumnType(columnNumber, typeName),
+                onClick: () => {
+                  spreadsheetModel.setColumnType(columnNumber, typeName)
+                },
               })),
             }
           }
@@ -143,8 +158,9 @@ const ColumnMenu = observer(function ({
     menuItems.push({
       label: 'Create filter',
       icon: FilterListIcon,
-      onClick: () =>
-        viewModel.filterControls.addBlankColumnFilter(columnNumber),
+      onClick: () => {
+        viewModel.filterControls.addBlankColumnFilter(columnNumber)
+      },
     })
   }
 

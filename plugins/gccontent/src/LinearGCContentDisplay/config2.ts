@@ -25,7 +25,7 @@ export default function LinearGCContentTrackDisplayF(
       /**
        * #baseConfiguration
        */
-      baseConfiguration: pluginManager.getDisplayType('LinearWiggleDisplay')
+      baseConfiguration: pluginManager.getDisplayType('LinearWiggleDisplay')!
         .configSchema,
       explicitlyTyped: true,
     },

@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 import {
   isOptionalType,
   isUnionType,
@@ -34,8 +33,8 @@ export function getSubType(type: IAnyType): IAnyType {
   } else {
     throw new TypeError('unsupported mst type')
   }
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (!t) {
-    // debugger
     throw new Error('failed to get subtype')
   }
   return t
@@ -71,7 +70,7 @@ export function getPropertyType(
   type: IModelReflectionPropertiesData,
   propertyName: string,
 ) {
-  return type.properties[propertyName]
+  return type.properties[propertyName]!
 }
 
 /**

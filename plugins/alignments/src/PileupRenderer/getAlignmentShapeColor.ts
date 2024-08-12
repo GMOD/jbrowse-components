@@ -46,26 +46,26 @@ export function getAlignmentShapeColor({
       const val = tags ? tags[tag] : feature.get(tag)
 
       if (tag === 'XS' || tag === 'TS') {
-        return fillColor[
-          {
-            '-': 'color_rev_strand' as const,
-            '+': 'color_fwd_strand' as const,
-          }[val as '-' | '+'] || 'color_nostrand'
-        ]
+        if (val === '-') {
+          return fillColor.color_rev_strand
+        } else if (val === '+') {
+          return fillColor.color_fwd_strand
+        } else {
+          return fillColor.color_nostrand
+        }
       }
       if (tag === 'ts') {
-        return fillColor[
-          {
-            '-':
-              feature.get('strand') === -1
-                ? ('color_fwd_strand' as const)
-                : ('color_rev_strand' as const),
-            '+':
-              feature.get('strand') === -1
-                ? ('color_rev_strand' as const)
-                : ('color_fwd_strand' as const),
-          }[val as '-' | '+'] || 'color_nostrand'
-        ]
+        if (val === '-') {
+          return feature.get('strand') === -1
+            ? fillColor.color_fwd_strand
+            : fillColor.color_rev_strand
+        } else if (val === '+') {
+          return feature.get('strand') === -1
+            ? fillColor.color_rev_strand
+            : fillColor.color_fwd_strand
+        } else {
+          return fillColor.color_nostrand
+        }
       }
       return colorTagMap[val] || fillColor.color_nostrand
     }

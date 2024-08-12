@@ -9,7 +9,6 @@ import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 export class MultiWiggleGetSources extends RpcMethodType {
   name = 'MultiWiggleGetSources'
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async deserializeArguments(args: any, rpcDriverClassName: string) {
     const l = await super.deserializeArguments(args, rpcDriverClassName)
     return {

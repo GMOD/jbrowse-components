@@ -307,7 +307,7 @@ export default class AddTrack extends JBrowseCommand {
     trackType = trackType || this.guessTrackType(adapter.type)
     trackId = trackId || path.basename(location, path.extname(location))
     name = name || trackId
-    assemblyNames = assemblyNames || configContents.assemblies[0].name
+    assemblyNames = assemblyNames || configContents.assemblies[0]?.name || ''
 
     const configObj = config ? parseJSON(config) : {}
     const trackConfig: Track = {
@@ -643,26 +643,27 @@ export default class AddTrack extends JBrowseCommand {
   }
 
   guessTrackType(adapterType: string): string {
-    const known: Record<string, string | undefined> = {
-      BamAdapter: 'AlignmentsTrack',
-      CramAdapter: 'AlignmentsTrack',
-      BgzipFastaAdapter: 'ReferenceSequenceTrack',
-      BigWigAdapter: 'QuantitativeTrack',
-      IndexedFastaAdapter: 'ReferenceSequenceTrack',
-      TwoBitAdapter: 'ReferenceSequenceTrack',
-      VcfTabixAdapter: 'VariantTrack',
-      VcfAdapter: 'VariantTrack',
-      BedpeAdapter: 'VariantTrack',
-      BedAdapter: 'FeatureTrack',
-      HicAdapter: 'HicTrack',
-      PAFAdapter: 'SyntenyTrack',
-      DeltaAdapter: 'SyntenyTrack',
-      ChainAdapter: 'SyntenyTrack',
-      MashMapAdapter: 'SyntenyTrack',
-      PairwiseIndexedPAFAdapter: 'SyntenyTrack',
-      MCScanAnchorsAdapter: 'SyntenyTrack',
-      MCScanSimpleAnchorsAdapter: 'SyntenyTrack',
-    }
-    return known[adapterType] || 'FeatureTrack'
+    return adapterTypesToTrackTypeMap[adapterType] || 'FeatureTrack'
   }
+}
+
+const adapterTypesToTrackTypeMap: Record<string, string> = {
+  BamAdapter: 'AlignmentsTrack',
+  CramAdapter: 'AlignmentsTrack',
+  BgzipFastaAdapter: 'ReferenceSequenceTrack',
+  BigWigAdapter: 'QuantitativeTrack',
+  IndexedFastaAdapter: 'ReferenceSequenceTrack',
+  TwoBitAdapter: 'ReferenceSequenceTrack',
+  VcfTabixAdapter: 'VariantTrack',
+  VcfAdapter: 'VariantTrack',
+  BedpeAdapter: 'VariantTrack',
+  BedAdapter: 'FeatureTrack',
+  HicAdapter: 'HicTrack',
+  PAFAdapter: 'SyntenyTrack',
+  DeltaAdapter: 'SyntenyTrack',
+  ChainAdapter: 'SyntenyTrack',
+  MashMapAdapter: 'SyntenyTrack',
+  PairwiseIndexedPAFAdapter: 'SyntenyTrack',
+  MCScanAnchorsAdapter: 'SyntenyTrack',
+  MCScanSimpleAnchorsAdapter: 'SyntenyTrack',
 }

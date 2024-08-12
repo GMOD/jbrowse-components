@@ -14,11 +14,11 @@ function lengthBetween(self: ViewSnap, start: BpOffset, end: BpOffset) {
   if (start.index === end.index) {
     bpSoFar += end.offset - start.offset
   } else {
-    const s = displayedRegions[start.index]
+    const s = displayedRegions[start.index]!
     bpSoFar += s.end - s.start - start.offset
     if (end.index - start.index >= 2) {
       for (let i = start.index + 1; i < end.index; i++) {
-        const region = displayedRegions[i]
+        const region = displayedRegions[i]!
         const len = region.end - region.start
         bpSoFar += len
       }
@@ -50,7 +50,7 @@ export function moveTo(
   const len = lengthBetween(self, start, end)
   let numBlocksWideEnough = 0
   for (let i = start.index; i < end.index; i++) {
-    const r = displayedRegions[i]
+    const r = displayedRegions[i]!
     if ((r.end - r.start) / bpPerPx > minimumBlockWidth) {
       numBlocksWideEnough++
     }
@@ -70,7 +70,7 @@ export function moveTo(
   let bpToStart = -extraBp
 
   for (let i = 0; i < self.displayedRegions.length; i += 1) {
-    const region = self.displayedRegions[i]
+    const region = self.displayedRegions[i]!
     if (start.index === i) {
       bpToStart += start.offset
       break
@@ -112,7 +112,7 @@ export function pxToBp(
   const blocks = staticBlocks.contentBlocks
   const bp = (offsetPx + px) * bpPerPx
   if (bp < 0) {
-    const r = displayedRegions[0]
+    const r = displayedRegions[0]!
     const snap = r
     return {
       // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
@@ -127,7 +127,7 @@ export function pxToBp(
   const interRegionPaddingBp = interRegionPaddingWidth * bpPerPx
   let currBlock = 0
   for (let i = 0; i < displayedRegions.length; i++) {
-    const r = displayedRegions[i]
+    const r = displayedRegions[i]!
     const len = r.end - r.start
     const offset = bp - bpSoFar
     if (len + bpSoFar > bp && bpSoFar <= bp) {
@@ -201,7 +201,7 @@ export function bpToPx({
 
   let i = 0
   for (; i < displayedRegions.length; i++) {
-    const r = displayedRegions[i]
+    const r = displayedRegions[i]!
     const len = r.end - r.start
     if (
       refName === r.refName &&
@@ -255,7 +255,7 @@ export function bpToPxMap({
 
   let i = 0
   for (; i < displayedRegions.length; i++) {
-    const r = displayedRegions[i]
+    const r = displayedRegions[i]!
     const len = r.end - r.start
     if (
       refName === r.refName &&

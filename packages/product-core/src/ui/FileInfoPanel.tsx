@@ -47,7 +47,7 @@ export default function FileInfoPanel({
         }
       : info || {}
 
-  return info !== null ? (
+  return (
     <BaseCard title="File info">
       {error ? (
         <ErrorMessage error={error} />
@@ -57,5 +57,5 @@ export default function FileInfoPanel({
         <Attributes attributes={details} />
       )}
     </BaseCard>
-  ) : null
+  )
 }

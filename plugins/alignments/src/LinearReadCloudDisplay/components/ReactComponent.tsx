@@ -20,7 +20,9 @@ const Cloud = observer(function ({
 
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   const cb = useCallback(
-    (ref: HTMLCanvasElement) => model.setRef(ref),
+    (ref: HTMLCanvasElement) => {
+      model.setRef(ref)
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [model, width, height],
   )

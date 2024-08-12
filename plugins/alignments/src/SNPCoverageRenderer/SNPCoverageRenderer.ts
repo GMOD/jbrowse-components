@@ -22,7 +22,7 @@ export interface RenderArgsDeserializedWithFeatures
   features: Map<string, Feature>
   ticks: { values: number[] }
   displayCrossHatches: boolean
-  modificationTagMap?: Record<string, string | undefined>
+  modificationTagMap?: Record<string, string>
 }
 
 type Counts = Record<string, { total: number; strands: Record<string, number> }>
@@ -55,7 +55,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       ticks,
     } = props
     const theme = createJBrowseTheme(configTheme)
-    const [region] = regions
+    const region = regions[0]!
     const width = (region.end - region.start) / bpPerPx
 
     // the adjusted height takes into account YSCALEBAR_LABEL_OFFSET from the
@@ -64,10 +64,6 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     const offset = YSCALEBAR_LABEL_OFFSET
     const height = unadjustedHeight - offset * 2
 
-    const { domain } = scaleOpts
-    if (!domain) {
-      return
-    }
     const opts = { ...scaleOpts, range: [0, height] }
     const viewScale = getScale(opts)
 
@@ -112,7 +108,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
 
     // Use two pass rendering, which helps in visualizing the SNPs at higher
     // bpPerPx First pass: draw the gray background
-    ctx.fillStyle = colorForBase.total
+    ctx.fillStyle = colorForBase.total!
     for (const feature of coverage) {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       const w = rightPx - leftPx + fudgeFactor
@@ -146,7 +142,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
 
       let curr = 0
       for (const base of keys) {
-        const { total } = snpinfo.cov[base]
+        const { total } = snpinfo.cov[base]!
         ctx.fillStyle =
           colorForBase[base] ||
           modificationTagMap[base.replace('mod_', '')] ||
@@ -168,9 +164,9 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       if (drawInterbaseCounts) {
         let curr = 0
         for (const base of interbaseEvents) {
-          const { total } = snpinfo.noncov[base]
+          const { total } = snpinfo.noncov[base]!
           const r = 0.6
-          ctx.fillStyle = colorForBase[base]
+          ctx.fillStyle = colorForBase[base]!
           ctx.fillRect(
             leftPx - r + extraHorizontallyFlippedOffset,
             indicatorHeight + toHeight2(curr),
@@ -186,7 +182,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
         let max = 0
         let maxBase = ''
         for (const base of interbaseEvents) {
-          const { total } = snpinfo.noncov[base]
+          const { total } = snpinfo.noncov[base]!
           accum += total
           if (total > max) {
             max = total
@@ -201,7 +197,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
           accum > indicatorComparatorScore * indicatorThreshold &&
           indicatorComparatorScore > 7
         ) {
-          ctx.fillStyle = colorForBase[maxBase]
+          ctx.fillStyle = colorForBase[maxBase]!
           ctx.beginPath()
           const l = leftPx + extraHorizontallyFlippedOffset
           ctx.moveTo(l - 3.5, 0)

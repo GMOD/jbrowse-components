@@ -76,7 +76,9 @@ export function ReferenceManagementSessionMixin(_pluginManager: PluginManager) {
             // from the view
             const type = 'open track(s)'
             const view = getContainingView(node) as TrackViewModel
-            callbacks.push(() => view.hideTrack(track.trackId))
+            callbacks.push(() => {
+              view.hideTrack(track.trackId)
+            })
             dereferenced = true
             if (!dereferenceTypeCount[type]) {
               dereferenceTypeCount[type] = 0
@@ -91,7 +93,9 @@ export function ReferenceManagementSessionMixin(_pluginManager: PluginManager) {
             // open, close the widget
             const type = 'configuration editor widget(s)'
             if (isSessionModelWithWidgets(self)) {
-              callbacks.push(() => self.hideWidget(node))
+              callbacks.push(() => {
+                self.hideWidget(node)
+              })
             }
             dereferenced = true
             if (!dereferenceTypeCount[type]) {

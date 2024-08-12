@@ -22,7 +22,7 @@ export default class FromConfigSequenceAdapter
       const feats = await firstValueFrom(
         super.getFeatures(region).pipe(toArray()),
       )
-      const feat = feats[0]
+      const feat = feats[0]!
       observer.next(
         new SimpleFeature({
           ...feat.toJSON(),

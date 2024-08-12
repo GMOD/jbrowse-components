@@ -23,9 +23,7 @@ const OverviewScalebarPolygon = observer(function ({
   const { interRegionPaddingWidth, offsetPx, dynamicBlocks, cytobandOffset } =
     model
   const { contentBlocks, totalWidthPxWithoutBorders } = dynamicBlocks
-
-  const { tertiary, primary } = theme.palette
-  const polygonColor = tertiary ? tertiary.light : primary.light
+  const polygonColor = theme.palette.tertiary.light
 
   // catches possible null from at's below
   if (!contentBlocks.length) {

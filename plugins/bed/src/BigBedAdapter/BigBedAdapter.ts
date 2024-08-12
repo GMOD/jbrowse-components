@@ -43,7 +43,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
 
   public async configure(opts?: BaseOptions) {
     if (!this.cached) {
-      this.cached = this.configurePre(opts).catch(e => {
+      this.cached = this.configurePre(opts).catch((e: unknown) => {
         this.cached = undefined
         throw e
       })
@@ -223,7 +223,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
       const s = min(subfeatures.map(f => f.start))
       const e = max(subfeatures.map(f => f.end))
       if (doesIntersect2(s, e, originalQuery.start, originalQuery.end)) {
-        const { uniqueId, strand } = subfeatures[0]
+        const { uniqueId, strand } = subfeatures[0]!
         observer.next(
           new SimpleFeature({
             id: `${this.id}-${uniqueId}-parent`,

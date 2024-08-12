@@ -28,14 +28,14 @@ function parseError(str: string) {
     )
     if (match) {
       str = `Failed to load element at ${match[1]}...Failed element had snapshot`
-      snapshotError = match[2]
+      snapshotError = match[2]!
     }
 
     // case 2. element has no path
     const match2 = /.*snapshot `(.*)` is not assignable/.exec(trim)
     if (match2) {
       str = 'Failed to load element...Failed element had snapshot'
-      snapshotError = match2[1]
+      snapshotError = match2[1]!
     }
   }
   return snapshotError
@@ -60,7 +60,12 @@ const ErrorMessage = ({
       <div style={{ float: 'right', marginLeft: 100 }}>
         {typeof error === 'object' && error && 'stack' in error ? (
           <Tooltip title="Get stack trace">
-            <IconButton onClick={() => setShowStack(true)} color="primary">
+            <IconButton
+              onClick={() => {
+                setShowStack(true)
+              }}
+              color="primary"
+            >
               <ReportIcon />
             </IconButton>
           </Tooltip>
@@ -88,7 +93,9 @@ const ErrorMessage = ({
         <Suspense fallback={null}>
           <ErrorMessageStackTraceDialog
             error={error}
-            onClose={() => setShowStack(false)}
+            onClose={() => {
+              setShowStack(false)
+            }}
           />
         </Suspense>
       ) : null}

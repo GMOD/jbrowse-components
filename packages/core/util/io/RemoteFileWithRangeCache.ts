@@ -53,13 +53,13 @@ export class RemoteFileWithRangeCache extends RemoteFile {
       fetchers[str] = this.fetchBinaryRange.bind(this)
     }
     // if it is a range request, route it through the range cache
-    const range = new Headers(init?.headers)?.get('range')
+    const range = new Headers(init?.headers).get('range')
     if (range) {
       const rangeParse = /bytes=(\d+)-(\d+)/.exec(range)
       if (rangeParse) {
         const [, start, end] = rangeParse
-        const s = Number.parseInt(start, 10)
-        const e = Number.parseInt(end, 10)
+        const s = Number.parseInt(start!, 10)
+        const e = Number.parseInt(end!, 10)
         const len = e - s
         const { buffer, headers } = (await globalRangeCache.getRange(
           url,
@@ -96,7 +96,7 @@ export class RemoteFileWithRangeCache extends RemoteFile {
 
     // translate the Headers object into a regular key -> value object.
     // will miss duplicate headers of course
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const headers: Record<string, any> = {}
     for (const [k, v] of res.headers.entries()) {
       headers[k] = v

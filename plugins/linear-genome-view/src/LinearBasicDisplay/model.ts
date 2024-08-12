@@ -199,14 +199,18 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               icon: VisibilityIcon,
               type: 'checkbox',
               checked: self.showLabels,
-              onClick: () => self.toggleShowLabels(),
+              onClick: () => {
+                self.toggleShowLabels()
+              },
             },
             {
               label: 'Show descriptions',
               icon: VisibilityIcon,
               type: 'checkbox',
               checked: self.showDescriptions,
-              onClick: () => self.toggleShowDescriptions(),
+              onClick: () => {
+                self.toggleShowDescriptions()
+              },
             },
             {
               label: 'Display mode',
@@ -218,7 +222,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 'collapse',
               ].map(val => ({
                 label: val,
-                onClick: () => self.setDisplayMode(val),
+                onClick: () => {
+                  self.setDisplayMode(val)
+                },
               })),
             },
             {

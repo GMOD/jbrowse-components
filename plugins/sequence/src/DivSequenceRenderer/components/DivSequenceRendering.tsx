@@ -196,7 +196,7 @@ function SequenceSVG({
   bpPerPx: number
   rowHeight: number
 }) {
-  const [region] = regions
+  const region = regions[0]!
   const theme = createJBrowseTheme(configTheme)
   const codonTable = generateCodonTable(defaultCodonTable)
   const [feature] = [...features.values()]
@@ -331,7 +331,7 @@ const DivSequenceRendering = observer(function (props: {
   showTranslation?: boolean
 }) {
   const { regions, bpPerPx, sequenceHeight } = props
-  const [region] = regions
+  const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
 
   return (

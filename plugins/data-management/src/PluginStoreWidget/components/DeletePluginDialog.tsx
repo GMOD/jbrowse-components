@@ -10,7 +10,13 @@ export default function DeletePluginDialog({
   onClose: (s?: string) => void
 }) {
   return (
-    <Dialog open onClose={() => onClose()} title={`Remove ${plugin}`}>
+    <Dialog
+      open
+      onClose={() => {
+        onClose()
+      }}
+      title={`Remove ${plugin}`}
+    >
       <DialogContent>
         <Typography>
           Please confirm that you want to remove {plugin}.
@@ -33,7 +39,13 @@ export default function DeletePluginDialog({
         >
           Confirm
         </Button>
-        <Button variant="contained" color="secondary" onClick={() => onClose()}>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => {
+            onClose()
+          }}
+        >
           Cancel
         </Button>
       </DialogActions>

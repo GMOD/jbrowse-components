@@ -91,7 +91,7 @@ const App = observer(function (props: Props) {
   return (
     <div
       className={classes.root}
-      style={{ gridTemplateColumns: grid?.filter(f => !!f).join(' ') }}
+      style={{ gridTemplateColumns: grid.filter(f => !!f).join(' ') }}
     >
       {drawerVisible && drawerPosition === 'left' ? (
         <LazyDrawerWidget session={session} />

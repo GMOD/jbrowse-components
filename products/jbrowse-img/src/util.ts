@@ -27,6 +27,6 @@ export function convert(
   const ls = spawnSync('rsvg-convert', a)
 
   console.error(`rsvg-convert stderr: ${ls.stderr.toString()}`)
-  console.log(`rsvg-convert stdout: ${ls.stdout.toString()}`) // eslint-disable-line no-console
+  console.log(`rsvg-convert stdout: ${ls.stdout.toString()}`)
   fs.unlinkSync(name)
 }

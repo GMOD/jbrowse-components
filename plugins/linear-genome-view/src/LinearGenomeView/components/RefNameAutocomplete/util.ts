@@ -51,7 +51,7 @@ export function getDeduplicatedResult(results: BaseResult[]) {
     ([displayString, results]) =>
       results.length === 1
         ? {
-            result: results[0],
+            result: results[0]!,
           }
         : {
             // deduplicate a "multi-result"

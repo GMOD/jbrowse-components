@@ -18,9 +18,10 @@ describe('insersection2', () => {
     { in: [1, 2, 1, 1], out: [] },
     { in: [1, 3, 2, 2], out: [] },
     { in: [2, 2, 1, 3], out: [] },
-  ]
+  ] as const
   testCases.forEach(testcase => {
     test(`intersection2(${testcase.in}) -> ${testcase.out}`, () => {
+      // @ts-expect-error
       expect(intersection2(...testcase.in)).toEqual(testcase.out)
     })
   })

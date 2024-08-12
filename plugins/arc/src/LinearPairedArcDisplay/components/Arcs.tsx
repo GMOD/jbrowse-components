@@ -62,32 +62,50 @@ const Arc = observer(function ({
           ref={ref}
           {...getStrokeProps(col)}
           strokeWidth={sw}
-          onMouseOut={() => setMouseOvered(false)}
-          onMouseOver={() => setMouseOvered(true)}
-          onClick={() => model.selectFeature(feature)}
+          onMouseOut={() => {
+            setMouseOvered(false)
+          }}
+          onMouseOver={() => {
+            setMouseOvered(true)
+          }}
+          onClick={() => {
+            model.selectFeature(feature)
+          }}
           fill="none"
           pointerEvents="stroke"
         />
-        {k1.mateDirection !== undefined ? (
+        {k1.mateDirection ? (
           <line
             {...getStrokeProps(col)}
             strokeWidth={sw}
-            onMouseOut={() => setMouseOvered(false)}
-            onMouseOver={() => setMouseOvered(true)}
-            onClick={() => model.selectFeature(feature)}
+            onMouseOut={() => {
+              setMouseOvered(false)
+            }}
+            onMouseOver={() => {
+              setMouseOvered(true)
+            }}
+            onClick={() => {
+              model.selectFeature(feature)
+            }}
             x1={left}
             x2={left + k1.mateDirection * 20}
             y1={1.5}
             y2={1.5}
           />
         ) : null}
-        {k2.mateDirection !== undefined ? (
+        {k2.mateDirection ? (
           <line
             {...getStrokeProps(col)}
             strokeWidth={sw}
-            onMouseOut={() => setMouseOvered(false)}
-            onMouseOver={() => setMouseOvered(true)}
-            onClick={() => model.selectFeature(feature)}
+            onMouseOut={() => {
+              setMouseOvered(false)
+            }}
+            onMouseOver={() => {
+              setMouseOvered(true)
+            }}
+            onClick={() => {
+              model.selectFeature(feature)
+            }}
             x1={right}
             x2={right + k2.mateDirection * 20}
             y1={1.5}
@@ -135,7 +153,7 @@ const Arcs = observer(function ({
   const session = getSession(model)
   const { assemblyManager } = session
   const { features } = model
-  const assembly = assemblyManager.get(view.assemblyNames[0])
+  const assembly = assemblyManager.get(view.assemblyNames[0]!)
 
   return assembly ? (
     <Wrapper model={model} exportSVG={exportSVG}>

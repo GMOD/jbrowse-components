@@ -82,7 +82,7 @@ const CDNASequence = observer(function ({
 
   const middleChunks = [] as React.ReactNode[]
   for (let idx = 0; idx < chunks.length; idx++) {
-    const chunk = chunks[idx]
+    const chunk = chunks[idx]!
     const intron = sequence.slice(chunk.end, chunks[idx + 1]?.start)
     const s = sequence.slice(chunk.start, chunk.end)
     const { segments, remainder } = splitString({

@@ -14,7 +14,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       ),
     })
     .actions(self => ({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       setTarget(newTarget: any) {
         self.target = newTarget
       },

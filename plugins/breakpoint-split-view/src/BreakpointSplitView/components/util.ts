@@ -75,7 +75,7 @@ export function findMatchingAlt(feat1: Feature, feat2: Feature) {
   if (alts) {
     return new Map(
       alts
-        ?.map(alt => parseBreakend(alt))
+        .map(alt => parseBreakend(alt))
         .filter(notEmpty)
         .map(bnd => [bnd.MatePosition, bnd]),
     ).get(`${feat2.get('refName')}:${feat2.get('start') + 1}`)

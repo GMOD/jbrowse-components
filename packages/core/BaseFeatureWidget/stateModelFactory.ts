@@ -154,14 +154,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 })
 
                 if (track) {
-                  // eslint-disable-next-line no-underscore-dangle
                   feature.__jbrowsefmt = combine('feature', feature)
 
                   formatSubfeatures(
                     feature,
                     getConf(track, ['formatDetails', 'depth']),
                     sub => {
-                      // eslint-disable-next-line no-underscore-dangle
                       sub.__jbrowsefmt = combine('subfeatures', sub)
                     },
                   )

@@ -132,17 +132,19 @@ const BookmarkGrid = observer(function ({
         ])
       }}
       processRowUpdate={row => {
-        const target = rows[row.id]
+        const target = rows[row.id]!
         model.updateBookmarkLabel(target, row.label)
         return row
       }}
-      onProcessRowUpdateError={e => session.notifyError(`${e}`, e)}
+      onProcessRowUpdateError={e => {
+        session.notifyError(`${e}`, e)
+      }}
       checkboxSelection
       onRowSelectionModelChange={newRowSelectionModel => {
         if (bookmarksWithValidAssemblies.length > 0) {
           model.setSelectedBookmarks(
             newRowSelectionModel.map(value => ({
-              ...rows[value as number],
+              ...rows[value as number]!,
             })),
           )
         }

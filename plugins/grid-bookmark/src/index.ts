@@ -85,9 +85,8 @@ export default class GridBookmarkPlugin extends Plugin {
               navigateNewestBookmark() {
                 const session = getSession(self)
                 const bookmarkWidget = self.activateBookmarkWidget()
-                const regions = bookmarkWidget.bookmarks
-                if (regions?.length) {
-                  self.navTo(regions.at(-1)!)
+                if (bookmarkWidget.bookmarks.length) {
+                  self.navTo(bookmarkWidget.bookmarks.at(-1)!)
                 } else {
                   session.notify(
                     'There are no recent bookmarks to navigate to.',
@@ -103,7 +102,11 @@ export default class GridBookmarkPlugin extends Plugin {
                     undefined,
                   )
                   const bookmarkWidget = self.activateBookmarkWidget()
-                  bookmarkWidget.addBookmark(selectedRegions[0])
+                  if (!selectedRegions.length) {
+                    throw new Error('no region selected')
+                  } else {
+                    bookmarkWidget.addBookmark(selectedRegions[0]!)
+                  }
                 }
               },
             }))
@@ -127,21 +130,27 @@ export default class GridBookmarkPlugin extends Plugin {
                         {
                           label: 'Bookmark current region',
                           icon: BookmarkIcon,
-                          onClick: () => self.bookmarkCurrentRegion(),
+                          onClick: () => {
+                            self.bookmarkCurrentRegion()
+                          },
                         },
                         {
                           label: 'Toggle bookmark highlights',
                           icon: HighlightIcon,
                           type: 'checkbox',
                           checked: self.showBookmarkHighlights,
-                          onClick: () => self.toggleShowBookmarkHighlights(),
+                          onClick: () => {
+                            self.toggleShowBookmarkHighlights()
+                          },
                         },
                         {
                           label: 'Toggle bookmark labels',
                           icon: LabelIcon,
                           type: 'checkbox',
                           checked: self.showBookmarkLabels,
-                          onClick: () => self.toggleShowBookmarkLabels(),
+                          onClick: () => {
+                            self.toggleShowBookmarkLabels()
+                          },
                         },
                       ],
                     },
@@ -161,7 +170,11 @@ export default class GridBookmarkPlugin extends Plugin {
                           rightOffset,
                         )
                         const bookmarkWidget = self.activateBookmarkWidget()
-                        bookmarkWidget.addBookmark(selectedRegions[0])
+                        if (!selectedRegions.length) {
+                          throw new Error('no regions selected')
+                        } else {
+                          bookmarkWidget.addBookmark(selectedRegions[0]!)
+                        }
                       },
                     },
                   ]

@@ -35,7 +35,7 @@ const Drawer = observer(function ({
 
   useEffect(() => {
     function handleSelectView(e: Event) {
-      if (e.target instanceof Element && ref?.current?.contains(e.target)) {
+      if (e.target instanceof Element && ref.current?.contains(e.target)) {
         // @ts-ignore
         const visibleWidgetId = session.visibleWidget?.view?.id
         if (visibleWidgetId) {

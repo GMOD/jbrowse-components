@@ -338,16 +338,6 @@ export default function stateModelFactory(pm: PluginManager) {
 
       /**
        * #action
-       * removes the view itself from the state tree entirely by calling the
-       * parent removeView
-       */
-      closeView() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        getParent<any>(self, 2).removeView(self)
-      },
-
-      /**
-       * #action
        */
       zoomOutButton() {
         self.hview.zoomOut()
@@ -389,7 +379,7 @@ export default function stateModelFactory(pm: PluginManager) {
         if (!trackType) {
           throw new Error(`unknown track type ${conf.type}`)
         }
-        const viewType = pm.getViewType(self.type)
+        const viewType = pm.getViewType(self.type)!
         const displayConf = conf.displays.find((d: AnyConfigurationModel) =>
           viewType.displayTypes.find(type => type.name === d.type),
         )
@@ -414,7 +404,9 @@ export default function stateModelFactory(pm: PluginManager) {
         const schema = pm.pluggableConfigSchemaType('track')
         const conf = resolveIdentifier(schema, getRoot(self), trackId)
         const t = self.tracks.filter(t => t.configuration === conf)
-        transaction(() => t.forEach(t => self.tracks.remove(t)))
+        transaction(() => {
+          t.forEach(t => self.tracks.remove(t))
+        })
         return t.length
       },
       /**
@@ -611,7 +603,7 @@ export default function stateModelFactory(pm: PluginManager) {
               transaction(() => {
                 self.assemblyNames.forEach((name, index) => {
                   const assembly = session.assemblyManager.get(name)
-                  const view = views[index]
+                  const view = views[index]!
                   view.setDisplayedRegions(assembly?.regions || [])
                 })
                 self.showAllRegions()
@@ -692,15 +684,21 @@ export default function stateModelFactory(pm: PluginManager) {
           },
           {
             label: 'Square view - same bp per pixel',
-            onClick: () => self.squareView(),
+            onClick: () => {
+              self.squareView()
+            },
           },
           {
             label: 'Rectangular view - same total bp',
-            onClick: () => self.squareView(),
+            onClick: () => {
+              self.squareView()
+            },
           },
           {
             label: 'Show all regions',
-            onClick: () => self.showAllRegions(),
+            onClick: () => {
+              self.showAllRegions()
+            },
           },
           {
             label: 'Export SVG',
@@ -726,7 +724,7 @@ export default function stateModelFactory(pm: PluginManager) {
       /**
        * #getter
        */
-      get error() {
+      get error(): unknown {
         return self.volatileError || self.assemblyErrors
       },
     }))

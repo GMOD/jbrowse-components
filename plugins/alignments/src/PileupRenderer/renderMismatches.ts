@@ -35,7 +35,7 @@ export function renderMismatches({
 }) {
   const { bpPerPx, regions } = renderArgs
   const { heightPx, topPx, feature } = feat
-  const [region] = regions
+  const region = regions[0]!
   const start = feature.get('start')
 
   const pxPerBp = Math.min(1 / bpPerPx, 2)
@@ -111,7 +111,7 @@ export function renderMismatches({
       const txt = `${mismatch.length}`
       const rwidth = measureText(txt, 10)
       if (widthPx >= rwidth && heightPx >= heightLim) {
-        ctx.fillStyle = contrastForBase.deletion
+        ctx.fillStyle = contrastForBase.deletion!
         ctx.fillText(txt, (leftPx + rightPx) / 2 - rwidth / 2, topPx + heightPx)
       }
     } else if (mismatch.type === 'insertion' && drawIndels) {

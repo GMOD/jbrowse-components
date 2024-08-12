@@ -5,9 +5,8 @@ import isNode from 'detect-node'
 
 import { CanvasSequence } from 'canvas-sequencer'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AbstractCanvas = any
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 type AbstractImageBitmap = any
 
 export let createCanvas: (width: number, height: number) => AbstractCanvas
@@ -19,7 +18,6 @@ export let createImageBitmap: (
 export let ImageBitmapType: unknown
 
 export function drawImageOntoCanvasContext(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   imageData: any,
   context: CanvasRenderingContext2D,
 ) {
@@ -39,29 +37,26 @@ const weHave = {
 if (weHave.realOffscreenCanvas) {
   createCanvas = (width, height) => new OffscreenCanvas(width, height)
 
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   createImageBitmap = window.createImageBitmap || self.createImageBitmap
 
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   ImageBitmapType = window.ImageBitmap || self.ImageBitmap
 } else if (weHave.node) {
   // use node-canvas if we are running in node (i.e. automated tests)
   createCanvas = (...args) => {
     // @ts-expect-error
-    // eslint-disable-next-line no-undef
     return nodeCreateCanvas(...args)
   }
-  createImageBitmap = async (canvas, ...otherargs) => {
-    if (otherargs.length > 0) {
-      throw new Error(
-        'only one-argument uses of createImageBitmap are supported by the node offscreencanvas ponyfill',
-      )
-    }
+  createImageBitmap = async canvas => {
     const dataUri = canvas.toDataURL()
     // @ts-expect-error
-    // eslint-disable-next-line no-undef
     const img = new nodeImage()
     return new Promise((resolve, reject) => {
       // need onload for jest
-      img.onload = () => resolve(img)
+      img.onload = () => {
+        resolve(img)
+      }
       img.onerror = reject
       img.src = dataUri
     })

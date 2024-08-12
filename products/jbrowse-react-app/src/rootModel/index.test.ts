@@ -120,7 +120,9 @@ describe('Root MST model', () => {
         configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
       },
     })
-    expect(() => root.setSession({})).toThrow()
+    expect(() => {
+      root.setSession({})
+    }).toThrow()
   })
 
   it('adds menus', () => {

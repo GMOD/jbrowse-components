@@ -143,9 +143,7 @@ export function getNiceDomain({
       min = 1
     }
   }
-  if (min === undefined || max === undefined) {
-    throw new Error('invalid domain supplied to stats function')
-  }
+
   if (minScore !== undefined && minScore !== Number.MIN_VALUE) {
     min = minScore
   }
@@ -183,7 +181,7 @@ export async function getQuantitativeStats(
   opts: {
     headers?: Record<string, string>
     signal?: AbortSignal
-    filters?: string[]
+    filters: string[]
   },
 ): Promise<QuantitativeStats> {
   const { rpcManager } = getSession(self)
@@ -297,6 +295,7 @@ export function quantitativeStatsAutorun(self: {
 
           const wiggleStats = await getQuantitativeStats(self, {
             signal: aborter.signal,
+            filters: [],
             ...self.renderProps(),
           })
 

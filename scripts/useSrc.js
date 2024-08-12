@@ -3,7 +3,6 @@
  * field into an empty string.
  */
 
-/* eslint-disable no-console */
 const fs = require('fs')
 
 function main() {

@@ -27,7 +27,9 @@ const SortByTagDialog = observer(function (props: {
         </Typography>
         <TextField
           value={tag}
-          onChange={event => setTag(event.target.value)}
+          onChange={event => {
+            setTag(event.target.value)
+          }}
           placeholder="Enter tag name"
           inputProps={{
             maxLength: 2,
@@ -54,7 +56,9 @@ const SortByTagDialog = observer(function (props: {
           <Button
             variant="contained"
             color="secondary"
-            onClick={() => handleClose()}
+            onClick={() => {
+              handleClose()
+            }}
           >
             Cancel
           </Button>

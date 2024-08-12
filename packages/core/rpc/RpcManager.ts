@@ -31,9 +31,6 @@ export default class RpcManager {
     public mainConfiguration: AnyConfigurationModel,
     public backendConfigurations: BackendConfigurations,
   ) {
-    if (!mainConfiguration) {
-      throw new Error('RpcManager requires at least a main configuration')
-    }
     this.driverObjects = new Map()
   }
 
@@ -58,7 +55,9 @@ export default class RpcManager {
       })
       this.driverObjects.set(backendName, newDriver)
       return newDriver
-    } else if (backendName === 'WebWorkerRpcDriver') {
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    else if (backendName === 'WebWorkerRpcDriver') {
       const backendConfiguration = this.backendConfigurations.WebWorkerRpcDriver
       if (!backendConfiguration) {
         throw new Error(

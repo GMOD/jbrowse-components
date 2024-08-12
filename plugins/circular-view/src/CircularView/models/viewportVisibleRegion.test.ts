@@ -143,9 +143,10 @@ describe('cartesian to polar', () => {
   ].forEach(testCase => {
     const [input, output] = testCase
     test(`${input} -> ${output}`, () => {
+      // @ts-expect-error
       const result = cartesianToPolar(...input)
-      expect(result[0]).toBeCloseTo(output[0])
-      expect((result[1] * 180) / Math.PI).toBeCloseTo(output[1])
+      expect(result[0]).toBeCloseTo(output![0]!)
+      expect((result[1] * 180) / Math.PI).toBeCloseTo(output![1]!)
     })
   })
 })
@@ -161,6 +162,7 @@ describe('theta overlap testing', () => {
   ].forEach(testCase => {
     const [input, output] = testCase
     test(`${input} -> ${output}`, () => {
+      // @ts-expect-error
       const result = thetaRangesOverlap(...input)
       expect(result).toBe(output)
     })

@@ -78,7 +78,7 @@ const MiddleComparativeView = observer(({ model }: { model: LCV }) => {
   const { classes } = useStyles()
   const { views } = model
   const { pluginManager } = getEnv(model)
-  const { ReactComponent } = pluginManager.getViewType(views[0].type)
+  const { ReactComponent } = pluginManager.getViewType(views[0]!.type)!
 
   return (
     <div className={classes.rubberbandContainer}>
@@ -122,7 +122,7 @@ const OverlayComparativeView = observer(({ model }: { model: LCV }) => {
         <div className={classes.content}>
           <div className={classes.relative}>
             {views.map(view => {
-              const { ReactComponent } = pluginManager.getViewType(view.type)
+              const { ReactComponent } = pluginManager.getViewType(view.type)!
               return <ReactComponent key={view.id} model={view} />
             })}
           </div>

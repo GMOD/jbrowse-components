@@ -29,7 +29,12 @@ const useStyles = makeStyles()(theme => ({
 function ClearButton({ onClick }: { onClick: () => void }) {
   return (
     <Tooltip title="Clear selection on this facet filter">
-      <IconButton onClick={() => onClick()} size="small">
+      <IconButton
+        onClick={() => {
+          onClick()
+        }}
+        size="small"
+      >
         <ClearIcon />
       </IconButton>
     </Tooltip>
@@ -45,7 +50,12 @@ function ExpandButton({
 }) {
   return (
     <Tooltip title="Minimize/expand this facet filter">
-      <IconButton onClick={() => onClick()} size="small">
+      <IconButton
+        onClick={() => {
+          onClick()
+        }}
+        size="small"
+      >
         {visible ? <MinimizeIcon /> : <AddIcon />}
       </IconButton>
     </Tooltip>
@@ -70,8 +80,17 @@ const FacetFilter = observer(function ({
     <FormControl className={classes.facet} fullWidth>
       <div>
         <Typography component="span">{field}</Typography>
-        <ClearButton onClick={() => faceted.setFilter(field, [])} />
-        <ExpandButton visible={visible} onClick={() => setVisible(!visible)} />
+        <ClearButton
+          onClick={() => {
+            faceted.setFilter(field, [])
+          }}
+        />
+        <ExpandButton
+          visible={visible}
+          onClick={() => {
+            setVisible(!visible)
+          }}
+        />
       </div>
       {visible ? (
         <Select

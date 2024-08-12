@@ -47,8 +47,8 @@ const ViewMenu = observer(function ({
   // a confusing bug related to it! see
   // https://github.com/GMOD/jbrowse-components/issues/4115
   //
-  // Make sure to test the Breakpoint split view menu checkboxes if you
-  // intend to change this
+  // Make sure to test the Breakpoint split view menu checkboxes if you intend
+  // to change this
   return (
     <>
       <IconButton
@@ -60,7 +60,9 @@ const ViewMenu = observer(function ({
       </IconButton>
       <CascadingMenu
         {...bindPopover(popupState)}
-        onMenuItemClick={(_event: unknown, callback: () => void) => callback()}
+        onMenuItemClick={(_event: unknown, callback: () => void) => {
+          callback()
+        }}
         menuItems={[
           ...(session.views.length > 1
             ? [
@@ -71,31 +73,36 @@ const ViewMenu = observer(function ({
                     {
                       label: 'Move view to top',
                       icon: KeyboardDoubleArrowUpIcon,
-                      onClick: () => session.moveViewToTop(model.id),
+                      onClick: () => {
+                        session.moveViewToTop(model.id)
+                      },
                     },
                     {
                       label: 'Move view up',
                       icon: KeyboardArrowUpIcon,
-                      onClick: () => session.moveViewUp(model.id),
+                      onClick: () => {
+                        session.moveViewUp(model.id)
+                      },
                     },
                     {
                       label: 'Move view down',
                       icon: KeyboardArrowDownIcon,
-                      onClick: () => session.moveViewDown(model.id),
+                      onClick: () => {
+                        session.moveViewDown(model.id)
+                      },
                     },
                     {
                       label: 'Move view to bottom',
                       icon: KeyboardDoubleArrowDownIcon,
-                      onClick: () => session.moveViewToBottom(model.id),
+                      onClick: () => {
+                        session.moveViewToBottom(model.id)
+                      },
                     },
                   ],
                 },
               ]
             : []),
-
-          // <=1.3.3 didn't use a function, so check as value also
-          ...((typeof menuItems === 'function' ? menuItems() : menuItems) ||
-            []),
+          ...menuItems(),
         ]}
         popupState={popupState}
       />

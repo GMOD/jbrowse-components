@@ -29,7 +29,7 @@ const SearchBox = observer(function ({
 
   const { textSearchManager, assemblyManager } = session
   const { assemblyNames, rankSearchResults } = model
-  const assemblyName = assemblyNames[0]
+  const assemblyName = assemblyNames[0]!
   const assembly = assemblyManager.get(assemblyName)
   const searchScope = model.searchScope(assemblyName)
 

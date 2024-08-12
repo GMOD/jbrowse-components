@@ -43,7 +43,7 @@ const LinearGenomeViewImportForm = observer(function ({
   const session = getSession(model)
   const { assemblyNames, assemblyManager } = session
   const { error } = model
-  const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0])
+  const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0]!)
   const [option, setOption] = useState<BaseResult>()
   const assembly = assemblyManager.get(selectedAsm)
   const assemblyError = assemblyNames.length
@@ -53,7 +53,7 @@ const LinearGenomeViewImportForm = observer(function ({
   const [value, setValue] = useState('')
   const regions = assembly?.regions
   const assemblyLoaded = !!regions
-  const r0 = regions ? regions[0]?.refName : ''
+  const r0 = regions ? regions[0]?.refName || '' : ''
 
   // useEffect resets to an "initial state" of displaying first region from
   // assembly after assembly change. needs to react to selectedAsm as well as
@@ -112,7 +112,9 @@ const LinearGenomeViewImportForm = observer(function ({
             <Grid item>
               <FormControl>
                 <AssemblySelector
-                  onChange={val => setSelectedAsm(val)}
+                  onChange={val => {
+                    setSelectedAsm(val)
+                  }}
                   localStorageKey="lgv"
                   session={session}
                   selected={selectedAsm}

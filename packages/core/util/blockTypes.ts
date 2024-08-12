@@ -32,7 +32,7 @@ export class BlockSet {
 
   forEach<T, U = this>(func: Func<T>, thisarg?: U) {
     // eslint-disable-next-line unicorn/no-array-method-this-argument
-    return this.blocks.forEach(func, thisarg)
+    this.blocks.forEach(func, thisarg)
   }
 
   get length() {
@@ -56,7 +56,7 @@ export class BlockSet {
   }
 
   get offsetPx() {
-    return this.blocks.length > 0 ? this.blocks[0].offsetPx : 0
+    return this.blocks.length > 0 ? this.blocks[0]!.offsetPx : 0
   }
 
   get contentBlocks() {
@@ -96,7 +96,7 @@ export class BaseBlock {
   /**
    * a block that should be shown as filled with data
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   constructor(data: Record<string, any>) {
     Object.assign(this, data)
     this.assemblyName = data.assemblyName
@@ -133,7 +133,6 @@ export class ElidedBlock extends BaseBlock {
 
   public elidedBlockCount = 0
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(data: Record<string, any>) {
     super(data)
     this.widthPx = data.widthPx
@@ -141,13 +140,10 @@ export class ElidedBlock extends BaseBlock {
 
   push(otherBlock: ElidedBlock) {
     this.elidedBlockCount += 1
-
-    if (otherBlock) {
-      this.refName = ''
-      this.start = 0
-      this.end = 0
-      this.widthPx += otherBlock.widthPx
-    }
+    this.refName = ''
+    this.start = 0
+    this.end = 0
+    this.widthPx += otherBlock.widthPx
   }
 }
 

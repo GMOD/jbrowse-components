@@ -43,9 +43,6 @@ export function openLocation(
   location: FileLocation,
   pluginManager?: PluginManager,
 ): GenericFilehandle {
-  if (!location) {
-    throw new Error('must provide a location to openLocation')
-  }
   if (isLocalPathLocation(location)) {
     if (!location.localPath) {
       throw new Error('No local path provided')
@@ -125,14 +122,15 @@ function getInternetAccount(
         'Failed to obtain token from internet account. Try reloading the page',
       )
     }
-    const internetAccountType = pluginManager.getInternetAccountType(
-      location.internetAccountPreAuthorization.internetAccountType,
-    )
-    return internetAccountType.stateModel.create({
-      type: location.internetAccountPreAuthorization.internetAccountType,
-      configuration:
-        location.internetAccountPreAuthorization.authInfo.configuration,
-    })
+    return pluginManager
+      .getInternetAccountType(
+        location.internetAccountPreAuthorization.internetAccountType,
+      )!
+      .stateModel.create({
+        type: location.internetAccountPreAuthorization.internetAccountType,
+        configuration:
+          location.internetAccountPreAuthorization.authInfo.configuration,
+      })
   }
   return undefined
 }

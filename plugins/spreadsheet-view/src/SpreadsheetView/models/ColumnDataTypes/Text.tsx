@@ -49,10 +49,10 @@ const OPERATION_PREDICATES = {
 } as Record<string, (a: string, b: string) => boolean>
 
 OPERATION_PREDICATES['does not contain'] = (textInCell, stringToFind) => {
-  return !OPERATION_PREDICATES.contains(textInCell, stringToFind)
+  return !OPERATION_PREDICATES.contains!(textInCell, stringToFind)
 }
 OPERATION_PREDICATES['does not equal'] = (textInCell, stringToFind) => {
-  return !OPERATION_PREDICATES.equals(textInCell, stringToFind)
+  return !OPERATION_PREDICATES.equals!(textInCell, stringToFind)
 }
 
 const useStyles = makeStyles()({
@@ -73,7 +73,6 @@ const useStyles = makeStyles()({
 
 // React component for the column filter control
 const FilterReactComponent = observer(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ({ filterModel }: { filterModel: any }) => {
     const { classes } = useStyles()
     const operationChoices = getEnumerationValues(
@@ -125,7 +124,7 @@ const ColumnTextFilter = types
     type: types.literal('Text'),
     columnNumber: types.integer,
     stringToFind: '',
-    operation: types.optional(types.enumeration(OPERATIONS), OPERATIONS[0]),
+    operation: types.optional(types.enumeration(OPERATIONS), OPERATIONS[0]!),
   })
   .views(self => ({
     // returns a function that tests the given row
@@ -138,7 +137,6 @@ const ColumnTextFilter = types
       }
       const s = stringToFind.toLowerCase() // case insensitive match
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return function stringPredicate(_sheet: any, row: any) {
         const { cellsWithDerived } = row
         const cell = cellsWithDerived[columnNumber]

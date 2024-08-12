@@ -26,7 +26,7 @@ interface SPARQLResponseHead {
 }
 
 interface SPARQLResponseResults {
-  bindings: SPARQLBinding[]
+  bindings?: SPARQLBinding[]
 }
 
 interface SPARQLResponse {
@@ -41,7 +41,7 @@ interface SPARQLFeatureData {
   refName: string
   subfeatures?: SPARQLFeatureData[]
   uniqueId: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   [propName: string]: any
 }
 
@@ -79,16 +79,14 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
     if (this.refNames) {
       return this.refNames
     }
-    let refNames = [] as string[]
     if (this.refNamesQueryTemplate) {
       const queryTemplate = encodeURIComponent(this.refNamesQueryTemplate)
       const results = await this.querySparql(queryTemplate, opts)
-      refNames = this.resultsToRefNames(results)
-    } else if (this.configRefNames) {
-      refNames = this.configRefNames
+      this.refNames = this.resultsToRefNames(results)
+    } else {
+      this.refNames = this.configRefNames
     }
-    this.refNames = refNames
-    return refNames
+    return this.refNames
   }
 
   public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
@@ -105,7 +103,6 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
     }, opts.signal)
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async querySparql(query: string, opts?: BaseOptions): Promise<any> {
     let additionalQueryParams = ''
     if (this.additionalQueryParams.length) {
@@ -123,25 +120,19 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
   }
 
   private resultsToRefNames(response: SPARQLResponse): string[] {
-    const rows = response?.results?.bindings || []
-    if (!rows.length) {
-      return []
-    }
+    const rows = response.results.bindings || []
     const fields = response.head.vars
     if (!fields.includes('refName')) {
       throw new Error('"refName" not found in refNamesQueryTemplate response')
     }
-    return rows.map(row => row.refName.value)
+    return rows.map(row => row.refName!.value)
   }
 
   private resultsToFeatures(
     results: SPARQLResponse,
     refName: string,
   ): SimpleFeature[] {
-    const rows = results?.results?.bindings || []
-    if (!rows.length) {
-      return []
-    }
+    const rows = results.results.bindings || []
     const fields = results.head.vars
     const requiredFields = ['start', 'end', 'uniqueId']
     requiredFields.forEach(requiredField => {
@@ -156,7 +147,7 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
       const rawData: Record<string, string>[] = [{}]
       fields.forEach(field => {
         if (field in row) {
-          const { value } = row[field]
+          const { value } = row[field]!
           let idx = 0
           while (field.startsWith('sub_')) {
             field = field.slice(4)
@@ -165,23 +156,23 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
           while (idx > rawData.length - 1) {
             rawData.push({})
           }
-          rawData[idx][field] = value
+          rawData[idx]![field] = value
         }
       })
 
       rawData.forEach((rd, idx) => {
-        const { uniqueId } = rd
+        const { uniqueId, start, end, strand } = rd
         if (idx < rawData.length - 1) {
-          rawData[idx + 1].parentUniqueId = uniqueId
+          rawData[idx + 1]!.parentUniqueId = uniqueId!
         }
-        seenFeatures[uniqueId] = {
+        seenFeatures[uniqueId!] = {
           data: {
             ...rd,
-            uniqueId,
+            uniqueId: uniqueId!,
             refName,
-            start: Number.parseInt(rd.start, 10),
-            end: Number.parseInt(rd.end, 10),
-            strand: Number.parseInt(rd.strand, 10) || 0,
+            start: Number.parseInt(start!, 10),
+            end: Number.parseInt(end!, 10),
+            strand: Number.parseInt(strand!, 10) || 0,
           },
         }
       })
@@ -209,7 +200,7 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
             .flat()
           let found = false
           for (const subfeature of subfeatures) {
-            if (subfeature && subfeature.uniqueId === pid) {
+            if (subfeature.uniqueId === pid) {
               if (!subfeature.subfeatures) {
                 subfeature.subfeatures = []
               }
@@ -221,7 +212,7 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
               found = true
               break
             }
-            if (subfeature?.subfeatures) {
+            if (subfeature.subfeatures) {
               subfeatures.push(...subfeature.subfeatures)
             }
           }
@@ -235,9 +226,9 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
     return Object.keys(seenFeatures).map(
       seenFeature =>
         new SimpleFeature({
-          ...seenFeatures[seenFeature].data,
+          ...seenFeatures[seenFeature]!.data,
           uniqueId: seenFeature,
-          subfeatures: seenFeatures[seenFeature].data.subfeatures,
+          subfeatures: seenFeatures[seenFeature]!.data.subfeatures,
         }),
     )
   }

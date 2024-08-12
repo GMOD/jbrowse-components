@@ -182,7 +182,7 @@ const OverviewRubberband = observer(function OverviewRubberband({
 
   let left = startX || 0
   let width = 0
-  if (startX !== undefined && currentX !== undefined) {
+  if (currentX !== undefined) {
     left = currentX < startX ? currentX : startX
     width = currentX - startX
   }

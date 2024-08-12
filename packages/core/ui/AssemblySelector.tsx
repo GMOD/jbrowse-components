@@ -72,7 +72,9 @@ const AssemblySelector = observer(function ({
       helperText={error || helperText}
       value={selection || ''}
       inputProps={{ 'data-testid': 'assembly-selector' }}
-      onChange={event => setLastSelected(event.target.value)}
+      onChange={event => {
+        setLastSelected(event.target.value)
+      }}
       error={!!error}
       InputProps={InputProps}
       disabled={!!error}

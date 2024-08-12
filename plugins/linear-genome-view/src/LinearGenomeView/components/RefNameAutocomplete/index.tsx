@@ -108,7 +108,9 @@ const RefNameAutocomplete = observer(function ({
       }}
       loadingText="loading results"
       open={open}
-      onOpen={() => setOpen(true)}
+      onOpen={() => {
+        setOpen(true)
+      }}
       onClose={() => {
         setOpen(false)
         setLoaded(true)

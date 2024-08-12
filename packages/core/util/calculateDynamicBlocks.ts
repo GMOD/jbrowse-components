@@ -61,7 +61,7 @@ export default function calculateDynamicBlocks(
       start: regionStart,
       end: regionEnd,
       reversed,
-    } = region
+    } = region!
     const displayedRegionRightPx =
       displayedRegionLeftPx + (regionEnd - regionStart) / bpPerPx
 

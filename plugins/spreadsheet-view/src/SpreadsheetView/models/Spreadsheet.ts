@@ -106,7 +106,7 @@ const Spreadsheet = types
      */
     get hideRowSelection() {
       // just delegates to parent
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       return getParent<any>(self).hideRowSelection
     },
 
@@ -129,7 +129,7 @@ const Spreadsheet = types
      */
     rowSortingComparisonFunction(rowA: Row, rowB: Row) {
       for (const { columnNumber, descending } of self.sortColumns) {
-        const { dataType } = self.columns[columnNumber]
+        const { dataType } = self.columns[columnNumber]!
         const result = dataType.compare(
           rowA.cellsWithDerived[columnNumber],
           rowB.cellsWithDerived[columnNumber],
@@ -181,6 +181,7 @@ const Spreadsheet = types
      * #action
      */
     setSortColumns(newSort: NonNullable<SnapshotIn<typeof self.sortColumns>>) {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (newSort) {
         // @ts-expect-error
         self.sortColumns = newSort
@@ -191,14 +192,14 @@ const Spreadsheet = types
      * #action
      */
     setColumnType(columnNumber: number, newTypeName: string) {
-      self.columns[columnNumber].dataType = { type: newTypeName }
+      self.columns[columnNumber]!.dataType = { type: newTypeName }
     },
 
     /**
      * #action
      */
     unselectAll() {
-      return self.rowSet.unselectAll()
+      self.rowSet.unselectAll()
     },
   }))
 

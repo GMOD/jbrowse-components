@@ -8,7 +8,7 @@ import '@fontsource/roboto'
 import Loader from './components/Loader'
 import PlatformSpecificErrorDialog from './components/PlatformSpecificErrorDialog'
 
-if (window?.name.startsWith('JBrowseAuthWindow')) {
+if (window.name.startsWith('JBrowseAuthWindow')) {
   window.opener?.postMessage({
     name: window.name,
     redirectUri: window.location.href,

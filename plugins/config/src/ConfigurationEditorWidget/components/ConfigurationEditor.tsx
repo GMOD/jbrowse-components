@@ -32,7 +32,7 @@ import TypeSelector from './TypeSelector'
 
 const useStyles = makeStyles()(theme => ({
   icon: {
-    color: theme.palette.tertiary?.contrastText || '#fff',
+    color: theme.palette.tertiary.contrastText || '#fff',
   },
   expansionPanelDetails: {
     display: 'block',
@@ -137,12 +137,12 @@ const ConfigurationEditor = observer(function ({
   session?: AbstractSessionModel
 }) {
   const { classes } = useStyles()
-  // key forces a re-render, otherwise the same field can end up being used
-  // for different tracks since only the backing model changes for example
-  // see pr #804
+  // key forces a re-render, otherwise the same field can end up being used for
+  // different tracks since only the backing model changes for example see pr
+  // #804
   const { target } = model
-  const key = target && readConfObject(target, 'trackId')
-  const name = target && readConfObject(target, 'name')
+  const key = readConfObject(target, 'trackId')
+  const name = readConfObject(target, 'name')
   return (
     <Accordion key={key} defaultExpanded className={classes.accordion}>
       <AccordionSummary
@@ -156,7 +156,7 @@ const ConfigurationEditor = observer(function ({
         className={classes.expansionPanelDetails}
         data-testid="configEditor"
       >
-        {!target ? 'no target set' : <Schema schema={target} />}
+        <Schema schema={target} />
       </AccordionDetails>
     </Accordion>
   )

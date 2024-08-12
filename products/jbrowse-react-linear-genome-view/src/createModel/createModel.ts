@@ -25,7 +25,6 @@ export default function createModel(
   hydrateFn?: (
     container: Element | Document,
     initialChildren: React.ReactNode,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ) => any,
   createRootFn?: (elt: Element | DocumentFragment) => {
     render: (node: React.ReactElement) => unknown
@@ -88,11 +87,9 @@ export default function createModel(
        * #action
        */
       renameCurrentSession(sessionName: string) {
-        if (self.session) {
-          const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
-          snapshot.name = sessionName
-          this.setSession(snapshot)
-        }
+        const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
+        snapshot.name = sessionName
+        this.setSession(snapshot)
       },
       /**
        * #action

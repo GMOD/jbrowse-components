@@ -73,7 +73,7 @@ export default class HicRenderer extends ServerSideRendererType {
       colorScheme,
       regions,
     } = props
-    const [region] = regions
+    const region = regions[0]!
     const { dataAdapter } = await getAdapter(
       this.pluginManager,
       sessionId,
@@ -151,7 +151,7 @@ export default class HicRenderer extends ServerSideRendererType {
 
   async render(renderProps: RenderArgsDeserialized) {
     const { config, regions, bpPerPx } = renderProps
-    const [region] = regions
+    const region = regions[0]!
     const width = (region.end - region.start) / bpPerPx
     const height = readConfObject(config, 'maxHeight')
     const features = await this.getFeatures(renderProps)
@@ -188,13 +188,13 @@ export default class HicRenderer extends ServerSideRendererType {
     )
     const features = await firstValueFrom(
       (dataAdapter as BaseFeatureDataAdapter)
-        .getFeatures(regions[0], args)
+        .getFeatures(regions[0]!, args)
         .pipe(toArray()),
     )
     // cast to any to avoid return-type conflict, because the
     // types of features returned by our getFeatures are quite
     // different from the base interface
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     return features as any
   }
 }

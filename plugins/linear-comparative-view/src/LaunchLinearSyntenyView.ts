@@ -48,18 +48,22 @@ export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
         const idsNotFound = [] as string[]
         await Promise.all(
           views.map(async (data, idx) => {
-            const view = model.views[idx]
+            const view = model.views[idx]!
             const { assembly, loc, tracks = [] } = data
             const asm = await assemblyManager.waitForAssembly(assembly)
             if (!asm) {
               throw new Error(`Assembly ${data.assembly} failed to load`)
             }
             await view.navToSearchString({ input: loc, assembly: asm })
-            tracks.forEach(track => tryTrack(view, track, idsNotFound))
+            tracks.forEach(track => {
+              tryTrack(view, track, idsNotFound)
+            })
           }),
         )
 
-        tracks.forEach(track => tryTrack(model, track, idsNotFound))
+        tracks.forEach(track => {
+          tryTrack(model, track, idsNotFound)
+        })
 
         if (idsNotFound.length) {
           throw new Error(

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
 import { ThemeOptions } from '@mui/material'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -151,7 +150,7 @@ function stateModelFactory() {
       get features() {
         const featureMaps = []
         for (const block of self.blockState.values()) {
-          if (block?.features) {
+          if (block.features) {
             featureMaps.push(block.features)
           }
         }
@@ -190,7 +189,7 @@ function stateModelFactory() {
       searchFeatureByID(id: string): LayoutRecord | undefined {
         let ret: LayoutRecord | undefined
         self.blockState.forEach(block => {
-          const val = block?.layout?.getByID(id)
+          const val = block.layout?.getByID(id)
           if (val) {
             ret = val
           }
@@ -284,7 +283,9 @@ function stateModelFactory() {
           self.setError()
           self.setCurrStatsBpPerPx(0)
           self.clearFeatureDensityStats()
-          ;[...self.blockState.values()].map(val => val.doReload())
+          ;[...self.blockState.values()].forEach(val => {
+            val.doReload()
+          })
           superReload()
         },
       }
@@ -413,6 +414,7 @@ function stateModelFactory() {
       },
     }))
     .preProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {
         return snap
       }
@@ -422,9 +424,9 @@ function stateModelFactory() {
       const { height, ...rest } = snap
       return { heightPreConfig: height, ...rest }
     })
-    .postProcessSnapshot(self => {
+    .postProcessSnapshot(snap => {
       // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
-      const r = self as Omit<typeof self, symbol>
+      const r = snap as Omit<typeof snap, symbol>
       const { blockState, ...rest } = r
       return rest
     })
