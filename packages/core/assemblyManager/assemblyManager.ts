@@ -32,7 +32,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
     })
     .views(self => ({
       get assemblyNameMap() {
-        const obj = {} as Record<string, Assembly | undefined>
+        const obj = {} as Record<string, Assembly>
         for (const assembly of self.assemblies) {
           for (const name of assembly.allAliases) {
             obj[name] = assembly

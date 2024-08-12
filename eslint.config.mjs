@@ -70,6 +70,13 @@ export default tseslint.config(
       'no-underscore-dangle': 'off',
       curly: 'error',
       semi: ['error', 'never'],
+      'spaced-comment': [
+        'error',
+        'always',
+        {
+          markers: ['/'],
+        },
+      ],
 
       'react-refresh/only-export-components': 'warn',
       'react/no-unescaped-entities': 'off',

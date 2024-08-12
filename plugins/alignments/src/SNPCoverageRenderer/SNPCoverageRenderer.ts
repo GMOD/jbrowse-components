@@ -22,7 +22,7 @@ export interface RenderArgsDeserializedWithFeatures
   features: Map<string, Feature>
   ticks: { values: number[] }
   displayCrossHatches: boolean
-  modificationTagMap?: Record<string, string | undefined>
+  modificationTagMap?: Record<string, string>
 }
 
 type Counts = Record<string, { total: number; strands: Record<string, number> }>

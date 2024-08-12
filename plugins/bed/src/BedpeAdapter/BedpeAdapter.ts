@@ -67,8 +67,8 @@ function parseStrand(strand: string) {
 export default class BedpeAdapter extends BaseFeatureDataAdapter {
   protected bedpeFeatures?: Promise<{
     header: string
-    feats1: Record<string, string[] | undefined>
-    feats2: Record<string, string[] | undefined>
+    feats1: Record<string, string[]>
+    feats2: Record<string, string[]>
     columnNames: string[]
   }>
 
@@ -96,8 +96,8 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
       headerLines.push(lines[i])
     }
     const header = headerLines.join('\n')
-    const feats1 = {} as Record<string, string[] | undefined>
-    const feats2 = {} as Record<string, string[] | undefined>
+    const feats1 = {} as Record<string, string[]>
+    const feats2 = {} as Record<string, string[]>
     for (; i < lines.length; i++) {
       const line = lines[i]!
       const cols = line.split('\t')

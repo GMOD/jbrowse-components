@@ -110,7 +110,7 @@ function checkRefName(refName: string) {
   }
 }
 
-type RefNameAliases = Record<string, string | undefined>
+type RefNameAliases = Record<string, string>
 
 interface CacheData {
   adapterConf: unknown

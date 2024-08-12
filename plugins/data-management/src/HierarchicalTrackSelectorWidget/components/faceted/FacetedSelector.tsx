@@ -60,7 +60,7 @@ const FacetedSelector = observer(function FacetedSelector({
 
   type T = GridColDef<(typeof filteredRows)[0]>
 
-  const [widths, setWidths] = useState<Record<string, number | undefined>>({
+  const [widths, setWidths] = useState<Record<string, number>>({
     name:
       measureGridWidth(
         rows.map(r => r.name),

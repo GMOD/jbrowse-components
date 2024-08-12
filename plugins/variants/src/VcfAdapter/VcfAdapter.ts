@@ -37,7 +37,7 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
 
   protected vcfFeatures?: Promise<{
     header: string
-    intervalTree: Record<string, IntervalTree<VcfFeature> | undefined>
+    intervalTree: Record<string, IntervalTree<VcfFeature>>
   }>
 
   public async getHeader() {

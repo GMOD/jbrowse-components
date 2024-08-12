@@ -146,7 +146,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     )
     .volatile(() => ({
       width: 800,
-      matchedTrackFeatures: {} as Record<string, Feature[][] | undefined>,
+      matchedTrackFeatures: {} as Record<string, Feature[][]>,
     }))
     .views(self => ({
       /**

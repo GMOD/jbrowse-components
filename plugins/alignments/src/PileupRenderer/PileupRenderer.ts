@@ -23,7 +23,7 @@ import { layoutFeats } from './layoutFeatures'
 export interface RenderArgsDeserialized extends BoxRenderArgsDeserialized {
   colorBy?: { type: string; tag?: string }
   colorTagMap?: Record<string, string>
-  modificationTagMap?: Record<string, string | undefined>
+  modificationTagMap?: Record<string, string>
   sortedBy?: {
     type: string
     pos: number

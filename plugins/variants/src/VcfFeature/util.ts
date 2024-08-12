@@ -1,6 +1,6 @@
 import VCF, { parseBreakend } from '@gmod/vcf'
 
-const altTypeToSO: Record<string, string | undefined> = {
+const altTypeToSO: Record<string, string> = {
   DEL: 'deletion',
   INS: 'insertion',
   DUP: 'duplication',

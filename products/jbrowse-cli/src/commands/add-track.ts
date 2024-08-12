@@ -643,26 +643,27 @@ export default class AddTrack extends JBrowseCommand {
   }
 
   guessTrackType(adapterType: string): string {
-    const known: Record<string, string | undefined> = {
-      BamAdapter: 'AlignmentsTrack',
-      CramAdapter: 'AlignmentsTrack',
-      BgzipFastaAdapter: 'ReferenceSequenceTrack',
-      BigWigAdapter: 'QuantitativeTrack',
-      IndexedFastaAdapter: 'ReferenceSequenceTrack',
-      TwoBitAdapter: 'ReferenceSequenceTrack',
-      VcfTabixAdapter: 'VariantTrack',
-      VcfAdapter: 'VariantTrack',
-      BedpeAdapter: 'VariantTrack',
-      BedAdapter: 'FeatureTrack',
-      HicAdapter: 'HicTrack',
-      PAFAdapter: 'SyntenyTrack',
-      DeltaAdapter: 'SyntenyTrack',
-      ChainAdapter: 'SyntenyTrack',
-      MashMapAdapter: 'SyntenyTrack',
-      PairwiseIndexedPAFAdapter: 'SyntenyTrack',
-      MCScanAnchorsAdapter: 'SyntenyTrack',
-      MCScanSimpleAnchorsAdapter: 'SyntenyTrack',
-    }
-    return known[adapterType] || 'FeatureTrack'
+    return adapterTypesToTrackTypeMap[adapterType] || 'FeatureTrack'
   }
+}
+
+const adapterTypesToTrackTypeMap: Record<string, string> = {
+  BamAdapter: 'AlignmentsTrack',
+  CramAdapter: 'AlignmentsTrack',
+  BgzipFastaAdapter: 'ReferenceSequenceTrack',
+  BigWigAdapter: 'QuantitativeTrack',
+  IndexedFastaAdapter: 'ReferenceSequenceTrack',
+  TwoBitAdapter: 'ReferenceSequenceTrack',
+  VcfTabixAdapter: 'VariantTrack',
+  VcfAdapter: 'VariantTrack',
+  BedpeAdapter: 'VariantTrack',
+  BedAdapter: 'FeatureTrack',
+  HicAdapter: 'HicTrack',
+  PAFAdapter: 'SyntenyTrack',
+  DeltaAdapter: 'SyntenyTrack',
+  ChainAdapter: 'SyntenyTrack',
+  MashMapAdapter: 'SyntenyTrack',
+  PairwiseIndexedPAFAdapter: 'SyntenyTrack',
+  MCScanAnchorsAdapter: 'SyntenyTrack',
+  MCScanSimpleAnchorsAdapter: 'SyntenyTrack',
 }

@@ -1252,13 +1252,15 @@ export function coarseStripHTML(s: string) {
 }
 
 // based on autolink-js, license MIT
+// https://github.com/bryanwoods/autolink-js/blob/1418049970152c56ced73d43dcc62d80b320fb71/autolink.js#L9
 export function linkify(s: string) {
   const pattern =
     /(^|[\s\n]|<[A-Za-z]*\/?>)((?:https?|ftp):\/\/[-A-Z0-9+\u0026\u2019@#/%?=()~_|!:,.;]*[-A-Z0-9+\u0026@#/%=~()_|])/gi
   return s.replaceAll(pattern, '$1<a href=\'$2\' target="_blank">$2</a>')
 }
 
-// heuristic measurement for a column of a @mui/x-data-grid, pass in values from a column
+// heuristic measurement for a column of a @mui/x-data-grid, pass in
+// values from a column
 export function measureGridWidth(
   elements: unknown[],
   args?: {
@@ -1330,10 +1332,13 @@ export function avg(arr: number[]) {
 }
 
 export function groupBy<T>(array: Iterable<T>, predicate: (v: T) => string) {
-  const result = {} as Record<string, T[] | undefined>
+  const result = {} as Record<string, T[]>
   for (const value of array) {
-    const entry = (result[predicate(value)] ||= [])
-    entry.push(value)
+    const t = predicate(value)
+    if (!result[t]) {
+      result[t] = []
+    }
+    result[t].push(value)
   }
   return result
 }
@@ -1412,12 +1417,18 @@ export function stripAlpha(str: string) {
 
 export function getStrokeProps(str: string) {
   const c = colord(str)
-  return { strokeOpacity: c.alpha(), stroke: c.alpha(1).toHex() }
+  return {
+    strokeOpacity: c.alpha(),
+    stroke: c.alpha(1).toHex(),
+  }
 }
 
 export function getFillProps(str: string) {
   const c = colord(str)
-  return { fillOpacity: c.alpha(), fill: c.alpha(1).toHex() }
+  return {
+    fillOpacity: c.alpha(),
+    fill: c.alpha(1).toHex(),
+  }
 }
 
 // https://react.dev/reference/react-dom/server/renderToString#removing-rendertostring-from-the-client-code

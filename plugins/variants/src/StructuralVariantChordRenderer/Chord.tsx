@@ -45,7 +45,7 @@ const Chord = observer(function Chord({
   onClick,
 }: {
   feature: Feature
-  blocksForRefs: Record<string, Block | undefined>
+  blocksForRefs: Record<string, Block>
   radius: number
   config: AnyConfigurationModel
   bezierRadius: number
