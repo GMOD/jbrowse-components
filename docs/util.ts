@@ -78,7 +78,7 @@ export function extractWithComment(
       'method',
     ]
     for (const entry of list) {
-      const type = '#' + entry
+      const type = `#${entry}`
       if (fulltext.includes(type) && r.comment.includes(type)) {
         cb({ type: entry, ...r })
       }

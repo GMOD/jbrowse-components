@@ -43,7 +43,7 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
 
   protected async configure() {
     if (!this.configured) {
-      this.configured = this.configurePre().catch(e => {
+      this.configured = this.configurePre().catch((e: unknown) => {
         this.configured = undefined
         throw e
       })

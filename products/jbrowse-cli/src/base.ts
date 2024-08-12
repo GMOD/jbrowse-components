@@ -115,12 +115,7 @@ export interface Track {
   trackId: string
   name: string
   assemblyNames: string[]
-  adapter:
-    | Gff3TabixAdapter
-    | GtfAdapter
-    | VcfTabixAdapter
-    | Gff3Adapter
-    | VcfAdapter
+  adapter?: { type: string; [key: string]: unknown }
   textSearching?: TextSearching
 }
 
@@ -177,8 +172,7 @@ export default abstract class JBrowseCommand extends Command {
     return result
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async writeJsonFile(location: string, contents: any) {
+  async writeJsonFile(location: string, contents: unknown) {
     this.debug(`Writing JSON file to ${process.cwd()} ${location}`)
     return fsPromises.writeFile(location, JSON.stringify(contents, null, 2))
   }
@@ -246,11 +240,11 @@ export default abstract class JBrowseCommand extends Command {
 
   async getLatest() {
     for await (const versions of this.fetchVersions()) {
-      // if a release was just uploaded, or an erroneous build was made
-      // then it might have no build asset
+      // if a release was just uploaded, or an erroneous build was made then it
+      // might have no build asset
       const nonprereleases = versions
-        .filter(release => release.prerelease === false)
-        .filter(release => release.assets && release.assets.length > 0)
+        .filter(release => !release.prerelease)
+        .filter(release => release.assets?.length)
 
       if (nonprereleases.length > 0) {
         // @ts-expect-error
@@ -270,21 +264,20 @@ export default abstract class JBrowseCommand extends Command {
 
   async *fetchVersions() {
     let page = 1
-    let result: GithubRelease[]
+    let result: GithubRelease[] | undefined
 
     do {
-      const response = await fetch(
-        `https://api.github.com/repos/GMOD/jbrowse-components/releases?page=${page}`,
-      )
+      const url = `https://api.github.com/repos/GMOD/jbrowse-components/releases?page=${page}`
+      const response = await fetch(url)
       if (response.ok) {
         result = (await response.json()) as GithubRelease[]
 
         yield result.filter(release => release.tag_name.startsWith('v'))
         page++
       } else {
-        throw new Error(`${response.statusText}`)
+        throw new Error(`HTTP ${response.status} fetching ${url}`)
       }
-    } while (result && result.length > 0)
+    } while (result.length)
   }
 
   async getTag(tag: string) {
@@ -293,7 +286,7 @@ export default abstract class JBrowseCommand extends Command {
     )
     if (response.ok) {
       const result = (await response.json()) as GithubRelease
-      const file = result?.assets?.find(f =>
+      const file = result.assets?.find(f =>
         f.name.includes('jbrowse-web'),
       )?.browser_download_url
 

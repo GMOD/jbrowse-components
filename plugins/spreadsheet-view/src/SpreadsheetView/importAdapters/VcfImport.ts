@@ -20,7 +20,6 @@ const vcfCoreColumns: { name: string; type: string }[] = [
   { name: 'FORMAT', type: 'Text' }, // 8
 ]
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function vcfRecordToRow(vcfParser: any, line: string, lineNumber: number): Row {
   const vcfVariant = vcfParser.parseLine(line)
   const vcfFeature = new VcfFeature({
@@ -70,14 +69,17 @@ export function parseVcfBuffer(buffer: Buffer, options: ParseOptions = {}) {
   for (let i = 0; i < vcfCoreColumns.length; i += 1) {
     columnDisplayOrder.push(i)
     columns[i] = {
-      name: vcfCoreColumns[i].name,
-      dataType: { type: vcfCoreColumns[i].type },
+      name: vcfCoreColumns[i]!.name,
+      dataType: { type: vcfCoreColumns[i]!.type },
     }
   }
   for (let i = 0; i < vcfParser.samples.length; i += 1) {
     const oi = vcfCoreColumns.length + i
     columnDisplayOrder.push(oi)
-    columns[oi] = { name: vcfParser.samples[i], dataType: { type: 'Text' } }
+    columns[oi] = {
+      name: vcfParser.samples[i]!,
+      dataType: { type: 'Text' },
+    }
   }
 
   columnDisplayOrder.push(columnDisplayOrder.length)

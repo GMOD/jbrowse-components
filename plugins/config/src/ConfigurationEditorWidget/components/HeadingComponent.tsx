@@ -5,7 +5,11 @@ import { isStateTreeNode, getType } from 'mobx-state-tree'
 const HeadingComponent = observer(function ({
   model,
 }: {
-  model?: { target: { type: string } }
+  model?: {
+    target: {
+      type: string
+    }
+  }
 }) {
   if (model?.target) {
     if (model.target.type) {
@@ -13,7 +17,7 @@ const HeadingComponent = observer(function ({
     }
     if (isStateTreeNode(model.target)) {
       const type = getType(model.target)
-      if (type?.name) {
+      if (type.name) {
         return `${type.name.replace('ConfigurationSchema', '')} settings`
       }
     }

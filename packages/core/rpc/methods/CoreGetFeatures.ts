@@ -44,7 +44,7 @@ export default class CoreGetFeatures extends RpcMethodType {
       regions: Region[]
       adapterConfig: Record<string, unknown>
       signal?: RemoteAbortSignal
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       opts?: any
     },
     rpcDriver: string,

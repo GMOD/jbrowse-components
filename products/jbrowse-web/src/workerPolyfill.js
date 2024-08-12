@@ -7,9 +7,13 @@ self.window = {
   fetch: self.fetch.bind(self),
   location: self.location,
   Date: self.Date,
-  requestIdleCallback: cb => cb(),
+  requestIdleCallback: cb => {
+    cb()
+  },
   cancelIdleCallback: () => {},
-  requestAnimationFrame: cb => cb(),
+  requestAnimationFrame: cb => {
+    cb()
+  },
   cancelAnimationFrame: () => {},
   navigator: {},
 }

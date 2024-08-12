@@ -15,7 +15,7 @@ test('opens feature detail from left click', async () => {
   fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), {}, delay))
 
   view.tracks[0].displays[0].setFeatureIdUnderMouse('test-vcf-604453')
-  fireEvent.click((await findAllByTestId('test-vcf-604453', {}, delay))[0])
+  fireEvent.click((await findAllByTestId('test-vcf-604453', {}, delay))[0]!)
   expect(
     await findByTestId('variant-side-drawer', {}, delay),
   ).toBeInTheDocument()
@@ -28,7 +28,7 @@ test('open feature detail from right click', async () => {
   view.tracks[0].displays[0].setFeatureIdUnderMouse('test-vcf-604453')
 
   fireEvent.contextMenu(
-    (await findAllByTestId('test-vcf-604453', {}, delay))[0],
+    (await findAllByTestId('test-vcf-604453', {}, delay))[0]!,
   )
   fireEvent.click(await findByText('Open feature details'))
   expect(

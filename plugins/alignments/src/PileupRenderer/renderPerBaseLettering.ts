@@ -36,15 +36,15 @@ export function renderPerBaseLettering({
     return
   }
   for (let i = 0; i < cigarOps.length; i += 2) {
-    const len = +cigarOps[i]
-    const op = cigarOps[i + 1]
+    const len = +cigarOps[i]!
+    const op = cigarOps[i + 1]!
     if (op === 'S' || op === 'I') {
       soffset += len
     } else if (op === 'D' || op === 'N') {
       roffset += len
     } else if (op === 'M' || op === 'X' || op === '=') {
       for (let m = 0; m < len; m++) {
-        const letter = seq[soffset + m]
+        const letter = seq[soffset + m]!
         const r = start + roffset + m
         const [leftPx] = bpSpanPx(r, r + 1, region, bpPerPx)
         const c = colorForBase[letter]
@@ -52,7 +52,7 @@ export function renderPerBaseLettering({
 
         if (w >= charWidth && heightPx >= heightLim) {
           // normal SNP coloring
-          ctx.fillStyle = contrastForBase[letter]
+          ctx.fillStyle = contrastForBase[letter]!
           ctx.fillText(
             letter,
             leftPx + (w - charWidth) / 2 + 1,

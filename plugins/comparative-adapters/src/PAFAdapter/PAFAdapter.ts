@@ -38,7 +38,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
 
   async setup(opts?: BaseOptions) {
     if (!this.setupP) {
-      this.setupP = this.setupPre(opts).catch(e => {
+      this.setupP = this.setupPre(opts).catch((e: unknown) => {
         this.setupP = undefined
         throw e
       })
@@ -114,7 +114,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       }
 
       for (let i = 0; i < pafRecords.length; i++) {
-        const r = pafRecords[i]
+        const r = pafRecords[i]!
         let start = 0
         let end = 0
         let refName = ''

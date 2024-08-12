@@ -81,12 +81,15 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
       intervalTree[key].insert([f.get('start'), f.get('end')], f)
     }
 
-    return { header, intervalTree }
+    return {
+      header,
+      intervalTree,
+    }
   }
 
   public async setup() {
     if (!this.vcfFeatures) {
-      this.vcfFeatures = this.setupP().catch(e => {
+      this.vcfFeatures = this.setupP().catch((e: unknown) => {
         this.vcfFeatures = undefined
         throw e
       })

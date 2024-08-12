@@ -36,7 +36,7 @@ test('reloads alignments track (BAI 404)', async () => {
     // @ts-expect-error
     fetch.mockResponse(readBuffer)
     const buttons = await findAllByTestId('reload_button')
-    fireEvent.click(buttons[0])
+    fireEvent.click(buttons[0]!)
     expectCanvasMatch(await findByTestId(pv('1..400-0'), ...opts))
   })
 }, 40000)
@@ -53,7 +53,7 @@ test('reloads alignments track (BAM 404)', async () => {
     // @ts-expect-error
     fetch.mockResponse(readBuffer)
     const buttons = await findAllByTestId('reload_button')
-    fireEvent.click(buttons[0])
+    fireEvent.click(buttons[0]!)
     expectCanvasMatch(await findByTestId(pv('1..400-0'), ...opts))
   })
 }, 40000)

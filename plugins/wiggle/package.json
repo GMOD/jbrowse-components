@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@floating-ui/react": "^0.26.3",
-    "@gmod/bbi": "^4.0.0",
+    "@gmod/bbi": "^5.0.0",
     "@mui/icons-material": "^5.0.2",
     "@mui/x-data-grid": "^7.0.0",
     "@mui/x-charts-vendor": "^7.12.0",

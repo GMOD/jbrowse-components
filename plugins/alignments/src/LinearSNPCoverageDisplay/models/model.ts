@@ -203,7 +203,7 @@ function stateModelFactory(
             // must use getSnapshot because otherwise changes to e.g. just the
             // colorBy.type are not read
             colorBy: colorBy ? getSnapshot(colorBy) : undefined,
-            filterBy: filterBy ? getSnapshot(filterBy) : undefined,
+            filterBy: getSnapshot(filterBy),
           }
         },
       }
@@ -319,19 +319,25 @@ function stateModelFactory(
               label: 'Draw insertion/clipping indicators',
               type: 'checkbox',
               checked: self.drawIndicatorsSetting,
-              onClick: () => self.toggleDrawIndicators(),
+              onClick: () => {
+                self.toggleDrawIndicators()
+              },
             },
             {
               label: 'Draw insertion/clipping counts',
               type: 'checkbox',
               checked: self.drawInterbaseCountsSetting,
-              onClick: () => self.toggleDrawInterbaseCounts(),
+              onClick: () => {
+                self.toggleDrawInterbaseCounts()
+              },
             },
             {
               label: 'Draw arcs',
               type: 'checkbox',
               checked: self.drawArcsSetting,
-              onClick: () => self.toggleDrawArcs(),
+              onClick: () => {
+                self.toggleDrawArcs()
+              },
             },
           ]
         },

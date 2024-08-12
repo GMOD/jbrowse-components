@@ -19,7 +19,9 @@ const DrawerControls = observer(function ({
     <>
       <IconButton
         color="inherit"
-        onClick={event => setAnchorEl(event.currentTarget)}
+        onClick={event => {
+          setAnchorEl(event.currentTarget)
+        }}
       >
         <MoreVertIcon />
       </IconButton>
@@ -41,7 +43,9 @@ const DrawerControls = observer(function ({
       <Tooltip title="Close drawer">
         <IconButton
           color="inherit"
-          onClick={() => session.hideWidget(visibleWidget)}
+          onClick={() => {
+            session.hideWidget(visibleWidget)
+          }}
         >
           <CloseIcon />
         </IconButton>
@@ -49,7 +53,9 @@ const DrawerControls = observer(function ({
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
-        onClose={() => setAnchorEl(null)}
+        onClose={() => {
+          setAnchorEl(null)
+        }}
       >
         {['left', 'right'].map(option => (
           <MenuItem

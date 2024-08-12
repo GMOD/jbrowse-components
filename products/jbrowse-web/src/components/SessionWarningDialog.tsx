@@ -40,13 +40,21 @@ function SessionWarningDialog({
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button color="primary" variant="contained" onClick={() => onConfirm()}>
+        <Button
+          color="primary"
+          variant="contained"
+          onClick={() => {
+            onConfirm()
+          }}
+        >
           Yes, I trust it
         </Button>
         <Button
           variant="contained"
           color="secondary"
-          onClick={() => onCancel()}
+          onClick={() => {
+            onCancel()
+          }}
         >
           Cancel
         </Button>

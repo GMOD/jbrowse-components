@@ -38,25 +38,35 @@ const DotplotControls = observer(function ({
       <CascadingMenuButton
         menuItems={[
           {
-            onClick: () => model.squareView(),
+            onClick: () => {
+              model.squareView()
+            },
             label: 'Square view - same base pairs per pixel',
           },
           {
-            onClick: () => model.squareViewProportional(),
+            onClick: () => {
+              model.squareViewProportional()
+            },
             label: 'Rectanglularize view - same total bp',
           },
           {
-            onClick: () => model.showAllRegions(),
+            onClick: () => {
+              model.showAllRegions()
+            },
             label: 'Show all regions',
           },
           {
-            onClick: () => model.setDrawCigar(!model.drawCigar),
+            onClick: () => {
+              model.setDrawCigar(!model.drawCigar)
+            },
             type: 'checkbox',
             label: 'Draw CIGAR',
             checked: model.drawCigar,
           },
           {
-            onClick: () => model.setShowPanButtons(!model.showPanButtons),
+            onClick: () => {
+              model.setShowPanButtons(!model.showPanButtons)
+            },
             label: 'Show pan buttons',
             type: 'checkbox',
             checked: model.showPanButtons,
@@ -65,7 +75,9 @@ const DotplotControls = observer(function ({
             label: 'Click and drag mode',
             subMenu: [
               {
-                onClick: () => model.setCursorMode('move'),
+                onClick: () => {
+                  model.setCursorMode('move')
+                },
                 label:
                   'Pan by default, select region when ctrl/cmd key is held',
                 icon: CursorMove,
@@ -73,7 +85,9 @@ const DotplotControls = observer(function ({
                 checked: model.cursorMode === 'move',
               },
               {
-                onClick: () => model.setCursorMode('crosshair'),
+                onClick: () => {
+                  model.setCursorMode('crosshair')
+                },
                 label:
                   'Select region by default, pan when ctrl/cmd key is held',
                 icon: CursorMouse,
@@ -86,19 +100,25 @@ const DotplotControls = observer(function ({
             label: 'Wheel scroll mode',
             subMenu: [
               {
-                onClick: () => model.setWheelMode('pan'),
+                onClick: () => {
+                  model.setWheelMode('pan')
+                },
                 label: 'Pans view',
                 type: 'radio',
                 checked: model.wheelMode === 'pan',
               },
               {
-                onClick: () => model.setWheelMode('zoom'),
+                onClick: () => {
+                  model.setWheelMode('zoom')
+                },
                 label: 'Zooms view',
                 type: 'radio',
                 checked: model.wheelMode === 'zoom',
               },
               {
-                onClick: () => model.setWheelMode('none'),
+                onClick: () => {
+                  model.setWheelMode('none')
+                },
                 label: 'Disable',
                 type: 'radio',
                 checked: model.wheelMode === 'none',

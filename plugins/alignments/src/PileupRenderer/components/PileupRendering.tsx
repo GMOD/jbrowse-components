@@ -43,7 +43,7 @@ const PileupRendering = observer(function (props: {
     setFirstRender(true)
   }, [])
 
-  const [region] = regions
+  const region = regions[0]!
   let selected = undefined as Rect | undefined
   let highlight = undefined as Rect | undefined
   const ref = useRef<HTMLDivElement>(null)
@@ -51,7 +51,7 @@ const PileupRendering = observer(function (props: {
   const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] =
     useState(false)
   const selectedRect = selectedFeatureId
-    ? displayModel.getFeatureByID?.(blockKey, selectedFeatureId)
+    ? displayModel.getFeatureByID(blockKey, selectedFeatureId)
     : undefined
   if (selectedRect) {
     const [leftBp, topPx, rightBp, bottomPx] = selectedRect
@@ -67,7 +67,7 @@ const PileupRendering = observer(function (props: {
   }
   const highlightedFeature = featureIdUnderMouse || contextMenuFeature?.id()
   const highlightedRect = highlightedFeature
-    ? displayModel.getFeatureByID?.(blockKey, highlightedFeature)
+    ? displayModel.getFeatureByID(blockKey, highlightedFeature)
     : undefined
 
   if (highlightedRect) {
@@ -168,15 +168,33 @@ const PileupRendering = observer(function (props: {
         .filter(f => !!f)
         .join('-')}
       style={{ position: 'relative', width: canvasWidth, height }}
-      onMouseDown={event => onMouseDown(event)}
-      onMouseEnter={event => onMouseEnter(event)}
-      onMouseOut={event => onMouseOut(event)}
-      onMouseOver={event => onMouseOver(event)}
-      onMouseUp={event => onMouseUp(event)}
-      onMouseLeave={event => onMouseLeave(event)}
-      onMouseMove={event => mouseMove(event)}
-      onClick={event => onClick(event)}
-      onContextMenu={event => onContextMenu(event)}
+      onMouseDown={event => {
+        onMouseDown(event)
+      }}
+      onMouseEnter={event => {
+        onMouseEnter(event)
+      }}
+      onMouseOut={event => {
+        onMouseOut(event)
+      }}
+      onMouseOver={event => {
+        onMouseOver(event)
+      }}
+      onMouseUp={event => {
+        onMouseUp(event)
+      }}
+      onMouseLeave={event => {
+        onMouseLeave(event)
+      }}
+      onMouseMove={event => {
+        mouseMove(event)
+      }}
+      onClick={event => {
+        onClick(event)
+      }}
+      onContextMenu={event => {
+        onContextMenu(event)
+      }}
       onFocus={() => {}}
       onBlur={() => {}}
     >

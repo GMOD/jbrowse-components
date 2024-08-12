@@ -1,7 +1,4 @@
-import util from 'util'
-if (!global.TextEncoder) {
-  global.TextEncoder = util.TextEncoder
-}
-if (!global.TextDecoder) {
-  global.TextDecoder = util.TextDecoder
-}
+import { TextEncoder, TextDecoder } from 'util'
+
+global.TextEncoder = TextEncoder
+global.TextDecoder = TextDecoder

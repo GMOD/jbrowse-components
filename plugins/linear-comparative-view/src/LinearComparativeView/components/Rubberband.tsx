@@ -14,14 +14,10 @@ type LCV = LinearComparativeViewModel
 type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles()(theme => {
-  const { tertiary, primary } = theme.palette
-  const background = tertiary
-    ? alpha(tertiary.main, 0.7)
-    : alpha(primary.main, 0.7)
   return {
     rubberband: {
       height: '100%',
-      background,
+      background: alpha(theme.palette.tertiary.main, 0.7),
       position: 'absolute',
       zIndex: 10,
       textAlign: 'center',
@@ -33,7 +29,7 @@ const useStyles = makeStyles()(theme => {
       minHeight: 8,
     },
     rubberbandText: {
-      color: tertiary ? tertiary.contrastText : primary.contrastText,
+      color: theme.palette.tertiary.contrastText,
     },
     popover: {
       mouseEvents: 'none',
@@ -65,7 +61,7 @@ const LinearComparativeRubberband = observer(function Rubberband({
   }>()
   const [guideX, setGuideX] = useState<number>()
   const controlsRef = useRef<HTMLDivElement>(null)
-  const rubberbandRef = useRef(null)
+  const rubberbandRef = useRef<HTMLDivElement>(null)
   const { classes } = useStyles()
   const mouseDragging = startX !== undefined && anchorPosition === undefined
 
@@ -155,7 +151,9 @@ const LinearComparativeRubberband = observer(function Rubberband({
 
   function mouseOut() {
     setGuideX(undefined)
-    model.views.forEach(view => view.setOffsets(undefined, undefined))
+    model.views.forEach(view => {
+      view.setOffsets(undefined, undefined)
+    })
   }
 
   function handleClose() {

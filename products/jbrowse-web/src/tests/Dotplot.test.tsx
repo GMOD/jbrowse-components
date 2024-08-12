@@ -29,7 +29,7 @@ test('open a dotplot view with import form', async () => {
   fireEvent.click(await findByText('Add'))
   fireEvent.click(await findByText('Dotplot view'))
   const inputBox = await findAllByTestId('assembly-selector')
-  fireEvent.change(inputBox[0], {
+  fireEvent.change(inputBox[0]!, {
     target: {
       value: 'peach',
     },

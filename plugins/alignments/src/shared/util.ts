@@ -2,7 +2,7 @@ import { ChainData } from './fetchChains'
 
 export function hasPairedReads(features: ChainData) {
   for (const f of features.chains.values()) {
-    if (f[0].flags & 1) {
+    if (f[0]!.flags & 1) {
       return true
     }
   }

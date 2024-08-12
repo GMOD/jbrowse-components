@@ -66,7 +66,7 @@ export const TooltipWhereMouseovered = observer(function ({
   )
   const { getFloatingProps } = useInteractions([clientPoint])
 
-  const popperTheme = theme?.components?.MuiPopper
+  const popperTheme = theme.components?.MuiPopper
 
   return mouserect ? (
     <Portal container={popperTheme?.defaultProps?.container}>
@@ -115,7 +115,7 @@ export const TooltipWhereClicked = observer(function ({
   const clientPoint = useClientPoint(context, { x, y })
   const { getFloatingProps } = useInteractions([clientPoint])
 
-  const popperTheme = theme?.components?.MuiPopper
+  const popperTheme = theme.components?.MuiPopper
   return mousedown && Math.abs(xdistance) > 3 && Math.abs(ydistance) > 3 ? (
     <Portal container={popperTheme?.defaultProps?.container}>
       <div

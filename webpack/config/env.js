@@ -3,6 +3,7 @@ const path = require('path')
 const paths = require('./paths')
 
 // Make sure that including paths.js after env.js will read .env variables.
+
 delete require.cache[require.resolve('./paths')]
 
 const NODE_ENV = process.env.NODE_ENV
@@ -61,7 +62,7 @@ const REACT_APP = /^REACT_APP_/i
 function getClientEnvironment(publicUrl) {
   const raw = Object.keys(process.env)
     .filter(key => REACT_APP.test(key))
-    // eslint-disable-next-line unicorn/no-array-reduce
+
     .reduce(
       (env, key) => {
         env[key] = process.env[key]
@@ -91,7 +92,6 @@ function getClientEnvironment(publicUrl) {
     )
   // Stringify all values so we can feed into webpack DefinePlugin
   const stringified = {
-    // eslint-disable-next-line unicorn/no-array-reduce
     'process.env': Object.keys(raw).reduce((env, key) => {
       env[key] = JSON.stringify(raw[key])
       return env

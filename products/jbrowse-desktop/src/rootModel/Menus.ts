@@ -121,7 +121,7 @@ export function DesktopMenusMixin(_pluginManager: PluginManager) {
             {
               label: 'Open track...',
               icon: StorageIcon,
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
               onClick: (session: any) => {
                 if (session.views.length === 0) {
                   session.notify('Please open a view to add a track first')

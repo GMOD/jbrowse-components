@@ -67,7 +67,9 @@ function TrackSelector({
         <RadioGroup
           row
           value={choice}
-          onChange={event => setChoice(event.target.value)}
+          onChange={event => {
+            setChoice(event.target.value)
+          }}
           aria-labelledby="group-label"
         >
           <FormControlLabel value="none" control={<Radio />} label="None" />
@@ -143,8 +145,12 @@ const LinearSyntenyViewImportForm = observer(function ({
           }),
         ),
       )
-      model.views.forEach(view => view.setWidth(model.width))
-      model.views.forEach(view => view.showAllRegions())
+      model.views.forEach(view => {
+        view.setWidth(model.width)
+      })
+      model.views.forEach(view => {
+        view.showAllRegions()
+      })
       if (sessionTrackData) {
         session.addTrackConf(sessionTrackData)
         model.toggleTrack(sessionTrackData.trackId)
@@ -183,14 +189,18 @@ const LinearSyntenyViewImportForm = observer(function ({
               <Grid item>
                 <AssemblySelector
                   selected={assembly1}
-                  onChange={val => setAssembly1(val)}
+                  onChange={val => {
+                    setAssembly1(val)
+                  }}
                   session={session}
                 />
               </Grid>
               <Grid item>
                 <AssemblySelector
                   selected={assembly2}
-                  onChange={val => setAssembly2(val)}
+                  onChange={val => {
+                    setAssembly2(val)
+                  }}
                   session={session}
                 />
               </Grid>

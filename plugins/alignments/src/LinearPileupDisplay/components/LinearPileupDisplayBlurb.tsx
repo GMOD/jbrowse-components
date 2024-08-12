@@ -18,11 +18,9 @@ const LinearPileupDisplayBlurb = observer(function ({
   return sortedBy ? (
     <div data-testid={`blurb-${sortedBy}`}>
       <Typography color="secondary" variant="caption">
-        {sortedBy
-          ? `Sorted by ${sortedBy.tag ?? sortedBy.type} at ${
-              sortedBy.refName
-            }:${sortedBy.pos}`
-          : null}
+        {`Sorted by ${sortedBy.tag ?? sortedBy.type} at ${
+          sortedBy.refName
+        }:${sortedBy.pos}`}
       </Typography>
     </div>
   ) : null

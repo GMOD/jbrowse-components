@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   FileLocation,
   isUriLocation,
@@ -73,7 +72,7 @@ export function generateTracks({
       do {
         currentTrackName = trackDb.data[currentTrackName]?.data.parent || ''
         if (currentTrackName) {
-          ;[currentTrackName] = currentTrackName.split(' ')
+          currentTrackName = currentTrackName.split(' ')[0]!
           parentTracks.push(trackDb.data[currentTrackName])
         }
       } while (currentTrackName)
@@ -116,7 +115,7 @@ function makeTrackConfig({
   const bigDataUrl = track.data.bigDataUrl || ''
   const bigDataIdx = track.data.bigDataIndex || ''
   const isUri = isUriLocation(trackDbLoc)
-  let baseTrackType = trackType?.split(' ')[0] || ''
+  let baseTrackType = trackType.split(' ')[0] || ''
   if (baseTrackType === 'bam' && bigDataUrl.toLowerCase().endsWith('cram')) {
     baseTrackType = 'cram'
   }

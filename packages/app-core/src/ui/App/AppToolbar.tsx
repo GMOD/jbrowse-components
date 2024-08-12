@@ -60,7 +60,7 @@ const AppToolbar = observer(function ({
         <EditableTypography
           value={name}
           setValue={newName => {
-            if (savedSessionNames?.includes(newName)) {
+            if (savedSessionNames.includes(newName)) {
               session.notify(
                 `Cannot rename session to "${newName}", a saved session with that name already exists`,
                 'warning',

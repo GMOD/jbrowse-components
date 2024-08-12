@@ -34,7 +34,9 @@ const EditBookmarkLabelDialog = observer(function ({
           inputProps={{ 'data-testid': 'edit-bookmark-label-field' }}
           variant="outlined"
           value={newLabel}
-          onChange={e => setNewLabel(e.target.value)}
+          onChange={e => {
+            setNewLabel(e.target.value)
+          }}
           autoFocus
         />
       </DialogContent>
@@ -43,7 +45,7 @@ const EditBookmarkLabelDialog = observer(function ({
           variant="contained"
           color="primary"
           onClick={() => {
-            if (newLabel && dialogRow) {
+            if (newLabel) {
               model.updateBookmarkLabel(dialogRow, newLabel)
             }
             setNewLabel('')

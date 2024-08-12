@@ -46,12 +46,19 @@ const DrawerHeader = observer(function ({
           ? classes.headerFocused
           : classes.headerUnfocused
       }
-      ref={ref => setToolbarHeight(ref?.getBoundingClientRect().height || 0)}
+      ref={ref => {
+        setToolbarHeight(ref?.getBoundingClientRect().height || 0)
+      }}
     >
       <Toolbar disableGutters>
         <DrawerWidgetSelector session={session} />
         <Tooltip title="Open drawer in dialog">
-          <IconButton color="inherit" onClick={() => onPopoutDrawer()}>
+          <IconButton
+            color="inherit"
+            onClick={() => {
+              onPopoutDrawer()
+            }}
+          >
             <LaunchIcon />
           </IconButton>
         </Tooltip>

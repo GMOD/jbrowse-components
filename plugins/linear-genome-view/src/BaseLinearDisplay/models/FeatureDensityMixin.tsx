@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
 import { getConf } from '@jbrowse/core/configuration'
 import { getContainingView } from '@jbrowse/core/util'
@@ -114,11 +113,11 @@ export default function FeatureDensityMixin() {
       /**
        * #action
        */
-      async getFeatureDensityStats() {
+      getFeatureDensityStats() {
         if (!self.featureDensityStatsP) {
           self.featureDensityStatsP = getFeatureDensityStatsPre(
             self as any,
-          ).catch(e => {
+          ).catch((e: unknown) => {
             if (isAlive(self)) {
               this.setFeatureDensityStatsP(undefined)
             }

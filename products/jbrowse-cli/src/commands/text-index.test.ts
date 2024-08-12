@@ -7,7 +7,7 @@ import path from 'path'
 import nock from 'nock'
 
 // locals
-import { dataDir, copyDir, runInTmpDir } from '../testUtil'
+import { dataDir, runInTmpDir } from '../testUtil'
 import { runCommand } from '@oclif/test'
 
 const configPath = dataDir('indexing_config.json')
@@ -218,7 +218,7 @@ test('indexes a track with no attributes in the config', async () => {
 })
 test('indexes with multiple per-file args', async () => {
   await runInTmpDir(async ctx => {
-    await copyDir(volvoxDir, ctx.dir)
+    fs.cpSync(volvoxDir, ctx.dir, { recursive: true, force: true })
     await runCommand([
       'text-index',
       '--file',
@@ -232,7 +232,7 @@ test('indexes with multiple per-file args', async () => {
 
 test('indexes with  single per-file arg', async () => {
   await runInTmpDir(async ctx => {
-    await copyDir(volvoxDir, ctx.dir)
+    fs.cpSync(volvoxDir, ctx.dir, { recursive: true, force: true })
     await runCommand(['text-index', '--file', 'volvox.sort.gff3.gz'])
     verifyIxxFiles(ctx.dir, 'volvox.sort.gff3.gz')
   })
@@ -244,7 +244,7 @@ test('indexes single assembly volvox config', async () => {
     let preVolvoxIxx = ''
     let preVolvoxMeta = ''
 
-    await copyDir(volvoxDir, ctx.dir)
+    fs.cpSync(volvoxDir, ctx.dir, { recursive: true, force: true })
     const volvoxConfig = readJSON(path.join(ctx.dir, 'config.json'))
     const assembly = volvoxConfig.assemblies[0]
     volvoxConfig.assemblies = undefined
@@ -277,7 +277,7 @@ test('indexes entire volvox config', async () => {
     let preVolvoxIxx = ''
     let preVolvoxMeta = ''
 
-    await copyDir(volvoxDir, ctx.dir)
+    fs.cpSync(volvoxDir, ctx.dir, { recursive: true, force: true })
 
     preVolvoxIx = readTrix(ctx.dir, 'volvox.ix')
     preVolvoxIxx = readTrix(ctx.dir, 'volvox.ixx')

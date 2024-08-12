@@ -11,13 +11,13 @@ test('plugin in a stock JBrowse', () => {
     /JBrowse already configured, cannot add plugins/,
   )
 
-  const VcfTabixAdapter = pluginManager.getAdapterType('VcfTabixAdapter')
+  const VcfTabixAdapter = pluginManager.getAdapterType('VcfTabixAdapter')!
   const config = VcfTabixAdapter.configSchema.create({
     type: 'VcfTabixAdapter',
   })
   expect(getSnapshot(config)).toMatchSnapshot()
 
-  const VariantTrack = pluginManager.getTrackType('VariantTrack')
+  const VariantTrack = pluginManager.getTrackType('VariantTrack')!
   const config2 = VariantTrack.configSchema.create({
     type: 'VariantTrack',
     trackId: 'trackId0',

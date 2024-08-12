@@ -315,9 +315,12 @@ export function stateModelFactory(
             scaleOpts,
             sources,
             ticks,
-            onMouseMove: (_: unknown, f: Feature) =>
-              self.setFeatureUnderMouse(f),
-            onMouseLeave: () => self.setFeatureUnderMouse(undefined),
+            onMouseMove: (_: unknown, f: Feature) => {
+              self.setFeatureUnderMouse(f)
+            },
+            onMouseLeave: () => {
+              self.setFeatureUnderMouse(undefined)
+            },
           }
         },
 
@@ -341,11 +344,11 @@ export function stateModelFactory(
         get fillSetting() {
           if (self.filled) {
             return 0
-          }
-          if (!self.filled && self.minSize === 1) {
+          } else if (self.minSize === 1) {
             return 1
+          } else {
+            return 2
           }
-          return 2
         },
       }
     })
@@ -373,7 +376,9 @@ export function stateModelFactory(
                         label: elt,
                         type: 'radio',
                         checked: self.fillSetting === idx,
-                        onClick: () => self.setFill(idx),
+                        onClick: () => {
+                          self.setFill(idx)
+                        },
                       }),
                     ),
                   },
@@ -386,7 +391,9 @@ export function stateModelFactory(
                     type: 'checkbox',
                     label: 'Draw cross hatches',
                     checked: self.displayCrossHatchesSetting,
-                    onClick: () => self.toggleCrossHatches(),
+                    onClick: () => {
+                      self.toggleCrossHatches()
+                    },
                   },
                 ]
               : []),
@@ -404,7 +411,9 @@ export function stateModelFactory(
                       label: key,
                       type: 'radio',
                       checked: self.rendererTypeNameSimple === key,
-                      onClick: () => self.setRendererType(key),
+                      onClick: () => {
+                        self.setRendererType(key)
+                      },
                     })),
                   },
                 ]

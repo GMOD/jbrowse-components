@@ -31,7 +31,7 @@ export default function SearchResultsTable({
   const { pluginManager } = getEnv(session)
   const { assemblyManager } = session
   const assemblyName =
-    optAssemblyName || model.displayedRegions[0]?.assemblyName
+    optAssemblyName || model.displayedRegions[0]!.assemblyName
 
   const assembly = assemblyManager.get(assemblyName)
   if (!assembly) {
@@ -80,7 +80,7 @@ export default function SearchResultsTable({
         </TableHead>
         <TableBody>
           {searchResults.map(result => (
-            <TableRow key={`${result.getId()}`}>
+            <TableRow key={result.getId()}>
               <TableCell component="th" scope="row">
                 {result.getLabel()}
               </TableCell>

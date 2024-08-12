@@ -14,12 +14,10 @@ export default function VariantAnnotationTable({
   return data.length ? (
     <BaseCard title={title}>
       <AnnotGrid
-        rows={
-          data.map((elt, id) => ({
-            id,
-            ...Object.fromEntries(elt.split('|').map((e, i) => [fields[i], e])),
-          })) || []
-        }
+        rows={data.map((elt, id) => ({
+          id,
+          ...Object.fromEntries(elt.split('|').map((e, i) => [fields[i], e])),
+        }))}
         columns={fields.map(c => ({ field: c }))}
       />
     </BaseCard>

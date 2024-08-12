@@ -47,7 +47,9 @@ export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
         },
         {
           label: 'Settings',
-          onClick: () => session.editConfiguration(trackConfig),
+          onClick: () => {
+            session.editConfiguration(trackConfig)
+          },
           icon: SettingsIcon,
         },
         {
@@ -101,7 +103,9 @@ export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
                       name: indexName,
                     },
                     name: indexName,
-                    cancelCallback: () => jobsManager.abortJob(),
+                    cancelCallback: () => {
+                      jobsManager.abortJob()
+                    },
                   })
                 },
                 icon: Indexing,

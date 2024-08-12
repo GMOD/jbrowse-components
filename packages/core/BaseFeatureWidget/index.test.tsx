@@ -1,12 +1,14 @@
 import React from 'react'
 import { render } from '@testing-library/react'
 import { types } from 'mobx-state-tree'
+import { ThemeProvider } from '@mui/material'
 
 // locals
 import { ConfigurationSchema } from '../configuration'
 import PluginManager from '../PluginManager'
 import { stateModelFactory } from '.'
 import BaseFeatureDetails from './BaseFeatureDetail'
+import { createJBrowseTheme } from '../ui'
 
 test('open up a widget', async () => {
   const pluginManager = new PluginManager([])
@@ -25,7 +27,9 @@ test('open up a widget', async () => {
     { pluginManager },
   )
   const { container, findByText } = render(
-    <BaseFeatureDetails model={model.widget} />,
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <BaseFeatureDetails model={model.widget} />
+    </ThemeProvider>,
   )
   model.widget.setFeatureData({
     start: 2,

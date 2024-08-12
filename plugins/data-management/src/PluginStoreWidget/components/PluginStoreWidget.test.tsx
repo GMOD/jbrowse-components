@@ -69,7 +69,9 @@ test('Installs a session plugin', async () => {
     </ThemeProvider>,
   )
   await user.click(await findByText('Install'))
-  await waitFor(() => expect(window.location.reload).toHaveBeenCalled())
+  await waitFor(() => {
+    expect(window.location.reload).toHaveBeenCalled()
+  })
   expect(getSnapshot(session.sessionPlugins)[0]).toEqual(plugins.plugins[0])
 })
 
@@ -85,7 +87,9 @@ test('plugin store admin - adds a custom plugin correctly', async () => {
   await user.type(await findByLabelText('Plugin name'), 'MsaView')
   await user.click(await findByText('Submit'))
 
-  await waitFor(() => expect(window.location.reload).toHaveBeenCalled())
+  await waitFor(() => {
+    expect(window.location.reload).toHaveBeenCalled()
+  })
 
   expect(getSnapshot(getParent(session)).jbrowse.plugins).toEqual([
     {
@@ -105,5 +109,7 @@ test('plugin store admin - removes a custom plugin correctly', async () => {
   )
   await user.click(await findByTestId('removePlugin-SVGPlugin'))
   await user.click(await findByText('Confirm'))
-  await waitFor(() => expect(window.location.reload).toHaveBeenCalled())
+  await waitFor(() => {
+    expect(window.location.reload).toHaveBeenCalled()
+  })
 })

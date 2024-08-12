@@ -44,7 +44,9 @@ const StringEditor = observer(function ({
       label={slot.name}
       helperText={slot.description}
       value={slot.value}
-      onChange={evt => slot.set(evt.target.value)}
+      onChange={evt => {
+        slot.set(evt.target.value)
+      }}
     />
   )
 })
@@ -65,7 +67,9 @@ const TextEditor = observer(function ({
       helperText={slot.description}
       multiline
       value={slot.value}
-      onChange={evt => slot.set(evt.target.value)}
+      onChange={evt => {
+        slot.set(evt.target.value)
+      }}
     />
   )
 })
@@ -100,7 +104,9 @@ const IntegerEditor = observer(function ({
       helperText={slot.description}
       value={val}
       type="number"
-      onChange={evt => setVal(evt.target.value)}
+      onChange={evt => {
+        setVal(evt.target.value)
+      }}
     />
   )
 })
@@ -114,7 +120,7 @@ const StringEnumEditor = observer(function ({
 }) {
   const p = getPropertyMembers(getSubType(slotSchema))
   const choices = getUnionSubTypes(
-    getUnionSubTypes(getSubType(p.properties.value))[1],
+    getUnionSubTypes(getSubType(p.properties.value!))[1]!,
   ).map(t => (t as ILiteralType<string>).value)
 
   return (
@@ -123,7 +129,9 @@ const StringEnumEditor = observer(function ({
       label={slot.name}
       select
       helperText={slot.description}
-      onChange={evt => slot.set(evt.target.value)}
+      onChange={evt => {
+        slot.set(evt.target.value)
+      }}
     >
       {choices.map(str => (
         <MenuItem key={str} value={str}>
@@ -147,9 +155,12 @@ const FileSelectorWrapper = observer(function ({
   return (
     <FileSelector
       location={slot.value}
-      setLocation={location => slot.set(location)}
+      setLocation={location => {
+        slot.set(location)
+      }}
       name={slot.name}
       description={slot.description}
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       rootModel={getEnv(slot).pluginManager?.rootModel}
     />
   )
@@ -175,7 +186,6 @@ const SlotEditor = observer(function ({
   slot,
   slotSchema,
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   slot: any
   slotSchema: IAnyType
 }) {

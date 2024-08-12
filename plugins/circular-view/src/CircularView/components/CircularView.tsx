@@ -29,7 +29,7 @@ const Slices = observer(({ model }: { model: CircularViewModel }) => {
       {model.staticSlices.map(slice => (
         <Ruler
           key={assembleLocString(
-            slice.region.elided ? slice.region.regions[0] : slice.region,
+            slice.region.elided ? slice.region.regions[0]! : slice.region,
           )}
           model={model}
           slice={slice}

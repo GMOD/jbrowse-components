@@ -20,7 +20,9 @@ const DeleteSessionDialog = ({
   return (
     <Dialog
       open
-      onClose={() => onClose(false)}
+      onClose={() => {
+        onClose(false)
+      }}
       title={`Delete ${quickstartToDelete} quickstart?`}
     >
       <DialogContent>
@@ -28,7 +30,12 @@ const DeleteSessionDialog = ({
         {error ? <Typography color="error">{`${error}`}</Typography> : null}
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => onClose(false)} color="primary">
+        <Button
+          onClick={() => {
+            onClose(false)
+          }}
+          color="primary"
+        >
           Cancel
         </Button>
         <Button

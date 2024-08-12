@@ -76,16 +76,22 @@ const AddCustomPluginDialog = observer(function ({
             label="Plugin name"
             variant="outlined"
             value={umdPluginName}
-            onChange={event => setUMDPluginName(event.target.value)}
+            onChange={event => {
+              setUMDPluginName(event.target.value)
+            }}
           />
           <TextField
             label="Plugin URL"
             variant="outlined"
             value={umdPluginUrl}
-            onChange={event => setUMDPluginUrl(event.target.value)}
+            onChange={event => {
+              setUMDPluginUrl(event.target.value)
+            }}
           />
           <DialogContentText
-            onClick={() => setAdvancedOptionsOpen(!advancedOptionsOpen)}
+            onClick={() => {
+              setAdvancedOptionsOpen(!advancedOptionsOpen)
+            }}
           >
             <IconButton
               className={cx(classes.expand, {
@@ -110,13 +116,17 @@ const AddCustomPluginDialog = observer(function ({
                 label="ESM build URL"
                 variant="outlined"
                 value={esmPluginUrl}
-                onChange={event => setESMPluginUrl(event.target.value)}
+                onChange={event => {
+                  setESMPluginUrl(event.target.value)
+                }}
               />
               <TextField
                 label="CJS build URL"
                 variant="outlined"
                 value={cjsPluginUrl}
-                onChange={event => setCJSPluginUrl(event.target.value)}
+                onChange={event => {
+                  setCJSPluginUrl(event.target.value)
+                }}
               />
             </div>
           </Collapse>

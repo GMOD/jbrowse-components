@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import {
@@ -47,7 +46,7 @@ const useStyles = makeStyles()(theme => ({
     padding: theme.spacing(1),
   },
   expandIcon: {
-    color: theme.palette.tertiary?.contrastText || '#fff',
+    color: theme.palette.tertiary.contrastText || '#fff',
   },
 }))
 
@@ -61,7 +60,9 @@ export function BaseCard({
   return (
     <Accordion
       expanded={expanded}
-      onChange={() => setExpanded(s => !s)}
+      onChange={() => {
+        setExpanded(s => !s)
+      }}
       TransitionProps={{ unmountOnExit: true, timeout: 150 }}
     >
       <AccordionSummary
@@ -106,7 +107,6 @@ function CoreDetails(props: BaseProps) {
     }
   }
 
-  // eslint-disable-next-line no-underscore-dangle
   const formattedFeat = { ...obj, ...obj.__jbrowsefmt }
   const { start, end } = formattedFeat
 

@@ -465,16 +465,16 @@ export function createJBrowseTheme(
   return createTheme(
     createJBrowseBaseTheme(
       themeName === 'default'
-        ? deepmerge(themes.default, augmentTheme(configTheme), {
+        ? deepmerge(themes.default!, augmentTheme(configTheme), {
             arrayMerge: overwriteArrayMerge,
           })
-        : augmentThemePlus(themes[themeName]) || themes.default,
+        : augmentThemePlus(themes[themeName]),
     ),
   )
 }
 
 function augmentTheme(theme: ThemeOptions = {}) {
-  if (theme?.palette?.tertiary) {
+  if (theme.palette?.tertiary) {
     theme = deepmerge(theme, {
       palette: {
         tertiary: refTheme.palette.augmentColor(
@@ -486,7 +486,7 @@ function augmentTheme(theme: ThemeOptions = {}) {
     })
   }
 
-  if (theme?.palette?.quaternary) {
+  if (theme.palette?.quaternary) {
     theme = deepmerge(theme, {
       palette: {
         quaternary: refTheme.palette.augmentColor(
@@ -504,7 +504,7 @@ function augmentTheme(theme: ThemeOptions = {}) {
 // creates some blank quaternary/tertiary colors if unsupplied by a user theme
 function augmentThemePlus(theme: ThemeOptions = {}) {
   theme = augmentTheme(theme)
-  if (!theme?.palette?.quaternary) {
+  if (!theme.palette?.quaternary) {
     theme = deepmerge(theme, {
       palette: {
         quaternary: refTheme.palette.augmentColor({
@@ -515,7 +515,7 @@ function augmentThemePlus(theme: ThemeOptions = {}) {
       },
     })
   }
-  if (!theme?.palette?.tertiary) {
+  if (!theme.palette?.tertiary) {
     theme = deepmerge(theme, {
       palette: {
         tertiary: refTheme.palette.augmentColor({

@@ -25,15 +25,15 @@ export function renderPerBaseQuality({
   let roffset = 0 // reference offset
 
   for (let i = 0; i < cigarOps.length; i += 2) {
-    const len = +cigarOps[i]
-    const op = cigarOps[i + 1]
+    const len = +cigarOps[i]!
+    const op = cigarOps[i + 1]!
     if (op === 'S' || op === 'I') {
       soffset += len
     } else if (op === 'D' || op === 'N') {
       roffset += len
     } else if (op === 'M' || op === 'X' || op === '=') {
       for (let m = 0; m < len; m++) {
-        const score = scores[soffset + m]
+        const score = scores[soffset + m]!
         const start0 = start + roffset + m
         const leftPx = bpSpanPx(start0, start0 + 1, region, bpPerPx)[0]
         const c = `hsl(${score === 255 ? 150 : score * 1.5},55%,50%)`

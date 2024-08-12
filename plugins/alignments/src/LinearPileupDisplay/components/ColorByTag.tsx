@@ -32,7 +32,9 @@ const ColorByTagDialog = observer(function ({
 
         <TextField
           value={tag}
-          onChange={event => setTag(event.target.value)}
+          onChange={event => {
+            setTag(event.target.value)
+          }}
           placeholder="Enter tag name"
           inputProps={{ maxLength: 2 }}
           error={tag.length === 2 && !validTag}

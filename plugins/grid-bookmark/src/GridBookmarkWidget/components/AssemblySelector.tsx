@@ -33,7 +33,9 @@ const AssemblySelector = observer(function ({
         labelId={id}
         multiple
         value={selectedAssemblies}
-        onChange={event => model.setSelectedAssemblies([...event.target.value])}
+        onChange={event => {
+          model.setSelectedAssemblies([...event.target.value])
+        }}
         input={<OutlinedInput label={label} />}
         renderValue={selected => selected.join(', ')}
       >

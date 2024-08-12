@@ -28,10 +28,21 @@ const ShoppingCart = observer(function ({
   return selection.length ? (
     <CascadingMenuButton
       menuItems={[
-        { label: 'Clear', onClick: () => model.clearSelection() },
+        {
+          label: 'Clear',
+          onClick: () => {
+            model.clearSelection()
+          },
+        },
         ...items.map(item => ({
           ...item,
-          ...('onClick' in item ? { onClick: () => item.onClick(model) } : {}),
+          ...('onClick' in item
+            ? {
+                onClick: () => {
+                  item.onClick(model)
+                },
+              }
+            : {}),
         })),
       ]}
     >

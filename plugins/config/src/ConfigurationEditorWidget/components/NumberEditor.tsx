@@ -28,7 +28,9 @@ const NumberEditor = observer(function ({
       helperText={slot.description}
       value={val}
       type="number"
-      onChange={evt => setVal(evt.target.value)}
+      onChange={evt => {
+        setVal(evt.target.value)
+      }}
     />
   )
 })

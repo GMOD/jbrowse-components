@@ -15,7 +15,7 @@ export default class BreakpointSplitViewType extends ViewType {
     const bpPerPx = 10
 
     // TODO: Figure this out for multiple assembly names
-    const { assemblyName } = view.displayedRegions[0]
+    const { assemblyName } = view.displayedRegions[0]!
     const { assemblyManager } = getSession(view)
     const assembly = assemblyManager.get(assemblyName)
 
@@ -39,8 +39,8 @@ export default class BreakpointSplitViewType extends ViewType {
       mateRefName = assembly.getCanonicalRefName(INFO.CHR2[0])
     } else if (bnd?.MatePosition) {
       const matePosition = bnd.MatePosition.split(':')
-      endPos = +matePosition[1] - 1
-      mateRefName = assembly.getCanonicalRefName(matePosition[0])
+      endPos = +matePosition[1]! - 1
+      mateRefName = assembly.getCanonicalRefName(matePosition[0]!)
       if (bnd.Join === 'left') {
         startMod = -1
       }
@@ -72,10 +72,10 @@ export default class BreakpointSplitViewType extends ViewType {
 
     const topMarkedRegion = [{ ...topRegion }, { ...topRegion }]
     const bottomMarkedRegion = [{ ...bottomRegion }, { ...bottomRegion }]
-    topMarkedRegion[0].end = startPos + startMod
-    topMarkedRegion[1].start = startPos + startMod
-    bottomMarkedRegion[0].end = endPos + endMod
-    bottomMarkedRegion[1].start = endPos + endMod
+    topMarkedRegion[0]!.end = startPos + startMod
+    topMarkedRegion[1]!.start = startPos + startMod
+    bottomMarkedRegion[0]!.end = endPos + endMod
+    bottomMarkedRegion[1]!.start = endPos + endMod
     return {
       type: 'BreakpointSplitView',
       views: [

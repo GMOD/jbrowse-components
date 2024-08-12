@@ -79,7 +79,9 @@ const AddConnectionWidget = observer(function ({ model }: { model: unknown }) {
               <div className={classes.actionsContainer}>
                 <Button
                   disabled={activeStep === 0}
-                  onClick={() => setActiveStep(activeStep - 1)}
+                  onClick={() => {
+                    setActiveStep(activeStep - 1)
+                  }}
                   className={classes.button}
                 >
                   Back

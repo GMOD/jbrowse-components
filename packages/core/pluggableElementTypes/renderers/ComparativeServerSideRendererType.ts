@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { filter, toArray } from 'rxjs/operators'
 import { Feature } from '../../util/simpleFeature'
 import { Region } from '../../util/types'
@@ -14,6 +13,7 @@ import { getAdapter } from '../../data_adapters/dataAdapterCache'
 import { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
 import { dedupe, getSerializedSvg } from '../../util'
 import { firstValueFrom } from 'rxjs'
+import { AnyConfigurationModel } from '../../configuration'
 
 export interface RenderArgs extends ServerSideRenderArgs {
   displayModel: Record<string, unknown>
@@ -50,14 +50,12 @@ function isSvgExport(e: ResultsSerialized): e is ResultsSerializedSvgExport {
 
 export default class ComparativeServerSideRenderer extends ServerSideRenderer {
   /**
-   * directly modifies the render arguments to prepare
-   * them to be serialized and sent to the worker.
+   * directly modifies the render arguments to prepare them to be serialized
+   * and sent to the worker.
    *
-   * the base class replaces the `displayModel` param
-   * (which on the client is a MST model) with a stub
-   * that only contains the `selectedFeature`, since
-   * this is the only part of the track model that most
-   * renderers read.
+   * the base class replaces the `displayModel` param (which on the client is a
+   * MST model) with a stub that only contains the `selectedFeature`, since
+   * this is the only part of the track model that most renderers read.
    *
    * @param args - the arguments passed to render
    * @returns the same object
@@ -114,16 +112,14 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
       : true
   }
 
-  async getFeatures(renderArgs: any) {
+  async getFeatures(renderArgs: {
+    regions: Region[]
+    sessionId: string
+    adapterConfig: AnyConfigurationModel
+  }) {
     const pm = this.pluginManager
-    const { sessionId, adapterConfig } = renderArgs
+    const { regions, sessionId, adapterConfig } = renderArgs
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
-    const regions = renderArgs.regions as Region[]
-    if (!regions || regions.length === 0) {
-      console.warn('no regions supplied to comparative renderer')
-      return []
-    }
-
     const requestRegions = regions.map(r => {
       // make sure the requested region's start and end are integers, if
       // there is a region specification.
@@ -142,6 +138,7 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
       (dataAdapter as BaseFeatureDataAdapter)
         .getFeaturesInMultipleRegions(requestRegions, renderArgs)
         .pipe(
+          // @ts-expect-error
           filter(f => this.featurePassesFilters(renderArgs, f)),
           toArray(),
         ),

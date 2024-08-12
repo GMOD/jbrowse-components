@@ -24,7 +24,9 @@ export const ExternalTokenEntryForm = ({
           label="Enter Token"
           variant="outlined"
           inputProps={{ 'data-testid': 'entry-externalToken' }}
-          onChange={event => setToken(event.target.value)}
+          onChange={event => {
+            setToken(event.target.value)
+          }}
           margin="dense"
         />
       </DialogContent>
@@ -45,7 +47,9 @@ export const ExternalTokenEntryForm = ({
         <Button
           variant="contained"
           color="secondary"
-          onClick={() => handleClose()}
+          onClick={() => {
+            handleClose()
+          }}
         >
           Cancel
         </Button>

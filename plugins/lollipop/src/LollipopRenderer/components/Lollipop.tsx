@@ -3,7 +3,6 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { observer } from 'mobx-react'
 import ScoreText from './ScoreText'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const Lollipop = observer(function Lollipop(props: Record<string, any>) {
   const { feature, config, layoutRecord, selectedFeatureId } = props
   const {

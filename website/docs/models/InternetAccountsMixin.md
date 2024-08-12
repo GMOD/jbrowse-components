@@ -38,7 +38,7 @@ initializeInternetAccount: (internetAccountConfig: { [x: string]: any; } & NonEm
 
 ```js
 // type signature
-createEphemeralInternetAccount: (internetAccountId: string, initialSnapshot: {}, url: string) => any
+createEphemeralInternetAccount: (internetAccountId: string, initialSnapshot: Record<string, unknown>, url: string) => any
 ```
 
 #### action: findAppropriateInternetAccount

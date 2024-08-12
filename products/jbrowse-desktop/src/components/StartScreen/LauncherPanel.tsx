@@ -38,7 +38,9 @@ export default function LauncherPanel({
         variant="contained"
         color="primary"
         className={classes.button}
-        onClick={() => setSequenceDialogOpen(true)}
+        onClick={() => {
+          setSequenceDialogOpen(true)
+        }}
       >
         Open sequence file(s)
       </Button>

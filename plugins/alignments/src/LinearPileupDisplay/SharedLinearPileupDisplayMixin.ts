@@ -181,7 +181,7 @@ export function SharedLinearPileupDisplayMixin(
         uniqueTag.forEach(value => {
           if (!self.colorTagMap.has(value)) {
             const totalKeys = [...self.colorTagMap.keys()].length
-            self.colorTagMap.set(value, colorPalette[totalKeys])
+            self.colorTagMap.set(value, colorPalette[totalKeys]!)
           }
         })
       },
@@ -327,18 +327,14 @@ export function SharedLinearPileupDisplayMixin(
                   icon: MenuOpenIcon,
                   onClick: (): void => {
                     self.clearFeatureSelection()
-                    if (feat) {
-                      self.selectFeature(feat)
-                    }
+                    self.selectFeature(feat)
                   },
                 },
                 {
                   label: 'Copy info to clipboard',
                   icon: ContentCopyIcon,
                   onClick: (): void => {
-                    if (feat) {
-                      self.copyFeatureToClipboard(feat)
-                    }
+                    self.copyFeatureToClipboard(feat)
                   },
                 },
               ]
@@ -420,7 +416,7 @@ export function SharedLinearPileupDisplayMixin(
                       layoutId: getContainingView(self).id,
                       rendererType: 'PileupRenderer',
                     },
-                  )) as { feature: SimpleFeatureSerialized }
+                  )) as { feature: SimpleFeatureSerialized | undefined }
 
                   if (feature) {
                     self.setContextMenuFeature(new SimpleFeature(feature))
@@ -441,27 +437,39 @@ export function SharedLinearPileupDisplayMixin(
           return [
             {
               label: 'Normal',
-              onClick: () => self.setColorScheme({ type: 'normal' }),
+              onClick: () => {
+                self.setColorScheme({ type: 'normal' })
+              },
             },
             {
               label: 'Mapping quality',
-              onClick: () => self.setColorScheme({ type: 'mappingQuality' }),
+              onClick: () => {
+                self.setColorScheme({ type: 'mappingQuality' })
+              },
             },
             {
               label: 'Strand',
-              onClick: () => self.setColorScheme({ type: 'strand' }),
+              onClick: () => {
+                self.setColorScheme({ type: 'strand' })
+              },
             },
             {
               label: 'Per-base quality',
-              onClick: () => self.setColorScheme({ type: 'perBaseQuality' }),
+              onClick: () => {
+                self.setColorScheme({ type: 'perBaseQuality' })
+              },
             },
             {
               label: 'Per-base lettering',
-              onClick: () => self.setColorScheme({ type: 'perBaseLettering' }),
+              onClick: () => {
+                self.setColorScheme({ type: 'perBaseLettering' })
+              },
             },
             {
               label: 'First-of-pair strand',
-              onClick: () => self.setColorScheme({ type: 'stranded' }),
+              onClick: () => {
+                self.setColorScheme({ type: 'stranded' })
+              },
             },
             {
               label: 'Color by tag...',
@@ -603,13 +611,16 @@ export function SharedLinearPileupDisplayMixin(
                       layoutId: view.id,
                       rendererType: 'PileupRenderer',
                     },
-                  )) as { feature: SimpleFeatureSerialized }
+                  )) as { feature: SimpleFeatureSerialized | undefined }
 
                   // check featureIdUnderMouse is still the same as the
                   // feature.id that was returned e.g. that the user hasn't
                   // moused over to a new position during the async operation
                   // above
-                  if (self.featureIdUnderMouse === feature?.uniqueId) {
+                  if (
+                    feature &&
+                    self.featureIdUnderMouse === feature.uniqueId
+                  ) {
                     self.setFeatureUnderMouse(new SimpleFeature(feature))
                   }
                 }

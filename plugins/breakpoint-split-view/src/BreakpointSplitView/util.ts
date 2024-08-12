@@ -17,7 +17,7 @@ interface Track {
   displays: Display[]
 }
 
-const [, TOP, , BOTTOM] = [0, 1, 2, 3]
+const [, TOP, , BOTTOM] = [0, 1, 2, 3] as const
 
 function cheight(chunk: LayoutRecord) {
   return chunk[BOTTOM] - chunk[TOP]
@@ -31,7 +31,7 @@ function heightFromSpecificLevel(
 ) {
   return getYPosOverride
     ? getYPosOverride(trackId, level)
-    : views[level].trackRefs[trackId]?.getBoundingClientRect().top || 0
+    : views[level]!.trackRefs[trackId]?.getBoundingClientRect().top || 0
 }
 
 export function getPxFromCoordinate(view: LGV, refName: string, coord: number) {
@@ -47,7 +47,7 @@ export function yPos(
   c: LayoutRecord,
   getYPosOverride?: (trackId: string, level: number) => number,
 ) {
-  const display = tracks[level].displays[0]
+  const display = tracks[level]!.displays[0]!
   const min = 0
   const max = display.height
   let offset = 0

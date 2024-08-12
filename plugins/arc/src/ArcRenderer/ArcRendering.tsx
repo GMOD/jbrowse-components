@@ -56,9 +56,15 @@ function Arc({
         d={`M ${left} 0 C ${left} ${height}, ${right} ${height}, ${right} 0`}
         strokeWidth={strokeWidth}
         fill="transparent"
-        onClick={e => onFeatureClick?.(e, featureId)}
-        onMouseOver={() => setIsMouseOvered(true)}
-        onMouseLeave={() => setIsMouseOvered(false)}
+        onClick={e => {
+          onFeatureClick(e, featureId)
+        }}
+        onMouseOver={() => {
+          setIsMouseOvered(true)
+        }}
+        onMouseLeave={() => {
+          setIsMouseOvered(false)
+        }}
         pointerEvents="stroke"
       />
       {isMouseOvered ? <ArcTooltip contents={caption} /> : null}
@@ -170,9 +176,15 @@ function SemiCircles({
         {...getStrokeProps(stroke)}
         strokeWidth={strokeWidth}
         fill="transparent"
-        onClick={e => onFeatureClick?.(e, featureId)}
-        onMouseOver={() => setIsMouseOvered(true)}
-        onMouseLeave={() => setIsMouseOvered(false)}
+        onClick={e => {
+          onFeatureClick(e, featureId)
+        }}
+        onMouseOver={() => {
+          setIsMouseOvered(true)
+        }}
+        onMouseLeave={() => {
+          setIsMouseOvered(false)
+        }}
         ref={ref}
         pointerEvents="stroke"
       />
@@ -214,7 +226,7 @@ const ArcRendering = observer(function ({
   onFeatureClick: (event: React.MouseEvent, featureId: string) => void
   exportSVG: boolean
 }) {
-  const [region] = regions
+  const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
   const semicircles = readConfObject(config, 'displayMode') === 'semicircles'
 

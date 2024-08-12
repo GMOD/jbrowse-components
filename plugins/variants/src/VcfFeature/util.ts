@@ -1,6 +1,6 @@
 import VCF, { parseBreakend } from '@gmod/vcf'
 
-const altTypeToSO: Record<string, string | undefined> = {
+const altTypeToSO: Record<string, string> = {
   DEL: 'deletion',
   INS: 'insertion',
   DUP: 'duplication',
@@ -18,7 +18,7 @@ const altTypeToSO: Record<string, string | undefined> = {
  */
 export function getSOTermAndDescription(
   ref: string,
-  alt: string[],
+  alt: string[] | undefined,
   parser: VCF,
 ): string[] {
   // it's just a remark if there are no alternate alleles
@@ -43,10 +43,12 @@ export function getSOTermAndDescription(
   if (descriptions.size > 1) {
     const descs = [...descriptions]
     const prefixes = new Set(
-      descs.map(desc => {
-        const prefix = desc.split('->')
-        return prefix[1] ? prefix[0] : desc
-      }),
+      descs
+        .map(desc => {
+          const prefix = desc.split('->')
+          return prefix[1] ? prefix[0] : desc
+        })
+        .filter((f): f is string => !!f),
     )
 
     descriptions = new Set(

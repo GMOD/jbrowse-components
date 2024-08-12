@@ -26,11 +26,11 @@ export default class TwoBitAdapter extends BaseSequenceAdapter {
       const data = await file.readFile('utf8')
       return Object.fromEntries(
         data
-          ?.split(/\n|\r\n|\r/)
+          .split(/\n|\r\n|\r/)
           .filter(line => !!line.trim())
           .map(line => {
             const [name, length] = line.split('\t')
-            return [name, +length]
+            return [name!, +length!]
           }),
       )
     }
@@ -64,14 +64,14 @@ export default class TwoBitAdapter extends BaseSequenceAdapter {
       return Object.keys(chromSizesData).map(refName => ({
         refName,
         start: 0,
-        end: chromSizesData[refName],
+        end: chromSizesData[refName]!,
       }))
     }
     const refSizes = await this.twobit.getSequenceSizes()
     return Object.keys(refSizes).map(refName => ({
       refName,
       start: 0,
-      end: refSizes[refName],
+      end: refSizes[refName]!,
     }))
   }
 

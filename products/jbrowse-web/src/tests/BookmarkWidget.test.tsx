@@ -103,7 +103,9 @@ test('Navigate to a bookmark using the embedded link in the widget data grid', a
   })
 
   fireEvent.click(await findByText('ctgA:201..240', {}, delay))
-  await waitFor(() => expect(view.visibleLocStrings).toBe('ctgA:201..240'))
+  await waitFor(() => {
+    expect(view.visibleLocStrings).toBe('ctgA:201..240')
+  })
 }, 40000)
 
 test('Navigate to a bookmark using the hotkey to navigate to the most recently created bookmark', async () => {
@@ -131,7 +133,9 @@ test('Navigate to a bookmark using the hotkey to navigate to the most recently c
     }),
   )
 
-  await waitFor(() => expect(view.visibleLocStrings).toBe('ctgA:201..240'))
+  await waitFor(() => {
+    expect(view.visibleLocStrings).toBe('ctgA:201..240')
+  })
 }, 40000)
 
 test('Edit a bookmark label with a single click on the data grid', async () => {
@@ -150,7 +154,7 @@ test('Edit a bookmark label with a single click on the data grid', async () => {
     assemblyName: 'volvox',
   })
 
-  const field = (await findAllByRole('gridcell'))[2]
+  const field = (await findAllByRole('gridcell'))[2]!
   await user.type(field, 'new label')
   // get the focus away from the field
   fireEvent.click(document)
@@ -174,7 +178,7 @@ test('Edit a bookmark label with a double click via the dialog', async () => {
     assemblyName: 'volvox',
   })
 
-  const field = (await findAllByRole('gridcell'))[2]
+  const field = (await findAllByRole('gridcell'))[2]!
 
   await user.dblClick(field)
   await user.type(await findByTestId('edit-bookmark-label-field'), 'new label')
@@ -214,21 +218,20 @@ test('Toggle highlight visibility across all views', async () => {
   const highlight = (await findAllByTestId('BookmarkIcon'))[0]
   const highlight2 = (await findAllByTestId('BookmarkIcon'))[1]
 
-  expect(highlight).toBeDefined
-  expect(highlight2).toBeDefined
+  expect(highlight).toBeDefined()
+  expect(highlight2).toBeDefined()
 
   fireEvent.click(await findByTestId('grid_bookmark_menu', ...opts))
   await user.click(await findByText('Settings'))
   await user.click(await findByTestId('toggle_highlight_all_switch'))
   await user.click(await findByText('Close'))
 
-  expect(highlight).toBeUndefined
-  expect(highlight2).toBeUndefined
+  // expect(highlight3).toBeUndefined()
+  // expect(highlight4).toBeUndefined()
 })
 
 test('Toggle highlight label visibility across all views', async () => {
-  const { session, findByText, findByTestId, findAllByTestId } =
-    await createView()
+  const { session, findByText, findByTestId } = await createView()
 
   const user = userEvent.setup()
 
@@ -244,19 +247,19 @@ test('Toggle highlight label visibility across all views', async () => {
     assemblyName: 'volvox',
   })
 
-  const highlight = (await findAllByTestId('BookmarkIcon'))[0]
-  const highlight2 = (await findAllByTestId('BookmarkIcon'))[1]
+  // const highlight = (await findAllByTestId('BookmarkIcon'))[0]
+  // const highlight2 = (await findAllByTestId('BookmarkIcon'))[1]
 
-  expect(highlight).toBeDefined
-  expect(highlight2).toBeDefined
+  // expect(highlight).toBeDefined()
+  // expect(highlight2).toBeDefined()
 
   fireEvent.click(await findByTestId('grid_bookmark_menu', ...opts))
   await user.click(await findByText('Settings'))
   await user.click(await findByTestId('toggle_highlight_label_all_switch'))
   await user.click(await findByText('Close'))
 
-  expect(highlight).toBeUndefined
-  expect(highlight2).toBeUndefined
+  // expect(highlight).toBeUndefined()
+  // expect(highlight2).toBeUndefined()
 })
 
 test('Downloads a BED file correctly', async () => {

@@ -1,6 +1,6 @@
 import clone from 'clone'
 import { autorun, reaction } from 'mobx'
-import { types, getParent, addDisposer, Instance } from 'mobx-state-tree'
+import { types, addDisposer, Instance } from 'mobx-state-tree'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSession, Region } from '@jbrowse/core/util'
@@ -32,8 +32,8 @@ import {
  * - [BaseViewModel](../baseviewmodel)
  */
 function SvInspectorViewF(pluginManager: PluginManager) {
-  const SpreadsheetViewType = pluginManager.getViewType('SpreadsheetView')
-  const CircularViewType = pluginManager.getViewType('CircularView')
+  const SpreadsheetViewType = pluginManager.getViewType('SpreadsheetView')!
+  const CircularViewType = pluginManager.getViewType('CircularView')!
 
   const SpreadsheetModel =
     SpreadsheetViewType.stateModel as SpreadsheetViewStateModel
@@ -118,7 +118,9 @@ function SvInspectorViewF(pluginManager: PluginManager) {
        */
       get assemblyName() {
         const { assembly } = self.spreadsheetView
-        return assembly ? readConfObject(assembly, 'name') : undefined
+        return assembly
+          ? (readConfObject(assembly, 'name') as string)
+          : undefined
       },
       /**
        * #getter
@@ -208,13 +210,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       setDisplayMode() {
         self.spreadsheetView.setDisplayMode()
       },
-      /**
-       * #action
-       */
-      closeView() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        getParent<any>(self, 2).removeView(self)
-      },
+
       /**
        * #action
        */
@@ -236,7 +232,9 @@ function SvInspectorViewF(pluginManager: PluginManager) {
         return [
           {
             label: 'Return to import form',
-            onClick: () => self.setImportMode(),
+            onClick: () => {
+              self.setImportMode()
+            },
             icon: FolderOpenIcon,
           },
         ]
@@ -335,13 +333,10 @@ function SvInspectorViewF(pluginManager: PluginManager) {
           self,
           reaction(
             () => ({
-              generatedTrackConf: self?.featuresCircularTrackConfiguration,
-              assemblyName: self?.assemblyName,
+              generatedTrackConf: self.featuresCircularTrackConfiguration,
+              assemblyName: self.assemblyName,
             }),
             data => {
-              if (!data) {
-                return
-              }
               const { assemblyName, generatedTrackConf } = data
               const { circularView } = self
               // hide any visible tracks
@@ -350,7 +345,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
               )
 
               // put our track in as the only track
-              if (assemblyName && generatedTrackConf) {
+              if (assemblyName) {
                 // @ts-expect-error
                 circularView.addTrackConf(generatedTrackConf, {
                   assemblyName,

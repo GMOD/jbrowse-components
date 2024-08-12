@@ -38,7 +38,7 @@ OPERATION_PREDICATES['not between'] = (
   firstNumber,
   secondNumber,
 ) => {
-  return !OPERATION_PREDICATES.between(numberInCell, firstNumber, secondNumber)
+  return !OPERATION_PREDICATES.between!(numberInCell, firstNumber, secondNumber)
 }
 
 const useStyles = makeStyles()({
@@ -58,7 +58,6 @@ const useStyles = makeStyles()({
 
 // React component for the column filter control
 const FilterReactComponent = observer(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ({ filterModel }: { filterModel: any }) => {
     const { classes } = useStyles()
 
@@ -116,7 +115,7 @@ const FilterModelType = types
     columnNumber: types.integer,
     firstNumber: types.maybe(types.number),
     secondNumber: types.maybe(types.number),
-    operation: types.optional(types.enumeration(OPERATIONS), OPERATIONS[0]),
+    operation: types.optional(types.enumeration(OPERATIONS), OPERATIONS[0]!),
   })
   .views(self => ({
     // returns a function that tests the given row
@@ -129,7 +128,6 @@ const FilterModelType = types
 
       const { firstNumber, secondNumber, operation, columnNumber } = self // avoid closing over self
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return function stringPredicate(_sheet: any, row: any) {
         const { cellsWithDerived } = row
         const cell = cellsWithDerived[columnNumber]

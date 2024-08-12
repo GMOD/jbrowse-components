@@ -31,7 +31,9 @@ const ReturnToImportFormDialog = observer(function ({
           OK
         </Button>
         <Button
-          onClick={() => handleClose()}
+          onClick={() => {
+            handleClose()
+          }}
           color="secondary"
           variant="contained"
         >

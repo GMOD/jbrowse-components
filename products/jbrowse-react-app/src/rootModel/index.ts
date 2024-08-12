@@ -75,7 +75,6 @@ export default function RootModel({
   hydrateFn?: (
     container: Element | Document,
     initialChildren: React.ReactNode,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ) => any
   createRootFn?: (elt: Element | DocumentFragment) => {
     render: (node: React.ReactElement) => unknown
@@ -197,7 +196,7 @@ export default function RootModel({
             {
               label: 'New session',
               icon: AddIcon,
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
               onClick: (session: any) => {
                 session.setDefaultSession()
               },
@@ -236,7 +235,7 @@ export default function RootModel({
                   const widget = session.addWidget(
                     'AddTrackWidget',
                     'addTrackWidget',
-                    { view: session.views[0].id },
+                    { view: session.views[0]!.id },
                   )
                   session.showWidget(widget)
                   if (session.views.length > 1) {

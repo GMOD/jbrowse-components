@@ -117,7 +117,7 @@ export const HorizontalAxisRaw = observer(function ({
             <text
               x={x - 7}
               y={0}
-              transform={`rotate(${htextRotation},${x},${0})`}
+              transform={`rotate(${htextRotation},${x},0)`}
               key={`text-${JSON.stringify(tick)}`}
               fontSize={11}
               dominantBaseline="middle"

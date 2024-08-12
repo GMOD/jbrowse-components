@@ -240,15 +240,21 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               subMenu: [
                 {
                   label: 'Thin',
-                  onClick: () => self.setLineWidth(1),
+                  onClick: () => {
+                    self.setLineWidth(1)
+                  },
                 },
                 {
                   label: 'Bold',
-                  onClick: () => self.setLineWidth(2),
+                  onClick: () => {
+                    self.setLineWidth(2)
+                  },
                 },
                 {
                   label: 'Extra bold',
-                  onClick: () => self.setLineWidth(5),
+                  onClick: () => {
+                    self.setLineWidth(5)
+                  },
                 },
               ],
             },
@@ -259,19 +265,25 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   type: 'checkbox',
                   checked: self.jitterVal === 0,
                   label: 'None',
-                  onClick: () => self.setJitter(0),
+                  onClick: () => {
+                    self.setJitter(0)
+                  },
                 },
                 {
                   type: 'checkbox',
                   checked: self.jitterVal === 2,
                   label: 'Small',
-                  onClick: () => self.setJitter(2),
+                  onClick: () => {
+                    self.setJitter(2)
+                  },
                 },
                 {
                   type: 'checkbox',
                   checked: self.jitterVal === 10,
                   label: 'Large',
-                  onClick: () => self.setJitter(10),
+                  onClick: () => {
+                    self.setJitter(10)
+                  },
                 },
               ],
             },
@@ -279,13 +291,17 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               label: 'Draw inter-region vertical lines',
               type: 'checkbox',
               checked: self.drawInter,
-              onClick: () => self.setDrawInter(!self.drawInter),
+              onClick: () => {
+                self.setDrawInter(!self.drawInter)
+              },
             },
             {
               label: 'Draw long range connections',
               type: 'checkbox',
               checked: self.drawLongRange,
-              onClick: () => self.setDrawLongRange(!self.drawLongRange),
+              onClick: () => {
+                self.setDrawLongRange(!self.drawLongRange)
+              },
             },
             {
               label: 'Color scheme',
@@ -293,20 +309,27 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               subMenu: [
                 {
                   label: 'Insert size ± 3σ and orientation',
-                  onClick: () =>
-                    self.setColorScheme({ type: 'insertSizeAndOrientation' }),
+                  onClick: () => {
+                    self.setColorScheme({ type: 'insertSizeAndOrientation' })
+                  },
                 },
                 {
                   label: 'Insert size ± 3σ',
-                  onClick: () => self.setColorScheme({ type: 'insertSize' }),
+                  onClick: () => {
+                    self.setColorScheme({ type: 'insertSize' })
+                  },
                 },
                 {
                   label: 'Orientation',
-                  onClick: () => self.setColorScheme({ type: 'orientation' }),
+                  onClick: () => {
+                    self.setColorScheme({ type: 'orientation' })
+                  },
                 },
                 {
                   label: 'Insert size gradient',
-                  onClick: () => self.setColorScheme({ type: 'gradient' }),
+                  onClick: () => {
+                    self.setColorScheme({ type: 'gradient' })
+                  },
                 },
               ],
             },

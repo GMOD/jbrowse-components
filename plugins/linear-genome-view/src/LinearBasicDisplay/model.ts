@@ -219,14 +219,18 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               icon: VisibilityIcon,
               type: 'checkbox',
               checked: self.showLabels,
-              onClick: () => self.toggleShowLabels(),
+              onClick: () => {
+                self.toggleShowLabels()
+              },
             },
             {
               label: 'Show descriptions',
               icon: VisibilityIcon,
               type: 'checkbox',
               checked: self.showDescriptions,
-              onClick: () => self.toggleShowDescriptions(),
+              onClick: () => {
+                self.toggleShowDescriptions()
+              },
             },
             {
               label: 'Display mode',
@@ -238,7 +242,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 'collapse',
               ].map(val => ({
                 label: val,
-                onClick: () => self.setDisplayMode(val),
+                onClick: () => {
+                  self.setDisplayMode(val)
+                },
               })),
             },
             {
@@ -258,14 +264,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   type: 'radio',
                   checked: self.adjustTrackLayoutHeightSetting === 'static',
                   onClick: () =>
-                    self.setAdjustTrackLayoutHeightSetting('static'),
+                    { self.setAdjustTrackLayoutHeightSetting('static') },
                 },
                 {
                   label: 'Dynamic (auto-adjust to show all features)',
                   type: 'radio',
                   checked: self.adjustTrackLayoutHeightSetting === 'dynamic',
                   onClick: () =>
-                    self.setAdjustTrackLayoutHeightSetting('dynamic'),
+                    { self.setAdjustTrackLayoutHeightSetting('dynamic') },
                 },
               ],
             },

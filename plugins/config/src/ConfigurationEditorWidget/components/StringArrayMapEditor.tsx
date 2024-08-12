@@ -50,7 +50,11 @@ const StringArrayMapEditor = observer(function ({
           <CardHeader
             title={key}
             action={
-              <IconButton onClick={() => slot.remove(key)}>
+              <IconButton
+                onClick={() => {
+                  slot.remove(key)
+                }}
+              >
                 <DeleteIcon />
               </IconButton>
             }
@@ -61,10 +65,15 @@ const StringArrayMapEditor = observer(function ({
                 name: slot.name,
                 value: val,
                 description: `Values associated with entry ${key}`,
-                setAtIndex: (idx: number, val: string) =>
-                  slot.setAtKeyIndex(key, idx, val),
-                removeAtIndex: (idx: number) => slot.removeAtKeyIndex(key, idx),
-                add: (val: string) => slot.addToKey(key, val),
+                setAtIndex: (idx: number, val: string) => {
+                  slot.setAtKeyIndex(key, idx, val)
+                },
+                removeAtIndex: (idx: number) => {
+                  slot.removeAtKeyIndex(key, idx)
+                },
+                add: (val: string) => {
+                  slot.addToKey(key, val)
+                },
               }}
             />
           </CardContent>
@@ -78,7 +87,9 @@ const StringArrayMapEditor = observer(function ({
               fullWidth
               value={value}
               placeholder="add new"
-              onChange={event => setValue(event.target.value)}
+              onChange={event => {
+                setValue(event.target.value)
+              }}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">

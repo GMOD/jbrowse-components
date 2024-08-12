@@ -25,7 +25,7 @@ const AnyFilterModelType = types.union(
         // @ts-expect-error
         type: columnType.properties.type.value,
       })
-      return FilterModelType as unknown as IAnyModelType
+      return FilterModelType as unknown as IAnyModelType | undefined
     })
     // some column types might not have filter machinery, filter those out
     .filter(t => !!t),
